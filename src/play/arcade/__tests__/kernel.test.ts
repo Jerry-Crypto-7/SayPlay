@@ -21,6 +21,7 @@ import {
   HEADER_SIZE,
   type InputEvent,
   NO_INPUT,
+  PROJECTILE_LIFETIME,
   ROLE,
   type RulePiece,
   bodyBase,
@@ -454,3 +455,216 @@ describe('arkádové jádro v2', () => {
     expect(hashes.size).toBeGreaterThan(100);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Projektil (P25G)
+
+const shotParams = z.object({ every: z.int().min(1), template: z.int(), vy: z.int(), vz: z.int() }).strict();
+/** Každých `every` tiků (od tiku 0) vystřelí kopii předlohy z hráče ve výšce 1 m. */
+const shot: RulePiece<z.infer<typeof shotParams>> = {
+  id: 'shot',
+  params: shotParams,
+  roles: ['projectile'],
+  trigger: 'tick',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state, player }, params): readonly ArcadeEffect[] => {
+    if ((state[HEADER.tick] as number) % params.every !== 0) return [];
+    const base = bodyBase(player);
+    return [{ kind: 'spawn', template: params.template, x: state[base + BODY.x] as number, y: 1000, z: state[base + BODY.z] as number, vx: 0, vy: params.vy, vz: params.vz }];
+  },
+};
+
+/** Zásah terče = bod a terč zmizí; konec bez zásahu = „životy“ −1 (počítadlo minutí). */
+const struck: RulePiece<Record<string, never>> = {
+  id: 'struck',
+  params: z.object({}).strict(),
+  roles: ['projectile', 'target'],
+  trigger: 'hit',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state, other, source }): readonly ArcadeEffect[] => {
+    expect(state[bodyBase(source) + BODY.role]).toBe(ROLE.projectile);
+    if (other < 0) return [{ kind: 'damage', amount: 1 }];
+    return state[bodyBase(other) + BODY.role] === ROLE.target
+      ? [
+          { kind: 'score', amount: 1 },
+          { kind: 'despawn', body: other },
+        ]
+      : [];
+  },
+};
+
+const shotLibrary: ArcadeLibrary = { ...v2Library, rules: { ...v2Library.rules, shot, struck } };
+const bullet = (extra: Partial<BodyInit> = {}): BodyInit => body('projectile', 0, { template: true, solid: false, w: 200, h: 200, d: 200, ...extra });
+
+function shotWorld(bodies: readonly BodyInit[], fire: z.infer<typeof shotParams>, spawnSlots = 8) {
+  const built = buildWorld(
+    {
+      seed: 1,
+      control: { id: 'move', params: { vz: 0 } },
+      rules: [
+        { id: 'shot', params: fire },
+        { id: 'struck', params: {} },
+      ],
+      bot: { id: 'idle', params: {} },
+      level: { bodies: [player, ...bodies], length: 0, spawnSlots },
+    },
+    shotLibrary,
+  );
+  if (!built.ok) throw new Error(built.issues.join('; '));
+  return built.world;
+}
+
+const missesOf = (state: Int32Array): number => 0 - (state[HEADER.counters + COUNTER.health] as number);
+const aliveAt = (state: Int32Array, index: number): boolean => ((state[bodyBase(index) + BODY.flags] as number) & FLAG.alive) !== 0;
+
+describe('projektil v jádře', () => {
+  it('let s gravitací je parabola, dopad bez odrazu ho ukončí jako minutí', () => {
+    // Výstřel v tiku 0 (spawn na konci tiku), první integrace v tiku 1.
+    const w = shotWorld([bullet({ gravity: true })], { every: 10_000, template: 1, vy: 120, vz: 150 });
+    const program = loadProgram(w, shotLibrary);
+    const state = instantiate(w);
+    step(state, NO_INPUT, program);
+    const slot = 2;
+    expect(aliveAt(state, slot)).toBe(true);
+    let y = 1000;
+    let vy = 120;
+    let landed = -1;
+    for (let t = 1; t < 200 && landed < 0; t += 1) {
+      step(state, NO_INPUT, program);
+      vy -= 8;
+      y += vy;
+      if (!aliveAt(state, slot)) landed = t;
+      else {
+        expect(state[bodyBase(slot) + BODY.y]).toBe(y);
+        expect(state[bodyBase(slot) + BODY.z]).toBe(150 * t);
+      }
+    }
+    // y(t) = 1000 + 120t − 4t(t+1) ≤ 0 poprvé v t = 36.
+    expect(landed).toBe(36);
+    expect(missesOf(state)).toBe(1);
+    expect(replay(w, [], shotLibrary, 120)).toEqual(replay(w, [], shotLibrary, 120));
+  });
+
+  it('životnost končí despawnem přesně po stanovených ticích', () => {
+    const w = shotWorld([bullet({ lifetime: 30 })], { every: 10_000, template: 1, vy: 0, vz: 100 });
+    const program = loadProgram(w, shotLibrary);
+    const state = instantiate(w);
+    step(state, NO_INPUT, program);
+    for (let t = 1; t < 30; t += 1) step(state, NO_INPUT, program);
+    expect(aliveAt(state, 2)).toBe(true);
+    expect(missesOf(state)).toBe(0);
+    step(state, NO_INPUT, program);
+    expect(aliveAt(state, 2)).toBe(false);
+    expect(state[bodyBase(2) + BODY.z]).toBe(3000);
+    expect(missesOf(state)).toBe(1);
+  });
+
+  it('zásah terče spustí pravidlo, projektil i terč zmizí; tenký terč rychlá střela nepropadne', () => {
+    const target = body('target', 5000, { y: 500, w: 1000, h: 1000, d: 50, solid: false });
+    const w = shotWorld([bullet({ d: 50 }), target], { every: 10_000, template: 1, vy: 0, vz: 700 });
+    const state = run2(w, 20);
+    expect(scoreOf(state)).toBe(1);
+    expect(aliveAt(state, 2)).toBe(false);
+    expect(aliveAt(state, 3)).toBe(false);
+    expect(missesOf(state)).toBe(0);
+  });
+
+  it('pevné tělo střelu zastaví bez bodu, netečné tělo propustí', () => {
+    const wall = body('obstacle', 3000, { w: 3000, h: 3000 });
+    const coin = body('collectible', 1500, { y: 800, solid: false });
+    const w = shotWorld([bullet(), coin, wall], { every: 10_000, template: 1, vy: 0, vz: 200 });
+    const state = run2(w, 30);
+    expect(aliveAt(state, 2)).toBe(true);
+    expect(aliveAt(state, 3)).toBe(true);
+    expect(aliveAt(state, 4)).toBe(false);
+    expect(state[bodyBase(4) + BODY.z]).toBeLessThanOrEqual(3000);
+    expect(scoreOf(state)).toBe(0);
+  });
+
+  it('odraz: vyskočí zmenšenou rychlostí a po pár dopadech skončí', () => {
+    const w = shotWorld([bullet({ gravity: true, bounce: 600 })], { every: 10_000, template: 1, vy: 0, vz: 60 });
+    const program = loadProgram(w, shotLibrary);
+    const state = instantiate(w);
+    let bounces = 0;
+    let end = -1;
+    let prevVy = 0;
+    for (let t = 0; t < 400 && end < 0; t += 1) {
+      step(state, NO_INPUT, program);
+      if (!aliveAt(state, 2)) {
+        if (t > 0) end = t;
+        continue;
+      }
+      const vy = state[bodyBase(2) + BODY.vy] as number;
+      if (vy > 0 && prevVy < 0) {
+        bounces += 1;
+        expect(state[bodyBase(2) + BODY.y]).toBe(0);
+        expect(vy).toBe(Math.trunc((-(prevVy - 8) * 600) / 1000));
+      }
+      prevVy = vy;
+    }
+    expect(bounces).toBeGreaterThanOrEqual(2);
+    expect(end).toBeGreaterThan(0);
+    expect(missesOf(state)).toBe(1);
+  });
+
+  it('strop těl zahodí další střelu, po zániku se slot znovu použije', () => {
+    const w = shotWorld([bullet({ lifetime: 100 })], { every: 5, template: 1, vy: 0, vz: 10 }, 3);
+    const program = loadProgram(w, shotLibrary);
+    const state = instantiate(w);
+    const capacity = (state.length - HEADER_SIZE) / BODY_STRIDE;
+    expect(capacity).toBe(5);
+    for (let t = 0; t < 60; t += 1) step(state, NO_INPUT, program);
+    // 12 výstřelů, místo jen pro 3.
+    expect(state[HEADER.bodyCount]).toBe(capacity);
+    const aliveCount = (): number => [2, 3, 4].filter((i) => aliveAt(state, i)).length;
+    expect(aliveCount()).toBe(3);
+    for (let t = 60; t < 101; t += 1) step(state, NO_INPUT, program);
+    // První střela (tik 0) dohasla v tiku 100, další výstřel v tiku 100 vzal její slot.
+    expect(missesOf(state)).toBe(1);
+    expect(aliveCount()).toBe(3);
+    expect(state[bodyBase(2) + BODY.aux1]).toBe(100);
+    expect(state[HEADER.bodyCount]).toBe(capacity);
+  });
+
+  it('palba každý tik celých 90 s skončí v mezích, stejně dvakrát', () => {
+    const w = shotWorld([bullet({ gravity: true, bounce: 900 }), body('target', 20_000, { solid: true, kinematic: true, vx: 30, period: 90 })], { every: 1, template: 1, vy: 90, vz: 120 }, ARCADE_LIMITS.maxBodies - 3);
+    const first = replay(w, [], shotLibrary);
+    expect(first.tick).toBe(ARCADE_LIMITS.maxTicks);
+    expect(replay(w, [], shotLibrary)).toEqual(first);
+    const state = instantiate(w);
+    const program = loadProgram(w, shotLibrary);
+    for (let t = 0; t < ARCADE_LIMITS.maxTicks; t += 1) step(state, NO_INPUT, program);
+    expect(state[HEADER.bodyCount]).toBeLessThanOrEqual(ARCADE_LIMITS.maxBodies);
+    for (let i = 3; i < (state[HEADER.bodyCount] as number); i += 1) {
+      const life = state[bodyBase(i) + BODY.aux1] as number;
+      expect(life).toBeGreaterThanOrEqual(0);
+      expect(life).toBeLessThanOrEqual(PROJECTILE_LIFETIME);
+    }
+  });
+
+  it('buildWorld odmítne nekonečný nebo nesmyslný projektil', () => {
+    const issuesOf = (extra: Partial<BodyInit>, role: BodyInit['role'] = 'projectile'): readonly string[] => {
+      const built = buildWorld(
+        { seed: 1, control: { id: 'move', params: { vz: 0 } }, rules: [], bot: { id: 'idle', params: {} }, level: { bodies: [player, body(role, 0, extra)], length: 0 } },
+        shotLibrary,
+      );
+      return built.ok ? [] : built.issues;
+    };
+    expect(issuesOf({ lifetime: 0 })).toHaveLength(1);
+    expect(issuesOf({ lifetime: ARCADE_LIMITS.maxTicks + 1 })).toHaveLength(1);
+    expect(issuesOf({ lifetime: 1.5 })).toHaveLength(1);
+    expect(issuesOf({ bounce: 1001 })).toHaveLength(1);
+    expect(issuesOf({ bounce: -1 })).toHaveLength(1);
+    expect(issuesOf({ kinematic: true })).toHaveLength(1);
+    expect(issuesOf({ lifetime: 10 }, 'target')).toHaveLength(1);
+    expect(issuesOf({ lifetime: ARCADE_LIMITS.maxTicks, bounce: 1000 })).toEqual([]);
+    expect(issuesOf({})).toEqual([]);
+  });
+});
+
+function run2(w: ReturnType<typeof shotWorld>, ticks: number) {
+  const program = loadProgram(w, shotLibrary);
+  const state = instantiate(w);
+  for (let t = 0; t < ticks; t += 1) step(state, NO_INPUT, program);
+  return state;
+}

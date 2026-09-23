@@ -262,3 +262,20 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `sandbox`, `manipulate`, `idle`, `build_place`). Hra se publikuje dál; `closest` je hra, kterou
   návrh postavil místo toho („a collect-and-escape game“). Spec, verze ani hashe se nemění –
   `/play/[id]` hlášku počítá znovu z `origin.sentence` (u upgradu z rodiče) a ukáže proužek.
+
+## P25G
+
+- **Projektil v jádře** (23. 9. 2026, T1). Role `projectile` dostala chování; `arcade-v2` se
+  nezvedá, protože žádný kus ani fixtura před P25G projektil nestaví (běžec, plošinovka ani
+  poletování role nepoužívají) – hashe jejich světů i přehrání beze změny.
+  - **`BodyInit.lifetime?`** (tiky 1..`maxTicks`, výchozí `PROJECTILE_LIFETIME` = 180) a
+    **`bounce?`** (0..`BOUNCE_MAX` = 1000), jen pro roli `projectile`; `buildWorld` odmítne
+    jiný rozsah, tato pole u jiné role a kinematický projektil. Ve stavu: `aux0` = odraz,
+    `aux1` = zbývající život; efekt `spawn` je u projektilu z předlohy nenuluje.
+  - **Spouštěč pravidla `hit`**: projektil skončil – zásah živého `target`/`enemy`/pevného
+    těla (`other` = tělo), nebo zem bez odrazu, dokutálení či dohasnutí (`other` = −1). Jádro
+    projektil despawnuje samo; `RuleContext` má nově povinné `source` (projektil u `hit`,
+    jinak −1) – kód, který kontext skládá sám (testy), ho musí doplnit.
+  - **Hráč projektil nevidí:** `collide` role `projectile` přeskočí (ani zastavení, ani
+    kontakt), aby střela nezasáhla střelce. Nepřátelská střela na hráče zatím není.
+  - Pořadí tiku: … kolize hráče → projektily → pravidla (`contact`, `hit`, `tick`, `counter`).

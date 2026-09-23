@@ -34,6 +34,11 @@ export const ARCADE_LIMITS = {
   maxCounters: 8,
 } as const;
 
+/** Životnost projektilu v ticích, když ji úroveň neuvede: 3 s. Mez je `maxTicks`. */
+export const PROJECTILE_LIFETIME = 3 * ARCADE_HZ;
+/** Plný odraz projektilu od země; 0 = zánik při dopadu. */
+export const BOUNCE_MAX = 1000;
+
 // ---------------------------------------------------------------------------
 // Stav
 
@@ -62,7 +67,8 @@ export type RunStateCode = (typeof RUN_STATE)[keyof typeof RUN_STATE];
 /**
  * Pojmenované sloty jednoho těla. Osy: `x` do stran, `y` nahoru, `z` vpřed
  * (běžec běží po +z). `x/y/z` je střed spodní stěny AABB, `w/h/d` celé rozměry.
- * `aux0/aux1` jsou pracovní sloty ovládání (cílový pruh, časovač skluzu).
+ * `aux0/aux1` jsou pracovní sloty ovládání (cílový pruh, časovač skluzu);
+ * u projektilu `aux0` = odraz 0–`BOUNCE_MAX`, `aux1` = zbývající tiky života.
  */
 export const BODY = {
   x: 0,
@@ -214,14 +220,21 @@ export type ArcadeEffect =
   /** Místo návratu = střed horní hrany těla `body`. */
   | { readonly kind: 'checkpoint'; readonly body: number };
 
-export type RuleTrigger = 'contact' | 'tick' | 'counter';
+/**
+ * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),
+ * nebo dopadl na zem bez odrazu, dohasl či se dokutálel (`other` −1). Jádro ho
+ * despawnuje samo, pravidlo jen rozhodne, co zásah znamená.
+ */
+export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit';
 
 /** Co pravidlo vidí: stav jen ke čtení, hráč a u `contact` těl, se kterým se dotkl. */
 export interface RuleContext {
   readonly state: ArcadeState;
   readonly player: number;
-  /** Tělo kontaktu; u `tick` a `counter` −1. */
+  /** Tělo kontaktu nebo zásahu; u `tick`, `counter` a zásahu země −1. */
   readonly other: number;
+  /** U `hit` projektil (už mrtvý, sloty čitelné), jinak −1. */
+  readonly source: number;
 }
 
 /** Pravidlo: spouštěč → efekty. Stav nemění samo, efekty aplikuje jádro. */
@@ -256,6 +269,10 @@ export interface BodyInit {
   readonly period?: number;
   /** Předloha pro efekt `spawn`: ve světě je, ale není živá. */
   readonly template?: boolean;
+  /** Jen role `projectile`: tiky života 1..`maxTicks` (výchozí `PROJECTILE_LIFETIME`), pak zánik. */
+  readonly lifetime?: number;
+  /** Jen role `projectile` s gravitací: odraz od země 0..`BOUNCE_MAX` (rychlost × bounce / 1000). */
+  readonly bounce?: number;
 }
 
 export interface ArcadeLevel {

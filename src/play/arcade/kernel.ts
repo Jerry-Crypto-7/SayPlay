@@ -3,7 +3,8 @@
  *
  * Tik: vstup → ovládání → vezení na kinematickém tělese → integrace
  * (rychlost, gravitace) → kolize AABB hráče s ostatními (pevné tělo zastaví
- * shora, zdola i z boku; přistání shora není náraz) → pravidla → úklid. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
+ * shora, zdola i z boku; přistání shora není náraz) → projektily (život,
+ * zásah, odraz; P25G) → pravidla → úklid. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
  * náhodu, takže stav v tiku *t* je funkce počátečního stavu a vstupů 0..*t*.
  * Každá smyčka jde přes těla nebo pravidla světa, a těch je nejvýš
  * `ARCADE_LIMITS` (ohlídá `buildWorld`).
@@ -21,6 +22,7 @@ import {
   type ArcadeWorld,
   BODY,
   BODY_STRIDE,
+  BOUNCE_MAX,
   type BotPiece,
   COUNTER,
   type ControlPiece,
@@ -30,6 +32,7 @@ import {
   HEADER_SIZE,
   type InputEvent,
   NO_INPUT,
+  PROJECTILE_LIFETIME,
   type PieceRef,
   ROLE,
   RUN_STATE,
@@ -105,6 +108,18 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
   check(library.controls, input.control, 'control');
   input.rules.forEach((ref, index) => check(library.rules, ref, `rules/${index}`));
   check(library.bots, input.bot, 'bot');
+  // Projektil musí zaniknout: konečná životnost je jediná mez jeho letu.
+  bodies.forEach((body, index) => {
+    if (body.role !== 'projectile') {
+      if (body.lifetime !== undefined || body.bounce !== undefined) issues.push(`bodies/${index}: lifetime and bounce belong to projectiles`);
+      return;
+    }
+    const lifetime = body.lifetime ?? PROJECTILE_LIFETIME;
+    if (!Number.isInteger(lifetime) || lifetime < 1 || lifetime > ARCADE_LIMITS.maxTicks) issues.push(`bodies/${index}: projectile lifetime ${lifetime} outside 1..${ARCADE_LIMITS.maxTicks}`);
+    const bounce = body.bounce ?? 0;
+    if (!Number.isInteger(bounce) || bounce < 0 || bounce > BOUNCE_MAX) issues.push(`bodies/${index}: projectile bounce ${bounce} outside 0..${BOUNCE_MAX}`);
+    if (body.kinematic === true) issues.push(`bodies/${index}: a projectile cannot be kinematic`);
+  });
   if (issues.length > 0) return { ok: false, issues };
 
   const kinds = [...new Set(bodies.map((body) => body.kind))];
@@ -131,6 +146,10 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
     state[base + BODY.role] = ROLE[body.role];
     state[base + BODY.kind] = kinds.indexOf(body.kind);
     if (body.kinematic === true) state[base + BODY.aux1] = body.period ?? 0;
+    if (body.role === 'projectile') {
+      state[base + BODY.aux0] = body.bounce ?? 0;
+      state[base + BODY.aux1] = body.lifetime ?? PROJECTILE_LIFETIME;
+    }
     const player = index === 0 ? FLAG.gravity | FLAG.grounded : 0;
     state[base + BODY.flags] =
       (body.template === true ? 0 : FLAG.alive) |
@@ -199,6 +218,7 @@ const S = BODY;
 const F = FLAG;
 const HD = HEADER;
 const CT = COUNTER;
+const R = ROLE;
 const baseOf = bodyBase;
 
 const alive = (state: ArcadeState, base: number): boolean => ((state[base + S.flags] as number) & F.alive) !== 0;
@@ -227,7 +247,8 @@ function integrate(state: ArcadeState, count: number): void {
     state[base + S.x] = (state[base + S.x] as number) + (state[base + S.vx] as number);
     state[base + S.y] = (state[base + S.y] as number) + (state[base + S.vy] as number);
     state[base + S.z] = (state[base + S.z] as number) + (state[base + S.vz] as number);
-    if (falls && (state[base + S.y] as number) <= 0) {
+    // Dopad projektilu (odraz, nebo zánik) řeší `projectiles()`, tady by jen ztratil rychlost.
+    if (falls && (state[base + S.y] as number) <= 0 && state[base + S.role] !== R.projectile) {
       state[base + S.y] = 0;
       state[base + S.vy] = 0;
       state[base + S.flags] = (state[base + S.flags] as number) | F.grounded;
@@ -277,7 +298,8 @@ function collide(state: ArcadeState, count: number, player: number, prevX: numbe
   for (let i = 0; i < count; i += 1) {
     if (i === player) continue;
     const base = baseOf(i);
-    if (!alive(state, base) || !overlaps(state, p, base)) continue;
+    // Projektil hráče nezastaví ani se ho nedotkne: vylétá z něj.
+    if (!alive(state, base) || state[base + S.role] === R.projectile || !overlaps(state, p, base)) continue;
     if (((state[base + S.flags] as number) & F.solid) === 0) {
       contacts.push(i);
       continue;
@@ -320,6 +342,66 @@ function collide(state: ArcadeState, count: number, player: number, prevX: numbe
   return contacts;
 }
 
+/**
+ * Průnik těla `b` s dráhou projektilu `a` za poslední tik (obal staré a nové
+ * polohy), aby rychlá střela nepropadla tenkým terčem. Souřadnice x/z zdvojené.
+ */
+function sweptHits(state: ArcadeState, a: number, b: number): boolean {
+  const vx = state[a + S.vx] as number;
+  const vy = state[a + S.vy] as number;
+  const vz = state[a + S.vz] as number;
+  const ay = state[a + S.y] as number;
+  const bottom = Math.min(ay, ay - vy);
+  const top = Math.max(ay, ay - vy) + (state[a + S.h] as number);
+  return (
+    Math.abs(2 * (state[a + S.x] as number) - vx - 2 * (state[b + S.x] as number)) < (state[a + S.w] as number) + Math.abs(vx) + (state[b + S.w] as number) &&
+    Math.abs(2 * (state[a + S.z] as number) - vz - 2 * (state[b + S.z] as number)) < (state[a + S.d] as number) + Math.abs(vz) + (state[b + S.d] as number) &&
+    bottom < (state[b + S.y] as number) + (state[b + S.h] as number) &&
+    (state[b + S.y] as number) < top
+  );
+}
+
+/**
+ * Projektily po integraci: ubere tik života, hledá zásah (terč, nepřítel,
+ * pevné tělo; první podle indexu), na zemi odrazí nebo ukončí. Skončený
+ * projektil jádro despawnuje a vrátí dvojice [projektil, zasažené tělo nebo −1]
+ * pro pravidla `hit`. Život je konečný (`buildWorld`), takže každý jednou skončí.
+ */
+function projectiles(state: ArcadeState, count: number, player: number): number[] {
+  const ended: number[] = [];
+  for (let i = 0; i < count; i += 1) {
+    const base = baseOf(i);
+    if (state[base + S.role] !== R.projectile || !alive(state, base)) continue;
+    let struck = -2;
+    const life = (state[base + S.aux1] as number) - 1;
+    state[base + S.aux1] = life;
+    for (let j = 0; j < count && struck === -2; j += 1) {
+      if (j === i || j === player) continue;
+      const other = baseOf(j);
+      const role = state[other + S.role] as number;
+      if (!alive(state, other) || role === R.projectile) continue;
+      if ((role === R.target || role === R.enemy || ((state[other + S.flags] as number) & F.solid) !== 0) && sweptHits(state, base, other)) struck = j;
+    }
+    if (struck === -2 && ((state[base + S.flags] as number) & F.gravity) !== 0 && (state[base + S.y] as number) <= 0) {
+      const bounce = state[base + S.aux0] as number;
+      const vy = Math.trunc((-(state[base + S.vy] as number) * bounce) / BOUNCE_MAX);
+      // Odraz slabší než dva tiky gravitace = míček se dokutálel.
+      if (vy <= 2 * GRAVITY) struck = -1;
+      else {
+        state[base + S.y] = 0;
+        state[base + S.vy] = vy;
+        state[base + S.vx] = Math.trunc(((state[base + S.vx] as number) * bounce) / BOUNCE_MAX);
+        state[base + S.vz] = Math.trunc(((state[base + S.vz] as number) * bounce) / BOUNCE_MAX);
+      }
+    }
+    if (struck === -2 && life <= 0) struck = -1;
+    if (struck === -2) continue;
+    state[base + S.flags] = (state[base + S.flags] as number) & ~F.alive;
+    ended.push(i, struck);
+  }
+  return ended;
+}
+
 function collect(effects: ArcadeEffect[], fired: readonly ArcadeEffect[]): void {
   for (const effect of fired) {
     if (effects.length >= ARCADE_LIMITS.maxEffectsPerTick) return;
@@ -350,8 +432,11 @@ function spawn(state: ArcadeState, effect: Extract<ArcadeEffect, { kind: 'spawn'
   state[to + S.vx] = effect.vx;
   state[to + S.vy] = effect.vy;
   state[to + S.vz] = effect.vz;
-  state[to + S.aux0] = 0;
-  state[to + S.aux1] = 0;
+  // Projektil si z předlohy nese odraz a plný život; ostatním se pracovní sloty nulují.
+  if (state[to + S.role] !== R.projectile) {
+    state[to + S.aux0] = 0;
+    state[to + S.aux1] = 0;
+  }
   state[to + S.flags] = ((state[to + S.flags] as number) | F.alive) & ~(F.grounded | F.sliding);
 }
 
@@ -403,20 +488,26 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const prevZ = state[p + S.z] as number;
   integrate(state, count);
   const contacts = collide(state, count, player, prevX, prevY, prevZ);
+  const ended = projectiles(state, count, player);
 
   const effects: ArcadeEffect[] = [];
   for (const other of contacts) {
     for (const rule of program.rules) {
-      if (rule.piece.trigger === 'contact') collect(effects, rule.piece.fire({ state, player, other }, rule.params));
+      if (rule.piece.trigger === 'contact') collect(effects, rule.piece.fire({ state, player, other, source: -1 }, rule.params));
+    }
+  }
+  for (let k = 0; k < ended.length; k += 2) {
+    for (const rule of program.rules) {
+      if (rule.piece.trigger === 'hit') collect(effects, rule.piece.fire({ state, player, other: ended[k + 1] as number, source: ended[k] as number }, rule.params));
     }
   }
   for (const rule of program.rules) {
-    if (rule.piece.trigger === 'tick') collect(effects, rule.piece.fire({ state, player, other: -1 }, rule.params));
+    if (rule.piece.trigger === 'tick') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1 }, rule.params));
   }
   apply(state, effects, 0);
   const countersFrom = effects.length;
   for (const rule of program.rules) {
-    if (rule.piece.trigger === 'counter') collect(effects, rule.piece.fire({ state, player, other: -1 }, rule.params));
+    if (rule.piece.trigger === 'counter') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1 }, rule.params));
   }
   apply(state, effects, countersFrom);
 
