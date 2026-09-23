@@ -13,6 +13,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { enemyModel, heroModel } from '@/play/arcade/models';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -27,22 +28,6 @@ import { createArcadeSession, type ArcadeSnapshot } from './session';
 // WebGL kontext na serveru není – stejně jako mřížkové plátno.
 const ArcadeStage = dynamic(() => import('./ArcadeStage'), { ssr: false });
 
-/** Hrdinové, kteří v katalogu mají model; jiný popisek hráče kreslí `explorer`. */
-const HERO_MODELS = new Set(['explorer', 'robot', 'fox', 'kid', 'raccoon', 'astronaut', 'knight', 'penguin', 'cat', 'hamster', 'goblin', 'slime', 'seal', 'ghost']);
-
-/** Poletování bez známého hrdiny kreslí ptáčka (primitiv), závod auto nebo letadlo, ostatní `explorer`. */
-function heroModel(spec: GameSpecV1): string {
-  const label = spec.roles.find((role) => role.kind === 'player')?.label.toLowerCase() ?? '';
-  if (spec.control === 'steer') return /\b(?:plane|pilot|jet)\b/.test(label) ? 'plane' : 'race-car';
-  const noun = label.split(/\s+/).at(-1) ?? '';
-  return HERO_MODELS.has(noun) ? noun : spec.control === 'flap' ? 'bird' : 'explorer';
-}
-
-/** Nepřátelé střelnice: model z popisku role, když ho katalog má, jinak robot. */
-function enemyModel(spec: GameSpecV1): string {
-  const noun = spec.roles.find((role) => role.id === 'enemy')?.label.toLowerCase().split(/\s+/).at(-1) ?? '';
-  return HERO_MODELS.has(noun) ? noun : 'robot';
-}
 
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
 const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec.control === 'throw';
