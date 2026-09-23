@@ -667,6 +667,55 @@ a.play-button {
   font-variant-numeric: tabular-nums;
 }
 
+/* „From your sentence“: sbalený řádek nese autorství i větu, rozbalený to, co z ní vzniklo. */
+.play-read summary {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.play-read[open] summary {
+  white-space: normal;
+}
+
+.play-read-by {
+  font-weight: 600;
+}
+
+.play-read-by-ai {
+  color: var(--play-accent);
+}
+
+.play-read-sentence {
+  color: var(--play-muted);
+}
+
+.play-read-rows {
+  margin: 8px 0 0;
+  display: grid;
+  gap: 4px;
+}
+
+.play-read-rows div {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 8px;
+}
+
+.play-read-rows dt {
+  color: var(--play-muted);
+}
+
+.play-read-rows dd {
+  margin: 0;
+  color: var(--play-text);
+}
+
+.play-read-note {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+}
+
 @media (max-width: 480px) {
   .play-lab {
     margin: 6px 10px 0;

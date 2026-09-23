@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import type { QualityReport } from '@/play/contracts';
 import { readGameSpec } from '@/play/spec';
 
-import { labFacts } from '../lab';
+import { authorshipOf, labFacts, readFacts } from '../lab';
 
 const spec = (() => {
   const read = readGameSpec(JSON.parse(readFileSync('src/play/__fixtures__/collect_exit.json', 'utf8')));
@@ -50,5 +50,32 @@ describe('labFacts', () => {
     const facts = labFacts(spec, { ...REPORT, witness: { certified: false, winsAtTick: 42 }, stub: true } as QualityReport & { stub: true });
     expect(facts.winnable).toBe('Not proven');
     expect(facts.replay).toBe('Replay: stub');
+  });
+});
+
+// Panel „From your sentence“ tvrdí porotci, kdo hru navrhl. Návrh ze slov,
+// který se hlásí jako „Designed by AI“, by vypadal správně a lhal.
+describe('authorshipOf and readFacts', () => {
+  it('a draft from keywords is never reported as AI, even with a sentence beside it', () => {
+    expect(authorshipOf({ origin: { sentence: 'fox in a forest', seed: null } })).toBe('draft');
+    expect(authorshipOf({ origin: { sentence: 'fox in a forest', seed: null }, sentence: 'fox in a forest' })).toBe('draft');
+  });
+
+  it('the model upgrade and a game the director published directly are AI; a remix is a remix', () => {
+    expect(authorshipOf({ relation: 'upgrade' })).toBe('ai');
+    expect(authorshipOf({ sentence: 'fox in a forest' })).toBe('ai');
+    expect(authorshipOf({})).toBe('remix');
+  });
+
+  it('reads the game, world, player, opponents, goal and rules straight from the spec', () => {
+    const arcade = readGameSpec(JSON.parse(readFileSync('src/play/arcade/__fixtures__/duel.json', 'utf8')));
+    if (!arcade.ok) throw new Error(arcade.reason);
+    const read = readFacts(arcade.value, 'ai', 'boxing match');
+    expect(read).toMatchObject({ authorship: 'ai', sentence: 'boxing match', game: 'Duel', world: 'a rooftop at night · tense', you: 'fighter', against: ['ninja'] });
+    expect(read.goal).toBe(arcade.value.objective.description);
+    // P26 T5: souboj čte jen `health`, ostatní mechaniky ze šablony zmizely.
+    expect(read.rules).toEqual(['health']);
+    // Mřížková hra nemá ovládání – jméno hry je její archetyp.
+    expect(readFacts(spec, 'draft', null)).toMatchObject({ game: 'Collect exit', you: 'fox', against: [], sentence: null });
   });
 });

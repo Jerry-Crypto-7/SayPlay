@@ -131,7 +131,7 @@ export async function honestyOf(versions: Pick<VersionStore, 'get'>, game: Publi
   return sentence === null ? null : unsupportedGame(sentence, game.spec);
 }
 
-async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {
+export async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {
   if (game.origin !== undefined) return game.origin.sentence;
   if (game.sentence !== undefined) return game.sentence;
   if (game.relation !== 'upgrade' || game.version.parentId === null) return null;

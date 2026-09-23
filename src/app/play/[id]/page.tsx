@@ -5,10 +5,10 @@ import { cache } from 'react';
 
 import { VERSION_ID_PATTERN } from '@/app/api/play/_errors';
 import { admit } from '@/app/api/play/_publish';
-import { labFacts } from '@/components/play/lab';
+import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import type { GameVersion } from '@/play/contracts';
-import { type Honesty, honestyOf } from '@/play/draft/unsupported';
+import { type Honesty, sentenceOf, unsupportedGame } from '@/play/draft/unsupported';
 import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
@@ -23,7 +23,7 @@ type Params = { params: Promise<{ id: string }> };
 type Loaded =
   | { readonly kind: 'refused' }
   | { readonly kind: 'missing' }
-  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[]; readonly honesty: Honesty | null };
+  | { readonly kind: 'game'; readonly game: PublishedGame; readonly children: readonly string[]; readonly lineage: readonly GameVersion[]; readonly honesty: Honesty | null; readonly sentence: string | null };
 
 /**
  * Jedno načtení na požadavek, sdílené metadaty i stránkou (`cache` z Reactu).
@@ -41,8 +41,9 @@ const load = cache(async (id: string): Promise<Loaded> => {
   const versions = versionStoreFromEnv(process.env);
   const game = await versions.get(id);
   if (game === null) return { kind: 'missing' };
-  const [children, lineage, honesty] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), honestyOf(versions, game)]);
-  return { kind: 'game', game, children, lineage, honesty };
+  const [children, lineage, sentence] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id), sentenceOf(versions, game)]);
+  const honesty = sentence === null ? null : unsupportedGame(sentence, game.spec);
+  return { kind: 'game', game, children, lineage, honesty, sentence };
 });
 
 /**
@@ -81,7 +82,7 @@ export default async function PlayGamePage({ params }: Params) {
       </main>
     );
   }
-  const { game, children, lineage, honesty } = loaded;
+  const { game, children, lineage, honesty, sentence } = loaded;
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
@@ -96,6 +97,7 @@ export default async function PlayGamePage({ params }: Params) {
       remixes={children.length}
       aiVersion={game.relation === 'upgrade'}
       lab={labFacts(game.spec, game.report)}
+      read={readFacts(game.spec, authorshipOf(game), sentence)}
       honesty={honesty}
       upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
     />
