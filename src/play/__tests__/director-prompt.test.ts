@@ -42,17 +42,20 @@ describe('director prompt', () => {
     for (const forbidden of ['projectile', 'moving_platform']) expect(request.system).not.toContain(forbidden);
   });
 
-  // Po sloučení vlny 1: 11 558 B. Vlna 2 přidala řízení a arénu (P25F) i střelbu
-  // a hod (P25G): sečteno by to bylo 12 006 B, proto je řádek ovládání psaný
-  // s legendou místo opakovaných popisků – 11 801 B.
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 801 B)', () => {
+  // Po sloučení vlny 1: 11 558 B. Vlna 2 přidala sedm ovládání (P25F řízení a aréna,
+  // P25G střelba a hod, P25H načasování, rytmus a souboj); s popisem každého zvlášť
+  // by to bylo 12 068 B, tedy přes strop. Řádek ovládání proto říká legendou jednou,
+  // co se opakovalo u každého (role `player` a `finish`, slovo `controlParams`):
+  // 11 963 B. Do stropu zbývá 37 B, takže další ovládání se do téhle podoby nevejde –
+  // vlna 3 musí řádek generovat z tabulky, ne ho psát ručně.
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 963 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_820);
+    expect(max).toBeLessThanOrEqual(11_975);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

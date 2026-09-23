@@ -13,6 +13,10 @@ import { platformBot } from './pieces/platform-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
+import { duelArena, duelControl } from './pieces/duel';
+import { duelBot } from './pieces/duel-bot';
+import { rhythmControl, rhythmLevel } from './pieces/rhythm';
+import { rhythmBot } from './pieces/rhythm-bot';
 import { gun, shooterControl, shooterRange } from './pieces/shooter';
 import { shooterBot } from './pieces/shooter-bot';
 import { SHOT_RULES } from './pieces/shots';
@@ -20,6 +24,8 @@ import { rivalFinish, steerControl, steerTrack } from './pieces/steer';
 import { steerBot } from './pieces/steer-bot';
 import { launch, throwControl, throwField } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
+import { judgeRule, timingControl, timingLevel } from './pieces/timing';
+import { timingBot } from './pieces/timing-bot';
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: {
@@ -30,8 +36,11 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     move_free: moveFreeControl,
     shooter: shooterControl,
     throw: throwControl,
+    timing: timingControl,
+    rhythm: rhythmControl,
+    duel: duelControl,
   },
-  rules: { ...RULES, ...SHOT_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime },
+  rules: { ...RULES, ...SHOT_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
@@ -40,6 +49,9 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     arena: arenaLevel,
     shooter_range: shooterRange,
     throw_field: throwField,
+    timing_level: timingLevel,
+    rhythm_level: rhythmLevel,
+    duel_arena: duelArena,
   },
   bots: {
     runner_bot: runnerBot,
@@ -49,5 +61,8 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     arena_bot: arenaBot,
     shooter_bot: shooterBot,
     throw_bot: throwBot,
+    timing_bot: timingBot,
+    rhythm_bot: rhythmBot,
+    duel_bot: duelBot,
   },
 };

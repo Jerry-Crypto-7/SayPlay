@@ -7,13 +7,16 @@ import { describe, expect, it } from 'vitest';
 
 import { applyRemix, REMIX_CHIPS, remixPatch } from '../../director/remix';
 import { readGameSpec, type GameSpecV1, type RunnerParams } from '../../spec';
+import duelFixture from '../__fixtures__/duel.json';
 import flapFixture from '../__fixtures__/flap.json';
 import platformFixture from '../__fixtures__/platform.json';
+import rhythmFixture from '../__fixtures__/rhythm.json';
 import fixture from '../__fixtures__/runner.json';
 import arenaFixture from '../__fixtures__/arena.json';
 import shooterFixture from '../__fixtures__/shooter.json';
 import steerFixture from '../__fixtures__/steer.json';
 import throwFixture from '../__fixtures__/throw.json';
+import timingFixture from '../__fixtures__/timing.json';
 import { arcadeWorldOf } from '../compile';
 import { verifyArcade } from '../verify';
 
@@ -225,4 +228,40 @@ describe('race and arena remix chips (P25F)', () => {
     const arena = remix('swap_enemy', PARENTS[1][1]);
     expect(arena.roles.find((role) => role.id === 'hunter')?.label).not.toBe('big fish');
   });
+});
+
+describe('timing, rhythm and duel remix chips (P25H)', () => {
+  const read = (raw: unknown): GameSpecV1 => {
+    const result = readGameSpec(raw);
+    if (!result.ok) throw new Error(result.issues.join('; '));
+    return result.value;
+  };
+  const PARENTS = [
+    ['timing', read(timingFixture), '/controlParams/speed'],
+    ['rhythm', read(rhythmFixture), '/controlParams/density'],
+    ['duel', read(duelFixture), '/controlParams/difficulty'],
+  ] as const;
+
+  for (const [control, base, firstPath] of PARENTS) {
+    it.each(REMIX_CHIPS)(`%s changes the ${control} game and the child still passes the arcade verifier`, (chip) => {
+      const child = remix(chip, base);
+      expect(child.control).toBe(control);
+      expect(child).not.toEqual(base);
+      expect(publishable(child)).toBe(true);
+    });
+
+    it(`${control}: harder changes one parameter at a time and every step stays publishable`, () => {
+      let spec = base;
+      const paths: string[] = [];
+      for (let round = 0; round < 8; round += 1) {
+        const ops = remixPatch('harder', spec);
+        if (ops.length === 0) break;
+        expect(ops).toHaveLength(1);
+        paths.push(ops[0]!.path);
+        spec = remix('harder', spec);
+        expect(publishable(spec), `round ${round}`).toBe(true);
+      }
+      expect(paths[0]).toBe(firstPath);
+    });
+  }
 });

@@ -1,0 +1,77 @@
+{
+  "schema": "gamespec.v1",
+  "control": "duel",
+  "controlParams": {
+    "difficulty": "normal"
+  },
+  "title": "Rooftop Duel",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 45,
+  "theme": {
+    "setting": "a rooftop at night",
+    "mood": "tense"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Dodge the swings, strike in the openings and knock your rival out.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "rival",
+        "effect": "damage"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    },
+    {
+      "id": "health",
+      "params": {
+        "max": 3
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "fighter"
+    },
+    {
+      "id": "rival",
+      "kind": "hazard",
+      "label": "ninja"
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "knockout"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Dodge the wind-up, strike in the opening. Knock out the rival.",
+    "controlsHint": "Tap right or Space to strike, tap left or Down to dodge."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

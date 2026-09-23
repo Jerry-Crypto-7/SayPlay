@@ -101,6 +101,9 @@ const ARCADE_CLOSEST: Readonly<Record<string, string | undefined>> = {
   flap: 'a flappy game',
   shooter: 'a shooting game',
   throw: 'a throwing game',
+  timing: 'a timing game',
+  rhythm: 'a rhythm game',
+  duel: 'a duel',
 };
 
 /** Věta a hotový návrh → hláška, nebo `null`, když hra splní, co věta chtěla. */

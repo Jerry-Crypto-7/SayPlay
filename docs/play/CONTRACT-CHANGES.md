@@ -324,3 +324,21 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   s `onEnd: 'win'` = přežít tolik sekund, jinak růst; časovač s `onEnd: 'lose'` = vyrůst
   včas (`time_limit`). `readGameSpec` odmítne růst s vítězným časovačem, `seconds` jiné
   než vítězný časovač a přežití mimo 20–80 s. Remix `harder` u arény mění jen hustotu.
+## P25H
+
+- **`GameSpec.control` += `'timing' | 'rhythm' | 'duel'`** (T2–T4) s parametry
+  `timing {mode, speed, tolerance ≥ 100, rounds}`, `rhythm {bpm, density, beats}` a
+  `duel {difficulty}` – všechna pole volitelná, `specHash` starých her se nehne. Jádro
+  (`kernel.ts`, `contract.ts`) beze změny, `ARCADE_RUNTIME_VERSION` zůstává `arcade-v2`.
+- **Kusy v knihovně:** ovládání `timing` / `rhythm` / `duel`, generátory `timing_level` /
+  `rhythm_level` / `duel_arena`, roboti `timing_bot` / `rhythm_bot` / `duel_bot` (reakce 8 tiků)
+  a pravidlo **`judge`** sdílené všemi třemi: ovládání zapíše výsledek ťuku do `aux0` hráče
+  (body > 0, minutí −1), `z` hráče v metrech je počet splněných úkolů (kola, noty, zásahy) a
+  `goal` z nich = výhra. HUD proto u těchto her píše `rounds` / `notes` / `hits` místo metrů.
+- **Životy:** rytmus je zastropuje na čtvrtinu not (jinak by nečinný hráč písničku „přežil“),
+  souboj bez mechaniky `health` dá hráči 3; načasování bez `health` prohrává prvním minutím.
+- **Relace v prohlížeči** (T5): `createArcadeSession(world, { swallowFirst })` – u
+  načasování, rytmu a souboje hodiny stojí do prvního stisku a ten stisk do záznamu nejde
+  (ťuk v tiku 0 by u načasování byl minutím). Záznam i přehrání robota se nemění.
+- **Zvuk rytmu je mimo stav:** pípnutí na beat a tón při trefě hraje scéna z pozorovaného
+  stavu, M ho vypne; hash ani záznam na něm nezávisí.

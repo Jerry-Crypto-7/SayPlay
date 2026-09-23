@@ -19,18 +19,25 @@
  * limit u střelby, u hodu jen limit; `swap_enemy` = střelba přejmenuje
  * nepřátele a přepne pohyb terčů, hod vymění cíl (terč → koš → věž).
  *
+ * Načasování, rytmus a souboj (P25H T5): `harder` = rychlost / hustota /
+ * obtížnost, pak kola nebo tempo; `twist` = životy (načasování) nebo limit;
+ * `swap_enemy` přejmenuje, co hráč trefuje – blok, notu, soupeře.
+ *
  * Funkce mění `child` na místě; záplatu z něj staví `remixPatch`.
  */
 
 import { type GameSpecV1, arenaWinOf } from '../spec';
 
 import { ARENA_DENSITIES, arenaLevel } from './pieces/arena';
+import { DUEL_DIFFICULTIES, duelArena } from './pieces/duel';
 import { FLAP_DIFFICULTIES, FLAP_TRACK, flapTrack } from './pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL, platformLevel } from './pieces/platform';
+import { RHYTHM, RHYTHM_DENSITIES, rhythmLevel } from './pieces/rhythm';
 import { RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK, type ObstacleKind, runnerTrack } from './pieces/runner';
 import { SHOOTER_DIFFICULTIES, type ShooterDifficulty, shooterRange } from './pieces/shooter';
 import { STEER_DIFFICULTIES, STEER_TRACK, steerTrack } from './pieces/steer';
 import { THROW_DIFFICULTIES, THROW_GOALS, THROW_GOAL_LABELS, type ThrowDifficulty, throwField } from './pieces/throw';
+import { TIMING, TIMING_SPEEDS, timingLevel } from './pieces/timing';
 
 type Pick = (max: number) => number;
 
@@ -102,6 +109,26 @@ export function aimHarder(child: GameSpecV1): boolean {
   return true;
 }
 
+/** Načasování, rytmus a souboj: rychlejší / hustší / těžší, pak víc kol nebo rychlejší tempo. */
+export function beatHarder(child: GameSpecV1): boolean {
+  let change: Record<string, unknown> | null = null;
+  if (child.control === 'timing') {
+    const params = timingLevel.params.parse({ ...child.controlParams });
+    const speed = next(TIMING_SPEEDS, params.speed);
+    change = speed !== null ? { speed } : params.rounds < TIMING.maxRounds ? { rounds: Math.min(TIMING.maxRounds, params.rounds + 3) } : null;
+  } else if (child.control === 'rhythm') {
+    const params = rhythmLevel.params.parse({ ...child.controlParams });
+    const density = next(RHYTHM_DENSITIES, params.density);
+    change = density !== null ? { density } : params.bpm < RHYTHM.maxBpm ? { bpm: Math.min(RHYTHM.maxBpm, params.bpm + 20) } : null;
+  } else {
+    const difficulty = next(DUEL_DIFFICULTIES, duelArena.params.parse({ ...child.controlParams }).difficulty);
+    change = difficulty !== null ? { difficulty } : null;
+  }
+  if (change === null) return false;
+  child.controlParams = { ...child.controlParams, ...change };
+  return true;
+}
+
 // Text cíle po twistu; u běžce zůstává původní znění (P25A).
 const LIVES_LINE: Readonly<Record<string, string>> = {
   runner: 'Run to the finish line. You have 3 lives.',
@@ -109,12 +136,16 @@ const LIVES_LINE: Readonly<Record<string, string>> = {
   flap: 'Fly to the finish. A pipe costs a life – you have 3.',
   shooter: 'Hit every target. An enemy that reaches you costs a life – you have 3.',
   move_free: 'A bite costs a life – you have 3.',
+  timing: 'Stop each block over the target. A miss costs a life – you have 3.',
 };
 
 const TIMER_LINE: Readonly<Record<string, (seconds: string) => string>> = {
   shooter: (seconds) => `Hit every target and stop every wave within ${seconds} seconds.`,
   throw: (seconds) => `Hit every target within ${seconds} seconds.`,
   move_free: (seconds) => `Outgrow every hunter within ${seconds} seconds.`,
+  timing: (seconds) => `Finish every round within ${seconds} seconds.`,
+  rhythm: (seconds) => `Play the song to the last beat within ${seconds} seconds.`,
+  duel: (seconds) => `Knock your rival out within ${seconds} seconds.`,
 };
 
 function withHealth(child: GameSpecV1): GameSpecV1 | null {
@@ -171,6 +202,23 @@ const HAZARD_LABELS: Readonly<Record<string, readonly string[]>> = {
   steer: ['rival car', 'police car', 'taxi', 'go-kart'],
   move_free: ['big fish', 'shark', 'giant cell', 'whale'],
 };
+
+// Co hráč trefuje u načasování, rytmu a souboje – role a popisky pro `swap_enemy`.
+const TARGET_LABELS: Readonly<Record<string, { readonly role: string; readonly labels: readonly string[] }>> = {
+  timing: { role: 'block', labels: ['block', 'crate', 'pancake', 'cake layer'] },
+  rhythm: { role: 'note', labels: ['tile', 'drum', 'star', 'gem'] },
+  duel: { role: 'rival', labels: ['ninja', 'samurai', 'robot', 'bear'] },
+};
+
+/** Načasování, rytmus a souboj: jiný popisek toho, co hráč trefuje; hra se nemění. */
+export function targetSwap(child: GameSpecV1, pick: Pick): boolean {
+  const entry = TARGET_LABELS[child.control ?? ''];
+  const target = child.roles.find((role) => role.id === entry?.role);
+  if (entry === undefined || target === undefined) return false;
+  const labels = entry.labels.filter((label) => label !== target.label);
+  target.label = labels[pick(labels.length)] ?? target.label;
+  return true;
+}
 
 /**
  * Plošinovka: přepne pohyblivé plošiny a přejmenuje hroty; poletování: přejmenuje

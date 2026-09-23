@@ -28,11 +28,14 @@ import { RUNNER } from '@/play/arcade/pieces/runner';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
+import { DuelScene, useDuelInput } from './duel/DuelScene';
+import { RhythmScene } from './rhythm/RhythmScene';
 import type { ArcadeSession } from './session';
 import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
 import { SteerBackdrop, placeChase, useSteerInput } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
+import { TimingScene, useTapInput } from './timing/TimingScene';
 
 const MODEL_BASE = '/assets/worldstream/game/';
 
@@ -496,18 +499,31 @@ export default function ArcadeStage({ session, playerModel, enemyModel = 'robot'
   useFlapInput(session, surface, control === 'flap');
   useSteerInput(session, surface, control === 'steer');
   useArenaInput(session, surface, control === 'move_free');
+  useTapInput(session, surface, control === 'timing' || control === 'rhythm');
+  useDuelInput(session, surface, control === 'duel');
   return (
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} style={{ touchAction: 'none' }}>
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
-        <color attach="background" args={['#bae6fd']} />
-        <fog attach="fog" args={['#bae6fd', 30, 90]} />
-        <hemisphereLight args={['#e0f2fe', '#166534', 0.9]} />
-        {/* Boční scény svítí ze strany kamery (−x). */}
-        <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={1.6} />
-        {control === 'move_free' ? (
-          <ArenaWorld session={session} half={Number(session.world.control.params.half)} surface={surface} />
+        {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
+        {control === 'timing' ? (
+          <TimingScene session={session} />
+        ) : control === 'rhythm' ? (
+          <RhythmScene session={session} surface={surface} />
+        ) : control === 'duel' ? (
+          <DuelScene session={session} />
         ) : (
-          <World session={session} control={control} playerModel={playerModel} enemyModel={enemyModel} surface={surface} />
+          <>
+            <color attach="background" args={['#bae6fd']} />
+            <fog attach="fog" args={['#bae6fd', 30, 90]} />
+            <hemisphereLight args={['#e0f2fe', '#166534', 0.9]} />
+            {/* Boční scény svítí ze strany kamery (−x). */}
+            <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={1.6} />
+            {control === 'move_free' ? (
+              <ArenaWorld session={session} half={Number(session.world.control.params.half)} surface={surface} />
+            ) : (
+              <World session={session} control={control} playerModel={playerModel} enemyModel={enemyModel} surface={surface} />
+            )}
+          </>
         )}
       </Canvas>
     </div>

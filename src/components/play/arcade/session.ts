@@ -59,8 +59,14 @@ export interface ArcadeSession {
  * `waitForInput`: hodiny stojí až do prvního stisku (poletování – ptáček by
  * jinak spadl dřív, než hráč hru uvidí). První stisk padne do tiku 0, takže
  * záznam i přehrání jsou tytéž jako bez čekání.
+ *
+ * `swallowFirst` (načasování, rytmus, souboj – P25H): první stisk jen pustí
+ * hodiny a do záznamu nejde – ťuk v tiku 0 by u načasování byl minutím.
  */
-export function createArcadeSession(world: ArcadeWorld, { waitForInput = false }: { readonly waitForInput?: boolean } = {}): ArcadeSession {
+export function createArcadeSession(
+  world: ArcadeWorld,
+  { waitForInput = false, swallowFirst = false }: { readonly waitForInput?: boolean; readonly swallowFirst?: boolean } = {},
+): ArcadeSession {
   const program = loadProgram(world, ARCADE_LIBRARY);
   let state = instantiate(world);
   let prev = Int32Array.from(state);
@@ -102,6 +108,10 @@ export function createArcadeSession(world: ArcadeWorld, { waitForInput = false }
     state: () => state,
     prev: () => prev,
     press: (buttons, axis = 0) => {
+      if (!started && swallowFirst && buttons !== 0) {
+        started = true;
+        return;
+      }
       pending |= buttons;
       if (axis !== 0) pendingAxis = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
       if (buttons !== 0) started = true;

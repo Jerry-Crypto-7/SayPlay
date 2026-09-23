@@ -10,6 +10,7 @@ import platformFixture from '@/play/arcade/__fixtures__/platform.json';
 import fixture from '@/play/arcade/__fixtures__/runner.json';
 import shooterFixture from '@/play/arcade/__fixtures__/shooter.json';
 import throwFixture from '@/play/arcade/__fixtures__/throw.json';
+import timingFixture from '@/play/arcade/__fixtures__/timing.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { AXIS_MAX, BODY, BUTTON, HEADER, bodyBase } from '@/play/arcade/contract';
 import { hashArcade, replay } from '@/play/arcade/kernel';
@@ -142,6 +143,20 @@ describe('arcade session – platform and flap (P25C)', () => {
     session.restart();
     session.advance(TICK_MS * 3);
     expect(session.inputs()).toEqual([]);
+  });
+
+  it('a timing session swallows the starting tap, so the game does not open on a miss', () => {
+    const timing = worldOf(timingFixture);
+    const session = createArcadeSession(timing, { waitForInput: true, swallowFirst: true });
+    session.advance(1000);
+    expect(session.snapshot().tick).toBe(0);
+    session.press(BUTTON.TAP);
+    session.advance(TICK_MS * 5);
+    expect(session.snapshot()).toMatchObject({ tick: 5, runState: 'running' });
+    expect(session.inputs()).toEqual([]);
+    session.press(BUTTON.TAP);
+    session.advance(TICK_MS);
+    expect(session.inputs()).toEqual([{ tick: 5, buttons: BUTTON.TAP, axis: 0 }]);
   });
 
   it.each([
