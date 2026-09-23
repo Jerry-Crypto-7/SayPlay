@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
 import flapFixture from '@/play/arcade/__fixtures__/flap.json';
 import platformFixture from '@/play/arcade/__fixtures__/platform.json';
 import fixture from '@/play/arcade/__fixtures__/runner.json';
+import shooterFixture from '@/play/arcade/__fixtures__/shooter.json';
+import throwFixture from '@/play/arcade/__fixtures__/throw.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { AXIS_MAX, BODY, BUTTON, HEADER, bodyBase } from '@/play/arcade/contract';
 import { hashArcade, replay } from '@/play/arcade/kernel';
@@ -110,9 +112,43 @@ describe('arcade session – platform and flap (P25C)', () => {
     expect(session.snapshot().tick).toBe(0);
   });
 
+  it('a click carries its aim into the tick even when the pointer lifts before the tick lands', () => {
+    const range = worldOf(shooterFixture);
+    const session = createArcadeSession(range);
+    session.hold(-600);
+    session.press(BUTTON.TAP, -600);
+    session.hold(0);
+    session.advance(TICK_MS * 2);
+    expect(session.inputs()).toEqual([{ tick: 0, buttons: BUTTON.TAP, axis: -600 }]);
+    expect(session.state()[bodyBase(session.state()[HEADER.player] as number) + BODY.aux0]).toBe(-600);
+  });
+
+  it('held buttons charge a throw in every tick, the release throws once and replays the same', () => {
+    const field = worldOf(throwFixture);
+    const session = createArcadeSession(field);
+    const shots = session.snapshot().shots;
+    session.holdButtons(BUTTON.HOLD);
+    session.hold(400);
+    for (let t = 0; t < 20; t += 1) session.advance(TICK_MS);
+    session.holdButtons(0);
+    session.hold(0);
+    session.press(BUTTON.TAP);
+    session.advance(TICK_MS * 3);
+    expect(session.inputs()).toHaveLength(21);
+    expect(session.inputs()[19]).toEqual({ tick: 19, buttons: BUTTON.HOLD, axis: 400 });
+    expect(session.inputs()[20]).toEqual({ tick: 20, buttons: BUTTON.TAP, axis: 0 });
+    expect(session.snapshot().shots).toBe(shots - 1);
+    expect(replay(field, session.inputs(), ARCADE_LIBRARY, 23).hash).toBe(hashArcade(session.state()));
+    session.restart();
+    session.advance(TICK_MS * 3);
+    expect(session.inputs()).toEqual([]);
+  });
+
   it.each([
     ['platform', platformFixture],
     ['flap', flapFixture],
+    ['shooter', shooterFixture],
+    ['throw', throwFixture],
   ] as const)('the %s verifier bot wins in the browser session (axis included)', (_, fixture) => {
     const session = createArcadeSession(worldOf(fixture));
     expect(session.playInputs(session.botInputs(), 90 * 60).runState).toBe('won');

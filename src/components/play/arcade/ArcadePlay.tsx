@@ -37,8 +37,20 @@ function heroModel(spec: GameSpecV1): string {
   return HERO_MODELS.has(noun) ? noun : spec.control === 'flap' ? 'bird' : 'explorer';
 }
 
-/** Poletování počítá i průlety mezerou, ne jen mince. */
-const scoreUnit = (spec: GameSpecV1): string => (spec.control === 'flap' ? 'points' : 'coins');
+/** Nepřátelé střelnice: model z popisku role, když ho katalog má, jinak robot. */
+function enemyModel(spec: GameSpecV1): string {
+  const noun = spec.roles.find((role) => role.id === 'enemy')?.label.toLowerCase().split(/\s+/).at(-1) ?? '';
+  return HERO_MODELS.has(noun) ? noun : 'robot';
+}
+
+/** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
+const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec.control === 'throw';
+
+/** Poletování počítá i průlety mezerou, ne jen mince; střelba a hod zásahy. */
+const scoreUnit = (spec: GameSpecV1): string => (spec.control === 'flap' ? 'points' : aiming(spec) ? 'hits' : 'coins');
+
+const distanceOf = (spec: GameSpecV1, snapshot: ArcadeSnapshot): string =>
+  aiming(spec) ? `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` : `${snapshot.distanceM} m`;
 
 function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: ArcadeSnapshot }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') ? ` · ${snapshot.health} lives` : '';
@@ -52,7 +64,7 @@ function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sna
           {snapshot.progress}% · {snapshot.score} {scoreUnit(spec)}{lives}
         </span>
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
-          {snapshot.distanceM} m
+          {distanceOf(spec, snapshot)}
         </span>
       </p>
     </header>
@@ -71,7 +83,8 @@ export interface ArcadePlayProps {
 
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upgrade }: ArcadePlayProps) {
   const upgraded = useUpgrade(upgrade);
-  const [session] = useState(() => createArcadeSession(arcade, { waitForInput: arcade.control.id === 'flap' }));
+  // Poletování a střelnice čekají na první stisk: ptáček by spadl a vlna došla dřív, než hráč hru uvidí.
+  const [session] = useState(() => createArcadeSession(arcade, { waitForInput: arcade.control.id === 'flap' || arcade.control.id === 'shooter' }));
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   const running = snapshot.runState === 'running';
 
@@ -93,7 +106,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upg
 
   return (
     <main className="play-shell">
-      <ArcadeStage session={session} playerModel={heroModel(spec)} />
+      <ArcadeStage session={session} playerModel={heroModel(spec)} enemyModel={enemyModel(spec)} />
       <ArcadeHud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
@@ -102,7 +115,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upg
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">
-            {snapshot.distanceM} m · {snapshot.score} {scoreUnit(spec)}
+            {distanceOf(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
           </p>
           <PostRun versionId={versionId} onReplay={() => session.restart()} />
         </section>
