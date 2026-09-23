@@ -288,3 +288,9 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
 - **Robot `arena_bot`** (T5, zpoždění 8 tiků, parametr `half`): větší buňka do 5 m (okraj
   k okraji) → utíká od ní a od stěny; jinak míří na nejbližší menší tělo, které neleží do 4 m
   od větší buňky.
+- **`GameSpec.control` += `'move_free'`** (T6, aréna). `controlParams` arény:
+  `{ density?, goal? (grow | survive), seconds? (20–80) }`, volitelná a bez výchozích hodnot;
+  sjednocení ve schématu je o `arenaParamsSchema` delší, hláška pro parametry u mřížkové hry
+  jmenuje i `move_free`. Kompilátor: `arena` + `move_free` + `arena_bot`, pravidla
+  `arena_eat` a `grow_to` / `survive_time`, s mechanikou `health` i `out_of_health`.
+  Fixtura `src/play/arcade/__fixtures__/arena.json`.

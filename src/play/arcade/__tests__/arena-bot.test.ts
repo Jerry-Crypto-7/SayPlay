@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import { reportFor } from '@/app/api/play/_report';
+import { compileGame } from '@/play/compile';
+import { readGameSpec } from '@/play/spec';
+
+import arenaFixture from '../__fixtures__/arena.json';
 import { type ArcadeLevel, type ArcadeWorld } from '../contract';
 import { buildWorld } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
@@ -47,6 +52,20 @@ describe('aréna – robot a ověření', () => {
     expect(verdict.idle.outcome).toBe('won');
     expect(verdict.failures.some((failure) => failure.startsWith('idle_loses:'))).toBe(true);
     expect(verdict.publishEligible).toBe(false);
+  });
+
+  it('fixtura arény se zkompiluje do arkádového světa a projde ověřením', () => {
+    const read = readGameSpec(arenaFixture);
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    const compiled = compileGame(read.value, 1);
+    if (!compiled.ok) throw new Error(compiled.issues.join('; '));
+    expect(compiled.value.arcade?.control.id).toBe('move_free');
+    expect(compiled.value.arcade?.bot.id).toBe('arena_bot');
+    expect(compiled.value.arcade?.rules.map((rule) => rule.id)).toEqual(['arena_eat', 'grow_to']);
+    const report = reportFor(compiled.value);
+    expect(report.keypoints.filter((keypoint) => !keypoint.passed)).toEqual([]);
+    expect(report.publishEligible).toBe(true);
+    expect(readGameSpec({ ...arenaFixture, controlParams: { density: 'dense', drift: true } }).ok).toBe(false);
   });
 
   it('hráč od začátku nejmenší a bez potravy neprojde', () => {

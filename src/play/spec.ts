@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
+import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
@@ -202,7 +203,7 @@ export const tutorialSchema = z
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
@@ -251,14 +252,24 @@ export const steerParamsSchema = z
   .strict();
 export type SteerParams = z.infer<typeof steerParamsSchema>;
 
+/** Parametry arény (P25F); výchozí doplní generátor arény. */
+export const arenaParamsSchema = z
+  .object({
+    density: z.enum(ARENA_DENSITIES).optional(),
+    goal: z.enum(ARENA_GOALS).optional(),
+    seconds: z.int().min(20).max(80).optional(),
+  })
+  .strict();
+export type ArenaSpecParams = z.infer<typeof arenaParamsSchema>;
+
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
-const CONTROL_PARAMS = { runner: runnerParamsSchema, platform: platformParamsSchema, flap: flapParamsSchema, steer: steerParamsSchema } as const;
+const CONTROL_PARAMS = { runner: runnerParamsSchema, platform: platformParamsSchema, flap: flapParamsSchema, steer: steerParamsSchema, move_free: arenaParamsSchema } as const;
 
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
     control: z.enum(CONTROLS).optional(),
-    controlParams: z.union([runnerParamsSchema, platformParamsSchema, flapParamsSchema, steerParamsSchema]).optional(),
+    controlParams: z.union([runnerParamsSchema, platformParamsSchema, flapParamsSchema, steerParamsSchema, arenaParamsSchema]).optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
@@ -323,7 +334,7 @@ export function readGameSpec(input: unknown): GameSpecResult {
   const spec = parsed.data;
   if (spec.controlParams !== undefined) {
     if (spec.control === undefined || spec.control === 'tap_go') {
-      return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/controlParams: only an arcade game (runner, platform, flap, steer) takes control parameters'] };
+      return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/controlParams: only an arcade game (runner, platform, flap, steer, move_free) takes control parameters'] };
     }
     // Sjednocení ve schématu pustí parametry kteréhokoli ovládání; tady musí sedět na to zvolené.
     const own = CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);
