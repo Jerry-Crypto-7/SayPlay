@@ -27,7 +27,7 @@ import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
 import { type CriticIssue, blockingIssues, critique } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
-import { readDirectorAnswer } from './read';
+import { readDirectorAnswer, unwrapAnswer } from './read';
 import { MAX_REPAIR_ROUNDS, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
 
 export type { FallbackReason } from '../contracts';
@@ -100,11 +100,12 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
   let spec: GameSpecV1;
-  const read = readDirectorAnswer(outcome.body);
+  const body = unwrapAnswer(outcome.body);
+  const read = readDirectorAnswer(body);
   if (read.ok) {
     spec = read.spec;
   } else {
-    const repaired = repairDeterministically(outcome.body, read.reason);
+    const repaired = repairDeterministically(body, read.reason);
     if (repaired === null) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
     spec = repaired.spec;
   }

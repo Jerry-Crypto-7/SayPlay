@@ -22,6 +22,8 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 import chaseEscape from '../__fixtures__/chase_escape.json';
 import collectExit from '../__fixtures__/collect_exit.json';
 import { CAPABILITIES } from '../capabilities';
+
+import { DIRECTOR_ANSWER_SCHEMA } from './answer-schema';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
 import { CONTROL_PARAMS, GAME_SPEC_SCHEMA, gameSpecSchema, verificationSchema, type GameSpecV1 } from '../spec';
 
@@ -164,5 +166,6 @@ export function buildDirectorRequest(sentence: string, draft: GameSpecV1): Upstr
     model: EMISSION_MODEL,
     system: directorSystemPrompt(),
     user: `${sentence.trim()}\n\nStarting point (keep or improve): ${JSON.stringify(draft)}`,
+    outputSchema: DIRECTOR_ANSWER_SCHEMA,
   };
 }
