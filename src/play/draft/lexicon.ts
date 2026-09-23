@@ -250,17 +250,22 @@ export function nounPhrase(text: string, max = 3): string | null {
   return rest === '' ? null : rest;
 }
 
+/** Jednotné číslo na -ie, ne -y: `zombies → zombie`, ne `zomby`. */
+const IE_NOUNS = new Set(['zombies', 'cookies', 'movies', 'pies', 'ties', 'brownies', 'hippies', 'rookies', 'goalies', 'genies', 'pixies', 'hoodies', 'birdies', 'smoothies', 'veggies', 'doggies', 'selfies', 'magpies']);
+
 /** Hrubé jednotné číslo pro `label`: `coins → coin`, `dummies → dummy`, `boxes → box`. */
 export function singular(phrase: string): string {
   const words = phrase.split(' ');
   const last = words[words.length - 1];
-  const single = last.endsWith('ies')
-    ? `${last.slice(0, -3)}y`
-    : /(?:ses|xes|ches|shes)$/.test(last)
-      ? last.slice(0, -2)
-      : last.endsWith('s') && !last.endsWith('ss')
-        ? last.slice(0, -1)
-        : last;
+  const single = IE_NOUNS.has(last)
+    ? last.slice(0, -1)
+    : last.endsWith('ies')
+      ? `${last.slice(0, -3)}y`
+      : /(?:ses|xes|ches|shes)$/.test(last)
+        ? last.slice(0, -2)
+        : last.endsWith('s') && !last.endsWith('ss')
+          ? last.slice(0, -1)
+          : last;
   return [...words.slice(0, -1), single].join(' ');
 }
 
@@ -349,9 +354,15 @@ export function readRoles(sentence: string): SentenceRoles {
     /\b(?:hunted|chased|pursued|followed) by (?:a |an |the )?([a-z][a-z -]*)/,
     /\b(?:flees|escapes|escape|flee|run from|runs from|outrun|outruns) (?:from )?(?:a |an |the )?([a-z][a-z -]*)/,
   ], 2);
-  const collectible = first(text, [/\b(?:collect|gather|find|pick up|grab|steal)s? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
+  const collectible = first(text, [/\b(?:collect|gather|find|pick up|grab|steal)(?:s|ing)? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
   const delivery = /\b(?:carry|deliver|bring|take|escort)s? (?:a |an |the )?([a-z][a-z -]*?) (?:from (?:a |an |the )?[a-z][a-z -]*? )?(?:across (?:a |an |the )?[a-z][a-z -]*? )?to (?:a |an |the )?([a-z][a-z -]*)/.exec(text);
-  const target = first(text, [/\b(?:defeat|destroy|knock out|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
+  const target = first(text, [
+    /\b(?:defeat|destroy|knock out|knock down|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/,
+    // P26 T12: co se střílí a na co se hází, jmenuje terč a nepřítele arkády („shoot the zombies“, „throw balls at ducks“).
+    /\b(?:shoot|blast|zap)(?:s|ing)? (?:down )?(?:all |every |the )?([a-z][a-z -]*)/,
+    /\b(?:throw|toss|aim|fire)(?:s|ing)? (?:[a-z]+ ){0,2}?at (?:the |a |an )?([a-z][a-z -]*)/,
+    /\bagainst (?:the |a |an )?([a-z][a-z -]*)/,
+  ], 2);
   const checkpointMatch = /(?:[a-z]+ )?((?:[a-z]+ )?(?:gates?|hoops?|rings?|checkpoints?|flags?|arches?|posts?))\b/.exec(text);
   const hazardMatch = HAZARD_WORDS.exec(text);
   const colours = COLOURS.filter((colour) => new RegExp(`\\b${colour}\\b`).test(text));

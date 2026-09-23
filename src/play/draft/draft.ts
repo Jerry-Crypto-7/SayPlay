@@ -696,6 +696,11 @@ function draftArcade(sentence: string, seed: number, choice: ControlChoice): Gam
   if (roles.collectible !== null && collectible !== null) role(spec, collectible).label = cap(roles.collectible, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
   if (choice.control === 'duel' && roles.target !== null) role(spec, 'rival').label = cap(roles.target, 60);
+  // P26 T12: scéna z těchhle popisků volí model – terč, nepřítel a překážka z věty, ne ze šablony.
+  const foe = roles.target ?? roles.threat?.label ?? null;
+  if (choice.control === 'shooter' && foe !== null) role(spec, 'enemy').label = cap(foe, 60);
+  if (choice.control === 'throw' && choice.goal === null && roles.target !== null) role(spec, 'target').label = cap(roles.target, 60);
+  if (choice.control === 'runner' && roles.threat !== null) role(spec, 'obstacle').label = cap(roles.threat.label, 60);
   if (choice.control === 'timing') {
     if (choice.mode !== 'stack') {
       const text = TIMING_TEXT[choice.mode];

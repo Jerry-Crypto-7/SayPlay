@@ -12,6 +12,7 @@ import runner from '../arcade/__fixtures__/runner.json';
 import shooter from '../arcade/__fixtures__/shooter.json';
 import throwGame from '../arcade/__fixtures__/throw.json';
 import { enemyModel, heroModel, modelOf, modelPath, propModels } from '../arcade/models';
+import { draftGameSpec } from '../draft';
 import type { GameSpecV1 } from '../spec';
 
 const withLabel = (fixture: unknown, id: string, label: string): GameSpecV1 => {
@@ -52,6 +53,17 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
     // Střelnice popisek terče nekreslí (tabulka schopností), takže ho nečte ani výběr.
     expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({});
+  });
+
+  // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.
+  it.each([
+    ['shoot the zombies in the mall', (spec: GameSpecV1) => enemyModel(spec), 'goblin'],
+    ['space shooter against asteroids', (spec: GameSpecV1) => spec.roles.find((role) => role.id === 'enemy')?.label, 'asteroid'],
+    ['throw balls at rubber ducks', (spec: GameSpecV1) => propModels(spec).target, 'rubber-duck'],
+    ['a runner dodging traffic cones and collecting gems', (spec: GameSpecV1) => propModels(spec).coin, 'crystal'],
+    ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'cat|dog'],
+  ])('sentence %s reaches the scene', (sentence, read, expected) => {
+    expect(read(draftGameSpec(sentence))).toBe(expected);
   });
 
   it('every model a label can pick has a GLB on disk', () => {
