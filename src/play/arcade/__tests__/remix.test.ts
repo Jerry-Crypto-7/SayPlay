@@ -10,6 +10,8 @@ import { readGameSpec, type GameSpecV1, type RunnerParams } from '../../spec';
 import flapFixture from '../__fixtures__/flap.json';
 import platformFixture from '../__fixtures__/platform.json';
 import fixture from '../__fixtures__/runner.json';
+import arenaFixture from '../__fixtures__/arena.json';
+import steerFixture from '../__fixtures__/steer.json';
 import { arcadeWorldOf } from '../compile';
 import { verifyArcade } from '../verify';
 
@@ -109,5 +111,54 @@ describe('platform and flap remix chips (P25C)', () => {
       expect(label(swapped), control).not.toBe(label(base));
       if (control === 'platform') expect(swapped.controlParams).toMatchObject({ movingPlatforms: true });
     }
+  });
+});
+
+describe('race and arena remix chips (P25F)', () => {
+  const read = (raw: unknown): GameSpecV1 => {
+    const result = readGameSpec(raw);
+    if (!result.ok) throw new Error(result.issues.join('; '));
+    return result.value;
+  };
+  const PARENTS = [
+    ['steer', read(steerFixture)],
+    ['move_free', read(arenaFixture)],
+  ] as const;
+
+  for (const [control, base] of PARENTS) {
+    it.each(REMIX_CHIPS)(`%s changes the ${control} game and the child still passes the arcade verifier`, (chip) => {
+      const child = remix(chip, base);
+      expect(child.control).toBe(control);
+      expect(child).not.toEqual(base);
+      expect(publishable(child)).toBe(true);
+    });
+  }
+
+  it('harder: the race goes to hard, the arena to dense, one parameter at a time', () => {
+    const race = remix('harder', PARENTS[0][1]);
+    expect(remixPatch('harder', PARENTS[0][1])).toHaveLength(1);
+    expect(race.controlParams).toMatchObject({ difficulty: 'hard' });
+    const arena = remix('harder', PARENTS[1][1]);
+    expect(arena.controlParams).toMatchObject({ density: 'dense' });
+    expect(remixPatch('harder', arena)).toEqual([]);
+  });
+
+  // Závod životy nečte; aréna (archetyp přežití) už `timer` má, zbydou jí životy.
+  it('twist gives the race a time limit and the arena three lives', () => {
+    for (let seed = 1; seed <= 6; seed += 1) {
+      const race = remix('twist', PARENTS[0][1], seed);
+      expect(race.mechanics.map((m) => m.id), `race seed ${seed}`).toContain('timer');
+      expect(race.mechanics.map((m) => m.id), `race seed ${seed}`).not.toContain('health');
+      const arena = remix('twist', PARENTS[1][1], seed);
+      expect(arena.mechanics.map((m) => m.id), `arena seed ${seed}`).toContain('health');
+      expect(arena.objective.description).toMatch(/you have 3/);
+    }
+  });
+
+  it('swap_enemy renames the rivals and the hunters', () => {
+    const race = remix('swap_enemy', PARENTS[0][1]);
+    expect(race.roles.find((role) => role.id === 'rival')?.label).not.toBe('rival car');
+    const arena = remix('swap_enemy', PARENTS[1][1]);
+    expect(arena.roles.find((role) => role.id === 'hunter')?.label).not.toBe('big fish');
   });
 });

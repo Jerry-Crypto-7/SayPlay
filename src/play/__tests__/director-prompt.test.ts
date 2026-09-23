@@ -42,15 +42,16 @@ describe('director prompt', () => {
     for (const forbidden of ['projectile', 'moving_platform']) expect(request.system).not.toContain(forbidden);
   });
 
-  // Po sloučení vlny 1: 11 453 B (P25D) + plošinovka a poletování (P25C) = 11 558 B.
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 558 B)', () => {
+  // Po sloučení vlny 1: 11 453 B (P25D) + plošinovka a poletování (P25C) = 11 558 B;
+  // + řízení a aréna (P25F) = 11 858 B.
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 858 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_600);
+    expect(max).toBeLessThanOrEqual(11_860);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

@@ -55,7 +55,8 @@ describe('draft control choice', () => {
     expect(pickControl('an endless runner where you jump between platforms')?.control).toBe('runner');
     expect(pickControl('a platformer where you run and jump over obstacles')?.control).toBe('platform');
     expect(pickControl('flappy bird but the runner is a fish')?.control).toBe('flap');
-    expect(pickControl('like mario kart with bananas')).toBeNull();
+    // P25F: kart je řízení.
+    expect(pickControl('like mario kart with bananas')?.control).toBe('steer');
     expect(pickControl('a frog must hop across the road and dodge cars')).toBeNull();
     expect(pickControl('hard obby with moving platforms and a double jump')).toEqual({ control: 'platform', difficulty: 'hard', movingPlatforms: true, doubleJump: true });
     expect(pickControl('an easy flappy game')).toEqual({ control: 'flap', difficulty: 'easy' });
@@ -74,6 +75,37 @@ describe('draft control choice', () => {
       expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
     }
     expect(draftGameSpec('like flappy bird but underwater').roles.find((r) => r.kind === 'player')?.label).toBe('bird');
+  });
+
+  // P25F T6, naměřeno 23. 9. 2026: řízení 18/19 (s134 stolní tenis), aréna
+  // 10/13 (s131 fotbal, s190 goat simulator, s193 vor), cizí jen s059
+  // („racing snails“, načasování).
+  it('picks steer for 18 of 19 steer sentences and move_free for 10 of 13 arena sentences (pin)', () => {
+    expect(corpus.filter((e) => e.verb === 'steer')).toHaveLength(19);
+    expect(corpus.filter((e) => e.verb === 'move_free')).toHaveLength(13);
+    expect(idsPicking('steer', (v) => v !== 'steer')).toEqual(['s059']);
+    expect(idsPicking('steer', (v) => v === 'steer')).toHaveLength(18);
+    expect(idsPicking('move_free', (v) => v === 'move_free')).toHaveLength(10);
+    expect(idsPicking('move_free', (v) => v !== 'move_free')).toEqual([]);
+  });
+
+  it('drafts race and arena specs that the arcade verifier publishes', () => {
+    for (const [sentence, control] of [
+      ['car racing game', 'steer'],
+      ['fly a paper plane through a house', 'steer'],
+      ['drift around a mountain road at night', 'steer'],
+      ['like agar.io but you are a fish eating smaller fish', 'move_free'],
+      ['a hard arena full of monsters, eat smaller ones and grow', 'move_free'],
+    ] as const) {
+      const spec = draftGameSpec(sentence);
+      expect(spec.control, sentence).toBe(control);
+      const built = arcadeWorldOf(spec, 1);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
+    }
+    expect(draftGameSpec('drift around a mountain road at night').controlParams).toMatchObject({ drift: true });
+    expect(draftGameSpec('a hard arena full of monsters, eat smaller ones and grow').controlParams).toMatchObject({ density: 'dense' });
+    expect(draftGameSpec('car racing game').roles.find((r) => r.kind === 'player')?.label).toBe('race car');
   });
 
   it('reads the obstacle density from quantifiers', () => {

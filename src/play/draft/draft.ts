@@ -32,6 +32,8 @@ import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 import flapTemplate from '../arcade/__fixtures__/flap.json';
 import platformTemplate from '../arcade/__fixtures__/platform.json';
 import runnerTemplate from '../arcade/__fixtures__/runner.json';
+import steerTemplate from '../arcade/__fixtures__/steer.json';
+import arenaTemplate from '../arcade/__fixtures__/arena.json';
 
 import { type ControlChoice, pickControl } from './controls';
 import {
@@ -628,7 +630,7 @@ function smashing(spec: GameSpecV1, read: Read, count: number, pop: boolean): vo
   if (pop && read.roles.setting === null) spec.theme.setting = 'sunny bubble meadow';
 }
 
-const ARCADE_TEMPLATES = { runner: runnerTemplate, platform: platformTemplate, flap: flapTemplate } as const;
+const ARCADE_TEMPLATES = { runner: runnerTemplate, platform: platformTemplate, flap: flapTemplate, steer: steerTemplate, move_free: arenaTemplate } as const;
 
 /**
  * Arkádová hra (P25A běžec, P25C plošinovka a poletování): šablona fixtury
@@ -639,10 +641,12 @@ function draftArcade(sentence: string, seed: number, choice: ControlChoice): Gam
   const roles = readRoles(sentence);
   const rng = xoroshiro128plus(seed);
   spec.title = titleFrom(sentence, spec.title);
-  // Ptáček poletování zůstane ptáčkem, když věta hráče nejmenuje.
-  const fallback = choice.control === 'flap' ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
+  // Ptáček poletování, závodní auto a rybka arény zůstanou, když věta hráče nejmenuje.
+  const keeps = choice.control === 'flap' || choice.control === 'steer' || choice.control === 'move_free';
+  const fallback = keeps ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
   role(spec, 'player').label = cap(roles.player ?? fallback, 60);
-  if (roles.collectible !== null) role(spec, 'coin').label = cap(roles.collectible, 60);
+  // Závod sbírá turbo, ne mince.
+  if (roles.collectible !== null && choice.control !== 'steer') role(spec, 'coin').label = cap(roles.collectible, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
   if (choice.control === 'runner') {
     if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
@@ -653,6 +657,10 @@ function draftArcade(sentence: string, seed: number, choice: ControlChoice): Gam
       ...(choice.movingPlatforms ? { movingPlatforms: true } : {}),
       ...(choice.doubleJump ? { doubleJump: true } : {}),
     };
+  } else if (choice.control === 'steer') {
+    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.drift ? { drift: true } : {}) };
+  } else if (choice.control === 'move_free') {
+    if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
   } else if (choice.difficulty !== null) spec.controlParams = { ...spec.controlParams, difficulty: choice.difficulty };
   const result = readGameSpec(spec);
   return result.ok ? result.value : null;
