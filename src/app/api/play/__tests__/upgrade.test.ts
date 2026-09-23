@@ -185,15 +185,24 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
 
-  // R1 (P25A): model odpověděl mřížkovou hrou na větu, ze které návrh udělal běžce.
-  it('vylepšení, které ztratí ovládání běžce, zůstane návrhem bez dítěte', async () => {
-    const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
-    expect((await game(created.body.versionId)).spec.control).toBe('runner');
-    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
-    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+  // P26 T4: AI smí opravit žánr, který návrh ze slov odhadl špatně – ověřuje robot, ne shoda s návrhem.
+  it('vylepšení ze střelnice na plošinovku se přijme, když je vyhratelné', async () => {
+    director.script = [answered({ ...(runnerAnswer() as object), control: 'platform', controlParams: { difficulty: 'easy' } })];
+    const created = await publish({ sentence: 'zombie shooter in a mall' });
+    expect((await game(created.body.versionId)).spec.control).toBe('shooter');
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect((await game(childId as string)).spec.control).toBe('platform');
   });
 
-  // P25E T5: druhé dva směry téhož pravidla – shoda ovládání projde, mřížka neshodu nesnese taky.
+  it('mřížková odpověď na běžce se přijme a dítě je mřížka', async () => {
+    const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
+    expect((await game(created.body.versionId)).spec.control).toBe('runner');
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect((await game(childId as string)).spec.control).toBeUndefined();
+  });
+
   it('běžec vylepšený běžcem je ready a dítě zůstane běžcem', async () => {
     director.script = [answered(runnerAnswer())];
     const created = await publish({ sentence: 'endless runner in a neon city' });
@@ -206,12 +215,13 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(child.spec.title).toBe('Neon Rooftop Sprint');
   });
 
-  it('mřížkový návrh vylepšený běžcem zůstane návrhem bez dítěte', async () => {
+  it('mřížkový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
     director.script = [answered(runnerAnswer())];
     const created = await publish({ sentence: SENTENCE });
     expect((await game(created.body.versionId)).spec.control).toBeUndefined();
-    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
-    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect((await game(childId as string)).spec.control).toBe('runner');
   });
 });
 

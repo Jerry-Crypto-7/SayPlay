@@ -48,14 +48,16 @@ describe('director prompt', () => {
   // co se opakovalo u každého (role `player` a `finish`, slovo `controlParams`):
   // 11 963 B. Do stropu zbývá 37 B, takže další ovládání se do téhle podoby nevejde –
   // vlna 3 musí řádek generovat z tabulky, ne ho psát ručně.
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 963 B)', () => {
+  // P26 T4: +34 B za pokyn, že AI smí ovládání změnit – 11 997 B. Místo vrátí
+  // P26 T5, která řádek ovládání vyrobí z tabulky schopností.
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 997 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_975);
+    expect(max).toBeLessThanOrEqual(11_997);
   });
 
   // Zlaté věty vedou všechny na mřížku, arkádové fixtury tak strop neměřil nikdo.

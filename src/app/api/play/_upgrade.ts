@@ -180,10 +180,8 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const directorMs = performance.now() - directorStarted;
   if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
-  // Vylepšení nesmí vyměnit ovládání: běžec by se přepsal na mřížkovou hru
-  // a hráči by se pod rukama změnila hra (R1, P25A).
-  const [drafted, authored] = [draft.spec.control ?? 'tap_go', directed.spec.control ?? 'tap_go'];
-  if (authored !== drafted) return final('MALFORMED', { stage: 'upgrade', reason: 'CONTROL_CHANGED', detail: `${drafted} -> ${authored}`, raw: directed.spec });
+  // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
+  // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const published = await publishReadSpec(versions, directed.spec, seeds, draftId, {
