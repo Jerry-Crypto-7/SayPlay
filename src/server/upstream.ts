@@ -872,6 +872,7 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
       reason: 'MALFORMED_RESPONSE',
       detail: `the codex answer is not JSON: ${(thrown as Error).message}`,
       usage: readableUsage(usage, text, config.maxOutputTokens),
+      raw: text,
     };
   }
   return {
@@ -986,6 +987,7 @@ async function generate(
       // i když je odpověď vadná. Návrat výš text nemá, takže tam se účtenka
       // neověřuje vůbec a zahazuje se celá.
       usage: readableUsage(usage, text, config.maxOutputTokens),
+      raw: text,
     };
   }
 

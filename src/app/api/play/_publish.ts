@@ -61,7 +61,8 @@ export interface Published {
   readonly game: PublishedGame;
 }
 
-export type PublishResult = { readonly ok: true; readonly value: Published } | { readonly ok: false; readonly response: Response };
+/** `issues`: proč kompilace nebo kontrola hru odmítla – pro záznam selhání, do odpovědi nejde. */
+export type PublishResult = { readonly ok: true; readonly value: Published } | { readonly ok: false; readonly response: Response; readonly issues?: readonly string[] };
 
 /**
  * Brány, které platí pro každé dveře: vypínač, ověřená identita za proxy a strop
@@ -180,7 +181,7 @@ export async function publishReadSpec(
     compiled = compile(spec, seed);
   }
   const compileMs = performance.now() - compileStarted;
-  if (!compiled.ok) return { ok: false, response: fail(422, compiled.reason, COMPILE_MESSAGE[compiled.reason]) };
+  if (!compiled.ok) return { ok: false, response: fail(422, compiled.reason, COMPILE_MESSAGE[compiled.reason]), issues: [compiled.reason, ...compiled.issues] };
 
   // Hra, jejíž keypoint, svědek, replay nebo rozpočet neprošel, se nepublikuje –
   // odkaz by vedl na hru, která nedělá, co slibuje.
@@ -189,7 +190,7 @@ export async function publishReadSpec(
   const verifyMs = performance.now() - verifyStarted;
   if (!report.publishEligible) {
     const keypoints = report.keypoints.filter((keypoint) => !keypoint.passed).map((keypoint) => keypoint.assertionId);
-    return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }) };
+    return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }), issues: ['NOT_PUBLISHABLE', ...keypoints] };
   }
 
   const version = sealVersion(compiled.value, parentId, Date.now);

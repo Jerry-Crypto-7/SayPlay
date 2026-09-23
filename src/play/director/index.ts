@@ -33,7 +33,20 @@ import { MAX_REPAIR_ROUNDS, applyRepairAnswer, buildRepairRequest, repairDetermi
 export type { FallbackReason } from '../contracts';
 
 /** Rozšíření `DirectorResult` – přiřaditelné do kontraktu, s tím, co obálka a měření potřebují navíc. */
+/**
+ * Proč režie skončila návrhem (P26 T3): kde to spadlo, přesný důvod a co model
+ * poslal. Jde do záznamu selhání a do logu, nikdy hráči.
+ */
+export interface DirectorFailure {
+  readonly stage: 'model' | 'read' | 'critic';
+  readonly reason: string;
+  readonly detail: string;
+  readonly raw: unknown;
+}
+
 export type DirectedGame = DirectorResult & {
+  /** Jen u návratu na návrh. */
+  readonly failure?: DirectorFailure;
   /** Varovné nálezy kritika nad vráceným specem. */
   readonly warnings: readonly CriticIssue[];
   readonly ms: number;
@@ -61,12 +74,13 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   deps.onDraft?.(draft);
   let calls = 0;
 
-  const fallback = (reason: FallbackReason): DirectedGame => ({
+  const fallback = (reason: FallbackReason, failure: DirectorFailure): DirectedGame => ({
     ok: true,
     spec: draft,
     source: 'draft',
     repairRounds: 0,
     fallbackReason: reason,
+    failure,
     warnings: warningsOf(draft),
     ms: deps.now() - started,
     calls,
@@ -82,7 +96,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 
   calls += 1;
   const outcome = await deps.branch.generate({ prompt: sentence, request });
-  if (!outcome.ok) return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE');
+  if (!outcome.ok)
+    return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
   let spec: GameSpecV1;
   const read = readDirectorAnswer(outcome.body);
@@ -90,7 +105,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     spec = read.spec;
   } else {
     const repaired = repairDeterministically(outcome.body, read.reason);
-    if (repaired === null) return fallback('MALFORMED');
+    if (repaired === null) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
     spec = repaired.spec;
   }
 
@@ -109,14 +124,14 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     repairRounds += 1;
     calls += 1;
     const answer = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(spec, blocks) });
-    if (!answer.ok) return fallback('MODEL_UNAVAILABLE');
+    if (!answer.ok) return fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: answer.reason, detail: `repair round ${repairRounds}: ${answer.detail}`, raw: answer.raw ?? null });
     const applied = applyRepairAnswer(spec, answer.body);
     // Špatná záplata nechává spec i nálezy, jak byly – další kolo je dostane znovu.
     if (!applied.ok) continue;
     spec = applied.spec;
     blocks = blockingIssues(critique(spec));
   }
-  if (blocks.length > 0) return fallback('UNREPAIRED');
+  if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
 
   await deps.cache?.write(key, spec);
   return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: null, warnings: warningsOf(spec), ms: deps.now() - started, calls };

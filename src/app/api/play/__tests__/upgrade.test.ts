@@ -5,7 +5,9 @@
  * `gate` drží režiséra, dokud ji test nepustí, aby šel vidět stav `pending`.
  */
 
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -151,6 +153,24 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     const created = await publish({ sentence: SENTENCE });
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+  });
+
+  // P26 T3: bez záznamu se nedá říct, proč model za 40 s nic nedodal.
+  it('rozbitá odpověď modelu zapíše záznam s důvodem a surovou odpovědí', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'play-failures-'));
+    vi.stubEnv('PLAY_FAILURES_DIR', dir);
+    vi.stubEnv('VERCEL', undefined);
+    director.script = [{ ok: false, reason: 'MALFORMED_RESPONSE', detail: 'the codex answer is not JSON: Unexpected token', usage: null, raw: 'Here is your game: {' }];
+    const created = await publish({ sentence: SENTENCE });
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    const record = JSON.parse(readFileSync(join(dir, `${created.body.versionId}.json`), 'utf8'));
+    expect(record).toMatchObject({ outcome: 'MALFORMED', stage: 'model', reason: 'MALFORMED_RESPONSE', detail: 'the codex answer is not JSON: Unexpected token', raw: 'Here is your game: {', sentence: SENTENCE });
+    // Odpověď, která je JSON, ale ne GameSpec: důvod čtení a celé tělo.
+    director.script = [answered({ entities: [], rules: [] })];
+    const second = await publish({ sentence: 'a robot collects batteries on Mars' });
+    expect(await settled(second.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    expect(JSON.parse(readFileSync(join(dir, `${second.body.versionId}.json`), 'utf8'))).toMatchObject({ stage: 'read', raw: { entities: [], rules: [] } });
+    vi.unstubAllEnvs();
   });
 
   it('autorská hra, která neprojde kontrolou, zůstane návrhem bez dítěte', async () => {

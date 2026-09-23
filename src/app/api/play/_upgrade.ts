@@ -16,6 +16,9 @@
  * Podtržítko v názvu: Next.js soubor nebere jako route.
  */
 
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { after } from 'next/server';
 
 import { gameSpecHash } from '@/play/spec';
@@ -130,9 +133,38 @@ async function runUpgrade(versions: VersionStore, draft: PublishedGame, request:
   return outcome;
 }
 
+/** Proč vylepšení skončilo návrhem: fáze, přesný důvod a co model nebo kompilátor dostal. */
+export interface UpgradeFailure {
+  readonly stage: 'model' | 'read' | 'critic' | 'upgrade' | 'publish';
+  readonly reason: string;
+  readonly detail: string;
+  readonly raw: unknown;
+}
+
+/**
+ * Záznam selhání (P26 T3): řádek logu vždy, soubor
+ * `data/play/failures/<draftId>.json` jen mimo Vercel – tam je souborový
+ * systém jen pro čtení. Bez záznamu se nedá říct, proč model za 40 s
+ * nic nedodal, a tři nejčastější příčiny nejdou seřadit.
+ */
+export function recordUpgradeFailure(draftId: string, sentence: string, reason: DraftFinalReason, failure: UpgradeFailure, env: Record<string, string | undefined> = process.env): void {
+  console.warn(`[play] upgrade of ${draftId} ended ${reason} at ${failure.stage}: ${failure.reason} – ${failure.detail.slice(0, 300)}`);
+  if (env.VERCEL !== undefined) return;
+  const dir = env.PLAY_FAILURES_DIR ?? join(process.cwd(), 'data', 'play', 'failures');
+  try {
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, `${draftId}.json`), `${JSON.stringify({ draftId, sentence, outcome: reason, ...failure, at: new Date().toISOString() }, null, 1)}\n`);
+  } catch (thrown) {
+    console.warn(`[play] failure record for ${draftId} not written: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
+  }
+}
+
 async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
-  const final = (reason: DraftFinalReason): UpgradeOutcome => ({ status: 'draft-final', reason });
   const draftId = draft.version.versionId;
+  const final = (reason: DraftFinalReason, failure?: UpgradeFailure): UpgradeOutcome => {
+    if (failure !== undefined) recordUpgradeFailure(draftId, request.sentence, reason, failure);
+    return { status: 'draft-final', reason };
+  };
 
   // Výpadek úložiště dřív, než se zaplatí model. Vyčerpaná kvóta ne – dítě se
   // do ní nepočítá (R11), takže odpověď `canPublish` tu nerozhoduje.
@@ -146,18 +178,22 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const directorStarted = performance.now();
   const directed = await getDirector(request.startedAt, request.caller)(request.sentence);
   const directorMs = performance.now() - directorStarted;
-  if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE');
-  if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED');
+  if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
+  if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
   // Vylepšení nesmí vyměnit ovládání: běžec by se přepsal na mřížkovou hru
   // a hráči by se pod rukama změnila hra (R1, P25A).
-  if ((directed.spec.control ?? 'tap_go') !== (draft.spec.control ?? 'tap_go')) return final('MALFORMED');
+  const [drafted, authored] = [draft.spec.control ?? 'tap_go', directed.spec.control ?? 'tap_go'];
+  if (authored !== drafted) return final('MALFORMED', { stage: 'upgrade', reason: 'CONTROL_CHANGED', detail: `${drafted} -> ${authored}`, raw: directed.spec });
 
   const seeds = request.seed !== null ? [request.seed] : derivedSeeds(seedFrom(request.sentence.trim()));
   const published = await publishReadSpec(versions, directed.spec, seeds, draftId, {
     relation: 'upgrade',
     timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source: directed.source },
   });
-  if (!published.ok) return final(REFUSAL_REASON[published.response.status] ?? 'FAILED');
+  if (!published.ok) {
+    const reason = REFUSAL_REASON[published.response.status] ?? 'FAILED';
+    return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: directed.spec });
+  }
   return { status: 'ready', versionId: published.value.game.version.versionId };
 }
 

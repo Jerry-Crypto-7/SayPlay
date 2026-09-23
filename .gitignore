@@ -142,3 +142,7 @@ evals/worldstream/conversation-answers/
 
 # Snímky a surová data sady věrnosti (P26 T1). Commituje se jen report.json.
 evals/play/fidelity/runs/
+
+# Záznamy selhání vylepšení (P26 T3): nesou surové odpovědi modelu – stejná
+# třída dat jako evals/live.
+data/play/failures/
