@@ -1,0 +1,66 @@
+{
+  "schema": "gamespec.v1",
+  "control": "throw",
+  "controlParams": {
+    "difficulty": "normal"
+  },
+  "title": "Toss Up",
+  "archetype": "combat_lite",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "sunny park lawn",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "defeat_targets",
+    "description": "Hit every target before you run out of throws.",
+    "count": 3,
+    "role": "target"
+  },
+  "mechanics": [
+    {
+      "id": "defeat",
+      "params": {
+        "role": "target",
+        "count": 3,
+        "hitsPerTarget": 1
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "thrower"
+    },
+    {
+      "id": "target",
+      "kind": "target",
+      "label": "target",
+      "count": 3
+    },
+    {
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Hit every target before the throws run out.",
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

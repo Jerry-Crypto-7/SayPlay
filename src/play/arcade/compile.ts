@@ -1,6 +1,6 @@
 /**
  * Arkádová cesta kompilátoru (P25A, T5; P25C, T5): `GameSpec` s `control`
- * `runner` / `platform` / `flap` + seed → `ArcadeWorld` a `CompiledGame`.
+ * `runner` / `platform` / `flap` / `shooter` / `throw` + seed → `ArcadeWorld` a `CompiledGame`.
  *
  * Ze specu se čte ovládání a jeho parametry a dvě koření z registru mechanik:
  * `health` (náraz ubere život místo prohry) a `timer` s `onEnd: 'lose'`
@@ -19,6 +19,8 @@ import { ARCADE_LIBRARY } from './library';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformLevel, platformRules } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
+import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
+import { throwField, throwRules } from './pieces/throw';
 import { runBot } from './verify';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
@@ -47,6 +49,15 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   if (spec.control === 'flap') {
     const params = flapTrack.params.parse({ ...spec.controlParams });
     return { control: { id: 'flap', params: {} }, bot: { id: 'flap_bot', params: {} }, level: flapTrack.generate(seed, params), rules: flapRules(health) };
+  }
+  if (spec.control === 'shooter') {
+    const params = shooterRange.params.parse({ ...spec.controlParams });
+    return { control: { id: 'shooter', params: {} }, bot: shooterBotRef(params), level: shooterRange.generate(seed, params), rules: shooterRules(params, health) };
+  }
+  if (spec.control === 'throw') {
+    // Hod nemá čím ubrat život: `health` se nečte, prohra je „hody došly“.
+    const params = throwField.params.parse({ ...spec.controlParams });
+    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules() };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams });
   const rules: PieceRef[] = [

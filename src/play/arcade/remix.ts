@@ -15,6 +15,10 @@
  * přepne pohyblivé plošiny a přejmenuje hroty, poletování přejmenuje
  * trubky (geometrie trubek je jediná, kterou generátor má).
  *
+ * Střelba a hod (P25G T6): `harder` = další obtížnost; `twist` = životy nebo
+ * limit u střelby, u hodu jen limit; `swap_enemy` = střelba přejmenuje
+ * nepřátele a přepne pohyb terčů, hod vymění cíl (terč → koš → věž).
+ *
  * Funkce mění `child` na místě; záplatu z něj staví `remixPatch`.
  */
 
@@ -23,6 +27,8 @@ import type { GameSpecV1 } from '../spec';
 import { FLAP_DIFFICULTIES, FLAP_TRACK, flapTrack } from './pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL, platformLevel } from './pieces/platform';
 import { RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK, type ObstacleKind, runnerTrack } from './pieces/runner';
+import { SHOOTER_DIFFICULTIES, type ShooterDifficulty, shooterRange } from './pieces/shooter';
+import { THROW_DIFFICULTIES, THROW_GOALS, THROW_GOAL_LABELS, type ThrowDifficulty, throwField } from './pieces/throw';
 
 type Pick = (max: number) => number;
 
@@ -72,11 +78,26 @@ export function difficultyHarder(child: GameSpecV1): boolean {
   return true;
 }
 
+/** Střelba a hod (P25G): další obtížnost; na nejtěžší už čip nemá co přitvrdit. */
+export function aimHarder(child: GameSpecV1): boolean {
+  const current = child.control === 'shooter' ? shooterRange.params.parse({ ...child.controlParams }).difficulty : throwField.params.parse({ ...child.controlParams }).difficulty;
+  const difficulty = next<ShooterDifficulty | ThrowDifficulty>(child.control === 'shooter' ? SHOOTER_DIFFICULTIES : THROW_DIFFICULTIES, current);
+  if (difficulty === null) return false;
+  child.controlParams = { ...child.controlParams, difficulty };
+  return true;
+}
+
 // Text cíle po twistu; u běžce zůstává původní znění (P25A).
 const LIVES_LINE: Readonly<Record<string, string>> = {
   runner: 'Run to the finish line. You have 3 lives.',
   platform: 'Jump to the flag. Spikes cost a life – you have 3.',
   flap: 'Fly to the finish. A pipe costs a life – you have 3.',
+  shooter: 'Hit every target. An enemy that reaches you costs a life – you have 3.',
+};
+
+const TIMER_LINE: Readonly<Record<string, (seconds: string) => string>> = {
+  shooter: (seconds) => `Hit every target and stop every wave within ${seconds} seconds.`,
+  throw: (seconds) => `Hit every target within ${seconds} seconds.`,
 };
 
 function withHealth(child: GameSpecV1): GameSpecV1 | null {
@@ -93,12 +114,14 @@ function withTimer(child: GameSpecV1): GameSpecV1 | null {
   if (child.mechanics.some((m) => m.id === 'timer')) return null;
   const probe = structuredClone(child);
   probe.mechanics.push({ id: 'timer', params: { id: 'clock', seconds: child.targetDurationSec, onEnd: 'lose' } });
-  probe.objective.description = `Reach the finish line within ${String(child.targetDurationSec)} seconds.`;
+  const seconds = String(child.targetDurationSec);
+  probe.objective.description = TIMER_LINE[child.control ?? 'runner']?.(seconds) ?? `Reach the finish line within ${seconds} seconds.`;
   return probe;
 }
 
 export function runnerTwist(child: GameSpecV1, pick: Pick, accept?: (spec: GameSpecV1) => boolean): boolean {
-  const makers = [withHealth, withTimer];
+  // Hod nemá čím ubrat život – jediný twist je časový limit.
+  const makers = child.control === 'throw' ? [withTimer] : [withHealth, withTimer];
   const start = pick(makers.length);
   for (let step = 0; step < makers.length; step += 1) {
     const probe = makers[(start + step) % makers.length](child);
@@ -136,5 +159,29 @@ export function hazardSwap(child: GameSpecV1, pick: Pick): boolean {
     const moving = platformLevel.params.parse({ ...child.controlParams }).movingPlatforms;
     child.controlParams = { ...child.controlParams, movingPlatforms: !moving };
   }
+  return true;
+}
+
+const ENEMY_LABELS: readonly string[] = ['robot', 'zombie', 'alien', 'ghost'];
+
+/** Střelba: jiní nepřátelé a terče přepnou pohyb; hod: jiný cíl (terč → koš → věž). */
+export function aimSwap(child: GameSpecV1, pick: Pick): boolean {
+  if (child.control === 'shooter') {
+    const enemy = child.roles.find((role) => role.id === 'enemy');
+    if (enemy !== undefined) {
+      const labels = ENEMY_LABELS.filter((label) => label !== enemy.label);
+      enemy.label = labels[pick(labels.length)] ?? enemy.label;
+    }
+    const moving = shooterRange.params.parse({ ...child.controlParams }).moving;
+    child.controlParams = { ...child.controlParams, moving: !moving };
+    return true;
+  }
+  const current = throwField.params.parse({ ...child.controlParams }).goal;
+  const others = THROW_GOALS.filter((goal) => goal !== current);
+  const goal = current === undefined ? others[pick(others.length)] : THROW_GOALS[(THROW_GOALS.indexOf(current) + 1) % THROW_GOALS.length];
+  if (goal === undefined) return false;
+  child.controlParams = { ...child.controlParams, goal };
+  const target = child.roles.find((role) => role.id === 'target');
+  if (target !== undefined) target.label = THROW_GOAL_LABELS[goal];
   return true;
 }

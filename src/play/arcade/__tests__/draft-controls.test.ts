@@ -51,6 +51,47 @@ describe('draft control choice', () => {
     expect(idsPicking('flap', () => true)).toEqual(['s035']);
   });
 
+  // P25G T6, naměřeno 23. 9. 2026: střelba 15/15, hod 10/14 (chybí přehození
+  // lahve, hadrová panenka, minigolf, kulečník – nic se tam nehází na cíl).
+  // Cizí jen tower defense (s154, s157, štítek build_place): bez stavění je to střelba na vlny.
+  it('picks the shooter for 15 of 15 aim sentences and throw for 10 of 14 throw sentences (pin)', () => {
+    expect(corpus.filter((e) => e.verb === 'aim_shoot')).toHaveLength(15);
+    expect(corpus.filter((e) => e.verb === 'throw')).toHaveLength(14);
+    expect(idsPicking('shooter', (v) => v === 'aim_shoot')).toHaveLength(15);
+    expect(idsPicking('throw', (v) => v === 'throw')).toHaveLength(10);
+    expect(idsPicking('shooter', (v) => v !== 'aim_shoot')).toEqual(['s154', 's157']);
+    expect(idsPicking('throw', (v) => v !== 'throw')).toEqual([]);
+  });
+
+  it('reads what the throw aims at, and keeps look-alikes off the shooter and throw', () => {
+    expect(pickControl('basketball free throws')).toEqual({ control: 'throw', difficulty: null, goal: 'hoop' });
+    expect(pickControl('angry birds but with cats and cardboard boxes')).toEqual({ control: 'throw', difficulty: null, goal: 'tower' });
+    expect(pickControl('an easy slingshot game')).toEqual({ control: 'throw', difficulty: 'easy', goal: null });
+    expect(pickControl('a hard zombie shooter')).toEqual({ control: 'shooter', difficulty: 'hard' });
+    expect(pickControl('catch the shooting stars')).toBeNull();
+    expect(pickControl('toss a pancake and catch it on the pan')).toBeNull();
+    expect(pickControl('fly a paper plane through four hoops')).toBeNull();
+    expect(pickControl('a tower defense platformer where you jump between ledges')?.control).toBe('platform');
+  });
+
+  it('drafts shooter and throw specs that the arcade verifier publishes', () => {
+    for (const [sentence, control] of [
+      ['zombie shooter in a mall', 'shooter'],
+      ['archery olympics', 'shooter'],
+      ['throw a basketball into a hoop from crazy angles', 'throw'],
+      ['knock down towers with a wrecking ball', 'throw'],
+    ] as const) {
+      const spec = draftGameSpec(sentence);
+      expect(spec.control, sentence).toBe(control);
+      for (const seed of [1, 2, 3]) {
+        const built = arcadeWorldOf(spec, seed);
+        if (!built.ok) throw new Error(built.issues.join('; '));
+        expect(verifyArcade(built.world).publishEligible, `${sentence}/${seed}`).toBe(true);
+      }
+    }
+    expect(draftGameSpec('knock down towers with a wrecking ball').roles.find((r) => r.kind === 'target')?.label).toBe('block');
+  });
+
   it('keeps genre priority: flap > runner genre > platform genre > runner words > platform words', () => {
     expect(pickControl('an endless runner where you jump between platforms')?.control).toBe('runner');
     expect(pickControl('a platformer where you run and jump over obstacles')?.control).toBe('platform');

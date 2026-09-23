@@ -10,6 +10,8 @@ import { readGameSpec, type GameSpecV1, type RunnerParams } from '../../spec';
 import flapFixture from '../__fixtures__/flap.json';
 import platformFixture from '../__fixtures__/platform.json';
 import fixture from '../__fixtures__/runner.json';
+import shooterFixture from '../__fixtures__/shooter.json';
+import throwFixture from '../__fixtures__/throw.json';
 import { arcadeWorldOf } from '../compile';
 import { verifyArcade } from '../verify';
 
@@ -102,12 +104,70 @@ describe('platform and flap remix chips (P25C)', () => {
     });
   }
 
-  it('swap_enemy renames the hazard, and the platformer toggles moving platforms', () => {
+  it('swap_enemy renames the hazard, and the platformer toggles moving platforms (P25C)', () => {
     for (const [control, base] of PARENTS) {
       const swapped = remix('swap_enemy', base);
       const label = (spec: GameSpecV1) => spec.roles.find((role) => role.kind === 'hazard')?.label;
       expect(label(swapped), control).not.toBe(label(base));
       if (control === 'platform') expect(swapped.controlParams).toMatchObject({ movingPlatforms: true });
     }
+  });
+});
+
+describe('shooter and throw remix chips (P25G)', () => {
+  const read = (raw: unknown): GameSpecV1 => {
+    const result = readGameSpec(raw);
+    if (!result.ok) throw new Error(result.issues.join('; '));
+    return result.value;
+  };
+  const PARENTS = [
+    ['shooter', read(shooterFixture)],
+    ['throw', read(throwFixture)],
+  ] as const;
+
+  for (const [control, base] of PARENTS) {
+    it.each(REMIX_CHIPS)(`%s changes the ${control} game and the child still passes the arcade verifier`, (chip) => {
+      const child = remix(chip, base);
+      expect(child.control).toBe(control);
+      expect(child).not.toEqual(base);
+      expect(publishable(child)).toBe(true);
+    });
+
+    it(`${control}: harder raises the difficulty until hard, then stops`, () => {
+      const hard = remix('harder', base);
+      expect(hard.controlParams).toMatchObject({ difficulty: 'hard' });
+      expect(publishable(hard)).toBe(true);
+      expect(remixPatch('harder', hard)).toEqual([]);
+    });
+  }
+
+  it('twist: the shooter gets lives or a time limit, the throw only a time limit', () => {
+    const added = new Set<string>();
+    for (let seed = 1; seed <= 6; seed += 1) {
+      for (const [control, base] of PARENTS) {
+        const twisted = remix('twist', base, seed);
+        const rules = twisted.mechanics.map((m) => m.id).filter((id) => id === 'health' || id === 'timer');
+        expect(rules, `${control}/${seed}`).toHaveLength(1);
+        if (control === 'throw') expect(rules).toEqual(['timer']);
+        else added.add(rules[0]!);
+      }
+    }
+    expect([...added].sort()).toEqual(['health', 'timer']);
+  });
+
+  it('swap_enemy renames the shooter enemies and cycles the throw goal target → hoop → tower', () => {
+    const [[, shooter], [, thrower]] = PARENTS;
+    const swapped = remix('swap_enemy', shooter);
+    expect(swapped.roles.find((r) => r.id === 'enemy')?.label).not.toBe('robot');
+    expect(swapped.controlParams).toMatchObject({ moving: false });
+    const goals: unknown[] = [];
+    let spec = read({ ...thrower, controlParams: { difficulty: 'normal', goal: 'target' } });
+    for (let round = 0; round < 3; round += 1) {
+      spec = remix('swap_enemy', spec);
+      goals.push((spec.controlParams as { goal?: string }).goal);
+      expect(publishable(spec), `round ${round}`).toBe(true);
+    }
+    expect(goals).toEqual(['hoop', 'tower', 'target']);
+    expect(spec.roles.find((r) => r.id === 'target')?.label).toBe('target');
   });
 });

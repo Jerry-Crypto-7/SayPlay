@@ -31,6 +31,8 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
+import { SHOOTER_DIFFICULTIES } from './arcade/pieces/shooter';
+import { THROW_DIFFICULTIES, THROW_GOALS } from './arcade/pieces/throw';
 import { ARCHETYPES, MECHANICS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from './registry';
 
 export const GAME_SPEC_SCHEMA = 'gamespec.v1' as const;
@@ -196,12 +198,12 @@ export const tutorialSchema = z
   .strict();
 
 /**
- * Ovládání (P25A, P25C). `tap_go` = dnešní mřížka (`src/sim`), `runner`,
- * `platform` a `flap` = arkádové jádro (`src/play/arcade`). Pole je volitelné
+ * Ovládání (P25A, P25C, P25G). `tap_go` = dnešní mřížka (`src/sim`), `runner`,
+ * `platform`, `flap`, `shooter` a `throw` = arkádové jádro (`src/play/arcade`). Pole je volitelné
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'shooter', 'throw'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
@@ -238,14 +240,37 @@ export const flapParamsSchema = z
   .strict();
 export type FlapParams = z.infer<typeof flapParamsSchema>;
 
+/** Parametry střelby (P25G); výchozí doplní generátor střelnice podle obtížnosti. */
+export const shooterParamsSchema = z
+  .object({
+    difficulty: z.enum(SHOOTER_DIFFICULTIES).optional(),
+    magazine: z.int().min(2).max(30).optional(),
+    reloadS: z.number().min(0.5).max(4).optional(),
+    moving: z.boolean().optional(),
+    waves: z.int().min(1).max(6).optional(),
+  })
+  .strict();
+export type ShooterSpecParams = z.infer<typeof shooterParamsSchema>;
+
+/** Parametry hodu (P25G); výchozí doplní generátor hřiště. */
+export const throwParamsSchema = z
+  .object({
+    difficulty: z.enum(THROW_DIFFICULTIES).optional(),
+    goal: z.enum(THROW_GOALS).optional(),
+    bounce: z.boolean().optional(),
+    spareThrows: z.int().min(0).max(10).optional(),
+  })
+  .strict();
+export type ThrowSpecParams = z.infer<typeof throwParamsSchema>;
+
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
-const CONTROL_PARAMS = { runner: runnerParamsSchema, platform: platformParamsSchema, flap: flapParamsSchema } as const;
+const CONTROL_PARAMS = { runner: runnerParamsSchema, platform: platformParamsSchema, flap: flapParamsSchema, shooter: shooterParamsSchema, throw: throwParamsSchema } as const;
 
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
     control: z.enum(CONTROLS).optional(),
-    controlParams: z.union([runnerParamsSchema, platformParamsSchema, flapParamsSchema]).optional(),
+    controlParams: z.union([runnerParamsSchema, platformParamsSchema, flapParamsSchema, shooterParamsSchema, throwParamsSchema]).optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
@@ -310,7 +335,7 @@ export function readGameSpec(input: unknown): GameSpecResult {
   const spec = parsed.data;
   if (spec.controlParams !== undefined) {
     if (spec.control === undefined || spec.control === 'tap_go') {
-      return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/controlParams: only an arcade game (runner, platform, flap) takes control parameters'] };
+      return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/controlParams: only an arcade game (runner, platform, flap, shooter, throw) takes control parameters'] };
     }
     // Sjednocení ve schématu pustí parametry kteréhokoli ovládání; tady musí sedět na to zvolené.
     const own = CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);

@@ -46,6 +46,8 @@ export const THROW_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type ThrowDifficulty = (typeof THROW_DIFFICULTIES)[number];
 export const THROW_GOALS = ['target', 'hoop', 'tower'] as const;
 export type ThrowGoal = (typeof THROW_GOALS)[number];
+/** Popisek role `target` ve specu podle toho, co generátor postaví. */
+export const THROW_GOAL_LABELS: Readonly<Record<ThrowGoal, string>> = { target: 'target', hoop: 'hoop', tower: 'block' };
 
 export const THROW = {
   /** Rychlost míčku při nejslabším a nejsilnějším hodu (jednotek za tik). */
