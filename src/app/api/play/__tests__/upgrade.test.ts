@@ -5,7 +5,7 @@
  * `gate` drží režiséra, dokud ji test nepustí, aby šel vidět stav `pending`.
  */
 
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -17,6 +17,8 @@ import { answered, failed, fakeBranch, type ScriptedOutcome } from '@/play/direc
 import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
+
+import { recordUpgradeFailure } from '../_upgrade';
 
 const director = vi.hoisted(() => ({
   script: [] as unknown[],
@@ -171,6 +173,13 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await settled(second.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
     expect(JSON.parse(readFileSync(join(dir, `${second.body.versionId}.json`), 'utf8'))).toMatchObject({ stage: 'read', raw: { entities: [], rules: [] } });
     vi.unstubAllEnvs();
+  });
+
+  // Testy bez vlastní složky psaly podvržená selhání do `data/play/failures/` sady věrnosti.
+  it('pod vitestem bez PLAY_FAILURES_DIR se záznam nezapíše', () => {
+    const id = `vitest-${String(process.pid)}`;
+    recordUpgradeFailure(id, SENTENCE, 'MALFORMED', { stage: 'model', reason: 'X', detail: 'x', raw: null }, { VITEST: 'true' });
+    expect(existsSync(join(process.cwd(), 'data', 'play', 'failures', `${id}.json`))).toBe(false);
   });
 
   it('autorská hra, která neprojde kontrolou, zůstane návrhem bez dítěte', async () => {

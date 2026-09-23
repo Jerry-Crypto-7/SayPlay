@@ -149,7 +149,9 @@ export interface UpgradeFailure {
  */
 export function recordUpgradeFailure(draftId: string, sentence: string, reason: DraftFinalReason, failure: UpgradeFailure, env: Record<string, string | undefined> = process.env): void {
   console.warn(`[play] upgrade of ${draftId} ended ${reason} at ${failure.stage}: ${failure.reason} – ${failure.detail.slice(0, 300)}`);
-  if (env.VERCEL !== undefined) return;
+  // Testy zapisují jen do složky, kterou samy určí – jinak by jejich podvržená
+  // selhání přimíchaly do záznamů, ze kterých sada věrnosti počítá příčiny.
+  if (env.VERCEL !== undefined || (env.VITEST !== undefined && env.PLAY_FAILURES_DIR === undefined)) return;
   const dir = env.PLAY_FAILURES_DIR ?? join(process.cwd(), 'data', 'play', 'failures');
   try {
     mkdirSync(dir, { recursive: true });
