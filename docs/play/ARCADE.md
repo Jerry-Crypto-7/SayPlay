@@ -25,7 +25,7 @@ Kontrakt: `src/play/arcade/contract.ts`. Řídicí plán: `plans/P25-play-knihov
 
 ## Tik jádra
 
-vstup → ovládání (kus `control`) → vezení (hráč stojící na kinematickém tělese dostane jeho rychlost) → integrace (rychlost, gravitace) → kolize AABB hráče s ostatními → projektily (život, zásah, odraz) → pravidla (`contact`, `hit`, `tick`, `counter` → `score`, `damage`, `count`, `lose`, `win`, `despawn`, `spawn`, `respawn`, `checkpoint`) → úklid.
+vstup → ovládání (kus `control`) → vezení (hráč stojící na kinematickém tělese dostane jeho rychlost) → integrace (rychlost, gravitace) → stohování (padající tělo s gravitací dosedne na pevné tělo pod sebou) → kolize AABB hráče s ostatními → projektily (život, zásah, odraz) → pravidla (`contact`, `hit`, `tick`, `counter` → `score`, `damage`, `count`, `lose`, `win`, `despawn`, `spawn`, `respawn`, `checkpoint`) → úklid.
 
 Kolize s pevným tělem podle toho, odkud hráč přišel (poloha před integrací; u pohyblivého tělesa jeho poloha minus rychlost):
 

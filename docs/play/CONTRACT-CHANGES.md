@@ -284,3 +284,8 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   amount }` přičte k čítači; `ArcadeLevel.counters?` nastaví počáteční hodnoty (kromě `health`,
   to dál nese `BuildWorldInput.health`). Pravidla nemění stav sama, takže zásobník a přebíjení
   bez efektu udělat nešlo. Stávající hry čítače 2–4 nečtou, hashe beze změny.
+- **Stohování `settle()`** (23. 9. 2026, T4). Nový krok tiku mezi integrací a kolizí: tělo
+  s gravitací (ne hráč, ne projektil, ne kinematické), které za tik propadlo horní hranou
+  živého pevného těla pod sebou, na ní přistane (`vy = 0`, `grounded`). Pořadí podle indexu,
+  věž se staví odspodu; zmizí-li podpora, tělo příští tik padá dál. Běžec, plošinovka ani
+  poletování nemají jiné tělo s gravitací než hráče, hashe beze změny.

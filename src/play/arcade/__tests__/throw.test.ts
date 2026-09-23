@@ -19,6 +19,8 @@ import {
   throwRules,
   throwSpeed,
 } from '../pieces/throw';
+import { throwBot } from '../pieces/throw-bot';
+import { runBot, verifyArcade } from '../verify';
 
 const params = (difficulty: ThrowDifficulty, extra: Record<string, unknown> = {}) => throwField.params.parse({ difficulty, ...extra });
 
@@ -149,5 +151,53 @@ describe('hod – ovládání a pravidla', () => {
     expect(((state[bodyBase(top) + BODY.flags] as number) & FLAG.alive)).toBe(0);
     expect(((state[bodyBase(bottom) + BODY.flags] as number) & FLAG.alive)).not.toBe(0);
     expect(state[bodyBase(bottom) + BODY.y]).toBe(0);
+  });
+});
+
+describe('hod – robot a ověření', () => {
+  const botWorld = (level: ArcadeLevel): ArcadeWorld => {
+    const built = buildWorld({ seed: 1, control: { id: 'throw', params: {} }, rules: throwRules(), bot: { id: 'throw_bot', params: {} }, level }, ARCADE_LIBRARY);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    return built.world;
+  };
+
+  it('robot reaguje se zpožděním 8 tiků', () => {
+    expect(throwBot.reactionTicks).toBe(8);
+  });
+
+  it('30 semínek × 3 obtížnosti projde ověřením: robot vyhraje, nečinný ne, přehrání sedí', () => {
+    for (const difficulty of THROW_DIFFICULTIES) {
+      for (let seed = 1; seed <= 30; seed += 1) {
+        const verdict = verifyArcade(botWorld(throwField.generate(seed * 7919, params(difficulty))));
+        expect(verdict.failures, `${difficulty}/${seed}`).toEqual([]);
+        // Hod nemá časový limit: nečinný hráč neprohraje, ale nikdy nevyhraje.
+        expect(verdict.idle.outcome, `${difficulty}/${seed}`).not.toBe('won');
+      }
+    }
+  });
+
+  it('robot hází jen tolikrát, kolik je cílů: na míček ve vzduchu počká', () => {
+    const level = throwField.generate(5, params('normal', { goal: 'tower', spareThrows: 0 }));
+    const run = runBot(botWorld(level));
+    expect(run.outcome).toBe('won');
+    expect(run.inputs.filter((input) => (input.buttons & BUTTON.TAP) !== 0)).toHaveLength(level.bodies.filter((b) => b.role === 'target').length);
+  });
+
+  it('cíl za nepřekonatelnou zdí: hra neprojde a kontrola řekne proč', () => {
+    const level = throwField.generate(2, params('easy', { goal: 'target' }));
+    const blocked: ArcadeLevel = { ...level, bodies: [...level.bodies, { role: 'obstacle', kind: 'wall', x: 0, y: 0, z: 5000, w: 4000, h: 30_000, d: 400, solid: true }] };
+    const verdict = verifyArcade(botWorld(blocked));
+    expect(verdict.publishEligible).toBe(false);
+    expect(verdict.failures.join()).toMatch(/bot_wins/);
+    expect(checkThrowLevel(blocked).join()).toMatch(/cannot be hit by any throw/);
+  });
+
+  it('pole bez cílů vyhraje i nečinný hráč – ověřením neprojde', () => {
+    const level = throwField.generate(3, params('easy'));
+    const empty: ArcadeLevel = { ...level, bodies: level.bodies.filter((b) => b.role !== 'target') };
+    const verdict = verifyArcade(botWorld(empty));
+    expect(verdict.idle.outcome).toBe('won');
+    expect(verdict.failures.join()).toMatch(/idle_loses/);
+    expect(verdict.publishEligible).toBe(false);
   });
 });
