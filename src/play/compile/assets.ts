@@ -1,7 +1,7 @@
 /**
  * Podoba entity: asset z katalogu, nebo kus rodiny (P23-A, T8).
  *
- * Katalog (`WORLDSTREAM_ASSETS`, 30 kusů) se ptá týmž `representationCandidates`
+ * Katalog (`WORLDSTREAM_ASSETS`, 86 kusů, tentýž jako arkáda – P26 T12) se ptá týmž `representationCandidates`
  * jako planner – skóre je počet tagů assetu ve slovech `label`u, takže `stone
  * portal` dá `iron-gate` a `party table` `dining-table`. Bez shody dostane
  * entita vlastní řádek v programu geometrie: kus podle druhu role, postavený
