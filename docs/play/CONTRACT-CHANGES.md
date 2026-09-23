@@ -277,3 +277,11 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   šířky) a podle ní v každém tiku nastaví boční rychlost kinematickým soupeřům – jádro nemá
   krok, ve kterém by se hýbala cizí těla (Findings P25F). `aux0`/`aux1` hráče = tiky turba
   a skóre, při kterém turbo naskočilo.
+- **Aréna – kusy v knihovně** (23. 9. 2026, T4): ovládání `move_free` (osa = jeden z 32
+  směrů z celočíselné tabulky, 0 = stát; šířka a hloubka hráče = `sizeOf(score)`, strop
+  6000; kinematické buňky role `enemy` vede ovládání – větší pronásledují, menší bloudí
+  a utíkají), generátor `arena` (`density`, `goal: grow | survive`, `seconds`), pravidla
+  `arena_eat` (`contact`: menší sníst = body + `despawn`, větší buňka = `lose` nebo se životy
+  `damage` + `respawn`), `grow_to` (`counter`: skóre ≥ `points` → výhra) a `survive_time`
+  (`tick`: dožít limit → výhra). Větší buňky generátor staví až nad hotovou potravou tak
+  daleko, aby hladová cesta vyrostla dřív, než dojedou. Ve specu ani kompilátoru zatím není.

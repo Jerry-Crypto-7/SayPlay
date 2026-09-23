@@ -329,22 +329,9 @@ export const arenaLevel: GeneratorPiece<ArenaParams> = {
     const { half } = ARENA;
     const bodies: BodyInit[] = [{ role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: ARENA.startSize, h: ARENA.height, d: ARENA.startSize, solid: false }];
 
-    // Větší buňky u okrajů: náhodný bod na obvodu čtverce aspoň `hunterDistance` od středu.
-    const hunters: BodyInit[] = [];
-    for (let k = 0; k < tier.hunters; k += 1) {
-      const size = 2 * rng.int(tier.hunterSize[0] / 2, tier.hunterSize[1] / 2);
-      const edge = half - size;
-      for (;;) {
-        const x = rng.int(-edge, edge);
-        const zz = rng.int(-edge, edge);
-        if (x * x + zz * zz >= ARENA_LEVEL.hunterDistance ** 2) {
-          hunters.push(cell('enemy', 'cell', x, zz, size));
-          break;
-        }
-      }
-    }
+    const hunterSizes = Array.from({ length: tier.hunters }, () => 2 * rng.int(tier.hunterSize[0] / 2, tier.hunterSize[1] / 2));
     // Věnec: tolik potravy, kolik je potřeba přerůst největší buňku, + rezerva.
-    const ring = pointsToBeat(Math.max(...hunters.map((h) => h.w))) + 2;
+    const ring = pointsToBeat(Math.max(...hunterSizes)) + 2;
     for (let k = 0; k < ring; k += 1) {
       const angle = (k * 32) / ring;
       const dir = DIRECTIONS[Math.floor(angle) % 32]!;
@@ -364,9 +351,24 @@ export const arenaLevel: GeneratorPiece<ArenaParams> = {
         }
       }
     }
-    bodies.push(...hunters);
     const edge = half - ARENA_LEVEL.pelletSize;
     for (let k = ring; k < tier.pellets; k += 1) bodies.push(cell('collectible', 'food', rng.int(-edge, edge), rng.int(-edge, edge), ARENA_LEVEL.pelletSize));
+
+    // Větší buňky až nad hotovou potravou: tak daleko, aby hladová cesta vyrostla
+    // nad každou dřív, než dojede (`checkArenaLevel`); nejde-li to náhodně, roh.
+    const pending: ArcadeLevel = { bodies, length: 0 };
+    for (const size of hunterSizes) {
+      const far = half - size;
+      const grow = greedyGrowTicks(pending, pointsToBeat(size));
+      const reach = Math.max(ARENA_LEVEL.hunterDistance, Math.ceil((grow / ARENA_LEVEL.growMargin + 1) * ARENA.hunterSpeed + (size + ARENA.startSize) / 2));
+      let placed: BodyInit | null = null;
+      for (let attempt = 0; attempt < 64 && placed === null; attempt += 1) {
+        const x = rng.int(-far, far);
+        const zz = rng.int(-far, far);
+        if (x * x + zz * zz >= reach * reach) placed = cell('enemy', 'cell', x, zz, size);
+      }
+      bodies.push(placed ?? cell('enemy', 'cell', rng.int(0, 1) === 0 ? -far : far, rng.int(0, 1) === 0 ? -far : far, size));
+    }
     return { bodies, length: 0 };
   },
 };
