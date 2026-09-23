@@ -53,7 +53,9 @@ function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sna
       <p className="play-hud-hint">{spec.tutorial.controlsHint}</p>
       <p className="play-hud-progress">
         <span data-testid="play-progress" data-progress={snapshot.progress}>
-          {snapshot.progress}% · {snapshot.score} {scoreUnit(spec)}{lives}
+          {/* Aréna nemá trať, procento by stálo na nule. */}
+          {spec.control === 'move_free' ? '' : `${snapshot.progress}% · `}
+          {snapshot.score} {scoreUnit(spec)}{lives}
         </span>
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
           {distanceLabel(spec, snapshot)}

@@ -23,6 +23,9 @@ import type { ArcadeSession } from '../session';
 
 const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15' } as const;
 
+/** Kolik metrů od hráče do strany je vidět vždy. */
+const SEE_M = 9;
+
 interface Disc {
   readonly index: number;
   readonly role: number;
@@ -75,8 +78,10 @@ export function ArenaWorld({ session, half, surface }: { readonly session: Arcad
     }
     const me = groups.current[player];
     if (me !== null && me !== undefined) {
-      // Výš s velikostí hráče, ať větší buňky vidí dřív, než dojedou.
-      const height = 16 + (mine / UNIT) * 3;
+      // Aspoň `SEE_M` metrů do strany i na výšku (mobil) a výš s velikostí hráče,
+      // ať větší buňku vidí dřív, než dojede.
+      const tan = Math.tan((camera.fov * Math.PI) / 360);
+      const height = Math.max(16, SEE_M / (tan * Math.min(1, camera.aspect))) + (mine / UNIT) * 3;
       camera.position.set(me.position.x, height, me.position.z - 0.01);
       look.set(me.position.x, 0, me.position.z);
       camera.lookAt(look);
