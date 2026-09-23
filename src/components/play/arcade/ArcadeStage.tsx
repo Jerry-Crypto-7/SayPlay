@@ -306,7 +306,8 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
               <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
             ) : (
-              <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+              // Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění.
+              <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
             )}
           </group>
         ),
