@@ -31,6 +31,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
+import { RHYTHM, RHYTHM_DENSITIES } from './arcade/pieces/rhythm';
 import { TIMING, TIMING_MODES, TIMING_SPEEDS } from './arcade/pieces/timing';
 import { ARCHETYPES, MECHANICS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from './registry';
 
@@ -202,7 +203,7 @@ export const tutorialSchema = z
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'timing'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'timing', 'rhythm'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
@@ -250,14 +251,24 @@ export const timingParamsSchema = z
   .strict();
 export type TimingParams = z.infer<typeof timingParamsSchema>;
 
+/** Parametry rytmu (P25H): tempo, hustota not a délka písničky v dobách. */
+export const rhythmParamsSchema = z
+  .object({
+    bpm: z.int().min(RHYTHM.minBpm).max(RHYTHM.maxBpm).optional(),
+    density: z.enum(RHYTHM_DENSITIES).optional(),
+    beats: z.int().min(RHYTHM.minBeats).max(RHYTHM.maxBeats).optional(),
+  })
+  .strict();
+export type RhythmParams = z.infer<typeof rhythmParamsSchema>;
+
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
-const CONTROL_PARAMS = { runner: runnerParamsSchema, platform: platformParamsSchema, flap: flapParamsSchema, timing: timingParamsSchema } as const;
+const CONTROL_PARAMS = { runner: runnerParamsSchema, platform: platformParamsSchema, flap: flapParamsSchema, timing: timingParamsSchema, rhythm: rhythmParamsSchema } as const;
 
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
     control: z.enum(CONTROLS).optional(),
-    controlParams: z.union([runnerParamsSchema, platformParamsSchema, flapParamsSchema, timingParamsSchema]).optional(),
+    controlParams: z.union([runnerParamsSchema, platformParamsSchema, flapParamsSchema, timingParamsSchema, rhythmParamsSchema]).optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
