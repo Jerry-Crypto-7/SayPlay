@@ -85,6 +85,8 @@ export interface PlayShellProps {
   /** Od kořene k listu; poslední záznam je tahle hra. */
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
+  /** Hra je AI verze návrhu (`relation: 'upgrade'`); rodokmen to řekne místo „Remixed from“. */
+  readonly aiVersion?: boolean;
   readonly lab: LabFacts;
   /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
   readonly upgrade: string | null;
@@ -112,7 +114,7 @@ export function PlayShell({
   );
 }
 
-function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade }: PlayShellProps) {
+function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, lab, upgrade }: PlayShellProps) {
   const upgraded = useUpgrade(upgrade);
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
@@ -217,7 +219,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade 
         </WorldstreamCanvas>
       </div>
       <Hud spec={spec} snapshot={snapshot} />
-      <Lineage lineage={lineage} remixes={remixes} />
+      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (

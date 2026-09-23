@@ -12,7 +12,7 @@
  */
 
 import type { ArchetypeId } from '../registry';
-import type { GameSpecV1 } from '../spec';
+import type { ControlId, GameSpecV1 } from '../spec';
 import type { PublishedGame, VersionStore } from '../version';
 
 export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place';
@@ -95,10 +95,12 @@ const CLOSEST: Readonly<Record<ArchetypeId, string>> = {
 };
 
 /** Arkádové hry sdílejí archetyp šablony, takže je pojmenuje ovládání. */
-const ARCADE_CLOSEST: Readonly<Record<string, string | undefined>> = {
+const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
   runner: 'an endless runner',
   platform: 'a platformer',
   flap: 'a flappy game',
+  steer: 'a racing game',
+  move_free: 'an arena game',
   shooter: 'a shooting game',
   throw: 'a throwing game',
   timing: 'a timing game',
@@ -116,7 +118,7 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
     reason: match.reason,
     // Arkádová hra si nese jméno podle ovládání – archetyp šablony je u všech
     // `hazard_crossing`, takže by hláška u plošinovky slibovala přecházení.
-    closest: ARCADE_CLOSEST[draft.control ?? 'tap_go'] ?? CLOSEST[draft.archetype],
+    closest: draft.control === undefined || draft.control === 'tap_go' ? CLOSEST[draft.archetype] : ARCADE_CLOSEST[draft.control],
   };
 }
 

@@ -10,7 +10,7 @@ import { draftGameSpec } from '@/play/draft';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 import type { RuntimeSnapshot } from '@/worldstream/runtime-controller';
 
-import { phaseLine } from '../Hud';
+import { TICKS_PER_SECOND, phaseLine, progressLine, timerLeft } from '../Hud';
 
 const snapshot = (values: Record<string, number>): Pick<RuntimeSnapshot, 'values'> => ({ values });
 
@@ -33,5 +33,21 @@ describe('phaseLine', () => {
 
   it('says nothing for a game without a light', () => {
     expect(phaseLine(specOf(collectExit), snapshot({}))).toBeNull();
+  });
+});
+
+/** Časovač od AI (P26 T8): audit viděl „tick 9“ místo odpočtu, hra pak skončila bez varování. */
+describe('timer countdown', () => {
+  const timed = specOf({ ...collectExit, mechanics: [...collectExit.mechanics, { id: 'timer', params: { id: 'clock', seconds: 30, onEnd: 'lose' } }] });
+
+  it('counts the timer down next to the objective counter and stops at zero', () => {
+    expect(timerLeft(timed, 12)).toBe('18s left');
+    expect(timerLeft(timed, 45)).toBe('0s left');
+    expect(progressLine(timed, { tick: 12 * TICKS_PER_SECOND, values: {} })).toBe('0 / 5 · 18s left');
+  });
+
+  it('shows no clock for a game without a timer', () => {
+    expect(timerLeft(specOf(collectExit), 12)).toBeNull();
+    expect(progressLine(specOf(collectExit), { tick: 0, values: {} })).toBe('0 / 5');
   });
 });

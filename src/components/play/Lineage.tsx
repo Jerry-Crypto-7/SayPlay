@@ -10,7 +10,8 @@ import Link from 'next/link';
 
 import type { GameVersion } from '@/play/contracts';
 
-export function Lineage({ lineage, remixes }: { readonly lineage: readonly GameVersion[]; readonly remixes: number }) {
+/** `aiVersion`: hra je vylepšení návrhu od AI (`relation: 'upgrade'`), ne remix hráče (P26 T8). */
+export function Lineage({ lineage, remixes, aiVersion = false }: { readonly lineage: readonly GameVersion[]; readonly remixes: number; readonly aiVersion?: boolean }) {
   const parent = lineage.length >= 2 ? lineage[lineage.length - 2] : null;
   return (
     <p className="play-lineage" data-testid="play-lineage">
@@ -18,7 +19,7 @@ export function Lineage({ lineage, remixes }: { readonly lineage: readonly GameV
         <span>Original</span>
       ) : (
         <span>
-          Remixed from <Link href={`/play/${parent.versionId}`}>{parent.title}</Link>
+          {aiVersion ? 'AI version of' : 'Remixed from'} <Link href={`/play/${parent.versionId}`}>{parent.title}</Link>
         </span>
       )}
       {remixes > 0 && <span className="play-lineage-count">{remixes === 1 ? '1 remix' : `${remixes} remixes`}</span>}

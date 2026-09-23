@@ -18,6 +18,7 @@ import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
+import { timerLeft } from '../Hud';
 import type { LabFacts } from '../lab';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
@@ -60,6 +61,8 @@ const TAP_TO_START = new Set(['flap', 'shooter', 'timing', 'rhythm', 'duel']);
 
 function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: ArcadeSnapshot }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') ? ` · ${snapshot.health} lives` : '';
+  // Arkáda tiká 60× za sekundu (viz `progressLabel`).
+  const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
   return (
     <header className="play-hud" aria-label="Game status">
       <h1 className="play-hud-title">{spec.title}</h1>
@@ -73,6 +76,7 @@ function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sna
           {/* Aréna nemá trať, procento by stálo na nule. */}
           {spec.control === 'move_free' ? '' : `${snapshot.progress}% · `}
           {snapshot.score} {scoreUnit(spec)}{lives}
+          {clock === null ? '' : ` · ${clock}`}
         </span>
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
           {progressLabel(spec, snapshot)}
@@ -88,11 +92,12 @@ export interface ArcadePlayProps {
   readonly arcade: ArcadeWorld;
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
+  readonly aiVersion?: boolean;
   readonly lab: LabFacts;
   readonly upgrade: string | null;
 }
 
-export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upgrade }: ArcadePlayProps) {
+export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, upgrade }: ArcadePlayProps) {
   const upgraded = useUpgrade(upgrade);
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -121,7 +126,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upg
     <main className="play-shell">
       <ArcadeStage session={session} playerModel={heroModel(spec)} enemyModel={enemyModel(spec)} />
       <ArcadeHud spec={spec} snapshot={snapshot} />
-      <Lineage lineage={lineage} remixes={remixes} />
+      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!running && (
