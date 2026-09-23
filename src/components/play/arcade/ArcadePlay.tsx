@@ -17,7 +17,8 @@ import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
-import type { LabFacts } from '../lab';
+import type { LabFacts, ReadFacts } from '../lab';
+import { SentenceRead } from '../SentenceRead';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner, useUpgrade } from '../UpgradeBanner';
@@ -104,10 +105,11 @@ export interface ArcadePlayProps {
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
   readonly lab: LabFacts;
+  readonly read: ReadFacts;
   readonly upgrade: string | null;
 }
 
-export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upgrade }: ArcadePlayProps) {
+export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, read, upgrade }: ArcadePlayProps) {
   const upgraded = useUpgrade(upgrade);
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -138,6 +140,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upg
       <ArcadeHud spec={spec} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
+      <SentenceRead read={read} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!running && (
         <section className="play-outcome" data-testid="play-outcome" role="status">

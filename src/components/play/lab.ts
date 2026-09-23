@@ -9,6 +9,65 @@
 import type { QualityReport } from '@/play/contracts';
 import { MECHANICS, type MechanicId } from '@/play/registry';
 import type { GameSpecV1 } from '@/play/spec';
+import type { PublishedGame } from '@/play/version';
+
+/**
+ * Kdo hru navrhl. `draft` = okamžitý návrh ze slov (bez modelu), `ai` = model
+ * (vylepšení návrhu, nebo rovnou režisér), `remix` = změna čipem nad cizí hrou.
+ * Návrh se nikdy nesmí vydávat za `ai` – panel by lhal porotci přesně tam,
+ * kde se ptá, co udělala AI.
+ */
+export type Authorship = 'ai' | 'draft' | 'remix';
+
+export function authorshipOf(game: Pick<PublishedGame, 'origin' | 'sentence' | 'relation'>): Authorship {
+  if (game.origin !== undefined) return 'draft';
+  if (game.relation === 'upgrade' || game.sentence !== undefined) return 'ai';
+  return 'remix';
+}
+
+/** Co se z věty stalo – panel „From your sentence“. */
+export interface ReadFacts {
+  readonly authorship: Authorship;
+  readonly sentence: string | null;
+  readonly game: string;
+  readonly world: string;
+  readonly you: string | null;
+  readonly against: readonly string[];
+  readonly goal: string;
+  readonly rules: readonly string[];
+}
+
+const CONTROL_NAME: Readonly<Record<string, string>> = {
+  runner: 'Runner',
+  platform: 'Platformer',
+  flap: 'Flying',
+  steer: 'Racing',
+  move_free: 'Arena',
+  shooter: 'Shooter',
+  throw: 'Throwing',
+  timing: 'Timing',
+  rhythm: 'Rhythm',
+  duel: 'Duel',
+};
+
+const OPPONENT_KINDS: ReadonlySet<string> = new Set(['hazard', 'chaser', 'patrol']);
+
+const words = (id: string): string => id.replaceAll('_', ' ');
+
+export function readFacts(spec: GameSpecV1, authorship: Authorship, sentence: string | null): ReadFacts {
+  const control = spec.control === undefined || spec.control === 'tap_go' ? null : spec.control;
+  const game = control === null ? words(spec.archetype) : (CONTROL_NAME[control] ?? words(control));
+  return {
+    authorship,
+    sentence,
+    game: game.charAt(0).toUpperCase() + game.slice(1),
+    world: `${spec.theme.setting} · ${spec.theme.mood}`,
+    you: spec.roles.find((role) => role.kind === 'player')?.label ?? null,
+    against: [...new Set(spec.roles.filter((role) => OPPONENT_KINDS.has(role.kind)).map((role) => role.label))],
+    goal: spec.objective.description,
+    rules: spec.mechanics.map((mechanic) => words(mechanic.id)),
+  };
+}
 
 export interface LabMechanic {
   readonly id: string;
