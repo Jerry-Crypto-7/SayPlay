@@ -6,7 +6,8 @@
  * záznam (`inputs()`) přehraný `replay` z jádra dá týž hash. Stisky mezi
  * tiky se sbírají do masky a padnou do nejbližšího tiku (hrany); osa
  * (`hold`, plošinovka P25C) platí, dokud se nezmění, a zapisuje se do
- * každého tiku, kdy je nenulová. `prev` je stav před posledním krokem –
+ * každého tiku, kdy je nenulová; držená tlačítka (`holdButtons`, nabíjení
+ * hodu P25G) stejně. `prev` je stav před posledním krokem –
  * kreslení mezi ním a `state` interpoluje.
  */
 
@@ -27,15 +28,20 @@ export interface ArcadeSnapshot {
   /** Uběhlá část trati 0..100 (%). */
   readonly progress: number;
   readonly distanceM: number;
+  /** Zbývající rány nebo hody (zásobník + záloha). */
+  readonly shots: number;
 }
 
 export interface ArcadeSession {
   readonly world: ArcadeWorld;
   state(): Int32Array;
   prev(): Int32Array;
-  press(buttons: number): void;
+  /** Stisk do nejbližšího tiku; `axis` (nenulová) platí jen pro ten tik. */
+  press(buttons: number, axis?: number): void;
   /** Držená osa −AXIS_MAX..AXIS_MAX (0 = puštěno). */
   hold(axis: number): void;
+  /** Držená tlačítka (nabíjení hodu, míření šipkami) – padnou do každého tiku, dokud se nepustí (0). */
+  holdButtons(buttons: number): void;
   /** Posune hodiny o `ms`; vrací podíl rozběhnutého tiku 0..1 pro interpolaci. */
   advance(ms: number): number;
   stepOnce(): void;
@@ -53,14 +59,22 @@ export interface ArcadeSession {
  * `waitForInput`: hodiny stojí až do prvního stisku (poletování – ptáček by
  * jinak spadl dřív, než hráč hru uvidí). První stisk padne do tiku 0, takže
  * záznam i přehrání jsou tytéž jako bez čekání.
+ *
+ * `swallowFirst` (načasování, rytmus, souboj – P25H): první stisk jen pustí
+ * hodiny a do záznamu nejde – ťuk v tiku 0 by u načasování byl minutím.
  */
-export function createArcadeSession(world: ArcadeWorld, { waitForInput = false }: { readonly waitForInput?: boolean } = {}): ArcadeSession {
+export function createArcadeSession(
+  world: ArcadeWorld,
+  { waitForInput = false, swallowFirst = false }: { readonly waitForInput?: boolean; readonly swallowFirst?: boolean } = {},
+): ArcadeSession {
   const program = loadProgram(world, ARCADE_LIBRARY);
   let state = instantiate(world);
   let prev = Int32Array.from(state);
   let log: InputEvent[] = [];
   let pending = 0;
+  let pendingAxis = 0;
   let held = 0;
+  let heldButtons = 0;
   let started = !waitForInput;
   let accumulator = 0;
   let cached: ArcadeSnapshot | null = null;
@@ -82,17 +96,33 @@ export function createArcadeSession(world: ArcadeWorld, { waitForInput = false }
     }
   };
 
+  /** Jeden tik ze sebraných stisků: osa stisku přebije drženou (klik = zamiř a vystřel, i když se pustí dřív, než tik padne). */
+  const flush = (): void => {
+    tickOnce(pending | heldButtons, pendingAxis !== 0 ? pendingAxis : held);
+    pending = 0;
+    pendingAxis = 0;
+  };
+
   const session: ArcadeSession = {
     world,
     state: () => state,
     prev: () => prev,
-    press: (buttons) => {
+    press: (buttons, axis = 0) => {
+      if (!started && swallowFirst && buttons !== 0) {
+        started = true;
+        return;
+      }
       pending |= buttons;
+      if (axis !== 0) pendingAxis = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
       if (buttons !== 0) started = true;
     },
     hold: (axis) => {
       held = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
       if (held !== 0) started = true;
+    },
+    holdButtons: (buttons) => {
+      heldButtons = buttons;
+      if (buttons !== 0) started = true;
     },
     advance: (ms) => {
       if (outcomeOf(state) !== 'running') return 1;
@@ -102,16 +132,14 @@ export function createArcadeSession(world: ArcadeWorld, { waitForInput = false }
       // Epsilon: 30 × (1000/60) v plovoucí čárce je o chlup pod 500 a tik by se ztratil.
       while (accumulator >= TICK_MS - 1e-6 && outcomeOf(state) === 'running') {
         accumulator -= TICK_MS;
-        tickOnce(pending, held);
-        pending = 0;
+        flush();
         stepped = true;
       }
       if (stepped) notify();
       return Math.min(1, accumulator / TICK_MS);
     },
     stepOnce: () => {
-      tickOnce(pending, held);
-      pending = 0;
+      flush();
       notify();
     },
     inputs: () => log,
@@ -128,6 +156,7 @@ export function createArcadeSession(world: ArcadeWorld, { waitForInput = false }
         // Cílová páska se protne přední stěnou, ne středem – výhra je vždy celá trať.
         progress: runState === 'won' ? 100 : world.length > 0 ? Math.min(99, Math.floor((z * 100) / world.length)) : 0,
         distanceM: Math.floor(z / UNIT),
+        shots: (state[HEADER.counters + COUNTER.ammo] as number) + (state[HEADER.counters + COUNTER.reserve] as number),
       };
       return cached;
     },
@@ -140,7 +169,9 @@ export function createArcadeSession(world: ArcadeWorld, { waitForInput = false }
       prev = Int32Array.from(state);
       log = [];
       pending = 0;
+      pendingAxis = 0;
       held = 0;
+      heldButtons = 0;
       started = !waitForInput;
       accumulator = 0;
       notify();

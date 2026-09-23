@@ -262,3 +262,83 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `sandbox`, `manipulate`, `idle`, `build_place`). Hra se publikuje dál; `closest` je hra, kterou
   návrh postavil místo toho („a collect-and-escape game“). Spec, verze ani hashe se nemění –
   `/play/[id]` hlášku počítá znovu z `origin.sentence` (u upgradu z rodiče) a ukáže proužek.
+
+## P25G
+
+- **Projektil v jádře** (23. 9. 2026, T1). Role `projectile` dostala chování; `arcade-v2` se
+  nezvedá, protože žádný kus ani fixtura před P25G projektil nestaví (běžec, plošinovka ani
+  poletování role nepoužívají) – hashe jejich světů i přehrání beze změny.
+  - **`BodyInit.lifetime?`** (tiky 1..`maxTicks`, výchozí `PROJECTILE_LIFETIME` = 180) a
+    **`bounce?`** (0..`BOUNCE_MAX` = 1000), jen pro roli `projectile`; `buildWorld` odmítne
+    jiný rozsah, tato pole u jiné role a kinematický projektil. Ve stavu: `aux0` = odraz,
+    `aux1` = zbývající život; efekt `spawn` je u projektilu z předlohy nenuluje.
+  - **Spouštěč pravidla `hit`**: projektil skončil – zásah živého `target`/`enemy`/pevného
+    těla (`other` = tělo), nebo zem bez odrazu, dokutálení či dohasnutí (`other` = −1). Jádro
+    projektil despawnuje samo; `RuleContext` má nově povinné `source` (projektil u `hit`,
+    jinak −1) – kód, který kontext skládá sám (testy), ho musí doplnit.
+  - **Hráč projektil nevidí:** `collide` role `projectile` přeskočí (ani zastavení, ani
+    kontakt), aby střela nezasáhla střelce. Nepřátelská střela na hráče zatím není.
+  - Pořadí tiku: … kolize hráče → projektily → pravidla (`contact`, `hit`, `tick`, `counter`).
+- **Čítače zbraně a efekt `count`** (23. 9. 2026, T2). `COUNTER` += `ammo` 2, `reserve` 3,
+  `cooldown` 4 (sloty hlavičky existovaly, jen neměly jméno); efekt `{ kind: 'count', counter,
+  amount }` přičte k čítači; `ArcadeLevel.counters?` nastaví počáteční hodnoty (kromě `health`,
+  to dál nese `BuildWorldInput.health`). Pravidla nemění stav sama, takže zásobník a přebíjení
+  bez efektu udělat nešlo. Stávající hry čítače 2–4 nečtou, hashe beze změny.
+- **Stohování `settle()`** (23. 9. 2026, T4). Nový krok tiku mezi integrací a kolizí: tělo
+  s gravitací (ne hráč, ne projektil, ne kinematické), které za tik propadlo horní hranou
+  živého pevného těla pod sebou, na ní přistane (`vy = 0`, `grounded`). Pořadí podle indexu,
+  věž se staví odspodu; zmizí-li podpora, tělo příští tik padá dál. Běžec, plošinovka ani
+  poletování nemají jiné tělo s gravitací než hráče, hashe beze změny.
+## P25F
+
+- **`GameSpec.control` += `'steer'`** (23. 9. 2026, T3, závod). `controlParams` závodu:
+  `{ difficulty?, lengthM? (200–800), rivals?, turbo?, drift? }`, všechna volitelná a bez
+  výchozích hodnot; sjednocení ve schématu je o `steerParamsSchema` delší. Hláška pro
+  parametry u mřížkové hry je teď „only an arcade game (runner, platform, flap, steer) takes
+  control parameters“. Jádro (`kernel.ts`, `contract.ts`) ani `ARCADE_RUNTIME_VERSION` se
+  nemění, hashe běžce, plošinovky, poletování i mřížkových her beze změny.
+- **Kusy v knihovně:** ovládání `steer`, generátor `steer_track`, robot `steer_bot`,
+  pravidlo `rival_finish` (`tick`: živé tělo role `enemy` přední hranou za `atZ` → prohra).
+  Ovládání `steer` nese v parametrech osu trati (`course`: konce úseků, středy, polovina
+  šířky) a podle ní v každém tiku nastaví boční rychlost kinematickým soupeřům – jádro nemá
+  krok, ve kterém by se hýbala cizí těla (Findings P25F). `aux0`/`aux1` hráče = tiky turba
+  a skóre, při kterém turbo naskočilo.
+- **Aréna – kusy v knihovně** (23. 9. 2026, T4): ovládání `move_free` (osa = jeden z 32
+  směrů z celočíselné tabulky, 0 = stát; šířka a hloubka hráče = `sizeOf(score)`, strop
+  6000; kinematické buňky role `enemy` vede ovládání – větší pronásledují, menší bloudí
+  a utíkají), generátor `arena` (`density`, `goal: grow | survive`, `seconds`), pravidla
+  `arena_eat` (`contact`: menší sníst = body + `despawn`, větší buňka = `lose` nebo se životy
+  `damage` + `respawn`), `grow_to` (`counter`: skóre ≥ `points` → výhra) a `survive_time`
+  (`tick`: dožít limit → výhra). Větší buňky generátor staví až nad hotovou potravou tak
+  daleko, aby hladová cesta vyrostla dřív, než dojedou. Ve specu ani kompilátoru zatím není.
+- **Robot `arena_bot`** (T5, zpoždění 8 tiků, parametr `half`): větší buňka do 5 m (okraj
+  k okraji) → utíká od ní a od stěny; jinak míří na nejbližší menší tělo, které neleží do 4 m
+  od větší buňky.
+- **`GameSpec.control` += `'move_free'`** (T6, aréna). `controlParams` arény:
+  `{ density?, goal? (grow | survive), seconds? (20–80) }`, volitelná a bez výchozích hodnot;
+  sjednocení ve schématu je o `arenaParamsSchema` delší, hláška pro parametry u mřížkové hry
+  jmenuje i `move_free`. Kompilátor: `arena` + `move_free` + `arena_bot`, pravidla
+  `arena_eat` a `grow_to` / `survive_time`, s mechanikou `health` i `out_of_health`.
+  Fixtura `src/play/arcade/__fixtures__/arena.json`.
+- **Cíl arény čte `arenaWinOf(spec)`** (revize fáze): `goal` z parametrů, bez něj časovač
+  s `onEnd: 'win'` = přežít tolik sekund, jinak růst; časovač s `onEnd: 'lose'` = vyrůst
+  včas (`time_limit`). `readGameSpec` odmítne růst s vítězným časovačem, `seconds` jiné
+  než vítězný časovač a přežití mimo 20–80 s. Remix `harder` u arény mění jen hustotu.
+## P25H
+
+- **`GameSpec.control` += `'timing' | 'rhythm' | 'duel'`** (T2–T4) s parametry
+  `timing {mode, speed, tolerance ≥ 100, rounds}`, `rhythm {bpm, density, beats}` a
+  `duel {difficulty}` – všechna pole volitelná, `specHash` starých her se nehne. Jádro
+  (`kernel.ts`, `contract.ts`) beze změny, `ARCADE_RUNTIME_VERSION` zůstává `arcade-v2`.
+- **Kusy v knihovně:** ovládání `timing` / `rhythm` / `duel`, generátory `timing_level` /
+  `rhythm_level` / `duel_arena`, roboti `timing_bot` / `rhythm_bot` / `duel_bot` (reakce 8 tiků)
+  a pravidlo **`judge`** sdílené všemi třemi: ovládání zapíše výsledek ťuku do `aux0` hráče
+  (body > 0, minutí −1), `z` hráče v metrech je počet splněných úkolů (kola, noty, zásahy) a
+  `goal` z nich = výhra. HUD proto u těchto her píše `rounds` / `notes` / `hits` místo metrů.
+- **Životy:** rytmus je zastropuje na čtvrtinu not (jinak by nečinný hráč písničku „přežil“),
+  souboj bez mechaniky `health` dá hráči 3; načasování bez `health` prohrává prvním minutím.
+- **Relace v prohlížeči** (T5): `createArcadeSession(world, { swallowFirst })` – u
+  načasování, rytmu a souboje hodiny stojí do prvního stisku a ten stisk do záznamu nejde
+  (ťuk v tiku 0 by u načasování byl minutím). Záznam i přehrání robota se nemění.
+- **Zvuk rytmu je mimo stav:** pípnutí na beat a tón při trefě hraje scéna z pozorovaného
+  stavu, M ho vypne; hash ani záznam na něm nezávisí.

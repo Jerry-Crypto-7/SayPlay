@@ -22,7 +22,7 @@ import { type Operation, applyPatch, createPatch } from 'rfc6902';
 
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
-import { difficultyHarder, hazardSwap, runnerHarder, runnerSwapObstacles, runnerTwist } from '../arcade/remix';
+import { aimHarder, aimSwap, beatHarder, difficultyHarder, hazardSwap, runnerHarder, runnerSwapObstacles, runnerTwist, targetSwap } from '../arcade/remix';
 import type { RemixClass } from '../contracts';
 import { ARCHETYPES, type MechanicId } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1, type GameRole } from '../spec';
@@ -257,10 +257,22 @@ export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1, accept
     else runnerSwapObstacles(child, pick);
     return createPatch(parent, child);
   }
-  if ((parent.control === 'platform' || parent.control === 'flap') && chip !== 'reskin') {
+  if ((parent.control === 'platform' || parent.control === 'flap' || parent.control === 'steer' || parent.control === 'move_free') && chip !== 'reskin') {
     if (chip === 'harder') difficultyHarder(child);
     else if (chip === 'twist') runnerTwist(child, pick, accept);
     else hazardSwap(child, pick);
+    return createPatch(parent, child);
+  }
+  if ((parent.control === 'shooter' || parent.control === 'throw') && chip !== 'reskin') {
+    if (chip === 'harder') aimHarder(child);
+    else if (chip === 'twist') runnerTwist(child, pick, accept);
+    else aimSwap(child, pick);
+    return createPatch(parent, child);
+  }
+  if ((parent.control === 'timing' || parent.control === 'rhythm' || parent.control === 'duel') && chip !== 'reskin') {
+    if (chip === 'harder') beatHarder(child);
+    else if (chip === 'twist') runnerTwist(child, pick, accept);
+    else targetSwap(child, pick);
     return createPatch(parent, child);
   }
   switch (chip) {

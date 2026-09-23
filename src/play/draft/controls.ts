@@ -1,19 +1,74 @@
 /**
- * Výběr ovládání ze slov (P25A T7, P25C T7): věta → `runner`, `platform`,
- * `flap`, nebo `null` (= dnešní `tap_go` bez pole `control`).
+ * Výběr ovládání ze slov (P25A T7, P25C T7, P25G T6): věta → `runner`,
+ * `platform`, `flap`, `throw`, `shooter`, nebo `null` (= dnešní `tap_go`
+ * bez pole `control`). Hod a střelba mají přednost před běžcem a plošinovkou:
+ * „shoot“ nebo „throw“ ve větě říká, co hráč dělá, „run“ a „jump“ ne.
  *
  * Silné narážky (žánr, známý titul) stačí samy. Slabé („run“, „jump“,
  * „dodge“) se sčítají a běžce dají až dvě – jedno slovo samo je v korpusu
  * i u plošinovek, přechodů a načasovaných her („ski jumping“, „dodging
  * ghosts“). Přednost: poletování > silný běžec > silná plošinovka > slabý
  * běžec > slabá plošinovka – „endless runner“ zůstává běžcem, i když skáče.
+ * Řízení (`steer`) a aréna (`move_free`, P25F) mají jen silné narážky a stojí
+ * hned za silným běžcem.
  * Hustotu a obtížnost čte jen z kvantifikátorů; co věta neřekne, doplní
  * generátor svým výchozím.
+ *
+ * P25H: rytmus, souboj a načasování mají jen silné narážky (žánr, titul,
+ * sloveso hry) a jdou hned za poletováním – „tap to the beat“ ani „time
+ * your jumps“ nejsou skákačka, „sword fighting with ninjas“ není běh.
  */
 
+import type { ArenaDensity } from '../arcade/pieces/arena';
+import type { DuelDifficulty } from '../arcade/pieces/duel';
 import type { FlapDifficulty } from '../arcade/pieces/flap';
 import type { PlatformDifficulty } from '../arcade/pieces/platform';
+import type { RhythmDensity } from '../arcade/pieces/rhythm';
 import type { RunnerDensity } from '../arcade/pieces/runner';
+import type { ShooterDifficulty } from '../arcade/pieces/shooter';
+import type { SteerDifficulty } from '../arcade/pieces/steer';
+import type { ThrowDifficulty, ThrowGoal } from '../arcade/pieces/throw';
+import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
+
+const RHYTHM_CUES: readonly RegExp[] = [
+  /\brhythm\b/,
+  /\b(?:to|with|on) the beat\b/,
+  /\bbeat saber\b/,
+  /\bpiano tiles\b/,
+  /\bguitar hero\b/,
+  /\bmusic game\b/,
+  /\bto (?:the )?music\b/,
+  /\bdanc(?:e|es|ing)\b/,
+  /\bdrumm(?:er|ing)\b/,
+  /\bdisco\b/,
+];
+
+// Holé „fight“ a „ninja“ jsou moc široké („fight the boss“, „ninja running on
+// rooftops“, „water gun fight“) – jen spojení, která znamenají souboj zblízka.
+const DUEL_CUES: readonly RegExp[] = [
+  /\bfight(?:s|ing)? (?:game|match|with|against)\b/,
+  /\b(?:sword|stickman|pillow|fist|street|ninja|samurai) ?fight/,
+  /\bduel\b(?!.*\bshoot)/,
+  /\bbox(?:ing|er)\b/,
+  /\bkarate\b/,
+  /\bkung fu\b/,
+  /\bdodge and (?:strike|hit|punch)\b/,
+];
+
+const TIMING_CUES: readonly RegExp[] = [
+  /\bstack(?:s|ing)?\b/,
+  // „tower of moving platforms“ je plošinovka – jen věž, která se staví.
+  /\b(?:tallest|highest)\b[a-z ]* tower\b/,
+  /\b(?:at )?the right (?:time|moment)\b/,
+  /\bperfect timing\b/,
+  /\btime your\b/,
+  /\bstop the (?:bar|moving|block|needle)\b/,
+  /\bhelix\b/,
+  /\bcut the rope\b/,
+  /\b(?:grow|build) a bridge\b/,
+  /\bfishing\b/,
+  /\bcatch it on\b/,
+];
 
 const STRONG_CUES: readonly RegExp[] = [
   /\bend+les+ runner\b/,
@@ -48,6 +103,47 @@ const GRID_CUES: readonly RegExp[] = [
 
 const FLAP_CUES: readonly RegExp[] = [/\bflapp?(?:y|s|ing)?\b/, /\btap to fly\b/, /\bbird\b.*\bpipes?\b/, /\bfly (?:through|between) (?:the )?(?:pipes|gaps)\b/];
 
+// Hod před střelbou: „slingshot“ a „trick shots“ nejsou střílečka. Házení nožů
+// na točící se kládu a „toss and catch“ jsou v korpusu načasování, kutálející
+// se sněhová koule řízení.
+const THROW_CUES: readonly RegExp[] = [
+  /(?<!knife )\b(?:throw|throws|throwing)\b/,
+  /\b(?:toss|tosses|tossing)\b(?!.*\bcatch)/,
+  /\bsling ?shots?\b/,
+  /\bsling\b/,
+  /\bcatapult\b/,
+  /\bangry birds\b/,
+  // Samotné „hoops“ ne: „fly a paper plane through four hoops“ je závod přes checkpointy.
+  /\bbasketball\b/,
+  /\bknock(?:s|ing)? (?:down|over)\b/,
+  /\bbowling\b/,
+  /\bpenalty (?:kicks?|shots?)\b/,
+  /\bdarts?\b/,
+  /\blaunch\w* .*\bfrom a cannon\b/,
+];
+
+// „auto shooting“ (vampire survivors) je volný pohyb – střílí se samo.
+const SHOOTER_CUES: readonly RegExp[] = [
+  /(?<!auto[- ])\bshoot(?:s|ing|er|ers)?\b(?! stars?)/,
+  /\bguns?\b/,
+  /\bsniper\b/,
+  /\barchery\b/,
+  /\bbow and arrows?\b/,
+  /\barrows?\b/,
+  /\bfps\b/,
+  /\bkrunker\b/,
+  /\btanks? (?:battle|war|fight)s?\b/,
+  /\baim(?:s|ing)? (?:at|and)\b/,
+  /\btower defen[cs]e\b/,
+  /\bzombie waves?\b/,
+  /\bwaves? of (?:zombies|enemies|aliens|robots)\b/,
+  /\bspace invaders\b/,
+];
+
+// Co se hází: koš, věž k sestřelení, jinak podle semínka.
+const HOOP_CUES = /\b(?:basketball|hoops?|free throws?|trash can|bin|bucket)\b/;
+const TOWER_CUES = /\b(?:angry birds|knock(?:s|ing)? (?:down|over)|towers?|boxes|bowling|pins|cans)\b/;
+
 const PLATFORM_STRONG: readonly RegExp[] = [
   /\bplatformer\b/,
   /\bplatform game\b/,
@@ -70,7 +166,51 @@ const PLATFORM_STRONG: readonly RegExp[] = [
 // „hill climb racing“ je řízení.
 const PLATFORM_WEAK: readonly RegExp[] = [/(?<!hill )\bclimb(?:s|ing)?\b/, /\bbounc(?:e|es|ing)\b/, /\bspikes?\b/];
 
-const HIGH_DENSITY = /\b(?:a lot of|lots of|many|tons of|loads of|full of|everywhere|hard|super hard)\b/;
+// Řízení (P25F): vozidlo, závod, letadlo. „drive out / drive cars“ je v korpusu
+// posouvačka a GTA, „food truck“ vaření, „park“ místo – proto ty výjimky.
+const STEER_CUES: readonly RegExp[] = [
+  /\brac(?:e|es|ing|er|ers)\b/,
+  /\bdriving\b/,
+  /\bdrive (?:a|an|the|your|my) /,
+  /\bkart\b/,
+  /\bdrift\w*/,
+  /\bpark(?:ing)? (?:game|without)\b/,
+  /\bbumper cars?\b/,
+  /\b(?:plane|airplane|pilot)s?\b/,
+  /\bfly (?:a|an|the) /,
+  /\b(?:(?<!food )truck|motorbike|motorcycle|scooter|sled|boat|kayak)s?\b/,
+  /\bon wheels\b/,
+  /\bformula 1\b/,
+  /\brocket league\b/,
+  /\bsurf(?:er|ing)\b/,
+  /\bsteer\w*/,
+  /\broll(?:s|ing)? (?:down|through)\b/,
+];
+
+// Závod branami nebo obručemi v pořadí je mřížkový `checkpoint_race` (zlatá sada).
+const GATE_RACE = /\b(?:gates?|hoops?|rings?|checkpoints?|in (?:the right )?order)\b/;
+
+// Aréna (P25F): jíst menší a růst, io hry, strkanice. „grow a bridge / a garden“
+// je načasování a idle, „gets bigger then“ běžec s davem, „hungry seal“ honička.
+const ARENA_CUES: readonly RegExp[] = [
+  /\bagar\b/,
+  /\bslither\b/,
+  /\bpaper ?io\b/,
+  /\beat(?:s|ing)? (?:smaller|everything)\b/,
+  /\bsmaller (?:fish|cells?|ones)\b/,
+  /\bbigger the more\b/,
+  /\b(?:grow|grows|growing)\b(?! (?:a|an|the|your|my) )/,
+  /\bswallow\w*/,
+  /\bsnake game\b/,
+  /\bsumo\b/,
+  /\bbattle royale\b/,
+  /\bbump\w* (?:other|everyone)/,
+  /\bpush everyone\b/,
+  /\bsurvive (?:the )?(?:swarm|waves)\b/,
+  /\barena\b/,
+];
+
+const HIGH_DENSITY =/\b(?:a lot of|lots of|many|tons of|loads of|full of|everywhere|hard|super hard)\b/;
 const LOW_DENSITY = /\b(?:few|easy|simple|chill|relaxing|calm)\b/;
 
 export type ControlChoice =
@@ -81,7 +221,14 @@ export type ControlChoice =
       readonly movingPlatforms: boolean;
       readonly doubleJump: boolean;
     }
-  | { readonly control: 'flap'; readonly difficulty: FlapDifficulty | null };
+  | { readonly control: 'flap'; readonly difficulty: FlapDifficulty | null }
+  | { readonly control: 'steer'; readonly difficulty: SteerDifficulty | null; readonly drift: boolean }
+  | { readonly control: 'move_free'; readonly density: ArenaDensity | null }
+  | { readonly control: 'shooter'; readonly difficulty: ShooterDifficulty | null }
+  | { readonly control: 'throw'; readonly difficulty: ThrowDifficulty | null; readonly goal: ThrowGoal | null }
+  | { readonly control: 'timing'; readonly mode: TimingMode; readonly speed: TimingSpeed | null }
+  | { readonly control: 'rhythm'; readonly density: RhythmDensity | null }
+  | { readonly control: 'duel'; readonly difficulty: DuelDifficulty | null };
 
 export function runnerScore(text: string): number {
   if (STRONG_CUES.some((cue) => cue.test(text))) return 2;
@@ -101,9 +248,30 @@ const difficultyOf = (text: string): 'easy' | 'hard' | null => (HIGH_DENSITY.tes
 /** `text` je věta malými písmeny. */
 export function pickControl(text: string): ControlChoice | null {
   if (FLAP_CUES.some((cue) => cue.test(text))) return { control: 'flap', difficulty: difficultyOf(text) };
+  const level = difficultyOf(text);
+  if (RHYTHM_CUES.some((cue) => cue.test(text))) return { control: 'rhythm', density: level === 'hard' ? 'dense' : level === 'easy' ? 'sparse' : null };
+  // Souboj zblízka před hodem a střelbou: „throw punches“ i „gun fight“ jsou souboj,
+  // a narážky souboje jsou úzké (holé „fight“ mezi nimi není).
+  if (DUEL_CUES.some((cue) => cue.test(text))) return { control: 'duel', difficulty: level };
+  // Výslovný žánr plošinovky přebije hod i střelbu („a tower defense platformer“).
+  const platformer = /\bplatform(?:er| game)\b/.test(text);
+  if (!platformer && THROW_CUES.some((cue) => cue.test(text))) {
+    return { control: 'throw', difficulty: difficultyOf(text), goal: HOOP_CUES.test(text) ? 'hoop' : TOWER_CUES.test(text) ? 'tower' : null };
+  }
+  if (!platformer && SHOOTER_CUES.some((cue) => cue.test(text))) return { control: 'shooter', difficulty: difficultyOf(text) };
+  if (TIMING_CUES.some((cue) => cue.test(text))) {
+    const mode = /\b(?:bridge|rope)\b/.test(text) ? 'bridge' : /\b(?:stack|stacks|stacking|tower|pile)\b/.test(text) ? 'stack' : 'precision';
+    return { control: 'timing', mode, speed: level === 'hard' ? 'fast' : level === 'easy' ? 'slow' : null };
+  }
   const runner = runnerScore(text);
   const platform = platformScore(text);
   const strongRunner = STRONG_CUES.some((cue) => cue.test(text));
+  // Řízení před arénou: „bumper cars arena“ je řízení, sněhová koule, která „gets
+  // bigger“, taky. Silný běžec má přednost („subway surfers“).
+  if (!strongRunner && !GATE_RACE.test(text) && STEER_CUES.some((cue) => cue.test(text))) return { control: 'steer', difficulty: difficultyOf(text), drift: /\bdrift/.test(text) };
+  if (!strongRunner && ARENA_CUES.some((cue) => cue.test(text))) {
+    return { control: 'move_free', density: HIGH_DENSITY.test(text) ? 'dense' : LOW_DENSITY.test(text) ? 'sparse' : null };
+  }
   if (!strongRunner && (platform === 2 || (runner < 2 && platform === 1))) {
     return { control: 'platform', difficulty: difficultyOf(text), movingPlatforms: /\bmoving platforms?\b/.test(text), doubleJump: /\bdouble jump/.test(text) };
   }

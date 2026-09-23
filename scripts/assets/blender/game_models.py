@@ -1007,6 +1007,160 @@ def track_tile():
             cyl("glow-yellow", 0.035, 0.02, (side * (width / 2 + 0.04), y, 0.105))
 
 
+# ---- vlna 2 (P25F/G/H): řízení, aréna, projektily; id čte arkádové jádro
+
+
+def _car(body, stripe):
+    """Závodní auto 1 × 1,8 m: nízká karoserie, kabina, spoiler, čtyři kola."""
+    box(body, (0.9, 1.7, 0.28), (0, 0, 0.3), bevel=0.06)
+    box(body, (0.7, 0.5, 0.12), (0, -0.62, 0.36), bevel=0.04)
+    box("sky", (0.62, 0.62, 0.22), (0, 0.1, 0.52), bevel=0.06)
+    box(stripe, (0.16, 1.72, 0.02), (0, 0, 0.45))
+    for side in (-1, 1):
+        box("black", (0.05, 0.1, 0.22), (side * 0.36, 0.78, 0.55))
+        for y in (-0.55, 0.55):
+            cyl("rubber", 0.2, 0.16, (side * 0.46, y, 0.2), rot=(0, 90, 0))
+            cyl("steel", 0.09, 0.17, (side * 0.46, y, 0.2), rot=(0, 90, 0))
+        ball("glow-yellow", 0.05, (side * 0.28, -0.86, 0.34), scale=(1.2, 0.5, 0.8))
+    box("black", (0.95, 0.18, 0.04), (0, 0.8, 0.72))
+
+
+@model(
+    "race-car",
+    "Red race car",
+    ["car", "cars", "racecar", "race-car", "kart", "karts", "go-kart", "vehicle"],
+)
+def race_car():
+    _car("red-cloth", "white")
+
+
+@model(
+    "rival-car",
+    "Blue rival car",
+    ["rival", "rivals", "opponent", "opponents", "racer", "racers"],
+)
+def rival_car():
+    _car("blue", "yellow")
+
+
+@model(
+    "plane",
+    "Propeller plane",
+    ["plane", "planes", "airplane", "aeroplane", "aircraft", "pilot", "biplane"],
+)
+def plane():
+    cyl("orange", 0.2, 1.5, (0, 0, 0.45), rot=(90, 0, 0), top=0.1)
+    ball("orange", 0.2, (0, -0.75, 0.45), scale=(1, 0.7, 1))
+    box("sky", (0.24, 0.3, 0.16), (0, -0.2, 0.62), bevel=0.05)
+    box("white", (1.8, 0.4, 0.05), (0, -0.25, 0.42), bevel=0.02)
+    box("white", (0.7, 0.22, 0.04), (0, 0.62, 0.5), bevel=0.01)
+    box("orange", (0.04, 0.24, 0.3), (0, 0.66, 0.66))
+    for side in (-1, 1):
+        box("red-cloth", (0.3, 0.41, 0.06), (side * 0.78, -0.25, 0.42))
+    # vrtule a podvozek
+    box("dark-grey", (0.7, 0.03, 0.08), (0, -0.98, 0.45))
+    cyl("dark-grey", 0.06, 0.08, (0, -0.95, 0.45), rot=(90, 0, 0))
+    for side in (-1, 1):
+        cyl("dark-grey", 0.02, 0.26, (side * 0.18, -0.35, 0.18))
+        cyl("rubber", 0.08, 0.06, (side * 0.18, -0.35, 0.08), rot=(0, 90, 0))
+
+
+@model(
+    "rocket",
+    "Little rocket",
+    ["rocket", "rockets", "spaceship", "spaceships", "starship", "missile"],
+)
+def rocket():
+    # stojí na ploutvích, špička nahoru; v letu ho scéna nakloní dopředu
+    cyl("white", 0.22, 1.0, (0, 0, 0.75))
+    cyl("red-cloth", 0.22, 0.45, (0, 0, 1.47), top=0.0)
+    cyl("sky", 0.09, 0.04, (0, -0.21, 0.95), rot=(90, 0, 0))
+    cyl("dark-steel", 0.17, 0.12, (0, 0, 0.2), top=0.22)
+    cyl("glow-orange", 0.12, 0.18, (0, 0, 0.08), top=0.16)
+    for angle in (0, 120, 240):
+        rad = math.radians(angle)
+        box(
+            "red-cloth",
+            (0.04, 0.26, 0.4),
+            (math.sin(rad) * 0.3, math.cos(rad) * 0.3, 0.35),
+            rot=(0, 0, -angle),
+        )
+
+
+@model(
+    "tire-barrier",
+    "Tire barrier",
+    ["tire", "tires", "tyre", "tyres", "wall", "guardrail", "bumper"],
+)
+def tire_barrier():
+    # řada pneumatik po dvou na sobě, 2 m dlouhá; mantinel trati. Podložka
+    # určuje obrys, ať se obrys LOD1 (hrubší prstence) nevejde mimo katalog.
+    box("dark-grey", (2.1, 0.6, 0.02), (0, 0, 0.01))
+    for x in (-0.75, -0.25, 0.25, 0.75):
+        for z in (0.1, 0.28):
+            ring("rubber", 0.18, 0.1, (x, 0, z))
+        cyl("red-cloth" if x in (-0.75, 0.25) else "white", 0.13, 0.36, (x, 0, 0.2))
+
+
+@model(
+    "cell",
+    "Glowing cell",
+    ["cell", "cells", "bubble", "bubbles", "amoeba", "germ", "germs", "microbe"],
+)
+def cell():
+    ball("glow-teal", 0.5, (0, 0, 0.3), scale=(1, 1, 0.6))
+    ball("green", 0.18, (0.12, -0.08, 0.5), scale=(1, 1, 0.7))
+    for angle in range(0, 360, 60):
+        rad = math.radians(angle)
+        ball("slime", 0.06, (math.cos(rad) * 0.38, math.sin(rad) * 0.38, 0.42))
+    eyes(0.45, -0.42, 0.12, 0.06)
+
+
+@model(
+    "target",
+    "Bullseye target",
+    ["bullseye", "targets", "dartboard", "archery", "shooting-target"],
+)
+def target():
+    # terč na stojanu, líc míří dopředu (-Y)
+    for radius, mat, y in (
+        (0.5, "white", 0.0),
+        (0.4, "red-cloth", -0.02),
+        (0.28, "white", -0.04),
+        (0.16, "red-cloth", -0.06),
+        (0.06, "gold", -0.08),
+    ):
+        cyl(mat, radius, 0.06, (0, y, 0.95), rot=(90, 0, 0))
+    for side in (-1, 1):
+        box("wood", (0.06, 0.06, 1.0), (side * 0.3, 0.12, 0.45), rot=(-12, 0, 0))
+    box("wood", (0.06, 0.06, 0.9), (0, 0.35, 0.42), rot=(25, 0, 0))
+
+
+@model(
+    "wood-block",
+    "Wooden block",
+    ["block", "blocks", "plank", "planks", "brick", "bricks", "tower", "jenga"],
+)
+def wood_block():
+    box("light-wood", (1.0, 0.5, 0.5), (0, 0, 0.25), bevel=0.02)
+    for x in (-0.33, 0.33):
+        box("wood", (0.03, 0.51, 0.51), (x, 0, 0.25))
+    # suky – oblé, ať LOD1 zlevní
+    for x, z in ((-0.15, 0.35), (0.2, 0.14)):
+        cyl("wood", 0.03, 0.02, (x, -0.255, z), rot=(90, 0, 0))
+
+
+@model(
+    "ball",
+    "Striped ball",
+    ["ball", "balls", "football", "soccer", "basketball", "beachball", "dodgeball"],
+)
+def ball_model():
+    ball("white", 0.3, (0, 0, 0.3))
+    ring("red-cloth", 0.295, 0.02, (0, 0, 0.3), rot=(90, 0, 0))
+    ring("blue", 0.295, 0.02, (0, 0, 0.3), rot=(0, 90, 0))
+
+
 # ---------------------------------------------------------------- export
 def clear_scene():
     bpy.ops.object.select_all(action="SELECT")

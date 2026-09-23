@@ -1,0 +1,79 @@
+{
+  "schema": "gamespec.v1",
+  "control": "timing",
+  "controlParams": {
+    "mode": "stack",
+    "speed": "normal",
+    "rounds": 8
+  },
+  "title": "Tower Stack",
+  "archetype": "hazard_crossing",
+  "targetDurationSec": 45,
+  "theme": {
+    "setting": "a windy hilltop at sunset",
+    "mood": "cheerful"
+  },
+  "objective": {
+    "kind": "reach",
+    "description": "Stop each swinging block over the tower. Stack eight to reach the top.",
+    "role": "finish"
+  },
+  "mechanics": [
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "miss",
+        "effect": "lose"
+      }
+    },
+    {
+      "id": "zone_trigger",
+      "params": {
+        "role": "finish",
+        "when": "enter",
+        "effect": "win"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "crane"
+    },
+    {
+      "id": "block",
+      "kind": "collectible",
+      "label": "block",
+      "count": 8
+    },
+    {
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed drop"
+    },
+    {
+      "id": "finish",
+      "kind": "exit",
+      "label": "top of the tower"
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Stop each block over the tower. Stack 8 to win.",
+    "controlsHint": "Tap or Space to drop the block."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

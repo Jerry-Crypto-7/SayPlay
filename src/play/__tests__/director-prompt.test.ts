@@ -42,15 +42,37 @@ describe('director prompt', () => {
     for (const forbidden of ['projectile', 'moving_platform']) expect(request.system).not.toContain(forbidden);
   });
 
-  // Po sloučení vlny 1: 11 453 B (P25D) + plošinovka a poletování (P25C) = 11 558 B.
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 558 B)', () => {
+  // Po sloučení vlny 1: 11 558 B. Vlna 2 přidala sedm ovládání (P25F řízení a aréna,
+  // P25G střelba a hod, P25H načasování, rytmus a souboj); s popisem každého zvlášť
+  // by to bylo 12 068 B, tedy přes strop. Řádek ovládání proto říká legendou jednou,
+  // co se opakovalo u každého (role `player` a `finish`, slovo `controlParams`):
+  // 11 963 B. Do stropu zbývá 37 B, takže další ovládání se do téhle podoby nevejde –
+  // vlna 3 musí řádek generovat z tabulky, ne ho psát ručně.
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 963 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_600);
+    expect(max).toBeLessThanOrEqual(11_975);
+  });
+
+  // Zlaté věty vedou všechny na mřížku, arkádové fixtury tak strop neměřil nikdo.
+  // Naměřeno 23. 9. 2026: 11 286–11 672 B, nejdelší je rytmus.
+  it.each([
+    'car racing game',
+    'like agar.io but you are a fish eating smaller fish',
+    'zombie shooter in a mall',
+    'throw a basketball into a hoop from crazy angles',
+    'stack blocks as high as you can',
+    'tap to the beat with glowing tiles',
+    'boxing match against a kangaroo',
+  ])('stays under 12 000 bytes for the arcade draft of "%s"', (sentence) => {
+    const draft = draftGameSpec(sentence);
+    expect(draft.control).toBeDefined();
+    const request = buildDirectorRequest(sentence, draft);
+    expect(Buffer.byteLength(request.system + request.user)).toBeLessThanOrEqual(12_000);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

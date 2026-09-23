@@ -1,6 +1,6 @@
 /**
  * Arkádová cesta kompilátoru (P25A, T5; P25C, T5): `GameSpec` s `control`
- * `runner` / `platform` / `flap` + seed → `ArcadeWorld` a `CompiledGame`.
+ * `runner` / `platform` / `flap` / `shooter` / `throw` + seed → `ArcadeWorld` a `CompiledGame`.
  *
  * Ze specu se čte ovládání a jeho parametry a dvě koření z registru mechanik:
  * `health` (náraz ubere život místo prohry) a `timer` s `onEnd: 'lose'`
@@ -11,14 +11,21 @@
 
 import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
-import type { GameSpecV1 } from '@/play/spec';
+import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeLevel, type ArcadeWorld, type PieceRef } from './contract';
 import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
+import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformLevel, platformRules } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
+import { duelParts } from './pieces/duel';
+import { rhythmParts } from './pieces/rhythm';
+import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
+import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
+import { throwField, throwRules } from './pieces/throw';
+import { timingParts } from './pieces/timing';
 import { runBot } from './verify';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
@@ -32,9 +39,16 @@ interface ArcadeParts {
   readonly bot: PieceRef;
   readonly level: ArcadeLevel;
   readonly rules: PieceRef[];
+  /** Úroveň neprošla kontrolou hratelnosti z konstrukce – svět se nestaví. */
+  readonly issues?: readonly string[];
+  /** Životy, které ovládání samo určí (rytmus je zastropuje, souboj bez nich nejde). */
+  readonly health?: number;
 }
 
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
+  if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
+  if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
+  if (spec.control === 'duel') return duelParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'platform') {
     const params = platformLevel.params.parse({ ...spec.controlParams });
     return {
@@ -44,9 +58,30 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
       rules: platformRules(params, health),
     };
   }
+  if (spec.control === 'steer') {
+    const params = steerTrack.params.parse({ ...spec.controlParams });
+    const level = steerTrack.generate(seed, params);
+    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level) };
+  }
+  if (spec.control === 'move_free') {
+    // `readGameSpec` už odmítl spec, kde by cíl a časovač nesouhlasily.
+    const win = arenaWinOf(spec);
+    const params = arenaLevel.params.parse({ ...spec.controlParams, ...('goal' in win ? win : {}) });
+    const level = arenaLevel.generate(seed, params);
+    return { control: arenaControlRef(), bot: arenaBotRef(), level, rules: arenaRules(level, params, health) };
+  }
   if (spec.control === 'flap') {
     const params = flapTrack.params.parse({ ...spec.controlParams });
     return { control: { id: 'flap', params: {} }, bot: { id: 'flap_bot', params: {} }, level: flapTrack.generate(seed, params), rules: flapRules(health) };
+  }
+  if (spec.control === 'shooter') {
+    const params = shooterRange.params.parse({ ...spec.controlParams });
+    return { control: { id: 'shooter', params: {} }, bot: shooterBotRef(params), level: shooterRange.generate(seed, params), rules: shooterRules(params, health) };
+  }
+  if (spec.control === 'throw') {
+    // Hod nemá čím ubrat život: `health` se nečte, prohra je „hody došly“.
+    const params = throwField.params.parse({ ...spec.controlParams });
+    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules() };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams });
   const rules: PieceRef[] = [
@@ -62,10 +97,13 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
 export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult {
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max;
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
-  const { control, bot, level, rules } = partsOf(spec, seed, health);
+  const parts = partsOf(spec, seed, health);
+  const { control, bot, level, rules, issues } = parts;
+  if (issues !== undefined && issues.length > 0) return { ok: false, issues };
+  const lives = 'health' in parts ? parts.health : health;
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
 
-  const built = buildWorld({ seed, control, rules, bot, level, ...(health === undefined ? {} : { health }) }, ARCADE_LIBRARY);
+  const built = buildWorld({ seed, control, rules, bot, level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);
   return built.ok ? { ok: true, world: built.world } : built;
 }
 
