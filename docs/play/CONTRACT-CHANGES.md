@@ -285,3 +285,6 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   `damage` + `respawn`), `grow_to` (`counter`: skóre ≥ `points` → výhra) a `survive_time`
   (`tick`: dožít limit → výhra). Větší buňky generátor staví až nad hotovou potravou tak
   daleko, aby hladová cesta vyrostla dřív, než dojedou. Ve specu ani kompilátoru zatím není.
+- **Robot `arena_bot`** (T5, zpoždění 8 tiků, parametr `half`): větší buňka do 5 m (okraj
+  k okraji) → utíká od ní a od stěny; jinak míří na nejbližší menší tělo, které neleží do 4 m
+  od větší buňky.

@@ -5,6 +5,7 @@
 
 import type { ArcadeLibrary } from './kernel';
 import { arenaEat, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
+import { arenaBot } from './pieces/arena-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
 import { platformControl, platformLevel } from './pieces/platform';
@@ -19,5 +20,5 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { runner: runnerControl, platform: platformControl, flap: flapControl, steer: steerControl, move_free: moveFreeControl },
   rules: { ...RULES, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime },
   generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack, steer_track: steerTrack, arena: arenaLevel },
-  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot, steer_bot: steerBot },
+  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot, steer_bot: steerBot, arena_bot: arenaBot },
 };

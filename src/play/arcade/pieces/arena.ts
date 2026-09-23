@@ -383,6 +383,10 @@ export function arenaControlRef(): PieceRef {
   return { id: 'move_free', params: { half: ARENA.half } };
 }
 
+export function arenaBotRef(): PieceRef {
+  return { id: 'arena_bot', params: { half: ARENA.half } };
+}
+
 /** Pravidla arény: jíst a být sněden, výhra růstem nebo přežitím; se životy prohra až po posledním. */
 export function arenaRules(level: ArcadeLevel, params: Pick<ArenaParams, 'goal' | 'seconds'>, health?: number): PieceRef[] {
   const rules: PieceRef[] = [{ id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage' } }];
