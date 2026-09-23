@@ -18,7 +18,7 @@
  * Funkce mění `child` na místě; záplatu z něj staví `remixPatch`.
  */
 
-import type { GameSpecV1 } from '../spec';
+import { type GameSpecV1, arenaWinOf } from '../spec';
 
 import { ARENA_DENSITIES, arenaLevel } from './pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK, flapTrack } from './pieces/flap';
@@ -62,13 +62,14 @@ export function runnerHarder(child: GameSpecV1): boolean {
   return true;
 }
 
-/** Aréna: hustší, jinak (cíl přežít) delší limit; hustá aréna s cílem růst už těžší není. */
+/**
+ * Aréna: jen hustší. Delší přežití by muselo přepsat časovač, cíl i text
+ * najednou – hustá aréna už těžší není.
+ */
 function arenaHarder(child: GameSpecV1): boolean {
-  const params = arenaLevel.params.parse({ ...child.controlParams });
-  const density = next(ARENA_DENSITIES, params.density);
-  const change = density !== null ? { density } : params.goal === 'survive' && params.seconds < 80 ? { seconds: Math.min(80, params.seconds + 10) } : null;
-  if (change === null) return false;
-  child.controlParams = { ...child.controlParams, ...change };
+  const density = next(ARENA_DENSITIES, arenaLevel.params.parse({ ...child.controlParams }).density);
+  if (density === null) return false;
+  child.controlParams = { ...child.controlParams, density };
   return true;
 }
 
@@ -111,6 +112,8 @@ function withHealth(child: GameSpecV1): GameSpecV1 | null {
 
 function withTimer(child: GameSpecV1): GameSpecV1 | null {
   if (child.mechanics.some((m) => m.id === 'timer')) return null;
+  // Aréna na přežití už na čas vyhrává; limit „vyrůst do N s“ by jí lhal.
+  if (child.control === 'move_free' && (arenaWinOf(child) as { goal?: string }).goal === 'survive') return null;
   const probe = structuredClone(child);
   probe.mechanics.push({ id: 'timer', params: { id: 'clock', seconds: child.targetDurationSec, onEnd: 'lose' } });
   probe.objective.description = `${TIMER_LINE[child.control ?? 'runner'] ?? 'Reach the finish line within'} ${String(child.targetDurationSec)} seconds.`;

@@ -61,11 +61,30 @@ describe('aréna – robot a ověření', () => {
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     expect(compiled.value.arcade?.control.id).toBe('move_free');
     expect(compiled.value.arcade?.bot.id).toBe('arena_bot');
-    expect(compiled.value.arcade?.rules.map((rule) => rule.id)).toEqual(['arena_eat', 'grow_to']);
+    // Časovač končící prohrou = vyrůst včas.
+    expect(compiled.value.arcade?.rules.map((rule) => rule.id)).toEqual(['arena_eat', 'grow_to', 'time_limit']);
     const report = reportFor(compiled.value);
     expect(report.keypoints.filter((keypoint) => !keypoint.passed)).toEqual([]);
     expect(report.publishEligible).toBe(true);
     expect(readGameSpec({ ...arenaFixture, controlParams: { density: 'dense', drift: true } }).ok).toBe(false);
+  });
+
+  // Nález revize fáze P25F: cíl arény se bral jen z `goal`, časovač výhry kompilátor zahodil.
+  it('časovač končící výhrou = přežít tak dlouho; rozpor cíle a časovače spec odmítne', () => {
+    const timer = (seconds: number, onEnd: string) => ({ id: 'timer', params: { id: 'clock', seconds, onEnd } });
+    const survive = { ...arenaFixture, controlParams: { density: 'normal' }, mechanics: [timer(30, 'win'), arenaFixture.mechanics[1]!] };
+    const read = readGameSpec(survive);
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    const compiled = compileGame(read.value, 1);
+    if (!compiled.ok) throw new Error(compiled.issues.join('; '));
+    expect(compiled.value.arcade?.rules).toContainEqual({ id: 'survive_time', params: { seconds: 30 } });
+    const reject = (spec: unknown) => {
+      const result = readGameSpec(spec);
+      return result.ok ? '' : result.issues.join();
+    };
+    expect(reject({ ...survive, controlParams: { goal: 'grow' } })).toMatch(/cannot also win on a timer/);
+    expect(reject({ ...survive, controlParams: { goal: 'survive', seconds: 20 } })).toMatch(/20 s but the winning timer says 30 s/);
+    expect(reject({ ...survive, mechanics: [timer(120, 'win')] })).toMatch(/20–80 s, not 120/);
   });
 
   it('hráč od začátku nejmenší a bez potravy neprojde', () => {

@@ -14,7 +14,7 @@
   },
   "objective": {
     "kind": "survive",
-    "description": "Eat smaller fish to grow, keep away from bigger ones, and outgrow them all.",
+    "description": "Eat smaller fish to grow, keep away from bigger ones, and outgrow them all within 40 seconds.",
     "seconds": 40
   },
   "mechanics": [
@@ -23,7 +23,7 @@
       "params": {
         "id": "clock",
         "seconds": 40,
-        "onEnd": "win"
+        "onEnd": "lose"
       }
     },
     {
@@ -54,7 +54,7 @@
     }
   ],
   "tutorial": {
-    "goalLine": "Eat smaller fish and grow bigger than every hunter.",
+    "goalLine": "Outgrow every hunter within 40 seconds.",
     "controlsHint": "Drag or arrows to swim. You are blue: eat yellow and green, flee red."
   },
   "verification": [

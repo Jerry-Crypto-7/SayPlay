@@ -141,6 +141,9 @@ describe('race and arena remix chips (P25F)', () => {
     const arena = remix('harder', PARENTS[1][1]);
     expect(arena.controlParams).toMatchObject({ density: 'dense' });
     expect(remixPatch('harder', arena)).toEqual([]);
+    // Nález revize: přežití se neprodlužuje (text, časovač a jádro by se rozešly).
+    const survive = read({ ...arenaFixture, mechanics: [{ id: 'timer', params: { id: 'clock', seconds: 40, onEnd: 'win' } }, arenaFixture.mechanics[1]], controlParams: { density: 'dense' } });
+    expect(remixPatch('harder', survive)).toEqual([]);
   });
 
   // Závod životy nečte; aréna (archetyp přežití) už `timer` má, zbydou jí životy.

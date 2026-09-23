@@ -11,7 +11,7 @@
 
 import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
-import type { GameSpecV1 } from '@/play/spec';
+import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeLevel, type ArcadeWorld, type PieceRef } from './contract';
 import { buildWorld, replay } from './kernel';
@@ -52,7 +52,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level) };
   }
   if (spec.control === 'move_free') {
-    const params = arenaLevel.params.parse({ ...spec.controlParams });
+    // `readGameSpec` už odmítl spec, kde by cíl a časovač nesouhlasily.
+    const win = arenaWinOf(spec);
+    const params = arenaLevel.params.parse({ ...spec.controlParams, ...('goal' in win ? win : {}) });
     const level = arenaLevel.generate(seed, params);
     return { control: arenaControlRef(), bot: arenaBotRef(), level, rules: arenaRules(level, params, health) };
   }

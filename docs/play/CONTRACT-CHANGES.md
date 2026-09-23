@@ -294,3 +294,7 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   jmenuje i `move_free`. Kompilátor: `arena` + `move_free` + `arena_bot`, pravidla
   `arena_eat` a `grow_to` / `survive_time`, s mechanikou `health` i `out_of_health`.
   Fixtura `src/play/arcade/__fixtures__/arena.json`.
+- **Cíl arény čte `arenaWinOf(spec)`** (revize fáze): `goal` z parametrů, bez něj časovač
+  s `onEnd: 'win'` = přežít tolik sekund, jinak růst; časovač s `onEnd: 'lose'` = vyrůst
+  včas (`time_limit`). `readGameSpec` odmítne růst s vítězným časovačem, `seconds` jiné
+  než vítězný časovač a přežití mimo 20–80 s. Remix `harder` u arény mění jen hustotu.

@@ -286,6 +286,27 @@ export const gameSpecSchema = z
 
 export type GameSpecV1 = z.infer<typeof gameSpecSchema>;
 
+/**
+ * Čím aréna (`move_free`) vyhrává – jediné místo, odkud to čte spec i
+ * kompilátor. `goal` z parametrů, bez něj časovač končící výhrou = přežít,
+ * jinak růst. Přežití trvá tolik, kolik říká ten časovač (nebo `seconds`),
+ * a obě čísla se musí shodovat: hráč čte časovač, jádro `seconds`.
+ */
+export function arenaWinOf(spec: Pick<GameSpecV1, 'controlParams' | 'mechanics'>): { readonly goal: 'grow' | 'survive'; readonly seconds?: number } | { readonly issue: string } {
+  const params = (spec.controlParams ?? {}) as ArenaSpecParams;
+  const timer = spec.mechanics.find((m) => m.id === 'timer' && (m.params as { onEnd?: string }).onEnd === 'win')?.params as { readonly seconds: number } | undefined;
+  const goal = params.goal ?? (timer === undefined ? 'grow' : 'survive');
+  if (goal === 'grow') {
+    return timer === undefined ? { goal } : { issue: '/controlParams/goal: an arena won by growing cannot also win on a timer – end the timer with lose' };
+  }
+  if (timer !== undefined && params.seconds !== undefined && params.seconds !== timer.seconds) {
+    return { issue: `/controlParams/seconds: ${params.seconds} s but the winning timer says ${timer.seconds} s` };
+  }
+  const seconds = timer?.seconds ?? params.seconds;
+  if (seconds !== undefined && (seconds < 20 || seconds > 80)) return { issue: `/controlParams/seconds: an arena survival lasts 20–80 s, not ${seconds}` };
+  return seconds === undefined ? { goal } : { goal, seconds };
+}
+
 export type GameSpecReason =
   /** Tvar neodpovídá schématu. */
   | 'MALFORMED_SPEC'
@@ -341,6 +362,10 @@ export function readGameSpec(input: unknown): GameSpecResult {
     if (!own.success) {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: own.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (${spec.control})`) };
     }
+  }
+  if (spec.control === 'move_free') {
+    const win = arenaWinOf(spec);
+    if ('issue' in win) return { ok: false, reason: 'MALFORMED_SPEC', issues: [win.issue] };
   }
   const archetype = ARCHETYPES[spec.archetype];
   const roleIds = new Set(spec.roles.map((role) => role.id));

@@ -43,15 +43,15 @@ describe('director prompt', () => {
   });
 
   // Po sloučení vlny 1: 11 453 B (P25D) + plošinovka a poletování (P25C) = 11 558 B;
-  // + řízení a aréna (P25F) = 11 858 B.
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 858 B)', () => {
+  // + řízení a aréna (P25F) = 11 885 B.
+  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 885 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_860);
+    expect(max).toBeLessThanOrEqual(11_885);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {
