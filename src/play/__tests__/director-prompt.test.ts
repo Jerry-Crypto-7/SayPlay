@@ -58,6 +58,23 @@ describe('director prompt', () => {
     expect(max).toBeLessThanOrEqual(11_975);
   });
 
+  // Zlaté věty vedou všechny na mřížku, arkádové fixtury tak strop neměřil nikdo.
+  // Naměřeno 23. 9. 2026: 11 286–11 672 B, nejdelší je rytmus.
+  it.each([
+    'car racing game',
+    'like agar.io but you are a fish eating smaller fish',
+    'zombie shooter in a mall',
+    'throw a basketball into a hoop from crazy angles',
+    'stack blocks as high as you can',
+    'tap to the beat with glowing tiles',
+    'boxing match against a kangaroo',
+  ])('stays under 12 000 bytes for the arcade draft of "%s"', (sentence) => {
+    const draft = draftGameSpec(sentence);
+    expect(draft.control).toBeDefined();
+    const request = buildDirectorRequest(sentence, draft);
+    expect(Buffer.byteLength(request.system + request.user)).toBeLessThanOrEqual(12_000);
+  });
+
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {
     expect(compactSchema({ type: 'string', pattern: '^[A-Za-z][A-Za-z0-9_.]{0,63}$' })).toBe('roleId');
     expect(compactSchema({ type: 'string', enum: ['slow', 'fast'] })).toBe('slow|fast');
