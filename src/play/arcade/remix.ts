@@ -92,7 +92,7 @@ const LIVES_LINE: Readonly<Record<string, string>> = {
   runner: 'Run to the finish line. You have 3 lives.',
   platform: 'Jump to the flag. Spikes cost a life – you have 3.',
   flap: 'Fly to the finish. A pipe costs a life – you have 3.',
-  move_free: 'Eat smaller, flee bigger. A bite costs a life – you have 3.',
+  move_free: 'A bite costs a life – you have 3.',
 };
 
 const TIMER_LINE: Readonly<Record<string, string>> = {
@@ -106,7 +106,9 @@ function withHealth(child: GameSpecV1): GameSpecV1 | null {
   probe.mechanics.push({ id: 'health', params: { max: 3 } });
   // Zásah teď ubírá život – jádro to čte z přítomnosti `health`, text i spec to musí říct taky.
   for (const m of probe.mechanics) if (m.id === 'hazard_zone') (m.params as Record<string, unknown>).effect = 'damage';
-  probe.objective.description = LIVES_LINE[child.control ?? 'runner'] ?? LIVES_LINE.runner!;
+  // Aréna si nechá svůj cíl (vyrůst včas / přežít N s) – životy jen přidá.
+  probe.objective.description =
+    child.control === 'move_free' ? `${child.tutorial.goalLine} ${LIVES_LINE.move_free!}` : (LIVES_LINE[child.control ?? 'runner'] ?? LIVES_LINE.runner!);
   return probe;
 }
 

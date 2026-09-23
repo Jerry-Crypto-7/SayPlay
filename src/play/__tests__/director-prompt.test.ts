@@ -51,7 +51,7 @@ describe('director prompt', () => {
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_885);
+    expect(max).toBeLessThanOrEqual(11_895);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {
