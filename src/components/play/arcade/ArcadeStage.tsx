@@ -1,10 +1,11 @@
 'use client';
 
 /**
- * Plátno arkády (P25A T6, P25C T6). Smyčka `useFrame` posouvá hodiny relace
+ * Plátno arkády (P25A T6, P25C T6, P25F T6). Smyčka `useFrame` posouvá hodiny relace
  * (pevný krok v `session.ts`) a kreslí těla interpolovaná mezi posledními
- * dvěma tiky. Scéna podle ovládání: běžec má kameru za a nad hráčem,
- * plošinovka a poletování boční kameru (trať jde zleva doprava). Vstup se
+ * dvěma tiky. Scéna podle ovládání: běžec a závod (`steer/`) mají kameru za
+ * a nad hráčem, plošinovka a poletování boční kameru (trať jde zleva
+ * doprava), aréna (`arena/`) vlastní svět s kamerou shora. Vstup se
  * jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  *
  * Modely: `/assets/worldstream/game/<id>-lod1.glb` podle id těla (`hurdle`,
@@ -22,8 +23,11 @@ import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/pl
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
+import type { SteerCourse } from '@/play/arcade/pieces/steer';
 
+import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import type { ArcadeSession } from './session';
+import { SteerBackdrop, placeChase, useSteerInput } from './steer/SteerScene';
 
 const MODEL_BASE = '/assets/worldstream/game/';
 
@@ -37,6 +41,7 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
   coin: '#facc15',
   finish: '#14b8a6',
   checkpoint: '#0ea5e9',
+  turbo: '#22d3ee',
 };
 
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
@@ -238,6 +243,8 @@ function World({ session, control, playerModel, surface }: { readonly session: A
       } else if (control === 'flap') {
         // Ptáček blíž středu: v levém horním rohu by ho na počítači zakryl HUD.
         placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 14, FLAP.ceiling / UNIT + 1, 26, 0.1);
+      } else if (control === 'steer') {
+        placeChase(camera, look, x, z);
       } else {
         camera.position.set(x * 0.6, 3.4, z - 6.5);
         look.set(x * 0.4, 1.1, z + 9);
@@ -251,7 +258,11 @@ function World({ session, control, playerModel, surface }: { readonly session: A
 
   return (
     <>
-      <Backdrop control={control} length={session.world.length / UNIT} />
+      {control === 'steer' ? (
+        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} />
+      ) : (
+        <Backdrop control={control} length={session.world.length / UNIT} />
+      )}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
@@ -456,6 +467,8 @@ export default function ArcadeStage({ session, playerModel }: { readonly session
   useRunnerInput(session, surface, control === 'runner');
   usePlatformInput(session, surface, control === 'platform');
   useFlapInput(session, surface, control === 'flap');
+  useSteerInput(session, surface, control === 'steer');
+  useArenaInput(session, surface, control === 'move_free');
   return (
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} style={{ touchAction: 'none' }}>
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
@@ -464,7 +477,11 @@ export default function ArcadeStage({ session, playerModel }: { readonly session
         <hemisphereLight args={['#e0f2fe', '#166534', 0.9]} />
         {/* Boční scény svítí ze strany kamery (−x). */}
         <directionalLight position={[control === 'runner' ? 6 : -6, 12, -4]} intensity={1.6} />
-        <World session={session} control={control} playerModel={playerModel} surface={surface} />
+        {control === 'move_free' ? (
+          <ArenaWorld session={session} half={Number(session.world.control.params.half)} surface={surface} />
+        ) : (
+          <World session={session} control={control} playerModel={playerModel} surface={surface} />
+        )}
       </Canvas>
     </div>
   );

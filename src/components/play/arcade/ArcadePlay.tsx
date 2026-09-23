@@ -30,15 +30,19 @@ const ArcadeStage = dynamic(() => import('./ArcadeStage'), { ssr: false });
 /** Hrdinové, kteří v katalogu mají model; jiný popisek hráče kreslí `explorer`. */
 const HERO_MODELS = new Set(['explorer', 'robot', 'fox', 'kid', 'raccoon', 'astronaut', 'knight', 'penguin', 'cat', 'hamster', 'goblin', 'slime', 'seal', 'ghost']);
 
-/** Poletování bez známého hrdiny kreslí ptáčka (primitiv), ostatní `explorer`. */
+/** Poletování bez známého hrdiny kreslí ptáčka (primitiv), závod auto nebo letadlo, ostatní `explorer`. */
 function heroModel(spec: GameSpecV1): string {
   const label = spec.roles.find((role) => role.kind === 'player')?.label.toLowerCase() ?? '';
+  if (spec.control === 'steer') return /\b(?:plane|pilot|jet)\b/.test(label) ? 'plane' : 'race-car';
   const noun = label.split(/\s+/).at(-1) ?? '';
   return HERO_MODELS.has(noun) ? noun : spec.control === 'flap' ? 'bird' : 'explorer';
 }
 
-/** Poletování počítá i průlety mezerou, ne jen mince. */
-const scoreUnit = (spec: GameSpecV1): string => (spec.control === 'flap' ? 'points' : 'coins');
+/** Poletování počítá i průlety mezerou, závod turba, aréna snědené body. */
+const scoreUnit = (spec: GameSpecV1): string => (spec.control === 'flap' ? 'points' : spec.control === 'steer' ? 'turbos' : spec.control === 'move_free' ? 'eaten' : 'coins');
+
+/** Aréna nemá trať: místo metrů ukazuje uběhlé sekundy. */
+const distanceLabel = (spec: GameSpecV1, snapshot: ArcadeSnapshot): string => (spec.control === 'move_free' ? `${Math.floor(snapshot.tick / 60)} s` : `${snapshot.distanceM} m`);
 
 function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: ArcadeSnapshot }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') ? ` · ${snapshot.health} lives` : '';
@@ -52,7 +56,7 @@ function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sna
           {snapshot.progress}% · {snapshot.score} {scoreUnit(spec)}{lives}
         </span>
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
-          {snapshot.distanceM} m
+          {distanceLabel(spec, snapshot)}
         </span>
       </p>
     </header>
@@ -102,7 +106,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upg
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">
-            {snapshot.distanceM} m · {snapshot.score} {scoreUnit(spec)}
+            {distanceLabel(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
           </p>
           <PostRun versionId={versionId} onReplay={() => session.restart()} />
         </section>

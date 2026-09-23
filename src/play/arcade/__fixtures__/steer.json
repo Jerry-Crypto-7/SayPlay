@@ -66,7 +66,7 @@
   ],
   "tutorial": {
     "goalLine": "Beat the rival cars to the finish line.",
-    "controlsHint": "Drag, tilt or arrows to steer. Down to brake."
+    "controlsHint": "Drag or arrows to steer. Down or a second finger brakes."
   },
   "verification": [
     {

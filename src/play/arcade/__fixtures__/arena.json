@@ -55,7 +55,7 @@
   ],
   "tutorial": {
     "goalLine": "Eat smaller fish and grow bigger than every hunter.",
-    "controlsHint": "Drag, tilt or arrows to swim."
+    "controlsHint": "Drag or arrows to swim. Blue is you, green is food, red eats you."
   },
   "verification": [
     {
