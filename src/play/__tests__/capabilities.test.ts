@@ -26,7 +26,14 @@ import { enemyModel, heroModel } from '../arcade/models';
 import { CAPABILITIES, readsLabel, readsMechanic, unreadItems } from '../capabilities';
 import { blockingIssues, critique } from '../director/critic';
 import { repairDeterministically } from '../director/repair';
+import { lookOf } from '../arcade/look';
 import { readGameSpec, type ControlId, type GameSpecV1 } from '../spec';
+
+/**
+ * Ovládání, jejichž podklad (`Backdrop` v `ArcadeStage.tsx`) kreslí sadu prostředí.
+ * Závod, aréna, načasování, rytmus a souboj mají vlastní scénu bez sad.
+ */
+const SCENERY_CONTROLS: ReadonlySet<ControlId> = new Set(['runner', 'platform', 'flap', 'shooter', 'throw']);
 
 const FIXTURES: readonly (readonly [Exclude<ControlId, 'tap_go'>, GameSpecV1])[] = [
   ['runner', runner],
@@ -84,8 +91,14 @@ describe('capability table against the arcade compiler and renderer', () => {
       next.theme.setting = 'a completely different place';
       next.roles = next.roles.map((role) => (role.kind === 'player' ? role : { ...role, count: 1 }));
       expect(CAPABILITIES[control].counts).toBe(false);
-      expect(CAPABILITIES[control].setting).toBe(false);
       expect(worldHash(next)).toBe(worldHash(spec));
+    });
+
+    // P26 T11: prostředí mění scénu (sadu), ne svět – jen u ovládání, jejichž scéna sadu kreslí.
+    it(`${control}: theme.setting picks the scene set exactly when the table says so`, () => {
+      const scenes = new Set(['on a glacier', 'on Mars', 'in a supermarket'].map((setting) => lookOf({ ...spec.theme, setting })));
+      expect(scenes.size).toBe(3);
+      expect(CAPABILITIES[control].setting).toBe(SCENERY_CONTROLS.has(control));
     });
 
     it(`${control}: a label the table marks as read changes the rendered model, others do not`, () => {

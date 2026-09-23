@@ -22,12 +22,14 @@ import { Box3, type Group, type Object3D, type PerspectiveCamera, Vector3 } from
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
+import { Scenery } from './look/Scenery';
 import { DuelScene, useDuelInput } from './duel/DuelScene';
 import { RhythmScene } from './rhythm/RhythmScene';
 import type { ArcadeSession } from './session';
@@ -222,9 +224,10 @@ interface WorldProps {
   readonly playerModel: string;
   readonly enemyModel: string;
   readonly surface: React.RefObject<HTMLDivElement | null>;
+  readonly scene: Look;
 }
 
-function World({ session, control, playerModel, enemyModel, surface }: WorldProps) {
+function World({ session, control, playerModel, enemyModel, surface, scene }: WorldProps) {
   const views = useMemo(() => bodiesOf(session), [session]);
   const groups = useRef<(Group | null)[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
@@ -281,7 +284,7 @@ function World({ session, control, playerModel, enemyModel, surface }: WorldProp
       {control === 'steer' ? (
         <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} />
       ) : (
-        <Backdrop control={control} length={session.world.length / UNIT} />
+        <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
       )}
       {control === 'shooter' && <ShooterRig session={session} surface={surface} />}
       {control === 'throw' && <ThrowRig session={session} surface={surface} />}
@@ -301,33 +304,43 @@ function World({ session, control, playerModel, enemyModel, surface }: WorldProp
   );
 }
 
-/** Podklad scény: dráha běžce, voda pod plošinami, tráva pod trubkami. */
-function Backdrop({ control, length }: { readonly control: string; readonly length: number }) {
+/** Podklad scény v barvách sady prostředí (P26 T11): dráha běžce, hladina pod plošinami, zem pod trubkami, rekvizity. */
+function Backdrop({ control, length, look }: { readonly control: string; readonly length: number; readonly look: Look }) {
   const span = length + 60;
   if (control === 'platform') {
+    const water = PLATFORM.fallBelowY / UNIT - 0.4;
     return (
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, PLATFORM.fallBelowY / UNIT - 0.4, span / 2 - 30]}>
-        <planeGeometry args={[80, span]} />
-        <meshStandardMaterial color="#0284c7" roughness={0.3} />
-      </mesh>
+      <>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, water, span / 2 - 30]}>
+          <planeGeometry args={[80, span]} />
+          <meshStandardMaterial color={look.water} roughness={0.3} />
+        </mesh>
+        <Scenery look={look} layout="behind" inner={9} from={-20} to={length + 20} y={water} />
+      </>
     );
   }
   if (control === 'flap') {
     // Úzký pás země: z boku je to proužek pod trubkami a za ním obloha. Široká
     // plocha by z výšky kamery zabrala spodní půlku obrazu a spolkla dolní trubky.
     return (
-      <mesh position={[0, -0.4, span / 2 - 30]}>
-        <boxGeometry args={[3, 0.8, span]} />
-        <meshStandardMaterial color="#a16207" roughness={1} />
-      </mesh>
+      <>
+        <mesh position={[0, -0.4, span / 2 - 30]}>
+          <boxGeometry args={[3, 0.8, span]} />
+          <meshStandardMaterial color={look.ground} roughness={1} />
+        </mesh>
+        <Scenery look={look} layout="behind" inner={10} from={-20} to={length + 20} y={-0.4} />
+      </>
     );
   }
   if (control === 'shooter' || control === 'throw') {
     return (
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
-        <planeGeometry args={[120, 120]} />
-        <meshStandardMaterial color={control === 'shooter' ? '#a3a36b' : '#4d9e4d'} roughness={1} />
-      </mesh>
+      <>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
+          <planeGeometry args={[120, 120]} />
+          <meshStandardMaterial color={look.ground} roughness={1} />
+        </mesh>
+        {control === 'shooter' ? <Scenery look={look} layout="sides" inner={13} from={-4} to={60} /> : <Scenery look={look} layout="behind" inner={12} from={-10} to={45} />}
+      </>
     );
   }
   const trackLength = length + 20;
@@ -337,12 +350,13 @@ function Backdrop({ control, length }: { readonly control: string; readonly leng
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, trackLength / 2 - 10]}>
         <planeGeometry args={[trackWidth + 0.6, trackLength]} />
-        <meshStandardMaterial color="#334155" roughness={0.9} />
+        <meshStandardMaterial color={look.track} roughness={0.9} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, trackLength / 2 - 10]}>
         <planeGeometry args={[80, trackLength + 80]} />
-        <meshStandardMaterial color="#15803d" roughness={1} />
+        <meshStandardMaterial color={look.ground} roughness={1} />
       </mesh>
+      <Scenery look={look} layout="sides" inner={trackWidth / 2 + 2.5} from={-10} to={trackLength - 10} />
       {[-0.5, 0.5].map((edge) => (
         <mesh key={edge} rotation={[-Math.PI / 2, 0, 0]} position={[edge * laneWidth, 0, trackLength / 2 - 10]}>
           <planeGeometry args={[0.08, trackLength]} />
@@ -491,9 +505,20 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
   }, [session, target, active]);
 }
 
-export default function ArcadeStage({ session, playerModel, enemyModel = 'robot' }: { readonly session: ArcadeSession; readonly playerModel: string; readonly enemyModel?: string }) {
+export default function ArcadeStage({
+  session,
+  playerModel,
+  enemyModel = 'robot',
+  lookId = 'meadow',
+}: {
+  readonly session: ArcadeSession;
+  readonly playerModel: string;
+  readonly enemyModel?: string;
+  readonly lookId?: LookId;
+}) {
   const surface = useRef<HTMLDivElement | null>(null);
   const control = session.world.control.id;
+  const look = LOOKS[lookId];
   useRunnerInput(session, surface, control === 'runner');
   usePlatformInput(session, surface, control === 'platform');
   useFlapInput(session, surface, control === 'flap');
@@ -502,7 +527,7 @@ export default function ArcadeStage({ session, playerModel, enemyModel = 'robot'
   useTapInput(session, surface, control === 'timing' || control === 'rhythm');
   useDuelInput(session, surface, control === 'duel');
   return (
-    <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} style={{ touchAction: 'none' }}>
+    <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} style={{ touchAction: 'none' }}>
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
@@ -513,15 +538,15 @@ export default function ArcadeStage({ session, playerModel, enemyModel = 'robot'
           <DuelScene session={session} />
         ) : (
           <>
-            <color attach="background" args={['#bae6fd']} />
-            <fog attach="fog" args={['#bae6fd', 30, 90]} />
-            <hemisphereLight args={['#e0f2fe', '#166534', 0.9]} />
+            <color attach="background" args={[look.sky]} />
+            <fog attach="fog" args={[look.sky, ...look.fog]} />
+            <hemisphereLight args={[...look.light]} />
             {/* Boční scény svítí ze strany kamery (−x). */}
-            <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={1.6} />
+            <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={look.sun} />
             {control === 'move_free' ? (
               <ArenaWorld session={session} half={Number(session.world.control.params.half)} surface={surface} />
             ) : (
-              <World session={session} control={control} playerModel={playerModel} enemyModel={enemyModel} surface={surface} />
+              <World session={session} control={control} playerModel={playerModel} enemyModel={enemyModel} surface={surface} scene={look} />
             )}
           </>
         )}

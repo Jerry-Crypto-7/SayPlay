@@ -32,7 +32,7 @@ export interface ControlCapability {
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
   readonly counts: boolean;
-  /** Prostředí (`theme.setting`) mění scénu. */
+  /** Prostředí (`theme.setting` / `theme.look`) mění scénu – u arkády sada z `arcade/look` (P26 T11). */
   readonly setting: boolean;
   /** Kolik rolí má smysl napsat. */
   readonly maxRoles: number;
@@ -40,18 +40,18 @@ export interface ControlCapability {
 
 const LIVES_AND_TIMER: readonly MechanicId[] = ['health', 'timer'];
 
-const arcade = (entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles'>): ControlCapability => ({
+const arcade = (entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles'> & { readonly setting?: boolean }): ControlCapability => ({
   ...entry,
   counts: false,
-  setting: false,
+  setting: entry.setting ?? false,
   maxRoles: 1 + (entry.finish ? 1 : 0) + entry.roles.length,
 });
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12 },
-  runner: arcade({ cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
-  platform: arcade({ cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
-  flap: arcade({ cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
+  runner: arcade({ setting: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
+  platform: arcade({ setting: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
+  flap: arcade({ setting: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player'], mechanics: LIVES_AND_TIMER }),
   steer: arcade({ cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player'], mechanics: ['timer'] }),
   move_free: arcade({
     cues: 'agar.io, eat smaller, grow',
@@ -61,8 +61,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     labels: [],
     mechanics: LIVES_AND_TIMER,
   }),
-  shooter: arcade({ cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
-  throw: arcade({ cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player'], mechanics: ['timer'] }),
+  shooter: arcade({ setting: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
+  throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player'], mechanics: ['timer'] }),
   timing: arcade({ cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
   rhythm: arcade({ cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
   duel: arcade({ cues: 'fight, boxing', roles: ['rival'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),

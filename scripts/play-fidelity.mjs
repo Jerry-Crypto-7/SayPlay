@@ -32,6 +32,7 @@ import { fileURLToPath } from 'node:url';
 // Co ovládání čte, říká tabulka schopností (P26 T5). Holý Node 22 ji načte jen
 // s `--experimental-strip-types`; tabulka má proto jen typové importy.
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic as readsMechanicOf } from '../src/play/capabilities.ts';
+import { lookFor } from '../src/play/arcade/look/index.ts';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
@@ -85,7 +86,9 @@ export function specFidelity(spec, checklist) {
     }
     if (entry.slot === 'setting') {
       const inSpec = mentions(spec.theme?.setting ?? '', entry.match);
-      return { item: entry.item, slot: entry.slot, inSpec, read: inSpec && CAPABILITIES[control].setting };
+      // Arkáda ukáže prostředí jen sadou (P26 T11): louka místo neznámého místa se nepočítá.
+      const shown = control === 'tap_go' || spec.theme?.look !== undefined || lookFor(spec.theme?.setting ?? '') !== null;
+      return { item: entry.item, slot: entry.slot, inSpec, read: inSpec && CAPABILITIES[control].setting && shown };
     }
     const candidates = roles.filter((role) => (entry.slot === 'hero' ? PLAYER(role) : entry.slot === 'role' ? !PLAYER(role) : true));
     const hits = candidates.filter((role) => mentions(role.label, entry.match));

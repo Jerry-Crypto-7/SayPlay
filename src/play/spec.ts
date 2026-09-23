@@ -28,6 +28,8 @@ import { z } from 'zod';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
+import { LOOK_IDS } from './arcade/look';
+
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
@@ -204,6 +206,8 @@ export const themeSchema = z
     /** Kde se to děje – vstup pro výběr assetů a palety (`"supermarket at night"`). */
     setting: text.max(80),
     mood: text.max(40),
+    /** Sada prostředí arkády, která `setting` nejlíp ukáže (P26 T11); bez ní se hádá ze slov. */
+    look: z.enum(LOOK_IDS).optional(),
   })
   .strict();
 

@@ -44,15 +44,24 @@ describe('fidelity corpus', () => {
 
 describe('specFidelity', () => {
   it('counts only what the control reads', () => {
-    // Střelnice čte popisek nepřítele, ne prostředí.
+    // Střelnice čte popisek nepřítele a od P26 T11 i prostředí (sada `mall`).
     const shooter = specFidelity(spec('shooter', 'Zombie', 'abandoned mall'), checklist);
     expect(shooter.items.map((item: { item: string; inSpec: boolean; read: boolean }) => [item.item, item.inSpec, item.read])).toEqual([
       ['zombie', true, true],
-      ['mall', true, false],
+      ['mall', true, true],
       ['shoot', true, true],
     ]);
     // Mřížka čte všechno, ale sloveso „shoot“ neumí.
     expect(specFidelity(spec('tap_go', 'Zombies', 'abandoned mall'), checklist).score).toBeCloseTo(2 / 3, 3);
+  });
+
+  it('counts an arcade setting only when a scene set shows it', () => {
+    const place = [{ item: 'nowhere', slot: 'setting', match: ['nowhere'] }];
+    const unknown = spec('shooter', 'Zombie', 'the land of nowhere');
+    expect(specFidelity(unknown, place).items[0]).toMatchObject({ inSpec: true, read: false });
+    expect(specFidelity({ ...unknown, theme: { ...unknown.theme, look: 'desert' } }, place).items[0]).toMatchObject({ inSpec: true, read: true });
+    // Závod má vlastní scénu bez sad.
+    expect(specFidelity(spec('steer', 'Zombie', 'abandoned mall'), checklist).items[1]).toMatchObject({ inSpec: true, read: false });
   });
 });
 
@@ -76,8 +85,8 @@ describe('summarize', () => {
     ];
     const metrics = summarize(results);
     expect(metrics.upgradeSuccess).toEqual({ ok: 1, of: 2, failures: { MALFORMED: 1 } });
-    expect(metrics.specFidelity.final).toBeCloseTo((2 / 3 + 1 / 3) / 2, 3);
-    expect(metrics.specFidelity.ai).toBeCloseTo(2 / 3, 3);
+    expect(metrics.specFidelity.final).toBeCloseTo((3 / 3 + 1 / 3) / 2, 3);
+    expect(metrics.specFidelity.ai).toBeCloseTo(3 / 3, 3);
     expect(metrics.recognizable.final.items).toEqual({ hit: 2, of: 6 });
     expect(metrics.recognizable.final.setting).toEqual({ hit: 0, of: 2 });
     expect(metrics.recognizable.final.judged).toBe(2);
