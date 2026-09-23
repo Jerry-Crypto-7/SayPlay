@@ -91,6 +91,8 @@ export interface UpstreamRequest {
   readonly model: string;
   readonly system: string;
   readonly user: string;
+  /** JSON Schema odpovědi v přísném režimu; větev `codex-cli` ji vynutí (`--output-schema`), ostatní ji nečtou. */
+  readonly outputSchema?: Readonly<Record<string, unknown>>;
 }
 
 /**
