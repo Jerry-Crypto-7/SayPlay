@@ -289,3 +289,38 @@ aktivní a nezranitelný). `explanation` teď slibuje návrat sražených, ne no
   živého pevného těla pod sebou, na ní přistane (`vy = 0`, `grounded`). Pořadí podle indexu,
   věž se staví odspodu; zmizí-li podpora, tělo příští tik padá dál. Běžec, plošinovka ani
   poletování nemají jiné tělo s gravitací než hráče, hashe beze změny.
+## P25F
+
+- **`GameSpec.control` += `'steer'`** (23. 9. 2026, T3, závod). `controlParams` závodu:
+  `{ difficulty?, lengthM? (200–800), rivals?, turbo?, drift? }`, všechna volitelná a bez
+  výchozích hodnot; sjednocení ve schématu je o `steerParamsSchema` delší. Hláška pro
+  parametry u mřížkové hry je teď „only an arcade game (runner, platform, flap, steer) takes
+  control parameters“. Jádro (`kernel.ts`, `contract.ts`) ani `ARCADE_RUNTIME_VERSION` se
+  nemění, hashe běžce, plošinovky, poletování i mřížkových her beze změny.
+- **Kusy v knihovně:** ovládání `steer`, generátor `steer_track`, robot `steer_bot`,
+  pravidlo `rival_finish` (`tick`: živé tělo role `enemy` přední hranou za `atZ` → prohra).
+  Ovládání `steer` nese v parametrech osu trati (`course`: konce úseků, středy, polovina
+  šířky) a podle ní v každém tiku nastaví boční rychlost kinematickým soupeřům – jádro nemá
+  krok, ve kterém by se hýbala cizí těla (Findings P25F). `aux0`/`aux1` hráče = tiky turba
+  a skóre, při kterém turbo naskočilo.
+- **Aréna – kusy v knihovně** (23. 9. 2026, T4): ovládání `move_free` (osa = jeden z 32
+  směrů z celočíselné tabulky, 0 = stát; šířka a hloubka hráče = `sizeOf(score)`, strop
+  6000; kinematické buňky role `enemy` vede ovládání – větší pronásledují, menší bloudí
+  a utíkají), generátor `arena` (`density`, `goal: grow | survive`, `seconds`), pravidla
+  `arena_eat` (`contact`: menší sníst = body + `despawn`, větší buňka = `lose` nebo se životy
+  `damage` + `respawn`), `grow_to` (`counter`: skóre ≥ `points` → výhra) a `survive_time`
+  (`tick`: dožít limit → výhra). Větší buňky generátor staví až nad hotovou potravou tak
+  daleko, aby hladová cesta vyrostla dřív, než dojedou. Ve specu ani kompilátoru zatím není.
+- **Robot `arena_bot`** (T5, zpoždění 8 tiků, parametr `half`): větší buňka do 5 m (okraj
+  k okraji) → utíká od ní a od stěny; jinak míří na nejbližší menší tělo, které neleží do 4 m
+  od větší buňky.
+- **`GameSpec.control` += `'move_free'`** (T6, aréna). `controlParams` arény:
+  `{ density?, goal? (grow | survive), seconds? (20–80) }`, volitelná a bez výchozích hodnot;
+  sjednocení ve schématu je o `arenaParamsSchema` delší, hláška pro parametry u mřížkové hry
+  jmenuje i `move_free`. Kompilátor: `arena` + `move_free` + `arena_bot`, pravidla
+  `arena_eat` a `grow_to` / `survive_time`, s mechanikou `health` i `out_of_health`.
+  Fixtura `src/play/arcade/__fixtures__/arena.json`.
+- **Cíl arény čte `arenaWinOf(spec)`** (revize fáze): `goal` z parametrů, bez něj časovač
+  s `onEnd: 'win'` = přežít tolik sekund, jinak růst; časovač s `onEnd: 'lose'` = vyrůst
+  včas (`time_limit`). `readGameSpec` odmítne růst s vítězným časovačem, `seconds` jiné
+  než vítězný časovač a přežití mimo 20–80 s. Remix `harder` u arény mění jen hustotu.

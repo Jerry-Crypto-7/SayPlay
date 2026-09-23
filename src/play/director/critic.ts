@@ -83,7 +83,10 @@ export function critique(spec: GameSpecV1): CriticIssue[] {
 
   const zoneWin = spec.mechanics.some((m) => m.id === 'zone_trigger' && (m.params as { effect?: string }).effect === 'win');
   const timerWin = spec.mechanics.some((m) => m.id === 'timer' && (m.params as { onEnd?: string }).onEnd === 'win');
-  if (!zoneWin && !timerWin && !ids.some((id) => WIN_MECHANICS.includes(id))) {
+  // Aréna (P25F) vyhrává v jádře růstem nebo přežitím (`arenaWinOf`, pravidla `grow_to` /
+  // `survive_time`) – časovač končící prohrou je tam limit na růst, ne chybějící výhra.
+  const arenaWin = spec.control === 'move_free';
+  if (!zoneWin && !timerWin && !arenaWin && !ids.some((id) => WIN_MECHANICS.includes(id))) {
     issues.push({
       code: 'NO_TERMINATION',
       severity: 'block',

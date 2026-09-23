@@ -257,7 +257,7 @@ export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1, accept
     else runnerSwapObstacles(child, pick);
     return createPatch(parent, child);
   }
-  if ((parent.control === 'platform' || parent.control === 'flap') && chip !== 'reskin') {
+  if ((parent.control === 'platform' || parent.control === 'flap' || parent.control === 'steer' || parent.control === 'move_free') && chip !== 'reskin') {
     if (chip === 'harder') difficultyHarder(child);
     else if (chip === 'twist') runnerTwist(child, pick, accept);
     else hazardSwap(child, pick);

@@ -9,14 +9,18 @@
  * i u plošinovek, přechodů a načasovaných her („ski jumping“, „dodging
  * ghosts“). Přednost: poletování > silný běžec > silná plošinovka > slabý
  * běžec > slabá plošinovka – „endless runner“ zůstává běžcem, i když skáče.
+ * Řízení (`steer`) a aréna (`move_free`, P25F) mají jen silné narážky a stojí
+ * hned za silným běžcem.
  * Hustotu a obtížnost čte jen z kvantifikátorů; co věta neřekne, doplní
  * generátor svým výchozím.
  */
 
+import type { ArenaDensity } from '../arcade/pieces/arena';
 import type { FlapDifficulty } from '../arcade/pieces/flap';
 import type { PlatformDifficulty } from '../arcade/pieces/platform';
 import type { RunnerDensity } from '../arcade/pieces/runner';
 import type { ShooterDifficulty } from '../arcade/pieces/shooter';
+import type { SteerDifficulty } from '../arcade/pieces/steer';
 import type { ThrowDifficulty, ThrowGoal } from '../arcade/pieces/throw';
 
 const STRONG_CUES: readonly RegExp[] = [
@@ -115,7 +119,51 @@ const PLATFORM_STRONG: readonly RegExp[] = [
 // „hill climb racing“ je řízení.
 const PLATFORM_WEAK: readonly RegExp[] = [/(?<!hill )\bclimb(?:s|ing)?\b/, /\bbounc(?:e|es|ing)\b/, /\bspikes?\b/];
 
-const HIGH_DENSITY = /\b(?:a lot of|lots of|many|tons of|loads of|full of|everywhere|hard|super hard)\b/;
+// Řízení (P25F): vozidlo, závod, letadlo. „drive out / drive cars“ je v korpusu
+// posouvačka a GTA, „food truck“ vaření, „park“ místo – proto ty výjimky.
+const STEER_CUES: readonly RegExp[] = [
+  /\brac(?:e|es|ing|er|ers)\b/,
+  /\bdriving\b/,
+  /\bdrive (?:a|an|the|your|my) /,
+  /\bkart\b/,
+  /\bdrift\w*/,
+  /\bpark(?:ing)? (?:game|without)\b/,
+  /\bbumper cars?\b/,
+  /\b(?:plane|airplane|pilot)s?\b/,
+  /\bfly (?:a|an|the) /,
+  /\b(?:(?<!food )truck|motorbike|motorcycle|scooter|sled|boat|kayak)s?\b/,
+  /\bon wheels\b/,
+  /\bformula 1\b/,
+  /\brocket league\b/,
+  /\bsurf(?:er|ing)\b/,
+  /\bsteer\w*/,
+  /\broll(?:s|ing)? (?:down|through)\b/,
+];
+
+// Závod branami nebo obručemi v pořadí je mřížkový `checkpoint_race` (zlatá sada).
+const GATE_RACE = /\b(?:gates?|hoops?|rings?|checkpoints?|in (?:the right )?order)\b/;
+
+// Aréna (P25F): jíst menší a růst, io hry, strkanice. „grow a bridge / a garden“
+// je načasování a idle, „gets bigger then“ běžec s davem, „hungry seal“ honička.
+const ARENA_CUES: readonly RegExp[] = [
+  /\bagar\b/,
+  /\bslither\b/,
+  /\bpaper ?io\b/,
+  /\beat(?:s|ing)? (?:smaller|everything)\b/,
+  /\bsmaller (?:fish|cells?|ones)\b/,
+  /\bbigger the more\b/,
+  /\b(?:grow|grows|growing)\b(?! (?:a|an|the|your|my) )/,
+  /\bswallow\w*/,
+  /\bsnake game\b/,
+  /\bsumo\b/,
+  /\bbattle royale\b/,
+  /\bbump\w* (?:other|everyone)/,
+  /\bpush everyone\b/,
+  /\bsurvive (?:the )?(?:swarm|waves)\b/,
+  /\barena\b/,
+];
+
+const HIGH_DENSITY =/\b(?:a lot of|lots of|many|tons of|loads of|full of|everywhere|hard|super hard)\b/;
 const LOW_DENSITY = /\b(?:few|easy|simple|chill|relaxing|calm)\b/;
 
 export type ControlChoice =
@@ -127,6 +175,8 @@ export type ControlChoice =
       readonly doubleJump: boolean;
     }
   | { readonly control: 'flap'; readonly difficulty: FlapDifficulty | null }
+  | { readonly control: 'steer'; readonly difficulty: SteerDifficulty | null; readonly drift: boolean }
+  | { readonly control: 'move_free'; readonly density: ArenaDensity | null }
   | { readonly control: 'shooter'; readonly difficulty: ShooterDifficulty | null }
   | { readonly control: 'throw'; readonly difficulty: ThrowDifficulty | null; readonly goal: ThrowGoal | null };
 
@@ -157,6 +207,12 @@ export function pickControl(text: string): ControlChoice | null {
   const runner = runnerScore(text);
   const platform = platformScore(text);
   const strongRunner = STRONG_CUES.some((cue) => cue.test(text));
+  // Řízení před arénou: „bumper cars arena“ je řízení, sněhová koule, která „gets
+  // bigger“, taky. Silný běžec má přednost („subway surfers“).
+  if (!strongRunner && !GATE_RACE.test(text) && STEER_CUES.some((cue) => cue.test(text))) return { control: 'steer', difficulty: difficultyOf(text), drift: /\bdrift/.test(text) };
+  if (!strongRunner && ARENA_CUES.some((cue) => cue.test(text))) {
+    return { control: 'move_free', density: HIGH_DENSITY.test(text) ? 'dense' : LOW_DENSITY.test(text) ? 'sparse' : null };
+  }
   if (!strongRunner && (platform === 2 || (runner < 2 && platform === 1))) {
     return { control: 'platform', difficulty: difficultyOf(text), movingPlatforms: /\bmoving platforms?\b/.test(text), doubleJump: /\bdouble jump/.test(text) };
   }

@@ -22,12 +22,14 @@
  * Funkce mění `child` na místě; záplatu z něj staví `remixPatch`.
  */
 
-import type { GameSpecV1 } from '../spec';
+import { type GameSpecV1, arenaWinOf } from '../spec';
 
+import { ARENA_DENSITIES, arenaLevel } from './pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK, flapTrack } from './pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL, platformLevel } from './pieces/platform';
 import { RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK, type ObstacleKind, runnerTrack } from './pieces/runner';
 import { SHOOTER_DIFFICULTIES, type ShooterDifficulty, shooterRange } from './pieces/shooter';
+import { STEER_DIFFICULTIES, STEER_TRACK, steerTrack } from './pieces/steer';
 import { THROW_DIFFICULTIES, THROW_GOALS, THROW_GOAL_LABELS, type ThrowDifficulty, throwField } from './pieces/throw';
 
 type Pick = (max: number) => number;
@@ -66,12 +68,25 @@ export function runnerHarder(child: GameSpecV1): boolean {
   return true;
 }
 
-/** Plošinovka a poletování: další obtížnost, jinak delší trať do stropu. */
+/**
+ * Aréna: jen hustší. Delší přežití by muselo přepsat časovač, cíl i text
+ * najednou – hustá aréna už těžší není.
+ */
+function arenaHarder(child: GameSpecV1): boolean {
+  const density = next(ARENA_DENSITIES, arenaLevel.params.parse({ ...child.controlParams }).density);
+  if (density === null) return false;
+  child.controlParams = { ...child.controlParams, density };
+  return true;
+}
+
+/** Plošinovka, poletování a závod: další obtížnost, jinak delší trať do stropu; aréna zvlášť. */
 export function difficultyHarder(child: GameSpecV1): boolean {
+  if (child.control === 'move_free') return arenaHarder(child);
   const flap = child.control === 'flap';
-  const params = flap ? flapTrack.params.parse({ ...child.controlParams }) : platformLevel.params.parse({ ...child.controlParams });
-  const difficulty = next<string>(flap ? FLAP_DIFFICULTIES : PLATFORM_DIFFICULTIES, params.difficulty);
-  const ceiling = flap ? FLAP_TRACK.maxLengthM : PLATFORM_LEVEL.maxLengthM;
+  const steer = child.control === 'steer';
+  const params = steer ? steerTrack.params.parse({ ...child.controlParams }) : flap ? flapTrack.params.parse({ ...child.controlParams }) : platformLevel.params.parse({ ...child.controlParams });
+  const difficulty = next<string>(steer ? STEER_DIFFICULTIES : flap ? FLAP_DIFFICULTIES : PLATFORM_DIFFICULTIES, params.difficulty);
+  const ceiling = steer ? STEER_TRACK.maxLengthM : flap ? FLAP_TRACK.maxLengthM : PLATFORM_LEVEL.maxLengthM;
   const change = difficulty !== null ? { difficulty } : params.lengthM < ceiling ? { lengthM: Math.min(ceiling, params.lengthM + 50) } : null;
   if (change === null) return false;
   child.controlParams = { ...child.controlParams, ...change };
@@ -93,25 +108,32 @@ const LIVES_LINE: Readonly<Record<string, string>> = {
   platform: 'Jump to the flag. Spikes cost a life – you have 3.',
   flap: 'Fly to the finish. A pipe costs a life – you have 3.',
   shooter: 'Hit every target. An enemy that reaches you costs a life – you have 3.',
+  move_free: 'A bite costs a life – you have 3.',
 };
 
 const TIMER_LINE: Readonly<Record<string, (seconds: string) => string>> = {
   shooter: (seconds) => `Hit every target and stop every wave within ${seconds} seconds.`,
   throw: (seconds) => `Hit every target within ${seconds} seconds.`,
+  move_free: (seconds) => `Outgrow every hunter within ${seconds} seconds.`,
 };
 
 function withHealth(child: GameSpecV1): GameSpecV1 | null {
-  if (child.mechanics.some((m) => m.id === 'health')) return null;
+  // Závod životy nečte (náraz do mantinelu zastaví, soupeř v cíli vyhraje) – twist je tam jen limit.
+  if (child.control === 'steer' || child.mechanics.some((m) => m.id === 'health')) return null;
   const probe = structuredClone(child);
   probe.mechanics.push({ id: 'health', params: { max: 3 } });
   // Zásah teď ubírá život – jádro to čte z přítomnosti `health`, text i spec to musí říct taky.
   for (const m of probe.mechanics) if (m.id === 'hazard_zone') (m.params as Record<string, unknown>).effect = 'damage';
-  probe.objective.description = LIVES_LINE[child.control ?? 'runner'] ?? LIVES_LINE.runner!;
+  // Aréna si nechá svůj cíl (vyrůst včas / přežít N s) – životy jen přidá.
+  probe.objective.description =
+    child.control === 'move_free' ? `${child.tutorial.goalLine} ${LIVES_LINE.move_free!}` : (LIVES_LINE[child.control ?? 'runner'] ?? LIVES_LINE.runner!);
   return probe;
 }
 
 function withTimer(child: GameSpecV1): GameSpecV1 | null {
   if (child.mechanics.some((m) => m.id === 'timer')) return null;
+  // Aréna na přežití už na čas vyhrává; limit „vyrůst do N s“ by jí lhal.
+  if (child.control === 'move_free' && (arenaWinOf(child) as { goal?: string }).goal === 'survive') return null;
   const probe = structuredClone(child);
   probe.mechanics.push({ id: 'timer', params: { id: 'clock', seconds: child.targetDurationSec, onEnd: 'lose' } });
   const seconds = String(child.targetDurationSec);
@@ -146,12 +168,17 @@ export function runnerSwapObstacles(child: GameSpecV1, pick: Pick): boolean {
 const HAZARD_LABELS: Readonly<Record<string, readonly string[]>> = {
   platform: ['spikes', 'thorns', 'saw teeth', 'icicles'],
   flap: ['pipe', 'pillar', 'tree trunk', 'chimney'],
+  steer: ['rival car', 'police car', 'taxi', 'go-kart'],
+  move_free: ['big fish', 'shark', 'giant cell', 'whale'],
 };
 
-/** Plošinovka: přepne pohyblivé plošiny a přejmenuje hroty; poletování: přejmenuje trubky. */
+/**
+ * Plošinovka: přepne pohyblivé plošiny a přejmenuje hroty; poletování: přejmenuje
+ * trubky; závod přejmenuje soupeře, aréna větší buňky.
+ */
 export function hazardSwap(child: GameSpecV1, pick: Pick): boolean {
-  const control = child.control === 'flap' ? 'flap' : 'platform';
-  const hazard = child.roles.find((role) => role.kind === 'hazard');
+  const control = child.control === 'flap' || child.control === 'steer' || child.control === 'move_free' ? child.control : 'platform';
+  const hazard = child.roles.find((role) => (control === 'steer' ? role.id === 'rival' : role.kind === 'hazard'));
   if (hazard === undefined) return false;
   const labels = (HAZARD_LABELS[control] ?? []).filter((label) => label !== hazard.label);
   hazard.label = labels[pick(labels.length)] ?? hazard.label;

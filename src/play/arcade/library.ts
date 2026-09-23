@@ -4,6 +4,8 @@
  */
 
 import type { ArcadeLibrary } from './kernel';
+import { arenaEat, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
+import { arenaBot } from './pieces/arena-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
 import { platformControl, platformLevel } from './pieces/platform';
@@ -14,12 +16,38 @@ import { runnerBot } from './pieces/runner-bot';
 import { gun, shooterControl, shooterRange } from './pieces/shooter';
 import { shooterBot } from './pieces/shooter-bot';
 import { SHOT_RULES } from './pieces/shots';
+import { rivalFinish, steerControl, steerTrack } from './pieces/steer';
+import { steerBot } from './pieces/steer-bot';
 import { launch, throwControl, throwField } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: { runner: runnerControl, platform: platformControl, flap: flapControl, shooter: shooterControl, throw: throwControl },
-  rules: { ...RULES, ...SHOT_RULES, gun, launch },
-  generators: { runner_track: runnerTrack, platform_level: platformLevel, flap_track: flapTrack, shooter_range: shooterRange, throw_field: throwField },
-  bots: { runner_bot: runnerBot, platform_bot: platformBot, flap_bot: flapBot, shooter_bot: shooterBot, throw_bot: throwBot },
+  controls: {
+    runner: runnerControl,
+    platform: platformControl,
+    flap: flapControl,
+    steer: steerControl,
+    move_free: moveFreeControl,
+    shooter: shooterControl,
+    throw: throwControl,
+  },
+  rules: { ...RULES, ...SHOT_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime },
+  generators: {
+    runner_track: runnerTrack,
+    platform_level: platformLevel,
+    flap_track: flapTrack,
+    steer_track: steerTrack,
+    arena: arenaLevel,
+    shooter_range: shooterRange,
+    throw_field: throwField,
+  },
+  bots: {
+    runner_bot: runnerBot,
+    platform_bot: platformBot,
+    flap_bot: flapBot,
+    steer_bot: steerBot,
+    arena_bot: arenaBot,
+    shooter_bot: shooterBot,
+    throw_bot: throwBot,
+  },
 };

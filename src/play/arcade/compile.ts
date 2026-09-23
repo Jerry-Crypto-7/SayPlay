@@ -11,15 +11,17 @@
 
 import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
-import type { GameSpecV1 } from '@/play/spec';
+import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeLevel, type ArcadeWorld, type PieceRef } from './contract';
 import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
+import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformLevel, platformRules } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
 import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
+import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
 import { throwField, throwRules } from './pieces/throw';
 import { runBot } from './verify';
 
@@ -45,6 +47,18 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
       level: platformLevel.generate(seed, params),
       rules: platformRules(params, health),
     };
+  }
+  if (spec.control === 'steer') {
+    const params = steerTrack.params.parse({ ...spec.controlParams });
+    const level = steerTrack.generate(seed, params);
+    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level) };
+  }
+  if (spec.control === 'move_free') {
+    // `readGameSpec` už odmítl spec, kde by cíl a časovač nesouhlasily.
+    const win = arenaWinOf(spec);
+    const params = arenaLevel.params.parse({ ...spec.controlParams, ...('goal' in win ? win : {}) });
+    const level = arenaLevel.generate(seed, params);
+    return { control: arenaControlRef(), bot: arenaBotRef(), level, rules: arenaRules(level, params, health) };
   }
   if (spec.control === 'flap') {
     const params = flapTrack.params.parse({ ...spec.controlParams });

@@ -1,0 +1,74 @@
+{
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {
+    "density": "normal",
+    "goal": "grow"
+  },
+  "title": "Big Fish Pond",
+  "archetype": "survival_timer",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "shallow pond seen from above",
+    "mood": "playful"
+  },
+  "objective": {
+    "kind": "survive",
+    "description": "Eat smaller fish to grow, keep away from bigger ones, and outgrow them all within 40 seconds.",
+    "seconds": 40
+  },
+  "mechanics": [
+    {
+      "id": "timer",
+      "params": {
+        "id": "clock",
+        "seconds": 40,
+        "onEnd": "lose"
+      }
+    },
+    {
+      "id": "hazard_zone",
+      "params": {
+        "role": "hunter",
+        "effect": "lose"
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "little fish"
+    },
+    {
+      "id": "hunter",
+      "kind": "hazard",
+      "label": "big fish",
+      "count": 3
+    },
+    {
+      "id": "coin",
+      "kind": "collectible",
+      "label": "plankton",
+      "count": 12
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Outgrow every hunter within 40 seconds.",
+    "controlsHint": "Drag or arrows to swim. You are blue: eat yellow and green, flee red."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}

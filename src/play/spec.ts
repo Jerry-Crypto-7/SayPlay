@@ -28,10 +28,12 @@ import { z } from 'zod';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
+import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
 import { SHOOTER_DIFFICULTIES } from './arcade/pieces/shooter';
+import { STEER_DIFFICULTIES, STEER_TRACK } from './arcade/pieces/steer';
 import { THROW_DIFFICULTIES, THROW_GOALS } from './arcade/pieces/throw';
 import { ARCHETYPES, MECHANICS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from './registry';
 
@@ -198,12 +200,13 @@ export const tutorialSchema = z
   .strict();
 
 /**
- * Ovládání (P25A, P25C, P25G). `tap_go` = dnešní mřížka (`src/sim`), `runner`,
- * `platform`, `flap`, `shooter` a `throw` = arkádové jádro (`src/play/arcade`). Pole je volitelné
+ * Ovládání (P25A, P25C, P25F, P25G). `tap_go` = dnešní mřížka (`src/sim`), `runner`,
+ * `platform`, `flap`, `steer`, `move_free`, `shooter` a `throw` = arkádové jádro
+ * (`src/play/arcade`). Pole je volitelné
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'shooter', 'throw'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
@@ -263,14 +266,46 @@ export const throwParamsSchema = z
   .strict();
 export type ThrowSpecParams = z.infer<typeof throwParamsSchema>;
 
+/** Parametry závodu (P25F); výchozí doplní generátor trati. */
+export const steerParamsSchema = z
+  .object({
+    difficulty: z.enum(STEER_DIFFICULTIES).optional(),
+    lengthM: z.int().min(STEER_TRACK.minLengthM).max(STEER_TRACK.maxLengthM).optional(),
+    rivals: z.boolean().optional(),
+    turbo: z.boolean().optional(),
+    drift: z.boolean().optional(),
+  })
+  .strict();
+export type SteerParams = z.infer<typeof steerParamsSchema>;
+
+/** Parametry arény (P25F); výchozí doplní generátor arény. */
+export const arenaParamsSchema = z
+  .object({
+    density: z.enum(ARENA_DENSITIES).optional(),
+    goal: z.enum(ARENA_GOALS).optional(),
+    seconds: z.int().min(20).max(80).optional(),
+  })
+  .strict();
+export type ArenaSpecParams = z.infer<typeof arenaParamsSchema>;
+
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
-const CONTROL_PARAMS = { runner: runnerParamsSchema, platform: platformParamsSchema, flap: flapParamsSchema, shooter: shooterParamsSchema, throw: throwParamsSchema } as const;
+const CONTROL_PARAMS = {
+  runner: runnerParamsSchema,
+  platform: platformParamsSchema,
+  flap: flapParamsSchema,
+  steer: steerParamsSchema,
+  move_free: arenaParamsSchema,
+  shooter: shooterParamsSchema,
+  throw: throwParamsSchema,
+} as const;
 
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
     control: z.enum(CONTROLS).optional(),
-    controlParams: z.union([runnerParamsSchema, platformParamsSchema, flapParamsSchema, shooterParamsSchema, throwParamsSchema]).optional(),
+    controlParams: z
+      .union([runnerParamsSchema, platformParamsSchema, flapParamsSchema, steerParamsSchema, arenaParamsSchema, shooterParamsSchema, throwParamsSchema])
+      .optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
@@ -286,6 +321,31 @@ export const gameSpecSchema = z
   .strict();
 
 export type GameSpecV1 = z.infer<typeof gameSpecSchema>;
+
+/**
+ * Čím aréna (`move_free`) vyhrává – jediné místo, odkud to čte spec i
+ * kompilátor. `goal` z parametrů, bez něj časovač končící výhrou = přežít,
+ * jinak růst. Přežití trvá tolik, kolik říká ten časovač (nebo `seconds`),
+ * a obě čísla se musí shodovat: hráč čte časovač, jádro `seconds`.
+ */
+export function arenaWinOf(spec: Pick<GameSpecV1, 'controlParams' | 'mechanics'>): { readonly goal: 'grow' | 'survive'; readonly seconds?: number } | { readonly issue: string } {
+  const params = (spec.controlParams ?? {}) as ArenaSpecParams;
+  const timer = spec.mechanics.find((m) => m.id === 'timer' && (m.params as { onEnd?: string }).onEnd === 'win')?.params as { readonly seconds: number } | undefined;
+  const goal = params.goal ?? (timer === undefined ? 'grow' : 'survive');
+  if (goal === 'grow') {
+    return timer === undefined ? { goal } : { issue: '/controlParams/goal: an arena won by growing cannot also win on a timer – end the timer with lose' };
+  }
+  // Přežití s časovačem, který končí prohrou: jádro by vyhrálo po `seconds`, hráč čte jiné číslo.
+  if (timer === undefined && spec.mechanics.some((m) => m.id === 'timer')) {
+    return { issue: '/controlParams/goal: an arena won by surviving needs its timer to end with win' };
+  }
+  if (timer !== undefined && params.seconds !== undefined && params.seconds !== timer.seconds) {
+    return { issue: `/controlParams/seconds: ${params.seconds} s but the winning timer says ${timer.seconds} s` };
+  }
+  const seconds = timer?.seconds ?? params.seconds;
+  if (seconds !== undefined && (seconds < 20 || seconds > 80)) return { issue: `/controlParams/seconds: an arena survival lasts 20–80 s, not ${seconds}` };
+  return seconds === undefined ? { goal } : { goal, seconds };
+}
 
 export type GameSpecReason =
   /** Tvar neodpovídá schématu. */
@@ -335,13 +395,21 @@ export function readGameSpec(input: unknown): GameSpecResult {
   const spec = parsed.data;
   if (spec.controlParams !== undefined) {
     if (spec.control === undefined || spec.control === 'tap_go') {
-      return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/controlParams: only an arcade game (runner, platform, flap, shooter, throw) takes control parameters'] };
+      return {
+        ok: false,
+        reason: 'MALFORMED_SPEC',
+        issues: ['/controlParams: only an arcade game (runner, platform, flap, steer, move_free, shooter, throw) takes control parameters'],
+      };
     }
     // Sjednocení ve schématu pustí parametry kteréhokoli ovládání; tady musí sedět na to zvolené.
     const own = CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);
     if (!own.success) {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: own.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (${spec.control})`) };
     }
+  }
+  if (spec.control === 'move_free') {
+    const win = arenaWinOf(spec);
+    if ('issue' in win) return { ok: false, reason: 'MALFORMED_SPEC', issues: [win.issue] };
   }
   const archetype = ARCHETYPES[spec.archetype];
   const roleIds = new Set(spec.roles.map((role) => role.id));
