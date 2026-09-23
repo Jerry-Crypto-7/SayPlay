@@ -299,6 +299,10 @@ export function arenaWinOf(spec: Pick<GameSpecV1, 'controlParams' | 'mechanics'>
   if (goal === 'grow') {
     return timer === undefined ? { goal } : { issue: '/controlParams/goal: an arena won by growing cannot also win on a timer – end the timer with lose' };
   }
+  // Přežití s časovačem, který končí prohrou: jádro by vyhrálo po `seconds`, hráč čte jiné číslo.
+  if (timer === undefined && spec.mechanics.some((m) => m.id === 'timer')) {
+    return { issue: '/controlParams/goal: an arena won by surviving needs its timer to end with win, not lose' };
+  }
   if (timer !== undefined && params.seconds !== undefined && params.seconds !== timer.seconds) {
     return { issue: `/controlParams/seconds: ${params.seconds} s but the winning timer says ${timer.seconds} s` };
   }

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { reportFor } from '@/app/api/play/_report';
 import { compileGame } from '@/play/compile';
+import { blockingIssues, critique } from '@/play/director/critic';
+import { draftGameSpec } from '@/play/draft';
 import { readGameSpec } from '@/play/spec';
 
 import arenaFixture from '../__fixtures__/arena.json';
@@ -85,6 +87,22 @@ describe('aréna – robot a ověření', () => {
     expect(reject({ ...survive, controlParams: { goal: 'grow' } })).toMatch(/cannot also win on a timer/);
     expect(reject({ ...survive, controlParams: { goal: 'survive', seconds: 20 } })).toMatch(/20 s but the winning timer says 30 s/);
     expect(reject({ ...survive, mechanics: [timer(120, 'win')] })).toMatch(/20–80 s, not 120/);
+    // Druhá revize: přežití s časovačem končícím prohrou by vyhrálo po jiném čísle, než hráč čte.
+    expect(reject({ ...arenaFixture, controlParams: { goal: 'survive' } })).toMatch(/needs its timer to end with win/);
+  });
+
+  // Druhá revize: kritik režiséra blokoval každou arénu „vyrůst včas“ (NO_TERMINATION).
+  it('kritik režiséra pustí arénu s časovačem končícím prohrou a návrh věty o aréně', () => {
+    const read = readGameSpec(arenaFixture);
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    expect(blockingIssues(critique(read.value))).toEqual([]);
+    const drafted = draftGameSpec('an agar.io game where a fish eats smaller fish');
+    expect(drafted.control).toBe('move_free');
+    expect(blockingIssues(critique(drafted))).toEqual([]);
+    // Mřížková hra bez výhry blokuje dál.
+    const grid = readGameSpec({ ...arenaFixture, control: undefined, controlParams: undefined });
+    if (!grid.ok) throw new Error(grid.issues.join('; '));
+    expect(blockingIssues(critique(grid.value)).map((issue) => issue.code)).toContain('NO_TERMINATION');
   });
 
   it('hráč od začátku nejmenší a bez potravy neprojde', () => {
