@@ -4,7 +4,9 @@ import { z } from 'zod';
 import { ARCADE_LIMITS, type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, bodyBase } from '../contract';
 import { type ArcadeLibrary, buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { SHOOTER, SHOOTER_DIFFICULTIES, type ShooterDifficulty, aimAt, aimVelocity, arrivalOf, checkShooterLevel, gunTick, shooterGun, shooterRange, shooterRules } from '../pieces/shooter';
+import { SHOOTER, SHOOTER_DIFFICULTIES, type ShooterDifficulty, aimAt, aimVelocity, arrivalOf, checkShooterLevel, gunTick, shooterBotRef, shooterGun, shooterRange, shooterRules } from '../pieces/shooter';
+import { shooterBot } from '../pieces/shooter-bot';
+import { runBot, verifyArcade } from '../verify';
 
 const params = (difficulty: ShooterDifficulty, extra: Record<string, unknown> = {}) => shooterRange.params.parse({ difficulty, ...extra });
 
@@ -181,5 +183,68 @@ describe('střelba – ovládání, zbraň a pravidla', () => {
     expect(result.outcome).toBe('lost');
     // Střela žije 90 tiků; prohra přijde v tiku jejího zániku, ne při výstřelu.
     expect(result.tick).toBe(91);
+  });
+});
+
+function botWorld(level: ArcadeLevel, p = params('normal')): ArcadeWorld {
+  const built = buildWorld({ seed: 1, control: { id: 'shooter', params: {} }, rules: shooterRules(p), bot: shooterBotRef(p), level }, ARCADE_LIBRARY);
+  if (!built.ok) throw new Error(built.issues.join('; '));
+  return built.world;
+}
+
+describe('střelba – robot a ověření', () => {
+  it('robot reaguje se zpožděním 8 tiků', () => {
+    expect(shooterBot.reactionTicks).toBe(8);
+  });
+
+  it('30 semínek × 3 obtížnosti projde ověřením: robot vyhraje, nečinný ne, přehrání sedí', () => {
+    for (const difficulty of SHOOTER_DIFFICULTIES) {
+      for (let seed = 1; seed <= 30; seed += 1) {
+        const p = params(difficulty);
+        const verdict = verifyArcade(botWorld(shooterRange.generate(seed * 104729, p), p));
+        expect(verdict.failures, `${difficulty}/${seed}`).toEqual([]);
+        expect(verdict.idle.outcome, `${difficulty}/${seed}`).toBe('lost');
+      }
+    }
+  });
+
+  it('robot vidí svět pozdě: bez vlastní paměti výstřelů by pálil do terče, který už je zasažený', () => {
+    // Jeden stojící terč, jeden nepřítel daleko: vystačí dvě rány, robot jich nesmí vypálit víc.
+    const p = params('easy');
+    const level: ArcadeLevel = {
+      bodies: [
+        { role: 'player', kind: 'shooter', x: 0, y: 0, z: 0, w: 600, h: 1700, d: 600, solid: false },
+        { role: 'projectile', kind: 'bullet', x: 0, y: 0, z: 0, w: 200, h: 200, d: 200, solid: false, template: true, lifetime: 90 },
+        { role: 'target', kind: 'target', x: -3000, y: 0, z: 24_000, w: 1000, h: 1500, d: 200, solid: false },
+        { role: 'enemy', kind: 'enemy', x: 0, y: 0, z: 24 * 1200, w: 800, h: 1700, d: 800, solid: false, vz: -24, kinematic: true },
+      ],
+      length: 0,
+      spawnSlots: 11,
+      counters: { ammo: 8, reserve: 0 },
+    };
+    const run = runBot(botWorld(level, p));
+    expect(run.outcome).toBe('won');
+    expect(run.inputs.filter((input) => (input.buttons & BUTTON.TAP) !== 0)).toHaveLength(2);
+  });
+
+  it('terč mimo dostřel: hra neprojde a kontrola řekne proč', () => {
+    const p = params('normal');
+    const level = shooterRange.generate(7, p);
+    const firstTarget = level.bodies.findIndex((b) => b.role === 'target');
+    const far: ArcadeLevel = { ...level, bodies: level.bodies.map((b, i) => (i === firstTarget ? { ...b, x: 0, z: 45_000, kinematic: false, vx: 0 } : b)) };
+    const verdict = verifyArcade(botWorld(far, p));
+    expect(verdict.publishEligible).toBe(false);
+    expect(verdict.failures.join()).toMatch(/bot_wins/);
+    expect(checkShooterLevel(far, shooterGun(p))).toEqual([`target ${firstTarget} at 45.0 m is out of range (36.0 m)`]);
+  });
+
+  it('úroveň, kterou vyhraje i nečinný hráč, ověřením neprojde', () => {
+    const p = params('easy');
+    const level = shooterRange.generate(2, p);
+    const empty: ArcadeLevel = { ...level, bodies: level.bodies.filter((b) => b.role !== 'target' && b.role !== 'enemy') };
+    const verdict = verifyArcade(botWorld(empty, p));
+    expect(verdict.idle.outcome).toBe('won');
+    expect(verdict.failures.join()).toMatch(/idle_loses/);
+    expect(verdict.publishEligible).toBe(false);
   });
 });

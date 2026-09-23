@@ -323,6 +323,12 @@ export function shooterRules(params: ShooterParams, health?: number): PieceRef[]
   return rules;
 }
 
+/** Robot střelce se zbraní úrovně. */
+export function shooterBotRef(params: ShooterParams): PieceRef {
+  const { magazine, reloadTicks } = shooterGun(params);
+  return { id: 'shooter_bot', params: { magazine, reloadTicks } };
+}
+
 /** Kdy nepřítel dorazí k hráči (tik), nebo null, když k němu nejde. */
 export function arrivalOf(body: BodyInit): number | null {
   const vz = body.vz ?? 0;
