@@ -174,6 +174,18 @@ export function readNumbers(sentence: string): SentenceNumbers {
 
 /** Slova, na kterých končí jmenná fráze role. */
 const PHRASE_STOP = new Set([
+  // Modální a pomocná slovesa – za podmětem („A knight must collect…“), nikdy součást jména.
+  'must',
+  'can',
+  'will',
+  'should',
+  'has',
+  'have',
+  'is',
+  'are',
+  'gets',
+  'wants',
+  'tries',
   'in',
   'on',
   'at',
@@ -218,14 +230,19 @@ const PHRASE_STOP = new Set([
 const ARTICLES = /^(?:a|an|the|all|every|each|some|its|your|my|our)\s+/;
 const NUMBER_PREFIX = new RegExp(`^${NUMBER_TOKEN}\\s+`);
 
-/** Prvních nejvýš `max` slov po členu a číslovce, do zarážky nebo interpunkce. */
+/** Podstatná jména na -ing; ostatní slova na -ing za hlavou fráze jsou sloveso („hamster escaping“). */
+const ING_NOUNS = new Set(['king', 'ring', 'thing', 'wing', 'string', 'building', 'ceiling', 'swing', 'sling', 'spring', 'pudding', 'viking', 'dumpling', 'painting', 'clothing', 'earring', 'icing', 'railing', 'duckling', 'sibling', 'clearing']);
+
+const isVerbIng = (word: string): boolean => word.length > 4 && word.endsWith('ing') && !ING_NOUNS.has(word);
+
+/** Prvních nejvýš `max` slov po členu a číslovce, do zarážky, interpunkce nebo slovesa v -ing. */
 export function nounPhrase(text: string, max = 3): string | null {
   let rest = text.trim().toLowerCase().replace(ARTICLES, '').replace(NUMBER_PREFIX, '').replace(ARTICLES, '');
   const words: string[] = [];
   for (const raw of rest.split(/\s+/)) {
     const word = raw.replace(/[^a-z-]/g, '');
     const punctuated = /[.,;:!?]$/.test(raw);
-    if (word === '' || PHRASE_STOP.has(word) || NUMBER_WORDS[word] !== undefined) break;
+    if (word === '' || PHRASE_STOP.has(word) || NUMBER_WORDS[word] !== undefined || (words.length > 0 && isVerbIng(word))) break;
     words.push(word);
     if (punctuated || words.length === max) break;
   }
@@ -284,12 +301,49 @@ function first(text: string, patterns: readonly RegExp[], max = 3): string | nul
   return null;
 }
 
+/** Hlava fráze na začátku věty, která jmenuje žánr nebo míru, ne postavu („a platformer where…“, „a lot of“). */
+const NOT_A_CHARACTER = new Set([
+  'game', 'games', 'shooter', 'runner', 'platformer', 'puzzle', 'racer', 'racing', 'sim', 'simulator', 'clicker', 'style', 'version',
+  'level', 'levels', 'obby', 'rpg', 'mode', 'map', 'idle', 'tycoon', 'roguelike', 'fps', 'arcade', 'app', 'story', 'adventure',
+  'battle', 'fight', 'duel', 'race', 'course', 'parkour', 'lot', 'bit', 'kind', 'sort', 'type', 'endless', 'infinite', 'hard', 'easy',
+  'simple', 'fun', 'cool', 'new', 'little', 'big', 'long', 'short', 'first', 'second', 'third', 'person', 'player',
+  'away', 'here', 'there', 'not', 'so', 'very', 'bored', 'gonna', 'going',
+]);
+
+/** Rozhoduje hlava fráze (poslední slovo): „little submarine“ je postava, „hard platformer“ ne. */
+const aCharacter = (phrase: string | null): string | null =>
+  phrase === null || NOT_A_CHARACTER.has(phrase.split(' ').at(-1) ?? '') ? null : phrase;
+
+/**
+ * Podmět před prvním slovesem (P26 T9): „A penguin slides down…“ → penguin,
+ * „a squirrel jumping…“ → squirrel. Po členu `a/an` je slovo na -s za
+ * jednotnou hlavou sloveso třetí osoby; fráze, která jmenuje žánr, je `null`.
+ */
+function subjectOf(text: string): string | null {
+  const match = /^(?:a|an|the|my|one) ([a-z0-9][a-z0-9' -]*)/.exec(text);
+  if (match === null) return null;
+  // „A gold mine where I hire…“, „a match 3 game“ – místo nebo žánr, ne postava.
+  if (match[1].split(' ').slice(0, 4).some((word) => word === 'where' || word === 'game' || word === 'games')) return null;
+  const phrase = nounPhrase(match[1], 3);
+  if (phrase === null) return null;
+  const words: string[] = [];
+  for (const word of phrase.split(' ')) {
+    const previous = words.at(-1);
+    if (previous !== undefined && /[^s]s$/.test(word) && !previous.endsWith('s')) break;
+    words.push(word);
+  }
+  return aCharacter(words.slice(-2).join(' '));
+}
+
 export function readRoles(sentence: string): SentenceRoles {
   const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
-  const player = first(text, [
-    /\b(?:i'?m|i am|you are|you're|play as|playing as) (?:a |an |the )?([a-z][a-z -]*)/,
-    /^(?:a |an |the )([a-z][a-z -]*?) (?:escapes|flees|runs|races|carries|delivers|brings|hunts|must|has to|sneaks|crosses)\b/,
-  ], 2);
+  const player =
+    aCharacter(first(text, [
+      /\b(?:i'?m|i am|you are|you're|youre|ur|play as|playing as|as|you play|you control|control|be|become) (?:a |an |the )([a-z][a-z -]*)/,
+      // Vozidlo, které hráč řídí, je jeho postava („fly a paper plane through a house“).
+      /^(?:drive|fly|ride|steer|pilot) (?:a |an |the )([a-z][a-z -]*)/,
+      /\b(?:i'?m|i am|you are|you're|play as|playing as) ([a-z][a-z -]*)/,
+    ], 2)) ?? subjectOf(text);
   const chaser = first(text, [
     /\b([a-z]+(?: [a-z]+)?) (?:hunts|chases|pursues|catches|follows|stalks) (?:it|you|me|them|him|her|the player)\b/,
     /\b(?:hunted|chased|pursued|followed) by (?:a |an |the )?([a-z][a-z -]*)/,
