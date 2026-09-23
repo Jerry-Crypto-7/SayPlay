@@ -2,7 +2,7 @@
  * Arkádové jádro (P25A, T2; v2 P25C): `step()`, hash a přehrání.
  *
  * Tik: vstup → ovládání → vezení na kinematickém tělese → integrace
- * (rychlost, gravitace) → kolize AABB hráče s ostatními (pevné tělo zastaví
+ * (rychlost, gravitace) → stohování padajících těl → kolize AABB hráče s ostatními (pevné tělo zastaví
  * shora, zdola i z boku; přistání shora není náraz) → projektily (život,
  * zásah, odraz; P25G) → pravidla → úklid. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
  * náhodu, takže stav v tiku *t* je funkce počátečního stavu a vstupů 0..*t*.
@@ -268,6 +268,40 @@ function integrate(state: ArcadeState, count: number): void {
   }
 }
 
+/**
+ * Stohování (P25G): padající tělo (gravitace, ne hráč, ne projektil, ne
+ * kinematické), které za tik propadlo horní hranou pevného těla pod sebou,
+ * na ní přistane. Pořadí podle indexu – generátor staví věž odspodu, takže
+ * spodní blok je usazený dřív, než na něj dosedne horní. Když podpora zmizí
+ * (despawn), tělo příští tik padá dál na další podporu nebo zem.
+ */
+function settle(state: ArcadeState, count: number, player: number): void {
+  for (let i = 0; i < count; i += 1) {
+    if (i === player) continue;
+    const base = baseOf(i);
+    const flags = state[base + S.flags] as number;
+    if ((flags & (F.alive | F.gravity | F.kinematic)) !== (F.alive | F.gravity) || state[base + S.role] === R.projectile) continue;
+    const y = state[base + S.y] as number;
+    if (y <= 0) continue;
+    const prevY = y - (state[base + S.vy] as number);
+    let support = -1;
+    for (let j = 0; j < count; j += 1) {
+      if (j === i) continue;
+      const other = baseOf(j);
+      if (((state[other + S.flags] as number) & (F.alive | F.solid)) !== (F.alive | F.solid)) continue;
+      const top = (state[other + S.y] as number) + (state[other + S.h] as number);
+      if (top > prevY || top <= y || top <= support) continue;
+      if (Math.abs((state[base + S.x] as number) - (state[other + S.x] as number)) * 2 >= (state[base + S.w] as number) + (state[other + S.w] as number)) continue;
+      if (Math.abs((state[base + S.z] as number) - (state[other + S.z] as number)) * 2 >= (state[base + S.d] as number) + (state[other + S.d] as number)) continue;
+      support = top;
+    }
+    if (support < 0) continue;
+    state[base + S.y] = support;
+    state[base + S.vy] = 0;
+    state[base + S.flags] = (state[base + S.flags] as number) | F.grounded;
+  }
+}
+
 /** Hráč stojící na kinematickém tělese se s ním veze: přičte jeho rychlost ještě před integrací. */
 function carry(state: ArcadeState, count: number, player: number): void {
   const p = baseOf(player);
@@ -490,6 +524,7 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const prevY = state[p + S.y] as number;
   const prevZ = state[p + S.z] as number;
   integrate(state, count);
+  settle(state, count, player);
   const contacts = collide(state, count, player, prevX, prevY, prevZ);
   const ended = projectiles(state, count, player);
 

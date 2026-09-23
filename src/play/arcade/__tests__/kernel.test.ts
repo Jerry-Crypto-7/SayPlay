@@ -642,6 +642,29 @@ describe('projektil v jádře', () => {
     }
   });
 
+  it('věž z bloků stojí; sestřelený prostřední blok = horní dopadne na spodní', () => {
+    const block = (y: number): BodyInit => body('target', 8000, { y, w: 800, h: 800, d: 800, solid: true, gravity: true });
+    const w = shotWorld([bullet(), block(0), block(800), block(1600)], { every: 100, template: 1, vy: 0, vz: 200 });
+    const program = loadProgram(w, shotLibrary);
+    const state = instantiate(w);
+    const yOf = (i: number): number => state[bodyBase(i) + BODY.y] as number;
+    // Výstřel v tiku 0 letí ve výšce 1–1,2 m: trefí jen prostřední blok.
+    for (let t = 0; t < 99; t += 1) step(state, NO_INPUT, program);
+    expect(aliveAt(state, 3)).toBe(false);
+    expect(scoreOf(state)).toBe(1);
+    expect([yOf(2), yOf(4)]).toEqual([0, 800]);
+    expect(state[bodyBase(4) + BODY.vy]).toBe(0);
+
+    // Bez zásahu věž stojí celých 90 s a hash je dvakrát stejný.
+    // (Pravidlo střílí v tiku 0 vždy – tady dozadu, mimo věž.)
+    const still = shotWorld([bullet(), block(0), block(800), block(1600)], { every: 100_000, template: 1, vy: 0, vz: -200 });
+    const s2 = instantiate(still);
+    const p2 = loadProgram(still, shotLibrary);
+    for (let t = 0; t < ARCADE_LIMITS.maxTicks; t += 1) step(s2, NO_INPUT, p2);
+    expect([2, 3, 4].map((i) => s2[bodyBase(i) + BODY.y])).toEqual([0, 800, 1600]);
+    expect(replay(still, [], shotLibrary)).toEqual(replay(still, [], shotLibrary));
+  });
+
   it('úroveň nastaví počáteční čítače, efekt count k nim přičte', () => {
     const counting: RulePiece<Record<string, never>> = {
       id: 'counting',
