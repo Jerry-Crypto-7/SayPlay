@@ -4,18 +4,18 @@
  *
  * - **úspěšnost vylepšení** – kolik vět dostalo AI verzi;
  * - **věrnost ve specifikaci** – podíl položek kontrolního seznamu, které
- *   spec nese *a* kompilátor daného ovládání je čte (`READS`);
+ *   spec nese *a* ovládání je podle `src/play/capabilities.ts` čte;
  * - **poznatelnost na snímku** – model s obrázkem (`codex exec -i`) odpoví
  *   ano/ne na každou položku; soudí jen plátno, text stránky je skrytý.
  *
  * Kontrolní seznam každé věty je v `evals/play/fidelity/corpus.json`, psaný
- * předem: 2–4 podstatná jména a jedno sloveso. `READS` je dnešní stav
- * kompilátoru podle auditu P26 §3; T5 ho nahradí tabulkou `src/play/capabilities.ts`.
+ * předem: 2–4 podstatná jména a jedno sloveso.
  *
- * Kroky jdou pouštět zvlášť a běh jde přerušit – hotová věta se přeskočí:
- *   node scripts/play-fidelity.mjs run    [--base http://127.0.0.1:3100] [--run <id>] [--only s039,h01]
- *   node scripts/play-fidelity.mjs judge  [--run <id>]
- *   node scripts/play-fidelity.mjs report [--run <id>]
+ * Kroky jdou pouštět zvlášť a běh jde přerušit – hotová věta se přeskočí
+ * (Node 22 potřebuje `--experimental-strip-types` kvůli tabulce v TypeScriptu):
+ *   node --experimental-strip-types scripts/play-fidelity.mjs run    [--base http://127.0.0.1:3100] [--run <id>] [--only s039,h01]
+ *   node --experimental-strip-types scripts/play-fidelity.mjs judge  [--run <id>]
+ *   node --experimental-strip-types scripts/play-fidelity.mjs report [--run <id>]
  *
  * Server musí být `next start` se živou větví a
  * `PLAY_DIRECTOR_CALLS_PER_CALLER` ≥ 30, jinak denní strop volajícího utne běh
@@ -29,30 +29,16 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Co ovládání čte, říká tabulka schopností (P26 T5). Holý Node 22 ji načte jen
+// s `--experimental-strip-types`; tabulka má proto jen typové importy.
+import { CAPABILITIES, controlOf, readsLabel, readsMechanic as readsMechanicOf } from '../src/play/capabilities.ts';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
 
 export const SLOTS = ['hero', 'role', 'any', 'setting', 'verb'];
 
-/**
- * Co kompilátor ovládání opravdu čte (audit P26 §3, mapa věrnosti).
- * `roles`: `'all'` nebo predikát nad rolí; `mechanics`: `'all'` nebo seznam id.
- */
 const PLAYER = (role) => role.kind === 'player';
-const LIVES_AND_TIMER = ['health', 'timer'];
-export const READS = {
-  tap_go: { roles: 'all', setting: true, mechanics: 'all' },
-  runner: { roles: PLAYER, setting: false, mechanics: LIVES_AND_TIMER },
-  platform: { roles: PLAYER, setting: false, mechanics: LIVES_AND_TIMER },
-  flap: { roles: PLAYER, setting: false, mechanics: LIVES_AND_TIMER },
-  shooter: { roles: (role) => PLAYER(role) || role.id === 'enemy', setting: false, mechanics: LIVES_AND_TIMER },
-  throw: { roles: PLAYER, setting: false, mechanics: ['timer'] },
-  steer: { roles: PLAYER, setting: false, mechanics: ['timer'] },
-  move_free: { roles: () => false, setting: false, mechanics: LIVES_AND_TIMER },
-  timing: { roles: () => false, setting: false, mechanics: LIVES_AND_TIMER },
-  rhythm: { roles: () => false, setting: false, mechanics: LIVES_AND_TIMER },
-  duel: { roles: () => false, setting: false, mechanics: LIVES_AND_TIMER },
-};
 
 /** Nálezy nad korpusem; prázdné pole = korpus platí. */
 export function checkCorpus(corpus) {
@@ -86,10 +72,9 @@ const mentions = (text, words) => words.some((word) => new RegExp(`\\b${escape(w
  * místem, které ovládání čte. `score` = podíl `read`.
  */
 export function specFidelity(spec, checklist) {
-  const control = spec.control ?? 'tap_go';
-  const reads = READS[control] ?? READS.tap_go;
-  const readsRole = (role) => reads.roles === 'all' || reads.roles(role);
-  const readsMechanic = (id) => reads.mechanics === 'all' || reads.mechanics.includes(id);
+  const control = controlOf(spec);
+  const readsRole = (role) => readsLabel(control, role);
+  const readsMechanic = (id) => readsMechanicOf(control, id);
   const roles = spec.roles ?? [];
   const mechanicIds = (spec.mechanics ?? []).map((mechanic) => mechanic.id);
   const items = checklist.map((entry) => {
@@ -100,7 +85,7 @@ export function specFidelity(spec, checklist) {
     }
     if (entry.slot === 'setting') {
       const inSpec = mentions(spec.theme?.setting ?? '', entry.match);
-      return { item: entry.item, slot: entry.slot, inSpec, read: inSpec && reads.setting };
+      return { item: entry.item, slot: entry.slot, inSpec, read: inSpec && CAPABILITIES[control].setting };
     }
     const candidates = roles.filter((role) => (entry.slot === 'hero' ? PLAYER(role) : entry.slot === 'role' ? !PLAYER(role) : true));
     const hits = candidates.filter((role) => mentions(role.label, entry.match));
