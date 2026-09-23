@@ -56,7 +56,7 @@ describe('specFidelity', () => {
   });
 
   it('counts an arcade setting only when a scene set shows it', () => {
-    const place = [{ item: 'nowhere', slot: 'setting', match: ['nowhere'] }];
+    const place = [{ item: 'nowhere', slot: 'setting' as const, match: ['nowhere'] }];
     const unknown = spec('shooter', 'Zombie', 'the land of nowhere');
     expect(specFidelity(unknown, place).items[0]).toMatchObject({ inSpec: true, read: false });
     expect(specFidelity({ ...unknown, theme: { ...unknown.theme, look: 'desert' } }, place).items[0]).toMatchObject({ inSpec: true, read: true });
