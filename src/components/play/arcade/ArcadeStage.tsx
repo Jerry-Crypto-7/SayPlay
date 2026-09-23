@@ -4,7 +4,9 @@
  * Plátno arkády (P25A T6, P25C T6). Smyčka `useFrame` posouvá hodiny relace
  * (pevný krok v `session.ts`) a kreslí těla interpolovaná mezi posledními
  * dvěma tiky. Scéna podle ovládání: běžec má kameru za a nad hráčem,
- * plošinovka a poletování boční kameru (trať jde zleva doprava). Vstup se
+ * plošinovka a poletování boční kameru (trať jde zleva doprava); střelnice
+ * a hřiště hodu mají vlastní scénu s kamerou a vstupem (`shooter/`,
+ * `throw/`, P25G). Vstup se
  * jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  *
  * Modely: `/assets/worldstream/game/<id>-lod1.glb` podle id těla (`hurdle`,
@@ -24,6 +26,9 @@ import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 
 import type { ArcadeSession } from './session';
+import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
+import { ShooterRig } from './shooter/ShooterRig';
+import { ThrowRig } from './throw/ThrowRig';
 
 const MODEL_BASE = '/assets/worldstream/game/';
 
@@ -40,12 +45,13 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
 };
 
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
-const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird']);
+const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', ...SHOT_PRIMITIVES]);
 
-/** Id těla → id modelu v katalogu. Hráč dostane model hrdiny z popisku role. */
-function modelIdOf(view: BodyView, playerModel: string): string {
+/** Id těla → id modelu v katalogu. Hráč dostane model hrdiny z popisku role, nepřítel střelnice model z popisku nepřátel. */
+function modelIdOf(view: BodyView, playerModel: string, enemyModel: string): string {
   if (view.role === ROLE.player) return playerModel;
   if (view.kind === 'finish') return 'finish-flag';
+  if (view.kind === 'enemy') return enemyModel;
   return view.kind;
 }
 
@@ -97,6 +103,7 @@ function FittedModel({ id, w, h, d, fallback }: { readonly id: string; readonly 
 
 /** Tělesa bez modelu: plošina (hlína + tráva), řada hrotů, trubka, strop, ptáček. */
 function Primitive({ id, w, h, d }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number }) {
+  if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} />;
   if (id === 'platform' || id === 'platform-moving') {
     const top = Math.min(0.25, h / 3);
     return (
@@ -201,7 +208,15 @@ function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y: numbe
   camera.lookAt(look);
 }
 
-function World({ session, control, playerModel, surface }: { readonly session: ArcadeSession; readonly control: string; readonly playerModel: string; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+interface WorldProps {
+  readonly session: ArcadeSession;
+  readonly control: string;
+  readonly playerModel: string;
+  readonly enemyModel: string;
+  readonly surface: React.RefObject<HTMLDivElement | null>;
+}
+
+function World({ session, control, playerModel, enemyModel, surface }: WorldProps) {
   const views = useMemo(() => bodiesOf(session), [session]);
   const groups = useRef<(Group | null)[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
@@ -238,6 +253,8 @@ function World({ session, control, playerModel, surface }: { readonly session: A
       } else if (control === 'flap') {
         // Ptáček blíž středu: v levém horním rohu by ho na počítači zakryl HUD.
         placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 14, FLAP.ceiling / UNIT + 1, 26, 0.1);
+      } else if (control === 'shooter' || control === 'throw') {
+        // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
       } else {
         camera.position.set(x * 0.6, 3.4, z - 6.5);
         look.set(x * 0.4, 1.1, z + 9);
@@ -252,14 +269,16 @@ function World({ session, control, playerModel, surface }: { readonly session: A
   return (
     <>
       <Backdrop control={control} length={session.world.length / UNIT} />
+      {control === 'shooter' && <ShooterRig session={session} surface={surface} />}
+      {control === 'throw' && <ThrowRig session={session} surface={surface} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }}>
-            {PRIMITIVE.has(modelIdOf(view, playerModel)) ? (
-              <Primitive id={modelIdOf(view, playerModel)} w={view.w} h={view.h} d={view.d} />
+            {PRIMITIVE.has(modelIdOf(view, playerModel, enemyModel)) ? (
+              <Primitive id={modelIdOf(view, playerModel, enemyModel)} w={view.w} h={view.h} d={view.d} />
             ) : (
-              <FittedModel id={modelIdOf(view, playerModel)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+              <FittedModel id={modelIdOf(view, playerModel, enemyModel)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
             )}
           </group>
         ),
@@ -286,6 +305,14 @@ function Backdrop({ control, length }: { readonly control: string; readonly leng
       <mesh position={[0, -0.4, span / 2 - 30]}>
         <boxGeometry args={[3, 0.8, span]} />
         <meshStandardMaterial color="#a16207" roughness={1} />
+      </mesh>
+    );
+  }
+  if (control === 'shooter' || control === 'throw') {
+    return (
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
+        <planeGeometry args={[120, 120]} />
+        <meshStandardMaterial color={control === 'shooter' ? '#a3a36b' : '#4d9e4d'} roughness={1} />
       </mesh>
     );
   }
@@ -450,7 +477,7 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
   }, [session, target, active]);
 }
 
-export default function ArcadeStage({ session, playerModel }: { readonly session: ArcadeSession; readonly playerModel: string }) {
+export default function ArcadeStage({ session, playerModel, enemyModel = 'robot' }: { readonly session: ArcadeSession; readonly playerModel: string; readonly enemyModel?: string }) {
   const surface = useRef<HTMLDivElement | null>(null);
   const control = session.world.control.id;
   useRunnerInput(session, surface, control === 'runner');
@@ -463,8 +490,8 @@ export default function ArcadeStage({ session, playerModel }: { readonly session
         <fog attach="fog" args={['#bae6fd', 30, 90]} />
         <hemisphereLight args={['#e0f2fe', '#166534', 0.9]} />
         {/* Boční scény svítí ze strany kamery (−x). */}
-        <directionalLight position={[control === 'runner' ? 6 : -6, 12, -4]} intensity={1.6} />
-        <World session={session} control={control} playerModel={playerModel} surface={surface} />
+        <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={1.6} />
+        <World session={session} control={control} playerModel={playerModel} enemyModel={enemyModel} surface={surface} />
       </Canvas>
     </div>
   );

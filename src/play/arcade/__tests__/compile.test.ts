@@ -11,6 +11,8 @@ import { ARCADE_COMPILER_VERSION } from '../compile';
 import flapFixture from '../__fixtures__/flap.json';
 import platformFixture from '../__fixtures__/platform.json';
 import runnerFixture from '../__fixtures__/runner.json';
+import shooterFixture from '../__fixtures__/shooter.json';
+import throwFixture from '../__fixtures__/throw.json';
 
 const read = (raw: unknown): GameSpecV1 => {
   const result = readGameSpec(raw);
@@ -23,6 +25,8 @@ describe('plošinovka a poletování (P25C)', () => {
   it.each([
     ['platform', platformFixture, 'platform_bot'],
     ['flap', flapFixture, 'flap_bot'],
+    ['shooter', shooterFixture, 'shooter_bot'],
+    ['throw', throwFixture, 'throw_bot'],
   ] as const)('fixtura %s se zkompiluje do arkádového světa a projde ověřením', (control, fixture, bot) => {
     const compiled = compileGame(read(fixture), 1);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));

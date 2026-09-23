@@ -25,7 +25,7 @@ Kontrakt: `src/play/arcade/contract.ts`. Řídicí plán: `plans/P25-play-knihov
 
 ## Tik jádra
 
-vstup → ovládání (kus `control`) → vezení (hráč stojící na kinematickém tělese dostane jeho rychlost) → integrace (rychlost, gravitace) → kolize AABB hráče s ostatními → pravidla (`contact`, `tick`, `counter` → `score`, `damage`, `lose`, `win`, `despawn`, `spawn`, `respawn`, `checkpoint`) → úklid.
+vstup → ovládání (kus `control`) → vezení (hráč stojící na kinematickém tělese dostane jeho rychlost) → integrace (rychlost, gravitace) → stohování (padající tělo s gravitací dosedne na pevné tělo pod sebou) → kolize AABB hráče s ostatními → projektily (život, zásah, odraz) → pravidla (`contact`, `hit`, `tick`, `counter` → `score`, `damage`, `count`, `lose`, `win`, `despawn`, `spawn`, `respawn`, `checkpoint`) → úklid.
 
 Kolize s pevným tělem podle toho, odkud hráč přišel (poloha před integrací; u pohyblivého tělesa jeho poloha minus rychlost):
 
@@ -34,6 +34,8 @@ Kolize s pevným tělem podle toho, odkud hráč přišel (poloha před integrac
 | shora | hráč stojí na horní hraně, `vy = 0`, `grounded` | ne |
 | zdola | hlava pod spodní hranou, `vy = 0` | ano |
 | z boku (`x` nebo `z`) | hráč na hraně, `vx`/`vz` = 0; přes roh rozhodne menší průnik | ano |
+
+**Projektil** (role `projectile`, P25G) jde po kolizích hráče: hráče nezastaví ani se ho nedotkne (vylétá z něj). Každý tik mu jádro ubere život (`aux1`, výchozí 3 s, mez 90 s – `buildWorld` jiný neveme), pak hledá zásah – živý terč (`target`), nepřítel (`enemy`) nebo pevné tělo, první podle indexu, proti obalu dráhy za tik, takže rychlá střela tenkým terčem nepropadne. S gravitací na zemi (`y ≤ 0`) se odrazí (`aux0` = odraz 0–1000: `vy`, `vx`, `vz` × odraz / 1000), nebo skončí – bez odrazu hned, s odrazem až když vyskočí slaběji než o dva tiky gravitace. Skončený projektil jádro despawnuje samo a spustí pravidla se spouštěčem `hit` (`other` = zasažené tělo, u země a dohasnutí −1; `source` = projektil). Předloha projektilu si odraz a plný život přenese i do spawnu.
 
 Nepevné tělo je jen kontakt. Příznaky těla: `solid` (stojí se na něm, zastaví), `gravity` (padá, drží se nad zemí `y ≥ 0`), `kinematic` (jede jen svou rychlostí, nic ho nezastaví, hráč se veze). Předloha (`template`) je ve světě mrtvá a efekt `spawn` ji kopíruje do rezervy; mrtvé spawnuté sloty se použijí znovu, těla úrovně nikdy, a když není kam, efekt se zahodí.
 

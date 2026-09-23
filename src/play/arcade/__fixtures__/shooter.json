@@ -1,0 +1,67 @@
+{
+  "schema": "gamespec.v1",
+  "control": "shooter",
+  "controlParams": {
+    "difficulty": "normal"
+  },
+  "title": "Target Range",
+  "archetype": "combat_lite",
+  "targetDurationSec": 60,
+  "theme": {
+    "setting": "dusty shooting range at sunset",
+    "mood": "action"
+  },
+  "objective": {
+    "kind": "defeat_targets",
+    "description": "Hit every target and stop every wave before it reaches you.",
+    "count": 4,
+    "role": "target"
+  },
+  "mechanics": [
+    {
+      "id": "defeat",
+      "params": {
+        "role": "target",
+        "count": 4,
+        "hitsPerTarget": 1
+      }
+    }
+  ],
+  "roles": [
+    {
+      "id": "player",
+      "kind": "player",
+      "label": "ranger"
+    },
+    {
+      "id": "target",
+      "kind": "target",
+      "label": "target",
+      "count": 4
+    },
+    {
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "robot",
+      "count": 9
+    }
+  ],
+  "tutorial": {
+    "goalLine": "Hit every target and stop the waves.",
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+  },
+  "verification": [
+    {
+      "id": "winnable",
+      "kind": "reachability",
+      "assert": {
+        "runState": "won"
+      }
+    }
+  ],
+  "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+  }
+}
