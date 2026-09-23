@@ -119,10 +119,69 @@
      "upgradeSecondsP90": 67.914
     }
    }
+  },
+  {
+   "runId": "2026-09-23-t6",
+   "measuredAt": "2026-09-23T16:05:21.727Z",
+   "commit": "5c57f36",
+   "note": "P26 T3 repairs + T6 strict schema + T7 labels (5c57f36)",
+   "metrics": {
+    "n": 30,
+    "upgradeSuccess": {
+     "ok": 23,
+     "of": 30,
+     "failures": {
+      "NOT_PLAYABLE": 7
+     }
+    },
+    "specFidelity": {
+     "final": 0.521,
+     "draft": 0.36,
+     "ai": 0.578,
+     "inSpecFinal": 0.806
+    },
+    "recognizable": {
+     "final": {
+      "items": {
+       "hit": 18,
+       "of": 110
+      },
+      "hero": {
+       "hit": 6,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     },
+     "draft": {
+      "items": {
+       "hit": 14,
+       "of": 110
+      },
+      "hero": {
+       "hit": 4,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     }
+    },
+    "timing": {
+     "draftMsP50": 173,
+     "upgradeSecondsP50": 44.265,
+     "upgradeSecondsP90": 83.914
+    }
+   }
   }
  ],
  "latest": {
-  "runId": "2026-09-23-t5",
+  "runId": "2026-09-23-t6",
   "sentences": [
    {
     "id": "h01",
@@ -132,7 +191,7 @@
      "ai": null
     },
     "upgrade": "NOT_PLAYABLE",
-    "upgradeSeconds": 68,
+    "upgradeSeconds": 61,
     "fidelity": {
      "draft": 0.4,
      "ai": null
@@ -149,19 +208,18 @@
     "text": "shopping cart race in a supermarket",
     "controls": {
      "draft": "steer",
-     "ai": null
+     "ai": "steer"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 43,
+    "upgrade": "ai",
+    "upgradeSeconds": 33,
     "fidelity": {
      "draft": 0.333,
-     "ai": null
+     "ai": 0.667
     },
     "recognized": [
      "race"
     ],
     "missing": [
-     "shopping cart",
      "supermarket (in spec, not read)"
     ]
    },
@@ -170,19 +228,18 @@
     "text": "defend a castle from dragons by throwing snowballs",
     "controls": {
      "draft": "throw",
-     "ai": null
+     "ai": "throw"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 43,
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 0.25,
-     "ai": null
+     "ai": 0.5
     },
     "recognized": [],
     "missing": [
-     "castle",
-     "dragon",
-     "snowball"
+     "castle (in spec, not read)",
+     "dragon (in spec, not read)"
     ]
    },
    {
@@ -193,7 +250,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 55,
+    "upgradeSeconds": 66,
     "fidelity": {
      "draft": 0.75,
      "ai": 1
@@ -229,8 +286,8 @@
      "draft": "throw",
      "ai": null
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 70,
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 74,
     "fidelity": {
      "draft": 0,
      "ai": null
@@ -252,7 +309,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 58,
+    "upgradeSeconds": 69,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.667
@@ -270,7 +327,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 50,
+    "upgradeSeconds": 57,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.667
@@ -288,7 +345,7 @@
      "ai": null
     },
     "upgrade": "NOT_PLAYABLE",
-    "upgradeSeconds": 49,
+    "upgradeSeconds": 57,
     "fidelity": {
      "draft": 0.333,
      "ai": null
@@ -304,21 +361,21 @@
     "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
     "controls": {
      "draft": "tap_go",
-     "ai": null
+     "ai": "runner"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 33,
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 0,
-     "ai": null
+     "ai": 0.4
     },
-    "recognized": [],
+    "recognized": [
+     "penguin"
+    ],
     "missing": [
-     "penguin",
-     "glacier",
-     "seal",
-     "fish",
-     "slide"
+     "glacier (in spec, not read)",
+     "seal (in spec, not read)",
+     "fish (in spec, not read)"
     ]
    },
    {
@@ -326,13 +383,13 @@
     "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
     "controls": {
      "draft": "tap_go",
-     "ai": "tap_go"
+     "ai": null
     },
-    "upgrade": "ai",
-    "upgradeSeconds": 53,
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 77,
     "fidelity": {
      "draft": 1,
-     "ai": 1
+     "ai": null
     },
     "recognized": [
      "knight",
@@ -349,7 +406,7 @@
      "ai": "tap_go"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 37,
+    "upgradeSeconds": 52,
     "fidelity": {
      "draft": 1,
      "ai": 1
@@ -368,7 +425,7 @@
      "ai": "runner"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 34,
+    "upgradeSeconds": 36,
     "fidelity": {
      "draft": 0.4,
      "ai": 0.4
@@ -390,7 +447,7 @@
      "ai": "runner"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 37,
+    "upgradeSeconds": 309,
     "fidelity": {
      "draft": 0.667,
      "ai": 0.667
@@ -410,7 +467,7 @@
      "ai": "platform"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 29,
+    "upgradeSeconds": 44,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.333
@@ -429,12 +486,14 @@
      "ai": "platform"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 37,
+    "upgradeSeconds": 28,
     "fidelity": {
      "draft": 0.25,
      "ai": 0.5
     },
-    "recognized": [],
+    "recognized": [
+     "robot"
+    ],
     "missing": [
      "charger (in spec, not read)",
      "tower (in spec, not read)"
@@ -448,16 +507,15 @@
      "ai": "flap"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 33,
+    "upgradeSeconds": 28,
     "fidelity": {
      "draft": 0.667,
-     "ai": 0.333
+     "ai": 0.667
     },
     "recognized": [
      "bird"
     ],
     "missing": [
-     "bird",
      "underwater (in spec, not read)"
     ]
    },
@@ -466,20 +524,18 @@
     "text": "A space marine shoots alien bugs in a mining colony",
     "controls": {
      "draft": "shooter",
-     "ai": null
+     "ai": "shooter"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 33,
+    "upgrade": "ai",
+    "upgradeSeconds": 32,
     "fidelity": {
      "draft": 0.25,
-     "ai": null
+     "ai": 0.75
     },
     "recognized": [
      "shoot"
     ],
     "missing": [
-     "space marine",
-     "alien bug",
      "mining colony (in spec, not read)"
     ]
    },
@@ -491,7 +547,7 @@
      "ai": "shooter"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 25,
+    "upgradeSeconds": 4,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.667
@@ -508,19 +564,18 @@
     "text": "throwing snowballs at kids behind a snow fort",
     "controls": {
      "draft": "throw",
-     "ai": null
+     "ai": "throw"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 28,
+    "upgrade": "ai",
+    "upgradeSeconds": 32,
     "fidelity": {
      "draft": 0.25,
-     "ai": null
+     "ai": 0.5
     },
     "recognized": [],
     "missing": [
-     "snowball",
-     "kid",
-     "snow fort"
+     "kid (in spec, not read)",
+     "snow fort (in spec, not read)"
     ]
    },
    {
@@ -528,20 +583,19 @@
     "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
     "controls": {
      "draft": "steer",
-     "ai": null
+     "ai": "steer"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 29,
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
     "fidelity": {
      "draft": 0.5,
-     "ai": null
+     "ai": 0.75
     },
     "recognized": [
      "traffic",
      "race"
     ],
     "missing": [
-     "scooter",
      "traffic (in spec, not read)"
     ]
    },
@@ -550,20 +604,20 @@
     "text": "boat race through a jungle river full of crocodiles",
     "controls": {
      "draft": "steer",
-     "ai": null
+     "ai": "steer"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 30,
+    "upgrade": "ai",
+    "upgradeSeconds": 41,
     "fidelity": {
      "draft": 0.25,
-     "ai": null
+     "ai": 0.25
     },
     "recognized": [
      "race"
     ],
     "missing": [
      "boat",
-     "crocodile",
+     "crocodile (in spec, not read)",
      "jungle river (in spec, not read)"
     ]
    },
@@ -572,18 +626,17 @@
     "text": "candy crush but with gems in a cave",
     "controls": {
      "draft": "tap_go",
-     "ai": "tap_go"
+     "ai": null
     },
-    "upgrade": "ai",
-    "upgradeSeconds": 37,
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 49,
     "fidelity": {
      "draft": 0.333,
-     "ai": 0.667
+     "ai": null
     },
-    "recognized": [
-     "gem"
-    ],
+    "recognized": [],
     "missing": [
+     "gem",
      "match"
     ]
    },
@@ -595,33 +648,33 @@
      "ai": "throw"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 28,
+    "upgradeSeconds": 44,
     "fidelity": {
      "draft": 0.333,
-     "ai": 1
+     "ai": 0.667
     },
-    "recognized": [],
-    "missing": []
+    "recognized": [
+     "cat"
+    ],
+    "missing": [
+     "cardboard box (in spec, not read)"
+    ]
    },
    {
     "id": "s095",
     "text": "knife throwing at a spinning log",
     "controls": {
      "draft": "tap_go",
-     "ai": null
+     "ai": "throw"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 31,
+    "upgrade": "ai",
+    "upgradeSeconds": 44,
     "fidelity": {
      "draft": 0,
-     "ai": null
+     "ai": 1
     },
     "recognized": [],
-    "missing": [
-     "knife",
-     "log",
-     "throw"
-    ]
+    "missing": []
    },
    {
     "id": "s099",
@@ -631,7 +684,7 @@
      "ai": "timing"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 41,
+    "upgradeSeconds": 40,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.333
@@ -650,7 +703,7 @@
      "ai": "move_free"
     },
     "upgrade": "ai",
-    "upgradeSeconds": 37,
+    "upgradeSeconds": 32,
     "fidelity": {
      "draft": 0.333,
      "ai": 0.333
@@ -666,19 +719,19 @@
     "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
     "controls": {
      "draft": "rhythm",
-     "ai": null
+     "ai": "rhythm"
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 34,
+    "upgrade": "ai",
+    "upgradeSeconds": 32,
     "fidelity": {
      "draft": 0.25,
-     "ai": null
+     "ai": 0.25
     },
     "recognized": [],
     "missing": [
-     "frog",
-     "lily pad",
-     "pond"
+     "frog (in spec, not read)",
+     "lily pad (in spec, not read)",
+     "pond (in spec, not read)"
     ]
    },
    {
@@ -688,8 +741,8 @@
      "draft": "tap_go",
      "ai": null
     },
-    "upgrade": "MALFORMED",
-    "upgradeSeconds": 61,
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 84,
     "fidelity": {
      "draft": 0,
      "ai": null
@@ -709,7 +762,7 @@
      "ai": null
     },
     "upgrade": "NOT_PLAYABLE",
-    "upgradeSeconds": 68,
+    "upgradeSeconds": 85,
     "fidelity": {
      "draft": 0.25,
      "ai": null
