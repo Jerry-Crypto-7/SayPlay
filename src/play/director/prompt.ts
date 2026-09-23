@@ -154,7 +154,7 @@ export function directorSystemPrompt(): string {
     'EXAMPLES (verification omitted for length; write it in full in your answer):',
     compactExample(collectExit),
     compactExample(chaseEscape),
-    'Role ids and mechanic ids are lowercase words with underscores. Labels, title, descriptions and the tutorial are English and short. Keep the user\'s explicit numbers, names and constraints.',
+    'Role ids and mechanic ids are lowercase words with underscores. Labels, title, descriptions and the tutorial are English and short; a role label is a 1–3 word noun, never an instruction. Keep the user\'s explicit numbers, names and constraints.',
   ].join('\n\n');
 }
 

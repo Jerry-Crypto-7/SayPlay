@@ -54,14 +54,15 @@ describe('director prompt', () => {
   // u střelby a hodu vynechal a model je hádal – přísné schéma neznámý klíč odmítne),
   // mechaniky a popisky, které hra ukáže, a tvar ověření arkády: 12 390 B. Strop
   // 12 000 B byl rozpočet plánu P23, ne mez poskytovatele; posouvá se na 12 500 B.
-  it('stays under 12 500 bytes for all forty golden sentences (pin: 12 390 B)', () => {
+  // P26 T7 přidal pravidlo o popiscích rolí (1–3 slova, žádný pokyn): 12 447 B.
+  it('stays under 12 500 bytes for all forty golden sentences (pin: 12 447 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_500);
-    expect(max).toBeLessThanOrEqual(12_390);
+    expect(max).toBeLessThanOrEqual(12_447);
   });
 
   // Zlaté věty vedou všechny na mřížku, arkádové fixtury tak strop neměřil nikdo.

@@ -13,6 +13,8 @@
  */
 
 import { intentFromKey } from '@/game/flow';
+import { MECHANICS, type MechanicEntry } from '@/play/registry';
+import type { GameSpecV1 } from '@/play/spec';
 import type { RuntimeAction } from '@/worldstream/runtime-input';
 
 export interface TargetCard {
@@ -34,12 +36,29 @@ export function playerActor(actions: readonly RuntimeAction[]): string | null {
   return actions.find((action) => action.actionId === 'moveTo')?.actor ?? null;
 }
 
-export function targetCards(actions: readonly RuntimeAction[], objects: readonly LabelledObject[]): readonly TargetCard[] {
+/**
+ * Entity rekvizit, na které žádná mechanika ani cíl hry neodkazují (P26 T7).
+ * Kompilátor dělá soket z každé role, takže by i kulisa „Remaining power
+ * countdown“ dostala kartu, ke které se dá dojít a nic se nestane.
+ */
+export function idleProps(spec: GameSpecV1, sim: unknown): ReadonlySet<string> {
+  // `blueprint.world.sim` je v typu `unknown`; entity mřížky nese `sim.ts` jako `{role, socket, state}`.
+  const entities = ((sim as { entities?: Record<string, { role?: string }> } | null)?.entities ?? {}) as Readonly<Record<string, { readonly role?: string }>>;
+  const used = new Set<string>(spec.objective.role === undefined ? [] : [spec.objective.role]);
+  for (const mechanic of spec.mechanics) {
+    const entry = MECHANICS[mechanic.id] as MechanicEntry<unknown>;
+    for (const [, roleId] of entry.roleRefs(mechanic.params)) used.add(roleId);
+  }
+  const idle = new Set(spec.roles.filter((role) => role.kind === 'prop' && !used.has(role.id)).map((role) => role.id));
+  return new Set(Object.entries(entities).filter(([, entity]) => entity.role !== undefined && idle.has(entity.role)).map(([id]) => id));
+}
+
+export function targetCards(actions: readonly RuntimeAction[], objects: readonly LabelledObject[], hidden: ReadonlySet<string> = new Set()): readonly TargetCard[] {
   const actor = playerActor(actions);
   if (actor === null) return [];
   const byTarget = new Map<string, RuntimeAction[]>();
   for (const action of actions) {
-    if (action.actor !== actor || action.target === undefined || action.target === actor) continue;
+    if (action.actor !== actor || action.target === undefined || action.target === actor || hidden.has(action.target)) continue;
     const list = byTarget.get(action.target) ?? [];
     list.push(action);
     byTarget.set(action.target, list);

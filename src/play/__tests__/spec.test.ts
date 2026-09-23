@@ -127,3 +127,20 @@ describe('readGameSpec', () => {
     expect(files).toEqual([...ARCHETYPE_IDS, 'collect_exit_stealth', 'delivery_orders', 'switch_puzzle_crates', 'switch_puzzle_ordered', 'invalid-dangling-role', 'invalid-over-budget', 'invalid-unknown-mechanic'].map((n) => `${n}.json`).sort());
   });
 });
+
+/** Popisky z auditu P26 (bod 7 a 8): hráč je čte na kartách jako text tlačítek. */
+describe('role labels (P26 T7)', () => {
+  it.each([
+    ['Battery; first beside spawn, others along the outpost loop', 'Battery'],
+    ['Remaining power countdown', 'Remaining power countdown'],
+    ['alien bug that crawls out of the vents', 'alien bug'],
+    ['big red angry dragon', 'red angry dragon'],
+    ['fox', 'fox'],
+  ])('reads %j as %j', (raw, label) => {
+    const spec = structuredClone(fixture('collect_exit')) as { roles: { label: string }[] };
+    spec.roles[0].label = raw;
+    const result = readGameSpec(spec);
+    if (!result.ok) throw new Error(result.issues.join('; '));
+    expect(result.value.roles[0].label).toBe(label);
+  });
+});

@@ -46,6 +46,19 @@ export const GAME_SPEC_SCHEMA = 'gamespec.v1' as const;
 export const gameId = z.string().regex(ID_PATTERN, 'identifier: letter, then letters/digits/_/. (max 64)');
 const text = z.string().min(1).max(200);
 
+/** Kde popisek přestává být jménem a začíná pokyn („Battery; first beside spawn…“, audit P26 bod 8). */
+const LABEL_BREAK = /[;:,(]| [-–] | (?:that|which|who|while|when|with|first|then|along|beside|near)\b/i;
+
+/**
+ * Popisek role je 1–3 slova (P26 T7): hráč ho čte na kartě a model hrdiny se
+ * vybírá z posledního slova. Za prvním zlomem se řeže, pak zůstanou poslední
+ * tři slova – v angličtině nese podstatné jméno konec („big red angry dragon“).
+ */
+export function roleLabel(raw: string): string {
+  const head = raw.split(LABEL_BREAK)[0].trim();
+  return (head === '' ? raw.trim() : head).split(/\s+/).slice(-3).join(' ');
+}
+
 /**
  * Druhy rolí. Role je **sémantická**: kompilátor z ní odvodí entitu, soket,
  * zónu a vizuální vazbu; hráč ji uvidí pod `label`. Právě jedna role je `player`.
@@ -435,7 +448,8 @@ export function readGameSpec(input: unknown): GameSpecResult {
       issues: parsed.error.issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`),
     };
   }
-  const spec = parsed.data;
+  // Popisky se čistí tady, ne `transform` ve schématu – z toho se staví JSON Schema zadání.
+  const spec = { ...parsed.data, roles: parsed.data.roles.map((role) => ({ ...role, label: roleLabel(role.label) })) };
   if (spec.controlParams !== undefined) {
     if (spec.control === undefined || spec.control === 'tap_go') {
       return {

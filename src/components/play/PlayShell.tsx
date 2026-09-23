@@ -39,7 +39,7 @@ import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
 import { UpgradeBanner, useUpgrade } from './UpgradeBanner';
-import { keyAction, playerActor, tapAction, targetCards } from './targets';
+import { idleProps, keyAction, playerActor, tapAction, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
 // při prerenderu spadl na `document`.
@@ -120,7 +120,10 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade 
   const [fault, setFault] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  const cards = useMemo(() => targetCards(controller.actions, blueprint.objects), [controller, blueprint]);
+  const cards = useMemo(
+    () => targetCards(controller.actions, blueprint.objects, idleProps(spec, blueprint.world.sim)),
+    [controller, blueprint, spec],
+  );
   const running = snapshot.runState === 'running';
   const built = world?.kind === 'built';
 
