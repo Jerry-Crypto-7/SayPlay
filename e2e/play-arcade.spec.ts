@@ -37,6 +37,27 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBe(before + 1);
   });
 
+  test('a hidden tab pauses the game and the first key resumes it (P27B T3)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(page.getByTestId('play-paused')).toBeVisible();
+    const frozen = await page.evaluate(() => window.__playShell!.tick());
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await page.waitForTimeout(500);
+    // Návrat do popředí hru sám nerozběhne.
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBe(frozen);
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('play-paused')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(frozen);
+  });
+
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
     await page.goto(url);
     const stage = page.getByTestId('arcade-stage');
