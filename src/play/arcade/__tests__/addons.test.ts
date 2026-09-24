@@ -94,6 +94,24 @@ function afterBot(world: ArcadeWorld): Int32Array {
 
 const needOf = (world: ArcadeWorld): number => world.rules.find((rule) => rule.id === 'finish_collected')?.params.need as number;
 
+describe('+shoot (P26D T5)', () => {
+  it.each([
+    ['runner', runner],
+    ['platform', platform],
+    ['flap', flap],
+    ['move_free', arena],
+  ])('%s +shoot passes the gate on 20 seeds and the bot hits something', (_control, fixture) => {
+    const spec = specOf(fixture, ['shoot']);
+    expect(failing(spec)).toEqual([]);
+    const world = worldOf(spec, 7);
+    expect(world.control.id).toBe('addon_control');
+    const state = afterBot(world);
+    // Každý zásah stál náboj a přidal bod; minutí by náboj stálo bez bodu.
+    expect(state[HEADER.counters + COUNTER.ammo]).toBeLessThan(world.initial[HEADER.counters + COUNTER.ammo] as number);
+    expect(state[HEADER.counters + COUNTER.score]).toBeGreaterThan(0);
+  });
+});
+
 describe('+collect (P26D T4)', () => {
   it.each([
     ['runner', runner],

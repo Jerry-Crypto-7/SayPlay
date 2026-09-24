@@ -90,10 +90,10 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   // Doplňky (P26D) dostanou hotové části základního ovládání.
   const base = { ...spec, controlParams: addonControlParams(spec) } as GameSpecV1;
-  const parts = applyAddons(partsOf(base, seed, health), { spec, seed });
-  const { control, bot, level, rules, issues } = parts;
+  const own = partsOf(base, seed, health);
+  const lives = 'health' in own ? own.health : health;
+  const { control, bot, level, rules, issues } = applyAddons(own, { spec, seed, health: lives });
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
-  const lives = 'health' in parts ? parts.health : health;
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
 
   const built = buildWorld({ seed, control, rules, bot, level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);

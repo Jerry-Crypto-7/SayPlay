@@ -3,8 +3,8 @@
  * (`PieceRef`), jádro i ověření je hledají tady. Co tu není, neexistuje.
  */
 
-import { ADDON_RULES, makeAddonBot } from './addons';
-import type { BotPiece } from './contract';
+import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
+import type { BotPiece, ControlPiece } from './contract';
 import type { ArcadeLibrary } from './kernel';
 import { arenaEat, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
 import { arenaBot } from './pieces/arena-bot';
@@ -42,19 +42,21 @@ const BASE_BOTS = {
   duel_bot: duelBot,
 } as const;
 
+const BASE_CONTROLS = {
+  runner: runnerControl,
+  platform: platformControl,
+  flap: flapControl,
+  steer: steerControl,
+  move_free: moveFreeControl,
+  shooter: shooterControl,
+  throw: throwControl,
+  timing: timingControl,
+  rhythm: rhythmControl,
+  duel: duelControl,
+} as const;
+
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: {
-    runner: runnerControl,
-    platform: platformControl,
-    flap: flapControl,
-    steer: steerControl,
-    move_free: moveFreeControl,
-    shooter: shooterControl,
-    throw: throwControl,
-    timing: timingControl,
-    rhythm: rhythmControl,
-    duel: duelControl,
-  },
+  controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece },
   rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule },
   generators: {
     runner_track: runnerTrack,
