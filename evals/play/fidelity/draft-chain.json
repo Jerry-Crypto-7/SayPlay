@@ -1,16 +1,16 @@
 {
  "header": {
   "about": "P27A T2 offline loss map: the fidelity corpus through the word draft and the compiler, no network, no model. See README.md.",
-  "measuredAt": "2026-09-24T16:20:37.449Z",
-  "commit": "d8c68af"
+  "measuredAt": "2026-09-24T16:38:05.199Z",
+  "commit": "55bb0f8"
  },
  "summary": {
   "sentences": 30,
   "compiled": 30,
   "items": 110,
-  "inSpec": 0.582,
-  "read": 0.545,
-  "drawn": 0.473
+  "inSpec": 0.691,
+  "read": 0.655,
+  "drawn": 0.591
  },
  "causes": [
   {
@@ -24,18 +24,6 @@
     "h10",
     "s069",
     "s095",
-    "s155"
-   ]
-  },
-  {
-   "why": "not-in-spec",
-   "control": "tap_go",
-   "slot": "setting",
-   "sentences": 4,
-   "ids": [
-    "h01",
-    "h09",
-    "h10",
     "s155"
    ]
   },
@@ -70,6 +58,16 @@
     "h01",
     "h04"
    ]
+  },
+  {
+   "why": "not-in-spec",
+   "control": "platform",
+   "slot": "role",
+   "sentences": 2,
+   "ids": [
+    "s021",
+    "s022"
+   ]
   }
  ],
  "sentences": [
@@ -83,10 +81,10 @@
     {
      "item": "zombie",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "mall",
@@ -413,10 +411,10 @@
     {
      "item": "underwater",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "flap",
@@ -448,16 +446,16 @@
      "slot": "role",
      "inSpec": true,
      "read": true,
-     "drawn": false,
-     "why": "no-model"
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "snow fort",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "throw",
@@ -586,10 +584,10 @@
     {
      "item": "boat",
      "slot": "hero",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "crocodile",
@@ -635,10 +633,10 @@
     {
      "item": "city",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "swallow",
@@ -750,10 +748,10 @@
     {
      "item": "pond",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "drum to the beat",
@@ -775,10 +773,10 @@
     {
      "item": "castle",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "goblin",
@@ -865,10 +863,10 @@
     {
      "item": "market",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "steal",
@@ -890,10 +888,10 @@
     {
      "item": "shopping cart",
      "slot": "hero",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "supermarket",
@@ -931,10 +929,10 @@
     {
      "item": "dragon",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "snowball",
@@ -1153,10 +1151,10 @@
     {
      "item": "hospital",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "flashlight",
@@ -1194,10 +1192,10 @@
     {
      "item": "glacier",
      "slot": "setting",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "seal",

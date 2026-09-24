@@ -40,7 +40,7 @@ import shooterTemplate from '../arcade/__fixtures__/shooter.json';
 import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
-import { lookFor } from '../arcade/look';
+import { lookFor, lookWords } from '../arcade/look';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
 import { type ControlChoice, type ControlPick, pickControl } from './controls';
@@ -61,6 +61,7 @@ import {
   SMASH,
   UNDERWATER,
   WATCHER,
+  nounPhrase,
   plural,
   readCountedNouns,
   readNumbers,
@@ -701,7 +702,7 @@ function applySentenceCounts(spec: GameSpecV1, sentence: string): void {
 }
 
 const DUEL_VERB = /\b(?:box(?:es|ing)?|fights?|fighting|punch(?:es|ing)?|kick(?:s|ing)?|wrestl(?:es?|ing)|duel(?:s|ing)?|battl(?:es?|ing)|spar(?:s|ring)?)\s+(?:against\s+|with\s+)?(.+)/;
-const FOE_STOP = /^(?:in|on|at|with|while|and|to|for|from|near|inside|under|until|who|that|but|before|after)$/;
+const FOE_STOP = /^(?:in|on|at|with|while|and|to|for|from|by|near|inside|under|until|who|that|but|before|after)$/;
 
 /**
  * Soupeř souboje z věty (P27A T4), když ho `readRoles` nenajde: předmět slovesa
@@ -723,6 +724,70 @@ function duelFoe(sentence: string): string | null {
 
 const NOT_FOE = /^(?:game|games|match|matches|round|rounds|fight|fights|ring|time|arena|tournament|club|gym|simulator|championship)$/;
 
+/** Slova až po předložku nebo spojku, nejvýš dvě. */
+const leadWords = (rest: string): string | null => {
+  const words: string[] = [];
+  for (const word of rest.split(/[^a-z-]+/)) {
+    if (word === '' || FOE_STOP.test(word) || words.length === 2) break;
+    words.push(word);
+  }
+  return words.length === 0 ? null : words.join(' ');
+};
+
+/** „defend a castle from dragons“, „from waves of goblins“: od koho se brání, je nepřítel. */
+const DEFEND_FROM = /\bdefend(?:s|ing)? (?:[a-z]+ ){0,3}?from (?:(?:waves|hordes|an army|armies|swarms) of )?(?:the |a |an )?([a-z][a-z -]*)/;
+/** „zombie shooter“: slovo před žánrem jmenuje nepřítele – ne místo („space shooter“) ani styl („top-down shooter“). */
+const SHOOTER_FOE = /\b([a-z-]+) shooter\b/;
+const SHOOTER_STYLE = /^(?:top-down|twin-stick|side-scrolling|arcade|retro|pixel|person|bullet|looter|hero|tactical|online|simple|fun|cool|easy|hard|first|third|wave|endless|a|an|the)$/;
+
+/** Nepřítel, kterého věta jmenuje bez slovesa útoku (P27A T5); `readRoles` ho nenajde. */
+function namedFoe(sentence: string): string | null {
+  const text = sentence.toLowerCase();
+  const defended = DEFEND_FROM.exec(text)?.[1];
+  const foe = defended === undefined ? null : leadWords(defended);
+  if (foe !== null) return singular(foe);
+  const genre = SHOOTER_FOE.exec(text)?.[1];
+  return genre === undefined || SHOOTER_STYLE.test(genre) || isPlace(genre) ? null : singular(genre);
+}
+
+/**
+ * „boat race“, „shopping cart race“: vozidlo před závodem je hráč – ne místo
+ * („space race“) ani druh závodu. „car racing game“ nechá závodní auto šablony.
+ */
+const RACE_HERO = /^(?:an? |the |my )?([a-z]+(?: [a-z]+)?) race\b/;
+const RACE_KIND = /^(?:drag|drift|street|time|endless|fast|big|epic|crazy|final|a|an|the)$/;
+
+function raceHero(sentence: string): string | null {
+  const phrase = RACE_HERO.exec(sentence.toLowerCase())?.[1];
+  return phrase === undefined || RACE_KIND.test(phrase.split(' ').at(-1)!) || isPlace(phrase) ? null : phrase;
+}
+
+/** Hlava fráze, která jmenuje tvora, věc nebo náladu, ne místo: „shoot the aliens“, „throwing snowballs“, „haunted“. */
+const NOT_A_PLACE = /^(?:alien|zombie|ghost|pirate|toy|boat|submarine|star|comet|lava|magma|coral|snowball|snowman|snowflake|haunted|spooky|horror|neon|cosmic|frozen|icy|ice|winter|medieval|tropical|traffic)s?$/;
+
+/** Jmenuje fráze místo? Rozhoduje hlava: „haunted hospital“ ano, „shopping cart“, „parking“ a „zombie“ ne. */
+const isPlace = (phrase: string): boolean => {
+  const head = phrase.split(' ').at(-1)!;
+  return lookFor(head) !== null && !NOT_A_PLACE.test(head) && !head.endsWith('ing');
+};
+
+/**
+ * Místo, které sada pozná, i bez předložky (P27A T5): „defend the castle“,
+ * „behind a snow fort“, „flappy bird but underwater“. Předložková fráze, kterou
+ * sada nezná („at kids“), ustoupí; hlava fráze musí sama jmenovat místo.
+ */
+function withPlace(roles: SentenceRoles, sentence: string): SentenceRoles {
+  if (roles.setting !== null && lookFor(roles.setting) !== null) return roles;
+  const text = sentence.toLowerCase();
+  for (const at of lookWords(text)) {
+    const rest = text.slice(text.lastIndexOf(' ', at) + 1);
+    for (const phrase of [nounPhrase(rest, 2), nounPhrase(rest, 1)]) {
+      if (phrase !== null && isPlace(phrase)) return { ...roles, setting: phrase };
+    }
+  }
+  return roles;
+}
+
 /**
  * Arkádová hra (P25A běžec, P25C plošinovka a poletování, P25F řízení a aréna,
  * P25G střelba a hod, P25H načasování, rytmus a souboj): šablona fixtury
@@ -730,14 +795,14 @@ const NOT_FOE = /^(?:game|games|match|matches|round|rounds|fight|fights|ring|tim
  */
 function draftArcade(sentence: string, seed: number, choice: ControlPick): GameSpecV1 | null {
   const spec = JSON.parse(JSON.stringify(ARCADE_TEMPLATES[choice.control])) as GameSpecV1;
-  const roles = readRoles(sentence);
+  const roles = withPlace(readRoles(sentence), sentence);
   const rng = xoroshiro128plus(seed);
   spec.title = titleFrom(sentence, spec.title);
   // Postava šablony (ptáček, závodní auto, rybka, jeřáb, bubeník, bojovník) zůstane,
   // když věta hráče nejmenuje; běžec, plošinovka, střelnice a hod losují.
   const keepsHero = choice.control !== 'runner' && choice.control !== 'platform' && choice.control !== 'shooter' && choice.control !== 'throw';
   const fallback = keepsHero ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
-  role(spec, 'player').label = cap(roles.player ?? fallback, 60);
+  role(spec, 'player').label = cap(roles.player ?? (choice.control === 'steer' ? raceHero(sentence) : null) ?? fallback, 60);
   const collectible = COLLECTIBLE_ROLE[choice.control];
   if (roles.collectible !== null && collectible !== null) role(spec, collectible).label = cap(roles.collectible, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
@@ -747,9 +812,10 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   const rival = choice.control === 'duel' ? (roles.target ?? duelFoe(sentence)) : null;
   if (rival !== null) role(spec, 'rival').label = cap(rival, 60);
   // P26 T12: scéna z těchhle popisků volí model – terč, nepřítel a překážka z věty, ne ze šablony.
-  const foe = roles.target ?? roles.threat?.label ?? null;
+  const foe = roles.target ?? roles.threat?.label ?? namedFoe(sentence);
   if (choice.control === 'shooter' && foe !== null) role(spec, 'enemy').label = cap(foe, 60);
-  if (choice.control === 'throw' && choice.goal === null && roles.target !== null) role(spec, 'target').label = cap(roles.target, 60);
+  const target = roles.target ?? namedFoe(sentence);
+  if (choice.control === 'throw' && choice.goal === null && target !== null) role(spec, 'target').label = cap(target, 60);
   if (choice.control === 'runner' && roles.threat !== null) role(spec, 'obstacle').label = cap(roles.threat.label, 60);
   if (choice.control === 'timing') {
     if (choice.mode !== 'stack') {
@@ -776,7 +842,9 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   } else if (choice.control === 'move_free') {
     if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
   } else if (choice.control === 'throw') {
-    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.goal === null ? {} : { goal: choice.goal }) };
+    // P27A T5: terč z věty („at kids“, „from dragons“) kreslí jen cíl `target` – věž z kostek nebo koš by ho nahradily.
+    const goal = choice.goal ?? (target === null ? null : 'target');
+    spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(goal === null ? {} : { goal }) };
     if (choice.goal !== null) role(spec, 'target').label = THROW_GOAL_LABELS[choice.goal];
   } else if (choice.difficulty !== null) spec.controlParams = { ...spec.controlParams, difficulty: choice.difficulty };
   // P26D T8: druhé sloveso věty („jump and shoot“) – `pickControl` vybral jen doplňky, které ovládání bere.
@@ -797,7 +865,7 @@ export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   }
   const archetype = pickArchetype(scores);
   const spec = template(archetype);
-  const roles = readRoles(sentence);
+  const roles = withPlace(readRoles(sentence), sentence);
   const numbers = readNumbers(sentence);
   const rng = xoroshiro128plus(seed);
   const playerLabel = roles.player ?? PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];

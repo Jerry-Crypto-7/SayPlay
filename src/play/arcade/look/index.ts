@@ -123,6 +123,13 @@ const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
 
 const match = (text: string): LookId | null => KEYWORDS.find(([, pattern]) => pattern.test(text.toLowerCase()))?.[0] ?? null;
 
+/** Pozice slov textu, podle kterých `lookFor` sadu vybral, v pořadí textu (P27A T5: návrh z nich skládá místo). */
+export function lookWords(text: string): number[] {
+  const lower = text.toLowerCase();
+  const found = KEYWORDS.find(([, pattern]) => pattern.test(lower));
+  return found === undefined ? [] : [...lower.matchAll(new RegExp(found[1].source, 'g'))].map((hit) => hit.index);
+}
+
 /**
  * Sada podle slov prostředí, nálada až když místo nic neřekne („spooky“ nesmí
  * z obchoďáku udělat hřbitov). `null` = sady místo neznají.

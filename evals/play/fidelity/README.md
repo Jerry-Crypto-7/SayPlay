@@ -21,5 +21,8 @@ Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
 ## Known limits
 
 - **Arena (`move_free`) setting.** The top-down camera mostly sees the arena floor. The floor takes the set's track colour and the set's props stand past the arena edge, so they come into view only near the edge. `drawn: true` here means the scene draws the set, not that the first frame shows the props.
+- **Grid verbs (`tap_go`, 6 sentences after P27A T5).** "do taxes", "date", "match", "throw", "defend", "slide" – the grid walks, collects and avoids. None of these is a control or a mechanic the grid has, so the draft cannot carry them without a new control.
+- **The thrown thing (`throw`, 3 sentences).** "snowballs", "cats", "cardboard boxes" – the throw scene reads only the player and target labels and always throws its own ball. Drawing the projectile from the sentence needs the scene to read a new label.
+- **Grid roles without a catalog model (`tap_go`, 2 sentences).** "fishmonger" and "battery" have no asset. The nearest tags are wrong on sight ("cell" is a germ), so they stay boxes until generation adds them.
 
 **The offline map measures the word draft, not the AI version.** The draft is what a player sees in the first second; the AI upgrade usually carries more of the sentence. A loss here is a loss of the offline path, and only a live run (`report.json`) says what the AI version shows.
