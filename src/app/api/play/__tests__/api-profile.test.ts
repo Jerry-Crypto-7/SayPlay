@@ -94,7 +94,19 @@ function brokenSwitch(): unknown {
 
 describe('final API profile over a provider double (D1)', () => {
   it('create: one call in the Messages format, the key only in the provider header, the AI child stored', async () => {
-    upstream.script = [answerFixture('good-collect_exit')];
+    // Výchozí režie je kompaktní (P27D T2): model vybírá, hru skládá šablona.
+    upstream.script = [
+      {
+        plan: 'a hamster runs from a robot vacuum',
+        control: 'runner',
+        addons: ['chaser'],
+        look: 'supermarket',
+        setting: 'supermarket aisles',
+        title: 'Hamster Escape',
+        labels: [{ role: 'player', label: 'hamster' }],
+        goal: 'Run past the aisles before the Roomba catches you.',
+      },
+    ];
     const { versionId, outcome, seen } = await create();
     expect(outcome.status).toBe('ready');
     expect(upstream.requests).toHaveLength(1);
@@ -109,6 +121,8 @@ describe('final API profile over a provider double (D1)', () => {
   });
 
   it('repair: an unplayable answer gets one repair round and the repaired game is published', async () => {
+    // Nehratelnou hru dá jen celý GameSpec; kompaktní skládání stojí na hratelných šablonách.
+    vi.stubEnv('PLAY_DIRECTOR_MODE', 'full');
     upstream.script = [brokenSwitch(), [{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }]];
     const { outcome } = await create();
     expect(outcome.status).toBe('ready');
