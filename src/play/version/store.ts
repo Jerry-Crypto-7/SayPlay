@@ -96,6 +96,8 @@ export interface WriteLimits {
    * Jak dlouho hra žije od publikace. Výchozí 180 dní: porota otvírá odkazy týdny
    * po odevzdání a se 60 dny by hra vytvořená 24. 9. 2026 zmizela 23. 11., dva dny
    * před vyhlášením 25. 11. Rezerva pokryje i hry publikované po odevzdání.
+   * `EX` se píše jen při publikaci: hrám uloženým dřív prodlouží expiraci
+   * jednorázově `scripts/play-extend-ttl.mjs`.
    */
   readonly ttlSeconds: number;
   /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; autorská dítě (`relation: 'upgrade'`) se nepočítají. */

@@ -39,6 +39,9 @@ rows no newer than `top`. So:
   and does not move anything below it; the reader sees it on the next fresh load.
 - Only the oldest end can shift: a game that expires (TTL, 180 days) or falls off the 200-row cap
   between two pages drops out.
+- Games stored before the TTL went from 60 to 180 days keep their old expiry until
+  `node scripts/play-extend-ttl.mjs --prefix <prefix> --apply` runs against the shared store; until
+  then such a game can still show as a card after its key expired.
 
 ## Who gets into the feed
 
