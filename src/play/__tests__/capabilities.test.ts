@@ -160,3 +160,19 @@ describe('critic and repair drop what the control does not play', () => {
     expect(blockingIssues(critique(idle)).map((issue) => issue.code)).toContain('NO_AGENCY');
   });
 });
+
+// P26D T2: doplněk smí jen ovládání, které ho umí zahrát. Životy = ovládání, které čte `health`;
+// sbírání = ovládání, kde hráč projde prostorem s mincemi (závod ani hod mince nemá).
+describe('addons each control accepts (P26D T2)', () => {
+  it('matches the plan table', () => {
+    const accepting = (addon: string): string[] =>
+      Object.entries(CAPABILITIES)
+        .filter(([, capability]) => (capability.addons as readonly string[]).includes(addon))
+        .map(([control]) => control)
+        .sort();
+    expect(accepting('shoot')).toEqual(['flap', 'move_free', 'platform', 'runner']);
+    expect(accepting('collect')).toEqual(['flap', 'move_free', 'platform', 'runner']);
+    expect(accepting('chaser')).toEqual(['move_free', 'platform', 'runner']);
+    expect(accepting('lives')).toEqual(Object.keys(CAPABILITIES).filter((control) => control !== 'tap_go' && readsMechanic(control as ControlId, 'health')).sort());
+  });
+});

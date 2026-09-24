@@ -109,7 +109,8 @@ function renderShape(): string {
   const top = z.toJSONSchema(gameSpecSchema) as JsonSchema;
   const properties = top.properties as Record<string, JsonSchema>;
   const outline = Object.entries(properties)
-    .filter(([key]) => key !== 'verification')
+    // Doplňky (P26D) řekne řádek ovládání u každého ovládání zvlášť.
+    .filter(([key]) => key !== 'verification' && key !== 'addons')
     .map(([key, value]) => `${key}: ${compactSchema(value)}`)
     .join('\n');
   return [

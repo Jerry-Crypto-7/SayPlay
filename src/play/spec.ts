@@ -29,6 +29,7 @@ import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
 import { LOOK_IDS } from './arcade/look';
+import { CAPABILITIES } from './capabilities';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
@@ -229,6 +230,14 @@ export const tutorialSchema = z
 export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
+/**
+ * Doplňky arkády (P26D): druhá mechanika nad základním ovládáním („jump and
+ * shoot“). Která ovládání který berou, říká `CAPABILITIES[control].addons`.
+ * Pole ve specu je volitelné **bez výchozí hodnoty**, jako `control`.
+ */
+export const ADDONS = ['shoot', 'collect', 'chaser', 'lives'] as const;
+export type AddonId = (typeof ADDONS)[number];
+
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
 export const runnerParamsSchema = z
   .object({
@@ -365,6 +374,7 @@ export const gameSpecSchema = z
         duelParamsSchema,
       ])
       .optional(),
+    addons: z.array(z.enum(ADDONS)).max(3).optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
@@ -467,6 +477,17 @@ export function readGameSpec(input: unknown): GameSpecResult {
     if (!own.success) {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: own.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (${spec.control})`) };
     }
+  }
+  if (spec.addons !== undefined) {
+    const allowed: readonly AddonId[] = CAPABILITIES[spec.control ?? 'tap_go'].addons;
+    const addonIssues = spec.addons.flatMap((addon, index) =>
+      spec.addons!.indexOf(addon) !== index
+        ? [`/addons/${index}: ${addon} is listed twice`]
+        : allowed.includes(addon)
+          ? []
+          : [`/addons/${index}: ${spec.control ?? 'tap_go'} does not take ${addon} (allowed: ${allowed.join(', ') || 'none'})`],
+    );
+    if (addonIssues.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', issues: addonIssues };
   }
   if (spec.control === 'move_free') {
     const win = arenaWinOf(spec);
