@@ -738,3 +738,131 @@ a.play-button {
     max-width: none;
   }
 }
+
+/* P27B */
+/* Svislý feed na `/play` (T4): na úzkém displeji jedna hra přes obrazovku,
+ * na širokém hra vlevo a seznam dalších vpravo. Listovací okraj leží vpravo
+ * přes plátno, a proto tlačítko Fire ve feedu uhne doleva. */
+.play-pager-state {
+  max-width: 760px;
+  margin: 0 auto 48px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.play-pager {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto 48px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.play-pager-slide {
+  position: relative;
+  height: min(78dvh, 760px);
+  border: 1px solid var(--play-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--play-panel);
+}
+
+.play-pager-slide > .play-shell {
+  height: 100%;
+}
+
+.play-pager .play-fire {
+  right: 72px;
+}
+
+.play-pager-note {
+  margin: 0;
+  padding: 24px 72px 24px 24px;
+  color: var(--play-muted);
+  line-height: 1.5;
+}
+
+.play-pager-note a {
+  color: var(--play-accent);
+}
+
+.play-pager-rail {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 56px;
+  box-sizing: border-box;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to left, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0));
+  touch-action: none;
+}
+
+.play-pager-step {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  color: var(--play-text);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.play-pager-step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.play-pager-count {
+  color: var(--play-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(72dvh, 700px);
+  margin: 8px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+button.play-feed-card {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.play-feed-card[aria-current='true'] {
+  border-color: var(--play-accent);
+}
+
+@media (max-width: 700px) {
+  .play-pager {
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  .play-pager-slide {
+    height: 100dvh;
+    border: 0;
+    border-radius: 0;
+  }
+
+  .play-pager .play-feed {
+    display: none;
+  }
+}

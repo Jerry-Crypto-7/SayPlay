@@ -123,8 +123,9 @@ export interface ArcadePlayProps {
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
   readonly aiVersion?: boolean;
-  readonly lab: LabFacts;
-  readonly read: ReadFacts;
+  /** Feed (P27B T4) je nemá – počítají se na serveru z registru – a hraje bez nich. */
+  readonly lab?: LabFacts;
+  readonly read?: ReadFacts;
   readonly upgrade: string | null;
   /** Hra na obrazovce feedu; `false` ji pozastaví (P27B T3). */
   readonly active?: boolean;
@@ -200,8 +201,8 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
-      <SentenceRead read={read} />
-      <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
+      {read !== undefined && <SentenceRead read={read} />}
+      {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {!running && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
