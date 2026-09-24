@@ -13,11 +13,38 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { __resetProcessVersionStore } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
-import { OG_PALETTES, ogPngFor, paletteForMood } from '../_og';
+import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
+
+import { OG_INK, OG_PALETTES, ogPngFor, paletteForMood } from '../_og';
 import { POST as createGame } from '../games/route';
 import { GET as ogImage } from '../games/[id]/og/route';
 
 const CALLER = { 'x-forwarded-for': '203.0.113.7' };
+
+// Selhání renderu na požádání: `ImageResponse` hodí dřív, než začne kreslit.
+const failRender = vi.hoisted(() => ({ value: false }));
+vi.mock('next/og', async (importOriginal) => {
+  const real = await importOriginal<typeof import('next/og')>();
+  class FlakyImageResponse extends real.ImageResponse {
+    constructor(...args: ConstructorParameters<typeof real.ImageResponse>) {
+      if (failRender.value) throw new Error('render failed on purpose');
+      super(...args);
+    }
+  }
+  return { ...real, ImageResponse: FlakyImageResponse };
+});
+
+async function publishSpec(title: string): Promise<string> {
+  const created = await createGame(
+    new Request('http://play.test/api/play/games', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...CALLER },
+      body: JSON.stringify({ spec: { ...runnerFixture, title } }),
+    }),
+  );
+  expect(created.status, await created.clone().text()).toBeLessThan(300);
+  return ((await created.json()) as { versionId: string }).versionId;
+}
 
 function params(id: string): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id }) };
@@ -64,11 +91,41 @@ describe('GET /api/play/games/:id/og', () => {
     const response = await og(versionId);
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/png');
-    expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    expect(response.headers.get('x-og-fallback')).toBeNull();
     const bytes = new Uint8Array(await response.arrayBuffer());
     expect([...bytes.slice(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     const view = new DataView(bytes.buffer);
     expect([view.getUint32(16), view.getUint32(20)]).toEqual([1200, 630]);
+  });
+
+  it('draws each version from its own game: two titles, two images, and the first stays as it was (P27B T6)', async () => {
+    const first = await publishSpec('Canyon Dash');
+    const second = await publishSpec('Rooftop Sprint');
+    const a = new Uint8Array(await (await og(first)).arrayBuffer());
+    const b = new Uint8Array(await (await og(second)).arrayBuffer());
+    expect(Buffer.from(a).equals(Buffer.from(b))).toBe(false);
+    // Paletový náhled je pro obě stejný (týž spec, táž nálada) – rozdíl dělá obsah hry.
+    expect(Buffer.from(a).equals(Buffer.from(ogPngFor(runnerFixture.theme.mood)))).toBe(false);
+    const again = new Uint8Array(await (await og(first)).arrayBuffer());
+    expect(Buffer.from(again).equals(Buffer.from(a))).toBe(true);
+  });
+
+  it('a render failure falls back to the palette PNG, flagged and not cached for a year', async () => {
+    const versionId = await publishSpec('Broken Render');
+    failRender.value = true;
+    try {
+      const response = await og(versionId);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('image/png');
+      expect(response.headers.get('x-og-fallback')).toBe('1');
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+      expect(Buffer.from(await response.arrayBuffer()).equals(Buffer.from(ogPngFor(runnerFixture.theme.mood)))).toBe(true);
+    } finally {
+      failRender.value = false;
+    }
+    // Selhání se nezapamatovalo: další požadavek už kreslí hru.
+    expect((await og(versionId)).headers.get('x-og-fallback')).toBeNull();
   });
 
   it('404 NOT_FOUND JSON for an unknown and for a malformed id', async () => {
@@ -107,8 +164,8 @@ describe('mood palette', () => {
     expect(ogPngFor('calm')).not.toEqual(ogPngFor('tense'));
   });
 
-  it('no purple in any palette (hue 250–320°)', () => {
-    for (const palette of OG_PALETTES) {
+  it('no purple in any palette or in the ink of the game preview (hue 250–320°)', () => {
+    for (const palette of [...OG_PALETTES, { id: 'ink', bands: OG_INK, accent: OG_INK[0] }]) {
       for (const hex of [...palette.bands, palette.accent]) {
         const hue = hueOf(hex);
         expect(hue === null || hue < 250 || hue > 320, `${palette.id} ${hex} ${String(hue)}`).toBe(true);

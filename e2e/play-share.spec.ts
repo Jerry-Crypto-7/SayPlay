@@ -42,6 +42,12 @@ test.describe('/play/[id] – share landing', () => {
     const png = await request.get(`/api/play/games/${id}/og`);
     expect(png.status()).toBe(200);
     expect(png.headers()['content-type']).toBe('image/png');
+    // P27B T6: náhled kreslí hru (ne paletová záloha), 1200×630, na verzi natrvalo.
+    expect(png.headers()['x-og-fallback']).toBeUndefined();
+    expect(png.headers()['cache-control']).toBe('public, max-age=31536000, immutable');
+    const bytes = await png.body();
+    expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([1200, 630]);
+    expect(await page.locator('meta[property="og:image:alt"]').getAttribute('content')).toBe(`${gameTitle} – cover image`);
   });
 
   test('sharing mid-game keeps the game running and a second browser opens the same version (P27B T5)', async ({ browser }) => {

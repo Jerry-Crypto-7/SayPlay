@@ -8,10 +8,22 @@
  * tentýž obrázek a obrázků je jen tolik, kolik je palet – vykreslený PNG se
  * drží v paměti a veřejný požadavek zaplatí 25 ms nejvýš jednou na paletu.
  *
+ * Od P27B T6 je to jen **záloha**: odkaz nese náhled z obsahu hry
+ * (`gamePreviewPng` níže) a paletový obrázek přijde, když ten render selže.
+ *
  * Žádná fialová: `__tests__/og.test.ts` měří odstín každé barvy v paletách.
  */
 
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+import { ImageResponse } from 'next/og';
+import { createElement as h } from 'react';
+
+import catalog from '@/assets/catalog.json';
 import { canonicalHash } from '@/ir/worlddoc';
+import { heroModel } from '@/play/arcade/models';
+import type { GameSpecV1 } from '@/play/spec';
 
 import { encodePng, hexToRgb } from '../og/png';
 
@@ -65,6 +77,140 @@ function render(palette: OgPalette): Uint8Array {
 }
 
 const RENDERED = new Map<string, Uint8Array<ArrayBuffer>>();
+
+// ---------------------------------------------------------------------------
+// Náhled z obsahu hry (P27B T6): titul, hrdina, prostředí a jedna řádka
+// ovládání, kreslené přes `next/og` (satori + resvg ve WASM). Není to snímek
+// scény – na serveru GPU není – a nikde se tak nejmenuje. Paletový PNG výše
+// zůstává jako záloha, když render selže.
+// ---------------------------------------------------------------------------
+
+/** Barvy písma a panelu náhledu; `og.test.ts` je měří na fialovou spolu s paletami. */
+export const OG_INK: readonly [string, string, string, string] = ['#f8fafc', '#cbd5e1', '#0f172a', '#1e293b'];
+
+/** Jedna řádka ovládání podle arkádového ovládání; mřížková hra vezme první větu nápovědy. */
+const CONTROL_LINE: Readonly<Record<string, string>> = {
+  runner: 'Tap to jump, swipe to switch lanes',
+  platform: 'Tap to jump, hold to run',
+  flap: 'Tap to flap',
+  steer: 'Swipe to steer',
+  move_free: 'Drag to move',
+  shooter: 'Tap to shoot',
+  throw: 'Hold, aim and release to throw',
+  timing: 'Tap at the right moment',
+  rhythm: 'Tap to the beat',
+  duel: 'Tap to strike',
+};
+
+export function controlLineOf(spec: GameSpecV1): string {
+  const line = spec.control === undefined ? undefined : CONTROL_LINE[spec.control];
+  if (line !== undefined) return line;
+  const first = spec.tutorial.controlsHint.split(/(?<=[.!?])\s/)[0] ?? '';
+  return first.length > 60 ? `${first.slice(0, 57)}…` : first;
+}
+
+/** Nálada rozhoduje, bez shody klíčové slovo prostředí, jinak hash nálady jako dosud. */
+export function paletteForTheme(theme: { readonly mood: string; readonly setting: string }): OgPalette {
+  const words = `${theme.mood} ${theme.setting}`.toLowerCase();
+  const byMood = OG_PALETTES.find((palette) => palette.keywords.some((keyword) => theme.mood.toLowerCase().includes(keyword)));
+  const bySetting = OG_PALETTES.find((palette) => palette.keywords.some((keyword) => words.includes(keyword)));
+  return byMood ?? bySetting ?? paletteForMood(theme.mood);
+}
+
+const THUMBNAILS: ReadonlyMap<string, string> = new Map(catalog.assets.map((asset) => [asset.assetId, asset.thumbnail]));
+
+/**
+ * PNG náhled modelu hrdiny z katalogu jako data URL. Nejdřív ze souboru v
+ * `public/`, kde ho má lokální server i test; kde funkce soubory `public/`
+ * nenese (Vercel je servíruje z CDN), přes HTTP z téhož původu. Nic z toho →
+ * `null` a náhled nakreslí ikonu ovládání.
+ */
+async function heroImage(modelId: string, origin: string): Promise<string | null> {
+  const thumbnail = THUMBNAILS.get(modelId);
+  if (thumbnail === undefined) return null;
+  const encode = (bytes: Uint8Array): string => `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
+  try {
+    return encode(await readFile(join(process.cwd(), 'public', thumbnail)));
+  } catch {
+    // Soubor u funkce není – zkusí se HTTP.
+  }
+  try {
+    const response = await fetch(new URL(thumbnail, origin), { signal: AbortSignal.timeout(2000) });
+    if (response.ok && response.headers.get('content-type') === 'image/png') return encode(new Uint8Array(await response.arrayBuffer()));
+  } catch {
+    // Síť nejde – ikona ovládání.
+  }
+  return null;
+}
+
+type Node = ReturnType<typeof h>;
+
+function controlIcon(accent: string): Node {
+  // Terč ze tří kruhů: ovládání bez modelu hrdiny, bez písma, které by v Geist chybělo.
+  return h(
+    'div',
+    { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 300, height: 300, borderRadius: 150, background: accent } },
+    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 200, height: 200, borderRadius: 100, background: OG_INK[2] } }, h('div', { style: { width: 90, height: 90, borderRadius: 45, background: accent } })),
+  );
+}
+
+function previewElement(spec: GameSpecV1, hero: string | null): Node {
+  const palette = paletteForTheme(spec.theme);
+  const [sky, high, low, ground] = palette.bands;
+  return h(
+    'div',
+    {
+      style: {
+        display: 'flex',
+        width: '100%',
+        height: '100%',
+        alignItems: 'center',
+        padding: 56,
+        gap: 48,
+        background: `linear-gradient(180deg, ${sky} 0%, ${high} 38%, ${low} 72%, ${ground} 100%)`,
+        fontFamily: 'Geist',
+      },
+    },
+    h(
+      'div',
+      { style: { display: 'flex', flexDirection: 'column', flex: 1, gap: 20, padding: 44, borderRadius: 32, background: 'rgba(15, 23, 42, 0.82)', color: OG_INK[0] } },
+      h('div', { style: { fontSize: 26, color: palette.accent, letterSpacing: 3 } }, 'WORLDSTREAM PLAY'),
+      h('div', { style: { fontSize: spec.title.length > 28 ? 56 : 72, lineHeight: 1.05 } }, spec.title),
+      h('div', { style: { fontSize: 28, color: OG_INK[1] } }, spec.theme.setting),
+      h('div', { style: { display: 'flex', alignSelf: 'flex-start', marginTop: 12, padding: '12px 24px', borderRadius: 999, background: palette.accent, color: OG_INK[2], fontSize: 30 } }, controlLineOf(spec)),
+    ),
+    h(
+      'div',
+      { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 420, height: 420, borderRadius: 32, background: OG_INK[3] } },
+      hero === null ? controlIcon(palette.accent) : h('img', { src: hero, width: 380, height: 380, style: { objectFit: 'contain' } }),
+    ),
+  );
+}
+
+/** Kolik náhledů her se drží v paměti; nejstarší vypadne první. */
+const PREVIEW_CAP = 256;
+const PREVIEWS = new Map<string, Uint8Array<ArrayBuffer>>();
+
+/**
+ * PNG náhled konkrétní verze. Verze se nemění, takže klíč `versionId` stačí a
+ * render se platí jednou na verzi a proces. Selhání vrátí `null` a nezapamatuje
+ * se – další požadavek zkusí kreslit znovu.
+ */
+export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string): Promise<Uint8Array<ArrayBuffer> | null> {
+  const ready = PREVIEWS.get(versionId);
+  if (ready !== undefined) return ready;
+  try {
+    const hero = await heroImage(heroModel(spec), origin);
+    const response = new ImageResponse(previewElement(spec, hero), { width: OG_WIDTH, height: OG_HEIGHT });
+    const png = new Uint8Array(await response.arrayBuffer());
+    if (PREVIEWS.size >= PREVIEW_CAP) PREVIEWS.delete(PREVIEWS.keys().next().value as string);
+    PREVIEWS.set(versionId, png);
+    return png;
+  } catch (error) {
+    console.warn(`[play og] preview for ${versionId} failed, serving the palette image:`, error instanceof Error ? error.message : error);
+    return null;
+  }
+}
 
 export function ogPngFor(mood: string): Uint8Array<ArrayBuffer> {
   const palette = paletteForMood(mood);

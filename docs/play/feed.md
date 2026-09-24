@@ -63,5 +63,28 @@ On top of that, per list:
   newest is shown;
 - one title, one entry – titles equal after lower-casing and stripping punctuation appear once.
 
+## On `/play`
+
+`FeedPager` shows one game at a time: full screen on a phone (≤ 700 px), with the list of more games
+on the right on a wide screen. Only one game is mounted (one WebGL canvas); the next game's detail is
+fetched ahead, its canvas mounts on the move. `?g=<versionId>` follows the game on screen and Back
+returns the previous one. Move with `Next game` / `Previous game`, with ↑/↓ when the game itself does
+not use those keys, or with a vertical swipe on the edge rail – never on the game, where a swipe is a
+jump or an aim. A game less than half on screen or in a hidden tab pauses and resumes on the
+player's first key or tap.
+
+## Sharing and the link preview
+
+`Share` sits in the game HUD while it runs and after it ends; it shares `/play/<versionId>` – the
+immutable version on screen – through the browser's share sheet, or copies it.
+
+The link preview (`GET /api/play/games/<id>/og`, PNG 1200×630) is a **cover image** drawn from the
+game's data: its title, its setting, one controls line and the hero's catalog thumbnail (a target icon
+when the hero has none), on a palette picked from the mood or setting. It is not a screenshot of the
+game – there is no GPU on the server. It is cached per version (`immutable`); if drawing fails, the
+older mood-palette image is served with `x-og-fallback: 1` and a one-hour cache.
+
+## Visibility
+
 **A hidden or ineligible game still opens by its link**: `GET /api/play/games/<id>` and `/play/<id>`
 answer 200 as long as the game is stored.

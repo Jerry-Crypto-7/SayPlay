@@ -6,7 +6,7 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (188)
+## Knihovny (191)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -14,9 +14,9 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @dimforge/rapier3d-compat@0.12.0 | https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.12.0.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @discoveryjs/json-ext@0.5.7 | https://registry.npmjs.org/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz | Roman Dvornov (https://github.com/lahmatiy) | MIT | copyright notice; plné znění licence | Copyright (c) 2020 Roman Dvornov <rdvornov@gmail.com> |
 | @emnapi/runtime@1.11.3 | https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.3.tgz | toyobayashi | MIT | copyright notice; plné znění licence | Copyright (c) 2021-present Toyobayashi |
-| @gltf-transform/core@4.5.0 | https://registry.npmjs.org/@gltf-transform/core/-/core-4.5.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @gltf-transform/core, viz https://registry.npmjs.org/@gltf-transform/core/-/core-4.5.0.tgz |
-| @gltf-transform/extensions@4.5.0 | https://registry.npmjs.org/@gltf-transform/extensions/-/extensions-4.5.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @gltf-transform/extensions, viz https://registry.npmjs.org/@gltf-transform/extensions/-/extensions-4.5.0.tgz |
-| @gltf-transform/functions@4.5.0 | https://registry.npmjs.org/@gltf-transform/functions/-/functions-4.5.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @gltf-transform/functions, viz https://registry.npmjs.org/@gltf-transform/functions/-/functions-4.5.0.tgz |
+| @gltf-transform/core@4.5.0 | https://registry.npmjs.org/@gltf-transform/core/-/core-4.5.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2024 Don McCurdy |
+| @gltf-transform/extensions@4.5.0 | https://registry.npmjs.org/@gltf-transform/extensions/-/extensions-4.5.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2024 Don McCurdy |
+| @gltf-transform/functions@4.5.0 | https://registry.npmjs.org/@gltf-transform/functions/-/functions-4.5.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2024 Don McCurdy |
 | @img/colour@1.1.0 | https://registry.npmjs.org/@img/colour/-/colour-1.1.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2012 Heather Arthur |
 | @img/sharp-darwin-arm64@0.35.3 | https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.35.3.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k @img/sharp-darwin-arm64, viz https://registry.npmjs.org/@img/sharp-darwin-arm64/-/sharp-darwin-arm64-0.35.3.tgz |
 | @img/sharp-darwin-x64@0.35.3 | https://registry.npmjs.org/@img/sharp-darwin-x64/-/sharp-darwin-x64-0.35.3.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k @img/sharp-darwin-x64, viz https://registry.npmjs.org/@img/sharp-darwin-x64/-/sharp-darwin-x64-0.35.3.tgz |
@@ -60,6 +60,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @playwright/test@1.62.1 | https://registry.npmjs.org/@playwright/test/-/test-1.62.1.tgz | Microsoft Corporation | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @polka/url@1.0.0-next.29 | https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.29.tgz | Luke Edwards | MIT | copyright notice; plné znění licence | držitelé práv k @polka/url, viz https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.29.tgz |
 | @react-three/fiber@9.7.0 | https://registry.npmjs.org/@react-three/fiber/-/fiber-9.7.0.tgz | Paul Henschel (https://github.com/drcmda) | MIT | copyright notice; plné znění licence | držitelé práv k @react-three/fiber, viz https://registry.npmjs.org/@react-three/fiber/-/fiber-9.7.0.tgz |
+| @resvg/resvg-wasm@2.4.0 | node_modules/next/dist/compiled/@vercel/og/resvg.wasm (vendored inside next@16.3.0) | Yisi Yu (yisibl) and resvg contributors | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | resvg-js © yisibl, MPL-2.0 |
 | @rolldown/binding-android-arm64@1.2.4 | https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @rolldown/binding-android-arm64, viz https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.4.tgz |
 | @rolldown/binding-darwin-arm64@1.2.4 | https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @rolldown/binding-darwin-arm64, viz https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.4.tgz |
 | @rolldown/binding-darwin-x64@1.2.4 | https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @rolldown/binding-darwin-x64, viz https://registry.npmjs.org/@rolldown/binding-darwin-x64/-/binding-darwin-x64-1.2.4.tgz |
@@ -81,7 +82,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @types/deep-eql@4.0.2 | https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/estree@1.0.9 | https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/chai@5.2.3 | https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
-| @types/ndarray@1.1.0 | https://registry.npmjs.org/@types/ndarray/-/ndarray-1.1.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @types/ndarray, viz https://registry.npmjs.org/@types/ndarray/-/ndarray-1.1.0.tgz |
+| @types/ndarray@1.1.0 | https://registry.npmjs.org/@types/ndarray/-/ndarray-1.1.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/node@26.2.0 | https://registry.npmjs.org/@types/node/-/node-26.2.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/react-dom@19.2.4 | https://registry.npmjs.org/@types/react-dom/-/react-dom-19.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/react-reconciler@0.28.9 | https://registry.npmjs.org/@types/react-reconciler/-/react-reconciler-0.28.9.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
@@ -89,6 +90,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @types/stats.js@0.17.4 | https://registry.npmjs.org/@types/stats.js/-/stats.js-0.17.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/three@0.185.4 | https://registry.npmjs.org/@types/three/-/three-0.185.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/webxr@0.5.24 | https://registry.npmjs.org/@types/webxr/-/webxr-0.5.24.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
+| @vercel/og@0.11.1 | node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0, imported as next/og) | Vercel, Inc. | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | @vercel/og © Vercel, Inc., MPL-2.0 |
 | @vitest/expect@4.1.10 | https://registry.npmjs.org/@vitest/expect/-/expect-4.1.10.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors |
 | @vitest/mocker@4.1.10 | https://registry.npmjs.org/@vitest/mocker/-/mocker-4.1.10.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors |
 | @vitest/pretty-format@4.1.10 | https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-4.1.10.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors |
@@ -107,7 +109,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | commander@7.2.0 | https://registry.npmjs.org/commander/-/commander-7.2.0.tgz | TJ Holowaychuk | MIT | copyright notice; plné znění licence | Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca> |
 | convert-source-map@2.0.0 | https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz | Thorsten Lorenz | MIT | copyright notice; plné znění licence | Copyright 2013 Thorsten Lorenz. |
 | csstype@3.2.3 | https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz | Fredrik Nicol | MIT | copyright notice; plné znění licence | Copyright (c) 2017-2018 Fredrik Nicol |
-| cwise-compiler@1.1.3 | https://registry.npmjs.org/cwise-compiler/-/cwise-compiler-1.1.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k cwise-compiler, viz https://registry.npmjs.org/cwise-compiler/-/cwise-compiler-1.1.3.tgz |
+| cwise-compiler@1.1.3 | https://registry.npmjs.org/cwise-compiler/-/cwise-compiler-1.1.3.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
 | debounce@1.2.1 | https://registry.npmjs.org/debounce/-/debounce-1.2.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2012-2018 The Debounce Contributors. See CONTRIBUTORS. |
 | detect-libc@2.1.2 | https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz | Lovell Fuller | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | duplexer@0.1.2 | https://registry.npmjs.org/duplexer/-/duplexer-0.1.2.tgz | Raynos | MIT | copyright notice; plné znění licence | Copyright (c) 2012 Raynos. |
@@ -125,11 +127,11 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | html-escaper@2.0.2 | https://registry.npmjs.org/html-escaper/-/html-escaper-2.0.2.tgz | Andrea Giammarchi | MIT | copyright notice; plné znění licence | Copyright (C) 2017-present by Andrea Giammarchi - @WebReflection |
 | chai@6.2.2 | https://registry.npmjs.org/chai/-/chai-6.2.2.tgz | Jake Luer | MIT | copyright notice; plné znění licence | Copyright (c) 2017 Chai.js Assertion Library |
 | ieee754@1.2.1 | https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz | Feross Aboukhadijeh | BSD-3-Clause | copyright notice; plné znění licence; disclaimer; zákaz použití jména autora k propagaci | Copyright 2008 Fair Oaks Labs, Inc. |
-| iota-array@1.0.0 | https://registry.npmjs.org/iota-array/-/iota-array-1.0.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k iota-array, viz https://registry.npmjs.org/iota-array/-/iota-array-1.0.0.tgz |
-| is-buffer@1.1.6 | https://registry.npmjs.org/is-buffer/-/is-buffer-1.1.6.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k is-buffer, viz https://registry.npmjs.org/is-buffer/-/is-buffer-1.1.6.tgz |
+| iota-array@1.0.0 | https://registry.npmjs.org/iota-array/-/iota-array-1.0.0.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
+| is-buffer@1.1.6 | https://registry.npmjs.org/is-buffer/-/is-buffer-1.1.6.tgz | Feross Aboukhadijeh | MIT | copyright notice; plné znění licence | Copyright (c) Feross Aboukhadijeh |
 | is-plain-object@5.0.0 | https://registry.npmjs.org/is-plain-object/-/is-plain-object-5.0.0.tgz | Jon Schlinkert (https://github.com/jonschlinkert) | MIT | copyright notice; plné znění licence | Copyright (c) 2014-2017, Jon Schlinkert. |
 | its-fine@2.0.0 | https://registry.npmjs.org/its-fine/-/its-fine-2.0.0.tgz | Cody Bennett (https://github.com/codyjasonbennett) | MIT | copyright notice; plné znění licence | Copyright (c) 2022-2025 Poimandres |
-| ktx-parse@1.1.0 | https://registry.npmjs.org/ktx-parse/-/ktx-parse-1.1.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k ktx-parse, viz https://registry.npmjs.org/ktx-parse/-/ktx-parse-1.1.0.tgz |
+| ktx-parse@1.1.0 | https://registry.npmjs.org/ktx-parse/-/ktx-parse-1.1.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2020 Don McCurdy |
 | lightningcss-android-arm64@1.33.0 | https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-android-arm64, viz https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz |
 | lightningcss-darwin-arm64@1.33.0 | https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-darwin-arm64, viz https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz |
 | lightningcss-darwin-x64@1.33.0 | https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-darwin-x64, viz https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz |
@@ -147,10 +149,10 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | meshoptimizer@1.1.1 | https://registry.npmjs.org/meshoptimizer/-/meshoptimizer-1.1.1.tgz | Arseny Kapoulkine | MIT | copyright notice; plné znění licence | Copyright (c) 2016-2026 Arseny Kapoulkine |
 | mrmime@2.0.1 | https://registry.npmjs.org/mrmime/-/mrmime-2.0.1.tgz | Luke Edwards | MIT | copyright notice; plné znění licence | Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (https://lukeed.com) |
 | nanoid@3.3.18 | https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz | Andrey Sitnik | MIT | copyright notice; plné znění licence | Copyright 2017 Andrey Sitnik <andrey@sitnik.ru> |
-| ndarray-lanczos@0.3.0 | https://registry.npmjs.org/ndarray-lanczos/-/ndarray-lanczos-0.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k ndarray-lanczos, viz https://registry.npmjs.org/ndarray-lanczos/-/ndarray-lanczos-0.3.0.tgz |
-| ndarray-ops@1.2.2 | https://registry.npmjs.org/ndarray-ops/-/ndarray-ops-1.2.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k ndarray-ops, viz https://registry.npmjs.org/ndarray-ops/-/ndarray-ops-1.2.2.tgz |
-| ndarray-pixels@5.2.0 | https://registry.npmjs.org/ndarray-pixels/-/ndarray-pixels-5.2.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k ndarray-pixels, viz https://registry.npmjs.org/ndarray-pixels/-/ndarray-pixels-5.2.0.tgz |
-| ndarray@1.1.1 | https://registry.npmjs.org/ndarray/-/ndarray-1.1.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k ndarray, viz https://registry.npmjs.org/ndarray/-/ndarray-1.1.1.tgz |
+| ndarray-lanczos@0.3.0 | https://registry.npmjs.org/ndarray-lanczos/-/ndarray-lanczos-0.3.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2021 Don McCurdy |
+| ndarray-ops@1.2.2 | https://registry.npmjs.org/ndarray-ops/-/ndarray-ops-1.2.2.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
+| ndarray-pixels@5.2.0 | https://registry.npmjs.org/ndarray-pixels/-/ndarray-pixels-5.2.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2021 Don McCurdy |
+| ndarray@1.1.1 | https://registry.npmjs.org/ndarray/-/ndarray-1.1.1.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013-2016 Mikola Lysenko |
 | next@16.3.0 | https://registry.npmjs.org/next/-/next-16.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2025 Vercel, Inc. |
 | obug@2.1.4 | https://registry.npmjs.org/obug/-/obug-2.1.4.tgz | Kevin Deng | MIT | copyright notice; plné znění licence | Copyright © 2025-PRESENT Kevin Deng (https://github.com/sxzz) |
 | OpenAI Codex CLI@0.145.0 | https://raw.githubusercontent.com/openai/codex/rust-v0.145.0/LICENSE | OpenAI | Apache-2.0 | při redistribuci přiložit licenci, zachovat relevantní notices a označit změny | Copyright 2025 OpenAI |
@@ -161,13 +163,14 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | playwright-core@1.62.1 | https://registry.npmjs.org/playwright-core/-/playwright-core-1.62.1.tgz | Microsoft Corporation | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | playwright@1.62.1 | https://registry.npmjs.org/playwright/-/playwright-1.62.1.tgz | Microsoft Corporation | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | postcss@8.5.23 | https://registry.npmjs.org/postcss/-/postcss-8.5.23.tgz | Andrey Sitnik | MIT | copyright notice; plné znění licence | Copyright 2013 Andrey Sitnik <andrey@sitnik.es> |
-| property-graph@4.1.0 | https://registry.npmjs.org/property-graph/-/property-graph-4.1.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k property-graph, viz https://registry.npmjs.org/property-graph/-/property-graph-4.1.0.tgz |
+| property-graph@4.1.0 | https://registry.npmjs.org/property-graph/-/property-graph-4.1.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2021 Don McCurdy |
 | pure-rand@8.4.2 | https://registry.npmjs.org/pure-rand/-/pure-rand-8.4.2.tgz | Nicolas DUBIEN | MIT | copyright notice; plné znění licence | Copyright (c) 2018 Nicolas DUBIEN |
 | react-dom@19.2.8 | https://registry.npmjs.org/react-dom/-/react-dom-19.2.8.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
 | react-use-measure@2.1.7 | https://registry.npmjs.org/react-use-measure/-/react-use-measure-2.1.7.tgz | Paul Henschel | MIT | copyright notice; plné znění licence | Copyright (c) 2019-2025 Poimandres |
 | react@19.2.8 | https://registry.npmjs.org/react/-/react-19.2.8.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
 | rfc6902@5.3.0 | https://registry.npmjs.org/rfc6902/-/rfc6902-5.3.0.tgz | Christopher Brown (http://henrian.com) | MIT | copyright notice; plné znění licence | držitelé práv k rfc6902, viz https://registry.npmjs.org/rfc6902/-/rfc6902-5.3.0.tgz |
 | rolldown@1.2.4 | https://registry.npmjs.org/rolldown/-/rolldown-1.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2024-present VoidZero Inc. & Contributors |
+| satori@0.25.0 | node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0) | Shu Ding / Vercel, Inc. | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | satori © Vercel, Inc., MPL-2.0 |
 | semver@7.8.5 | https://registry.npmjs.org/semver/-/semver-7.8.5.tgz | GitHub Inc. | ISC | copyright notice; plné znění licence | Copyright (c) Isaac Z. Schlueter and Contributors |
 | sharp@0.35.3 | https://registry.npmjs.org/sharp/-/sharp-0.35.3.tgz | Lovell Fuller | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by the copyright |
 | scheduler@0.27.0 | https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
@@ -187,7 +190,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | tslib@2.8.1 | https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz | Microsoft Corp. | 0BSD | žádné — 0BSD notice nevyžaduje | Copyright (c) Microsoft Corporation. |
 | typescript@6.0.3 | https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz | Microsoft Corp. | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License. |
 | undici-types@8.3.0 | https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Matteo Collina and Undici contributors |
-| uniq@1.0.1 | https://registry.npmjs.org/uniq/-/uniq-1.0.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k uniq, viz https://registry.npmjs.org/uniq/-/uniq-1.0.1.tgz |
+| uniq@1.0.1 | https://registry.npmjs.org/uniq/-/uniq-1.0.1.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
 | use-sync-external-store@1.6.0 | https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.6.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
 | vite › fsevents@2.3.3 | https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k vite › fsevents, viz https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz |
 | vite › postcss@8.5.26 | https://registry.npmjs.org/postcss/-/postcss-8.5.26.tgz | Andrey Sitnik | MIT | copyright notice; plné znění licence | Copyright 2013 Andrey Sitnik <andrey@sitnik.es> |
@@ -215,6 +218,8 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **@img/sharp-win32-arm64@0.35.3** (Apache-2.0 AND LGPL-3.0-or-later): Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit.
 - **@img/sharp-win32-ia32@0.35.3** (Apache-2.0 AND LGPL-3.0-or-later): Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit.
 - **@img/sharp-win32-x64@0.35.3** (Apache-2.0 AND LGPL-3.0-or-later): Nativní binárka image optimizeru Next.js (sharp/libvips). Běží na serveru, do prohlížečového bundlu nevstupuje, je nemodifikovaná a linkuje se dynamicky — LGPL tím nesahá na licenci našeho kódu. Kdyby se binárka někdy upravila, tenhle řádek přestane platit.
+- **@resvg/resvg-wasm@2.4.0** (MPL-2.0): Rasterises the preview SVG to PNG inside @vercel/og (P27B T6); WASM on the /og route only, never on the path to a game's first frame; unmodified, not in package-lock.json.
+- **@vercel/og@0.11.1** (MPL-2.0): Draws the game link preview (GET /api/play/games/<id>/og, P27B T6) on the server only; used unmodified. Vendored in next, so invisible to package-lock.json. It also bundles yoga.wasm (MIT, Meta) and the default font Geist-Regular.ttf (SIL OFL-1.1, Vercel), which renders the preview text; OFL permits bundling and use, the font is not sold on its own.
 - **caniuse-lite@1.0.30001809** (CC-BY-4.0): Build-time dataset o podpoře v prohlížečích (browserslist). Do produktu nevstupuje jako obsah, jen ovlivňuje cíle transpilace. Atribuce je vedená v tomhle registru.
 - **fastapi@0.141.1** (MIT): HTTP layer of the local ops/gen3d service. Python dependency in ops/gen3d/uv.lock, not in package-lock.json; the other Python dependencies and their licenses are listed in ops/gen3d/README.md (Licence).
 - **gltfpack@1.2.0** (MIT): Command-line tool that builds LOD0/LOD1 of generated models; fetched by npx at run time, not in package-lock.json and not distributed.
@@ -232,16 +237,14 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **lightningcss@1.33.0** (MPL-2.0): Dev závislost buildu (lightningcss). MPL-2.0 je copyleft na úrovni souboru; žádný její soubor neupravujeme, takže povinnost zveřejnit zdroje modifikací nevzniká.
 - **OpenAI Codex CLI@0.145.0** (Apache-2.0): Externí lokální nástroj instalovaný uživatelem ve WSL2; jeho binárka není zkopírována do repozitáře ani distribuována s tímto handoffem. Verze ověřena oficiálním CLI, licence proti upstream tagu rust-v0.145.0 dne 8. 9. 2026. Odvozený veřejný modelový katalog má vlastní položku níže. Licence kódu CLI není oprávnění k modelové službě ani ke sdílení osobního účtu.
 - **opener@1.5.2** ((WTFPL OR MIT)): Duální licence (WTFPL OR MIT). Bereme větev MIT, která má jasné znění i notice; WTFPL se neuplatňuje.
+- **satori@0.25.0** (MPL-2.0): Turns the preview layout into SVG inside @vercel/og for the game link preview (P27B T6); server-only, unmodified, not in package-lock.json.
 
-### Knihovny — bez deklarovaného autora (114)
+### Knihovny — bez deklarovaného autora (101)
 
 Tyhle balíčky autora ve svém `package.json` neuvádějí. Atribuce se proto opírá
 o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 - @dimforge/rapier3d-compat@0.12.0
-- @gltf-transform/core@4.5.0
-- @gltf-transform/extensions@4.5.0
-- @gltf-transform/functions@4.5.0
 - @img/colour@1.1.0
 - @img/sharp-darwin-arm64@0.35.3
 - @img/sharp-darwin-x64@0.35.3
@@ -314,13 +317,9 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - acorn@8.18.0
 - baseline-browser-mapping@2.11.13
 - client-only@0.0.1
-- cwise-compiler@1.1.3
 - debounce@1.2.1
 - expect-type@1.4.0
 - fsevents@2.3.2
-- iota-array@1.0.0
-- is-buffer@1.1.6
-- ktx-parse@1.1.0
 - lightningcss-android-arm64@1.33.0
 - lightningcss-darwin-arm64@1.33.0
 - lightningcss-darwin-x64@1.33.0
@@ -333,13 +332,8 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - lightningcss-win32-arm64-msvc@1.33.0
 - lightningcss-win32-x64-msvc@1.33.0
 - lightningcss@1.33.0
-- ndarray-lanczos@0.3.0
-- ndarray-ops@1.2.2
-- ndarray-pixels@5.2.0
-- ndarray@1.1.1
 - next@16.3.0
 - pathe@2.0.3
-- property-graph@4.1.0
 - react-dom@19.2.8
 - react@19.2.8
 - rolldown@1.2.4
@@ -349,7 +343,6 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - tinybench@2.9.0
 - tinyrainbow@3.1.1
 - undici-types@8.3.0
-- uniq@1.0.1
 - use-sync-external-store@1.6.0
 - vite › fsevents@2.3.3
 
