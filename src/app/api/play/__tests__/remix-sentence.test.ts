@@ -217,6 +217,61 @@ describe('POST …/remix { sentence }', () => {
   });
 });
 
+/** `__resetRemixes()` zahodí paměť procesu, úložiště zůstane – tak vypadá restart nebo jiná instance (T4a). */
+describe('stav práce přežije restart a jinou instanci', () => {
+  const SNOW = [{ op: 'replace', path: '/theme', value: { setting: 'snowy supermarket at night', mood: 'frantic' } }];
+
+  it('hotové dítě se najde z úložiště: GET i nové odeslání bez druhého volání modelu', async () => {
+    const parentId = await publish(chaseEscape);
+    upstream.script = [SNOW];
+    const started = await send(parentId, { sentence: 'add snow' });
+    const ready = await settled(parentId, started.body.job);
+    expect(ready.status).toBe('ready');
+
+    __resetRemixes();
+    expect(await status(parentId, started.body.job)).toEqual({ status: 200, body: ready });
+    upstream.script = [SNOW];
+    expect(await remixed(parentId, 'add snow')).toEqual(ready);
+    expect(upstream.calls).toBe(1);
+  });
+
+  it('běžící práce není na jiné instanci 404 a druhé odeslání model nezaplatí', async () => {
+    const parentId = await publish(chaseEscape);
+    let release: () => void = () => {};
+    upstream.gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    upstream.script = [SNOW];
+    const started = await send(parentId, { sentence: 'add snow' });
+    await vi.waitFor(() => expect(upstream.calls).toBe(1));
+
+    __resetRemixes();
+    expect((await status(parentId, started.body.job)).body.status).toBe('pending');
+    const again = await send(parentId, { sentence: 'add snow' });
+    expect(again.status).toBe(202);
+    expect(again.body.job).toBe(started.body.job);
+    release();
+    expect((await settled(parentId, started.body.job)).status).toBe('ready');
+    expect(upstream.calls).toBe(1);
+  });
+
+  it('verdikt o větě platí i po restartu, výpadek ne', async () => {
+    const parentId = await publish(chaseEscape);
+    upstream.script = [{ text: '{"hello": 1}' }];
+    expect(await remixed(parentId, 'add snow')).toEqual({ status: 'final', reason: 'MALFORMED' });
+    __resetRemixes();
+    expect(await remixed(parentId, 'add snow')).toEqual({ status: 'final', reason: 'MALFORMED' });
+    expect(upstream.calls).toBe(1);
+
+    upstream.script = ['timeout'];
+    expect(await remixed(parentId, 'add rain')).toEqual({ status: 'final', reason: 'MODEL_UNAVAILABLE' });
+    __resetRemixes();
+    upstream.script = [SNOW];
+    expect((await remixed(parentId, 'add rain')).status).toBe('ready');
+    expect(upstream.calls).toBe(3);
+  });
+});
+
 describe('brány placené větve platí jako u upgradu', () => {
   function control(off: string[]): void {
     const dir = mkdtempSync(join(tmpdir(), 'play-remix-kill-'));

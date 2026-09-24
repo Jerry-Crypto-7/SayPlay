@@ -3,7 +3,8 @@
  * RFC 6902 záplata nad rodičem (`buildRemixRequest`). Práce běží na pozadí
  * se stejným vzorem jako upgrade (`_upgrade.ts`): jedna práce na klíč
  * `(rodič, normalizovaná věta)` v mapě na `globalThis`, dotaz na stav podle
- * `job`. Dvojí odeslání tak nezaplatí model dvakrát.
+ * `job`. Dvojí odeslání tak nezaplatí model dvakrát – ani na jiné instanci,
+ * protože stav práce leží i v úložišti (T4a).
  *
  * Slib práce nikdy neodmítne – každá chyba je `final` s důvodem.
  *
@@ -23,7 +24,7 @@ import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '
 
 import { callDirectorModel, DIRECTOR_BUDGET_MS } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
-import { UPGRADE_DEADLINE_SLACK_MS } from './_upgrade';
+import { DRAFT_FINAL_TTL_SECONDS, UPGRADE_DEADLINE_SLACK_MS } from './_upgrade';
 
 export type RemixFinalReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED' | 'UNCHANGED' | 'NOT_PLAYABLE' | 'STORE_UNAVAILABLE' | 'UNASKED_CHANGE' | 'FAILED';
 
@@ -67,9 +68,9 @@ export function cleanRemixSentence(raw: string): string {
 }
 
 /**
- * `job` je hash rodiče a normalizované věty. Mapa prací žije jen v jednom
- * procesu (`next start`); na víc instancích druhé odeslání práci nenajde –
- * trvalý stav v úložišti je routovaný úkol z revize T4.
+ * `job` je hash rodiče a normalizované věty. Mapa prací je jen zrychlení
+ * v jednom procesu; stav práce se zapisuje i do úložiště (`StoredRemix`), aby
+ * ji našel restart i jiná instance (T4a).
  * SHA-256, ne `canonicalHash` (32bitový FNV): kolize by jiné větě vrátila
  * cizí výsledek.
  */
@@ -77,8 +78,58 @@ export function remixJobId(parentId: string, sentence: string): string {
   return createHash('sha256').update(JSON.stringify([parentId, sentence.toLowerCase()])).digest('hex').slice(0, 32);
 }
 
-function pendingOf(id: string, job: Job): RemixStatus {
-  return { status: 'pending', job: id, deadlineAt: new Date(job.startedAt + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS).toISOString() };
+const DEADLINE_MS = DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS;
+
+function pendingOf(id: string, startedAt: number): RemixStatus {
+  return { status: 'pending', job: id, deadlineAt: new Date(startedAt + DEADLINE_MS).toISOString() };
+}
+
+/** Práce v úložišti: `outcome: null` = někde běží, do lhůty (pak záznam vyprší). */
+interface StoredRemix {
+  readonly parentId: string;
+  readonly startedAt: number;
+  readonly outcome: RemixOutcome | null;
+}
+
+/** Jak dlouho se hotové dítě najde podle věty; hra sama žije v úložišti déle. */
+export const REMIX_READY_TTL_SECONDS = 7 * 24 * 3600;
+const PENDING_TTL_SECONDS = Math.ceil(DEADLINE_MS / 1000);
+/** Jak často se instance, která práci nespustila, ptá úložiště, jestli už doběhla. */
+export const STORE_POLL_MS = 1_000;
+
+/**
+ * Klíč v prostoru verdiktů upgradu: rozhraní úložiště patří stopě B a tohle
+ * se do něj vejde beze změny. `remix:` ho oddělí od id verzí (samé hex znaky).
+ */
+const recordKey = (job: string): string => `remix:${job}`;
+
+async function readRecord(versions: VersionStore, job: string): Promise<StoredRemix | null> {
+  const text = await versions.upgradeVerdict(recordKey(job));
+  if (text === null) return null;
+  try {
+    const record = JSON.parse(text) as Partial<StoredRemix> | null;
+    return typeof record?.parentId === 'string' && typeof record.startedAt === 'number' ? (record as StoredRemix) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Výpadek i konec běhu jen krátce – nové odeslání pak dostane nový pokus; verdikt o větě hodinu, hotové dítě týden. */
+function writeRecord(versions: VersionStore, job: string, record: StoredRemix): Promise<void> {
+  const { outcome } = record;
+  const ttl = outcome === null || (outcome.status === 'final' && TRANSIENT.has(outcome.reason)) ? PENDING_TTL_SECONDS : outcome.status === 'ready' ? REMIX_READY_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS;
+  return versions.rememberUpgradeVerdict(recordKey(job), JSON.stringify(record), ttl);
+}
+
+/** Práci spustila jiná instance: čeká na její výsledek v úložišti do lhůty. */
+async function followStored(versions: VersionStore, job: string, parentId: string, startedAt: number): Promise<RemixOutcome> {
+  while (Date.now() < startedAt + DEADLINE_MS) {
+    await new Promise((resolve) => setTimeout(resolve, STORE_POLL_MS));
+    const stored = await readRecord(versions, job);
+    if (stored === null) break;
+    if (stored.outcome !== null) return stored.outcome;
+  }
+  return final('FAILED', parentId, 'the instance running this remix did not finish it');
 }
 
 function final(reason: RemixFinalReason, parentId: string, detail: string): RemixOutcome {
@@ -153,9 +204,9 @@ export function startRemix(versions: VersionStore, parent: PublishedGame, reques
   const map = jobs();
   const id = remixJobId(parent.version.versionId, request.sentence);
   const known = map.get(id);
-  if (known !== undefined && !(known.outcome?.status === 'final' && TRANSIENT.has(known.outcome.reason))) return pendingOf(id, known);
+  if (known !== undefined && !(known.outcome?.status === 'final' && TRANSIENT.has(known.outcome.reason))) return pendingOf(id, known.startedAt);
 
-  const done = runRemix(versions, parent, request).catch((thrown: unknown): RemixOutcome => final('FAILED', parent.version.versionId, thrown instanceof Error ? thrown.message : String(thrown)));
+  const done = settle(versions, parent, request, id);
   const job: Job = { parentId: parent.version.versionId, startedAt: request.startedAt, done, outcome: null };
   map.set(id, job);
   const remembered = done.then((outcome) => {
@@ -169,12 +220,36 @@ export function startRemix(versions: VersionStore, parent: PublishedGame, reques
     console.warn(`[play] after() unavailable, remix ${id} runs unguarded`);
     void remembered;
   }
-  return pendingOf(id, job);
+  return pendingOf(id, job.startedAt);
 }
 
-/** Stav práce `job` pod rodičem `parentId`; `null` = proces o ní neví. */
-export function remixStatus(parentId: string, job: string): RemixStatus | null {
+/**
+ * Úložiště dřív než model: hotové dítě a verdikt o větě se vrátí, běžící práce
+ * jiné instance se dočká. Jinak se práce zapíše jako běžící, spustí a výsledek
+ * zapíše. Přechodný konec v úložišti znamená nový pokus.
+ */
+async function settle(versions: VersionStore, parent: PublishedGame, request: RemixRequest, id: string): Promise<RemixOutcome> {
+  const parentId = parent.version.versionId;
+  try {
+    const stored = await readRecord(versions, id);
+    if (stored !== null && stored.parentId === parentId) {
+      if (stored.outcome === null) return await followStored(versions, id, parentId, stored.startedAt);
+      if (!(stored.outcome.status === 'final' && TRANSIENT.has(stored.outcome.reason))) return stored.outcome;
+    }
+    await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome: null });
+    const outcome = await runRemix(versions, parent, request);
+    await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome });
+    return outcome;
+  } catch (thrown) {
+    return final('FAILED', parentId, thrown instanceof Error ? thrown.message : String(thrown));
+  }
+}
+
+/** Stav práce `job` pod rodičem `parentId` – z paměti procesu, jinak z úložiště; `null` = nikdo o ní neví. */
+export async function remixStatus(versions: VersionStore, parentId: string, job: string): Promise<RemixStatus | null> {
   const known = jobs().get(job);
-  if (known === undefined || known.parentId !== parentId) return null;
-  return known.outcome ?? pendingOf(job, known);
+  if (known !== undefined && known.parentId === parentId) return known.outcome ?? pendingOf(job, known.startedAt);
+  const stored = await readRecord(versions, job);
+  if (stored === null || stored.parentId !== parentId) return null;
+  return stored.outcome ?? pendingOf(job, stored.startedAt);
 }

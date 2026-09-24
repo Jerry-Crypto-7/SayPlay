@@ -130,6 +130,6 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params;
   const job = new URL(request.url).searchParams.get('job') ?? '';
   if (!VERSION_ID_PATTERN.test(id) || !JOB_PATTERN.test(job)) return notFound();
-  const status = remixStatus(id, job);
+  const status = await remixStatus(store(), id, job);
   return status === null ? notFound() : noStore(status);
 }
