@@ -17,7 +17,7 @@ import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
 import type { RepairIssue } from '@/play/director';
 import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
-import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
+import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
@@ -113,6 +113,12 @@ export function directorCallerOf(request: Request): string {
 
 export function store(): VersionStore {
   return versionStoreFromEnv(process.env);
+}
+
+/** Čtení z úložiště, které zmizí s procesem, to řekne hlavičkou (P27B T1). */
+export function markVolatileStore(response: Response): Response {
+  if (volatileVersionStore(process.env)) response.headers.set('x-play-store', 'memory');
+  return response;
 }
 
 /** Rodič musí existovat dřív, než se kvůli němu něco kompiluje. */

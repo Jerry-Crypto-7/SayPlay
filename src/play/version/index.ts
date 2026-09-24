@@ -9,6 +9,7 @@ export {
   httpVersionStore,
   memoryVersionStore,
   versionStoreFromEnv,
+  volatileVersionStore,
   writeLimitsFromEnv,
   type HttpVersionStoreConfig,
   type PutOutcome,

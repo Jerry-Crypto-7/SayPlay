@@ -88,13 +88,17 @@ export const MAX_LINEAGE = 32;
 
 /** Meze zápisu; `versionStoreFromEnv` je čte z `PLAY_VERSION_TTL_SECONDS` a `PLAY_PUBLISH_DAILY_CAP`. */
 export interface WriteLimits {
-  /** Jak dlouho hra žije od publikace. Výchozí 60 dní – porota otvírá odkazy týdny po odevzdání. */
+  /**
+   * Jak dlouho hra žije od publikace. Výchozí 180 dní: porota otvírá odkazy týdny
+   * po odevzdání a se 60 dny by hra vytvořená 24. 9. 2026 zmizela 23. 11., dva dny
+   * před vyhlášením 25. 11. Rezerva pokryje i hry publikované po odevzdání.
+   */
   readonly ttlSeconds: number;
   /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; autorská dítě (`relation: 'upgrade'`) se nepočítají. */
   readonly dailyCap: number;
 }
 
-export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 60 * 24 * 3600, dailyCap: 500 };
+export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 180 * 24 * 3600, dailyCap: 500 };
 
 /** Den v UTC pro klíč počítadla. */
 function quotaDay(nowMs: number): string {
@@ -420,12 +424,23 @@ export function __resetProcessVersionStore(): void {
   processStore = null;
 }
 
+/**
+ * Produkce bez sdíleného úložiště drží hry jen v paměti procesu – zmizí s ním.
+ * Dveře to přiznají hlavičkou `x-play-store: memory`, odkaz nesmí předstírat trvalost.
+ */
+export function volatileVersionStore(env: Record<string, string | undefined>): boolean {
+  return env.NODE_ENV === 'production' && sharedStoreFromEnv(env) === null;
+}
+
 /** Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak paměť procesu. */
 export function versionStoreFromEnv(env: Record<string, string | undefined>, fetchImpl: typeof fetch = fetch): VersionStore {
   const shared = sharedStoreFromEnv(env);
   const limits = writeLimitsFromEnv(env);
   if (shared !== null)
     return httpVersionStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: VERSION_STORE_TIMEOUT_MS, limits }, fetchImpl);
-  processStore ??= memoryVersionStore(limits);
+  if (processStore === null) {
+    processStore = memoryVersionStore(limits);
+    if (volatileVersionStore(env)) console.warn('[play] no shared store configured: published games live only in this process and vanish with it');
+  }
   return processStore;
 }

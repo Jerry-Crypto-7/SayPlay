@@ -391,6 +391,23 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     return { status: response.status, body: await response.json() };
   };
 
+  it('produkce bez sdíleného úložiště to přizná hlavičkou u feedu i u hry', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv('NODE_ENV', 'production');
+    try {
+      const listed = await listGames(new Request('http://play.test/api/play/games?recent=24', { headers: CALLER }));
+      expect(listed.headers.get('x-play-store')).toBe('memory');
+      const created = await publish('Collect five glowing mushrooms in a moonlit forest');
+      expect((await read(created.body.versionId)).response.headers.get('x-play-store')).toBe('memory');
+      expect((await read('0000000000000000')).response.headers.get('x-play-store')).toBe('memory');
+    } finally {
+      vi.unstubAllEnvs();
+      warn.mockRestore();
+    }
+    const listed = await listGames(new Request('http://play.test/api/play/games?recent=24', { headers: CALLER }));
+    expect(listed.headers.get('x-play-store')).toBeNull();
+  });
+
   it('prázdný feed je prázdné pole, ne vymyšlené hry', async () => {
     expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [] } });
   });

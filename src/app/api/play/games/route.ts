@@ -21,7 +21,7 @@ import { diversify } from '@/play/version/diversify';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
-import { admit, derivedSeeds, directorCallerOf, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { admit, derivedSeeds, directorCallerOf, isSeed, markVolatileStore, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 import { upgradeOf } from '../_upgrade';
 
 const bodySchema = z
@@ -67,18 +67,20 @@ export async function GET(request: Request): Promise<Response> {
   // Rezerva nad `limit`: rozmanitost odkládá hry do dalších osmic.
   const rows = diversify(await versions.recent(Math.min(RECENT_CAP, limit * 4)), limit);
   const remixes = await versions.childCounts(rows.map((row) => row.versionId));
-  return Response.json(
-    {
-      games: rows.map((row, index) => ({
-        versionId: row.versionId,
-        title: row.title,
-        archetype: row.archetype,
-        createdAt: row.createdAt,
-        parentId: row.parentId,
-        remixes: remixes[index] ?? 0,
-      })),
-    },
-    { headers: { 'cache-control': 'public, max-age=0, s-maxage=15' } },
+  return markVolatileStore(
+    Response.json(
+      {
+        games: rows.map((row, index) => ({
+          versionId: row.versionId,
+          title: row.title,
+          archetype: row.archetype,
+          createdAt: row.createdAt,
+          parentId: row.parentId,
+          remixes: remixes[index] ?? 0,
+        })),
+      },
+      { headers: { 'cache-control': 'public, max-age=0, s-maxage=15' } },
+    ),
   );
 }
 

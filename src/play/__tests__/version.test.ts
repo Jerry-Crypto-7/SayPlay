@@ -27,6 +27,7 @@ import {
   sealVersion,
   versionStoreFromEnv,
   VersionStoreUnavailable,
+  volatileVersionStore,
   writeLimitsFromEnv,
   type PublishedGame,
   type VersionStore,
@@ -407,5 +408,26 @@ describe('versionStoreFromEnv', () => {
 
   it('uses the shared store when the environment names one', () => {
     expect(versionStoreFromEnv({ KV_REST_API_URL: 'https://x', KV_REST_API_TOKEN: 't' }, fakeUpstash(new Map())).id).toBe('http');
+  });
+
+  it('keeps a game published on 24 Sep past the results on 25 Nov', () => {
+    const published = Date.UTC(2026, 8, 24);
+    const results = Date.UTC(2026, 10, 25);
+    expect(published + DEFAULT_WRITE_LIMITS.ttlSeconds * 1000).toBeGreaterThan(results + 30 * 24 * 3600 * 1000);
+    expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '86400' }).ttlSeconds).toBe(86400);
+  });
+
+  it('flags a production process that holds games only in memory, and warns once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(volatileVersionStore({ NODE_ENV: 'production' })).toBe(true);
+      expect(volatileVersionStore({ NODE_ENV: 'development' })).toBe(false);
+      expect(volatileVersionStore({ NODE_ENV: 'production', KV_REST_API_URL: 'https://x', KV_REST_API_TOKEN: 't' })).toBe(false);
+      versionStoreFromEnv({ NODE_ENV: 'production' });
+      versionStoreFromEnv({ NODE_ENV: 'production' });
+      expect(warn).toHaveBeenCalledTimes(1);
+    } finally {
+      warn.mockRestore();
+    }
   });
 });
