@@ -120,12 +120,25 @@ export function paletteForTheme(theme: { readonly mood: string; readonly setting
 const THUMBNAILS: ReadonlyMap<string, string> = new Map(catalog.assets.map((asset) => [asset.assetId, asset.thumbnail]));
 
 /**
+ * Odkud smí server stáhnout náhled modelu: `SITE_URL`, jinak adresa nasazení,
+ * kterou nastavuje Vercel. **Nikdy z hlaviček požadavku** – `Host` si pošle
+ * kdokoli, stažený obrázek by se zapamatoval k verzi a otrávený náhled by pak
+ * dostal každý (táž třída jako `embed/[layoutId]/site-url.ts`). Bez obojího
+ * `null`: jen soubor z `public/`, jinak ikona.
+ */
+export function assetOriginFrom(env: Record<string, string | undefined>): string | null {
+  if (env.SITE_URL !== undefined && env.SITE_URL !== '') return env.SITE_URL.replace(/\/+$/, '');
+  if (env.VERCEL_URL !== undefined && env.VERCEL_URL !== '') return `https://${env.VERCEL_URL}`;
+  return null;
+}
+
+/**
  * PNG náhled modelu hrdiny z katalogu jako data URL. Nejdřív ze souboru v
  * `public/`, kde ho má lokální server i test; kde funkce soubory `public/`
- * nenese (Vercel je servíruje z CDN), přes HTTP z téhož původu. Nic z toho →
- * `null` a náhled nakreslí ikonu ovládání.
+ * nenese (Vercel je servíruje z CDN), přes HTTP z důvěryhodného původu. Nic
+ * z toho → `null` a náhled nakreslí ikonu ovládání.
  */
-async function heroImage(modelId: string, origin: string): Promise<string | null> {
+async function heroImage(modelId: string, origin: string | null): Promise<string | null> {
   const thumbnail = THUMBNAILS.get(modelId);
   if (thumbnail === undefined) return null;
   const encode = (bytes: Uint8Array): string => `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
@@ -134,6 +147,7 @@ async function heroImage(modelId: string, origin: string): Promise<string | null
   } catch {
     // Soubor u funkce není – zkusí se HTTP.
   }
+  if (origin === null) return null;
   try {
     const response = await fetch(new URL(thumbnail, origin), { signal: AbortSignal.timeout(2000) });
     if (response.ok && response.headers.get('content-type') === 'image/png') return encode(new Uint8Array(await response.arrayBuffer()));
@@ -196,7 +210,7 @@ const PREVIEWS = new Map<string, Uint8Array<ArrayBuffer>>();
  * render se platí jednou na verzi a proces. Selhání vrátí `null` a nezapamatuje
  * se – další požadavek zkusí kreslit znovu.
  */
-export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string): Promise<Uint8Array<ArrayBuffer> | null> {
+export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string | null): Promise<Uint8Array<ArrayBuffer> | null> {
   const ready = PREVIEWS.get(versionId);
   if (ready !== undefined) return ready;
   try {

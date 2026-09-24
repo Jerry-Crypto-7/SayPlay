@@ -9,7 +9,7 @@
  */
 
 import { notFound, VERSION_ID_PATTERN } from '../../../_errors';
-import { gamePreviewPng, ogPngFor } from '../../../_og';
+import { assetOriginFrom, gamePreviewPng, ogPngFor } from '../../../_og';
 import { admit, store } from '../../../_publish';
 
 export const runtime = 'nodejs';
@@ -24,7 +24,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const game = await store().get(id);
   if (game === null) return notFound();
 
-  const preview = await gamePreviewPng(id, game.spec, new URL(request.url).origin);
+  const preview = await gamePreviewPng(id, game.spec, assetOriginFrom(process.env));
   const png = preview ?? ogPngFor(game.spec.theme.mood);
   return new Response(png, {
     headers: {

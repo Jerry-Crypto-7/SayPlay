@@ -15,7 +15,7 @@ import { resetRateWindows } from '@/server/rate-limit';
 
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
 
-import { OG_INK, OG_PALETTES, ogPngFor, paletteForMood } from '../_og';
+import { OG_INK, OG_PALETTES, assetOriginFrom, ogPngFor, paletteForMood } from '../_og';
 import { POST as createGame } from '../games/route';
 import { GET as ogImage } from '../games/[id]/og/route';
 
@@ -126,6 +126,12 @@ describe('GET /api/play/games/:id/og', () => {
     }
     // Selhání se nezapamatovalo: další požadavek už kreslí hru.
     expect((await og(versionId)).headers.get('x-og-fallback')).toBeNull();
+  });
+
+  it('fetches a hero thumbnail only from a configured origin, never from the request host', () => {
+    expect(assetOriginFrom({})).toBeNull();
+    expect(assetOriginFrom({ VERCEL_URL: 'play-abc.vercel.app' })).toBe('https://play-abc.vercel.app');
+    expect(assetOriginFrom({ SITE_URL: 'https://play.example/', VERCEL_URL: 'play-abc.vercel.app' })).toBe('https://play.example');
   });
 
   it('404 NOT_FOUND JSON for an unknown and for a malformed id', async () => {
