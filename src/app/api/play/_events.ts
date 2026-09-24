@@ -5,12 +5,16 @@
  * hru nezdrží: událost je statistika, ne stav.
  */
 
-import { appendFileSync, mkdirSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { LoopEvent } from '@/play/loop-events';
 
 export const LOOP_LOG_PREFIX = '[play-loop] ';
+
+/** ~130 tis. řádků po ~150 B: řádově víc, než demo za den dostane poctivě. */
+export const MAX_DAY_BYTES = 20 * 1024 * 1024;
+const capped = new Set<string>();
 
 export function recordLoopEvent(event: LoopEvent, env: Record<string, string | undefined> = process.env, now: () => Date = () => new Date()): void {
   const at = now();
@@ -22,9 +26,16 @@ export function recordLoopEvent(event: LoopEvent, env: Record<string, string | u
   // Testy zapisují jen do složky, kterou samy určí (jako záznamy selhání v `_upgrade.ts`).
   if (env.VITEST !== undefined && env.PLAY_EVENTS_DIR === undefined) return;
   const dir = env.PLAY_EVENTS_DIR ?? join(process.cwd(), 'data', 'play', 'events');
+  const file = join(dir, `${at.toISOString().slice(0, 10)}.jsonl`);
   try {
+    // Strop dne (revize T4): záplava beaconů nezaplní disk, jen přestane přibývat statistika.
+    if (existsSync(file) && statSync(file).size >= MAX_DAY_BYTES) {
+      if (!capped.has(file)) console.warn(`[play] loop events for ${file} stopped at the ${String(MAX_DAY_BYTES)} B day cap`);
+      capped.add(file);
+      return;
+    }
     mkdirSync(dir, { recursive: true });
-    appendFileSync(join(dir, `${at.toISOString().slice(0, 10)}.jsonl`), `${line}\n`);
+    appendFileSync(file, `${line}\n`);
   } catch (thrown) {
     console.warn(`[play] loop event not written: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
   }

@@ -3,7 +3,7 @@
  * jiného nepřijmou, a trychtýř se skutečnými jmenovateli.
  */
 
-import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { type LoopEvent, readLoopEvent, summarizeLoop } from '@/play/loop-events';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 
+import { MAX_DAY_BYTES } from '../_events';
 import { callerOf } from '../_publish';
 import { POST as sendEvent } from '../events/route';
 
@@ -104,6 +105,13 @@ describe('POST /api/play/events', () => {
     for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('play/events', caller);
     expect((await post({ name: 'win', versionId: VERSION, session: SESSION })).status).toBe(429);
     expect(takeRateSlot('play', caller).allowed).toBe(true);
+  });
+
+  it('stops appending once the day file reaches the cap', async () => {
+    const day = join(dir, `${new Date().toISOString().slice(0, 10)}.jsonl`);
+    writeFileSync(day, 'x'.repeat(MAX_DAY_BYTES));
+    expect((await post({ name: 'win', versionId: VERSION, session: SESSION })).status).toBe(204);
+    expect(statSync(day).size).toBe(MAX_DAY_BYTES);
   });
 
   function existsAny(): boolean {

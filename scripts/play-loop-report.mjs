@@ -55,7 +55,9 @@ for (const line of lines) {
   else events.push(parsed);
 }
 
-const report = { measuredAt: new Date().toISOString(), source: options.log ?? dir, events: events.length, refusedLines: refused, ...summarizeLoop(events) };
+// Revize T4: události hlásí prohlížeč a server neověřuje, že hra s `versionId` existuje – čísla jsou nahlášená, ne dokázaná.
+const trust = 'client-reported: versionId is not checked against the game store and once-only dedupe is in the browser, so counts can be inflated';
+const report = { measuredAt: new Date().toISOString(), source: options.log ?? dir, trust, events: events.length, refusedLines: refused, ...summarizeLoop(events) };
 if (options.out !== undefined) {
   mkdirSync(dirname(resolve(options.out)), { recursive: true });
   writeFileSync(resolve(options.out), `${JSON.stringify(report, null, 1)}\n`);
