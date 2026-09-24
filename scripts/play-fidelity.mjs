@@ -458,7 +458,7 @@ function summary(options) {
     .filter((name) => /^[a-z]\d+\.json$/.test(name))
     .map((name) => readJson(join(runDir, name)));
   const config = Object.fromEntries(
-    ['WORLDSMITH_BRANCH', 'WORLDSMITH_MODEL_ENDPOINT', 'WORLDSMITH_MODEL', 'WORLDSMITH_MODEL_EFFORT', 'WORLDSMITH_MODEL_PROFILE', 'WORLDSMITH_UPSTREAM_TIMEOUT_MS'].map((key) => [key, process.env[key] ?? null]),
+    ['WORLDSMITH_BRANCH', 'WORLDSMITH_MODEL_ENDPOINT', 'WORLDSMITH_MODEL', 'WORLDSMITH_MODEL_EFFORT', 'WORLDSMITH_MODEL_PROFILE', 'WORLDSMITH_UPSTREAM_TIMEOUT_MS', 'PLAY_DIRECTOR_MODE'].map((key) => [key, process.env[key] ?? null]),
   );
   const sentences = results.map((result) => {
     const final = specFidelity(result[finalOf(result)].spec, result.checklist);

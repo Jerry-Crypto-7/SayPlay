@@ -19,7 +19,7 @@ import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 
 import { CAPABILITIES } from '../capabilities';
 import { ARCHETYPE_IDS, type ArchetypeId } from '../registry';
-import { readGameSpec, type GameSpecV1 } from '../spec';
+import { readGameSpec, type ControlId, type GameSpecV1 } from '../spec';
 import chaseEscape from '../__fixtures__/chase_escape.json';
 import checkpointRace from '../__fixtures__/checkpoint_race.json';
 import collectExit from '../__fixtures__/collect_exit.json';
@@ -863,6 +863,10 @@ export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
     const arcade = draftArcade(sentence, seed, control);
     if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false };
   }
+  return draftGrid(sentence, seed, scores);
+}
+
+function draftGrid(sentence: string, seed: number, scores: Readonly<Record<ArchetypeId, number>>): DraftMeta {
   const archetype = pickArchetype(scores);
   const spec = template(archetype);
   const roles = withPlace(readRoles(sentence), sentence);
@@ -881,6 +885,31 @@ export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   fallback.title = titleFrom(sentence, fallback.title);
   const normalized = readGameSpec(fallback);
   return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true };
+}
+
+/** Výchozí volba ovládání, když ho vybral model a slova věty ukazují jinam. */
+const DEFAULT_CHOICE: Readonly<Record<ControlChoice['control'], ControlChoice>> = {
+  runner: { control: 'runner', density: null },
+  platform: { control: 'platform', difficulty: null, movingPlatforms: false, doubleJump: false },
+  flap: { control: 'flap', difficulty: null },
+  steer: { control: 'steer', difficulty: null, drift: false },
+  move_free: { control: 'move_free', density: null },
+  shooter: { control: 'shooter', difficulty: null },
+  throw: { control: 'throw', difficulty: null, goal: null },
+  timing: { control: 'timing', mode: 'stack', speed: null },
+  rhythm: { control: 'rhythm', density: null },
+  duel: { control: 'duel', difficulty: null },
+};
+
+/**
+ * Návrh ze slov pro ovládání, které vybral někdo jiný (P27D T2, kompaktní
+ * režie): parametry z věty, když slova ukazují na totéž ovládání, jinak
+ * výchozí volba. `null` jen když šablona s popisky věty neprojde schématem.
+ */
+export function draftForControl(sentence: string, control: ControlId, seed = 1): GameSpecV1 | null {
+  if (control === 'tap_go') return draftGrid(sentence, seed, scoreArchetypes(sentence)).spec;
+  const pick = pickControl(sentence.toLowerCase());
+  return draftArcade(sentence, seed, pick?.control === control ? pick : DEFAULT_CHOICE[control]);
 }
 
 /** Věta → validní `GameSpecV1`, nikdy `null`, nikdy výjimka. */

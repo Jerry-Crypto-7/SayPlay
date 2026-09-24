@@ -163,7 +163,9 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
     });
     if (branch === null || !acquireSlot('play')) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
     try {
-      return { ...(await direct(sentence, { branch, cache, now: Date.now, check })), callerLimited };
+      // P27D T2: kompaktní první odpověď jen na výslovnou objednávku, dokud měření nerozhodne.
+      const compact = process.env.PLAY_DIRECTOR_MODE === 'compact';
+      return { ...(await direct(sentence, { branch, cache, now: Date.now, check, compact })), callerLimited };
     } finally {
       releaseSlot('play');
     }
