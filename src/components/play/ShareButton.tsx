@@ -21,6 +21,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
   const button = useRef<HTMLButtonElement | null>(null);
   const [share, setShare] = useState<Share>('idle');
   const [href, setHref] = useState('');
+  const [volatile, setVolatile] = useState(false);
 
   useEffect(() => {
     const element = button.current;
@@ -33,9 +34,24 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
     };
   }, []);
 
+  /**
+   * Server bez sdíleného úložiště (P27D T5, D1) drží hry jen v paměti procesu
+   * a přizná to hlavičkou `x-play-store: memory`. Odkaz pak nesmí vypadat
+   * trvale – hráč se to dozví hned u sdílení.
+   */
+  async function checkLasting(): Promise<void> {
+    try {
+      const response = await fetch(`/api/play/games/${versionId}`, { cache: 'no-store' });
+      setVolatile(response.headers.get('x-play-store') === 'memory');
+    } catch {
+      // Nedostupné dveře o trvalosti nic neřeknou; odkaz sám se sdílí dál.
+    }
+  }
+
   async function run(): Promise<void> {
     const url = `${window.location.origin}/play/${versionId}`;
     setHref(url);
+    void checkLasting();
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: title ?? document.title, url });
@@ -61,6 +77,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
       {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}
       <span className="play-status" aria-live="polite">
         {share === 'copied' ? 'Link copied' : ''}
+        {volatile ? `${share === 'copied' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
       </span>
       {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
     </>
