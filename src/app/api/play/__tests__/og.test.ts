@@ -194,7 +194,7 @@ describe('GET /api/play/games/:id/og', () => {
       }
     }
     const accepted: number[] = [];
-    for (let c = 0x20; c < 0x2100; c += 1) if (fontCovers(String.fromCodePoint(c))) accepted.push(c);
+    for (let c = 0; c <= 0x10ffff; c += c === 0xd7ff ? 0x801 : 1) if (fontCovers(String.fromCodePoint(c))) accepted.push(c);
     expect(accepted.length).toBeGreaterThan(300);
     expect(accepted.filter((c) => !covered.has(c)).map((c) => c.toString(16))).toEqual([]);
     expect(fontCovers('Sky‑High Run')).toBe(false);
