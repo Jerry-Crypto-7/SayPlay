@@ -13,11 +13,49 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { __resetProcessVersionStore } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
-import { OG_PALETTES, ogPngFor, paletteForMood } from '../_og';
+import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
+
+import { OG_INK, OG_PALETTES, assetOriginFrom, fontCovers, ogPngFor, paletteForMood } from '../_og';
 import { POST as createGame } from '../games/route';
 import { GET as ogImage } from '../games/[id]/og/route';
 
 const CALLER = { 'x-forwarded-for': '203.0.113.7' };
+
+// Selhání renderu na požádání: `ImageResponse` hodí dřív, než začne kreslit.
+const failRender = vi.hoisted(() => ({ value: false }));
+vi.mock('next/og', async (importOriginal) => {
+  const real = await importOriginal<typeof import('next/og')>();
+  class FlakyImageResponse extends real.ImageResponse {
+    constructor(...args: ConstructorParameters<typeof real.ImageResponse>) {
+      if (failRender.value) throw new Error('render failed on purpose');
+      super(...args);
+    }
+  }
+  return { ...real, ImageResponse: FlakyImageResponse };
+});
+
+// Soubor náhledu hrdiny chybí na požádání – jako funkce na Vercelu, která `public/` nenese.
+const noPublicFiles = vi.hoisted(() => ({ value: false }));
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const real = await importOriginal<typeof import('node:fs/promises')>();
+  const readFile = (async (...args: Parameters<typeof real.readFile>) => {
+    if (noPublicFiles.value && String(args[0]).includes(`${join('public', 'assets')}`)) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    return real.readFile(...args);
+  }) as typeof real.readFile;
+  return { ...real, default: { ...real, readFile }, readFile };
+});
+
+async function publishSpec(title: string): Promise<string> {
+  const created = await createGame(
+    new Request('http://play.test/api/play/games', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...CALLER },
+      body: JSON.stringify({ spec: { ...runnerFixture, title } }),
+    }),
+  );
+  expect(created.status, await created.clone().text()).toBeLessThan(300);
+  return ((await created.json()) as { versionId: string }).versionId;
+}
 
 function params(id: string): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id }) };
@@ -64,11 +102,109 @@ describe('GET /api/play/games/:id/og', () => {
     const response = await og(versionId);
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toBe('image/png');
-    expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    expect(response.headers.get('x-og-fallback')).toBeNull();
     const bytes = new Uint8Array(await response.arrayBuffer());
     expect([...bytes.slice(0, 8)]).toEqual([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
     const view = new DataView(bytes.buffer);
     expect([view.getUint32(16), view.getUint32(20)]).toEqual([1200, 630]);
+  });
+
+  it('draws each version from its own game: two titles, two images, and the first stays as it was (P27B T6)', async () => {
+    const first = await publishSpec('Canyon Dash');
+    const second = await publishSpec('Rooftop Sprint');
+    const a = new Uint8Array(await (await og(first)).arrayBuffer());
+    const b = new Uint8Array(await (await og(second)).arrayBuffer());
+    expect(Buffer.from(a).equals(Buffer.from(b))).toBe(false);
+    // Paletový náhled je pro obě stejný (týž spec, táž nálada) – rozdíl dělá obsah hry.
+    expect(Buffer.from(a).equals(Buffer.from(ogPngFor(runnerFixture.theme.mood)))).toBe(false);
+    const again = new Uint8Array(await (await og(first)).arrayBuffer());
+    expect(Buffer.from(again).equals(Buffer.from(a))).toBe(true);
+  });
+
+  it('a render failure falls back to the palette PNG, flagged and not cached for a year', async () => {
+    const versionId = await publishSpec('Broken Render');
+    failRender.value = true;
+    try {
+      const response = await og(versionId);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('content-type')).toBe('image/png');
+      expect(response.headers.get('x-og-fallback')).toBe('1');
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+      expect(Buffer.from(await response.arrayBuffer()).equals(Buffer.from(ogPngFor(runnerFixture.theme.mood)))).toBe(true);
+    } finally {
+      failRender.value = false;
+    }
+    // Selhání se nezapamatovalo: další požadavek už kreslí hru.
+    expect((await og(versionId)).headers.get('x-og-fallback')).toBeNull();
+  });
+
+  it('a preview without its hero is served for an hour, flagged partial, and drawn again next time (review T6-1)', async () => {
+    const versionId = await publishSpec('Missing Hero');
+    noPublicFiles.value = true;
+    try {
+      const response = await og(versionId);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-og-partial')).toBe('1');
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+    } finally {
+      noPublicFiles.value = false;
+    }
+    // Nezapamatoval se: soubor je zpátky a náhled je úplný.
+    const healed = await og(versionId);
+    expect(healed.headers.get('x-og-partial')).toBeNull();
+    expect(healed.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+  });
+
+  it('text outside the bundled font is never cached as immutable, even when the render succeeds (review T6-1)', async () => {
+    expect(fontCovers('Canyon Dash – Příliš žluťoučký kůň…')).toBe(true);
+    expect(fontCovers('峡谷ダッシュ')).toBe(false);
+    // Stažení písma selže: satori nehodí, kreslí prázdná místa – právě ten případ.
+    const offline = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+    try {
+      const versionId = await publishSpec('峡谷ダッシュ');
+      const response = await og(versionId);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-og-partial')).toBe('1');
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+    } finally {
+      offline.mockRestore();
+    }
+  });
+
+  it('accepts only characters the bundled Geist font really has (review T6-2)', async () => {
+    const { readFileSync } = await vi.importActual<typeof import('node:fs')>('node:fs');
+    const font = readFileSync(join(process.cwd(), 'node_modules/next/dist/compiled/@vercel/og/Geist-Regular.ttf'));
+    // cmap formát 4 (Windows, Unicode BMP): kódy, které mají glyf.
+    let cmap = -1;
+    for (let i = 0; i < font.readUInt16BE(4); i += 1) if (font.toString('latin1', 12 + i * 16, 16 + i * 16) === 'cmap') cmap = font.readUInt32BE(12 + i * 16 + 8);
+    const covered = new Set<number>();
+    for (let i = 0; i < font.readUInt16BE(cmap + 2); i += 1) {
+      const sub = cmap + font.readUInt32BE(cmap + 4 + i * 8 + 4);
+      if (font.readUInt16BE(sub) !== 4) continue;
+      const segs = font.readUInt16BE(sub + 6) / 2;
+      const [ends, starts] = [sub + 14, sub + 16 + segs * 2];
+      const [deltas, offsets] = [starts + segs * 2, starts + segs * 4];
+      for (let s = 0; s < segs; s += 1) {
+        const [start, end, delta, ro] = [font.readUInt16BE(starts + s * 2), font.readUInt16BE(ends + s * 2), font.readInt16BE(deltas + s * 2), font.readUInt16BE(offsets + s * 2)];
+        for (let c = start; c <= end && c !== 0xffff; c += 1) {
+          const raw = ro === 0 ? c : font.readUInt16BE(offsets + s * 2 + ro + (c - start) * 2);
+          if (raw !== 0 && ((raw + delta) & 0xffff) !== 0) covered.add(c);
+        }
+      }
+    }
+    const accepted: number[] = [];
+    for (let c = 0; c <= 0x10ffff; c += c === 0xd7ff ? 0x801 : 1) if (fontCovers(String.fromCodePoint(c))) accepted.push(c);
+    expect(accepted.length).toBeGreaterThan(300);
+    expect(accepted.filter((c) => !covered.has(c)).map((c) => c.toString(16))).toEqual([]);
+    expect(fontCovers('Sky‑High Run')).toBe(false);
+    expect(fontCovers('Sky-High Run – “Go”')).toBe(true);
+  });
+
+  it('fetches a hero thumbnail only from a configured origin, never from the request host', () => {
+    expect(assetOriginFrom({})).toBeNull();
+    expect(assetOriginFrom({ VERCEL_URL: 'play-abc.vercel.app' })).toBe('https://play-abc.vercel.app');
+    expect(assetOriginFrom({ SITE_URL: 'https://play.example/', VERCEL_URL: 'play-abc.vercel.app' })).toBe('https://play.example');
   });
 
   it('404 NOT_FOUND JSON for an unknown and for a malformed id', async () => {
@@ -107,8 +243,8 @@ describe('mood palette', () => {
     expect(ogPngFor('calm')).not.toEqual(ogPngFor('tense'));
   });
 
-  it('no purple in any palette (hue 250–320°)', () => {
-    for (const palette of OG_PALETTES) {
+  it('no purple in any palette or in the ink of the game preview (hue 250–320°)', () => {
+    for (const palette of [...OG_PALETTES, { id: 'ink', bands: OG_INK, accent: OG_INK[0] }]) {
       for (const hex of [...palette.bands, palette.accent]) {
         const hue = hueOf(hex);
         expect(hue === null || hue < 250 || hue > 320, `${palette.id} ${hex} ${String(hue)}`).toBe(true);

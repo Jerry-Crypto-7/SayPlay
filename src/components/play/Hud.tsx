@@ -14,6 +14,8 @@
 import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import type { GameSpecV1 } from '@/play/spec';
 
+import { ShareButton } from './ShareButton';
+
 export const TICKS_PER_SECOND = 20;
 
 /** Čítač, který cíl hry sleduje; `null`, když cíl žádný čítač nemá. */
@@ -70,7 +72,8 @@ export function phaseLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'val
   return readVariable(snapshot as RuntimeSnapshot, `${timer.params.id}_red`) === 1 ? 'RED – freeze' : 'GREEN – go';
 }
 
-export function Hud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: RuntimeSnapshot }) {
+/** Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`, ať nejsou na stránce dvě. */
+export function Hud({ spec, snapshot, versionId }: { readonly spec: GameSpecV1; readonly snapshot: RuntimeSnapshot; readonly versionId: string }) {
   const phase = phaseLine(spec, snapshot);
   return (
     <header className="play-hud" aria-label="Game status">
@@ -88,6 +91,7 @@ export function Hud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sn
           tick {snapshot.tick}
         </span>
       </p>
+      {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );
 }

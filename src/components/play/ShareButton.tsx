@@ -1,0 +1,68 @@
+'use client';
+
+/**
+ * Sdílení hry (P27B T5) – v HUD během hry i po ní v `PostRun`.
+ *
+ * Odkaz míří vždy na neměnnou verzi, kterou hráč hraje (`/play/<versionId>`),
+ * ne na adresu stránky – ve feedu je to `/play?g=…`, a to se časem posune.
+ * Kde prohlížeč umí `navigator.share`, otevře se jeho nabídka; jinak se odkaz
+ * zkopíruje, a když ani schránka nejde (oprávnění, nezabezpečený původ),
+ * ukáže se v poli k ručnímu výběru.
+ *
+ * Stisk nesmí do hry: plocha scény i klávesy hry poslouchají nativně, takže
+ * ťuk i klávesu musí zastavit nativní posluchač (stejně jako tlačítko Fire).
+ */
+
+import { useEffect, useRef, useState } from 'react';
+
+type Share = 'idle' | 'copied' | 'manual';
+
+export function ShareButton({ versionId, title, label = 'Share', className = '' }: { readonly versionId: string; readonly title?: string; readonly label?: string; readonly className?: string }) {
+  const button = useRef<HTMLButtonElement | null>(null);
+  const [share, setShare] = useState<Share>('idle');
+  const [href, setHref] = useState('');
+
+  useEffect(() => {
+    const element = button.current;
+    if (element === null) return;
+    const stop = (event: Event) => event.stopPropagation();
+    const events = ['pointerdown', 'pointerup', 'keydown', 'keyup'] as const;
+    for (const name of events) element.addEventListener(name, stop);
+    return () => {
+      for (const name of events) element.removeEventListener(name, stop);
+    };
+  }, []);
+
+  async function run(): Promise<void> {
+    const url = `${window.location.origin}/play/${versionId}`;
+    setHref(url);
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: title ?? document.title, url });
+        return;
+      } catch (error) {
+        // Hráč nabídku zavřel – nic dalšího. Jiná chyba: zkusit schránku.
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShare('copied');
+    } catch {
+      setShare('manual');
+    }
+  }
+
+  return (
+    <>
+      <button ref={button} type="button" className={`play-button play-share ${className}`.trim()} data-testid="play-share" onClick={() => void run()}>
+        {label}
+      </button>
+      {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}
+      <span className="play-status" aria-live="polite">
+        {share === 'copied' ? 'Link copied' : ''}
+      </span>
+      {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
+    </>
+  );
+}

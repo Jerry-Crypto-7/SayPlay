@@ -9,22 +9,21 @@
  */
 
 import { notFound, VERSION_ID_PATTERN } from '../../_errors';
-import { admit, store } from '../../_publish';
+import { admit, markVolatileStore, store } from '../../_publish';
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }): Promise<Response> {
   const refused = await admit(request, 'snapshots');
   if (refused !== null) return refused;
 
   const { id } = await context.params;
-  if (!VERSION_ID_PATTERN.test(id)) return notFound();
+  if (!VERSION_ID_PATTERN.test(id)) return markVolatileStore(notFound());
 
   const versions = store();
   const game = await versions.get(id);
-  if (game === null) return notFound();
+  if (game === null) return markVolatileStore(notFound());
 
   const [children, lineage] = await Promise.all([versions.childrenOf(id), versions.lineageOf(id)]);
-  return Response.json(
-    { ...game, children, lineage },
-    { headers: { 'cache-control': 'public, max-age=0, s-maxage=60' } },
+  return markVolatileStore(
+    Response.json({ ...game, children, lineage }, { headers: { 'cache-control': 'public, max-age=0, s-maxage=60' } }),
   );
 }

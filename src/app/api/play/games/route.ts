@@ -16,12 +16,11 @@ import { z } from 'zod';
 
 import { draftGameSpec } from '@/play/draft';
 import { unsupportedGame } from '@/play/draft/unsupported';
-import { RECENT_CAP } from '@/play/version';
-import { diversify } from '@/play/version/diversify';
+import { decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
-import { admit, derivedSeeds, directorCallerOf, isSeed, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
+import { admit, derivedSeeds, directorCallerOf, isSeed, markVolatileStore, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 import { upgradeOf } from '../_upgrade';
 
 const bodySchema = z
@@ -44,13 +43,14 @@ export const maxDuration = 300;
 const MAX_FEED = 48;
 
 /**
- * `GET /api/play/games?recent=N` – feed (P23-D T4): `{ games: [{ versionId,
- * title, archetype, createdAt, parentId, remixes }] }` od nejnovější, v každé
- * osmici nejvýš tři hry téhož archetypu (`diversify`). Jen autorské verze od
- * režiséra – proč, říká `put` v `store.ts`. Stojí dva příkazy úložiště
- * (seznam a počty dětí), vlastní páku `feed` a strop jako každé čtení; hrana
- * ho smí 15 s držet, a proto dotaz nesmí nést nic jiného než kanonické `recent`
- * – náhodný parametr navíc by cache obešel pokaždé.
+ * `GET /api/play/games?recent=N[&cursor=C]` – feed (P23-D T4, stránky P27B T2):
+ * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes }],
+ * next }` od nejnovější, v každé osmici nejvýš tři hry téhož archetypu
+ * (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do feedu smí,
+ * říká `feedEligible` – kontrakt v `docs/play/feed.md`. Stojí dva příkazy
+ * úložiště (seznam a počty dětí), vlastní páku `feed` a strop jako každé čtení;
+ * hrana ho smí 15 s držet, a proto dotaz nesmí nést nic jiného než `recent`
+ * a `cursor` – náhodný parametr navíc by cache obešel pokaždé.
  */
 export async function GET(request: Request): Promise<Response> {
   const refused = await admit(request, 'feed');
@@ -59,26 +59,34 @@ export async function GET(request: Request): Promise<Response> {
   const query = new URL(request.url).searchParams;
   const text = query.get('recent');
   const limit = Number(text);
-  if (text === null || [...query.keys()].length !== 1 || !/^[1-9]\d?$/.test(text) || limit > MAX_FEED) {
-    return fail(400, 'BAD_REQUEST', `send only recent, a whole number from 1 to ${String(MAX_FEED)}`);
+  const keys = [...query.keys()];
+  const known = keys.every((key) => key === 'recent' || key === 'cursor') && new Set(keys).size === keys.length;
+  if (text === null || !known || !/^[1-9]\d?$/.test(text) || limit > MAX_FEED) {
+    return fail(400, 'BAD_REQUEST', `send recent, a whole number from 1 to ${String(MAX_FEED)}, and optionally the cursor from the last page`);
   }
+  const cursorText = query.get('cursor');
+  const cursor = cursorText === null ? null : decodeCursor(cursorText);
+  if (cursorText !== null && cursor === null) return fail(400, 'BAD_REQUEST', 'the cursor is not one this feed gave out');
 
   const versions = store();
-  // Rezerva nad `limit`: rozmanitost odkládá hry do dalších osmic.
-  const rows = diversify(await versions.recent(Math.min(RECENT_CAP, limit * 4)), limit);
-  const remixes = await versions.childCounts(rows.map((row) => row.versionId));
-  return Response.json(
-    {
-      games: rows.map((row, index) => ({
-        versionId: row.versionId,
-        title: row.title,
-        archetype: row.archetype,
-        createdAt: row.createdAt,
-        parentId: row.parentId,
-        remixes: remixes[index] ?? 0,
-      })),
-    },
-    { headers: { 'cache-control': 'public, max-age=0, s-maxage=15' } },
+  // Celý seznam (jeden příkaz): stránka se počítá ze snímku, viz `feed.ts`.
+  const page = feedPage(await versions.recent(RECENT_CAP), limit, cursor, hiddenFromEnv(process.env));
+  const remixes = await versions.childCounts(page.games.map((row) => row.versionId));
+  return markVolatileStore(
+    Response.json(
+      {
+        games: page.games.map((row, index) => ({
+          versionId: row.versionId,
+          title: row.title,
+          archetype: row.archetype,
+          createdAt: row.createdAt,
+          parentId: row.parentId,
+          remixes: remixes[index] ?? 0,
+        })),
+        next: page.next,
+      },
+      { headers: { 'cache-control': 'public, max-age=0, s-maxage=15' } },
+    ),
   );
 }
 

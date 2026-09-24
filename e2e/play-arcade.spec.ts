@@ -37,6 +37,42 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBe(before + 1);
   });
 
+  test('a hidden tab pauses the game and the first key resumes it (P27B T3)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(page.getByTestId('play-paused')).toBeVisible();
+    const frozen = await page.evaluate(() => window.__playShell!.tick());
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await page.waitForTimeout(500);
+    // Návrat do popředí hru sám nerozběhne.
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBe(frozen);
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('play-paused')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(frozen);
+  });
+
+  test('Space on the focused share button shares and does not jump (P27B T5)', async ({ page }) => {
+    await page.addInitScript(() => {
+      const shared: unknown[] = [];
+      (window as unknown as { __shared: unknown[] }).__shared = shared;
+      Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: unknown) => void shared.push(data) });
+    });
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    const before = await page.evaluate(() => window.__playShell!.inputs().length);
+    await page.getByTestId('play-share').focus();
+    await page.keyboard.press('Space');
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: unknown[] }).__shared.length)).toBe(1);
+    expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(before);
+  });
+
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
     await page.goto(url);
     const stage = page.getByTestId('arcade-stage');

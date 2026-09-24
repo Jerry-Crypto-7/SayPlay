@@ -42,6 +42,72 @@ test.describe('/play/[id] – share landing', () => {
     const png = await request.get(`/api/play/games/${id}/og`);
     expect(png.status()).toBe(200);
     expect(png.headers()['content-type']).toBe('image/png');
+    // P27B T6: náhled kreslí hru (ne paletová záloha), 1200×630, na verzi natrvalo.
+    expect(png.headers()['x-og-fallback']).toBeUndefined();
+    expect(png.headers()['cache-control']).toBe('public, max-age=31536000, immutable');
+    const bytes = await png.body();
+    expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([1200, 630]);
+    expect(await page.locator('meta[property="og:image:alt"]').getAttribute('content')).toBe(`${gameTitle} – cover image`);
+  });
+
+  test('sharing mid-game keeps the game running and a second browser opens the same version (P27B T5)', async ({ browser }) => {
+    const first = await browser.newContext();
+    // Nabídka sdílení prohlížeče se v e2e nedá obsluhovat – zachytí se, co by dostala.
+    await first.addInitScript(() => {
+      const shared: ShareData[] = [];
+      (window as unknown as { __shared: ShareData[] }).__shared = shared;
+      Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: ShareData) => void shared.push(data) });
+    });
+    const page = await first.newPage();
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 20, undefined, { timeout: 60_000 });
+    const inputs = await page.evaluate(() => window.__playShell!.inputs().length);
+    await page.getByTestId('play-share').click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length)).toBe(1);
+    const data = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0]);
+    expect(data.url).toMatch(new RegExp(`/play/${id}$`));
+    expect(data.title).toBe(gameTitle);
+    // Stisk do hry nepropadl: žádný nový vstup, hodiny běží dál, pauza nenastala.
+    const tick = await page.evaluate(() => window.__playShell!.tick());
+    await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(tick);
+    expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(inputs);
+    await expect(page.getByTestId('play-paused')).toHaveCount(0);
+    // Otisk světa, jak ho dostal tento prohlížeč: spec, blueprint i arkádový svět verze.
+    const worldOf = (target: typeof page) =>
+      target.evaluate(async (versionId) => {
+        const game = (await (await fetch(`/api/play/games/${versionId}`)).json()) as Record<string, unknown>;
+        return JSON.stringify([game.spec, game.blueprint ?? null, game.arcade ?? null]);
+      }, id);
+    const world = await worldOf(page);
+
+    const second = await browser.newContext();
+    const other = await second.newPage();
+    let generated = 0;
+    other.on('request', (request) => {
+      if (request.method() === 'POST') generated += 1;
+    });
+    await other.goto(data.url!);
+    await expect(other).toHaveURL(new RegExp(`/play/${id}$`));
+    await other.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    await expect(other.getByTestId('play-goal')).toBeVisible();
+    expect(await worldOf(other)).toBe(world);
+    expect(generated).toBe(0);
+    await first.close();
+    await second.close();
+  });
+
+  test('without a share sheet the HUD button copies the link to this version', async ({ browser }) => {
+    const context = await browser.newContext();
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await context.addInitScript(() => {
+      Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
+    });
+    const page = await context.newPage();
+    await page.goto(url);
+    await page.getByTestId('play-share').click();
+    await expect(page.getByText('Link copied')).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(new RegExp(`^https?://[^/]+/play/${id}$`));
+    await context.close();
   });
 
   test('an unknown game is a 404 with a sentence, for the page and the image', async ({ page, request }) => {

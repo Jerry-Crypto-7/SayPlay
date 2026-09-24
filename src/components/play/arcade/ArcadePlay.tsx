@@ -23,6 +23,7 @@ import { HowItWorks } from '../HowItWorks';
 import { timerLeft } from '../Hud';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
+import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner, useUpgrade } from '../UpgradeBanner';
@@ -87,7 +88,7 @@ function AddonCounters({ world, snapshot }: { readonly world: ArcadeWorld; reado
   );
 }
 
-function ArcadeHud({ spec, world, snapshot }: { readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot }) {
+function ArcadeHud({ versionId, spec, world, snapshot, paused }: { readonly versionId: string; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   // Arkáda tiká 60× za sekundu (viz `progressLabel`).
   const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
@@ -96,6 +97,7 @@ function ArcadeHud({ spec, world, snapshot }: { readonly spec: GameSpecV1; reado
       <h1 className="play-hud-title">{spec.title}</h1>
       <p className="play-hud-goal" data-testid="play-goal">{spec.tutorial.goalLine}</p>
       <p className="play-hud-hint">
+        {paused && snapshot.runState === 'running' ? <span data-testid="play-paused">Paused. Tap or press a key to resume. </span> : null}
         {snapshot.tick === 0 && spec.control !== undefined && TAP_TO_START.has(spec.control) ? 'Tap to start. ' : ''}
         {spec.tutorial.controlsHint}
       </p>
@@ -111,6 +113,8 @@ function ArcadeHud({ spec, world, snapshot }: { readonly spec: GameSpecV1; reado
         </span>
       </p>
       <AddonCounters world={world} snapshot={snapshot} />
+      {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
+      {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );
 }
@@ -122,12 +126,19 @@ export interface ArcadePlayProps {
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
   readonly aiVersion?: boolean;
-  readonly lab: LabFacts;
-  readonly read: ReadFacts;
+  /** Feed (P27B T4) je nemá – počítají se na serveru z registru – a hraje bez nich. */
+  readonly lab?: LabFacts;
+  readonly read?: ReadFacts;
   readonly upgrade: string | null;
+  /** Hra na obrazovce feedu; `false` ji pozastaví (P27B T3). */
+  readonly active?: boolean;
 }
 
-export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade }: ArcadePlayProps) {
+/** Klávesa do pole formuláře hru neobnoví – píše se tam věta, ne hraje. */
+const typing = (target: EventTarget | null): boolean =>
+  target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
+
+export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true }: ArcadePlayProps) {
   const upgraded = useUpgrade(upgrade);
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -138,6 +149,38 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   const running = snapshot.runState === 'running';
+  const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
+
+  // Pauza při skryté záložce a mimo obrazovku feedu. Sama se hra nerozběhne:
+  // obnoví ji až vstup hráče, a to v zachytávací fázi, takže ten stisk už do hry padne
+  // (u poletování je to rovnou mávnutí). Rytmus nepípá, když tiky stojí.
+  useEffect(() => {
+    if (!active) {
+      session.pause();
+      return;
+    }
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') session.pause();
+    };
+    const wake = () => {
+      if (session.paused() && document.visibilityState === 'visible') session.resume();
+    };
+    const onPointer = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) wake();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (!event.repeat && !typing(event.target)) wake();
+    };
+    onVisibility();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pointerdown', onPointer, true);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pointerdown', onPointer, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [active, session]);
 
   useEffect(() => {
     const probe = {
@@ -158,11 +201,11 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   return (
     <main className="play-shell">
       <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
-      <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} />
+      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
-      <SentenceRead read={read} />
-      <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
+      {read !== undefined && <SentenceRead read={read} />}
+      {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {!running && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>

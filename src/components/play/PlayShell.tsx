@@ -220,7 +220,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
           )}
         </WorldstreamCanvas>
       </div>
-      <Hud spec={spec} snapshot={snapshot} />
+      <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
       <SentenceRead read={read} />

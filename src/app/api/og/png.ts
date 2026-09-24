@@ -8,6 +8,13 @@
  * cestě k první odpovědi. Kodér je proti tomu padesát řádků nad `node:zlib`,
  * který v Node stejně je.
  *
+ * **P27B T6 to pro náhled hry mění.** Paletový obrázek nenesl nic z hry, a
+ * sdílený odkaz proto nerozlišil jednu hru od druhé. `next/og` je součástí
+ * `next` (žádný nový balíček; satori, resvg a `@vercel/og` jsou MPL-2.0 a stojí
+ * v `disclosure.json`) a WASM leží jen na cestě `…/og`, kterou volá crawler
+ * sociální sítě – ne na cestě k prvnímu snímku hry. Tenhle kodér zůstává
+ * pro paletovou zálohu a pro `/api/og`.
+ *
  * Formát je záměrně ten nejjednodušší platný: 8 bitů na kanál, truecolor bez
  * alfy, každý řádek s filtrem 0. Žádná paleta, žádné prokládání.
  */

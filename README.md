@@ -2,7 +2,7 @@
 
 Write one sentence and get a short 3D game you can play right away by tapping where to go. When you win or lose, change one thing ("Make it harder"), get a new game that remembers where it came from, and send the link to a friend – no account, no install.
 
-**Try it at `/play`** on a running build (see Quick start). Every game has its own permanent link, `/play/<id>`, and every remix points back to its parent.
+**Try it at `/play`** on a running build (see Quick start). Every game has its own link, `/play/<id>`; links stay for 180 days, and every remix points back to its parent.
 
 ## How it works
 

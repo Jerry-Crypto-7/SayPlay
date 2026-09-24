@@ -55,6 +55,14 @@ export interface ArcadeSession {
   playInputs(inputs: readonly InputEvent[], horizon: number): ArcadeSnapshot;
   /** Záznam robota ověřovače – ten, kterým hra prošla publikací. */
   botInputs(): readonly InputEvent[];
+  /**
+   * Pauza (P27B T3): hodiny stojí a vstupy se zahodí – do záznamu nejde nic,
+   * takže záznam s pauzami je týž jako bez nich. Rozběhnutý stisk i držené
+   * vstupy pauza pustí; restart ji nechá, jak byla.
+   */
+  pause(): void;
+  resume(): void;
+  paused(): boolean;
 }
 
 /**
@@ -79,6 +87,7 @@ export function createArcadeSession(
   let heldButtons = 0;
   let started = !waitForInput;
   let accumulator = 0;
+  let halted = false;
   let cached: ArcadeSnapshot | null = null;
   const listeners = new Set<() => void>();
 
@@ -110,6 +119,7 @@ export function createArcadeSession(
     state: () => state,
     prev: () => prev,
     press: (buttons, axis = 0) => {
+      if (halted) return;
       if (!started && swallowFirst && buttons !== 0) {
         started = true;
         return;
@@ -119,16 +129,20 @@ export function createArcadeSession(
       if (buttons !== 0) started = true;
     },
     hold: (axis) => {
+      if (halted) return;
       held = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
       if (held !== 0) started = true;
     },
     holdButtons: (buttons) => {
+      if (halted) return;
       heldButtons = buttons;
       if (buttons !== 0) started = true;
     },
     advance: (ms) => {
       if (outcomeOf(state) !== 'running') return 1;
       if (!started) return 0;
+      // Pauza drží rozběhnutý podíl, ať stojící snímek necukne o tik zpět.
+      if (halted) return Math.min(1, accumulator / TICK_MS);
       accumulator += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
       let stepped = false;
       // Epsilon: 30 × (1000/60) v plovoucí čárce je o chlup pod 500 a tik by se ztratil.
@@ -193,6 +207,21 @@ export function createArcadeSession(
       return session.snapshot();
     },
     botInputs: () => runBot(world).inputs,
+    pause: () => {
+      if (halted) return;
+      halted = true;
+      pending = 0;
+      pendingAxis = 0;
+      held = 0;
+      heldButtons = 0;
+      notify();
+    },
+    resume: () => {
+      if (!halted) return;
+      halted = false;
+      notify();
+    },
+    paused: () => halted,
   };
   return session;
 }
