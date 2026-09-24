@@ -30,6 +30,8 @@ import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
+import { CAPABILITIES } from '@/play/capabilities';
+import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Scenery } from './look/Scenery';
@@ -333,7 +335,7 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
   return (
     <>
       {control === 'steer' ? (
-        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} />
+        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
       ) : (
         <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
       )}
@@ -626,6 +628,7 @@ export default function ArcadeStage({
   const control = base.id;
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
   const look = LOOKS[lookId];
+  const draws = CAPABILITIES[control as ControlId]?.setting === true;
   useFireInput(session, fires);
   useRunnerInput(session, surface, control === 'runner');
   usePlatformInput(session, surface, control === 'platform');
@@ -635,7 +638,8 @@ export default function ArcadeStage({
   useTapInput(session, surface, control === 'timing' || control === 'rhythm');
   useDuelInput(session, surface, control === 'duel');
   return (
-    <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} style={{ touchAction: 'none' }}>
+    // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
+    <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
@@ -652,7 +656,7 @@ export default function ArcadeStage({
             {/* Boční scény svítí ze strany kamery (−x). */}
             <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={look.sun} />
             {control === 'move_free' ? (
-              <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} />
+              <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
             ) : (
               <World session={session} control={control} cast={cast} surface={surface} scene={look} />
             )}

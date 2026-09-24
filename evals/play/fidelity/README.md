@@ -18,4 +18,8 @@ Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
 
 `why` names the first stage where the item was lost: `not-in-spec`, `not-read-by-control`, `no-model`, `off-camera` (reserved for the camera-frame probe, never produced offline) or `ok`. `causes` lists the five most frequent `why × control × slot` groups by the number of sentences they hit.
 
+## Known limits
+
+- **Arena (`move_free`) setting.** The top-down camera mostly sees the arena floor. The floor takes the set's track colour and the set's props stand past the arena edge, so they come into view only near the edge. `drawn: true` here means the scene draws the set, not that the first frame shows the props.
+
 **The offline map measures the word draft, not the AI version.** The draft is what a player sees in the first second; the AI upgrade usually carries more of the sentence. A loss here is a loss of the offline path, and only a live run (`report.json`) says what the AI version shows.

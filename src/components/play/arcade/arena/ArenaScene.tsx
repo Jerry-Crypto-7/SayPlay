@@ -17,8 +17,10 @@ import { useEffect, useMemo, useRef } from 'react';
 import { type Group, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import type { Look } from '@/play/arcade/look';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
 
+import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
 const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15', shot: '#f8fafc' } as const;
@@ -32,6 +34,9 @@ const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.e
 /** Kolik metrů od hráče do strany je vidět vždy. */
 const SEE_M = 9;
 
+/** Jak daleko za hranou arény stojí první řada kulis (m). */
+const SCENERY_MARGIN = 1.5;
+
 interface Disc {
   readonly index: number;
   readonly role: number;
@@ -39,7 +44,7 @@ interface Disc {
   readonly h: number;
 }
 
-export function ArenaWorld({ session, half, surface }: { readonly session: ArcadeSession; readonly half: number; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+export function ArenaWorld({ session, half, surface, look: scene }: { readonly session: ArcadeSession; readonly half: number; readonly surface: React.RefObject<HTMLDivElement | null>; readonly look: Look }) {
   const discs = useMemo<readonly Disc[]>(() => {
     const state = session.state();
     const count = state[HEADER.bodyCount] as number;
@@ -106,12 +111,19 @@ export function ArenaWorld({ session, half, surface }: { readonly session: Arcad
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
         <planeGeometry args={[side, side]} />
-        <meshStandardMaterial color="#0e7490" roughness={0.8} />
+        {/* Podlaha v barvě dráhy sady: kamera shora vidí hlavně ji, kulisy za hranou až u okraje. */}
+        <meshStandardMaterial color={scene.track} roughness={0.8} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]}>
         <planeGeometry args={[side + 60, side + 60]} />
-        <meshStandardMaterial color="#1e293b" roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} />
       </mesh>
+      {/* Kulisy sady prostředí (P27A T3) za hranou arény ze všech čtyř stran – jen vzhled, jádro o nich neví. */}
+      {[0, Math.PI / 2].map((turn) => (
+        <group key={turn} rotation={[0, turn, 0]}>
+          <Scenery look={scene} layout="sides" inner={side / 2 + SCENERY_MARGIN} from={-side / 2} to={side / 2} />
+        </group>
+      ))}
       {discs.map((disc) => {
         const color = colorOf(disc.role);
         const tall = disc.role === ROLE.collectible ? 0.15 : Math.min(0.5, disc.h);

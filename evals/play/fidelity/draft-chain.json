@@ -1,16 +1,16 @@
 {
  "header": {
   "about": "P27A T2 offline loss map: the fidelity corpus through the word draft and the compiler, no network, no model. See README.md.",
-  "measuredAt": "2026-09-24T15:59:32.386Z",
-  "commit": "1a14d4c"
+  "measuredAt": "2026-09-24T16:11:28.310Z",
+  "commit": "1d2d7ad"
  },
  "summary": {
   "sentences": 30,
   "compiled": 30,
   "items": 110,
   "inSpec": 0.564,
-  "read": 0.482,
-  "drawn": 0.427
+  "read": 0.5,
+  "drawn": 0.445
  },
  "causes": [
   {
@@ -603,9 +603,9 @@
      "item": "jungle river",
      "slot": "setting",
      "inSpec": true,
-     "read": false,
-     "drawn": false,
-     "why": "not-read-by-control"
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "race",
@@ -899,9 +899,9 @@
      "item": "supermarket",
      "slot": "setting",
      "inSpec": true,
-     "read": false,
-     "drawn": false,
-     "why": "not-read-by-control"
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "race",

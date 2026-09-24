@@ -80,10 +80,11 @@ describe('fidelityChain', () => {
         ['shoot', false, false],
       ]);
     });
+    // P27A T3: závod kreslí sadu prostředí, `mall` je od té doby čtené.
     it('steer', () => {
       expect(readStages(spec('steer', 'Zombie'))).toEqual([
         ['zombie', true, false],
-        ['mall', true, false],
+        ['mall', true, true],
         ['shoot', false, false],
       ]);
     });

@@ -43,6 +43,13 @@ describe('offline fidelity loss map', () => {
     }
   });
 
+  // P27A T3: závod kreslí sadu prostředí – supermarket z věty je vidět.
+  it('draws the supermarket of the shopping cart race', () => {
+    const race = first.sentences.find((sentence) => sentence.id === 'h02');
+    expect(race?.control).toBe('steer');
+    expect(race?.items.find((item) => item.item === 'supermarket')).toMatchObject({ drawn: true, why: 'ok' });
+  });
+
   it('the committed map keeps the timestamp in the header only', () => {
     const committed = JSON.parse(readFileSync(join(DIR, 'draft-chain.json'), 'utf8'));
     expect(typeof committed.header.measuredAt).toBe('string');

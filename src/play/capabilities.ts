@@ -62,8 +62,10 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   runner: arcade({ setting: true, counts: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
   platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
   flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: ROAMING }),
-  steer: arcade({ cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player'], mechanics: ['timer'] }),
+  // P27A T3: závod a aréna kreslí kulisy sady prostředí mimo dráhu a za hranou arény.
+  steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player'], mechanics: ['timer'] }),
   move_free: arcade({
+    setting: true,
     cues: 'agar.io, eat smaller, grow',
     roles: ['hunter', 'coin'],
     finish: false,

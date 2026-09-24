@@ -30,10 +30,11 @@ import { lookOf } from '../arcade/look';
 import { readGameSpec, type ControlId, type GameSpecV1 } from '../spec';
 
 /**
- * Ovládání, jejichž podklad (`Backdrop` v `ArcadeStage.tsx`) kreslí sadu prostředí.
- * Závod, aréna, načasování, rytmus a souboj mají vlastní scénu bez sad.
+ * Ovládání, jejichž scéna kreslí sadu prostředí: podklad `Backdrop` v
+ * `ArcadeStage.tsx`, od P27A T3 i závod (`SteerBackdrop`) a aréna (`ArenaWorld`).
+ * Načasování, rytmus a souboj mají vlastní scénu bez sad.
  */
-const SCENERY_CONTROLS: ReadonlySet<ControlId> = new Set(['runner', 'platform', 'flap', 'shooter', 'throw']);
+const SCENERY_CONTROLS: ReadonlySet<ControlId> = new Set(['runner', 'platform', 'flap', 'shooter', 'throw', 'steer', 'move_free']);
 
 const FIXTURES: readonly (readonly [Exclude<ControlId, 'tap_go'>, GameSpecV1])[] = [
   ['runner', runner],
