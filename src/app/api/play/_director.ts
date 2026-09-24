@@ -18,7 +18,8 @@
 import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
-import type { GenerationBranch } from '@/server/pipeline';
+import type { UpstreamRequest } from '@/model/prompt';
+import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
 import { costUsd, processSpendCap } from '@/server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 
@@ -124,6 +125,23 @@ async function cappedBranch(
  * klíčem a táž věta dá tutéž hru bez ohledu na zátěž (R8).
  */
 const NO_MODEL: GenerationBranch = upstreamBranch(null);
+
+/**
+ * Jedno placené volání s vlastním požadavkem (P27C T4, remix vlastní větou):
+ * tytéž brány jako `getDirector` – objednávka, vypínač `upstream`, strop
+ * utrácení, počet volajícího, rozpočet trasy a slot dveří `play`. Bez
+ * kterékoli z nich se nevolá a výsledek je `UPSTREAM_REJECTED`.
+ */
+export async function callDirectorModel(startedAt: number, caller: string, request: UpstreamRequest, prompt: string): Promise<GenerationOutcome> {
+  const branch = await cappedBranch(process.env, startedAt + DIRECTOR_BUDGET_MS, caller, () => {});
+  if (branch === null) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the paid director branch is not available', usage: null };
+  if (!acquireSlot('play')) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'no free play slot', usage: null };
+  try {
+    return await branch.generate({ prompt, request });
+  } finally {
+    releaseSlot('play');
+  }
+}
 
 /**
  * Placená větev drží po celou režii jeden slot **vlastních dveří `play`** – pod

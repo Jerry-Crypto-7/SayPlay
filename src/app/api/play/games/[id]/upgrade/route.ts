@@ -1,7 +1,7 @@
 /**
  * `GET /api/play/games/:id/upgrade` – je autorská verze návrhu hotová?
  *
- * `{ status: 'pending' }` | `{ status: 'ready', versionId }` |
+ * `{ status: 'pending', deadlineAt }` (ISO, P27C T1) | `{ status: 'ready', versionId }` |
  * `{ status: 'draft-final', reason }`. Proces, který POST viděl, odpoví
  * z paměti hned. Proces, který o návrhu neví (serverless, restart), práci
  * **sám spustí** z věty uložené u návrhu a počká nejvýš `UPGRADE_WAIT_MS`;
@@ -13,7 +13,7 @@
 
 import { notFound, VERSION_ID_PATTERN } from '../../../_errors';
 import { admit, directorCallerOf, store } from '../../../_publish';
-import { knownUpgrade, type UpgradeStatus, upgradeOf } from '../../../_upgrade';
+import { knownUpgrade, pendingSince, type UpgradeStatus, upgradeOf } from '../../../_upgrade';
 
 const UPGRADE_WAIT_MS = 25_000;
 
@@ -43,7 +43,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   const waited = new Promise<UpgradeStatus>((resolve) => {
-    timer = setTimeout(() => resolve({ status: 'pending' }), UPGRADE_WAIT_MS);
+    timer = setTimeout(() => resolve(knownUpgrade(id) ?? pendingSince(startedAt)), UPGRADE_WAIT_MS);
   });
   const done = upgradeOf(versions, draft, { ...draft.origin, ackMs: null, draftReadyMs: null, startedAt, caller: directorCallerOf(request) });
   try {

@@ -65,6 +65,11 @@ export interface VersionStore {
    */
   upgradeVerdict(draftId: string): Promise<string | null>;
   rememberUpgradeVerdict(draftId: string, reason: string, ttlSeconds: number): Promise<void>;
+  /**
+   * Zapíše jen, když klíč ještě není (`SET NX`); `false` = zabral ho někdo jiný.
+   * Výpadek úložiště je `true` – nejhůř se zaplatí dvakrát, jako bez zámku.
+   */
+  claimUpgradeVerdict(draftId: string, value: string, ttlSeconds: number): Promise<boolean>;
   childrenOf(versionId: string): Promise<string[]>;
   /** Od kořene k listu, nejvýš `MAX_LINEAGE` nejnovějších záznamů. */
   lineageOf(versionId: string): Promise<GameVersion[]>;
@@ -252,6 +257,13 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         // Viz `upgradeVerdict`.
       }
     },
+    async claimUpgradeVerdict(draftId, value, ttlSeconds) {
+      try {
+        return await raw.setNx(verdictKey(draftId), value, ttlSeconds);
+      } catch {
+        return true;
+      }
+    },
     async childrenOf(versionId) {
       try {
         const text = await raw.get(childrenKey(versionId));
@@ -308,19 +320,36 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   return store;
 }
 
-/** Paměť procesu neexpiruje – drží ji denní strop, a `next start` žije kratší dobu než TTL. */
+/**
+ * Hodnoty (`set`/`setNx`) vyprší po svém TTL jako v Redisu – krátké záznamy
+ * remixů by jinak rostly do restartu (P27C T4d). Seznamy a počítadla neexpirují,
+ * drží je strop délky a denní klíč.
+ */
 export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
   const entries = new Map<string, string>();
+  const expiresAt = new Map<string, number>();
   const lists = new Map<string, string[]>();
+  const live = (key: string): string | null => {
+    const until = expiresAt.get(key);
+    if (until !== undefined && now() >= until) {
+      entries.delete(key);
+      expiresAt.delete(key);
+    }
+    return entries.get(key) ?? null;
+  };
+  const write = (key: string, value: string, ttlSeconds: number): void => {
+    entries.set(key, value);
+    expiresAt.set(key, now() + ttlSeconds * 1000);
+  };
   const raw: RawStore = {
-    get: (key) => Promise.resolve(entries.get(key) ?? null),
-    setNx: (key, value) => {
-      if (entries.has(key)) return Promise.resolve(false);
-      entries.set(key, value);
+    get: (key) => Promise.resolve(live(key)),
+    setNx: (key, value, ttlSeconds) => {
+      if (live(key) !== null) return Promise.resolve(false);
+      write(key, value, ttlSeconds);
       return Promise.resolve(true);
     },
-    set: (key, value) => {
-      entries.set(key, value);
+    set: (key, value, ttlSeconds) => {
+      write(key, value, ttlSeconds);
       return Promise.resolve();
     },
     // Počítadlo leží mezi hodnotami jako text, stejně jako v Redisu – `get` ho přečte.
@@ -334,7 +363,7 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       return Promise.resolve();
     },
     head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
-    getMany: (keys) => Promise.resolve(keys.map((key) => entries.get(key) ?? null)),
+    getMany: (keys) => Promise.resolve(keys.map(live)),
   };
   return versionStoreOver('memory', 'memory', raw, limits, now);
 }

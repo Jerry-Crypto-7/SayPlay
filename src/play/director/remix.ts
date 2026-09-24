@@ -24,6 +24,7 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { aimHarder, aimSwap, beatHarder, difficultyHarder, hazardSwap, runnerHarder, runnerSwapObstacles, runnerTwist, targetSwap } from '../arcade/remix';
 import type { RemixClass } from '../contracts';
+import { pickControl } from '../draft/controls';
 import { ARCHETYPES, type MechanicId } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1, type GameRole } from '../spec';
 
@@ -307,6 +308,92 @@ export function applyRemix(parent: GameSpecV1, ops: readonly Operation[]): { ok:
 
 const REMIX_ANSWER_LINE =
   'The player asked for a change to an existing game. Answer with a JSON array of RFC 6902 operations ({"op":"replace"|"add"|"remove","path":"/json/pointer","value":...}) over SPEC and nothing else. Never touch /schema or /archetype. Keep every mechanic the request does not mention; every mechanic you add needs a role and a verification keypoint.';
+
+/**
+ * Slova, kterými si věta o jiného hrdinu řekne výslovně („play as a cat“).
+ * Holé „player“ ne – „enemies chase the player faster“ o hrdinovi nemluví.
+ */
+const HERO_WORDS = /\b(play(?:ing)? as|(?:new|different|another) (?:hero|character)|make me|i am|i'm)\b/i;
+
+/** Rovnost bez ohledu na pořadí klíčů – uložený rodič je kanonicky seřazený, záplatované dítě ne. */
+function same(a: unknown, b: unknown): boolean {
+  return createPatch({ value: a }, { value: b }).length === 0;
+}
+
+/**
+ * Stráž remixu vlastní větou (P27C T4): dítě smí změnit ovládání (`control`,
+ * `controlParams`, `addons`), cíl (archetyp, druh a roli `objective`, kterýkoli
+ * keypoint rodiče) a hrdinu (roli `player`) jen tehdy, když o to věta
+ * výslovně žádá – slovesem ovládání (`pickControl` z návrhu ze slov), slovem
+ * cíle nebo hrdiny. „add snow“, po kterém se hraje jinak, je rozbitá hra,
+ * i když projde ověřením robotem. `false` = odmítnout (`UNASKED_CHANGE`).
+ * Nové keypointy smí přibýt vždy: každá přidaná mechanika jeden potřebuje.
+ */
+export function remixKeeps(parent: GameSpecV1, child: GameSpecV1, sentence: string): boolean {
+  // Každá část má svá slova: „make enemies shoot fireballs“ je sloveso ovládání,
+  // ale o jiný cíl ani jiného hrdinu si neříká (revize T4, nález 4).
+  const text = sentence.toLowerCase();
+  const askedControl = pickControl(text) !== null;
+  const askedGoal = OBJECTIVE_WORDS.test(text);
+  const askedHero = HERO_WORDS.test(text);
+
+  const control = !same([parent.control, parent.controlParams, parent.addons], [child.control, child.controlParams, child.addons]);
+  if (control && !askedControl) return false;
+
+  const kept = new Map(child.verification.map((assertion) => [assertion.id, assertion]));
+  const goal =
+    parent.archetype !== child.archetype ||
+    parent.objective.kind !== child.objective.kind ||
+    parent.objective.role !== child.objective.role ||
+    parent.verification.some((assertion) => !same(assertion, kept.get(assertion.id)));
+  if (goal && !askedGoal) return false;
+
+  // Všechny role hráče, ne první: přidaný druhý hráč je taky jiný hrdina.
+  const heroesOf = (spec: GameSpecV1) => spec.roles.filter((role) => role.kind === 'player');
+  if (!same(heroesOf(parent), heroesOf(child)) && !askedHero) return false;
+  return true;
+}
+
+const PART_NAMES: Readonly<Record<string, string>> = {
+  theme: 'setting',
+  title: 'title',
+  objective: 'goal',
+  verification: 'checks',
+  control: 'controls',
+  controlParams: 'controls',
+  addons: 'extras',
+  targetDurationSec: 'length',
+  budgets: 'limits',
+};
+
+function words(key: string): string {
+  return key.replace(/_/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+}
+
+/**
+ * Lidský seznam změněných částí z RFC 6902 operací – co hráči ukázat pod
+ * „What changed“. Parametr mechaniky nese jméno mechaniky („chaser speed“),
+ * role svůj popisek („bear“), návod se nepočítá – jen popisuje zbytek.
+ */
+export function describeRemix(parent: GameSpecV1, ops: readonly Operation[]): string[] {
+  const parts: string[] = [];
+  for (const operation of ops) {
+    const [top, index, field, param] = operation.path.split('/').slice(1);
+    if (top === undefined || top === 'tutorial' || top === 'schema') continue;
+    let part = PART_NAMES[top] ?? words(top);
+    if (top === 'mechanics') {
+      const id = parent.mechanics[Number(index)]?.id;
+      part = id !== undefined && field === 'params' && param !== undefined ? `${words(id)} ${words(param)}` : 'rules';
+    } else if (top === 'roles') {
+      const role = parent.roles[Number(index)];
+      part = role === undefined ? 'characters' : field === 'count' ? `number of ${role.label}s` : role.label;
+    } else if (top === 'controlParams' && index !== undefined) {
+      part = words(index);
+    }
+    if (!parts.includes(part)) parts.push(part);
+  }
+  return parts;
+}
 
 /** Volná remixová věta pro model – pro `mechanic`/`topology`/`objective` a pro `parameter`/`presentation` bez čipu. */
 export function buildRemixRequest(sentence: string, parent: GameSpecV1): UpstreamRequest {

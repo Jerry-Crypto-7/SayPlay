@@ -31,10 +31,12 @@ const director = vi.hoisted(() => ({
   branch: null as FakeBranch | null,
 }));
 
-vi.mock('../_director', async () => {
+vi.mock('../_director', async (importOriginal) => {
   const { direct } = await import('@/play/director');
   const { fakeBranch: branchOf } = await import('@/play/director/__fixtures__/branch');
   return {
+    // `DIRECTOR_BUDGET_MS` a spol. zůstávají skutečné: z rozpočtu se počítá `deadlineAt`.
+    ...(await importOriginal<typeof import('../_director')>()),
     getDirector: (_startedAt: number, _caller: string, check?: DirectorDeps['check']) => async (sentence: string) => {
       director.calls += 1;
       await director.gate;
@@ -49,6 +51,10 @@ const { POST: createGame } = await import('../games/route');
 const { GET: readGame } = await import('../games/[id]/route');
 const { GET: readUpgrade } = await import('../games/[id]/upgrade/route');
 const { __resetUpgrades } = await import('../_upgrade');
+
+const { DIRECTOR_BUDGET_MS } = await import('../_director');
+const { UPGRADE_DEADLINE_SLACK_MS } = await import('../_upgrade');
+const PENDING = { status: 'pending', deadlineAt: expect.stringMatching(/^\d{4}-\d\d-\d\dT/) };
 
 const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
 const CALLER = { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.9' };
@@ -115,14 +121,27 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     const draft = await game(created.body.versionId);
     expect(draft.spec).toEqual(draftGameSpec(SENTENCE));
     expect(draft.origin).toEqual({ sentence: SENTENCE, seed: null });
-    expect(await upgrade(created.body.versionId)).toEqual({ status: 'pending' });
+    expect(await upgrade(created.body.versionId)).toEqual(PENDING);
+  });
+
+  it('pending nese deadlineAt: start práce + rozpočet režie + 15 s rezerva (P27C T1)', async () => {
+    holdDirector();
+    const before = Date.now();
+    const created = await publish({ sentence: SENTENCE });
+    const after = Date.now();
+    const pending = await upgrade(created.body.versionId);
+    const deadline = Date.parse(pending.deadlineAt);
+    expect(deadline).toBeGreaterThanOrEqual(before + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS);
+    expect(deadline).toBeLessThanOrEqual(after + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS);
+    // Druhý dotaz lhůtu neposune: patří práci, ne dotazu.
+    expect((await upgrade(created.body.versionId)).deadlineAt).toBe(pending.deadlineAt);
   });
 
   it('pending → ready: autorská verze je dítě návrhu s rodokmenem a vodopádem', async () => {
     holdDirector();
     const created = await publish({ sentence: SENTENCE });
     const draftId: string = created.body.versionId;
-    expect(await upgrade(draftId)).toEqual({ status: 'pending' });
+    expect(await upgrade(draftId)).toEqual(PENDING);
     release();
     const ready = await settled(draftId);
     expect(ready.status).toBe('ready');
@@ -342,7 +361,7 @@ describe('GET …/upgrade', () => {
     __resetUpgrades();
     const outcomes = await Promise.all([upgrade(created.body.versionId), upgrade(created.body.versionId)]);
     expect(outcomes).toContainEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
-    expect(outcomes).toContainEqual({ status: 'pending' });
+    expect(outcomes).toContainEqual(PENDING);
     director.callerLimited = false;
     director.script = [answered(answerFixture('good-collect_exit'))];
     expect((await settled(created.body.versionId)).status).toBe('ready');

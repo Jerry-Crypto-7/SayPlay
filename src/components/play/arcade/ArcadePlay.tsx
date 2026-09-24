@@ -26,7 +26,7 @@ import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
-import { UpgradeBanner, useUpgrade } from '../UpgradeBanner';
+import { UpgradeBanner } from '../UpgradeBanner';
 
 import { createArcadeSession, type ArcadeSnapshot } from './session';
 
@@ -139,7 +139,6 @@ const typing = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
 
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true }: ArcadePlayProps) {
-  const upgraded = useUpgrade(upgrade);
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
   // u načasování by to byl rovnou minutý pokus (u poletování je to první mávnutí).
@@ -203,7 +202,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
-      {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
+      <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
       {read !== undefined && <SentenceRead read={read} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {!running && (

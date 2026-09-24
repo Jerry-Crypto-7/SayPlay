@@ -12,6 +12,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { RemixBox } from './RemixBox';
 import { ShareButton } from './ShareButton';
 import { CHALLENGE_A_FRIEND, CHANGE_ONE_THING, POST_RUN_CHIPS } from './starters';
 
@@ -65,6 +66,7 @@ export function PostRun({ versionId, onReplay }: { readonly versionId: string; r
         ))}
       </div>
       {failure !== null && <p className="play-alert" role="alert">{failure}</p>}
+      <RemixBox versionId={versionId} />
 
       <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} />
     </section>
