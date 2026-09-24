@@ -49,4 +49,25 @@ Merged build `c3d0bf2`, 30 sentences, AI through `codex-cli` / `gpt-6-astra` at 
 - **p90 is a hang, not a slow model.** Four calls hit the 285 s codex timeout (`codex exec ran past the timeout` in the server log); the other 26 finished in 28–138 s. Three of the four still produced an AI version at ~315–319 s, one ended as `timeout` at 331 s. Inference: an occasional stuck `codex exec`, which the timeout cuts too late to matter for a player. Cutting that tail is T2's job.
 - **The vision judge still sees no setting (0/24)** and only 25 of 110 items, while `drawn` says 0.702. The gap is the known arena/top-down limit above plus small bodies in a 3D frame; `drawn` is a structural claim, the judge is the oracle.
 
+## Compact first answer, 2026-09-24-p27-compact (P27D T2)
+
+Same 30 sentences, same model and config, build `b17cd5c` with `PLAY_DIRECTOR_MODE=compact` (the summary header says `05fa3e9` because `summary` stamps the HEAD it ran on; the code under test is the same). The model picks only control, addons, look, setting, title, role labels and a goal line; `src/play/director/compact.ts` builds the game on the control's template, then the same critic, robot check and repair rounds run. Summary: `runs/2026-09-24-p27-compact.json`.
+
+| | full GameSpec (`2026-09-24-p27`) | compact (`2026-09-24-p27-compact`) |
+|---|---|---|
+| AI version playable | 25/30 | **30/30** |
+| failures | NOT_PLAYABLE 3, MALFORMED 1, timeout 1 | none |
+| late results | 4 | 0 |
+| read, final | 0.801 | **0.827** |
+| drawn, final | 0.702 | **0.727** |
+| inSpec, final | 0.887 | 0.913 |
+| read, AI versions only | 0.860 (of 25) | 0.827 (of 30) |
+| vision judge, items / hero / setting (final) | 25/110 · 10/18 · 0/24 | 26/110 · 8/18 · 1/24 |
+| upgrade p50 / p90 | 45 s / 317 s | **12 s / 20 s** |
+
+- **Kept: compact**, now the default (`PLAY_DIRECTOR_MODE=full` brings the whole GameSpec back). It is faster to a playable AI version by 33 s at the median and its fidelity is not worse (read +0.026, drawn +0.025), which is the T2 rule.
+- **Target not met:** the C2 working target is p50 ≤ 10 s; measured 12.4 s. The 28/30 usable target is met (30/30).
+- **What compact loses:** per AI version it reads slightly less (0.827 vs 0.860) and the judge saw the hero in 8 of 18 instead of 10. The full answer writes its own mechanics and parameters; compact keeps the template's. The gain is that no sentence falls back to the draft any more.
+- **Why it is faster (inference):** the answer is ~8 short fields instead of a full GameSpec, and the prompt is a control table instead of the whole registry. Nothing hung past the 285 s timeout in this run.
+
 **The offline map measures the word draft, not the AI version.** The draft is what a player sees in the first second; the AI upgrade usually carries more of the sentence. A loss here is a loss of the offline path, and only a live run (`report.json`) says what the AI version shows.
