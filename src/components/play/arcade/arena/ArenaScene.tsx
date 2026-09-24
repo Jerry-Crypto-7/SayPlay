@@ -21,7 +21,13 @@ import { arenaAxis } from '@/play/arcade/pieces/arena';
 
 import type { ArcadeSession } from '../session';
 
-const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15' } as const;
+const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15', shot: '#f8fafc' } as const;
+
+/** Barva kotouče při stavbě scény; nepřítel ji podle velikosti mění každý tik, pronásledovatel `+chaser` je vždy k útěku. */
+const colorOf = (role: number): string =>
+  role === ROLE.player ? COLOR.player : role === ROLE.collectible ? COLOR.food : role === ROLE.chaser ? COLOR.hunter : role === ROLE.projectile ? COLOR.shot : COLOR.prey;
+
+const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
 
 /** Kolik metrů od hráče do strany je vidět vždy. */
 const SEE_M = 9;
@@ -47,6 +53,11 @@ export function ArenaWorld({ session, half, surface }: { readonly session: Arcad
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
+
+  // Role kreslených kotoučů pro e2e (jako `data-drawn` ostatních scén).
+  useEffect(() => {
+    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(discs.map((disc) => ROLE_NAMES[disc.role]))].join(' ');
+  }, [discs, surface]);
 
   // Pohled shora potřebuje „nahoru“ = +z; ostatní scény počítají s +y.
   useEffect(() => {
@@ -102,7 +113,7 @@ export function ArenaWorld({ session, half, surface }: { readonly session: Arcad
         <meshStandardMaterial color="#1e293b" roughness={1} />
       </mesh>
       {discs.map((disc) => {
-        const color = disc.role === ROLE.player ? COLOR.player : disc.role === ROLE.collectible ? COLOR.food : COLOR.prey;
+        const color = colorOf(disc.role);
         const tall = disc.role === ROLE.collectible ? 0.15 : Math.min(0.5, disc.h);
         return (
           <group key={disc.index} ref={(group) => { groups.current[disc.index] = group; }}>

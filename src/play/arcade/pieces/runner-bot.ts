@@ -36,14 +36,14 @@ const baseOf = bodyBase;
 
 const read = (state: Int32Array, base: number, slot: keyof typeof BODY): number => state[base + S[slot]] as number;
 
-interface Row {
+export interface Row {
   readonly z: number;
   /** Stav pruhu −1, 0, 1 a akce, kterou pruh žádá. */
   readonly lanes: readonly { readonly status: LaneStatus; readonly action: 'jump' | 'slide' | null }[];
 }
 
 /** Nejbližší řada překážek, kterou hráč podle pohledu ještě neminul. */
-function nextRow(state: Int32Array, player: number): Row | null {
+export function nextRow(state: Int32Array, player: number): Row | null {
   const p = baseOf(player);
   const pz = read(state, p, 'z');
   const count = state[HD.bodyCount] as number;

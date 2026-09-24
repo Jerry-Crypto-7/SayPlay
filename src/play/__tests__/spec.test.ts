@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import runnerFixture from '../arcade/__fixtures__/runner.json';
+import shooterFixture from '../arcade/__fixtures__/shooter.json';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, estimateCost } from '../registry';
 import { gameSpecHash, readGameSpec, type GameSpecV1 } from '../spec';
 
@@ -142,5 +144,37 @@ describe('role labels (P26 T7)', () => {
     const result = readGameSpec(spec);
     if (!result.ok) throw new Error(result.issues.join('; '));
     expect(result.value.roles[0].label).toBe(label);
+  });
+});
+
+/** P26D T2: doplňky arkády – volitelné pole bez výchozí hodnoty, povolené podle tabulky schopností. */
+describe('arcade addons (P26D T2)', () => {
+  const runnerSpec = (addons?: unknown): unknown => ({ ...(runnerFixture as object), ...(addons === undefined ? {} : { addons }) });
+
+  it('a spec without addons keeps the hash it had before the field existed', () => {
+    const read = readGameSpec(runnerSpec());
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    expect('addons' in read.value).toBe(false);
+    // P26D T9: bceb9e16 → fc27e276 – fixtura běžce ztratila zástupné `count: 5` u překážky a mince
+    // (počty od 2 generátor nově čte). Pole `addons` na hash dál nesahá.
+    expect(read.specHash).toBe('fc27e276');
+  });
+
+  it('accepts an addon the control allows and rejects one it does not', () => {
+    const ok = readGameSpec(runnerSpec(['shoot', 'lives']));
+    expect(ok.ok && ok.value.addons).toEqual(['shoot', 'lives']);
+    const shooterWithShoot = readGameSpec({ ...(shooterFixture as object), addons: ['shoot'] });
+    expect(shooterWithShoot.ok).toBe(false);
+    if (!shooterWithShoot.ok) expect(shooterWithShoot.issues.join()).toContain('/addons/0');
+  });
+
+  it('rejects an unknown addon, a repeated one and more than three', () => {
+    expect(readGameSpec(runnerSpec(['fly'])).ok).toBe(false);
+    expect(readGameSpec(runnerSpec(['lives', 'lives'])).ok).toBe(false);
+    expect(readGameSpec(runnerSpec(['shoot', 'collect', 'chaser', 'lives'])).ok).toBe(false);
+  });
+
+  it('a grid game takes no addons', () => {
+    expect(readGameSpec({ ...(fixture('collect_exit') as object), addons: ['lives'] }).ok).toBe(false);
   });
 });

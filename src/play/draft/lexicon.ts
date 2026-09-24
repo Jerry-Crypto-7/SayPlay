@@ -172,6 +172,15 @@ export function readNumbers(sentence: string): SentenceNumbers {
   return { seconds, counts };
 }
 
+/**
+ * Počty s podstatným jménem („five coins“, „10 big rocks“) pro arkádu (P26D T9):
+ * číslo, nejvýš jedno přídavné jméno a podstatné jméno v množném čísle.
+ */
+export function readCountedNouns(sentence: string): readonly { readonly count: number; readonly noun: string }[] {
+  const pattern = new RegExp(`\\b${NUMBER_TOKEN} (?:[a-z]+ )?([a-z]+s)\\b`, 'g');
+  return [...sentence.toLowerCase().matchAll(pattern)].map((match) => ({ count: toNumber(match[1]), noun: match[2] }));
+}
+
 /** Slova, na kterých končí jmenná fráze role. */
 const PHRASE_STOP = new Set([
   // Modální a pomocná slovesa – za podmětem („A knight must collect…“), nikdy součást jména.
@@ -315,6 +324,14 @@ const NOT_A_CHARACTER = new Set([
   'away', 'here', 'there', 'not', 'so', 'very', 'bored', 'gonna', 'going',
 ]);
 
+/** Slova žánru, u kterých podmět končí. */
+const GENRE_HEADS = new Set([
+  'game', 'games', 'shooter', 'runner', 'platformer', 'puzzle', 'racer', 'racing', 'sim', 'simulator', 'clicker', 'obby', 'rpg',
+  'tycoon', 'roguelike', 'fps', 'arcade', 'adventure',
+]);
+/** Žánry, před kterými stojí hrdina („corgi runner“, „goat simulator“); u ostatních předchozí slovo jmenuje terč nebo místo. */
+const PLAYER_GENRES = new Set(['runner', 'platformer', 'racer', 'sim', 'simulator', 'adventure']);
+
 /** Rozhoduje hlava fráze (poslední slovo): „little submarine“ je postava, „hard platformer“ ne. */
 const aCharacter = (phrase: string | null): string | null =>
   phrase === null || NOT_A_CHARACTER.has(phrase.split(' ').at(-1) ?? '') ? null : phrase;
@@ -337,6 +354,9 @@ function subjectOf(text: string): string | null {
     if (previous !== undefined && /[^s]s$/.test(word) && !previous.endsWith('s')) break;
     words.push(word);
   }
+  // P26D T1: „a corgi runner“ → corgi; „a space shooter“ jmenuje terč, ne hrdinu.
+  const genre = words.findIndex((word) => GENRE_HEADS.has(word));
+  if (genre >= 0) return PLAYER_GENRES.has(words[genre]) && genre > 0 ? aCharacter(words.slice(0, genre).slice(-2).join(' ')) : null;
   return aCharacter(words.slice(-2).join(' '));
 }
 

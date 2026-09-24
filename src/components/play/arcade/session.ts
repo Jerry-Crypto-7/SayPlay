@@ -30,6 +30,8 @@ export interface ArcadeSnapshot {
   readonly distanceM: number;
   /** Zbývající rány nebo hody (zásobník + záloha). */
   readonly shots: number;
+  /** Sebrané předměty doplňku `+collect`. */
+  readonly items: number;
 }
 
 export interface ArcadeSession {
@@ -157,6 +159,7 @@ export function createArcadeSession(
         progress: runState === 'won' ? 100 : world.length > 0 ? Math.min(99, Math.floor((z * 100) / world.length)) : 0,
         distanceM: Math.floor(z / UNIT),
         shots: (state[HEADER.counters + COUNTER.ammo] as number) + (state[HEADER.counters + COUNTER.reserve] as number),
+        items: state[HEADER.counters + COUNTER.items] as number,
       };
       return cached;
     },

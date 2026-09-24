@@ -109,7 +109,8 @@ function renderShape(): string {
   const top = z.toJSONSchema(gameSpecSchema) as JsonSchema;
   const properties = top.properties as Record<string, JsonSchema>;
   const outline = Object.entries(properties)
-    .filter(([key]) => key !== 'verification')
+    // Doplňky (P26D) řekne řádek ovládání u každého ovládání zvlášť.
+    .filter(([key]) => key !== 'verification' && key !== 'addons')
     .map(([key, value]) => `${key}: ${compactSchema(value)}`)
     .join('\n');
   return [
@@ -117,7 +118,8 @@ function renderShape(): string {
     outline,
     'verification: list (1..20) of assertions, at least one keypoint per mechanic you use plus one reachability {runState: won}:',
     schemaOf(verificationSchema),
-    'Keys in setup/assert maps are role ids or counter names from this spec. actions use the same verbs as the player: moveTo, pickup, use.',
+    // P26D T10: věta o slovesech akcí opakovala výčet `actionId` ze schématu výš – místo pro doplňky.
+    'Keys in setup/assert maps are role ids or counter names from this spec.',
   ].join('\n');
 }
 
@@ -133,11 +135,14 @@ export function controlPromptLine(): string {
     const mechanics = c.mechanics === 'all' || c.mechanics.join() === 'health,timer' ? '' : `only ${c.mechanics.join('/')}; `;
     const shows = c.labels === 'all' || c.labels.join() === 'player' ? '' : `shows ${c.labels.join('+') || 'no'}; `;
     const note = c.note === undefined ? '' : `${c.note}; `;
-    return `"${id}" (${c.cues}): ${note}${mechanics}${shows}${[...(c.finish ? ['finish'] : []), ...c.roles].join(', ')}; {${Object.keys(CONTROL_PARAMS[id].shape).join(', ')}}.`;
+    // P26D T10: „lives“ řekne legenda jednou (bere ho každé ovládání s health), u ovládání stojí ostatní doplňky.
+    const extras = c.addons.filter((addon) => addon !== 'lives');
+    const addons = extras.length === 0 ? '' : `+${extras.join('/')}; `;
+    return `"${id}" (${c.cues}): ${note}${mechanics}${shows}${addons}${[...(c.finish ? ['finish'] : []), ...c.roles].join(', ')}; {${Object.keys(CONTROL_PARAMS[id].shape).join(', ')}}.`;
   });
   return [
     "control: omit for the grid above; change the starting point's if another fits the verb better.",
-    'Arcade: archetype hazard_crossing, mechanics only health/timer, screen shows only the player label unless "shows" lists more role labels – put the nouns there; verification [{id: wins, kind: reachability, assert: {runState: won}}]. Per control (cues): exceptions; roles besides player; controlParams.',
+    'Arcade: archetype hazard_crossing, mechanics only health/timer, screen shows only the player label unless "shows" lists more – put the nouns there; verification [{id: wins, kind: reachability, assert: {runState: won}}]. addons: 2nd verb from "+" ("jump and shoot" = platform ["shoot"]); lives wherever health is. Per control (cues): exceptions; roles besides player; controlParams.',
     ...entries,
   ].join(' ');
 }
@@ -147,7 +152,7 @@ export function directorSystemPrompt(): string {
   return [
     DIRECTOR_RULES,
     ANSWER_SHAPE_LINE,
-    'Runtime is a tap-to-move grid: the player taps a target to walk there, picks items up and uses things next to them. Everything happens by walking, picking up and using; express any other fantasy through the registered mechanics.',
+    'Default runtime: tap-to-move grid (tap to walk, pick up, use what is next to you); other fantasies go through registered mechanics.',
     controlPromptLine(),
     renderRegistry(),
     renderShape(),

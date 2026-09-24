@@ -110,9 +110,11 @@ export const FLAG = {
 /**
  * Pevné sloty čítačů v hlavičce (`HEADER.counters + index`). `ammo` = náboje
  * v zásobníku (u hodu zbývající hody), `reserve` = náboje mimo zásobník,
- * `cooldown` = tiky, než zbraň znovu vystřelí (rozestup ran, přebíjení).
+ * `cooldown` = tiky, než zbraň znovu vystřelí (rozestup ran, přebíjení),
+ * `items` = sebrané předměty doplňku `+collect` (P26D; body za branky v něm nejsou),
+ * `trigger` = spoušť `+shoot` v tomto tiku (zapíše ji obal ovládání `addon_control`).
  */
-export const COUNTER = { score: 0, health: 1, ammo: 2, reserve: 3, cooldown: 4 } as const;
+export const COUNTER = { score: 0, health: 1, ammo: 2, reserve: 3, cooldown: 4, items: 5, trigger: 6 } as const;
 export type ArcadeCounter = keyof typeof COUNTER;
 
 /** Role těla – co s ním pravidla dělají. Čísla jsou součást hashe, nepřečíslovat. */
@@ -152,6 +154,8 @@ export const BUTTON = {
   UP: 1 << 3,
   DOWN: 1 << 4,
   HOLD: 1 << 5,
+  /** Střela doplňku `+shoot` (P26D) – základní ovládání ho nečtou, takže se nesrazí se skokem ani skluzem. */
+  FIRE: 1 << 6,
 } as const;
 
 export const AXIS_MIN = -1000;

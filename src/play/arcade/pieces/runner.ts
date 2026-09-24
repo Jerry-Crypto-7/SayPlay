@@ -142,6 +142,9 @@ const generatorParams = z
     lengthM: z.int().min(RUNNER_TRACK.minLengthM).max(RUNNER_TRACK.maxLengthM).default(250),
     obstacles: z.array(z.enum(OBSTACLE_KINDS)).min(1).max(OBSTACLE_KINDS.length).default([...OBSTACLE_KINDS]),
     coins: z.boolean().default(true),
+    /** Přesný počet mincí a řad překážek z počtu rolí (P26D T9); bez hodnoty podle hustoty. */
+    coinCount: z.int().min(1).max(RUNNER_TRACK.maxCoins).optional(),
+    rows: z.int().min(1).max(60).optional(),
   })
   .strict();
 export type RunnerTrackParams = z.infer<typeof generatorParams>;
@@ -169,7 +172,9 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
     const passable = params.obstacles.filter((kind) => OBSTACLES[kind].passBy !== 'lane');
     const rows: number[] = [];
     const [minLanes, maxLanes] = ROW_LANES[params.density];
-    const maxRows = Math.ceil(length / (RUNNER_TRACK.minGapTicks * speed));
+    const maxRows = Math.min(params.rows ?? Infinity, Math.ceil(length / (RUNNER_TRACK.minGapTicks * speed)));
+    // Daný počet řad se rozloží po celé trati, nenahrne se na začátek.
+    const spread = params.rows === undefined ? null : Math.max(RUNNER_TRACK.minGapTicks * speed, Math.floor((length - RUNNER_TRACK.startClear - RUNNER_TRACK.endClear) / params.rows));
 
     let z = RUNNER_TRACK.startClear;
     for (let row = 0; row < maxRows && z <= length - RUNNER_TRACK.endClear; row += 1) {
@@ -183,13 +188,13 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
       if (kinds.length === RUNNER.lanes && kinds.every((kind) => OBSTACLES[kind].passBy === 'lane')) kinds[0] = rng.pick(passable);
       taken.forEach((lane, index) => bodies.push(obstacleBody(kinds[index] as ObstacleKind, lane, z)));
       rows.push(z);
-      z += (GAP_TICKS[params.density] + rng.int(0, 20)) * speed;
+      z += spread ?? (GAP_TICKS[params.density] + rng.int(0, 20)) * speed;
     }
 
     if (params.coins) {
       // Mince uprostřed mezi řadami, 3 za sebou v náhodném pruhu – daleko od překážek.
       // Strop mincí drží celý svět pod `maxBodies` i s páskou.
-      const budget = Math.min(RUNNER_TRACK.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
+      const budget = Math.min(params.coinCount ?? RUNNER_TRACK.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
       let coins = 0;
       for (let i = 0; i < rows.length && coins < budget; i += 1) {
         const from = rows[i] as number;

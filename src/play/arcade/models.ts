@@ -132,6 +132,12 @@ export function enemyModel(spec: GameSpecV1): string {
   return riggedModelOf(label) ?? modelOf(label, true) ?? 'robot';
 }
 
+/** Pronásledovatel doplňku `+chaser` (P26D): model z popisku role druhu `chaser` („bear“), jinak jako nepřítel. */
+export function chaserModel(spec: GameSpecV1): string {
+  const label = spec.roles.find((role) => role.kind === 'chaser')?.label ?? '';
+  return riggedModelOf(label) ?? modelOf(label, true) ?? enemyModel(spec);
+}
+
 /** Role arkády, jejichž těla smí nést model z popisku: sbíraná mince, překážka běžce, terč hodu. */
 export const PROP_ROLES = ['coin', 'obstacle', 'target'] as const;
 export type PropRole = (typeof PROP_ROLES)[number];

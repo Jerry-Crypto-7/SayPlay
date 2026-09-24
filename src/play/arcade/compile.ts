@@ -13,7 +13,8 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeLevel, type ArcadeWorld, type PieceRef } from './contract';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef } from './contract';
 import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
@@ -33,24 +34,40 @@ export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIM
 
 export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld } | { readonly ok: false; readonly issues: readonly string[] };
 
-/** Ovládání, trať a pravidla, která se liší podle `control`. */
-interface ArcadeParts {
-  readonly control: PieceRef;
-  readonly bot: PieceRef;
-  readonly level: ArcadeLevel;
-  readonly rules: PieceRef[];
-  /** Úroveň neprošla kontrolou hratelnosti z konstrukce – svět se nestaví. */
-  readonly issues?: readonly string[];
-  /** Životy, které ovládání samo určí (rytmus je zastropuje, souboj bez nich nejde). */
-  readonly health?: number;
+/**
+ * Počet role jako parametr generátoru (P26D T9). Schéma dává `count` výchozí 1,
+ * takže 1 od „neřečeno“ nejde rozlišit – čte se až počet od 2.
+ */
+function countOf(spec: GameSpecV1, roleId: string): number | undefined {
+  const count = spec.roles.find((role) => role.id === roleId)?.count ?? 1;
+  return count >= 2 ? count : undefined;
 }
 
+/** Počty rolí, které generátor ovládání čte (klíče jeho parametrů); `capabilities.ts` `counts` to tvrdí. */
+function countParams(spec: GameSpecV1): Record<string, number> {
+  // [role, klíč parametru, strop generátoru] – víc, než generátor unese, se ořízne (`within_limits`).
+  const pairs: Readonly<Record<string, readonly (readonly [string, string, number])[]>> = {
+    runner: [['coin', 'coinCount', 60], ['obstacle', 'rows', 60]],
+    platform: [['coin', 'coinCount', 60]],
+    flap: [['coin', 'coinCount', 40]],
+    shooter: [['target', 'targets', 8], ['enemy', 'enemies', 24]],
+  };
+  const out: Record<string, number> = {};
+  for (const [roleId, key, max] of pairs[spec.control ?? ''] ?? []) {
+    const count = countOf(spec, roleId);
+    if (count !== undefined) out[key] = Math.min(count, max);
+  }
+  return out;
+}
+
+/** Ovládání, trať a pravidla, která se liší podle `control`. */
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
+  const counts = countParams(spec);
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'duel') return duelParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'platform') {
-    const params = platformLevel.params.parse({ ...spec.controlParams });
+    const params = platformLevel.params.parse({ ...spec.controlParams, ...counts });
     return {
       control: { id: 'platform', params: { doubleJump: params.doubleJump } },
       bot: { id: 'platform_bot', params: {} },
@@ -72,11 +89,11 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     return { control: arenaControlRef(), bot: arenaBotRef(), level, rules: arenaRules(level, params, health) };
   }
   if (spec.control === 'flap') {
-    const params = flapTrack.params.parse({ ...spec.controlParams });
+    const params = flapTrack.params.parse({ ...spec.controlParams, ...counts });
     return { control: { id: 'flap', params: {} }, bot: { id: 'flap_bot', params: {} }, level: flapTrack.generate(seed, params), rules: flapRules(health) };
   }
   if (spec.control === 'shooter') {
-    const params = shooterRange.params.parse({ ...spec.controlParams });
+    const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });
     return { control: { id: 'shooter', params: {} }, bot: shooterBotRef(params), level: shooterRange.generate(seed, params), rules: shooterRules(params, health) };
   }
   if (spec.control === 'throw') {
@@ -84,7 +101,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = throwField.params.parse({ ...spec.controlParams });
     return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules(), health: undefined };
   }
-  const params = runnerTrack.params.parse({ ...spec.controlParams });
+  const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
   const rules: PieceRef[] = [
     { id: 'hit', params: { role: 'obstacle', effect: health === undefined ? 'lose' : 'damage' } },
     { id: 'pickup', params: {} },
@@ -96,12 +113,14 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
 
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. */
 export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult {
-  const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max;
+  const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
-  const parts = partsOf(spec, seed, health);
-  const { control, bot, level, rules, issues } = parts;
+  // Doplňky (P26D) dostanou hotové části základního ovládání.
+  const base = { ...spec, controlParams: addonControlParams(spec) } as GameSpecV1;
+  const own = partsOf(base, seed, health);
+  const lives = 'health' in own ? own.health : health;
+  const { control, bot, level, rules, issues } = applyAddons(own, { spec, seed, health: lives });
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
-  const lives = 'health' in parts ? parts.health : health;
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
 
   const built = buildWorld({ seed, control, rules, bot, level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);

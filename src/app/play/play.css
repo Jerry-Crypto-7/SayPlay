@@ -254,6 +254,22 @@
   height: 100%;
 }
 
+/* Střelba doplňku +shoot: palec vpravo dole, mimo HUD a obrazovku po hře. */
+.play-fire {
+  position: absolute;
+  right: 20px;
+  bottom: 24px;
+  z-index: 1;
+  width: 72px;
+  height: 72px;
+  border: 2px solid var(--play-text);
+  border-radius: 50%;
+  background: var(--play-danger);
+  color: var(--play-text);
+  font-weight: 700;
+  touch-action: none;
+}
+
 .play-hud {
   position: relative;
   z-index: 1;

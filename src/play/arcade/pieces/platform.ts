@@ -157,6 +157,8 @@ const generatorParams = z
     checkpoints: z.boolean().default(false),
     coins: z.boolean().default(true),
     doubleJump: z.boolean().default(false),
+    /** Přesný počet mincí z počtu rolí (P26D T9); bez hodnoty co místo dá. */
+    coinCount: z.int().min(1).max(PLATFORM_LEVEL.maxCoins).optional(),
   })
   .strict();
 export type PlatformLevelParams = z.infer<typeof generatorParams>;
@@ -240,7 +242,7 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
 
     const bodies = [player, ...slabs, ...extras];
     if (params.coins) {
-      const budget = Math.min(PLATFORM_LEVEL.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
+      const budget = Math.min(params.coinCount ?? PLATFORM_LEVEL.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
       for (const spot of coinSpots.slice(0, Math.max(0, budget))) bodies.push(coin(spot.z, spot.y));
     }
     bodies.push(goal);

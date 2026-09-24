@@ -232,8 +232,14 @@ const generatorParams = z
     moving: z.boolean().default(true),
     /** Počet vln; bez hodnoty podle obtížnosti. */
     waves: z.int().min(1).max(6).optional(),
+    /** Přesný počet terčů a nepřátel z počtu rolí (P26D T9); bez hodnoty podle obtížnosti. */
+    targets: z.int().min(1).max(8).optional(),
+    enemies: z.int().min(1).max(24).optional(),
   })
   .strict();
+
+/** Vln tolik, aby unesly daný počet nepřátel (poslední je kratší). */
+const wavesOf = (params: ShooterParams, size: number): number => (params.enemies === undefined ? (params.waves ?? TIERS[params.difficulty].waves) : Math.ceil(params.enemies / size));
 export type ShooterParams = z.infer<typeof generatorParams>;
 
 /** Parametry zbraně pro úroveň (šablona střely je tělo 1). */
@@ -256,7 +262,7 @@ export const shooterRange: GeneratorPiece<ShooterParams> = {
   roles: ['player', 'projectile', 'target', 'enemy'],
   cost: (params) => {
     const tier = TIERS[params.difficulty];
-    return { bodies: 2 + tier.targets + (params.waves ?? tier.waves) * tier.waveSize + BULLET_LIFETIME / SHOOTER.fireInterval + 2, rules: 5 };
+    return { bodies: 2 + (params.targets ?? tier.targets) + wavesOf(params, tier.waveSize) * tier.waveSize + BULLET_LIFETIME / SHOOTER.fireInterval + 2, rules: 5 };
   },
   generate: (seed, params) => {
     const rng = createCompileRng(seed);
@@ -265,9 +271,10 @@ export const shooterRange: GeneratorPiece<ShooterParams> = {
     const bodies: BodyInit[] = [player, bullet];
 
     // Terče: každý ve svém pásu vzdálenosti, aby se nepřekrývaly.
-    const band = Math.floor((SHOOTER_RANGE.targetFar - SHOOTER_RANGE.targetNear) / tier.targets);
-    const moving = params.moving ? tier.moving : 0;
-    for (let i = 0; i < tier.targets; i += 1) {
+    const targets = params.targets ?? tier.targets;
+    const band = Math.floor((SHOOTER_RANGE.targetFar - SHOOTER_RANGE.targetNear) / targets);
+    const moving = params.moving ? Math.min(tier.moving, targets) : 0;
+    for (let i = 0; i < targets; i += 1) {
       const z = SHOOTER_RANGE.targetNear + i * band + rng.int(0, Math.floor(band / 2));
       const reach = Math.floor(SHOOTER_RANGE.targetSpread * SHOOTER.tanMax * z);
       const base = { role: 'target' as const, kind: 'target', y: 0, z, w: SHOOTER.targetW, h: SHOOTER.targetH, d: SHOOTER.targetD, solid: false };
@@ -287,12 +294,13 @@ export const shooterRange: GeneratorPiece<ShooterParams> = {
     const interval = Math.max(tier.interval, waveSpacing(size, gunParams));
     const lastAllowed = ARCADE_LIMITS.maxTicks - SHOOTER_RANGE.endMargin;
     const maxWaves = Math.max(1, 1 + Math.floor((lastAllowed - tier.firstArrive - (size - 1) * SHOOTER_RANGE.memberGap) / interval));
-    const waves = Math.min(params.waves ?? tier.waves, maxWaves);
+    const waves = Math.min(wavesOf(params, size), maxWaves);
     const speed = tier.enemySpeed;
     const lane = Math.floor(SHOOTER_RANGE.laneSpread * SHOOTER.tanMax * speed);
     for (let k = 0; k < waves; k += 1) {
       const lanes = rng.shuffle(Array.from({ length: size }, (_, j) => (size === 1 ? 0 : Math.round(-lane + (2 * lane * j) / (size - 1)))));
       lanes.forEach((vx, j) => {
+        if (params.enemies !== undefined && k * size + j >= params.enemies) return;
         const arrive = tier.firstArrive + k * interval + j * SHOOTER_RANGE.memberGap;
         bodies.push({ role: 'enemy', kind: 'enemy', x: -vx * arrive, y: 0, z: speed * arrive, w: SHOOTER.enemyW, h: SHOOTER.enemyH, d: SHOOTER.enemyW, solid: false, vx, vz: -speed, kinematic: true });
       });

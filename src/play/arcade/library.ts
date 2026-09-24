@@ -3,6 +3,8 @@
  * (`PieceRef`), jádro i ověření je hledají tady. Co tu není, neexistuje.
  */
 
+import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
+import type { BotPiece, ControlPiece } from './contract';
 import type { ArcadeLibrary } from './kernel';
 import { arenaEat, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
 import { arenaBot } from './pieces/arena-bot';
@@ -27,20 +29,35 @@ import { throwBot } from './pieces/throw-bot';
 import { judgeRule, timingControl, timingLevel } from './pieces/timing';
 import { timingBot } from './pieces/timing-bot';
 
+const BASE_BOTS = {
+  runner_bot: runnerBot,
+  platform_bot: platformBot,
+  flap_bot: flapBot,
+  steer_bot: steerBot,
+  arena_bot: arenaBot,
+  shooter_bot: shooterBot,
+  throw_bot: throwBot,
+  timing_bot: timingBot,
+  rhythm_bot: rhythmBot,
+  duel_bot: duelBot,
+} as const;
+
+const BASE_CONTROLS = {
+  runner: runnerControl,
+  platform: platformControl,
+  flap: flapControl,
+  steer: steerControl,
+  move_free: moveFreeControl,
+  shooter: shooterControl,
+  throw: throwControl,
+  timing: timingControl,
+  rhythm: rhythmControl,
+  duel: duelControl,
+} as const;
+
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: {
-    runner: runnerControl,
-    platform: platformControl,
-    flap: flapControl,
-    steer: steerControl,
-    move_free: moveFreeControl,
-    shooter: shooterControl,
-    throw: throwControl,
-    timing: timingControl,
-    rhythm: rhythmControl,
-    duel: duelControl,
-  },
-  rules: { ...RULES, ...SHOT_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule },
+  controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece },
+  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
@@ -53,16 +70,5 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     rhythm_level: rhythmLevel,
     duel_arena: duelArena,
   },
-  bots: {
-    runner_bot: runnerBot,
-    platform_bot: platformBot,
-    flap_bot: flapBot,
-    steer_bot: steerBot,
-    arena_bot: arenaBot,
-    shooter_bot: shooterBot,
-    throw_bot: throwBot,
-    timing_bot: timingBot,
-    rhythm_bot: rhythmBot,
-    duel_bot: duelBot,
-  },
+  bots: { ...BASE_BOTS, addon_bot: makeAddonBot(BASE_BOTS) as BotPiece },
 };

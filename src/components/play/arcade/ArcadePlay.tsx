@@ -12,9 +12,10 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
+import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
-import { enemyModel, heroModel, propModels } from '@/play/arcade/models';
+import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -61,8 +62,33 @@ const progressLabel = (spec: GameSpecV1, snapshot: ArcadeSnapshot): string =>
 /** Hodiny stojí do prvního ťuku; u P25H ovládání ten ťuk jen spouští hru. */
 const TAP_TO_START = new Set(['flap', 'shooter', 'timing', 'rhythm', 'duel']);
 
-function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: ArcadeSnapshot }) {
-  const lives = spec.mechanics.some((m) => m.id === 'health') ? ` · ${snapshot.health} lives` : '';
+/**
+ * Počítadla doplňků (P26D): sebrané mince proti potřebě a náboje. Popisek jde
+ * do `data-testid` (`hud-counter-…`) a musí být v uzavřeném anglickém seznamu
+ * `e2e/hud-labels.ts`.
+ */
+function AddonCounters({ world, snapshot }: { readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot }) {
+  const need = world.rules.find((rule) => rule.id === 'finish_collected')?.params.need;
+  const fires = world.rules.some((rule) => rule.id === 'blaster');
+  if (need === undefined && !fires) return null;
+  return (
+    <p className="play-hud-progress">
+      {need !== undefined && (
+        <span data-testid="hud-counter-collected" data-count={snapshot.items}>
+          {snapshot.items}/{String(need)} collected
+        </span>
+      )}
+      {fires && (
+        <span data-testid="hud-counter-ammo" data-count={snapshot.shots}>
+          {snapshot.shots} ammo
+        </span>
+      )}
+    </p>
+  );
+}
+
+function ArcadeHud({ spec, world, snapshot }: { readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot }) {
+  const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   // Arkáda tiká 60× za sekundu (viz `progressLabel`).
   const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
   return (
@@ -84,6 +110,7 @@ function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sna
           {progressLabel(spec, snapshot)}
         </span>
       </p>
+      <AddonCounters world={world} snapshot={snapshot} />
     </header>
   );
 }
@@ -105,7 +132,10 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
   // u načasování by to byl rovnou minutý pokus (u poletování je to první mávnutí).
-  const [session] = useState(() => createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(arcade.control.id), swallowFirst: arcade.control.id !== 'flap' }));
+  const [session] = useState(() => {
+    const control = baseControlOf(arcade.control).id;
+    return createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' });
+  });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   const running = snapshot.runState === 'running';
 
@@ -127,8 +157,8 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   return (
     <main className="play-shell">
-      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
-      <ArcadeHud spec={spec} snapshot={snapshot} />
+      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
+      <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
       <SentenceRead read={read} />
