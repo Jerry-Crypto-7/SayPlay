@@ -16,6 +16,7 @@
  *   node --experimental-strip-types scripts/play-fidelity.mjs run    [--base http://127.0.0.1:3100] [--run <id>] [--only s039,h01]
  *   node --experimental-strip-types scripts/play-fidelity.mjs judge  [--run <id>]
  *   node --experimental-strip-types scripts/play-fidelity.mjs report [--run <id>]
+ *   node --experimental-strip-types scripts/play-fidelity.mjs summary [--run <id>]   (souhrn do runs/<id>.json, report.json nechá)
  *
  * Offline mapa ztrát (P27A T2) – slovní draft a kompilace bez sítě a bez
  * modelu, zapíše `evals/play/fidelity/draft-chain.json`:
@@ -126,6 +127,8 @@ export function summarize(results) {
   return {
     n: results.length,
     upgradeSuccess: { ok: ready.length, of: results.length, failures: reasons },
+    // Pozdní = hotovo až po `deadlineAt`, kdy se klient přestal ptát; zůstává v `n`.
+    late: { any: results.filter((result) => result.upgrade?.late === true).length, ai: ready.filter((result) => result.upgrade?.late === true).length },
     specFidelity: {
       final: mean(results.map((result) => specFidelity(result[finalOf(result)].spec, result.checklist).score)),
       draft: mean(results.map((result) => specFidelity(result.draft.spec, result.checklist).score)),
@@ -136,6 +139,7 @@ export function summarize(results) {
       })),
       // P27A T1: podíl položek, které scéna nakreslí – vedle `inSpec` a `read`, nenahrazuje je.
       drawnFinal: mean(results.map((result) => specFidelity(result[finalOf(result)].spec, result.checklist).drawnScore)),
+      drawnDraft: mean(results.map((result) => specFidelity(result.draft.spec, result.checklist).drawnScore)),
     },
     recognizable: {
       final: recognition(results, finalOf),
@@ -262,9 +266,13 @@ async function runOne(sentence, base, runDir, page) {
   const draftMs = Date.now() - started;
   if (!created.versionId) throw new Error(`${sentence.id}: POST ${response.status} ${JSON.stringify(created).slice(0, 200)}`);
   let upgrade;
+  // Klient se po `deadlineAt` přestane ptát (P27C T1); měření se ptá dál, aby
+  // pozdní výsledek zůstal ve jmenovateli a nesl značku `late`.
+  let deadlineAt = null;
   for (;;) {
     await sleep(4000);
     upgrade = await (await fetch(`${base}/api/play/games/${created.versionId}/upgrade`, { cache: 'no-store' })).json();
+    if (upgrade.status === 'pending' && deadlineAt === null && typeof upgrade.deadlineAt === 'string') deadlineAt = Date.parse(upgrade.deadlineAt);
     if (upgrade.status !== 'pending') break;
     if (Date.now() - started > 330_000) {
       upgrade = { status: 'timeout' };
@@ -282,7 +290,7 @@ async function runOne(sentence, base, runDir, page) {
     source: sentence.source,
     checklist: sentence.checklist,
     draft: { versionId: created.versionId, ms: draftMs, spec: draft.spec },
-    upgrade: { ...upgrade, ms: upgradeMs },
+    upgrade: { ...upgrade, ms: upgradeMs, deadlineAt: deadlineAt === null ? null : new Date(deadlineAt).toISOString(), late: deadlineAt !== null && started + upgradeMs > deadlineAt },
     ai: ai ? { versionId: upgrade.versionId, spec: ai.spec } : null,
     raw: existsSync(failure) ? readJson(failure) : null,
   };
@@ -406,7 +414,8 @@ function judge(options) {
 function latestRun(run) {
   const runs = join(DIR, 'runs');
   if (typeof run === 'string') return join(runs, run);
-  const names = readdirSync(runs).sort();
+  // Souhrn běhu (`<id>.json`, krok `summary`) leží vedle složek běhů a běh to není.
+  const names = readdirSync(runs, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
   if (names.length === 0) throw new Error('no run yet – start with `run`');
   return join(runs, names.at(-1));
 }
@@ -438,6 +447,41 @@ function report(options) {
   console.log(JSON.stringify(metrics, null, 1));
 }
 
+/**
+ * Souhrn jednoho běhu do `runs/<id>.json` (P27D T1) – vedle `report.json`,
+ * který zůstává nedotčený. Nese build SHA, konfiguraci modelu a každé selhání.
+ */
+function summary(options) {
+  const runDir = latestRun(options.run);
+  const runId = runDir.split(/[\\/]/).at(-1);
+  const results = readdirSync(runDir)
+    .filter((name) => /^[a-z]\d+\.json$/.test(name))
+    .map((name) => readJson(join(runDir, name)));
+  const config = Object.fromEntries(
+    ['WORLDSMITH_BRANCH', 'WORLDSMITH_MODEL_ENDPOINT', 'WORLDSMITH_MODEL', 'WORLDSMITH_MODEL_EFFORT', 'WORLDSMITH_MODEL_PROFILE', 'WORLDSMITH_UPSTREAM_TIMEOUT_MS'].map((key) => [key, process.env[key] ?? null]),
+  );
+  const sentences = results.map((result) => {
+    const final = specFidelity(result[finalOf(result)].spec, result.checklist);
+    return {
+      id: result.id,
+      upgrade: result.ai ? 'ai' : (result.upgrade.reason ?? result.upgrade.status),
+      upgradeSeconds: Math.round(result.upgrade.ms / 1000),
+      late: result.upgrade.late === true,
+      controls: { draft: result.draft.spec.control ?? 'tap_go', ai: result.ai ? (result.ai.spec.control ?? 'tap_go') : null },
+      final: {
+        inSpec: Math.round((final.items.filter((item) => item.inSpec).length / final.items.length) * 1000) / 1000,
+        read: final.score,
+        drawn: final.drawnScore,
+      },
+      lost: final.items.filter((item) => item.why !== 'ok').map((item) => `${item.item}: ${item.why}`),
+    };
+  });
+  const path = join(DIR, 'runs', `${runId}.json`);
+  const header = { about: 'P27D T1 live fidelity run summary. report.json is left untouched. See README.md.', runId, measuredAt: new Date().toISOString(), commit: commit(), config };
+  writeJson(path, { header, metrics: summarize(results), sentences });
+  console.log(`summary -> ${path}`);
+}
+
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const options = args();
@@ -446,8 +490,9 @@ if (isMain) {
   else if (step === 'run') await run(options);
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
+  else if (step === 'summary') summary(options);
   else {
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report [--run <id>] [--base <url>] [--only <ids>] [--note <text>] | --offline');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--note <text>] | --offline');
     process.exit(2);
   }
 }
