@@ -15,7 +15,7 @@ import { resetRateWindows } from '@/server/rate-limit';
 
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
 
-import { OG_INK, OG_PALETTES, assetOriginFrom, ogPngFor, paletteForMood } from '../_og';
+import { OG_INK, OG_PALETTES, assetOriginFrom, fontCovers, ogPngFor, paletteForMood } from '../_og';
 import { POST as createGame } from '../games/route';
 import { GET as ogImage } from '../games/[id]/og/route';
 
@@ -32,6 +32,17 @@ vi.mock('next/og', async (importOriginal) => {
     }
   }
   return { ...real, ImageResponse: FlakyImageResponse };
+});
+
+// Soubor náhledu hrdiny chybí na požádání – jako funkce na Vercelu, která `public/` nenese.
+const noPublicFiles = vi.hoisted(() => ({ value: false }));
+vi.mock('node:fs/promises', async (importOriginal) => {
+  const real = await importOriginal<typeof import('node:fs/promises')>();
+  const readFile = (async (...args: Parameters<typeof real.readFile>) => {
+    if (noPublicFiles.value && String(args[0]).includes(`${join('public', 'assets')}`)) throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    return real.readFile(...args);
+  }) as typeof real.readFile;
+  return { ...real, default: { ...real, readFile }, readFile };
 });
 
 async function publishSpec(title: string): Promise<string> {
@@ -126,6 +137,39 @@ describe('GET /api/play/games/:id/og', () => {
     }
     // Selhání se nezapamatovalo: další požadavek už kreslí hru.
     expect((await og(versionId)).headers.get('x-og-fallback')).toBeNull();
+  });
+
+  it('a preview without its hero is served for an hour, flagged partial, and drawn again next time (review T6-1)', async () => {
+    const versionId = await publishSpec('Missing Hero');
+    noPublicFiles.value = true;
+    try {
+      const response = await og(versionId);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-og-partial')).toBe('1');
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+    } finally {
+      noPublicFiles.value = false;
+    }
+    // Nezapamatoval se: soubor je zpátky a náhled je úplný.
+    const healed = await og(versionId);
+    expect(healed.headers.get('x-og-partial')).toBeNull();
+    expect(healed.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+  });
+
+  it('text outside the bundled font is never cached as immutable, even when the render succeeds (review T6-1)', async () => {
+    expect(fontCovers('Canyon Dash – Příliš žluťoučký kůň…')).toBe(true);
+    expect(fontCovers('峡谷ダッシュ')).toBe(false);
+    // Stažení písma selže: satori nehodí, kreslí prázdná místa – právě ten případ.
+    const offline = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
+    try {
+      const versionId = await publishSpec('峡谷ダッシュ');
+      const response = await og(versionId);
+      expect(response.status).toBe(200);
+      expect(response.headers.get('x-og-partial')).toBe('1');
+      expect(response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=3600');
+    } finally {
+      offline.mockRestore();
+    }
   });
 
   it('fetches a hero thumbnail only from a configured origin, never from the request host', () => {

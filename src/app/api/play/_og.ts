@@ -201,25 +201,51 @@ function previewElement(spec: GameSpecV1, hero: string | null): Node {
   );
 }
 
+/**
+ * Znaky, které nakreslí Geist – jediné písmo, které `next/og` nese. Pro jiné
+ * znaky si satori písmo stahuje z Google Fonts a když to nevyjde, **nehodí**:
+ * nakreslí prázdná místa a render „projde“ (nález revize T6-1). Rozsah je
+ * záměrně úzký – latinka s diakritikou a běžná interpunkce.
+ */
+const GEIST_TEXT = /^[ -~ -ſ‐-…€]*$/u;
+
+export function fontCovers(text: string): boolean {
+  return GEIST_TEXT.test(text);
+}
+
 /** Kolik náhledů her se drží v paměti; nejstarší vypadne první. */
 const PREVIEW_CAP = 256;
 const PREVIEWS = new Map<string, Uint8Array<ArrayBuffer>>();
 
+export interface GamePreview {
+  readonly png: Uint8Array<ArrayBuffer>;
+  /**
+   * `false`: obrázek hrdiny se nepodařilo získat, ač ho katalog má, nebo text
+   * potřebuje stažené písmo. Takový náhled se neukládá a nesmí být `immutable`
+   * – přechodná chyba by se jinak stala trvalým obrázkem verze.
+   */
+  readonly complete: boolean;
+}
+
 /**
  * PNG náhled konkrétní verze. Verze se nemění, takže klíč `versionId` stačí a
- * render se platí jednou na verzi a proces. Selhání vrátí `null` a nezapamatuje
- * se – další požadavek zkusí kreslit znovu.
+ * úplný render se platí jednou na verzi a proces. Selhání vrátí `null` a
+ * nezapamatuje se – další požadavek zkusí kreslit znovu.
  */
-export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string | null): Promise<Uint8Array<ArrayBuffer> | null> {
+export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string | null): Promise<GamePreview | null> {
   const ready = PREVIEWS.get(versionId);
-  if (ready !== undefined) return ready;
+  if (ready !== undefined) return { png: ready, complete: true };
   try {
-    const hero = await heroImage(heroModel(spec), origin);
+    const model = heroModel(spec);
+    const hero = await heroImage(model, origin);
+    const complete = (hero !== null || !THUMBNAILS.has(model)) && [spec.title, spec.theme.setting, controlLineOf(spec)].every(fontCovers);
     const response = new ImageResponse(previewElement(spec, hero), { width: OG_WIDTH, height: OG_HEIGHT });
     const png = new Uint8Array(await response.arrayBuffer());
-    if (PREVIEWS.size >= PREVIEW_CAP) PREVIEWS.delete(PREVIEWS.keys().next().value as string);
-    PREVIEWS.set(versionId, png);
-    return png;
+    if (complete) {
+      if (PREVIEWS.size >= PREVIEW_CAP) PREVIEWS.delete(PREVIEWS.keys().next().value as string);
+      PREVIEWS.set(versionId, png);
+    }
+    return { png, complete };
   } catch (error) {
     console.warn(`[play og] preview for ${versionId} failed, serving the palette image:`, error instanceof Error ? error.message : error);
     return null;
