@@ -8,8 +8,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import duel from '../arcade/__fixtures__/duel.json';
 import runner from '../arcade/__fixtures__/runner.json';
 import shooter from '../arcade/__fixtures__/shooter.json';
+import steer from '../arcade/__fixtures__/steer.json';
 import throwGame from '../arcade/__fixtures__/throw.json';
 import { enemyModel, heroModel, modelOf, modelPath, propModels, riggedCharacter } from '../arcade/models';
 import { lookOf } from '../arcade/look';
@@ -57,6 +59,17 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
     // Střelnice popisek terče nekreslí (tabulka schopností), takže ho nečte ani výběr.
     expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({});
+  });
+
+  // P27A T4: soupeř souboje a závodu z popisku – jen model, který popisek jmenuje, žádná kategorie.
+  it('names the duel and race rival from its label, honestly', () => {
+    expect(propModels(withLabel(duel, 'rival', 'fox'))).toEqual({ rival: 'fox' });
+    // Klokana katalog nemá: kategorie „zvíře“ by nakreslila lišku, soupeř zůstane postavou z primitiv.
+    expect(propModels(withLabel(duel, 'rival', 'kangaroo'))).toEqual({});
+    expect(propModels(withLabel(steer, 'rival', 'rival plane'))).toEqual({ rival: 'plane' });
+    // Soupeř závodu je vozidlo; zvíře jako auto neřídí.
+    expect(propModels(withLabel(steer, 'rival', 'fox'))).toEqual({});
+    expect(propModels(withLabel(steer, 'rival', 'rival car'))).toEqual({});
   });
 
   // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.

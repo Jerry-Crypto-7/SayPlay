@@ -138,8 +138,8 @@ export function chaserModel(spec: GameSpecV1): string {
   return riggedModelOf(label) ?? modelOf(label, true) ?? enemyModel(spec);
 }
 
-/** Role arkády, jejichž těla smí nést model z popisku: sbíraná mince, překážka běžce, terč hodu. */
-export const PROP_ROLES = ['coin', 'obstacle', 'target'] as const;
+/** Role arkády, jejichž těla smí nést model z popisku: sbíraná mince, překážka běžce, terč hodu, soupeř souboje a závodu (P27A T4). */
+export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival'] as const;
 export type PropRole = (typeof PROP_ROLES)[number];
 
 /** Co jádro pro roli kreslí samo; popisek, který jmenuje právě tohle („obstacles“), nic nemění. */
@@ -147,15 +147,27 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   coin: ['coin'],
   obstacle: OBSTACLE_KINDS,
   target: ['target'],
+  // „rival car“ je auto soupeře; hráčovo závodní auto by soupeře od hráče nerozlišilo.
+  rival: ['rival-car', 'race-car'],
 };
+
+/** Model soupeře: riggovaná postava nebo přímá shoda s katalogem; v závodě jen vozidlo. */
+function rivalModel(label: string, control: string): string | undefined {
+  if (control === 'steer') {
+    const found = modelOf(label, false);
+    return found !== undefined && VEHICLES.has(found) ? found : undefined;
+  }
+  return riggedModelOf(label) ?? modelOf(label, false);
+}
 
 /** Modely rekvizit z popisků rolí – jen přímá shoda s katalogem, bez kategorií. */
 export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> {
   const out: Partial<Record<PropRole, string>> = {};
+  const control = controlOf(spec);
   for (const id of PROP_ROLES) {
     const role = spec.roles.find((candidate) => candidate.id === id);
-    if (role === undefined || !readsLabel(controlOf(spec), role)) continue;
-    const found = modelOf(role.label, false);
+    if (role === undefined || !readsLabel(control, role)) continue;
+    const found = id === 'rival' ? rivalModel(role.label, control) : modelOf(role.label, false);
     if (found !== undefined && found !== 'bird' && !OWN_KINDS[id].includes(found)) out[id] = found;
   }
   return out;

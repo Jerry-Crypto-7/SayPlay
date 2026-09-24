@@ -13,19 +13,38 @@ import { useEffect } from 'react';
 import type { PerspectiveCamera, Vector3 } from 'three';
 
 import { AXIS_MAX, BUTTON, UNIT } from '@/play/arcade/contract';
+import type { Look } from '@/play/arcade/look';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
 
+import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
-/** Kamera za autem: dojíždí za ním do strany, kouká kus před něj. */
+/**
+ * Kamera za autem: dojíždí za ním do strany, kouká kus před něj. Na výšku
+ * (mobil) je nízká kamera tak úzká, že soupeř nebo turbo vedle auta (~6 m
+ * do strany) leží mimo obraz – stoupne a ustoupí do strmého pohledu shora,
+ * auto zůstává přes 24 px (P27A T6, `e2e/play-frame`).
+ */
 export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, z: number): void {
-  camera.position.set(x * 0.8, 4.2, z - 8.5);
-  look.set(x * 0.6, 0.8, z + 12);
+  if (camera.aspect < 1) {
+    camera.position.set(x * 0.8, 18, z - 18);
+    look.set(x * 0.6, 0, z + 8);
+  } else {
+    camera.position.set(x * 0.8, 4.2, z - 8.5);
+    look.set(x * 0.6, 0.8, z + 12);
+  }
   camera.lookAt(look);
 }
 
-/** Asfalt úsek po úseku (střed a šířka z osy trati) + bílé okraje, tráva pod tím. */
-export function SteerBackdrop({ course, length }: { readonly course: SteerCourse | undefined; readonly length: number }) {
+/** Jak daleko za okrajem dráhy stojí první řada kulis (m) – mimo mantinely, na tělesa jádra nedosáhne. */
+const SCENERY_MARGIN = 2.5;
+
+/**
+ * Asfalt úsek po úseku (střed a šířka z osy trati) + bílé okraje, zem a
+ * kulisy sady prostředí (P27A T3) podél každého úseku. Kulisy jsou jen vzhled:
+ * jádro o nich neví, hash světa se nehne.
+ */
+export function SteerBackdrop({ course, length, look }: { readonly course: SteerCourse | undefined; readonly length: number; readonly look: Look }) {
   const span = length + 80;
   const half = (course?.halfWidth ?? 5 * UNIT) / UNIT;
   const segments = (course?.ends ?? []).map((end, i) => {
@@ -36,14 +55,15 @@ export function SteerBackdrop({ course, length }: { readonly course: SteerCourse
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, span / 2 - 30]}>
         <planeGeometry args={[160, span + 60]} />
-        <meshStandardMaterial color="#15803d" roughness={1} />
+        <meshStandardMaterial color={look.ground} roughness={1} />
       </mesh>
       {segments.map((segment, i) => (
         <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
             <planeGeometry args={[half * 2, segment.far - segment.near + 0.05]} />
-            <meshStandardMaterial color="#334155" roughness={0.9} />
+            <meshStandardMaterial color={look.track} roughness={0.9} />
           </mesh>
+          <Scenery look={look} layout="sides" inner={half + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
           {[-1, 1].map((side) => (
             <mesh key={side} rotation={[-Math.PI / 2, 0, 0]} position={[side * (half - 0.15), 0, 0]}>
               <planeGeometry args={[0.12, segment.far - segment.near]} />

@@ -18,7 +18,7 @@
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box3, type Group, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
+import { Box3, type Camera, type Group, type Mesh, type Object3D, type PerspectiveCamera, type SkinnedMesh, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { baseControlOf } from '@/play/arcade/addons';
@@ -30,10 +30,12 @@ import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
+import { CAPABILITIES } from '@/play/capabilities';
+import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Scenery } from './look/Scenery';
-import { DuelScene, useDuelInput } from './duel/DuelScene';
+import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -81,6 +83,8 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.player) return cast.player;
   if (view.kind === 'finish') return 'finish-flag';
   if (view.kind === 'enemy') return cast.enemy;
+  // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
+  if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
@@ -241,6 +245,138 @@ function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y: numbe
   camera.lookAt(look);
 }
 
+/**
+ * Sonda záběru (P27A T6): `window.__playFrame()` promítne hrdinu a nejbližší
+ * živý cíl nebo hrozbu skutečnou kamerou scény. Scény značí objekty
+ * `userData.frame = 'hero' | 'target'`; sonda čte jen to, co se opravdu kreslí
+ * (objekt i všichni předci viditelní, jen viditelné meshe).
+ */
+export interface FrameBox {
+  /** Střed promítnutého obdélníku v NDC (−1 … 1, +y nahoru). */
+  readonly x: number;
+  readonly y: number;
+  readonly minX: number;
+  readonly maxX: number;
+  readonly minY: number;
+  readonly maxY: number;
+  readonly widthPx: number;
+  readonly heightPx: number;
+  /** Velikost na obrazovce = větší z šířky a výšky promítnutého obdélníku (px). */
+  readonly sizePx: number;
+  /** Některý roh je za kamerou – promítnutí pak neplatí a objekt v záběru není. */
+  readonly behind: boolean;
+}
+
+export interface FrameReport {
+  readonly control: string;
+  readonly width: number;
+  readonly height: number;
+  readonly hero: FrameBox | null;
+  readonly target: FrameBox | null;
+  /** Kolik viditelných kandidátů na cíl scéna má. */
+  readonly targets: number;
+  /** Cíl minus hrdina ve světě (m) – podklad, když cíl vyjde mimo záběr. */
+  readonly offset: { readonly x: number; readonly y: number; readonly z: number } | null;
+}
+
+declare global {
+  interface Window {
+    __playFrame?: () => FrameReport;
+  }
+}
+
+/** Tratě jedou po +z: cílem je nejbližší kandidát před hrdinou, ne ten, který už minul. */
+const TRACK_CONTROLS: ReadonlySet<string> = new Set(['runner', 'platform', 'flap', 'steer']);
+
+const shown = (object: Object3D): boolean => {
+  for (let node: Object3D | null = object; node !== null; node = node.parent) if (!node.visible) return false;
+  return true;
+};
+
+const cornerOf = new Vector3();
+const inView = new Vector3();
+
+/** Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich. */
+function frameOf(object: Object3D, camera: Camera, width: number, height: number): FrameBox | null {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  let behind = false;
+  object.traverseVisible((node) => {
+    const mesh = node as Mesh;
+    if (mesh.isMesh !== true) return;
+    let box: Box3;
+    if ((mesh as SkinnedMesh).isSkinnedMesh === true) {
+      // Riggovaná postava: kvádr s pózou kostí, ne klidová geometrie.
+      (mesh as SkinnedMesh).computeBoundingBox();
+      box = (mesh as SkinnedMesh).boundingBox!;
+    } else {
+      if (mesh.geometry.boundingBox === null) mesh.geometry.computeBoundingBox();
+      box = mesh.geometry.boundingBox!;
+    }
+    for (let i = 0; i < 8; i += 1) {
+      cornerOf.set(i & 1 ? box.max.x : box.min.x, i & 2 ? box.max.y : box.min.y, i & 4 ? box.max.z : box.min.z).applyMatrix4(mesh.matrixWorld);
+      // Kamera kouká po −z svého prostoru: roh s z ≥ 0 je za ní.
+      if (inView.copy(cornerOf).applyMatrix4(camera.matrixWorldInverse).z >= 0) behind = true;
+      cornerOf.project(camera);
+      minX = Math.min(minX, cornerOf.x);
+      maxX = Math.max(maxX, cornerOf.x);
+      minY = Math.min(minY, cornerOf.y);
+      maxY = Math.max(maxY, cornerOf.y);
+    }
+  });
+  if (minX === Infinity) return null;
+  const widthPx = ((maxX - minX) / 2) * width;
+  const heightPx = ((maxY - minY) / 2) * height;
+  return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, minX, maxX, minY, maxY, widthPx, heightPx, sizePx: Math.max(widthPx, heightPx), behind };
+}
+
+function FrameProbe({ control }: { readonly control: string }) {
+  const get = useThree((three) => three.get);
+  useEffect(() => {
+    const probe = (): FrameReport => {
+      const { camera, scene, size } = get();
+      scene.updateMatrixWorld();
+      camera.updateMatrixWorld();
+      let hero: Object3D | null = null;
+      const candidates: Object3D[] = [];
+      scene.traverse((node) => {
+        if (node.userData.frame === 'hero' && shown(node)) hero = node;
+        else if (node.userData.frame === 'target' && shown(node)) candidates.push(node);
+      });
+      const heroAt = hero === null ? null : (hero as Object3D).getWorldPosition(new Vector3());
+      let target: { node: Object3D; pos: Vector3 } | null = null;
+      if (heroAt !== null && candidates.length > 0) {
+        const at = candidates.map((node) => ({ node, pos: node.getWorldPosition(new Vector3()) }));
+        const ahead = TRACK_CONTROLS.has(control) ? at.filter((c) => c.pos.z > heroAt.z) : [];
+        const pool = ahead.length > 0 ? ahead : at;
+        target = pool.reduce((best, c) => (c.pos.distanceTo(heroAt) < best.pos.distanceTo(heroAt) ? c : best));
+      }
+      return {
+        control,
+        width: size.width,
+        height: size.height,
+        hero: hero === null ? null : frameOf(hero, camera, size.width, size.height),
+        target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
+        targets: candidates.length,
+        offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
+      };
+    };
+    // Bez podmínky, stejně jako `__playShell`: e2e ji čte na každé arkádové hře.
+    window.__playFrame = probe;
+    return () => {
+      if (window.__playFrame === probe) delete window.__playFrame;
+    };
+  }, [get, control]);
+  return null;
+}
+
+/** Role, které sonda záběru bere jako cíl nebo hrozbu; mantinely závodu jsou kulisa, ne cíl. */
+const FRAME_TARGET_ROLES: ReadonlySet<number> = new Set([ROLE.obstacle, ROLE.collectible, ROLE.chaser, ROLE.hazard, ROLE.enemy, ROLE.target]);
+const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
+  view.role === ROLE.player ? 'hero' : FRAME_TARGET_ROLES.has(view.role) && view.kind !== 'tire-barrier' ? 'target' : undefined;
+
 interface WorldProps {
   readonly session: ArcadeSession;
   readonly control: string;
@@ -311,10 +447,16 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
       if (control === 'platform') {
         // Kamera za výškou hráče jen dojíždí, ať skok netřese obrazem.
         followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 4));
-        placeSide(camera, look, z, followY.current + 1.2, 16, 7, 18, 0.4);
+        // Na výšku je obraz úzký: kamera smí dál (hráč pořád nad 24 px) a hráč jde víc doleva,
+        // ať je vidět nejbližší mince či hrot ~9 m před startem (P27A T6, `e2e/play-frame`).
+        if (camera.aspect < 1) placeSide(camera, look, z, followY.current + 1.2, 16, 7, 22, 0.7);
+        else placeSide(camera, look, z, followY.current + 1.2, 16, 7, 18, 0.4);
       } else if (control === 'flap') {
-        // Ptáček blíž středu: v levém horním rohu by ho na počítači zakryl HUD.
-        placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 14, FLAP.ceiling / UNIT + 1, 26, 0.1);
+        // Na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera
+        // o kus dál, ať je vidět první trubka; na výšku HUD kryje celou šířku, takže ptáček
+        // jde doleva – dál kamera nesmí, ptáček by byl pod 24 px (P27A T6).
+        if (camera.aspect < 1) placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 14, FLAP.ceiling / UNIT + 1, 26, 0.7);
+        else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 24, FLAP.ceiling / UNIT + 1, 26, 0.1);
       } else if (control === 'steer') {
         placeChase(camera, look, x, z);
       } else if (control === 'shooter' || control === 'throw') {
@@ -333,7 +475,7 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
   return (
     <>
       {control === 'steer' ? (
-        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} />
+        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
       ) : (
         <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
       )}
@@ -342,7 +484,7 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
-          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }}>
+          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view) }}>
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
               <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
             ) : rigged[view.index] !== undefined ? (
@@ -626,6 +768,14 @@ export default function ArcadeStage({
   const control = base.id;
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
   const look = LOOKS[lookId];
+  const draws = CAPABILITIES[control as ControlId]?.setting === true;
+  // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
+  const rival = cast.props.rival;
+  const character = rival === undefined ? undefined : riggedCharacter(rival);
+  const rivalModel: RivalModel | undefined =
+    rival === undefined
+      ? undefined
+      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
   useFireInput(session, fires);
   useRunnerInput(session, surface, control === 'runner');
   usePlatformInput(session, surface, control === 'platform');
@@ -635,15 +785,17 @@ export default function ArcadeStage({
   useTapInput(session, surface, control === 'timing' || control === 'rhythm');
   useDuelInput(session, surface, control === 'duel');
   return (
-    <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} style={{ touchAction: 'none' }}>
+    // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
+    <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
+        <FrameProbe control={control} />
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
-          <TimingScene session={session} />
+          <TimingScene session={session} look={look} />
         ) : control === 'rhythm' ? (
-          <RhythmScene session={session} surface={surface} />
+          <RhythmScene session={session} surface={surface} look={look} />
         ) : control === 'duel' ? (
-          <DuelScene session={session} />
+          <DuelScene session={session} look={look} rivalModel={rivalModel} />
         ) : (
           <>
             <color attach="background" args={[look.sky]} />
@@ -652,7 +804,7 @@ export default function ArcadeStage({
             {/* Boční scény svítí ze strany kamery (−x). */}
             <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={look.sun} />
             {control === 'move_free' ? (
-              <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} />
+              <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
             ) : (
               <World session={session} control={control} cast={cast} surface={surface} scene={look} />
             )}

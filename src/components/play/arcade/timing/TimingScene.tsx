@@ -16,8 +16,10 @@ import type { Group, Mesh, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
 import { BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import type { Look } from '@/play/arcade/look';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
 
+import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
 const TAP_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
@@ -56,7 +58,10 @@ export function initialBody(world: ArcadeSession['world'], index: number) {
   return { x: read(BODY.x), y: read(BODY.y), z: read(BODY.z), w: read(BODY.w), h: read(BODY.h), d: read(BODY.d), kind: world.kinds[world.initial[at + BODY.kind] as number] ?? '' };
 }
 
-export function TimingScene({ session }: { readonly session: ArcadeSession }) {
+/** Jak daleko za hrací plochou (m po +z) stojí řada kulis – za zemí hrací plochy. */
+const SCENERY_BEHIND = 7;
+
+export function TimingScene({ session, look: scene }: { readonly session: ArcadeSession; readonly look: Look }) {
   const world = session.world;
   const base = initialBody(world, 0);
   const sliderInit = initialBody(world, TIMING_SLOTS.slider);
@@ -105,20 +110,25 @@ export function TimingScene({ session }: { readonly session: ArcadeSession }) {
   const blockH = TIMING.blockH / UNIT;
   return (
     <>
-      <color attach="background" args={['#fde68a']} />
+      <color attach="background" args={[scene.sky]} />
       <hemisphereLight args={['#fff7ed', '#78350f', 1]} />
       <directionalLight position={[3, 12, -8]} intensity={1.4} />
       {/* Zem a základna (věž stojí na ní, můstek začíná sloupem, lišta je deska). */}
       <mesh position={[0, -0.05, 0]}>
         <boxGeometry args={[40, 0.1, 12]} />
-        <meshStandardMaterial color="#65a30d" roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} />
       </mesh>
+      {/* Kulisy sady prostředí (P27A T4) v řadě za hrací plochou: otočená sada „behind“ jde přes x v hloubce +z. */}
+      <group rotation={[0, -Math.PI / 2, 0]}>
+        <Scenery look={scene} layout="behind" inner={SCENERY_BEHIND} from={-14} to={14} />
+      </group>
       <mesh position={[0, base.h / 2, 0]}>
         <boxGeometry args={[base.w, base.h, depth]} />
         <meshStandardMaterial color={BASE_COLOR[baseKind] ?? '#475569'} roughness={0.8} />
       </mesh>
       {/* Tolerance: průsvitný sloupec nad středem – kam jezdce zastavit. */}
-      <mesh position={[-target.x, top / 2 + 0.5, -depth / 2 - 0.02]}>
+      {/* Pro sondu záběru (P27A T6) je tolerance cíl a jezdec hrdina. */}
+      <mesh position={[-target.x, top / 2 + 0.5, -depth / 2 - 0.02]} userData={{ frame: 'target' }}>
         <boxGeometry args={[target.w, top + 1, 0.02]} />
         <meshBasicMaterial color="#16a34a" transparent opacity={0.28} />
       </mesh>
@@ -128,7 +138,7 @@ export function TimingScene({ session }: { readonly session: ArcadeSession }) {
           <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
         </mesh>
       ))}
-      <group ref={slider}>
+      <group ref={slider} userData={{ frame: 'hero' }}>
         <mesh position={[0, blockH / 2, 0]}>
           <boxGeometry args={[sliderInit.w, blockH, depth]} />
           <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
