@@ -10,7 +10,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
@@ -28,7 +28,7 @@ import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner } from '../UpgradeBanner';
 
-import { createArcadeSession, type ArcadeSnapshot } from './session';
+import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
 // WebGL kontext na serveru není – stejně jako mřížkové plátno.
 const ArcadeStage = dynamic(() => import('./ArcadeStage'), { ssr: false });
@@ -88,7 +88,30 @@ function AddonCounters({ world, snapshot }: { readonly world: ArcadeWorld; reado
   );
 }
 
-function ArcadeHud({ versionId, spec, world, snapshot, paused }: { readonly versionId: string; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean }) {
+/**
+ * „Show me how“ (P27D T3): přehraje záznam robota, kterým verze prošla
+ * publikací. Během ukázky je to napsané v HUD a jde ji zastavit.
+ */
+function DemoControl({ session, demo }: { readonly session: ArcadeSession; readonly demo: DemoState | null }) {
+  if (demo === null) {
+    return (
+      <button type="button" className="play-button play-hud-demo" data-testid="play-demo-start" onClick={() => session.startDemo()}>
+        Show me how
+      </button>
+    );
+  }
+  if (demo.ended) return null;
+  return (
+    <p className="play-hud-progress" data-testid="play-demo">
+      <span>Demo: the verified run of this version. Your score is not counted.</span>{' '}
+      <button type="button" className="play-button play-hud-demo" data-testid="play-demo-stop" onClick={() => session.restart()}>
+        Stop and play
+      </button>
+    </p>
+  );
+}
+
+function ArcadeHud({ versionId, spec, world, snapshot, paused, children }: { readonly versionId: string; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   // Arkáda tiká 60× za sekundu (viz `progressLabel`).
   const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
@@ -113,6 +136,7 @@ function ArcadeHud({ versionId, spec, world, snapshot, paused }: { readonly vers
         </span>
       </p>
       <AddonCounters world={world} snapshot={snapshot} />
+      {children}
       {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
       {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
@@ -149,6 +173,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
+  const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
 
   // Pauza při skryté záložce a mimo obrazovku feedu. Sama se hra nerozběhne:
   // obnoví ji až vstup hráče, a to v zachytávací fázi, takže ten stisk už do hry padne
@@ -200,12 +225,26 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   return (
     <main className="play-shell">
       <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
-      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
+      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused}>
+        {running && <DemoControl session={session} demo={demo} />}
+      </ArcadeHud>
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
       {read !== undefined && <SentenceRead read={read} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
-      {!running && (
+      {/* Konec ukázky není výhra hráče: bez „You won“, bez sdílení výsledku. */}
+      {!running && demo !== null && (
+        <section className="play-outcome" data-testid="play-demo-outcome" data-verified={String(demo.verified)} role="status">
+          <h2 className="play-outcome-title">Demo finished</h2>
+          <p className="play-outcome-detail">
+            {demo.verified === true ? 'Same result and end state as the check this version passed.' : 'This replay did not match the check this version passed.'}
+          </p>
+          <button type="button" className="play-button" data-testid="play-demo-yours" onClick={() => session.restart()}>
+            Play it yourself
+          </button>
+        </section>
+      )}
+      {!running && demo === null && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">

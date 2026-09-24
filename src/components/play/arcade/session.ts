@@ -12,9 +12,9 @@
  */
 
 import { ARCADE_HZ, AXIS_MAX, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, BODY } from '@/play/arcade/contract';
-import { type ArcadeOutcome, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
+import { type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { runBot } from '@/play/arcade/verify';
+import { type BotRun, runBot } from '@/play/arcade/verify';
 
 export const TICK_MS = 1000 / ARCADE_HZ;
 /** Víc času najednou (skrytá záložka, zamrzlý snímek) se zahodí – hra se nedohraje bez hráče. */
@@ -63,6 +63,19 @@ export interface ArcadeSession {
   pause(): void;
   resume(): void;
   paused(): boolean;
+  /**
+   * Ukázka „Show me how“ (P27D T3): od tiku 0 v reálném čase přehraje záznam
+   * robota ověřovače. Stisky hráče se zahodí a do lidského záznamu nejde nic;
+   * konec ukázky nechá stav stát, dokud ho `restart` nepustí hráči.
+   */
+  startDemo(): void;
+  /** `null` = hraje člověk; `verified` = konec má výsledek i hash publikace (`null`, dokud běží). */
+  demo(): DemoState | null;
+}
+
+export interface DemoState {
+  readonly ended: boolean;
+  readonly verified: boolean | null;
 }
 
 /**
@@ -89,26 +102,44 @@ export function createArcadeSession(
   let accumulator = 0;
   let halted = false;
   let cached: ArcadeSnapshot | null = null;
+  // Ukázka: záznam robota, kurzor v něm a konec, proti kterému se ověří.
+  let script: BotRun | null = null;
+  let cursor = 0;
+  let demoView: DemoState | null = null;
   const listeners = new Set<() => void>();
 
   const notify = (): void => {
     cached = null;
+    if (script !== null && outcomeOf(state) !== 'running' && demoView?.ended !== true) {
+      demoView = { ended: true, verified: outcomeOf(state) === script.outcome && hashArcade(state) === script.hash };
+    }
     for (const listener of listeners) listener();
   };
 
-  const tickOnce = (buttons: number, axis: number): void => {
+  const tickOnce = (buttons: number, axis: number, record = true): void => {
     if (outcomeOf(state) !== 'running') return;
     prev.set(state);
     const tick = state[HEADER.tick] as number;
     if (buttons === 0 && axis === 0) step(state, NO_INPUT, program);
     else {
-      log.push({ tick, buttons, axis });
+      if (record) log.push({ tick, buttons, axis });
       step(state, { buttons, axis }, program);
     }
   };
 
+  /** Krok ukázky: vstup robota pro tenhle tik – týž výběr jako `playInputs`. */
+  const scriptedTick = (inputs: readonly InputEvent[]): void => {
+    const tick = state[HEADER.tick] as number;
+    while (cursor < inputs.length && (inputs[cursor] as InputEvent).tick < tick) cursor += 1;
+    const event = inputs[cursor];
+    const now = event !== undefined && event.tick === tick ? event : NO_INPUT;
+    tickOnce(now.buttons, now.axis, false);
+  };
+
   /** Jeden tik ze sebraných stisků: osa stisku přebije drženou (klik = zamiř a vystřel, i když se pustí dřív, než tik padne). */
   const flush = (): void => {
+    // Ukázku hraje robot: sebrané stisky hráče se nepoužijí a `restart` je zahodí.
+    if (script !== null) return scriptedTick(script.inputs);
     tickOnce(pending | heldButtons, pendingAxis !== 0 ? pendingAxis : held);
     pending = 0;
     pendingAxis = 0;
@@ -191,6 +222,9 @@ export function createArcadeSession(
       heldButtons = 0;
       started = !waitForInput;
       accumulator = 0;
+      script = null;
+      cursor = 0;
+      demoView = null;
       notify();
     },
     playInputs: (inputs, horizon) => {
@@ -222,6 +256,17 @@ export function createArcadeSession(
       notify();
     },
     paused: () => halted,
+    startDemo: () => {
+      const bot = runBot(world);
+      session.restart();
+      script = bot;
+      demoView = { ended: false, verified: null };
+      // Ukázka nečeká na první ťuk: ten by jinak musel přijít od hráče.
+      started = true;
+      halted = false;
+      notify();
+    },
+    demo: () => demoView,
   };
   return session;
 }

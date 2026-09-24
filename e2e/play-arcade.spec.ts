@@ -37,6 +37,28 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBe(before + 1);
   });
 
+  test('"Show me how" plays the verified run as a labelled demo, then the player plays (P27D T3)', async ({ page }) => {
+    test.setTimeout(240_000);
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 10, undefined, { timeout: 60_000 });
+    await page.getByTestId('play-demo-start').click();
+    await expect(page.getByTestId('play-demo')).toBeVisible();
+    // Ukázka běží v čase před očima, ne naráz.
+    const early = await page.evaluate(() => window.__playShell!.tick());
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(early);
+    // Stisk hráče během ukázky se do jeho záznamu nezapíše.
+    await page.keyboard.press('Space');
+    expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(0);
+    await expect(page.getByTestId('play-demo-outcome')).toHaveAttribute('data-verified', 'true', { timeout: 200_000 });
+    await expect(page.getByTestId('play-outcome')).toHaveCount(0);
+    await page.getByTestId('play-demo-yours').click();
+    await expect(page.getByTestId('play-demo-outcome')).toHaveCount(0);
+    await expect(page.getByTestId('play-demo-start')).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBeGreaterThan(0);
+  });
+
   test('a hidden tab pauses the game and the first key resumes it (P27B T3)', async ({ page }) => {
     await page.goto(url);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });

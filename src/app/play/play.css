@@ -857,6 +857,15 @@ button.play-feed-card {
   font-size: 0.9rem;
 }
 
+/* „Show me how“ (P27D T3): stejně jako sdílení chytá ťuk samo, plátno ho nedostane. */
+.play-hud-demo {
+  pointer-events: auto;
+  margin-top: 8px;
+  margin-right: 8px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+}
+
 .play-hud .play-status {
   display: block;
   font-size: 0.85rem;
