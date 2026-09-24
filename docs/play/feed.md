@@ -22,7 +22,9 @@ GET /api/play/games?recent=N[&cursor=C]
 { "games": [{ "versionId", "title", "archetype", "createdAt", "parentId", "remixes" }], "next": "…" | null }
 ```
 
-- Newest first; in every block of eight at most three games of one archetype (`diversify`).
+- Newest first; in every block of eight at most three games of one archetype (`diversify`). Once no
+  other archetype is left to mix in, the remaining games follow newest first without that rule –
+  they are never dropped.
 - `next` is the cursor of the following page, `null` on the last one. An empty store is
   `{ "games": [], "next": null }`.
 - `?recent=N` without a cursor returns the first page in the same shape as before, plus `next`.

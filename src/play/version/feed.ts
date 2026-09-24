@@ -106,7 +106,12 @@ export function feedPage(rows: readonly RecentGame[], limit: number, cursor: Cur
     titles.add(title);
     return true;
   });
-  const all = diversify(shown);
+  // `diversify` skončí, jakmile se do osmice nevejde žádná zbylá hra; zbytek
+  // jde za ni od nejnovější bez pravidla rozmanitosti, jinak by na žádné
+  // stránce nebyl.
+  const placed = diversify(shown);
+  const inPlace = new Set(placed.map((row) => row.versionId));
+  const all = [...placed, ...shown.filter((row) => !inPlace.has(row.versionId))];
   const offset = cursor?.offset ?? 0;
   const end = offset + limit;
   return {

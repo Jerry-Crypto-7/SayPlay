@@ -93,6 +93,13 @@ describe('feedPage', () => {
     expect(feedPage(rows, 4, null, NONE).games[0].versionId).toBe(rows[0].versionId);
   });
 
+  it('a game diversify cannot place still lands on a page', () => {
+    const rows = [...Array.from({ length: 10 }, (_, n) => row(n + 1, { archetype: 'chase_escape' })), row(20, { archetype: 'collect_exit' })];
+    const seen = walk(rows, 4);
+    expect(new Set(seen)).toEqual(new Set(rows.map((r) => r.versionId)));
+    expect(seen).toHaveLength(rows.length);
+  });
+
   it('hides a game on the hide list', () => {
     const rows = [row(1), row(2), row(3)];
     const seen = walk(rows, 10, new Set([rows[1].versionId]));
