@@ -16,8 +16,8 @@ import runner from '../__fixtures__/runner.json';
 import shooter from '../__fixtures__/shooter.json';
 import steer from '../__fixtures__/steer.json';
 import { arcadeWorldOf } from '../compile';
-import { type ArcadeWorld, COUNTER, HEADER, NO_INPUT } from '../contract';
-import { instantiate, loadProgram, step } from '../kernel';
+import { ARCADE_LIMITS, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
+import { instantiate, loadProgram, outcomeOf, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { runBot, verifyArcade } from '../verify';
 
@@ -134,6 +134,76 @@ describe('+shoot (P26D T5)', () => {
     const state = afterBot(world);
     expect(state[HEADER.counters + COUNTER.score]).toBeGreaterThan(0);
     expect(state[HEADER.counters + COUNTER.items]).toBeGreaterThanOrEqual(needOf(world));
+  });
+});
+
+/** Hra bez jediného vstupu až do konce nebo horizontu. */
+function idle(world: ArcadeWorld): { outcome: string; state: Int32Array } {
+  const state = instantiate(world);
+  const program = loadProgram(world, ARCADE_LIBRARY);
+  for (let tick = 0; tick < ARCADE_LIMITS.maxTicks && outcomeOf(state) === 'running'; tick += 1) step(state, NO_INPUT, program);
+  return { outcome: outcomeOf(state), state };
+}
+
+const chaserIndex = (world: ArcadeWorld): number =>
+  Array.from({ length: world.initial[HEADER.bodyCount] as number }, (_, i) => i).find((i) => world.initial[bodyBase(i) + BODY.role] === ROLE.chaser) ?? -1;
+
+describe('+chaser (P26D T6)', () => {
+  it.each([
+    ['runner', runner],
+    ['platform', platform],
+    ['move_free', arena],
+  ])('%s +chaser passes the gate on 20 seeds', (_control, fixture) => {
+    const spec = specOf(fixture, ['chaser']);
+    expect(failing(spec)).toEqual([]);
+    const world = worldOf(spec, 7);
+    expect(chaserIndex(world)).toBeGreaterThan(0);
+    expect(world.rules).toContainEqual({ id: 'hit', params: { role: 'chaser', effect: 'lose' } });
+  });
+
+  it('the chaser closes in on a player who stands still, slower than the player runs', () => {
+    for (const fixture of [platform, arena]) {
+      const world = worldOf(specOf(fixture, ['chaser']), 7);
+      const i = chaserIndex(world);
+      const state = instantiate(world);
+      const program = loadProgram(world, ARCADE_LIBRARY);
+      const gap = () => Math.hypot((state[bodyBase(i) + BODY.x] as number) - (state[bodyBase(0) + BODY.x] as number), (state[bodyBase(i) + BODY.z] as number) - (state[bodyBase(0) + BODY.z] as number));
+      const before = gap();
+      for (let tick = 0; tick < 60; tick += 1) step(state, NO_INPUT, program);
+      expect(before - gap()).toBeGreaterThan(30 * 60);
+      expect(before - gap()).toBeLessThan(110 * 60 * Math.SQRT2);
+    }
+  });
+
+  it('a platformer who does nothing gets caught', () => {
+    expect(idle(worldOf(specOf(platform), 7)).outcome).toBe('running');
+    expect(idle(worldOf(specOf(platform, ['chaser']), 7)).outcome).toBe('lost');
+  });
+
+  it('a runner bot that never dodges runs into the chaser', () => {
+    const world = worldOf(specOf(runner, ['chaser']), 7);
+    const plain = { ...world, bot: (world.bot.params as { base: ArcadeWorld['bot'] }).base };
+    expect(runBot(plain).outcome).toBe('lost');
+    expect(runBot(world).outcome).toBe('won');
+  });
+
+  it('with lives a catch takes one life and the chaser is gone', () => {
+    const world = worldOf(specOf(platform, ['chaser', 'lives']), 7);
+    const { state } = idle(world);
+    expect(state[HEADER.counters + COUNTER.health]).toBe(2);
+    expect((state[bodyBase(chaserIndex(world)) + BODY.flags] as number) & FLAG.alive).toBe(0);
+  });
+
+  it.each([
+    ['runner', ['shoot', 'chaser'], runner],
+    ['platform', ['chaser', 'shoot', 'collect'], platform],
+    ['move_free', ['chaser', 'shoot'], arena],
+  ] as const)('%s with %j keeps both the chaser and the trigger', (_control, addons, fixture) => {
+    const spec = specOf(fixture, addons);
+    expect(failing(spec)).toEqual([]);
+    const control = worldOf(spec, 7).control;
+    expect(control.id).toBe('addon_control');
+    expect(control.params.chase).toBeDefined();
   });
 });
 

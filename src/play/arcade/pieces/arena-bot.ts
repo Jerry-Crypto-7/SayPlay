@@ -61,10 +61,11 @@ export const arenaBot: BotPiece<z.infer<typeof botParams>> = {
       const base = bodyBase(i);
       if (((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
       const role = state[base + BODY.role];
-      if (role !== ROLE.enemy && role !== ROLE.collectible) continue;
+      if (role !== ROLE.enemy && role !== ROLE.collectible && role !== ROLE.chaser) continue;
       const w = state[base + BODY.w] as number;
       const at = { x: (state[base + BODY.x] as number) + (state[base + BODY.vx] as number) * lag, z: (state[base + BODY.z] as number) + (state[base + BODY.vz] as number) * lag, w };
-      if (w > size && role === ROLE.enemy) threats.push(at);
+      // Pronásledovatel doplňku `+chaser` (P26D) se sníst nedá, ať je hráč jakkoli velký.
+      if ((w > size && role === ROLE.enemy) || role === ROLE.chaser) threats.push(at);
       else if (w < size) food.push(at);
     }
 

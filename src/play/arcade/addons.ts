@@ -33,8 +33,9 @@ import {
   bodyBase,
 } from './contract';
 import { GRAVITY } from './kernel';
+import { ARENA } from './pieces/arena';
 import { FLAP } from './pieces/flap';
-import { RUNNER } from './pieces/runner';
+import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
 import { census } from './pieces/shots';
@@ -399,7 +400,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
     if (control !== 'move_free') rules.push({ id: 'hit', params: { role: 'enemy', effect: health === undefined ? 'lose' : 'damage' } });
     return {
       ...parts,
-      control: { id: 'addon_control', params: { base: baseControl(parts) } },
+      control: wrapControl(parts, {}),
       level: {
         ...parts.level,
         bodies,
@@ -412,18 +413,171 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
   bot: shootStep,
 };
 
+// ---------------------------------------------------------------------------
+// +chaser
+
+/**
+ * Rychlost pronásledovatele za tik: `along` po trati (z), `across` do stran a
+ * nahoru. Vždy pod rychlostí hráče (běžec 117–183, plošinovka 110, aréna 150),
+ * takže před ním jde utéct; běžci jde naproti, protože zezadu by ho nedohnal.
+ */
+export const CHASE = {
+  runner: { along: 100, across: 60, oncoming: true, commit: 6500 },
+  platform: { along: 55, across: 40 },
+  move_free: { along: 80, across: 80 },
+  w: 1000,
+  h: 1400,
+  d: 1000,
+  /** Plošinovka: náskok hráče na startu. */
+  platformLead: 12 * UNIT,
+  /** Aréna: odstup od stěny v protějším rohu. */
+  arenaInset: 3 * UNIT,
+  /** Běžec uhne, když ho pronásledovatel mine do tolika tiků (už se nestáčí), a nejpozději za tolik. */
+  dodgeTicks: 20,
+  dodgeLatest: 6,
+  /** Rezerva k šířce obou těl, se kterou robot pruh považuje za zasažený. */
+  dodgeMargin: 100,
+} as const;
+
+/** `oncoming`: běží jen proti hráči a pruh dorovnává, jen dokud je dál než `commit` – pak se rozběhne rovně. */
+type ChaseSpeed = { readonly along: number; readonly across: number; readonly oncoming?: boolean; readonly commit?: number };
+
+/** Kde pronásledovatel startuje: běžci naproti tak, aby se potkali v mezeře mezi řadami; plošinovce za zády; aréně v protějším rohu. */
+function chaserFor(control: PieceRef, level: ArcadeLevel): { body: BodyInit; speed: ChaseSpeed } | null {
+  const player = level.bodies[0] as BodyInit;
+  const at = (x: number, y: number, z: number): BodyInit => ({ role: 'chaser', kind: 'chaser', x, y, z, w: CHASE.w, h: CHASE.h, d: CHASE.d, solid: false, kinematic: true });
+  if (control.id === 'runner') {
+    const zs = [...runnerRows(level).keys()].sort((a, b) => a - b);
+    if (zs.length < 2) return null;
+    const gap = Math.max(1, Math.floor(zs.length / 3));
+    const meet = Math.floor(((zs[gap - 1] as number) + (zs[gap] as number)) / 2);
+    const speed = SPEED[(control.params.speed as RunnerSpeed | undefined) ?? 'normal'];
+    const ticks = Math.floor((meet - player.z) / speed);
+    return { body: at(0, 0, meet + CHASE.runner.along * ticks), speed: CHASE.runner };
+  }
+  if (control.id === 'platform') return { body: at(0, player.y, player.z - CHASE.platformLead), speed: CHASE.platform };
+  if (control.id === 'move_free') {
+    const corner = ((control.params.half as number | undefined) ?? ARENA.half) - CHASE.arenaInset;
+    return { body: at(player.x > 0 ? -corner : corner, 0, player.z > 0 ? -corner : corner), speed: CHASE.move_free };
+  }
+  return null;
+}
+
+/**
+ * Pronásledovatel míří na hráče po každé ose zvlášť, nejvýš svou rychlostí.
+ * Hýbe jím obal ovládání. `oncoming` (běžec) běží jen proti hráči: zamíří do
+ * jeho pruhu a od `commit` pádí rovně, i když ho mine – kdyby se otočil,
+ * zůstal by hráči v patách a boční dorovnání by ho dostihlo, i když je
+ * pomalejší; kdyby se stáčel až do střetu, skončil by mezi pruhy a nešlo by
+ * mu uhnout.
+ */
+function chase(state: Int32Array, player: number, speed: ChaseSpeed): void {
+  const p = bodyBase(player);
+  const clamp = (delta: number, limit: number) => Math.max(-limit, Math.min(limit, delta));
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const b = bodyBase(i);
+    if (state[b + BODY.role] !== ROLE.chaser || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    if (speed.oncoming === true) {
+      const aiming = (state[b + BODY.z] as number) - (state[p + BODY.z] as number) > (speed.commit ?? 0);
+      state[b + BODY.vx] = aiming ? clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across) : 0;
+      state[b + BODY.vz] = -speed.along;
+      continue;
+    }
+    state[b + BODY.vx] = clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across);
+    state[b + BODY.vy] = clamp((state[p + BODY.y] as number) - (state[b + BODY.y] as number), speed.across);
+    state[b + BODY.vz] = clamp((state[p + BODY.z] as number) - (state[b + BODY.z] as number), speed.along);
+  }
+}
+
+/**
+ * Běžec uhne o pruh, když ho pronásledovatel mine za `dodgeLatest`–`dodgeTicks`
+ * tiků v pruhu, kam běžec míří; pruh vybere podle příští řady překážek. Dokud
+ * je pronásledovatel blízko, nepustí ho základní robot zpátky do jeho pruhu.
+ * Plošinovka a aréna úhyb nepotřebují: plošinovka je rychlejší, robot arény
+ * před pronásledovatelem utíká sám (`arena-bot.ts`).
+ */
+const chaseStep: AddonBotStep = ({ state, player, recent }, input, base) => {
+  if (base.id !== 'runner_bot') return input;
+  const p = bodyBase(player);
+  const lag = recent.length;
+  let lane = state[p + BODY.aux0] as number;
+  for (const seen of recent) {
+    if ((seen.buttons & BUTTON.LEFT) !== 0) lane = Math.max(-1, lane - 1);
+    if ((seen.buttons & BUTTON.RIGHT) !== 0) lane = Math.min(1, lane + 1);
+  }
+  const pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * lag;
+  const reach = (CHASE.w + RUNNER.playerW) / 2 + CHASE.dodgeMargin;
+  // Pruhy, kam pronásledovatel stihne dorazit, než hráče mine – a za kolik tiků ho mine.
+  let soonest = Number.POSITIVE_INFINITY;
+  const danger = new Set<number>();
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const b = bodyBase(i);
+    if (state[b + BODY.role] !== ROLE.chaser || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const closing = (state[p + BODY.vz] as number) + CHASE.runner.along;
+    const seenDz = (state[b + BODY.z] as number) - (state[p + BODY.z] as number);
+    const dz = seenDz - closing * lag;
+    const ticks = Math.floor((dz + (CHASE.d + RUNNER.playerD) / 2) / closing);
+    if (ticks < 0 || ticks > CHASE.dodgeTicks) continue;
+    soonest = Math.min(soonest, ticks);
+    // Od pohledu se pronásledovatel ještě stáčel, dokud nebyl blíž než `commit`.
+    const turning = Math.max(0, Math.min(lag, Math.ceil((seenDz - CHASE.runner.commit) / closing)));
+    const cx = (state[b + BODY.x] as number) + (state[b + BODY.vx] as number) * turning;
+    for (const l of [-1, 0, 1]) if (Math.abs(cx - l * RUNNER.laneWidth) < reach) danger.add(l);
+  }
+  if (danger.size === 0) return input;
+  const wants = (input.buttons & BUTTON.LEFT) !== 0 ? lane - 1 : (input.buttons & BUTTON.RIGHT) !== 0 ? lane + 1 : lane;
+  if (!danger.has(lane)) return danger.has(wants) ? { ...input, buttons: input.buttons & ~(BUTTON.LEFT | BUTTON.RIGHT) } : input;
+  if (soonest < CHASE.dodgeLatest) return input;
+  const row = nextRow(state, player);
+  const status = (l: number) => (row === null ? 0 : (row.lanes[l + 1] as Row['lanes'][number]).status);
+  const safe = [-1, 0, 1].filter((l) => !danger.has(l)).sort((a, b) => Math.abs(a - lane) - Math.abs(b - lane) || status(a) - status(b));
+  if (safe.length === 0) return input;
+  return { buttons: (safe[0] as number) < lane ? BUTTON.LEFT : BUTTON.RIGHT, axis: 0 };
+};
+
+/**
+ * `+chaser`: jeden pronásledovatel (medvěd, duch), který hráče honí pod jeho
+ * rychlostí. Dotek je prohra, se životy ztráta života (a pronásledovatel zmizí).
+ */
+export const chaserAddon: AddonPiece<z.infer<typeof noParams>> = {
+  id: 'chaser',
+  params: noParams,
+  apply: (parts, _params, { health }) => {
+    const made = chaserFor(baseControl(parts), parts.level);
+    if (made === null) return { ...parts, issues: [...(parts.issues ?? []), 'chaser: the level has no place for a chaser'] };
+    return {
+      ...parts,
+      control: wrapControl(parts, { chase: made.speed }),
+      level: { ...parts.level, bodies: [...parts.level.bodies, made.body] },
+      rules: [...parts.rules, { id: 'hit', params: { role: 'chaser', effect: health === undefined ? 'lose' : 'damage' } }],
+    };
+  },
+  bot: chaseStep,
+};
+
 export const ADDON_PIECES: Readonly<Record<AddonId, AddonPiece | undefined>> = {
   lives: livesAddon as AddonPiece,
   collect: collectAddon as AddonPiece,
   shoot: shootAddon as AddonPiece,
-  chaser: undefined,
+  chaser: chaserAddon as AddonPiece,
 };
 
-const wrappedControlParams = z.object({ base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict() }).strict();
+const wrappedControlParams = z
+  .object({
+    base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict(),
+    chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional() }).strict().optional(),
+  })
+  .strict();
+
+/** Obalí ovládání `addon_control`, nebo doplní parametry obalu, který už tam je. */
+function wrapControl(parts: ArcadeParts, extra: Partial<z.infer<typeof wrappedControlParams>>): PieceRef {
+  const params = parts.control.id === 'addon_control' ? parts.control.params : { base: parts.control };
+  return { id: 'addon_control', params: { ...params, ...extra } };
+}
 
 /**
- * Ovládání s tlačítkem střelby: základní ovládání pohne hráčem, obal zapíše
- * `FIRE` do čítače `trigger`, odkud ho čte pravidlo `blaster`.
+ * Ovládání s doplňky: základní ovládání pohne hráčem, obal zapíše `FIRE` do
+ * čítače `trigger` (odkud ho čte pravidlo `blaster`) a pohne pronásledovatelem.
  */
 export function makeAddonControl(bases: Readonly<Record<string, ControlPiece>>): ControlPiece<z.infer<typeof wrappedControlParams>> {
   return {
@@ -436,6 +590,7 @@ export function makeAddonControl(bases: Readonly<Record<string, ControlPiece>>):
       if (base === undefined) throw new Error(`arcade: unknown control ${params.base.id}`);
       base.step(state, player, input, paramsOf(base, params.base.params));
       state[HEADER.counters + COUNTER.trigger] = (input.buttons & BUTTON.FIRE) !== 0 ? 1 : 0;
+      if (params.chase !== undefined) chase(state, player, params.chase);
     },
   };
 }
