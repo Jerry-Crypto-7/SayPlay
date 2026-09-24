@@ -17,7 +17,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { EMISSION_MODEL } from '@/model/prompt';
 
 import { goldenPrompts } from '../../../evals/play/golden';
-import { ANSWER_SHAPE_LINE, DIRECTOR_PROMPT_VERSION, DIRECTOR_RULES, buildDirectorRequest, compactSchema, renderRegistry } from '../director/prompt';
+import runnerFixture from '../arcade/__fixtures__/runner.json';
+import shooterFixture from '../arcade/__fixtures__/shooter.json';
+import { CAPABILITIES } from '../capabilities';
+import { ANSWER_SHAPE_LINE, DIRECTOR_PROMPT_VERSION, DIRECTOR_RULES, buildDirectorRequest, compactSchema, controlPromptLine, renderRegistry } from '../director/prompt';
+import { readDirectorAnswer } from '../director/read';
+import { repairDeterministically } from '../director/repair';
 import { draftGameSpec } from '../draft';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
 
@@ -57,14 +62,46 @@ describe('director prompt', () => {
   // P26 T7 přidal pravidlo o popiscích rolí (1–3 slova, žádný pokyn): 12 447 B.
   // P26 T11 přidal výčet 18 sad prostředí `theme.look` (+142 B): 12 589 B, strop 12 700 B.
   // P26 T12: scéna čte i popisky mince, překážky a terče, řádek je vyjmenuje: 12 684 B.
-  it('stays under 12 700 bytes for all forty golden sentences (pin: 12 684 B)', () => {
+  // P26D T10: doplňky u ovládání a legenda (+~190 B) se vešly zkrácením řádku o mřížce
+  // a vypuštěním věty o slovesech akcí, kterou schéma `actionId` už říká: 12 682 B.
+  it('stays under 12 700 bytes for all forty golden sentences (pin: 12 682 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(12_684);
+    expect(max).toBeLessThanOrEqual(12_682);
+  });
+
+  // P26D T10: doplňky jdou z tabulky schopností, ne z ručního seznamu. Legenda říká
+  // „lives wherever health is“ jednou – test drží, že to tabulka opravdu tak má.
+  it('offers each control exactly the addons of the capability table', () => {
+    const line = controlPromptLine();
+    for (const [id, capability] of Object.entries(CAPABILITIES)) {
+      if (id === 'tap_go') continue;
+      const entry = line.split(`"${id}" (`)[1]!.split('}.')[0]!;
+      const extras = capability.addons.filter((addon) => addon !== 'lives');
+      if (extras.length > 0) expect(entry, id).toContain(`+${extras.join('/')};`);
+      // „shows player+enemy“ nese „+“ taky – doplňky stojí vždy za „: “ nebo „; “.
+      else expect(entry, id).not.toMatch(/[:;] \+/);
+      const health = capability.mechanics === 'all' || capability.mechanics.includes('health');
+      expect(capability.addons.includes('lives'), `${id}: lives iff health`).toBe(health);
+    }
+    expect(line).toContain('lives wherever health is');
+  });
+
+  it('rejects an addon the control does not take and the deterministic repair drops it', () => {
+    const body = { ...(shooterFixture as object), addons: ['shoot'] };
+    const read = readDirectorAnswer(body);
+    expect(read.ok).toBe(false);
+    if (read.ok) return;
+    expect(read.reason).toBe('MALFORMED_SPEC');
+    const repaired = repairDeterministically(body, read.reason);
+    expect(repaired?.spec.addons).toBeUndefined();
+    expect(repaired?.applied.join()).toContain('dropped addons shoot');
+    const kept = repairDeterministically({ ...(runnerFixture as object), addons: ['shoot', 'shoot', 'collect'] }, 'MALFORMED_SPEC');
+    expect(kept?.spec.addons).toEqual(['shoot', 'collect']);
   });
 
   // Zlaté věty vedou všechny na mřížku, arkádové fixtury tak strop neměřil nikdo.

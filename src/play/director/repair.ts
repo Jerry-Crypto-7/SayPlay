@@ -25,9 +25,9 @@ import delivery from '../__fixtures__/delivery.json';
 import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
-import { controlOf, readsMechanic } from '../capabilities';
+import { CAPABILITIES, controlOf, readsMechanic } from '../capabilities';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
-import { readGameSpec, type GameSpecReason, type GameSpecV1, type VerificationAssertion } from '../spec';
+import { readGameSpec, type ControlId, type GameSpecReason, type GameSpecV1, type VerificationAssertion } from '../spec';
 
 import type { CriticIssue } from './critic';
 import { renderRegistry } from './prompt';
@@ -105,6 +105,20 @@ function defaultParams(id: MechanicId, spec: Loose): Loose | null {
 }
 
 /** Neznámé mechaniky přes `NEAREST_MECHANIC`, cizí a nevalidní pryč, když nejsou povinné. */
+/** Doplňky, které ovládání nebere (P26D T10), vypadnou; `false` = nebylo co opravit. */
+function fixAddons(spec: Loose, applied: string[]): boolean {
+  const list: unknown = spec.addons;
+  if (!Array.isArray(list)) return false;
+  const control = typeof spec.control === 'string' && spec.control in CAPABILITIES ? (spec.control as ControlId) : 'tap_go';
+  const allowed: readonly unknown[] = CAPABILITIES[control].addons;
+  const kept = list.filter((addon, index) => allowed.includes(addon) && list.indexOf(addon) === index);
+  if (kept.length === list.length) return false;
+  applied.push(`dropped addons ${list.filter((addon) => !kept.includes(addon)).join(', ')} (${control} does not take them)`);
+  if (kept.length === 0) delete spec.addons;
+  else spec.addons = kept;
+  return true;
+}
+
 function fixMechanics(spec: Loose, applied: string[]): boolean {
   const archetype = archetypeOf(spec);
   if (archetype === null) return false;
@@ -399,7 +413,8 @@ export function repairDeterministically(spec: unknown, issues: readonly CriticIs
 
   if (codes.has('WRONG_DOCUMENT') || codes.has('NOT_AN_OBJECT')) return null;
   if (codes.has('MECHANIC_REJECTED') || codes.has('MALFORMED_SPEC')) {
-    if (!fixMechanics(work, applied)) return null;
+    const addonsFixed = fixAddons(work, applied);
+    if (!fixMechanics(work, applied) && !addonsFixed) return null;
   }
   if (typeof issues !== 'string' && issues.some((issue) => issue.code === 'UNSUPPORTED' && issue.severity === 'block')) dropUnread(work, applied);
   if (codes.has('DANGLING_REFERENCE')) {
