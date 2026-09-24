@@ -217,7 +217,9 @@ export type RateLimitedDoor =
   | 'sessions'
   | 'changes'
   | 'commit'
-  | 'play';
+  | 'play'
+  // Události smyčky PLAY (P27D T4) mají vlastní okno: statistika nesmí ubrat hráči kvótu na tvorbu her.
+  | 'play/events';
 
 export interface RateVerdict {
   readonly allowed: boolean;

@@ -67,6 +67,20 @@ describe.each([
     expect(session.inputs()).toEqual([{ tick: 0, buttons: BUTTON.TAP, axis: 0 }]);
   });
 
+  it('only a player run is a human run: not the demo, not a bot replay (P27D T4)', () => {
+    const session = createArcadeSession(world);
+    expect(session.humanRun()).toBe(true);
+    session.startDemo();
+    expect(session.humanRun()).toBe(false);
+    session.restart();
+    expect(session.humanRun()).toBe(true);
+    session.playInputs(session.botInputs(), 100_000);
+    expect(session.snapshot().runState).toBe(bot.outcome);
+    expect(session.humanRun()).toBe(false);
+    session.restart();
+    expect(session.humanRun()).toBe(true);
+  });
+
   it('a pause in the middle of the demo does not change where it ends', () => {
     const session = createArcadeSession(world);
     session.startDemo();

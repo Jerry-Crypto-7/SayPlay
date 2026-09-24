@@ -20,6 +20,7 @@ import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
+import { loopEvent, loopImpression } from '../loop-client';
 import { timerLeft } from '../Hud';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
@@ -206,6 +207,24 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
     };
   }, [active, session]);
 
+  // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
+  useEffect(() => {
+    if (active) loopImpression(versionId);
+  }, [active, versionId]);
+  useEffect(() => {
+    let reported = false;
+    return session.subscribe(() => {
+      if (!session.humanRun()) return;
+      const now = session.snapshot();
+      if (now.runState === 'running') reported = false;
+      if (session.inputs().length > 0) loopEvent('first_input', versionId);
+      if (now.runState !== 'running' && !reported) {
+        reported = true;
+        loopEvent(now.runState === 'won' ? 'win' : 'lose', versionId);
+      }
+    });
+  }, [session, versionId]);
+
   useEffect(() => {
     const probe = {
       inputs: () => session.inputs(),
@@ -250,7 +269,13 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
           <p className="play-outcome-detail">
             {progressLabel(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
           </p>
-          <PostRun versionId={versionId} onReplay={() => session.restart()} />
+          <PostRun
+            versionId={versionId}
+            onReplay={() => {
+              if (session.humanRun()) loopEvent('restart', versionId);
+              session.restart();
+            }}
+          />
         </section>
       )}
     </main>

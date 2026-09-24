@@ -71,6 +71,8 @@ export interface ArcadeSession {
   startDemo(): void;
   /** `null` = hraje člověk; `verified` = konec má výsledek i hash publikace (`null`, dokud běží). */
   demo(): DemoState | null;
+  /** Hraje člověk: ne ukázka, ne záznam robota přehraný `playInputs` (P27D T4 – jen takový běh se počítá). */
+  humanRun(): boolean;
 }
 
 export interface DemoState {
@@ -106,6 +108,8 @@ export function createArcadeSession(
   let script: BotRun | null = null;
   let cursor = 0;
   let demoView: DemoState | null = null;
+  // Běh dohraný `playInputs` (záznam robota přes sondu) do restartu – nehrál ho člověk.
+  let replayed = false;
   const listeners = new Set<() => void>();
 
   const notify = (): void => {
@@ -225,10 +229,12 @@ export function createArcadeSession(
       script = null;
       cursor = 0;
       demoView = null;
+      replayed = false;
       notify();
     },
     playInputs: (inputs, horizon) => {
       session.restart();
+      replayed = true;
       let next = 0;
       while (outcomeOf(state) === 'running' && (state[HEADER.tick] as number) < horizon) {
         const tick = state[HEADER.tick] as number;
@@ -267,6 +273,7 @@ export function createArcadeSession(
       notify();
     },
     demo: () => demoView,
+    humanRun: () => script === null && !replayed,
   };
   return session;
 }

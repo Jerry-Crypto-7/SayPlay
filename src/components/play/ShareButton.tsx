@@ -15,6 +15,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { loopEvent, SHARE_MARK } from './loop-client';
+
 type Share = 'idle' | 'copied' | 'manual';
 
 export function ShareButton({ versionId, title, label = 'Share', className = '' }: { readonly versionId: string; readonly title?: string; readonly label?: string; readonly className?: string }) {
@@ -49,12 +51,14 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
   }
 
   async function run(): Promise<void> {
-    const url = `${window.location.origin}/play/${versionId}`;
+    // `?via=share` je jediný doklad, že odkaz došel: jeho otevření je `shared_open` (P27D T4).
+    const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}`;
     setHref(url);
     void checkLasting();
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: title ?? document.title, url });
+        loopEvent('share', versionId);
         return;
       } catch (error) {
         // Hráč nabídku zavřel – nic dalšího. Jiná chyba: zkusit schránku.
@@ -64,6 +68,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
     try {
       await navigator.clipboard.writeText(url);
       setShare('copied');
+      loopEvent('share', versionId);
     } catch {
       setShare('manual');
     }

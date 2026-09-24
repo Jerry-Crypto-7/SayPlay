@@ -65,6 +65,16 @@ z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`.
 `twist` přidá mechaniku s rolí a keypointem, `swap_enemy` jiný nepřítel (bez něj `harder`),
 `reskin` jen `theme`, titul a `label`y.
 
+### `POST /api/play/events` – událost smyčky (P27D T4)
+
+Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |
+restart | next_game | share | shared_open` (`src/play/loop-events.ts`), `versionId` hex id verze, `session` náhodné id záložky
+(12–32 znaků `[a-z0-9]`). Klíč navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
+frekvence (`play/events`), takže statistika hráči neubere kvótu na tvorbu; páka `sessions` vypne i tyhle dveře. Zápis: řádek
+do `data/play/events/<den>.jsonl` pod `next start`, na Vercelu řádek `[play-loop] {…}` do logu funkce; souhrn s jmenovateli
+`scripts/play-loop-report.mjs`. Robot ověřovače (sonda `playWitness`) ani ukázka „Show me how“ události neposílají.
+Sdílený odkaz nese `?via=share` a jeho otevření je `shared_open` – samotné sdílení doručení nedokládá.
+
 ## Verze a úložiště
 
 `sealVersion` (`src/play/version/version.ts`): `versionId = gameVersionId(specHash, worldHash,

@@ -15,7 +15,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
@@ -34,6 +34,7 @@ import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
 import type { LabFacts, ReadFacts } from './lab';
 import { Lineage } from './Lineage';
+import { loopEvent, loopImpression } from './loop-client';
 import { SentenceRead } from './SentenceRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
@@ -176,6 +177,23 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
     return () => window.removeEventListener('keydown', onKey);
   }, [cards, selected, send]);
 
+  // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – ne za svědka ze sondy.
+  const witnessed = useRef(false);
+  useEffect(() => loopImpression(versionId), [versionId]);
+  useEffect(() => {
+    let reported = false;
+    return controller.subscribe(() => {
+      if (witnessed.current) return;
+      const now = controller.getSnapshot();
+      if (now.runState === 'running') reported = false;
+      if (controller.getInputLog().length > 0) loopEvent('first_input', versionId);
+      if (now.runState !== 'running' && !reported) {
+        reported = true;
+        loopEvent(now.runState === 'won' ? 'win' : 'lose', versionId);
+      }
+    });
+  }, [controller, versionId]);
+
   // Sonda pro e2e.
   useEffect(() => {
     const actor = playerActor(controller.actions);
@@ -183,6 +201,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
       inputs: () => controller.getInputLog(),
       tick: () => controller.getSnapshot().tick,
       playWitness: () => {
+        witnessed.current = true;
         // Kroky svědka se posouvají o aktuální tik: hra už mohla chvíli běžet
         // a couvnout nejde – vstup je dovolený jen na nejnovějším tiku.
         const base = controller.getSnapshot().tick;
@@ -238,7 +257,14 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">at tick {snapshot.tick}</p>
-          <PostRun versionId={versionId} onReplay={() => controller.observeAt(0)} />
+          <PostRun
+            versionId={versionId}
+            onReplay={() => {
+              if (!witnessed.current) loopEvent('restart', versionId);
+              witnessed.current = false;
+              controller.observeAt(0);
+            }}
+          />
         </section>
       )}
     </main>

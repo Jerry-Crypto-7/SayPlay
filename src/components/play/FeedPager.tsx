@@ -28,6 +28,7 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
 import { Feed, type FeedGame } from './Feed';
+import { loopEvent } from './loop-client';
 
 const PAGE = 12;
 /** Tah kratší než tohle je ťuk, ne listování. */
@@ -126,9 +127,11 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
     (target: number) => {
       const game = games[target];
       if (game === undefined || target === index) return;
+      // Další hra (P27D T4) se počítá za tu, kterou hráč opouští.
+      if (current !== undefined) loopEvent('next_game', current.versionId);
       window.history.pushState(null, '', `?g=${game.versionId}`);
     },
-    [games, index],
+    [games, index, current],
   );
   const pick = useCallback((versionId: string) => go(games.findIndex((game) => game.versionId === versionId)), [games, go]);
 
