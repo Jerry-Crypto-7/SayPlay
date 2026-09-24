@@ -45,7 +45,8 @@ describe('extendPlayTtl', () => {
     const report = await extendPlayTtl({ url: 'https://x', token: 't', prefix: 'p', ttlSeconds: 180 * DAY, apply: true, now }, fakeStore(seeded(), expireAt));
     expect(report).toEqual({ games: 3, extended: 1, expired: 1, unreadable: 1 });
     const at = published + 180 * DAY;
-    expect(Object.fromEntries(expireAt)).toEqual({ 'p:play:v:aaaaaaaa': at, 'p:play:lineage:aaaaaaaa': at, 'p:play:children:aaaaaaaa': at });
+    // Seznam feedu (`play:recent`) obnovuje jen publikace – bez prodloužení by feed k 25. 11. zmizel celý.
+    expect(Object.fromEntries(expireAt)).toEqual({ 'p:play:v:aaaaaaaa': at, 'p:play:lineage:aaaaaaaa': at, 'p:play:children:aaaaaaaa': at, 'p:play:recent': at });
     // 20. 9. + 180 dní je po vyhlášení 25. 11. 2026.
     expect(at * 1000).toBeGreaterThan(Date.UTC(2026, 10, 25));
   });

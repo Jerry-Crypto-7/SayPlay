@@ -11,6 +11,11 @@
  * ze `storePrefix` záleží na prostředí Vercelu a chyba by šla do cizích klíčů.
  *
  *   KV_REST_API_URL=… KV_REST_API_TOKEN=… node scripts/play-extend-ttl.mjs --prefix <prefix> [--ttl-days 180] [--apply]
+ *
+ * Produkční předpona = `WORLDSMITH_SPEND_STORE_PREFIX` z produkčního prostředí
+ * Vercelu, bez něj `worldsmith:spend` (`storePrefix()` v `src/server/spend-store.ts`).
+ * Preview přidává `:preview`, neznámé prostředí `:unknown-env` – ty sem nepatří.
+ * Nejdřív pusť bez `--apply`: počet her ukáže, jestli předpona sedí.
  */
 
 import { pathToFileURL } from 'node:url';
@@ -31,6 +36,7 @@ export async function extendPlayTtl(config, fetchImpl = fetch) {
   };
   const head = `${config.prefix}:play:v:`;
   const report = { games: 0, extended: 0, expired: 0, unreadable: 0 };
+  let latest = 0;
   let cursor = '0';
   do {
     const [next, keys] = await command(['SCAN', cursor, 'MATCH', `${head}*`, 'COUNT', '200']);
@@ -54,12 +60,16 @@ export async function extendPlayTtl(config, fetchImpl = fetch) {
         continue;
       }
       report.extended += 1;
+      latest = Math.max(latest, at);
       if (!config.apply) continue;
       for (const target of [key, `${config.prefix}:play:lineage:${id}`, `${config.prefix}:play:children:${id}`]) {
         await command(['EXPIREAT', target, String(at)]);
       }
     }
   } while (cursor !== '0');
+  // Seznam feedu obnovuje jen publikace (`store.ts` EXPIRE při zápisu): bez nové
+  // publikace by vypršel se starým TTL a feed by byl prázdný, i když hry žijí.
+  if (config.apply && latest > 0) await command(['EXPIREAT', `${config.prefix}:play:recent`, String(latest)]);
   return report;
 }
 
