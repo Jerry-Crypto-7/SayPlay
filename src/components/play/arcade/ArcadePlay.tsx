@@ -23,6 +23,7 @@ import { HowItWorks } from '../HowItWorks';
 import { timerLeft } from '../Hud';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
+import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner, useUpgrade } from '../UpgradeBanner';
@@ -87,7 +88,7 @@ function AddonCounters({ world, snapshot }: { readonly world: ArcadeWorld; reado
   );
 }
 
-function ArcadeHud({ spec, world, snapshot, paused }: { readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean }) {
+function ArcadeHud({ versionId, spec, world, snapshot, paused }: { readonly versionId: string; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   // Arkáda tiká 60× za sekundu (viz `progressLabel`).
   const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
@@ -112,6 +113,8 @@ function ArcadeHud({ spec, world, snapshot, paused }: { readonly spec: GameSpecV
         </span>
       </p>
       <AddonCounters world={world} snapshot={snapshot} />
+      {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
+      {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );
 }
@@ -198,7 +201,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   return (
     <main className="play-shell">
       <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
-      <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
+      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
       {read !== undefined && <SentenceRead read={read} />}

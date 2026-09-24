@@ -6,23 +6,19 @@
  * Replay přetočí běh na tik 0 a nechá ho znovu doběhnout hodinami shellu –
  * vstupy hráče v runtime zůstávají, takže se přehraje týž běh do téhož konce
  * a nic nového se nezapíše. Čip pošle `POST …/remix` a přejde na odkaz dítěte;
- * rodič se nemění. Sdílení kopíruje adresu stránky; když schránka nejde
- * (oprávnění, nezabezpečený původ), ukáže se adresa v poli k ručnímu výběru.
+ * rodič se nemění. Sdílení je `ShareButton` (P27B T5), týž jako v HUD.
  */
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { ShareButton } from './ShareButton';
 import { CHALLENGE_A_FRIEND, CHANGE_ONE_THING, POST_RUN_CHIPS } from './starters';
-
-type Share = 'idle' | 'copied' | 'manual';
 
 export function PostRun({ versionId, onReplay }: { readonly versionId: string; readonly onReplay: () => void }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
-  const [share, setShare] = useState<Share>('idle');
-  const [href, setHref] = useState('');
 
   async function remix(chip: string): Promise<void> {
     setBusy(chip);
@@ -43,17 +39,6 @@ export function PostRun({ versionId, onReplay }: { readonly versionId: string; r
     } catch {
       setFailure('The remix could not be created. Check your connection and try again.');
       setBusy(null);
-    }
-  }
-
-  async function copyLink(): Promise<void> {
-    const url = window.location.href;
-    setHref(url);
-    try {
-      await navigator.clipboard.writeText(url);
-      setShare('copied');
-    } catch {
-      setShare('manual');
     }
   }
 
@@ -81,13 +66,7 @@ export function PostRun({ versionId, onReplay }: { readonly versionId: string; r
       </div>
       {failure !== null && <p className="play-alert" role="alert">{failure}</p>}
 
-      <button type="button" className="play-button play-share" data-testid="play-share" onClick={() => void copyLink()}>
-        {CHALLENGE_A_FRIEND}
-      </button>
-      {share === 'copied' && <p className="play-status" aria-live="polite">Link copied</p>}
-      {share === 'manual' && (
-        <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />
-      )}
+      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} />
     </section>
   );
 }

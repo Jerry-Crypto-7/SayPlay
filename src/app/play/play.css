@@ -849,6 +849,24 @@ button.play-feed-card {
   border-color: var(--play-accent);
 }
 
+/* Sdílení v HUD (T5): HUD pouští ťuky skrz na plátno, tlačítko je chytá samo. */
+.play-hud-share {
+  pointer-events: auto;
+  margin-top: 8px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+}
+
+.play-hud .play-status {
+  display: block;
+  font-size: 0.85rem;
+}
+
+.play-hud .play-share-url {
+  margin-top: 6px;
+  pointer-events: auto;
+}
+
 @media (max-width: 700px) {
   .play-pager {
     display: block;
