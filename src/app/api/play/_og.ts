@@ -205,9 +205,11 @@ function previewElement(spec: GameSpecV1, hero: string | null): Node {
  * Znaky, které nakreslí Geist – jediné písmo, které `next/og` nese. Pro jiné
  * znaky si satori písmo stahuje z Google Fonts a když to nevyjde, **nehodí**:
  * nakreslí prázdná místa a render „projde“ (nález revize T6-1). Rozsah je
- * záměrně úzký – latinka s diakritikou a běžná interpunkce.
+ * latinka s diakritikou a běžná interpunkce **zúžená na cmap písma** – Geist
+ * nemá třeba U+2011 ani U+00AD (revize T6-2); `og.test.ts` to měří na souboru písma.
  */
-const GEIST_TEXT = /^[ -~ -ſ‐-…€]*$/u;
+const GEIST_TEXT =
+  /^[ -~ -¬®-ēĖ-īĮ-ķĹ-ľŁ-ňŊ-ōŐ-ž–—‘-‚“-„†-•…‰′″‹›€]*$/u;
 
 export function fontCovers(text: string): boolean {
   return GEIST_TEXT.test(text);

@@ -172,6 +172,35 @@ describe('GET /api/play/games/:id/og', () => {
     }
   });
 
+  it('accepts only characters the bundled Geist font really has (review T6-2)', async () => {
+    const { readFileSync } = await vi.importActual<typeof import('node:fs')>('node:fs');
+    const font = readFileSync(join(process.cwd(), 'node_modules/next/dist/compiled/@vercel/og/Geist-Regular.ttf'));
+    // cmap formát 4 (Windows, Unicode BMP): kódy, které mají glyf.
+    let cmap = -1;
+    for (let i = 0; i < font.readUInt16BE(4); i += 1) if (font.toString('latin1', 12 + i * 16, 16 + i * 16) === 'cmap') cmap = font.readUInt32BE(12 + i * 16 + 8);
+    const covered = new Set<number>();
+    for (let i = 0; i < font.readUInt16BE(cmap + 2); i += 1) {
+      const sub = cmap + font.readUInt32BE(cmap + 4 + i * 8 + 4);
+      if (font.readUInt16BE(sub) !== 4) continue;
+      const segs = font.readUInt16BE(sub + 6) / 2;
+      const [ends, starts] = [sub + 14, sub + 16 + segs * 2];
+      const [deltas, offsets] = [starts + segs * 2, starts + segs * 4];
+      for (let s = 0; s < segs; s += 1) {
+        const [start, end, delta, ro] = [font.readUInt16BE(starts + s * 2), font.readUInt16BE(ends + s * 2), font.readInt16BE(deltas + s * 2), font.readUInt16BE(offsets + s * 2)];
+        for (let c = start; c <= end && c !== 0xffff; c += 1) {
+          const raw = ro === 0 ? c : font.readUInt16BE(offsets + s * 2 + ro + (c - start) * 2);
+          if (raw !== 0 && ((raw + delta) & 0xffff) !== 0) covered.add(c);
+        }
+      }
+    }
+    const accepted: number[] = [];
+    for (let c = 0x20; c < 0x2100; c += 1) if (fontCovers(String.fromCodePoint(c))) accepted.push(c);
+    expect(accepted.length).toBeGreaterThan(300);
+    expect(accepted.filter((c) => !covered.has(c)).map((c) => c.toString(16))).toEqual([]);
+    expect(fontCovers('Sky‑High Run')).toBe(false);
+    expect(fontCovers('Sky-High Run – “Go”')).toBe(true);
+  });
+
   it('fetches a hero thumbnail only from a configured origin, never from the request host', () => {
     expect(assetOriginFrom({})).toBeNull();
     expect(assetOriginFrom({ VERCEL_URL: 'play-abc.vercel.app' })).toBe('https://play-abc.vercel.app');
