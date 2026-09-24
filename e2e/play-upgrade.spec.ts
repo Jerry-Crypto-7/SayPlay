@@ -1,19 +1,61 @@
-import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 /**
- * Progresivní hra (P23-D T2) bez modelu: věta dá návrh hned, dotaz na
- * upgrade skončí `draft-final` s důvodem, proužek „custom version“ se
- * nezobrazí a hra dál běží. S modelem se tahle cesta měří v T6.
+ * Progresivní hra (P23-D T2, P27C T2) bez modelu: věta dá návrh hned a nad
+ * hrou stojí proužek se stavem AI verze. Server v e2e model nemá, takže sám
+ * umí jen `draft-final` s `MODEL_UNAVAILABLE`; `working → ready` a
+ * `working → final` se podvrhnou přes `page.route` na `GET …/upgrade`
+ * a `ready` míří na skutečně publikovanou hru. S modelem se cesta měří v P27D.
  */
 
 const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
 
-test('without a model the draft stays final, no upgrade banner, the game keeps running', async ({ page, request }) => {
+interface Created {
+  readonly url: string;
+  readonly versionId: string;
+  readonly upgrade: string;
+}
+
+async function draftFromSentence(request: APIRequestContext): Promise<Created> {
   const created = await request.post('/api/play/games', { data: { sentence: SENTENCE } });
   expect(created.status(), await created.text()).toBeLessThan(300);
-  const body = (await created.json()) as { url: string; versionId: string; upgrade: string };
+  const body = (await created.json()) as Created;
   expect(body.upgrade).toBe(`/api/play/games/${body.versionId}/upgrade`);
+  return body;
+}
 
+async function publishedSpec(request: APIRequestContext): Promise<string> {
+  const spec = JSON.parse(readFileSync(join(process.cwd(), 'src/play/__fixtures__/collect_exit.json'), 'utf8')) as unknown;
+  const response = await request.post('/api/play/games', { data: { spec } });
+  expect(response.status(), await response.text()).toBeLessThan(300);
+  return ((await response.json()) as { versionId: string }).versionId;
+}
+
+/** Podvržený server: `answer(n)` je odpověď na n-tý dotaz (od 1); vrací počítadlo dotazů. */
+async function fakeUpgrade(page: Page, draft: Created, answer: (asked: number) => Record<string, unknown>): Promise<() => number> {
+  let asked = 0;
+  await page.route(`**${draft.upgrade}`, async (route) => {
+    asked += 1;
+    await route.fulfill({ json: answer(asked), headers: { 'cache-control': 'no-store' } });
+  });
+  return () => asked;
+}
+
+const pending = { status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() };
+
+async function running(page: Page): Promise<number> {
+  await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
+  return page.evaluate(() => window.__playShell?.tick() ?? 0);
+}
+
+// Vědomá změna chování (P27C T2): dřív se při `draft-final` neukázalo nic
+// (`toHaveCount(0)`) a hráč nevěděl, že AI verze nepřijde. Teď proužek řekne
+// proč a nabídne nový pokus; hra pod ním běží dál.
+test('without a model the draft stays final, the banner says the AI is busy, the game keeps running', async ({ page, request }) => {
+  const body = await draftFromSentence(request);
   await expect
     .poll(async () => ((await (await request.get(body.upgrade)).json()) as { status: string }).status, { timeout: 30_000 })
     .toBe('draft-final');
@@ -21,10 +63,60 @@ test('without a model the draft stays final, no upgrade banner, the game keeps r
   expect(final.reason).toBe('MODEL_UNAVAILABLE');
 
   await page.goto(body.url);
-  await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
-  const first = await page.evaluate(() => window.__playShell?.tick() ?? 0);
-  // Dvě kola dotazování klienta (po 2 s) – proužek by se ukázal na prvním `ready`.
-  await page.waitForTimeout(4_500);
-  await expect(page.getByTestId('play-upgrade')).toHaveCount(0);
+  const first = await running(page);
+  const banner = page.getByTestId('upgrade-state');
+  await expect(banner).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
+  await expect(banner).toContainText('The AI is busy right now');
+  await expect(page.getByTestId('upgrade-action')).toHaveText('Try again');
   expect(await page.evaluate(() => window.__playShell?.tick() ?? 0)).toBeGreaterThan(first);
+  expect(new URL(page.url()).pathname).toBe(body.url);
+});
+
+test('working → ready: the banner counts seconds, then offers the AI version without swapping the game', async ({ page, request }) => {
+  const draft = await draftFromSentence(request);
+  const target = await publishedSpec(request);
+  await fakeUpgrade(page, draft, (asked) => (asked < 3 ? pending : { status: 'ready', versionId: target }));
+
+  await page.goto(draft.url);
+  await running(page);
+  const banner = page.getByTestId('upgrade-state');
+  await expect(banner).toHaveAttribute('data-kind', 'working');
+  await expect(banner).toContainText('Your AI version is being built – keep playing, nothing will change until you choose.');
+  await expect(banner).toContainText(/\d+ s$/);
+  await expect(banner).not.toContainText('%');
+
+  await expect(banner).toHaveAttribute('data-kind', 'ready', { timeout: 15_000 });
+  await expect(banner).toContainText('Your AI version is ready');
+  // Hotová verze hru sama nevymění – hráč pořád hraje návrh.
+  await page.waitForTimeout(2_500);
+  expect(new URL(page.url()).pathname).toBe(draft.url);
+
+  await page.getByTestId('upgrade-action').click();
+  await page.waitForURL(`**/play/${target}`);
+});
+
+test('working → final: the banner says why, and one double-clicked retry asks the server once', async ({ page, request }) => {
+  const draft = await draftFromSentence(request);
+  const asked = await fakeUpgrade(page, draft, (count) => (count < 2 ? pending : count === 2 ? { status: 'draft-final', reason: 'NOT_PLAYABLE' } : { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }));
+
+  await page.goto(draft.url);
+  await running(page);
+  const banner = page.getByTestId('upgrade-state');
+  await expect(banner).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
+  await expect(banner).toContainText("The AI's version didn't pass our playability check.");
+  // Verdikt o větě: nový pokus by dopadl stejně, tlačítko nic neslibuje.
+  await expect(page.getByTestId('upgrade-action')).toHaveCount(0);
+
+  await page.unrouteAll();
+  const retried = await fakeUpgrade(page, draft, (count) => (count === 1 ? { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' } : pending));
+  await page.reload();
+  await running(page);
+  await expect(banner).toContainText('The AI is busy right now', { timeout: 15_000 });
+  expect(retried()).toBe(1);
+  await page.getByTestId('upgrade-action').dblclick();
+  await expect(banner).toHaveAttribute('data-kind', 'working');
+  await page.waitForTimeout(3_000);
+  // Dvojí klik = jedno nové sledování = jeden dotaz za první 2 s intervalu.
+  expect(retried()).toBe(2);
+  expect(asked()).toBe(2);
 });

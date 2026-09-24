@@ -884,3 +884,31 @@ button.play-feed-card {
     display: none;
   }
 }
+
+/* P27C */
+/* Stav AI verze: delší věty se zalomí, přechodné a ztracené stavy nesvítí akcentem. */
+.play-upgrade[data-kind] {
+  width: max-content;
+  max-width: min(92vw, 560px);
+  white-space: normal;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.play-upgrade[data-kind='working'] {
+  padding: 8px 16px;
+  border-color: var(--play-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.play-upgrade[data-kind='final'],
+.play-upgrade[data-kind='offline'],
+.play-upgrade[data-kind='lost'] {
+  border-color: var(--play-line);
+  color: var(--play-muted);
+}
+
+.play-upgrade[data-kind] .play-button {
+  flex: none;
+}

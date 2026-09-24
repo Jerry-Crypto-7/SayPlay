@@ -39,7 +39,7 @@ import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
-import { UpgradeBanner, useUpgrade } from './UpgradeBanner';
+import { UpgradeBanner } from './UpgradeBanner';
 import { idleProps, keyAction, playerActor, tapAction, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
@@ -117,7 +117,6 @@ export function PlayShell({
 }
 
 function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, lab, read, upgrade }: PlayShellProps) {
-  const upgraded = useUpgrade(upgrade);
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
@@ -222,7 +221,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
       </div>
       <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
-      {upgraded.kind === 'ready' && <UpgradeBanner versionId={upgraded.versionId} />}
+      <UpgradeBanner request={upgrade} />
       <SentenceRead read={read} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (

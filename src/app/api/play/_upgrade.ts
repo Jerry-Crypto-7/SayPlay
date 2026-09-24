@@ -128,7 +128,7 @@ export const DRAFT_FINAL_TTL_SECONDS = 3600;
  */
 const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'UNCHANGED', 'NOT_PLAYABLE']);
 
-function isTransient(outcome: UpgradeOutcome): boolean {
+export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
 }
 

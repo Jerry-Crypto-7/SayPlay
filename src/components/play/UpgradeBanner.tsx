@@ -113,26 +113,90 @@ export function followUpgrade(url: string, onView: (view: UpgradeView) => void):
   };
 }
 
-/** Stav AI verze návrhu na `url`; `url === null` = neptej se. Stav patří adrese, takže jiná hra nedostane cizí výsledek. */
-export function useUpgrade(url: string | null): UpgradeView {
+/**
+ * Stav AI verze návrhu na `url`; `url === null` = neptej se. Stav patří adrese,
+ * takže jiná hra nedostane cizí výsledek. `retry` začne sledovat znovu – první
+ * dotaz na `…/upgrade` po přechodném konci spustí nový pokus a souběžný se
+ * na serveru spáruje s běžící prací (`upgradeOf`), takže dvojí klik nezaplatí dvakrát.
+ */
+export function useUpgrade(url: string | null): { readonly view: UpgradeView; readonly retry: () => void } {
   const [state, setState] = useState<{ readonly url: string | null; readonly view: UpgradeView }>({ url: null, view: IDLE });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (url === null) return;
     return followUpgrade(url, (view) => setState({ url, view }));
-  }, [url]);
+  }, [url, attempt]);
 
-  return url !== null && state.url === url ? state.view : IDLE;
+  return { view: url !== null && state.url === url ? state.view : IDLE, retry: () => setAttempt((count) => count + 1) };
 }
 
-export function UpgradeBanner({ versionId }: { readonly versionId: string }) {
+/** Proč AI verze nevyšla – jedna věta pro hráče na každý důvod serveru. */
+export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
+  MODEL_UNAVAILABLE: 'The AI is busy right now – you are playing the quick version.',
+  MALFORMED: 'The AI sent back an answer we could not read, so the quick version stays.',
+  UNREPAIRED: 'The AI made a mistake it could not fix, so the quick version stays.',
+  UNCHANGED: 'The AI had nothing to add – the quick version is already its take.',
+  NOT_PLAYABLE: "The AI's version didn't pass our playability check.",
+  STORE_UNAVAILABLE: 'We could not save the AI version right now.',
+  NOT_FROM_SENTENCE: 'This game was not made from a sentence, so there is no AI version.',
+  FAILED: 'Something went wrong while building the AI version.',
+};
+
+/**
+ * Důvody, u kterých má nový pokus smysl: serverový `isTransient` (výpadek,
+ * úložiště, chyba) bez `NOT_FROM_SENTENCE` – ten se opakováním nezmění.
+ */
+const RETRYABLE: ReadonlySet<DraftFinalReason> = new Set(['MODEL_UNAVAILABLE', 'STORE_UNAVAILABLE', 'FAILED']);
+
+export interface UpgradeNotice {
+  readonly text: string;
+  readonly action: { readonly kind: 'open' | 'retry'; readonly label: string } | null;
+}
+
+/** Co proužek řekne a nabídne; `null` = nic. Nejvýš jedna akce, žádná procenta. */
+export function noticeOf(view: UpgradeView, now: number): UpgradeNotice | null {
+  switch (view.kind) {
+    case 'idle':
+      return null;
+    case 'working':
+      return { text: `Your AI version is being built – keep playing, nothing will change until you choose. ${Math.max(0, Math.floor((now - view.since) / 1000))} s`, action: null };
+    case 'ready':
+      return { text: 'Your AI version is ready', action: { kind: 'open', label: 'Open it' } };
+    case 'final':
+      return { text: FINAL_REASON_TEXT[view.reason], action: RETRYABLE.has(view.reason) ? { kind: 'retry', label: 'Try again' } : null };
+    case 'offline':
+    case 'lost':
+      return { text: 'We lost track of the AI – check again', action: { kind: 'retry', label: 'Check again' } };
+  }
+}
+
+/** Proužek nad hrou pro každý stav AI verze. Rozehraná hra se nevymění – nová se otevře jen tlačítkem. */
+export function UpgradeBanner({ request }: { readonly request: string | null }) {
   const router = useRouter();
+  const { view, retry } = useUpgrade(request);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (view.kind !== 'working') return;
+    const ticker = setInterval(() => setNow(Date.now()), 1_000);
+    return () => clearInterval(ticker);
+  }, [view.kind]);
+
+  const notice = noticeOf(view, Math.max(now, view.kind === 'working' ? view.since : now));
+  if (notice === null) return null;
+  const act = (): void => {
+    if (view.kind === 'ready') router.push(`/play/${view.versionId}`);
+    else retry();
+  };
   return (
-    <aside className="play-upgrade" data-testid="play-upgrade" role="status">
-      <span>Your custom version is ready</span>
-      <button className="play-button" type="button" onClick={() => router.push(`/play/${versionId}`)}>
-        Play it
-      </button>
+    <aside className="play-upgrade" data-testid="upgrade-state" data-kind={view.kind} role="status">
+      <span>{notice.text}</span>
+      {notice.action !== null && (
+        <button className="play-button" type="button" data-testid="upgrade-action" onClick={act}>
+          {notice.action.label}
+        </button>
+      )}
     </aside>
   );
 }
