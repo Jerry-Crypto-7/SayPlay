@@ -409,7 +409,7 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
   });
 
   it('prázdný feed je prázdné pole, ne vymyšlené hry', async () => {
-    expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [] } });
+    expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [], next: null } });
   });
 
   /** Autorská verze návrhu, jak by ji zapsal upgrade na pozadí – bez modelu v testu. */
@@ -424,7 +424,8 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
 
   it('návrh, remix ani ruční spec do feedu nejdou; autorské verze od nejnovější s počtem remixů', async () => {
     const first = await publish('Collect five glowing mushrooms in a moonlit forest');
-    const second = await publish(STARTERS[1].sentence);
+    // Jiný titul než první hra: feed od P27B T2 stejný titul podruhé neukáže.
+    const second = await publish(STARTERS[0].sentence);
     const remix = await remixGame(post(`/api/play/games/${first.body.versionId}/remix`, { chip: 'harder' }), params(first.body.versionId));
     expect(remix.status).toBe(201);
     expect((await createGame(post('/api/play/games', { spec: switchPuzzle }))).status).toBeLessThan(300);

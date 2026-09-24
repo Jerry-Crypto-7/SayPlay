@@ -1,4 +1,5 @@
 export { sealVersion, type PlayTimings, type PublishedGame } from './version';
+export { decodeCursor, feedEligible, feedPage, hiddenFromEnv, type FeedCandidate, type FeedPage } from './feed';
 export {
   DEFAULT_WRITE_LIMITS,
   MAX_LINEAGE,

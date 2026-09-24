@@ -35,7 +35,11 @@ import { canonical } from '@/ir/worlddoc';
 import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
 import type { GameVersion } from '../contracts';
+import { feedEligible } from './feed';
 import type { PublishedGame } from './version';
+
+/** Skrytí platí až při čtení feedu (`PLAY_FEED_HIDE`); zápis do seznamu ho nezná. */
+const NOTHING_HIDDEN: ReadonlySet<string> = new Set();
 
 export interface VersionStore {
   readonly id: string;
@@ -206,8 +210,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       // ručního specu, remixu i návrhu ze slov píše volající, a feed by ho
       // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
       // placené volání pod stropy a titul jí napsal model.
-      if (game.report.publishEligible && game.relation === 'upgrade') {
-        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, relation: game.relation };
+      if (feedEligible({ versionId: game.version.versionId, relation: game.relation, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
+        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, relation: 'upgrade' };
         try {
           await raw.pushCapped(recentKey, JSON.stringify(row), RECENT_CAP, limits.ttlSeconds);
         } catch {
