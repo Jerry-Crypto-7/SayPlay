@@ -76,7 +76,10 @@ export function decodeCursor(text: string): Cursor | null {
   if (typeof versionId !== 'string' || !/^[a-f0-9]{8,64}$/.test(versionId)) return null;
   // Poctivý kurzor ukazuje dovnitř seznamu, který má nejvýš `RECENT_CAP` řádků.
   if (typeof offset !== 'number' || !Number.isInteger(offset) || offset < 1 || offset >= RECENT_CAP) return null;
-  return { top: { createdAt, versionId }, offset };
+  const cursor = { top: { createdAt, versionId }, offset };
+  // Jen přesně ten zápis, který feed vydal: jiný zápis téhož kurzoru (`4e0`,
+  // volné bity posledního znaku) by byl nový klíč cache hrany.
+  return encodeCursor(cursor) === text ? cursor : null;
 }
 
 /** Od nejnovější; shodný čas rozhodne `versionId`, aby pořadí bylo úplné. */

@@ -145,6 +145,21 @@ describe('feedPage', () => {
     expect(decodeCursor(forge(edited))).toBeNull();
   });
 
+  it('refuses another spelling of an issued cursor', () => {
+    const issued = feedPage(Array.from({ length: 12 }, (_, n) => row(n + 1)), 4, null, NONE).next as string;
+    const json = Buffer.from(issued, 'base64url').toString('utf8');
+    const respelled = Buffer.from(json.replace(/,4,/, ',4e0,')).toString('base64url');
+    expect(JSON.parse(Buffer.from(respelled, 'base64url').toString('utf8'))).toEqual(JSON.parse(json));
+    expect(decodeCursor(respelled)).toBeNull();
+    // Volné bity posledního znaku: jiný znak, tytéž bajty.
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+    const last = alphabet.indexOf(issued.at(-1) as string);
+    const sibling = issued.slice(0, -1) + alphabet[last ^ 1];
+    expect(Buffer.from(sibling, 'base64url').equals(Buffer.from(issued, 'base64url'))).toBe(true);
+    expect(decodeCursor(sibling)).toBeNull();
+    expect(decodeCursor(issued)).not.toBeNull();
+  });
+
   it('refuses an offset beyond the list cap even with a valid checksum', () => {
     const top = { createdAt: '2026-09-24T00:00:00.000Z', versionId: 'a'.repeat(32) };
     expect(decodeCursor(encodeCursor({ top, offset: RECENT_CAP - 1 }))).toEqual({ top, offset: RECENT_CAP - 1 });
