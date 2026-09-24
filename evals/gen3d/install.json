@@ -1,0 +1,100 @@
+{
+  "measuredAt": "2026-09-24",
+  "comfy": {
+    "version": "0.37.0",
+    "trellis2Nodes": true
+  },
+  "weights": [
+    {
+      "repo": "Comfy-Org/TRELLIS.2",
+      "revision": "430a9d09b2416687018c8fe8edced2ad4858a439",
+      "file": "diffusion_models/trellis_2_bf16.safetensors",
+      "bytes": 10338297616,
+      "license": "mit",
+      "licenseSource": "https://huggingface.co/Comfy-Org/TRELLIS.2",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/TRELLIS.2",
+      "revision": "430a9d09b2416687018c8fe8edced2ad4858a439",
+      "file": "vae/trellis_2_shape_vae_bf16.safetensors",
+      "bytes": 1095844024,
+      "license": "mit",
+      "licenseSource": "https://huggingface.co/Comfy-Org/TRELLIS.2",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/TRELLIS.2",
+      "revision": "430a9d09b2416687018c8fe8edced2ad4858a439",
+      "file": "vae/trellis_2_texture_vae_bf16.safetensors",
+      "bytes": 948461364,
+      "license": "mit",
+      "licenseSource": "https://huggingface.co/Comfy-Org/TRELLIS.2",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/TRELLIS.2",
+      "revision": "430a9d09b2416687018c8fe8edced2ad4858a439",
+      "file": "clip_vision/dino_v3_vit_l.safetensors",
+      "bytes": 1212559776,
+      "license": "LicenseRef-DINOv3",
+      "licenseSource": "https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md",
+      "verdict": "REVIEW"
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "revision": "6fc90a3b1b653e935a0d175e260736de25b84df5",
+      "file": "split_files/diffusion_models/z_image_turbo_bf16.safetensors",
+      "bytes": 12309866400,
+      "license": "apache-2.0",
+      "licenseSource": "https://huggingface.co/Comfy-Org/z_image_turbo",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "revision": "6fc90a3b1b653e935a0d175e260736de25b84df5",
+      "file": "split_files/text_encoders/qwen_3_4b.safetensors",
+      "bytes": 8044982048,
+      "license": "apache-2.0",
+      "licenseSource": "https://huggingface.co/Comfy-Org/z_image_turbo",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/z_image_turbo",
+      "revision": "6fc90a3b1b653e935a0d175e260736de25b84df5",
+      "file": "split_files/vae/ae.safetensors",
+      "bytes": 335304388,
+      "license": "apache-2.0",
+      "licenseSource": "https://huggingface.co/Comfy-Org/z_image_turbo",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/flux2-klein-4B",
+      "revision": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+      "file": "split_files/diffusion_models/flux-2-klein-4b.safetensors",
+      "bytes": 7751105712,
+      "license": "apache-2.0",
+      "licenseSource": "https://huggingface.co/Comfy-Org/flux2-klein-4B",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/flux2-klein-4B",
+      "revision": "5f526678002e43af5551dadb73ce2e8c91b43afe",
+      "file": "split_files/vae/flux2-vae.safetensors",
+      "bytes": 336211292,
+      "license": "apache-2.0",
+      "licenseSource": "https://huggingface.co/Comfy-Org/flux2-klein-4B",
+      "verdict": "OK"
+    },
+    {
+      "repo": "Comfy-Org/BiRefNet",
+      "revision": "25511f8787e51912e1480706b4e47b8f467fbf72",
+      "file": "background_removal/birefnet.safetensors",
+      "bytes": 444473596,
+      "license": "mit",
+      "licenseSource": "https://huggingface.co/Comfy-Org/BiRefNet",
+      "verdict": "OK"
+    }
+  ],
+  "totalWeightBytes": 42817106216
+}

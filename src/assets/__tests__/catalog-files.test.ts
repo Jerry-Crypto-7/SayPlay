@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { Box3, Mesh, Vector3 } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { parseGlb } from '../__fixtures__/gltf-node';
 import catalog from '../catalog.json';
 import { assetCatalogSchema } from '../schema';
 
@@ -26,7 +26,7 @@ describe('committed original GLB catalog', () => {
       const bytes = readFileSync(`public${lod.path}`);
       expect(createHash('sha256').update(bytes).digest('hex')).toBe(lod.hash);
       expect(bytes.length).toBe(lod.bytes);
-      const gltf = await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length), '');
+      const gltf = await parseGlb(bytes);
       const bounds = new Box3().setFromObject(gltf.scene, true);
       for (let axis = 0; axis < 3; axis++) {
         expect(bounds.min.getComponent(axis)).toBeGreaterThanOrEqual(asset.bounds.min[axis] - 1e-6);
@@ -51,7 +51,7 @@ describe('committed original GLB catalog', () => {
     const person = catalog.assets.find((a) => a.assetId === 'seated-person')!;
     expect(person.bounds.max[1]).toBeGreaterThan(1.4); expect(person.bounds.max[1]).toBeLessThan(1.5);
     const bytes = readFileSync(`public${person.lods[0].path}`);
-    const gltf = await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length), '');
+    const gltf = await parseGlb(bytes);
     expect(gltf.scene.getObjectByName('nose')!.position.z).toBeGreaterThan(gltf.scene.getObjectByName('head')!.position.z);
     const door = catalog.assets.find((a) => a.assetId === 'panel-door')!;
     expect(door.bounds.max[1]).toBeCloseTo(2.2);

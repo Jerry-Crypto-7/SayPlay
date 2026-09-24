@@ -43,7 +43,8 @@ import { Box3, Matrix4, Vector3 } from 'three';
 
 import { bakePlacements, compilePlacements, type GeomPlacement } from '@/geom/placements';
 import { childIndicesOf, placedFrom, separableFrom, type GeomNode } from '@/geom/program';
-import { blueprintRejectionSentence, type BlueprintOutcome } from '@/model/worldstream-repair';
+import { blueprintRejectionSentence } from '@/model/blueprint-rejection';
+import type { BlueprintOutcome } from '@/model/worldstream-repair';
 import {
   MeshBudgetError,
   MeshEmptyError,
@@ -58,7 +59,6 @@ import { visualPreviewSchema, type VisualPreview, type WorldstreamBlueprint } fr
 type VisualScene = Pick<WorldstreamBlueprint, 'geometry' | 'objects' | 'shapes' | 'sceneSpec' | 'intent' | 'title' | 'sessionSeed'> & { readonly lookBindings?: WorldstreamBlueprint['lookBindings'] };
 import { boundsCenter, slotFromAsset, slotFromForm, slotFromWorldForm, type SemanticSlot } from './slots';
 import type { AssetManifest } from '@/assets/manifest';
-import { WORLDSTREAM_ASSETS } from '@/assets/catalog';
 import { sceneEnvironment, type SceneEnvironment } from '@/scene/environment';
 import { readSurface } from '@/assets/materials';
 import type { AssetReference } from '@/assets/schema';
@@ -813,6 +813,13 @@ async function buildVisualProxyFrom(blueprint: VisualScene, deps: ProxyDeps): Pr
   const placed = placedFrom(blueprint.geometry.nodes, blueprint.geometry.root);
   const separable = separableFrom(blueprint.geometry.nodes, blueprint.geometry.root);
 
+  // Plný katalog (1,2 MB) se stáhne až scéna s assetem – arkáda ho nepotřebuje a stránka ho nenese.
+  const assets =
+    deps.assets ??
+    (blueprint.objects.some((object) => object.source.kind === 'asset')
+      ? (await import('@/assets/catalog')).WORLDSTREAM_ASSETS
+      : undefined);
+
   const slots: ProxySlot[] = blueprint.objects.map((object) => {
     const clay = (reason: string, drawn = true): ProxySlot => ({
       slot: slotFromWorldForm(object, object.targetBounds),
@@ -820,7 +827,7 @@ async function buildVisualProxyFrom(blueprint: VisualScene, deps: ProxyDeps): Pr
     });
 
     if (object.source.kind === 'asset') {
-      const resolved = (deps.assets ?? WORLDSTREAM_ASSETS).resolve(object.source);
+      const resolved = assets?.resolve(object.source);
       if (!resolved?.ok) return clay(resolved?.reason ?? 'Asset catalog is unavailable');
       return {
         slot: slotFromAsset(object, resolved.asset),

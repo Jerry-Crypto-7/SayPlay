@@ -1,0 +1,511 @@
+{
+  "cache": "D:/claude/_cc0-cache",
+  "packs": [
+    {
+      "pack": "kenney-food-kit",
+      "url": "https://kenney.nl/media/pages/assets/food-kit/83086fa91c-1719418518/kenney_food-kit.zip",
+      "sha256": "cdad90853682499b94c9fda2f87678b24bfd8f3264e0ed323f6b6a27fd7c6f6f",
+      "bytes": 4606270,
+      "licenseFile": "<cache>/kenney-food-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 200
+    },
+    {
+      "pack": "kenney-furniture-kit",
+      "url": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip",
+      "sha256": "e67652d0932cee41683f74711c03d3e192a2af9979ef8e6b237711f5482d46b0",
+      "bytes": 5130729,
+      "licenseFile": "<cache>/kenney-furniture-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 140
+    },
+    {
+      "pack": "kenney-nature-kit",
+      "url": "https://kenney.nl/media/pages/assets/nature-kit/37ac38a37b-1677698939/kenney_nature-kit.zip",
+      "sha256": "fa7974a0d342bfe63c38664ba9f8ec1a4aab8ea25f099bdc56870e33588c4d9d",
+      "bytes": 10537521,
+      "licenseFile": "<cache>/kenney-nature-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 329
+    },
+    {
+      "pack": "kenney-holiday-kit",
+      "url": "https://kenney.nl/media/pages/assets/holiday-kit/3976a6496a-1733923970/kenney_holiday-kit.zip",
+      "sha256": "fde4d514d7297388d98058e8933ff614e071886f7ce57f9aea4b00d7698dd769",
+      "bytes": 4482244,
+      "licenseFile": "<cache>/kenney-holiday-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 99
+    },
+    {
+      "pack": "kenney-pirate-kit",
+      "url": "https://kenney.nl/media/pages/assets/pirate-kit/e6d4bb1525-1771333093/kenney_pirate-kit.zip",
+      "sha256": "667ed2caf92954ddb98f7b7cede831fe99ab75063c26b25e23d32715bee9c943",
+      "bytes": 3154665,
+      "licenseFile": "<cache>/kenney-pirate-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 72
+    },
+    {
+      "pack": "kenney-graveyard-kit",
+      "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip",
+      "sha256": "1a93613f2e5675f3310acf49ec9ef13ae7adeb756ac3b205bfb6cc9311a81062",
+      "bytes": 3623408,
+      "licenseFile": "<cache>/kenney-graveyard-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 91
+    },
+    {
+      "pack": "kenney-blaster-kit",
+      "url": "https://kenney.nl/media/pages/assets/blaster-kit/261d80a716-1753959510/kenney_blaster-kit_2.1.zip",
+      "sha256": "91e3093e95427d59625e7e2ce2d0399b861600160fd0b4ada7714796b67cea8c",
+      "bytes": 1724676,
+      "licenseFile": "<cache>/kenney-blaster-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 40
+    },
+    {
+      "pack": "kenney-car-kit",
+      "url": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip",
+      "sha256": "fac7dacac5c7874348cf19729af3ef205f3d366493edaf0a827d93f4fdf3d0c4",
+      "bytes": 4814237,
+      "licenseFile": "<cache>/kenney-car-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 50
+    },
+    {
+      "pack": "kenney-castle-kit",
+      "url": "https://kenney.nl/media/pages/assets/castle-kit/a395102d20-1711543616/kenney_castle-kit.zip",
+      "sha256": "921f3f73927bb23106cae34bc21d5ab4b033a9fc120475e96f714a406e3169df",
+      "bytes": 2232589,
+      "licenseFile": "<cache>/kenney-castle-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 76
+    },
+    {
+      "pack": "kenney-survival-kit",
+      "url": "https://kenney.nl/media/pages/assets/survival-kit/4065a8185b-1712149243/kenney_survival-kit.zip",
+      "sha256": "c3586341b5932c87eb43d75d915434f47daed168b17ed36a03e8ca9977c7443e",
+      "bytes": 1948174,
+      "licenseFile": "<cache>/kenney-survival-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 80
+    },
+    {
+      "pack": "kenney-train-kit",
+      "url": "https://kenney.nl/media/pages/assets/train-kit/cf8521d625-1727040883/kenney_train-kit.zip",
+      "sha256": "cf50d77e8cbacbf38dd50826d4bce5392db8e4f67373d3c4e583b0ed0e474475",
+      "bytes": 5266588,
+      "licenseFile": "<cache>/kenney-train-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 103
+    },
+    {
+      "pack": "kenney-cube-pets",
+      "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip",
+      "sha256": "b3bdc99a2ec92c687b875718c5d01e9231d2711ed0e2845f295b474bb42a1283",
+      "bytes": 2812444,
+      "licenseFile": "<cache>/kenney-cube-pets.license.txt",
+      "license": "CC0-1.0",
+      "models": 24
+    },
+    {
+      "pack": "kenney-platformer-kit",
+      "url": "https://kenney.nl/media/pages/assets/platformer-kit/1585cf62b4-1775122253/kenney_platformer-kit.zip",
+      "sha256": "899605d237367688c6b42e41fff2206c0fb8d626163158294556353f7baa7c1b",
+      "bytes": 4640135,
+      "licenseFile": "<cache>/kenney-platformer-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 153
+    },
+    {
+      "pack": "kenney-toy-car-kit",
+      "url": "https://kenney.nl/media/pages/assets/toy-car-kit/42e19cc426-1736346027/kenney_toy-car-kit.zip",
+      "sha256": "26c11bbb77102b8dd00cdaf7b2c7ab692416d750dd064de886d809acec346782",
+      "bytes": 5245353,
+      "licenseFile": "<cache>/kenney-toy-car-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 157
+    },
+    {
+      "pack": "kenney-space-kit",
+      "url": "https://kenney.nl/media/pages/assets/space-kit/20874c75ac-1677698978/kenney_space-kit.zip",
+      "sha256": "d5d7cdf2635ed5a43a9187deaf409b6f47484e402321128341d3c3698e9ef4d9",
+      "bytes": 6677531,
+      "licenseFile": "<cache>/kenney-space-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 153
+    },
+    {
+      "pack": "kenney-mini-dungeon",
+      "url": "https://kenney.nl/media/pages/assets/mini-dungeon/6cd72dc849-1785314274/kenney_mini-dungeon.zip",
+      "sha256": "19c4648680cb1d2e8836cade96cbf9781c0c1f45fbc6d2ce41cee8239a3ec4d8",
+      "bytes": 1796820,
+      "licenseFile": "<cache>/kenney-mini-dungeon.license.txt",
+      "license": "CC0-1.0",
+      "models": 30
+    },
+    {
+      "pack": "kenney-fantasy-town-kit",
+      "url": "https://kenney.nl/media/pages/assets/fantasy-town-kit/efe948d309-1754222374/kenney_fantasy-town-kit_2.0.zip",
+      "sha256": "1a7530c09f4d2fa2cdee259876f089334f8b1f27fa86a0c4f54ef86cdd8676ef",
+      "bytes": 3854691,
+      "licenseFile": "<cache>/kenney-fantasy-town-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 167
+    },
+    {
+      "pack": "kenney-mini-market",
+      "url": "https://kenney.nl/media/pages/assets/mini-market/463f38da51-1729865423/kenney_mini-market.zip",
+      "sha256": "6f2e69090e359204ace43e4c98dc3fb8639b75e423109672b5c890d194c45203",
+      "bytes": 1135859,
+      "licenseFile": "<cache>/kenney-mini-market.license.txt",
+      "license": "CC0-1.0",
+      "models": 20
+    },
+    {
+      "pack": "kenney-minigolf-kit",
+      "url": "https://kenney.nl/media/pages/assets/minigolf-kit/3ae60d8b01-1741163874/kenney_minigolf-kit.zip",
+      "sha256": "74b7bf5cf82bf8a5225319ade1284600c64f9482ae66f0ccf1f22d2212d5a952",
+      "bytes": 3163116,
+      "licenseFile": "<cache>/kenney-minigolf-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 126
+    },
+    {
+      "pack": "kenney-city-kit-commercial",
+      "url": "https://kenney.nl/media/pages/assets/city-kit-commercial/a742d900eb-1753115042/kenney_city-kit-commercial_2.1.zip",
+      "sha256": "f8b09b081c2bb88bcc126e2dec1cb40fd0dad7e7e591b6c26aaefe96fb35276b",
+      "bytes": 4096974,
+      "licenseFile": "<cache>/kenney-city-kit-commercial.license.txt",
+      "license": "CC0-1.0",
+      "models": 41
+    },
+    {
+      "pack": "kenney-city-kit-suburban",
+      "url": "https://kenney.nl/media/pages/assets/city-kit-suburban/2c871b7af2-1745479373/kenney_city-kit-suburban_20.zip",
+      "sha256": "5869c35cf30b1c87bdb2d197b6d325eebadd2ef08ea27f04797e8e08d77a9a39",
+      "bytes": 3038740,
+      "licenseFile": "<cache>/kenney-city-kit-suburban.license.txt",
+      "license": "CC0-1.0",
+      "models": 40
+    },
+    {
+      "pack": "kenney-tower-defense-kit",
+      "url": "https://kenney.nl/media/pages/assets/tower-defense-kit/a402493eaa-1726471567/kenney_tower-defense-kit.zip",
+      "sha256": "d4c887680b709218315e4e1c17ae18c160635dcdfc4199763eeba97c02c77f00",
+      "bytes": 5404433,
+      "licenseFile": "<cache>/kenney-tower-defense-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 160
+    },
+    {
+      "pack": "kenney-factory-kit",
+      "url": "https://kenney.nl/media/pages/assets/factory-kit/edaac9d4f6-1777639602/kenney_factory-kit_3.0.zip",
+      "sha256": "7e31fb2308e90304672bd15cd18fa9d9f02c03731a8cbc57a8e3e1c181dfb0a7",
+      "bytes": 4511890,
+      "licenseFile": "<cache>/kenney-factory-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 143
+    },
+    {
+      "pack": "kenney-space-station-kit",
+      "url": "https://kenney.nl/media/pages/assets/space-station-kit/6475288f2e-1712749919/kenney_space-station-kit.zip",
+      "sha256": "215e79bd5415cff93665183390f0343ed9acf87780306331013b78520170c6d8",
+      "bytes": 1835875,
+      "licenseFile": "<cache>/kenney-space-station-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 97
+    },
+    {
+      "pack": "kaykit-furniture-bits",
+      "url": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0/zip/refs/heads/main",
+      "sha256": "973ba87b154d7e734531253314df07e8b1bf2d76cda2a79dc63ee9bc07af9a02",
+      "bytes": 667531,
+      "licenseFile": "<cache>/kaykit-furniture-bits.license.txt",
+      "license": "CC0-1.0",
+      "models": 53
+    },
+    {
+      "pack": "kaykit-restaurant-bits",
+      "url": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0/zip/refs/heads/main",
+      "sha256": "83abc343a8bc5f275e5bec99e544a8fa2b66e9e49ee24af4fa446042fc321c07",
+      "bytes": 3130929,
+      "licenseFile": "<cache>/kaykit-restaurant-bits.license.txt",
+      "license": "CC0-1.0",
+      "models": 144
+    },
+    {
+      "pack": "kaykit-halloween-bits",
+      "url": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0/zip/refs/heads/main",
+      "sha256": "dcef4652aa47155fa9506717645a9b236c5c7f44c0a57fc9634ff933fd931c88",
+      "bytes": 1152943,
+      "licenseFile": "<cache>/kaykit-halloween-bits.license.txt",
+      "license": "CC0-1.0",
+      "models": 63
+    },
+    {
+      "pack": "kaykit-city-builder-bits",
+      "url": "https://codeload.github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0/zip/refs/heads/main",
+      "sha256": "0d1a41ef653751fcd718a57531c29d600be61eb71700cb7f062f75cdea0d7e0b",
+      "bytes": 958876,
+      "licenseFile": "<cache>/kaykit-city-builder-bits.license.txt",
+      "license": "CC0-1.0",
+      "models": 41
+    },
+    {
+      "pack": "kaykit-space-base-bits",
+      "url": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Space-Base-Bits-1.0/zip/refs/heads/main",
+      "sha256": "b6b384378f38f60fbfb0bb187b71387885261dd67beba4ccfcc4a681d820a6e8",
+      "bytes": 1101131,
+      "licenseFile": "<cache>/kaykit-space-base-bits.license.txt",
+      "license": "CC0-1.0",
+      "models": 57
+    },
+    {
+      "pack": "kaykit-dungeon-remastered",
+      "url": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0/zip/refs/heads/main",
+      "sha256": "8e92aa460f5be4252dff0cf030f92846ab74b875ce4756076ecce75b5d0c9bee",
+      "bytes": 6312130,
+      "licenseFile": "<cache>/kaykit-dungeon-remastered.license.txt",
+      "license": "CC0-1.0",
+      "models": 203
+    },
+    {
+      "pack": "kaykit-prototype-bits",
+      "url": "https://codeload.github.com/KayKit-Game-Assets/KayKit-Prototype-Bits-1.0/zip/refs/heads/main",
+      "sha256": "b209d9a1be4d84cc504fa6f65d9e5aa57acb46829e1cddf770eef3a8a21d0d31",
+      "bytes": 751448,
+      "licenseFile": "<cache>/kaykit-prototype-bits.license.txt",
+      "license": "CC0-1.0",
+      "models": 72
+    },
+    {
+      "pack": "quaternius-ultimate-animated-animals",
+      "url": "https://drive.google.com/drive/folders/1uJ3N5HfB7jKTseJUNQr3N4YaN0UuEtHk",
+      "sha256": "e424a1bba990bced8d5402293f8f73faacc04ac7df3efc7aebac01b346715185",
+      "bytes": 37248486,
+      "licenseFile": "<cache>/quaternius-ultimate-animated-animals.license.txt",
+      "license": "CC0-1.0",
+      "models": 12
+    },
+    {
+      "pack": "quaternius-farm-animals",
+      "url": "https://drive.google.com/drive/folders/1is1ax2V0mIEDS7BbbzBV_x2Pabya1dVJ",
+      "sha256": "a5a869c7d87da176d9b6ad82d096afba37a1547ae3afc15274f0bde211dc58bd",
+      "bytes": 252531,
+      "licenseFile": "<cache>/quaternius-farm-animals.license.txt",
+      "license": "CC0-1.0",
+      "models": 7
+    },
+    {
+      "pack": "quaternius-animated-dinosaurs",
+      "url": "https://drive.google.com/drive/folders/1u5Fhu3ziuRlGonW6bUI7uClqBGoSNeF6",
+      "sha256": "e510d6fe59c0a66726f7a2a167a59af4ff949381927a8a73908c5a3441120b73",
+      "bytes": 447820,
+      "licenseFile": "<cache>/quaternius-animated-dinosaurs.license.txt",
+      "license": "CC0-1.0",
+      "models": 6
+    },
+    {
+      "pack": "quaternius-cute-fish",
+      "url": "https://drive.google.com/drive/folders/1QK5NCgIxUZ1cYGzVwaNfcfEiQhvczqUB",
+      "sha256": "33baf43ca34e63f8a1a9b3dfcc9fbdcf6461ebfbe99356c93f734261b648d02f",
+      "bytes": 3258509,
+      "licenseFile": "<cache>/quaternius-cute-fish.license.txt",
+      "license": "CC0-1.0",
+      "models": 52
+    },
+    {
+      "pack": "quaternius-ultimate-monsters",
+      "url": "https://drive.google.com/drive/folders/18m4KpzpEzhC9wl7jzr6dUc0N8Jozr79C",
+      "sha256": "98de2fef9e1aa82804b27aceba438398e116212bc8ee4c6e56bdf6b9bfaf36d2",
+      "bytes": 32219800,
+      "licenseFile": "<cache>/quaternius-ultimate-monsters.license.txt",
+      "license": "CC0-1.0",
+      "models": 50
+    },
+    {
+      "pack": "quaternius-cute-monsters",
+      "url": "https://drive.google.com/drive/folders/1zLLO_7ZoWgUsS4uooYnVSErQYRu1VdS0",
+      "sha256": "616d6971e822c316e51e71fbb5e9f65165b26f0789a9630be3e37e4a70e9d90f",
+      "bytes": 11196418,
+      "licenseFile": "<cache>/quaternius-cute-monsters.license.txt",
+      "license": "CC0-1.0",
+      "models": 21
+    },
+    {
+      "pack": "quaternius-rpg-characters",
+      "url": "https://drive.google.com/drive/folders/1MIRQXLfTd21HMI5rwOb6Xy0rv0xv1m8b",
+      "sha256": "7bca2dd938c5cd0c3437fbbc80aa77e6e3eafe9f484a387d5c72a5a96640890a",
+      "bytes": 17528945,
+      "licenseFile": "<cache>/quaternius-rpg-characters.license.txt",
+      "license": "CC0-1.0",
+      "models": 6
+    },
+    {
+      "pack": "quaternius-ultimate-animated-character",
+      "url": "https://drive.google.com/drive/folders/1sNi1AfenfPRrvRt5yfaj5QMMd6KKcUJ5",
+      "sha256": "c9b4545744aa3813fe39cfd15b9dbd5fc586cbbb673fcd4e4ef8104716a3dd91",
+      "bytes": 103547952,
+      "licenseFile": "<cache>/quaternius-ultimate-animated-character.license.txt",
+      "license": "CC0-1.0",
+      "models": 52
+    },
+    {
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "url": "https://drive.google.com/drive/folders/1mWP6sCHun7OUMHQeDNZLrXTteXlzWg_t",
+      "sha256": "81af4a45bcce4ced4ee5fd10455ac1a188d954dc0b1d285143f8acb072cd53b2",
+      "bytes": 33602773,
+      "licenseFile": "<cache>/quaternius-zombie-apocalypse-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 64
+    },
+    {
+      "pack": "quaternius-ultimate-food",
+      "url": "https://drive.google.com/drive/folders/1zMfN7q9VU80M7mLAbBBJyY2OdoXslbl1",
+      "sha256": "8ad146b05cc985ce357328b01384cb163f28689c26e8595efb920857cc2979dd",
+      "bytes": 2036586,
+      "licenseFile": "<cache>/quaternius-ultimate-food.license.txt",
+      "license": "CC0-1.0",
+      "models": 103
+    },
+    {
+      "pack": "quaternius-junk-food",
+      "url": "https://drive.google.com/drive/folders/127xt6nsl4Z-YRy-FZru38Sf6ElBWc8IU",
+      "sha256": "786590913797f1522611429d19adab56b795f0c5c333d1c7ec129604cb377102",
+      "bytes": 381581,
+      "licenseFile": "<cache>/quaternius-junk-food.license.txt",
+      "license": "CC0-1.0",
+      "models": 16
+    },
+    {
+      "pack": "quaternius-sushi-restaurant-kit",
+      "url": "https://drive.google.com/drive/folders/1srOaThdSqYBtmrqq9couZShM5r0cw_bH",
+      "sha256": "838cb44c3ad8638cd27b87060c8127a8501789ef08213e49e16c456be08733d7",
+      "bytes": 41863440,
+      "licenseFile": "<cache>/quaternius-sushi-restaurant-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 117
+    },
+    {
+      "pack": "quaternius-ultimate-nature",
+      "url": "https://drive.google.com/drive/folders/1-Kl0L_Jg8awbh0S5T-z3zxh4mVlnxTpa",
+      "sha256": "be8061fd6aec7fc8de5bcb2f320b2ef5cfd6134c16184f6bc04f6a49a1d7fb29",
+      "bytes": 8698356,
+      "licenseFile": "<cache>/quaternius-ultimate-nature.license.txt",
+      "license": "CC0-1.0",
+      "models": 150
+    },
+    {
+      "pack": "quaternius-ultimate-stylized-nature",
+      "url": "https://drive.google.com/drive/folders/1IV3bXHzkNvuNWFHPi4KPx-G4ghuxIuT-",
+      "sha256": "49d01262a6294ce81e28356fc50e1305440e9b79ca5d29153c346d4d43c1afbb",
+      "bytes": 103319967,
+      "licenseFile": "<cache>/quaternius-ultimate-stylized-nature.license.txt",
+      "license": "CC0-1.0",
+      "models": 36
+    },
+    {
+      "pack": "quaternius-medieval-weapons",
+      "url": "https://drive.google.com/drive/folders/1Z6vYiQxY8W73FXuMWzaTQAg9rzbumnOr",
+      "sha256": "1fb162833c7d00aa3e27cbd9b8e5198764bf678890a75384665f6ac87fc61643",
+      "bytes": 1071734,
+      "licenseFile": "<cache>/quaternius-medieval-weapons.license.txt",
+      "license": "CC0-1.0",
+      "models": 24
+    },
+    {
+      "pack": "quaternius-ultimate-gun",
+      "url": "https://drive.google.com/drive/folders/12V-mHNB6bnW2WzgpJfRBQd-TG4pOO3yx",
+      "sha256": "875ee6d189ace51a0dc4307584935ecf0defdecccc1a21802ae76d0dec53ee17",
+      "bytes": 2562106,
+      "licenseFile": "<cache>/quaternius-ultimate-gun.license.txt",
+      "license": "CC0-1.0",
+      "models": 55
+    },
+    {
+      "pack": "quaternius-toon-shooter-kit",
+      "url": "https://drive.google.com/drive/folders/1-BDs_EIyd6uiF2XuoyiZEcqnMQIJrE0C",
+      "sha256": "189d4d3d02d6d362678476fcbda6d3513a42f57f05f5d5e6dbe18d8646f85247",
+      "bytes": 11894462,
+      "licenseFile": "<cache>/quaternius-toon-shooter-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 74
+    },
+    {
+      "pack": "quaternius-cars",
+      "url": "https://drive.google.com/drive/folders/1fKlbDry77iY8KlEoxzUxIAZQL_XhzWlA",
+      "sha256": "445918829adf39219cbdd3692b699a9560ef92ffab675a92a5c56cb3a730adad",
+      "bytes": 990960,
+      "licenseFile": "<cache>/quaternius-cars.license.txt",
+      "license": "CC0-1.0",
+      "models": 7
+    },
+    {
+      "pack": "quaternius-public-transport",
+      "url": "https://drive.google.com/drive/folders/1GUIE138uPVNraiQEf33dIx9wENhttZ15",
+      "sha256": "58aad93d9f39a438b6981f63322f61e038655d70e09389b79292e509c3214ba5",
+      "bytes": 550551,
+      "licenseFile": "<cache>/quaternius-public-transport.license.txt",
+      "license": "CC0-1.0",
+      "models": 12
+    },
+    {
+      "pack": "quaternius-ultimate-spaceships",
+      "url": "https://drive.google.com/drive/folders/1NpfT3wqe2k3Jwue2xryi7tzxP4bWzETu",
+      "sha256": "19e142761581a9bf0a1df0513a2ca42c08d311e64d058ddea76e3a945d30863f",
+      "bytes": 44925998,
+      "licenseFile": "<cache>/quaternius-ultimate-spaceships.license.txt",
+      "license": "CC0-1.0",
+      "models": 11
+    },
+    {
+      "pack": "quaternius-ultimate-space-kit",
+      "url": "https://drive.google.com/drive/folders/17F8HlI2zPTlo32aieW5YPPwOk78xo-2m",
+      "sha256": "aacd0667e2384853e7a874ddd021795927838513a088d53083793ab3640aba27",
+      "bytes": 19898871,
+      "licenseFile": "<cache>/quaternius-ultimate-space-kit.license.txt",
+      "license": "CC0-1.0",
+      "models": 92
+    },
+    {
+      "pack": "quaternius-ultimate-platformer",
+      "url": "https://drive.google.com/drive/folders/1NDZn_aGnn0vfFV3M22Y8GPcDjO8BVcLs",
+      "sha256": "ed5d772403927473c575912974cbfb316e956c9c36a4f3881196b665d52f9492",
+      "bytes": 6480713,
+      "licenseFile": "<cache>/quaternius-ultimate-platformer.license.txt",
+      "license": "CC0-1.0",
+      "models": 111
+    },
+    {
+      "pack": "quaternius-ultimate-furniture",
+      "url": "https://drive.google.com/drive/folders/1n85oUi0RN5ZUXEIMKA-AnBsPErVXWcma",
+      "sha256": "4a2c5b0c43dfbf818d59b75acb3be69d367d33040e21fbdba1ecdd2887b6c56d",
+      "bytes": 2309268,
+      "licenseFile": "<cache>/quaternius-ultimate-furniture.license.txt",
+      "license": "CC0-1.0",
+      "models": 20
+    },
+    {
+      "pack": "quaternius-stylized-nature-megakit",
+      "url": "https://quaternius.com/packs/stylizednaturemegakit.html",
+      "skipped": "only on itch.io, needs a click – download the zip from https://quaternius.itch.io/stylized-nature-megakit into D:/claude/_cc0-cache/manual/quaternius-stylized-nature-megakit.zip"
+    },
+    {
+      "pack": "quaternius-fantasy-props-megakit",
+      "url": "https://quaternius.com/packs/fantasypropsmegakit.html",
+      "skipped": "only on itch.io, needs a click – download the zip from https://quaternius.itch.io/fantasy-props-megakit into D:/claude/_cc0-cache/manual/quaternius-fantasy-props-megakit.zip"
+    },
+    {
+      "pack": "quaternius-sci-fi-essentials-kit",
+      "url": "https://quaternius.com/packs/scifiessentialskit.html",
+      "skipped": "only on itch.io, needs a click – download the zip from https://quaternius.itch.io/sci-fi-essentials-kit into D:/claude/_cc0-cache/manual/quaternius-sci-fi-essentials-kit.zip"
+    },
+    {
+      "pack": "quaternius-universal-base-characters",
+      "url": "https://quaternius.com/packs/universalbasecharacters.html",
+      "skipped": "only on itch.io, needs a click – download the zip from https://quaternius.itch.io/universal-base-characters into D:/claude/_cc0-cache/manual/quaternius-universal-base-characters.zip"
+    }
+  ]
+}

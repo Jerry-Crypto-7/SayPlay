@@ -1,0 +1,756 @@
+{
+  "cacheDir": "D:/claude/_cc0-cache/rigged",
+  "sources": [
+    {
+      "id": "kaykit-adventurers",
+      "name": "KayKit Character Pack: Adventurers 1.0",
+      "author": "Kay Lousberg",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "license": "CC0-1.0",
+      "licenseFile": "kaykit-adventurers/LICENSE.txt",
+      "status": "fetched",
+      "files": [
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Barbarian.glb",
+          "path": "kaykit-adventurers/Barbarian.glb",
+          "sha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6",
+          "bytes": 3613268
+        },
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb",
+          "path": "kaykit-adventurers/Knight.glb",
+          "sha256": "60428e3abc09ba83e595d256e3af8c5c976b46cdae599f0802fc82b4a3445168",
+          "bytes": 3659532
+        },
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Mage.glb",
+          "path": "kaykit-adventurers/Mage.glb",
+          "sha256": "cf898585da33fab50c724d31605fb931eb2912e6d2280092141e98ca81ad507d",
+          "bytes": 3589240
+        },
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue.glb",
+          "path": "kaykit-adventurers/Rogue.glb",
+          "sha256": "e825437cd4d2ee9c1960b517a74a69101e33eb409ae7fa8cedc7134a998fbb7d",
+          "bytes": 3616284
+        },
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue_Hooded.glb",
+          "path": "kaykit-adventurers/Rogue_Hooded.glb",
+          "sha256": "93e6e25213009952276d9cf34f5d96a243767334c66f280db0433ddfabb91545",
+          "bytes": 3597652
+        }
+      ]
+    },
+    {
+      "id": "kaykit-skeletons",
+      "name": "KayKit Character Pack: Skeletons 1.0",
+      "author": "Kay Lousberg",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "license": "CC0-1.0",
+      "licenseFile": "kaykit-skeletons/LICENSE.txt",
+      "status": "fetched",
+      "files": [
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Mage.glb",
+          "path": "kaykit-skeletons/Skeleton_Mage.glb",
+          "sha256": "e05b0f5cfa395271c9f75fd07c0a0613c56f401ece4ab644e080001a79971075",
+          "bytes": 4761048
+        },
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Minion.glb",
+          "path": "kaykit-skeletons/Skeleton_Minion.glb",
+          "sha256": "6ffc003f895bed0b074791e0e490846210a2e2f8fc7da300aba53cc185f95968",
+          "bytes": 4814296
+        },
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Rogue.glb",
+          "path": "kaykit-skeletons/Skeleton_Rogue.glb",
+          "sha256": "4003f2b77891bb56f7e0de7d555abcb497aebbcaee35b614211f16275f9ccae3",
+          "bytes": 4827024
+        },
+        {
+          "url": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Warrior.glb",
+          "path": "kaykit-skeletons/Skeleton_Warrior.glb",
+          "sha256": "178b6fda810b814c250d8a2010c24dfd9b458b9006dd323353e620b7ff118bbe",
+          "bytes": 4863620
+        }
+      ]
+    },
+    {
+      "id": "quaternius-ual",
+      "name": "Quaternius Universal Animation Library (Standard, glTF mirror)",
+      "author": "Quaternius",
+      "page": "https://github.com/J-Ponzo/gltf-universal-animation-library",
+      "license": "CC0-1.0",
+      "licenseFile": "quaternius-ual/LICENSE.txt",
+      "status": "fetched",
+      "files": [
+        {
+          "url": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/main/glTF/AnimationLibrary_Godot_Standard.gltf",
+          "path": "quaternius-ual/AnimationLibrary_Godot_Standard.gltf",
+          "sha256": "0ff075c7ad6855c5c2c37a171592ee8f0d6ab2f58259e2be77a9b63dd8027765",
+          "bytes": 2459987
+        },
+        {
+          "url": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/main/glTF/AnimationLibrary_Godot_Standard.bin",
+          "path": "quaternius-ual/AnimationLibrary_Godot_Standard.bin",
+          "sha256": "6e65377d81558333c4093dbb144a48fd19019343d82b1a3a7992a98ec0e0543c",
+          "bytes": 1587224
+        }
+      ]
+    },
+    {
+      "id": "quaternius-ubc",
+      "name": "Quaternius Universal Base Characters",
+      "page": "https://quaternius.com/packs/universalbasecharacters.html",
+      "license": "CC0-1.0",
+      "status": "skipped",
+      "reason": "download goes through itch.io / Google Drive and needs a click; no mirror with a licence file found"
+    },
+    {
+      "id": "kenney-mini-characters",
+      "name": "Kenney Mini Characters",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/mini-characters",
+      "license": "CC0-1.0",
+      "licenseFile": "kenney-mini-characters/LICENSE.txt",
+      "status": "fetched",
+      "files": [
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/FBX format/Textures/colormap.png",
+          "path": "kenney-mini-characters/Models/FBX format/Textures/colormap.png",
+          "sha256": "0d4947d34ff32acf4a359c7f22ca784e057e7e72f622170a9a77b6fc88fdb70e",
+          "bytes": 8706
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/Textures/colormap.png",
+          "path": "kenney-mini-characters/Models/GLB format/Textures/colormap.png",
+          "sha256": "0d4947d34ff32acf4a359c7f22ca784e057e7e72f622170a9a77b6fc88fdb70e",
+          "bytes": 8706
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-cane-blind.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-cane-blind.glb",
+          "sha256": "b4cea9fee317e70ebbdb2c2396ff08ec1b1f532db526a81111302b40c813dea6",
+          "bytes": 6168
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-cane-low-vision.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-cane-low-vision.glb",
+          "sha256": "5e0e9547669e92df8560e8532017379f0f48f29b06dce20e35d5796f23e9a1df",
+          "bytes": 6568
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-cane.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-cane.glb",
+          "sha256": "cf7da205d71bfa531cc5839430392efc8f5c58887e65fe0d3c1e226776c7352a",
+          "bytes": 8524
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-crutch.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-crutch.glb",
+          "sha256": "322cd65cea0acb5eefa8a7a085a33bc6215bcbf962f8f691d41c64980223ccf2",
+          "bytes": 16008
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-defibrillator-green.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-defibrillator-green.glb",
+          "sha256": "f8513662ae769afd7e277a28176bda2aff8c0f3cb096ee7bfa0e8d6cd92793a6",
+          "bytes": 10296
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-defibrillator-red.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-defibrillator-red.glb",
+          "sha256": "5f4e6496a934030bafce051fa741e4d84d013edd05f423662e8307643e1454e5",
+          "bytes": 10288
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-glasses.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-glasses.glb",
+          "sha256": "adb8bb84ba24413068e28a800ccb8cc50060c77dc28df4cdddaee6c4d30b6289",
+          "bytes": 6764
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-mask.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-mask.glb",
+          "sha256": "92a77b92df28883f363e0b79ee0d6f0510fcd9bca7f5efa1b540e0fce4a67987",
+          "bytes": 15820
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid-sunglasses.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid-sunglasses.glb",
+          "sha256": "5532a56de76274c80941b44fd5c96ba2636ab211d17987e3944ecb5051e88020",
+          "bytes": 6324
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/aid_hearing.glb",
+          "path": "kenney-mini-characters/Models/GLB format/aid_hearing.glb",
+          "sha256": "4e7579b5ec8d8b3f2c3d88f448e54a79683f4f824755247ddc27f6c6d7ea7c01",
+          "bytes": 7212
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-a.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-female-a.glb",
+          "sha256": "8cfcff43460da8b421f2a7fdfb43ec177321cad2746db9497cbf128d5806e2a8",
+          "bytes": 273448
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-b.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-female-b.glb",
+          "sha256": "2288438e7baf9acc91a870c82dc00d66710bb486592cfc3474ef8ed93a03863a",
+          "bytes": 252140
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-c.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-female-c.glb",
+          "sha256": "3cd9e1b5d6409fce0ba1af617d9e008c3069493185a4c100f49fb99a2626a055",
+          "bytes": 252040
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-d.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-female-d.glb",
+          "sha256": "67f61708743bd34f91a4c2ba8160b61bf2e7d4ec2ca6647dfe99873422561410",
+          "bytes": 258760
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-e.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-female-e.glb",
+          "sha256": "3ee3939f80d718945fcb9199f909a92c39669e38aeec7f544536b5dce6e79f98",
+          "bytes": 248012
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-f.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-female-f.glb",
+          "sha256": "2ff4311897bfaf99be80d2fa13918db30f506607da0291640b2609d82b70e0ca",
+          "bytes": 259488
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-a.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-male-a.glb",
+          "sha256": "77572792bfe2773b715b8cd8e18644b52b3e1f155fe10450254b50f9c364382a",
+          "bytes": 246916
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-b.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-male-b.glb",
+          "sha256": "791fc0c203924c175c0a3d5b60d030daf36797b039506689cf7cd01ef5253b3c",
+          "bytes": 247332
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-c.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-male-c.glb",
+          "sha256": "672a6506f7475bbd655da1d7ff712c1729a430f134c62385a4e5d3c1378acb40",
+          "bytes": 263104
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-d.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-male-d.glb",
+          "sha256": "dd12b2e75ffb1cdb45aaec3916c3d6e732929ccb4a8b89b946f69baaabfa64da",
+          "bytes": 245184
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-e.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-male-e.glb",
+          "sha256": "cd76681090ce29861b055b0f8b2bdcf84bfccc4ca816f428df42a9bb76d6e1b6",
+          "bytes": 242704
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-f.glb",
+          "path": "kenney-mini-characters/Models/GLB format/character-male-f.glb",
+          "sha256": "ed151fc47c5cd6be9693c524e92f045170c965819f4f81b28ed66dcc3c1085bf",
+          "bytes": 249388
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/wheelchair-deluxe.glb",
+          "path": "kenney-mini-characters/Models/GLB format/wheelchair-deluxe.glb",
+          "sha256": "b72046e5ce52770fc7d7cf36623d7599e7247d6071659a39df915a9fc62e942f",
+          "bytes": 60588
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/wheelchair-power-deluxe.glb",
+          "path": "kenney-mini-characters/Models/GLB format/wheelchair-power-deluxe.glb",
+          "sha256": "de6016ef540ce2849420e73264303cd9eaea37d335037990037fd33296c9caf4",
+          "bytes": 90512
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/wheelchair-power.glb",
+          "path": "kenney-mini-characters/Models/GLB format/wheelchair-power.glb",
+          "sha256": "b930df2def526f066295e24a441d4406df4ef9183997e5bb6a6740608346929c",
+          "bytes": 76664
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/wheelchair.glb",
+          "path": "kenney-mini-characters/Models/GLB format/wheelchair.glb",
+          "sha256": "cb7b6cbebc7bbe238ae926b26305661eb66e17659fafa8fa0c098f5e7955fabe",
+          "bytes": 56680
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/OBJ format/Textures/colormap.png",
+          "path": "kenney-mini-characters/Models/OBJ format/Textures/colormap.png",
+          "sha256": "0d4947d34ff32acf4a359c7f22ca784e057e7e72f622170a9a77b6fc88fdb70e",
+          "bytes": 8706
+        }
+      ]
+    },
+    {
+      "id": "kenney-blocky-characters",
+      "name": "Kenney Blocky Characters",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/blocky-characters",
+      "license": "CC0-1.0",
+      "licenseFile": "kenney-blocky-characters/LICENSE.txt",
+      "status": "fetched",
+      "files": [
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-a.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-a.png",
+          "sha256": "257e944c582ce7cda206fbd8ceb717be648f9721756baf377a36478c11c0059a",
+          "bytes": 20171
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-b.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-b.png",
+          "sha256": "c614148428fbf63ab701ab95e2ebe0b6103ea0e2e6212c986d8931899bad7692",
+          "bytes": 15606
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-c.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-c.png",
+          "sha256": "582a62eae6ca086f65e6bfdde16d0d1d15a95fdaf484c0def4769d5a47ba1c8e",
+          "bytes": 12829
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-d.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-d.png",
+          "sha256": "c61bc29ec4d96229b979fc9196500afac13c2b448bbab1085832354fb4ef849a",
+          "bytes": 13151
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-e.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-e.png",
+          "sha256": "6bbdb4f76b8d2ba7feb1ad8e4a341ca87afd655a4f061c77a86c400ad3125049",
+          "bytes": 14509
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-f.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-f.png",
+          "sha256": "54404f22588bac5a7f8df09c2aac0520e101a6f32944ce4070f550d7ad80c6f7",
+          "bytes": 15886
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-g.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-g.png",
+          "sha256": "cce3f8d545625998c27e91016672366eb84f21bbc520f8227022c23d0dd557fc",
+          "bytes": 16069
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-h.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-h.png",
+          "sha256": "7d908f3f12ac56b3debc5036dd962e2151c151f7a379cb37fe757a6ab4147536",
+          "bytes": 16215
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-i.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-i.png",
+          "sha256": "2c721b0a8837836ab0bf0eb0de12ca14e5d518ccba7420b8c673ed4600dc6b63",
+          "bytes": 14496
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-j.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-j.png",
+          "sha256": "11b6625d2d3119c9340fe93095374c45687be00fc7d1256c1f8db7d78cd7b531",
+          "bytes": 17576
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-k.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-k.png",
+          "sha256": "4e063c40b02955bab6cb177268f56d8837346cb9661c4022ac79310bd80774fc",
+          "bytes": 17437
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-l.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-l.png",
+          "sha256": "437c06e18a41def8449afb84c843b819927c7f8b423e653cd669c1f60c3e0741",
+          "bytes": 22764
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-m.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-m.png",
+          "sha256": "ee5652737837e662a756d66828218b2b784a6990eeee8c4e1e95a1f70d1af994",
+          "bytes": 19343
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-n.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-n.png",
+          "sha256": "b4af32a544b70da2ba99c6a142f33f0c5ee50a06b71ca71f8ac928bb5a15bb64",
+          "bytes": 16824
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-o.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-o.png",
+          "sha256": "782e0873431934fc39d8ebd48a3283085619863a7477508099a66c3734a6b479",
+          "bytes": 21064
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-p.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-p.png",
+          "sha256": "29176841e85fa8547322cf74ea34051c2b531039867de317f51728c4e54eef88",
+          "bytes": 18000
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-q.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-q.png",
+          "sha256": "bf220bbc945072a4fce31118b6585207445ddac1c2836b350d10fe0d49fed5ca",
+          "bytes": 16102
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/FBX format/Textures/texture-r.png",
+          "path": "kenney-blocky-characters/Models/FBX format/Textures/texture-r.png",
+          "sha256": "fd29fd9fc745ca7b4231d704830b7508a3ec6894c54eeacc6cff722e851d9236",
+          "bytes": 13909
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-a.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-a.png",
+          "sha256": "257e944c582ce7cda206fbd8ceb717be648f9721756baf377a36478c11c0059a",
+          "bytes": 20171
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-b.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-b.png",
+          "sha256": "c614148428fbf63ab701ab95e2ebe0b6103ea0e2e6212c986d8931899bad7692",
+          "bytes": 15606
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-c.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-c.png",
+          "sha256": "582a62eae6ca086f65e6bfdde16d0d1d15a95fdaf484c0def4769d5a47ba1c8e",
+          "bytes": 12829
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-d.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-d.png",
+          "sha256": "c61bc29ec4d96229b979fc9196500afac13c2b448bbab1085832354fb4ef849a",
+          "bytes": 13151
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-e.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-e.png",
+          "sha256": "6bbdb4f76b8d2ba7feb1ad8e4a341ca87afd655a4f061c77a86c400ad3125049",
+          "bytes": 14509
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-f.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-f.png",
+          "sha256": "54404f22588bac5a7f8df09c2aac0520e101a6f32944ce4070f550d7ad80c6f7",
+          "bytes": 15886
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-g.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-g.png",
+          "sha256": "cce3f8d545625998c27e91016672366eb84f21bbc520f8227022c23d0dd557fc",
+          "bytes": 16069
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-h.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-h.png",
+          "sha256": "7d908f3f12ac56b3debc5036dd962e2151c151f7a379cb37fe757a6ab4147536",
+          "bytes": 16215
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-i.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-i.png",
+          "sha256": "2c721b0a8837836ab0bf0eb0de12ca14e5d518ccba7420b8c673ed4600dc6b63",
+          "bytes": 14496
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-j.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-j.png",
+          "sha256": "11b6625d2d3119c9340fe93095374c45687be00fc7d1256c1f8db7d78cd7b531",
+          "bytes": 17576
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-k.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-k.png",
+          "sha256": "4e063c40b02955bab6cb177268f56d8837346cb9661c4022ac79310bd80774fc",
+          "bytes": 17437
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-l.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-l.png",
+          "sha256": "437c06e18a41def8449afb84c843b819927c7f8b423e653cd669c1f60c3e0741",
+          "bytes": 22764
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-m.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-m.png",
+          "sha256": "ee5652737837e662a756d66828218b2b784a6990eeee8c4e1e95a1f70d1af994",
+          "bytes": 19343
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-n.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-n.png",
+          "sha256": "b4af32a544b70da2ba99c6a142f33f0c5ee50a06b71ca71f8ac928bb5a15bb64",
+          "bytes": 16824
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-o.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-o.png",
+          "sha256": "782e0873431934fc39d8ebd48a3283085619863a7477508099a66c3734a6b479",
+          "bytes": 21064
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-p.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-p.png",
+          "sha256": "29176841e85fa8547322cf74ea34051c2b531039867de317f51728c4e54eef88",
+          "bytes": 18000
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-q.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-q.png",
+          "sha256": "bf220bbc945072a4fce31118b6585207445ddac1c2836b350d10fe0d49fed5ca",
+          "bytes": 16102
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/Textures/texture-r.png",
+          "path": "kenney-blocky-characters/Models/GLB format/Textures/texture-r.png",
+          "sha256": "fd29fd9fc745ca7b4231d704830b7508a3ec6894c54eeacc6cff722e851d9236",
+          "bytes": 13909
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-a.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-a.glb",
+          "sha256": "8ee5dae167ec589863f6bba222467eb90ace8be357a4c5abfcab289290181616",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-b.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-b.glb",
+          "sha256": "30ed390a741a1b285f587544819aa8a02c8f7f270e552ed742eb84785034f62a",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-c.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-c.glb",
+          "sha256": "ad2425ba0da5d9adff791b949bd62389ddcb09963ff89265930eab0d6484398c",
+          "bytes": 113580
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-d.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-d.glb",
+          "sha256": "bd7cbf0d45e58f6809e3249a84502ce629ac53bfa13bc39fb0a83d171faf84bf",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-e.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-e.glb",
+          "sha256": "9a12684981bc7763aebeceaffed82abfcc458d27b1ed3e169b92bebcc4870675",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-f.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-f.glb",
+          "sha256": "04223c1c6cdce5da6fe9c9729a24e1aa9c765dec93af952379112f7da24a828a",
+          "bytes": 113592
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-g.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-g.glb",
+          "sha256": "e3249ffc0aaa55eba973696ba4b36a204b35a10574b373e9945b56d918e8c9fd",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-h.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-h.glb",
+          "sha256": "f62fcf774dc6d61d64a3616803bc3a71176e1aee252020dd3ef680ef0a95d588",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-i.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-i.glb",
+          "sha256": "2b566d3b6261faa3e151b352396d823a285834f039ff6476db248ec6da902fe8",
+          "bytes": 113532
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-j.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-j.glb",
+          "sha256": "5bae1cabb44a719fba8e18a8c519f45c92531bc02a2a1324cd316ffa5903e311",
+          "bytes": 113584
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-k.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-k.glb",
+          "sha256": "1b0f9b218eda8444e68e988b1b87786ca058928a6c091bc3e44986363fefbc3b",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-l.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-l.glb",
+          "sha256": "ac3d350aba9311cf522f6b5ef56e1838fd8cd6bd3fb61795db4416dd2cc73a3d",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-m.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-m.glb",
+          "sha256": "5289ed1e5f79a93c28d1bb0e4b8afda6fce298ab53a04fb2cc1f8f77cf661ccc",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-n.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-n.glb",
+          "sha256": "1ea5a0cb0c65f51d6a1b40caa15a27f625365d341f33392a2bd926b0bf695394",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-o.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-o.glb",
+          "sha256": "a5033b736d13be3434fbf31e8b222d1e3767e532baa5f10ae8ba7cb1b059c148",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-p.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-p.glb",
+          "sha256": "50e18edd3003eeeca60c215a12f2c8230f9d12bc07e656eb06c3727ab0dba6cd",
+          "bytes": 113584
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-q.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-q.glb",
+          "sha256": "9193d03bc9ee1cfb080a1d561522f45806fe0b522b9807ef2b7c451b77547999",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-r.glb",
+          "path": "kenney-blocky-characters/Models/GLB format/character-r.glb",
+          "sha256": "b880654e0bcf4cfda119750d1ae0842ccfb73ae22f7844ab95015122b746808a",
+          "bytes": 113596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-a.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-a.png",
+          "sha256": "257e944c582ce7cda206fbd8ceb717be648f9721756baf377a36478c11c0059a",
+          "bytes": 20171
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-b.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-b.png",
+          "sha256": "c614148428fbf63ab701ab95e2ebe0b6103ea0e2e6212c986d8931899bad7692",
+          "bytes": 15606
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-c.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-c.png",
+          "sha256": "582a62eae6ca086f65e6bfdde16d0d1d15a95fdaf484c0def4769d5a47ba1c8e",
+          "bytes": 12829
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-d.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-d.png",
+          "sha256": "c61bc29ec4d96229b979fc9196500afac13c2b448bbab1085832354fb4ef849a",
+          "bytes": 13151
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-e.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-e.png",
+          "sha256": "6bbdb4f76b8d2ba7feb1ad8e4a341ca87afd655a4f061c77a86c400ad3125049",
+          "bytes": 14509
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-f.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-f.png",
+          "sha256": "54404f22588bac5a7f8df09c2aac0520e101a6f32944ce4070f550d7ad80c6f7",
+          "bytes": 15886
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-g.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-g.png",
+          "sha256": "cce3f8d545625998c27e91016672366eb84f21bbc520f8227022c23d0dd557fc",
+          "bytes": 16069
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-h.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-h.png",
+          "sha256": "7d908f3f12ac56b3debc5036dd962e2151c151f7a379cb37fe757a6ab4147536",
+          "bytes": 16215
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-i.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-i.png",
+          "sha256": "2c721b0a8837836ab0bf0eb0de12ca14e5d518ccba7420b8c673ed4600dc6b63",
+          "bytes": 14496
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-j.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-j.png",
+          "sha256": "11b6625d2d3119c9340fe93095374c45687be00fc7d1256c1f8db7d78cd7b531",
+          "bytes": 17576
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-k.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-k.png",
+          "sha256": "4e063c40b02955bab6cb177268f56d8837346cb9661c4022ac79310bd80774fc",
+          "bytes": 17437
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-l.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-l.png",
+          "sha256": "437c06e18a41def8449afb84c843b819927c7f8b423e653cd669c1f60c3e0741",
+          "bytes": 22764
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-m.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-m.png",
+          "sha256": "ee5652737837e662a756d66828218b2b784a6990eeee8c4e1e95a1f70d1af994",
+          "bytes": 19343
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-n.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-n.png",
+          "sha256": "b4af32a544b70da2ba99c6a142f33f0c5ee50a06b71ca71f8ac928bb5a15bb64",
+          "bytes": 16824
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-o.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-o.png",
+          "sha256": "782e0873431934fc39d8ebd48a3283085619863a7477508099a66c3734a6b479",
+          "bytes": 21064
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-p.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-p.png",
+          "sha256": "29176841e85fa8547322cf74ea34051c2b531039867de317f51728c4e54eef88",
+          "bytes": 18000
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-q.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-q.png",
+          "sha256": "bf220bbc945072a4fce31118b6585207445ddac1c2836b350d10fe0d49fed5ca",
+          "bytes": 16102
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/OBJ format/Textures/texture-r.png",
+          "path": "kenney-blocky-characters/Models/OBJ format/Textures/texture-r.png",
+          "sha256": "fd29fd9fc745ca7b4231d704830b7508a3ec6894c54eeacc6cff722e851d9236",
+          "bytes": 13909
+        }
+      ]
+    },
+    {
+      "id": "kenney-protagonists",
+      "name": "Kenney Animated Characters: Protagonists",
+      "page": "https://kenney.nl/assets/animated-characters-protagonists",
+      "license": "CC0-1.0",
+      "status": "skipped",
+      "reason": "no glTF models inside https://kenney.nl/media/pages/assets/animated-characters-protagonists/608191acc4-1774773108/kenney_animated-characters-protagonists.zip"
+    },
+    {
+      "id": "kenney-survivors",
+      "name": "Kenney Animated Characters: Survivors",
+      "page": "https://kenney.nl/assets/animated-characters-survivors",
+      "license": "CC0-1.0",
+      "status": "skipped",
+      "reason": "no glTF models inside https://kenney.nl/media/pages/assets/animated-characters-survivors/27b16052a7-1774772958/kenney_animated-characters-survivors.zip"
+    }
+  ]
+}

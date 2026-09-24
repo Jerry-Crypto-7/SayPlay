@@ -1,0 +1,415 @@
+# CC0 models – provenance
+
+Third-party models from free CC0 packs, fetched by `scripts/assets/cc0/fetch.mjs`, picked for sentence nouns by `select.mjs`,
+normalized (metres, +Y up, +Z forward, base-centre pivot, textures kept up to 512 px, untextured parts in the project palette, LOD1)
+by `normalize.mjs --style`, and written here by `promote.mjs` within a size budget (`promote-report.json` lists what fell out).
+CC0 1.0 needs no attribution; the credit below is voluntary.
+
+| Model | Noun | Author | Pack | Source file | License |
+|---|---|---|---|---|---|
+| `cc0-corgi` | corgi | Kenney (www.kenney.nl) | [kenney-cube-pets](https://kenney.nl/assets/cube-pets) | `Models/GLB format/animal-dog.glb` | CC0-1.0 |
+| `cc0-dragon` | dragon | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Dragon.gltf` | CC0-1.0 |
+| `cc0-flashlight` | flashlight | Quaternius (quaternius.com) | [quaternius-ultimate-gun](https://quaternius.com/packs/ultimategun.html) | `OBJ/Accessories/Flashlight.glb` | CC0-1.0 |
+| `cc0-knife` | knife | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/knife.gltf` | CC0-1.0 |
+| `cc0-shark` | shark | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Shark.glb` | CC0-1.0 |
+| `cc0-water` | water | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/WaterTower.gltf` | CC0-1.0 |
+| `cc0-alien` | alien | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/alien.glb` | CC0-1.0 |
+| `cc0-asteroid` | asteroid | Kenney (www.kenney.nl) | [kenney-survival-kit](https://kenney.nl/assets/survival-kit) | `Models/GLB format/rock-a.glb` | CC0-1.0 |
+| `cc0-bee` | bee | Kenney (www.kenney.nl) | [kenney-cube-pets](https://kenney.nl/assets/cube-pets) | `Models/GLB format/animal-bee.glb` | CC0-1.0 |
+| `cc0-dinner` | dinner | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/plate-dinner.glb` | CC0-1.0 |
+| `cc0-elephant` | elephant | Kenney (www.kenney.nl) | [kenney-cube-pets](https://kenney.nl/assets/cube-pets) | `Models/GLB format/animal-elephant.glb` | CC0-1.0 |
+| `cc0-chicken` | chicken | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/Chicken.gltf` | CC0-1.0 |
+| `cc0-lily-pad` | lily pad | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/Lilypad.glb` | CC0-1.0 |
+| `cc0-monkey` | monkey | Kenney (www.kenney.nl) | [kenney-cube-pets](https://kenney.nl/assets/cube-pets) | `Models/GLB format/animal-monkey.glb` | CC0-1.0 |
+| `cc0-pancake` | pancake | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/pancakes.glb` | CC0-1.0 |
+| `cc0-pigeon` | pigeon | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/Pigeon.gltf` | CC0-1.0 |
+| `cc0-police` | police | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/police.glb` | CC0-1.0 |
+| `cc0-present` | present | Kenney (www.kenney.nl) | [kenney-holiday-kit](https://kenney.nl/assets/holiday-kit) | `Models/GLB format/present-a-cube.glb` | CC0-1.0 |
+| `cc0-sausage` | sausage | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/sausage.glb` | CC0-1.0 |
+| `cc0-sock` | sock | Kenney (www.kenney.nl) | [kenney-holiday-kit](https://kenney.nl/assets/holiday-kit) | `Models/GLB format/sock-green.glb` | CC0-1.0 |
+| `cc0-spike` | spike | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/Spikes.gltf` | CC0-1.0 |
+| `cc0-traffic` | traffic | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/TrafficBarrier_1.gltf` | CC0-1.0 |
+| `cc0-trash-can` | trash can | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/trashcan.glb` | CC0-1.0 |
+| `cc0-zombie` | zombie | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/character-zombie.glb` | CC0-1.0 |
+| `cc0-anglerfish` | anglerfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Anglerfish.glb` | CC0-1.0 |
+| `cc0-apatosaurus` | apatosaurus | Quaternius (quaternius.com) | [quaternius-animated-dinosaurs](https://quaternius.com/packs/animateddinosaurs.html) | `OBJ/Apatosaurus.glb` | CC0-1.0 |
+| `cc0-beaver` | beaver | Kenney (www.kenney.nl) | [kenney-cube-pets](https://kenney.nl/assets/cube-pets) | `Models/GLB format/animal-beaver.glb` | CC0-1.0 |
+| `cc0-betta` | betta | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Betta.glb` | CC0-1.0 |
+| `cc0-blobfish` | blobfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Blobfish.glb` | CC0-1.0 |
+| `cc0-caterpillar` | caterpillar | Kenney (www.kenney.nl) | [kenney-cube-pets](https://kenney.nl/assets/cube-pets) | `Models/GLB format/animal-caterpillar.glb` | CC0-1.0 |
+| `cc0-clownfish` | clownfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Clownfish.glb` | CC0-1.0 |
+| `cc0-cowfish` | cowfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Cowfish.glb` | CC0-1.0 |
+| `cc0-flatfish` | flatfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Flatfish.glb` | CC0-1.0 |
+| `cc0-giraffe` | giraffe | Kenney (www.kenney.nl) | [kenney-cube-pets](https://kenney.nl/assets/cube-pets) | `Models/GLB format/animal-giraffe.glb` | CC0-1.0 |
+| `cc0-goldfish` | goldfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Goldfish.glb` | CC0-1.0 |
+| `cc0-humphead` | humphead | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Humphead.glb` | CC0-1.0 |
+| `cc0-koi` | koi | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Koi.glb` | CC0-1.0 |
+| `cc0-lionfish` | lionfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Lionfish.glb` | CC0-1.0 |
+| `cc0-llama` | llama | Quaternius (quaternius.com) | [quaternius-farm-animals](https://quaternius.com/packs/farmanimal.html) | `OBJ/Llama.glb` | CC0-1.0 |
+| `cc0-lure` | lure | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Lure_1.glb` | CC0-1.0 |
+| `cc0-parasaurolophus` | parasaurolophus | Quaternius (quaternius.com) | [quaternius-animated-dinosaurs](https://quaternius.com/packs/animateddinosaurs.html) | `OBJ/Parasaurolophus.glb` | CC0-1.0 |
+| `cc0-pig` | pig | Quaternius (quaternius.com) | [quaternius-farm-animals](https://quaternius.com/packs/farmanimal.html) | `OBJ/Pig.glb` | CC0-1.0 |
+| `cc0-piranha` | piranha | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Piranha.glb` | CC0-1.0 |
+| `cc0-puffer` | puffer | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Puffer.glb` | CC0-1.0 |
+| `cc0-pug` | pug | Quaternius (quaternius.com) | [quaternius-farm-animals](https://quaternius.com/packs/farmanimal.html) | `OBJ/Pug.glb` | CC0-1.0 |
+| `cc0-sheep` | sheep | Quaternius (quaternius.com) | [quaternius-farm-animals](https://quaternius.com/packs/farmanimal.html) | `OBJ/Sheep.glb` | CC0-1.0 |
+| `cc0-snapper` | snapper | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/RedSnapper.glb` | CC0-1.0 |
+| `cc0-sunfish` | sunfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Sunfish.glb` | CC0-1.0 |
+| `cc0-swordfish` | swordfish | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Swordfish.glb` | CC0-1.0 |
+| `cc0-tang` | tang | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Tang.glb` | CC0-1.0 |
+| `cc0-tetra` | tetra | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Tetra.glb` | CC0-1.0 |
+| `cc0-trex` | trex | Quaternius (quaternius.com) | [quaternius-animated-dinosaurs](https://quaternius.com/packs/animateddinosaurs.html) | `OBJ/Trex.glb` | CC0-1.0 |
+| `cc0-triceratops` | triceratops | Quaternius (quaternius.com) | [quaternius-animated-dinosaurs](https://quaternius.com/packs/animateddinosaurs.html) | `OBJ/Triceratops.glb` | CC0-1.0 |
+| `cc0-tuna` | tuna | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Tuna.glb` | CC0-1.0 |
+| `cc0-turbot` | turbot | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Turbot.glb` | CC0-1.0 |
+| `cc0-velociraptor` | velociraptor | Quaternius (quaternius.com) | [quaternius-animated-dinosaurs](https://quaternius.com/packs/animateddinosaurs.html) | `OBJ/Velociraptor.glb` | CC0-1.0 |
+| `cc0-worm` | worm | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/Worm.glb` | CC0-1.0 |
+| `cc0-zebra` | zebra | Quaternius (quaternius.com) | [quaternius-farm-animals](https://quaternius.com/packs/farmanimal.html) | `OBJ/Zebra.glb` | CC0-1.0 |
+| `cc0-book-set` | book set | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/book_set.gltf` | CC0-1.0 |
+| `cc0-book-single` | book single | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/book_single.gltf` | CC0-1.0 |
+| `cc0-bottle` | bottle | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Bottle1.glb` | CC0-1.0 |
+| `cc0-bottle-ketchup` | bottle ketchup | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/bottle-ketchup.glb` | CC0-1.0 |
+| `cc0-bottle-labeled` | bottle labeled | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/bottle_A_labeled_brown.gltf.glb` | CC0-1.0 |
+| `cc0-bottle-musterd` | bottle musterd | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/bottle-musterd.glb` | CC0-1.0 |
+| `cc0-bottle-oil` | bottle oil | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/bottle-oil.glb` | CC0-1.0 |
+| `cc0-bottle-return` | bottle return | Kenney (www.kenney.nl) | [kenney-mini-market](https://kenney.nl/assets/mini-market) | `Models/GLB format/bottle-return.glb` | CC0-1.0 |
+| `cc0-candle` | candle | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/candle.gltf` | CC0-1.0 |
+| `cc0-candle-lit` | candle lit | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/candle_lit.gltf.glb` | CC0-1.0 |
+| `cc0-candle-melted` | candle melted | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/candle_melted.gltf` | CC0-1.0 |
+| `cc0-candle-multiple` | candle multiple | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/candle-multiple.glb` | CC0-1.0 |
+| `cc0-candle-triple` | candle triple | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/candle_triple.gltf` | CC0-1.0 |
+| `cc0-coin-stack` | coin stack | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/coin_stack_large.gltf.glb` | CC0-1.0 |
+| `cc0-heart` | heart | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Powerups and Pickups/glTF/Heart.gltf` | CC0-1.0 |
+| `cc0-heart-outline` | heart outline | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Powerups and Pickups/glTF/Heart_Outline.gltf` | CC0-1.0 |
+| `cc0-chest-special` | chest special | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/Chest_Special.gltf` | CC0-1.0 |
+| `cc0-ketchup-bottle` | ketchup bottle | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/KetchupBottle.glb` | CC0-1.0 |
+| `cc0-lantern-candle` | lantern candle | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/lantern-candle.glb` | CC0-1.0 |
+| `cc0-lantern-hanging` | lantern hanging | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/lantern_hanging.gltf` | CC0-1.0 |
+| `cc0-lantern-standing` | lantern standing | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/lantern_standing.gltf` | CC0-1.0 |
+| `cc0-mayo-bottle` | mayo bottle | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/MayoBottle.glb` | CC0-1.0 |
+| `cc0-mustard-bottle` | mustard bottle | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/MustardBottle.glb` | CC0-1.0 |
+| `cc0-obstacle-diamond` | obstacle diamond | Kenney (www.kenney.nl) | [kenney-minigolf-kit](https://kenney.nl/assets/minigolf-kit) | `Models/GLB format/obstacle-diamond.glb` | CC0-1.0 |
+| `cc0-pickup-bullets` | pickup bullets | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Items/GLTF/Pickup_Bullets.gltf` | CC0-1.0 |
+| `cc0-pickup-health` | pickup health | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Items/GLTF/Pickup_Health.gltf` | CC0-1.0 |
+| `cc0-pickup-jar` | pickup jar | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Items/GLTF/Pickup_Jar.gltf` | CC0-1.0 |
+| `cc0-pickup-sphere` | pickup sphere | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Items/GLTF/Pickup_Sphere.gltf` | CC0-1.0 |
+| `cc0-pickup-thunder` | pickup thunder | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Items/GLTF/Pickup_Thunder.gltf` | CC0-1.0 |
+| `cc0-pipe-ring` | pipe ring | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/pipe_ring.glb` | CC0-1.0 |
+| `cc0-potion` | potion | Kenney (www.kenney.nl) | [kenney-mini-dungeon](https://kenney.nl/assets/mini-dungeon) | `Models/GLB format/potion.glb` | CC0-1.0 |
+| `cc0-present-cube` | present cube | Kenney (www.kenney.nl) | [kenney-holiday-kit](https://kenney.nl/assets/holiday-kit) | `Models/GLB format/present-a-cube.glb` | CC0-1.0 |
+| `cc0-present-rectangle` | present rectangle | Kenney (www.kenney.nl) | [kenney-holiday-kit](https://kenney.nl/assets/holiday-kit) | `Models/GLB format/present-a-rectangle.glb` | CC0-1.0 |
+| `cc0-present-round` | present round | Kenney (www.kenney.nl) | [kenney-holiday-kit](https://kenney.nl/assets/holiday-kit) | `Models/GLB format/present-a-round.glb` | CC0-1.0 |
+| `cc0-rice-ball` | rice ball | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/rice-ball.glb` | CC0-1.0 |
+| `cc0-skull-candle` | skull candle | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/skull_candle.gltf` | CC0-1.0 |
+| `cc0-soda-bottle` | soda bottle | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/soda-bottle.glb` | CC0-1.0 |
+| `cc0-spiky-ball` | spiky ball | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/SpikyBall.gltf` | CC0-1.0 |
+| `cc0-star-outline` | star outline | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Powerups and Pickups/glTF/Star_Outline.gltf` | CC0-1.0 |
+| `cc0-torch` | torch | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/torch.gltf.glb` | CC0-1.0 |
+| `cc0-torch-lit` | torch lit | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/torch_lit.gltf.glb` | CC0-1.0 |
+| `cc0-torch-mounted` | torch mounted | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/torch_mounted.gltf.glb` | CC0-1.0 |
+| `cc0-trash-bag` | trash bag | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/TrashBag_1.gltf` | CC0-1.0 |
+| `cc0-apple` | apple | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Apple.glb` | CC0-1.0 |
+| `cc0-avocado` | avocado | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Avocado.glb` | CC0-1.0 |
+| `cc0-bell` | bell | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Decoration/glTF/Decoration_Bell.gltf` | CC0-1.0 |
+| `cc0-bottles` | bottles | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Bottles.gltf` | CC0-1.0 |
+| `cc0-bowl` | bowl | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Bowl.gltf` | CC0-1.0 |
+| `cc0-bread` | bread | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Bread.glb` | CC0-1.0 |
+| `cc0-broccoli` | broccoli | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Broccoli.glb` | CC0-1.0 |
+| `cc0-burger` | burger | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Burger.glb` | CC0-1.0 |
+| `cc0-carpet` | carpet | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Decoration/glTF/Decoration_Carpet.gltf` | CC0-1.0 |
+| `cc0-carrot` | carrot | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Carrot.glb` | CC0-1.0 |
+| `cc0-coconut` | coconut | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Coconut.glb` | CC0-1.0 |
+| `cc0-corn` | corn | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/Corn_1.glb` | CC0-1.0 |
+| `cc0-corndog` | corndog | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Corndog.glb` | CC0-1.0 |
+| `cc0-croissant` | croissant | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Croissant.glb` | CC0-1.0 |
+| `cc0-cupcake` | cupcake | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Cupcake.glb` | CC0-1.0 |
+| `cc0-cuttingboard` | cuttingboard | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/cuttingboard.gltf` | CC0-1.0 |
+| `cc0-donut` | donut | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Donut1.glb` | CC0-1.0 |
+| `cc0-eggplant` | eggplant | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Eggplant.glb` | CC0-1.0 |
+| `cc0-fork` | fork | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Fork.glb` | CC0-1.0 |
+| `cc0-fries` | fries | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Fries.glb` | CC0-1.0 |
+| `cc0-fruit` | fruit | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Nature/glTF/Fruit.gltf` | CC0-1.0 |
+| `cc0-hotdog` | hotdog | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Hotdog.glb` | CC0-1.0 |
+| `cc0-cheeseburger` | cheeseburger | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Cheeseburger.glb` | CC0-1.0 |
+| `cc0-chopsticks` | chopsticks | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Chopsticks.glb` | CC0-1.0 |
+| `cc0-icecream` | icecream | Quaternius (quaternius.com) | [quaternius-junk-food](https://quaternius.com/packs/junkfood.html) | `OBJ/Icecream.glb` | CC0-1.0 |
+| `cc0-kitchencabinet` | kitchencabinet | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/kitchencabinet.gltf` | CC0-1.0 |
+| `cc0-kitchentable` | kitchentable | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/kitchentable_A.gltf` | CC0-1.0 |
+| `cc0-lettuce` | lettuce | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Lettuce.glb` | CC0-1.0 |
+| `cc0-menu` | menu | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/menu.gltf` | CC0-1.0 |
+| `cc0-milkshake` | milkshake | Quaternius (quaternius.com) | [quaternius-junk-food](https://quaternius.com/packs/junkfood.html) | `OBJ/Milkshake.glb` | CC0-1.0 |
+| `cc0-mustard` | mustard | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/mustard.gltf` | CC0-1.0 |
+| `cc0-painting` | painting | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Decoration/glTF/Decoration_Painting.gltf` | CC0-1.0 |
+| `cc0-pan` | pan | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Pan.gltf` | CC0-1.0 |
+| `cc0-papertowel` | papertowel | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/papertowel.gltf` | CC0-1.0 |
+| `cc0-pepper` | pepper | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Pepper_Green.glb` | CC0-1.0 |
+| `cc0-pumpkin` | pumpkin | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Pumpkin.glb` | CC0-1.0 |
+| `cc0-soda` | soda | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Soda.glb` | CC0-1.0 |
+| `cc0-spoon` | spoon | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Spoon.glb` | CC0-1.0 |
+| `cc0-steak` | steak | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Steak.glb` | CC0-1.0 |
+| `cc0-tentacle` | tentacle | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Tentacle.glb` | CC0-1.0 |
+| `cc0-tomato` | tomato | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Tomato.glb` | CC0-1.0 |
+| `cc0-towelrail` | towelrail | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/towelrail.gltf` | CC0-1.0 |
+| `cc0-turnip` | turnip | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Turnip.glb` | CC0-1.0 |
+| `cc0-waffle` | waffle | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/Waffle.glb` | CC0-1.0 |
+| `cc0-armchair` | armchair | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/armchair.gltf` | CC0-1.0 |
+| `cc0-armchair-pillows` | armchair pillows | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/armchair_pillows.gltf` | CC0-1.0 |
+| `cc0-bathtub` | bathtub | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/bathtub.glb` | CC0-1.0 |
+| `cc0-bed` | bed | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/bed.glb` | CC0-1.0 |
+| `cc0-bed-decorated` | bed decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/bed_decorated.gltf.glb` | CC0-1.0 |
+| `cc0-bed-frame` | bed frame | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/bed_frame.gltf.glb` | CC0-1.0 |
+| `cc0-bed-single` | bed single | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/bed_single_A.gltf` | CC0-1.0 |
+| `cc0-bench` | bench | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Bench.gltf` | CC0-1.0 |
+| `cc0-bench-decorated` | bench decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/bench_decorated.gltf` | CC0-1.0 |
+| `cc0-books` | books | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/books.glb` | CC0-1.0 |
+| `cc0-cabinet-decorated` | cabinet decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/cabinet_medium_decorated.gltf` | CC0-1.0 |
+| `cc0-cabinet-doors` | cabinet doors | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Cabinet_Doors.gltf` | CC0-1.0 |
+| `cc0-cabinet-shelves` | cabinet shelves | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Cabinet_Shelves_2.gltf` | CC0-1.0 |
+| `cc0-can-fridge` | can fridge | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_CanFridge.gltf` | CC0-1.0 |
+| `cc0-cooking-pot` | cooking pot | Quaternius (quaternius.com) | [quaternius-ultimate-food](https://quaternius.com/packs/ultimatefood.html) | `OBJ/CookingPot.glb` | CC0-1.0 |
+| `cc0-couch` | couch | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/Couch.gltf` | CC0-1.0 |
+| `cc0-couch-pillows` | couch pillows | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/couch_pillows.gltf` | CC0-1.0 |
+| `cc0-counter-sink` | counter sink | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Counter_Sink.gltf` | CC0-1.0 |
+| `cc0-cutting-table` | cutting table | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_CuttingTable.gltf` | CC0-1.0 |
+| `cc0-dryer` | dryer | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/dryer.glb` | CC0-1.0 |
+| `cc0-fridge-decorated` | fridge decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/fridge_A_decorated.gltf` | CC0-1.0 |
+| `cc0-chair-stool` | chair stool | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/chair_stool.gltf` | CC0-1.0 |
+| `cc0-chair-wood` | chair wood | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/chair_A_wood.gltf` | CC0-1.0 |
+| `cc0-kitchencounter-sink` | kitchencounter sink | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/kitchencounter_sink.gltf` | CC0-1.0 |
+| `cc0-kitchentable-sink` | kitchentable sink | Kay Lousberg (www.kaylousberg.com) | [kaykit-restaurant-bits](https://github.com/KayKit-Game-Assets/KayKit-Restaurant-Bits-1.0) | `addons/kaykit_restaurant_bits/Assets/gltf/kitchentable_sink.gltf` | CC0-1.0 |
+| `cc0-lamp-standing` | lamp standing | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/lamp_standing.gltf` | CC0-1.0 |
+| `cc0-lamp-table` | lamp table | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/lamp_table.gltf` | CC0-1.0 |
+| `cc0-laptop` | laptop | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/laptop.glb` | CC0-1.0 |
+| `cc0-oven` | oven | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Oven.gltf` | CC0-1.0 |
+| `cc0-pictureframe` | pictureframe | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/pictureframe_large_A.gltf` | CC0-1.0 |
+| `cc0-pictureframe-standing` | pictureframe standing | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/pictureframe_standing_A.gltf` | CC0-1.0 |
+| `cc0-pillow` | pillow | Kay Lousberg (www.kaylousberg.com) | [kaykit-furniture-bits](https://github.com/KayKit-Game-Assets/KayKit-Furniture-Bits-1.0) | `addons/kaykit_furniture_bits/Assets/gltf/pillow_A.gltf` | CC0-1.0 |
+| `cc0-pot-filled` | pot filled | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Environment/glTF/Environment_Pot_1_Filled.gltf` | CC0-1.0 |
+| `cc0-radio` | radio | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/radio.glb` | CC0-1.0 |
+| `cc0-shower` | shower | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/shower.glb` | CC0-1.0 |
+| `cc0-sofa` | sofa | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/Sofa.gltf` | CC0-1.0 |
+| `cc0-speaker` | speaker | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/speaker.glb` | CC0-1.0 |
+| `cc0-toaster` | toaster | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/toaster.glb` | CC0-1.0 |
+| `cc0-toilet` | toilet | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/toilet.glb` | CC0-1.0 |
+| `cc0-washer` | washer | Kenney (www.kenney.nl) | [kenney-furniture-kit](https://kenney.nl/assets/furniture-kit) | `Models/GLTF format/washer.glb` | CC0-1.0 |
+| `cc0-employee` | employee | Kenney (www.kenney.nl) | [kenney-mini-market](https://kenney.nl/assets/mini-market) | `Models/GLB format/character-employee.glb` | CC0-1.0 |
+| `cc0-oobi` | oobi | Kenney (www.kenney.nl) | [kenney-platformer-kit](https://kenney.nl/assets/platformer-kit) | `Models/GLB format/character-oobi.glb` | CC0-1.0 |
+| `cc0-oodi` | oodi | Kenney (www.kenney.nl) | [kenney-platformer-kit](https://kenney.nl/assets/platformer-kit) | `Models/GLB format/character-oodi.glb` | CC0-1.0 |
+| `cc0-ooli` | ooli | Kenney (www.kenney.nl) | [kenney-platformer-kit](https://kenney.nl/assets/platformer-kit) | `Models/GLB format/character-ooli.glb` | CC0-1.0 |
+| `cc0-oopi` | oopi | Kenney (www.kenney.nl) | [kenney-platformer-kit](https://kenney.nl/assets/platformer-kit) | `Models/GLB format/character-oopi.glb` | CC0-1.0 |
+| `cc0-oozi` | oozi | Kenney (www.kenney.nl) | [kenney-platformer-kit](https://kenney.nl/assets/platformer-kit) | `Models/GLB format/character-oozi.glb` | CC0-1.0 |
+| `cc0-wizard` | wizard | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/Wizard.gltf` | CC0-1.0 |
+| `cc0-alpaking` | alpaking | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Alpaking.gltf` | CC0-1.0 |
+| `cc0-alpaking-evolved` | alpaking evolved | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Alpaking_Evolved.gltf` | CC0-1.0 |
+| `cc0-armabee` | armabee | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Armabee.gltf` | CC0-1.0 |
+| `cc0-armabee-evolved` | armabee evolved | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Armabee_Evolved.gltf` | CC0-1.0 |
+| `cc0-enemy` | enemy | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Enemies/glTF/Enemy.gltf` | CC0-1.0 |
+| `cc0-enemy-extra` | enemy extra | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Characters/GLTF/Enemy_ExtraSmall.gltf` | CC0-1.0 |
+| `cc0-enemy-flying` | enemy flying | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Characters/GLTF/Enemy_Flying.gltf` | CC0-1.0 |
+| `cc0-ghost-skull` | ghost skull | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Ghost_Skull.gltf` | CC0-1.0 |
+| `cc0-glub` | glub | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Glub.gltf` | CC0-1.0 |
+| `cc0-glub-evolved` | glub evolved | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Glub_Evolved.gltf` | CC0-1.0 |
+| `cc0-goleling` | goleling | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Goleling.gltf` | CC0-1.0 |
+| `cc0-goleling-evolved` | goleling evolved | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Goleling_Evolved.gltf` | CC0-1.0 |
+| `cc0-hywirl` | hywirl | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Flying/glTF/Hywirl.gltf` | CC0-1.0 |
+| `cc0-mushnub` | mushnub | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/Mushnub.gltf` | CC0-1.0 |
+| `cc0-mushnub-evolved` | mushnub evolved | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/Mushnub_Evolved.gltf` | CC0-1.0 |
+| `cc0-ship-ghost` | ship ghost | Kenney (www.kenney.nl) | [kenney-pirate-kit](https://kenney.nl/assets/pirate-kit) | `Models/GLB format/ship-ghost.glb` | CC0-1.0 |
+| `cc0-skeleton` | skeleton | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/character-skeleton.glb` | CC0-1.0 |
+| `cc0-spiky-blob` | spiky blob | Quaternius (quaternius.com) | [quaternius-ultimate-monsters](https://quaternius.com/packs/ultimatemonsters.html) | `Blob/glTF/GreenSpikyBlob.gltf` | CC0-1.0 |
+| `cc0-tree-blob` | tree blob | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Environment/GLTF/Tree_Blob_1.gltf` | CC0-1.0 |
+| `cc0-vampire` | vampire | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/character-vampire.glb` | CC0-1.0 |
+| `cc0-zombie-ribcage` | zombie ribcage | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Characters/glTF/Zombie_Ribcage.gltf` | CC0-1.0 |
+| `cc0-altar-stone` | altar stone | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/altar-stone.glb` | CC0-1.0 |
+| `cc0-bamboo` | bamboo | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Decoration/glTF/Decoration_Bamboo.gltf` | CC0-1.0 |
+| `cc0-birch-tree` | birch tree | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/BirchTree_1.glb` | CC0-1.0 |
+| `cc0-bush` | bush | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/Bush_1.glb` | CC0-1.0 |
+| `cc0-bush-berries` | bush berries | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/BushBerries_1.glb` | CC0-1.0 |
+| `cc0-cactus-flowers` | cactus flowers | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/CactusFlowers_2.glb` | CC0-1.0 |
+| `cc0-campfire-bricks` | campfire bricks | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/campfire_bricks.glb` | CC0-1.0 |
+| `cc0-campfire-logs` | campfire logs | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/campfire_logs.glb` | CC0-1.0 |
+| `cc0-campfire-stones` | campfire stones | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/campfire_stones.glb` | CC0-1.0 |
+| `cc0-cloud` | cloud | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Nature/glTF/Cloud_1.gltf` | CC0-1.0 |
+| `cc0-coral-grouper` | coral grouper | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/CoralGrouper.glb` | CC0-1.0 |
+| `cc0-crop-melon` | crop melon | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/crop_melon.glb` | CC0-1.0 |
+| `cc0-crop-turnip` | crop turnip | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/crop_turnip.glb` | CC0-1.0 |
+| `cc0-flower` | flower | Quaternius (quaternius.com) | [quaternius-ultimate-stylized-nature](https://quaternius.com/packs/ultimatestylizednature.html) | `glTF/Flower_1.gltf` | CC0-1.0 |
+| `cc0-flower-horn` | flower horn | Quaternius (quaternius.com) | [quaternius-cute-fish](https://quaternius.com/packs/cutefish.html) | `OBJ/FlowerHorn.glb` | CC0-1.0 |
+| `cc0-grass` | grass | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/Grass_2.glb` | CC0-1.0 |
+| `cc0-grass-leafs` | grass leafs | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/grass_leafs.glb` | CC0-1.0 |
+| `cc0-grass-patch` | grass patch | Kenney (www.kenney.nl) | [kenney-pirate-kit](https://kenney.nl/assets/pirate-kit) | `Models/GLB format/grass-patch.glb` | CC0-1.0 |
+| `cc0-grass-plant` | grass plant | Kenney (www.kenney.nl) | [kenney-pirate-kit](https://kenney.nl/assets/pirate-kit) | `Models/GLB format/grass-plant.glb` | CC0-1.0 |
+| `cc0-hanging-moss` | hanging moss | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/hanging_moss.glb` | CC0-1.0 |
+| `cc0-hedge` | hedge | Kenney (www.kenney.nl) | [kenney-platformer-kit](https://kenney.nl/assets/platformer-kit) | `Models/GLB format/hedge.glb` | CC0-1.0 |
+| `cc0-lily` | lily | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/lily_large.glb` | CC0-1.0 |
+| `cc0-log-stack` | log stack | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/log_stack.glb` | CC0-1.0 |
+| `cc0-palm-tree` | palm tree | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/PalmTree_1.glb` | CC0-1.0 |
+| `cc0-pine` | pine | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/pine.glb` | CC0-1.0 |
+| `cc0-pine-tree` | pine tree | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/PineTree_1.glb` | CC0-1.0 |
+| `cc0-rock-moss` | rock moss | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/Rock_Moss_1.glb` | CC0-1.0 |
+| `cc0-sakura-flower` | sakura flower | Quaternius (quaternius.com) | [quaternius-sushi-restaurant-kit](https://quaternius.com/packs/sushirestaurantkit.html) | `Decoration/glTF/Decoration_SakuraFlower.gltf` | CC0-1.0 |
+| `cc0-stump` | stump | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/stump_old.glb` | CC0-1.0 |
+| `cc0-tree-decorated` | tree decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/tree_dead_large_decorated.gltf` | CC0-1.0 |
+| `cc0-tree-floating` | tree floating | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Environment/GLTF/Tree_Floating_1.gltf` | CC0-1.0 |
+| `cc0-tree-pine` | tree pine | Kay Lousberg (www.kaylousberg.com) | [kaykit-halloween-bits](https://github.com/KayKit-Game-Assets/KayKit-Halloween-Bits-1.0) | `addons/kaykit_halloween_bits/Assets/gltf/tree_pine_orange_large.gltf` | CC0-1.0 |
+| `cc0-tree-spiral` | tree spiral | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Environment/GLTF/Tree_Spiral_1.gltf` | CC0-1.0 |
+| `cc0-tree-stump` | tree stump | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/TreeStump.glb` | CC0-1.0 |
+| `cc0-tree-swirl` | tree swirl | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Environment/GLTF/Tree_Swirl_1.gltf` | CC0-1.0 |
+| `cc0-wheat` | wheat | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/Wheat.glb` | CC0-1.0 |
+| `cc0-wood-log` | wood log | Quaternius (quaternius.com) | [quaternius-ultimate-nature](https://quaternius.com/packs/ultimatenature.html) | `OBJ/WoodLog.glb` | CC0-1.0 |
+| `cc0-barrel` | barrel | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/Barrel.gltf` | CC0-1.0 |
+| `cc0-barrel-decorated` | barrel decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/barrel_large_decorated.gltf.glb` | CC0-1.0 |
+| `cc0-barrel-stack` | barrel stack | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/barrel_small_stack.gltf.glb` | CC0-1.0 |
+| `cc0-barrier-fixed` | barrier fixed | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/Barrier_Fixed.gltf` | CC0-1.0 |
+| `cc0-barrier-single` | barrier single | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/Barrier_Single.gltf` | CC0-1.0 |
+| `cc0-barrier-trash` | barrier trash | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/Barrier_Trash.gltf` | CC0-1.0 |
+| `cc0-bear-trap` | bear trap | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/BearTrap_Closed.gltf` | CC0-1.0 |
+| `cc0-bomb` | bomb | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/Bomb.gltf` | CC0-1.0 |
+| `cc0-box-decorated` | box decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/box_small_decorated.gltf.glb` | CC0-1.0 |
+| `cc0-box-long` | box long | Kenney (www.kenney.nl) | [kenney-factory-kit](https://kenney.nl/assets/factory-kit) | `Models/GLB format/box-long.glb` | CC0-1.0 |
+| `cc0-cannon` | cannon | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/Cannon.gltf` | CC0-1.0 |
+| `cc0-cannon-mobile` | cannon mobile | Kenney (www.kenney.nl) | [kenney-pirate-kit](https://kenney.nl/assets/pirate-kit) | `Models/GLB format/cannon-mobile.glb` | CC0-1.0 |
+| `cc0-cube-spikes` | cube spikes | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Cubes/glTF/Cube_Spikes.gltf` | CC0-1.0 |
+| `cc0-dumpster` | dumpster | Kay Lousberg (www.kaylousberg.com) | [kaykit-city-builder-bits](https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0) | `addons/kaykit_city_builder_bits/Assets/gltf/dumpster.gltf` | CC0-1.0 |
+| `cc0-exploding-barrel` | exploding barrel | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/ExplodingBarrel.gltf` | CC0-1.0 |
+| `cc0-exploding-barrel-spilled` | exploding barrel spilled | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/ExplodingBarrel_Spilled.gltf` | CC0-1.0 |
+| `cc0-fire-hydrant` | fire hydrant | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/FireHydrant.gltf` | CC0-1.0 |
+| `cc0-hay-bale` | hay bale | Kenney (www.kenney.nl) | [kenney-graveyard-kit](https://kenney.nl/assets/graveyard-kit) | `Models/GLB format/hay-bale.glb` | CC0-1.0 |
+| `cc0-hazard-saw` | hazard saw | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/Hazard_Saw.gltf` | CC0-1.0 |
+| `cc0-hazard-spike-trap` | hazard spike trap | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/Hazard_SpikeTrap.gltf` | CC0-1.0 |
+| `cc0-machine-barrel` | machine barrel | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/machine_barrel.glb` | CC0-1.0 |
+| `cc0-obstacle-triangle` | obstacle triangle | Kenney (www.kenney.nl) | [kenney-minigolf-kit](https://kenney.nl/assets/minigolf-kit) | `Models/GLB format/obstacle-triangle.glb` | CC0-1.0 |
+| `cc0-pallet` | pallet | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/Pallet.gltf` | CC0-1.0 |
+| `cc0-pallet-decorated` | pallet decorated | Kay Lousberg (www.kaylousberg.com) | [kaykit-prototype-bits](https://github.com/KayKit-Game-Assets/KayKit-Prototype-Bits-1.0) | `addons/kaykit_prototype_bits/Assets/gltf/Pallet_Small_Decorated_A.gltf` | CC0-1.0 |
+| `cc0-pipe` | pipe | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/Pipe_90.gltf` | CC0-1.0 |
+| `cc0-pipe-bend` | pipe bend | Kenney (www.kenney.nl) | [kenney-space-station-kit](https://kenney.nl/assets/space-station-kit) | `Models/GLB format/pipe-bend.glb` | CC0-1.0 |
+| `cc0-pipe-bump` | pipe bump | Kenney (www.kenney.nl) | [kenney-factory-kit](https://kenney.nl/assets/factory-kit) | `Models/GLB format/pipe-large-bump.glb` | CC0-1.0 |
+| `cc0-pipe-cross` | pipe cross | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/pipe_cross.glb` | CC0-1.0 |
+| `cc0-pipe-entrance` | pipe entrance | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/pipe_entrance.glb` | CC0-1.0 |
+| `cc0-pipe-glass` | pipe glass | Kenney (www.kenney.nl) | [kenney-factory-kit](https://kenney.nl/assets/factory-kit) | `Models/GLB format/pipe-glass-large.glb` | CC0-1.0 |
+| `cc0-pipe-long` | pipe long | Kenney (www.kenney.nl) | [kenney-factory-kit](https://kenney.nl/assets/factory-kit) | `Models/GLB format/pipe-large-long.glb` | CC0-1.0 |
+| `cc0-pipe-valve` | pipe valve | Kenney (www.kenney.nl) | [kenney-factory-kit](https://kenney.nl/assets/factory-kit) | `Models/GLB format/pipe-large-valve.glb` | CC0-1.0 |
+| `cc0-pizza-box` | pizza box | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/pizza-box.glb` | CC0-1.0 |
+| `cc0-plastic-barrier` | plastic barrier | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/PlasticBarrier.gltf` | CC0-1.0 |
+| `cc0-sack-trench` | sack trench | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/SackTrench.gltf` | CC0-1.0 |
+| `cc0-traffic-barrier` | traffic barrier | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Environment/glTF/TrafficBarrier_1.gltf` | CC0-1.0 |
+| `cc0-trap-spikes` | trap spikes | Kenney (www.kenney.nl) | [kenney-platformer-kit](https://kenney.nl/assets/platformer-kit) | `Models/GLB format/trap-spikes.glb` | CC0-1.0 |
+| `cc0-tree-cone` | tree cone | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/tree_cone.glb` | CC0-1.0 |
+| `cc0-tree-spikes` | tree spikes | Quaternius (quaternius.com) | [quaternius-ultimate-space-kit](https://quaternius.com/packs/ultimatespacekit.html) | `Environment/GLTF/Tree_Spikes_1.gltf` | CC0-1.0 |
+| `cc0-turret-double` | turret double | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/turret_double.glb` | CC0-1.0 |
+| `cc0-turret-single` | turret single | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/turret_single.glb` | CC0-1.0 |
+| `cc0-weapon-cannon` | weapon cannon | Kenney (www.kenney.nl) | [kenney-tower-defense-kit](https://kenney.nl/assets/tower-defense-kit) | `Models/GLB format/weapon-cannon.glb` | CC0-1.0 |
+| `cc0-weapon-turret` | weapon turret | Kenney (www.kenney.nl) | [kenney-tower-defense-kit](https://kenney.nl/assets/tower-defense-kit) | `Models/GLB format/weapon-turret.glb` | CC0-1.0 |
+| `cc0-workbench-anvil` | workbench anvil | Kenney (www.kenney.nl) | [kenney-survival-kit](https://kenney.nl/assets/survival-kit) | `Models/GLB format/workbench-anvil.glb` | CC0-1.0 |
+| `cc0-ambulance` | ambulance | Quaternius (quaternius.com) | [quaternius-public-transport](https://quaternius.com/packs/publictransport.html) | `OBJ/Ambulance.glb` | CC0-1.0 |
+| `cc0-boat-row` | boat row | Kenney (www.kenney.nl) | [kenney-pirate-kit](https://kenney.nl/assets/pirate-kit) | `Models/GLB format/boat-row-large.glb` | CC0-1.0 |
+| `cc0-bus` | bus | Quaternius (quaternius.com) | [quaternius-public-transport](https://quaternius.com/packs/publictransport.html) | `OBJ/Bus.glb` | CC0-1.0 |
+| `cc0-canoe` | canoe | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/canoe.glb` | CC0-1.0 |
+| `cc0-canoe-paddle` | canoe paddle | Kenney (www.kenney.nl) | [kenney-nature-kit](https://kenney.nl/assets/nature-kit) | `Models/GLTF format/canoe_paddle.glb` | CC0-1.0 |
+| `cc0-car-hatchback` | car hatchback | Kay Lousberg (www.kaylousberg.com) | [kaykit-city-builder-bits](https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0) | `addons/kaykit_city_builder_bits/Assets/gltf/car_hatchback.gltf` | CC0-1.0 |
+| `cc0-car-police` | car police | Kay Lousberg (www.kaylousberg.com) | [kaykit-city-builder-bits](https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0) | `addons/kaykit_city_builder_bits/Assets/gltf/car_police.gltf` | CC0-1.0 |
+| `cc0-car-sedan` | car sedan | Kay Lousberg (www.kaylousberg.com) | [kaykit-city-builder-bits](https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0) | `addons/kaykit_city_builder_bits/Assets/gltf/car_sedan.gltf` | CC0-1.0 |
+| `cc0-car-stationwagon` | car stationwagon | Kay Lousberg (www.kaylousberg.com) | [kaykit-city-builder-bits](https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0) | `addons/kaykit_city_builder_bits/Assets/gltf/car_stationwagon.gltf` | CC0-1.0 |
+| `cc0-car-taxi` | car taxi | Kay Lousberg (www.kaylousberg.com) | [kaykit-city-builder-bits](https://github.com/KayKit-Game-Assets/KayKit-City-Builder-Bits-1.0) | `addons/kaykit_city_builder_bits/Assets/gltf/car_taxi.gltf` | CC0-1.0 |
+| `cc0-craft-racer` | craft racer | Kenney (www.kenney.nl) | [kenney-space-kit](https://kenney.nl/assets/space-kit) | `Models/GLTF format/craft_racer.glb` | CC0-1.0 |
+| `cc0-delivery` | delivery | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/delivery.glb` | CC0-1.0 |
+| `cc0-enemy-ufo` | enemy ufo | Kenney (www.kenney.nl) | [kenney-tower-defense-kit](https://kenney.nl/assets/tower-defense-kit) | `Models/GLB format/enemy-ufo-a.glb` | CC0-1.0 |
+| `cc0-firetruck` | firetruck | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/firetruck.glb` | CC0-1.0 |
+| `cc0-garbage-truck` | garbage truck | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/garbage-truck.glb` | CC0-1.0 |
+| `cc0-gas-tank` | gas tank | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/GasTank.gltf` | CC0-1.0 |
+| `cc0-hatchback-sports` | hatchback sports | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/hatchback-sports.glb` | CC0-1.0 |
+| `cc0-kart-oobi` | kart oobi | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/kart-oobi.glb` | CC0-1.0 |
+| `cc0-kart-oodi` | kart oodi | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/kart-oodi.glb` | CC0-1.0 |
+| `cc0-race` | race | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/race.glb` | CC0-1.0 |
+| `cc0-school-bus` | school bus | Quaternius (quaternius.com) | [quaternius-public-transport](https://quaternius.com/packs/publictransport.html) | `OBJ/SchoolBus.glb` | CC0-1.0 |
+| `cc0-sled` | sled | Kenney (www.kenney.nl) | [kenney-holiday-kit](https://kenney.nl/assets/holiday-kit) | `Models/GLB format/sled.glb` | CC0-1.0 |
+| `cc0-tank` | tank | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Environment/glTF/Tank.gltf` | CC0-1.0 |
+| `cc0-tractor` | tractor | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/tractor.glb` | CC0-1.0 |
+| `cc0-train` | train | Quaternius (quaternius.com) | [quaternius-public-transport](https://quaternius.com/packs/publictransport.html) | `OBJ/Train.glb` | CC0-1.0 |
+| `cc0-van` | van | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/van.glb` | CC0-1.0 |
+| `cc0-wheel` | wheel | Kenney (www.kenney.nl) | [kenney-car-kit](https://kenney.nl/assets/car-kit) | `Models/GLB format/wheel-dark.glb` | CC0-1.0 |
+| `cc0-ak` | ak | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Guns/glTF/AK.gltf` | CC0-1.0 |
+| `cc0-arrow` | arrow | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Arrow.glb` | CC0-1.0 |
+| `cc0-arrow-rounded` | arrow rounded | Kenney (www.kenney.nl) | [kenney-factory-kit](https://kenney.nl/assets/factory-kit) | `Models/GLB format/arrow-rounded.glb` | CC0-1.0 |
+| `cc0-arrow-up` | arrow up | Quaternius (quaternius.com) | [quaternius-ultimate-platformer](https://quaternius.com/packs/ultimateplatformer.html) | `Level and Mechanics/glTF/Arrow_Up.gltf` | CC0-1.0 |
+| `cc0-assault-rifle` | assault rifle | Quaternius (quaternius.com) | [quaternius-ultimate-gun](https://quaternius.com/packs/ultimategun.html) | `OBJ/AssaultRifle_1.glb` | CC0-1.0 |
+| `cc0-axe` | axe | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Weapons/glTF/Axe.gltf` | CC0-1.0 |
+| `cc0-axe-double` | axe double | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Axe_Double.glb` | CC0-1.0 |
+| `cc0-blaster` | blaster | Kenney (www.kenney.nl) | [kenney-blaster-kit](https://kenney.nl/assets/blaster-kit) | `Models/GLB format/blaster-a.glb` | CC0-1.0 |
+| `cc0-bow` | bow | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Bow_Golden.glb` | CC0-1.0 |
+| `cc0-bow-evil` | bow evil | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Bow_Evil.glb` | CC0-1.0 |
+| `cc0-bow-wooden` | bow wooden | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Bow_Wooden.glb` | CC0-1.0 |
+| `cc0-claymore` | claymore | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Claymore.glb` | CC0-1.0 |
+| `cc0-cooking-knife` | cooking knife | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/cooking-knife.glb` | CC0-1.0 |
+| `cc0-dagger` | dagger | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Dagger_2.glb` | CC0-1.0 |
+| `cc0-fire-grenade` | fire grenade | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Guns/glTF/FireGrenade.gltf` | CC0-1.0 |
+| `cc0-grenade-launcher` | grenade launcher | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Guns/glTF/GrenadeLauncher.gltf` | CC0-1.0 |
+| `cc0-guitar` | guitar | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Weapons/glTF/Guitar.gltf` | CC0-1.0 |
+| `cc0-hammer` | hammer | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Hammer_Small.glb` | CC0-1.0 |
+| `cc0-hammer-double` | hammer double | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Hammer_Double.glb` | CC0-1.0 |
+| `cc0-pistol` | pistol | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Weapons/glTF/Pistol.gltf` | CC0-1.0 |
+| `cc0-revolver` | revolver | Quaternius (quaternius.com) | [quaternius-ultimate-gun](https://quaternius.com/packs/ultimategun.html) | `OBJ/Revolver_1.glb` | CC0-1.0 |
+| `cc0-rocket-launcher` | rocket launcher | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Guns/glTF/RocketLauncher.gltf` | CC0-1.0 |
+| `cc0-scythe` | scythe | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Scythe.glb` | CC0-1.0 |
+| `cc0-shield-celtic` | shield celtic | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Shield_Celtic_Golden.glb` | CC0-1.0 |
+| `cc0-shield-heater` | shield heater | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Shield_Heater_2.glb` | CC0-1.0 |
+| `cc0-shield-rectangle` | shield rectangle | Kenney (www.kenney.nl) | [kenney-mini-dungeon](https://kenney.nl/assets/mini-dungeon) | `Models/GLB format/shield-rectangle.glb` | CC0-1.0 |
+| `cc0-shield-round` | shield round | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Shield_Round_2.glb` | CC0-1.0 |
+| `cc0-shotgun` | shotgun | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Weapons/glTF/Shotgun.gltf` | CC0-1.0 |
+| `cc0-shovel` | shovel | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Guns/glTF/Shovel.gltf` | CC0-1.0 |
+| `cc0-smg` | smg | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Weapons/glTF/SMG.gltf` | CC0-1.0 |
+| `cc0-smoke` | smoke | Kenney (www.kenney.nl) | [kenney-blaster-kit](https://kenney.nl/assets/blaster-kit) | `Models/GLB format/smoke.glb` | CC0-1.0 |
+| `cc0-sniper` | sniper | Quaternius (quaternius.com) | [quaternius-toon-shooter-kit](https://quaternius.com/packs/toonshootergamekit.html) | `Guns/glTF/Sniper_2.gltf` | CC0-1.0 |
+| `cc0-sniper-rifle` | sniper rifle | Quaternius (quaternius.com) | [quaternius-ultimate-gun](https://quaternius.com/packs/ultimategun.html) | `OBJ/SniperRifle_1.glb` | CC0-1.0 |
+| `cc0-spear` | spear | Quaternius (quaternius.com) | [quaternius-zombie-apocalypse-kit](https://quaternius.com/packs/zombieapocalypsekit.html) | `Weapons/glTF/Spear.gltf` | CC0-1.0 |
+| `cc0-submachine-gun` | submachine gun | Quaternius (quaternius.com) | [quaternius-ultimate-gun](https://quaternius.com/packs/ultimategun.html) | `OBJ/SubmachineGun_1.glb` | CC0-1.0 |
+| `cc0-sword` | sword | Quaternius (quaternius.com) | [quaternius-medieval-weapons](https://quaternius.com/packs/medievalweapons.html) | `OBJ/Sword_2.glb` | CC0-1.0 |
+| `cc0-sword-shield` | sword shield | Kay Lousberg (www.kaylousberg.com) | [kaykit-dungeon-remastered](https://github.com/KayKit-Game-Assets/KayKit-Dungeon-Remastered-1.0) | `addons/kaykit_dungeon_remastered/Assets/gltf/sword_shield.gltf.glb` | CC0-1.0 |
+| `cc0-tool-axe` | tool axe | Kenney (www.kenney.nl) | [kenney-survival-kit](https://kenney.nl/assets/survival-kit) | `Models/GLB format/tool-axe.glb` | CC0-1.0 |
+| `cc0-tool-hammer` | tool hammer | Kenney (www.kenney.nl) | [kenney-survival-kit](https://kenney.nl/assets/survival-kit) | `Models/GLB format/tool-hammer.glb` | CC0-1.0 |
+| `cc0-utensil-knife` | utensil knife | Kenney (www.kenney.nl) | [kenney-food-kit](https://kenney.nl/assets/food-kit) | `Models/GLB format/utensil-knife.glb` | CC0-1.0 |
+| `cc0-weapon-ballista` | weapon ballista | Kenney (www.kenney.nl) | [kenney-tower-defense-kit](https://kenney.nl/assets/tower-defense-kit) | `Models/GLB format/weapon-ballista.glb` | CC0-1.0 |
+| `cc0-weapon-catapult` | weapon catapult | Kenney (www.kenney.nl) | [kenney-tower-defense-kit](https://kenney.nl/assets/tower-defense-kit) | `Models/GLB format/weapon-catapult.glb` | CC0-1.0 |
+
+## Pack licence texts
+
+- `kenney-cube-pets` – [licenses/kenney-cube-pets.txt](licenses/kenney-cube-pets.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-ultimate-monsters` – [licenses/quaternius-ultimate-monsters.txt](licenses/quaternius-ultimate-monsters.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-ultimate-gun` – [licenses/quaternius-ultimate-gun.txt](licenses/quaternius-ultimate-gun.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kaykit-restaurant-bits` – [licenses/kaykit-restaurant-bits.txt](licenses/kaykit-restaurant-bits.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-cute-fish` – [licenses/quaternius-cute-fish.txt](licenses/quaternius-cute-fish.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-zombie-apocalypse-kit` – [licenses/quaternius-zombie-apocalypse-kit.txt](licenses/quaternius-zombie-apocalypse-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-space-kit` – [licenses/kenney-space-kit.txt](licenses/kenney-space-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-survival-kit` – [licenses/kenney-survival-kit.txt](licenses/kenney-survival-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-food-kit` – [licenses/kenney-food-kit.txt](licenses/kenney-food-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-ultimate-nature` – [licenses/quaternius-ultimate-nature.txt](licenses/quaternius-ultimate-nature.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-car-kit` – [licenses/kenney-car-kit.txt](licenses/kenney-car-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-holiday-kit` – [licenses/kenney-holiday-kit.txt](licenses/kenney-holiday-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-ultimate-platformer` – [licenses/quaternius-ultimate-platformer.txt](licenses/quaternius-ultimate-platformer.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-furniture-kit` – [licenses/kenney-furniture-kit.txt](licenses/kenney-furniture-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-graveyard-kit` – [licenses/kenney-graveyard-kit.txt](licenses/kenney-graveyard-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-animated-dinosaurs` – [licenses/quaternius-animated-dinosaurs.txt](licenses/quaternius-animated-dinosaurs.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-farm-animals` – [licenses/quaternius-farm-animals.txt](licenses/quaternius-farm-animals.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kaykit-furniture-bits` – [licenses/kaykit-furniture-bits.txt](licenses/kaykit-furniture-bits.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-ultimate-food` – [licenses/quaternius-ultimate-food.txt](licenses/quaternius-ultimate-food.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kaykit-dungeon-remastered` – [licenses/kaykit-dungeon-remastered.txt](licenses/kaykit-dungeon-remastered.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-mini-market` – [licenses/kenney-mini-market.txt](licenses/kenney-mini-market.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kaykit-halloween-bits` – [licenses/kaykit-halloween-bits.txt](licenses/kaykit-halloween-bits.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-minigolf-kit` – [licenses/kenney-minigolf-kit.txt](licenses/kenney-minigolf-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-ultimate-space-kit` – [licenses/quaternius-ultimate-space-kit.txt](licenses/quaternius-ultimate-space-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-mini-dungeon` – [licenses/kenney-mini-dungeon.txt](licenses/kenney-mini-dungeon.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-sushi-restaurant-kit` – [licenses/quaternius-sushi-restaurant-kit.txt](licenses/quaternius-sushi-restaurant-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-junk-food` – [licenses/quaternius-junk-food.txt](licenses/quaternius-junk-food.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-nature-kit` – [licenses/kenney-nature-kit.txt](licenses/kenney-nature-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-toon-shooter-kit` – [licenses/quaternius-toon-shooter-kit.txt](licenses/quaternius-toon-shooter-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-platformer-kit` – [licenses/kenney-platformer-kit.txt](licenses/kenney-platformer-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-pirate-kit` – [licenses/kenney-pirate-kit.txt](licenses/kenney-pirate-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-ultimate-stylized-nature` – [licenses/quaternius-ultimate-stylized-nature.txt](licenses/quaternius-ultimate-stylized-nature.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-factory-kit` – [licenses/kenney-factory-kit.txt](licenses/kenney-factory-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kaykit-city-builder-bits` – [licenses/kaykit-city-builder-bits.txt](licenses/kaykit-city-builder-bits.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kaykit-prototype-bits` – [licenses/kaykit-prototype-bits.txt](licenses/kaykit-prototype-bits.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-space-station-kit` – [licenses/kenney-space-station-kit.txt](licenses/kenney-space-station-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-tower-defense-kit` – [licenses/kenney-tower-defense-kit.txt](licenses/kenney-tower-defense-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-public-transport` – [licenses/quaternius-public-transport.txt](licenses/quaternius-public-transport.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `quaternius-medieval-weapons` – [licenses/quaternius-medieval-weapons.txt](licenses/quaternius-medieval-weapons.txt), https://creativecommons.org/publicdomain/zero/1.0/
+- `kenney-blaster-kit` – [licenses/kenney-blaster-kit.txt](licenses/kenney-blaster-kit.txt), https://creativecommons.org/publicdomain/zero/1.0/

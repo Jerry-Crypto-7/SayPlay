@@ -1,0 +1,9175 @@
+{
+  "assets": [
+    {
+      "assetId": "aquarium",
+      "tags": [
+        "aquarium",
+        "glass",
+        "transparent",
+        "fish"
+      ],
+      "path": "/assets/worldstream/aquarium-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5099999904632568,
+          8.940696724635266e-10,
+          -0.25
+        ],
+        "max": [
+          0.5099999904632568,
+          0.6575000000745058,
+          0.25
+        ]
+      }
+    },
+    {
+      "assetId": "seated-person",
+      "tags": [
+        "human",
+        "person",
+        "seated",
+        "listener"
+      ],
+      "path": "/assets/worldstream/seated-person-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3121029077131621,
+          0,
+          -0.22000000000000003
+        ],
+        "max": [
+          0.3121029077131621,
+          1.485,
+          0.5
+        ]
+      }
+    },
+    {
+      "assetId": "desktop-terminal",
+      "tags": [
+        "device",
+        "computer",
+        "monitor",
+        "terminal"
+      ],
+      "path": "/assets/worldstream/desktop-terminal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29499998688697815,
+          -1.862645142292063e-10,
+          -0.11500000208616257
+        ],
+        "max": [
+          0.29499998688697815,
+          0.5500000071525574,
+          0.27000000029802323
+        ]
+      }
+    },
+    {
+      "assetId": "lounge-chair",
+      "tags": [
+        "chair",
+        "furniture",
+        "seat"
+      ],
+      "path": "/assets/worldstream/lounge-chair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3074999988079071,
+          -2.980232227667301e-9,
+          -0.3366302919365368
+        ],
+        "max": [
+          0.3074999988079071,
+          1.065140307144326,
+          0.29499998688697815
+        ]
+      }
+    },
+    {
+      "assetId": "potted-plant",
+      "tags": [
+        "organic",
+        "plant",
+        "foliage",
+        "pot"
+      ],
+      "path": "/assets/worldstream/potted-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39846584353433623,
+          2.980232227667301e-9,
+          -0.3846715654509445
+        ],
+        "max": [
+          0.3862631106197112,
+          1.2350000023841858,
+          0.390653305194585
+        ]
+      }
+    },
+    {
+      "assetId": "panel-door",
+      "tags": [
+        "door",
+        "hinge",
+        "architecture"
+      ],
+      "path": "/assets/worldstream/panel-door-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.550000011920929,
+          3.814697269177714e-8,
+          -0.10350000018626451
+        ],
+        "max": [
+          0.550000011920929,
+          2.1999999991059305,
+          0.10350000018626451
+        ]
+      }
+    },
+    {
+      "assetId": "oak-tree",
+      "tags": [
+        "tree",
+        "oak",
+        "trunk",
+        "canopy",
+        "nature"
+      ],
+      "path": "/assets/worldstream/oak-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.8499270946858957,
+          0,
+          -1.8381057814134216
+        ],
+        "max": [
+          1.7989850833030436,
+          4.6,
+          1.7337034337958541
+        ]
+      }
+    },
+    {
+      "assetId": "dining-table",
+      "tags": [
+        "table",
+        "dining-table",
+        "desk",
+        "tabletop",
+        "furniture"
+      ],
+      "path": "/assets/worldstream/dining-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.800000011920929,
+          5.960464455334602e-9,
+          -0.44999998807907104
+        ],
+        "max": [
+          0.800000011920929,
+          0.750000000372529,
+          0.44999998807907104
+        ]
+      }
+    },
+    {
+      "assetId": "iron-gate",
+      "tags": [
+        "gate",
+        "iron-gate",
+        "entrance",
+        "fence",
+        "portal"
+      ],
+      "path": "/assets/worldstream/iron-gate-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.25,
+          -2.3841857821338408e-8,
+          -0.25
+        ],
+        "max": [
+          1.25,
+          2.3199999986588953,
+          0.25
+        ]
+      }
+    },
+    {
+      "assetId": "rowing-boat",
+      "tags": [
+        "boat",
+        "rowboat",
+        "ship",
+        "vessel",
+        "hull"
+      ],
+      "path": "/assets/worldstream/rowing-boat-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.8500000059604644,
+          0,
+          -1.6
+        ],
+        "max": [
+          1.8500000059604644,
+          0.9543020543581511,
+          1.6
+        ]
+      }
+    },
+    {
+      "assetId": "steam-machine",
+      "tags": [
+        "machine",
+        "engine",
+        "boiler",
+        "generator",
+        "contraption",
+        "mechanism"
+      ],
+      "path": "/assets/worldstream/steam-machine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.699999988079071,
+          -1.4901161138336505e-9,
+          -0.44999998807907104
+        ],
+        "max": [
+          0.8,
+          2.2499999940395354,
+          0.44999998807907104
+        ]
+      }
+    },
+    {
+      "assetId": "storage-cabinet",
+      "tags": [
+        "cabinet",
+        "cupboard",
+        "wardrobe",
+        "shelf",
+        "storage"
+      ],
+      "path": "/assets/worldstream/storage-cabinet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44999998807907104,
+          8.940696724635266e-10,
+          -0.25
+        ],
+        "max": [
+          0.44999998807907104,
+          1.879999976158142,
+          0.30200000010430816
+        ]
+      }
+    },
+    {
+      "assetId": "bar-stool",
+      "tags": [
+        "stool",
+        "bar-stool",
+        "perch",
+        "footstool"
+      ],
+      "path": "/assets/worldstream/bar-stool-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18000000715255737,
+          -3.576278662098531e-9,
+          -0.18000000715255737
+        ],
+        "max": [
+          0.18000000715255737,
+          0.750000000372529,
+          0.18000000715255737
+        ]
+      }
+    },
+    {
+      "assetId": "wall-switch",
+      "tags": [
+        "switch",
+        "toggle",
+        "wall-switch",
+        "control"
+      ],
+      "path": "/assets/worldstream/wall-switch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25,
+          -3.725290284584126e-10,
+          -0.20000000298023224
+        ],
+        "max": [
+          0.25,
+          1.1599999994039536,
+          0.278
+        ]
+      }
+    },
+    {
+      "assetId": "push-button",
+      "tags": [
+        "button",
+        "push-button",
+        "pushbutton",
+        "control-button"
+      ],
+      "path": "/assets/worldstream/push-button-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2199999988079071,
+          1.1920928966180355e-8,
+          -0.2199999988079071
+        ],
+        "max": [
+          0.2199999988079071,
+          1.06,
+          0.2199999988079071
+        ]
+      }
+    },
+    {
+      "assetId": "log-cabin",
+      "tags": [
+        "cabin",
+        "log-cabin",
+        "hut",
+        "cottage",
+        "lodge"
+      ],
+      "path": "/assets/worldstream/log-cabin-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.4000000953674316,
+          -5.960464483090178e-9,
+          -1.9150119642173096
+        ],
+        "max": [
+          2.4000000953674316,
+          4.100000023841858,
+          1.9150119642173096
+        ]
+      }
+    },
+    {
+      "assetId": "floor-lever",
+      "tags": [
+        "lever",
+        "floor-lever",
+        "handle",
+        "pull-lever"
+      ],
+      "path": "/assets/worldstream/floor-lever-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25,
+          -7.450580569168253e-10,
+          -0.49
+        ],
+        "max": [
+          0.25,
+          1.1500000000000001,
+          0.15000000596046448
+        ]
+      }
+    },
+    {
+      "assetId": "stone-wall",
+      "tags": [
+        "wall",
+        "stone-wall",
+        "rampart",
+        "partition",
+        "barrier"
+      ],
+      "path": "/assets/worldstream/stone-wall-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.6300000071525573,
+          -2.980232241545089e-9,
+          -0.25
+        ],
+        "max": [
+          1.6300000071525573,
+          2.050000000745058,
+          0.25
+        ]
+      }
+    },
+    {
+      "assetId": "framed-window",
+      "tags": [
+        "window",
+        "framed-window",
+        "casement",
+        "pane"
+      ],
+      "path": "/assets/worldstream/framed-window-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.800000011920929,
+          1.1920928966180355e-8,
+          -0.10000000149011612
+        ],
+        "max": [
+          0.800000011920929,
+          2.4000000029802324,
+          0.2199999964237213
+        ]
+      }
+    },
+    {
+      "assetId": "workbench",
+      "tags": [
+        "workbench",
+        "bench-top",
+        "workshop",
+        "worktable",
+        "craft-table"
+      ],
+      "path": "/assets/worldstream/workbench-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8999999761581421,
+          3.576278662098531e-9,
+          -0.3499999940395355
+        ],
+        "max": [
+          0.8999999761581421,
+          1.000000000745058,
+          0.6500000059604645
+        ]
+      }
+    },
+    {
+      "assetId": "wooden-bridge",
+      "tags": [
+        "bridge",
+        "footbridge",
+        "crossing",
+        "walkway",
+        "plank-bridge"
+      ],
+      "path": "/assets/worldstream/wooden-bridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.800000011920929,
+          -2.980232227667301e-9,
+          -2.700000023841858
+        ],
+        "max": [
+          0.800000011920929,
+          1.6450000003725291,
+          2.700000023841858
+        ]
+      }
+    },
+    {
+      "assetId": "dog",
+      "tags": [
+        "dog",
+        "hound",
+        "puppy",
+        "pet",
+        "animal"
+      ],
+      "path": "/assets/worldstream/dog-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17,
+          -7.152557379708213e-9,
+          -0.5468231904287637
+        ],
+        "max": [
+          0.17,
+          0.83,
+          0.685
+        ]
+      }
+    },
+    {
+      "assetId": "elevator-car",
+      "tags": [
+        "elevator",
+        "lift",
+        "elevator-car",
+        "hoist"
+      ],
+      "path": "/assets/worldstream/elevator-car-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8500000238418579,
+          -7.450580569168253e-10,
+          -0.8500000238418579
+        ],
+        "max": [
+          0.8500000238418579,
+          2.5000000007450582,
+          0.8899999997764826
+        ]
+      }
+    },
+    {
+      "assetId": "floor-lamp",
+      "tags": [
+        "lamp",
+        "floor-lamp",
+        "reading-lamp",
+        "lampshade"
+      ],
+      "path": "/assets/worldstream/floor-lamp-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25,
+          3.3527612630646075e-10,
+          -0.25
+        ],
+        "max": [
+          0.25,
+          1.8799999993294478,
+          0.25
+        ]
+      }
+    },
+    {
+      "assetId": "hanging-lantern",
+      "tags": [
+        "lantern",
+        "oil-lantern",
+        "lamppost",
+        "street-lantern"
+      ],
+      "path": "/assets/worldstream/hanging-lantern-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12999999523162842,
+          8.940696724635266e-10,
+          -0.1599999964237213
+        ],
+        "max": [
+          0.6099999964237213,
+          1.9799999995529651,
+          0.1599999964237213
+        ]
+      }
+    },
+    {
+      "assetId": "canvas-tent",
+      "tags": [
+        "tent",
+        "canvas-tent",
+        "camp",
+        "campsite",
+        "shelter"
+      ],
+      "path": "/assets/worldstream/canvas-tent-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.2000000476837158,
+          -1.1920928910669204e-8,
+          -1.399999976158142
+        ],
+        "max": [
+          1.2000000476837158,
+          1.629999999329448,
+          1.423020122785174
+        ]
+      }
+    },
+    {
+      "assetId": "watchtower",
+      "tags": [
+        "tower",
+        "watchtower",
+        "lookout",
+        "turret"
+      ],
+      "path": "/assets/worldstream/watchtower-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.0999999046325684,
+          0,
+          -2.0999999046325684
+        ],
+        "max": [
+          2.0999999046325684,
+          8.449999976158143,
+          2.0999999046325684
+        ]
+      }
+    },
+    {
+      "assetId": "fire-beacon",
+      "tags": [
+        "beacon",
+        "warning-beacon",
+        "fire-beacon",
+        "brazier"
+      ],
+      "path": "/assets/worldstream/fire-beacon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6499999761581421,
+          -5.960464483090178e-9,
+          -0.6499999761581421
+        ],
+        "max": [
+          0.6499999761581421,
+          4.57,
+          0.6499999761581421
+        ]
+      }
+    },
+    {
+      "assetId": "townhouse",
+      "tags": [
+        "building",
+        "townhouse",
+        "house",
+        "apartment",
+        "facade"
+      ],
+      "path": "/assets/worldstream/townhouse-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.0999999046325684,
+          -1.4901161138336505e-9,
+          -2.5999999046325684
+        ],
+        "max": [
+          3.0999999046325684,
+          8.000000023841858,
+          3.000000011920929
+        ]
+      }
+    },
+    {
+      "assetId": "classroom",
+      "tags": [
+        "classroom",
+        "lecture-room",
+        "schoolroom",
+        "school"
+      ],
+      "path": "/assets/worldstream/classroom-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.0000000007450582,
+          -7.450580569168253e-10,
+          -2.5000000007450582
+        ],
+        "max": [
+          3.0000000007450582,
+          3.1,
+          2.5700000017881393
+        ]
+      }
+    },
+    {
+      "assetId": "knight",
+      "tags": [
+        "knight",
+        "hero",
+        "warrior",
+        "paladin",
+        "player",
+        "armor",
+        "armour"
+      ],
+      "path": "/assets/worldstream/game/knight-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5849999785423279,
+          0,
+          -0.2849999964237213
+        ],
+        "max": [
+          0.5849999785423279,
+          1.569000005722046,
+          0.2849999964237213
+        ]
+      }
+    },
+    {
+      "assetId": "key",
+      "tags": [
+        "key",
+        "keys",
+        "unlock"
+      ],
+      "path": "/assets/worldstream/game/key-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11800000071525574,
+          0,
+          -0.10000000149011612
+        ],
+        "max": [
+          0.11800000071525574,
+          0.5379999876022339,
+          0.10000000149011612
+        ]
+      }
+    },
+    {
+      "assetId": "ghost",
+      "tags": [
+        "ghost",
+        "ghosts",
+        "spirit",
+        "phantom",
+        "spectre",
+        "specter",
+        "spooky"
+      ],
+      "path": "/assets/worldstream/game/ghost-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5059999227523804,
+          0,
+          -0.3500000238418579
+        ],
+        "max": [
+          0.5059999227523804,
+          1.1069998741149902,
+          0.3500000238418579
+        ]
+      }
+    },
+    {
+      "assetId": "mushroom",
+      "tags": [
+        "mushroom",
+        "mushrooms",
+        "shroom",
+        "shrooms",
+        "fungus",
+        "toadstool"
+      ],
+      "path": "/assets/worldstream/game/mushroom-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23999999463558197,
+          0,
+          -0.23999999463558197
+        ],
+        "max": [
+          0.23999999463558197,
+          0.4775000214576721,
+          0.23999999463558197
+        ]
+      }
+    },
+    {
+      "assetId": "coin",
+      "tags": [
+        "coin",
+        "coins",
+        "gold",
+        "treasure",
+        "money"
+      ],
+      "path": "/assets/worldstream/game/coin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20000000298023224,
+          0,
+          -0.11999999731779099
+        ],
+        "max": [
+          0.20000000298023224,
+          0.5,
+          0.11999999731779099
+        ]
+      }
+    },
+    {
+      "assetId": "crystal",
+      "tags": [
+        "crystal",
+        "crystals",
+        "gem",
+        "gems",
+        "jewel",
+        "jewels",
+        "diamond",
+        "diamonds"
+      ],
+      "path": "/assets/worldstream/game/crystal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2052789330482483,
+          0,
+          -0.20000000298023224
+        ],
+        "max": [
+          0.2052789330482483,
+          0.5659999847412109,
+          0.20000000298023224
+        ]
+      }
+    },
+    {
+      "assetId": "star",
+      "tags": [
+        "star",
+        "stars",
+        "starfish"
+      ],
+      "path": "/assets/worldstream/game/star-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19021129608154297,
+          0,
+          -0.10000000149011612
+        ],
+        "max": [
+          0.19021129608154297,
+          0.5600000023841858,
+          0.10000000149011612
+        ]
+      }
+    },
+    {
+      "assetId": "rubber-duck",
+      "tags": [
+        "duck",
+        "ducks",
+        "ducky",
+        "duckling",
+        "rubber"
+      ],
+      "path": "/assets/worldstream/game/rubber-duck-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19999998807907104,
+          0,
+          -0.3065197169780731
+        ],
+        "max": [
+          0.19999998807907104,
+          0.48000001907348633,
+          0.3065197169780731
+        ]
+      }
+    },
+    {
+      "assetId": "chest",
+      "tags": [
+        "chest",
+        "chests",
+        "treasure-chest",
+        "loot",
+        "trunk"
+      ],
+      "path": "/assets/worldstream/game/chest-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30000001192092896,
+          0,
+          -0.2175000011920929
+        ],
+        "max": [
+          0.30000001192092896,
+          0.5199999809265137,
+          0.2175000011920929
+        ]
+      }
+    },
+    {
+      "assetId": "waiter",
+      "tags": [
+        "waiter",
+        "waiters",
+        "waitress",
+        "server",
+        "butler",
+        "keeper",
+        "chef"
+      ],
+      "path": "/assets/worldstream/game/waiter-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41901326179504395,
+          0,
+          -0.24000000953674316
+        ],
+        "max": [
+          0.41901326179504395,
+          1.3049999475479126,
+          0.24000000953674316
+        ]
+      }
+    },
+    {
+      "assetId": "goblin",
+      "tags": [
+        "goblin",
+        "goblins",
+        "orc",
+        "orcs",
+        "troll",
+        "trolls",
+        "monster",
+        "monsters",
+        "imp"
+      ],
+      "path": "/assets/worldstream/game/goblin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.373653769493103,
+          0,
+          -0.2199999988079071
+        ],
+        "max": [
+          0.373653769493103,
+          1.09499990940094,
+          0.2199999988079071
+        ]
+      }
+    },
+    {
+      "assetId": "roomba",
+      "tags": [
+        "roomba",
+        "roombas",
+        "vacuum",
+        "robot-vacuum",
+        "cleaner",
+        "robot"
+      ],
+      "path": "/assets/worldstream/game/roomba-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4099999964237213,
+          0,
+          -0.4099999964237213
+        ],
+        "max": [
+          0.4099999964237213,
+          0.1850000023841858,
+          0.4099999964237213
+        ]
+      }
+    },
+    {
+      "assetId": "drone",
+      "tags": [
+        "drone",
+        "drones",
+        "quadcopter",
+        "surveillance"
+      ],
+      "path": "/assets/worldstream/game/drone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4300000071525574,
+          0,
+          -0.4300000071525574
+        ],
+        "max": [
+          0.4300000071525574,
+          0.7099999785423279,
+          0.4300000071525574
+        ]
+      }
+    },
+    {
+      "assetId": "cat",
+      "tags": [
+        "cat",
+        "cats",
+        "kitten",
+        "kitty"
+      ],
+      "path": "/assets/worldstream/game/cat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1599999964237213,
+          0,
+          -0.45464491844177246
+        ],
+        "max": [
+          0.1599999964237213,
+          0.6200000047683716,
+          0.45464491844177246
+        ]
+      }
+    },
+    {
+      "assetId": "seal",
+      "tags": [
+        "seal",
+        "seals",
+        "walrus",
+        "sealion"
+      ],
+      "path": "/assets/worldstream/game/seal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38456255197525024,
+          0,
+          -0.5149999856948853
+        ],
+        "max": [
+          0.38456255197525024,
+          0.6739999055862427,
+          0.5149999856948853
+        ]
+      }
+    },
+    {
+      "assetId": "slime",
+      "tags": [
+        "slime",
+        "slimes",
+        "blob",
+        "blobs",
+        "jelly",
+        "ooze"
+      ],
+      "path": "/assets/worldstream/game/slime-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3399999737739563,
+          0,
+          -0.3399999141693115
+        ],
+        "max": [
+          0.3399999737739563,
+          0.5948000550270081,
+          0.3399999141693115
+        ]
+      }
+    },
+    {
+      "assetId": "training-dummy",
+      "tags": [
+        "dummy",
+        "dummies",
+        "training",
+        "scarecrow",
+        "target"
+      ],
+      "path": "/assets/worldstream/game/training-dummy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4000000059604645,
+          0,
+          -0.25
+        ],
+        "max": [
+          0.4000000059604645,
+          1.4199999570846558,
+          0.25
+        ]
+      }
+    },
+    {
+      "assetId": "robot",
+      "tags": [
+        "robot",
+        "robots",
+        "android",
+        "bot",
+        "cardboard",
+        "automaton"
+      ],
+      "path": "/assets/worldstream/game/robot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39000004529953003,
+          0,
+          -0.19249999523162842
+        ],
+        "max": [
+          0.39000004529953003,
+          1.4549999237060547,
+          0.19249999523162842
+        ]
+      }
+    },
+    {
+      "assetId": "wasp-nest",
+      "tags": [
+        "wasp",
+        "wasps",
+        "nest",
+        "hive",
+        "beehive",
+        "bees",
+        "hornet"
+      ],
+      "path": "/assets/worldstream/game/wasp-nest-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3140000104904175,
+          0,
+          -0.3500000238418579
+        ],
+        "max": [
+          0.3140000104904175,
+          1.1100000143051147,
+          0.3500000238418579
+        ]
+      }
+    },
+    {
+      "assetId": "hamster",
+      "tags": [
+        "hamster",
+        "hamsters",
+        "mouse",
+        "mice",
+        "rodent",
+        "gerbil",
+        "rat"
+      ],
+      "path": "/assets/worldstream/game/hamster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25999993085861206,
+          0,
+          -0.312999963760376
+        ],
+        "max": [
+          0.25999993085861206,
+          0.5139999389648438,
+          0.312999963760376
+        ]
+      }
+    },
+    {
+      "assetId": "penguin",
+      "tags": [
+        "penguin",
+        "penguins"
+      ],
+      "path": "/assets/worldstream/game/penguin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3181473910808563,
+          0,
+          -0.25050002336502075
+        ],
+        "max": [
+          0.3181473910808563,
+          0.9200000166893005,
+          0.25050002336502075
+        ]
+      }
+    },
+    {
+      "assetId": "cake",
+      "tags": [
+        "cake",
+        "cakes",
+        "birthday",
+        "dessert",
+        "gateau"
+      ],
+      "path": "/assets/worldstream/game/cake-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25999999046325684,
+          0,
+          -0.25999999046325684
+        ],
+        "max": [
+          0.25999999046325684,
+          0.47699999809265137,
+          0.25999999046325684
+        ]
+      }
+    },
+    {
+      "assetId": "pizza",
+      "tags": [
+        "pizza",
+        "pizzas",
+        "slice"
+      ],
+      "path": "/assets/worldstream/game/pizza-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25999999046325684,
+          0,
+          -0.25999999046325684
+        ],
+        "max": [
+          0.25999999046325684,
+          0.3100000023841858,
+          0.25999999046325684
+        ]
+      }
+    },
+    {
+      "assetId": "egg",
+      "tags": [
+        "egg",
+        "eggs"
+      ],
+      "path": "/assets/worldstream/game/egg-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16999998688697815,
+          0,
+          -0.16999998688697815
+        ],
+        "max": [
+          0.16999998688697815,
+          0.39899998903274536,
+          0.16999998688697815
+        ]
+      }
+    },
+    {
+      "assetId": "altar",
+      "tags": [
+        "altar",
+        "altars",
+        "shrine",
+        "pedestal",
+        "plinth",
+        "shrines"
+      ],
+      "path": "/assets/worldstream/game/altar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44999998807907104,
+          0,
+          -0.30000001192092896
+        ],
+        "max": [
+          0.44999998807907104,
+          1.027999997138977,
+          0.30000001192092896
+        ]
+      }
+    },
+    {
+      "assetId": "bird-nest",
+      "tags": [
+        "nest",
+        "nests",
+        "bird-nest",
+        "bird",
+        "birds"
+      ],
+      "path": "/assets/worldstream/game/bird-nest-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2800000011920929,
+          0,
+          -0.2800000011920929
+        ],
+        "max": [
+          0.2800000011920929,
+          0.16499999165534973,
+          0.2800000011920929
+        ]
+      }
+    },
+    {
+      "assetId": "exit-door",
+      "tags": [
+        "exit",
+        "exits",
+        "doors",
+        "exit-door",
+        "doorway",
+        "way-out"
+      ],
+      "path": "/assets/worldstream/game/exit-door-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75,
+          0,
+          -0.1599999964237213
+        ],
+        "max": [
+          0.75,
+          2.620000123977661,
+          0.1599999964237213
+        ]
+      }
+    },
+    {
+      "assetId": "stone-portal",
+      "tags": [
+        "portal",
+        "portals",
+        "stone",
+        "gateway",
+        "archway",
+        "arch",
+        "teleporter"
+      ],
+      "path": "/assets/worldstream/game/stone-portal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8999999761581421,
+          0,
+          -0.3499999940395355
+        ],
+        "max": [
+          0.8999999761581421,
+          2.9600000381469727,
+          0.3499999940395355
+        ]
+      }
+    },
+    {
+      "assetId": "finish-flag",
+      "tags": [
+        "ledge",
+        "ledges",
+        "finish",
+        "goal",
+        "flag",
+        "summit",
+        "platform",
+        "far-side"
+      ],
+      "path": "/assets/worldstream/game/finish-flag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7699999809265137,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.7699999809265137,
+          1.96999990940094,
+          0.5
+        ]
+      }
+    },
+    {
+      "assetId": "checkpoint",
+      "tags": [
+        "checkpoint",
+        "checkpoints",
+        "waypoint",
+        "marker",
+        "post"
+      ],
+      "path": "/assets/worldstream/game/checkpoint-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3100000023841858,
+          0,
+          -0.20000000298023224
+        ],
+        "max": [
+          0.3100000023841858,
+          1.5199999809265137,
+          0.20000000298023224
+        ]
+      }
+    },
+    {
+      "assetId": "hoop",
+      "tags": [
+        "hoop",
+        "hoops",
+        "ring",
+        "rings",
+        "flaming",
+        "loop"
+      ],
+      "path": "/assets/worldstream/game/hoop-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6700000166893005,
+          0,
+          -0.11999999731779099
+        ],
+        "max": [
+          0.6700000166893005,
+          1.8630127906799316,
+          0.11999999731779099
+        ]
+      }
+    },
+    {
+      "assetId": "stepping-stone",
+      "tags": [
+        "stepping",
+        "steppingstone",
+        "slab",
+        "slabs",
+        "rock",
+        "rocks"
+      ],
+      "path": "/assets/worldstream/game/stepping-stone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4431634545326233,
+          0,
+          -0.43643081188201904
+        ],
+        "max": [
+          0.4431634545326233,
+          0.24000000953674316,
+          0.43643081188201904
+        ]
+      }
+    },
+    {
+      "assetId": "lava-pool",
+      "tags": [
+        "lava",
+        "magma",
+        "vent",
+        "vents",
+        "molten",
+        "fire-pit"
+      ],
+      "path": "/assets/worldstream/game/lava-pool-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6197212934494019,
+          0,
+          -0.6000000238418579
+        ],
+        "max": [
+          0.6197212934494019,
+          0.20000000298023224,
+          0.6000000238418579
+        ]
+      }
+    },
+    {
+      "assetId": "ice-patch",
+      "tags": [
+        "ice",
+        "icy",
+        "frozen",
+        "frost",
+        "snow"
+      ],
+      "path": "/assets/worldstream/game/ice-patch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6000000238418579,
+          0,
+          -0.6000000238418579
+        ],
+        "max": [
+          0.6000000238418579,
+          0.320000022649765,
+          0.6000000238418579
+        ]
+      }
+    },
+    {
+      "assetId": "acid-pool",
+      "tags": [
+        "acid",
+        "poison",
+        "toxic",
+        "sludge",
+        "goo",
+        "swamp"
+      ],
+      "path": "/assets/worldstream/game/acid-pool-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6000000238418579,
+          0,
+          -0.6000000238418579
+        ],
+        "max": [
+          0.6000000238418579,
+          0.1860000044107437,
+          0.6000000238418579
+        ]
+      }
+    },
+    {
+      "assetId": "hazard-tile",
+      "tags": [
+        "tile",
+        "tiles",
+        "floor-tile",
+        "trap",
+        "traps",
+        "pressure-plate"
+      ],
+      "path": "/assets/worldstream/game/hazard-tile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          0.13499999046325684,
+          0.5
+        ]
+      }
+    },
+    {
+      "assetId": "shopping-cart",
+      "tags": [
+        "cart",
+        "carts",
+        "shopping",
+        "trolley",
+        "trolleys"
+      ],
+      "path": "/assets/worldstream/game/shopping-cart-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26499998569488525,
+          0,
+          -0.4449999928474426
+        ],
+        "max": [
+          0.26499998569488525,
+          0.8250000476837158,
+          0.4449999928474426
+        ]
+      }
+    },
+    {
+      "assetId": "explorer",
+      "tags": [
+        "explorer",
+        "explorers",
+        "adventurer",
+        "hiker"
+      ],
+      "path": "/assets/worldstream/game/explorer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3380265235900879,
+          0,
+          -0.3050000071525574
+        ],
+        "max": [
+          0.3380265235900879,
+          1.349000096321106,
+          0.3050000071525574
+        ]
+      }
+    },
+    {
+      "assetId": "kid",
+      "tags": [
+        "kid",
+        "kids",
+        "child",
+        "children",
+        "boy",
+        "girl"
+      ],
+      "path": "/assets/worldstream/game/kid-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32492807507514954,
+          0,
+          -0.24000000953674316
+        ],
+        "max": [
+          0.32492807507514954,
+          1.056999921798706,
+          0.24000000953674316
+        ]
+      }
+    },
+    {
+      "assetId": "astronaut",
+      "tags": [
+        "astronaut",
+        "astronauts",
+        "spaceman",
+        "cosmonaut"
+      ],
+      "path": "/assets/worldstream/game/astronaut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3380265235900879,
+          0,
+          -0.2724999785423279
+        ],
+        "max": [
+          0.3380265235900879,
+          1.374000072479248,
+          0.2724999785423279
+        ]
+      }
+    },
+    {
+      "assetId": "fox",
+      "tags": [
+        "fox",
+        "foxes",
+        "vixen"
+      ],
+      "path": "/assets/worldstream/game/fox-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1599999964237213,
+          0,
+          -0.5764999985694885
+        ],
+        "max": [
+          0.1599999964237213,
+          0.6999999284744263,
+          0.5764999985694885
+        ]
+      }
+    },
+    {
+      "assetId": "raccoon",
+      "tags": [
+        "raccoon",
+        "raccoons"
+      ],
+      "path": "/assets/worldstream/game/raccoon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1979999840259552,
+          0,
+          -0.5351554155349731
+        ],
+        "max": [
+          0.1979999840259552,
+          0.6700000166893005,
+          0.5351554155349731
+        ]
+      }
+    },
+    {
+      "assetId": "hurdle",
+      "tags": [
+        "hurdle",
+        "hurdles",
+        "obstacle",
+        "obstacles",
+        "barrier",
+        "barriers",
+        "fence",
+        "fences",
+        "jump"
+      ],
+      "path": "/assets/worldstream/game/hurdle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5499999523162842,
+          0,
+          -0.20999999344348907
+        ],
+        "max": [
+          0.5499999523162842,
+          0.5399999618530273,
+          0.20999999344348907
+        ]
+      }
+    },
+    {
+      "assetId": "slide-bar",
+      "tags": [
+        "bar",
+        "bars",
+        "laser",
+        "lasers",
+        "beam",
+        "beams",
+        "limbo",
+        "slide"
+      ],
+      "path": "/assets/worldstream/game/slide-bar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8200000524520874,
+          0,
+          -0.20000000298023224
+        ],
+        "max": [
+          0.8200000524520874,
+          1.5700000524520874,
+          0.20000000298023224
+        ]
+      }
+    },
+    {
+      "assetId": "cone",
+      "tags": [
+        "cone",
+        "cones",
+        "traffic-cone",
+        "pylon",
+        "pylons"
+      ],
+      "path": "/assets/worldstream/game/cone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20000000298023224,
+          0,
+          -0.20000000298023224
+        ],
+        "max": [
+          0.20000000298023224,
+          0.5400000214576721,
+          0.20000000298023224
+        ]
+      }
+    },
+    {
+      "assetId": "crate",
+      "tags": [
+        "crate",
+        "crates",
+        "box",
+        "boxes",
+        "wooden-box",
+        "cargo"
+      ],
+      "path": "/assets/worldstream/game/crate-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3700000047683716,
+          0,
+          -0.3725000023841858
+        ],
+        "max": [
+          0.3700000047683716,
+          0.7099999785423279,
+          0.3725000023841858
+        ]
+      }
+    },
+    {
+      "assetId": "track-tile",
+      "tags": [
+        "track",
+        "tracks",
+        "lane",
+        "lanes",
+        "runway",
+        "course"
+      ],
+      "path": "/assets/worldstream/game/track-tile-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.8799997568130493,
+          0,
+          -1
+        ],
+        "max": [
+          1.8799997568130493,
+          0.11499998718500137,
+          1
+        ]
+      }
+    },
+    {
+      "assetId": "race-car",
+      "tags": [
+        "car",
+        "cars",
+        "racecar",
+        "race-car",
+        "kart",
+        "karts",
+        "go-kart",
+        "vehicle"
+      ],
+      "path": "/assets/worldstream/game/race-car-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5450000166893005,
+          0,
+          -0.8875001072883606
+        ],
+        "max": [
+          0.5450000166893005,
+          0.7400000095367432,
+          0.8875001072883606
+        ]
+      }
+    },
+    {
+      "assetId": "rival-car",
+      "tags": [
+        "rival",
+        "rivals",
+        "opponent",
+        "opponents",
+        "racer",
+        "racers"
+      ],
+      "path": "/assets/worldstream/game/rival-car-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5450000166893005,
+          0,
+          -0.8875001072883606
+        ],
+        "max": [
+          0.5450000166893005,
+          0.7400000095367432,
+          0.8875001072883606
+        ]
+      }
+    },
+    {
+      "assetId": "plane",
+      "tags": [
+        "plane",
+        "planes",
+        "airplane",
+        "aeroplane",
+        "aircraft",
+        "pilot",
+        "biplane"
+      ],
+      "path": "/assets/worldstream/game/plane-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.9299999475479126,
+          0,
+          -0.8875000476837158
+        ],
+        "max": [
+          0.9299999475479126,
+          0.8100000619888306,
+          0.8875000476837158
+        ]
+      }
+    },
+    {
+      "assetId": "rocket",
+      "tags": [
+        "rocket",
+        "rockets",
+        "spaceship",
+        "spaceships",
+        "starship",
+        "missile"
+      ],
+      "path": "/assets/worldstream/game/rocket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38239091634750366,
+          0,
+          -0.3311602473258972
+        ],
+        "max": [
+          0.38239091634750366,
+          1.7050000429153442,
+          0.3311602473258972
+        ]
+      }
+    },
+    {
+      "assetId": "tire-barrier",
+      "tags": [
+        "tire",
+        "tires",
+        "tyre",
+        "tyres",
+        "wall",
+        "guardrail",
+        "bumper"
+      ],
+      "path": "/assets/worldstream/game/tire-barrier-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.0499999523162842,
+          0,
+          -0.30000001192092896
+        ],
+        "max": [
+          1.0499999523162842,
+          0.3799999952316284,
+          0.30000001192092896
+        ]
+      }
+    },
+    {
+      "assetId": "cell",
+      "tags": [
+        "cell",
+        "cells",
+        "bubble",
+        "bubbles",
+        "amoeba",
+        "germ",
+        "germs",
+        "microbe"
+      ],
+      "path": "/assets/worldstream/game/cell-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.5
+        ],
+        "max": [
+          0.5,
+          0.6259999871253967,
+          0.5
+        ]
+      }
+    },
+    {
+      "assetId": "target",
+      "tags": [
+        "bullseye",
+        "targets",
+        "dartboard",
+        "archery",
+        "shooting-target"
+      ],
+      "path": "/assets/worldstream/game/target-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.33868375420570374
+        ],
+        "max": [
+          0.5,
+          1.4953112602233887,
+          0.33868372440338135
+        ]
+      }
+    },
+    {
+      "assetId": "wood-block",
+      "tags": [
+        "block",
+        "blocks",
+        "plank",
+        "planks",
+        "brick",
+        "bricks",
+        "tower",
+        "jenga"
+      ],
+      "path": "/assets/worldstream/game/wood-block-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5,
+          0,
+          -0.25999999046325684
+        ],
+        "max": [
+          0.5,
+          0.5099999904632568,
+          0.25999999046325684
+        ]
+      }
+    },
+    {
+      "assetId": "ball",
+      "tags": [
+        "ball",
+        "balls",
+        "football",
+        "soccer",
+        "basketball",
+        "beachball",
+        "dodgeball"
+      ],
+      "path": "/assets/worldstream/game/ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3149999976158142,
+          0,
+          -0.3149999976158142
+        ],
+        "max": [
+          0.3149999976158142,
+          0.6299999952316284,
+          0.3149999976158142
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-corgi",
+      "tags": [
+        "corgi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-corgi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.63001,
+          0,
+          -0.75027
+        ],
+        "max": [
+          0.63001,
+          1.58444,
+          0.75027
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-dragon",
+      "tags": [
+        "dragon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-dragon-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.19103,
+          0,
+          -1.21496
+        ],
+        "max": [
+          2.19103,
+          1.54069,
+          1.21496
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-flashlight",
+      "tags": [
+        "flashlight"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-flashlight-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19492,
+          0,
+          -0.15929
+        ],
+        "max": [
+          0.19492,
+          0.22725,
+          0.15929
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-knife",
+      "tags": [
+        "knife"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-knife-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12501,
+          0,
+          -0.05001
+        ],
+        "max": [
+          0.12501,
+          1.15001,
+          0.05001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shark",
+      "tags": [
+        "shark"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shark-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.88656,
+          0,
+          -2.63674
+        ],
+        "max": [
+          1.88656,
+          3.77284,
+          2.63674
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-water",
+      "tags": [
+        "water"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-water-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.32286,
+          0,
+          -1.35425
+        ],
+        "max": [
+          1.32286,
+          9.3798,
+          1.35425
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-alien",
+      "tags": [
+        "alien"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-alien-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2416,
+          0,
+          -0.16501
+        ],
+        "max": [
+          0.2416,
+          0.84319,
+          0.16501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-asteroid",
+      "tags": [
+        "asteroid",
+        "meteor"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-asteroid-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2776,
+          0,
+          -0.3108
+        ],
+        "max": [
+          0.2776,
+          0.39271,
+          0.3108
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bee",
+      "tags": [
+        "bee"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bee-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.66751,
+          0,
+          -0.64654
+        ],
+        "max": [
+          0.66751,
+          1.99883,
+          0.64654
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-dinner",
+      "tags": [
+        "dinner",
+        "plate"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-dinner-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44589,
+          0,
+          -0.44589
+        ],
+        "max": [
+          0.44589,
+          0.22137,
+          0.44589
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-elephant",
+      "tags": [
+        "elephant"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-elephant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.93893,
+          0,
+          -0.83761
+        ],
+        "max": [
+          0.93893,
+          1.43126,
+          0.83761
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-chicken",
+      "tags": [
+        "chicken"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-chicken-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.17454,
+          0,
+          -1.051
+        ],
+        "max": [
+          1.17454,
+          2.34721,
+          1.051
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lily-pad",
+      "tags": [
+        "lily pad",
+        "lilypad"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lily-pad-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59861,
+          0,
+          -0.59457
+        ],
+        "max": [
+          0.59861,
+          0.22087,
+          0.59457
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-monkey",
+      "tags": [
+        "monkey"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-monkey-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.99116,
+          0,
+          -0.89082
+        ],
+        "max": [
+          0.99116,
+          1.61,
+          0.89082
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pancake",
+      "tags": [
+        "pancake",
+        "pancakes"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pancake-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21776,
+          0,
+          -0.25196
+        ],
+        "max": [
+          0.21776,
+          0.12161,
+          0.25196
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pigeon",
+      "tags": [
+        "pigeon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pigeon-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.17454,
+          0,
+          -1.00583
+        ],
+        "max": [
+          1.17454,
+          1.80234,
+          1.00583
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-police",
+      "tags": [
+        "police"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-police-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75001,
+          0,
+          -1.55001
+        ],
+        "max": [
+          0.75001,
+          1.30001,
+          1.55001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-present",
+      "tags": [
+        "present",
+        "gift"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-present-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22501,
+          0,
+          -0.22501
+        ],
+        "max": [
+          0.22501,
+          0.57072,
+          0.22501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sausage",
+      "tags": [
+        "sausage"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sausage-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18534,
+          0,
+          -0.06864
+        ],
+        "max": [
+          0.18534,
+          0.11888,
+          0.06864
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sock",
+      "tags": [
+        "sock"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15303,
+          0,
+          -0.10001
+        ],
+        "max": [
+          0.15303,
+          0.62287,
+          0.10001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-spike",
+      "tags": [
+        "spike",
+        "spikes"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-spike-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.97511,
+          0,
+          -0.91417
+        ],
+        "max": [
+          0.97511,
+          3.40141,
+          0.91417
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-traffic",
+      "tags": [
+        "traffic"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-traffic-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77767,
+          0,
+          -0.44032
+        ],
+        "max": [
+          0.77767,
+          1.11199,
+          0.44032
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-trash-can",
+      "tags": [
+        "trash can",
+        "trashcan"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-trash-can-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10385,
+          0,
+          -0.11707
+        ],
+        "max": [
+          0.10385,
+          0.42787,
+          0.11707
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-zombie",
+      "tags": [
+        "zombie"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-zombie-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40569,
+          0,
+          -0.17276
+        ],
+        "max": [
+          0.40569,
+          0.82514,
+          0.17276
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-anglerfish",
+      "tags": [
+        "anglerfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-anglerfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.88836,
+          0,
+          -2.64037
+        ],
+        "max": [
+          1.88836,
+          3.37014,
+          2.64037
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-apatosaurus",
+      "tags": [
+        "apatosaurus"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-apatosaurus-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.85207,
+          0,
+          -24.77903
+        ],
+        "max": [
+          2.85207,
+          11.0111,
+          24.77903
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-beaver",
+      "tags": [
+        "beaver"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-beaver-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62501,
+          0,
+          -0.91847
+        ],
+        "max": [
+          0.62501,
+          1.50126,
+          0.91847
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-betta",
+      "tags": [
+        "betta"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-betta-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.53071,
+          0,
+          -2.70211
+        ],
+        "max": [
+          1.53071,
+          3.37361,
+          2.70211
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-blobfish",
+      "tags": [
+        "blobfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-blobfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.69967,
+          0,
+          -2.12102
+        ],
+        "max": [
+          1.69967,
+          2.3715,
+          2.12102
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-caterpillar",
+      "tags": [
+        "caterpillar"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-caterpillar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.72226,
+          0,
+          -0.66599
+        ],
+        "max": [
+          0.72226,
+          1.74661,
+          0.66599
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-clownfish",
+      "tags": [
+        "clownfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-clownfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.1707,
+          0,
+          -2.51481
+        ],
+        "max": [
+          2.1707,
+          3.06598,
+          2.51481
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cowfish",
+      "tags": [
+        "cowfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cowfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.67636,
+          0,
+          -2.79982
+        ],
+        "max": [
+          1.67636,
+          2.42052,
+          2.79982
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-flatfish",
+      "tags": [
+        "flatfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-flatfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.03907,
+          0,
+          -2.33506
+        ],
+        "max": [
+          1.03907,
+          4.04122,
+          2.33506
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-giraffe",
+      "tags": [
+        "giraffe"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-giraffe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77776,
+          0,
+          -0.70801
+        ],
+        "max": [
+          0.77776,
+          1.71376,
+          0.70801
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-goldfish",
+      "tags": [
+        "goldfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-goldfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.62499,
+          0,
+          -2.6202
+        ],
+        "max": [
+          1.62499,
+          4.62674,
+          2.6202
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-humphead",
+      "tags": [
+        "humphead"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-humphead-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.06228,
+          0,
+          -2.94567
+        ],
+        "max": [
+          2.06228,
+          3.28244,
+          2.94567
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-koi",
+      "tags": [
+        "koi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-koi-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.57608,
+          0,
+          -2.80026
+        ],
+        "max": [
+          1.57608,
+          4.47315,
+          2.80026
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lionfish",
+      "tags": [
+        "lionfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lionfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.90266,
+          0,
+          -3.15992
+        ],
+        "max": [
+          1.90266,
+          5.21615,
+          3.15992
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-llama",
+      "tags": [
+        "llama"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-llama-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.78414,
+          0,
+          -2.45366
+        ],
+        "max": [
+          0.78414,
+          5.85799,
+          2.45366
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lure",
+      "tags": [
+        "lure"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lure-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.93301,
+          0,
+          -0.30835
+        ],
+        "max": [
+          0.93301,
+          0.6167,
+          0.30835
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-parasaurolophus",
+      "tags": [
+        "parasaurolophus"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-parasaurolophus-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.97919,
+          0,
+          -5.89305
+        ],
+        "max": [
+          0.97919,
+          5.75659,
+          5.89305
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pig",
+      "tags": [
+        "pig",
+        "hog"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pig-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.65182,
+          0,
+          -4.88524
+        ],
+        "max": [
+          1.65182,
+          4.57505,
+          4.88524
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-piranha",
+      "tags": [
+        "piranha"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-piranha-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.56086,
+          0,
+          -2.37041
+        ],
+        "max": [
+          1.56086,
+          2.40449,
+          2.37041
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-puffer",
+      "tags": [
+        "puffer"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-puffer-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.7221,
+          0,
+          -1.96914
+        ],
+        "max": [
+          1.7221,
+          2.69316,
+          1.96914
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pug",
+      "tags": [
+        "pug"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pug-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.72352,
+          0,
+          -1.75023
+        ],
+        "max": [
+          0.72352,
+          2.65265,
+          1.75023
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sheep",
+      "tags": [
+        "sheep"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sheep-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.11253,
+          0,
+          -2.95971
+        ],
+        "max": [
+          1.11253,
+          4.36459,
+          2.95971
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-snapper",
+      "tags": [
+        "snapper"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-snapper-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.58074,
+          0,
+          -2.59177
+        ],
+        "max": [
+          1.58074,
+          2.68945,
+          2.59177
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sunfish",
+      "tags": [
+        "sunfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sunfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.67463,
+          0,
+          -1.89137
+        ],
+        "max": [
+          1.67463,
+          5.79247,
+          1.89137
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-swordfish",
+      "tags": [
+        "swordfish"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-swordfish-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.77898,
+          0,
+          -3.21149
+        ],
+        "max": [
+          1.77898,
+          3.83377,
+          3.21149
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tang",
+      "tags": [
+        "tang"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tang-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.60146,
+          0,
+          -2.06904
+        ],
+        "max": [
+          1.60146,
+          2.69049,
+          2.06904
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tetra",
+      "tags": [
+        "tetra"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tetra-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.4661,
+          0,
+          -2.60985
+        ],
+        "max": [
+          1.4661,
+          1.79686,
+          2.60985
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-trex",
+      "tags": [
+        "trex"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-trex-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.97818,
+          0,
+          -15.43726
+        ],
+        "max": [
+          3.97818,
+          14.67795,
+          15.43726
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-triceratops",
+      "tags": [
+        "triceratops"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-triceratops-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.92412,
+          0,
+          -10.49077
+        ],
+        "max": [
+          2.92412,
+          8.8714,
+          10.49077
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tuna",
+      "tags": [
+        "tuna"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tuna-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.93239,
+          0,
+          -2.80443
+        ],
+        "max": [
+          1.93239,
+          3.50972,
+          2.80443
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-turbot",
+      "tags": [
+        "turbot"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-turbot-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.02797,
+          0,
+          -2.2916
+        ],
+        "max": [
+          1.02797,
+          3.91867,
+          2.2916
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-velociraptor",
+      "tags": [
+        "velociraptor"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-velociraptor-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.31801,
+          0,
+          -6.3703
+        ],
+        "max": [
+          1.31801,
+          6.07497,
+          6.3703
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-worm",
+      "tags": [
+        "worm"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-worm-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24737,
+          0,
+          -0.21575
+        ],
+        "max": [
+          0.24737,
+          0.48432,
+          0.21575
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-zebra",
+      "tags": [
+        "zebra"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-zebra-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.27975,
+          0,
+          -4.61684
+        ],
+        "max": [
+          1.27975,
+          7.07398,
+          4.61684
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-book-set",
+      "tags": [
+        "book set",
+        "book-set",
+        "set"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-book-set-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39001,
+          0,
+          -0.18251
+        ],
+        "max": [
+          0.39001,
+          0.50001,
+          0.18251
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-book-single",
+      "tags": [
+        "book single",
+        "book-single",
+        "single"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-book-single-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13001,
+          0,
+          -0.18251
+        ],
+        "max": [
+          0.13001,
+          0.50001,
+          0.18251
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bottle",
+      "tags": [
+        "bottle",
+        "bottle1"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22585,
+          0,
+          -0.22585
+        ],
+        "max": [
+          0.22585,
+          1.56381,
+          0.22585
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bottle-ketchup",
+      "tags": [
+        "bottle ketchup",
+        "bottle-ketchup",
+        "ketchup"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bottle-ketchup-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07206,
+          0,
+          -0.08321
+        ],
+        "max": [
+          0.07206,
+          0.39313,
+          0.08321
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bottle-labeled",
+      "tags": [
+        "bottle labeled",
+        "bottle-labeled",
+        "labeled"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bottle-labeled-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18421,
+          0,
+          -0.18421
+        ],
+        "max": [
+          0.18421,
+          0.88572,
+          0.18421
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bottle-musterd",
+      "tags": [
+        "bottle musterd",
+        "bottle-musterd",
+        "musterd"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bottle-musterd-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07206,
+          0,
+          -0.08321
+        ],
+        "max": [
+          0.07206,
+          0.39313,
+          0.08321
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bottle-oil",
+      "tags": [
+        "bottle oil",
+        "bottle-oil",
+        "oil"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bottle-oil-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07001,
+          0,
+          -0.07001
+        ],
+        "max": [
+          0.07001,
+          0.62181,
+          0.07001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bottle-return",
+      "tags": [
+        "bottle return",
+        "bottle-return",
+        "return"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bottle-return-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22501,
+          0,
+          -0.24052
+        ],
+        "max": [
+          0.22501,
+          1.09255,
+          0.24052
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-candle",
+      "tags": [
+        "candle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-candle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15047,
+          0,
+          -0.14819
+        ],
+        "max": [
+          0.15047,
+          0.78569,
+          0.14819
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-candle-lit",
+      "tags": [
+        "candle lit",
+        "candle-lit",
+        "lit"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-candle-lit-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16719,
+          0,
+          -0.16465
+        ],
+        "max": [
+          0.16719,
+          1.05109,
+          0.16465
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-candle-melted",
+      "tags": [
+        "candle melted",
+        "candle-melted",
+        "melted"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-candle-melted-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15047,
+          0,
+          -0.14819
+        ],
+        "max": [
+          0.15047,
+          0.63139,
+          0.14819
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-candle-multiple",
+      "tags": [
+        "candle multiple",
+        "candle-multiple",
+        "multiple"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-candle-multiple-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1276,
+          0,
+          -0.13338
+        ],
+        "max": [
+          0.1276,
+          0.20017,
+          0.13338
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-candle-triple",
+      "tags": [
+        "candle triple",
+        "candle-triple",
+        "triple"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-candle-triple-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22554,
+          0,
+          -0.17547
+        ],
+        "max": [
+          0.22554,
+          0.78569,
+          0.17547
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-coin-stack",
+      "tags": [
+        "coin stack",
+        "coin-stack",
+        "stack"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-coin-stack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71826,
+          0,
+          -0.82935
+        ],
+        "max": [
+          0.71826,
+          1.1569,
+          0.82935
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-heart",
+      "tags": [
+        "heart"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-heart-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.74007,
+          0,
+          -0.37711
+        ],
+        "max": [
+          0.74007,
+          1.24207,
+          0.37711
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-heart-outline",
+      "tags": [
+        "heart outline",
+        "heart-outline",
+        "outline"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-heart-outline-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.74007,
+          0,
+          -0.03036
+        ],
+        "max": [
+          0.74007,
+          1.24207,
+          0.03036
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-chest-special",
+      "tags": [
+        "chest special",
+        "chest-special",
+        "special"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-chest-special-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4262,
+          0,
+          -0.24148
+        ],
+        "max": [
+          0.4262,
+          0.40618,
+          0.24148
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-ketchup-bottle",
+      "tags": [
+        "ketchup bottle",
+        "ketchup-bottle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ketchup-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24979,
+          0,
+          -0.24979
+        ],
+        "max": [
+          0.24979,
+          1.5327,
+          0.24979
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lantern-candle",
+      "tags": [
+        "lantern candle",
+        "lantern-candle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lantern-candle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12001,
+          0,
+          -0.12001
+        ],
+        "max": [
+          0.12001,
+          0.38768,
+          0.12001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lantern-hanging",
+      "tags": [
+        "lantern hanging",
+        "lantern-hanging",
+        "hanging"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lantern-hanging-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32002,
+          0,
+          -0.32002
+        ],
+        "max": [
+          0.32002,
+          1.40858,
+          0.32002
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lantern-standing",
+      "tags": [
+        "lantern standing",
+        "lantern-standing",
+        "standing"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lantern-standing-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32002,
+          0,
+          -0.32002
+        ],
+        "max": [
+          0.32002,
+          0.9252,
+          0.32002
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-mayo-bottle",
+      "tags": [
+        "mayo bottle",
+        "mayo-bottle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-mayo-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24979,
+          0,
+          -0.24979
+        ],
+        "max": [
+          0.24979,
+          1.5327,
+          0.24979
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-mustard-bottle",
+      "tags": [
+        "mustard bottle",
+        "mustard-bottle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-mustard-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24979,
+          0,
+          -0.24979
+        ],
+        "max": [
+          0.24979,
+          1.5327,
+          0.24979
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-obstacle-diamond",
+      "tags": [
+        "obstacle diamond",
+        "obstacle-diamond"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-obstacle-diamond-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49996,
+          0,
+          -0.49996
+        ],
+        "max": [
+          0.49996,
+          0.14666,
+          0.49996
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pickup-bullets",
+      "tags": [
+        "pickup bullets",
+        "pickup-bullets",
+        "bullets"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pickup-bullets-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41422,
+          0,
+          -0.13808
+        ],
+        "max": [
+          0.41422,
+          0.84212,
+          0.13808
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pickup-health",
+      "tags": [
+        "pickup health",
+        "pickup-health",
+        "health"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pickup-health-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48472,
+          0,
+          -0.22009
+        ],
+        "max": [
+          0.48472,
+          1.00359,
+          0.22009
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pickup-jar",
+      "tags": [
+        "pickup jar",
+        "pickup-jar",
+        "jar"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pickup-jar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34598,
+          0,
+          -0.34598
+        ],
+        "max": [
+          0.34598,
+          1.02362,
+          0.34598
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pickup-sphere",
+      "tags": [
+        "pickup sphere",
+        "pickup-sphere",
+        "sphere"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pickup-sphere-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44279,
+          0,
+          -0.44279
+        ],
+        "max": [
+          0.44279,
+          0.88557,
+          0.44279
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pickup-thunder",
+      "tags": [
+        "pickup thunder",
+        "pickup-thunder",
+        "thunder"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pickup-thunder-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48642,
+          0,
+          -0.44159
+        ],
+        "max": [
+          0.48642,
+          0.86176,
+          0.44159
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-ring",
+      "tags": [
+        "pipe ring",
+        "pipe-ring"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-ring-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46189,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.46189,
+          0.80001,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-potion",
+      "tags": [
+        "potion"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-potion-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16403,
+          0,
+          -0.16403
+        ],
+        "max": [
+          0.16403,
+          0.40209,
+          0.16403
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-present-cube",
+      "tags": [
+        "present cube",
+        "present-cube"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-present-cube-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22501,
+          0,
+          -0.22501
+        ],
+        "max": [
+          0.22501,
+          0.57072,
+          0.22501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-present-rectangle",
+      "tags": [
+        "present rectangle",
+        "present-rectangle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-present-rectangle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32501,
+          0,
+          -0.22501
+        ],
+        "max": [
+          0.32501,
+          0.42072,
+          0.22501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-present-round",
+      "tags": [
+        "present round",
+        "present-round"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-present-round-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27445,
+          0,
+          -0.27445
+        ],
+        "max": [
+          0.27445,
+          0.57072,
+          0.27445
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-rice-ball",
+      "tags": [
+        "rice ball",
+        "rice-ball"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-rice-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.04061,
+          0,
+          -0.05761
+        ],
+        "max": [
+          0.04061,
+          0.13094,
+          0.05761
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-skull-candle",
+      "tags": [
+        "skull candle",
+        "skull-candle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-skull-candle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45879,
+          0,
+          -0.46808
+        ],
+        "max": [
+          0.45879,
+          1.18733,
+          0.46808
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-soda-bottle",
+      "tags": [
+        "soda bottle",
+        "soda-bottle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-soda-bottle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09025,
+          0,
+          -0.07816
+        ],
+        "max": [
+          0.09025,
+          0.58042,
+          0.07816
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-spiky-ball",
+      "tags": [
+        "spiky ball",
+        "spiky-ball"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-spiky-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58948,
+          0,
+          -0.58948
+        ],
+        "max": [
+          0.58948,
+          1.19041,
+          0.58948
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-star-outline",
+      "tags": [
+        "star outline",
+        "star-outline"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-star-outline-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75536,
+          0,
+          -0.02973
+        ],
+        "max": [
+          0.75536,
+          1.43825,
+          0.02973
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-torch",
+      "tags": [
+        "torch"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-torch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27515,
+          0,
+          -0.27515
+        ],
+        "max": [
+          0.27515,
+          1.04161,
+          0.27515
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-torch-lit",
+      "tags": [
+        "torch lit",
+        "torch-lit"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-torch-lit-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27515,
+          0,
+          -0.27515
+        ],
+        "max": [
+          0.27515,
+          1.1258,
+          0.27515
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-torch-mounted",
+      "tags": [
+        "torch mounted",
+        "torch-mounted",
+        "mounted"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-torch-mounted-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27515,
+          0,
+          -0.30793
+        ],
+        "max": [
+          0.27515,
+          1.06247,
+          0.30793
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-trash-bag",
+      "tags": [
+        "trash bag",
+        "trash-bag",
+        "bag"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-trash-bag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24845,
+          0,
+          -0.25167
+        ],
+        "max": [
+          0.24845,
+          0.56372,
+          0.25167
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-apple",
+      "tags": [
+        "apple"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-apple-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40123,
+          0,
+          -0.39936
+        ],
+        "max": [
+          0.40123,
+          0.85175,
+          0.39936
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-avocado",
+      "tags": [
+        "avocado"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-avocado-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37658,
+          0,
+          -0.26988
+        ],
+        "max": [
+          0.37658,
+          1.09391,
+          0.26988
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bell",
+      "tags": [
+        "bell",
+        "decoration"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bell-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.95993,
+          0,
+          -0.69488
+        ],
+        "max": [
+          1.95993,
+          3.64206,
+          0.69488
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bottles",
+      "tags": [
+        "bottles",
+        "environment"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bottles-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45159,
+          0,
+          -0.65155
+        ],
+        "max": [
+          0.45159,
+          1.02164,
+          0.65155
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bowl",
+      "tags": [
+        "bowl"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bowl-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49225,
+          0,
+          -0.49984
+        ],
+        "max": [
+          0.49225,
+          0.4582,
+          0.49984
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bread",
+      "tags": [
+        "bread"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bread-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34668,
+          0,
+          -0.59953
+        ],
+        "max": [
+          0.34668,
+          0.84703,
+          0.59953
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-broccoli",
+      "tags": [
+        "broccoli"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-broccoli-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37574,
+          0,
+          -0.32221
+        ],
+        "max": [
+          0.37574,
+          0.89964,
+          0.32221
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-burger",
+      "tags": [
+        "burger"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-burger-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.82597,
+          0,
+          -0.85004
+        ],
+        "max": [
+          0.82597,
+          1.06523,
+          0.85004
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-carpet",
+      "tags": [
+        "carpet"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-carpet-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.23873,
+          0,
+          -2.00001
+        ],
+        "max": [
+          1.23873,
+          0.21048,
+          2.00001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-carrot",
+      "tags": [
+        "carrot"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-carrot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47337,
+          0,
+          -0.46582
+        ],
+        "max": [
+          0.47337,
+          2.77855,
+          0.46582
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-coconut",
+      "tags": [
+        "coconut"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-coconut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38884,
+          0,
+          -0.39173
+        ],
+        "max": [
+          0.38884,
+          0.77693,
+          0.39173
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-corn",
+      "tags": [
+        "corn"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-corn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41185,
+          0,
+          -0.54741
+        ],
+        "max": [
+          0.41185,
+          1.98398,
+          0.54741
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-corndog",
+      "tags": [
+        "corndog"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-corndog-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.12808,
+          0,
+          -0.12808
+        ],
+        "max": [
+          0.12808,
+          1.35183,
+          0.12808
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-croissant",
+      "tags": [
+        "croissant"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-croissant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.65224,
+          0,
+          -0.36525
+        ],
+        "max": [
+          0.65224,
+          0.54979,
+          0.36525
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cupcake",
+      "tags": [
+        "cupcake"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cupcake-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36709,
+          0,
+          -0.36291
+        ],
+        "max": [
+          0.36709,
+          0.93156,
+          0.36291
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cuttingboard",
+      "tags": [
+        "cuttingboard"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cuttingboard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.75001,
+          0.15001,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-donut",
+      "tags": [
+        "donut",
+        "donut1"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-donut-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42953,
+          0,
+          -0.4349
+        ],
+        "max": [
+          0.42953,
+          0.29139,
+          0.4349
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-eggplant",
+      "tags": [
+        "eggplant"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-eggplant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48112,
+          0,
+          -0.35901
+        ],
+        "max": [
+          0.48112,
+          1.75199,
+          0.35901
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-fork",
+      "tags": [
+        "fork"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-fork-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10394,
+          0,
+          -1.0088
+        ],
+        "max": [
+          0.10394,
+          0.04741,
+          1.0088
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-fries",
+      "tags": [
+        "fries"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-fries-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47443,
+          0,
+          -0.66315
+        ],
+        "max": [
+          0.47443,
+          0.58576,
+          0.66315
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-fruit",
+      "tags": [
+        "fruit"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-fruit-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43867,
+          0,
+          -0.34438
+        ],
+        "max": [
+          0.43867,
+          0.82307,
+          0.34438
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hotdog",
+      "tags": [
+        "hotdog"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hotdog-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39265,
+          0,
+          -0.83095
+        ],
+        "max": [
+          0.39265,
+          0.40938,
+          0.83095
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cheeseburger",
+      "tags": [
+        "cheeseburger"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cheeseburger-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.73239,
+          0,
+          -0.77049
+        ],
+        "max": [
+          0.73239,
+          0.9382,
+          0.77049
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-chopsticks",
+      "tags": [
+        "chopsticks"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-chopsticks-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.81491,
+          0,
+          -0.06304
+        ],
+        "max": [
+          0.81491,
+          0.05318,
+          0.06304
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-icecream",
+      "tags": [
+        "icecream"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-icecream-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.42709,
+          0,
+          -0.41638
+        ],
+        "max": [
+          0.42709,
+          1.82987,
+          0.41638
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-kitchencabinet",
+      "tags": [
+        "kitchencabinet"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-kitchencabinet-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -0.52096
+        ],
+        "max": [
+          1.00001,
+          2.00001,
+          0.52096
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-kitchentable",
+      "tags": [
+        "kitchentable"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-kitchentable-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -1.00001
+        ],
+        "max": [
+          1.00001,
+          1.00376,
+          1.00001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lettuce",
+      "tags": [
+        "lettuce"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lettuce-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.89403,
+          0,
+          -0.84144
+        ],
+        "max": [
+          0.89403,
+          0.23056,
+          0.84144
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-menu",
+      "tags": [
+        "menu"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-menu-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25001,
+          0,
+          -0.15001
+        ],
+        "max": [
+          0.25001,
+          0.80001,
+          0.15001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-milkshake",
+      "tags": [
+        "milkshake"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-milkshake-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35229,
+          0,
+          -0.38226
+        ],
+        "max": [
+          0.35229,
+          1.86181,
+          0.38226
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-mustard",
+      "tags": [
+        "mustard"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-mustard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15001,
+          0,
+          -0.15001
+        ],
+        "max": [
+          0.15001,
+          0.77852,
+          0.15001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-painting",
+      "tags": [
+        "painting"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-painting-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.00143,
+          0,
+          -0.15005
+        ],
+        "max": [
+          2.00143,
+          1.4119,
+          0.15005
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pan",
+      "tags": [
+        "pan"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pan-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62592,
+          0,
+          -1.03309
+        ],
+        "max": [
+          0.62592,
+          0.24278,
+          1.03309
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-papertowel",
+      "tags": [
+        "papertowel"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-papertowel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25001,
+          0,
+          -0.25001
+        ],
+        "max": [
+          0.25001,
+          0.91376,
+          0.25001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pepper",
+      "tags": [
+        "pepper"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pepper-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33701,
+          0,
+          -0.3559
+        ],
+        "max": [
+          0.33701,
+          1.11659,
+          0.3559
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pumpkin",
+      "tags": [
+        "pumpkin"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pumpkin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.74864,
+          0,
+          -0.75616
+        ],
+        "max": [
+          0.74864,
+          0.93095,
+          0.75616
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-soda",
+      "tags": [
+        "soda"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-soda-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4559,
+          0,
+          -0.4559
+        ],
+        "max": [
+          0.4559,
+          1.92293,
+          0.4559
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-spoon",
+      "tags": [
+        "spoon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-spoon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19641,
+          0,
+          -0.94255
+        ],
+        "max": [
+          0.19641,
+          0.08355,
+          0.94255
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-steak",
+      "tags": [
+        "steak"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-steak-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.65997,
+          0,
+          -0.95634
+        ],
+        "max": [
+          0.65997,
+          0.33968,
+          0.95634
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tentacle",
+      "tags": [
+        "tentacle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tentacle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38101,
+          0,
+          -0.13366
+        ],
+        "max": [
+          0.38101,
+          0.27567,
+          0.13366
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tomato",
+      "tags": [
+        "tomato"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tomato-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37625,
+          0,
+          -0.37625
+        ],
+        "max": [
+          0.37625,
+          0.62639,
+          0.37625
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-towelrail",
+      "tags": [
+        "towelrail"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-towelrail-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.80001,
+          0,
+          -0.23172
+        ],
+        "max": [
+          0.80001,
+          0.58289,
+          0.23172
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-turnip",
+      "tags": [
+        "turnip"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-turnip-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62414,
+          0,
+          -0.61685
+        ],
+        "max": [
+          0.62414,
+          2.39148,
+          0.61685
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-waffle",
+      "tags": [
+        "waffle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-waffle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56701,
+          0,
+          -0.7646
+        ],
+        "max": [
+          0.56701,
+          0.23225,
+          0.7646
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-armchair",
+      "tags": [
+        "armchair"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-armchair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.90001,
+          0,
+          -0.80001
+        ],
+        "max": [
+          0.90001,
+          1.22407,
+          0.80001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-armchair-pillows",
+      "tags": [
+        "armchair pillows",
+        "armchair-pillows",
+        "pillows"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-armchair-pillows-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.90001,
+          0,
+          -0.80001
+        ],
+        "max": [
+          0.90001,
+          1.22407,
+          0.80001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bathtub",
+      "tags": [
+        "bathtub"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bathtub-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59501,
+          0,
+          -0.28001
+        ],
+        "max": [
+          0.59501,
+          0.42001,
+          0.28001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bed",
+      "tags": [
+        "bed"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bed-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16744,
+          0,
+          -0.37367
+        ],
+        "max": [
+          0.16744,
+          0.27375,
+          0.37367
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bed-decorated",
+      "tags": [
+        "bed decorated",
+        "bed-decorated"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bed-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.30317,
+          0,
+          -1.52863
+        ],
+        "max": [
+          1.30317,
+          1.7008,
+          1.52863
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bed-frame",
+      "tags": [
+        "bed frame",
+        "bed-frame",
+        "frame"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bed-frame-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75001,
+          0,
+          -1.50001
+        ],
+        "max": [
+          0.75001,
+          1.06264,
+          1.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bed-single",
+      "tags": [
+        "bed single",
+        "bed-single"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bed-single-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.80001,
+          0,
+          -1.50001
+        ],
+        "max": [
+          0.80001,
+          1.00001,
+          1.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bench",
+      "tags": [
+        "bench"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bench-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43786,
+          0,
+          -0.7857
+        ],
+        "max": [
+          0.43786,
+          0.74424,
+          0.7857
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bench-decorated",
+      "tags": [
+        "bench decorated",
+        "bench-decorated"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bench-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -0.50848
+        ],
+        "max": [
+          1.00001,
+          1.67728,
+          0.50848
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-books",
+      "tags": [
+        "books"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-books-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07523,
+          0,
+          -0.04726
+        ],
+        "max": [
+          0.07523,
+          0.10391,
+          0.04726
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cabinet-decorated",
+      "tags": [
+        "cabinet decorated",
+        "cabinet-decorated"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cabinet-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.02082,
+          0,
+          -0.50079
+        ],
+        "max": [
+          1.02082,
+          1.82704,
+          0.50079
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cabinet-doors",
+      "tags": [
+        "cabinet doors",
+        "cabinet-doors"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cabinet-doors-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.00001,
+          0,
+          -0.91923
+        ],
+        "max": [
+          2.00001,
+          1.39935,
+          0.91923
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cabinet-shelves",
+      "tags": [
+        "cabinet shelves",
+        "cabinet-shelves",
+        "shelves"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cabinet-shelves-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.00001,
+          0,
+          -0.88292
+        ],
+        "max": [
+          2.00001,
+          1.39935,
+          0.88292
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-can-fridge",
+      "tags": [
+        "can fridge",
+        "can-fridge",
+        "fridge"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-can-fridge-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.18001,
+          0,
+          -0.68682
+        ],
+        "max": [
+          1.18001,
+          4.38526,
+          0.68682
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cooking-pot",
+      "tags": [
+        "cooking pot",
+        "cooking-pot"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cooking-pot-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.20878,
+          0,
+          -0.99609
+        ],
+        "max": [
+          1.20878,
+          1.07571,
+          0.99609
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-couch",
+      "tags": [
+        "couch"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-couch-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.5066,
+          0,
+          -0.6068
+        ],
+        "max": [
+          1.5066,
+          1.24406,
+          0.6068
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-couch-pillows",
+      "tags": [
+        "couch pillows",
+        "couch-pillows"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-couch-pillows-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.50001,
+          0,
+          -0.80001
+        ],
+        "max": [
+          1.50001,
+          1.22407,
+          0.80001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-counter-sink",
+      "tags": [
+        "counter sink",
+        "counter-sink",
+        "sink"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-counter-sink-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.00001,
+          0,
+          -0.88292
+        ],
+        "max": [
+          2.00001,
+          2.26181,
+          0.88292
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cutting-table",
+      "tags": [
+        "cutting table",
+        "cutting-table"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cutting-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.04871,
+          0,
+          -0.84654
+        ],
+        "max": [
+          1.04871,
+          0.15148,
+          0.84654
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-dryer",
+      "tags": [
+        "dryer"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-dryer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19501,
+          0,
+          -0.19001
+        ],
+        "max": [
+          0.19501,
+          0.47001,
+          0.19001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-fridge-decorated",
+      "tags": [
+        "fridge decorated",
+        "fridge-decorated"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-fridge-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -1.12002
+        ],
+        "max": [
+          1.00001,
+          2.50001,
+          1.12002
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-chair-stool",
+      "tags": [
+        "chair stool",
+        "chair-stool"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-chair-stool-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37501,
+          0,
+          -0.37501
+        ],
+        "max": [
+          0.37501,
+          0.50001,
+          0.37501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-chair-wood",
+      "tags": [
+        "chair wood",
+        "chair-wood",
+        "wood"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-chair-wood-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37501,
+          0,
+          -0.42257
+        ],
+        "max": [
+          0.37501,
+          1.25833,
+          0.42257
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-kitchencounter-sink",
+      "tags": [
+        "kitchencounter sink",
+        "kitchencounter-sink"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-kitchencounter-sink-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -1.02096
+        ],
+        "max": [
+          1.00001,
+          1.80163,
+          1.02096
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-kitchentable-sink",
+      "tags": [
+        "kitchentable sink",
+        "kitchentable-sink"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-kitchentable-sink-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -1.00001
+        ],
+        "max": [
+          1.00001,
+          1.80538,
+          1.00001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lamp-standing",
+      "tags": [
+        "lamp standing",
+        "lamp-standing"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lamp-standing-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.50001,
+          2.52001,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lamp-table",
+      "tags": [
+        "lamp table",
+        "lamp-table"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lamp-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.50001,
+          1.02167,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-laptop",
+      "tags": [
+        "laptop"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-laptop-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13201,
+          0,
+          -0.12004
+        ],
+        "max": [
+          0.13201,
+          0.16182,
+          0.12004
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-oven",
+      "tags": [
+        "oven"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-oven-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.07118,
+          0,
+          -0.97924
+        ],
+        "max": [
+          1.07118,
+          2.22846,
+          0.97924
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pictureframe",
+      "tags": [
+        "pictureframe"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pictureframe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50501,
+          0,
+          -0.10001
+        ],
+        "max": [
+          0.50501,
+          1.20001,
+          0.10001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pictureframe-standing",
+      "tags": [
+        "pictureframe standing",
+        "pictureframe-standing"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pictureframe-standing-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25001,
+          0,
+          -0.18974
+        ],
+        "max": [
+          0.25001,
+          0.61855,
+          0.18974
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pillow",
+      "tags": [
+        "pillow"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pillow-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32501,
+          0,
+          -0.25001
+        ],
+        "max": [
+          0.32501,
+          0.20001,
+          0.25001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pot-filled",
+      "tags": [
+        "pot filled",
+        "pot-filled",
+        "filled"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pot-filled-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.79198,
+          0,
+          -0.62592
+        ],
+        "max": [
+          0.79198,
+          0.731,
+          0.62592
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-radio",
+      "tags": [
+        "radio"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-radio-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15751,
+          0,
+          -0.04876
+        ],
+        "max": [
+          0.15751,
+          0.2282,
+          0.04876
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shower",
+      "tags": [
+        "shower"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2809,
+          0,
+          -0.2909
+        ],
+        "max": [
+          0.2809,
+          1.09404,
+          0.2909
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sofa",
+      "tags": [
+        "sofa"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sofa-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.67497,
+          0,
+          -0.73214
+        ],
+        "max": [
+          1.67497,
+          1.3241,
+          0.73214
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-speaker",
+      "tags": [
+        "speaker"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-speaker-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07401,
+          0,
+          -0.07401
+        ],
+        "max": [
+          0.07401,
+          0.63641,
+          0.07401
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-toaster",
+      "tags": [
+        "toaster"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-toaster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.094,
+          0,
+          -0.05001
+        ],
+        "max": [
+          0.094,
+          0.13001,
+          0.05001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-toilet",
+      "tags": [
+        "toilet"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-toilet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15628,
+          0,
+          -0.2386
+        ],
+        "max": [
+          0.15628,
+          0.45097,
+          0.2386
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-washer",
+      "tags": [
+        "washer"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-washer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19501,
+          0,
+          -0.19501
+        ],
+        "max": [
+          0.19501,
+          0.47001,
+          0.19501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-employee",
+      "tags": [
+        "employee"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-employee-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.39029,
+          0,
+          -0.20069
+        ],
+        "max": [
+          0.39029,
+          0.72336,
+          0.20069
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-oobi",
+      "tags": [
+        "oobi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-oobi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43412,
+          0,
+          -0.30127
+        ],
+        "max": [
+          0.43412,
+          0.90744,
+          0.30127
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-oodi",
+      "tags": [
+        "oodi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-oodi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43412,
+          0,
+          -0.30493
+        ],
+        "max": [
+          0.43412,
+          0.90744,
+          0.30493
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-ooli",
+      "tags": [
+        "ooli"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ooli-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43412,
+          0,
+          -0.30127
+        ],
+        "max": [
+          0.43412,
+          0.90744,
+          0.30127
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-oopi",
+      "tags": [
+        "oopi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-oopi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43412,
+          0,
+          -0.30127
+        ],
+        "max": [
+          0.43412,
+          0.90744,
+          0.30127
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-oozi",
+      "tags": [
+        "oozi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-oozi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43412,
+          0,
+          -0.30436
+        ],
+        "max": [
+          0.43412,
+          0.90744,
+          0.30436
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-wizard",
+      "tags": [
+        "wizard"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-wizard-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.1649,
+          0,
+          -1.15468
+        ],
+        "max": [
+          1.1649,
+          2.6014,
+          1.15468
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-alpaking",
+      "tags": [
+        "alpaking"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-alpaking-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.15196,
+          0,
+          -1.11924
+        ],
+        "max": [
+          2.15196,
+          2.13899,
+          1.11924
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-alpaking-evolved",
+      "tags": [
+        "alpaking evolved",
+        "alpaking-evolved",
+        "evolved"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-alpaking-evolved-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.15196,
+          0,
+          -1.48652
+        ],
+        "max": [
+          2.15196,
+          3.19193,
+          1.48652
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-armabee",
+      "tags": [
+        "armabee"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-armabee-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.15196,
+          0,
+          -1.0296
+        ],
+        "max": [
+          2.15196,
+          1.88617,
+          1.0296
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-armabee-evolved",
+      "tags": [
+        "armabee evolved",
+        "armabee-evolved"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-armabee-evolved-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.15196,
+          0,
+          -1.02317
+        ],
+        "max": [
+          2.15196,
+          2.13794,
+          1.02317
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-enemy",
+      "tags": [
+        "enemy"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-enemy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.99065,
+          0,
+          -0.68917
+        ],
+        "max": [
+          0.99065,
+          1.64594,
+          0.68917
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-enemy-extra",
+      "tags": [
+        "enemy extra",
+        "enemy-extra",
+        "extra"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-enemy-extra-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45944,
+          0,
+          -0.45823
+        ],
+        "max": [
+          0.45944,
+          1.67731,
+          0.45823
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-enemy-flying",
+      "tags": [
+        "enemy flying",
+        "enemy-flying",
+        "flying"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-enemy-flying-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62843,
+          0,
+          -0.61844
+        ],
+        "max": [
+          0.62843,
+          3.70738,
+          0.61844
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-ghost-skull",
+      "tags": [
+        "ghost skull",
+        "ghost-skull",
+        "skull"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ghost-skull-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.74991,
+          0,
+          -0.76702
+        ],
+        "max": [
+          2.74991,
+          3.10088,
+          0.76702
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-glub",
+      "tags": [
+        "glub"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-glub-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.15196,
+          0,
+          -1.08548
+        ],
+        "max": [
+          2.15196,
+          2.35087,
+          1.08548
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-glub-evolved",
+      "tags": [
+        "glub evolved",
+        "glub-evolved"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-glub-evolved-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.15196,
+          0,
+          -1.00403
+        ],
+        "max": [
+          2.15196,
+          3.70738,
+          1.00403
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-goleling",
+      "tags": [
+        "goleling"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-goleling-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.19103,
+          0,
+          -0.97107
+        ],
+        "max": [
+          2.19103,
+          1.55219,
+          0.97107
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-goleling-evolved",
+      "tags": [
+        "goleling evolved",
+        "goleling-evolved"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-goleling-evolved-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.19103,
+          0,
+          -1.09312
+        ],
+        "max": [
+          2.19103,
+          2.56831,
+          1.09312
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hywirl",
+      "tags": [
+        "hywirl"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hywirl-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.77155,
+          0,
+          -0.88386
+        ],
+        "max": [
+          2.77155,
+          2.74488,
+          0.88386
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-mushnub",
+      "tags": [
+        "mushnub"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-mushnub-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.3756,
+          0,
+          -1.3756
+        ],
+        "max": [
+          1.3756,
+          3.29605,
+          1.3756
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-mushnub-evolved",
+      "tags": [
+        "mushnub evolved",
+        "mushnub-evolved"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-mushnub-evolved-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.70105,
+          0,
+          -1.76025
+        ],
+        "max": [
+          1.70105,
+          4.41108,
+          1.76025
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-ship-ghost",
+      "tags": [
+        "ship ghost",
+        "ship-ghost"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ship-ghost-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.40001,
+          0,
+          -5.30001
+        ],
+        "max": [
+          2.40001,
+          9.96353,
+          5.30001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-skeleton",
+      "tags": [
+        "skeleton"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-skeleton-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38041,
+          0,
+          -0.15798
+        ],
+        "max": [
+          0.38041,
+          0.70014,
+          0.15798
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-spiky-blob",
+      "tags": [
+        "spiky blob",
+        "spiky-blob"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-spiky-blob-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.7501,
+          0,
+          -2.07934
+        ],
+        "max": [
+          1.7501,
+          4.1426,
+          2.07934
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-blob",
+      "tags": [
+        "tree blob",
+        "tree-blob"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-blob-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.93134,
+          0,
+          -1.93134
+        ],
+        "max": [
+          1.93134,
+          5.8756,
+          1.93134
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-vampire",
+      "tags": [
+        "vampire"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-vampire-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40569,
+          0,
+          -0.22729
+        ],
+        "max": [
+          0.40569,
+          0.78048,
+          0.22729
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-zombie-ribcage",
+      "tags": [
+        "zombie ribcage",
+        "zombie-ribcage",
+        "ribcage"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-zombie-ribcage-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25328,
+          0,
+          -0.21255
+        ],
+        "max": [
+          0.25328,
+          1.06277,
+          0.21255
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-altar-stone",
+      "tags": [
+        "altar stone",
+        "altar-stone"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-altar-stone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5198,
+          0,
+          -0.32661
+        ],
+        "max": [
+          0.5198,
+          0.48761,
+          0.32661
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bamboo",
+      "tags": [
+        "bamboo"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bamboo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49256,
+          0,
+          -0.47835
+        ],
+        "max": [
+          0.49256,
+          2.87575,
+          0.47835
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-birch-tree",
+      "tags": [
+        "birch tree",
+        "birch-tree"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-birch-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.85094,
+          0,
+          -1.23987
+        ],
+        "max": [
+          0.85094,
+          3.57381,
+          1.23987
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bush",
+      "tags": [
+        "bush"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.66422,
+          0,
+          -0.84502
+        ],
+        "max": [
+          0.66422,
+          1.24175,
+          0.84502
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bush-berries",
+      "tags": [
+        "bush berries",
+        "bush-berries",
+        "berries"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bush-berries-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6962,
+          0,
+          -0.85945
+        ],
+        "max": [
+          0.6962,
+          1.276,
+          0.85945
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cactus-flowers",
+      "tags": [
+        "cactus flowers",
+        "cactus-flowers",
+        "flowers"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cactus-flowers-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.38269,
+          0,
+          -0.64164
+        ],
+        "max": [
+          0.38269,
+          1.93899,
+          0.64164
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-campfire-bricks",
+      "tags": [
+        "campfire bricks",
+        "campfire-bricks"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-campfire-bricks-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23461,
+          0,
+          -0.23461
+        ],
+        "max": [
+          0.23461,
+          0.06761,
+          0.23461
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-campfire-logs",
+      "tags": [
+        "campfire logs",
+        "campfire-logs",
+        "logs"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-campfire-logs-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.14593,
+          0,
+          -0.14593
+        ],
+        "max": [
+          0.14593,
+          0.06261,
+          0.14593
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-campfire-stones",
+      "tags": [
+        "campfire stones",
+        "campfire-stones",
+        "stones"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-campfire-stones-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27043,
+          0,
+          -0.25776
+        ],
+        "max": [
+          0.27043,
+          0.07776,
+          0.25776
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cloud",
+      "tags": [
+        "cloud"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cloud-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.64437,
+          0,
+          -1.22375
+        ],
+        "max": [
+          1.64437,
+          2.11685,
+          1.22375
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-coral-grouper",
+      "tags": [
+        "coral grouper",
+        "coral-grouper",
+        "grouper"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-coral-grouper-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.57717,
+          0,
+          -2.61385
+        ],
+        "max": [
+          1.57717,
+          2.62813,
+          2.61385
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-crop-melon",
+      "tags": [
+        "crop melon",
+        "crop-melon",
+        "melon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-crop-melon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20881,
+          0,
+          -0.18083
+        ],
+        "max": [
+          0.20881,
+          0.34801,
+          0.18083
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-crop-turnip",
+      "tags": [
+        "crop turnip",
+        "crop-turnip"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-crop-turnip-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17158,
+          0,
+          -0.17158
+        ],
+        "max": [
+          0.17158,
+          0.66068,
+          0.17158
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-flower",
+      "tags": [
+        "flower"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-flower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13387,
+          0,
+          -0.1022
+        ],
+        "max": [
+          0.13387,
+          0.48942,
+          0.1022
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-flower-horn",
+      "tags": [
+        "flower horn",
+        "flower-horn",
+        "horn"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-flower-horn-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.57977,
+          0,
+          -2.52033
+        ],
+        "max": [
+          1.57977,
+          3.00476,
+          2.52033
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-grass",
+      "tags": [
+        "grass"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-grass-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15811,
+          0,
+          -0.22087
+        ],
+        "max": [
+          0.15811,
+          1.20127,
+          0.22087
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-grass-leafs",
+      "tags": [
+        "grass leafs",
+        "grass-leafs",
+        "leafs"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-grass-leafs-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11725,
+          0,
+          -0.12866
+        ],
+        "max": [
+          0.11725,
+          0.14251,
+          0.12866
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-grass-patch",
+      "tags": [
+        "grass patch",
+        "grass-patch",
+        "patch"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-grass-patch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6564,
+          0,
+          -0.63543
+        ],
+        "max": [
+          0.6564,
+          0.47093,
+          0.63543
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-grass-plant",
+      "tags": [
+        "grass plant",
+        "grass-plant"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-grass-plant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5571,
+          0,
+          -0.61851
+        ],
+        "max": [
+          0.5571,
+          0.51962,
+          0.61851
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hanging-moss",
+      "tags": [
+        "hanging moss",
+        "hanging-moss",
+        "moss"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hanging-moss-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07992,
+          0,
+          -0.01751
+        ],
+        "max": [
+          0.07992,
+          0.47849,
+          0.01751
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hedge",
+      "tags": [
+        "hedge"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hedge-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.15001
+        ],
+        "max": [
+          0.50001,
+          0.40001,
+          0.15001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-lily",
+      "tags": [
+        "lily"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-lily-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13594,
+          0,
+          -0.15697
+        ],
+        "max": [
+          0.13594,
+          0.09801,
+          0.15697
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-log-stack",
+      "tags": [
+        "log stack",
+        "log-stack"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-log-stack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21237,
+          0,
+          -0.35501
+        ],
+        "max": [
+          0.21237,
+          0.34642,
+          0.35501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-palm-tree",
+      "tags": [
+        "palm tree",
+        "palm-tree"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-palm-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.43846,
+          0,
+          -1.3045
+        ],
+        "max": [
+          1.43846,
+          4.4714,
+          1.3045
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pine",
+      "tags": [
+        "pine"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pine-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58901,
+          0,
+          -0.66729
+        ],
+        "max": [
+          0.58901,
+          2.30246,
+          0.66729
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pine-tree",
+      "tags": [
+        "pine tree",
+        "pine-tree"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pine-tree-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.97809,
+          0,
+          -0.90769
+        ],
+        "max": [
+          0.97809,
+          2.70003,
+          0.90769
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-rock-moss",
+      "tags": [
+        "rock moss",
+        "rock-moss"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-rock-moss-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24267,
+          0,
+          -0.23338
+        ],
+        "max": [
+          0.24267,
+          0.95004,
+          0.23338
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sakura-flower",
+      "tags": [
+        "sakura flower",
+        "sakura-flower"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sakura-flower-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48576,
+          0,
+          -0.22474
+        ],
+        "max": [
+          0.48576,
+          0.95402,
+          0.22474
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-stump",
+      "tags": [
+        "stump",
+        "old"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-stump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17827,
+          0,
+          -0.18551
+        ],
+        "max": [
+          0.17827,
+          0.26651,
+          0.18551
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-decorated",
+      "tags": [
+        "tree decorated",
+        "tree-decorated",
+        "dead"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.15082,
+          0,
+          -0.80716
+        ],
+        "max": [
+          1.15082,
+          5.41703,
+          0.80716
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-floating",
+      "tags": [
+        "tree floating",
+        "tree-floating",
+        "floating"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-floating-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.04426,
+          0,
+          -0.41297
+        ],
+        "max": [
+          1.04426,
+          4.61139,
+          0.41297
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-pine",
+      "tags": [
+        "tree pine",
+        "tree-pine"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-pine-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.37969,
+          0,
+          -2.07737
+        ],
+        "max": [
+          2.37969,
+          7.47513,
+          2.07737
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-spiral",
+      "tags": [
+        "tree spiral",
+        "tree-spiral",
+        "spiral"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-spiral-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.18186,
+          0,
+          -1.11379
+        ],
+        "max": [
+          1.18186,
+          4.4913,
+          1.11379
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-stump",
+      "tags": [
+        "tree stump",
+        "tree-stump"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-stump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.67979,
+          0,
+          -0.5157
+        ],
+        "max": [
+          0.67979,
+          0.62159,
+          0.5157
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-swirl",
+      "tags": [
+        "tree swirl",
+        "tree-swirl",
+        "swirl"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-swirl-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.30291,
+          0,
+          -0.83945
+        ],
+        "max": [
+          2.30291,
+          7.34933,
+          0.83945
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-wheat",
+      "tags": [
+        "wheat"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-wheat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17891,
+          0,
+          -0.17825
+        ],
+        "max": [
+          0.17891,
+          1.10223,
+          0.17825
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-wood-log",
+      "tags": [
+        "wood log",
+        "wood-log",
+        "log"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-wood-log-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31643,
+          0,
+          -1.33515
+        ],
+        "max": [
+          0.31643,
+          0.74836,
+          1.33515
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-barrel",
+      "tags": [
+        "barrel"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35207,
+          0,
+          -0.35207
+        ],
+        "max": [
+          0.35207,
+          1.14492,
+          0.35207
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-barrel-decorated",
+      "tags": [
+        "barrel decorated",
+        "barrel-decorated"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-barrel-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.96899,
+          0,
+          -0.92773
+        ],
+        "max": [
+          0.96899,
+          2.55646,
+          0.92773
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-barrel-stack",
+      "tags": [
+        "barrel stack",
+        "barrel-stack"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-barrel-stack-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.92508,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.92508,
+          1.77015,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-barrier-fixed",
+      "tags": [
+        "barrier fixed",
+        "barrier-fixed",
+        "fixed"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-barrier-fixed-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.90277,
+          0,
+          -0.33333
+        ],
+        "max": [
+          1.90277,
+          3.18329,
+          0.33333
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-barrier-single",
+      "tags": [
+        "barrier single",
+        "barrier-single"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-barrier-single-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.94513,
+          0,
+          -0.32846
+        ],
+        "max": [
+          0.94513,
+          0.62809,
+          0.32846
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-barrier-trash",
+      "tags": [
+        "barrier trash",
+        "barrier-trash",
+        "trash"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-barrier-trash-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.24422,
+          0,
+          -0.65487
+        ],
+        "max": [
+          2.24422,
+          2.50948,
+          0.65487
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bear-trap",
+      "tags": [
+        "bear trap",
+        "bear-trap"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bear-trap-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.41251,
+          0,
+          -0.51919
+        ],
+        "max": [
+          0.41251,
+          0.4967,
+          0.51919
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bomb",
+      "tags": [
+        "bomb"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bomb-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56269,
+          0,
+          -0.56616
+        ],
+        "max": [
+          0.56269,
+          1.75267,
+          0.56616
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-box-decorated",
+      "tags": [
+        "box decorated",
+        "box-decorated"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-box-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.74494,
+          0,
+          -0.74363
+        ],
+        "max": [
+          0.74494,
+          1.48284,
+          0.74363
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-box-long",
+      "tags": [
+        "box long",
+        "box-long"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-box-long-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.55001,
+          0,
+          -0.25001
+        ],
+        "max": [
+          0.55001,
+          0.55001,
+          0.25001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cannon",
+      "tags": [
+        "cannon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cannon-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.68727,
+          0,
+          -1.66048
+        ],
+        "max": [
+          1.68727,
+          3.67334,
+          1.66048
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cannon-mobile",
+      "tags": [
+        "cannon mobile",
+        "cannon-mobile",
+        "mobile"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cannon-mobile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.83938,
+          0,
+          -0.96251
+        ],
+        "max": [
+          0.83938,
+          1.37967,
+          0.96251
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cube-spikes",
+      "tags": [
+        "cube spikes",
+        "cube-spikes"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cube-spikes-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.57563,
+          0,
+          -1.57563
+        ],
+        "max": [
+          1.57563,
+          3.15124,
+          1.57563
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-dumpster",
+      "tags": [
+        "dumpster"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-dumpster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28298,
+          0,
+          -0.17641
+        ],
+        "max": [
+          0.28298,
+          0.31729,
+          0.17641
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-exploding-barrel",
+      "tags": [
+        "exploding barrel",
+        "exploding-barrel"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-exploding-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3925,
+          0,
+          -0.3925
+        ],
+        "max": [
+          0.3925,
+          1.02429,
+          0.3925
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-exploding-barrel-spilled",
+      "tags": [
+        "exploding barrel spilled",
+        "exploding-barrel-spilled",
+        "spilled"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-exploding-barrel-spilled-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.2607,
+          0,
+          -0.69993
+        ],
+        "max": [
+          1.2607,
+          0.78499,
+          0.69993
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-fire-hydrant",
+      "tags": [
+        "fire hydrant",
+        "fire-hydrant",
+        "hydrant"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-fire-hydrant-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25756,
+          0,
+          -0.19959
+        ],
+        "max": [
+          0.25756,
+          0.77237,
+          0.19959
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hay-bale",
+      "tags": [
+        "hay bale",
+        "hay-bale",
+        "bale"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hay-bale-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30329,
+          0,
+          -0.20098
+        ],
+        "max": [
+          0.30329,
+          0.3541,
+          0.20098
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hazard-saw",
+      "tags": [
+        "hazard saw",
+        "hazard-saw",
+        "saw"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hazard-saw-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.50009,
+          0,
+          -0.09888
+        ],
+        "max": [
+          1.50009,
+          2.85978,
+          0.09888
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hazard-spike-trap",
+      "tags": [
+        "hazard spike trap",
+        "hazard-spike-trap"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hazard-spike-trap-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -1.00001
+        ],
+        "max": [
+          1.00001,
+          0.69678,
+          1.00001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-machine-barrel",
+      "tags": [
+        "machine barrel",
+        "machine-barrel"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-machine-barrel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32321,
+          0,
+          -0.25774
+        ],
+        "max": [
+          0.32321,
+          0.60001,
+          0.25774
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-obstacle-triangle",
+      "tags": [
+        "obstacle triangle",
+        "obstacle-triangle",
+        "triangle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-obstacle-triangle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49996,
+          0,
+          -0.49996
+        ],
+        "max": [
+          0.49996,
+          0.14666,
+          0.49996
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pallet",
+      "tags": [
+        "pallet"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pallet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44627,
+          0,
+          -0.60849
+        ],
+        "max": [
+          0.44627,
+          0.14005,
+          0.60849
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pallet-decorated",
+      "tags": [
+        "pallet decorated",
+        "pallet-decorated"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pallet-decorated-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -1.00001
+        ],
+        "max": [
+          1.00001,
+          1.50001,
+          1.00001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe",
+      "tags": [
+        "pipe"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.93385,
+          0,
+          -0.86769
+        ],
+        "max": [
+          0.93385,
+          1.86769,
+          0.86769
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-bend",
+      "tags": [
+        "pipe bend",
+        "pipe-bend",
+        "bend"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-bend-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25001,
+          0,
+          -0.14227
+        ],
+        "max": [
+          0.25001,
+          0.50001,
+          0.14227
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-bump",
+      "tags": [
+        "pipe bump",
+        "pipe-bump",
+        "bump"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-bump-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.50001,
+          1.00001,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-cross",
+      "tags": [
+        "pipe cross",
+        "pipe-cross",
+        "cross"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-cross-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.50001,
+          0.60001,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-entrance",
+      "tags": [
+        "pipe entrance",
+        "pipe-entrance"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-entrance-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.46189,
+          0,
+          -0.30001
+        ],
+        "max": [
+          0.46189,
+          0.80001,
+          0.30001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-glass",
+      "tags": [
+        "pipe glass",
+        "pipe-glass"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-glass-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.50001,
+          1.00001,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-long",
+      "tags": [
+        "pipe long",
+        "pipe-long"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-long-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          1.00001,
+          1.00001,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pipe-valve",
+      "tags": [
+        "pipe valve",
+        "pipe-valve",
+        "valve"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pipe-valve-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.50781
+        ],
+        "max": [
+          0.50001,
+          1.00001,
+          0.50781
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pizza-box",
+      "tags": [
+        "pizza box",
+        "pizza-box"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pizza-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47091,
+          0,
+          -0.47591
+        ],
+        "max": [
+          0.47091,
+          0.88163,
+          0.47591
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-plastic-barrier",
+      "tags": [
+        "plastic barrier",
+        "plastic-barrier"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-plastic-barrier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.51768,
+          0,
+          -0.16695
+        ],
+        "max": [
+          0.51768,
+          0.59955,
+          0.16695
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sack-trench",
+      "tags": [
+        "sack trench",
+        "sack-trench",
+        "trench"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sack-trench-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.67258,
+          0,
+          -0.46232
+        ],
+        "max": [
+          1.67258,
+          1.27728,
+          0.46232
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-traffic-barrier",
+      "tags": [
+        "traffic barrier",
+        "traffic-barrier"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-traffic-barrier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77767,
+          0,
+          -0.44032
+        ],
+        "max": [
+          0.77767,
+          1.11199,
+          0.44032
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-trap-spikes",
+      "tags": [
+        "trap spikes",
+        "trap-spikes"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-trap-spikes-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31961,
+          0,
+          -0.31876
+        ],
+        "max": [
+          0.31961,
+          0.25501,
+          0.31876
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-cone",
+      "tags": [
+        "tree cone",
+        "tree-cone"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-cone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26484,
+          0,
+          -0.26484
+        ],
+        "max": [
+          0.26484,
+          1.43034,
+          0.26484
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tree-spikes",
+      "tags": [
+        "tree spikes",
+        "tree-spikes"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tree-spikes-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.02517,
+          0,
+          -2.02517
+        ],
+        "max": [
+          2.02517,
+          5.15295,
+          2.02517
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-turret-double",
+      "tags": [
+        "turret double",
+        "turret-double",
+        "double"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-turret-double-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45001,
+          0,
+          -0.30001
+        ],
+        "max": [
+          0.45001,
+          0.70001,
+          0.30001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-turret-single",
+      "tags": [
+        "turret single",
+        "turret-single"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-turret-single-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30001,
+          0,
+          -0.36119
+        ],
+        "max": [
+          0.30001,
+          0.90001,
+          0.36119
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-weapon-cannon",
+      "tags": [
+        "weapon cannon",
+        "weapon-cannon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-weapon-cannon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30001,
+          0,
+          -0.30001
+        ],
+        "max": [
+          0.30001,
+          0.53277,
+          0.30001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-weapon-turret",
+      "tags": [
+        "weapon turret",
+        "weapon-turret"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-weapon-turret-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25549,
+          0,
+          -0.30844
+        ],
+        "max": [
+          0.25549,
+          0.53001,
+          0.30844
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-workbench-anvil",
+      "tags": [
+        "workbench anvil",
+        "workbench-anvil",
+        "anvil"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-workbench-anvil-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16134,
+          0,
+          -0.14783
+        ],
+        "max": [
+          0.16134,
+          0.33576,
+          0.14783
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-ambulance",
+      "tags": [
+        "ambulance"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ambulance-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.41899,
+          0,
+          -2.85842
+        ],
+        "max": [
+          1.41899,
+          2.91398,
+          2.85842
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-boat-row",
+      "tags": [
+        "boat row",
+        "boat-row",
+        "row"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-boat-row-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.37428,
+          0,
+          -1.42608
+        ],
+        "max": [
+          1.37428,
+          0.8477,
+          1.42608
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bus",
+      "tags": [
+        "bus"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bus-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.04321,
+          0,
+          -0.87233
+        ],
+        "max": [
+          2.04321,
+          1.676,
+          0.87233
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-canoe",
+      "tags": [
+        "canoe"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-canoe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.15001,
+          0,
+          -0.57501
+        ],
+        "max": [
+          0.15001,
+          0.18251,
+          0.57501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-canoe-paddle",
+      "tags": [
+        "canoe paddle",
+        "canoe-paddle",
+        "paddle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-canoe-paddle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.03837,
+          0,
+          -0.2951
+        ],
+        "max": [
+          0.03837,
+          0.03611,
+          0.2951
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-car-hatchback",
+      "tags": [
+        "car hatchback",
+        "car-hatchback",
+        "hatchback"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-car-hatchback-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20949,
+          0,
+          -0.40304
+        ],
+        "max": [
+          0.20949,
+          0.36877,
+          0.40304
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-car-police",
+      "tags": [
+        "car police",
+        "car-police"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-car-police-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20949,
+          0,
+          -0.46904
+        ],
+        "max": [
+          0.20949,
+          0.41264,
+          0.46904
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-car-sedan",
+      "tags": [
+        "car sedan",
+        "car-sedan",
+        "sedan"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-car-sedan-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20949,
+          0,
+          -0.46904
+        ],
+        "max": [
+          0.20949,
+          0.36877,
+          0.46904
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-car-stationwagon",
+      "tags": [
+        "car stationwagon",
+        "car-stationwagon",
+        "stationwagon"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-car-stationwagon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20949,
+          0,
+          -0.46904
+        ],
+        "max": [
+          0.20949,
+          0.36877,
+          0.46904
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-car-taxi",
+      "tags": [
+        "car taxi",
+        "car-taxi",
+        "taxi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-car-taxi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20949,
+          0,
+          -0.46904
+        ],
+        "max": [
+          0.20949,
+          0.43448,
+          0.46904
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-craft-racer",
+      "tags": [
+        "craft racer",
+        "craft-racer"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-craft-racer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60001,
+          0,
+          -1.01284
+        ],
+        "max": [
+          0.60001,
+          0.75001,
+          1.01284
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-delivery",
+      "tags": [
+        "delivery"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-delivery-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75001,
+          0,
+          -1.62501
+        ],
+        "max": [
+          0.75001,
+          1.65001,
+          1.62501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-enemy-ufo",
+      "tags": [
+        "enemy ufo",
+        "enemy-ufo",
+        "ufo"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-enemy-ufo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50001,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.50001,
+          0.67791,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-firetruck",
+      "tags": [
+        "firetruck"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-firetruck-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75001,
+          0,
+          -1.70001
+        ],
+        "max": [
+          0.75001,
+          1.70001,
+          1.70001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-garbage-truck",
+      "tags": [
+        "garbage truck",
+        "garbage-truck",
+        "truck"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-garbage-truck-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.80001,
+          0,
+          -1.72501
+        ],
+        "max": [
+          0.80001,
+          1.60001,
+          1.72501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-gas-tank",
+      "tags": [
+        "gas tank",
+        "gas-tank"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-gas-tank-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50311,
+          0,
+          -0.50311
+        ],
+        "max": [
+          0.50311,
+          1.38725,
+          0.50311
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hatchback-sports",
+      "tags": [
+        "hatchback sports",
+        "hatchback-sports",
+        "sports"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hatchback-sports-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.65001,
+          0,
+          -1.42501
+        ],
+        "max": [
+          0.65001,
+          1.10001,
+          1.42501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-kart-oobi",
+      "tags": [
+        "kart oobi",
+        "kart-oobi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-kart-oobi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48716,
+          0,
+          -0.71388
+        ],
+        "max": [
+          0.48716,
+          1.32914,
+          0.71388
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-kart-oodi",
+      "tags": [
+        "kart oodi",
+        "kart-oodi"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-kart-oodi-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48716,
+          0,
+          -0.71388
+        ],
+        "max": [
+          0.48716,
+          1.32914,
+          0.71388
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-race",
+      "tags": [
+        "race"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-race-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.65001,
+          0,
+          -1.27989
+        ],
+        "max": [
+          0.65001,
+          0.73255,
+          1.27989
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-school-bus",
+      "tags": [
+        "school bus",
+        "school-bus"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-school-bus-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.30385,
+          0,
+          -0.93927
+        ],
+        "max": [
+          2.30385,
+          2.1926,
+          0.93927
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sled",
+      "tags": [
+        "sled"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sled-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31251,
+          0,
+          -0.50001
+        ],
+        "max": [
+          0.31251,
+          0.37534,
+          0.50001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tank",
+      "tags": [
+        "tank"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tank-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.18624,
+          0,
+          -1.25145
+        ],
+        "max": [
+          1.18624,
+          2.1435,
+          1.25145
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tractor",
+      "tags": [
+        "tractor"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tractor-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.67105,
+          0,
+          -1.10078
+        ],
+        "max": [
+          0.67105,
+          1.60206,
+          1.10078
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-train",
+      "tags": [
+        "train"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-train-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.06322,
+          0,
+          -3.50866
+        ],
+        "max": [
+          1.06322,
+          2.19902,
+          3.50866
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-van",
+      "tags": [
+        "van"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-van-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.75001,
+          0,
+          -1.37501
+        ],
+        "max": [
+          0.75001,
+          1.35001,
+          1.37501
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-wheel",
+      "tags": [
+        "wheel"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-wheel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20001,
+          0,
+          -0.30001
+        ],
+        "max": [
+          0.20001,
+          0.60001,
+          0.30001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-ak",
+      "tags": [
+        "ak"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-ak-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71116,
+          0,
+          -0.07684
+        ],
+        "max": [
+          0.71116,
+          0.73035,
+          0.07684
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-arrow",
+      "tags": [
+        "arrow"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-arrow-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13708,
+          0,
+          -1.36692
+        ],
+        "max": [
+          0.13708,
+          0.23828,
+          1.36692
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-arrow-rounded",
+      "tags": [
+        "arrow rounded",
+        "arrow-rounded",
+        "rounded"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-arrow-rounded-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3809,
+          0,
+          -0.30276
+        ],
+        "max": [
+          0.3809,
+          0.20001,
+          0.30276
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-arrow-up",
+      "tags": [
+        "arrow up",
+        "arrow-up",
+        "up"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-arrow-up-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.50881,
+          0,
+          -0.18162
+        ],
+        "max": [
+          0.50881,
+          2.70131,
+          0.18162
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-assault-rifle",
+      "tags": [
+        "assault rifle",
+        "assault-rifle",
+        "rifle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-assault-rifle-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.55241,
+          0,
+          -0.09802
+        ],
+        "max": [
+          1.55241,
+          1.26002,
+          0.09802
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-axe",
+      "tags": [
+        "axe"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-axe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1503,
+          0,
+          -0.64994
+        ],
+        "max": [
+          0.1503,
+          0.08754,
+          0.64994
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-axe-double",
+      "tags": [
+        "axe double",
+        "axe-double"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-axe-double-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.03115,
+          0,
+          -0.13045
+        ],
+        "max": [
+          1.03115,
+          6.35312,
+          0.13045
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-blaster",
+      "tags": [
+        "blaster"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-blaster-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09191,
+          0,
+          -0.40001
+        ],
+        "max": [
+          0.09191,
+          0.45591,
+          0.40001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bow",
+      "tags": [
+        "bow",
+        "golden"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bow-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.79005,
+          0,
+          -0.12171
+        ],
+        "max": [
+          0.79005,
+          5.43661,
+          0.12171
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bow-evil",
+      "tags": [
+        "bow evil",
+        "bow-evil",
+        "evil"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bow-evil-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77812,
+          0,
+          -0.1154
+        ],
+        "max": [
+          0.77812,
+          5.68915,
+          0.1154
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-bow-wooden",
+      "tags": [
+        "bow wooden",
+        "bow-wooden",
+        "wooden"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-bow-wooden-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.73397,
+          0,
+          -0.12171
+        ],
+        "max": [
+          0.73397,
+          5.43661,
+          0.12171
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-claymore",
+      "tags": [
+        "claymore"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-claymore-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48898,
+          0,
+          -0.13565
+        ],
+        "max": [
+          0.48898,
+          6.59462,
+          0.13565
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-cooking-knife",
+      "tags": [
+        "cooking knife",
+        "cooking-knife"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-cooking-knife-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35813,
+          0,
+          -0.06634
+        ],
+        "max": [
+          0.35813,
+          0.04001,
+          0.06634
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-dagger",
+      "tags": [
+        "dagger"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-dagger-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32201,
+          0,
+          -0.12819
+        ],
+        "max": [
+          0.32201,
+          3.10553,
+          0.12819
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-fire-grenade",
+      "tags": [
+        "fire grenade",
+        "fire-grenade",
+        "grenade"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-fire-grenade-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28476,
+          0,
+          -0.23533
+        ],
+        "max": [
+          0.28476,
+          0.85002,
+          0.23533
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-grenade-launcher",
+      "tags": [
+        "grenade launcher",
+        "grenade-launcher",
+        "launcher"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-grenade-launcher-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60239,
+          0,
+          -0.23897
+        ],
+        "max": [
+          0.60239,
+          0.55503,
+          0.23897
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-guitar",
+      "tags": [
+        "guitar"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-guitar-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.36046,
+          0,
+          -0.89854
+        ],
+        "max": [
+          0.36046,
+          0.12912,
+          0.89854
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hammer",
+      "tags": [
+        "hammer"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hammer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.74332,
+          0,
+          -0.40286
+        ],
+        "max": [
+          0.74332,
+          4.32973,
+          0.40286
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-hammer-double",
+      "tags": [
+        "hammer double",
+        "hammer-double"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-hammer-double-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.10855,
+          0,
+          -0.40286
+        ],
+        "max": [
+          1.10855,
+          4.97097,
+          0.40286
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-pistol",
+      "tags": [
+        "pistol"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-pistol-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07062,
+          0,
+          -0.48821
+        ],
+        "max": [
+          0.07062,
+          0.33975,
+          0.48821
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-revolver",
+      "tags": [
+        "revolver"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-revolver-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.99095,
+          0,
+          -0.14719
+        ],
+        "max": [
+          0.99095,
+          0.88982,
+          0.14719
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-rocket-launcher",
+      "tags": [
+        "rocket launcher",
+        "rocket-launcher"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-rocket-launcher-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.65081,
+          0,
+          -0.23446
+        ],
+        "max": [
+          0.65081,
+          0.74649,
+          0.23446
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-scythe",
+      "tags": [
+        "scythe"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-scythe-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.51437,
+          0,
+          -0.13854
+        ],
+        "max": [
+          1.51437,
+          5.58187,
+          0.13854
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shield-celtic",
+      "tags": [
+        "shield celtic",
+        "shield-celtic",
+        "celtic"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shield-celtic-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.04929,
+          0,
+          -0.70638
+        ],
+        "max": [
+          1.04929,
+          4.28018,
+          0.70638
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shield-heater",
+      "tags": [
+        "shield heater",
+        "shield-heater",
+        "heater"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shield-heater-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00252,
+          0,
+          -0.29934
+        ],
+        "max": [
+          1.00252,
+          2.56373,
+          0.29934
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shield-rectangle",
+      "tags": [
+        "shield rectangle",
+        "shield-rectangle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shield-rectangle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13795,
+          0,
+          -0.065
+        ],
+        "max": [
+          0.13795,
+          0.29751,
+          0.065
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shield-round",
+      "tags": [
+        "shield round",
+        "shield-round"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shield-round-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.00001,
+          0,
+          -0.30185
+        ],
+        "max": [
+          1.00001,
+          2.00001,
+          0.30185
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shotgun",
+      "tags": [
+        "shotgun"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shotgun-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.04759,
+          0,
+          -0.55648
+        ],
+        "max": [
+          0.04759,
+          0.33824,
+          0.55648
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-shovel",
+      "tags": [
+        "shovel"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-shovel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.17596,
+          0,
+          -0.0429
+        ],
+        "max": [
+          0.17596,
+          1.10807,
+          0.0429
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-smg",
+      "tags": [
+        "smg"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-smg-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07534,
+          0,
+          -0.497
+        ],
+        "max": [
+          0.07534,
+          0.47188,
+          0.497
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-smoke",
+      "tags": [
+        "smoke"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-smoke-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13852,
+          0,
+          -0.13852
+        ],
+        "max": [
+          0.13852,
+          0.17044,
+          0.13852
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sniper",
+      "tags": [
+        "sniper"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sniper-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.86758,
+          0,
+          -0.09703
+        ],
+        "max": [
+          0.86758,
+          0.78524,
+          0.09703
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sniper-rifle",
+      "tags": [
+        "sniper rifle",
+        "sniper-rifle"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sniper-rifle-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.64732,
+          0,
+          -0.22966
+        ],
+        "max": [
+          3.64732,
+          1.48398,
+          0.22966
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-spear",
+      "tags": [
+        "spear"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-spear-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.06832,
+          0,
+          -1.00565
+        ],
+        "max": [
+          0.06832,
+          0.15399,
+          1.00565
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-submachine-gun",
+      "tags": [
+        "submachine gun",
+        "submachine-gun",
+        "gun"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-submachine-gun-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.38574,
+          0,
+          -0.15928
+        ],
+        "max": [
+          1.38574,
+          1.70869,
+          0.15928
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sword",
+      "tags": [
+        "sword"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sword-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60881,
+          0,
+          -0.15522
+        ],
+        "max": [
+          0.60881,
+          5.36059,
+          0.15522
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-sword-shield",
+      "tags": [
+        "sword shield",
+        "sword-shield",
+        "shield"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-sword-shield-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.11601,
+          0,
+          -0.16788
+        ],
+        "max": [
+          1.11601,
+          1.66745,
+          0.16788
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tool-axe",
+      "tags": [
+        "tool axe",
+        "tool-axe"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tool-axe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.05725,
+          0,
+          -0.01547
+        ],
+        "max": [
+          0.05725,
+          0.25601,
+          0.01547
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-tool-hammer",
+      "tags": [
+        "tool hammer",
+        "tool-hammer"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-tool-hammer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.04501,
+          0,
+          -0.02001
+        ],
+        "max": [
+          0.04501,
+          0.15349,
+          0.02001
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-utensil-knife",
+      "tags": [
+        "utensil knife",
+        "utensil-knife"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-utensil-knife-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30039,
+          0,
+          -0.03891
+        ],
+        "max": [
+          0.30039,
+          0.01781,
+          0.03891
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-weapon-ballista",
+      "tags": [
+        "weapon ballista",
+        "weapon-ballista",
+        "ballista"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-weapon-ballista-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.33133,
+          0,
+          -0.38881
+        ],
+        "max": [
+          0.33133,
+          0.50001,
+          0.38881
+        ]
+      }
+    },
+    {
+      "assetId": "cc0-weapon-catapult",
+      "tags": [
+        "weapon catapult",
+        "weapon-catapult",
+        "catapult"
+      ],
+      "path": "/assets/worldstream/cc0/cc0-weapon-catapult-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.30001,
+          0,
+          -0.41831
+        ],
+        "max": [
+          0.30001,
+          0.46251,
+          0.41831
+        ]
+      }
+    }
+  ]
+}

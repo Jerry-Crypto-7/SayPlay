@@ -1,0 +1,90 @@
+{
+  "$comment": "Zdroje riggovaných postav s klipy pro P26B (T3). kind: github = soubory z raw.githubusercontent.com, kenney = zip odkázaný ze stránky balíku (adresa zipu nese hash, proto se čte ze stránky), skip = nejde stáhnout bez klikání. Licence jen CC0-1.0 / CC-BY-4.0; text licence se stahuje a ukládá vedle souborů.",
+  "sources": [
+    {
+      "id": "kaykit-adventurers",
+      "name": "KayKit Character Pack: Adventurers 1.0",
+      "author": "Kay Lousberg",
+      "kind": "github",
+      "license": "CC0-1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "licenseUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/LICENSE.txt",
+      "files": [
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Barbarian.glb",
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb",
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Mage.glb",
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue.glb",
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue_Hooded.glb"
+      ]
+    },
+    {
+      "id": "kaykit-skeletons",
+      "name": "KayKit Character Pack: Skeletons 1.0",
+      "author": "Kay Lousberg",
+      "kind": "github",
+      "license": "CC0-1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "licenseUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/LICENSE.txt",
+      "files": [
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Mage.glb",
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Minion.glb",
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Rogue.glb",
+        "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Warrior.glb"
+      ]
+    },
+    {
+      "id": "quaternius-ual",
+      "name": "Quaternius Universal Animation Library (Standard, glTF mirror)",
+      "author": "Quaternius",
+      "kind": "github",
+      "license": "CC0-1.0",
+      "page": "https://github.com/J-Ponzo/gltf-universal-animation-library",
+      "licenseUrl": "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/main/LICENSE",
+      "files": [
+        "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/main/glTF/AnimationLibrary_Godot_Standard.gltf",
+        "https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/main/glTF/AnimationLibrary_Godot_Standard.bin"
+      ]
+    },
+    {
+      "id": "quaternius-ubc",
+      "name": "Quaternius Universal Base Characters",
+      "author": "Quaternius",
+      "kind": "skip",
+      "license": "CC0-1.0",
+      "page": "https://quaternius.com/packs/universalbasecharacters.html",
+      "skipReason": "download goes through itch.io / Google Drive and needs a click; no mirror with a licence file found"
+    },
+    {
+      "id": "kenney-mini-characters",
+      "name": "Kenney Mini Characters",
+      "author": "Kenney",
+      "kind": "kenney",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/mini-characters"
+    },
+    {
+      "id": "kenney-blocky-characters",
+      "name": "Kenney Blocky Characters",
+      "author": "Kenney",
+      "kind": "kenney",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/blocky-characters"
+    },
+    {
+      "id": "kenney-protagonists",
+      "name": "Kenney Animated Characters: Protagonists",
+      "author": "Kenney",
+      "kind": "kenney",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/animated-characters-protagonists"
+    },
+    {
+      "id": "kenney-survivors",
+      "name": "Kenney Animated Characters: Survivors",
+      "author": "Kenney",
+      "kind": "kenney",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/animated-characters-survivors"
+    }
+  ]
+}

@@ -23,7 +23,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { modelPath, type PropRole } from '@/play/arcade/models';
+import { modelPath, type PropRole, riggedCharacter } from '@/play/arcade/models';
+import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
@@ -33,6 +34,7 @@ import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Scenery } from './look/Scenery';
 import { DuelScene, useDuelInput } from './duel/DuelScene';
 import { RhythmScene } from './rhythm/RhythmScene';
+import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
 import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
@@ -238,9 +240,26 @@ interface WorldProps {
   readonly scene: Look;
 }
 
+/** Role, jejichž model se hýbe podle stavu těla (P26B); plošiny, auta a překážky jedou bez pózy. */
+const POSED_ROLES: ReadonlySet<number> = new Set([ROLE.player, ROLE.enemy, ROLE.chaser]);
+
+/** Póza na vnitřní skupinu modelu: poskok, předklon, zmáčknutí (objem drží), bliknutí po zásahu. */
+function applyPose(group: Group, pose: Pose): void {
+  group.position.y = pose.bob;
+  group.rotation.x = pose.lean;
+  const wide = 1 + pose.squash / 2;
+  group.scale.set(wide, 1 - pose.squash, wide);
+  group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
+}
+
 function World({ session, control, cast, surface, scene }: WorldProps) {
   const views = useMemo(() => bodiesOf(session), [session]);
   const groups = useRef<(Group | null)[]>([]);
+  const posed = useRef<(Group | null)[]>([]);
+  const poses = useRef<(Pose | null)[]>([]);
+  /** Riggovaná postava po indexu těla (P26B T5) a klip, který jí scéna v tomhle snímku volí. */
+  const rigged = useMemo(() => views.map((view) => riggedCharacter(modelIdOf(view, cast))), [views, cast]);
+  const clips = useRef<ClipState[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
@@ -250,7 +269,14 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
     const alpha = session.advance(delta * 1000);
     const state = session.state();
     const prev = session.prev();
+    // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
+    const tick = (state[HEADER.tick] as number) + alpha;
+    posesOf(state, prev, poses.current, tick);
     for (const view of views) {
+      const inner = posed.current[view.index];
+      const pose = poses.current[view.index];
+      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
+      if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) clips.current[view.index] = clipOf(viewOf(state, prev, view.index), pose, tick);
       const group = groups.current[view.index];
       if (group === null || group === undefined) continue;
       const base = bodyBase(view.index);
@@ -305,9 +331,21 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }}>
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
               <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
+            ) : rigged[view.index] !== undefined ? (
+              // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
+              <RiggedModel
+                character={rigged[view.index]!}
+                h={view.h}
+                clip={() => clips.current[view.index] ?? 'idle'}
+                fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
+                // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
+                onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
+              />
             ) : (
-              // Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění.
-              <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+              <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
+                {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}
+                <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+              </group>
             )}
           </group>
         ),

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { Group, Mesh, BoxGeometry, MeshStandardMaterial, Texture } from 'three';
 import { createAssetLoader } from '../loader';
+import { parseGlb } from '../__fixtures__/gltf-node';
 import { createAssetCache } from '../cache';
 import { createAssetManifest } from '../manifest';
 import { asset } from '../__fixtures__/catalog';
@@ -48,13 +49,13 @@ describe('approved GLB loader', () => {
   });
   it('accepts every packaged model and LOD through the production security checks', async () => {
     const manifest = createAssetManifest(catalog);
-    const cache = createAssetCache(createAssetLoader(manifest, { fetch: async (path) => new Response(readFileSync(`public${String(path)}`)) }));
+    const cache = createAssetCache(createAssetLoader(manifest, { fetch: async (path) => new Response(readFileSync(`public${String(path)}`)), parse: async (buffer) => (await parseGlb(new Uint8Array(buffer))).scene }));
     for (const model of catalog.assets) for (const lod of model.lods) {
       const lease = await cache.acquire({ kind: 'asset', assetId: model.assetId, version: model.version, hash: model.hash }, lod.level);
       expect(lease.triangles).toBe(lod.triangles); lease.release();
     }
     expect(cache.size).toBe(0);
-  });
+  }, 180_000); // ~450 modelů po dvou LOD (P26A T11) jde přes celou bezpečnostní cestu postupně
   it('decodes real GLB with geometry, named part and material', async () => {
     const f = await fixture(); const fetcher = vi.fn(async (_url: string | URL | Request) => new Response(f.buffer));
     const loaded = await createAssetLoader(f.manifest, { fetch: fetcher }).load(f.ref);

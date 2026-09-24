@@ -1,0 +1,305 @@
+{
+  "about": "P26A T7: role nouns (readRoles of the play draft) from evals/play/demand (200) and evals/play/fidelity (30, plus checklist items) that src/play/arcade/models.ts modelOf maps to a catalog model carrying that noun as id or tag. before = the same choice without CC0 models. bySet (P26A T12): demand, fidelity and its 10 hostile sentences apart.",
+  "sentences": {
+    "demand": 200,
+    "fidelity": 30
+  },
+  "mentions": {
+    "mentions": 163,
+    "before": 69,
+    "now": 99
+  },
+  "nouns": {
+    "distinct": 119,
+    "before": 42,
+    "now": 67
+  },
+  "byRole": {
+    "hero": {
+      "mentions": 54,
+      "before": 25,
+      "now": 32
+    },
+    "enemy": {
+      "mentions": 18,
+      "before": 5,
+      "now": 8
+    },
+    "collectible": {
+      "mentions": 17,
+      "before": 11,
+      "now": 12
+    },
+    "obstacle": {
+      "mentions": 14,
+      "before": 9,
+      "now": 12
+    },
+    "target": {
+      "mentions": 21,
+      "before": 4,
+      "now": 7
+    },
+    "checklist": {
+      "mentions": 39,
+      "before": 15,
+      "now": 28
+    }
+  },
+  "bySet": {
+    "demand": {
+      "mentions": 94,
+      "now": 55,
+      "nouns": 82,
+      "nounsNow": 43
+    },
+    "fidelity": {
+      "mentions": 69,
+      "now": 44,
+      "nouns": 65,
+      "nounsNow": 41
+    },
+    "hostile": {
+      "mentions": 24,
+      "now": 16,
+      "nouns": 23,
+      "nounsNow": 15
+    }
+  },
+  "gained": [
+    {
+      "noun": "corgi",
+      "model": "cc0-corgi",
+      "mentions": 2
+    },
+    {
+      "noun": "dragon",
+      "model": "cc0-dragon",
+      "mentions": 2
+    },
+    {
+      "noun": "flashlight",
+      "model": "cc0-flashlight",
+      "mentions": 2
+    },
+    {
+      "noun": "spinning log",
+      "model": "cc0-wood-log",
+      "mentions": 2
+    },
+    {
+      "noun": "water",
+      "model": "cc0-water",
+      "mentions": 2
+    },
+    {
+      "noun": "alien",
+      "model": "cc0-alien",
+      "mentions": 1
+    },
+    {
+      "noun": "asteroid",
+      "model": "cc0-asteroid",
+      "mentions": 1
+    },
+    {
+      "noun": "bee",
+      "model": "cc0-bee",
+      "mentions": 1
+    },
+    {
+      "noun": "dinner",
+      "model": "cc0-dinner",
+      "mentions": 1
+    },
+    {
+      "noun": "elephant",
+      "model": "cc0-elephant",
+      "mentions": 1
+    },
+    {
+      "noun": "hungry shark",
+      "model": "cc0-shark",
+      "mentions": 1
+    },
+    {
+      "noun": "chicken",
+      "model": "cc0-chicken",
+      "mentions": 1
+    },
+    {
+      "noun": "knife",
+      "model": "cc0-knife",
+      "mentions": 1
+    },
+    {
+      "noun": "log",
+      "model": "cc0-wood-log",
+      "mentions": 1
+    },
+    {
+      "noun": "monkey",
+      "model": "cc0-monkey",
+      "mentions": 1
+    },
+    {
+      "noun": "pancake",
+      "model": "cc0-pancake",
+      "mentions": 1
+    },
+    {
+      "noun": "pigeon",
+      "model": "cc0-pigeon",
+      "mentions": 1
+    },
+    {
+      "noun": "police",
+      "model": "cc0-police",
+      "mentions": 1
+    },
+    {
+      "noun": "present",
+      "model": "cc0-present",
+      "mentions": 1
+    },
+    {
+      "noun": "sausage",
+      "model": "cc0-sausage",
+      "mentions": 1
+    },
+    {
+      "noun": "shark",
+      "model": "cc0-shark",
+      "mentions": 1
+    },
+    {
+      "noun": "sock",
+      "model": "cc0-sock",
+      "mentions": 1
+    },
+    {
+      "noun": "spike",
+      "model": "cc0-spike",
+      "mentions": 1
+    },
+    {
+      "noun": "traffic",
+      "model": "cc0-traffic",
+      "mentions": 1
+    },
+    {
+      "noun": "zombie",
+      "model": "cc0-zombie",
+      "mentions": 1
+    }
+  ],
+  "aliasedAway": [
+    {
+      "noun": "lily pad",
+      "cc0": "cc0-lily-pad",
+      "drawn": "cc0-lily",
+      "mentions": 1
+    },
+    {
+      "noun": "trash can",
+      "cc0": "cc0-trash-can",
+      "drawn": "cc0-barrier-trash",
+      "mentions": 1
+    }
+  ],
+  "states": {
+    "before-CC0 (7c411db)": {
+      "models": 86,
+      "nouns": {
+        "distinct": 119,
+        "now": 42
+      },
+      "mentions": {
+        "mentions": 163,
+        "now": 69
+      },
+      "bySet": {
+        "demand": {
+          "mentions": 94,
+          "now": 40,
+          "nouns": 82,
+          "nounsNow": 29
+        },
+        "fidelity": {
+          "mentions": 69,
+          "now": 29,
+          "nouns": 65,
+          "nounsNow": 26
+        },
+        "hostile": {
+          "mentions": 24,
+          "now": 11,
+          "nouns": 23,
+          "nounsNow": 10
+        }
+      }
+    },
+    "after-T7 (e0aa52c)": {
+      "models": 102,
+      "nouns": {
+        "distinct": 119,
+        "now": 57
+      },
+      "mentions": {
+        "mentions": 163,
+        "now": 85
+      },
+      "bySet": {
+        "demand": {
+          "mentions": 94,
+          "now": 47,
+          "nouns": 82,
+          "nounsNow": 36
+        },
+        "fidelity": {
+          "mentions": 69,
+          "now": 38,
+          "nouns": 65,
+          "nounsNow": 35
+        },
+        "hostile": {
+          "mentions": 24,
+          "now": 14,
+          "nouns": 23,
+          "nounsNow": 13
+        }
+      }
+    },
+    "now": {
+      "models": 449,
+      "nouns": {
+        "distinct": 119,
+        "now": 67
+      },
+      "mentions": {
+        "mentions": 163,
+        "now": 99
+      },
+      "bySet": {
+        "demand": {
+          "mentions": 94,
+          "now": 55,
+          "nouns": 82,
+          "nounsNow": 43
+        },
+        "fidelity": {
+          "mentions": 69,
+          "now": 44,
+          "nouns": 65,
+          "nounsNow": 41
+        },
+        "hostile": {
+          "mentions": 24,
+          "now": 16,
+          "nouns": 23,
+          "nounsNow": 15
+        }
+      }
+    }
+  }
+}

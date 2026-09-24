@@ -1,0 +1,6981 @@
+{
+  "about": "P26A T10: the T2 picks (nouns the sentences ask for) first, then a broad selection from the whole CC0 cache by category, one model per shape name; scene pieces, interface parts and colour or size variants are dropped. unmatched feeds P26C; ambiguous nouns had no deciding word in the sentence.",
+  "models": 4322,
+  "broad": {
+    "selected": 470,
+    "overflow": 481,
+    "dropped": {
+      "scene": 1890,
+      "uncategorized": 392,
+      "variant": 679,
+      "known": 410
+    }
+  },
+  "selected": [
+    {
+      "noun": "frog",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Frog.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s020",
+        "s144",
+        "fidelity:s144"
+      ],
+      "category": "animal",
+      "tags": [
+        "frog"
+      ]
+    },
+    {
+      "noun": "banana",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/banana.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s008",
+        "fidelity:s008"
+      ],
+      "category": "food",
+      "tags": [
+        "banana"
+      ]
+    },
+    {
+      "noun": "corgi",
+      "pack": "kenney-cube-pets",
+      "file": "Models/GLB format/animal-dog.glb",
+      "via": "synonym",
+      "synonyms": [
+        "dog"
+      ],
+      "sentences": [
+        "s006",
+        "fidelity:s006"
+      ],
+      "category": "animal",
+      "tags": [
+        "corgi",
+        "dog"
+      ]
+    },
+    {
+      "noun": "dragon",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Dragon.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s182",
+        "fidelity:h03"
+      ],
+      "category": "monster",
+      "tags": [
+        "dragon"
+      ]
+    },
+    {
+      "noun": "flashlight",
+      "pack": "quaternius-ultimate-gun",
+      "file": "OBJ/Accessories/Flashlight.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s150",
+        "fidelity:h09"
+      ],
+      "category": "weapon",
+      "tags": [
+        "flashlight"
+      ]
+    },
+    {
+      "noun": "knife",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/knife.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s017",
+        "fidelity:s095"
+      ],
+      "category": "weapon",
+      "tags": [
+        "knife"
+      ]
+    },
+    {
+      "noun": "log",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/log.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s095",
+        "fidelity:s095"
+      ],
+      "category": "nature",
+      "tags": [
+        "log"
+      ]
+    },
+    {
+      "noun": "shark",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Shark.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s118",
+        "s135"
+      ],
+      "category": "animal",
+      "tags": [
+        "shark"
+      ]
+    },
+    {
+      "noun": "water",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/WaterTower.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s044",
+        "s075"
+      ],
+      "category": "collectible",
+      "tags": [
+        "water"
+      ]
+    },
+    {
+      "noun": "alien",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/alien.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:h06"
+      ],
+      "category": "monster",
+      "tags": [
+        "alien"
+      ]
+    },
+    {
+      "noun": "asteroid",
+      "pack": "kenney-survival-kit",
+      "file": "Models/GLB format/rock-a.glb",
+      "via": "manual",
+      "synonyms": [
+        "meteor"
+      ],
+      "sentences": [
+        "s043"
+      ],
+      "category": "nature",
+      "tags": [
+        "asteroid",
+        "meteor"
+      ]
+    },
+    {
+      "noun": "bee",
+      "pack": "kenney-cube-pets",
+      "file": "Models/GLB format/animal-bee.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s192"
+      ],
+      "category": "animal",
+      "tags": [
+        "bee"
+      ]
+    },
+    {
+      "noun": "cookie",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/cookie.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s147"
+      ],
+      "category": "food",
+      "tags": [
+        "cookie"
+      ]
+    },
+    {
+      "noun": "dinner",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/plate-dinner.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:h08"
+      ],
+      "category": "food",
+      "tags": [
+        "dinner"
+      ]
+    },
+    {
+      "noun": "elephant",
+      "pack": "kenney-cube-pets",
+      "file": "Models/GLB format/animal-elephant.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:h07"
+      ],
+      "category": "animal",
+      "tags": [
+        "elephant"
+      ]
+    },
+    {
+      "noun": "chicken",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Blob/glTF/Chicken.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s036"
+      ],
+      "category": "animal",
+      "tags": [
+        "chicken"
+      ]
+    },
+    {
+      "noun": "lily pad",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Lilypad.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:s144"
+      ],
+      "category": "nature",
+      "tags": [
+        "lily pad"
+      ]
+    },
+    {
+      "noun": "monkey",
+      "pack": "kenney-cube-pets",
+      "file": "Models/GLB format/animal-monkey.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:s008"
+      ],
+      "category": "animal",
+      "tags": [
+        "monkey"
+      ]
+    },
+    {
+      "noun": "ninja",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Ninja.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s009"
+      ],
+      "category": "character",
+      "tags": [
+        "ninja"
+      ]
+    },
+    {
+      "noun": "pancake",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/pancakes.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:s099"
+      ],
+      "category": "food",
+      "tags": [
+        "pancake"
+      ]
+    },
+    {
+      "noun": "pigeon",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Blob/glTF/Pigeon.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:s188"
+      ],
+      "category": "monster",
+      "tags": [
+        "pigeon"
+      ]
+    },
+    {
+      "noun": "police",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/police.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s062"
+      ],
+      "category": "vehicle",
+      "tags": [
+        "police"
+      ]
+    },
+    {
+      "noun": "present",
+      "pack": "kenney-holiday-kit",
+      "file": "Models/GLB format/present-a-cube.glb",
+      "via": "name",
+      "synonyms": [
+        "gift"
+      ],
+      "sentences": [
+        "s158"
+      ],
+      "category": "collectible",
+      "tags": [
+        "present",
+        "gift"
+      ]
+    },
+    {
+      "noun": "sausage",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/sausage.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:s006"
+      ],
+      "category": "food",
+      "tags": [
+        "sausage"
+      ]
+    },
+    {
+      "noun": "sock",
+      "pack": "kenney-holiday-kit",
+      "file": "Models/GLB format/sock-green.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s032"
+      ],
+      "category": "collectible",
+      "tags": [
+        "sock"
+      ]
+    },
+    {
+      "noun": "spike",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/Spikes.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s030"
+      ],
+      "category": "obstacle",
+      "tags": [
+        "spike"
+      ]
+    },
+    {
+      "noun": "traffic",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/TrafficBarrier_1.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:s056"
+      ],
+      "category": "obstacle",
+      "tags": [
+        "traffic"
+      ]
+    },
+    {
+      "noun": "trash can",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/trashcan.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s011"
+      ],
+      "category": "furniture",
+      "tags": [
+        "trash can"
+      ]
+    },
+    {
+      "noun": "yeti",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Yeti.gltf",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "s065"
+      ],
+      "category": "monster",
+      "tags": [
+        "yeti"
+      ]
+    },
+    {
+      "noun": "zombie",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/character-zombie.glb",
+      "via": "name",
+      "synonyms": [],
+      "sentences": [
+        "fidelity:s039"
+      ],
+      "category": "monster",
+      "tags": [
+        "zombie"
+      ]
+    },
+    {
+      "noun": "alpaca",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Alpaca.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "alpaca"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "anglerfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Anglerfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "anglerfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "apatosaurus",
+      "pack": "quaternius-animated-dinosaurs",
+      "file": "OBJ/Apatosaurus.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "apatosaurus"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "beaver",
+      "pack": "kenney-cube-pets",
+      "file": "Models/GLB format/animal-beaver.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "beaver"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "betta",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Betta.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "betta"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "blobfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Blobfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "blobfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bull",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Bull.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "bull"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bunny",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Bunny.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "bunny",
+        "rabbit"
+      ],
+      "synonyms": [
+        "rabbit"
+      ],
+      "sentences": []
+    },
+    {
+      "noun": "caterpillar",
+      "pack": "kenney-cube-pets",
+      "file": "Models/GLB format/animal-caterpillar.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "caterpillar"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "clownfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Clownfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "clownfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cow",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Cow.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "cow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cowfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Cowfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "cowfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "crab",
+      "pack": "quaternius-cute-monsters",
+      "file": "glTF/Crab.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "crab"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "deer",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Deer.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "deer"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "donkey",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Donkey.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "donkey"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "flatfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Flatfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "flatfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "giraffe",
+      "pack": "kenney-cube-pets",
+      "file": "Models/GLB format/animal-giraffe.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "giraffe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "goldfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Goldfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "goldfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "horse",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Horse.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "horse"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "humphead",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Humphead.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "humphead"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "husky",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Husky.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "husky"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "koi",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Koi.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "koi"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lionfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Lionfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "lionfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "llama",
+      "pack": "quaternius-farm-animals",
+      "file": "OBJ/Llama.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "llama"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lure",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Lure_1.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "lure"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "panda",
+      "pack": "quaternius-cute-monsters",
+      "file": "glTF/Panda.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "panda"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "parasaurolophus",
+      "pack": "quaternius-animated-dinosaurs",
+      "file": "OBJ/Parasaurolophus.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "parasaurolophus"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pig",
+      "pack": "quaternius-farm-animals",
+      "file": "OBJ/Pig.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "pig",
+        "hog"
+      ],
+      "synonyms": [
+        "hog"
+      ],
+      "sentences": []
+    },
+    {
+      "noun": "piranha",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Piranha.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "piranha"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "puffer",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Puffer.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "puffer"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pug",
+      "pack": "quaternius-farm-animals",
+      "file": "OBJ/Pug.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "pug"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rabbit",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Characters/Normal/glTF/Rabbit_Cyan.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "rabbit",
+        "bunny"
+      ],
+      "synonyms": [
+        "bunny"
+      ],
+      "sentences": []
+    },
+    {
+      "noun": "sheep",
+      "pack": "quaternius-farm-animals",
+      "file": "OBJ/Sheep.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "sheep"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "snapper",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/RedSnapper.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "snapper"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "stag",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Stag.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "stag"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "stegosaurus",
+      "pack": "quaternius-animated-dinosaurs",
+      "file": "OBJ/Stegosaurus.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "stegosaurus"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sunfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Sunfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "sunfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "swordfish",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Swordfish.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "swordfish"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tang",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Tang.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "tang"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tetra",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Tetra.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "tetra"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "trex",
+      "pack": "quaternius-animated-dinosaurs",
+      "file": "OBJ/Trex.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "trex"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "triceratops",
+      "pack": "quaternius-animated-dinosaurs",
+      "file": "OBJ/Triceratops.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "triceratops"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tuna",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Tuna.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "tuna"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "turbot",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Turbot.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "turbot"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "velociraptor",
+      "pack": "quaternius-animated-dinosaurs",
+      "file": "OBJ/Velociraptor.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "velociraptor"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "wolf",
+      "pack": "quaternius-ultimate-animated-animals",
+      "file": "glTF/Wolf.gltf",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "wolf"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "worm",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/Worm.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "worm"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "zebra",
+      "pack": "quaternius-farm-animals",
+      "file": "OBJ/Zebra.glb",
+      "via": "broad",
+      "category": "animal",
+      "tags": [
+        "zebra"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bag",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/bag.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "bag"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "book set",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/book_set.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "book set",
+        "book-set",
+        "set",
+        "book"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "book single",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/book_single.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "book single",
+        "book-single",
+        "single",
+        "book"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bottle",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Bottle1.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "bottle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bottle ketchup",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/bottle-ketchup.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "bottle ketchup",
+        "bottle-ketchup",
+        "ketchup",
+        "bottle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bottle labeled",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/bottle_A_labeled_brown.gltf.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "bottle labeled",
+        "bottle-labeled",
+        "labeled",
+        "bottle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bottle musterd",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/bottle-musterd.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "bottle musterd",
+        "bottle-musterd",
+        "musterd",
+        "bottle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bottle oil",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/bottle-oil.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "bottle oil",
+        "bottle-oil",
+        "oil",
+        "bottle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bottle return",
+      "pack": "kenney-mini-market",
+      "file": "Models/GLB format/bottle-return.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "bottle return",
+        "bottle-return",
+        "return",
+        "bottle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "candle",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/candle.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "candle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "candle lit",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/candle_lit.gltf.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "candle lit",
+        "candle-lit",
+        "lit",
+        "candle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "candle melted",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/candle_melted.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "candle melted",
+        "candle-melted",
+        "melted",
+        "candle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "candle multiple",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/candle-multiple.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "candle multiple",
+        "candle-multiple",
+        "multiple",
+        "candle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "candle triple",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/candle_triple.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "candle triple",
+        "candle-triple",
+        "triple",
+        "candle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cannon ball",
+      "pack": "kenney-pirate-kit",
+      "file": "Models/GLB format/cannon-ball.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "cannon ball",
+        "cannon-ball",
+        "ball",
+        "cannon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "coin stack",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/coin_stack_large.gltf.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "coin stack",
+        "coin-stack",
+        "stack",
+        "coin"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "heart",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Powerups and Pickups/glTF/Heart.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "heart"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "heart outline",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Powerups and Pickups/glTF/Heart_Outline.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "heart outline",
+        "heart-outline",
+        "outline",
+        "heart"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "chest special",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/Chest_Special.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "chest special",
+        "chest-special",
+        "special",
+        "chest"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ketchup bottle",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/KetchupBottle.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "ketchup bottle",
+        "ketchup-bottle",
+        "bottle",
+        "ketchup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lantern candle",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/lantern-candle.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "lantern candle",
+        "lantern-candle",
+        "candle",
+        "lantern"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lantern glass",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/lantern-glass.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "lantern glass",
+        "lantern-glass",
+        "glass",
+        "lantern"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lantern hanging",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/lantern_hanging.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "lantern hanging",
+        "lantern-hanging",
+        "hanging",
+        "lantern"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lantern standing",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/lantern_standing.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "lantern standing",
+        "lantern-standing",
+        "standing",
+        "lantern"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "mayo bottle",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/MayoBottle.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "mayo bottle",
+        "mayo-bottle",
+        "bottle",
+        "mayo"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "mustard bottle",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/MustardBottle.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "mustard bottle",
+        "mustard-bottle",
+        "bottle",
+        "mustard"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "obstacle diamond",
+      "pack": "kenney-minigolf-kit",
+      "file": "Models/GLB format/obstacle-diamond.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "obstacle diamond",
+        "obstacle-diamond",
+        "diamond",
+        "obstacle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pickup bullets",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Items/GLTF/Pickup_Bullets.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "pickup bullets",
+        "pickup-bullets",
+        "bullets",
+        "pickup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pickup health",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Items/GLTF/Pickup_Health.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "pickup health",
+        "pickup-health",
+        "health",
+        "pickup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pickup jar",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Items/GLTF/Pickup_Jar.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "pickup jar",
+        "pickup-jar",
+        "jar",
+        "pickup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pickup sphere",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Items/GLTF/Pickup_Sphere.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "pickup sphere",
+        "pickup-sphere",
+        "sphere",
+        "pickup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pickup thunder",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Items/GLTF/Pickup_Thunder.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "pickup thunder",
+        "pickup-thunder",
+        "thunder",
+        "pickup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe ring",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/pipe_ring.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "pipe ring",
+        "pipe-ring",
+        "ring",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "potion",
+      "pack": "kenney-mini-dungeon",
+      "file": "Models/GLB format/potion.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "potion"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "present cube",
+      "pack": "kenney-holiday-kit",
+      "file": "Models/GLB format/present-a-cube.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "present cube",
+        "present-cube",
+        "cube",
+        "present"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "present rectangle",
+      "pack": "kenney-holiday-kit",
+      "file": "Models/GLB format/present-a-rectangle.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "present rectangle",
+        "present-rectangle",
+        "rectangle",
+        "present"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "present round",
+      "pack": "kenney-holiday-kit",
+      "file": "Models/GLB format/present-a-round.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "present round",
+        "present-round",
+        "round",
+        "present"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rice ball",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/rice-ball.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "rice ball",
+        "rice-ball",
+        "ball",
+        "rice"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "skull candle",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/skull_candle.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "skull candle",
+        "skull-candle",
+        "candle",
+        "skull"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "soda bottle",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/soda-bottle.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "soda bottle",
+        "soda-bottle",
+        "bottle",
+        "soda"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "spiky ball",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/SpikyBall.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "spiky ball",
+        "spiky-ball",
+        "ball",
+        "spiky"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "star outline",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Powerups and Pickups/glTF/Star_Outline.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "star outline",
+        "star-outline",
+        "outline",
+        "star"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "thunder",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Powerups and Pickups/glTF/Thunder.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "thunder"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "torch",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/torch.gltf.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "torch"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "torch lit",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/torch_lit.gltf.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "torch lit",
+        "torch-lit",
+        "lit",
+        "torch"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "torch mounted",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/torch_mounted.gltf.glb",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "torch mounted",
+        "torch-mounted",
+        "mounted",
+        "torch"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "trash bag",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/TrashBag_1.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "trash bag",
+        "trash-bag",
+        "bag",
+        "trash"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "vehicle pickup",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Vehicles/glTF/Vehicle_Pickup.gltf",
+      "via": "broad",
+      "category": "collectible",
+      "tags": [
+        "vehicle pickup",
+        "vehicle-pickup",
+        "pickup",
+        "vehicle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "apple",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Apple.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "apple"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "avocado",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Avocado.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "avocado"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bell",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Decoration/glTF/Decoration_Bell.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "bell"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bottles",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Bottles.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "bottles"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bowl",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Bowl.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "bowl"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bread",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Bread.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "bread"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "broccoli",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Broccoli.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "broccoli"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "burger",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Burger.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "burger"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "carpet",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Decoration/glTF/Decoration_Carpet.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "carpet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "carrot",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Carrot.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "carrot"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "coconut",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Coconut.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "coconut"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "corn",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Corn_1.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "corn"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "corndog",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Corndog.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "corndog"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "croissant",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Croissant.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "croissant"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cupcake",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Cupcake.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "cupcake"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cuttingboard",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/cuttingboard.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "cuttingboard"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "donut",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Donut1.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "donut"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "eggplant",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Eggplant.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "eggplant"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "fork",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Fork.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "fork"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "fries",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Fries.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "fries"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "fruit",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Nature/glTF/Fruit.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "fruit"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hotdog",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Hotdog.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "hotdog"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cheeseburger",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Cheeseburger.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "cheeseburger"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "chopsticks",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Chopsticks.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "chopsticks"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "icecream",
+      "pack": "quaternius-junk-food",
+      "file": "OBJ/Icecream.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "icecream"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "jar",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Jar_Large.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "jar"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ketchup",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/ketchup.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "ketchup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kitchencabinet",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/kitchencabinet.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "kitchencabinet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kitchentable",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/kitchentable_A.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "kitchentable"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lettuce",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Lettuce.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "lettuce"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lid",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/lid_A.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "lid"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "menu",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/menu.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "menu"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "milkshake",
+      "pack": "quaternius-junk-food",
+      "file": "OBJ/Milkshake.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "milkshake"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "mustard",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/mustard.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "mustard"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "painting",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Decoration/glTF/Decoration_Painting.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "painting"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pan",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Pan.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "pan"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "papertowel",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/papertowel.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "papertowel"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pepper",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Pepper_Green.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "pepper"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "plate",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Plate.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "plate"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pumpkin",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Pumpkin.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "pumpkin"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "soda",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Soda.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "soda"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "spoon",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Spoon.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "spoon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "steak",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Steak.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "steak"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tentacle",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Tentacle.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "tentacle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tomato",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Tomato.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "tomato"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "towelrail",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/towelrail.gltf",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "towelrail"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "turnip",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Turnip.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "turnip"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "waffle",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/Waffle.glb",
+      "via": "broad",
+      "category": "food",
+      "tags": [
+        "waffle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "armchair",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/armchair.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "armchair"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "armchair pillows",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/armchair_pillows.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "armchair pillows",
+        "armchair-pillows",
+        "pillows",
+        "armchair"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bathtub",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/bathtub.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bathtub"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bed",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/bed.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bed"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bed decorated",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/bed_decorated.gltf.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bed decorated",
+        "bed-decorated",
+        "decorated",
+        "bed"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bed double",
+      "pack": "quaternius-ultimate-furniture",
+      "file": "OBJ/BedDouble.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bed double",
+        "bed-double",
+        "double",
+        "bed"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bed frame",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/bed_frame.gltf.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bed frame",
+        "bed-frame",
+        "frame",
+        "bed"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bed single",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/bed_single_A.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bed single",
+        "bed-single",
+        "single",
+        "bed"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bed twin",
+      "pack": "quaternius-ultimate-furniture",
+      "file": "OBJ/BedTwin.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bed twin",
+        "bed-twin",
+        "twin",
+        "bed"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bench",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Bench.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bench"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bench decorated",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/bench_decorated.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bench decorated",
+        "bench-decorated",
+        "decorated",
+        "bench"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bookcase",
+      "pack": "quaternius-ultimate-furniture",
+      "file": "OBJ/Bookcase.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bookcase"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bookcase books",
+      "pack": "quaternius-ultimate-furniture",
+      "file": "OBJ/Bookcase_Books.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "bookcase books",
+        "bookcase-books",
+        "books",
+        "bookcase"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "books",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/books.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "books"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cabinet decorated",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/cabinet_medium_decorated.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "cabinet decorated",
+        "cabinet-decorated",
+        "decorated",
+        "cabinet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cabinet doors",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Cabinet_Doors.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "cabinet doors",
+        "cabinet-doors",
+        "doors",
+        "cabinet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cabinet shelves",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Cabinet_Shelves_2.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "cabinet shelves",
+        "cabinet-shelves",
+        "shelves",
+        "cabinet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "can fridge",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_CanFridge.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "can fridge",
+        "can-fridge",
+        "fridge",
+        "can"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "closet",
+      "pack": "quaternius-ultimate-furniture",
+      "file": "OBJ/Closet.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "closet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cooking pot",
+      "pack": "quaternius-ultimate-food",
+      "file": "OBJ/CookingPot.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "cooking pot",
+        "cooking-pot",
+        "pot",
+        "cooking"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "couch",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/Couch.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "couch"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "couch pillows",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/couch_pillows.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "couch pillows",
+        "couch-pillows",
+        "pillows",
+        "couch"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "counter sink",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Counter_Sink.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "counter sink",
+        "counter-sink",
+        "sink",
+        "counter"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cutting table",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_CuttingTable.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "cutting table",
+        "cutting-table",
+        "table",
+        "cutting"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "dryer",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/dryer.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "dryer"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "fridge",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Fridge.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "fridge"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "fridge decorated",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/fridge_A_decorated.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "fridge decorated",
+        "fridge-decorated",
+        "decorated",
+        "fridge"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "chair stool",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/chair_stool.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "chair stool",
+        "chair-stool",
+        "stool",
+        "chair"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "chair wood",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/chair_A_wood.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "chair wood",
+        "chair-wood",
+        "wood",
+        "chair"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kitchencounter sink",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/kitchencounter_sink.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "kitchencounter sink",
+        "kitchencounter-sink",
+        "sink",
+        "kitchencounter"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kitchentable sink",
+      "pack": "kaykit-restaurant-bits",
+      "file": "addons/kaykit_restaurant_bits/Assets/gltf/kitchentable_sink.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "kitchentable sink",
+        "kitchentable-sink",
+        "sink",
+        "kitchentable"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lamp standing",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/lamp_standing.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "lamp standing",
+        "lamp-standing",
+        "standing",
+        "lamp"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lamp table",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/lamp_table.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "lamp table",
+        "lamp-table",
+        "table",
+        "lamp"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "laptop",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/laptop.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "laptop"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "office chair",
+      "pack": "quaternius-ultimate-furniture",
+      "file": "OBJ/OfficeChair.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "office chair",
+        "office-chair",
+        "chair",
+        "office"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "oven",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Oven.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "oven"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pictureframe",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/pictureframe_large_A.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "pictureframe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pictureframe standing",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/pictureframe_standing_A.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "pictureframe standing",
+        "pictureframe-standing",
+        "standing",
+        "pictureframe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pillow",
+      "pack": "kaykit-furniture-bits",
+      "file": "addons/kaykit_furniture_bits/Assets/gltf/pillow_A.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "pillow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pot filled",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Environment_Pot_1_Filled.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "pot filled",
+        "pot-filled",
+        "filled",
+        "pot"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "radio",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/radio.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "radio"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shower",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/shower.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "shower"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sofa",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/Sofa.gltf",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "sofa"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "speaker",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/speaker.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "speaker"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "toaster",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/toaster.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "toaster"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "toilet",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/toilet.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "toilet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "trashcan",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/trashcan.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "trashcan"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "washer",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/washer.glb",
+      "via": "broad",
+      "category": "furniture",
+      "tags": [
+        "washer"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "casual bald",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Casual_Bald.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "casual bald",
+        "casual-bald",
+        "bald",
+        "casual"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "casual female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Casual_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "casual female",
+        "casual-female",
+        "female",
+        "casual"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "casual male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Casual_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "casual male",
+        "casual-male",
+        "male",
+        "casual"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "classy female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/OldClassy_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "classy female",
+        "classy-female",
+        "female",
+        "classy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "classy male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/OldClassy_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "classy male",
+        "classy-male",
+        "male",
+        "classy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cleric",
+      "pack": "quaternius-rpg-characters",
+      "file": "glTF/Cleric.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "cleric"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cowboy female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Cowboy_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "cowboy female",
+        "cowboy-female",
+        "female",
+        "cowboy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cowboy male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Cowboy_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "cowboy male",
+        "cowboy-male",
+        "male",
+        "cowboy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "doctor female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Doctor_Female_Old.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "doctor female",
+        "doctor-female",
+        "female",
+        "doctor"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "doctor male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Doctor_Male_Old.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "doctor male",
+        "doctor-male",
+        "male",
+        "doctor"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "employee",
+      "pack": "kenney-mini-market",
+      "file": "Models/GLB format/character-employee.glb",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "employee"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "german shepherd",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Characters_GermanShepherd.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "german shepherd",
+        "german-shepherd",
+        "shepherd",
+        "german"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "goblin female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Goblin_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "goblin female",
+        "goblin-female",
+        "female",
+        "goblin"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "goblin male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Goblin_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "goblin male",
+        "goblin-male",
+        "male",
+        "goblin"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hazmat",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Characters/glTF/Character_Hazmat.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "hazmat"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "chef female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Chef_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "chef female",
+        "chef-female",
+        "female",
+        "chef"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "chef male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Chef_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "chef male",
+        "chef-male",
+        "male",
+        "chef"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kimono female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Kimono_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "kimono female",
+        "kimono-female",
+        "female",
+        "kimono"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kimono male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Kimono_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "kimono male",
+        "kimono-male",
+        "male",
+        "kimono"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "knight female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Knight_Golden_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "knight female",
+        "knight-female",
+        "female",
+        "knight"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "knight male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Knight_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "knight male",
+        "knight-male",
+        "male",
+        "knight"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lis",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Characters_Lis.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "lis"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "matt",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Characters_Matt.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "matt"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "monk",
+      "pack": "quaternius-rpg-characters",
+      "file": "glTF/Monk.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "monk"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "mushroom king",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/MushroomKing.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "mushroom king",
+        "mushroom-king",
+        "king",
+        "mushroom"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ninja female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Ninja_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "ninja female",
+        "ninja-female",
+        "female",
+        "ninja"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ninja male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Ninja_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "ninja male",
+        "ninja-male",
+        "male",
+        "ninja"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ninja sand",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Ninja_Sand.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "ninja sand",
+        "ninja-sand",
+        "sand",
+        "ninja"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "oobi",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/character-oobi.glb",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "oobi"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "oodi",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/character-oodi.glb",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "oodi"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ooli",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/character-ooli.glb",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "ooli"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "oopi",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/character-oopi.glb",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "oopi"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "oozi",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/character-oozi.glb",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "oozi"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pirate female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Pirate_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "pirate female",
+        "pirate-female",
+        "female",
+        "pirate"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pirate male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Pirate_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "pirate male",
+        "pirate-male",
+        "male",
+        "pirate"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ranger",
+      "pack": "quaternius-rpg-characters",
+      "file": "glTF/Ranger.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "ranger"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rogue",
+      "pack": "quaternius-rpg-characters",
+      "file": "glTF/Rogue.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "rogue"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sam",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Characters_Sam.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "sam"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shaun",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Characters_Shaun.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "shaun"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "soldier",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Characters/glTF/Character_Soldier.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "soldier"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "soldier female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Soldier_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "soldier female",
+        "soldier-female",
+        "female",
+        "soldier"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "soldier male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Soldier_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "soldier male",
+        "soldier-male",
+        "male",
+        "soldier"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "suit female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Suit_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "suit female",
+        "suit-female",
+        "female",
+        "suit"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "suit male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Suit_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "suit male",
+        "suit-male",
+        "male",
+        "suit"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "viking female",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Viking_Female.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "viking female",
+        "viking-female",
+        "female",
+        "viking"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "viking helmet",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/VikingHelmet.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "viking helmet",
+        "viking-helmet",
+        "helmet",
+        "viking"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "viking male",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Viking_Male.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "viking male",
+        "viking-male",
+        "male",
+        "viking"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "wizard",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Blob/glTF/Wizard.gltf",
+      "via": "broad",
+      "category": "character",
+      "tags": [
+        "wizard"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "alpaking",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Alpaking.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "alpaking"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "alpaking evolved",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Alpaking_Evolved.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "alpaking evolved",
+        "alpaking-evolved",
+        "evolved",
+        "alpaking"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "armabee",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Armabee.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "armabee"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "armabee evolved",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Armabee_Evolved.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "armabee evolved",
+        "armabee-evolved",
+        "evolved",
+        "armabee"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bat",
+      "pack": "quaternius-cute-monsters",
+      "file": "glTF/Bat.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "bat"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "birb",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Birb.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "birb"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cactoro",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Cactoro.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "cactoro"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cthulhu",
+      "pack": "quaternius-cute-monsters",
+      "file": "glTF/Cthulhu.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "cthulhu"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cyclops",
+      "pack": "quaternius-cute-monsters",
+      "file": "glTF/Cyclops.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "cyclops"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "demon",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Demon.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "demon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "dino",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Dino.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "dino"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "dragon evolved",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Dragon_Evolved.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "dragon evolved",
+        "dragon-evolved",
+        "evolved",
+        "dragon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "enemy",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Enemies/glTF/Enemy.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "enemy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "enemy extra",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Characters/GLTF/Enemy_ExtraSmall.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "enemy extra",
+        "enemy-extra",
+        "extra",
+        "enemy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "enemy flying",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Characters/GLTF/Enemy_Flying.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "enemy flying",
+        "enemy-flying",
+        "flying",
+        "enemy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ghost skull",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Ghost_Skull.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "ghost skull",
+        "ghost-skull",
+        "skull",
+        "ghost"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "glub",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Glub.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "glub"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "glub evolved",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Glub_Evolved.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "glub evolved",
+        "glub-evolved",
+        "evolved",
+        "glub"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "goleling",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Goleling.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "goleling"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "goleling evolved",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Goleling_Evolved.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "goleling evolved",
+        "goleling-evolved",
+        "evolved",
+        "goleling"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hywirl",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Hywirl.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "hywirl"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "monkroose",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Monkroose.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "monkroose"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "mushnub",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Blob/glTF/Mushnub.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "mushnub"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "mushnub evolved",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Blob/glTF/Mushnub_Evolved.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "mushnub evolved",
+        "mushnub-evolved",
+        "evolved",
+        "mushnub"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "orc skull",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Orc_Skull.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "orc skull",
+        "orc-skull",
+        "skull",
+        "orc"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ship ghost",
+      "pack": "kenney-pirate-kit",
+      "file": "Models/GLB format/ship-ghost.glb",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "ship ghost",
+        "ship-ghost",
+        "ghost",
+        "ship"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "skeleton",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/character-skeleton.glb",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "skeleton"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "skull",
+      "pack": "quaternius-cute-monsters",
+      "file": "glTF/Skull.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "skull"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "spiky blob",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Blob/glTF/GreenSpikyBlob.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "spiky blob",
+        "spiky-blob",
+        "blob",
+        "spiky"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "squidle",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Flying/glTF/Squidle.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "squidle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree blob",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Environment/GLTF/Tree_Blob_1.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "tree blob",
+        "tree-blob",
+        "blob",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tribal",
+      "pack": "quaternius-ultimate-monsters",
+      "file": "Big/glTF/Tribal.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "tribal"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "vampire",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/character-vampire.glb",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "vampire"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "witch",
+      "pack": "quaternius-ultimate-animated-character",
+      "file": "glTF/Witch.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "witch"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "zombie arm",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Zombie_Arm.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "zombie arm",
+        "zombie-arm",
+        "arm",
+        "zombie"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "zombie chubby",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Zombie_Chubby.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "zombie chubby",
+        "zombie-chubby",
+        "chubby",
+        "zombie"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "zombie ribcage",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Characters/glTF/Zombie_Ribcage.gltf",
+      "via": "broad",
+      "category": "monster",
+      "tags": [
+        "zombie ribcage",
+        "zombie-ribcage",
+        "ribcage",
+        "zombie"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "altar stone",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/altar-stone.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "altar stone",
+        "altar-stone",
+        "stone",
+        "altar"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bamboo",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Decoration/glTF/Decoration_Bamboo.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "bamboo"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "birch tree",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/BirchTree_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "birch tree",
+        "birch-tree",
+        "tree",
+        "birch"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bush",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Bush_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "bush"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bush berries",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/BushBerries_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "bush berries",
+        "bush-berries",
+        "berries",
+        "bush"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bush flowers",
+      "pack": "quaternius-ultimate-stylized-nature",
+      "file": "glTF/Bush_Flowers.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "bush flowers",
+        "bush-flowers",
+        "flowers",
+        "bush"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cactus",
+      "pack": "quaternius-cute-monsters",
+      "file": "glTF/Cactus.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "cactus"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cactus flower",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/CactusFlower_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "cactus flower",
+        "cactus-flower",
+        "flower",
+        "cactus"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cactus flowers",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/CactusFlowers_2.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "cactus flowers",
+        "cactus-flowers",
+        "flowers",
+        "cactus"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "campfire bricks",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/campfire_bricks.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "campfire bricks",
+        "campfire-bricks",
+        "bricks",
+        "campfire"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "campfire logs",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/campfire_logs.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "campfire logs",
+        "campfire-logs",
+        "logs",
+        "campfire"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "campfire stones",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/campfire_stones.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "campfire stones",
+        "campfire-stones",
+        "stones",
+        "campfire"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cloud",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Nature/glTF/Cloud_1.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "cloud"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "common tree",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/CommonTree_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "common tree",
+        "common-tree",
+        "tree",
+        "common"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "coral grouper",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/CoralGrouper.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "coral grouper",
+        "coral-grouper",
+        "grouper",
+        "coral"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "crop melon",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/crop_melon.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "crop melon",
+        "crop-melon",
+        "melon",
+        "crop"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "crop turnip",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/crop_turnip.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "crop turnip",
+        "crop-turnip",
+        "turnip",
+        "crop"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "flower",
+      "pack": "quaternius-ultimate-stylized-nature",
+      "file": "glTF/Flower_1.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "flower"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "flower clump",
+      "pack": "quaternius-ultimate-stylized-nature",
+      "file": "glTF/Flower_1_Clump.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "flower clump",
+        "flower-clump",
+        "clump",
+        "flower"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "flower horn",
+      "pack": "quaternius-cute-fish",
+      "file": "OBJ/FlowerHorn.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "flower horn",
+        "flower-horn",
+        "horn",
+        "flower"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "flowers",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Flowers.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "flowers"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "grass",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Grass_2.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "grass"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "grass extruded",
+      "pack": "quaternius-ultimate-stylized-nature",
+      "file": "glTF/Grass_Large_Extruded.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "grass extruded",
+        "grass-extruded",
+        "extruded",
+        "grass"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "grass leafs",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/grass_leafs.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "grass leafs",
+        "grass-leafs",
+        "leafs",
+        "grass"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "grass patch",
+      "pack": "kenney-pirate-kit",
+      "file": "Models/GLB format/grass-patch.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "grass patch",
+        "grass-patch",
+        "patch",
+        "grass"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "grass plant",
+      "pack": "kenney-pirate-kit",
+      "file": "Models/GLB format/grass-plant.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "grass plant",
+        "grass-plant",
+        "plant",
+        "grass"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hanging moss",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/hanging_moss.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "hanging moss",
+        "hanging-moss",
+        "moss",
+        "hanging"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hedge",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/hedge.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "hedge"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lily",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/lily_large.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "lily"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "lilypad",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Lilypad.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "lilypad"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "log stack",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/log_stack.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "log stack",
+        "log-stack",
+        "stack",
+        "log"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "maple tree",
+      "pack": "quaternius-ultimate-stylized-nature",
+      "file": "glTF/MapleTree_1.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "maple tree",
+        "maple-tree",
+        "tree",
+        "maple"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "palm tree",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/PalmTree_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "palm tree",
+        "palm-tree",
+        "tree",
+        "palm"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pine",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/pine.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "pine"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pine tree",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/PineTree_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "pine tree",
+        "pine-tree",
+        "tree",
+        "pine"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rock moss",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Rock_Moss_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "rock moss",
+        "rock-moss",
+        "moss",
+        "rock"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sakura flower",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Decoration/glTF/Decoration_SakuraFlower.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "sakura flower",
+        "sakura-flower",
+        "flower",
+        "sakura"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sakura tree",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Decoration/glTF/Decoration_SakuraTree.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "sakura tree",
+        "sakura-tree",
+        "tree",
+        "sakura"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "stump",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/stump_old.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "stump"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree decorated",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/tree_dead_large_decorated.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "tree decorated",
+        "tree-decorated",
+        "decorated",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree floating",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Environment/GLTF/Tree_Floating_1.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "tree floating",
+        "tree-floating",
+        "floating",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree pine",
+      "pack": "kaykit-halloween-bits",
+      "file": "addons/kaykit_halloween_bits/Assets/gltf/tree_pine_orange_large.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "tree pine",
+        "tree-pine",
+        "pine",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree spiral",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Environment/GLTF/Tree_Spiral_1.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "tree spiral",
+        "tree-spiral",
+        "spiral",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree stump",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/TreeStump.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "tree stump",
+        "tree-stump",
+        "stump",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree swirl",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Environment/GLTF/Tree_Swirl_1.gltf",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "tree swirl",
+        "tree-swirl",
+        "swirl",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "wheat",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Wheat.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "wheat"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "willow",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/Willow_1.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "willow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "wood log",
+      "pack": "quaternius-ultimate-nature",
+      "file": "OBJ/WoodLog.glb",
+      "via": "broad",
+      "category": "nature",
+      "tags": [
+        "wood log",
+        "wood-log",
+        "log",
+        "wood"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "barrel",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/Barrel.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "barrel"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "barrel decorated",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/barrel_large_decorated.gltf.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "barrel decorated",
+        "barrel-decorated",
+        "decorated",
+        "barrel"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "barrel stack",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/barrel_small_stack.gltf.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "barrel stack",
+        "barrel-stack",
+        "stack",
+        "barrel"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "barrier fixed",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/Barrier_Fixed.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "barrier fixed",
+        "barrier-fixed",
+        "fixed",
+        "barrier"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "barrier single",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/Barrier_Single.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "barrier single",
+        "barrier-single",
+        "single",
+        "barrier"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "barrier trash",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/Barrier_Trash.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "barrier trash",
+        "barrier-trash",
+        "trash",
+        "barrier"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bear trap",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/BearTrap_Closed.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "bear trap",
+        "bear-trap",
+        "trap",
+        "bear"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bomb",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/Bomb.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "bomb"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "box decorated",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/box_small_decorated.gltf.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "box decorated",
+        "box-decorated",
+        "decorated",
+        "box"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "box long",
+      "pack": "kenney-factory-kit",
+      "file": "Models/GLB format/box-long.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "box long",
+        "box-long",
+        "long",
+        "box"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "box stacked",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/box_stacked.gltf.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "box stacked",
+        "box-stacked",
+        "stacked",
+        "box"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cannon",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/Cannon.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "cannon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cannon mobile",
+      "pack": "kenney-pirate-kit",
+      "file": "Models/GLB format/cannon-mobile.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "cannon mobile",
+        "cannon-mobile",
+        "mobile",
+        "cannon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cardboard box",
+      "pack": "kenney-furniture-kit",
+      "file": "Models/GLTF format/cardboardBoxClosed.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "cardboard box",
+        "cardboard-box",
+        "box",
+        "cardboard"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cube spikes",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Cubes/glTF/Cube_Spikes.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "cube spikes",
+        "cube-spikes",
+        "spikes",
+        "cube"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "dumpster",
+      "pack": "kaykit-city-builder-bits",
+      "file": "addons/kaykit_city_builder_bits/Assets/gltf/dumpster.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "dumpster"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "exploding barrel",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/ExplodingBarrel.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "exploding barrel",
+        "exploding-barrel",
+        "barrel",
+        "exploding"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "exploding barrel spilled",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/ExplodingBarrel_Spilled.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "exploding barrel spilled",
+        "exploding-barrel-spilled",
+        "spilled",
+        "exploding"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "fire hydrant",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/FireHydrant.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "fire hydrant",
+        "fire-hydrant",
+        "hydrant",
+        "fire"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hay bale",
+      "pack": "kenney-graveyard-kit",
+      "file": "Models/GLB format/hay-bale.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "hay bale",
+        "hay-bale",
+        "bale",
+        "hay"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hazard saw",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/Hazard_Saw.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "hazard saw",
+        "hazard-saw",
+        "saw",
+        "hazard"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hazard spike trap",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/Hazard_SpikeTrap.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "hazard spike trap",
+        "hazard-spike-trap",
+        "trap",
+        "hazard"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "machine barrel",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/machine_barrel.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "machine barrel",
+        "machine-barrel",
+        "barrel",
+        "machine"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "obstacle triangle",
+      "pack": "kenney-minigolf-kit",
+      "file": "Models/GLB format/obstacle-triangle.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "obstacle triangle",
+        "obstacle-triangle",
+        "triangle",
+        "obstacle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pallet",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/Pallet.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pallet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pallet decorated",
+      "pack": "kaykit-prototype-bits",
+      "file": "addons/kaykit_prototype_bits/Assets/gltf/Pallet_Small_Decorated_A.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pallet decorated",
+        "pallet-decorated",
+        "decorated",
+        "pallet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/Pipe_90.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe bend",
+      "pack": "kenney-space-station-kit",
+      "file": "Models/GLB format/pipe-bend.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe bend",
+        "pipe-bend",
+        "bend",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe bump",
+      "pack": "kenney-factory-kit",
+      "file": "Models/GLB format/pipe-large-bump.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe bump",
+        "pipe-bump",
+        "bump",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe cross",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/pipe_cross.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe cross",
+        "pipe-cross",
+        "cross",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe entrance",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/pipe_entrance.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe entrance",
+        "pipe-entrance",
+        "entrance",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe glass",
+      "pack": "kenney-factory-kit",
+      "file": "Models/GLB format/pipe-glass-large.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe glass",
+        "pipe-glass",
+        "glass",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe long",
+      "pack": "kenney-factory-kit",
+      "file": "Models/GLB format/pipe-large-long.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe long",
+        "pipe-long",
+        "long",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pipe valve",
+      "pack": "kenney-factory-kit",
+      "file": "Models/GLB format/pipe-large-valve.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pipe valve",
+        "pipe-valve",
+        "valve",
+        "pipe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pizza box",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/pizza-box.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "pizza box",
+        "pizza-box",
+        "box",
+        "pizza"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "plastic barrier",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/PlasticBarrier.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "plastic barrier",
+        "plastic-barrier",
+        "barrier",
+        "plastic"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sack trench",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/SackTrench.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "sack trench",
+        "sack-trench",
+        "trench",
+        "sack"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "saw",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/saw.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "saw"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "traffic barrier",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Environment/glTF/TrafficBarrier_1.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "traffic barrier",
+        "traffic-barrier",
+        "barrier",
+        "traffic"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "trap spikes",
+      "pack": "kenney-platformer-kit",
+      "file": "Models/GLB format/trap-spikes.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "trap spikes",
+        "trap-spikes",
+        "spikes",
+        "trap"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "trash",
+      "pack": "kaykit-city-builder-bits",
+      "file": "addons/kaykit_city_builder_bits/Assets/gltf/trash_A.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "trash"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree cone",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/tree_cone.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "tree cone",
+        "tree-cone",
+        "cone",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tree spikes",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Environment/GLTF/Tree_Spikes_1.gltf",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "tree spikes",
+        "tree-spikes",
+        "spikes",
+        "tree"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "turret double",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/turret_double.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "turret double",
+        "turret-double",
+        "double",
+        "turret"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "turret single",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/turret_single.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "turret single",
+        "turret-single",
+        "single",
+        "turret"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "weapon cannon",
+      "pack": "kenney-tower-defense-kit",
+      "file": "Models/GLB format/weapon-cannon.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "weapon cannon",
+        "weapon-cannon",
+        "cannon",
+        "weapon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "weapon turret",
+      "pack": "kenney-tower-defense-kit",
+      "file": "Models/GLB format/weapon-turret.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "weapon turret",
+        "weapon-turret",
+        "turret",
+        "weapon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "workbench anvil",
+      "pack": "kenney-survival-kit",
+      "file": "Models/GLB format/workbench-anvil.glb",
+      "via": "broad",
+      "category": "obstacle",
+      "tags": [
+        "workbench anvil",
+        "workbench-anvil",
+        "anvil",
+        "workbench"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ambulance",
+      "pack": "quaternius-public-transport",
+      "file": "OBJ/Ambulance.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "ambulance"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bicycle",
+      "pack": "quaternius-public-transport",
+      "file": "OBJ/Bicycle.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "bicycle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "boat row",
+      "pack": "kenney-pirate-kit",
+      "file": "Models/GLB format/boat-row-large.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "boat row",
+        "boat-row",
+        "row",
+        "boat"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bob",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Bob/glTF/Bob.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "bob"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bus",
+      "pack": "quaternius-public-transport",
+      "file": "OBJ/Bus.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "bus"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "canoe",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/canoe.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "canoe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "canoe paddle",
+      "pack": "kenney-nature-kit",
+      "file": "Models/GLTF format/canoe_paddle.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "canoe paddle",
+        "canoe-paddle",
+        "paddle",
+        "canoe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "car hatchback",
+      "pack": "kaykit-city-builder-bits",
+      "file": "addons/kaykit_city_builder_bits/Assets/gltf/car_hatchback.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "car hatchback",
+        "car-hatchback",
+        "hatchback",
+        "car"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "car police",
+      "pack": "kaykit-city-builder-bits",
+      "file": "addons/kaykit_city_builder_bits/Assets/gltf/car_police.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "car police",
+        "car-police",
+        "police",
+        "car"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "car sedan",
+      "pack": "kaykit-city-builder-bits",
+      "file": "addons/kaykit_city_builder_bits/Assets/gltf/car_sedan.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "car sedan",
+        "car-sedan",
+        "sedan",
+        "car"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "car stationwagon",
+      "pack": "kaykit-city-builder-bits",
+      "file": "addons/kaykit_city_builder_bits/Assets/gltf/car_stationwagon.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "car stationwagon",
+        "car-stationwagon",
+        "stationwagon",
+        "car"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "car taxi",
+      "pack": "kaykit-city-builder-bits",
+      "file": "addons/kaykit_city_builder_bits/Assets/gltf/car_taxi.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "car taxi",
+        "car-taxi",
+        "taxi",
+        "car"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cop",
+      "pack": "quaternius-cars",
+      "file": "OBJ/Cop.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "cop"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "craft racer",
+      "pack": "kenney-space-kit",
+      "file": "Models/GLTF format/craft_racer.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "craft racer",
+        "craft-racer",
+        "racer",
+        "craft"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "delivery",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/delivery.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "delivery"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "dispatcher",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Dispatcher/glTF/Dispatcher.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "dispatcher"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "enemy ufo",
+      "pack": "kenney-tower-defense-kit",
+      "file": "Models/GLB format/enemy-ufo-a.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "enemy ufo",
+        "enemy-ufo",
+        "ufo",
+        "enemy"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "executioner",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Executioner/glTF/Executioner.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "executioner"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "firetruck",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/firetruck.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "firetruck"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "garbage truck",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/garbage-truck.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "garbage truck",
+        "garbage-truck",
+        "truck",
+        "garbage"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "gas tank",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/GasTank.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "gas tank",
+        "gas-tank",
+        "tank",
+        "gas"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hatchback sports",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/hatchback-sports.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "hatchback sports",
+        "hatchback-sports",
+        "sports",
+        "hatchback"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "challenger",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Challenger/glTF/Challenger.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "challenger"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "imperial",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Imperial/glTF/Imperial.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "imperial"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "insurgent",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Insurgent/glTF/Insurgent.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "insurgent"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kart oobi",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/kart-oobi.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "kart oobi",
+        "kart-oobi",
+        "oobi",
+        "kart"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "kart oodi",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/kart-oodi.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "kart oodi",
+        "kart-oodi",
+        "oodi",
+        "kart"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "omen",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Omen/glTF/Omen.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "omen"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "race",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/race.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "race"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rover",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Vehicles/GLTF/Rover_1.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "rover"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rover round",
+      "pack": "quaternius-ultimate-space-kit",
+      "file": "Vehicles/GLTF/Rover_Round.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "rover round",
+        "rover-round",
+        "round",
+        "rover"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sedan",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/sedan.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "sedan"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "school bus",
+      "pack": "quaternius-public-transport",
+      "file": "OBJ/SchoolBus.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "school bus",
+        "school-bus",
+        "bus",
+        "school"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sled",
+      "pack": "kenney-holiday-kit",
+      "file": "Models/GLB format/sled.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "sled"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "spitfire",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Spitfire/glTF/Spitfire.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "spitfire"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sports car",
+      "pack": "quaternius-cars",
+      "file": "OBJ/SportsCar.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "sports car",
+        "sports-car",
+        "car",
+        "sports"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "striker",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Striker/glTF/Striker.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "striker"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "suv",
+      "pack": "quaternius-cars",
+      "file": "OBJ/SUV.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "suv"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tank",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Environment/glTF/Tank.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "tank"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "taxi",
+      "pack": "quaternius-cars",
+      "file": "OBJ/Taxi.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "taxi",
+        "cab"
+      ],
+      "synonyms": [
+        "cab"
+      ],
+      "sentences": []
+    },
+    {
+      "noun": "tractor",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/tractor.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "tractor"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "train",
+      "pack": "quaternius-public-transport",
+      "file": "OBJ/Train.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "train"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "truck",
+      "pack": "quaternius-sushi-restaurant-kit",
+      "file": "Environment/glTF/Truck.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "truck"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "van",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/van.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "van"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "vehicle sports",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Vehicles/glTF/Vehicle_Sports.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "vehicle sports",
+        "vehicle-sports",
+        "sports",
+        "vehicle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "vehicle truck",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Vehicles/glTF/Vehicle_Truck.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "vehicle truck",
+        "vehicle-truck",
+        "truck",
+        "vehicle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "wheel",
+      "pack": "kenney-car-kit",
+      "file": "Models/GLB format/wheel-dark.glb",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "wheel"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "zenith",
+      "pack": "quaternius-ultimate-spaceships",
+      "file": "Zenith/glTF/Zenith.gltf",
+      "via": "broad",
+      "category": "vehicle",
+      "tags": [
+        "zenith"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "ak",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Guns/glTF/AK.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "ak"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "arrow",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Arrow.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "arrow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "arrow rounded",
+      "pack": "kenney-factory-kit",
+      "file": "Models/GLB format/arrow-rounded.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "arrow rounded",
+        "arrow-rounded",
+        "rounded",
+        "arrow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "arrow up",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Level and Mechanics/glTF/Arrow_Up.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "arrow up",
+        "arrow-up",
+        "up",
+        "arrow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "assault rifle",
+      "pack": "quaternius-ultimate-gun",
+      "file": "OBJ/AssaultRifle_1.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "assault rifle",
+        "assault-rifle",
+        "rifle",
+        "assault"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "axe",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Weapons/glTF/Axe.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "axe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "axe double",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Axe_Double.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "axe double",
+        "axe-double",
+        "double",
+        "axe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "blaster",
+      "pack": "kenney-blaster-kit",
+      "file": "Models/GLB format/blaster-a.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "blaster"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bow",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Bow_Golden.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "bow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bow evil",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Bow_Evil.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "bow evil",
+        "bow-evil",
+        "evil",
+        "bow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bow wooden",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Bow_Wooden.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "bow wooden",
+        "bow-wooden",
+        "wooden",
+        "bow"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bullet foam",
+      "pack": "kenney-blaster-kit",
+      "file": "Models/GLB format/bullet-foam.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "bullet foam",
+        "bullet-foam",
+        "foam",
+        "bullet"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "bullpup",
+      "pack": "quaternius-ultimate-gun",
+      "file": "OBJ/Bullpup_1.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "bullpup"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "claymore",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Claymore.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "claymore"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "club",
+      "pack": "kenney-minigolf-kit",
+      "file": "Models/GLB format/club-blue.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "club"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "cooking knife",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/cooking-knife.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "cooking knife",
+        "cooking-knife",
+        "knife",
+        "cooking"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "dagger",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Dagger_2.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "dagger"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "fire grenade",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Guns/glTF/FireGrenade.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "fire grenade",
+        "fire-grenade",
+        "grenade",
+        "fire"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "grenade",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Guns/glTF/Grenade.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "grenade"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "grenade launcher",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Guns/glTF/GrenadeLauncher.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "grenade launcher",
+        "grenade-launcher",
+        "launcher",
+        "grenade"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "guitar",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Weapons/glTF/Guitar.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "guitar"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "gun",
+      "pack": "quaternius-ultimate-platformer",
+      "file": "Character/glTF/Character_Gun.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "gun"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hammer",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Hammer_Small.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "hammer"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "hammer double",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Hammer_Double.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "hammer double",
+        "hammer-double",
+        "double",
+        "hammer"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "pistol",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Weapons/glTF/Pistol.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "pistol"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "revolver",
+      "pack": "quaternius-ultimate-gun",
+      "file": "OBJ/Revolver_1.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "revolver"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rifle",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Weapons/glTF/Rifle.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "rifle"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "rocket launcher",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Guns/glTF/RocketLauncher.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "rocket launcher",
+        "rocket-launcher",
+        "launcher",
+        "rocket"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "scythe",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Scythe.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "scythe"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shield celtic",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Shield_Celtic_Golden.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "shield celtic",
+        "shield-celtic",
+        "celtic",
+        "shield"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shield heater",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Shield_Heater_2.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "shield heater",
+        "shield-heater",
+        "heater",
+        "shield"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shield rectangle",
+      "pack": "kenney-mini-dungeon",
+      "file": "Models/GLB format/shield-rectangle.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "shield rectangle",
+        "shield-rectangle",
+        "rectangle",
+        "shield"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shield round",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Shield_Round_2.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "shield round",
+        "shield-round",
+        "round",
+        "shield"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shotgun",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Weapons/glTF/Shotgun.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "shotgun"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "shovel",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Guns/glTF/Shovel.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "shovel"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "smg",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Weapons/glTF/SMG.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "smg"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "smoke",
+      "pack": "kenney-blaster-kit",
+      "file": "Models/GLB format/smoke.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "smoke"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sniper",
+      "pack": "quaternius-toon-shooter-kit",
+      "file": "Guns/glTF/Sniper_2.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "sniper"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sniper rifle",
+      "pack": "quaternius-ultimate-gun",
+      "file": "OBJ/SniperRifle_1.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "sniper rifle",
+        "sniper-rifle",
+        "rifle",
+        "sniper"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "spear",
+      "pack": "quaternius-zombie-apocalypse-kit",
+      "file": "Weapons/glTF/Spear.gltf",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "spear"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "submachine gun",
+      "pack": "quaternius-ultimate-gun",
+      "file": "OBJ/SubmachineGun_1.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "submachine gun",
+        "submachine-gun",
+        "gun",
+        "submachine"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sword",
+      "pack": "quaternius-medieval-weapons",
+      "file": "OBJ/Sword_2.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "sword"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "sword shield",
+      "pack": "kaykit-dungeon-remastered",
+      "file": "addons/kaykit_dungeon_remastered/Assets/gltf/sword_shield.gltf.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "sword shield",
+        "sword-shield",
+        "shield",
+        "sword"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tool axe",
+      "pack": "kenney-survival-kit",
+      "file": "Models/GLB format/tool-axe.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "tool axe",
+        "tool-axe",
+        "axe",
+        "tool"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "tool hammer",
+      "pack": "kenney-survival-kit",
+      "file": "Models/GLB format/tool-hammer.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "tool hammer",
+        "tool-hammer",
+        "hammer",
+        "tool"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "utensil knife",
+      "pack": "kenney-food-kit",
+      "file": "Models/GLB format/utensil-knife.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "utensil knife",
+        "utensil-knife",
+        "knife",
+        "utensil"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "weapon ballista",
+      "pack": "kenney-tower-defense-kit",
+      "file": "Models/GLB format/weapon-ballista.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "weapon ballista",
+        "weapon-ballista",
+        "ballista",
+        "weapon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    },
+    {
+      "noun": "weapon catapult",
+      "pack": "kenney-tower-defense-kit",
+      "file": "Models/GLB format/weapon-catapult.glb",
+      "via": "broad",
+      "category": "weapon",
+      "tags": [
+        "weapon catapult",
+        "weapon-catapult",
+        "catapult",
+        "weapon"
+      ],
+      "synonyms": [],
+      "sentences": []
+    }
+  ],
+  "overflow": [],
+  "unmatched": [
+    {
+      "noun": "snowball",
+      "sentences": [
+        "s114",
+        "fidelity:s050",
+        "fidelity:h03"
+      ]
+    },
+    {
+      "noun": "black hole",
+      "sentences": [
+        "s111",
+        "fidelity:s111"
+      ]
+    },
+    {
+      "noun": "bug",
+      "sentences": [
+        "s037",
+        "fidelity:s037"
+      ]
+    },
+    {
+      "noun": "grandma",
+      "sentences": [
+        "s179",
+        "fidelity:s188"
+      ]
+    },
+    {
+      "noun": "kangaroo",
+      "sentences": [
+        "s139",
+        "fidelity:h05"
+      ]
+    },
+    {
+      "noun": "karate",
+      "sentences": [
+        "s188",
+        "fidelity:s188"
+      ]
+    },
+    {
+      "noun": "marine",
+      "sentences": [
+        "s037",
+        "fidelity:s037"
+      ]
+    },
+    {
+      "noun": "scooter",
+      "sentences": [
+        "s056",
+        "fidelity:s056"
+      ]
+    },
+    {
+      "noun": "acorn",
+      "sentences": [
+        "s029"
+      ]
+    },
+    {
+      "noun": "balloon",
+      "sentences": [
+        "s041"
+      ]
+    },
+    {
+      "noun": "barista",
+      "sentences": [
+        "s163"
+      ]
+    },
+    {
+      "noun": "battery",
+      "sentences": [
+        "fidelity:h04"
+      ]
+    },
+    {
+      "noun": "crocodile",
+      "sentences": [
+        "fidelity:s058"
+      ]
+    },
+    {
+      "noun": "fishmonger",
+      "sentences": [
+        "fidelity:h01"
+      ]
+    },
+    {
+      "noun": "goalkeeper",
+      "sentences": [
+        "s127"
+      ]
+    },
+    {
+      "noun": "guard",
+      "sentences": [
+        "s146"
+      ]
+    },
+    {
+      "noun": "hospital",
+      "sentences": [
+        "fidelity:h09"
+      ]
+    },
+    {
+      "noun": "charger",
+      "sentences": [
+        "fidelity:s022"
+      ]
+    },
+    {
+      "noun": "mom",
+      "sentences": [
+        "s147"
+      ]
+    },
+    {
+      "noun": "operator",
+      "sentences": [
+        "s102"
+      ]
+    },
+    {
+      "noun": "owner",
+      "sentences": [
+        "s151"
+      ]
+    },
+    {
+      "noun": "paint",
+      "sentences": [
+        "s048"
+      ]
+    },
+    {
+      "noun": "people",
+      "sentences": [
+        "s010"
+      ]
+    },
+    {
+      "noun": "pollen",
+      "sentences": [
+        "s192"
+      ]
+    },
+    {
+      "noun": "rider",
+      "sentences": [
+        "s199"
+      ]
+    },
+    {
+      "noun": "saber",
+      "sentences": [
+        "s141"
+      ]
+    },
+    {
+      "noun": "sprinkler",
+      "sentences": [
+        "fidelity:s006"
+      ]
+    },
+    {
+      "noun": "squirrel",
+      "sentences": [
+        "s029"
+      ]
+    },
+    {
+      "noun": "submarine",
+      "sentences": [
+        "s184"
+      ]
+    },
+    {
+      "noun": "surfer",
+      "sentences": [
+        "s135"
+      ]
+    }
+  ],
+  "ambiguous": []
+}

@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import runner from '../arcade/__fixtures__/runner.json';
 import shooter from '../arcade/__fixtures__/shooter.json';
 import throwGame from '../arcade/__fixtures__/throw.json';
-import { enemyModel, heroModel, modelOf, modelPath, propModels } from '../arcade/models';
+import { enemyModel, heroModel, modelOf, modelPath, propModels, riggedCharacter } from '../arcade/models';
 import { lookOf } from '../arcade/look';
 import { draftGameSpec } from '../draft';
 import type { GameSpecV1 } from '../spec';
@@ -28,19 +28,22 @@ describe('arcade model choice from role labels', () => {
     ['cardboard robot', 'robot'], // hlava fráze, ne první slovo
     ['brave little puppies', 'dog'], // synonymum v množném čísle
     ['kitten', 'cat'], // tag katalogu
-    ['zombies', 'goblin'], // příšera
+    ['zombies', 'cc0-zombie'], // přesný model CC0 přebije náhradu
+    ['ogres', 'goblin'], // bez modelu náhradní příšera
+    ['a small bird', 'bird'], // tag `bird` nese hnízdo, věta myslí ptáka
     ['space bunny', 'hamster'],
     ['grizzly bear', 'fox'], // kategorie zvíře
     ['mall security guard', 'explorer'], // kategorie člověk
-    ['battle tank', 'robot'], // kategorie stroj
+    ['angry bulldozer', 'robot'], // kategorie stroj
+    ['battle tank', 'cc0-tank'], // CC0 tank, ne plynová bomba `cc0-gas-tank` (P26A T11)
   ])('%s → %s', (label, model) => {
     expect(modelOf(label, true)).toBe(model);
   });
 
   it('a thing the catalog lacks gets no category and keeps the role default', () => {
-    expect(modelOf('sock', true)).toBeUndefined();
-    expect(heroModel(withLabel(runner, 'player', 'sock'))).toBe('explorer');
-    expect(enemyModel(withLabel(shooter, 'enemy', 'angry socks'))).toBe('robot');
+    expect(modelOf('balloon', true)).toBeUndefined();
+    expect(heroModel(withLabel(runner, 'player', 'balloon'))).toBe('explorer');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('robot');
   });
 
   it('a flappy bird is the bird, not the nest', () => {
@@ -58,7 +61,7 @@ describe('arcade model choice from role labels', () => {
 
   // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.
   it.each([
-    ['shoot the zombies in the mall', (spec: GameSpecV1) => enemyModel(spec), 'goblin'],
+    ['shoot the zombies in the mall', (spec: GameSpecV1) => enemyModel(spec), 'cc0-zombie'],
     ['space shooter against asteroids', (spec: GameSpecV1) => spec.roles.find((role) => role.id === 'enemy')?.label, 'asteroid'],
     ['throw balls at rubber ducks', (spec: GameSpecV1) => propModels(spec).target, 'rubber-duck'],
     ['a runner dodging traffic cones and collecting gems', (spec: GameSpecV1) => propModels(spec).coin, 'crystal'],
@@ -73,6 +76,42 @@ describe('arcade model choice from role labels', () => {
     ['throw snowballs at kids from a snow fort', 'snow'],
   ])('sentence %s keeps its place (%s)', (sentence, look) => {
     expect(lookOf(draftGameSpec(sentence).theme)).toBe(look);
+  });
+
+  // P26B T6: lidská role s tagem riggované postavy dostane postavu s klipy, jinak se nic nemění.
+  it.each([
+    ['a knight running and jumping over hurdles', 'rigged:knight'],
+    ['a wizard running through the forest', 'rigged:mage'],
+    ['a cat running and dodging dogs', 'cat'],
+  ])('sentence %s casts %s as the hero', (sentence, model) => {
+    expect(heroModel(draftGameSpec(sentence))).toBe(model);
+  });
+
+  // Návrh ze slov „a cat runner“ kočku do popisku nezapíše (dá výchozího rytíře), takže pravidlo hlavy fráze se měří na popisku.
+  it.each([
+    ['cat runner', 'cat'],
+    ['knight', 'rigged:knight'],
+    ['brave little girl', 'rigged:girl-a'],
+    ['sock', 'cc0-sock'],
+    ['stapler', 'explorer'],
+  ])('hero label %s → %s', (label, model) => {
+    expect(heroModel(withLabel(runner, 'player', label))).toBe(model);
+  });
+
+  it.each([
+    ['skeleton warriors', 'rigged:skeleton-warrior'],
+    ['angry pirates', 'rigged:rogue'],
+    ['zombies', 'cc0-zombie'], // kostlivec není zombie – zombie má vlastní model
+    ['cardboard robots', 'robot'],
+  ])('enemy label %s → %s', (label, model) => {
+    expect(enemyModel(withLabel(shooter, 'enemy', label))).toBe(model);
+  });
+
+  it('a rigged pick resolves to a manifest character whose GLB is on disk', () => {
+    const character = riggedCharacter(heroModel(draftGameSpec('a knight jumping over lava')));
+    expect(character?.clips).toMatchObject({ idle: expect.any(String), run: expect.any(String), jump: expect.any(String) });
+    expect(existsSync(join(process.cwd(), 'public', character!.path))).toBe(true);
+    expect(riggedCharacter('knight')).toBeUndefined();
   });
 
   it('every model a label can pick has a GLB on disk', () => {

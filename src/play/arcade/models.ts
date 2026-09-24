@@ -1,7 +1,8 @@
 /**
  * Který model katalogu kreslí role arkády – z popisku role (P26 T12).
  *
- * Arkáda a mřížka mají jeden katalog `src/assets/catalog.json` (86 modelů).
+ * Arkáda a mřížka mají jeden katalog `src/assets/catalog.json` (102 modelů);
+ * arkáda z něj čte štíhlý index `catalog-index.json`, který píše `promote.mjs`.
  * Popisek se čte od posledního slova (hlava fráze: „cardboard robot“ je robot,
  * ne karton): přímé slovo → tag katalogu → jednotné číslo. Postava, kterou
  * katalog nemá, dostane nejbližší kategorii (zvíře, člověk, stroj, příšera),
@@ -13,17 +14,20 @@
  * tvrdí, které popisky vykreslení čte, a test to ověřuje právě tady.
  */
 
-import catalog from '@/assets/catalog.json';
+import catalog from '@/assets/catalog-index.json';
+
+import rigged from '@/assets/rigged.json';
 
 import { controlOf, readsLabel } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
+import type { ClipState } from './motion';
 import { OBSTACLE_KINDS } from './pieces/runner';
 
 const GAME_BASE = '/assets/worldstream/game/';
 
 /** Id modelu → cesta k jeho LOD1 v katalogu. */
 const PATHS: ReadonlyMap<string, string> = new Map(
-  catalog.assets.map((asset) => [asset.assetId, asset.lods.find((lod) => lod.level === 1)?.path ?? asset.lods[0]?.path ?? '']),
+  catalog.assets.map((asset) => [asset.assetId, asset.path]),
 );
 
 /** Tag → model. Tag, který nese víc modelů (`robot`), patří tomu, který se tak jmenuje. */
@@ -37,13 +41,11 @@ const BY_TAG: ReadonlyMap<string, string> = (() => {
   return index;
 })();
 
-/**
- * Slova, která tag katalogu nese jinak, než je myslí věta: pták je postava
- * (primitiv `bird`), ne hnízdo; zombie a drak jsou příšera.
- */
+/** Slova, která tag katalogu nese jinak, než je myslí věta: pták je postava (primitiv `bird`), ne hnízdo. */
+const WORD_SENSE: Readonly<Record<string, string>> = { bird: 'bird', birds: 'bird' };
+
+/** Nejbližší model pro slovo, které katalog jako tag nemá; přesný tag vyhrává (CC0 zombie, drak, včela). */
 const WORD_MODEL: Readonly<Record<string, string>> = {
-  bird: 'bird',
-  birds: 'bird',
   jet: 'plane',
   helicopter: 'drone',
   ufo: 'rocket',
@@ -90,7 +92,7 @@ function singulars(word: string): readonly string[] {
   return out;
 }
 
-function lookup(word: string, index: (form: string) => string | undefined): string | undefined {
+function lookup<T>(word: string, index: (form: string) => T | undefined): T | undefined {
   for (const form of [word, ...singulars(word)]) {
     const found = index(form);
     if (found !== undefined) return found;
@@ -102,7 +104,7 @@ function lookup(word: string, index: (form: string) => string | undefined): stri
 export function modelOf(label: string, character: boolean): string | undefined {
   const words = label.toLowerCase().match(/[a-z][a-z-]*/g) ?? [];
   for (const word of [...words].reverse()) {
-    const found = lookup(word, (form) => WORD_MODEL[form] ?? BY_TAG.get(form));
+    const found = lookup(word, (form) => WORD_SENSE[form] ?? BY_TAG.get(form) ?? WORD_MODEL[form]);
     if (found !== undefined) return found;
   }
   if (!character) return undefined;
@@ -116,17 +118,18 @@ export function modelOf(label: string, character: boolean): string | undefined {
 /** Vozidla, která závod umí nést; jiný popisek řídí auto. */
 const VEHICLES: ReadonlySet<string> = new Set(['race-car', 'rival-car', 'plane', 'rocket', 'rowing-boat', 'shopping-cart', 'drone']);
 
-/** Hrdina z popisku hráče; bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
+/** Hrdina z popisku hráče: riggovaná postava, pak katalog; bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
 export function heroModel(spec: GameSpecV1): string {
   const label = spec.roles.find((role) => role.kind === 'player')?.label ?? '';
   const found = modelOf(label, spec.control !== 'steer');
   if (spec.control === 'steer') return found !== undefined && VEHICLES.has(found) ? found : 'race-car';
-  return found ?? (spec.control === 'flap' ? 'bird' : 'explorer');
+  return riggedModelOf(label) ?? found ?? (spec.control === 'flap' ? 'bird' : 'explorer');
 }
 
-/** Nepřátelé střelnice: model z popisku role `enemy`, jinak robot. */
+/** Nepřátelé střelnice: riggovaná postava nebo model z popisku role `enemy`, jinak robot. */
 export function enemyModel(spec: GameSpecV1): string {
-  return modelOf(spec.roles.find((role) => role.id === 'enemy')?.label ?? '', true) ?? 'robot';
+  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? '';
+  return riggedModelOf(label) ?? modelOf(label, true) ?? 'robot';
 }
 
 /** Role arkády, jejichž těla smí nést model z popisku: sbíraná mince, překážka běžce, terč hodu. */
@@ -150,6 +153,53 @@ export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> 
     if (found !== undefined && found !== 'bird' && !OWN_KINDS[id].includes(found)) out[id] = found;
   }
   return out;
+}
+
+/** Id modelu riggované postavy s klipy (`src/assets/rigged.json`, P26B) nese tuhle předponu, ať se nesrazí s katalogem. */
+export const RIGGED_PREFIX = 'rigged:';
+
+export interface RiggedCharacter {
+  readonly id: string;
+  readonly path: string;
+  readonly tags: readonly string[];
+  /** Stav hry → jméno klipu v GLB; `idle` a `run` jsou vždy. */
+  readonly clips: Partial<Record<ClipState, string>>;
+}
+
+const RIGGED: ReadonlyMap<string, RiggedCharacter> = new Map(rigged.characters.map((character) => [character.id, character]));
+
+/** Tag → riggované postavy, které ho nesou (v pořadí manifestu). */
+const RIGGED_BY_TAG: ReadonlyMap<string, readonly (typeof rigged.characters)[number][]> = (() => {
+  const index = new Map<string, (typeof rigged.characters)[number][]>();
+  for (const character of rigged.characters) for (const tag of character.tags) index.set(tag, [...(index.get(tag) ?? []), character]);
+  return index;
+})();
+
+/**
+ * Riggovaná postava, kterou popisek jmenuje (P26B T6). Čte se od hlavy fráze
+ * jako `modelOf`: první slovo odzadu, které zná postava, vyhrává; slovo, které
+ * zná jen katalog („cat runner“ → kočka), výběr ukončí – postava s klipy
+ * nesmí přebít zvíře nebo věc z věty. Když hlavu nese víc postav („warriors“),
+ * rozhodnou ostatní slova („skeleton warriors“ → kostlivec).
+ */
+export function riggedModelOf(label: string): string | undefined {
+  const words = label.toLowerCase().match(/[a-z][a-z-]*/g) ?? [];
+  const forms = new Set(words.flatMap((word) => [word, ...singulars(word)]));
+  for (const word of [...words].reverse()) {
+    const candidates = lookup(word, (form) => RIGGED_BY_TAG.get(form));
+    if (candidates !== undefined) {
+      const score = (character: (typeof candidates)[number]): number => character.tags.filter((tag) => forms.has(tag)).length;
+      const best = candidates.reduce((top, character) => (score(character) > score(top) ? character : top));
+      return `${RIGGED_PREFIX}${best.id}`;
+    }
+    if (lookup(word, (form) => WORD_MODEL[form] ?? BY_TAG.get(form)) !== undefined) return undefined;
+  }
+  return undefined;
+}
+
+/** Riggovaná postava za id modelu, nebo `undefined` pro model katalogu. */
+export function riggedCharacter(modelId: string): RiggedCharacter | undefined {
+  return modelId.startsWith(RIGGED_PREFIX) ? RIGGED.get(modelId.slice(RIGGED_PREFIX.length)) : undefined;
 }
 
 /** Cesta ke GLB: katalog zná 86 modelů, jiné id (tělo jádra) leží ve složce her. */
