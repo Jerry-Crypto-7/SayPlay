@@ -15,6 +15,20 @@ export declare function specFidelity(
   checklist: readonly ChecklistEntry[],
 ): { readonly control: string; readonly items: FidelityItem[]; readonly score: number; readonly drawnScore: number };
 
+export declare interface LossCause {
+  readonly why: string;
+  readonly control: string;
+  readonly slot: string;
+  readonly sentences: number;
+  readonly ids: readonly string[];
+}
+
+export declare function offlineChain(sentences: readonly { readonly id: string; readonly text: string; readonly checklist: readonly ChecklistEntry[] }[]): {
+  readonly summary: { readonly sentences: number; readonly compiled: number; readonly items: number; readonly inSpec: number; readonly read: number; readonly drawn: number };
+  readonly causes: readonly LossCause[];
+  readonly sentences: readonly { readonly id: string; readonly control: string; readonly addons: readonly string[]; readonly compiled: boolean; readonly items: readonly FidelityItem[] }[];
+};
+
 interface Tally {
   readonly hit: number;
   readonly of: number;

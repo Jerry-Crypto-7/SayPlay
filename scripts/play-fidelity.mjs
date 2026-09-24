@@ -17,6 +17,10 @@
  *   node --experimental-strip-types scripts/play-fidelity.mjs judge  [--run <id>]
  *   node --experimental-strip-types scripts/play-fidelity.mjs report [--run <id>]
  *
+ * Offline mapa ztrát (P27A T2) – slovní draft a kompilace bez sítě a bez
+ * modelu, zapíše `evals/play/fidelity/draft-chain.json`:
+ *   node --experimental-strip-types scripts/play-fidelity.mjs --offline
+ *
  * Server musí být `next start` se živou větví a
  * `PLAY_DIRECTOR_CALLS_PER_CALLER` ≥ 30, jinak denní strop volajícího utne běh
  * po dvanácti větách. Snímky a surová data leží v `evals/play/fidelity/runs/`
@@ -33,6 +37,8 @@ import { fileURLToPath } from 'node:url';
 // `ts-paths.mjs` (cesty `@/`, přípony, JSON), vitest sám.
 if (!process.env.VITEST) await import('./ts-paths.mjs');
 const { fidelityChain } = await import('../src/play/fidelity/chain.ts');
+const { draftGameSpec } = await import('../src/play/draft/index.ts');
+const { compileGame } = await import('../src/play/compile/index.ts');
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
@@ -141,6 +147,71 @@ export function summarize(results) {
       upgradeSecondsP90: quantile(upgradeSeconds, 0.9),
     },
   };
+}
+
+// ---------------------------------------------------------------- offline mapa ztrát (P27A T2)
+
+/** Kolik příčin ztráty mapa vypíše. */
+const CAUSES = 5;
+
+const share = (hit, of) => (of === 0 ? 0 : Math.round((hit / of) * 1000) / 1000);
+
+/**
+ * Korpus přes slovní draft a kompilaci, bez sítě: každá položka se všemi
+ * stupni řetězu, souhrn a nejčetnější příčiny ztráty (`why` × ovládání × slot)
+ * podle počtu postižených vět. Deterministické – časové razítko přidá až zápis.
+ */
+export function offlineChain(sentences) {
+  const rows = sentences.map((sentence) => {
+    const spec = draftGameSpec(sentence.text);
+    return {
+      id: sentence.id,
+      text: sentence.text,
+      control: spec.control ?? 'tap_go',
+      addons: spec.addons ?? [],
+      compiled: compileGame(spec, 1).ok,
+      items: fidelityChain(spec, sentence.checklist),
+    };
+  });
+  const items = rows.flatMap((row) => row.items);
+  const count = (pick) => items.filter(pick).length;
+  const groups = new Map();
+  for (const row of rows) {
+    for (const item of row.items) {
+      if (item.why === 'ok') continue;
+      const key = `${item.why}|${row.control}|${item.slot}`;
+      const group = groups.get(key) ?? { why: item.why, control: row.control, slot: item.slot, ids: new Set() };
+      group.ids.add(row.id);
+      groups.set(key, group);
+    }
+  }
+  const causes = [...groups.values()]
+    .map((group) => ({ why: group.why, control: group.control, slot: group.slot, sentences: group.ids.size, ids: [...group.ids].sort() }))
+    .sort((a, b) => b.sentences - a.sentences || `${a.why}|${a.control}|${a.slot}`.localeCompare(`${b.why}|${b.control}|${b.slot}`))
+    .slice(0, CAUSES);
+  return {
+    summary: {
+      sentences: rows.length,
+      compiled: rows.filter((row) => row.compiled).length,
+      items: items.length,
+      inSpec: share(count((item) => item.inSpec), items.length),
+      read: share(count((item) => item.read), items.length),
+      drawn: share(count((item) => item.drawn), items.length),
+    },
+    causes,
+    sentences: rows,
+  };
+}
+
+function offline() {
+  const body = offlineChain(loadCorpus());
+  const header = {
+    about: 'P27A T2 offline loss map: the fidelity corpus through the word draft and the compiler, no network, no model. See README.md.',
+    measuredAt: new Date().toISOString(),
+    commit: commit(),
+  };
+  writeJson(join(DIR, 'draft-chain.json'), { header, ...body });
+  console.log(JSON.stringify({ summary: body.summary, causes: body.causes.map((cause) => `${cause.sentences}× ${cause.why} ${cause.control}/${cause.slot}`) }, null, 1));
 }
 
 // ---------------------------------------------------------------- běh
@@ -371,11 +442,12 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const options = args();
   const step = options._[0];
-  if (step === 'run') await run(options);
+  if (options.offline) offline();
+  else if (step === 'run') await run(options);
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
   else {
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report [--run <id>] [--base <url>] [--only <ids>] [--note <text>]');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report [--run <id>] [--base <url>] [--only <ids>] [--note <text>] | --offline');
     process.exit(2);
   }
 }
