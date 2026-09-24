@@ -115,6 +115,12 @@ describe('lexicon', () => {
     ['be a bee collecting pollen and bringing it to the hive', 'bee'],
     ['fly a paper plane through a house', 'paper plane'],
     ['a platformer where you jump between floating islands', null],
+    // P26D T1: žánr za postavou se odřízne, žánr bez postavy postavou nezůstane.
+    ['A corgi runner collecting bones', 'corgi'],
+    ['a goat simulator', 'goat'],
+    ['an endless runner in a neon city', null],
+    ['a space shooter against asteroids', null],
+    ['a runner game', null],
     ['A gold mine where I hire dwarves', null],
     ['tap to grow a garden that makes money while im away', null],
   ])('reads the player of %j as %j', (sentence, player) => {

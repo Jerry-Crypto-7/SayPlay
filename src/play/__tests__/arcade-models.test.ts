@@ -83,6 +83,9 @@ describe('arcade model choice from role labels', () => {
     ['a knight running and jumping over hurdles', 'rigged:knight'],
     ['a wizard running through the forest', 'rigged:mage'],
     ['a cat running and dodging dogs', 'cat'],
+    // P26D T1: slovo žánru za postavou postavu nesmaže.
+    ['A corgi runner collecting bones', 'cc0-corgi'],
+    ['a penguin runner', 'penguin'],
   ])('sentence %s casts %s as the hero', (sentence, model) => {
     expect(heroModel(draftGameSpec(sentence))).toBe(model);
   });
