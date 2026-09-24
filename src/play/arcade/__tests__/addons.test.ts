@@ -110,6 +110,31 @@ describe('+shoot (P26D T5)', () => {
     expect(state[HEADER.counters + COUNTER.ammo]).toBeLessThan(world.initial[HEADER.counters + COUNTER.ammo] as number);
     expect(state[HEADER.counters + COUNTER.score]).toBeGreaterThan(0);
   });
+
+  it.each([
+    ['runner', runner],
+    ['platform', platform],
+    ['flap', flap],
+  ])('%s +shoot: a bot that never fires runs into an enemy and loses', (_control, fixture) => {
+    const world = worldOf(specOf(fixture, ['shoot']), 7);
+    const plain = { ...world, bot: (world.bot.params as { base: ArcadeWorld['bot'] }).base };
+    expect(runBot(plain).outcome).toBe('lost');
+  });
+
+  // Pořadí doplňků: každý přidává těla jen na konec, takže index modelu mince z `+collect` drží i po `+shoot`.
+  it.each([
+    ['runner', ['collect', 'shoot'], runner],
+    ['runner', ['shoot', 'collect'], runner],
+    ['platform', ['collect', 'shoot', 'lives'], platform],
+    ['flap', ['shoot', 'collect'], flap],
+  ] as const)('%s with %j passes the gate on 20 seeds', (_control, addons, fixture) => {
+    const spec = specOf(fixture, addons);
+    expect(failing(spec)).toEqual([]);
+    const world = worldOf(spec, 7);
+    const state = afterBot(world);
+    expect(state[HEADER.counters + COUNTER.score]).toBeGreaterThan(0);
+    expect(state[HEADER.counters + COUNTER.items]).toBeGreaterThanOrEqual(needOf(world));
+  });
 });
 
 describe('+collect (P26D T4)', () => {

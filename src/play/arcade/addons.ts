@@ -58,6 +58,10 @@ export interface ArcadeParts {
   readonly health?: number;
 }
 
+/** Základní ovládání pod obalem `addon_control` – doplněk po `+shoot` musí dál poznat běžce. */
+const baseControl = (parts: ArcadeParts): PieceRef =>
+  parts.control.id === 'addon_control' ? (parts.control.params as { base: PieceRef }).base : parts.control;
+
 export interface AddonContext {
   readonly spec: GameSpecV1;
   readonly seed: number;
@@ -171,7 +175,7 @@ export const collectAddon: AddonPiece<z.infer<typeof collectParams>> = {
   params: collectParams,
   controlParams: { coins: true },
   apply: (input, params) => {
-    const parts = input.control.id === 'runner' ? { ...input, level: coinsOnFreeLanes(input.level) } : input;
+    const parts = baseControl(input).id === 'runner' ? { ...input, level: coinsOnFreeLanes(input.level) } : input;
     const kinds = [...new Set(parts.level.bodies.map((body) => body.kind))];
     const coins = parts.level.bodies.filter((body) => body.role === 'collectible' && body.kind === 'coin').length;
     if (coins === 0) return { ...parts, issues: [...(parts.issues ?? []), 'collect: the level has no coins to collect'] };
@@ -303,14 +307,33 @@ function clearShot(state: Int32Array, player: number, from: { x: number; y: numb
   return true;
 }
 
+/** Na nepřítele už letí střela: živý projektil před ním, v jeho šířce a výšce. */
+function covered(state: Int32Array, target: number): boolean {
+  const t = bodyBase(target);
+  const tx = state[t + BODY.x] as number;
+  const ty = state[t + BODY.y] as number;
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const b = bodyBase(i);
+    if (state[b + BODY.role] !== ROLE.projectile || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    if ((state[b + BODY.z] as number) > (state[t + BODY.z] as number)) continue;
+    if (Math.abs((state[b + BODY.x] as number) - tx) * 2 >= (state[t + BODY.w] as number) + SHOOTER.bulletSize) continue;
+    const y = state[b + BODY.y] as number;
+    if (y + SHOOTER.bulletSize > ty && y < ty + (state[t + BODY.h] as number)) return true;
+  }
+  return false;
+}
+
 /**
- * Robot střílí, když má čistou ránu na nepřítele před sebou a žádná jeho
- * střela ještě neletí. Pohled je 8 tiků starý: běžec proto nestřílí při
- * přebíhání, plošinovka jen ze země, poletování dopočítá výšku z vlastních
- * ťuků (jako jeho robot). Aréna střílí ve směru pohybu na cokoli v ráně.
+ * Robot střílí, když má čistou ránu na nepřítele před sebou, na kterého
+ * ještě žádná jeho střela neletí – střela na vzdáleného nepřítele letí až
+ * 90 tiků a bližší nepřítel v novém pruhu nesmí čekat, až dopadne. Pohled je
+ * 8 tiků starý: běžec proto nestřílí při přebíhání, plošinovka jen ze země,
+ * poletování dopočítá výšku z vlastních ťuků (jako jeho robot). Aréna
+ * střílí ve směru pohybu na cokoli v ráně, jen když nic neletí.
  */
 const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
-  if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0) || census(state).projectiles > 0) return input;
+  if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
+  if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
   const p = bodyBase(player);
   const px = state[p + BODY.x] as number;
   const pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
@@ -347,7 +370,7 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
     const y = state[b + BODY.y] as number;
     // Střela musí celá projít výškou nepřítele, ne ho jen škrtnout.
     if (from.y < y || from.y + SHOOTER.bulletSize > y + (state[b + BODY.h] as number)) continue;
-    if (clearShot(state, player, from, i)) return { ...input, buttons: input.buttons | BUTTON.FIRE };
+    if (!covered(state, i) && clearShot(state, player, from, i)) return { ...input, buttons: input.buttons | BUTTON.FIRE };
   }
   return input;
 };
@@ -360,7 +383,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
   id: 'shoot',
   params: noParams,
   apply: (parts, _params, { health }) => {
-    const control = parts.control.id;
+    const control = baseControl(parts).id;
     const enemies = enemiesFor(control, parts.level);
     // Nová těla jen na konec: index modelu (`kinds`), který si dřívější doplněk zapsal, se tak nepohne.
     const bodies = [...parts.level.bodies, ...enemies];
@@ -376,7 +399,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
     if (control !== 'move_free') rules.push({ id: 'hit', params: { role: 'enemy', effect: health === undefined ? 'lose' : 'damage' } });
     return {
       ...parts,
-      control: { id: 'addon_control', params: { base: parts.control } },
+      control: { id: 'addon_control', params: { base: baseControl(parts) } },
       level: {
         ...parts.level,
         bodies,
