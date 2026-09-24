@@ -86,12 +86,17 @@ describe('capability table against the arcade compiler and renderer', () => {
       });
     }
 
-    it(`${control}: role counts and theme.setting never change the world`, () => {
+    it(`${control}: theme.setting never changes the world`, () => {
       const next = clone(spec);
       next.theme.setting = 'a completely different place';
-      next.roles = next.roles.map((role) => (role.kind === 'player' ? role : { ...role, count: 1 }));
-      expect(CAPABILITIES[control].counts).toBe(false);
       expect(worldHash(next)).toBe(worldHash(spec));
+    });
+
+    // P26D T9: počet od 2 (1 je výchozí hodnota schématu) změní svět právě u ovládání s `counts`.
+    it(`${control}: role counts ${CAPABILITIES[control].counts ? 'are read – the world changes' : 'are not read – the world stays'}`, () => {
+      const next = clone(spec);
+      next.roles = next.roles.map((role) => (role.kind === 'player' ? role : { ...role, count: 3 }));
+      expect(worldHash(next) !== worldHash(spec)).toBe(CAPABILITIES[control].counts);
     });
 
     // P26 T11: prostředí mění scénu (sadu), ne svět – jen u ovládání, jejichž scéna sadu kreslí.
@@ -118,7 +123,7 @@ describe('capability table against the arcade compiler and renderer', () => {
 
 describe('critic and repair drop what the control does not play', () => {
   it('a runner with a grid hazard is blocked as UNSUPPORTED and repaired by removing it', () => {
-    const spec = clone(runner as GameSpecV1);
+    const spec = clone(runner as unknown as GameSpecV1);
     spec.mechanics = [{ id: 'hazard_zone', params: { role: 'obstacle', effect: 'lose' } }] as GameSpecV1['mechanics'];
     const read = readGameSpec(spec);
     if (!read.ok) throw new Error(read.issues.join('; '));

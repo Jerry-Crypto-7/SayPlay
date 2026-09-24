@@ -155,7 +155,9 @@ describe('arcade addons (P26D T2)', () => {
     const read = readGameSpec(runnerSpec());
     if (!read.ok) throw new Error(read.issues.join('; '));
     expect('addons' in read.value).toBe(false);
-    expect(read.specHash).toBe('bceb9e16');
+    // P26D T9: bceb9e16 → fc27e276 – fixtura běžce ztratila zástupné `count: 5` u překážky a mince
+    // (počty od 2 generátor nově čte). Pole `addons` na hash dál nesahá.
+    expect(read.specHash).toBe('fc27e276');
   });
 
   it('accepts an addon the control allows and rejects one it does not', () => {

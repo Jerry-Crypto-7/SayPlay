@@ -34,13 +34,40 @@ export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIM
 
 export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld } | { readonly ok: false; readonly issues: readonly string[] };
 
+/**
+ * Počet role jako parametr generátoru (P26D T9). Schéma dává `count` výchozí 1,
+ * takže 1 od „neřečeno“ nejde rozlišit – čte se až počet od 2.
+ */
+function countOf(spec: GameSpecV1, roleId: string): number | undefined {
+  const count = spec.roles.find((role) => role.id === roleId)?.count ?? 1;
+  return count >= 2 ? count : undefined;
+}
+
+/** Počty rolí, které generátor ovládání čte (klíče jeho parametrů); `capabilities.ts` `counts` to tvrdí. */
+function countParams(spec: GameSpecV1): Record<string, number> {
+  // [role, klíč parametru, strop generátoru] – víc, než generátor unese, se ořízne (`within_limits`).
+  const pairs: Readonly<Record<string, readonly (readonly [string, string, number])[]>> = {
+    runner: [['coin', 'coinCount', 60], ['obstacle', 'rows', 60]],
+    platform: [['coin', 'coinCount', 60]],
+    flap: [['coin', 'coinCount', 40]],
+    shooter: [['target', 'targets', 8], ['enemy', 'enemies', 24]],
+  };
+  const out: Record<string, number> = {};
+  for (const [roleId, key, max] of pairs[spec.control ?? ''] ?? []) {
+    const count = countOf(spec, roleId);
+    if (count !== undefined) out[key] = Math.min(count, max);
+  }
+  return out;
+}
+
 /** Ovládání, trať a pravidla, která se liší podle `control`. */
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
+  const counts = countParams(spec);
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'duel') return duelParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'platform') {
-    const params = platformLevel.params.parse({ ...spec.controlParams });
+    const params = platformLevel.params.parse({ ...spec.controlParams, ...counts });
     return {
       control: { id: 'platform', params: { doubleJump: params.doubleJump } },
       bot: { id: 'platform_bot', params: {} },
@@ -62,11 +89,11 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     return { control: arenaControlRef(), bot: arenaBotRef(), level, rules: arenaRules(level, params, health) };
   }
   if (spec.control === 'flap') {
-    const params = flapTrack.params.parse({ ...spec.controlParams });
+    const params = flapTrack.params.parse({ ...spec.controlParams, ...counts });
     return { control: { id: 'flap', params: {} }, bot: { id: 'flap_bot', params: {} }, level: flapTrack.generate(seed, params), rules: flapRules(health) };
   }
   if (spec.control === 'shooter') {
-    const params = shooterRange.params.parse({ ...spec.controlParams });
+    const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });
     return { control: { id: 'shooter', params: {} }, bot: shooterBotRef(params), level: shooterRange.generate(seed, params), rules: shooterRules(params, health) };
   }
   if (spec.control === 'throw') {
@@ -74,7 +101,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = throwField.params.parse({ ...spec.controlParams });
     return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules(), health: undefined };
   }
-  const params = runnerTrack.params.parse({ ...spec.controlParams });
+  const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
   const rules: PieceRef[] = [
     { id: 'hit', params: { role: 'obstacle', effect: health === undefined ? 'lose' : 'damage' } },
     { id: 'pickup', params: {} },

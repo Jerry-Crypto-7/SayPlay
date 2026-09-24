@@ -46,10 +46,10 @@ const LIVES_AND_TIMER: readonly MechanicId[] = ['health', 'timer'];
 const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
 
 const arcade = (
-  entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles' | 'addons'> & { readonly setting?: boolean; readonly addons?: readonly AddonId[] },
+  entry: Omit<ControlCapability, 'counts' | 'setting' | 'maxRoles' | 'addons'> & { readonly setting?: boolean; readonly counts?: boolean; readonly addons?: readonly AddonId[] },
 ): ControlCapability => ({
   ...entry,
-  counts: false,
+  counts: entry.counts ?? false,
   setting: entry.setting ?? false,
   maxRoles: 1 + (entry.finish ? 1 : 0) + entry.roles.length,
   // Životy jen tam, kde ovládání čte `health` – jinak by doplněk nic neubral.
@@ -58,9 +58,10 @@ const arcade = (
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [] },
-  runner: arcade({ setting: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
-  platform: arcade({ setting: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
-  flap: arcade({ setting: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: ROAMING }),
+  // P26D T9: počty od 2 čte generátor – běžec mince a řady překážek, plošinovka a poletování mince, střelnice terče a nepřátele.
+  runner: arcade({ setting: true, counts: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
+  platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
+  flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: ROAMING }),
   steer: arcade({ cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player'], mechanics: ['timer'] }),
   move_free: arcade({
     cues: 'agar.io, eat smaller, grow',
@@ -71,7 +72,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     mechanics: LIVES_AND_TIMER,
     addons: ['shoot', 'chaser', 'lives'],
   }),
-  shooter: arcade({ setting: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
+  shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
   throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player', 'target'], mechanics: ['timer'] }),
   timing: arcade({ cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
   rhythm: arcade({ cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),

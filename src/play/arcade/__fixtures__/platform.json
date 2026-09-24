@@ -34,8 +34,7 @@
     {
       "id": "coin",
       "kind": "collectible",
-      "label": "coin",
-      "count": 5
+      "label": "coin"
     },
     {
       "id": "finish",

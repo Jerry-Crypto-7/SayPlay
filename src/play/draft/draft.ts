@@ -17,6 +17,7 @@
 import { uniformInt } from 'pure-rand/distribution/uniformInt';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 
+import { CAPABILITIES } from '../capabilities';
 import { ARCHETYPE_IDS, type ArchetypeId } from '../registry';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 import chaseEscape from '../__fixtures__/chase_escape.json';
@@ -61,6 +62,7 @@ import {
   UNDERWATER,
   WATCHER,
   plural,
+  readCountedNouns,
   readNumbers,
   readRoles,
   scoreArchetypes,
@@ -678,6 +680,26 @@ const TIMING_TEXT = {
   },
 } as const;
 
+// Počty z věty (P26D T9): podstatné jméno za číslem → id role šablony. Co sem
+// nepatří (životy, sekundy, pruhy), se nepočítá; ostatní množné číslo jsou mince.
+const COUNT_ROLES: readonly (readonly [RegExp, string])[] = [
+  [/^(?:lives|hearts|seconds|minutes|levels|lanes|players|times|jumps|waves|shots|bullets)$/, ''],
+  [/^(?:obstacles|hurdles|walls|barriers|rocks|cones|traps|rows|blocks|logs|boxes)$/, 'obstacle'],
+  [/^targets$/, 'target'],
+  [/^(?:enemies|zombies|aliens|robots|monsters|ghosts|invaders|ninjas|soldiers|bandits|pirates)$/, 'enemy'],
+  [/./, 'coin'],
+];
+
+/** „five coins“ → role `coin` s počtem 5, jen u rolí, které šablona má (a generátor čte, `capabilities.ts` `counts`). */
+function applySentenceCounts(spec: GameSpecV1, sentence: string): void {
+  if (!CAPABILITIES[spec.control ?? 'tap_go'].counts) return;
+  for (const { count, noun } of readCountedNouns(sentence)) {
+    const id = COUNT_ROLES.find(([pattern]) => pattern.test(noun))?.[1] ?? '';
+    const target = spec.roles.find((r) => r.id === id);
+    if (target !== undefined) target.count = clamp(count, 1, 50);
+  }
+}
+
 /**
  * Arkádová hra (P25A běžec, P25C plošinovka a poletování, P25F řízení a aréna,
  * P25G střelba a hod, P25H načasování, rytmus a souboj): šablona fixtury
@@ -716,7 +738,8 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   } else if (choice.control === 'rhythm') {
     if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
   } else if (choice.control === 'runner') {
-    if (choice.density !== null) spec.controlParams = { ...spec.controlParams, density: choice.density };
+    // P26D T9: šablona má `high`, takže „a lot of obstacles“ by nic nepřidalo – věta bez hustoty dostane `normal`.
+    spec.controlParams = { ...spec.controlParams, density: choice.density ?? 'normal' };
   } else if (choice.control === 'platform') {
     spec.controlParams = {
       ...spec.controlParams,
@@ -734,6 +757,7 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   } else if (choice.difficulty !== null) spec.controlParams = { ...spec.controlParams, difficulty: choice.difficulty };
   // P26D T8: druhé sloveso věty („jump and shoot“) – `pickControl` vybral jen doplňky, které ovládání bere.
   if (choice.addons !== undefined) spec.addons = [...choice.addons];
+  applySentenceCounts(spec, sentence);
   const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
   if (choice.addons?.includes('shoot') === true && fireHint.length <= 80) spec.tutorial.controlsHint = fireHint;
   const result = readGameSpec(spec);

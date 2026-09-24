@@ -94,6 +94,8 @@ const generatorParams = z
     difficulty: z.enum(FLAP_DIFFICULTIES).default('normal'),
     lengthM: z.int().min(FLAP_TRACK.minLengthM).max(FLAP_TRACK.maxLengthM).default(150),
     coins: z.boolean().default(true),
+    /** Přesný počet mincí z počtu rolí (P26D T9); bez hodnoty co mezery dají. */
+    coinCount: z.int().min(1).max(FLAP_TRACK.maxCoins).optional(),
   })
   .strict();
 export type FlapTrackParams = z.infer<typeof generatorParams>;
@@ -133,7 +135,7 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
       z += spacing;
     }
     if (params.coins) {
-      const budget = Math.min(FLAP_TRACK.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
+      const budget = Math.min(params.coinCount ?? FLAP_TRACK.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
       for (const spot of coinSpots.slice(0, Math.max(0, budget))) bodies.push({ role: 'collectible', kind: 'coin', x: 0, y: spot.y, z: spot.z, w: 500, h: 500, d: 500, solid: false });
     }
     bodies.push({ role: 'goal', kind: 'finish', x: 0, y: 0, z: length, w: FLAP.pipeW, h: FLAP.ceiling, d: 400, solid: false });

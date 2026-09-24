@@ -33,8 +33,7 @@
     {
       "id": "enemy",
       "kind": "hazard",
-      "label": "robot",
-      "count": 9
+      "label": "robot"
     }
   ],
   "tutorial": {

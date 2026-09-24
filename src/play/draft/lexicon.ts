@@ -172,6 +172,15 @@ export function readNumbers(sentence: string): SentenceNumbers {
   return { seconds, counts };
 }
 
+/**
+ * Počty s podstatným jménem („five coins“, „10 big rocks“) pro arkádu (P26D T9):
+ * číslo, nejvýš jedno přídavné jméno a podstatné jméno v množném čísle.
+ */
+export function readCountedNouns(sentence: string): readonly { readonly count: number; readonly noun: string }[] {
+  const pattern = new RegExp(`\\b${NUMBER_TOKEN} (?:[a-z]+ )?([a-z]+s)\\b`, 'g');
+  return [...sentence.toLowerCase().matchAll(pattern)].map((match) => ({ count: toNumber(match[1]), noun: match[2] }));
+}
+
 /** Slova, na kterých končí jmenná fráze role. */
 const PHRASE_STOP = new Set([
   // Modální a pomocná slovesa – za podmětem („A knight must collect…“), nikdy součást jména.
