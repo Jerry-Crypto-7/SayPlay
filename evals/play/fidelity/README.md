@@ -25,4 +25,28 @@ Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
 - **The thrown thing (`throw`, 3 sentences).** "snowballs", "cats", "cardboard boxes" – the throw scene reads only the player and target labels and always throws its own ball. Drawing the projectile from the sentence needs the scene to read a new label.
 - **Grid roles without a catalog model (`tap_go`, 2 sentences).** "fishmonger" and "battery" have no asset. The nearest tags are wrong on sight ("cell" is a germ), so they stay boxes until generation adds them.
 
+## Live run 2026-09-24-p27 (P27D T1)
+
+Merged build `c3d0bf2`, 30 sentences, AI through `codex-cli` / `gpt-6-astra` at effort `high` on the subscription, upstream timeout 285 s. Summary with the full config and every failure: `runs/2026-09-24-p27.json` (`report.json` untouched). Late results stay in the denominator.
+
+| | offline map (`draft-chain.json`) | live `2026-09-23-t6` | live `2026-09-24-p27` |
+|---|---|---|---|
+| AI version playable | – | 23/30 | **25/30** |
+| failures | – | NOT_PLAYABLE 7 | NOT_PLAYABLE 3, MALFORMED 1, timeout 1 |
+| late results (after deadline) | – | – | 4 (3 of them AI) |
+| inSpec, final | 0.691 (draft) | 0.806 | **0.887** |
+| read, final | 0.655 (draft) | 0.521 | **0.801** |
+| read, draft | 0.655 | 0.360 | 0.646 |
+| drawn, final / draft | – / 0.591 | not measured | 0.702 / 0.583 |
+| vision judge, items seen (final) | – | 18/110 | 25/110 |
+| vision judge, hero seen (final) | – | 6/18 | 10/18 |
+| vision judge, setting seen (final) | – | 0/24 | 0/24 |
+| draft p50 | – | 173 ms | 207 ms |
+| upgrade p50 / p90 | – | 44 s / 84 s | 45 s / **317 s** |
+
+- **Against t6:** the draft now reads almost what the offline map predicts (0.646 vs 0.655, t6 had 0.360), so wave 1 moved the first second, not just the AI version. The AI version reads 0.801 of the checklist and fails less often (5 vs 7).
+- **Against the offline map:** live draft `read` matches the map within 0.01 and `drawn` within 0.01, so the map is a fair predictor of the first second.
+- **p90 is a hang, not a slow model.** Four calls hit the 285 s codex timeout (`codex exec ran past the timeout` in the server log); the other 26 finished in 28–138 s. Three of the four still produced an AI version at ~315–319 s, one ended as `timeout` at 331 s. Inference: an occasional stuck `codex exec`, which the timeout cuts too late to matter for a player. Cutting that tail is T2's job.
+- **The vision judge still sees no setting (0/24)** and only 25 of 110 items, while `drawn` says 0.702. The gap is the known arena/top-down limit above plus small bodies in a 3D frame; `drawn` is a structural claim, the judge is the oracle.
+
 **The offline map measures the word draft, not the AI version.** The draft is what a player sees in the first second; the AI upgrade usually carries more of the sentence. A loss here is a loss of the offline path, and only a live run (`report.json`) says what the AI version shows.
