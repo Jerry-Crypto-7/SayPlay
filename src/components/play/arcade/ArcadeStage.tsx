@@ -35,7 +35,7 @@ import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Scenery } from './look/Scenery';
-import { DuelScene, useDuelInput } from './duel/DuelScene';
+import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -83,6 +83,8 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.player) return cast.player;
   if (view.kind === 'finish') return 'finish-flag';
   if (view.kind === 'enemy') return cast.enemy;
+  // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
+  if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
@@ -629,6 +631,13 @@ export default function ArcadeStage({
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
   const look = LOOKS[lookId];
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
+  // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
+  const rival = cast.props.rival;
+  const character = rival === undefined ? undefined : riggedCharacter(rival);
+  const rivalModel: RivalModel | undefined =
+    rival === undefined
+      ? undefined
+      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
   useFireInput(session, fires);
   useRunnerInput(session, surface, control === 'runner');
   usePlatformInput(session, surface, control === 'platform');
@@ -643,11 +652,11 @@ export default function ArcadeStage({
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
-          <TimingScene session={session} />
+          <TimingScene session={session} look={look} />
         ) : control === 'rhythm' ? (
-          <RhythmScene session={session} surface={surface} />
+          <RhythmScene session={session} surface={surface} look={look} />
         ) : control === 'duel' ? (
-          <DuelScene session={session} />
+          <DuelScene session={session} look={look} rivalModel={rivalModel} />
         ) : (
           <>
             <color attach="background" args={[look.sky]} />

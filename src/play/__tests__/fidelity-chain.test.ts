@@ -38,6 +38,18 @@ describe('fidelityChain', () => {
     expect(robot).toMatchObject({ drawn: true, why: 'ok' });
   });
 
+  // P27A T4: soupeř souboje z věty; model jen ten, který popisek jmenuje.
+  it('names the duel rival from the sentence and draws it only with its own model', () => {
+    const kangaroo = draftGameSpec('boxing a kangaroo in the australian outback');
+    expect(kangaroo.control).toBe('duel');
+    expect(fidelityChain(kangaroo, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'] }, { item: 'outback', slot: 'setting', match: ['outback'] }])).toMatchObject([
+      { inSpec: true, read: true, drawn: false, why: 'no-model' },
+      { drawn: true, why: 'ok' },
+    ]);
+    const pigeons = draftGameSpec('A grandma karate fights a gang of pigeons in the park');
+    expect(fidelityChain(pigeons, [{ item: 'pigeon', slot: 'role', match: ['pigeon'] }])[0]).toMatchObject({ drawn: true, why: 'ok' });
+  });
+
   it('names the first stage where an item is lost', () => {
     const spec = shooterFixture as GameSpecV1;
     const items = fidelityChain(spec, [

@@ -91,6 +91,20 @@ describe('director prompt', () => {
     expect(line).toContain('lives wherever health is');
   });
 
+  // P27A T4: „shows“ vyjmenuje popisky nad hráčem (ten je vidět vždy, legenda to říká jednou);
+  // ovládání, které hráčův popisek nekreslí, má „shows only …“ nebo „shows no“.
+  it('lists the labels each control shows beyond the player', () => {
+    const line = controlPromptLine();
+    const shows = (id: string): string | undefined => line.split(`"${id}" (`)[1]!.split('}.')[0]!.match(/shows ([^;]+);/)?.[1];
+    expect(shows('runner')).toBe('obstacle+coin');
+    expect(shows('platform')).toBe('coin');
+    expect(shows('shooter')).toBe('enemy');
+    expect(shows('steer')).toBe('rival');
+    expect(shows('duel')).toBe('only rival');
+    expect(shows('timing')).toBe('no');
+    expect(line).not.toContain('player+');
+  });
+
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {
     const body = { ...(shooterFixture as object), addons: ['shoot'] };
     const read = readDirectorAnswer(body);

@@ -1,16 +1,16 @@
 {
  "header": {
   "about": "P27A T2 offline loss map: the fidelity corpus through the word draft and the compiler, no network, no model. See README.md.",
-  "measuredAt": "2026-09-24T16:11:28.310Z",
-  "commit": "1d2d7ad"
+  "measuredAt": "2026-09-24T16:20:37.449Z",
+  "commit": "d8c68af"
  },
  "summary": {
   "sentences": 30,
   "compiled": 30,
   "items": 110,
-  "inSpec": 0.564,
-  "read": 0.5,
-  "drawn": 0.445
+  "inSpec": 0.582,
+  "read": 0.545,
+  "drawn": 0.473
  },
  "causes": [
   {
@@ -562,9 +562,9 @@
      "item": "traffic",
      "slot": "role",
      "inSpec": true,
-     "read": false,
+     "read": true,
      "drawn": false,
-     "why": "not-read-by-control"
+     "why": "no-model"
     },
     {
      "item": "race",
@@ -701,18 +701,18 @@
     {
      "item": "pigeon",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "park",
      "slot": "setting",
      "inSpec": true,
-     "read": false,
-     "drawn": false,
-     "why": "not-read-by-control"
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "fight",
@@ -1005,18 +1005,18 @@
     {
      "item": "kangaroo",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
+     "inSpec": true,
+     "read": true,
      "drawn": false,
-     "why": "not-in-spec"
+     "why": "no-model"
     },
     {
      "item": "outback",
      "slot": "setting",
      "inSpec": true,
-     "read": false,
-     "drawn": false,
-     "why": "not-read-by-control"
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "box",

@@ -17,8 +17,10 @@ import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
 
+import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { initialBody } from '../timing/TimingScene';
 
@@ -67,7 +69,7 @@ function useBeatSound(target: React.RefObject<HTMLDivElement | null>) {
   };
 }
 
-export function RhythmScene({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+export function RhythmScene({ session, surface, look: scene }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly look: Look }) {
   const world = session.world;
   const count = world.initial[HEADER.bodyCount] as number;
   const notes = useMemo(() => Array.from({ length: count - 1 }, (_, i) => initialBody(world, i + 1)), [world, count]);
@@ -127,6 +129,16 @@ export function RhythmScene({ session, surface }: { readonly session: ArcadeSess
       <fog attach="fog" args={['#0f172a', 20, TRACK_M]} />
       <hemisphereLight args={['#e0f2fe', '#1e293b', 1.1]} />
       <directionalLight position={[2, 10, -6]} intensity={1.2} />
+      {/* Prostředí (P27A T4): zem sady kolem pruhů a kulisy po stranách; pod pruhy zůstává tma, ať svítící noty čtou. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, TRACK_M / 2 - 2]}>
+        <planeGeometry args={[60, TRACK_M + 10]} />
+        <meshStandardMaterial color={scene.ground} roughness={1} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, TRACK_M / 2 - 2]}>
+        <planeGeometry args={[RHYTHM.lanes * laneW + 0.4, TRACK_M]} />
+        <meshStandardMaterial color="#0f172a" roughness={1} />
+      </mesh>
+      <Scenery look={scene} layout="sides" inner={(RHYTHM.lanes * laneW) / 2 + 2} from={2} to={TRACK_M} />
       {LANE_COLORS.map((color, lane) => (
         <mesh key={color} rotation={[-Math.PI / 2, 0, 0]} position={[-(lane - (RHYTHM.lanes - 1) / 2) * laneW, -0.02, TRACK_M / 2 - 2]}>
           <planeGeometry args={[laneW * 0.94, TRACK_M]} />

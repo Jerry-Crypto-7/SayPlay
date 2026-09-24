@@ -70,7 +70,7 @@ const mentions = (text: string, words: readonly string[]): boolean =>
 const PLAYER = (role: Pick<GameRole, 'kind'>): boolean => role.kind === 'player';
 
 /** Role arkády, které scéna kreslí modelem z popisku, a zda pro ně svět postavil těleso. */
-type DrawnBody = 'player' | 'enemy' | 'chaser' | 'coin' | 'obstacle' | 'target';
+type DrawnBody = 'player' | 'enemy' | 'chaser' | 'coin' | 'obstacle' | 'target' | 'rival';
 interface ArcadeScene {
   readonly bodies: ReadonlySet<DrawnBody>;
 }
@@ -88,6 +88,7 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     const kind = made.world.kinds[state[base + BODY.kind] as number] ?? '';
     if (role === ROLE.player) bodies.add('player');
     else if (kind === 'enemy') bodies.add('enemy');
+    else if (kind === 'rival-car' || kind === 'foe') bodies.add('rival');
     else if (role === ROLE.chaser) bodies.add('chaser');
     else if (role === ROLE.collectible && kind === 'coin') bodies.add('coin');
     else if (role === ROLE.obstacle && ['hurdle', 'cone', 'crate'].includes(kind)) bodies.add('obstacle');
@@ -109,7 +110,7 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   }
   if (role.id === 'enemy') return bodies.has('enemy') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === enemyModel(spec);
   if (role.kind === 'chaser') return bodies.has('chaser') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === chaserModel(spec);
-  if (role.id === 'coin' || role.id === 'obstacle' || role.id === 'target') return bodies.has(role.id) && propModels(spec)[role.id] !== undefined;
+  if (role.id === 'coin' || role.id === 'obstacle' || role.id === 'target' || role.id === 'rival') return bodies.has(role.id) && propModels(spec)[role.id] !== undefined;
   return false;
 }
 

@@ -60,9 +60,8 @@ describe('specFidelity', () => {
     const unknown = spec('shooter', 'Zombie', 'the land of nowhere');
     expect(specFidelity(unknown, place).items[0]).toMatchObject({ inSpec: true, read: false });
     expect(specFidelity({ ...unknown, theme: { ...unknown.theme, look: 'desert' } }, place).items[0]).toMatchObject({ inSpec: true, read: true });
-    // Načasování má vlastní scénu bez sad; závod od P27A T3 sadu kreslí.
-    expect(specFidelity(spec('timing', 'Zombie', 'abandoned mall'), checklist).items[1]).toMatchObject({ inSpec: true, read: false });
-    expect(specFidelity(spec('steer', 'Zombie', 'abandoned mall'), checklist).items[1]).toMatchObject({ inSpec: true, read: true });
+    // Od P27A T3–T4 kreslí sadu každé ovládání arkády, i závod a souboj.
+    for (const control of ['steer', 'duel']) expect(specFidelity(spec(control, 'Zombie', 'abandoned mall'), checklist).items[1]).toMatchObject({ inSpec: true, read: true });
   });
 });
 

@@ -133,7 +133,9 @@ export function controlPromptLine(): string {
   const entries = (Object.keys(CONTROL_PARAMS) as (keyof typeof CONTROL_PARAMS)[]).map((id) => {
     const c = CAPABILITIES[id];
     const mechanics = c.mechanics === 'all' || c.mechanics.join() === 'health,timer' ? '' : `only ${c.mechanics.join('/')}; `;
-    const shows = c.labels === 'all' || c.labels.join() === 'player' ? '' : `shows ${c.labels.join('+') || 'no'}; `;
+    // P27A T4: hráčův popisek říká legenda jednou; „shows“ nese jen popisky navíc, „only“ tam, kde hráčův chybí.
+    const extra = c.labels === 'all' ? [] : c.labels.filter((label) => label !== 'player');
+    const shows = c.labels === 'all' || (extra.length === 0 && c.labels.length > 0) ? '' : c.labels.length === 0 ? 'shows no; ' : `shows ${c.labels.includes('player') ? '' : 'only '}${extra.join('+')}; `;
     const note = c.note === undefined ? '' : `${c.note}; `;
     // P26D T10: „lives“ řekne legenda jednou (bere ho každé ovládání s health), u ovládání stojí ostatní doplňky.
     const extras = c.addons.filter((addon) => addon !== 'lives');

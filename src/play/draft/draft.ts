@@ -700,6 +700,29 @@ function applySentenceCounts(spec: GameSpecV1, sentence: string): void {
   }
 }
 
+const DUEL_VERB = /\b(?:box(?:es|ing)?|fights?|fighting|punch(?:es|ing)?|kick(?:s|ing)?|wrestl(?:es?|ing)|duel(?:s|ing)?|battl(?:es?|ing)|spar(?:s|ring)?)\s+(?:against\s+|with\s+)?(.+)/;
+const FOE_STOP = /^(?:in|on|at|with|while|and|to|for|from|near|inside|under|until|who|that|but|before|after)$/;
+
+/**
+ * Soupeř souboje z věty (P27A T4), když ho `readRoles` nenajde: předmět slovesa
+ * boje – „boxing a kangaroo in the outback“ → „kangaroo“, „fights a gang of
+ * pigeons“ → „pigeons“. Nejvýš tři slova před předložkou nebo spojkou.
+ */
+function duelFoe(sentence: string): string | null {
+  const rest = DUEL_VERB.exec(sentence.toLowerCase())?.[1];
+  if (rest === undefined) return null;
+  const words = rest.replace(/^(?:a|an|the|my|your|some)\s+/, '').replace(/^(?:gang|group|horde|pack|bunch|team|army|swarm|flock) of\s+/, '').split(/[^a-z-]+/);
+  const foe: string[] = [];
+  for (const word of words) {
+    if (word === '' || FOE_STOP.test(word) || foe.length === 3) break;
+    foe.push(word);
+  }
+  // „boxing game“, „fighting match“: podstatné jméno žánru, ne soupeř.
+  return foe.length === 0 || NOT_FOE.test(foe.at(-1)!) ? null : foe.join(' ');
+}
+
+const NOT_FOE = /^(?:game|games|match|matches|round|rounds|fight|fights|ring|time|arena|tournament|club|gym|simulator|championship)$/;
+
 /**
  * Arkádová hra (P25A běžec, P25C plošinovka a poletování, P25F řízení a aréna,
  * P25G střelba a hod, P25H načasování, rytmus a souboj): šablona fixtury
@@ -721,7 +744,8 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   // Místo bez předložky („flappy bird but underwater“, „a snow fort“) sada najde v celé větě (nález T11).
   const place = lookFor(spec.theme.setting) === null ? lookFor(sentence.toLowerCase()) : null;
   if (place !== null) spec.theme.look = place;
-  if (choice.control === 'duel' && roles.target !== null) role(spec, 'rival').label = cap(roles.target, 60);
+  const rival = choice.control === 'duel' ? (roles.target ?? duelFoe(sentence)) : null;
+  if (rival !== null) role(spec, 'rival').label = cap(rival, 60);
   // P26 T12: scéna z těchhle popisků volí model – terč, nepřítel a překážka z věty, ne ze šablony.
   const foe = roles.target ?? roles.threat?.label ?? null;
   if (choice.control === 'shooter' && foe !== null) role(spec, 'enemy').label = cap(foe, 60);
