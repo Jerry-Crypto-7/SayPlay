@@ -241,8 +241,14 @@ interface Windows {
   startedAtMs: number;
   /** Klíč je `${door} ${caller}`. Vyprazdňuje se s každým novým oknem. */
   perCaller: Map<string, Window>;
-  /** Všechny dveře a všichni volající dohromady. */
+  /** Všechny dveře a všichni volající dohromady – kromě událostí smyčky. */
   instanceCount: number;
+  /**
+   * Události smyčky PLAY mají vlastní strop instance (revize P27D T4): levné
+   * beacony by jinak naplnily společný a zavřely tvorbu her. Týž strop drží
+   * i počet jejich klíčů v mapě.
+   */
+  eventsCount: number;
 }
 
 /**
@@ -255,7 +261,7 @@ const WINDOWS_KEY = '__worldsmithRateWindows';
 
 function windows(): Windows {
   const holder = globalThis as Record<string, unknown>;
-  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0 };
+  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0, eventsCount: 0 };
   return holder[WINDOWS_KEY] as Windows;
 }
 
@@ -696,14 +702,16 @@ export function takeRateSlot(
     open.startedAtMs = startedAtMs;
     open.perCaller.clear();
     open.instanceCount = 0;
+    open.eventsCount = 0;
   }
 
   const retryAfterSeconds = Math.ceil((startedAtMs + RATE_WINDOW_MS - nowMs) / 1000);
-  open.instanceCount += 1;
-  if (open.instanceCount > MAX_REQUESTS_PER_WINDOW_PER_INSTANCE)
+  const events = door === 'play/events';
+  const instanceCount = events ? (open.eventsCount += 1) : (open.instanceCount += 1);
+  if (instanceCount > MAX_REQUESTS_PER_WINDOW_PER_INSTANCE)
     return {
       allowed: false,
-      count: open.instanceCount,
+      count: instanceCount,
       limit: MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
       scope: 'instance',
       retryAfterSeconds,
@@ -761,4 +769,5 @@ export function resetRateWindows(): void {
   open.startedAtMs = 0;
   open.perCaller.clear();
   open.instanceCount = 0;
+  open.eventsCount = 0;
 }

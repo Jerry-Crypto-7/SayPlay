@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { type LoopEvent, readLoopEvent, summarizeLoop } from '@/play/loop-events';
-import { MAX_REQUESTS_PER_WINDOW, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
+import { MAX_REQUESTS_PER_WINDOW, MAX_REQUESTS_PER_WINDOW_PER_INSTANCE, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 
 import { MAX_DAY_BYTES } from '../_events';
 import { callerOf } from '../_publish';
@@ -105,6 +105,12 @@ describe('POST /api/play/events', () => {
     for (let taken = 0; taken < MAX_REQUESTS_PER_WINDOW; taken += 1) takeRateSlot('play/events', caller);
     expect((await post({ name: 'win', versionId: VERSION, session: SESSION })).status).toBe(429);
     expect(takeRateSlot('play', caller).allowed).toBe(true);
+  });
+
+  it('a flood of events from many addresses leaves game creation open, and the events keep their own server cap', () => {
+    for (let n = 0; n < MAX_REQUESTS_PER_WINDOW_PER_INSTANCE; n += 1) takeRateSlot('play/events', `198.51.100.${String(n % 250)}#${String(n)}`);
+    expect(takeRateSlot('play/events', 'one-more').allowed).toBe(false);
+    expect(takeRateSlot('play', 'a-player').allowed).toBe(true);
   });
 
   it('stops appending once the day file reaches the cap', async () => {
