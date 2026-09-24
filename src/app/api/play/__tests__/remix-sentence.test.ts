@@ -236,6 +236,23 @@ describe('stav práce přežije restart a jinou instanci', () => {
     expect(upstream.calls).toBe(1);
   });
 
+  it('uložené ready, jehož dítě vypršelo, neplatí: GET řekne FAILED a nové odeslání postaví dítě znovu', async () => {
+    const parentId = await publish(chaseEscape);
+    upstream.script = [SNOW];
+    const started = await send(parentId, { sentence: 'add snow' });
+    const ready = await settled(parentId, started.body.job);
+    expect(ready.status).toBe('ready');
+
+    __resetRemixes();
+    const versions = store();
+    const get = versions.get.bind(versions);
+    vi.spyOn(versions, 'get').mockImplementation(async (id) => (id === ready.versionId ? null : get(id)));
+    expect((await status(parentId, started.body.job)).body).toEqual({ status: 'final', reason: 'FAILED' });
+    upstream.script = [SNOW];
+    expect((await remixed(parentId, 'add snow')).status).toBe('ready');
+    expect(upstream.calls).toBe(2);
+  });
+
   it('běžící práce není na jiné instanci 404 a druhé odeslání model nezaplatí', async () => {
     const parentId = await publish(chaseEscape);
     let release: () => void = () => {};

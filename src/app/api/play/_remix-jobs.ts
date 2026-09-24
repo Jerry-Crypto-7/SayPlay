@@ -144,6 +144,11 @@ function writeRecord(versions: VersionStore, job: string, record: StoredRemix): 
   return versions.rememberUpgradeVerdict(recordKey(job), JSON.stringify(record), ttl);
 }
 
+/** Uložené `ready`, jehož dítě mezitím vypršelo, neplatí – hra smí žít kratší dobu než záznam (`PLAY_VERSION_TTL_SECONDS`). */
+async function stillThere(versions: VersionStore, outcome: RemixOutcome): Promise<boolean> {
+  return outcome.status !== 'ready' || (await versions.get(outcome.versionId)) !== null;
+}
+
 /** Práci spustila jiná instance: čeká na její výsledek v úložišti do lhůty. */
 async function followStored(versions: VersionStore, job: string, parentId: string, startedAt: number): Promise<RemixOutcome> {
   while (Date.now() < startedAt + DEADLINE_MS) {
@@ -283,8 +288,8 @@ async function settle(versions: VersionStore, parent: PublishedGame, request: Re
     let child: GameSpecV1 | null = null;
     if (stored !== null && stored.parentId === parentId) {
       if (stored.outcome === null) return await followStored(versions, id, parentId, stored.startedAt);
-      if (!(stored.outcome.status === 'final' && TRANSIENT.has(stored.outcome.reason))) return stored.outcome;
-      child = stored.child ?? null;
+      if (stored.outcome.status === 'final' && TRANSIENT.has(stored.outcome.reason)) child = stored.child ?? null;
+      else if (await stillThere(versions, stored.outcome)) return stored.outcome;
     }
     const resume = child;
     await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome: null, child: resume ?? undefined });
@@ -307,5 +312,7 @@ export async function remixStatus(versions: VersionStore, parentId: string, job:
   if (refused !== undefined && refused.parentId === parentId) return refused.outcome;
   const stored = await readRecord(versions, job);
   if (stored === null || stored.parentId !== parentId) return null;
-  return stored.outcome ?? pendingOf(job, stored.startedAt);
+  if (stored.outcome === null) return pendingOf(job, stored.startedAt);
+  // Přechodný důvod: klient nabídne nový pokus a ten dítě postaví znovu.
+  return (await stillThere(versions, stored.outcome)) ? stored.outcome : { status: 'final', reason: 'FAILED' };
 }
