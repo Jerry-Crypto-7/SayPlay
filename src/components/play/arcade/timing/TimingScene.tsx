@@ -127,7 +127,8 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
         <meshStandardMaterial color={BASE_COLOR[baseKind] ?? '#475569'} roughness={0.8} />
       </mesh>
       {/* Tolerance: průsvitný sloupec nad středem – kam jezdce zastavit. */}
-      <mesh position={[-target.x, top / 2 + 0.5, -depth / 2 - 0.02]}>
+      {/* Pro sondu záběru (P27A T6) je tolerance cíl a jezdec hrdina. */}
+      <mesh position={[-target.x, top / 2 + 0.5, -depth / 2 - 0.02]} userData={{ frame: 'target' }}>
         <boxGeometry args={[target.w, top + 1, 0.02]} />
         <meshBasicMaterial color="#16a34a" transparent opacity={0.28} />
       </mesh>
@@ -137,7 +138,7 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
           <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
         </mesh>
       ))}
-      <group ref={slider}>
+      <group ref={slider} userData={{ frame: 'hero' }}>
         <mesh position={[0, blockH / 2, 0]}>
           <boxGeometry args={[sliderInit.w, blockH, depth]} />
           <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />

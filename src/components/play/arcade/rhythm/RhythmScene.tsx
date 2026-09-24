@@ -145,14 +145,15 @@ export function RhythmScene({ session, surface, look: scene }: { readonly sessio
           <meshStandardMaterial color={color} transparent opacity={0.18} />
         </mesh>
       ))}
-      <mesh position={[0, bar.h / 2, 0]}>
+      {/* Rytmus nemá postavu: hrdinou sondy záběru (P27A T6) je lišta, na kterou hráč ťuká, cílem noty. */}
+      <mesh position={[0, bar.h / 2, 0]} userData={{ frame: 'hero' }}>
         <boxGeometry args={[bar.w, bar.h, bar.d]} />
         <meshStandardMaterial ref={barMaterial} color="#e2e8f0" />
       </mesh>
       {notes.map((note, i) => {
         const lane = LANE_OF(note.x * UNIT);
         return (
-          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]}>
+          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]} userData={{ frame: 'target' }}>
             <mesh position={[0, note.h / 2, 0]}>
               <boxGeometry args={[note.w, note.h, note.d]} />
               <meshStandardMaterial color={LANE_COLORS[lane] ?? '#f59e0b'} emissive={LANE_COLORS[lane] ?? '#f59e0b'} emissiveIntensity={0.35} />

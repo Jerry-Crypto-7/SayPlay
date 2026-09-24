@@ -33,6 +33,8 @@ const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.e
 
 /** Kolik metrů od hráče do strany je vidět vždy. */
 const SEE_M = 9;
+/** Na výšku (mobil) méně: při 9 m by byl hráč pod 24 px (P27A T6); nahoru a dolů je pak vidět víc. */
+const SEE_M_TALL = 6;
 
 /** Jak daleko za hranou arény stojí první řada kulis (m). */
 const SCENERY_MARGIN = 1.5;
@@ -97,7 +99,7 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
       // Aspoň `SEE_M` metrů do strany i na výšku (mobil) a výš s velikostí hráče,
       // ať větší buňku vidí dřív, než dojede.
       const tan = Math.tan((camera.fov * Math.PI) / 360);
-      const height = Math.max(16, SEE_M / (tan * Math.min(1, camera.aspect))) + (mine / UNIT) * 3;
+      const height = Math.max(16, (camera.aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, camera.aspect))) + (mine / UNIT) * 3;
       camera.position.set(me.position.x, height, me.position.z - 0.01);
       look.set(me.position.x, 0, me.position.z);
       camera.lookAt(look);
@@ -128,7 +130,8 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
         const color = colorOf(disc.role);
         const tall = disc.role === ROLE.collectible ? 0.15 : Math.min(0.5, disc.h);
         return (
-          <group key={disc.index} ref={(group) => { groups.current[disc.index] = group; }}>
+          // `frame` čte sonda záběru (P27A T6): hráč je hrdina, každý jiný kotouč kromě střely cíl nebo hrozba.
+          <group key={disc.index} ref={(group) => { groups.current[disc.index] = group; }} userData={{ frame: disc.role === ROLE.player ? 'hero' : disc.role === ROLE.projectile ? undefined : 'target' }}>
             <mesh position={[0, tall / 2, 0]}>
               <cylinderGeometry args={[disc.w / 2, disc.w / 2, tall, 32]} />
               <meshStandardMaterial ref={(material) => { materials.current[disc.index] = material; }} color={color} roughness={0.5} />

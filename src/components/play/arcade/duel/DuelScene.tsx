@@ -163,10 +163,11 @@ export function DuelScene({ session, look: scene, rivalModel }: { readonly sessi
         <boxGeometry args={[4, 0.2, 9]} />
         <meshStandardMaterial color="#78716c" roughness={0.95} />
       </mesh>
-      <group position={[0, 0, hero.z]}>
+      {/* Sonda záběru (P27A T6): hráč je hrdina, soupeř cíl. */}
+      <group position={[0, 0, hero.z]} userData={{ frame: 'hero' }}>
         <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
       </group>
-      <group position={[0, 0, rival.z]}>
+      <group position={[0, 0, rival.z]} userData={{ frame: 'target' }}>
         {/* Model hledí k hráči (−z). */}
         <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} model={rivalModel === undefined ? undefined : <group rotation={[0, Math.PI, 0]}>{rivalModel(rival.w, rival.h, rival.d)}</group>} />
       </group>
