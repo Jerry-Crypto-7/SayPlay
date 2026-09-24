@@ -59,9 +59,13 @@ export interface ArcadeParts {
   readonly health?: number;
 }
 
-/** Základní ovládání pod obalem `addon_control` – doplněk po `+shoot` musí dál poznat běžce. */
-const baseControl = (parts: ArcadeParts): PieceRef =>
-  parts.control.id === 'addon_control' ? (parts.control.params as { base: PieceRef }).base : parts.control;
+/**
+ * Základní ovládání pod obalem `addon_control` – doplněk po `+shoot` musí dál
+ * poznat běžce a scéna podle něj volí kameru a vstup.
+ */
+export const baseControlOf = (control: PieceRef): PieceRef =>
+  control.id === 'addon_control' ? (control.params as { base: PieceRef }).base : control;
+const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export interface AddonContext {
   readonly spec: GameSpecV1;

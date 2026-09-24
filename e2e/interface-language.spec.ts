@@ -1,6 +1,7 @@
 import { expect, test, type Locator } from '@playwright/test';
 
 import { openInspect } from './inspect';
+import { HUD_COUNTER_LABELS } from './hud-labels';
 
 /**
  * Oracle T27r — **rozhraní na demo cestě je anglicky.**
@@ -88,7 +89,6 @@ async function expectEnglish(panel: Locator, what: string): Promise<void> {
  * Uzavřená množina je tu na místě: tři archetypy jich mají dohromady šest a nový
  * popisek se má do seznamu dopsat, ne detekovat.
  */
-const HUD_COUNTER_LABELS = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step'];
 
 async function expectEnglishCounters(hud: Locator, what: string): Promise<void> {
   const labels = await hud

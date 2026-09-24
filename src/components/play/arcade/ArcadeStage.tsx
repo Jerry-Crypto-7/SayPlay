@@ -21,6 +21,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Group, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { modelPath, type PropRole, riggedCharacter } from '@/play/arcade/models';
@@ -53,7 +54,12 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
   finish: '#14b8a6',
   checkpoint: '#0ea5e9',
   turbo: '#22d3ee',
+  enemy: '#dc2626',
+  chaser: '#b91c1c',
 };
+
+/** Jména rolí podle čísla – scéna je zapíše do `data-drawn`, ať e2e vidí, co kreslí. */
+const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
 
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
 const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', ...SHOT_PRIMITIVES]);
@@ -62,6 +68,8 @@ const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'cei
 export interface Cast {
   readonly player: string;
   readonly enemy: string;
+  /** Pronásledovatel doplňku `+chaser`. */
+  readonly chaser: string;
   readonly props: Partial<Record<PropRole, string>>;
 }
 
@@ -73,6 +81,7 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.player) return cast.player;
   if (view.kind === 'finish') return 'finish-flag';
   if (view.kind === 'enemy') return cast.enemy;
+  if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
   if (view.role === ROLE.target && view.kind === 'target') return cast.props.target ?? view.kind;
@@ -264,6 +273,11 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
+
+  // Role těl, pro která scéna postavila model – doplněk, který jádro hraje a scéna nekreslí, e2e takhle pozná.
+  useEffect(() => {
+    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => view.kind !== 'gate').map((view) => ROLE_NAMES[view.role]))].join(' ');
+  }, [views, surface]);
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
@@ -555,6 +569,48 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
   }, [session, target, active]);
 }
 
+const FIRE_KEYS = new Set(['f', 'j', 'enter']);
+
+/** Střelba doplňku `+shoot` (P26D): F/J/Enter, na dotyku tlačítko ve scéně – skok a skluz zůstávají, kde byly. */
+function useFireInput(session: ArcadeSession, active: boolean): void {
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || !FIRE_KEYS.has(event.key.toLowerCase())) return;
+      event.preventDefault();
+      session.press(BUTTON.FIRE);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [session, active]);
+}
+
+function FireButton({ session }: { readonly session: ArcadeSession }) {
+  const button = useRef<HTMLButtonElement | null>(null);
+  // Ťuk na tlačítko nesmí doběhnout k ploše scény – tam je to skok. Plocha poslouchá
+  // nativně, takže zastavit to musí nativní posluchač (React by přišel až po ní).
+  useEffect(() => {
+    const element = button.current;
+    if (element === null) return;
+    const stop = (event: PointerEvent) => event.stopPropagation();
+    const fire = (event: PointerEvent) => {
+      stop(event);
+      session.press(BUTTON.FIRE);
+    };
+    element.addEventListener('pointerdown', fire);
+    element.addEventListener('pointerup', stop);
+    return () => {
+      element.removeEventListener('pointerdown', fire);
+      element.removeEventListener('pointerup', stop);
+    };
+  }, [session]);
+  return (
+    <button ref={button} type="button" className="play-fire" data-testid="arcade-fire">
+      Fire
+    </button>
+  );
+}
+
 export default function ArcadeStage({
   session,
   cast,
@@ -565,8 +621,12 @@ export default function ArcadeStage({
   readonly lookId?: LookId;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
-  const control = session.world.control.id;
+  // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
+  const base = baseControlOf(session.world.control);
+  const control = base.id;
+  const fires = session.world.rules.some((rule) => rule.id === 'blaster');
   const look = LOOKS[lookId];
+  useFireInput(session, fires);
   useRunnerInput(session, surface, control === 'runner');
   usePlatformInput(session, surface, control === 'platform');
   useFlapInput(session, surface, control === 'flap');
@@ -592,13 +652,14 @@ export default function ArcadeStage({
             {/* Boční scény svítí ze strany kamery (−x). */}
             <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={look.sun} />
             {control === 'move_free' ? (
-              <ArenaWorld session={session} half={Number(session.world.control.params.half)} surface={surface} />
+              <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} />
             ) : (
               <World session={session} control={control} cast={cast} surface={surface} scene={look} />
             )}
           </>
         )}
       </Canvas>
+      {fires && <FireButton session={session} />}
     </div>
   );
 }
