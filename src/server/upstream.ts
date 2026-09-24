@@ -1,5 +1,5 @@
 import { type ChildProcess, execFile, spawn } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -722,9 +722,17 @@ const MAX_CODEX_OUTPUT_BYTES = 8 * 1024 * 1024;
 /** Jak dlouho se po zabití čeká na `close`, než se skončí bez něj. */
 const CODEX_KILL_GRACE_MS = 2_000;
 
-function codexArgs(model: string, effort: string, cwd: string): string[] {
+/** Soubor se schématem odpovědi leží v prázdném pracovním adresáři volání. */
+export const CODEX_SCHEMA_FILE = 'answer-schema.json';
+
+export function codexArgs(model: string, effort: string, cwd: string, withSchema = false): string[] {
   return [
-    'exec', '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
+    'exec',
+    // Přepínač patří podpříkazu `exec` – před ním codex skončí kódem 2 (naměřeno 23. 9.).
+    // Tiše ho ignoruje, když má zapnuté nástroje nebo MCP (openai/codex#15451); tady jsou
+    // vypnuté všechny a `--ignore-user-config` drží MCP venku.
+    ...(withSchema ? ['--output-schema', join(cwd, CODEX_SCHEMA_FILE)] : []),
+    '--ignore-user-config', '--ignore-rules', '--ephemeral', '--skip-git-repo-check', '--sandbox', 'read-only',
     '-c', 'approval_policy="never"', '-c', 'forced_login_method="chatgpt"', '-c', 'model_provider="openai"',
     '-c', `model_reasoning_effort="${effort}"`,
     '-c', 'features.shell_tool=false', '-c', 'features.apps=false', '-c', 'web_search="disabled"',
@@ -761,11 +769,12 @@ export function killCodexTree(child: ChildProcess, afterKill: () => void): void 
   }
 }
 
-function runCodex(model: string, effort: string, input: string, timeoutMs: number): Promise<string> {
+function runCodex(model: string, effort: string, input: string, timeoutMs: number, schema?: Readonly<Record<string, unknown>>): Promise<string> {
   const command = codexCommand();
   const cwd = mkdtempSync(join(tmpdir(), 'worldsmith-codex-'));
+  if (schema !== undefined) writeFileSync(join(cwd, CODEX_SCHEMA_FILE), JSON.stringify(schema));
   return new Promise((resolve, reject) => {
-    const child = spawn(command.file, [...command.prefix, ...codexArgs(model, effort, cwd)], {
+    const child = spawn(command.file, [...command.prefix, ...codexArgs(model, effort, cwd, schema !== undefined)], {
       cwd,
       // Přetypování jen kvůli typu Next, který v `ProcessEnv` vyžaduje `NODE_ENV`.
       env: Object.fromEntries(CODEX_ENV_ALLOWLIST.filter((name) => process.env[name] !== undefined).map((name) => [name, process.env[name]])) as NodeJS.ProcessEnv,
@@ -842,6 +851,7 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
       effortForCall(call, config),
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
+      call.request.outputSchema,
     ));
   } catch (thrown) {
     return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${(thrown as Error).message}`, usage: null };
@@ -872,6 +882,7 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
       reason: 'MALFORMED_RESPONSE',
       detail: `the codex answer is not JSON: ${(thrown as Error).message}`,
       usage: readableUsage(usage, text, config.maxOutputTokens),
+      raw: text,
     };
   }
   return {
@@ -986,6 +997,7 @@ async function generate(
       // i když je odpověď vadná. Návrat výš text nemá, takže tam se účtenka
       // neověřuje vůbec a zahazuje se celá.
       usage: readableUsage(usage, text, config.maxOutputTokens),
+      raw: text,
     };
   }
 

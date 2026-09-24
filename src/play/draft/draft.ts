@@ -39,6 +39,7 @@ import shooterTemplate from '../arcade/__fixtures__/shooter.json';
 import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
+import { lookFor } from '../arcade/look';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
 import { type ControlChoice, pickControl } from './controls';
@@ -695,7 +696,15 @@ function draftArcade(sentence: string, seed: number, choice: ControlChoice): Gam
   const collectible = COLLECTIBLE_ROLE[choice.control];
   if (roles.collectible !== null && collectible !== null) role(spec, collectible).label = cap(roles.collectible, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
+  // Místo bez předložky („flappy bird but underwater“, „a snow fort“) sada najde v celé větě (nález T11).
+  const place = lookFor(spec.theme.setting) === null ? lookFor(sentence.toLowerCase()) : null;
+  if (place !== null) spec.theme.look = place;
   if (choice.control === 'duel' && roles.target !== null) role(spec, 'rival').label = cap(roles.target, 60);
+  // P26 T12: scéna z těchhle popisků volí model – terč, nepřítel a překážka z věty, ne ze šablony.
+  const foe = roles.target ?? roles.threat?.label ?? null;
+  if (choice.control === 'shooter' && foe !== null) role(spec, 'enemy').label = cap(foe, 60);
+  if (choice.control === 'throw' && choice.goal === null && roles.target !== null) role(spec, 'target').label = cap(roles.target, 60);
+  if (choice.control === 'runner' && roles.threat !== null) role(spec, 'obstacle').label = cap(roles.threat.label, 60);
   if (choice.control === 'timing') {
     if (choice.mode !== 'stack') {
       const text = TIMING_TEXT[choice.mode];

@@ -1,0 +1,2611 @@
+{
+  "about": "P26A T11 – which normalized CC0 models made the catalog and why the rest did not. Written by scripts/assets/cc0/promote.mjs.",
+  "budget": {
+    "modelBytes": 300000,
+    "totalBytes": 80000000
+  },
+  "totalBytes": 53352087,
+  "promoted": [
+    {
+      "assetId": "cc0-corgi",
+      "category": "animal",
+      "bytes": 101452
+    },
+    {
+      "assetId": "cc0-dragon",
+      "category": "monster",
+      "bytes": 247092
+    },
+    {
+      "assetId": "cc0-flashlight",
+      "category": "weapon",
+      "bytes": 22464
+    },
+    {
+      "assetId": "cc0-knife",
+      "category": "weapon",
+      "bytes": 123532
+    },
+    {
+      "assetId": "cc0-shark",
+      "category": "animal",
+      "bytes": 147256
+    },
+    {
+      "assetId": "cc0-water",
+      "category": "collectible",
+      "bytes": 99860
+    },
+    {
+      "assetId": "cc0-alien",
+      "category": "monster",
+      "bytes": 41080
+    },
+    {
+      "assetId": "cc0-asteroid",
+      "category": "nature",
+      "bytes": 44144
+    },
+    {
+      "assetId": "cc0-bee",
+      "category": "animal",
+      "bytes": 123584
+    },
+    {
+      "assetId": "cc0-dinner",
+      "category": "food",
+      "bytes": 59940
+    },
+    {
+      "assetId": "cc0-elephant",
+      "category": "animal",
+      "bytes": 114448
+    },
+    {
+      "assetId": "cc0-chicken",
+      "category": "animal",
+      "bytes": 130320
+    },
+    {
+      "assetId": "cc0-lily-pad",
+      "category": "nature",
+      "bytes": 63372
+    },
+    {
+      "assetId": "cc0-monkey",
+      "category": "animal",
+      "bytes": 124264
+    },
+    {
+      "assetId": "cc0-pancake",
+      "category": "food",
+      "bytes": 66116
+    },
+    {
+      "assetId": "cc0-pigeon",
+      "category": "monster",
+      "bytes": 104084
+    },
+    {
+      "assetId": "cc0-police",
+      "category": "vehicle",
+      "bytes": 172508
+    },
+    {
+      "assetId": "cc0-present",
+      "category": "collectible",
+      "bytes": 62168
+    },
+    {
+      "assetId": "cc0-sausage",
+      "category": "food",
+      "bytes": 42692
+    },
+    {
+      "assetId": "cc0-sock",
+      "category": "collectible",
+      "bytes": 51068
+    },
+    {
+      "assetId": "cc0-spike",
+      "category": "obstacle",
+      "bytes": 80368
+    },
+    {
+      "assetId": "cc0-traffic",
+      "category": "obstacle",
+      "bytes": 70908
+    },
+    {
+      "assetId": "cc0-trash-can",
+      "category": "furniture",
+      "bytes": 12552
+    },
+    {
+      "assetId": "cc0-zombie",
+      "category": "monster",
+      "bytes": 184272
+    },
+    {
+      "assetId": "cc0-anglerfish",
+      "category": "animal",
+      "bytes": 210296
+    },
+    {
+      "assetId": "cc0-apatosaurus",
+      "category": "animal",
+      "bytes": 226272
+    },
+    {
+      "assetId": "cc0-beaver",
+      "category": "animal",
+      "bytes": 112928
+    },
+    {
+      "assetId": "cc0-betta",
+      "category": "animal",
+      "bytes": 153500
+    },
+    {
+      "assetId": "cc0-blobfish",
+      "category": "animal",
+      "bytes": 144448
+    },
+    {
+      "assetId": "cc0-caterpillar",
+      "category": "animal",
+      "bytes": 101740
+    },
+    {
+      "assetId": "cc0-clownfish",
+      "category": "animal",
+      "bytes": 180528
+    },
+    {
+      "assetId": "cc0-cowfish",
+      "category": "animal",
+      "bytes": 159204
+    },
+    {
+      "assetId": "cc0-flatfish",
+      "category": "animal",
+      "bytes": 154732
+    },
+    {
+      "assetId": "cc0-giraffe",
+      "category": "animal",
+      "bytes": 105292
+    },
+    {
+      "assetId": "cc0-goldfish",
+      "category": "animal",
+      "bytes": 191576
+    },
+    {
+      "assetId": "cc0-humphead",
+      "category": "animal",
+      "bytes": 153500
+    },
+    {
+      "assetId": "cc0-koi",
+      "category": "animal",
+      "bytes": 175876
+    },
+    {
+      "assetId": "cc0-lionfish",
+      "category": "animal",
+      "bytes": 245476
+    },
+    {
+      "assetId": "cc0-llama",
+      "category": "animal",
+      "bytes": 108676
+    },
+    {
+      "assetId": "cc0-lure",
+      "category": "animal",
+      "bytes": 134104
+    },
+    {
+      "assetId": "cc0-parasaurolophus",
+      "category": "animal",
+      "bytes": 230044
+    },
+    {
+      "assetId": "cc0-pig",
+      "category": "animal",
+      "bytes": 92780
+    },
+    {
+      "assetId": "cc0-piranha",
+      "category": "animal",
+      "bytes": 180896
+    },
+    {
+      "assetId": "cc0-puffer",
+      "category": "animal",
+      "bytes": 281380
+    },
+    {
+      "assetId": "cc0-pug",
+      "category": "animal",
+      "bytes": 102856
+    },
+    {
+      "assetId": "cc0-sheep",
+      "category": "animal",
+      "bytes": 101040
+    },
+    {
+      "assetId": "cc0-snapper",
+      "category": "animal",
+      "bytes": 163380
+    },
+    {
+      "assetId": "cc0-sunfish",
+      "category": "animal",
+      "bytes": 149256
+    },
+    {
+      "assetId": "cc0-swordfish",
+      "category": "animal",
+      "bytes": 156096
+    },
+    {
+      "assetId": "cc0-tang",
+      "category": "animal",
+      "bytes": 171804
+    },
+    {
+      "assetId": "cc0-tetra",
+      "category": "animal",
+      "bytes": 215776
+    },
+    {
+      "assetId": "cc0-trex",
+      "category": "animal",
+      "bytes": 273880
+    },
+    {
+      "assetId": "cc0-triceratops",
+      "category": "animal",
+      "bytes": 209736
+    },
+    {
+      "assetId": "cc0-tuna",
+      "category": "animal",
+      "bytes": 208776
+    },
+    {
+      "assetId": "cc0-turbot",
+      "category": "animal",
+      "bytes": 152748
+    },
+    {
+      "assetId": "cc0-velociraptor",
+      "category": "animal",
+      "bytes": 203144
+    },
+    {
+      "assetId": "cc0-worm",
+      "category": "animal",
+      "bytes": 42720
+    },
+    {
+      "assetId": "cc0-zebra",
+      "category": "animal",
+      "bytes": 217852
+    },
+    {
+      "assetId": "cc0-book-set",
+      "category": "collectible",
+      "bytes": 105712
+    },
+    {
+      "assetId": "cc0-book-single",
+      "category": "collectible",
+      "bytes": 90544
+    },
+    {
+      "assetId": "cc0-bottle",
+      "category": "collectible",
+      "bytes": 35208
+    },
+    {
+      "assetId": "cc0-bottle-ketchup",
+      "category": "collectible",
+      "bytes": 44620
+    },
+    {
+      "assetId": "cc0-bottle-labeled",
+      "category": "collectible",
+      "bytes": 110152
+    },
+    {
+      "assetId": "cc0-bottle-musterd",
+      "category": "collectible",
+      "bytes": 44620
+    },
+    {
+      "assetId": "cc0-bottle-oil",
+      "category": "collectible",
+      "bytes": 45388
+    },
+    {
+      "assetId": "cc0-bottle-return",
+      "category": "collectible",
+      "bytes": 53576
+    },
+    {
+      "assetId": "cc0-candle",
+      "category": "collectible",
+      "bytes": 95920
+    },
+    {
+      "assetId": "cc0-candle-lit",
+      "category": "collectible",
+      "bytes": 102936
+    },
+    {
+      "assetId": "cc0-candle-melted",
+      "category": "collectible",
+      "bytes": 96076
+    },
+    {
+      "assetId": "cc0-candle-multiple",
+      "category": "collectible",
+      "bytes": 42556
+    },
+    {
+      "assetId": "cc0-candle-triple",
+      "category": "collectible",
+      "bytes": 109440
+    },
+    {
+      "assetId": "cc0-coin-stack",
+      "category": "collectible",
+      "bytes": 256788
+    },
+    {
+      "assetId": "cc0-heart",
+      "category": "collectible",
+      "bytes": 23728
+    },
+    {
+      "assetId": "cc0-heart-outline",
+      "category": "collectible",
+      "bytes": 22604
+    },
+    {
+      "assetId": "cc0-chest-special",
+      "category": "collectible",
+      "bytes": 262020
+    },
+    {
+      "assetId": "cc0-ketchup-bottle",
+      "category": "collectible",
+      "bytes": 36548
+    },
+    {
+      "assetId": "cc0-lantern-candle",
+      "category": "collectible",
+      "bytes": 52988
+    },
+    {
+      "assetId": "cc0-lantern-hanging",
+      "category": "collectible",
+      "bytes": 124872
+    },
+    {
+      "assetId": "cc0-lantern-standing",
+      "category": "collectible",
+      "bytes": 113872
+    },
+    {
+      "assetId": "cc0-mayo-bottle",
+      "category": "collectible",
+      "bytes": 36544
+    },
+    {
+      "assetId": "cc0-mustard-bottle",
+      "category": "collectible",
+      "bytes": 36548
+    },
+    {
+      "assetId": "cc0-obstacle-diamond",
+      "category": "collectible",
+      "bytes": 35816
+    },
+    {
+      "assetId": "cc0-pickup-bullets",
+      "category": "collectible",
+      "bytes": 44016
+    },
+    {
+      "assetId": "cc0-pickup-health",
+      "category": "collectible",
+      "bytes": 84424
+    },
+    {
+      "assetId": "cc0-pickup-jar",
+      "category": "collectible",
+      "bytes": 31456
+    },
+    {
+      "assetId": "cc0-pickup-sphere",
+      "category": "collectible",
+      "bytes": 110420
+    },
+    {
+      "assetId": "cc0-pickup-thunder",
+      "category": "collectible",
+      "bytes": 19692
+    },
+    {
+      "assetId": "cc0-pipe-ring",
+      "category": "collectible",
+      "bytes": 17944
+    },
+    {
+      "assetId": "cc0-potion",
+      "category": "collectible",
+      "bytes": 38920
+    },
+    {
+      "assetId": "cc0-present-cube",
+      "category": "collectible",
+      "bytes": 62168
+    },
+    {
+      "assetId": "cc0-present-rectangle",
+      "category": "collectible",
+      "bytes": 62112
+    },
+    {
+      "assetId": "cc0-present-round",
+      "category": "collectible",
+      "bytes": 62160
+    },
+    {
+      "assetId": "cc0-rice-ball",
+      "category": "collectible",
+      "bytes": 42712
+    },
+    {
+      "assetId": "cc0-skull-candle",
+      "category": "collectible",
+      "bytes": 134268
+    },
+    {
+      "assetId": "cc0-soda-bottle",
+      "category": "collectible",
+      "bytes": 44984
+    },
+    {
+      "assetId": "cc0-spiky-ball",
+      "category": "collectible",
+      "bytes": 64824
+    },
+    {
+      "assetId": "cc0-star-outline",
+      "category": "collectible",
+      "bytes": 35116
+    },
+    {
+      "assetId": "cc0-torch",
+      "category": "collectible",
+      "bytes": 115092
+    },
+    {
+      "assetId": "cc0-torch-lit",
+      "category": "collectible",
+      "bytes": 117032
+    },
+    {
+      "assetId": "cc0-torch-mounted",
+      "category": "collectible",
+      "bytes": 122112
+    },
+    {
+      "assetId": "cc0-trash-bag",
+      "category": "collectible",
+      "bytes": 64732
+    },
+    {
+      "assetId": "cc0-apple",
+      "category": "food",
+      "bytes": 69992
+    },
+    {
+      "assetId": "cc0-avocado",
+      "category": "food",
+      "bytes": 42576
+    },
+    {
+      "assetId": "cc0-bell",
+      "category": "food",
+      "bytes": 167576
+    },
+    {
+      "assetId": "cc0-bottles",
+      "category": "food",
+      "bytes": 113380
+    },
+    {
+      "assetId": "cc0-bowl",
+      "category": "food",
+      "bytes": 38336
+    },
+    {
+      "assetId": "cc0-bread",
+      "category": "food",
+      "bytes": 35600
+    },
+    {
+      "assetId": "cc0-broccoli",
+      "category": "food",
+      "bytes": 55084
+    },
+    {
+      "assetId": "cc0-burger",
+      "category": "food",
+      "bytes": 147336
+    },
+    {
+      "assetId": "cc0-carpet",
+      "category": "food",
+      "bytes": 20772
+    },
+    {
+      "assetId": "cc0-carrot",
+      "category": "food",
+      "bytes": 128664
+    },
+    {
+      "assetId": "cc0-coconut",
+      "category": "food",
+      "bytes": 21160
+    },
+    {
+      "assetId": "cc0-corn",
+      "category": "food",
+      "bytes": 93716
+    },
+    {
+      "assetId": "cc0-corndog",
+      "category": "food",
+      "bytes": 46336
+    },
+    {
+      "assetId": "cc0-croissant",
+      "category": "food",
+      "bytes": 21716
+    },
+    {
+      "assetId": "cc0-cupcake",
+      "category": "food",
+      "bytes": 69464
+    },
+    {
+      "assetId": "cc0-cuttingboard",
+      "category": "food",
+      "bytes": 119836
+    },
+    {
+      "assetId": "cc0-donut",
+      "category": "food",
+      "bytes": 156620
+    },
+    {
+      "assetId": "cc0-eggplant",
+      "category": "food",
+      "bytes": 60040
+    },
+    {
+      "assetId": "cc0-fork",
+      "category": "food",
+      "bytes": 25192
+    },
+    {
+      "assetId": "cc0-fries",
+      "category": "food",
+      "bytes": 53216
+    },
+    {
+      "assetId": "cc0-fruit",
+      "category": "food",
+      "bytes": 26752
+    },
+    {
+      "assetId": "cc0-hotdog",
+      "category": "food",
+      "bytes": 157360
+    },
+    {
+      "assetId": "cc0-cheeseburger",
+      "category": "food",
+      "bytes": 99896
+    },
+    {
+      "assetId": "cc0-chopsticks",
+      "category": "food",
+      "bytes": 70408
+    },
+    {
+      "assetId": "cc0-icecream",
+      "category": "food",
+      "bytes": 34388
+    },
+    {
+      "assetId": "cc0-kitchencabinet",
+      "category": "food",
+      "bytes": 127844
+    },
+    {
+      "assetId": "cc0-kitchentable",
+      "category": "food",
+      "bytes": 136628
+    },
+    {
+      "assetId": "cc0-lettuce",
+      "category": "food",
+      "bytes": 120864
+    },
+    {
+      "assetId": "cc0-menu",
+      "category": "food",
+      "bytes": 126704
+    },
+    {
+      "assetId": "cc0-milkshake",
+      "category": "food",
+      "bytes": 123864
+    },
+    {
+      "assetId": "cc0-mustard",
+      "category": "food",
+      "bytes": 126776
+    },
+    {
+      "assetId": "cc0-painting",
+      "category": "food",
+      "bytes": 65180
+    },
+    {
+      "assetId": "cc0-pan",
+      "category": "food",
+      "bytes": 38476
+    },
+    {
+      "assetId": "cc0-papertowel",
+      "category": "food",
+      "bytes": 131864
+    },
+    {
+      "assetId": "cc0-pepper",
+      "category": "food",
+      "bytes": 129296
+    },
+    {
+      "assetId": "cc0-pumpkin",
+      "category": "food",
+      "bytes": 102840
+    },
+    {
+      "assetId": "cc0-soda",
+      "category": "food",
+      "bytes": 69336
+    },
+    {
+      "assetId": "cc0-spoon",
+      "category": "food",
+      "bytes": 27572
+    },
+    {
+      "assetId": "cc0-steak",
+      "category": "food",
+      "bytes": 65360
+    },
+    {
+      "assetId": "cc0-tentacle",
+      "category": "food",
+      "bytes": 96008
+    },
+    {
+      "assetId": "cc0-tomato",
+      "category": "food",
+      "bytes": 56204
+    },
+    {
+      "assetId": "cc0-towelrail",
+      "category": "food",
+      "bytes": 130068
+    },
+    {
+      "assetId": "cc0-turnip",
+      "category": "food",
+      "bytes": 143628
+    },
+    {
+      "assetId": "cc0-waffle",
+      "category": "food",
+      "bytes": 144800
+    },
+    {
+      "assetId": "cc0-armchair",
+      "category": "furniture",
+      "bytes": 109864
+    },
+    {
+      "assetId": "cc0-armchair-pillows",
+      "category": "furniture",
+      "bytes": 114528
+    },
+    {
+      "assetId": "cc0-bathtub",
+      "category": "furniture",
+      "bytes": 40812
+    },
+    {
+      "assetId": "cc0-bed",
+      "category": "furniture",
+      "bytes": 31648
+    },
+    {
+      "assetId": "cc0-bed-decorated",
+      "category": "furniture",
+      "bytes": 219944
+    },
+    {
+      "assetId": "cc0-bed-frame",
+      "category": "furniture",
+      "bytes": 115848
+    },
+    {
+      "assetId": "cc0-bed-single",
+      "category": "furniture",
+      "bytes": 119296
+    },
+    {
+      "assetId": "cc0-bench",
+      "category": "furniture",
+      "bytes": 39316
+    },
+    {
+      "assetId": "cc0-bench-decorated",
+      "category": "furniture",
+      "bytes": 176184
+    },
+    {
+      "assetId": "cc0-books",
+      "category": "furniture",
+      "bytes": 11136
+    },
+    {
+      "assetId": "cc0-cabinet-decorated",
+      "category": "furniture",
+      "bytes": 169952
+    },
+    {
+      "assetId": "cc0-cabinet-doors",
+      "category": "furniture",
+      "bytes": 92764
+    },
+    {
+      "assetId": "cc0-cabinet-shelves",
+      "category": "furniture",
+      "bytes": 37644
+    },
+    {
+      "assetId": "cc0-can-fridge",
+      "category": "furniture",
+      "bytes": 219088
+    },
+    {
+      "assetId": "cc0-cooking-pot",
+      "category": "furniture",
+      "bytes": 39752
+    },
+    {
+      "assetId": "cc0-couch",
+      "category": "furniture",
+      "bytes": 194312
+    },
+    {
+      "assetId": "cc0-couch-pillows",
+      "category": "furniture",
+      "bytes": 125988
+    },
+    {
+      "assetId": "cc0-counter-sink",
+      "category": "furniture",
+      "bytes": 95432
+    },
+    {
+      "assetId": "cc0-cutting-table",
+      "category": "furniture",
+      "bytes": 57912
+    },
+    {
+      "assetId": "cc0-dryer",
+      "category": "furniture",
+      "bytes": 26232
+    },
+    {
+      "assetId": "cc0-fridge-decorated",
+      "category": "furniture",
+      "bytes": 255392
+    },
+    {
+      "assetId": "cc0-chair-stool",
+      "category": "furniture",
+      "bytes": 101824
+    },
+    {
+      "assetId": "cc0-chair-wood",
+      "category": "furniture",
+      "bytes": 112800
+    },
+    {
+      "assetId": "cc0-kitchencounter-sink",
+      "category": "furniture",
+      "bytes": 163192
+    },
+    {
+      "assetId": "cc0-kitchentable-sink",
+      "category": "furniture",
+      "bytes": 170172
+    },
+    {
+      "assetId": "cc0-lamp-standing",
+      "category": "furniture",
+      "bytes": 100604
+    },
+    {
+      "assetId": "cc0-lamp-table",
+      "category": "furniture",
+      "bytes": 105252
+    },
+    {
+      "assetId": "cc0-laptop",
+      "category": "furniture",
+      "bytes": 9680
+    },
+    {
+      "assetId": "cc0-oven",
+      "category": "furniture",
+      "bytes": 141508
+    },
+    {
+      "assetId": "cc0-pictureframe",
+      "category": "furniture",
+      "bytes": 88460
+    },
+    {
+      "assetId": "cc0-pictureframe-standing",
+      "category": "furniture",
+      "bytes": 90200
+    },
+    {
+      "assetId": "cc0-pillow",
+      "category": "furniture",
+      "bytes": 87344
+    },
+    {
+      "assetId": "cc0-pot-filled",
+      "category": "furniture",
+      "bytes": 57752
+    },
+    {
+      "assetId": "cc0-radio",
+      "category": "furniture",
+      "bytes": 35508
+    },
+    {
+      "assetId": "cc0-shower",
+      "category": "furniture",
+      "bytes": 98800
+    },
+    {
+      "assetId": "cc0-sofa",
+      "category": "furniture",
+      "bytes": 37312
+    },
+    {
+      "assetId": "cc0-speaker",
+      "category": "furniture",
+      "bytes": 18800
+    },
+    {
+      "assetId": "cc0-toaster",
+      "category": "furniture",
+      "bytes": 23264
+    },
+    {
+      "assetId": "cc0-toilet",
+      "category": "furniture",
+      "bytes": 29128
+    },
+    {
+      "assetId": "cc0-washer",
+      "category": "furniture",
+      "bytes": 67068
+    },
+    {
+      "assetId": "cc0-employee",
+      "category": "character",
+      "bytes": 144544
+    },
+    {
+      "assetId": "cc0-oobi",
+      "category": "character",
+      "bytes": 118304
+    },
+    {
+      "assetId": "cc0-oodi",
+      "category": "character",
+      "bytes": 112756
+    },
+    {
+      "assetId": "cc0-ooli",
+      "category": "character",
+      "bytes": 113352
+    },
+    {
+      "assetId": "cc0-oopi",
+      "category": "character",
+      "bytes": 112840
+    },
+    {
+      "assetId": "cc0-oozi",
+      "category": "character",
+      "bytes": 112480
+    },
+    {
+      "assetId": "cc0-wizard",
+      "category": "character",
+      "bytes": 90400
+    },
+    {
+      "assetId": "cc0-alpaking",
+      "category": "monster",
+      "bytes": 151248
+    },
+    {
+      "assetId": "cc0-alpaking-evolved",
+      "category": "monster",
+      "bytes": 262076
+    },
+    {
+      "assetId": "cc0-armabee",
+      "category": "monster",
+      "bytes": 146232
+    },
+    {
+      "assetId": "cc0-armabee-evolved",
+      "category": "monster",
+      "bytes": 193460
+    },
+    {
+      "assetId": "cc0-enemy",
+      "category": "monster",
+      "bytes": 130128
+    },
+    {
+      "assetId": "cc0-enemy-extra",
+      "category": "monster",
+      "bytes": 98380
+    },
+    {
+      "assetId": "cc0-enemy-flying",
+      "category": "monster",
+      "bytes": 201344
+    },
+    {
+      "assetId": "cc0-ghost-skull",
+      "category": "monster",
+      "bytes": 275700
+    },
+    {
+      "assetId": "cc0-glub",
+      "category": "monster",
+      "bytes": 154672
+    },
+    {
+      "assetId": "cc0-glub-evolved",
+      "category": "monster",
+      "bytes": 222276
+    },
+    {
+      "assetId": "cc0-goleling",
+      "category": "monster",
+      "bytes": 215340
+    },
+    {
+      "assetId": "cc0-goleling-evolved",
+      "category": "monster",
+      "bytes": 259228
+    },
+    {
+      "assetId": "cc0-hywirl",
+      "category": "monster",
+      "bytes": 240772
+    },
+    {
+      "assetId": "cc0-mushnub",
+      "category": "monster",
+      "bytes": 68640
+    },
+    {
+      "assetId": "cc0-mushnub-evolved",
+      "category": "monster",
+      "bytes": 152636
+    },
+    {
+      "assetId": "cc0-ship-ghost",
+      "category": "monster",
+      "bytes": 148132
+    },
+    {
+      "assetId": "cc0-skeleton",
+      "category": "monster",
+      "bytes": 162388
+    },
+    {
+      "assetId": "cc0-spiky-blob",
+      "category": "monster",
+      "bytes": 207448
+    },
+    {
+      "assetId": "cc0-tree-blob",
+      "category": "monster",
+      "bytes": 214164
+    },
+    {
+      "assetId": "cc0-vampire",
+      "category": "monster",
+      "bytes": 186488
+    },
+    {
+      "assetId": "cc0-zombie-ribcage",
+      "category": "monster",
+      "bytes": 262552
+    },
+    {
+      "assetId": "cc0-altar-stone",
+      "category": "nature",
+      "bytes": 47012
+    },
+    {
+      "assetId": "cc0-bamboo",
+      "category": "nature",
+      "bytes": 77320
+    },
+    {
+      "assetId": "cc0-birch-tree",
+      "category": "nature",
+      "bytes": 269888
+    },
+    {
+      "assetId": "cc0-bush",
+      "category": "nature",
+      "bytes": 59376
+    },
+    {
+      "assetId": "cc0-bush-berries",
+      "category": "nature",
+      "bytes": 141856
+    },
+    {
+      "assetId": "cc0-cactus-flowers",
+      "category": "nature",
+      "bytes": 238292
+    },
+    {
+      "assetId": "cc0-campfire-bricks",
+      "category": "nature",
+      "bytes": 20812
+    },
+    {
+      "assetId": "cc0-campfire-logs",
+      "category": "nature",
+      "bytes": 16952
+    },
+    {
+      "assetId": "cc0-campfire-stones",
+      "category": "nature",
+      "bytes": 34352
+    },
+    {
+      "assetId": "cc0-cloud",
+      "category": "nature",
+      "bytes": 19212
+    },
+    {
+      "assetId": "cc0-coral-grouper",
+      "category": "nature",
+      "bytes": 190108
+    },
+    {
+      "assetId": "cc0-crop-melon",
+      "category": "nature",
+      "bytes": 29352
+    },
+    {
+      "assetId": "cc0-crop-turnip",
+      "category": "nature",
+      "bytes": 27292
+    },
+    {
+      "assetId": "cc0-flower",
+      "category": "nature",
+      "bytes": 276724
+    },
+    {
+      "assetId": "cc0-flower-horn",
+      "category": "nature",
+      "bytes": 175184
+    },
+    {
+      "assetId": "cc0-grass",
+      "category": "nature",
+      "bytes": 34352
+    },
+    {
+      "assetId": "cc0-grass-leafs",
+      "category": "nature",
+      "bytes": 7432
+    },
+    {
+      "assetId": "cc0-grass-patch",
+      "category": "nature",
+      "bytes": 54740
+    },
+    {
+      "assetId": "cc0-grass-plant",
+      "category": "nature",
+      "bytes": 41864
+    },
+    {
+      "assetId": "cc0-hanging-moss",
+      "category": "nature",
+      "bytes": 9288
+    },
+    {
+      "assetId": "cc0-hedge",
+      "category": "nature",
+      "bytes": 37964
+    },
+    {
+      "assetId": "cc0-lily",
+      "category": "nature",
+      "bytes": 13488
+    },
+    {
+      "assetId": "cc0-log-stack",
+      "category": "nature",
+      "bytes": 19984
+    },
+    {
+      "assetId": "cc0-palm-tree",
+      "category": "nature",
+      "bytes": 283168
+    },
+    {
+      "assetId": "cc0-pine",
+      "category": "nature",
+      "bytes": 64404
+    },
+    {
+      "assetId": "cc0-pine-tree",
+      "category": "nature",
+      "bytes": 298924
+    },
+    {
+      "assetId": "cc0-rock-moss",
+      "category": "nature",
+      "bytes": 13724
+    },
+    {
+      "assetId": "cc0-sakura-flower",
+      "category": "nature",
+      "bytes": 104512
+    },
+    {
+      "assetId": "cc0-stump",
+      "category": "nature",
+      "bytes": 19404
+    },
+    {
+      "assetId": "cc0-tree-decorated",
+      "category": "nature",
+      "bytes": 170040
+    },
+    {
+      "assetId": "cc0-tree-floating",
+      "category": "nature",
+      "bytes": 127912
+    },
+    {
+      "assetId": "cc0-tree-pine",
+      "category": "nature",
+      "bytes": 124064
+    },
+    {
+      "assetId": "cc0-tree-spiral",
+      "category": "nature",
+      "bytes": 49164
+    },
+    {
+      "assetId": "cc0-tree-stump",
+      "category": "nature",
+      "bytes": 38948
+    },
+    {
+      "assetId": "cc0-tree-swirl",
+      "category": "nature",
+      "bytes": 107976
+    },
+    {
+      "assetId": "cc0-wheat",
+      "category": "nature",
+      "bytes": 63736
+    },
+    {
+      "assetId": "cc0-wood-log",
+      "category": "nature",
+      "bytes": 76488
+    },
+    {
+      "assetId": "cc0-barrel",
+      "category": "obstacle",
+      "bytes": 68028
+    },
+    {
+      "assetId": "cc0-barrel-decorated",
+      "category": "obstacle",
+      "bytes": 192532
+    },
+    {
+      "assetId": "cc0-barrel-stack",
+      "category": "obstacle",
+      "bytes": 240248
+    },
+    {
+      "assetId": "cc0-barrier-fixed",
+      "category": "obstacle",
+      "bytes": 230512
+    },
+    {
+      "assetId": "cc0-barrier-single",
+      "category": "obstacle",
+      "bytes": 19420
+    },
+    {
+      "assetId": "cc0-barrier-trash",
+      "category": "obstacle",
+      "bytes": 281584
+    },
+    {
+      "assetId": "cc0-bear-trap",
+      "category": "obstacle",
+      "bytes": 63544
+    },
+    {
+      "assetId": "cc0-bomb",
+      "category": "obstacle",
+      "bytes": 48444
+    },
+    {
+      "assetId": "cc0-box-decorated",
+      "category": "obstacle",
+      "bytes": 202940
+    },
+    {
+      "assetId": "cc0-box-long",
+      "category": "obstacle",
+      "bytes": 41736
+    },
+    {
+      "assetId": "cc0-cannon",
+      "category": "obstacle",
+      "bytes": 112692
+    },
+    {
+      "assetId": "cc0-cannon-mobile",
+      "category": "obstacle",
+      "bytes": 65512
+    },
+    {
+      "assetId": "cc0-cube-spikes",
+      "category": "obstacle",
+      "bytes": 32184
+    },
+    {
+      "assetId": "cc0-dumpster",
+      "category": "obstacle",
+      "bytes": 118448
+    },
+    {
+      "assetId": "cc0-exploding-barrel",
+      "category": "obstacle",
+      "bytes": 43880
+    },
+    {
+      "assetId": "cc0-exploding-barrel-spilled",
+      "category": "obstacle",
+      "bytes": 48044
+    },
+    {
+      "assetId": "cc0-fire-hydrant",
+      "category": "obstacle",
+      "bytes": 67828
+    },
+    {
+      "assetId": "cc0-hay-bale",
+      "category": "obstacle",
+      "bytes": 43640
+    },
+    {
+      "assetId": "cc0-hazard-saw",
+      "category": "obstacle",
+      "bytes": 85880
+    },
+    {
+      "assetId": "cc0-hazard-spike-trap",
+      "category": "obstacle",
+      "bytes": 39504
+    },
+    {
+      "assetId": "cc0-machine-barrel",
+      "category": "obstacle",
+      "bytes": 32552
+    },
+    {
+      "assetId": "cc0-obstacle-triangle",
+      "category": "obstacle",
+      "bytes": 36484
+    },
+    {
+      "assetId": "cc0-pallet",
+      "category": "obstacle",
+      "bytes": 44856
+    },
+    {
+      "assetId": "cc0-pallet-decorated",
+      "category": "obstacle",
+      "bytes": 228684
+    },
+    {
+      "assetId": "cc0-pipe",
+      "category": "obstacle",
+      "bytes": 19280
+    },
+    {
+      "assetId": "cc0-pipe-bend",
+      "category": "obstacle",
+      "bytes": 34688
+    },
+    {
+      "assetId": "cc0-pipe-bump",
+      "category": "obstacle",
+      "bytes": 55192
+    },
+    {
+      "assetId": "cc0-pipe-cross",
+      "category": "obstacle",
+      "bytes": 25204
+    },
+    {
+      "assetId": "cc0-pipe-entrance",
+      "category": "obstacle",
+      "bytes": 15388
+    },
+    {
+      "assetId": "cc0-pipe-glass",
+      "category": "obstacle",
+      "bytes": 47528
+    },
+    {
+      "assetId": "cc0-pipe-long",
+      "category": "obstacle",
+      "bytes": 53200
+    },
+    {
+      "assetId": "cc0-pipe-valve",
+      "category": "obstacle",
+      "bytes": 67368
+    },
+    {
+      "assetId": "cc0-pizza-box",
+      "category": "obstacle",
+      "bytes": 44804
+    },
+    {
+      "assetId": "cc0-plastic-barrier",
+      "category": "obstacle",
+      "bytes": 72924
+    },
+    {
+      "assetId": "cc0-sack-trench",
+      "category": "obstacle",
+      "bytes": 49532
+    },
+    {
+      "assetId": "cc0-traffic-barrier",
+      "category": "obstacle",
+      "bytes": 70908
+    },
+    {
+      "assetId": "cc0-trap-spikes",
+      "category": "obstacle",
+      "bytes": 53304
+    },
+    {
+      "assetId": "cc0-tree-cone",
+      "category": "obstacle",
+      "bytes": 20892
+    },
+    {
+      "assetId": "cc0-tree-spikes",
+      "category": "obstacle",
+      "bytes": 122208
+    },
+    {
+      "assetId": "cc0-turret-double",
+      "category": "obstacle",
+      "bytes": 65800
+    },
+    {
+      "assetId": "cc0-turret-single",
+      "category": "obstacle",
+      "bytes": 45632
+    },
+    {
+      "assetId": "cc0-weapon-cannon",
+      "category": "obstacle",
+      "bytes": 88672
+    },
+    {
+      "assetId": "cc0-weapon-turret",
+      "category": "obstacle",
+      "bytes": 92816
+    },
+    {
+      "assetId": "cc0-workbench-anvil",
+      "category": "obstacle",
+      "bytes": 60664
+    },
+    {
+      "assetId": "cc0-ambulance",
+      "category": "vehicle",
+      "bytes": 205676
+    },
+    {
+      "assetId": "cc0-boat-row",
+      "category": "vehicle",
+      "bytes": 45496
+    },
+    {
+      "assetId": "cc0-bus",
+      "category": "vehicle",
+      "bytes": 201600
+    },
+    {
+      "assetId": "cc0-canoe",
+      "category": "vehicle",
+      "bytes": 16640
+    },
+    {
+      "assetId": "cc0-canoe-paddle",
+      "category": "vehicle",
+      "bytes": 7776
+    },
+    {
+      "assetId": "cc0-car-hatchback",
+      "category": "vehicle",
+      "bytes": 194036
+    },
+    {
+      "assetId": "cc0-car-police",
+      "category": "vehicle",
+      "bytes": 207496
+    },
+    {
+      "assetId": "cc0-car-sedan",
+      "category": "vehicle",
+      "bytes": 193748
+    },
+    {
+      "assetId": "cc0-car-stationwagon",
+      "category": "vehicle",
+      "bytes": 195924
+    },
+    {
+      "assetId": "cc0-car-taxi",
+      "category": "vehicle",
+      "bytes": 201000
+    },
+    {
+      "assetId": "cc0-craft-racer",
+      "category": "vehicle",
+      "bytes": 37688
+    },
+    {
+      "assetId": "cc0-delivery",
+      "category": "vehicle",
+      "bytes": 188780
+    },
+    {
+      "assetId": "cc0-enemy-ufo",
+      "category": "vehicle",
+      "bytes": 80616
+    },
+    {
+      "assetId": "cc0-firetruck",
+      "category": "vehicle",
+      "bytes": 214684
+    },
+    {
+      "assetId": "cc0-garbage-truck",
+      "category": "vehicle",
+      "bytes": 239100
+    },
+    {
+      "assetId": "cc0-gas-tank",
+      "category": "vehicle",
+      "bytes": 72984
+    },
+    {
+      "assetId": "cc0-hatchback-sports",
+      "category": "vehicle",
+      "bytes": 156716
+    },
+    {
+      "assetId": "cc0-kart-oobi",
+      "category": "vehicle",
+      "bytes": 177876
+    },
+    {
+      "assetId": "cc0-kart-oodi",
+      "category": "vehicle",
+      "bytes": 171756
+    },
+    {
+      "assetId": "cc0-race",
+      "category": "vehicle",
+      "bytes": 144820
+    },
+    {
+      "assetId": "cc0-school-bus",
+      "category": "vehicle",
+      "bytes": 230136
+    },
+    {
+      "assetId": "cc0-sled",
+      "category": "vehicle",
+      "bytes": 62668
+    },
+    {
+      "assetId": "cc0-tank",
+      "category": "vehicle",
+      "bytes": 247664
+    },
+    {
+      "assetId": "cc0-tractor",
+      "category": "vehicle",
+      "bytes": 154196
+    },
+    {
+      "assetId": "cc0-train",
+      "category": "vehicle",
+      "bytes": 93196
+    },
+    {
+      "assetId": "cc0-van",
+      "category": "vehicle",
+      "bytes": 154976
+    },
+    {
+      "assetId": "cc0-wheel",
+      "category": "vehicle",
+      "bytes": 57500
+    },
+    {
+      "assetId": "cc0-ak",
+      "category": "weapon",
+      "bytes": 157408
+    },
+    {
+      "assetId": "cc0-arrow",
+      "category": "weapon",
+      "bytes": 27292
+    },
+    {
+      "assetId": "cc0-arrow-rounded",
+      "category": "weapon",
+      "bytes": 38976
+    },
+    {
+      "assetId": "cc0-arrow-up",
+      "category": "weapon",
+      "bytes": 14648
+    },
+    {
+      "assetId": "cc0-assault-rifle",
+      "category": "weapon",
+      "bytes": 167228
+    },
+    {
+      "assetId": "cc0-axe",
+      "category": "weapon",
+      "bytes": 80936
+    },
+    {
+      "assetId": "cc0-axe-double",
+      "category": "weapon",
+      "bytes": 233472
+    },
+    {
+      "assetId": "cc0-blaster",
+      "category": "weapon",
+      "bytes": 67200
+    },
+    {
+      "assetId": "cc0-bow",
+      "category": "weapon",
+      "bytes": 121888
+    },
+    {
+      "assetId": "cc0-bow-evil",
+      "category": "weapon",
+      "bytes": 118440
+    },
+    {
+      "assetId": "cc0-bow-wooden",
+      "category": "weapon",
+      "bytes": 112252
+    },
+    {
+      "assetId": "cc0-claymore",
+      "category": "weapon",
+      "bytes": 117364
+    },
+    {
+      "assetId": "cc0-cooking-knife",
+      "category": "weapon",
+      "bytes": 41748
+    },
+    {
+      "assetId": "cc0-dagger",
+      "category": "weapon",
+      "bytes": 91136
+    },
+    {
+      "assetId": "cc0-fire-grenade",
+      "category": "weapon",
+      "bytes": 65296
+    },
+    {
+      "assetId": "cc0-grenade-launcher",
+      "category": "weapon",
+      "bytes": 93380
+    },
+    {
+      "assetId": "cc0-guitar",
+      "category": "weapon",
+      "bytes": 228620
+    },
+    {
+      "assetId": "cc0-hammer",
+      "category": "weapon",
+      "bytes": 221256
+    },
+    {
+      "assetId": "cc0-hammer-double",
+      "category": "weapon",
+      "bytes": 287640
+    },
+    {
+      "assetId": "cc0-pistol",
+      "category": "weapon",
+      "bytes": 112220
+    },
+    {
+      "assetId": "cc0-revolver",
+      "category": "weapon",
+      "bytes": 125004
+    },
+    {
+      "assetId": "cc0-rocket-launcher",
+      "category": "weapon",
+      "bytes": 86236
+    },
+    {
+      "assetId": "cc0-scythe",
+      "category": "weapon",
+      "bytes": 193876
+    },
+    {
+      "assetId": "cc0-shield-celtic",
+      "category": "weapon",
+      "bytes": 118112
+    },
+    {
+      "assetId": "cc0-shield-heater",
+      "category": "weapon",
+      "bytes": 159440
+    },
+    {
+      "assetId": "cc0-shield-rectangle",
+      "category": "weapon",
+      "bytes": 41084
+    },
+    {
+      "assetId": "cc0-shield-round",
+      "category": "weapon",
+      "bytes": 177792
+    },
+    {
+      "assetId": "cc0-shotgun",
+      "category": "weapon",
+      "bytes": 121444
+    },
+    {
+      "assetId": "cc0-shovel",
+      "category": "weapon",
+      "bytes": 40576
+    },
+    {
+      "assetId": "cc0-smg",
+      "category": "weapon",
+      "bytes": 225372
+    },
+    {
+      "assetId": "cc0-smoke",
+      "category": "weapon",
+      "bytes": 47584
+    },
+    {
+      "assetId": "cc0-sniper",
+      "category": "weapon",
+      "bytes": 102496
+    },
+    {
+      "assetId": "cc0-sniper-rifle",
+      "category": "weapon",
+      "bytes": 195384
+    },
+    {
+      "assetId": "cc0-spear",
+      "category": "weapon",
+      "bytes": 241720
+    },
+    {
+      "assetId": "cc0-submachine-gun",
+      "category": "weapon",
+      "bytes": 149376
+    },
+    {
+      "assetId": "cc0-sword",
+      "category": "weapon",
+      "bytes": 113692
+    },
+    {
+      "assetId": "cc0-sword-shield",
+      "category": "weapon",
+      "bytes": 146168
+    },
+    {
+      "assetId": "cc0-tool-axe",
+      "category": "weapon",
+      "bytes": 40220
+    },
+    {
+      "assetId": "cc0-tool-hammer",
+      "category": "weapon",
+      "bytes": 36632
+    },
+    {
+      "assetId": "cc0-utensil-knife",
+      "category": "weapon",
+      "bytes": 38688
+    },
+    {
+      "assetId": "cc0-weapon-ballista",
+      "category": "weapon",
+      "bytes": 94216
+    },
+    {
+      "assetId": "cc0-weapon-catapult",
+      "category": "weapon",
+      "bytes": 89744
+    }
+  ],
+  "dropped": [
+    {
+      "assetId": "cc0-frog",
+      "category": "animal",
+      "bytes": 428228,
+      "reason": "428228 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-ninja",
+      "category": "character",
+      "bytes": 448128,
+      "reason": "448128 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-yeti",
+      "category": "monster",
+      "bytes": 432068,
+      "reason": "432068 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-alpaca",
+      "category": "animal",
+      "bytes": 743348,
+      "reason": "743348 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bull",
+      "category": "animal",
+      "bytes": 1830972,
+      "reason": "1830972 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bunny",
+      "category": "animal",
+      "bytes": 474936,
+      "reason": "474936 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cow",
+      "category": "animal",
+      "bytes": 1835968,
+      "reason": "1835968 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-crab",
+      "category": "animal",
+      "bytes": 556672,
+      "reason": "556672 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-deer",
+      "category": "animal",
+      "bytes": 1849208,
+      "reason": "1849208 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-donkey",
+      "category": "animal",
+      "bytes": 2021516,
+      "reason": "2021516 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-horse",
+      "category": "animal",
+      "bytes": 2066660,
+      "reason": "2066660 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-husky",
+      "category": "animal",
+      "bytes": 1713960,
+      "reason": "1713960 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-panda",
+      "category": "animal",
+      "bytes": 470548,
+      "reason": "470548 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-rabbit",
+      "category": "animal",
+      "bytes": 671236,
+      "reason": "671236 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-stag",
+      "category": "animal",
+      "bytes": 2123992,
+      "reason": "2123992 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-stegosaurus",
+      "category": "animal",
+      "bytes": 360600,
+      "reason": "360600 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-wolf",
+      "category": "animal",
+      "bytes": 1778416,
+      "reason": "1778416 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-vehicle-pickup",
+      "category": "collectible",
+      "bytes": 336116,
+      "reason": "336116 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bed-double",
+      "category": "furniture",
+      "bytes": 688096,
+      "reason": "688096 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bed-twin",
+      "category": "furniture",
+      "bytes": 546076,
+      "reason": "546076 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bookcase",
+      "category": "furniture",
+      "bytes": 358020,
+      "reason": "358020 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-closet",
+      "category": "furniture",
+      "bytes": 419120,
+      "reason": "419120 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-office-chair",
+      "category": "furniture",
+      "bytes": 306624,
+      "reason": "306624 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-casual-bald",
+      "category": "character",
+      "bytes": 957880,
+      "reason": "957880 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-casual-female",
+      "category": "character",
+      "bytes": 1122016,
+      "reason": "1122016 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-casual-male",
+      "category": "character",
+      "bytes": 1120008,
+      "reason": "1120008 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-classy-female",
+      "category": "character",
+      "bytes": 1149728,
+      "reason": "1149728 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-classy-male",
+      "category": "character",
+      "bytes": 1135160,
+      "reason": "1135160 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cleric",
+      "category": "character",
+      "bytes": 2145912,
+      "reason": "2145912 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cowboy-female",
+      "category": "character",
+      "bytes": 1147400,
+      "reason": "1147400 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cowboy-male",
+      "category": "character",
+      "bytes": 1050752,
+      "reason": "1050752 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-doctor-female",
+      "category": "character",
+      "bytes": 1125708,
+      "reason": "1125708 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-doctor-male",
+      "category": "character",
+      "bytes": 1110424,
+      "reason": "1110424 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-german-shepherd",
+      "category": "character",
+      "bytes": 640548,
+      "reason": "640548 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-goblin-female",
+      "category": "character",
+      "bytes": 1146588,
+      "reason": "1146588 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-goblin-male",
+      "category": "character",
+      "bytes": 979884,
+      "reason": "979884 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-hazmat",
+      "category": "character",
+      "bytes": 936108,
+      "reason": "936108 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-chef-female",
+      "category": "character",
+      "bytes": 1220536,
+      "reason": "1220536 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-chef-male",
+      "category": "character",
+      "bytes": 1149492,
+      "reason": "1149492 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-kimono-female",
+      "category": "character",
+      "bytes": 1140664,
+      "reason": "1140664 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-kimono-male",
+      "category": "character",
+      "bytes": 997704,
+      "reason": "997704 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-knight-female",
+      "category": "character",
+      "bytes": 1199716,
+      "reason": "1199716 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-knight-male",
+      "category": "character",
+      "bytes": 1108292,
+      "reason": "1108292 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-monk",
+      "category": "character",
+      "bytes": 1586036,
+      "reason": "1586036 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-mushroom-king",
+      "category": "character",
+      "bytes": 433932,
+      "reason": "433932 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-ninja-female",
+      "category": "character",
+      "bytes": 1179340,
+      "reason": "1179340 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-ninja-male",
+      "category": "character",
+      "bytes": 1048988,
+      "reason": "1048988 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-ninja-sand",
+      "category": "character",
+      "bytes": 1048992,
+      "reason": "1048992 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-pirate-female",
+      "category": "character",
+      "bytes": 1177016,
+      "reason": "1177016 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-pirate-male",
+      "category": "character",
+      "bytes": 1028072,
+      "reason": "1028072 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-ranger",
+      "category": "character",
+      "bytes": 1722404,
+      "reason": "1722404 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-rogue",
+      "category": "character",
+      "bytes": 1628724,
+      "reason": "1628724 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-soldier-female",
+      "category": "character",
+      "bytes": 1158032,
+      "reason": "1158032 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-soldier-male",
+      "category": "character",
+      "bytes": 1068992,
+      "reason": "1068992 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-suit-female",
+      "category": "character",
+      "bytes": 1127976,
+      "reason": "1127976 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-suit-male",
+      "category": "character",
+      "bytes": 1099288,
+      "reason": "1099288 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-viking-female",
+      "category": "character",
+      "bytes": 1253232,
+      "reason": "1253232 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-viking-helmet",
+      "category": "character",
+      "bytes": 1217944,
+      "reason": "1217944 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-viking-male",
+      "category": "character",
+      "bytes": 1183768,
+      "reason": "1183768 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bat",
+      "category": "monster",
+      "bytes": 501844,
+      "reason": "501844 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-birb",
+      "category": "monster",
+      "bytes": 441556,
+      "reason": "441556 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cactoro",
+      "category": "monster",
+      "bytes": 448532,
+      "reason": "448532 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cthulhu",
+      "category": "monster",
+      "bytes": 545868,
+      "reason": "545868 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cyclops",
+      "category": "monster",
+      "bytes": 565260,
+      "reason": "565260 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-demon",
+      "category": "monster",
+      "bytes": 449548,
+      "reason": "449548 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-dino",
+      "category": "monster",
+      "bytes": 442980,
+      "reason": "442980 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-dragon-evolved",
+      "category": "monster",
+      "bytes": 365316,
+      "reason": "365316 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-monkroose",
+      "category": "monster",
+      "bytes": 443116,
+      "reason": "443116 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-orc-skull",
+      "category": "monster",
+      "bytes": 453128,
+      "reason": "453128 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-skull",
+      "category": "monster",
+      "bytes": 860444,
+      "reason": "860444 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-squidle",
+      "category": "monster",
+      "bytes": 337600,
+      "reason": "337600 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-tribal",
+      "category": "monster",
+      "bytes": 482128,
+      "reason": "482128 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-witch",
+      "category": "monster",
+      "bytes": 1165784,
+      "reason": "1165784 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-zombie-arm",
+      "category": "monster",
+      "bytes": 474528,
+      "reason": "474528 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-zombie-chubby",
+      "category": "monster",
+      "bytes": 597572,
+      "reason": "597572 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bush-flowers",
+      "category": "nature",
+      "bytes": 410000,
+      "reason": "410000 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cactus",
+      "category": "nature",
+      "bytes": 544352,
+      "reason": "544352 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cactus-flower",
+      "category": "nature",
+      "bytes": 332112,
+      "reason": "332112 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-common-tree",
+      "category": "nature",
+      "bytes": 453232,
+      "reason": "453232 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-flower-clump",
+      "category": "nature",
+      "bytes": 306480,
+      "reason": "306480 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-grass-extruded",
+      "category": "nature",
+      "bytes": 311888,
+      "reason": "311888 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-maple-tree",
+      "category": "nature",
+      "bytes": 1003120,
+      "reason": "1003120 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-sakura-tree",
+      "category": "nature",
+      "bytes": 405496,
+      "reason": "405496 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-willow",
+      "category": "nature",
+      "bytes": 307344,
+      "reason": "307344 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-box-stacked",
+      "category": "obstacle",
+      "bytes": 334912,
+      "reason": "334912 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bicycle",
+      "category": "vehicle",
+      "bytes": 446208,
+      "reason": "446208 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bob",
+      "category": "vehicle",
+      "bytes": 945140,
+      "reason": "945140 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-cop",
+      "category": "vehicle",
+      "bytes": 485168,
+      "reason": "485168 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-dispatcher",
+      "category": "vehicle",
+      "bytes": 901632,
+      "reason": "901632 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-executioner",
+      "category": "vehicle",
+      "bytes": 1125908,
+      "reason": "1125908 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-challenger",
+      "category": "vehicle",
+      "bytes": 1198684,
+      "reason": "1198684 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-imperial",
+      "category": "vehicle",
+      "bytes": 1215572,
+      "reason": "1215572 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-insurgent",
+      "category": "vehicle",
+      "bytes": 1178288,
+      "reason": "1178288 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-omen",
+      "category": "vehicle",
+      "bytes": 1075472,
+      "reason": "1075472 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-rover",
+      "category": "vehicle",
+      "bytes": 401936,
+      "reason": "401936 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-rover-round",
+      "category": "vehicle",
+      "bytes": 365152,
+      "reason": "365152 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-spitfire",
+      "category": "vehicle",
+      "bytes": 1260468,
+      "reason": "1260468 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-sports-car",
+      "category": "vehicle",
+      "bytes": 461400,
+      "reason": "461400 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-striker",
+      "category": "vehicle",
+      "bytes": 1245724,
+      "reason": "1245724 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-suv",
+      "category": "vehicle",
+      "bytes": 493848,
+      "reason": "493848 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-taxi",
+      "category": "vehicle",
+      "bytes": 491868,
+      "reason": "491868 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-truck",
+      "category": "vehicle",
+      "bytes": 465648,
+      "reason": "465648 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-vehicle-sports",
+      "category": "vehicle",
+      "bytes": 335284,
+      "reason": "335284 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-vehicle-truck",
+      "category": "vehicle",
+      "bytes": 383828,
+      "reason": "383828 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-zenith",
+      "category": "vehicle",
+      "bytes": 1143520,
+      "reason": "1143520 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-bullpup",
+      "category": "weapon",
+      "bytes": 384644,
+      "reason": "384644 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-gun",
+      "category": "weapon",
+      "bytes": 503008,
+      "reason": "503008 B of LODs, over 300000 B per model"
+    },
+    {
+      "assetId": "cc0-thunder",
+      "category": "collectible",
+      "bytes": 9776,
+      "reason": "\"thunder\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-jar",
+      "category": "food",
+      "bytes": 34008,
+      "reason": "\"jar\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-ketchup",
+      "category": "food",
+      "bytes": 126776,
+      "reason": "\"ketchup\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-plate",
+      "category": "food",
+      "bytes": 26072,
+      "reason": "\"plate\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-fridge",
+      "category": "furniture",
+      "bytes": 96980,
+      "reason": "\"fridge\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-trashcan",
+      "category": "furniture",
+      "bytes": 12552,
+      "reason": "\"trashcan\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-flowers",
+      "category": "nature",
+      "bytes": 68640,
+      "reason": "\"flowers\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-lilypad",
+      "category": "nature",
+      "bytes": 63372,
+      "reason": "\"lilypad\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-saw",
+      "category": "obstacle",
+      "bytes": 45920,
+      "reason": "\"saw\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-sedan",
+      "category": "vehicle",
+      "bytes": 151148,
+      "reason": "\"sedan\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-grenade",
+      "category": "weapon",
+      "bytes": 52972,
+      "reason": "\"grenade\" is already a tag of another catalog model"
+    },
+    {
+      "assetId": "cc0-rifle",
+      "category": "weapon",
+      "bytes": 174384,
+      "reason": "\"rifle\" is already a tag of another catalog model"
+    }
+  ],
+  "failed": [
+    {
+      "assetId": "cc0-banana",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-log",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-cookie",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-bag",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-cannon-ball",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-lantern-glass",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-lid",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-bookcase-books",
+      "reason": "normalize failed: cannot simplify under 5000 triangles"
+    },
+    {
+      "assetId": "cc0-lis",
+      "reason": "normalize failed: cannot simplify under 5000 triangles"
+    },
+    {
+      "assetId": "cc0-matt",
+      "reason": "normalize failed: cannot simplify under 5000 triangles"
+    },
+    {
+      "assetId": "cc0-sam",
+      "reason": "normalize failed: cannot simplify under 5000 triangles"
+    },
+    {
+      "assetId": "cc0-shaun",
+      "reason": "normalize failed: cannot simplify under 5000 triangles"
+    },
+    {
+      "assetId": "cc0-soldier",
+      "reason": "normalize failed: cannot simplify under 5000 triangles"
+    },
+    {
+      "assetId": "cc0-cardboard-box",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-trash",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-bullet-foam",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    },
+    {
+      "assetId": "cc0-club",
+      "reason": "normalize failed: LOD1 cannot be made lighter than LOD0 at the same size"
+    }
+  ]
+}

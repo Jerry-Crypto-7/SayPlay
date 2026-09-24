@@ -33,18 +33,29 @@ export function objectiveCounter(spec: GameSpecV1): string | null {
   }
 }
 
+/**
+ * Odpočet mechaniky `timer` (P26 T8): časovač od AI hráč jinak neviděl a hra
+ * skončila „z ničeho nic“. `null`, když spec časovač nemá.
+ */
+export function timerLeft(spec: GameSpecV1, elapsedSeconds: number): string | null {
+  const timer = spec.mechanics.find((entry) => entry.id === 'timer');
+  const seconds = timer?.params.seconds;
+  return typeof seconds === 'number' ? `${Math.max(0, seconds - elapsedSeconds)}s left` : null;
+}
+
 export function progressLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'tick' | 'values'>): string {
   const seconds = Math.floor(snapshot.tick / TICKS_PER_SECOND);
+  const clock = timerLeft(spec, seconds);
   const counter = objectiveCounter(spec);
   if (counter !== null) {
     const value = readVariable(snapshot as RuntimeSnapshot, counter) ?? 0;
-    return `${value} / ${spec.objective.count ?? 1}`;
+    return `${value} / ${spec.objective.count ?? 1}${clock === null ? '' : ` · ${clock}`}`;
   }
   if (spec.objective.kind === 'survive') {
     const remaining = Math.max(0, (spec.objective.seconds ?? 0) - seconds);
     return `${remaining}s left`;
   }
-  return `${seconds}s`;
+  return clock ?? `${seconds}s`;
 }
 
 /**

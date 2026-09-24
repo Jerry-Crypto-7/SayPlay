@@ -1,0 +1,7 @@
+# Volba z měření evals/gen3d/bench.json (24. 9. 2026, RTX 3090, 12 slov na model).
+# FLUX.2 klein 4B: 12/12 ok, teplý medián 47,0 s (obrázek 9,4 s) proti Z-Image-Turbo
+# 12/12 ok, 51,9 s (obrázek 15,6 s) – stejná úspěšnost, o 5 s rychlejší a o 3 GB méně paměti karty.
+image_model = "klein"
+
+# Šablona zadání obrázku; {noun} je normalizované podstatné jméno.
+prompt = "a {noun}, low-poly stylized 3D game asset, single object, centered, full view, flat colors, plain white background"

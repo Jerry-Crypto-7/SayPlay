@@ -98,6 +98,8 @@ export interface GenerationFailure {
   readonly detail: string;
   /** `null` znamená „nevíme, kolik to spálilo" — účtuje se nejhorší případ. */
   readonly usage: Usage | null;
+  /** Text odpovědi, který se nedal přečíst – pro záznam selhání (P26 T3), nikdy ne ven. */
+  readonly raw?: string;
 }
 
 export type GenerationOutcome = GenerationSuccess | GenerationFailure;

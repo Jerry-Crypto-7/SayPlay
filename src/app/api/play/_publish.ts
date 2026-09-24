@@ -13,7 +13,8 @@
  */
 
 import { canonicalHash } from '@/ir/worlddoc';
-import type { CompileGameReason } from '@/play/contracts';
+import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
+import type { RepairIssue } from '@/play/director';
 import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv } from '@/play/version';
@@ -61,7 +62,8 @@ export interface Published {
   readonly game: PublishedGame;
 }
 
-export type PublishResult = { readonly ok: true; readonly value: Published } | { readonly ok: false; readonly response: Response };
+/** `issues`: proč kompilace nebo kontrola hru odmítla – pro záznam selhání, do odpovědi nejde. */
+export type PublishResult = { readonly ok: true; readonly value: Published } | { readonly ok: false; readonly response: Response; readonly issues?: readonly string[] };
 
 /**
  * Brány, které platí pro každé dveře: vypínač, ověřená identita za proxy a strop
@@ -165,6 +167,42 @@ export interface PublishExtras {
   readonly timings?: Omit<PlayTimings, 'compileMs' | 'verifyMs'>;
 }
 
+function compileOnSeeds(spec: GameSpecV1, seeds: readonly number[]): CompileGameResult {
+  const compile = getCompiler();
+  let compiled = compile(spec, seeds[0]);
+  for (const seed of seeds.slice(1)) {
+    if (compiled.ok || !SEED_DEPENDENT.has(compiled.reason)) break;
+    compiled = compile(spec, seed);
+  }
+  return compiled;
+}
+
+/**
+ * Tatáž kompilace a kontrola jako `publishReadSpec`, ale jako nálezy pro
+ * opravné kolo režiséra (P26 T10a): proč by publikace hru odmítla. Prázdné
+ * pole = publikovat se dá.
+ */
+export function playabilityIssues(spec: GameSpecV1, seeds: readonly number[]): RepairIssue[] {
+  const compiled = compileOnSeeds(spec, seeds);
+  if (!compiled.ok) {
+    return [{ code: compiled.reason, path: '', evidence: compiled.issues.join('; ').slice(0, 500), repairHint: 'change the spec so the game compiles and the robot player can win it' }];
+  }
+  const report = reportFor(compiled.value);
+  if (report.publishEligible) return [];
+  const issues: RepairIssue[] = report.keypoints
+    .filter((keypoint) => !keypoint.passed)
+    .map((keypoint) => ({
+      code: 'KEYPOINT_FAILED',
+      path: `/verification/${String(spec.verification.findIndex((assertion) => assertion.id === keypoint.assertionId))}`,
+      evidence: `keypoint ${keypoint.assertionId} failed: ${keypoint.failures.join('; ')}`.slice(0, 500),
+      repairHint: 'either the game is wrong (fix the mechanics or roles so the world does what the keypoint claims) or the claim is wrong (fix the keypoint); decide which',
+    }));
+  if (!report.witness.certified) issues.push({ code: 'UNWINNABLE', path: '/verification', evidence: 'the robot player never won the game', repairHint: 'make the objective reachable' });
+  if (!report.replayEqual) issues.push({ code: 'NOT_DETERMINISTIC', path: '', evidence: 'two replays of the witness ended in a different state', repairHint: 'remove what makes the run differ' });
+  if (issues.length === 0) issues.push({ code: 'BUDGET', path: '/budgets', evidence: `the world has ${String(report.budgets.entities)} entities and ${String(report.budgets.rules)} rules`, repairHint: 'raise /budgets or reduce counts' });
+  return issues;
+}
+
 export async function publishReadSpec(
   versions: VersionStore,
   spec: GameSpecV1,
@@ -172,15 +210,10 @@ export async function publishReadSpec(
   parentId: string | null,
   extras: PublishExtras = {},
 ): Promise<PublishResult> {
-  const compile = getCompiler();
   const compileStarted = performance.now();
-  let compiled = compile(spec, seeds[0]);
-  for (const seed of seeds.slice(1)) {
-    if (compiled.ok || !SEED_DEPENDENT.has(compiled.reason)) break;
-    compiled = compile(spec, seed);
-  }
+  const compiled = compileOnSeeds(spec, seeds);
   const compileMs = performance.now() - compileStarted;
-  if (!compiled.ok) return { ok: false, response: fail(422, compiled.reason, COMPILE_MESSAGE[compiled.reason]) };
+  if (!compiled.ok) return { ok: false, response: fail(422, compiled.reason, COMPILE_MESSAGE[compiled.reason]), issues: [compiled.reason, ...compiled.issues] };
 
   // Hra, jejíž keypoint, svědek, replay nebo rozpočet neprošel, se nepublikuje –
   // odkaz by vedl na hru, která nedělá, co slibuje.
@@ -189,7 +222,7 @@ export async function publishReadSpec(
   const verifyMs = performance.now() - verifyStarted;
   if (!report.publishEligible) {
     const keypoints = report.keypoints.filter((keypoint) => !keypoint.passed).map((keypoint) => keypoint.assertionId);
-    return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }) };
+    return { ok: false, response: fail(422, 'NOT_PUBLISHABLE', 'the game did not pass its own checks', undefined, { keypoints }), issues: ['NOT_PUBLISHABLE', ...keypoints] };
   }
 
   const version = sealVersion(compiled.value, parentId, Date.now);

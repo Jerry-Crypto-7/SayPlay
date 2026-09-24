@@ -1,0 +1,44 @@
+# Slova z vět, která `batch.py --derive` nepovažuje za věc k vygenerování.
+# Rozšiřuje se ručně podle vygenerovaného evals/gen3d/batch-nouns.txt – repo nemá
+# rozpoznávač slovních druhů. Slova v jednotném čísle, malými písmeny.
+
+# spojky, předložky, zájmena, pomocná slovesa
+a an the in on at to of for from with without into onto over under through across up down
+out off away and or but so if then than as while where when before after until against vs
+i me my you your u re d it its we our they their them he she his her this that these those
+who what which there here some something other every each all lot more most very
+is are be being was were am have has had get got can must want will would should
+like just only also not no too even ever super really
+
+# žánry a herní pojmy
+game style mode level version simulator sim io
+arcade runner endless endles platformer shooter puzzle racing race racer idle clicker
+tycoon rpg roguelike survival sandbox obby parkour merge match stack tap swipe upgrade
+
+# slovesa
+run running jump jumping collect collecting dodge dodging fight fighting shoot shooting
+survive escape escaping build building beat avoid avoiding grab grabbing climb slide sliding
+fly flying fall falling bounce chase chasing catch catching hunt eat find pick make grow
+reach defend protect save sort drive driving swim swimming throw throwing explore play
+multiply divide dig mine hide order sneak steal stealing stolen cut deliver drop knock move
+open push roll stop trick
+
+# přídavná jména a abstrakta
+giant tiny little small big bigger huge cute haunted icy neon floating moving spinning
+evil angry crazy funny scary dark right left high higher fast faster slow late many
+three two one first last best new old red blue green yellow black white glowing messy
+abandoned time night day end start top bottom side way thing kind battle defense wave
+everything anything lol around angle ad asmr music boxing parking
+behind between breaking bringing broken bump capture change cold colored bake australian auto
+
+# lidé a skupiny bez podoby – nejde z nich nakreslit jednu věc
+guy boss crowd army brother
+
+# místa – prostředí, ne jeden model
+light road space sky room hill arena island village temple rooftop mountain water land
+alley city street world map floor ground wall house school kitchen park pond ocean sea
+forest jungle desert beach cave dungeon field lake river town
+
+# cizí značky a postavy – generovat je nesmíme (práva), i když je lidé do vět píšou
+mario luigi sonic pikachu pokemon minecraft fortnite roblox tetris pacman zelda subway
+surfer agar flappy kirby yoshi bowser spyro among amongus doom halo portal

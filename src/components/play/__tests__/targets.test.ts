@@ -8,7 +8,10 @@ import { describe, expect, it } from 'vitest';
 
 import type { RuntimeAction } from '@/worldstream/runtime-input';
 
-import { keyAction, playerActor, secondTapLabel, tapAction, targetCards } from '../targets';
+import collectExit from '@/play/__fixtures__/collect_exit.json';
+import { readGameSpec } from '@/play/spec';
+
+import { idleProps, keyAction, playerActor, secondTapLabel, tapAction, targetCards } from '../targets';
 
 const ACTIONS: readonly RuntimeAction[] = [
   { actor: 'visitor', actionId: 'moveTo', target: 'visitor' },
@@ -32,6 +35,19 @@ describe('targetCards', () => {
     expect(cards.map((card) => card.label)).toEqual(['the light well', 'the brass lever', 'gem']);
     expect(cards.map(secondTapLabel)).toEqual(['Move here', 'Use', 'Pick up']);
     expect(playerActor(ACTIONS)).toBe('visitor');
+  });
+
+  it('hides a prop no mechanic or objective refers to (P26 T7, "Remaining power countdown")', () => {
+    const read = readGameSpec(collectExit);
+    if (!read.ok) throw new Error('fixture');
+    const spec = { ...read.value, roles: [...read.value.roles, { id: 'countdown', kind: 'prop' as const, label: 'Remaining power countdown', count: 1 }] };
+    const entities = { visitor: { role: 'actor' }, well: { role: 'countdown' }, lever: { role: 'portal' }, gem: { role: 'mushroom' } };
+    const hidden = idleProps(spec, { entities });
+    expect([...hidden]).toEqual(['well']);
+    expect(targetCards(ACTIONS, OBJECTS, hidden).map((card) => card.id)).toEqual(['lever', 'gem']);
+    // Rekvizita, na kterou mechanika odkazuje (cíl zóny), kartu dostane.
+    const zoned = { ...spec, mechanics: [...spec.mechanics.filter((m) => m.id !== 'zone_trigger'), { id: 'zone_trigger' as const, params: { role: 'countdown', when: 'enter', effect: 'win' } }] };
+    expect([...idleProps(zoned as typeof spec, { entities })]).toEqual([]);
   });
 
   it('is empty for a world without a moving actor', () => {

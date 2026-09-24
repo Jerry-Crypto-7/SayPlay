@@ -13,11 +13,15 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { lookOf } from '@/play/arcade/look';
+import { enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
-import type { LabFacts } from '../lab';
+import { timerLeft } from '../Hud';
+import type { LabFacts, ReadFacts } from '../lab';
+import { SentenceRead } from '../SentenceRead';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner, useUpgrade } from '../UpgradeBanner';
@@ -27,22 +31,6 @@ import { createArcadeSession, type ArcadeSnapshot } from './session';
 // WebGL kontext na serveru není – stejně jako mřížkové plátno.
 const ArcadeStage = dynamic(() => import('./ArcadeStage'), { ssr: false });
 
-/** Hrdinové, kteří v katalogu mají model; jiný popisek hráče kreslí `explorer`. */
-const HERO_MODELS = new Set(['explorer', 'robot', 'fox', 'kid', 'raccoon', 'astronaut', 'knight', 'penguin', 'cat', 'hamster', 'goblin', 'slime', 'seal', 'ghost']);
-
-/** Poletování bez známého hrdiny kreslí ptáčka (primitiv), závod auto nebo letadlo, ostatní `explorer`. */
-function heroModel(spec: GameSpecV1): string {
-  const label = spec.roles.find((role) => role.kind === 'player')?.label.toLowerCase() ?? '';
-  if (spec.control === 'steer') return /\b(?:plane|pilot|jet)\b/.test(label) ? 'plane' : 'race-car';
-  const noun = label.split(/\s+/).at(-1) ?? '';
-  return HERO_MODELS.has(noun) ? noun : spec.control === 'flap' ? 'bird' : 'explorer';
-}
-
-/** Nepřátelé střelnice: model z popisku role, když ho katalog má, jinak robot. */
-function enemyModel(spec: GameSpecV1): string {
-  const noun = spec.roles.find((role) => role.id === 'enemy')?.label.toLowerCase().split(/\s+/).at(-1) ?? '';
-  return HERO_MODELS.has(noun) ? noun : 'robot';
-}
 
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
 const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec.control === 'throw';
@@ -75,6 +63,8 @@ const TAP_TO_START = new Set(['flap', 'shooter', 'timing', 'rhythm', 'duel']);
 
 function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: ArcadeSnapshot }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') ? ` · ${snapshot.health} lives` : '';
+  // Arkáda tiká 60× za sekundu (viz `progressLabel`).
+  const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
   return (
     <header className="play-hud" aria-label="Game status">
       <h1 className="play-hud-title">{spec.title}</h1>
@@ -88,6 +78,7 @@ function ArcadeHud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly sna
           {/* Aréna nemá trať, procento by stálo na nule. */}
           {spec.control === 'move_free' ? '' : `${snapshot.progress}% · `}
           {snapshot.score} {scoreUnit(spec)}{lives}
+          {clock === null ? '' : ` · ${clock}`}
         </span>
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
           {progressLabel(spec, snapshot)}
@@ -103,11 +94,13 @@ export interface ArcadePlayProps {
   readonly arcade: ArcadeWorld;
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
+  readonly aiVersion?: boolean;
   readonly lab: LabFacts;
+  readonly read: ReadFacts;
   readonly upgrade: string | null;
 }
 
-export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upgrade }: ArcadePlayProps) {
+export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade }: ArcadePlayProps) {
   const upgraded = useUpgrade(upgrade);
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -134,10 +127,11 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, lab, upg
 
   return (
     <main className="play-shell">
-      <ArcadeStage session={session} playerModel={heroModel(spec)} enemyModel={enemyModel(spec)} />
+      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
       <ArcadeHud spec={spec} snapshot={snapshot} />
-      <Lineage lineage={lineage} remixes={remixes} />
+      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
+      <SentenceRead read={read} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!running && (
         <section className="play-outcome" data-testid="play-outcome" role="status">

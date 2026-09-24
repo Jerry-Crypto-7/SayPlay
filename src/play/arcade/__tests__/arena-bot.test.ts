@@ -74,7 +74,7 @@ describe('aréna – robot a ověření', () => {
   // Nález revize fáze P25F: cíl arény se bral jen z `goal`, časovač výhry kompilátor zahodil.
   it('časovač končící výhrou = přežít tak dlouho; rozpor cíle a časovače spec odmítne', () => {
     const timer = (seconds: number, onEnd: string) => ({ id: 'timer', params: { id: 'clock', seconds, onEnd } });
-    const survive = { ...arenaFixture, controlParams: { density: 'normal' }, mechanics: [timer(30, 'win'), arenaFixture.mechanics[1]!] };
+    const survive = { ...arenaFixture, controlParams: { density: 'normal' }, mechanics: [timer(30, 'win')] };
     const read = readGameSpec(survive);
     if (!read.ok) throw new Error(read.issues.join('; '));
     const compiled = compileGame(read.value, 1);

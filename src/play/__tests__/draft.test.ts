@@ -105,4 +105,34 @@ describe('lexicon', () => {
     expect(readRoles('Press red and blue but not green to open the door.').switches).toEqual({ all: ['red', 'blue', 'green'], required: ['red', 'blue'] });
     expect(readNumbers('Outlast a 45 second sandstorm with 3 lives')).toEqual({ seconds: 45, counts: [3] });
   });
+
+  // P26 T9: hráč je podmět před prvním slovesem, jméno končí u slovesa v -ing.
+  it.each([
+    ['A penguin slides down an icy mountain collecting fish', 'penguin'],
+    ['a squirrel jumping from tree to tree collecting acorns', 'squirrel'],
+    ['A knight must collect three keys in a haunted castle', 'knight'],
+    ['a slime that bounces higher every time it eats a candy', 'slime'],
+    ['be a bee collecting pollen and bringing it to the hive', 'bee'],
+    ['fly a paper plane through a house', 'paper plane'],
+    ['a platformer where you jump between floating islands', null],
+    ['A gold mine where I hire dwarves', null],
+    ['tap to grow a garden that makes money while im away', null],
+  ])('reads the player of %j as %j', (sentence, player) => {
+    expect(readRoles(sentence).player).toBe(player);
+  });
+
+  it('keeps verbs out of every label and setting over the 200-sentence demand corpus (pin: player in 40/200)', () => {
+    const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly id: string; readonly text: string }[];
+    const verbTail = /\b(?!(?:king|ring|thing|wing|string|building|ceiling|swing|sling|spring|pudding|viking|painting|clearing)\b)\w{2,}ing$/;
+    const leaks: string[] = [];
+    let players = 0;
+    for (const { id, text } of demand) {
+      if (readRoles(text).player !== null) players += 1;
+      const spec = draftGameSpec(text);
+      for (const label of [...spec.roles.map((role) => role.label), spec.theme.setting]) if (verbTail.test(label)) leaks.push(`${id}: ${label}`);
+    }
+    expect(leaks).toEqual([]);
+    // Ve zbylých 160 větách postava není („shooting game“, „tower defense in space“).
+    expect(players).toBeGreaterThanOrEqual(40);
+  });
 });

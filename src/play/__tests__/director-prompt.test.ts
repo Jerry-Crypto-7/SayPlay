@@ -48,14 +48,23 @@ describe('director prompt', () => {
   // co se opakovalo u každého (role `player` a `finish`, slovo `controlParams`):
   // 11 963 B. Do stropu zbývá 37 B, takže další ovládání se do téhle podoby nevejde –
   // vlna 3 musí řádek generovat z tabulky, ne ho psát ručně.
-  it('stays under 12 000 bytes for all forty golden sentences (pin: 11 963 B)', () => {
+  // P26 T4: +34 B za pokyn, že AI smí ovládání změnit – 11 997 B. Místo vrátí
+  // P26 T5, která řádek ovládání vyrobí z tabulky schopností.
+  // P26 T5: řádek z tabulky nese **všechny** klíče `controlParams` (ruční řádek je
+  // u střelby a hodu vynechal a model je hádal – přísné schéma neznámý klíč odmítne),
+  // mechaniky a popisky, které hra ukáže, a tvar ověření arkády: 12 390 B. Strop
+  // 12 000 B byl rozpočet plánu P23, ne mez poskytovatele; posouvá se na 12 500 B.
+  // P26 T7 přidal pravidlo o popiscích rolí (1–3 slova, žádný pokyn): 12 447 B.
+  // P26 T11 přidal výčet 18 sad prostředí `theme.look` (+142 B): 12 589 B, strop 12 700 B.
+  // P26 T12: scéna čte i popisky mince, překážky a terče, řádek je vyjmenuje: 12 684 B.
+  it('stays under 12 700 bytes for all forty golden sentences (pin: 12 684 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
-    expect(max).toBeLessThanOrEqual(12_000);
-    expect(max).toBeLessThanOrEqual(11_975);
+    expect(max).toBeLessThanOrEqual(12_700);
+    expect(max).toBeLessThanOrEqual(12_684);
   });
 
   // Zlaté věty vedou všechny na mřížku, arkádové fixtury tak strop neměřil nikdo.
@@ -68,11 +77,11 @@ describe('director prompt', () => {
     'stack blocks as high as you can',
     'tap to the beat with glowing tiles',
     'boxing match against a kangaroo',
-  ])('stays under 12 000 bytes for the arcade draft of "%s"', (sentence) => {
+  ])('stays under 12 500 bytes for the arcade draft of "%s"', (sentence) => {
     const draft = draftGameSpec(sentence);
     expect(draft.control).toBeDefined();
     const request = buildDirectorRequest(sentence, draft);
-    expect(Buffer.byteLength(request.system + request.user)).toBeLessThanOrEqual(12_000);
+    expect(Buffer.byteLength(request.system + request.user)).toBeLessThanOrEqual(12_500);
   });
 
   it('compacts schemas: role ids, enums, bounded ints, optional fields with defaults', () => {

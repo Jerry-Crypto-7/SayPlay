@@ -50,6 +50,9 @@
     "zod": "4.4.x"
   },
   "devDependencies": {
+    "@gltf-transform/core": "4.5.0",
+    "@gltf-transform/extensions": "4.5.0",
+    "@gltf-transform/functions": "4.5.0",
     "@next/bundle-analyzer": "16.3.x",
     "@next/env": "16.3.x",
     "@playwright/test": "1.62.x",
@@ -58,9 +61,10 @@
     "@types/react-dom": "19.2.x",
     "@types/three": "0.185.x",
     "gltf-validator": "^2.0.0-dev.3.10",
+    "meshoptimizer": "1.1.1",
+    "sharp": "0.35.3",
     "typescript": "6.0.x",
-    "vitest": "4.1.x",
-    "sharp": "0.35.3"
+    "vitest": "4.1.x"
   },
   "overrides": {
     "three": "0.185.1"

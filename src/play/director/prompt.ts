@@ -21,8 +21,11 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import chaseEscape from '../__fixtures__/chase_escape.json';
 import collectExit from '../__fixtures__/collect_exit.json';
+import { CAPABILITIES } from '../capabilities';
+
+import { DIRECTOR_ANSWER_SCHEMA } from './answer-schema';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
-import { GAME_SPEC_SCHEMA, gameSpecSchema, verificationSchema, type GameSpecV1 } from '../spec';
+import { CONTROL_PARAMS, GAME_SPEC_SCHEMA, gameSpecSchema, verificationSchema, type GameSpecV1 } from '../spec';
 
 /** Doslova `docs/play/pack/director.md`; test drží shodu se souborem. */
 export const DIRECTOR_RULES =
@@ -118,21 +121,40 @@ function renderShape(): string {
   ].join('\n');
 }
 
+/**
+ * Řádek ovládání z tabulky schopností (P26 T5): u každého ovládání narážky,
+ * role, mechaniky, které hra hraje, popisky, které ukáže, a klíče `controlParams`.
+ * Co tu není, kritik ze specu vyjme – model to proto nemá psát.
+ */
+export function controlPromptLine(): string {
+  // Strop promptu je 12 000 B: výchozí hodnoty legenda řekne jednou, u ovládání stojí jen odchylky.
+  const entries = (Object.keys(CONTROL_PARAMS) as (keyof typeof CONTROL_PARAMS)[]).map((id) => {
+    const c = CAPABILITIES[id];
+    const mechanics = c.mechanics === 'all' || c.mechanics.join() === 'health,timer' ? '' : `only ${c.mechanics.join('/')}; `;
+    const shows = c.labels === 'all' || c.labels.join() === 'player' ? '' : `shows ${c.labels.join('+') || 'no'}; `;
+    const note = c.note === undefined ? '' : `${c.note}; `;
+    return `"${id}" (${c.cues}): ${note}${mechanics}${shows}${[...(c.finish ? ['finish'] : []), ...c.roles].join(', ')}; {${Object.keys(CONTROL_PARAMS[id].shape).join(', ')}}.`;
+  });
+  return [
+    "control: omit for the grid above; change the starting point's if another fits the verb better.",
+    'Arcade: archetype hazard_crossing, mechanics only health/timer, screen shows only the player label unless "shows" lists more role labels – put the nouns there; verification [{id: wins, kind: reachability, assert: {runState: won}}]. Per control (cues): exceptions; roles besides player; controlParams.',
+    ...entries,
+  ].join(' ');
+}
+
 /** Systémový prompt bez věty. Stavěný při každém volání, aby změna registru prošla ven. */
 export function directorSystemPrompt(): string {
   return [
     DIRECTOR_RULES,
     ANSWER_SHAPE_LINE,
     'Runtime is a tap-to-move grid: the player taps a target to walk there, picks items up and uses things next to them. Everything happens by walking, picking up and using; express any other fantasy through the registered mechanics.',
-    // Každé ovládání stojí v promptu místo, a strop je 12 000 B: proto legenda
-    // jednou a pak jen `control (narážky): vstup; role; controlParams`.
-    'control: omit for the grid above; keep the starting point\'s. Arcade controls keep archetype hazard_crossing and win at the finish; every one has roles player and finish, and reads as control (cues): its other roles; controlParams. "runner" (endless runner, subway surfers): obstacle, coin; {speed, density, lengthM}. "platform" (platformer, mario, obby): spikes, coin; {difficulty, lengthM, movingPlatforms, checkpoints, doubleJump}. "flap" (flappy bird, pipe gaps): pipe, coin; {difficulty, lengthM}. "steer" (racing, fly a plane): barrier, rival, turbo; {difficulty, lengthM, rivals, turbo, drift}. "move_free" (agar.io, eat smaller, grow): archetype survival_timer, timer onEnd lose = outgrow in time, win = survive 20-80 s; hunter, coin; {density}. "shooter" (tap = shoot) and "throw" (hold, release): archetype combat_lite, defeat on role target. "timing" (stack, stop the bar): block, miss; {mode, speed, rounds}. "rhythm" (tap on the beat): note, miss; {bpm, density, beats}. "duel" (fight, boxing): rival; {difficulty}.',
+    controlPromptLine(),
     renderRegistry(),
     renderShape(),
     'EXAMPLES (verification omitted for length; write it in full in your answer):',
     compactExample(collectExit),
     compactExample(chaseEscape),
-    'Role ids and mechanic ids are lowercase words with underscores. Labels, title, descriptions and the tutorial are English and short. Keep the user\'s explicit numbers, names and constraints.',
+    'Role ids and mechanic ids are lowercase words with underscores. Labels, title, descriptions and the tutorial are English and short; a role label is a 1–3 word noun, never an instruction. Keep the user\'s explicit numbers, names and constraints.',
   ].join('\n\n');
 }
 
@@ -144,5 +166,6 @@ export function buildDirectorRequest(sentence: string, draft: GameSpecV1): Upstr
     model: EMISSION_MODEL,
     system: directorSystemPrompt(),
     user: `${sentence.trim()}\n\nStarting point (keep or improve): ${JSON.stringify(draft)}`,
+    outputSchema: DIRECTOR_ANSWER_SCHEMA,
   };
 }

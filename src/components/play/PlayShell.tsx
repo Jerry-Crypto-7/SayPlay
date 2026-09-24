@@ -32,14 +32,15 @@ import { ArcadePlay } from './arcade/ArcadePlay';
 import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
-import type { LabFacts } from './lab';
+import type { LabFacts, ReadFacts } from './lab';
 import { Lineage } from './Lineage';
+import { SentenceRead } from './SentenceRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
 import { TargetCards } from './TargetCards';
 import { UpgradeBanner, useUpgrade } from './UpgradeBanner';
-import { keyAction, playerActor, tapAction, targetCards } from './targets';
+import { idleProps, keyAction, playerActor, tapAction, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
 // při prerenderu spadl na `document`.
@@ -85,7 +86,10 @@ export interface PlayShellProps {
   /** Od kořene k listu; poslední záznam je tahle hra. */
   readonly lineage: readonly GameVersion[];
   readonly remixes: number;
+  /** Hra je AI verze návrhu (`relation: 'upgrade'`); rodokmen to řekne místo „Remixed from“. */
+  readonly aiVersion?: boolean;
   readonly lab: LabFacts;
+  readonly read: ReadFacts;
   /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
   readonly upgrade: string | null;
 }
@@ -112,7 +116,7 @@ export function PlayShell({
   );
 }
 
-function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade }: PlayShellProps) {
+function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, lab, read, upgrade }: PlayShellProps) {
   const upgraded = useUpgrade(upgrade);
   const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
@@ -120,7 +124,10 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade 
   const [fault, setFault] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  const cards = useMemo(() => targetCards(controller.actions, blueprint.objects), [controller, blueprint]);
+  const cards = useMemo(
+    () => targetCards(controller.actions, blueprint.objects, idleProps(spec, blueprint.world.sim)),
+    [controller, blueprint, spec],
+  );
   const running = snapshot.runState === 'running';
   const built = world?.kind === 'built';
 
@@ -214,8 +221,9 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, lab, upgrade 
         </WorldstreamCanvas>
       </div>
       <Hud spec={spec} snapshot={snapshot} />
-      <Lineage lineage={lineage} remixes={remixes} />
+      <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
+      <SentenceRead read={read} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
         <p className="play-building" data-testid="play-building" aria-live="polite">Building the world…</p>

@@ -5,16 +5,21 @@
  * `gate` drží režiséra, dokud ji test nepustí, aby šel vidět stav `pending`.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import { answerFixture, runnerAnswer } from '@/play/director/__fixtures__';
-import { answered, failed, fakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
+import type { DirectorDeps } from '@/play/director';
+import { answered, failed, fakeBranch, type FakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
 import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
+
+import { recordUpgradeFailure } from '../_upgrade';
 
 const director = vi.hoisted(() => ({
   script: [] as unknown[],
@@ -22,17 +27,20 @@ const director = vi.hoisted(() => ({
   gate: Promise.resolve() as Promise<void>,
   /** Režie odmítnutá vyčerpaným počtem volajícího (R8). */
   callerLimited: false,
+  /** Větev poslední režie – test čte, co model dostal. */
+  branch: null as FakeBranch | null,
 }));
 
 vi.mock('../_director', async () => {
   const { direct } = await import('@/play/director');
   const { fakeBranch: branchOf } = await import('@/play/director/__fixtures__/branch');
   return {
-    getDirector: () => async (sentence: string) => {
+    getDirector: (_startedAt: number, _caller: string, check?: DirectorDeps['check']) => async (sentence: string) => {
       director.calls += 1;
       await director.gate;
-      if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now })), callerLimited: true };
-      return { ...(await direct(sentence, { branch: branchOf(director.script as ScriptedOutcome[]), now: Date.now })), callerLimited: false };
+      if (director.callerLimited) return { ...(await direct(sentence, { branch: branchOf([]), now: Date.now, check })), callerLimited: true };
+      director.branch = branchOf(director.script as ScriptedOutcome[]);
+      return { ...(await direct(sentence, { branch: director.branch, now: Date.now, check })), callerLimited: false };
     },
   };
 });
@@ -153,6 +161,31 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
 
+  // P26 T3: bez záznamu se nedá říct, proč model za 40 s nic nedodal.
+  it('rozbitá odpověď modelu zapíše záznam s důvodem a surovou odpovědí', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'play-failures-'));
+    vi.stubEnv('PLAY_FAILURES_DIR', dir);
+    vi.stubEnv('VERCEL', undefined);
+    director.script = [{ ok: false, reason: 'MALFORMED_RESPONSE', detail: 'the codex answer is not JSON: Unexpected token', usage: null, raw: 'Here is your game: {' }];
+    const created = await publish({ sentence: SENTENCE });
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    const record = JSON.parse(readFileSync(join(dir, `${created.body.versionId}.json`), 'utf8'));
+    expect(record).toMatchObject({ outcome: 'MALFORMED', stage: 'model', reason: 'MALFORMED_RESPONSE', detail: 'the codex answer is not JSON: Unexpected token', raw: 'Here is your game: {', sentence: SENTENCE });
+    // Odpověď, která je JSON, ale ne GameSpec: důvod čtení a celé tělo.
+    director.script = [answered({ entities: [], rules: [] })];
+    const second = await publish({ sentence: 'a robot collects batteries on Mars' });
+    expect(await settled(second.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    expect(JSON.parse(readFileSync(join(dir, `${second.body.versionId}.json`), 'utf8'))).toMatchObject({ stage: 'read', raw: { entities: [], rules: [] } });
+    vi.unstubAllEnvs();
+  });
+
+  // Testy bez vlastní složky psaly podvržená selhání do `data/play/failures/` sady věrnosti.
+  it('pod vitestem bez PLAY_FAILURES_DIR se záznam nezapíše', () => {
+    const id = `vitest-${String(process.pid)}`;
+    recordUpgradeFailure(id, SENTENCE, 'MALFORMED', { stage: 'model', reason: 'X', detail: 'x', raw: null }, { VITEST: 'true' });
+    expect(existsSync(join(process.cwd(), 'data', 'play', 'failures', `${id}.json`))).toBe(false);
+  });
+
   it('autorská hra, která neprojde kontrolou, zůstane návrhem bez dítěte', async () => {
     // Táž mutace jako v `authored-fallback.test.ts`: tři barvy spínače, verifikátor ji chytí.
     const broken = structuredClone(answerFixture('good-switch_puzzle')) as { mechanics: { id: string; params: Record<string, unknown> }[] };
@@ -165,15 +198,48 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
 
-  // R1 (P25A): model odpověděl mřížkovou hrou na větu, ze které návrh udělal běžce.
-  it('vylepšení, které ztratí ovládání běžce, zůstane návrhem bez dítěte', async () => {
-    const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
-    expect((await game(created.body.versionId)).spec.control).toBe('runner');
-    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+  // P26 T10a: neprošlý keypoint jde modelu k opravě, nerozhoduje tichá výměna.
+  function brokenSwitch(): unknown {
+    const broken = structuredClone(answerFixture('good-switch_puzzle')) as { mechanics: { id: string; params: Record<string, unknown> }[] };
+    broken.mechanics[0].params.required = ['red', 'blue', 'green'];
+    return broken;
+  }
+
+  it('neprošlý keypoint dostane opravné kolo a opravená hra se publikuje', async () => {
+    director.script = [answered(brokenSwitch()), answered([{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }])];
+    const created = await publish({ sentence: SENTENCE });
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const repair = director.branch?.calls[1]?.request.user ?? '';
+    expect(repair).toContain('KEYPOINT_FAILED');
+    expect(repair).toContain('right_pair_opens');
+  });
+
+  it('neopravený keypoint zůstane NOT_PLAYABLE i po opravných kolech', async () => {
+    director.script = [answered(brokenSwitch()), answered([]), answered([])];
+    const created = await publish({ sentence: SENTENCE });
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
+    expect(director.branch?.calls).toHaveLength(3);
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
 
-  // P25E T5: druhé dva směry téhož pravidla – shoda ovládání projde, mřížka neshodu nesnese taky.
+  // P26 T4: AI smí opravit žánr, který návrh ze slov odhadl špatně – ověřuje robot, ne shoda s návrhem.
+  it('vylepšení ze střelnice na plošinovku se přijme, když je vyhratelné', async () => {
+    director.script = [answered({ ...(runnerAnswer() as object), control: 'platform', controlParams: { difficulty: 'easy' } })];
+    const created = await publish({ sentence: 'zombie shooter in a mall' });
+    expect((await game(created.body.versionId)).spec.control).toBe('shooter');
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect((await game(childId as string)).spec.control).toBe('platform');
+  });
+
+  it('mřížková odpověď na běžce se přijme a dítě je mřížka', async () => {
+    const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
+    expect((await game(created.body.versionId)).spec.control).toBe('runner');
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect((await game(childId as string)).spec.control).toBeUndefined();
+  });
+
   it('běžec vylepšený běžcem je ready a dítě zůstane běžcem', async () => {
     director.script = [answered(runnerAnswer())];
     const created = await publish({ sentence: 'endless runner in a neon city' });
@@ -186,12 +252,13 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(child.spec.title).toBe('Neon Rooftop Sprint');
   });
 
-  it('mřížkový návrh vylepšený běžcem zůstane návrhem bez dítěte', async () => {
+  it('mřížkový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
     director.script = [answered(runnerAnswer())];
     const created = await publish({ sentence: SENTENCE });
     expect((await game(created.body.versionId)).spec.control).toBeUndefined();
-    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
-    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+    expect((await settled(created.body.versionId)).status).toBe('ready');
+    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
+    expect((await game(childId as string)).spec.control).toBe('runner');
   });
 });
 

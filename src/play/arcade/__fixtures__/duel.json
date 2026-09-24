@@ -18,21 +18,6 @@
   },
   "mechanics": [
     {
-      "id": "hazard_zone",
-      "params": {
-        "role": "rival",
-        "effect": "damage"
-      }
-    },
-    {
-      "id": "zone_trigger",
-      "params": {
-        "role": "finish",
-        "when": "enter",
-        "effect": "win"
-      }
-    },
-    {
       "id": "health",
       "params": {
         "max": 3

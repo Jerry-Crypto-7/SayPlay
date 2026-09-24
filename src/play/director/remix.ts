@@ -168,7 +168,8 @@ function reskin(child: GameSpecV1, pick: (max: number) => number): void {
   const skin = candidates[pick(candidates.length)];
   child.theme = { setting: skin.setting, mood: skin.mood };
   child.title = cap(`${child.title} – ${skin.name}`, 80);
-  for (const role of child.roles) role.label = cap(`${skin.adjective} ${role.label}`, 60);
+  // Popisek má nejvýš tři slova (`roleLabel`), přídavné jméno proto nahradí první z nich.
+  for (const role of child.roles) role.label = cap(`${skin.adjective} ${role.label.split(' ').slice(-2).join(' ')}`, 60);
 }
 
 /** Nová role pro přidanou mechaniku; `id` uhýbá kolizi. */

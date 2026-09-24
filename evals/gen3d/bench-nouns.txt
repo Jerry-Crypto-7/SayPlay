@@ -1,0 +1,15 @@
+# animals
+penguin
+dragon
+frog
+horse
+# things
+sock
+banana
+teapot
+umbrella
+# characters
+cowboy
+knight
+wizard
+robot

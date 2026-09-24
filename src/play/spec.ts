@@ -28,6 +28,8 @@ import { z } from 'zod';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
+import { LOOK_IDS } from './arcade/look';
+
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
@@ -45,6 +47,19 @@ export const GAME_SPEC_SCHEMA = 'gamespec.v1' as const;
 /** Ohraničený identifikátor – tentýž vzor, jaký mají entity a sloty v IR. */
 export const gameId = z.string().regex(ID_PATTERN, 'identifier: letter, then letters/digits/_/. (max 64)');
 const text = z.string().min(1).max(200);
+
+/** Kde popisek přestává být jménem a začíná pokyn („Battery; first beside spawn…“, audit P26 bod 8). */
+const LABEL_BREAK = /[;:,(]| [-–] | (?:that|which|who|while|when|with|first|then|along|beside|near)\b/i;
+
+/**
+ * Popisek role je 1–3 slova (P26 T7): hráč ho čte na kartě a model hrdiny se
+ * vybírá z posledního slova. Za prvním zlomem se řeže, pak zůstanou poslední
+ * tři slova – v angličtině nese podstatné jméno konec („big red angry dragon“).
+ */
+export function roleLabel(raw: string): string {
+  const head = raw.split(LABEL_BREAK)[0].trim();
+  return (head === '' ? raw.trim() : head).split(/\s+/).slice(-3).join(' ');
+}
 
 /**
  * Druhy rolí. Role je **sémantická**: kompilátor z ní odvodí entitu, soket,
@@ -191,6 +206,8 @@ export const themeSchema = z
     /** Kde se to děje – vstup pro výběr assetů a palety (`"supermarket at night"`). */
     setting: text.max(80),
     mood: text.max(40),
+    /** Sada prostředí arkády, která `setting` nejlíp ukáže (P26 T11); bez ní se hádá ze slov. */
+    look: z.enum(LOOK_IDS).optional(),
   })
   .strict();
 
@@ -317,7 +334,7 @@ export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES)
 export type DuelParams = z.infer<typeof duelParamsSchema>;
 
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
-const CONTROL_PARAMS = {
+export const CONTROL_PARAMS = {
   runner: runnerParamsSchema,
   platform: platformParamsSchema,
   flap: flapParamsSchema,
@@ -354,7 +371,8 @@ export const gameSpecSchema = z
     theme: themeSchema,
     objective: objectiveSchema,
     /** Právě jedna nesmí chybět; nad pěti se hra přestává vysvětlit jednou větou. */
-    mechanics: z.array(mechanicSchema).min(1).max(5),
+    // Arkáda (P26 T5) smí být bez mechanik; mřížce aspoň jednu vynutí povinné mechaniky archetypu.
+    mechanics: z.array(mechanicSchema).max(5),
     roles: z.array(roleSchema).min(2).max(30),
     tutorial: tutorialSchema,
     verification: z.array(verificationSchema).min(1).max(20),
@@ -434,7 +452,8 @@ export function readGameSpec(input: unknown): GameSpecResult {
       issues: parsed.error.issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`),
     };
   }
-  const spec = parsed.data;
+  // Popisky se čistí tady, ne `transform` ve schématu – z toho se staví JSON Schema zadání.
+  const spec = { ...parsed.data, roles: parsed.data.roles.map((role) => ({ ...role, label: roleLabel(role.label) })) };
   if (spec.controlParams !== undefined) {
     if (spec.control === undefined || spec.control === 'tap_go') {
       return {
@@ -466,7 +485,10 @@ export function readGameSpec(input: unknown): GameSpecResult {
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
 
-  for (const required of archetype.requiredMechanics) {
+  // Arkáda povinné mechaniky archetypu nečte (P26 T5, `capabilities.ts`) – vyžadovat
+  // je by nutilo model psát, co hra nehraje.
+  const arcade = spec.control !== undefined && spec.control !== 'tap_go';
+  for (const required of arcade ? [] : archetype.requiredMechanics) {
     if (!mechanicIds.has(required)) issues.push(`/mechanics: archetype ${spec.archetype} requires ${required}`);
   }
   spec.mechanics.forEach((mechanic, index) => {
@@ -533,11 +555,12 @@ export function readGameSpec(input: unknown): GameSpecResult {
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
 
-  const cost = estimateCost(spec.mechanics, spec.roles);
-  if (cost.entities > spec.budgets.maxEntities) {
+  // Odhad počítá pravidla mřížky; arkáda je nekompiluje a svoje meze drží `ARCADE_LIMITS` (P26 T3).
+  const cost = arcade ? null : estimateCost(spec.mechanics, spec.roles);
+  if (cost !== null && cost.entities > spec.budgets.maxEntities) {
     issues.push(`/budgets/maxEntities: estimate ${cost.entities} exceeds ${spec.budgets.maxEntities}`);
   }
-  if (cost.rules > spec.budgets.maxRules) issues.push(`/budgets/maxRules: estimate ${cost.rules} exceeds ${spec.budgets.maxRules}`);
+  if (cost !== null && cost.rules > spec.budgets.maxRules) issues.push(`/budgets/maxRules: estimate ${cost.rules} exceeds ${spec.budgets.maxRules}`);
   if (issues.length > 0) return { ok: false, reason: 'BUDGET_EXCEEDED', issues };
 
   return { ok: true, value: spec, specHash: gameSpecHash(spec) };

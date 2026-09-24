@@ -17,16 +17,7 @@
     "count": 4,
     "role": "target"
   },
-  "mechanics": [
-    {
-      "id": "defeat",
-      "params": {
-        "role": "target",
-        "count": 4,
-        "hitsPerTarget": 1
-      }
-    }
-  ],
+  "mechanics": [],
   "roles": [
     {
       "id": "player",

@@ -15,7 +15,7 @@
  * Podtržítko v názvu: Next.js soubor nebere jako route.
  */
 
-import { direct, directorCacheFromEnv, type DirectedGame } from '@/play/director';
+import { direct, directorCacheFromEnv, type DirectedGame, type DirectorDeps } from '@/play/director';
 import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import type { GenerationBranch } from '@/server/pipeline';
@@ -135,7 +135,7 @@ const NO_MODEL: GenerationBranch = upstreamBranch(null);
  *
  * `startedAt` je příchod požadavku (`Date.now()`), jehož `maxDuration` režii drží.
  */
-export function getDirector(startedAt: number, caller: string): Director {
+export function getDirector(startedAt: number, caller: string, check?: DirectorDeps['check']): Director {
   return async (sentence) => {
     const deadline = startedAt + DIRECTOR_BUDGET_MS;
     const cache = directorCacheFromEnv(process.env);
@@ -145,7 +145,7 @@ export function getDirector(startedAt: number, caller: string): Director {
     });
     if (branch === null || !acquireSlot('play')) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
     try {
-      return { ...(await direct(sentence, { branch, cache, now: Date.now })), callerLimited };
+      return { ...(await direct(sentence, { branch, cache, now: Date.now, check })), callerLimited };
     } finally {
       releaseSlot('play');
     }

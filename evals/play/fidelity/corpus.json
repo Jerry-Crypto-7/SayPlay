@@ -1,0 +1,145 @@
+{
+ "about": "P26 T1 fidelity set: 20 sentences from evals/play/demand/corpus.json spread across controls, 10 hostile jury-style ones. Each checklist was written before any run: 2-4 nouns and exactly 1 verb. slot hero = the player's role, role = any other role, any = any role including the player, setting = theme.setting. A verb is realised when the game's control is one of `controls`, or when it carries one of `mechanics` and its control reads that mechanic.",
+ "sentences": [
+  { "id": "s039", "source": "corpus", "text": "zombie shooter in a mall", "checklist": [
+   { "item": "zombie", "slot": "role", "match": ["zombie", "undead"] },
+   { "item": "mall", "slot": "setting", "match": ["mall", "shopping"] },
+   { "item": "shoot", "slot": "verb", "controls": ["shooter"] } ] },
+  { "id": "s037", "source": "corpus", "text": "A space marine shoots alien bugs in a mining colony", "checklist": [
+   { "item": "space marine", "slot": "hero", "match": ["marine", "soldier", "astronaut"] },
+   { "item": "alien bug", "slot": "role", "match": ["bug", "alien", "insect"] },
+   { "item": "mining colony", "slot": "setting", "match": ["mine", "mining", "colony"] },
+   { "item": "shoot", "slot": "verb", "controls": ["shooter"] } ] },
+  { "id": "s002", "source": "corpus", "text": "A knight must collect three keys in a haunted castle while dodging ghosts.", "checklist": [
+   { "item": "knight", "slot": "hero", "match": ["knight"] },
+   { "item": "key", "slot": "role", "match": ["key"] },
+   { "item": "ghost", "slot": "role", "match": ["ghost", "spirit", "phantom"] },
+   { "item": "haunted castle", "slot": "setting", "match": ["castle"] },
+   { "item": "collect", "slot": "verb", "controls": [], "mechanics": ["collectible", "lock_key"] } ] },
+  { "id": "s003", "source": "corpus", "text": "A hamster escaping a supermarket while a giant Roomba hunts me", "checklist": [
+   { "item": "hamster", "slot": "hero", "match": ["hamster"] },
+   { "item": "roomba", "slot": "role", "match": ["roomba", "vacuum", "robot"] },
+   { "item": "supermarket", "slot": "setting", "match": ["supermarket", "grocery", "store"] },
+   { "item": "escape", "slot": "verb", "controls": ["runner"], "mechanics": ["chaser"] } ] },
+  { "id": "s006", "source": "corpus", "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers", "checklist": [
+   { "item": "corgi", "slot": "hero", "match": ["corgi", "dog", "puppy"] },
+   { "item": "sausage", "slot": "role", "match": ["sausage", "hot dog"] },
+   { "item": "sprinkler", "slot": "role", "match": ["sprinkler"] },
+   { "item": "park", "slot": "setting", "match": ["park"] },
+   { "item": "run", "slot": "verb", "controls": ["runner"] } ] },
+  { "id": "s008", "source": "corpus", "text": "temple run but you're a banana running from a monkey", "checklist": [
+   { "item": "banana", "slot": "hero", "match": ["banana"] },
+   { "item": "monkey", "slot": "role", "match": ["monkey", "ape"] },
+   { "item": "run", "slot": "verb", "controls": ["runner"], "mechanics": ["chaser"] } ] },
+  { "id": "s022", "source": "corpus", "text": "A tiny robot climbs a tower of moving platforms to reach its charger", "checklist": [
+   { "item": "robot", "slot": "hero", "match": ["robot", "bot"] },
+   { "item": "charger", "slot": "role", "match": ["charger", "charging", "battery"] },
+   { "item": "tower", "slot": "setting", "match": ["tower"] },
+   { "item": "climb", "slot": "verb", "controls": ["platform"] } ] },
+  { "id": "s021", "source": "corpus", "text": "obby game with lava and spinning bars", "checklist": [
+   { "item": "lava", "slot": "role", "match": ["lava", "magma"] },
+   { "item": "spinning bar", "slot": "role", "match": ["bar", "spinner", "beam"] },
+   { "item": "jump", "slot": "verb", "controls": ["platform"] } ] },
+  { "id": "s035", "source": "corpus", "text": "like flappy bird but underwater", "checklist": [
+   { "item": "bird", "slot": "hero", "match": ["bird", "fish"] },
+   { "item": "underwater", "slot": "setting", "match": ["underwater", "sea", "ocean", "reef", "deep"] },
+   { "item": "flap", "slot": "verb", "controls": ["flap"] } ] },
+  { "id": "s050", "source": "corpus", "text": "throwing snowballs at kids behind a snow fort", "checklist": [
+   { "item": "snowball", "slot": "any", "match": ["snowball"] },
+   { "item": "kid", "slot": "role", "match": ["kid", "child", "children"] },
+   { "item": "snow fort", "slot": "setting", "match": ["snow", "fort", "winter"] },
+   { "item": "throw", "slot": "verb", "controls": ["throw"] } ] },
+  { "id": "s088", "source": "corpus", "text": "angry birds but with cats and cardboard boxes", "checklist": [
+   { "item": "cat", "slot": "any", "match": ["cat", "kitten"] },
+   { "item": "cardboard box", "slot": "any", "match": ["box", "cardboard", "crate"] },
+   { "item": "launch", "slot": "verb", "controls": ["throw"] } ] },
+  { "id": "s069", "source": "corpus", "text": "candy crush but with gems in a cave", "checklist": [
+   { "item": "gem", "slot": "any", "match": ["gem", "jewel", "crystal"] },
+   { "item": "cave", "slot": "setting", "match": ["cave", "cavern", "mine"] },
+   { "item": "match", "slot": "verb", "controls": [] } ] },
+  { "id": "s056", "source": "corpus", "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold", "checklist": [
+   { "item": "scooter", "slot": "hero", "match": ["scooter", "moped", "bike"] },
+   { "item": "pizza", "slot": "any", "match": ["pizza"] },
+   { "item": "traffic", "slot": "role", "match": ["car", "traffic", "truck", "bus"] },
+   { "item": "race", "slot": "verb", "controls": ["steer"] } ] },
+  { "id": "s058", "source": "corpus", "text": "boat race through a jungle river full of crocodiles", "checklist": [
+   { "item": "boat", "slot": "hero", "match": ["boat", "canoe", "raft", "kayak"] },
+   { "item": "crocodile", "slot": "role", "match": ["crocodile", "croc", "alligator"] },
+   { "item": "jungle river", "slot": "setting", "match": ["jungle", "river"] },
+   { "item": "race", "slot": "verb", "controls": ["steer"] } ] },
+  { "id": "s111", "source": "corpus", "text": "a black hole that swallows a city, it gets bigger the more it eats", "checklist": [
+   { "item": "black hole", "slot": "hero", "match": ["black hole", "hole", "vortex"] },
+   { "item": "city", "slot": "setting", "match": ["city", "town", "street"] },
+   { "item": "swallow", "slot": "verb", "controls": ["move_free"] } ] },
+  { "id": "s095", "source": "corpus", "text": "knife throwing at a spinning log", "checklist": [
+   { "item": "knife", "slot": "any", "match": ["knife", "knives", "dagger"] },
+   { "item": "log", "slot": "any", "match": ["log", "wood", "trunk"] },
+   { "item": "throw", "slot": "verb", "controls": ["timing", "throw"] } ] },
+  { "id": "s188", "source": "corpus", "text": "A grandma karate fights a gang of pigeons in the park", "checklist": [
+   { "item": "grandma", "slot": "hero", "match": ["grandma", "granny", "grandmother", "old lady"] },
+   { "item": "pigeon", "slot": "role", "match": ["pigeon", "bird"] },
+   { "item": "park", "slot": "setting", "match": ["park"] },
+   { "item": "fight", "slot": "verb", "controls": ["duel"] } ] },
+  { "id": "s144", "source": "corpus", "text": "A drummer frog plays on lily pads and the pond lights up with the beat", "checklist": [
+   { "item": "frog", "slot": "hero", "match": ["frog", "toad"] },
+   { "item": "lily pad", "slot": "any", "match": ["lily", "pad"] },
+   { "item": "pond", "slot": "setting", "match": ["pond", "lake", "swamp"] },
+   { "item": "drum to the beat", "slot": "verb", "controls": ["rhythm"] } ] },
+  { "id": "s155", "source": "corpus", "text": "defend the castle from waves of goblins", "checklist": [
+   { "item": "castle", "slot": "setting", "match": ["castle", "fortress", "wall"] },
+   { "item": "goblin", "slot": "role", "match": ["goblin", "orc"] },
+   { "item": "defend", "slot": "verb", "controls": ["shooter"], "mechanics": ["spawn_wave", "defeat"] } ] },
+  { "id": "s099", "source": "corpus", "text": "build the tallest pancake tower before it falls over", "checklist": [
+   { "item": "pancake", "slot": "any", "match": ["pancake"] },
+   { "item": "tower", "slot": "any", "match": ["tower", "stack"] },
+   { "item": "stack", "slot": "verb", "controls": ["timing"] } ] },
+  { "id": "h01", "source": "hostile", "text": "a cat stealing fish from a market while dodging the fishmonger", "checklist": [
+   { "item": "cat", "slot": "hero", "match": ["cat", "kitten"] },
+   { "item": "fish", "slot": "role", "match": ["fish"] },
+   { "item": "fishmonger", "slot": "role", "match": ["fishmonger", "merchant", "vendor", "seller"] },
+   { "item": "market", "slot": "setting", "match": ["market", "bazaar", "stall"] },
+   { "item": "steal", "slot": "verb", "controls": [], "mechanics": ["collectible", "carry"] } ] },
+  { "id": "h02", "source": "hostile", "text": "shopping cart race in a supermarket", "checklist": [
+   { "item": "shopping cart", "slot": "hero", "match": ["cart", "trolley"] },
+   { "item": "supermarket", "slot": "setting", "match": ["supermarket", "grocery", "store"] },
+   { "item": "race", "slot": "verb", "controls": ["steer"] } ] },
+  { "id": "h03", "source": "hostile", "text": "defend a castle from dragons by throwing snowballs", "checklist": [
+   { "item": "castle", "slot": "setting", "match": ["castle", "fortress", "wall"] },
+   { "item": "dragon", "slot": "role", "match": ["dragon", "wyvern"] },
+   { "item": "snowball", "slot": "any", "match": ["snowball"] },
+   { "item": "throw", "slot": "verb", "controls": ["throw", "shooter"] } ] },
+  { "id": "h04", "source": "hostile", "text": "a robot collects batteries on Mars", "checklist": [
+   { "item": "robot", "slot": "hero", "match": ["robot", "rover", "bot"] },
+   { "item": "battery", "slot": "role", "match": ["battery", "batteries", "cell"] },
+   { "item": "Mars", "slot": "setting", "match": ["mars", "martian", "red planet"] },
+   { "item": "collect", "slot": "verb", "controls": [], "mechanics": ["collectible"] } ] },
+  { "id": "h05", "source": "hostile", "text": "boxing a kangaroo in the australian outback", "checklist": [
+   { "item": "kangaroo", "slot": "role", "match": ["kangaroo", "roo"] },
+   { "item": "outback", "slot": "setting", "match": ["outback", "desert", "australia", "bush"] },
+   { "item": "box", "slot": "verb", "controls": ["duel"] } ] },
+  { "id": "h06", "source": "hostile", "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him", "checklist": [
+   { "item": "astronaut", "slot": "hero", "match": ["astronaut", "spaceman"] },
+   { "item": "crystal", "slot": "role", "match": ["crystal", "gem", "shard"] },
+   { "item": "alien", "slot": "role", "match": ["alien"] },
+   { "item": "icy moon", "slot": "setting", "match": ["moon", "ice", "icy", "frozen"] },
+   { "item": "collect", "slot": "verb", "controls": [], "mechanics": ["collectible"] } ] },
+  { "id": "h07", "source": "hostile", "text": "purple elephants doing taxes on a volcano", "checklist": [
+   { "item": "elephant", "slot": "hero", "match": ["elephant"] },
+   { "item": "volcano", "slot": "setting", "match": ["volcano", "lava", "volcanic"] },
+   { "item": "do taxes", "slot": "verb", "controls": [] } ] },
+  { "id": "h08", "source": "hostile", "text": "a romantic dinner date on the moon", "checklist": [
+   { "item": "dinner", "slot": "any", "match": ["dinner", "table", "candle", "food"] },
+   { "item": "moon", "slot": "setting", "match": ["moon", "lunar"] },
+   { "item": "date", "slot": "verb", "controls": [] } ] },
+  { "id": "h09", "source": "hostile", "text": "escape from a haunted hospital with a flashlight", "checklist": [
+   { "item": "hospital", "slot": "setting", "match": ["hospital", "ward", "clinic"] },
+   { "item": "flashlight", "slot": "any", "match": ["flashlight", "torch", "lantern"] },
+   { "item": "escape", "slot": "verb", "controls": ["runner"], "mechanics": ["chaser", "zone_trigger"] } ] },
+  { "id": "h10", "source": "hostile", "text": "a penguin that slides down a glacier, jumps over seals and catches fish", "checklist": [
+   { "item": "penguin", "slot": "hero", "match": ["penguin"] },
+   { "item": "glacier", "slot": "setting", "match": ["glacier", "ice", "icy", "snow", "arctic", "antarctic"] },
+   { "item": "seal", "slot": "role", "match": ["seal"] },
+   { "item": "fish", "slot": "role", "match": ["fish"] },
+   { "item": "slide", "slot": "verb", "controls": ["runner"] } ] }
+ ]
+}

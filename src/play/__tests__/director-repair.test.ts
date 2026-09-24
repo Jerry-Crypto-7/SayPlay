@@ -11,6 +11,8 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import combatLite from '../__fixtures__/combat_lite.json';
+import shooter from '../arcade/__fixtures__/shooter.json';
 import { GOOD_ANSWERS, answerFixture } from '../director/__fixtures__';
 import { blockingIssues, critique } from '../director/critic';
 import { readDirectorAnswer } from '../director/read';
@@ -49,7 +51,9 @@ describe('repairDeterministically over the reader reasons', () => {
     expect(foreign?.spec.mechanics.map((m) => m.id)).toEqual(['switch', 'zone_trigger']);
 
     const budget = repairRead('bad-over-budget');
-    expect(budget?.spec.roles.find((role) => role.id === 'bookcart')?.count).toBe(1);
+    // P26 T3: rozpočet modelu se nejdřív zvedne k mezi registru, 22 vozíků se do ní vejde.
+    expect(budget?.spec.roles.find((role) => role.id === 'bookcart')?.count).toBe(22);
+    expect(budget?.applied[0]).toMatch(/^budgets raised to/);
 
     expect(repairRead('bad-worlddoc')).toBeNull();
     expect(repairDeterministically(undefined, 'NOT_AN_OBJECT')).toBeNull();
@@ -107,6 +111,48 @@ describe('repairDeterministically over critic issues', () => {
   it('returns null when there is nothing to apply', () => {
     const spec = good('good-switch_puzzle');
     expect(repairDeterministically(spec, [])).toBeNull();
+  });
+});
+
+/** Tři příčiny z běhu `2026-09-23-t5` (P26 T3), každá zmenšená na jednu vadu nad šablonou. */
+describe('repairDeterministically over the measured upgrade failures', () => {
+  function readRepair(body: Record<string, unknown>) {
+    const read = readDirectorAnswer(body);
+    if (read.ok) throw new Error('unexpectedly readable');
+    return { reason: read.reason, repaired: repairDeterministically(body, read.reason) };
+  }
+
+  it('fills a missing objective count from the target role and adds no grid keypoints to an arcade game', () => {
+    const body = clone(shooter) as Record<string, unknown> & { objective: Record<string, unknown> };
+    body.mechanics = [{ id: 'health', params: { max: 3 } }];
+    delete body.objective.count;
+    const { reason, repaired } = readRepair(body);
+    expect(reason).toBe('OBJECTIVE_MISMATCH');
+    expect(repaired?.spec.objective.count).toBe(4);
+    expect(repaired?.spec.verification).toEqual(shooter.verification);
+  });
+
+  it('drops the second copy of a mechanic declared twice', () => {
+    const body = clone(combatLite) as Record<string, unknown> & { mechanics: unknown[] };
+    body.mechanics = [...body.mechanics, { id: 'health', params: { max: 5 } }];
+    const { reason, repaired } = readRepair(body);
+    expect(reason).toBe('DANGLING_REFERENCE');
+    expect(repaired?.spec.mechanics.map((mechanic) => mechanic.id)).toEqual(['defeat', 'health']);
+  });
+
+  it('raises a too small budget to the registry limit before shrinking the game', () => {
+    const body = clone(combatLite) as Record<string, unknown>;
+    body.budgets = { maxEntities: 2, maxRules: 3, maxTriangles: 200000 };
+    const { reason, repaired } = readRepair(body);
+    expect(reason).toBe('BUDGET_EXCEEDED');
+    expect(repaired?.spec.objective.count).toBe(5);
+    expect(repaired?.spec.budgets.maxEntities).toBeGreaterThan(2);
+  });
+
+  it('does not charge an arcade game with the grid cost estimate', () => {
+    const body = clone(shooter) as Record<string, unknown>;
+    body.budgets = { maxEntities: 2, maxRules: 1, maxTriangles: 200000 };
+    expect(readGameSpec(body).ok).toBe(true);
   });
 });
 

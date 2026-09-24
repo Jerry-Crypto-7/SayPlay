@@ -1,0 +1,439 @@
+{
+  "$comment": "Riggované CC0 postavy s klipy (P26B T4). Generuje scripts/assets/rigged/build.mjs – needitovat ručně. clips: stav hry → jméno klipu v GLB.",
+  "version": 1,
+  "characters": [
+    {
+      "id": "knight",
+      "name": "Knight",
+      "tags": [
+        "knight",
+        "soldier",
+        "warrior",
+        "paladin",
+        "guard",
+        "crusader"
+      ],
+      "path": "/assets/worldstream/rigged/knight.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "1H_Melee_Attack_Chop",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 6952,
+      "bytes": 621592,
+      "sha256": "415bd5eb8efd96bb943aa97f53cac156580e005ed2e989914e62e1834c27d5ac",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Adventurers 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb",
+      "sourceSha256": "60428e3abc09ba83e595d256e3af8c5c976b46cdae599f0802fc82b4a3445168"
+    },
+    {
+      "id": "barbarian",
+      "name": "Barbarian",
+      "tags": [
+        "barbarian",
+        "viking",
+        "warrior",
+        "brute",
+        "fighter",
+        "gladiator"
+      ],
+      "path": "/assets/worldstream/rigged/barbarian.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "1H_Melee_Attack_Chop",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 6543,
+      "bytes": 575676,
+      "sha256": "60430bf067ab43887263512894b39b62dd213647323cfe50bcab7e2d14073fdb",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Adventurers 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Barbarian.glb",
+      "sourceSha256": "cefc311a0e10c7858b6141f5ada7e33268727564fb8ac1347aab97d000669cc6"
+    },
+    {
+      "id": "mage",
+      "name": "Mage",
+      "tags": [
+        "wizard",
+        "mage",
+        "sorcerer",
+        "witch",
+        "magician",
+        "warlock"
+      ],
+      "path": "/assets/worldstream/rigged/mage.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "Spellcast_Shoot",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 5683,
+      "bytes": 552172,
+      "sha256": "e0797f4ae83659a808e55cf331fab4f17812efc67d2afde428e8ea571b18e7c6",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Adventurers 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Mage.glb",
+      "sourceSha256": "cf898585da33fab50c724d31605fb931eb2912e6d2280092141e98ca81ad507d"
+    },
+    {
+      "id": "rogue",
+      "name": "Rogue",
+      "tags": [
+        "rogue",
+        "thief",
+        "bandit",
+        "assassin",
+        "pirate"
+      ],
+      "path": "/assets/worldstream/rigged/rogue.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "1H_Melee_Attack_Chop",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 6377,
+      "bytes": 578668,
+      "sha256": "dc43fd18a8ab023ef32e886cd164ff000e218cdfd886ade9245bdab423d59ab8",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Adventurers 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue.glb",
+      "sourceSha256": "e825437cd4d2ee9c1960b517a74a69101e33eb409ae7fa8cedc7134a998fbb7d"
+    },
+    {
+      "id": "rogue-hooded",
+      "name": "Hooded Rogue",
+      "tags": [
+        "archer",
+        "ranger",
+        "hunter",
+        "ninja",
+        "hood"
+      ],
+      "path": "/assets/worldstream/rigged/rogue-hooded.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "2H_Ranged_Shoot",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 6035,
+      "bytes": 565348,
+      "sha256": "3b74bd870d00ef72c8128c2f217bb543f788abb103e74e2a82dfd4a25f4696d9",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Adventurers 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue_Hooded.glb",
+      "sourceSha256": "93e6e25213009952276d9cf34f5d96a243767334c66f280db0433ddfabb91545"
+    },
+    {
+      "id": "skeleton-warrior",
+      "name": "Skeleton Warrior",
+      "tags": [
+        "skeleton",
+        "undead",
+        "warrior"
+      ],
+      "path": "/assets/worldstream/rigged/skeleton-warrior.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "1H_Melee_Attack_Chop",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 5934,
+      "bytes": 618184,
+      "sha256": "949cf2ceab81638a6c62c60eedbb47d6c9fd3eeaccf97eb1fca51a811f662584",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Skeletons 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Warrior.glb",
+      "sourceSha256": "178b6fda810b814c250d8a2010c24dfd9b458b9006dd323353e620b7ff118bbe"
+    },
+    {
+      "id": "skeleton-minion",
+      "name": "Skeleton Minion",
+      "tags": [
+        "skeleton",
+        "undead",
+        "minion"
+      ],
+      "path": "/assets/worldstream/rigged/skeleton-minion.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "1H_Melee_Attack_Chop",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 5288,
+      "bytes": 569216,
+      "sha256": "a95e053dae1c99e5d8f9bfce6f262be2d7978199a7a798229deefeb881574829",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Skeletons 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Minion.glb",
+      "sourceSha256": "6ffc003f895bed0b074791e0e490846210a2e2f8fc7da300aba53cc185f95968"
+    },
+    {
+      "id": "skeleton-mage",
+      "name": "Skeleton Mage",
+      "tags": [
+        "skeleton",
+        "necromancer",
+        "lich",
+        "undead"
+      ],
+      "path": "/assets/worldstream/rigged/skeleton-mage.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "Spellcast_Shoot",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 4588,
+      "bytes": 516316,
+      "sha256": "0788b91b6836fc77d671bcf1ba644848c1af97905130f4e7b1461bc8bc4a2ddf",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Skeletons 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Mage.glb",
+      "sourceSha256": "e05b0f5cfa395271c9f75fd07c0a0613c56f401ece4ab644e080001a79971075"
+    },
+    {
+      "id": "skeleton-rogue",
+      "name": "Skeleton Rogue",
+      "tags": [
+        "skeleton",
+        "undead",
+        "bandit"
+      ],
+      "path": "/assets/worldstream/rigged/skeleton-rogue.glb",
+      "clips": {
+        "idle": "Idle",
+        "run": "Running_A",
+        "jump": "Jump_Idle",
+        "shoot": "1H_Melee_Attack_Chop",
+        "hit": "Hit_A",
+        "die": "Death_A"
+      },
+      "triangles": 5278,
+      "bytes": 581876,
+      "sha256": "90104ff1cc480b5acdb349069403a399664fc68d6f7d40c8d158dbcd83b64d3a",
+      "license": "CC0-1.0",
+      "author": "Kay Lousberg",
+      "pack": "KayKit Character Pack: Skeletons 1.0",
+      "page": "https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0",
+      "sourceUrl": "https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Rogue.glb",
+      "sourceSha256": "4003f2b77891bb56f7e0de7d555abcb497aebbcaee35b614211f16275f9ccae3"
+    },
+    {
+      "id": "boy-a",
+      "name": "Boy A",
+      "tags": [
+        "boy",
+        "kid",
+        "man",
+        "person",
+        "human"
+      ],
+      "path": "/assets/worldstream/rigged/boy-a.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "jump": "jump",
+        "shoot": "holding-right-shoot",
+        "die": "die"
+      },
+      "triangles": 723,
+      "bytes": 142640,
+      "sha256": "4b6120ee9e248137ae7233646cd7757abff51881e65291e5247f1a7e059acc60",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Mini Characters",
+      "page": "https://kenney.nl/assets/mini-characters",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-a.glb",
+      "sourceSha256": "77572792bfe2773b715b8cd8e18644b52b3e1f155fe10450254b50f9c364382a"
+    },
+    {
+      "id": "boy-b",
+      "name": "Boy B",
+      "tags": [
+        "boy",
+        "kid",
+        "man",
+        "person",
+        "human",
+        "student"
+      ],
+      "path": "/assets/worldstream/rigged/boy-b.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "jump": "jump",
+        "shoot": "holding-right-shoot",
+        "die": "die"
+      },
+      "triangles": 690,
+      "bytes": 143064,
+      "sha256": "bc3fd17695cfd331eb734ea2c26bfb758f9d86bc10d85d1f72f2ec5996729498",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Mini Characters",
+      "page": "https://kenney.nl/assets/mini-characters",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-b.glb",
+      "sourceSha256": "791fc0c203924c175c0a3d5b60d030daf36797b039506689cf7cd01ef5253b3c"
+    },
+    {
+      "id": "boy-c",
+      "name": "Boy C",
+      "tags": [
+        "boy",
+        "kid",
+        "man",
+        "person",
+        "human"
+      ],
+      "path": "/assets/worldstream/rigged/boy-c.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "jump": "jump",
+        "shoot": "holding-right-shoot",
+        "die": "die"
+      },
+      "triangles": 793,
+      "bytes": 158724,
+      "sha256": "0bff5f84b4f4b33bfba80498109bb681fd2103464172cab58c05b2f48dff9600",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Mini Characters",
+      "page": "https://kenney.nl/assets/mini-characters",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-male-c.glb",
+      "sourceSha256": "672a6506f7475bbd655da1d7ff712c1729a430f134c62385a4e5d3c1378acb40"
+    },
+    {
+      "id": "girl-a",
+      "name": "Girl A",
+      "tags": [
+        "girl",
+        "kid",
+        "woman",
+        "person",
+        "human"
+      ],
+      "path": "/assets/worldstream/rigged/girl-a.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "jump": "jump",
+        "shoot": "holding-right-shoot",
+        "die": "die"
+      },
+      "triangles": 876,
+      "bytes": 169008,
+      "sha256": "9b8b079ba0289f8af0a178d84d36b239a68cc2b0943558e7dd8f3bd483e53405",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Mini Characters",
+      "page": "https://kenney.nl/assets/mini-characters",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-a.glb",
+      "sourceSha256": "8cfcff43460da8b421f2a7fdfb43ec177321cad2746db9497cbf128d5806e2a8"
+    },
+    {
+      "id": "girl-b",
+      "name": "Girl B",
+      "tags": [
+        "girl",
+        "kid",
+        "woman",
+        "person",
+        "human",
+        "student"
+      ],
+      "path": "/assets/worldstream/rigged/girl-b.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "jump": "jump",
+        "shoot": "holding-right-shoot",
+        "die": "die"
+      },
+      "triangles": 742,
+      "bytes": 147844,
+      "sha256": "0c185d5b1b10d5a6e724838832ee525693abd5e2a259886bab4d172e4edfb6d0",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Mini Characters",
+      "page": "https://kenney.nl/assets/mini-characters",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-b.glb",
+      "sourceSha256": "2288438e7baf9acc91a870c82dc00d66710bb486592cfc3474ef8ed93a03863a"
+    },
+    {
+      "id": "girl-c",
+      "name": "Girl C",
+      "tags": [
+        "girl",
+        "kid",
+        "woman",
+        "person",
+        "human"
+      ],
+      "path": "/assets/worldstream/rigged/girl-c.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "jump": "jump",
+        "shoot": "holding-right-shoot",
+        "die": "die"
+      },
+      "triangles": 732,
+      "bytes": 147748,
+      "sha256": "8c6e8a0d941d190dd76ed4bd33b5032a4906db40eeb5d48229cb13825a616cc6",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Mini Characters",
+      "page": "https://kenney.nl/assets/mini-characters",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/mini-characters/bfc7e272b4-1774770718/kenney_mini-characters.zip#Models/GLB format/character-female-c.glb",
+      "sourceSha256": "3cd9e1b5d6409fce0ba1af617d9e008c3069493185a4c100f49fb99a2626a055"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "mannequin",
+      "reason": "13743 triangles over the 12500 budget"
+    }
+  ]
+}

@@ -1,0 +1,779 @@
+{
+ "runs": [
+  {
+   "runId": "2026-09-23-baseline",
+   "measuredAt": "2026-09-23T12:57:06.196Z",
+   "commit": "0cc4866",
+   "note": "P26 T2 baseline, main 04cdc92 + fidelity set",
+   "metrics": {
+    "n": 30,
+    "upgradeSuccess": {
+     "ok": 16,
+     "of": 30,
+     "failures": {
+      "NOT_PLAYABLE": 3,
+      "MALFORMED": 11
+     }
+    },
+    "specFidelity": {
+     "final": 0.427,
+     "draft": 0.36,
+     "ai": 0.589,
+     "inSpecFinal": 0.665
+    },
+    "recognizable": {
+     "final": {
+      "items": {
+       "hit": 16,
+       "of": 110
+      },
+      "hero": {
+       "hit": 5,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     },
+     "draft": {
+      "items": {
+       "hit": 15,
+       "of": 110
+      },
+      "hero": {
+       "hit": 5,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     }
+    },
+    "timing": {
+     "draftMsP50": 137,
+     "upgradeSecondsP50": 49.156,
+     "upgradeSecondsP90": 68.415
+    }
+   }
+  },
+  {
+   "runId": "2026-09-23-t5",
+   "measuredAt": "2026-09-23T14:17:09.815Z",
+   "commit": "d1c0b74",
+   "note": "P26 T3+T4+T5 (d1c0b74)",
+   "metrics": {
+    "n": 30,
+    "upgradeSuccess": {
+     "ok": 16,
+     "of": 30,
+     "failures": {
+      "NOT_PLAYABLE": 3,
+      "MALFORMED": 11
+     }
+    },
+    "specFidelity": {
+     "final": 0.432,
+     "draft": 0.36,
+     "ai": 0.619,
+     "inSpecFinal": 0.62
+    },
+    "recognizable": {
+     "final": {
+      "items": {
+       "hit": 16,
+       "of": 110
+      },
+      "hero": {
+       "hit": 4,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     },
+     "draft": {
+      "items": {
+       "hit": 15,
+       "of": 110
+      },
+      "hero": {
+       "hit": 5,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     }
+    },
+    "timing": {
+     "draftMsP50": 444,
+     "upgradeSecondsP50": 37.015,
+     "upgradeSecondsP90": 67.914
+    }
+   }
+  },
+  {
+   "runId": "2026-09-23-t6",
+   "measuredAt": "2026-09-23T16:05:21.727Z",
+   "commit": "5c57f36",
+   "note": "P26 T3 repairs + T6 strict schema + T7 labels (5c57f36)",
+   "metrics": {
+    "n": 30,
+    "upgradeSuccess": {
+     "ok": 23,
+     "of": 30,
+     "failures": {
+      "NOT_PLAYABLE": 7
+     }
+    },
+    "specFidelity": {
+     "final": 0.521,
+     "draft": 0.36,
+     "ai": 0.578,
+     "inSpecFinal": 0.806
+    },
+    "recognizable": {
+     "final": {
+      "items": {
+       "hit": 18,
+       "of": 110
+      },
+      "hero": {
+       "hit": 6,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     },
+     "draft": {
+      "items": {
+       "hit": 14,
+       "of": 110
+      },
+      "hero": {
+       "hit": 4,
+       "of": 18
+      },
+      "setting": {
+       "hit": 0,
+       "of": 24
+      },
+      "judged": 30
+     }
+    },
+    "timing": {
+     "draftMsP50": 173,
+     "upgradeSecondsP50": 44.265,
+     "upgradeSecondsP90": 83.914
+    }
+   }
+  }
+ ],
+ "latest": {
+  "runId": "2026-09-23-t6",
+  "sentences": [
+   {
+    "id": "h01",
+    "text": "a cat stealing fish from a market while dodging the fishmonger",
+    "controls": {
+     "draft": "tap_go",
+     "ai": null
+    },
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 61,
+    "fidelity": {
+     "draft": 0.4,
+     "ai": null
+    },
+    "recognized": [],
+    "missing": [
+     "cat",
+     "fish",
+     "market"
+    ]
+   },
+   {
+    "id": "h02",
+    "text": "shopping cart race in a supermarket",
+    "controls": {
+     "draft": "steer",
+     "ai": "steer"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 33,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.667
+    },
+    "recognized": [
+     "race"
+    ],
+    "missing": [
+     "supermarket (in spec, not read)"
+    ]
+   },
+   {
+    "id": "h03",
+    "text": "defend a castle from dragons by throwing snowballs",
+    "controls": {
+     "draft": "throw",
+     "ai": "throw"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
+    "fidelity": {
+     "draft": 0.25,
+     "ai": 0.5
+    },
+    "recognized": [],
+    "missing": [
+     "castle (in spec, not read)",
+     "dragon (in spec, not read)"
+    ]
+   },
+   {
+    "id": "h04",
+    "text": "a robot collects batteries on Mars",
+    "controls": {
+     "draft": "tap_go",
+     "ai": "tap_go"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 66,
+    "fidelity": {
+     "draft": 0.75,
+     "ai": 1
+    },
+    "recognized": [
+     "robot"
+    ],
+    "missing": []
+   },
+   {
+    "id": "h05",
+    "text": "boxing a kangaroo in the australian outback",
+    "controls": {
+     "draft": "duel",
+     "ai": "duel"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 33,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.333
+    },
+    "recognized": [],
+    "missing": [
+     "kangaroo (in spec, not read)",
+     "outback (in spec, not read)"
+    ]
+   },
+   {
+    "id": "h06",
+    "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+    "controls": {
+     "draft": "throw",
+     "ai": null
+    },
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 74,
+    "fidelity": {
+     "draft": 0,
+     "ai": null
+    },
+    "recognized": [],
+    "missing": [
+     "astronaut",
+     "crystal",
+     "alien",
+     "icy moon (in spec, not read)",
+     "collect"
+    ]
+   },
+   {
+    "id": "h07",
+    "text": "purple elephants doing taxes on a volcano",
+    "controls": {
+     "draft": "tap_go",
+     "ai": "tap_go"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 69,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.667
+    },
+    "recognized": [],
+    "missing": [
+     "do taxes"
+    ]
+   },
+   {
+    "id": "h08",
+    "text": "a romantic dinner date on the moon",
+    "controls": {
+     "draft": "tap_go",
+     "ai": "tap_go"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 57,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.667
+    },
+    "recognized": [],
+    "missing": [
+     "date"
+    ]
+   },
+   {
+    "id": "h09",
+    "text": "escape from a haunted hospital with a flashlight",
+    "controls": {
+     "draft": "tap_go",
+     "ai": null
+    },
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 57,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": null
+    },
+    "recognized": [],
+    "missing": [
+     "hospital",
+     "flashlight"
+    ]
+   },
+   {
+    "id": "h10",
+    "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+    "controls": {
+     "draft": "tap_go",
+     "ai": "runner"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
+    "fidelity": {
+     "draft": 0,
+     "ai": 0.4
+    },
+    "recognized": [
+     "penguin"
+    ],
+    "missing": [
+     "glacier (in spec, not read)",
+     "seal (in spec, not read)",
+     "fish (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s002",
+    "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+    "controls": {
+     "draft": "tap_go",
+     "ai": null
+    },
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 77,
+    "fidelity": {
+     "draft": 1,
+     "ai": null
+    },
+    "recognized": [
+     "knight",
+     "key",
+     "ghost"
+    ],
+    "missing": []
+   },
+   {
+    "id": "s003",
+    "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+    "controls": {
+     "draft": "tap_go",
+     "ai": "tap_go"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 52,
+    "fidelity": {
+     "draft": 1,
+     "ai": 1
+    },
+    "recognized": [
+     "hamster",
+     "roomba"
+    ],
+    "missing": []
+   },
+   {
+    "id": "s006",
+    "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+    "controls": {
+     "draft": "runner",
+     "ai": "runner"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 36,
+    "fidelity": {
+     "draft": 0.4,
+     "ai": 0.4
+    },
+    "recognized": [
+     "run"
+    ],
+    "missing": [
+     "sausage (in spec, not read)",
+     "sprinkler (in spec, not read)",
+     "park (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s008",
+    "text": "temple run but you're a banana running from a monkey",
+    "controls": {
+     "draft": "runner",
+     "ai": "runner"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 309,
+    "fidelity": {
+     "draft": 0.667,
+     "ai": 0.667
+    },
+    "recognized": [
+     "run"
+    ],
+    "missing": [
+     "monkey"
+    ]
+   },
+   {
+    "id": "s021",
+    "text": "obby game with lava and spinning bars",
+    "controls": {
+     "draft": "platform",
+     "ai": "platform"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 44,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.333
+    },
+    "recognized": [],
+    "missing": [
+     "lava (in spec, not read)",
+     "spinning bar"
+    ]
+   },
+   {
+    "id": "s022",
+    "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+    "controls": {
+     "draft": "platform",
+     "ai": "platform"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 28,
+    "fidelity": {
+     "draft": 0.25,
+     "ai": 0.5
+    },
+    "recognized": [
+     "robot"
+    ],
+    "missing": [
+     "charger (in spec, not read)",
+     "tower (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s035",
+    "text": "like flappy bird but underwater",
+    "controls": {
+     "draft": "flap",
+     "ai": "flap"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 28,
+    "fidelity": {
+     "draft": 0.667,
+     "ai": 0.667
+    },
+    "recognized": [
+     "bird"
+    ],
+    "missing": [
+     "underwater (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s037",
+    "text": "A space marine shoots alien bugs in a mining colony",
+    "controls": {
+     "draft": "shooter",
+     "ai": "shooter"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 32,
+    "fidelity": {
+     "draft": 0.25,
+     "ai": 0.75
+    },
+    "recognized": [
+     "shoot"
+    ],
+    "missing": [
+     "mining colony (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s039",
+    "text": "zombie shooter in a mall",
+    "controls": {
+     "draft": "shooter",
+     "ai": "shooter"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 4,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.667
+    },
+    "recognized": [
+     "shoot"
+    ],
+    "missing": [
+     "mall (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s050",
+    "text": "throwing snowballs at kids behind a snow fort",
+    "controls": {
+     "draft": "throw",
+     "ai": "throw"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 32,
+    "fidelity": {
+     "draft": 0.25,
+     "ai": 0.5
+    },
+    "recognized": [],
+    "missing": [
+     "kid (in spec, not read)",
+     "snow fort (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s056",
+    "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+    "controls": {
+     "draft": "steer",
+     "ai": "steer"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 37,
+    "fidelity": {
+     "draft": 0.5,
+     "ai": 0.75
+    },
+    "recognized": [
+     "traffic",
+     "race"
+    ],
+    "missing": [
+     "traffic (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s058",
+    "text": "boat race through a jungle river full of crocodiles",
+    "controls": {
+     "draft": "steer",
+     "ai": "steer"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 41,
+    "fidelity": {
+     "draft": 0.25,
+     "ai": 0.25
+    },
+    "recognized": [
+     "race"
+    ],
+    "missing": [
+     "boat",
+     "crocodile (in spec, not read)",
+     "jungle river (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s069",
+    "text": "candy crush but with gems in a cave",
+    "controls": {
+     "draft": "tap_go",
+     "ai": null
+    },
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 49,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": null
+    },
+    "recognized": [],
+    "missing": [
+     "gem",
+     "match"
+    ]
+   },
+   {
+    "id": "s088",
+    "text": "angry birds but with cats and cardboard boxes",
+    "controls": {
+     "draft": "throw",
+     "ai": "throw"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 44,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.667
+    },
+    "recognized": [
+     "cat"
+    ],
+    "missing": [
+     "cardboard box (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s095",
+    "text": "knife throwing at a spinning log",
+    "controls": {
+     "draft": "tap_go",
+     "ai": "throw"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 44,
+    "fidelity": {
+     "draft": 0,
+     "ai": 1
+    },
+    "recognized": [],
+    "missing": []
+   },
+   {
+    "id": "s099",
+    "text": "build the tallest pancake tower before it falls over",
+    "controls": {
+     "draft": "timing",
+     "ai": "timing"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 40,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.333
+    },
+    "recognized": [],
+    "missing": [
+     "pancake (in spec, not read)",
+     "tower (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s111",
+    "text": "a black hole that swallows a city, it gets bigger the more it eats",
+    "controls": {
+     "draft": "move_free",
+     "ai": "move_free"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 32,
+    "fidelity": {
+     "draft": 0.333,
+     "ai": 0.333
+    },
+    "recognized": [],
+    "missing": [
+     "black hole (in spec, not read)",
+     "city (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s144",
+    "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+    "controls": {
+     "draft": "rhythm",
+     "ai": "rhythm"
+    },
+    "upgrade": "ai",
+    "upgradeSeconds": 32,
+    "fidelity": {
+     "draft": 0.25,
+     "ai": 0.25
+    },
+    "recognized": [],
+    "missing": [
+     "frog (in spec, not read)",
+     "lily pad (in spec, not read)",
+     "pond (in spec, not read)"
+    ]
+   },
+   {
+    "id": "s155",
+    "text": "defend the castle from waves of goblins",
+    "controls": {
+     "draft": "tap_go",
+     "ai": null
+    },
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 84,
+    "fidelity": {
+     "draft": 0,
+     "ai": null
+    },
+    "recognized": [],
+    "missing": [
+     "castle",
+     "goblin",
+     "defend"
+    ]
+   },
+   {
+    "id": "s188",
+    "text": "A grandma karate fights a gang of pigeons in the park",
+    "controls": {
+     "draft": "duel",
+     "ai": null
+    },
+    "upgrade": "NOT_PLAYABLE",
+    "upgradeSeconds": 85,
+    "fidelity": {
+     "draft": 0.25,
+     "ai": null
+    },
+    "recognized": [],
+    "missing": [
+     "grandma",
+     "pigeon",
+     "park (in spec, not read)"
+    ]
+   }
+  ]
+ }
+}
