@@ -67,7 +67,9 @@ export function cleanRemixSentence(raw: string): string {
 }
 
 /**
- * `job` je hash rodiče a normalizované věty – týž klíč z kteréhokoli procesu.
+ * `job` je hash rodiče a normalizované věty. Mapa prací žije jen v jednom
+ * procesu (`next start`); na víc instancích druhé odeslání práci nenajde –
+ * trvalý stav v úložišti je routovaný úkol z revize T4.
  * SHA-256, ne `canonicalHash` (32bitový FNV): kolize by jiné větě vrátila
  * cizí výsledek.
  */

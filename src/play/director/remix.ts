@@ -309,8 +309,11 @@ export function applyRemix(parent: GameSpecV1, ops: readonly Operation[]): { ok:
 const REMIX_ANSWER_LINE =
   'The player asked for a change to an existing game. Answer with a JSON array of RFC 6902 operations ({"op":"replace"|"add"|"remove","path":"/json/pointer","value":...}) over SPEC and nothing else. Never touch /schema or /archetype. Keep every mechanic the request does not mention; every mechanic you add needs a role and a verification keypoint.';
 
-/** Slova, kterými si věta o jiného hrdinu řekne výslovně („play as a cat“). */
-const HERO_WORDS = /\b(play(?:ing)? as|hero|player|character)\b/i;
+/**
+ * Slova, kterými si věta o jiného hrdinu řekne výslovně („play as a cat“).
+ * Holé „player“ ne – „enemies chase the player faster“ o hrdinovi nemluví.
+ */
+const HERO_WORDS = /\b(play(?:ing)? as|(?:new|different|another) (?:hero|character)|make me|i am|i'm)\b/i;
 
 /** Rovnost bez ohledu na pořadí klíčů – uložený rodič je kanonicky seřazený, záplatované dítě ne. */
 function same(a: unknown, b: unknown): boolean {
@@ -327,10 +330,12 @@ function same(a: unknown, b: unknown): boolean {
  * Nové keypointy smí přibýt vždy: každá přidaná mechanika jeden potřebuje.
  */
 export function remixKeeps(parent: GameSpecV1, child: GameSpecV1, sentence: string): boolean {
+  // Každá část má svá slova: „make enemies shoot fireballs“ je sloveso ovládání,
+  // ale o jiný cíl ani jiného hrdinu si neříká (revize T4, nález 4).
   const text = sentence.toLowerCase();
   const askedControl = pickControl(text) !== null;
-  const askedGoal = askedControl || OBJECTIVE_WORDS.test(text);
-  const askedHero = askedGoal || HERO_WORDS.test(text);
+  const askedGoal = OBJECTIVE_WORDS.test(text);
+  const askedHero = HERO_WORDS.test(text);
 
   const control = !same([parent.control, parent.controlParams, parent.addons], [child.control, child.controlParams, child.addons]);
   if (control && !askedControl) return false;
@@ -343,8 +348,9 @@ export function remixKeeps(parent: GameSpecV1, child: GameSpecV1, sentence: stri
     parent.verification.some((assertion) => !same(assertion, kept.get(assertion.id)));
   if (goal && !askedGoal) return false;
 
-  const heroOf = (spec: GameSpecV1) => spec.roles.find((role) => role.kind === 'player');
-  if (!same(heroOf(parent), heroOf(child)) && !askedHero) return false;
+  // Všechny role hráče, ne první: přidaný druhý hráč je taky jiný hrdina.
+  const heroesOf = (spec: GameSpecV1) => spec.roles.filter((role) => role.kind === 'player');
+  if (!same(heroesOf(parent), heroesOf(child)) && !askedHero) return false;
   return true;
 }
 

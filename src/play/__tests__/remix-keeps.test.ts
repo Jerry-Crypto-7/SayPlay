@@ -68,7 +68,21 @@ describe('remixKeeps', () => {
   it('jiný hrdina bez žádosti → false; „play as“ projde', () => {
     const child = edited(chase, (c) => void (c.roles[0].label = 'cat'));
     expect(remixKeeps(chase, child, 'add snow')).toBe(false);
+    expect(remixKeeps(chase, child, 'enemies chase the player faster')).toBe(false);
     expect(remixKeeps(chase, child, 'let me play as a cat')).toBe(true);
+  });
+
+  it('druhá role hráče je jiný hrdina (revize T4, nález 4)', () => {
+    const child = edited(chase, (c) => void c.roles.push({ id: 'twin', kind: 'player', label: 'hamster', count: 1 } as GameSpecV1['roles'][number]));
+    expect(remixKeeps(chase, child, 'add snow')).toBe(false);
+  });
+
+  it('sloveso ovládání nepustí změnu cíle ani hrdiny (revize T4, nález 4)', () => {
+    const sentence = 'make enemies shoot fireballs';
+    const goal = edited(chase, (c) => void (c.objective = { ...c.objective, role: 'cart' }));
+    const hero = edited(chase, (c) => void (c.roles[0].label = 'cat'));
+    expect(remixKeeps(chase, goal, sentence)).toBe(false);
+    expect(remixKeeps(chase, hero, sentence)).toBe(false);
   });
 });
 
