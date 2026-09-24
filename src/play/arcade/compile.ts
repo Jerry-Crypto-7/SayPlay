@@ -13,7 +13,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { type ArcadeParts, addonLives, applyAddons } from './addons';
+import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
 import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef } from './contract';
 import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
@@ -89,7 +89,8 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   // Doplňky (P26D) dostanou hotové části základního ovládání.
-  const parts = applyAddons(partsOf(spec, seed, health), { spec, seed });
+  const base = { ...spec, controlParams: addonControlParams(spec) } as GameSpecV1;
+  const parts = applyAddons(partsOf(base, seed, health), { spec, seed });
   const { control, bot, level, rules, issues } = parts;
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   const lives = 'health' in parts ? parts.health : health;

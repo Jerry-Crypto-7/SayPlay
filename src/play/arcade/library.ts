@@ -3,7 +3,7 @@
  * (`PieceRef`), jádro i ověření je hledají tady. Co tu není, neexistuje.
  */
 
-import { makeAddonBot } from './addons';
+import { ADDON_RULES, makeAddonBot } from './addons';
 import type { BotPiece } from './contract';
 import type { ArcadeLibrary } from './kernel';
 import { arenaEat, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
@@ -55,7 +55,7 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     rhythm: rhythmControl,
     duel: duelControl,
   },
-  rules: { ...RULES, ...SHOT_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule },
+  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

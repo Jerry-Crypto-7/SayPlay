@@ -42,7 +42,7 @@ export interface ControlCapability {
 
 const LIVES_AND_TIMER: readonly MechanicId[] = ['health', 'timer'];
 
-/** Doplňky ovládání, kde hráč projde prostorem: běh, skákání, poletování, aréna. */
+/** Doplňky ovládání s tratí k cíli: běh, skákání, poletování (aréna sbírá už sama – potrava). */
 const ROAMING: readonly AddonId[] = ['shoot', 'collect', 'lives'];
 
 const arcade = (
@@ -69,7 +69,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     note: 'archetype survival_timer; timer onEnd lose = outgrow in time, win = survive 20-80 s',
     labels: [],
     mechanics: LIVES_AND_TIMER,
-    addons: [...ROAMING, 'chaser'],
+    addons: ['shoot', 'chaser', 'lives'],
   }),
   shooter: arcade({ setting: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
   throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player', 'target'], mechanics: ['timer'] }),
