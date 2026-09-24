@@ -941,3 +941,79 @@ button.play-feed-card {
 .play-pending-card .play-button {
   flex: none;
 }
+
+/* „Change it“ pod čipy (T5): vlastní změna větou, stav práce pod polem. */
+.play-remix {
+  width: min(92vw, 480px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.play-remix-row {
+  display: flex;
+  gap: 8px;
+}
+
+.play-remix-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.play-remix-row .play-button {
+  flex: none;
+}
+
+.play-remix-count {
+  align-self: flex-end;
+  font-size: 0.75rem;
+  color: var(--play-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.play-remix-state {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  font-size: 0.9rem;
+  line-height: 1.35;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.play-remix-state p {
+  margin: 0;
+}
+
+.play-remix-state[data-kind='working'] {
+  font-variant-numeric: tabular-nums;
+}
+
+.play-remix-state[data-kind='ready'] {
+  border-color: var(--play-accent);
+}
+
+.play-remix-state[data-kind='final'],
+.play-remix-state[data-kind='refused'],
+.play-remix-state[data-kind='lost'] {
+  color: var(--play-muted);
+}
+
+.play-remix-changed-title {
+  font-weight: 600;
+}
+
+.play-remix-changed {
+  margin: 0;
+  padding-left: 18px;
+}
