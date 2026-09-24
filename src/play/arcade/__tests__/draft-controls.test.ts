@@ -2,7 +2,7 @@
  * Návrh ze slov vybere běžce (P25A T7) – pin nad korpusem poptávky
  * (`evals/play/demand/corpus.json`, 200 vět se štítkem ovládání `verb`).
  * Naměřeno 22. 9. 2026: běžec 14/16 (s012 a s013 mají jen jedno slabé
- * slovo), cizí štítky 0, plošinovky 2/15 (s001, s024 – povolené, běžec je
+ * slovo; od P26D T8 15/16 – s012 nese druhé sloveso), cizí štítky 0, plošinovky 2/15 (s001, s024 – povolené, běžec je
  * nejbližší skákačka).
  */
 
@@ -34,9 +34,11 @@ const density = (text: string): string | null | undefined => {
 };
 
 describe('draft control choice', () => {
-  it('picks the runner for 14 of 16 runner sentences and for no sentence of another control (pin)', () => {
+  // 24. 9. 2026 (P26D T8): 14 → 15. s012 („run on a rainbow road and collect stars“)
+  // má dvě slovesa hráče, takže „run … and collect“ dá běžce s doplňkem sbírání.
+  it('picks the runner for 15 of 16 runner sentences and for no sentence of another control (pin)', () => {
     expect(corpus.filter((e) => e.verb === 'runner')).toHaveLength(16);
-    expect(idsPicking('runner', (v) => v === 'runner')).toHaveLength(14);
+    expect(idsPicking('runner', (v) => v === 'runner')).toHaveLength(15);
     expect(idsPicking('runner', (v) => v !== 'runner' && v !== 'platform')).toEqual([]);
     // Obecné skákání s překážkami a parkour – běžec má přednost (P25C T7).
     expect(idsPicking('runner', (v) => v === 'platform')).toEqual(['s001', 's024']);

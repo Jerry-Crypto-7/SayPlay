@@ -29,6 +29,8 @@ import type { ShooterDifficulty } from '../arcade/pieces/shooter';
 import type { SteerDifficulty } from '../arcade/pieces/steer';
 import type { ThrowDifficulty, ThrowGoal } from '../arcade/pieces/throw';
 import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
+import { CAPABILITIES } from '../capabilities';
+import { ADDONS, type AddonId } from '../spec';
 
 const RHYTHM_CUES: readonly RegExp[] = [
   /\brhythm\b/,
@@ -124,7 +126,7 @@ const THROW_CUES: readonly RegExp[] = [
 
 // „auto shooting“ (vampire survivors) je volný pohyb – střílí se samo.
 const SHOOTER_CUES: readonly RegExp[] = [
-  /(?<!auto[- ])\bshoot(?:s|ing|er|ers)?\b(?! stars?)/,
+  /(?<!auto[- ]|photo )\bshoot(?:s|ing|er|ers)?\b(?! stars?)/,
   /\bguns?\b/,
   /\bsniper\b/,
   /\barchery\b/,
@@ -245,8 +247,42 @@ function platformScore(text: string): number {
 
 const difficultyOf = (text: string): 'easy' | 'hard' | null => (HIGH_DENSITY.test(text) ? 'hard' : LOW_DENSITY.test(text) ? 'easy' : null);
 
-/** `text` je věta malými písmeny. */
-export function pickControl(text: string): ControlChoice | null {
+/**
+ * Druhé sloveso jako doplněk (P26D T8). Střelba pozná jen sloveso, ne „photo
+ * shoot“ ani „shooting stars“; sbírání jen sloveso („coin factory“ nic nesbírá);
+ * pronásledovatel jen hráče, kterého někdo honí; životy jen s počtem.
+ */
+const ADDON_CUES: Readonly<Record<AddonId, RegExp>> = {
+  shoot: /(?<!(?:photo|auto)[- ])\bshoot(?:s|ing)?\b(?! stars?)|\bblast(?:s|ing)? (?:the |at )?(?!off\b)\w+/,
+  collect: /\b(?:collect(?:s|ing)?|grab(?:s|bing)?|gather(?:s|ing)?|pick(?:s|ing)? up)\b/,
+  chaser: /\b(?:chased|hunted|followed) by\b|\bchas(?:es|ing) (?:you|u|me|him|her|them|the player)\b/,
+  lives: /\b(?:\d+|two|three|four|five|a few|extra) (?:lives|hearts)\b/,
+};
+
+// „jump and shoot“, „run and collect“: dvě slovesa hráče – pohyb je základ, druhé
+// sloveso doplněk (jinak by vyhrála střelnice, a samotné „run“ běžce nedá).
+const MOVE_AND_VERB = /\b(jump|hop|run)\w*(?: \w+){0,5} and (?:shoot|collect|grab|gather|pick)|\bshoot\w* (?:and|while) (jump|hop|run)/;
+
+/** Ovládání ze slov (níž) a doplňky, které jeho tabulka schopností bere. */
+export type ControlPick = ControlChoice & { readonly addons?: readonly AddonId[] };
+
+/** `text` je věta malými písmeny. Klíč `addons` jen když věta nějaký doplněk řekla. */
+export function pickControl(text: string): ControlPick | null {
+  const pair = MOVE_AND_VERB.exec(text);
+  const choice = pickBase(text, pair !== null) ?? (pair === null ? null : moveOf(pair[1] ?? pair[2] ?? 'jump', text));
+  if (choice === null) return null;
+  const allowed = CAPABILITIES[choice.control].addons;
+  const addons = ADDONS.filter((addon) => allowed.includes(addon) && ADDON_CUES[addon].test(text));
+  return addons.length === 0 ? choice : { ...choice, addons };
+}
+
+/** Základ dvojice „jump/run and shoot“, když věta jinou narážku nemá. */
+function moveOf(verb: string, text: string): ControlChoice {
+  if (verb === 'run') return { control: 'runner', density: HIGH_DENSITY.test(text) ? 'high' : LOW_DENSITY.test(text) ? 'low' : null };
+  return { control: 'platform', difficulty: difficultyOf(text), movingPlatforms: /\bmoving platforms?\b/.test(text), doubleJump: /\bdouble jump/.test(text) };
+}
+
+function pickBase(text: string, moveAndShoot: boolean): ControlChoice | null {
   if (FLAP_CUES.some((cue) => cue.test(text))) return { control: 'flap', difficulty: difficultyOf(text) };
   const level = difficultyOf(text);
   if (RHYTHM_CUES.some((cue) => cue.test(text))) return { control: 'rhythm', density: level === 'hard' ? 'dense' : level === 'easy' ? 'sparse' : null };
@@ -254,7 +290,7 @@ export function pickControl(text: string): ControlChoice | null {
   // a narážky souboje jsou úzké (holé „fight“ mezi nimi není).
   if (DUEL_CUES.some((cue) => cue.test(text))) return { control: 'duel', difficulty: level };
   // Výslovný žánr plošinovky přebije hod i střelbu („a tower defense platformer“).
-  const platformer = /\bplatform(?:er| game)\b/.test(text);
+  const platformer = /\bplatform(?:er| game)\b/.test(text) || moveAndShoot;
   if (!platformer && THROW_CUES.some((cue) => cue.test(text))) {
     return { control: 'throw', difficulty: difficultyOf(text), goal: HOOP_CUES.test(text) ? 'hoop' : TOWER_CUES.test(text) ? 'tower' : null };
   }

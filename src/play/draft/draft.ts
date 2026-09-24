@@ -42,7 +42,7 @@ import timingTemplate from '../arcade/__fixtures__/timing.json';
 import { lookFor } from '../arcade/look';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
-import { type ControlChoice, pickControl } from './controls';
+import { type ControlChoice, type ControlPick, pickControl } from './controls';
 import {
   CARE,
   FOOD,
@@ -683,7 +683,7 @@ const TIMING_TEXT = {
  * P25G střelba a hod, P25H načasování, rytmus a souboj): šablona fixtury
  * ovládání, přepíše se titul, popisky a parametry, které věta řekla.
  */
-function draftArcade(sentence: string, seed: number, choice: ControlChoice): GameSpecV1 | null {
+function draftArcade(sentence: string, seed: number, choice: ControlPick): GameSpecV1 | null {
   const spec = JSON.parse(JSON.stringify(ARCADE_TEMPLATES[choice.control])) as GameSpecV1;
   const roles = readRoles(sentence);
   const rng = xoroshiro128plus(seed);
@@ -732,6 +732,10 @@ function draftArcade(sentence: string, seed: number, choice: ControlChoice): Gam
     spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(choice.goal === null ? {} : { goal: choice.goal }) };
     if (choice.goal !== null) role(spec, 'target').label = THROW_GOAL_LABELS[choice.goal];
   } else if (choice.difficulty !== null) spec.controlParams = { ...spec.controlParams, difficulty: choice.difficulty };
+  // P26D T8: druhé sloveso věty („jump and shoot“) – `pickControl` vybral jen doplňky, které ovládání bere.
+  if (choice.addons !== undefined) spec.addons = [...choice.addons];
+  const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
+  if (choice.addons?.includes('shoot') === true && fireHint.length <= 80) spec.tutorial.controlsHint = fireHint;
   const result = readGameSpec(spec);
   return result.ok ? result.value : null;
 }
