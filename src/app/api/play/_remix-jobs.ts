@@ -110,6 +110,8 @@ interface StoredRemix {
   readonly parentId: string;
   readonly startedAt: number;
   readonly outcome: RemixOutcome | null;
+  /** Zaplacené dítě, na kterém přechodný konec přerušil práci – příští pokus pokračuje od něj (T4c). */
+  readonly child?: GameSpecV1;
 }
 
 /** Jak dlouho se hotové dítě najde podle věty; hra sama žije v úložišti déle. */
@@ -170,7 +172,12 @@ interface RemixRequest {
   readonly caller: string;
 }
 
-async function runRemix(versions: VersionStore, parent: PublishedGame, request: RemixRequest): Promise<RemixOutcome> {
+/**
+ * `resume` = dítě, které už předchozí pokus zaplatil a stráž pustila (T4c) –
+ * první volání se pak přeskočí. `keep` dostane každé takové dítě, aby ho
+ * přechodný konec mohl uložit pro příští pokus.
+ */
+async function runRemix(versions: VersionStore, parent: PublishedGame, request: RemixRequest, resume: GameSpecV1 | null, keep: (child: GameSpecV1) => void): Promise<RemixOutcome> {
   const parentId = parent.version.versionId;
   try {
     await versions.canPublish();
@@ -180,13 +187,19 @@ async function runRemix(versions: VersionStore, parent: PublishedGame, request: 
   }
 
   const seeds = derivedSeeds(seedFrom({ parentId, sentence: request.sentence.toLowerCase() }));
-  const answer = await callDirectorModel(request.startedAt, request.caller, buildRemixRequest(request.sentence, parent.spec), request.sentence);
-  if (!answer.ok) return final(answer.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', parentId, `${answer.reason}: ${answer.detail}`);
-  const applied = applyRepairAnswer(parent.spec, answer.body);
-  if (!applied.ok) return final('MALFORMED', parentId, `${applied.reason}: ${applied.detail}`);
-  let child = applied.spec;
-  // Stráž dřív než opravné kolo: dítě, které mění, o co věta nežádala, nemá cenu opravovat za peníze.
-  if (!remixKeeps(parent.spec, child, request.sentence)) return final('UNASKED_CHANGE', parentId, 'the patch changes control, goal or hero');
+  let child: GameSpecV1;
+  if (resume !== null) {
+    child = resume;
+  } else {
+    const answer = await callDirectorModel(request.startedAt, request.caller, buildRemixRequest(request.sentence, parent.spec), request.sentence);
+    if (!answer.ok) return final(answer.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', parentId, `${answer.reason}: ${answer.detail}`);
+    const applied = applyRepairAnswer(parent.spec, answer.body);
+    if (!applied.ok) return final('MALFORMED', parentId, `${applied.reason}: ${applied.detail}`);
+    child = applied.spec;
+    // Stráž dřív než opravné kolo: dítě, které mění, o co věta nežádala, nemá cenu opravovat za peníze.
+    if (!remixKeeps(parent.spec, child, request.sentence)) return final('UNASKED_CHANGE', parentId, 'the patch changes control, goal or hero');
+    keep(child);
+  }
 
   let issues = issuesOf(child, seeds);
   if (issues.length > 0) {
@@ -196,6 +209,7 @@ async function runRemix(versions: VersionStore, parent: PublishedGame, request: 
     if (!repaired.ok) return final('UNREPAIRED', parentId, `repair: ${repaired.reason}: ${repaired.detail}`);
     if (!remixKeeps(parent.spec, repaired.spec, request.sentence)) return final('UNASKED_CHANGE', parentId, 'the repair changes control, goal or hero');
     child = repaired.spec;
+    keep(child);
     issues = issuesOf(child, seeds);
     if (issues.length > 0) return final(blockingIssues(critique(child)).length > 0 ? 'UNREPAIRED' : 'NOT_PLAYABLE', parentId, issues.map((issue) => `${issue.code}: ${issue.evidence}`).join('; '));
   }
@@ -266,13 +280,19 @@ async function settle(versions: VersionStore, parent: PublishedGame, request: Re
   const parentId = parent.version.versionId;
   try {
     const stored = await readRecord(versions, id);
+    let child: GameSpecV1 | null = null;
     if (stored !== null && stored.parentId === parentId) {
       if (stored.outcome === null) return await followStored(versions, id, parentId, stored.startedAt);
       if (!(stored.outcome.status === 'final' && TRANSIENT.has(stored.outcome.reason))) return stored.outcome;
+      child = stored.child ?? null;
     }
-    await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome: null });
-    const outcome = await runRemix(versions, parent, request);
-    await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome });
+    const resume = child;
+    await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome: null, child: resume ?? undefined });
+    const outcome = await runRemix(versions, parent, request, resume, (kept) => {
+      child = kept;
+    });
+    const again = outcome.status === 'final' && TRANSIENT.has(outcome.reason);
+    await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome, child: again ? (child ?? undefined) : undefined });
     return outcome;
   } catch (thrown) {
     return final('FAILED', parentId, thrown instanceof Error ? thrown.message : String(thrown));

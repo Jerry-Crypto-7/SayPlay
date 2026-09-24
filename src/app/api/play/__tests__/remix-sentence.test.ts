@@ -275,6 +275,21 @@ describe('stav práce přežije restart a jinou instanci', () => {
     expect((await status(parentId, refused)).body).toEqual({ status: 'final', reason: 'MODEL_UNAVAILABLE' });
   });
 
+  it('po selhání opravy nové odeslání zaplatí jen opravu, ne první volání (T4c)', async () => {
+    const parentId = await publish(chaseEscape);
+    // Deset rolí navíc = TOO_COMPLEX, blokující nález kritika, takže přijde opravné kolo.
+    const piles = Array.from({ length: 10 }, (_, n) => ({ op: 'add', path: '/roles/-', value: { id: `pile${String(n)}`, kind: 'prop', label: 'snow pile' } }));
+    const trim = Array.from({ length: 10 }, (_, n) => ({ op: 'remove', path: `/roles/${String(chaseEscape.roles.length + 9 - n)}` }));
+    upstream.script = [[{ op: 'replace', path: '/budgets/maxRules', value: 200 }, ...piles], 'timeout'];
+    expect(await remixed(parentId, 'add snow piles')).toEqual({ status: 'final', reason: 'MODEL_UNAVAILABLE' });
+    expect(upstream.calls).toBe(2);
+
+    __resetRemixes();
+    upstream.script = [trim];
+    expect((await remixed(parentId, 'add snow piles')).status).toBe('ready');
+    expect(upstream.calls).toBe(3);
+  });
+
   it('verdikt o větě platí i po restartu, výpadek ne', async () => {
     const parentId = await publish(chaseEscape);
     upstream.script = [{ text: '{"hello": 1}' }];
