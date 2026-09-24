@@ -14,7 +14,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import chaseEscape from '@/play/__fixtures__/chase_escape.json';
 import platform from '@/play/arcade/__fixtures__/platform.json';
 import runner from '@/play/arcade/__fixtures__/runner.json';
-import { __resetProcessVersionStore } from '@/play/version';
+import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, memoryVersionStore } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
@@ -273,6 +273,26 @@ describe('stav práce přežije restart a jinou instanci', () => {
     expect(upstream.calls).toBe(1);
   });
 
+  it('dvě instance ve stejné chvíli zaplatí model jednou – záznam se zabírá atomicky (T4d)', async () => {
+    const parentId = await publish(chaseEscape);
+    let release: () => void = () => {};
+    upstream.gate = new Promise((resolve) => {
+      release = resolve;
+    });
+    upstream.script = [SNOW, SNOW];
+    const versions = store();
+    const parent = (await versions.get(parentId))!;
+    const request = { sentence: 'add snow', startedAt: Date.now(), caller: directorCallerOf(new Request('http://play.test', { headers: CALLER })) };
+    // Obě instance čtou úložiště dřív, než kterákoli zapíše, že práce běží.
+    startRemix(versions, parent, request);
+    __resetRemixes();
+    startRemix(versions, parent, request);
+    await vi.waitFor(() => expect(upstream.calls).toBe(1));
+    release();
+    expect((await settled(parentId, remixJobId(parentId, 'add snow'))).status).toBe('ready');
+    expect(upstream.calls).toBe(1);
+  });
+
   it('1001 odmítnutí bez placeného volání nevytlačí cizí hotovou práci z paměti (T4b)', async () => {
     vi.stubEnv('PLAY_DIRECTOR_CALLS_PER_CALLER', '1');
     const parentId = await publish(chaseEscape);
@@ -305,6 +325,19 @@ describe('stav práce přežije restart a jinou instanci', () => {
     upstream.script = [trim];
     expect((await remixed(parentId, 'add snow piles')).status).toBe('ready');
     expect(upstream.calls).toBe(3);
+  });
+
+  it('paměťové úložiště nechá záznam vypršet po jeho TTL (T4d)', async () => {
+    let now = Date.UTC(2026, 8, 24);
+    const versions = memoryVersionStore(DEFAULT_WRITE_LIMITS, () => now);
+    await versions.rememberUpgradeVerdict('remix:job', 'kept', 10);
+    now += 9_000;
+    expect(await versions.upgradeVerdict('remix:job')).toBe('kept');
+    now += 2_000;
+    expect(await versions.upgradeVerdict('remix:job')).toBeNull();
+    // Po vypršení jde záznam zabrat znovu.
+    expect(await versions.claimUpgradeVerdict('remix:job', 'again', 10)).toBe(true);
+    expect(await versions.claimUpgradeVerdict('remix:job', 'late', 10)).toBe(false);
   });
 
   it('verdikt o větě platí i po restartu, výpadek ne', async () => {

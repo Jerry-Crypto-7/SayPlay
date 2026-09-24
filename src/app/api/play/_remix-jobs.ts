@@ -138,10 +138,12 @@ async function readRecord(versions: VersionStore, job: string): Promise<StoredRe
 }
 
 /** Výpadek i konec běhu jen krátce – nové odeslání pak dostane nový pokus; verdikt o větě hodinu, hotové dítě týden. */
+function ttlOf({ outcome }: StoredRemix): number {
+  return outcome === null || (outcome.status === 'final' && TRANSIENT.has(outcome.reason)) ? PENDING_TTL_SECONDS : outcome.status === 'ready' ? REMIX_READY_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS;
+}
+
 function writeRecord(versions: VersionStore, job: string, record: StoredRemix): Promise<void> {
-  const { outcome } = record;
-  const ttl = outcome === null || (outcome.status === 'final' && TRANSIENT.has(outcome.reason)) ? PENDING_TTL_SECONDS : outcome.status === 'ready' ? REMIX_READY_TTL_SECONDS : DRAFT_FINAL_TTL_SECONDS;
-  return versions.rememberUpgradeVerdict(recordKey(job), JSON.stringify(record), ttl);
+  return versions.rememberUpgradeVerdict(recordKey(job), JSON.stringify(record), ttlOf(record));
 }
 
 /** Uložené `ready`, jehož dítě mezitím vypršelo, neplatí – hra smí žít kratší dobu než záznam (`PLAY_VERSION_TTL_SECONDS`). */
@@ -292,7 +294,12 @@ async function settle(versions: VersionStore, parent: PublishedGame, request: Re
       else if (await stillThere(versions, stored.outcome)) return stored.outcome;
     }
     const resume = child;
-    await writeRecord(versions, id, { parentId, startedAt: request.startedAt, outcome: null, child: resume ?? undefined });
+    const running: StoredRemix = { parentId, startedAt: request.startedAt, outcome: null, child: resume ?? undefined };
+    // Prázdný klíč se zabírá atomicky (T4d): ze dvou instancí, které ho právě přečetly
+    // prázdný, zaplatí model jen jedna a druhá se dočká jejího výsledku.
+    if (stored === null) {
+      if (!(await versions.claimUpgradeVerdict(recordKey(id), JSON.stringify(running), ttlOf(running)))) return await followStored(versions, id, parentId, request.startedAt);
+    } else await writeRecord(versions, id, running);
     const outcome = await runRemix(versions, parent, request, resume, (kept) => {
       child = kept;
     });
