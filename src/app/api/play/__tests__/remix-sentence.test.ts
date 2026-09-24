@@ -19,7 +19,8 @@ import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
 
 import { resetConcurrency } from '../../worldstream/sessions/route';
-import { __resetRemixes } from '../_remix-jobs';
+import { directorCallerOf, store } from '../_publish';
+import { __rememberedRemixes, __resetRemixes, MAX_REMEMBERED_REMIXES, remixJobId, startRemix } from '../_remix-jobs';
 import { GET as readGame } from '../games/[id]/route';
 import { GET as readRemix, POST as remix } from '../games/[id]/remix/route';
 import { POST as createGame } from '../games/route';
@@ -253,6 +254,25 @@ describe('stav práce přežije restart a jinou instanci', () => {
     release();
     expect((await settled(parentId, started.body.job)).status).toBe('ready');
     expect(upstream.calls).toBe(1);
+  });
+
+  it('1001 odmítnutí bez placeného volání nevytlačí cizí hotovou práci z paměti (T4b)', async () => {
+    vi.stubEnv('PLAY_DIRECTOR_CALLS_PER_CALLER', '1');
+    const parentId = await publish(chaseEscape);
+    upstream.script = [SNOW];
+    const started = await send(parentId, { sentence: 'add snow' });
+    const ready = await settled(parentId, started.body.job);
+    expect(ready.status).toBe('ready');
+
+    const versions = store();
+    const parent = (await versions.get(parentId))!;
+    // Mimo route: strop frekvence by zastavil dřív. Volající už svůj jeden hovor vyčerpal.
+    for (let n = 0; n <= MAX_REMEMBERED_REMIXES; n += 1) startRemix(versions, parent, { sentence: `add snow ${String(n)}`, startedAt: Date.now(), caller: directorCallerOf(new Request('http://play.test', { headers: CALLER })) });
+    await vi.waitFor(() => expect(__rememberedRemixes()).toBe(1), { timeout: 20_000 });
+    expect(upstream.calls).toBe(1);
+    expect(await status(parentId, started.body.job)).toEqual({ status: 200, body: ready });
+    const refused = remixJobId(parentId, `add snow ${String(MAX_REMEMBERED_REMIXES)}`);
+    expect((await status(parentId, refused)).body).toEqual({ status: 'final', reason: 'MODEL_UNAVAILABLE' });
   });
 
   it('verdikt o větě platí i po restartu, výpadek ne', async () => {

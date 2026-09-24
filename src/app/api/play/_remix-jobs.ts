@@ -54,9 +54,30 @@ function jobs(): Map<string, Job> {
   return holder[JOBS];
 }
 
+/**
+ * Konce bez verdiktu o větě (výpadek, vypínač, vyčerpaný počet volajícího,
+ * úložiště) mají vlastní malou mapu: stojí útočníka nic, a v hlavní mapě by
+ * vytlačily cizí hotové práce (T4b). Nové odeslání je stejně spustí znovu.
+ */
+export const MAX_REMEMBERED_REFUSALS = 200;
+
+const REFUSALS = Symbol.for('worldstream.play.remix-refusals');
+
+function refusals(): Map<string, { readonly parentId: string; readonly outcome: RemixOutcome }> {
+  const holder = globalThis as { [REFUSALS]?: Map<string, { readonly parentId: string; readonly outcome: RemixOutcome }> };
+  holder[REFUSALS] ??= new Map();
+  return holder[REFUSALS];
+}
+
 /** Jen pro testy. */
 export function __resetRemixes(): void {
   jobs().clear();
+  refusals().clear();
+}
+
+/** Jen pro testy: kolik prací drží hlavní mapa. */
+export function __rememberedRemixes(): number {
+  return jobs().size;
 }
 
 /** Věta z těla: řídicí znaky pryč, mezery sjednocené, ořezaná. */
@@ -188,10 +209,16 @@ async function runRemix(versions: VersionStore, parent: PublishedGame, request: 
   return { status: 'ready', versionId: published.value.game.version.versionId, changed: describeRemix(parent.spec, createPatch(parent.spec, child)) };
 }
 
+/** Strop platí na doběhlé práce: nával běžících (každá do chvíle odmítnutí) nesmí vytlačit cizí hotovou (T4b). */
 function forgetSettled(map: Map<string, Job>): void {
+  let settled = 0;
+  for (const job of map.values()) if (job.outcome !== null) settled += 1;
   for (const [id, job] of map) {
-    if (map.size <= MAX_REMEMBERED_REMIXES) return;
-    if (job.outcome !== null) map.delete(id);
+    if (settled <= MAX_REMEMBERED_REMIXES) return;
+    if (job.outcome !== null) {
+      map.delete(id);
+      settled -= 1;
+    }
   }
 }
 
@@ -211,6 +238,13 @@ export function startRemix(versions: VersionStore, parent: PublishedGame, reques
   map.set(id, job);
   const remembered = done.then((outcome) => {
     job.outcome = outcome;
+    if (outcome.status === 'final' && TRANSIENT.has(outcome.reason)) {
+      if (map.get(id) === job) map.delete(id);
+      const refused = refusals();
+      refused.delete(id);
+      refused.set(id, { parentId: job.parentId, outcome });
+      if (refused.size > MAX_REMEMBERED_REFUSALS) refused.delete(refused.keys().next().value!);
+    }
     forgetSettled(map);
   });
   // `after()` jako u upgradu: na serverless se instance po odpovědi zmrazí.
@@ -249,6 +283,8 @@ async function settle(versions: VersionStore, parent: PublishedGame, request: Re
 export async function remixStatus(versions: VersionStore, parentId: string, job: string): Promise<RemixStatus | null> {
   const known = jobs().get(job);
   if (known !== undefined && known.parentId === parentId) return known.outcome ?? pendingOf(job, known.startedAt);
+  const refused = refusals().get(job);
+  if (refused !== undefined && refused.parentId === parentId) return refused.outcome;
   const stored = await readRecord(versions, job);
   if (stored === null || stored.parentId !== parentId) return null;
   return stored.outcome ?? pendingOf(job, stored.startedAt);
