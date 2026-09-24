@@ -3,24 +3,17 @@
  * a potřebuje jeho kontrakt zapsaný.
  */
 
-export declare interface ChecklistEntry {
-  readonly item: string;
-  readonly slot: 'hero' | 'role' | 'any' | 'setting' | 'verb';
-  readonly match?: readonly string[];
-  readonly controls?: readonly string[];
-  readonly mechanics?: readonly string[];
-}
+import type { ChainItem, ChecklistEntry } from '../src/play/fidelity/chain';
 
-export declare interface FidelityItem {
-  readonly item: string;
-  readonly slot: string;
-  readonly inSpec: boolean;
-  readonly read: boolean;
-}
+export type { ChecklistEntry };
+export type FidelityItem = ChainItem;
 
 export declare function checkCorpus(corpus: unknown): string[];
 
-export declare function specFidelity(spec: unknown, checklist: readonly ChecklistEntry[]): { readonly control: string; readonly items: FidelityItem[]; readonly score: number };
+export declare function specFidelity(
+  spec: unknown,
+  checklist: readonly ChecklistEntry[],
+): { readonly control: string; readonly items: FidelityItem[]; readonly score: number; readonly drawnScore: number };
 
 interface Tally {
   readonly hit: number;
@@ -30,7 +23,7 @@ interface Tally {
 export declare function summarize(results: readonly unknown[]): {
   readonly n: number;
   readonly upgradeSuccess: { readonly ok: number; readonly of: number; readonly failures: Record<string, number> };
-  readonly specFidelity: { readonly final: number | null; readonly draft: number | null; readonly ai: number | null; readonly inSpecFinal: number | null };
+  readonly specFidelity: { readonly final: number | null; readonly draft: number | null; readonly ai: number | null; readonly inSpecFinal: number | null; readonly drawnFinal: number | null };
   readonly recognizable: Record<'final' | 'draft', { readonly items: Tally; readonly hero: Tally; readonly setting: Tally; readonly judged: number }>;
   readonly timing: { readonly draftMsP50: number | null; readonly upgradeSecondsP50: number | null; readonly upgradeSecondsP90: number | null };
 };

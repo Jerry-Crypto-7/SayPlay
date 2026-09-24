@@ -29,17 +29,15 @@ import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Co ovládání čte, říká tabulka schopností (P26 T5). Holý Node 22 ji načte jen
-// s `--experimental-strip-types`; tabulka má proto jen typové importy.
-import { CAPABILITIES, controlOf, readsLabel, readsMechanic as readsMechanicOf } from '../src/play/capabilities.ts';
-import { lookFor } from '../src/play/arcade/look/index.ts';
+// Řetěz věrnosti (P27A T1) je modul aplikace: holý Node ho načte přes zavaděč
+// `ts-paths.mjs` (cesty `@/`, přípony, JSON), vitest sám.
+if (!process.env.VITEST) await import('./ts-paths.mjs');
+const { fidelityChain } = await import('../src/play/fidelity/chain.ts');
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
 
 export const SLOTS = ['hero', 'role', 'any', 'setting', 'verb'];
-
-const PLAYER = (role) => role.kind === 'player';
 
 /** Nálezy nad korpusem; prázdné pole = korpus platí. */
 export function checkCorpus(corpus) {
@@ -65,37 +63,15 @@ export function checkCorpus(corpus) {
   return issues;
 }
 
-const escape = (word) => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const mentions = (text, words) => words.some((word) => new RegExp(`\\b${escape(word.toLowerCase())}(?:e?s)?\\b`).test(text.toLowerCase()));
-
 /**
- * Položky seznamu nad jedním specem: `inSpec` = spec ji nese, `read` = nese ji
- * místem, které ovládání čte. `score` = podíl `read`.
+ * Položky seznamu nad jedním specem (`src/play/fidelity/chain.ts`): `inSpec` =
+ * spec ji nese, `read` = nese ji místem, které ovládání čte, `drawn` = scéna ji
+ * nakreslí. `score` = podíl `read`, `drawnScore` = podíl `drawn`.
  */
 export function specFidelity(spec, checklist) {
-  const control = controlOf(spec);
-  const readsRole = (role) => readsLabel(control, role);
-  const readsMechanic = (id) => readsMechanicOf(control, id);
-  const roles = spec.roles ?? [];
-  const mechanicIds = (spec.mechanics ?? []).map((mechanic) => mechanic.id);
-  const items = checklist.map((entry) => {
-    if (entry.slot === 'verb') {
-      const byControl = entry.controls.includes(control);
-      const byMechanic = (entry.mechanics ?? []).filter((id) => mechanicIds.includes(id));
-      return { item: entry.item, slot: entry.slot, inSpec: byControl || byMechanic.length > 0, read: byControl || byMechanic.some(readsMechanic) };
-    }
-    if (entry.slot === 'setting') {
-      const inSpec = mentions(spec.theme?.setting ?? '', entry.match);
-      // Arkáda ukáže prostředí jen sadou (P26 T11): louka místo neznámého místa se nepočítá.
-      const shown = control === 'tap_go' || spec.theme?.look !== undefined || lookFor(spec.theme?.setting ?? '') !== null;
-      return { item: entry.item, slot: entry.slot, inSpec, read: inSpec && CAPABILITIES[control].setting && shown };
-    }
-    const candidates = roles.filter((role) => (entry.slot === 'hero' ? PLAYER(role) : entry.slot === 'role' ? !PLAYER(role) : true));
-    const hits = candidates.filter((role) => mentions(role.label, entry.match));
-    return { item: entry.item, slot: entry.slot, inSpec: hits.length > 0, read: hits.some(readsRole) };
-  });
-  const score = items.length === 0 ? 0 : items.filter((item) => item.read).length / items.length;
-  return { control, items, score: Math.round(score * 1000) / 1000 };
+  const items = fidelityChain(spec, checklist);
+  const share = (pick) => (items.length === 0 ? 0 : Math.round((items.filter(pick).length / items.length) * 1000) / 1000);
+  return { control: spec.control ?? 'tap_go', items, score: share((item) => item.read), drawnScore: share((item) => item.drawn) };
 }
 
 const mean = (values) => (values.length === 0 ? null : Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 1000) / 1000);
@@ -152,6 +128,8 @@ export function summarize(results) {
         const items = specFidelity(result[finalOf(result)].spec, result.checklist).items;
         return items.filter((item) => item.inSpec).length / items.length;
       })),
+      // P27A T1: podíl položek, které scéna nakreslí – vedle `inSpec` a `read`, nenahrazuje je.
+      drawnFinal: mean(results.map((result) => specFidelity(result[finalOf(result)].spec, result.checklist).drawnScore)),
     },
     recognizable: {
       final: recognition(results, finalOf),
