@@ -3,6 +3,8 @@
  * (`PieceRef`), jádro i ověření je hledají tady. Co tu není, neexistuje.
  */
 
+import { makeAddonBot } from './addons';
+import type { BotPiece } from './contract';
 import type { ArcadeLibrary } from './kernel';
 import { arenaEat, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
 import { arenaBot } from './pieces/arena-bot';
@@ -26,6 +28,19 @@ import { launch, throwControl, throwField } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
 import { judgeRule, timingControl, timingLevel } from './pieces/timing';
 import { timingBot } from './pieces/timing-bot';
+
+const BASE_BOTS = {
+  runner_bot: runnerBot,
+  platform_bot: platformBot,
+  flap_bot: flapBot,
+  steer_bot: steerBot,
+  arena_bot: arenaBot,
+  shooter_bot: shooterBot,
+  throw_bot: throwBot,
+  timing_bot: timingBot,
+  rhythm_bot: rhythmBot,
+  duel_bot: duelBot,
+} as const;
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: {
@@ -53,16 +68,5 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     rhythm_level: rhythmLevel,
     duel_arena: duelArena,
   },
-  bots: {
-    runner_bot: runnerBot,
-    platform_bot: platformBot,
-    flap_bot: flapBot,
-    steer_bot: steerBot,
-    arena_bot: arenaBot,
-    shooter_bot: shooterBot,
-    throw_bot: throwBot,
-    timing_bot: timingBot,
-    rhythm_bot: rhythmBot,
-    duel_bot: duelBot,
-  },
+  bots: { ...BASE_BOTS, addon_bot: makeAddonBot(BASE_BOTS) as BotPiece },
 };

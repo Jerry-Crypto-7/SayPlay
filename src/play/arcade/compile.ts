@@ -13,7 +13,8 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts';
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
-import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeLevel, type ArcadeWorld, type PieceRef } from './contract';
+import { type ArcadeParts, addonLives, applyAddons } from './addons';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef } from './contract';
 import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
@@ -34,17 +35,6 @@ export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIM
 export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld } | { readonly ok: false; readonly issues: readonly string[] };
 
 /** Ovládání, trať a pravidla, která se liší podle `control`. */
-interface ArcadeParts {
-  readonly control: PieceRef;
-  readonly bot: PieceRef;
-  readonly level: ArcadeLevel;
-  readonly rules: PieceRef[];
-  /** Úroveň neprošla kontrolou hratelnosti z konstrukce – svět se nestaví. */
-  readonly issues?: readonly string[];
-  /** Životy, které ovládání samo určí (rytmus je zastropuje, souboj bez nich nejde). */
-  readonly health?: number;
-}
-
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
@@ -96,9 +86,10 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
 
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. */
 export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult {
-  const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max;
+  const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
-  const parts = partsOf(spec, seed, health);
+  // Doplňky (P26D) dostanou hotové části základního ovládání.
+  const parts = applyAddons(partsOf(spec, seed, health), { spec, seed });
   const { control, bot, level, rules, issues } = parts;
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   const lives = 'health' in parts ? parts.health : health;
