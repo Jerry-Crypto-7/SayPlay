@@ -912,3 +912,32 @@ button.play-feed-card {
 .play-upgrade[data-kind] .play-button {
   flex: none;
 }
+
+/* Karty pozdě hotových AI verzí na /play (T3), nad feedem. */
+.play-pending {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.play-pending-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 12px;
+  background: var(--play-panel);
+  border: 1px solid var(--play-accent);
+}
+
+.play-pending-card[data-kind='final'] {
+  border-color: var(--play-line);
+  color: var(--play-muted);
+}
+
+.play-pending-card .play-button {
+  flex: none;
+}

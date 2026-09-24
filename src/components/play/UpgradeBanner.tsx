@@ -10,10 +10,13 @@
  * smí trvat až 270 s a pozdní hotová verze se dřív ztratila potichu.
  */
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import type { DraftFinalReason } from '@/app/api/play/_upgrade';
+
+import { forgetPending, type PendingUpgrade, pendingUpgrades, rememberPending } from './pending-upgrades';
 
 export type UpgradeView =
   | { readonly kind: 'idle' }
@@ -171,11 +174,27 @@ export function noticeOf(view: UpgradeView, now: number): UpgradeNotice | null {
   }
 }
 
-/** Proužek nad hrou pro každý stav AI verze. Rozehraná hra se nevymění – nová se otevře jen tlačítkem. */
-export function UpgradeBanner({ request }: { readonly request: string | null }) {
+function draftIdOf(request: string): string | null {
+  return /\/games\/([^/]+)\/upgrade$/.exec(request)?.[1] ?? null;
+}
+
+/**
+ * Proužek nad hrou pro každý stav AI verze. Rozehraná hra se nevymění – nová
+ * se otevře jen tlačítkem. Rozběhnutou práci si prohlížeč zapamatuje (T3),
+ * `final` jen jednou ukáže a zapomene.
+ */
+export function UpgradeBanner({ request, sentence }: { readonly request: string | null; readonly sentence: string | null }) {
   const router = useRouter();
   const { view, retry } = useUpgrade(request);
   const [now, setNow] = useState(() => Date.now());
+  const draftId = request === null ? null : draftIdOf(request);
+  const since = view.kind === 'working' ? view.since : null;
+
+  useEffect(() => {
+    if (draftId === null) return;
+    if (since !== null && sentence !== null) rememberPending({ draftId, sentence, startedAt: since });
+    if (view.kind === 'final') forgetPending(draftId);
+  }, [draftId, sentence, since, view.kind]);
 
   useEffect(() => {
     if (view.kind !== 'working') return;
@@ -186,8 +205,9 @@ export function UpgradeBanner({ request }: { readonly request: string | null }) 
   const notice = noticeOf(view, Math.max(now, view.kind === 'working' ? view.since : now));
   if (notice === null) return null;
   const act = (): void => {
-    if (view.kind === 'ready') router.push(`/play/${view.versionId}`);
-    else retry();
+    if (view.kind !== 'ready') return retry();
+    if (draftId !== null) forgetPending(draftId);
+    router.push(`/play/${view.versionId}`);
   };
   return (
     <aside className="play-upgrade" data-testid="upgrade-state" data-kind={view.kind} role="status">
@@ -198,5 +218,55 @@ export function UpgradeBanner({ request }: { readonly request: string | null }) 
         </button>
       )}
     </aside>
+  );
+}
+
+type Settled = { readonly entry: PendingUpgrade; readonly answer: { readonly status: 'ready'; readonly versionId: string } | { readonly status: 'final'; readonly reason: DraftFinalReason } };
+
+/**
+ * Karty na `/play` (T3): uložené práce se jednou zeptají na stav. Hotová verze
+ * dostane kartu s odkazem, neúspěch se ukáže jednou a zapomene, běžící mlčí.
+ */
+export function PendingUpgradeCards() {
+  const [settled, setSettled] = useState<readonly Settled[]>([]);
+
+  useEffect(() => {
+    const control = new AbortController();
+    for (const entry of pendingUpgrades()) {
+      void fetch(`/api/play/games/${entry.draftId}/upgrade`, { signal: control.signal, cache: 'no-store' })
+        .then(async (response) => {
+          if (response.status === 404) return forgetPending(entry.draftId);
+          const answer = response.ok ? answerOf(await response.json()) : null;
+          if (answer === null || answer.status === 'pending') return;
+          if (answer.status === 'final') forgetPending(entry.draftId);
+          setSettled((shown) => [...shown.filter((known) => known.entry.draftId !== entry.draftId), { entry, answer }]);
+        })
+        .catch(() => {
+          // Bez sítě karta prostě nebude; práce zůstane uložená na příště.
+        });
+    }
+    return () => control.abort();
+  }, []);
+
+  if (settled.length === 0) return null;
+  return (
+    <ul className="play-pending">
+      {settled.map(({ entry, answer }) => (
+        <li key={entry.draftId} className="play-pending-card" data-testid="pending-upgrade" data-kind={answer.status}>
+          {answer.status === 'ready' ? (
+            <>
+              <span>Your game &lsquo;{entry.sentence}&rsquo; is ready</span>
+              <Link className="play-button" href={`/play/${answer.versionId}`} onClick={() => forgetPending(entry.draftId)}>
+                Open it
+              </Link>
+            </>
+          ) : (
+            <span>
+              Your game &lsquo;{entry.sentence}&rsquo;: {FINAL_REASON_TEXT[answer.reason]}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }

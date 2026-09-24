@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { CreateGame } from '@/components/play/CreateGame';
 import { FeedPager } from '@/components/play/FeedPager';
 import { HERO, SUBHEAD } from '@/components/play/starters';
+import { PendingUpgradeCards } from '@/components/play/UpgradeBanner';
 import { ARCHETYPES } from '@/play/registry';
 
 /** Věty archetypů pro seznam feedu – registr zůstává na serveru. */
@@ -21,6 +22,7 @@ export default function PlayPage() {
         <h1 className="play-hero">{HERO}</h1>
         <p className="play-subhead">{SUBHEAD}</p>
         <CreateGame />
+        <PendingUpgradeCards />
       </div>
       <Suspense fallback={null}>
         <FeedPager pitches={PITCHES} />

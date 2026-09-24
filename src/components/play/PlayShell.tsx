@@ -221,7 +221,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
       </div>
       <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
-      <UpgradeBanner request={upgrade} />
+      <UpgradeBanner request={upgrade} sentence={read.sentence} />
       <SentenceRead read={read} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
