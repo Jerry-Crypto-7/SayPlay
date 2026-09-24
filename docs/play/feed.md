@@ -14,7 +14,10 @@ GET /api/play/games?recent=N[&cursor=C]
 - `cursor` – optional, exactly the `next` value of the previous page. Opaque: clients never build or
   read it.
 - Any other parameter, a repeated parameter, or a cursor this feed did not give out → `400 BAD_REQUEST`.
-  A broken cursor is a 400, never a crash.
+  A broken cursor is a 400, never a crash. The cursor carries a checksum and an offset below
+  `RECENT_CAP`, so a random or edited one is refused before the list is read (and cannot mint new
+  edge-cache keys). The checksum is not a signature: a caller who reads the code can compute it, and
+  the per-caller rate limit (`admit()`) is what bounds that.
 
 ## Response
 

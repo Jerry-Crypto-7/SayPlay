@@ -13,7 +13,7 @@
  */
 
 import { diversify } from './diversify';
-import type { RecentGame } from './store';
+import { RECENT_CAP, type RecentGame } from './store';
 
 /** Co feed o hře potřebuje vědět, aby rozhodl, jestli ji ukáže. */
 export interface FeedCandidate {
@@ -40,9 +40,24 @@ interface Cursor {
   readonly offset: number;
 }
 
-/** Kurzor je neprůhledný: base64url JSONu. Klient ho jen vrací. */
-function encodeCursor(cursor: Cursor): string {
-  return Buffer.from(JSON.stringify([cursor.top.createdAt, cursor.top.versionId, cursor.offset])).toString('base64url');
+/**
+ * Kontrolní součet kurzoru (FNV-1a, 32 bitů). Není to podpis – kdo čte kód,
+ * součet spočítá; jen náhodný nebo upravený kurzor neprojde dřív, než se čte
+ * seznam, a vyhne se tak i 15s cache hrany. Odhodlaného volajícího drží `admit()`.
+ */
+function checksum(text: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i += 1) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash.toString(16).padStart(8, '0');
+}
+
+/** Kurzor je neprůhledný: base64url JSONu se součtem. Klient ho jen vrací. */
+export function encodeCursor(cursor: Cursor): string {
+  const fields = [cursor.top.createdAt, cursor.top.versionId, cursor.offset];
+  return Buffer.from(JSON.stringify([...fields, checksum(JSON.stringify(fields))])).toString('base64url');
 }
 
 /** `null` = poškozený kurzor; dveře odpoví 400. */
@@ -54,11 +69,13 @@ export function decodeCursor(text: string): Cursor | null {
   } catch {
     return null;
   }
-  if (!Array.isArray(value) || value.length !== 3) return null;
-  const [createdAt, versionId, offset] = value as unknown[];
+  if (!Array.isArray(value) || value.length !== 4) return null;
+  const [createdAt, versionId, offset, sum] = value as unknown[];
+  if (sum !== checksum(JSON.stringify([createdAt, versionId, offset]))) return null;
   if (typeof createdAt !== 'string' || Number.isNaN(Date.parse(createdAt))) return null;
   if (typeof versionId !== 'string' || !/^[a-f0-9]{8,64}$/.test(versionId)) return null;
-  if (typeof offset !== 'number' || !Number.isInteger(offset) || offset < 1 || offset > 10_000) return null;
+  // Poctivý kurzor ukazuje dovnitř seznamu, který má nejvýš `RECENT_CAP` řádků.
+  if (typeof offset !== 'number' || !Number.isInteger(offset) || offset < 1 || offset >= RECENT_CAP) return null;
   return { top: { createdAt, versionId }, offset };
 }
 

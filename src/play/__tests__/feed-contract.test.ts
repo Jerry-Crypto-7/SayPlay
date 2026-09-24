@@ -8,7 +8,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { GET as listGames, POST as createGame } from '@/app/api/play/games/route';
 import { GET as readGame } from '@/app/api/play/games/[id]/route';
-import { __resetProcessVersionStore, decodeCursor, feedEligible, feedPage, hiddenFromEnv, type RecentGame, versionStoreFromEnv } from '@/play/version';
+import { __resetProcessVersionStore, decodeCursor, feedEligible, feedPage, hiddenFromEnv, RECENT_CAP, type RecentGame, versionStoreFromEnv } from '@/play/version';
+import { encodeCursor } from '@/play/version/feed';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -126,6 +127,28 @@ describe('feedPage', () => {
     for (const bad of ['', '!!!', 'bm90IGpzb24', Buffer.from('[1,2,3]').toString('base64url'), Buffer.from('["2026-09-24T00:00:00.000Z","zz",1]').toString('base64url'), Buffer.from('["2026-09-24T00:00:00.000Z","aaaaaaaa",0]').toString('base64url')]) {
       expect(decodeCursor(bad), bad).toBeNull();
     }
+  });
+
+  it('refuses a well-formed cursor that was forged or edited', () => {
+    const rows = Array.from({ length: 12 }, (_, n) => row(n + 1));
+    const issued = feedPage(rows, 4, null, NONE).next;
+    expect(issued).not.toBeNull();
+    const [createdAt, versionId, offset] = JSON.parse(Buffer.from(issued as string, 'base64url').toString('utf8')) as unknown[];
+    const forge = (value: unknown[]): string => Buffer.from(JSON.stringify(value)).toString('base64url');
+    // Bez kontrolního součtu, s cizím součtem, s posunutým offsetem a za stropem seznamu.
+    for (const bad of [forge([createdAt, versionId, offset]), forge([createdAt, versionId, offset, 'deadbeef']), forge([createdAt, versionId, 9, 'deadbeef'])]) {
+      expect(decodeCursor(bad), bad).toBeNull();
+    }
+    expect(decodeCursor(issued as string)).toMatchObject({ offset: 4 });
+    const edited = JSON.parse(Buffer.from(issued as string, 'base64url').toString('utf8')) as unknown[];
+    edited[2] = 8;
+    expect(decodeCursor(forge(edited))).toBeNull();
+  });
+
+  it('refuses an offset beyond the list cap even with a valid checksum', () => {
+    const top = { createdAt: '2026-09-24T00:00:00.000Z', versionId: 'a'.repeat(32) };
+    expect(decodeCursor(encodeCursor({ top, offset: RECENT_CAP - 1 }))).toEqual({ top, offset: RECENT_CAP - 1 });
+    expect(decodeCursor(encodeCursor({ top, offset: RECENT_CAP }))).toBeNull();
   });
 });
 
