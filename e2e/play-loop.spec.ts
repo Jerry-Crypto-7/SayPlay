@@ -39,6 +39,8 @@ test('a played and shared game, then its link opened elsewhere, log each step on
   await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 10, undefined, { timeout: 60_000 });
   await page.keyboard.press('Space');
   await page.keyboard.press('Space');
+  // Stisk jde do záznamu až s dalším tikem; restart sondy před ním by ho zahodil.
+  await page.waitForFunction(() => window.__playShell!.inputs().length > 0);
   // Robot ověřovače dohraje hru za hráče – to výhra hráče není, a restart po ní taky ne.
   await page.evaluate(() => window.__playShell!.playWitness());
   await expect(page.getByTestId('play-outcome')).toBeVisible();
@@ -56,7 +58,9 @@ test('a played and shared game, then its link opened elsewhere, log each step on
   const opener = await sessionOf(other);
   expect(opener).not.toBe(player);
 
-  await expect.poll(() => eventsOf(player).sort(), { timeout: 15_000 }).toEqual(['first_input', 'impression', 'share']);
+  // Po „Replay“ hraje zase člověk a běžec bez stisku sám narazí – ta prohra je lidská
+  // a smí přijít kdykoli; výhra robota ani restart po ní se nepočítají.
+  await expect.poll(() => eventsOf(player).filter((name) => name !== 'lose').sort(), { timeout: 15_000 }).toEqual(['first_input', 'impression', 'share']);
   await expect.poll(() => eventsOf(opener).sort(), { timeout: 15_000 }).toEqual(['impression', 'shared_open']);
   // Věta hry do záznamu nešla.
   expect(linesOf(player).join('\n')).not.toContain('obstacles');
