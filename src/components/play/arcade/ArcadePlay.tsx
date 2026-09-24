@@ -203,7 +203,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
-      {upgraded !== null && <UpgradeBanner versionId={upgraded} />}
+      {upgraded.kind === 'ready' && <UpgradeBanner versionId={upgraded.versionId} />}
       {read !== undefined && <SentenceRead read={read} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {!running && (

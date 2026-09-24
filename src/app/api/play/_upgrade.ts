@@ -24,7 +24,7 @@ import { after } from 'next/server';
 import { gameSpecHash } from '@/play/spec';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
-import { getDirector } from './_director';
+import { DIRECTOR_BUDGET_MS, getDirector } from './_director';
 import { derivedSeeds, playabilityIssues, publishReadSpec, seedFrom } from './_publish';
 
 export type DraftFinalReason =
@@ -41,7 +41,19 @@ export type UpgradeOutcome =
   | { readonly status: 'ready'; readonly versionId: string }
   | { readonly status: 'draft-final'; readonly reason: DraftFinalReason };
 
-export type UpgradeStatus = UpgradeOutcome | { readonly status: 'pending' };
+/** `deadlineAt` (ISO): do kdy se má klient ptát – start práce + rozpočet režie + rezerva (P27C T1). */
+export type UpgradeStatus = UpgradeOutcome | { readonly status: 'pending'; readonly deadlineAt: string };
+
+/**
+ * Rezerva nad rozpočtem režie: kompilace, zápis dítěte a zpoždění dotazu.
+ * Klient se po `deadlineAt` bez výsledku přestane ptát a řekne, že AI ztratil.
+ */
+export const UPGRADE_DEADLINE_SLACK_MS = 15_000;
+
+/** `pending` práce, která začala `startedAt` (`Date.now()` příchodu požadavku). */
+export function pendingSince(startedAt: number): UpgradeStatus {
+  return { status: 'pending', deadlineAt: new Date(startedAt + DIRECTOR_BUDGET_MS + UPGRADE_DEADLINE_SLACK_MS).toISOString() };
+}
 
 /** Co zná POST a dotaz na upgrade ne: věta, semínko volajícího a dva první časy vodopádu. */
 export interface UpgradeRequest {
@@ -57,6 +69,7 @@ export interface UpgradeRequest {
 
 interface Job {
   readonly done: Promise<UpgradeOutcome>;
+  readonly startedAt: number;
   outcome: UpgradeOutcome | null;
 }
 
@@ -209,13 +222,13 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   const known = map.get(draftId);
   // Přechodný výsledek patří jen tomu, čí dotaz práci spustil (R13): připojený
   // divák by na `draft-final` přestal pollovat, ač jeho vlastní pokus by běžel.
-  if (known !== undefined) return known.done.then((outcome) => (isTransient(outcome) ? { status: 'pending' } : outcome));
+  if (known !== undefined) return known.done.then((outcome) => (isTransient(outcome) ? pendingSince(known.startedAt) : outcome));
 
   const attempt = runUpgrade(versions, draft, request).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };
   });
-  const job: Job = { done: attempt, outcome: null };
+  const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null };
   const remembered = attempt.then((outcome) => {
     if (isTransient(outcome)) {
       if (map.get(draftId) === job) map.delete(draftId);
@@ -245,5 +258,5 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
 export function knownUpgrade(draftId: string): UpgradeStatus | null {
   const job = jobs().get(draftId);
   if (job === undefined) return null;
-  return job.outcome ?? { status: 'pending' };
+  return job.outcome ?? pendingSince(job.startedAt);
 }
