@@ -34,6 +34,7 @@ import { CAPABILITIES } from '@/play/capabilities';
 import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
+import { type BodyView, bodiesOf, bodiesStale } from './bodies';
 import { Scenery } from './look/Scenery';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping } from './input';
@@ -198,33 +199,6 @@ function Primitive({ id, w, h, d }: { readonly id: string; readonly w: number; r
   );
 }
 
-interface BodyView {
-  readonly index: number;
-  readonly kind: string;
-  readonly role: number;
-  readonly w: number;
-  readonly h: number;
-  readonly d: number;
-}
-
-function bodiesOf(session: ArcadeSession): readonly BodyView[] {
-  const state = session.state();
-  const count = state[HEADER.bodyCount] as number;
-  const views: BodyView[] = [];
-  for (let index = 0; index < count; index += 1) {
-    const base = bodyBase(index);
-    views.push({
-      index,
-      kind: session.world.kinds[state[base + BODY.kind] as number] ?? 'crate',
-      role: state[base + BODY.role] as number,
-      w: (state[base + BODY.w] as number) / UNIT,
-      h: (state[base + BODY.h] as number) / UNIT,
-      d: (state[base + BODY.d] as number) / UNIT,
-    });
-  }
-  return views;
-}
-
 function lerp(from: number, to: number, alpha: number): number {
   return from + (to - from) * alpha;
 }
@@ -280,10 +254,31 @@ export interface FrameReport {
   readonly offset: { readonly x: number; readonly y: number; readonly z: number } | null;
 }
 
+/** Sonda kreslení (P28B T2, T6): draw cally posledního snímku a živé zdroje GPU. */
+export interface RenderReport {
+  readonly calls: number;
+  readonly triangles: number;
+  readonly geometries: number;
+  readonly textures: number;
+}
+
 declare global {
   interface Window {
     __playFrame?: () => FrameReport;
+    __playRender?: () => RenderReport;
   }
+}
+
+function RenderProbe() {
+  const gl = useThree((three) => three.gl);
+  useEffect(() => {
+    const probe = (): RenderReport => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures });
+    window.__playRender = probe;
+    return () => {
+      if (window.__playRender === probe) delete window.__playRender;
+    };
+  }, [gl]);
+  return null;
 }
 
 /** Tratě jedou po +z: cílem je nejbližší kandidát před hrdinou, ne ten, který už minul. */
@@ -399,7 +394,8 @@ function applyPose(group: Group, pose: Pose): void {
 }
 
 function World({ session, control, cast, surface, scene }: WorldProps) {
-  const views = useMemo(() => bodiesOf(session), [session]);
+  // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
+  const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
   const posed = useRef<(Group | null)[]>([]);
   const poses = useRef<(Pose | null)[]>([]);
@@ -418,11 +414,13 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
+    if (bodiesStale(views, session)) setViews(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
     // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
+    let shots = 0;
     for (const view of views) {
       const inner = posed.current[view.index];
       const pose = poses.current[view.index];
@@ -441,7 +439,10 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
       // Skluz snižuje tělo – model se přikrčí stejně.
       if (view.role === ROLE.player) group.scale.y = (state[base + BODY.h] as number) / UNIT / view.h;
       if (view.role === ROLE.collectible) group.rotation.y += delta * 3;
+      if (view.role === ROLE.projectile && group.visible) shots += 1;
     }
+    // Střely, které scéna opravdu kreslí (P28B T2) – e2e tak pozná střelu, kterou stav má a scéna ne.
+    if (surface.current !== null && surface.current.dataset.shotsDrawn !== String(shots)) surface.current.dataset.shotsDrawn = String(shots);
     const player = groups.current[state[HEADER.player] as number];
     if (player !== null && player !== undefined) {
       const { x, y, z } = player.position;
@@ -790,6 +791,7 @@ export default function ArcadeStage({
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
         <FrameProbe control={control} />
+        <RenderProbe />
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
           <TimingScene session={session} look={look} />

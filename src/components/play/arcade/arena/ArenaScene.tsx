@@ -13,13 +13,14 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { type Group, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
 
+import { bodiesOf, bodiesStale } from '../bodies';
 import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
@@ -40,22 +41,9 @@ const SEE_M_TALL = 6;
 /** Jak daleko za hranou arény stojí první řada kulis (m). */
 const SCENERY_MARGIN = 1.5;
 
-interface Disc {
-  readonly index: number;
-  readonly role: number;
-  readonly w: number;
-  readonly h: number;
-}
-
 export function ArenaWorld({ session, half, surface, look: scene }: { readonly session: ArcadeSession; readonly half: number; readonly surface: React.RefObject<HTMLDivElement | null>; readonly look: Look }) {
-  const discs = useMemo<readonly Disc[]>(() => {
-    const state = session.state();
-    const count = state[HEADER.bodyCount] as number;
-    return Array.from({ length: count }, (_, index) => {
-      const base = bodyBase(index);
-      return { index, role: state[base + BODY.role] as number, w: (state[base + BODY.w] as number) / UNIT, h: (state[base + BODY.h] as number) / UNIT };
-    });
-  }, [session]);
+  // Střely doplňku `+shoot` přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
+  const [discs, setDiscs] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
   const materials = useRef<(MeshStandardMaterial | null)[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
@@ -77,6 +65,7 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
+    if (bodiesStale(discs, session)) setDiscs(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
     const player = state[HEADER.player] as number;

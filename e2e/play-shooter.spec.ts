@@ -19,6 +19,37 @@ async function publish(request: APIRequestContext, sentence: string): Promise<st
   return ((await response.json()) as { url: string }).url;
 }
 
+test.describe('/play/[id] – shots are drawn (P28B T2)', () => {
+  let url = '';
+
+  test.beforeAll(async ({ request }) => {
+    url = await publish(request, GAMES[0].sentence);
+  });
+
+  test('a shot the kernel spawns mid-run shows up in the scene', async ({ page }) => {
+    await page.goto(url);
+    const stage = page.getByTestId('arcade-stage');
+    await expect(stage).toHaveAttribute('data-control', 'shooter');
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playRender !== undefined, undefined, { timeout: 60_000 });
+    await expect(stage).toHaveAttribute('data-shots-drawn', /\d+/, { timeout: 60_000 });
+    const box = (await stage.boundingBox())!;
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+    // První klik hru jen pustí; střela ze druhého už musí být vidět.
+    await page.mouse.click(x, y);
+    await page.waitForFunction(() => window.__playShell!.tick() > 90, undefined, { timeout: 10_000 });
+    const drawn = async (): Promise<number> => Number(await stage.getAttribute('data-shots-drawn'));
+    const before = await drawn();
+    const calls = await page.evaluate(() => window.__playRender!().calls);
+    await page.mouse.click(x, y);
+    await expect.poll(drawn, { intervals: [16], timeout: 2_000 }).toBeGreaterThan(before);
+    const after = await page.evaluate(() => window.__playRender!().calls);
+    expect(after).toBeGreaterThan(calls);
+    // Strop plánu P28B: kreslení všech živých těl přidá nejvýš 20 draw callů.
+    expect(after - calls).toBeLessThanOrEqual(20);
+  });
+});
+
 for (const game of GAMES) {
   test.describe(`/play/[id] – arcade ${game.control}`, () => {
     let url = '';
