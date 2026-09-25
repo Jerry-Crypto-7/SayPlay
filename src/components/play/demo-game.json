@@ -76,7 +76,11 @@
   "control": {
    "id": "runner",
    "params": {
-    "speed": "normal"
+    "speed": "normal",
+    "ramp": [
+     83333,
+     166666
+    ]
    }
   },
   "rules": [
