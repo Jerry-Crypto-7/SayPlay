@@ -37,7 +37,7 @@ import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { type BodyView, bodiesOf, bodiesStale } from './bodies';
 import { Scenery } from './look/Scenery';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
-import { isTyping } from './input';
+import { isTyping, runnerGesture } from './input';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -576,10 +576,9 @@ function Backdrop({ control, length, look }: { readonly control: string; readonl
   );
 }
 
-const SWIPE_PX = 30;
 const JUMP_KEYS = new Set([' ', 'arrowup', 'w']);
 
-/** Běžec: ťuk/klik/mezerník = skok, šipky/A-D a swipe = pruh, šipka dolů / swipe dolů = skluz. */
+/** Běžec: ťuk/klik/mezerník = skok (hned při stisku), šipky/A-D a swipe = pruh, šipka dolů / swipe dolů = skluz. */
 function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
     if (!active) return;
@@ -603,24 +602,19 @@ function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivE
   useEffect(() => {
     const element = target.current;
     if (!active || element === null) return;
-    let start: { x: number; y: number } | null = null;
-    const onDown = (event: PointerEvent) => {
-      start = { x: event.clientX, y: event.clientY };
-    };
-    const onUp = (event: PointerEvent) => {
-      if (start === null) return;
-      const dx = event.clientX - start.x;
-      const dy = event.clientY - start.y;
-      start = null;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_PX) session.press(BUTTON.TAP);
-      else if (Math.abs(dx) > Math.abs(dy)) session.press(dx < 0 ? BUTTON.LEFT : BUTTON.RIGHT);
-      else session.press(dy > 0 ? BUTTON.DOWN : BUTTON.TAP);
-    };
+    const gesture = runnerGesture(session);
+    const onDown = (event: PointerEvent) => gesture.down(event);
+    const onMove = (event: PointerEvent) => gesture.move(event);
+    const onEnd = () => gesture.end();
     element.addEventListener('pointerdown', onDown);
-    element.addEventListener('pointerup', onUp);
+    element.addEventListener('pointermove', onMove);
+    element.addEventListener('pointerup', onEnd);
+    element.addEventListener('pointercancel', onEnd);
     return () => {
       element.removeEventListener('pointerdown', onDown);
-      element.removeEventListener('pointerup', onUp);
+      element.removeEventListener('pointermove', onMove);
+      element.removeEventListener('pointerup', onEnd);
+      element.removeEventListener('pointercancel', onEnd);
     };
   }, [session, target, active]);
 }

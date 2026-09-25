@@ -122,6 +122,8 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
       sync();
     };
     const onDown = (event: PointerEvent) => {
+      // Tah, který vyjede z plátna, se musí pustit i venku – jinak řízení zůstane vytočené.
+      element.setPointerCapture(event.pointerId);
       pointers.set(event.pointerId, { x: event.clientX, axis: 0 });
       sync();
     };

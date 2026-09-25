@@ -175,6 +175,8 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
       sync();
     };
     const onDown = (event: PointerEvent) => {
+      // Tah, který vyjede z plátna, se musí pustit i venku – jinak hráč jede dál.
+      element.setPointerCapture(event.pointerId);
       drag = { x: event.clientX, y: event.clientY, dx: 0, dz: 0 };
       sync();
     };
