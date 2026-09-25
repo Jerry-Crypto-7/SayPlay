@@ -61,7 +61,7 @@ Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
 
 ## Known limits
 
-- **Arena (`move_free`) setting.** The top-down camera mostly sees the arena floor. The floor takes the set's track colour and the set's props stand past the arena edge, so they come into view only near the edge. `drawn: true` here means the scene draws the set, not that the first frame shows the props.
+- **Setting props are too primitive to name.** Since P28D T6 the arena camera tilts to 48° and every arcade scene opens with a 1.5 s fly-in, so the set's props are in frame – but they are boxes, cones and spheres, and the vision judge reads them as "sparse gray blocks" (city), "open gray roadway" (supermarket), "flat gray ground and blue cubes" (glacier). Live run `2026-09-25-p28d` below: setting still 1/24. The next lever is recognisable props (catalog models per set), not the camera.
 - **Grid verbs (`tap_go`, 6 sentences after P27A T5).** "do taxes", "date", "match", "throw", "defend", "slide" – the grid walks, collects and avoids. None of these is a control or a mechanic the grid has, so the draft cannot carry them without a new control.
 - **The thrown thing (`throw`, 3 sentences).** "snowballs", "cats", "cardboard boxes" – the throw scene reads only the player and target labels and always throws its own ball. Drawing the projectile from the sentence needs the scene to read a new label.
 - **Grid roles without a catalog model (`tap_go`, 2 sentences).** "fishmonger" and "battery" have no asset. The nearest tags are wrong on sight ("cell" is a germ), so they stay boxes until generation adds them.
@@ -110,5 +110,22 @@ Same 30 sentences, same model and config, build `b17cd5c` with `PLAY_DIRECTOR_MO
 - **Target not met:** the C2 working target is p50 ≤ 10 s; measured 12.4 s. The 28/30 usable target is met (30/30).
 - **What compact loses:** per AI version it reads slightly less (0.827 vs 0.860) and the judge saw the hero in 8 of 18 instead of 10. The full answer writes its own mechanics and parameters; compact keeps the template's. The gain is that no sentence falls back to the draft any more.
 - **Why it is faster (inference):** the answer is ~8 short fields instead of a full GameSpec, and the prompt is a control table instead of the whole registry. Nothing hung past the 285 s timeout in this run.
+
+## Live run 2026-09-25-p28d (P28D T6)
+
+Build `04c524e` (P28D T2–T6: nearest arcade game, sentence nouns, honest runner, grid scenery behind the arena, fly-in, tilted arena camera). Same server config as P27D T1 (`codex-cli` / `gpt-6-astra`, effort `high`, subscription). The frozen judge set ran as its own run, `run --set judge-10.json`. Summaries: `runs/2026-09-25-p28d.json`, `runs/2026-09-25-p28d-j10.json`.
+
+| | corpus p27 compact | corpus p28d | judge-10 p28d |
+|---|---|---|---|
+| AI version | 30/30 | 30/30 | 10/10 |
+| read (final / draft) | 0.827 / – | 0.838 / 0.759 | 0.632 / 0.507 |
+| drawn (final / draft) | – | 0.758 / 0.698 | 0.540 / 0.448 |
+| vision judge, items (final) | 26/110 | 26/110 | 6/37 |
+| vision judge, hero (final) | 8/18 | 7/18 | 1/5 |
+| vision judge, setting (final) | 1/24 | **1/24** | 2/9 |
+| upgrade p50 | 12.4 s | 20.7 s | – |
+
+- **T6 target missed:** setting ≥ 12/24 and items ≥ 40/110 were the goal; both stay where they were. The props are now in frame (see the arena shot `runs/2026-09-25-p28d/s111-ai-scene.png`), but the judge cannot name a primitive set – see Known limits.
+- **Structural numbers moved:** draft drawn 0.698 against 0.591 in the offline baseline, and the draft now reads 0.759 of the sentence.
 
 **The offline map measures the word draft, not the AI version.** The draft is what a player sees in the first second; the AI upgrade usually carries more of the sentence. A loss here is a loss of the offline path, and only a live run (`report.json`) says what the AI version shows.
