@@ -75,6 +75,7 @@ describe('arcade session events (P28C T1)', () => {
     expect(session.snapshot().tick).toBe(600);
     const pinned = replay(world, inputs, ARCADE_LIBRARY, 600).hash;
     expect(hashArcade(session.state())).toBe(pinned);
-    expect(pinned).toBe('28ef2d9e');
+    // Před rampou rychlosti (P28C T6) '28ef2d9e'; svět teď nese značky rampy.
+    expect(pinned).toBe('1b7cf2ba');
   });
 });

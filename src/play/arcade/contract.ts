@@ -39,6 +39,23 @@ export const PROJECTILE_LIFETIME = 3 * ARCADE_HZ;
 /** Plný odraz projektilu od země; 0 = zánik při dopadu. */
 export const BOUNCE_MAX = 1000;
 
+/** O kolik procent zrychlí běh za každou značkou rampy (P28C T6). */
+export const RAMP_STEP_PCT = 10;
+
+/**
+ * Rampa uvnitř běhu: značky jsou `z` na třetině a dvou třetinách trati. Svět
+ * je nese v parametrech ovládání, takže svět bez nich (každý dřív
+ * zkompilovaný) jede dál stálou rychlostí a jeho hash se nepohne.
+ */
+export const rampMarks = (length: number): [number, number] => [Math.floor(length / 3), Math.floor((2 * length) / 3)];
+
+/** Rychlost `speed` na místě `z` po přičtení minutých značek rampy. */
+export function rampedSpeed(speed: number, z: number, ramp: readonly number[] | undefined): number {
+  if (ramp === undefined) return speed;
+  const passed = ramp.filter((mark) => z >= mark).length;
+  return Math.floor((speed * (100 + RAMP_STEP_PCT * passed)) / 100);
+}
+
 // ---------------------------------------------------------------------------
 // Stav
 

@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, UNIT, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const RUNNER_SPEEDS = ['slow', 'normal', 'fast'] as const;
@@ -77,7 +77,13 @@ export const OBSTACLES: Readonly<Record<ObstacleKind, ObstacleShape>> = {
 
 const aux = (state: Int32Array, base: number, slot: 'aux0' | 'aux1'): number => state[base + BODY[slot]] as number;
 
-const controlParams = z.object({ speed: z.enum(RUNNER_SPEEDS).default('normal') }).strict();
+const controlParams = z
+  .object({
+    speed: z.enum(RUNNER_SPEEDS).default('normal'),
+    /** Značky rampy (`rampMarks`); bez nich stálá rychlost. */
+    ramp: z.tuple([z.int(), z.int()]).optional(),
+  })
+  .strict();
 
 /** Ovládání běžce. `aux0` = cílový pruh (−1, 0, 1), `aux1` = zbývající tiky skluzu. */
 export const runnerControl: ControlPiece<z.infer<typeof controlParams>> = {
@@ -89,7 +95,7 @@ export const runnerControl: ControlPiece<z.infer<typeof controlParams>> = {
     const base = bodyBase(player);
     const flags = state[base + BODY.flags] as number;
     const grounded = (flags & FLAG.grounded) !== 0;
-    state[base + BODY.vz] = SPEED[params.speed];
+    state[base + BODY.vz] = rampedSpeed(SPEED[params.speed], state[base + BODY.z] as number, params.ramp);
 
     let lane = aux(state, base, 'aux0');
     if ((input.buttons & BUTTON.LEFT) !== 0) lane = Math.max(-1, lane - 1);
@@ -165,6 +171,8 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
     const rng = createCompileRng(seed);
     const length = params.lengthM * UNIT;
     const speed = SPEED[params.speed];
+    // Odstup řad drží reakční čas i za značkami rampy, kde běh zrychlí.
+    const ramp = rampMarks(length);
     const bodies: BodyInit[] = [
       { role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: RUNNER.playerW, h: RUNNER.runH, d: RUNNER.playerD, solid: false },
     ];
@@ -188,7 +196,7 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
       if (kinds.length === RUNNER.lanes && kinds.every((kind) => OBSTACLES[kind].passBy === 'lane')) kinds[0] = rng.pick(passable);
       taken.forEach((lane, index) => bodies.push(obstacleBody(kinds[index] as ObstacleKind, lane, z)));
       rows.push(z);
-      z += spread ?? (GAP_TICKS[params.density] + rng.int(0, 20)) * speed;
+      z += Math.max(RUNNER_TRACK.minGapTicks * rampedSpeed(speed, z, ramp), spread ?? (GAP_TICKS[params.density] + rng.int(0, 20)) * speed);
     }
 
     if (params.coins) {
@@ -217,7 +225,7 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
  * Tvrzení „hratelné z konstrukce“ nad hotovou úrovní: vrací porušení, prázdné
  * pole = hratelná. Řada = překážky se stejným `z`.
  */
-export function checkRunnerLevel(level: ArcadeLevel, speed: RunnerSpeed): string[] {
+export function checkRunnerLevel(level: ArcadeLevel, speed: RunnerSpeed, ramp: readonly number[] | undefined = rampMarks(level.length)): string[] {
   const issues: string[] = [];
   const rows = new Map<number, BodyInit[]>();
   for (const body of level.bodies) {
@@ -225,8 +233,8 @@ export function checkRunnerLevel(level: ArcadeLevel, speed: RunnerSpeed): string
     rows.set(body.z, [...(rows.get(body.z) ?? []), body]);
   }
   const zs = [...rows.keys()].sort((a, b) => a - b);
-  const minGap = RUNNER_TRACK.minGapTicks * SPEED[speed];
   zs.forEach((z, index) => {
+    const minGap = RUNNER_TRACK.minGapTicks * rampedSpeed(SPEED[speed], z, ramp);
     const row = rows.get(z) as BodyInit[];
     const closed = row.length >= RUNNER.lanes && row.every((body) => OBSTACLES[body.kind as ObstacleKind]?.passBy === 'lane');
     if (closed) issues.push(`row at ${z / UNIT} m blocks all ${RUNNER.lanes} lanes with obstacles that cannot be jumped or slid under`);
