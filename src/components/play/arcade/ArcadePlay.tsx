@@ -13,19 +13,21 @@ import dynamic from 'next/dynamic';
 import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
+import { installSoundControls, jumped, playSfx, presetsFor } from '@/play/audio';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
-import { secondsOf, timerLeft } from '../Hud';
+import { FirstPrompt, secondsOf, timerLeft } from '../Hud';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
+import { MuteButton } from '../MuteButton';
 import { PostRun } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
@@ -139,6 +141,7 @@ function ArcadeHud({ versionId, spec, world, snapshot, paused, children }: { rea
       </p>
       <AddonCounters world={world} snapshot={snapshot} />
       {children}
+      <MuteButton />
       {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
       {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
@@ -160,6 +163,8 @@ export interface ArcadePlayProps {
   readonly active?: boolean;
 }
 
+const END_PAUSE_MS = 600;
+
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true }: ArcadePlayProps) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -173,6 +178,16 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
   const remix = useRemixJob(versionId, !running && demo === null);
+  // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (running) {
+      setSettled(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setSettled(true), END_PAUSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [running]);
 
   // Pauza mimo obrazovku feedu, při skryté záložce a oknu bez fokusu (`focus.ts`).
   // Rytmus nepípá, když tiky stojí.
@@ -202,6 +217,25 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
     });
   }, [session, versionId]);
 
+  // Zvuk (P28C T2): efekty pravidel z tiků hráče a skok z rychlosti vzhůru – mimo stav.
+  useEffect(() => installSoundControls(), []);
+  useEffect(() => {
+    const offEvents = session.onEvents((events) => {
+      for (const preset of presetsFor(events)) playSfx(preset);
+    });
+    let lastTick = -1;
+    const offJump = session.subscribe(() => {
+      const tick = session.state()[HEADER.tick] as number;
+      if (tick === lastTick) return;
+      lastTick = tick;
+      if (session.humanRun() && jumped(session.prev(), session.state())) playSfx('jump');
+    });
+    return () => {
+      offEvents();
+      offJump();
+    };
+  }, [session]);
+
   useEffect(() => {
     const probe = {
       inputs: () => session.inputs(),
@@ -210,8 +244,33 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
         const end = session.playInputs(session.botInputs(), ARCADE_LIMITS.maxTicks);
         return { runState: end.runState, tick: end.tick };
       },
+      /**
+       * Záznam robota zahraný „rukou“ (P28C T3): tytéž stisky tik po tiku cestou,
+       * kterou jde klávesnice, takže běh je hráčův a odezva i zvuk reagují.
+       * Stojí u prvního bodu (`score`) nebo na konci hry (`end`); `at` je
+       * `performance.now()` té chvíle.
+       */
+      handPlay: (until: 'score' | 'end') => {
+        const inputs = session.botInputs();
+        session.restart();
+        let next = 0;
+        const done = (): boolean => {
+          const now = session.snapshot();
+          return now.runState !== 'running' || now.tick >= ARCADE_LIMITS.maxTicks || (until === 'score' && now.score > 0);
+        };
+        while (!done()) {
+          const tick = session.snapshot().tick;
+          while (next < inputs.length && inputs[next]!.tick < tick) next += 1;
+          const event = inputs[next]?.tick === tick ? inputs[next] : undefined;
+          session.hold(event?.axis ?? 0);
+          session.press(event?.buttons ?? 0);
+          session.stepOnce();
+        }
+        const end = session.snapshot();
+        return { runState: end.runState, tick: end.tick, score: end.score, at: performance.now() };
+      },
     };
-    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick` a `playWitness`.
+    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick`, `playWitness` a `handPlay`.
     window.__playShell = probe as unknown as Window['__playShell'];
     return () => {
       if (window.__playShell === (probe as unknown)) delete window.__playShell;
@@ -224,6 +283,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
+      {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
       {running && <RemixReadyChip job={remix} />}
@@ -241,7 +301,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
           </button>
         </section>
       )}
-      {!running && demo === null && (
+      {!running && demo === null && settled && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">

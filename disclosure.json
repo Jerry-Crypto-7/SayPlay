@@ -2619,6 +2619,21 @@
       "scope": "prod"
     },
     {
+      "name": "zzfx (vendored)",
+      "kind": "library",
+      "manual": true,
+      "scope": "prod",
+      "source": "https://github.com/KilledByAPixel/ZzFX (sample generator zzfxG, vendored and ported to TypeScript in src/play/audio/zzfx.ts)",
+      "authorOrProvider": "Frank Force",
+      "license": "MIT",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence"
+      ],
+      "attribution": "ZzFX - Zuper Zmall Zound Zynth, Copyright (c) 2019 Frank Force, MIT",
+      "reviewNote": "Generates the five game sounds (jump, pickup, hit, win, lose) and the rhythm beeps in the browser (P28C T2); ported to TypeScript with the MIT notice kept in the file header. Vendored, so invisible to package-lock.json."
+    },
+    {
       "name": "public/assets/worldstream/aquarium-lod0.glb",
       "kind": "asset",
       "firstParty": true,

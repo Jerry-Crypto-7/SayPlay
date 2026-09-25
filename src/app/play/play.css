@@ -254,6 +254,85 @@
   height: 100%;
 }
 
+/* Výzva prvních sekund (P28C T5): jeden povel uprostřed, klepnutí jde skrz na plátno. */
+.play-first-prompt {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  z-index: 2;
+  max-width: calc(100% - 32px);
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: clamp(1.6rem, 5.5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 3px 12px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+  animation: play-first-prompt 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes play-first-prompt {
+  to {
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-first-prompt {
+    animation: none;
+  }
+}
+
+/* Odezva (P28C T3): „+N“ vyletí nad hráčem a zhasne za 500 ms, zásah otřese obrazem 150 ms. */
+.play-score-pop {
+  position: absolute;
+  top: 34%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fde047;
+  text-shadow: 0 2px 6px rgb(0 0 0 / 0.55);
+  pointer-events: none;
+  animation: play-score-pop 500ms ease-out forwards;
+}
+
+@keyframes play-score-pop {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1.15);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -48px) scale(1);
+  }
+}
+
+.play-stage-shake {
+  animation: play-stage-shake 150ms linear;
+}
+
+@keyframes play-stage-shake {
+  25% {
+    transform: translate(-7px, 3px);
+  }
+  50% {
+    transform: translate(6px, -4px);
+  }
+  75% {
+    transform: translate(-4px, 2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-stage-shake {
+    animation: none;
+  }
+}
+
 /* Střelba doplňku +shoot: palec vpravo dole, mimo HUD a obrazovku po hře. */
 .play-fire {
   position: absolute;
@@ -360,6 +439,12 @@
   flex-wrap: wrap;
   gap: 8px;
   background: linear-gradient(to top, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0));
+  /* Mezery mezi kartami pouští klepnutí na plátno pod nimi (P28C T4); kartu chytá karta. */
+  pointer-events: none;
+}
+
+.play-targets .play-target {
+  pointer-events: auto;
 }
 
 .play-targets-empty {
@@ -527,6 +612,8 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    /* Pás se tu posouvá prstem do strany – musí tah chytat i v mezerách. */
+    pointer-events: auto;
   }
 
   .play-target {
@@ -857,8 +944,9 @@ button.play-feed-card {
   font-size: 0.9rem;
 }
 
-/* „Show me how“ (P27D T3): stejně jako sdílení chytá ťuk samo, plátno ho nedostane. */
-.play-hud-demo {
+/* „Show me how“ (P27D T3) a ztlumení (P28C T2): stejně jako sdílení chytají ťuk samy, plátno ho nedostane. */
+.play-hud-demo,
+.play-hud-mute {
   pointer-events: auto;
   margin-top: 8px;
   margin-right: 8px;

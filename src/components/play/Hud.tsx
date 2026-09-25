@@ -11,11 +11,14 @@
  * importovaná, aby klientský bundl netáhl registr mechanik a zod.
  */
 
+import { useEffect, useState } from 'react';
+
 import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
 // `timer.ts` importuje jen typy, takže konstanta runtime bundl nezatíží.
 import { TICKS_PER_SECOND } from '@/play/compile/adapters/timer';
 import type { GameSpecV1 } from '@/play/spec';
 
+import { MuteButton } from './MuteButton';
 import { ShareButton } from './ShareButton';
 
 export { TICKS_PER_SECOND };
@@ -77,6 +80,56 @@ export function phaseLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'val
   return readVariable(snapshot as RuntimeSnapshot, `${timer.params.id}_red`) === 1 ? 'RED – freeze' : 'GREEN – go';
 }
 
+/** Náhradní vstupy za „nebo“ – výzva jmenuje jen první („Tap or Space“ → „Tap“). */
+const ALTERNATIVE_INPUT = /\s+or\s+(?:space|arrows|a\/d|w\/s|down|up|enter|keys|tap|swipe|click|drag)\b/gi;
+
+/**
+ * Výzva prvních sekund (P28C T5): nápověda ovládání zkrácená na jeden povel –
+ * první věta, první souvětí, bez náhradních kláves. U „Tap a mushroom to walk
+ * to it“ zůstane jen to, na co klepnout („Tap a mushroom“). Žádný nový text:
+ * jen slova, která hra už v nápovědě má.
+ */
+export function callToAction(controlsHint: string): string {
+  const sentence = controlsHint.trim().split(/(?<=[.!?])\s/)[0] ?? '';
+  let clause = (sentence.split(/[,;]/)[0] ?? '').replace(/[.!?]+$/, '').replace(ALTERNATIVE_INPUT, '').trim();
+  // Povel s předmětem („Tap a/the …“) končí předmětem: „to walk to it“, „when the lava is calm“ je už návod.
+  if (/^\w+\s+(?:a|an|the)\s/i.test(clause)) clause = clause.split(/\s+(?:to|when|and)\s+/i)[0] ?? clause;
+  return clause;
+}
+
+const FIRST_PROMPT_MS = 4000;
+
+/**
+ * Velká výzva uprostřed (P28C T5): zmizí po prvním vstupu hráče – klepnutí,
+ * klávesa mimo pole formuláře – nebo po 4 s. Menší nápověda v HUD zůstává.
+ */
+export function FirstPrompt({ controlsHint }: { readonly controlsHint: string }) {
+  const [shown, setShown] = useState(true);
+  useEffect(() => {
+    const hide = (): void => setShown(false);
+    const onKey = (event: KeyboardEvent): void => {
+      const target = event.target;
+      if (target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null)) return;
+      hide();
+    };
+    const timer = window.setTimeout(hide, FIRST_PROMPT_MS);
+    window.addEventListener('pointerdown', hide, true);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('pointerdown', hide, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, []);
+  const text = callToAction(controlsHint);
+  if (!shown || text === '') return null;
+  return (
+    <p className="play-first-prompt" data-testid="play-first-prompt" aria-hidden="true">
+      {text}
+    </p>
+  );
+}
+
 /** Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`, ať nejsou na stránce dvě. */
 export function Hud({ spec, snapshot, versionId }: { readonly spec: GameSpecV1; readonly snapshot: RuntimeSnapshot; readonly versionId: string }) {
   const phase = phaseLine(spec, snapshot);
@@ -96,6 +149,7 @@ export function Hud({ spec, snapshot, versionId }: { readonly spec: GameSpecV1; 
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick} hidden />
 
       </p>
+      <MuteButton />
       {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );

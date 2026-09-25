@@ -382,6 +382,8 @@ interface WorldProps {
   readonly enabled: boolean;
 }
 
+const PICKUP_MS = 200;
+
 /** Role, jejichž model se hýbe podle stavu těla (P26B); plošiny, auta a překážky jedou bez pózy. */
 const POSED_ROLES: ReadonlySet<number> = new Set([ROLE.player, ROLE.enemy, ROLE.chaser]);
 
@@ -407,6 +409,17 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
+  // Sebrané tělo (bod + zmizení v jednom tiku) → čas sebrání; ještě PICKUP_MS se nafoukne a splaskne (P28C T3).
+  const fading = useRef(new Map<number, number>());
+  useEffect(
+    () =>
+      session.onEvents((events) => {
+        if (!events.some((event) => event.kind === 'score')) return;
+        const now = performance.now();
+        for (const event of events) if (event.kind === 'despawn') fading.current.set(event.body, now);
+      }),
+    [session],
+  );
 
   // Role těl, pro která scéna postavila model – doplněk, který jádro hraje a scéna nekreslí, e2e takhle pozná.
   useEffect(() => {
@@ -431,6 +444,17 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
       if (group === null || group === undefined) continue;
       const base = bodyBase(view.index);
       group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
+      const fade = fading.current.get(view.index);
+      if (fade !== undefined) {
+        const t = (performance.now() - fade) / PICKUP_MS;
+        if (t >= 1 || group.visible) {
+          fading.current.delete(view.index);
+          group.scale.setScalar(1);
+        } else {
+          group.visible = true;
+          group.scale.setScalar((1 + 0.6 * Math.sin(t * Math.PI)) * (1 - t));
+        }
+      }
       // Kamera běžce kouká po +z, takže +x jádra by vyšlo na obrazovce vlevo a „LEFT“ (x − 1) by hráče poslal doprava.
       group.position.set(
         -lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
@@ -750,6 +774,69 @@ function FireButton({ session }: { readonly session: ArcadeSession }) {
   );
 }
 
+/** Jak dlouho visí „+1“ nad hráčem a jak dlouho třese obraz po zásahu (P28C T3). */
+export const SCORE_POP_MS = 500;
+const SHAKE_MS = 150;
+
+interface ScorePop {
+  readonly id: number;
+  readonly amount: number;
+  /** Vodorovná poloha hráče na obrazovce v % (střed, když ji scéna nehlásí). */
+  readonly left: number;
+}
+
+/**
+ * Odezva nad plátnem (P28C T3), společná všem scénám: „+N“ nad hráčem při
+ * bodu a otřes obrazu při zásahu. Je to DOM nad plátnem – žádný draw call
+ * navíc, kamera scény ani stav relace se nemění. Poloha „+N“ je `data-player-x`,
+ * který píše scéna běžce, plošinovky, poletování a závodu; ostatní scény ho
+ * nemají a „+N“ je uprostřed.
+ */
+function EventFeedback({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+  const [pops, setPops] = useState<readonly ScorePop[]>([]);
+  useEffect(() => {
+    let next = 0;
+    const timers = new Set<number>();
+    const later = (ms: number, fn: () => void): void => {
+      const timer = window.setTimeout(() => {
+        timers.delete(timer);
+        fn();
+      }, ms);
+      timers.add(timer);
+    };
+    const off = session.onEvents((events) => {
+      const amount = events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
+      if (amount > 0) {
+        const x = Number(surface.current?.dataset.playerX ?? 0);
+        const pop = { id: (next += 1), amount, left: 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50 };
+        setPops((current) => [...current, pop]);
+        later(SCORE_POP_MS, () => setPops((current) => current.filter((entry) => entry.id !== pop.id)));
+      }
+      const element = surface.current;
+      if (element !== null && events.some((event) => event.kind === 'damage')) {
+        // Znovu spustit animaci i při zásahu v jejím průběhu: bez přepočtu stylu by třída jen zůstala.
+        element.classList.remove('play-stage-shake');
+        void element.offsetWidth;
+        element.classList.add('play-stage-shake');
+        later(SHAKE_MS, () => element.classList.remove('play-stage-shake'));
+      }
+    });
+    return () => {
+      off();
+      for (const timer of timers) window.clearTimeout(timer);
+    };
+  }, [session, surface]);
+  return (
+    <>
+      {pops.map((pop) => (
+        <span key={pop.id} className="play-score-pop" data-testid="score-pop" style={{ left: `${pop.left}%` }} aria-hidden="true">
+          +{pop.amount}
+        </span>
+      ))}
+    </>
+  );
+}
+
 export default function ArcadeStage({
   session,
   cast,
@@ -794,7 +881,7 @@ export default function ArcadeStage({
         {control === 'timing' ? (
           <TimingScene session={session} look={look} />
         ) : control === 'rhythm' ? (
-          <RhythmScene session={session} surface={surface} look={look} />
+          <RhythmScene session={session} look={look} />
         ) : control === 'duel' ? (
           <DuelScene session={session} look={look} rivalModel={rivalModel} />
         ) : (
@@ -812,6 +899,7 @@ export default function ArcadeStage({
           </>
         )}
       </Canvas>
+      <EventFeedback session={session} surface={surface} />
       {fires && enabled && <FireButton session={session} />}
     </div>
   );

@@ -14,7 +14,7 @@ import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts'
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
-import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef } from './contract';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef, rampMarks } from './contract';
 import { buildWorld, replay } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
@@ -90,7 +90,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   }
   if (spec.control === 'flap') {
     const params = flapTrack.params.parse({ ...spec.controlParams, ...counts });
-    return { control: { id: 'flap', params: {} }, bot: { id: 'flap_bot', params: {} }, level: flapTrack.generate(seed, params), rules: flapRules(health) };
+    const level = flapTrack.generate(seed, params);
+    const ramp = rampMarks(level.length);
+    return { control: { id: 'flap', params: { ramp } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health) };
   }
   if (spec.control === 'shooter') {
     const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });
@@ -108,7 +110,8 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     { id: 'finish', params: {} },
   ];
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
-  return { control: { id: 'runner', params: { speed: params.speed } }, bot: { id: 'runner_bot', params: {} }, level: runnerTrack.generate(seed, params), rules };
+  const level = runnerTrack.generate(seed, params);
+  return { control: { id: 'runner', params: { speed: params.speed, ramp: rampMarks(level.length) } }, bot: { id: 'runner_bot', params: {} }, level, rules };
 }
 
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. */

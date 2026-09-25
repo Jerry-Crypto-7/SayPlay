@@ -11,7 +11,7 @@
  * kreslení mezi ním a `state` interpoluje.
  */
 
-import { ARCADE_HZ, AXIS_MAX, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, BODY } from '@/play/arcade/contract';
+import { ARCADE_HZ, AXIS_MAX, type ArcadeEffect, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, BODY } from '@/play/arcade/contract';
 import { type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { type BotRun, runBot } from '@/play/arcade/verify';
@@ -73,7 +73,16 @@ export interface ArcadeSession {
   demo(): DemoState | null;
   /** Hraje člověk: ne ukázka, ne záznam robota přehraný `playInputs` (P27D T4 – jen takový běh se počítá). */
   humanRun(): boolean;
+  /**
+   * Efekty pravidel z tiků, které hraje člověk (P28C T1) – pro zvuk a odezvu.
+   * Ukázka ani přehrání `playInputs` posluchače nevolají; do stavu ani hashe
+   * posluchač nesahá.
+   */
+  onEvents(listener: ArcadeEventListener): () => void;
 }
+
+/** `tick` = tik, ve kterém efekty padly (před jeho přičtením). */
+export type ArcadeEventListener = (events: readonly ArcadeEffect[], tick: number) => void;
 
 export interface DemoState {
   readonly ended: boolean;
@@ -112,6 +121,7 @@ export function createArcadeSession(
   // Běh dohraný `playInputs` (záznam robota přes sondu) do restartu – nehrál ho člověk.
   let replayed = false;
   const listeners = new Set<() => void>();
+  const eventListeners = new Set<ArcadeEventListener>();
 
   const notify = (): void => {
     cached = null;
@@ -125,11 +135,10 @@ export function createArcadeSession(
     if (outcomeOf(state) !== 'running') return;
     prev.set(state);
     const tick = state[HEADER.tick] as number;
-    if (buttons === 0 && axis === 0) step(state, NO_INPUT, program);
-    else {
-      if (record) log.push({ tick, buttons, axis });
-      step(state, { buttons, axis }, program);
-    }
+    const idle = buttons === 0 && axis === 0;
+    if (record && !idle) log.push({ tick, buttons, axis });
+    const effects = step(state, idle ? NO_INPUT : { buttons, axis }, program);
+    if (effects.length > 0 && script === null && !replayed) for (const listener of eventListeners) listener(effects, tick);
   };
 
   /** Krok ukázky: vstup robota pro tenhle tik – týž výběr jako `playInputs`. */
@@ -277,6 +286,10 @@ export function createArcadeSession(
     },
     demo: () => demoView,
     humanRun: () => script === null && !replayed,
+    onEvents: (listener) => {
+      eventListeners.add(listener);
+      return () => eventListeners.delete(listener);
+    },
   };
   return session;
 }

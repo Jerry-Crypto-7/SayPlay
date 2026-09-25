@@ -95,6 +95,56 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(before);
   });
 
+  test('the first click wakes the sound and M mutes it for the next visit too (P28C T2)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    // Bez gesta hráče prohlížeč zvuk nepustí – kontext ještě nevznikl.
+    expect(await page.evaluate(() => window.__playAudio!.state())).toBe('none');
+    await page.getByTestId('arcade-stage').click();
+    await expect.poll(() => page.evaluate(() => window.__playAudio!.state())).toBe('running');
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound on');
+    await page.keyboard.press('m');
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
+    expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('muted');
+    await page.reload();
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
+    await page.getByTestId('play-mute').click();
+    await expect(page.getByTestId('play-mute')).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('on');
+  });
+
+  test('a pickup pops "+1" and the result waits ~600 ms after the end (P28C T3)', async ({ page }) => {
+    type Hand = { handPlay: (until: 'score' | 'end') => { runState: string; score: number; at: number } };
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
+    const scored = await page.evaluate(() => (window.__playShell as unknown as Hand).handPlay('score'));
+    expect(scored.score).toBeGreaterThan(0);
+    await page.waitForTimeout(100);
+    // Snímek 100 ms po sebrání: „+N“ visí nad hráčem (a za 500 ms zmizí sám).
+    expect(await page.evaluate(() => document.querySelector('[data-testid="score-pop"]')?.textContent ?? null)).toBe(`+${scored.score}`);
+
+    const end = await page.evaluate(async () => {
+      const run = (window.__playShell as unknown as Hand).handPlay('end');
+      return new Promise<{ runState: string; delay: number }>((resolve) => {
+        const poll = (): void => {
+          if (document.querySelector('[data-testid="play-outcome"]') !== null) resolve({ runState: run.runState, delay: performance.now() - run.at });
+          else requestAnimationFrame(poll);
+        };
+        poll();
+      });
+    });
+    expect(end.runState).toBe('won');
+    expect(end.delay).toBeGreaterThanOrEqual(550);
+    expect(end.delay).toBeLessThanOrEqual(800);
+  });
+
+  test('a one-command prompt says what to do and goes away on the first input (P28C T5)', async ({ page }) => {
+    await page.goto(url);
+    await expect(page.getByTestId('play-first-prompt')).toHaveText('Tap to jump', { timeout: 60_000 });
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('play-first-prompt')).toHaveCount(0);
+  });
+
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
     await page.goto(url);
     const stage = page.getByTestId('arcade-stage');

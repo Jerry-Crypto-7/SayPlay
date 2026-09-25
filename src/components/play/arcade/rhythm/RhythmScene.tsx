@@ -6,21 +6,21 @@
  * když je nota v okně, trefa bliká zeleně, minutí červeně.
  *
  * Zvuk je ozdoba mimo stav: krátké pípnutí, když nota dorazí na lištu
- * (beat), a vyšší tón při trefě. AudioContext vznikne až po prvním ťuku
- * (prohlížeč jinak zvuk nepustí), M zvuk vypne a zapne. Nic z toho
- * nesahá do relace ani do hashe.
+ * (beat), a vyšší tón při trefě. Kontext, probuzení gestem a ztlumení M
+ * jsou společné všem hrám (`@/play/audio`, P28C T2). Nic z toho nesahá do
+ * relace ani do hashe.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { Group, MeshStandardMaterial, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
+import { playTone } from '@/play/audio';
 
-import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { initialBody } from '../timing/TimingScene';
@@ -33,45 +33,7 @@ const LANE_OF = (x: number): number => Math.round(x / RHYTHM.laneW + (RHYTHM.lan
 const FLASH_TICKS = 12;
 const TRACK_M = 60;
 
-/** Zvuk rytmu: pípnutí na beat a tón při trefě; M přepíná. */
-function useBeatSound(target: React.RefObject<HTMLDivElement | null>) {
-  const audio = useRef<AudioContext | null>(null);
-  const muted = useRef(false);
-  useEffect(() => {
-    const element = target.current;
-    if (element === null) return;
-    const wake = () => {
-      if (audio.current === null && typeof AudioContext !== 'undefined') audio.current = new AudioContext();
-    };
-    const onKey = (event: KeyboardEvent) => {
-      if (isTyping(event.target)) return;
-      if (event.key.toLowerCase() === 'm' && !event.repeat) muted.current = !muted.current;
-      else wake();
-    };
-    element.addEventListener('pointerdown', wake);
-    window.addEventListener('keydown', onKey);
-    return () => {
-      element.removeEventListener('pointerdown', wake);
-      window.removeEventListener('keydown', onKey);
-      void audio.current?.close();
-      audio.current = null;
-    };
-  }, [target]);
-  return (frequency: number, volume: number): void => {
-    const context = audio.current;
-    if (context === null || muted.current) return;
-    const osc = context.createOscillator();
-    const gain = context.createGain();
-    osc.frequency.value = frequency;
-    gain.gain.setValueAtTime(volume, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12);
-    osc.connect(gain).connect(context.destination);
-    osc.start();
-    osc.stop(context.currentTime + 0.13);
-  };
-}
-
-export function RhythmScene({ session, surface, look: scene }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly look: Look }) {
+export function RhythmScene({ session, look: scene }: { readonly session: ArcadeSession; readonly look: Look }) {
   const world = session.world;
   const count = world.initial[HEADER.bodyCount] as number;
   const notes = useMemo(() => Array.from({ length: count - 1 }, (_, i) => initialBody(world, i + 1)), [world, count]);
@@ -81,7 +43,6 @@ export function RhythmScene({ session, surface, look: scene }: { readonly sessio
   const flash = useRef<{ tick: number; hit: boolean } | null>(null);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
-  const play = useBeatSound(surface);
   const hitWindow = (world.control.params as { window?: number }).window ?? RHYTHM.window;
   const reach = hitWindow * RHYTHM.noteSpeed;
 
@@ -102,13 +63,13 @@ export function RhythmScene({ session, surface, look: scene }: { readonly sessio
       group.position.z = lerp(before, z, alpha) / UNIT;
       if (alive && Math.abs(z) <= reach) near = true;
       // Beat: nota právě přejela lištu (z kladného na nekladné).
-      if (before > 0 && z <= 0 && tick !== 0) play(440, 0.05);
+      if (before > 0 && z <= 0 && tick !== 0) playTone(440, 0.05);
     });
     const p = bodyBase(state[HEADER.player] as number);
     const result = state[p + BODY.aux0] as number;
     if (result !== 0 && flash.current?.tick !== tick) {
       flash.current = { tick, hit: result > 0 };
-      if (result > 0) play(880, 0.08);
+      if (result > 0) playTone(880, 0.08);
     }
     const material = barMaterial.current;
     if (material !== null) {
