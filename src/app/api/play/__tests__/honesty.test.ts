@@ -38,7 +38,7 @@ describe('POST /api/play/games – honesty', () => {
     expect(created.body.url).toMatch(/^\/play\/[a-f0-9]+$/);
     expect(created.body.honesty).toEqual({
       reason: 'Swapping, sorting and sliding pieces around is not something we can build yet.',
-      closest: 'a collect-and-escape game',
+      closest: 'an endless runner',
     });
   });
 

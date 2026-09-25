@@ -276,6 +276,63 @@ export function pickControl(text: string): ControlPick | null {
   return addons.length === 0 ? choice : { ...choice, addons };
 }
 
+/**
+ * Nejbližší arkádová hra (P28D T2, F-05) pro větu, ve které `pickControl` ani
+ * archetypy mřížky nic neslyší – dřív z ní byl sběr hub na mřížce. Nejdřív
+ * sloveso, pak podstatné jméno, jinak běžec: nejjednodušší hra a funguje na
+ * telefonu. `why: 'default'` = věta žádnou narážku nemá (T4 to hráči řekne).
+ */
+const NEAREST_VERBS: readonly (readonly [RegExp, ControlChoice['control']])[] = [
+  [/\b(?:pop|pops|popping|popped|defend|defends|defending|protect|protects|protecting|zap|zaps|zapping|blast|blasts|blasting)\b/, 'shooter'],
+  [/\b(?:fight|fights|fighting|duel|duels|punch|punches|punching|kick|kicks|kicking|battle|battles|battling)\b/, 'duel'],
+  [/\b(?:throw|throws|throwing|toss|tosses|tossing|knife|knives)\b/, 'throw'],
+  [/\b(?:beat|beats|rhythm|sing|sings|singing|song|songs|music|dance|dances|dancing)\b/, 'rhythm'],
+  [/\b(?:fly|flies|flying|ride|rides|riding|soar|soars|soaring|glide|glides|gliding)\b/, 'flap'],
+  [/\b(?:race|races|racing|drive|drives|driving)\b/, 'steer'],
+  [/\b(?:dodge|dodges|dodging|avoid|avoids|avoiding|survive|survives|surviving)\b/, 'move_free'],
+  [/\b(?:jump|jumps|jumping|hop|hops|hopping|climb|climbs|climbing)\b/, 'platform'],
+];
+
+const NEAREST_NOUNS: readonly (readonly [RegExp, ControlChoice['control']])[] = [
+  [/\b(?:balloons?|targets?|aliens?|zombies?|monsters?|skeletons?|invaders?)\b/, 'shooter'],
+  [/\b(?:birds?|dragons?|wings?|sky|skies|clouds?)\b/, 'flap'],
+  [/\b(?:balls?|baskets?)\b/, 'throw'],
+  [/\b(?:drums?|guitars?|pianos?|concert|disco)\b/, 'rhythm'],
+  [/\b(?:cars?|bikes?|bicycles?|horses?|roads?)\b/, 'steer'],
+];
+
+export type NearestPick = { readonly choice: ControlChoice; readonly why: 'verb' | 'noun' | 'default' };
+
+export function nearestControl(text: string): NearestPick {
+  const byVerb = NEAREST_VERBS.find(([cue]) => cue.test(text))?.[1];
+  if (byVerb !== undefined) return { choice: defaultChoice(byVerb, text), why: 'verb' };
+  const byNoun = NEAREST_NOUNS.find(([cue]) => cue.test(text))?.[1];
+  if (byNoun !== undefined) return { choice: defaultChoice(byNoun, text), why: 'noun' };
+  return { choice: defaultChoice('runner', text), why: 'default' };
+}
+
+function defaultChoice(control: ControlChoice['control'], text: string): ControlChoice {
+  const level = difficultyOf(text);
+  switch (control) {
+    case 'runner':
+      return { control, density: level === 'hard' ? 'high' : level === 'easy' ? 'low' : null };
+    case 'platform':
+      return { control, difficulty: level, movingPlatforms: false, doubleJump: false };
+    case 'steer':
+      return { control, difficulty: level, drift: false };
+    case 'move_free':
+      return { control, density: level === 'hard' ? 'dense' : level === 'easy' ? 'sparse' : null };
+    case 'throw':
+      return { control, difficulty: level, goal: null };
+    case 'timing':
+      return { control, mode: 'precision', speed: null };
+    case 'rhythm':
+      return { control, density: null };
+    default:
+      return { control, difficulty: level };
+  }
+}
+
 /** Základ dvojice „jump/run and shoot“, když věta jinou narážku nemá. */
 function moveOf(verb: string, text: string): ControlChoice {
   if (verb === 'run') return { control: 'runner', density: HIGH_DENSITY.test(text) ? 'high' : LOW_DENSITY.test(text) ? 'low' : null };

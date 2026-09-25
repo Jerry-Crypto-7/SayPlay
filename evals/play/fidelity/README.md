@@ -22,6 +22,20 @@
 
 9 of the 10 judge sentences fall to the grid (`tap_go`); only the dragon sentence gets another control (shooter).
 
+## P28D T2 – nearest arcade game instead of mushrooms (offline)
+
+`runs/2026-09-25-p28-t2.json`. A sentence where neither the control words nor any grid cue speak (no archetype score, no calm/search/moving-wall cue) now gets the nearest arcade game – verb, then noun, else the runner (`nearestControl` in `src/play/draft/controls.ts`). The arcade draft also reads sentence nouns into the roles its control reads: pickups ("grabbing sausages"), obstacles ("jumping over sprinklers", "running from a monkey"), a genre reskin ("angry birds but with cats and cardboard boxes") and a bare subject ("purple elephants doing …").
+
+| | corpus before | corpus T2 | judge-10 before | judge-10 T2 |
+|---|---|---|---|---|
+| inSpec | 0.691 | 0.791 | 0.378 | 0.486 |
+| read | 0.655 | **0.755** | 0.378 | 0.459 |
+| drawn | 0.591 | 0.673 | 0.324 | 0.432 |
+
+- AC `read` ≥ 0.646 + 0.10 = 0.746: met (0.755). No corpus sentence lost `read`; 8 gained (s006, s008, s069, s088, s095, s155, h07, and s088's boxes).
+- Judge-10 (untuned): 5 sentences moved off the grid; j07 ("squirrel hoards acorns") **lost** `read` 0.50 → 0.25 – the grid read "hoard" as collecting, the runner does not.
+- All 40 drafts compile and pass the robot (`src/play/__tests__/draft-nearest.test.ts`).
+
 ## The chain
 
 Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:

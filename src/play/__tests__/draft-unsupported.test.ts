@@ -57,7 +57,7 @@ describe('unsupportedGame', () => {
     expect(unsupportedGame(sentence, draftGameSpec(sentence))).toEqual({
       kind: 'manipulate',
       reason: 'Swapping, sorting and sliding pieces around is not something we can build yet.',
-      closest: 'a collect-and-escape game',
+      closest: 'an endless runner',
     });
   });
 
