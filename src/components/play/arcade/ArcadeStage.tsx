@@ -396,6 +396,8 @@ interface WorldProps {
 }
 
 const PICKUP_MS = 200;
+/** Jak dlouho po konci běhu plátno ještě kreslí naplno: klip pádu či oslavy a pauza výsledku (600 ms). */
+const END_CLIP_MS = 1500;
 
 /** Role, jejichž model se hýbe podle stavu těla (P26B); plošiny, auta a překážky jedou bez pózy. */
 const POSED_ROLES: ReadonlySet<number> = new Set([ROLE.player, ROLE.enemy, ROLE.chaser]);
@@ -894,7 +896,17 @@ export default function ArcadeStage({
   useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'));
   useDuelInput(session, surface, enabled && control === 'duel');
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
-  const live = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
+  // Po konci ale ještě END_CLIP_MS naplno – klip pádu či oslavy (P28C T3) by jinak stál na prvním snímku.
+  const ticking = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
+  const ended = useSyncExternalStore(session.subscribe, () => session.snapshot().runState !== 'running', () => false);
+  const [settling, setSettling] = useState(false);
+  useEffect(() => {
+    if (!ended) return;
+    setSettling(true);
+    const timer = window.setTimeout(() => setSettling(false), END_CLIP_MS);
+    return () => window.clearTimeout(timer);
+  }, [ended]);
+  const live = ticking || settling;
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
