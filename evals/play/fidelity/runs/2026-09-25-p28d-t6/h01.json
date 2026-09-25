@@ -1,0 +1,411 @@
+{
+ "id": "h01",
+ "text": "a cat stealing fish from a market while dodging the fishmonger",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "cat",
+   "slot": "hero",
+   "match": [
+    "cat",
+    "kitten"
+   ]
+  },
+  {
+   "item": "fish",
+   "slot": "role",
+   "match": [
+    "fish"
+   ]
+  },
+  {
+   "item": "fishmonger",
+   "slot": "role",
+   "match": [
+    "fishmonger",
+    "merchant",
+    "vendor",
+    "seller"
+   ]
+  },
+  {
+   "item": "market",
+   "slot": "setting",
+   "match": [
+    "market",
+    "bazaar",
+    "stall"
+   ]
+  },
+  {
+   "item": "steal",
+   "slot": "verb",
+   "controls": [],
+   "mechanics": [
+    "collectible",
+    "carry"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "477353d5c0d973f2f3eb05124a0ea32d",
+  "ms": 831,
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "patrol",
+     "params": {
+      "disposition": "bold",
+      "role": "enemy",
+      "stops": 3,
+      "touchEffect": "lose"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Collect five fishes, then reach the stone portal.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "cat"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "fish"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "patrol",
+     "label": "fishmonger"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "calm",
+    "setting": "market"
+   },
+   "title": "Cat Stealing Fish Market",
+   "tutorial": {
+    "controlsHint": "Tap a fish to walk to it. Tap again to pick it up.",
+    "goalLine": "Collect 5 fishes, then reach the exit. Avoid the fishmonger."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "lost"
+     },
+     "id": "enemy_touch_loses",
+     "kind": "keypoint",
+     "mechanic": "patrol",
+     "setup": {
+      "placeAt": {
+       "enemy": "player"
+      }
+     },
+     "ticks": 5
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "583e576f688436a76865923156b95fad",
+  "ms": 20961,
+  "deadlineAt": "2026-09-25T14:11:04.015Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "583e576f688436a76865923156b95fad",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "patrol",
+     "params": {
+      "disposition": "bold",
+      "role": "enemy",
+      "stops": 3,
+      "touchEffect": "lose"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Steal the fish without getting caught by the fishmonger.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "cat"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "fish"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "patrol",
+     "label": "fishmonger"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "look": "supermarket",
+    "mood": "calm",
+    "setting": "market"
+   },
+   "title": "Cat's Fish Market Heist",
+   "tutorial": {
+    "controlsHint": "Tap a fish to walk to it. Tap again to pick it up.",
+    "goalLine": "Steal the fish without getting caught by the fishmonger."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "lost"
+     },
+     "id": "enemy_touch_loses",
+     "kind": "keypoint",
+     "mechanic": "patrol",
+     "setup": {
+      "placeAt": {
+       "enemy": "player"
+      }
+     },
+     "ticks": 5
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "477353d5c0d973f2f3eb05124a0ea32d",
+  "sentence": "a cat stealing fish from a market while dodging the fishmonger",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T13:45:56.986Z"
+ },
+ "judge": {
+  "draft": {
+   "cat": true,
+   "fish": true,
+   "fishmonger": false,
+   "market": false,
+   "steal": false
+  },
+  "ai": {
+   "cat": true,
+   "fish": true,
+   "fishmonger": false,
+   "market": false,
+   "steal": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "cat",
+    "visible": true,
+    "why": "Orange animal has pointed ears, whiskers, four legs, and raised tail."
+   },
+   {
+    "item": "fish",
+    "visible": true,
+    "why": "Small fish with fins and tails appear inside glass tanks."
+   },
+   {
+    "item": "fishmonger",
+    "visible": false,
+    "why": "Figure near tanks lacks clearly recognizable fishmonger features."
+   },
+   {
+    "item": "market",
+    "visible": false,
+    "why": "Scattered tanks and counters occupy a neutral ground plane."
+   },
+   {
+    "item": "steal",
+    "visible": false,
+    "why": "No visible taking, carrying away, or theft interaction."
+   }
+  ],
+  "ai": [
+   {
+    "item": "cat",
+    "visible": true,
+    "why": "Orange animal has pointed ears, whiskers, four legs, and raised tail."
+   },
+   {
+    "item": "fish",
+    "visible": true,
+    "why": "Small fish with fins and tails are visible inside glass tanks."
+   },
+   {
+    "item": "fishmonger",
+    "visible": false,
+    "why": "No clearly recognizable fish seller is visible."
+   },
+   {
+    "item": "market",
+    "visible": false,
+    "why": "Scattered tanks and cabinets on neutral ground do not establish a market."
+   },
+   {
+    "item": "steal",
+    "visible": false,
+    "why": "No visible taking or theft action occurs."
+   }
+  ]
+ }
+}

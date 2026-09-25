@@ -2,18 +2,24 @@
 
 /**
  * Rekvizity sady prostředí (P26 T11) na okrajích trati: stromy, domy, regály,
- * korály… z primitiv, bez stahování. Rozmístění je čistá funkce délky trati –
+ * korály… z primitiv a od P28D T6 i z modelů katalogu (`SCENERY_MODELS`) –
+ * primitivy hodnotitel jako prostředí nepoznal. Rozmístění je čistá funkce délky trati –
  * žádná náhoda, táž hra vypadá pokaždé stejně. Na hru nesahají: stojí mimo
  * trať a jádro o nich neví.
  */
 
-import type { Look, PropKind } from '@/play/arcade/look';
+import { useEffect, useMemo, useState } from 'react';
+import { Box3, type Object3D, Vector3 } from 'three';
+
+import { isSceneryModel, type Look, type PropKind, SCENERY_MODELS, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
+
+import { loadFlatModel } from './load';
 
 /** `sides` = obě strany dráhy (kamera za hráčem), `behind` = za tratí (boční kamera na −x). */
 export type SceneryLayout = 'sides' | 'behind';
 
 export interface SceneryPlace {
-  readonly kind: PropKind;
+  readonly kind: SceneryKind;
   readonly x: number;
   readonly z: number;
   readonly scale: number;
@@ -21,14 +27,14 @@ export interface SceneryPlace {
 }
 
 /** Kde rekvizity stojí: krok 7 m, odsazení a velikost se střídají podle pořadí. */
-export function sceneryPlaces(props: readonly PropKind[], layout: SceneryLayout, inner: number, from: number, to: number): SceneryPlace[] {
+export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayout, inner: number, from: number, to: number): SceneryPlace[] {
   const places: SceneryPlace[] = [];
   const sides = layout === 'sides' ? [-1, 1] : [1];
   for (let index = 0, z = from; z <= to; index += 1, z += 7) {
     for (const side of sides) {
       const n = index * 7 + (side + 1) * 3;
       places.push({
-        kind: props[n % props.length] as PropKind,
+        kind: props[n % props.length] as SceneryKind,
         x: side * (inner + ((index * 37 + side * 11) % 5) * 1.3),
         z: z + ((index * 13) % 3),
         scale: 0.8 + ((index * 29 + side * 7) % 5) * 0.12,
@@ -145,6 +151,13 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
       return <mesh position={[0, 0.9, 0]} rotation={[0.2, 0, 0.25]}><octahedronGeometry args={[0.8, 0]} /><meshStandardMaterial color={main} emissive={main} emissiveIntensity={0.5} roughness={0.2} flatShading /></mesh>;
     case 'iceblock':
       return <mesh position={[0, 0.6, 0]}><boxGeometry args={[1.2, 1.2, 1.2]} /><meshStandardMaterial color={accent} roughness={0.1} metalness={0.1} transparent opacity={0.85} /></mesh>;
+    case 'volcano':
+      return (
+        <>
+          <mesh position={[0, 2.5, 0]}><cylinderGeometry args={[1.2, 3.8, 5, 10, 1, true]} /><meshStandardMaterial color={main} roughness={1} flatShading /></mesh>
+          <mesh position={[0, 4.95, 0]} rotation={[-Math.PI / 2, 0, 0]}><circleGeometry args={[1.2, 10]} /><meshBasicMaterial color={accent} /></mesh>
+        </>
+      );
     case 'buoy':
       return (
         <>
@@ -155,12 +168,67 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
   }
 }
 
-export function Scenery({ look, layout, inner, from, to, y = 0 }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number }) {
+/** Model katalogu postavený na zem ve výšce ze `SCENERY_MODELS`; dokud se nenačte, nic. */
+function SceneryModelProp({ id }: { readonly id: SceneryModel }) {
+  const [model, setModel] = useState<Object3D | null>(null);
+  useEffect(() => {
+    let live = true;
+    void loadFlatModel(id).then((loaded) => {
+      if (live) setModel(loaded);
+    });
+    return () => {
+      live = false;
+    };
+  }, [id]);
+  const fitted = useMemo(() => {
+    if (model === null) return null;
+    const copy = model.clone(true);
+    const box = new Box3().setFromObject(copy);
+    const size = box.getSize(new Vector3());
+    const scale = SCENERY_MODELS[id] / Math.max(size.y, 1e-3);
+    copy.scale.setScalar(scale);
+    const center = box.getCenter(new Vector3());
+    copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+    return copy;
+  }, [model, id]);
+  return fitted === null ? null : <primitive object={fitted} />;
+}
+
+/** Buňka mřížky je 1 m, kulisa arkády počítá s hrdinou ~2 m: na mřížce stojí zmenšená. */
+const GRID_SCALE = 0.55;
+/** Mezera mezi hranou mřížky a osou první řady kulis, v buňkách: sopka má poloměr 2,1 buňky. */
+const GRID_GAP = 2.2;
+
+/**
+ * Kulisy sady prostředí za mřížkovou hrou (P28D T6). Kamera mřížky přichází od
+ * +x/+z (`blueprint.ts`), takže kulisa stojí podél vzdálených hran −z a −x,
+ * mimo hrací plochu a mimo hash – jádro o ní neví.
+ */
+export function GridScenery({ look, width, height }: { readonly look: Look; readonly width: number; readonly height: number }) {
+  const at = (cells: number) => cells / GRID_SCALE;
+  return (
+    <group name="grid-scenery">
+      {/* Zem v barvě sady těsně nad terénem rodiny: béžová pod „icy moon“ ani sopkou prostředí neřekla. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]} receiveShadow>
+        <planeGeometry args={[140, 140]} />
+        <meshStandardMaterial color={look.ground} roughness={1} />
+      </mesh>
+      <group rotation={[0, Math.PI / 2, 0]} scale={GRID_SCALE}>
+        <Scenery look={look} layout="behind" inner={at(height / 2 + GRID_GAP)} from={at(-width / 2 - 3)} to={at(width / 2)} />
+      </group>
+      <group rotation={[0, Math.PI, 0]} scale={GRID_SCALE}>
+        <Scenery look={look} layout="behind" inner={at(width / 2 + GRID_GAP)} from={at(-height / 2)} to={at(height / 2 + 3)} />
+      </group>
+    </group>
+  );
+}
+
+export function Scenery({ look, layout, inner, from, to, y = 0, size = 1 }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number }) {
   return (
     <group>
       {sceneryPlaces(look.props, layout, inner, from, to).map((place, index) => (
-        <group key={index} position={[place.x, y, place.z]} rotation={[0, place.turn, 0]} scale={place.scale}>
-          <Prop kind={place.kind} tint={look.tint} />
+        <group key={index} position={[place.x, y, place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
+          {isSceneryModel(place.kind) ? <SceneryModelProp id={place.kind} /> : <Prop kind={place.kind} tint={look.tint} />}
         </group>
       ))}
     </group>

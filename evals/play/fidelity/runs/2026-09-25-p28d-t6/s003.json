@@ -1,0 +1,293 @@
+{
+ "id": "s003",
+ "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "hamster",
+   "slot": "hero",
+   "match": [
+    "hamster"
+   ]
+  },
+  {
+   "item": "roomba",
+   "slot": "role",
+   "match": [
+    "roomba",
+    "vacuum",
+    "robot"
+   ]
+  },
+  {
+   "item": "supermarket",
+   "slot": "setting",
+   "match": [
+    "supermarket",
+    "grocery",
+    "store"
+   ]
+  },
+  {
+   "item": "escape",
+   "slot": "verb",
+   "controls": [
+    "runner"
+   ],
+   "mechanics": [
+    "chaser"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "d403ca4594bc7a970f790d0a793acaef",
+  "ms": 481,
+  "spec": {
+   "archetype": "chase_escape",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "chaser",
+     "params": {
+      "catchEffect": "lose",
+      "role": "roomba",
+      "speed": "normal"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "exit",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "stun",
+     "params": {
+      "seconds": 4,
+      "targetRole": "roomba",
+      "uses": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Reach the exit before the giant roomba catches you.",
+    "kind": "reach",
+    "role": "exit"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "hamster"
+    },
+    {
+     "count": 1,
+     "id": "roomba",
+     "kind": "chaser",
+     "label": "giant roomba"
+    },
+    {
+     "count": 1,
+     "id": "exit",
+     "kind": "exit",
+     "label": "exit doors"
+    },
+    {
+     "count": 3,
+     "id": "cart",
+     "kind": "prop",
+     "label": "shopping cart"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "frantic",
+    "setting": "supermarket"
+   },
+   "title": "Hamster Escaping Supermarket Giant",
+   "tutorial": {
+    "controlsHint": "Tap where to run. Use a cart to stun the giant roomba.",
+    "goalLine": "Escape through the exit. The giant roomba hunts you."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "use",
+       "target": "roomba"
+      }
+     ],
+     "assert": {
+      "firedMechanics": [
+       "stun"
+      ]
+     },
+     "id": "stun_freezes",
+     "kind": "keypoint",
+     "mechanic": "stun",
+     "setup": {
+      "placeAt": {
+       "roomba": "player"
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "5d38d2fdbf33d2c32bbaf615294e8d3c",
+  "ms": 20628,
+  "deadlineAt": "2026-09-25T13:58:06.445Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "5d38d2fdbf33d2c32bbaf615294e8d3c",
+  "spec": {
+   "addons": [
+    "chaser"
+   ],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Escape the supermarket without being caught by the giant Roomba.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "hamster"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "giant roomba"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "supermarket",
+    "mood": "energetic",
+    "setting": "supermarket"
+   },
+   "title": "Hamster Escape: Giant Roomba",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Escape the supermarket without being caught by the giant Roomba."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "hamster": true,
+   "roomba": true,
+   "supermarket": false,
+   "escape": false
+  },
+  "ai": {
+   "hamster": false,
+   "roomba": true,
+   "supermarket": false,
+   "escape": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "hamster",
+    "visible": true,
+    "why": "Round brown animal with small ears, dark eyes, and whiskers."
+   },
+   {
+    "item": "roomba",
+    "visible": true,
+    "why": "Circular robotic vacuum with a dark bumper beneath the hamster."
+   },
+   {
+    "item": "supermarket",
+    "visible": false,
+    "why": "Scattered shopping carts on neutral ground lack a recognizable supermarket environment."
+   },
+   {
+    "item": "escape",
+    "visible": false,
+    "why": "An exit door alone does not establish an escape action."
+   }
+  ],
+  "ai": [
+   {
+    "item": "hamster",
+    "visible": false,
+    "why": "Brown shape has ears but lacks clearly recognizable hamster features."
+   },
+   {
+    "item": "roomba",
+    "visible": true,
+    "why": "Low circular robot vacuums are recognizable on the floor."
+   },
+   {
+    "item": "supermarket",
+    "visible": false,
+    "why": "Sparse furniture on neutral ground does not establish a supermarket."
+   },
+   {
+    "item": "escape",
+    "visible": false,
+    "why": "No clear pursuit, threat, or escape action is shown."
+   }
+  ]
+ }
+}

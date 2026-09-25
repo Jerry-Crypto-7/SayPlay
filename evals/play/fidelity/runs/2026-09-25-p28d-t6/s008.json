@@ -1,0 +1,231 @@
+{
+ "id": "s008",
+ "text": "temple run but you're a banana running from a monkey",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "banana",
+   "slot": "hero",
+   "match": [
+    "banana"
+   ]
+  },
+  {
+   "item": "monkey",
+   "slot": "role",
+   "match": [
+    "monkey",
+    "ape"
+   ]
+  },
+  {
+   "item": "run",
+   "slot": "verb",
+   "controls": [
+    "runner"
+   ],
+   "mechanics": [
+    "chaser"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "1ceaa96762fdfe45d578e9537ac1b7fd",
+  "ms": 231,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Run to the finish line without hitting an obstacle.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "banana"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "monkey"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "energetic",
+    "setting": "sunny arcade track"
+   },
+   "title": "Temple Run Re Banana",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "4a12a9d958bbf39d8b681f3d2a928c31",
+  "ms": 24813,
+  "deadlineAt": "2026-09-25T14:00:36.078Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "4a12a9d958bbf39d8b681f3d2a928c31",
+  "spec": {
+   "addons": [
+    "chaser"
+   ],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Keep the banana running and stay ahead of the monkey.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "banana"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "monkey"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "jungle",
+    "mood": "energetic",
+    "setting": "Jungle temple paths"
+   },
+   "title": "Banana Temple Run",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Keep the banana running and stay ahead of the monkey."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "banana": false,
+   "monkey": false,
+   "run": true
+  },
+  "ai": {
+   "banana": false,
+   "monkey": true,
+   "run": true
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "banana",
+    "visible": false,
+    "why": "Yellow collectibles look like coins, not clearly recognizable bananas."
+   },
+   {
+    "item": "monkey",
+    "visible": false,
+    "why": "The rear-facing character lacks clearly recognizable monkey features."
+   },
+   {
+    "item": "run",
+    "visible": true,
+    "why": "Character faces a long lane-based course with collectibles and obstacles."
+   }
+  ],
+  "ai": [
+   {
+    "item": "banana",
+    "visible": false,
+    "why": "Yellow objects look like coins, not recognizable bananas."
+   },
+   {
+    "item": "monkey",
+    "visible": true,
+    "why": "Central character has prominent round ears and a monkey-shaped head."
+   },
+   {
+    "item": "run",
+    "visible": true,
+    "why": "Character faces down a three-lane running track with collectible trails."
+   }
+  ]
+ }
+}

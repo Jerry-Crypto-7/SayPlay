@@ -13,13 +13,16 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { type Group, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
 
+import { bodiesOf, bodiesStale } from '../bodies';
+import { isTyping } from '../input';
+import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
@@ -39,27 +42,18 @@ const SEE_M_TALL = 6;
 /** Jak daleko za hranou arény stojí první řada kulis (m). */
 const SCENERY_MARGIN = 1.5;
 
-interface Disc {
-  readonly index: number;
-  readonly role: number;
-  readonly w: number;
-  readonly h: number;
-}
+/** Sklon kamery nad vodorovnou (rad): 48° – hrdina pořád zřetelně shora, horní třetina obrazu už za hranou arény (58° ukázalo kulisy jen v rozích). */
+const PITCH = (48 * Math.PI) / 180;
 
 export function ArenaWorld({ session, half, surface, look: scene }: { readonly session: ArcadeSession; readonly half: number; readonly surface: React.RefObject<HTMLDivElement | null>; readonly look: Look }) {
-  const discs = useMemo<readonly Disc[]>(() => {
-    const state = session.state();
-    const count = state[HEADER.bodyCount] as number;
-    return Array.from({ length: count }, (_, index) => {
-      const base = bodyBase(index);
-      return { index, role: state[base + BODY.role] as number, w: (state[base + BODY.w] as number) / UNIT, h: (state[base + BODY.h] as number) / UNIT };
-    });
-  }, [session]);
+  // Střely doplňku `+shoot` přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
+  const [discs, setDiscs] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
   const materials = useRef<(MeshStandardMaterial | null)[]>([]);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
+  const introClock = useIntroClock();
 
   // Role kreslených kotoučů pro e2e (jako `data-drawn` ostatních scén).
   useEffect(() => {
@@ -74,8 +68,9 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
     };
   }, [camera]);
 
-  useFrame((_, delta) => {
+  useFrame((three, delta) => {
     const alpha = session.advance(delta * 1000);
+    if (bodiesStale(discs, session)) setDiscs(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
     const player = state[HEADER.player] as number;
@@ -99,10 +94,13 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
       // Aspoň `SEE_M` metrů do strany i na výšku (mobil) a výš s velikostí hráče,
       // ať větší buňku vidí dřív, než dojede.
       const tan = Math.tan((camera.fov * Math.PI) / 360);
-      const height = Math.max(16, (camera.aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, camera.aspect))) + (mine / UNIT) * 3;
-      camera.position.set(me.position.x, height, me.position.z - 0.01);
+      const distance = Math.max(16, (camera.aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, camera.aspect))) + (mine / UNIT) * 3;
+      // Šikmo zezadu, ne kolmo dolů (P28D T6, F-29): kolmá kamera viděla jen podlahu,
+      // takhle horní okraj obrazu sahá za hranu arény na kulisy prostředí.
+      camera.position.set(me.position.x, distance * Math.sin(PITCH), me.position.z - distance * Math.cos(PITCH));
       look.set(me.position.x, 0, me.position.z);
       camera.lookAt(look);
+      applyIntro(camera, look, introLeft(introClock(three.clock.elapsedTime)));
       camera.updateMatrixWorld();
       if (surface.current !== null) surface.current.dataset.playerX = projected.copy(me.position).project(camera).x.toFixed(3);
     }
@@ -113,7 +111,7 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
     <>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]}>
         <planeGeometry args={[side, side]} />
-        {/* Podlaha v barvě dráhy sady: kamera shora vidí hlavně ji, kulisy za hranou až u okraje. */}
+        {/* Podlaha v barvě dráhy sady, ne země: zelená kořist by na trávě splynula. Prostředí ukazují kulisy za hranou. */}
         <meshStandardMaterial color={scene.track} roughness={0.8} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]}>
@@ -171,7 +169,7 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
       : key === 'arrowdown' || key === 's' ? 'down'
       : null;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = keyOf(event.key.toLowerCase());
       if (key === null) return;
       event.preventDefault();
@@ -185,6 +183,8 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
       sync();
     };
     const onDown = (event: PointerEvent) => {
+      // Tah, který vyjede z plátna, se musí pustit i venku – jinak hráč jede dál.
+      element.setPointerCapture(event.pointerId);
       drag = { x: event.clientX, y: event.clientY, dx: 0, dz: 0 };
       sync();
     };

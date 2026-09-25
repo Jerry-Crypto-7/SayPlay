@@ -25,6 +25,7 @@ import type { GameSpecV1 } from '../spec';
 
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
+import { COMPACT_PROMPT_VERSION, buildCompactRequest, composeCompact } from './compact';
 import { type CriticIssue, blockingIssues, critique } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { readDirectorAnswer, unwrapAnswer } from './read';
@@ -69,6 +70,8 @@ export interface DirectorDeps {
    * nedělá, co tvrdí. Prázdné pole = hra prošla.
    */
   readonly check?: (spec: GameSpecV1) => readonly RepairIssue[];
+  /** Kompaktní první odpověď (P27D T2, `compact.ts`); opravná kola zůstávají stejná. */
+  readonly compact?: boolean;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -93,8 +96,10 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     calls,
   });
 
-  const request = buildDirectorRequest(sentence, draft);
-  const key = directorKey({ sentence, promptVersion: DIRECTOR_PROMPT_VERSION, model: request.model, endpoint: deps.branch.id });
+  const compact = deps.compact === true;
+  const request = compact ? buildCompactRequest(sentence, draft) : buildDirectorRequest(sentence, draft);
+  const promptVersion = compact ? COMPACT_PROMPT_VERSION : DIRECTOR_PROMPT_VERSION;
+  const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
   if (cached !== null && blockingIssues(critique(cached)).length === 0) {
@@ -107,10 +112,13 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
   let spec: GameSpecV1;
-  const body = unwrapAnswer(outcome.body);
-  const read = readDirectorAnswer(body);
+  const body = compact ? outcome.body : unwrapAnswer(outcome.body);
+  const read = compact ? composeCompact(sentence, body, deps.seed) : readDirectorAnswer(body);
   if (read.ok) {
     spec = read.spec;
+  } else if (compact) {
+    // Složený spec vzniká ze šablony – co neprojde, oprava tabulkou nespraví.
+    return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
   } else {
     const repaired = repairDeterministically(body, read.reason);
     if (repaired === null) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });

@@ -12,11 +12,15 @@
  */
 
 import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
+// `timer.ts` importuje jen typy, takže konstanta runtime bundl nezatíží.
+import { TICKS_PER_SECOND } from '@/play/compile/adapters/timer';
 import type { GameSpecV1 } from '@/play/spec';
 
+import { MuteButton } from './MuteButton';
 import { ShareButton } from './ShareButton';
+import { timerLeft } from './timer';
 
-export const TICKS_PER_SECOND = 20;
+export { TICKS_PER_SECOND };
 
 /** Čítač, který cíl hry sleduje; `null`, když cíl žádný čítač nemá. */
 export function objectiveCounter(spec: GameSpecV1): string | null {
@@ -39,12 +43,6 @@ export function objectiveCounter(spec: GameSpecV1): string | null {
  * Odpočet mechaniky `timer` (P26 T8): časovač od AI hráč jinak neviděl a hra
  * skončila „z ničeho nic“. `null`, když spec časovač nemá.
  */
-export function timerLeft(spec: GameSpecV1, elapsedSeconds: number): string | null {
-  const timer = spec.mechanics.find((entry) => entry.id === 'timer');
-  const seconds = timer?.params.seconds;
-  return typeof seconds === 'number' ? `${Math.max(0, seconds - elapsedSeconds)}s left` : null;
-}
-
 export function progressLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'tick' | 'values'>): string {
   const seconds = Math.floor(snapshot.tick / TICKS_PER_SECOND);
   const clock = timerLeft(spec, seconds);
@@ -87,10 +85,11 @@ export function Hud({ spec, snapshot, versionId }: { readonly spec: GameSpecV1; 
       )}
       <p className="play-hud-progress">
         <span data-testid="play-progress">{progressLine(spec, snapshot)}</span>
-        <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
-          tick {snapshot.tick}
-        </span>
+        {/* Tik hráč nevidí (P28B F-15); čas nese `progressLine`, atribut čtou e2e. */}
+        <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick} hidden />
+
       </p>
+      <MuteButton />
       {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );

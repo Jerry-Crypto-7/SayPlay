@@ -45,7 +45,11 @@ describe('arcade model choice from role labels', () => {
   it('a thing the catalog lacks gets no category and keeps the role default', () => {
     expect(modelOf('balloon', true)).toBeUndefined();
     expect(heroModel(withLabel(runner, 'player', 'balloon'))).toBe('explorer');
-    expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('robot');
+    // P28D T3: věc bez modelu dostane zástupce (míč), ne robota; `modelOf` ho dál nevrací, řetěz věrnosti hlásí `no-model`.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('ball');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry umbrellas'))).toBe('robot');
+    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'cc0-fire-hydrant' });
+    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'), false)).toEqual({});
   });
 
   it('a flappy bird is the bird, not the nest', () => {

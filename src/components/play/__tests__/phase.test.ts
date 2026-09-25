@@ -10,7 +10,8 @@ import { draftGameSpec } from '@/play/draft';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 import type { RuntimeSnapshot } from '@/worldstream/runtime-controller';
 
-import { TICKS_PER_SECOND, phaseLine, progressLine, timerLeft } from '../Hud';
+import { TICKS_PER_SECOND, phaseLine, progressLine } from '../Hud';
+import { timerLeft } from '../timer';
 
 const snapshot = (values: Record<string, number>): Pick<RuntimeSnapshot, 'values'> => ({ values });
 

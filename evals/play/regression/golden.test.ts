@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { arcadeReport, verifyArcade } from '@/play/arcade/verify';
 import { compileGame } from '@/play/compile';
 import { draftGameSpec } from '@/play/draft';
 import { readGameSpec } from '@/play/spec';
@@ -94,7 +95,9 @@ function measure(entry: ReturnType<typeof goldenPrompts>[number]): Row {
     return { ...base, ...none, archetype, archetypeHit, specValid: true, reason: `${compiled.reason}: ${compiled.issues.join('; ')}`, keypointsTotal: spec.verification.length, compileMs };
   }
   const verifyStarted = performance.now();
-  const quality = verifyGame(compiled.value);
+  // Arkádu (P28D: návrh volí nejbližší arkádovou hru) ověřuje táž cesta jako publikace (`_report.ts`).
+  const arcade = compiled.value.arcade;
+  const quality = arcade === undefined ? verifyGame(compiled.value) : arcadeReport(verifyArcade(arcade), arcade, compiled.value);
   const verifyMs = round(performance.now() - verifyStarted);
   return {
     ...base,

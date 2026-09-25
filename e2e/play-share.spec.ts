@@ -65,7 +65,7 @@ test.describe('/play/[id] – share landing', () => {
     await page.getByTestId('play-share').click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length)).toBe(1);
     const data = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0]);
-    expect(data.url).toMatch(new RegExp(`/play/${id}$`));
+    expect(data.url).toMatch(new RegExp(`/play/${id}\\?via=share$`));
     expect(data.title).toBe(gameTitle);
     // Stisk do hry nepropadl: žádný nový vstup, hodiny běží dál, pauza nenastala.
     const tick = await page.evaluate(() => window.__playShell!.tick());
@@ -84,10 +84,11 @@ test.describe('/play/[id] – share landing', () => {
     const other = await second.newPage();
     let generated = 0;
     other.on('request', (request) => {
-      if (request.method() === 'POST') generated += 1;
+      // Události smyčky (P27D T4) jsou POST, ale nic negenerují.
+      if (request.method() === 'POST' && !request.url().includes('/api/play/events')) generated += 1;
     });
     await other.goto(data.url!);
-    await expect(other).toHaveURL(new RegExp(`/play/${id}$`));
+    await expect(other).toHaveURL(new RegExp(`/play/${id}\\?via=share$`));
     await other.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     await expect(other.getByTestId('play-goal')).toBeVisible();
     expect(await worldOf(other)).toBe(world);
@@ -106,7 +107,9 @@ test.describe('/play/[id] – share landing', () => {
     await page.goto(url);
     await page.getByTestId('play-share').click();
     await expect(page.getByText('Link copied')).toBeVisible();
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(new RegExp(`^https?://[^/]+/play/${id}$`));
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(new RegExp(`^https?://[^/]+/play/${id}\\?via=share$`));
+    // E2e server nemá sdílené úložiště (P27D T5): odkaz nesmí vypadat trvale.
+    await expect(page.getByText('the link stops working when it restarts')).toBeVisible();
     await context.close();
   });
 

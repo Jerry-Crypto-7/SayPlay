@@ -1,0 +1,226 @@
+{
+ "id": "h05",
+ "text": "boxing a kangaroo in the australian outback",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "kangaroo",
+   "slot": "role",
+   "match": [
+    "kangaroo",
+    "roo"
+   ]
+  },
+  {
+   "item": "outback",
+   "slot": "setting",
+   "match": [
+    "outback",
+    "desert",
+    "australia",
+    "bush"
+   ]
+  },
+  {
+   "item": "box",
+   "slot": "verb",
+   "controls": [
+    "duel"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "0c8dae58cab657614ee555d8c3358c75",
+  "ms": 58,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "duel",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Dodge the swings, strike in the openings and knock your rival out.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "fighter"
+    },
+    {
+     "count": 1,
+     "id": "rival",
+     "kind": "hazard",
+     "label": "kangaroo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "knockout"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 45,
+   "theme": {
+    "mood": "tense",
+    "setting": "australian outback"
+   },
+   "title": "Boxing Kangaroo Australian Outback",
+   "tutorial": {
+    "controlsHint": "Tap right or Space to strike, tap left or Down to dodge.",
+    "goalLine": "Dodge the wind-up, strike in the opening. Knock out the rival."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "5cd408c3dec9854da297e850eb465b9d",
+  "ms": 20349,
+  "deadlineAt": "2026-09-25T14:16:18.682Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "5cd408c3dec9854da297e850eb465b9d",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "duel",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Beat the kangaroo in a boxing match.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "fighter"
+    },
+    {
+     "count": 1,
+     "id": "rival",
+     "kind": "hazard",
+     "label": "kangaroo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "knockout"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 45,
+   "theme": {
+    "look": "desert",
+    "mood": "tense",
+    "setting": "Australian outback"
+   },
+   "title": "Outback Kangaroo Boxing",
+   "tutorial": {
+    "controlsHint": "Tap right or Space to strike, tap left or Down to dodge.",
+    "goalLine": "Beat the kangaroo in a boxing match."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "kangaroo": false,
+   "outback": false,
+   "box": false
+  },
+  "ai": {
+   "kangaroo": false,
+   "outback": false,
+   "box": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "kangaroo",
+    "visible": false,
+    "why": "Only generic block figures; no recognizable kangaroo anatomy."
+   },
+   {
+    "item": "outback",
+    "visible": false,
+    "why": "Plain orange ground and cactus shapes do not clearly establish outback."
+   },
+   {
+    "item": "box",
+    "visible": false,
+    "why": "Figures show no clear boxing stance, punches, or recognizable boxing gloves."
+   }
+  ],
+  "ai": [
+   {
+    "item": "kangaroo",
+    "visible": false,
+    "why": "Figures lack recognizable kangaroo features."
+   },
+   {
+    "item": "outback",
+    "visible": false,
+    "why": "Plain orange terrain and cactus shapes do not clearly identify outback."
+   },
+   {
+    "item": "box",
+    "visible": false,
+    "why": "Two generic figures stand apart without clear boxing poses or punches."
+   }
+  ]
+ }
+}

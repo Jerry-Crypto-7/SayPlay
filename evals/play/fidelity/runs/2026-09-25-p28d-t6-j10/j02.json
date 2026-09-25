@@ -1,0 +1,307 @@
+{
+ "id": "j02",
+ "text": "a sleepy cat naps in a cozy rainy café",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "cat",
+   "slot": "any",
+   "match": [
+    "cat",
+    "kitten"
+   ]
+  },
+  {
+   "item": "café",
+   "slot": "setting",
+   "match": [
+    "cafe",
+    "café",
+    "coffee"
+   ]
+  },
+  {
+   "item": "nap",
+   "slot": "verb",
+   "controls": []
+  }
+ ],
+ "draft": {
+  "versionId": "631714dab2e9e6c4fd11e1cd3249efa9",
+  "ms": 724,
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Gather five warm cookies at your own pace, then stroll to the cottage door.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "sleepy cat"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "warm cookie"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "cottage door"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "cozy",
+    "setting": "cozy rainy caf"
+   },
+   "title": "Sleepy Cat Naps Cozy",
+   "tutorial": {
+    "controlsHint": "Tap a warm cookie to walk to it. Nothing here can hurt you.",
+    "goalLine": "Gather 5 warm cookies, then reach the cottage door."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "77c75e36c161f1e429a5926d16bf24ed",
+  "ms": 20826,
+  "deadlineAt": "2026-09-25T14:57:12.421Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "77c75e36c161f1e429a5926d16bf24ed",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Settle the sleepy cat down for a nap in the cozy rainy café.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "sleepy cat"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "warm cookie"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "cottage door"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "cozy",
+    "setting": "A cozy rainy café"
+   },
+   "title": "Sleepy Cat in a Rainy Café",
+   "tutorial": {
+    "controlsHint": "Tap a warm cookie to walk to it. Nothing here can hurt you.",
+    "goalLine": "Settle the sleepy cat down for a nap in the cozy rainy café."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "631714dab2e9e6c4fd11e1cd3249efa9",
+  "sentence": "a sleepy cat naps in a cozy rainy café",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:33:15.713Z"
+ },
+ "judge": {
+  "draft": {
+   "cat": true,
+   "café": false,
+   "nap": false
+  },
+  "ai": {
+   "cat": true,
+   "café": false,
+   "nap": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "cat",
+    "visible": true,
+    "why": "Orange animal has pointed ears, whiskers, four legs, and raised tail."
+   },
+   {
+    "item": "caf�c",
+    "visible": false,
+    "why": "Outdoor field and blocky buildings lack recognizable café features."
+   },
+   {
+    "item": "nap",
+    "visible": false,
+    "why": "Cat is standing upright; no sleeping action is visible."
+   }
+  ],
+  "ai": [
+   {
+    "item": "cat",
+    "visible": true,
+    "why": "Orange animal has pointed ears, whiskers, four legs, and raised tail."
+   },
+   {
+    "item": "caf�c",
+    "visible": false,
+    "why": "No recognizable café environment, seating area, counter, or signage."
+   },
+   {
+    "item": "nap",
+    "visible": false,
+    "why": "The cat is standing; no sleeping action is visible."
+   }
+  ]
+ }
+}

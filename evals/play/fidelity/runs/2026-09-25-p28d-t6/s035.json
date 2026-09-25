@@ -1,0 +1,227 @@
+{
+ "id": "s035",
+ "text": "like flappy bird but underwater",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "bird",
+   "slot": "hero",
+   "match": [
+    "bird",
+    "fish"
+   ]
+  },
+  {
+   "item": "underwater",
+   "slot": "setting",
+   "match": [
+    "underwater",
+    "sea",
+    "ocean",
+    "reef",
+    "deep"
+   ]
+  },
+  {
+   "item": "flap",
+   "slot": "verb",
+   "controls": [
+    "flap"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "c9888728f9d28a712fbd02732cb591ef",
+  "ms": 208,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "flap",
+   "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 120
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Flap through the gaps between the pipes to the finish.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "bird"
+    },
+    {
+     "count": 5,
+     "id": "pipe",
+     "kind": "hazard",
+     "label": "pipe"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "cheerful",
+    "setting": "underwater"
+   },
+   "title": "Flappy Bird Underwater",
+   "tutorial": {
+    "controlsHint": "Tap or Space to flap.",
+    "goalLine": "Fly through the pipe gaps to the finish."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "4e0b4df5ed8df0b28425bcce5a71df1e",
+  "ms": 20538,
+  "deadlineAt": "2026-09-25T14:02:39.826Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "4e0b4df5ed8df0b28425bcce5a71df1e",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "flap",
+   "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 120
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Keep the bird moving through underwater gaps without crashing.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "bird"
+    },
+    {
+     "count": 5,
+     "id": "pipe",
+     "kind": "hazard",
+     "label": "pipe"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "underwater",
+    "mood": "cheerful",
+    "setting": "Underwater"
+   },
+   "title": "Underwater Flappy Bird",
+   "tutorial": {
+    "controlsHint": "Tap or Space to flap.",
+    "goalLine": "Keep the bird moving through underwater gaps without crashing."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "bird": true,
+   "underwater": true,
+   "flap": false
+  },
+  "ai": {
+   "bird": true,
+   "underwater": true,
+   "flap": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "bird",
+    "visible": true,
+    "why": "Yellow round character has a distinct beak and black eye."
+   },
+   {
+    "item": "underwater",
+    "visible": true,
+    "why": "Blue surroundings contain fish, rocks, and coral-like aquatic plants."
+   },
+   {
+    "item": "flap",
+    "visible": false,
+    "why": "No visible wings or wing movement demonstrate flapping."
+   }
+  ],
+  "ai": [
+   {
+    "item": "bird",
+    "visible": true,
+    "why": "Yellow character has a recognizable beak and black eye."
+   },
+   {
+    "item": "underwater",
+    "visible": true,
+    "why": "Fish, aquatic plants, and blue surroundings depict an underwater environment."
+   },
+   {
+    "item": "flap",
+    "visible": false,
+    "why": "No visible wings or flapping motion."
+   }
+  ]
+ }
+}

@@ -1,0 +1,261 @@
+{
+ "id": "j09",
+ "text": "a dragon burns down villages and dodges arrows from knights",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "dragon",
+   "slot": "hero",
+   "match": [
+    "dragon"
+   ]
+  },
+  {
+   "item": "knight",
+   "slot": "role",
+   "match": [
+    "knight",
+    "archer",
+    "soldier"
+   ]
+  },
+  {
+   "item": "arrow",
+   "slot": "any",
+   "match": [
+    "arrow"
+   ]
+  },
+  {
+   "item": "village",
+   "slot": "setting",
+   "match": [
+    "village",
+    "town"
+   ]
+  },
+  {
+   "item": "dodge",
+   "slot": "verb",
+   "controls": [
+    "move_free",
+    "runner"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "c76dfab1fd0016352ba2f05327f5b6f6",
+  "ms": 111,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Hit every target and stop every wave before it reaches you.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "dragon"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "arrow"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "action",
+    "setting": "dusty shooting range at sunset"
+   },
+   "title": "Dragon Burns Down Villages",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Hit every target and stop the waves."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "54f2f7566b5dac2ae6250b0c2aa866c2",
+  "ms": 20270,
+  "deadlineAt": "2026-09-25T15:05:54.064Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "54f2f7566b5dac2ae6250b0c2aa866c2",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Burn down villages and dodge arrows from knights.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "dragon"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "villages"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "city",
+    "mood": "action",
+    "setting": "Villages defended by knights firing arrows"
+   },
+   "title": "Dragon Burns Down Villages",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Burn down villages and dodge arrows from knights."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "c76dfab1fd0016352ba2f05327f5b6f6",
+  "sentence": "a dragon burns down villages and dodges arrows from knights",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:33:38.873Z"
+ },
+ "judge": {
+  "draft": {
+   "dragon": false,
+   "knight": false,
+   "arrow": false,
+   "village": false,
+   "dodge": false
+  },
+  "ai": {
+   "dragon": false,
+   "knight": false,
+   "arrow": false,
+   "village": false,
+   "dodge": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "dragon",
+    "visible": false,
+    "why": "Small winged creature could be a bat; dragon identity is unclear."
+   },
+   {
+    "item": "knight",
+    "visible": false,
+    "why": "No recognizable armored warrior is visible."
+   },
+   {
+    "item": "arrow",
+    "visible": false,
+    "why": "No recognizable arrow shaft, arrowhead, or fletching is visible."
+   },
+   {
+    "item": "village",
+    "visible": false,
+    "why": "Grass, trees, rocks, and benches do not establish a village."
+   },
+   {
+    "item": "dodge",
+    "visible": false,
+    "why": "No visible movement or incoming threat establishes dodging."
+   }
+  ],
+  "ai": [
+   {
+    "item": "dragon",
+    "visible": false,
+    "why": "Small winged creature resembles a bat; no clearly recognizable dragon features."
+   },
+   {
+    "item": "knight",
+    "visible": false,
+    "why": "Distant figure lacks recognizable armor, sword, or shield."
+   },
+   {
+    "item": "arrow",
+    "visible": false,
+    "why": "Crosshair and thin line visible, but no recognizable arrow."
+   },
+   {
+    "item": "village",
+    "visible": false,
+    "why": "Tall buildings and taxis suggest a city street, not a village."
+   },
+   {
+    "item": "dodge",
+    "visible": false,
+    "why": "No visible evasive movement or clearly depicted dodging action."
+   }
+  ]
+ }
+}

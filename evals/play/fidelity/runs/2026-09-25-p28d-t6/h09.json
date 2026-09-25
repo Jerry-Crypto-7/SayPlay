@@ -1,0 +1,365 @@
+{
+ "id": "h09",
+ "text": "escape from a haunted hospital with a flashlight",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "hospital",
+   "slot": "setting",
+   "match": [
+    "hospital",
+    "ward",
+    "clinic"
+   ]
+  },
+  {
+   "item": "flashlight",
+   "slot": "any",
+   "match": [
+    "flashlight",
+    "torch",
+    "lantern"
+   ]
+  },
+  {
+   "item": "escape",
+   "slot": "verb",
+   "controls": [
+    "runner"
+   ],
+   "mechanics": [
+    "chaser",
+    "zone_trigger"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "eb98b505474ffa2bb3016779b9c74e0d",
+  "ms": 783,
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 1,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "patrol",
+     "params": {
+      "disposition": "bold",
+      "role": "enemy",
+      "sight": true,
+      "stops": 3,
+      "touchEffect": "lose"
+     }
+    }
+   ],
+   "objective": {
+    "count": 1,
+    "description": "Collect one glowing mushroom, then reach the stone portal.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 1,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "glowing mushroom"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "patrol",
+     "label": "haunted hospital"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "calm",
+    "setting": "haunted hospital"
+   },
+   "title": "Escape Haunted Hospital Flashlight",
+   "tutorial": {
+    "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+    "goalLine": "Collect 1 glowing mushroom, then reach the exit. Stay off the haunted…"
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 1
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 0
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "lost"
+     },
+     "id": "spotted_loses",
+     "kind": "keypoint",
+     "mechanic": "patrol",
+     "setup": {
+      "placeAt": {
+       "player": "enemy"
+      }
+     },
+     "ticks": 3
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "87fc4ee09891ab577976c96735f36a34",
+  "ms": 21149,
+  "deadlineAt": "2026-09-25T14:21:27.906Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "87fc4ee09891ab577976c96735f36a34",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 1,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "patrol",
+     "params": {
+      "disposition": "bold",
+      "role": "enemy",
+      "sight": true,
+      "stops": 3,
+      "touchEffect": "lose"
+     }
+    }
+   ],
+   "objective": {
+    "count": 1,
+    "description": "Escape from the haunted hospital with a flashlight.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 1,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "flashlight"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "patrol",
+     "label": "haunted hospital"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "calm",
+    "setting": "haunted hospital"
+   },
+   "title": "Escape the Haunted Hospital",
+   "tutorial": {
+    "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+    "goalLine": "Escape from the haunted hospital with a flashlight."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 1
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 0
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "lost"
+     },
+     "id": "spotted_loses",
+     "kind": "keypoint",
+     "mechanic": "patrol",
+     "setup": {
+      "placeAt": {
+       "player": "enemy"
+      }
+     },
+     "ticks": 3
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "hospital": false,
+   "flashlight": false,
+   "escape": false
+  },
+  "ai": {
+   "hospital": false,
+   "flashlight": false,
+   "escape": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "hospital",
+    "visible": false,
+    "why": "Generic buildings lack recognizable hospital features."
+   },
+   {
+    "item": "flashlight",
+    "visible": false,
+    "why": "No recognizable flashlight is visible."
+   },
+   {
+    "item": "escape",
+    "visible": false,
+    "why": "Static scene shows no clear escape action."
+   }
+  ],
+  "ai": [
+   {
+    "item": "hospital",
+    "visible": false,
+    "why": "Plain buildings lack recognizable hospital features or medical signage."
+   },
+   {
+    "item": "flashlight",
+    "visible": false,
+    "why": "No clearly recognizable flashlight is visible."
+   },
+   {
+    "item": "escape",
+    "visible": false,
+    "why": "No visible pursuit or fleeing clearly establishes an escape action."
+   }
+  ]
+ }
+}

@@ -163,7 +163,10 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
     });
     if (branch === null || !acquireSlot('play')) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
     try {
-      return { ...(await direct(sentence, { branch, cache, now: Date.now, check })), callerLimited };
+      // P27D T2: kompaktní první odpověď je výchozí – živě 30/30 hratelných, p50 12 s proti 45 s
+      // a věrnost `drawn` 0,727 proti 0,702 (`evals/play/fidelity/README.md`). Celý GameSpec jen na objednávku.
+      const compact = process.env.PLAY_DIRECTOR_MODE !== 'full';
+      return { ...(await direct(sentence, { branch, cache, now: Date.now, check, compact })), callerLimited };
     } finally {
       releaseSlot('play');
     }

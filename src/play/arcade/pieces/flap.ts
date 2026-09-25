@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, type PieceRef, UNIT, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, type PieceRef, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const FLAP_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -49,17 +49,18 @@ export const FLAP_RISE = (() => {
   return peak;
 })();
 
-const controlParams = z.object({}).strict();
+/** Značky rampy (`rampMarks`); bez nich stálá rychlost. Čte je ovládání i robot. */
+export const flapRampParams = z.object({ ramp: z.tuple([z.int(), z.int()]).optional() }).strict();
 
-/** Ovládání: stálý let vpřed, ťuk/nahoru = vzlet. */
-export const flapControl: ControlPiece<z.infer<typeof controlParams>> = {
+/** Ovládání: let vpřed (za značkami rampy rychlejší), ťuk/nahoru = vzlet. */
+export const flapControl: ControlPiece<z.infer<typeof flapRampParams>> = {
   id: 'flap',
-  params: controlParams,
+  params: flapRampParams,
   roles: ['player'],
   cost: () => ({ bodies: 1, rules: 0 }),
-  step: (state, player, input) => {
+  step: (state, player, input, params) => {
     const base = bodyBase(player);
-    state[base + BODY.vz] = FLAP.speed;
+    state[base + BODY.vz] = rampedSpeed(FLAP.speed, state[base + BODY.z] as number, params.ramp);
     state[base + BODY.vx] = 0;
     if ((input.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0) state[base + BODY.vy] = FLAP.flapVy;
   },
@@ -113,6 +114,7 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
     const length = params.lengthM * UNIT;
     const lowest = FLAP.minPipe;
     const highest = FLAP.ceiling - FLAP.minPipe - tier.gap;
+    const ramp = rampMarks(length);
 
     const bodies: BodyInit[] = [
       { role: 'player', kind: 'bird', x: 0, y: FLAP.startY, z: 0, w: FLAP.size, h: FLAP.size, d: FLAP.size, solid: false },
@@ -130,7 +132,7 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
       if (prev !== null) coinSpots.push({ z: Math.floor((prev.z + z) / 2), y: Math.floor((prev.bottom + bottom + tier.gap - FLAP.size) / 2) });
       prev = { z, bottom };
       const spacing = rng.int(tier.spacing[0], tier.spacing[1]);
-      const reach = Math.min(tier.shift, Math.floor(FLAP.climbPerUnit * spacing));
+      const reach = Math.min(tier.shift, climbOver(spacing, z + spacing, ramp));
       bottom = Math.max(lowest, Math.min(highest, bottom + rng.int(-reach, reach)));
       z += spacing;
     }
@@ -169,15 +171,20 @@ export function flapGaps(level: ArcadeLevel): { z: number; bottom: number; top: 
     });
 }
 
+/** Výška, kterou hráč stihne vystoupat na úseku `span` končícím v `z`: za značkou rampy letí rychleji, tedy méně tiků. */
+function climbOver(span: number, z: number, ramp: readonly number[] | undefined): number {
+  return Math.floor((FLAP.climbPerUnit * span * FLAP.speed) / rampedSpeed(FLAP.speed, z, ramp));
+}
+
 /** Tvrzení „hratelné z konstrukce“ nad hotovou tratí; prázdné pole = hratelná. */
-export function checkFlapLevel(level: ArcadeLevel): string[] {
+export function checkFlapLevel(level: ArcadeLevel, ramp: readonly number[] | undefined = rampMarks(level.length)): string[] {
   const issues: string[] = [];
   const m = (units: number): string => `${(units / UNIT).toFixed(1)} m`;
   const gaps = flapGaps(level);
   gaps.forEach((gap, index) => {
     if (gap.top - gap.bottom < FLAP.size + FLAP_RISE + 600) issues.push(`gap at ${m(gap.z)} is ${m(gap.top - gap.bottom)} high – too tight to fly through`);
     const prev = gaps[index - 1];
-    if (prev !== undefined && Math.abs(gap.bottom - prev.bottom) > FLAP.climbPerUnit * (gap.z - prev.z)) issues.push(`gap at ${m(gap.z)} moves ${m(gap.bottom - prev.bottom)} over ${m(gap.z - prev.z)} – too far to follow`);
+    if (prev !== undefined && Math.abs(gap.bottom - prev.bottom) > climbOver(gap.z - prev.z, gap.z, ramp)) issues.push(`gap at ${m(gap.z)} moves ${m(gap.bottom - prev.bottom)} over ${m(gap.z - prev.z)} – too far to follow`);
     if (index === 0 && gap.z < FLAP_TRACK.startClear) issues.push(`first pipes at ${m(gap.z)} leave no run-in`);
   });
   if (!level.bodies.some((body) => body.role === 'goal' && body.z === level.length)) issues.push('no finish at the end of the track');

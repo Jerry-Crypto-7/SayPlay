@@ -1,0 +1,212 @@
+{
+ "id": "s039",
+ "text": "zombie shooter in a mall",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "zombie",
+   "slot": "role",
+   "match": [
+    "zombie",
+    "undead"
+   ]
+  },
+  {
+   "item": "mall",
+   "slot": "setting",
+   "match": [
+    "mall",
+    "shopping"
+   ]
+  },
+  {
+   "item": "shoot",
+   "slot": "verb",
+   "controls": [
+    "shooter"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "adfb2b719e5544d1eb7c48c79d37655f",
+  "ms": 610,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Hit every target and stop every wave before it reaches you.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "zombie"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "action",
+    "setting": "mall"
+   },
+   "title": "Zombie Shooter Mall",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Hit every target and stop the waves."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "f194b24f8e84f28533cc9caf57dde2ef",
+  "ms": 16703,
+  "deadlineAt": "2026-09-25T13:55:19.677Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "f194b24f8e84f28533cc9caf57dde2ef",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Shoot all the zombies in the mall.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "zombie"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "mall",
+    "mood": "action",
+    "setting": "mall"
+   },
+   "title": "Zombie Shooter in a Mall",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Shoot all the zombies in the mall."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "zombie": false,
+   "mall": false,
+   "shoot": true
+  },
+  "ai": {
+   "zombie": false,
+   "mall": false,
+   "shoot": true
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "zombie",
+    "visible": false,
+    "why": "Armored character visible, but no recognizable zombie features."
+   },
+   {
+    "item": "mall",
+    "visible": false,
+    "why": "Neutral ground plane with scattered props; no recognizable mall environment."
+   },
+   {
+    "item": "shoot",
+    "visible": true,
+    "why": "Visible crosshair and aiming line indicate shooting at targets."
+   }
+  ],
+  "ai": [
+   {
+    "item": "zombie",
+    "visible": false,
+    "why": "Armored figure visible, but no recognizable zombie features."
+   },
+   {
+    "item": "mall",
+    "visible": false,
+    "why": "Neutral ground plane with scattered props, no recognizable mall environment."
+   },
+   {
+    "item": "shoot",
+    "visible": true,
+    "why": "A red crosshair and aiming line point toward target boards."
+   }
+  ]
+ }
+}

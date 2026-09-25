@@ -45,8 +45,9 @@ export function failing(spec: GameSpecV1): string[] {
 
 describe('addon hook and +lives (P26D T3)', () => {
   it('a game without addons keeps the world it had before the hook', () => {
-    // Naměřeno před háčkem (c631214) nad `runner.json`, semínko 7.
-    expect(canonicalHash(worldOf(specOf(runner), 7))).toBe('61e583cc');
+    // Naměřeno před háčkem (c631214) nad `runner.json`, semínko 7: '61e583cc'.
+    // P28C T6 vědomě posunul na 'fe86ee7c' – ovládání nese značky rampy rychlosti.
+    expect(canonicalHash(worldOf(specOf(runner), 7))).toBe('fe86ee7c');
   });
 
   it.each([

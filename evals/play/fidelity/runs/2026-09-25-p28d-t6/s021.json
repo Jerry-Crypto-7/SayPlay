@@ -1,0 +1,228 @@
+{
+ "id": "s021",
+ "text": "obby game with lava and spinning bars",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "lava",
+   "slot": "role",
+   "match": [
+    "lava",
+    "magma"
+   ]
+  },
+  {
+   "item": "spinning bar",
+   "slot": "role",
+   "match": [
+    "bar",
+    "spinner",
+    "beam"
+   ]
+  },
+  {
+   "item": "jump",
+   "slot": "verb",
+   "controls": [
+    "platform"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "46e092cefe4af05f7203322e28d5bf3e",
+  "ms": 853,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "platform",
+   "controlParams": {
+    "checkpoints": true,
+    "difficulty": "normal",
+    "lengthM": 90
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Jump across the platforms to the flag without touching the spikes.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 5,
+     "id": "spikes",
+     "kind": "hazard",
+     "label": "spikes"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "flag"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "volcano",
+    "mood": "playful",
+    "setting": "floating stone platforms"
+   },
+   "title": "Obby Lava Spinning Bars",
+   "tutorial": {
+    "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+    "goalLine": "Reach the flag. Jump over gaps and spikes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "33e98f334bfe7173b0d80616876c5a9d",
+  "ms": 21339,
+  "deadlineAt": "2026-09-25T14:02:00.342Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "33e98f334bfe7173b0d80616876c5a9d",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "platform",
+   "controlParams": {
+    "checkpoints": true,
+    "difficulty": "normal",
+    "lengthM": 90
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Complete the obby without touching lava or spinning bars.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 5,
+     "id": "spikes",
+     "kind": "hazard",
+     "label": "spinning bars"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "flag"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "volcano",
+    "mood": "playful",
+    "setting": "Obby platforms above lava with spinning bars"
+   },
+   "title": "Lava and Spinning Bars Obby",
+   "tutorial": {
+    "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+    "goalLine": "Complete the obby without touching lava or spinning bars."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "lava": false,
+   "spinning bar": false,
+   "jump": false
+  },
+  "ai": {
+   "lava": false,
+   "spinning bar": false,
+   "jump": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "lava",
+    "visible": false,
+    "why": "Flat orange ground lacks recognizable molten texture, glow, or lava flows."
+   },
+   {
+    "item": "spinning bar",
+    "visible": false,
+    "why": "No recognizable spinning bar appears in the image."
+   },
+   {
+    "item": "jump",
+    "visible": false,
+    "why": "Character stands on a platform; no jumping action is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "lava",
+    "visible": false,
+    "why": "Flat orange ground lacks recognizable molten texture, glow, or flowing lava."
+   },
+   {
+    "item": "spinning bar",
+    "visible": false,
+    "why": "No recognizable spinning bar is visible."
+   },
+   {
+    "item": "jump",
+    "visible": false,
+    "why": "Character stands on a platform; no jumping action is shown."
+   }
+  ]
+ }
+}

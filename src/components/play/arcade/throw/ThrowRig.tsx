@@ -19,6 +19,7 @@ import { AXIS_MAX, AXIS_MIN, BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play
 import { GRAVITY } from '@/play/arcade/kernel';
 import { THROW, launchVelocity } from '@/play/arcade/pieces/throw';
 
+import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
 
 const DOTS = 12;
@@ -28,7 +29,7 @@ const AXIS_PER_PX = 12;
 /** Co musí být vidět: hřiště do ~26 m a výška ~9 m. */
 const VIEW = { from: -3, to: 27, tall: 10, y: 4 } as const;
 
-export function ThrowRig({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+export function ThrowRig({ session, surface, enabled }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly enabled: boolean }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const dots = useRef<(Mesh | null)[]>([]);
   const look = useMemo(() => new Vector3(), []);
@@ -71,7 +72,7 @@ export function ThrowRig({ session, surface }: { readonly session: ArcadeSession
 
   useEffect(() => {
     const element = surface.current;
-    if (element === null) return;
+    if (element === null || !enabled) return;
     let drag: { id: number; y: number } | null = null;
     const aimKeys = new Set<number>();
     let charging = false;
@@ -107,7 +108,7 @@ export function ThrowRig({ session, surface }: { readonly session: ArcadeSession
 
     const aimOf = (key: string): number => (key === 'arrowup' || key === 'w' ? BUTTON.UP : key === 'arrowdown' || key === 's' ? BUTTON.DOWN : 0);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const aim = aimOf(key);
       if (aim !== 0) {
@@ -153,7 +154,7 @@ export function ThrowRig({ session, surface }: { readonly session: ArcadeSession
       element.removeEventListener('pointerup', onUp);
       element.removeEventListener('pointercancel', onUp);
     };
-  }, [session, surface]);
+  }, [session, surface, enabled]);
 
   return (
     <>

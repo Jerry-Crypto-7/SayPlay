@@ -37,6 +37,28 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBe(before + 1);
   });
 
+  test('"Show me how" plays the verified run as a labelled demo, then the player plays (P27D T3)', async ({ page }) => {
+    test.setTimeout(240_000);
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 10, undefined, { timeout: 60_000 });
+    await page.getByTestId('play-demo-start').click();
+    await expect(page.getByTestId('play-demo')).toBeVisible();
+    // Ukázka běží v čase před očima, ne naráz.
+    const early = await page.evaluate(() => window.__playShell!.tick());
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(early);
+    // Stisk hráče během ukázky se do jeho záznamu nezapíše.
+    await page.keyboard.press('Space');
+    expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(0);
+    await expect(page.getByTestId('play-demo-outcome')).toHaveAttribute('data-verified', 'true', { timeout: 200_000 });
+    await expect(page.getByTestId('play-outcome')).toHaveCount(0);
+    await page.getByTestId('play-demo-yours').click();
+    await expect(page.getByTestId('play-demo-outcome')).toHaveCount(0);
+    await expect(page.getByTestId('play-demo-start')).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBeGreaterThan(0);
+  });
+
   test('a hidden tab pauses the game and the first key resumes it (P27B T3)', async ({ page }) => {
     await page.goto(url);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
@@ -73,6 +95,56 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(before);
   });
 
+  test('the first click wakes the sound and M mutes it for the next visit too (P28C T2)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    // Bez gesta hráče prohlížeč zvuk nepustí – kontext ještě nevznikl.
+    expect(await page.evaluate(() => window.__playAudio!.state())).toBe('none');
+    await page.getByTestId('arcade-stage').click();
+    await expect.poll(() => page.evaluate(() => window.__playAudio!.state())).toBe('running');
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound on');
+    await page.keyboard.press('m');
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
+    expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('muted');
+    await page.reload();
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
+    await page.getByTestId('play-mute').click();
+    await expect(page.getByTestId('play-mute')).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('on');
+  });
+
+  test('a pickup pops "+1" and the result waits ~600 ms after the end (P28C T3)', async ({ page }) => {
+    type Hand = { handPlay: (until: 'score' | 'end') => { runState: string; score: number; at: number } };
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
+    const scored = await page.evaluate(() => (window.__playShell as unknown as Hand).handPlay('score'));
+    expect(scored.score).toBeGreaterThan(0);
+    await page.waitForTimeout(100);
+    // Snímek 100 ms po sebrání: „+N“ visí nad hráčem (a za 500 ms zmizí sám).
+    expect(await page.evaluate(() => document.querySelector('[data-testid="score-pop"]')?.textContent ?? null)).toBe(`+${scored.score}`);
+
+    const end = await page.evaluate(async () => {
+      const run = (window.__playShell as unknown as Hand).handPlay('end');
+      return new Promise<{ runState: string; delay: number }>((resolve) => {
+        const poll = (): void => {
+          if (document.querySelector('[data-testid="play-outcome"]') !== null) resolve({ runState: run.runState, delay: performance.now() - run.at });
+          else requestAnimationFrame(poll);
+        };
+        poll();
+      });
+    });
+    expect(end.runState).toBe('won');
+    expect(end.delay).toBeGreaterThanOrEqual(550);
+    expect(end.delay).toBeLessThanOrEqual(800);
+  });
+
+  test('a one-command prompt says what to do and goes away on the first input (P28C T5)', async ({ page }) => {
+    await page.goto(url);
+    await expect(page.getByTestId('play-first-prompt')).toHaveText('Tap to jump', { timeout: 60_000 });
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('play-first-prompt')).toHaveCount(0);
+  });
+
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
     await page.goto(url);
     const stage = page.getByTestId('arcade-stage');
@@ -89,6 +161,94 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(outcome.runState).toBe('won');
     await expect(page.getByTestId('play-outcome')).toContainText('You won');
     await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
+  });
+
+  test('after the run the scene draws on demand: the end state and Replay still redraw it (P28E T2)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    const stage = page.getByTestId('arcade-stage').locator('canvas');
+    const running = await stage.screenshot();
+    await page.evaluate(() => window.__playShell!.playWitness());
+    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    // Konec běhu přepne plátno na kreslení na požádání; poslední stav se přesto nakreslí.
+    await expect.poll(async () => (await stage.screenshot()).equals(running)).toBe(false);
+    const ended = await stage.screenshot();
+    await page.getByTestId('play-replay').click();
+    await expect.poll(async () => (await stage.screenshot()).equals(ended)).toBe(false);
+  });
+
+  test('after the run the canvas draws the end state once, then stays idle until Replay (P28E T2)', async ({ page }) => {
+    // Počítá snímky, ve kterých WebGL opravdu kreslilo (`draw*` > 0), s časem snímku.
+    await page.addInitScript(() => {
+      const gl = WebGL2RenderingContext.prototype as unknown as Record<string, (...args: unknown[]) => unknown>;
+      const drawn: number[] = [];
+      let calls = 0;
+      for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced', 'drawRangeElements']) {
+        const original = gl[name]!;
+        gl[name] = function (this: unknown, ...args: unknown[]) {
+          calls += 1;
+          return original.apply(this, args);
+        };
+      }
+      const frame = (at: number) => {
+        if (calls > 0) drawn.push(at);
+        calls = 0;
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+      (window as unknown as { __drawn: number[] }).__drawn = drawn;
+    });
+    const drawnSince = (since: number) => page.evaluate((t) => (window as unknown as { __drawn: number[] }).__drawn.filter((at) => at > t).length, since);
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    // Záznam robota doběhne v jednom tahu; konec musí plátno nakreslit aspoň jednou (RedrawOnChange).
+    const ended = await page.evaluate(() => {
+      window.__playShell!.playWitness();
+      return performance.now();
+    });
+    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect.poll(() => drawnSince(ended)).toBeGreaterThan(0);
+    // Pak plátno stojí: za sekundu nejvýš pár snímků, ne ~60.
+    const idle = await page.evaluate(() => performance.now());
+    await page.waitForTimeout(1_000);
+    expect(await drawnSince(idle)).toBeLessThanOrEqual(3);
+    // Otočení telefonu po konci: plátno se zvětší a vymaže, stojící scéna se musí nakreslit znovu.
+    const resized = await page.evaluate(() => performance.now());
+    await page.setViewportSize({ width: 900, height: 700 });
+    await expect.poll(() => drawnSince(resized)).toBeGreaterThan(0);
+    const replay = await page.evaluate(() => performance.now());
+    await page.getByTestId('play-replay').click();
+    await expect.poll(() => drawnSince(replay)).toBeGreaterThan(10);
+  });
+
+  test('the runner draws at most 250 calls a frame, not the whole track (P28E-R1)', async ({ page }) => {
+    // Počítá `draw*` WebGL mezi dvěma snímky – totéž, co `renderer.info.render.calls`.
+    await page.addInitScript(() => {
+      const gl = WebGL2RenderingContext.prototype as unknown as Record<string, (...args: unknown[]) => unknown>;
+      const counts: number[] = [];
+      let calls = 0;
+      for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced', 'drawRangeElements']) {
+        const original = gl[name]!;
+        gl[name] = function (this: unknown, ...args: unknown[]) {
+          calls += 1;
+          return original.apply(this, args);
+        };
+      }
+      const frame = () => {
+        if (calls > 0) counts.push(calls);
+        calls = 0;
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+      (window as unknown as { __calls: number[] }).__calls = counts;
+    });
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    await page.getByTestId('play-demo-start').click();
+    await page.waitForTimeout(2_000);
+    const counts = await page.evaluate(() => [...(window as unknown as { __calls: number[] }).__calls].slice(-60).sort((a, b) => a - b));
+    expect(counts.length).toBeGreaterThan(10);
+    expect(counts[Math.floor(counts.length / 2)]).toBeLessThanOrEqual(250);
   });
 
   test('a phone viewport has no horizontal scroll', async ({ page }) => {

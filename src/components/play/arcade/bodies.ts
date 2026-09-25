@@ -1,0 +1,53 @@
+/**
+ * Seznam těl, která scéna kreslí (P28B T2). `spawn()` v jádře za běhu
+ * zvyšuje `bodyCount` (střely, hody, doplňky) a mrtvý slot od `spawnBase`
+ * přepíše jinou předlohou – seznam postavený jednou ze startu by nové tělo
+ * nikdy nenakreslil. Scéna proto každý snímek zkontroluje `bodiesStale`
+ * a při změně seznam postaví znovu.
+ */
+
+import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+
+import type { ArcadeSession } from './session';
+
+export interface BodyView {
+  readonly index: number;
+  readonly kind: string;
+  readonly role: number;
+  readonly w: number;
+  readonly h: number;
+  readonly d: number;
+}
+
+const kindOf = (session: Pick<ArcadeSession, 'world'>, code: number): string => session.world.kinds[code] ?? 'crate';
+
+export function bodiesOf(session: Pick<ArcadeSession, 'world' | 'state'>): readonly BodyView[] {
+  const state = session.state();
+  const count = state[HEADER.bodyCount] as number;
+  const views: BodyView[] = [];
+  for (let index = 0; index < count; index += 1) {
+    const base = bodyBase(index);
+    views.push({
+      index,
+      kind: kindOf(session, state[base + BODY.kind] as number),
+      role: state[base + BODY.role] as number,
+      w: (state[base + BODY.w] as number) / UNIT,
+      h: (state[base + BODY.h] as number) / UNIT,
+      d: (state[base + BODY.d] as number) / UNIT,
+    });
+  }
+  return views;
+}
+
+/** Stav má jiný počet těl, nebo spawn obsadil slot jiným druhem či rolí, než seznam kreslí. */
+export function bodiesStale(views: readonly BodyView[], session: Pick<ArcadeSession, 'world' | 'state'>): boolean {
+  const state = session.state();
+  const count = state[HEADER.bodyCount] as number;
+  if (count !== views.length) return true;
+  for (let index = state[HEADER.spawnBase] as number; index < count; index += 1) {
+    const base = bodyBase(index);
+    const view = views[index] as BodyView;
+    if (view.role !== state[base + BODY.role] || view.kind !== kindOf(session, state[base + BODY.kind] as number)) return true;
+  }
+  return false;
+}

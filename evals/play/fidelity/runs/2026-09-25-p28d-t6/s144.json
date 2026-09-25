@@ -1,0 +1,260 @@
+{
+ "id": "s144",
+ "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "frog",
+   "slot": "hero",
+   "match": [
+    "frog",
+    "toad"
+   ]
+  },
+  {
+   "item": "lily pad",
+   "slot": "any",
+   "match": [
+    "lily",
+    "pad"
+   ]
+  },
+  {
+   "item": "pond",
+   "slot": "setting",
+   "match": [
+    "pond",
+    "lake",
+    "swamp"
+   ]
+  },
+  {
+   "item": "drum to the beat",
+   "slot": "verb",
+   "controls": [
+    "rhythm"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "c091f7b3d1153f2437d9cb4875770ed0",
+  "ms": 104,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "rhythm",
+   "controlParams": {
+    "beats": 48,
+    "bpm": 120,
+    "density": "normal"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Tap each tile as it reaches the line and play the song to the last beat.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "drummer frog"
+    },
+    {
+     "count": 12,
+     "id": "note",
+     "kind": "collectible",
+     "label": "tile"
+    },
+    {
+     "count": 1,
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed beat"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "last beat"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 30,
+   "theme": {
+    "mood": "energetic",
+    "setting": "pond"
+   },
+   "title": "Drummer Frog Plays Lily",
+   "tutorial": {
+    "controlsHint": "Tap or Space on the beat. M toggles sound.",
+    "goalLine": "Tap as each tile hits the line. Three misses end the song."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "e7c69e0f60f0370ac5940d222748add6",
+  "ms": 20344,
+  "deadlineAt": "2026-09-25T14:09:14.741Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "e7c69e0f60f0370ac5940d222748add6",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "rhythm",
+   "controlParams": {
+    "beats": 48,
+    "bpm": 120,
+    "density": "normal"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Play lily pads on the beat to light up the pond.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "drummer frog"
+    },
+    {
+     "count": 12,
+     "id": "note",
+     "kind": "collectible",
+     "label": "lily pads"
+    },
+    {
+     "count": 1,
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed beat"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "last beat"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 30,
+   "theme": {
+    "mood": "energetic",
+    "setting": "pond"
+   },
+   "title": "Drummer Frog's Pond Beat",
+   "tutorial": {
+    "controlsHint": "Tap or Space on the beat. M toggles sound.",
+    "goalLine": "Play lily pads on the beat to light up the pond."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "frog": false,
+   "lily pad": false,
+   "pond": false,
+   "drum to the beat": false
+  },
+  "ai": {
+   "frog": false,
+   "lily pad": false,
+   "pond": false,
+   "drum to the beat": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "frog",
+    "visible": false,
+    "why": "Small distant figures are not clearly recognizable as frogs."
+   },
+   {
+    "item": "lily pad",
+    "visible": false,
+    "why": "No recognizable lily pads are visible."
+   },
+   {
+    "item": "pond",
+    "visible": false,
+    "why": "Green ground and colored lanes do not resemble a pond."
+   },
+   {
+    "item": "drum to the beat",
+    "visible": false,
+    "why": "No recognizable drums or drumming action are shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "frog",
+    "visible": false,
+    "why": "Small distant figures are not clearly recognizable as frogs."
+   },
+   {
+    "item": "lily pad",
+    "visible": false,
+    "why": "No recognizable lily pads are visible."
+   },
+   {
+    "item": "pond",
+    "visible": false,
+    "why": "Scene shows grassy ground and colored lanes, not a recognizable pond."
+   },
+   {
+    "item": "drum to the beat",
+    "visible": false,
+    "why": "No drums or visible drumming activity."
+   }
+  ]
+ }
+}

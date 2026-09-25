@@ -146,3 +146,6 @@ evals/play/fidelity/runs/
 # Záznamy selhání vylepšení (P26 T3): nesou surové odpovědi modelu – stejná
 # třída dat jako evals/live.
 data/play/failures/
+
+# Události herní smyčky (P27D T4): provozní záznam, souhrn dělá scripts/play-loop-report.mjs.
+data/play/events/

@@ -16,6 +16,7 @@ import { AXIS_MAX, BUTTON, UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
 
+import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
@@ -81,8 +82,8 @@ const BRAKE_KEYS = new Set(['arrowdown', 's']);
 /**
  * Šipky/A-D = zatáčení (osa), šipka dolů/S = brzda. Dotyk: první prst táhne
  * do strany (osa podle vzdálenosti od místa stisku, plná po `DRAG_PX`),
- * druhý prst kdekoli brzdí. Brzda se drží, dokud je stisknutá – tlačí se
- * do každého snímku, protože `press` platí jen pro jeden tik.
+ * druhý prst kdekoli brzdí. Brzda je držené tlačítko relace – padne do
+ * každého tiku, ať snímků za sekundu je kolik chce (P28B T5).
  */
 const DRAG_PX = 90;
 
@@ -92,22 +93,16 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     if (!active || element === null) return;
     const keys = new Set<'left' | 'right' | 'brake'>();
     const pointers = new Map<number, { readonly x: number; axis: number }>();
-    let frame = 0;
     const sync = (): void => {
       const drag = [...pointers.values()][0]?.axis ?? 0;
       const key = ((keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)) * AXIS_MAX;
       session.hold(key !== 0 ? key : drag);
+      session.holdButtons(keys.has('brake') || pointers.size > 1 ? BUTTON.DOWN : 0);
     };
-    const braking = (): boolean => keys.has('brake') || pointers.size > 1;
-    const pump = (): void => {
-      if (braking()) session.press(BUTTON.DOWN);
-      frame = requestAnimationFrame(pump);
-    };
-    frame = requestAnimationFrame(pump);
     const keyOf = (key: string): 'left' | 'right' | 'brake' | null =>
       key === 'arrowleft' || key === 'a' ? 'left' : key === 'arrowright' || key === 'd' ? 'right' : BRAKE_KEYS.has(key) ? 'brake' : null;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = keyOf(event.key.toLowerCase());
       if (key === null) return;
       event.preventDefault();
@@ -121,6 +116,8 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
       sync();
     };
     const onDown = (event: PointerEvent) => {
+      // Tah, který vyjede z plátna, se musí pustit i venku – jinak řízení zůstane vytočené.
+      element.setPointerCapture(event.pointerId);
       pointers.set(event.pointerId, { x: event.clientX, axis: 0 });
       sync();
     };
@@ -146,7 +143,6 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     element.addEventListener('pointerup', onUp);
     element.addEventListener('pointercancel', onUp);
     return () => {
-      cancelAnimationFrame(frame);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', release);

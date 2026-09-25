@@ -1,0 +1,245 @@
+{
+ "id": "s188",
+ "text": "A grandma karate fights a gang of pigeons in the park",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "grandma",
+   "slot": "hero",
+   "match": [
+    "grandma",
+    "granny",
+    "grandmother",
+    "old lady"
+   ]
+  },
+  {
+   "item": "pigeon",
+   "slot": "role",
+   "match": [
+    "pigeon",
+    "bird"
+   ]
+  },
+  {
+   "item": "park",
+   "slot": "setting",
+   "match": [
+    "park"
+   ]
+  },
+  {
+   "item": "fight",
+   "slot": "verb",
+   "controls": [
+    "duel"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "40300b9b3fdde61323340786969c3d36",
+  "ms": 49,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "duel",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Dodge the swings, strike in the openings and knock your rival out.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "grandma karate"
+    },
+    {
+     "count": 1,
+     "id": "rival",
+     "kind": "hazard",
+     "label": "pigeons"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "knockout"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 45,
+   "theme": {
+    "mood": "tense",
+    "setting": "park"
+   },
+   "title": "Grandma Karate Fights Gang",
+   "tutorial": {
+    "controlsHint": "Tap right or Space to strike, tap left or Down to dodge.",
+    "goalLine": "Dodge the wind-up, strike in the opening. Knock out the rival."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "29f6ba594001cecf09456246eb479e89",
+  "ms": 20333,
+  "deadlineAt": "2026-09-25T14:08:37.765Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "29f6ba594001cecf09456246eb479e89",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "duel",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [
+    {
+     "id": "health",
+     "params": {
+      "max": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Defeat the gang of pigeons with grandma's karate.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "grandma"
+    },
+    {
+     "count": 1,
+     "id": "rival",
+     "kind": "hazard",
+     "label": "pigeons"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "knockout"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 45,
+   "theme": {
+    "look": "meadow",
+    "mood": "tense",
+    "setting": "park"
+   },
+   "title": "Grandma vs. Gang of Pigeons",
+   "tutorial": {
+    "controlsHint": "Tap right or Space to strike, tap left or Down to dodge.",
+    "goalLine": "Defeat the gang of pigeons with grandma's karate."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "grandma": false,
+   "pigeon": false,
+   "park": true,
+   "fight": false
+  },
+  "ai": {
+   "grandma": false,
+   "pigeon": false,
+   "park": true,
+   "fight": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "grandma",
+    "visible": false,
+    "why": "Generic block figure lacks recognizable elderly features."
+   },
+   {
+    "item": "pigeon",
+    "visible": false,
+    "why": "Dark rounded object lacks a recognizable bird silhouette."
+   },
+   {
+    "item": "park",
+    "visible": true,
+    "why": "Grass, tree, bench, and paved path suggest a park."
+   },
+   {
+    "item": "fight",
+    "visible": false,
+    "why": "No clear attacks, weapons, or combat interactions are shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "grandma",
+    "visible": false,
+    "why": "Generic block figure lacks recognizable grandmother features."
+   },
+   {
+    "item": "pigeon",
+    "visible": false,
+    "why": "Dark rounded object lacks recognizable pigeon anatomy."
+   },
+   {
+    "item": "park",
+    "visible": true,
+    "why": "Grass, tree, bench, and paved path suggest a park."
+   },
+   {
+    "item": "fight",
+    "visible": false,
+    "why": "No clear combat interaction, attacks, or fighting poses are shown."
+   }
+  ]
+ }
+}

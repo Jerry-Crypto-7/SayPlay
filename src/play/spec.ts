@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
+import { ADDONS, type AddonId } from './arcade/contract';
 import { LOOK_IDS } from './arcade/look';
 import { CAPABILITIES } from './capabilities';
 
@@ -231,12 +232,10 @@ export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_
 export type ControlId = (typeof CONTROLS)[number];
 
 /**
- * Doplňky arkády (P26D): druhá mechanika nad základním ovládáním („jump and
- * shoot“). Která ovládání který berou, říká `CAPABILITIES[control].addons`.
- * Pole ve specu je volitelné **bez výchozí hodnoty**, jako `control`.
+ * Doplňky arkády (P26D), seznam v `arcade/contract.ts`. Pole ve specu je
+ * volitelné **bez výchozí hodnoty**, jako `control`.
  */
-export const ADDONS = ['shoot', 'collect', 'chaser', 'lives'] as const;
-export type AddonId = (typeof ADDONS)[number];
+export { ADDONS, type AddonId };
 
 /** Parametry běžce; co chybí, doplní generátor tratě svým výchozím. */
 export const runnerParamsSchema = z

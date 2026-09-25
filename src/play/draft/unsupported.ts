@@ -14,8 +14,10 @@
 import type { ArchetypeId } from '../registry';
 import type { ControlId, GameSpecV1 } from '../spec';
 import type { PublishedGame, VersionStore } from '../version';
+import { noVerbTopic } from './draft';
 
-export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place';
+/** `no_verb` (P28D T4): věta hru nechce vůbec („explain quantum physics“) – hraje se běžec o jejím tématu. */
+export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place' | 'no_verb';
 
 export interface Honesty {
   readonly kind: UnsupportedKind;
@@ -112,7 +114,12 @@ const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
 export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'archetype' | 'control'>): Honesty | null {
   const text = sentence.toLowerCase();
   const match = CLASSES.find((entry) => entry.cues.some((cue) => cue.test(text)));
-  if (match === undefined) return null;
+  if (match === undefined) {
+    // Jen dokud hra je ten běžec – AI verze s jiným ovládáním hlášku nepotřebuje.
+    const topic = draft.control === 'runner' ? noVerbTopic(sentence) : null;
+    if (topic === null) return null;
+    return { kind: 'no_verb', reason: `No game verb found – here is a runner about ${topic}. Try: ‘Dodge …’, ‘Collect …’`, closest: ARCADE_CLOSEST.runner };
+  }
   return {
     kind: match.kind,
     reason: match.reason,

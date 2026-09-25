@@ -1,0 +1,237 @@
+{
+ "id": "h02",
+ "text": "shopping cart race in a supermarket",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "shopping cart",
+   "slot": "hero",
+   "match": [
+    "cart",
+    "trolley"
+   ]
+  },
+  {
+   "item": "supermarket",
+   "slot": "setting",
+   "match": [
+    "supermarket",
+    "grocery",
+    "store"
+   ]
+  },
+  {
+   "item": "race",
+   "slot": "verb",
+   "controls": [
+    "steer"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "02681ad7384be5fa994485f39e41831a",
+  "ms": 872,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 450
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Steer through the bends and cross the finish line before the rival cars.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "shopping cart"
+    },
+    {
+     "count": 5,
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "tire barrier"
+    },
+    {
+     "count": 3,
+     "id": "rival",
+     "kind": "patrol",
+     "label": "rival car"
+    },
+    {
+     "count": 3,
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "fast",
+    "setting": "supermarket"
+   },
+   "title": "Shopping Cart Race Supermarket",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+    "goalLine": "Beat the rival cars to the finish line."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "eb14a903e5e28c78603b0e9a8a08587a",
+  "ms": 21515,
+  "deadlineAt": "2026-09-25T14:12:35.799Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "eb14a903e5e28c78603b0e9a8a08587a",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 450
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Win the shopping cart race in the supermarket.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "shopping cart"
+    },
+    {
+     "count": 5,
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "tire barrier"
+    },
+    {
+     "count": 3,
+     "id": "rival",
+     "kind": "patrol",
+     "label": "rival car"
+    },
+    {
+     "count": 3,
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "supermarket",
+    "mood": "fast",
+    "setting": "supermarket"
+   },
+   "title": "Shopping Cart Race",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+    "goalLine": "Win the shopping cart race in the supermarket."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "shopping cart": false,
+   "supermarket": false,
+   "race": true
+  },
+  "ai": {
+   "shopping cart": true,
+   "supermarket": false,
+   "race": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "shopping cart",
+    "visible": false,
+    "why": "No recognizable basket, handle, and wheeled shopping cart structure."
+   },
+   {
+    "item": "supermarket",
+    "visible": false,
+    "why": "Neutral ground with scattered objects lacks a recognizable supermarket environment."
+   },
+   {
+    "item": "race",
+    "visible": true,
+    "why": "Several racing cars occupy a marked course stretching into the distance."
+   }
+  ],
+  "ai": [
+   {
+    "item": "shopping cart",
+    "visible": true,
+    "why": "Wheeled baskets with projecting handles are recognizable as shopping carts."
+   },
+   {
+    "item": "supermarket",
+    "visible": false,
+    "why": "Scattered shelves and refrigerators on neutral ground lack recognizable supermarket surroundings."
+   },
+   {
+    "item": "race",
+    "visible": false,
+    "why": "Cars occupy a roadway, but no clear racing action is shown."
+   }
+  ]
+ }
+}

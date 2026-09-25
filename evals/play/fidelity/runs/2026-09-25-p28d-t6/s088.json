@@ -1,0 +1,215 @@
+{
+ "id": "s088",
+ "text": "angry birds but with cats and cardboard boxes",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "cat",
+   "slot": "any",
+   "match": [
+    "cat",
+    "kitten"
+   ]
+  },
+  {
+   "item": "cardboard box",
+   "slot": "any",
+   "match": [
+    "box",
+    "cardboard",
+    "crate"
+   ]
+  },
+  {
+   "item": "launch",
+   "slot": "verb",
+   "controls": [
+    "throw"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "7e8aee4763418e7e3bd2a89c6ea8c940",
+  "ms": 186,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal",
+    "goal": "tower"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Hit every target before you run out of throws.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "cat"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "cardboard box"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "sunny park lawn"
+   },
+   "title": "Angry Birds Cats Cardboard",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Hit every target before the throws run out."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "bbe4ce4d63946344c7f81f545e2e42e0",
+  "ms": 20484,
+  "deadlineAt": "2026-09-25T14:03:51.613Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "bbe4ce4d63946344c7f81f545e2e42e0",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal",
+    "goal": "tower"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Knock down all the cardboard boxes by launching cats.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "cats"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "cardboard boxes"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "meadow",
+    "mood": "playful",
+    "setting": "A sunny lawn with stacks of cardboard boxes"
+   },
+   "title": "Cats vs. Cardboard Boxes",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Knock down all the cardboard boxes by launching cats."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "cat": true,
+   "cardboard box": false,
+   "launch": false
+  },
+  "ai": {
+   "cat": true,
+   "cardboard box": false,
+   "launch": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "cat",
+    "visible": true,
+    "why": "Small orange animal has pointed ears and a raised tail."
+   },
+   {
+    "item": "cardboard box",
+    "visible": false,
+    "why": "Stacked containers look like wooden crates, not cardboard boxes."
+   },
+   {
+    "item": "launch",
+    "visible": false,
+    "why": "No visible launching action or airborne projectile."
+   }
+  ],
+  "ai": [
+   {
+    "item": "cat",
+    "visible": true,
+    "why": "Small orange animal has pointed ears, four legs, and raised tail."
+   },
+   {
+    "item": "cardboard box",
+    "visible": false,
+    "why": "Stacked boxes look like wooden crates with diagonal reinforcing planks."
+   },
+   {
+    "item": "launch",
+    "visible": false,
+    "why": "No visible launching action, airborne object, or launch mechanism."
+   }
+  ]
+ }
+}

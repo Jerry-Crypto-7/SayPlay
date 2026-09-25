@@ -1,0 +1,217 @@
+{
+ "id": "s155",
+ "text": "defend the castle from waves of goblins",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "castle",
+   "slot": "setting",
+   "match": [
+    "castle",
+    "fortress",
+    "wall"
+   ]
+  },
+  {
+   "item": "goblin",
+   "slot": "role",
+   "match": [
+    "goblin",
+    "orc"
+   ]
+  },
+  {
+   "item": "defend",
+   "slot": "verb",
+   "controls": [
+    "shooter"
+   ],
+   "mechanics": [
+    "spawn_wave",
+    "defeat"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "176e440a5cf78a8000d0a7f5fdbb191a",
+  "ms": 82,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Hit every target and stop every wave before it reaches you.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "goblin"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "action",
+    "setting": "castle"
+   },
+   "title": "Defend Castle Waves Goblins",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Hit every target and stop the waves."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "e5b9750ca4dc8317bd5fa4fa92411a86",
+  "ms": 16220,
+  "deadlineAt": "2026-09-25T14:09:53.861Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "e5b9750ca4dc8317bd5fa4fa92411a86",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Defend the castle from waves of goblins.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "goblins"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "castle",
+    "mood": "action",
+    "setting": "castle"
+   },
+   "title": "Defend the Castle",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Defend the castle from waves of goblins."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "castle": true,
+   "goblin": false,
+   "defend": false
+  },
+  "ai": {
+   "castle": true,
+   "goblin": false,
+   "defend": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "castle",
+    "visible": true,
+    "why": "Stone towers with pointed roofs and wall sections suggest a castle."
+   },
+   {
+    "item": "goblin",
+    "visible": false,
+    "why": "Distant figures lack clearly recognizable goblin features."
+   },
+   {
+    "item": "defend",
+    "visible": false,
+    "why": "No visible attack or protective action establishes defending."
+   }
+  ],
+  "ai": [
+   {
+    "item": "castle",
+    "visible": true,
+    "why": "Stone towers, pointed roofs, and wall sections suggest a castle environment."
+   },
+   {
+    "item": "goblin",
+    "visible": false,
+    "why": "Distant green figures lack clearly recognizable goblin features."
+   },
+   {
+    "item": "defend",
+    "visible": false,
+    "why": "An armed knight and targets do not clearly establish defensive action."
+   }
+  ]
+ }
+}

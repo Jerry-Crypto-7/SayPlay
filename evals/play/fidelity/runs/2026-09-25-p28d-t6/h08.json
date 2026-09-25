@@ -1,0 +1,263 @@
+{
+ "id": "h08",
+ "text": "a romantic dinner date on the moon",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "dinner",
+   "slot": "any",
+   "match": [
+    "dinner",
+    "table",
+    "candle",
+    "food"
+   ]
+  },
+  {
+   "item": "moon",
+   "slot": "setting",
+   "match": [
+    "moon",
+    "lunar"
+   ]
+  },
+  {
+   "item": "date",
+   "slot": "verb",
+   "controls": []
+  }
+ ],
+ "draft": {
+  "versionId": "16b93a72012b9ee81a63dd149eb330a6",
+  "ms": 208,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Run to the finish line without hitting an obstacle.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "dinner date"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "hurdle"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "energetic",
+    "setting": "moon"
+   },
+   "title": "Romantic Dinner Date Moon",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "2f8d7e994aa721b023e0b5e99cf0c998",
+  "ms": 20983,
+  "deadlineAt": "2026-09-25T14:20:07.332Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "2f8d7e994aa721b023e0b5e99cf0c998",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Join your date for a romantic dinner on the moon.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "date"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "glowing mushroom"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "look": "space",
+    "mood": "calm",
+    "setting": "On the moon"
+   },
+   "title": "A Romantic Dinner Date on the Moon",
+   "tutorial": {
+    "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+    "goalLine": "Join your date for a romantic dinner on the moon."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "dinner": false,
+   "moon": false,
+   "date": false
+  },
+  "ai": {
+   "dinner": false,
+   "moon": false,
+   "date": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "dinner",
+    "visible": false,
+    "why": "Small plate-like object does not clearly establish a recognizable dinner."
+   },
+   {
+    "item": "moon",
+    "visible": false,
+    "why": "Orange ground, rockets, and rocks do not clearly identify the Moon."
+   },
+   {
+    "item": "date",
+    "visible": false,
+    "why": "No couple or recognizable dating activity is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "dinner",
+    "visible": false,
+    "why": "No recognizable meal or dinner setting is visible."
+   },
+   {
+    "item": "moon",
+    "visible": false,
+    "why": "Reddish terrain and rockets do not clearly identify the Moon."
+   },
+   {
+    "item": "date",
+    "visible": false,
+    "why": "No recognizable romantic interaction or dating activity is shown."
+   }
+  ]
+ }
+}

@@ -11,7 +11,7 @@
 
 import { z } from 'zod';
 
-import { AXIS_MAX, type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
+import { AXIS_MAX, type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, rampedSpeed } from '../contract';
 import { STEER, type SteerCourse, centerAt, courseSchema } from './steer';
 
 const REACTION = 8;
@@ -30,13 +30,13 @@ const BRAKE_SLACK = 600;
 const toward = (value: number, target: number, step: number): number => (value < target ? Math.min(target, value + step) : Math.max(target, value - step));
 
 /** Jízda „teď“: viděný stav + vstupy, které v něm ještě nejsou (jako ovládání, bez turba a kolizí). */
-function predict(state: Int32Array, player: number, recent: readonly ArcadeInput[], topSpeed: number, grip: number): { x: number; z: number; vx: number; vz: number } {
+function predict(state: Int32Array, player: number, recent: readonly ArcadeInput[], topSpeed: number, grip: number, ramp: readonly number[] | undefined): { x: number; z: number; vx: number; vz: number } {
   const p = bodyBase(player);
   let x = state[p + BODY.x] as number;
   let z = state[p + BODY.z] as number;
   let vx = state[p + BODY.vx] as number;
   let vz = state[p + BODY.vz] as number;
-  const top = topSpeed + ((state[p + BODY.aux0] as number) > 0 ? STEER.boost : 0);
+  const top = rampedSpeed(topSpeed, z, ramp) + ((state[p + BODY.aux0] as number) > 0 ? STEER.boost : 0);
   for (const input of recent) {
     vz = (input.buttons & BUTTON.DOWN) !== 0 ? Math.max(0, vz - STEER.brake) : toward(vz, top, vz > top ? STEER.brake : STEER.accel);
     const target = Math.trunc((input.axis * STEER.latMax) / AXIS_MAX);
@@ -75,7 +75,12 @@ function aimX(state: Int32Array, player: number, course: SteerCourse, x: number,
 }
 
 const botParams = z
-  .object({ topSpeed: z.int().min(150).max(360).default(STEER.topSpeed), drift: z.boolean().default(false), course: courseSchema.optional() })
+  .object({
+    topSpeed: z.int().min(150).max(360).default(STEER.topSpeed),
+    drift: z.boolean().default(false),
+    course: courseSchema.optional(),
+    ramp: z.tuple([z.int(), z.int()]).optional(),
+  })
   .strict();
 
 export const steerBot: BotPiece<z.infer<typeof botParams>> = {
@@ -86,7 +91,7 @@ export const steerBot: BotPiece<z.infer<typeof botParams>> = {
   cost: () => ({ bodies: 0, rules: 0 }),
   decide: ({ state, player, recent }, params): ArcadeInput => {
     if (params.course === undefined) return NO_INPUT;
-    const now = predict(state, player, recent, params.topSpeed, params.drift ? STEER.driftGrip : STEER.grip);
+    const now = predict(state, player, recent, params.topSpeed, params.drift ? STEER.driftGrip : STEER.grip, params.ramp);
     const look = Math.max(STEER.carD * 2, now.vz * LOOK_TICKS) + STEER.carD;
     const aim = aimX(state, player, params.course, now.x, now.z, look);
     const want = Math.max(-STEER.latMax, Math.min(STEER.latMax, Math.trunc((aim - now.x) / SETTLE_TICKS)));
