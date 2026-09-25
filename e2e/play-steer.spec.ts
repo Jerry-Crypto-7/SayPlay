@@ -45,6 +45,29 @@ for (const game of GAMES) {
       expect(held).toBeGreaterThan(10);
     });
 
+    test('a drag released outside the canvas lets go of the controls (P28B T4)', async ({ page }) => {
+      await page.goto(url);
+      const stage = page.getByTestId('arcade-stage');
+      await expect(stage).toHaveAttribute('data-player-x', /.+/, { timeout: 60_000 });
+      await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+      const box = (await stage.boundingBox())!;
+      const hud = (await page.locator('.play-hud').boundingBox())!;
+      const count = (): Promise<number> => page.evaluate(() => window.__playShell!.inputs().length);
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.75);
+      await page.mouse.down();
+      await page.mouse.move(box.x + box.width / 2 + 120, box.y + box.height * 0.75 - 60, { steps: 6 });
+      // Tažená osa se zapisuje do každého tiku.
+      const held = await count();
+      await expect.poll(count).toBeGreaterThan(held + 5);
+      // Puštění nad HUD – ten leží nad plátnem, ale není jeho součástí.
+      await page.mouse.move(hud.x + hud.width / 2, hud.y + hud.height / 2, { steps: 6 });
+      await page.mouse.up();
+      await page.waitForTimeout(200);
+      const released = await count();
+      await page.waitForTimeout(500);
+      expect(await count()).toBe(released);
+    });
+
     test('the verifier bot replayed by the probe wins and the outcome says so', async ({ page }) => {
       await page.goto(url);
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });

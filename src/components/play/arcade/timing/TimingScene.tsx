@@ -19,6 +19,7 @@ import { BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contra
 import type { Look } from '@/play/arcade/look';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
 
+import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
@@ -30,7 +31,7 @@ export function useTapInput(session: ArcadeSession, target: React.RefObject<HTML
     const element = target.current;
     if (!active || element === null) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || !TAP_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !TAP_KEYS.has(event.key.toLowerCase())) return;
       event.preventDefault();
       session.press(BUTTON.TAP);
     };

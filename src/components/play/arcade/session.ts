@@ -85,8 +85,9 @@ export interface DemoState {
  * jinak spadl dřív, než hráč hru uvidí). První stisk padne do tiku 0, takže
  * záznam i přehrání jsou tytéž jako bez čekání.
  *
- * `swallowFirst` (načasování, rytmus, souboj – P25H): první stisk jen pustí
+ * `swallowFirst` (načasování, rytmus, souboj – P25H, střelnice): první stisk jen pustí
  * hodiny a do záznamu nejde – ťuk v tiku 0 by u načasování byl minutím.
+ * Držená osa a tlačítka hodiny nepustí, jen se nastaví.
  */
 export function createArcadeSession(
   world: ArcadeWorld,
@@ -163,15 +164,17 @@ export function createArcadeSession(
       if (axis !== 0) pendingAxis = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
       if (buttons !== 0) started = true;
     },
+    // Se `swallowFirst` pouští hodiny jen stisk (a ten se spolkne): kdyby je pustilo
+    // míření, klik na střelnici (míř + střel) by první ranou vystřelil (P28B T5).
     hold: (axis) => {
       if (halted) return;
       held = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
-      if (held !== 0) started = true;
+      if (held !== 0 && !swallowFirst) started = true;
     },
     holdButtons: (buttons) => {
       if (halted) return;
       heldButtons = buttons;
-      if (buttons !== 0) started = true;
+      if (buttons !== 0 && !swallowFirst) started = true;
     },
     advance: (ms) => {
       if (outcomeOf(state) !== 'running') return 1;

@@ -151,6 +151,22 @@ test.describe('/play – vertical feed', () => {
     expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(0);
   });
 
+  test('after the runner ends, ↓ moves to the next game (P28B T3)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await serveFeed(page, rows);
+    await page.goto('/play');
+    await expectShowing(page, rows[0]);
+    await page.getByTestId('feed-current').scrollIntoViewIfNeeded();
+    const outcome = await page.evaluate(() => window.__playShell!.playWitness());
+    expect(outcome.runState).not.toBe('running');
+    await expect(page.getByTestId('play-outcome')).toBeVisible();
+    // Posluchače hry odpojí efekt až po vykreslení výsledku; člověk tak rychle neklikne.
+    await page.waitForTimeout(300);
+    // Skončená hra už šipky nebere – patří feedu.
+    await page.keyboard.press('ArrowDown');
+    await expectShowing(page, rows[1]);
+  });
+
   test('an empty feed says so honestly', async ({ page }) => {
     await serveFeed(page, []);
     await page.goto('/play');

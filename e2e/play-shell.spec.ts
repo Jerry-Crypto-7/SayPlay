@@ -68,6 +68,32 @@ test.describe('/play/[id] – play shell', () => {
     expect(outcome.runState).toBe('won');
     await expect(page.getByTestId('play-outcome')).toBeVisible();
     await expect(page.getByTestId('play-outcome')).toContainText('You won');
-    await expect(page.getByTestId('play-outcome')).toContainText(String(outcome.tick));
+    // Sekundy, ne tiky (P28B F-15): grid tiká 20× za sekundu.
+    await expect(page.getByTestId('play-outcome')).toContainText(`in ${(outcome.tick / 20).toFixed(1)} s`);
+    await expect(page.getByTestId('play-outcome')).not.toContainText('tick');
+    await expect(page.getByTestId('play-tick')).toHaveText('');
+  });
+
+  test('every pickup removes one item from the scene; none are left after the win (P28B F-16)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__worldstreamStage?.ready() === true, undefined, { timeout: 60_000 });
+    const shown = () => page.evaluate(() => window.__worldstreamStage!.slots().filter((slot) => slot.shown).length);
+    let before = await shown();
+    let pickups = 0;
+    for (;;) {
+      const step = await page.evaluate(() => window.__playShell!.playWitness(1));
+      if (step.last === 'pickup') {
+        pickups += 1;
+        // Zmenšení trvá 200 ms, pak se obal skryje.
+        await expect.poll(shown, { timeout: 5_000 }).toBe(before - 1);
+      }
+      before = await shown();
+      if (step.left === 0) break;
+    }
+    expect(pickups).toBeGreaterThanOrEqual(5);
+    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect.poll(shown).toBe(before);
+    // Snímek pro lidské oko; WebGL pixely se mezi stroji liší, takže se nesrovnává.
+    await test.info().attach('won-without-mushrooms', { body: await page.locator('canvas').first().screenshot(), contentType: 'image/png' });
   });
 });

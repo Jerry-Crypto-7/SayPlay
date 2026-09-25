@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import type { GameVersion } from '@/play/contracts';
@@ -21,14 +21,16 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
-import { timerLeft } from '../Hud';
+import { secondsOf, timerLeft } from '../Hud';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
+import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
+import { pauseWhenAway } from './focus';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
 // WebGL kontext na serveru není – stejně jako mřížkové plátno.
@@ -56,7 +58,7 @@ const COUNT_UNIT: Readonly<Record<string, string>> = { timing: 'rounds', rhythm:
 /** Aréna ukazuje uběhlé sekundy, střelba a hod zbývající rány, P25H splněné úkoly, jinak metry. */
 const progressLabel = (spec: GameSpecV1, snapshot: ArcadeSnapshot): string =>
   spec.control === 'move_free'
-    ? `${Math.floor(snapshot.tick / 60)} s`
+    ? `${Math.floor(snapshot.tick / ARCADE_HZ)} s`
     : aiming(spec)
       ? `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left`
       : `${snapshot.distanceM} ${COUNT_UNIT[spec.control ?? ''] ?? 'm'}`;
@@ -114,8 +116,7 @@ function DemoControl({ session, demo }: { readonly session: ArcadeSession; reado
 
 function ArcadeHud({ versionId, spec, world, snapshot, paused, children }: { readonly versionId: string; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
-  // Arkáda tiká 60× za sekundu (viz `progressLabel`).
-  const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
+  const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
   return (
     <header className="play-hud" aria-label="Game status">
       <h1 className="play-hud-title">{spec.title}</h1>
@@ -159,10 +160,6 @@ export interface ArcadePlayProps {
   readonly active?: boolean;
 }
 
-/** Klávesa do pole formuláře hru neobnoví – píše se tam věta, ne hraje. */
-const typing = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
-
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true }: ArcadePlayProps) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -175,36 +172,16 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
+  const remix = useRemixJob(versionId, !running && demo === null);
 
-  // Pauza při skryté záložce a mimo obrazovku feedu. Sama se hra nerozběhne:
-  // obnoví ji až vstup hráče, a to v zachytávací fázi, takže ten stisk už do hry padne
-  // (u poletování je to rovnou mávnutí). Rytmus nepípá, když tiky stojí.
+  // Pauza mimo obrazovku feedu, při skryté záložce a oknu bez fokusu (`focus.ts`).
+  // Rytmus nepípá, když tiky stojí.
   useEffect(() => {
     if (!active) {
       session.pause();
       return;
     }
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') session.pause();
-    };
-    const wake = () => {
-      if (session.paused() && document.visibilityState === 'visible') session.resume();
-    };
-    const onPointer = (event: PointerEvent) => {
-      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) wake();
-    };
-    const onKey = (event: KeyboardEvent) => {
-      if (!event.repeat && !typing(event.target)) wake();
-    };
-    onVisibility();
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('pointerdown', onPointer, true);
-    window.addEventListener('keydown', onKey, true);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('pointerdown', onPointer, true);
-      window.removeEventListener('keydown', onKey, true);
-    };
+    return pauseWhenAway(session, window, document);
   }, [active, session]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
@@ -243,12 +220,13 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   return (
     <main className="play-shell">
-      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
+      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} enabled={active && running} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
+      {running && <RemixReadyChip job={remix} />}
       {read !== undefined && <SentenceRead read={read} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {/* Konec ukázky není výhra hráče: bez „You won“, bez sdílení výsledku. */}
@@ -267,10 +245,13 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">
+            {/* Aréna už čas nese v `progressLabel`. */}
+            {spec.control === 'move_free' ? '' : `in ${secondsOf(snapshot.tick, ARCADE_HZ)} · `}
             {progressLabel(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
           </p>
           <PostRun
             versionId={versionId}
+            remix={remix}
             onReplay={() => {
               if (session.humanRun()) loopEvent('restart', versionId);
               session.restart();

@@ -17,13 +17,14 @@ import { type Group, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 
 import { BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { SHOOTER, aimAt, aimVelocity } from '@/play/arcade/pieces/shooter';
 
+import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
 
 const MUZZLE_Y = SHOOTER.muzzleY / UNIT;
 const RETICLE_M = 20;
 const FIRE_KEYS = new Set([' ', 'arrowup', 'w']);
 
-export function ShooterRig({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+export function ShooterRig({ session, surface, enabled }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly enabled: boolean }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const reticle = useRef<Group | null>(null);
   const look = useMemo(() => new Vector3(), []);
@@ -52,7 +53,7 @@ export function ShooterRig({ session, surface }: { readonly session: ArcadeSessi
 
   useEffect(() => {
     const element = surface.current;
-    if (element === null) return;
+    if (element === null || !enabled) return;
     const raycaster = new Raycaster();
     const ground = new Plane(new Vector3(0, 1, 0), -MUZZLE_Y);
     const hit = new Vector3();
@@ -93,7 +94,7 @@ export function ShooterRig({ session, surface }: { readonly session: ArcadeSessi
     const sideOf = (key: string): number => (key === 'arrowleft' || key === 'a' ? BUTTON.LEFT : key === 'arrowright' || key === 'd' ? BUTTON.RIGHT : 0);
     const sync = (): void => session.holdButtons([...keys].reduce((mask, bit) => mask | bit, 0));
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const side = sideOf(key);
       if (side !== 0) {
@@ -134,7 +135,7 @@ export function ShooterRig({ session, surface }: { readonly session: ArcadeSessi
       element.removeEventListener('pointerup', onUp);
       element.removeEventListener('pointercancel', onUp);
     };
-  }, [session, surface, camera]);
+  }, [session, surface, camera, enabled]);
 
   // Zaměřovač: průsvitný paprsek z hlavně a kříž s kroužkem ve 20 m.
   return (

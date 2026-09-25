@@ -34,8 +34,10 @@ import { CAPABILITIES } from '@/play/capabilities';
 import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
+import { type BodyView, bodiesOf, bodiesStale } from './bodies';
 import { Scenery } from './look/Scenery';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
+import { isTyping, runnerGesture } from './input';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -197,33 +199,6 @@ function Primitive({ id, w, h, d }: { readonly id: string; readonly w: number; r
   );
 }
 
-interface BodyView {
-  readonly index: number;
-  readonly kind: string;
-  readonly role: number;
-  readonly w: number;
-  readonly h: number;
-  readonly d: number;
-}
-
-function bodiesOf(session: ArcadeSession): readonly BodyView[] {
-  const state = session.state();
-  const count = state[HEADER.bodyCount] as number;
-  const views: BodyView[] = [];
-  for (let index = 0; index < count; index += 1) {
-    const base = bodyBase(index);
-    views.push({
-      index,
-      kind: session.world.kinds[state[base + BODY.kind] as number] ?? 'crate',
-      role: state[base + BODY.role] as number,
-      w: (state[base + BODY.w] as number) / UNIT,
-      h: (state[base + BODY.h] as number) / UNIT,
-      d: (state[base + BODY.d] as number) / UNIT,
-    });
-  }
-  return views;
-}
-
 function lerp(from: number, to: number, alpha: number): number {
   return from + (to - from) * alpha;
 }
@@ -279,10 +254,31 @@ export interface FrameReport {
   readonly offset: { readonly x: number; readonly y: number; readonly z: number } | null;
 }
 
+/** Sonda kreslení (P28B T2, T6): draw cally posledního snímku a živé zdroje GPU. */
+export interface RenderReport {
+  readonly calls: number;
+  readonly triangles: number;
+  readonly geometries: number;
+  readonly textures: number;
+}
+
 declare global {
   interface Window {
     __playFrame?: () => FrameReport;
+    __playRender?: () => RenderReport;
   }
+}
+
+function RenderProbe() {
+  const gl = useThree((three) => three.gl);
+  useEffect(() => {
+    const probe = (): RenderReport => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures });
+    window.__playRender = probe;
+    return () => {
+      if (window.__playRender === probe) delete window.__playRender;
+    };
+  }, [gl]);
+  return null;
 }
 
 /** Tratě jedou po +z: cílem je nejbližší kandidát před hrdinou, ne ten, který už minul. */
@@ -383,6 +379,7 @@ interface WorldProps {
   readonly cast: Cast;
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly scene: Look;
+  readonly enabled: boolean;
 }
 
 /** Role, jejichž model se hýbe podle stavu těla (P26B); plošiny, auta a překážky jedou bez pózy. */
@@ -397,8 +394,9 @@ function applyPose(group: Group, pose: Pose): void {
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
-function World({ session, control, cast, surface, scene }: WorldProps) {
-  const views = useMemo(() => bodiesOf(session), [session]);
+function World({ session, control, cast, surface, scene, enabled }: WorldProps) {
+  // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
+  const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
   const posed = useRef<(Group | null)[]>([]);
   const poses = useRef<(Pose | null)[]>([]);
@@ -417,11 +415,13 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
+    if (bodiesStale(views, session)) setViews(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
     // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
+    let shots = 0;
     for (const view of views) {
       const inner = posed.current[view.index];
       const pose = poses.current[view.index];
@@ -440,7 +440,10 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
       // Skluz snižuje tělo – model se přikrčí stejně.
       if (view.role === ROLE.player) group.scale.y = (state[base + BODY.h] as number) / UNIT / view.h;
       if (view.role === ROLE.collectible) group.rotation.y += delta * 3;
+      if (view.role === ROLE.projectile && group.visible) shots += 1;
     }
+    // Střely, které scéna opravdu kreslí (P28B T2) – e2e tak pozná střelu, kterou stav má a scéna ne.
+    if (surface.current !== null && surface.current.dataset.shotsDrawn !== String(shots)) surface.current.dataset.shotsDrawn = String(shots);
     const player = groups.current[state[HEADER.player] as number];
     if (player !== null && player !== undefined) {
       const { x, y, z } = player.position;
@@ -479,8 +482,8 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
       ) : (
         <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
       )}
-      {control === 'shooter' && <ShooterRig session={session} surface={surface} />}
-      {control === 'throw' && <ThrowRig session={session} surface={surface} />}
+      {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} />}
+      {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
@@ -573,15 +576,14 @@ function Backdrop({ control, length, look }: { readonly control: string; readonl
   );
 }
 
-const SWIPE_PX = 30;
 const JUMP_KEYS = new Set([' ', 'arrowup', 'w']);
 
-/** Běžec: ťuk/klik/mezerník = skok, šipky/A-D a swipe = pruh, šipka dolů / swipe dolů = skluz. */
+/** Běžec: ťuk/klik/mezerník = skok (hned při stisku), šipky/A-D a swipe = pruh, šipka dolů / swipe dolů = skluz. */
 function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
     if (!active) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const button =
         JUMP_KEYS.has(key) ? BUTTON.TAP
@@ -600,24 +602,19 @@ function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivE
   useEffect(() => {
     const element = target.current;
     if (!active || element === null) return;
-    let start: { x: number; y: number } | null = null;
-    const onDown = (event: PointerEvent) => {
-      start = { x: event.clientX, y: event.clientY };
-    };
-    const onUp = (event: PointerEvent) => {
-      if (start === null) return;
-      const dx = event.clientX - start.x;
-      const dy = event.clientY - start.y;
-      start = null;
-      if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_PX) session.press(BUTTON.TAP);
-      else if (Math.abs(dx) > Math.abs(dy)) session.press(dx < 0 ? BUTTON.LEFT : BUTTON.RIGHT);
-      else session.press(dy > 0 ? BUTTON.DOWN : BUTTON.TAP);
-    };
+    const gesture = runnerGesture(session);
+    const onDown = (event: PointerEvent) => gesture.down(event);
+    const onMove = (event: PointerEvent) => gesture.move(event);
+    const onEnd = () => gesture.end();
     element.addEventListener('pointerdown', onDown);
-    element.addEventListener('pointerup', onUp);
+    element.addEventListener('pointermove', onMove);
+    element.addEventListener('pointerup', onEnd);
+    element.addEventListener('pointercancel', onEnd);
     return () => {
       element.removeEventListener('pointerdown', onDown);
-      element.removeEventListener('pointerup', onUp);
+      element.removeEventListener('pointermove', onMove);
+      element.removeEventListener('pointerup', onEnd);
+      element.removeEventListener('pointercancel', onEnd);
     };
   }, [session, target, active]);
 }
@@ -639,7 +636,7 @@ function usePlatformInput(session: ArcadeSession, target: React.RefObject<HTMLDi
     };
     const sideOf = (key: string): 'left' | 'right' | null => (key === 'arrowleft' || key === 'a' ? 'left' : key === 'arrowright' || key === 'd' ? 'right' : null);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const side = sideOf(key);
       if (side !== null) {
@@ -697,7 +694,7 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
     const element = target.current;
     if (!active || element === null) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || !JUMP_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !JUMP_KEYS.has(event.key.toLowerCase())) return;
       event.preventDefault();
       session.press(BUTTON.TAP);
     };
@@ -718,7 +715,7 @@ function useFireInput(session: ArcadeSession, active: boolean): void {
   useEffect(() => {
     if (!active) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || !FIRE_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !FIRE_KEYS.has(event.key.toLowerCase())) return;
       event.preventDefault();
       session.press(BUTTON.FIRE);
     };
@@ -757,10 +754,13 @@ export default function ArcadeStage({
   session,
   cast,
   lookId = 'meadow',
+  enabled = true,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
   readonly lookId?: LookId;
+  /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
+  readonly enabled?: boolean;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -776,19 +776,20 @@ export default function ArcadeStage({
     rival === undefined
       ? undefined
       : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
-  useFireInput(session, fires);
-  useRunnerInput(session, surface, control === 'runner');
-  usePlatformInput(session, surface, control === 'platform');
-  useFlapInput(session, surface, control === 'flap');
-  useSteerInput(session, surface, control === 'steer');
-  useArenaInput(session, surface, control === 'move_free');
-  useTapInput(session, surface, control === 'timing' || control === 'rhythm');
-  useDuelInput(session, surface, control === 'duel');
+  useFireInput(session, fires && enabled);
+  useRunnerInput(session, surface, enabled && control === 'runner');
+  usePlatformInput(session, surface, enabled && control === 'platform');
+  useFlapInput(session, surface, enabled && control === 'flap');
+  useSteerInput(session, surface, enabled && control === 'steer');
+  useArenaInput(session, surface, enabled && control === 'move_free');
+  useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'));
+  useDuelInput(session, surface, enabled && control === 'duel');
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
       <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
         <FrameProbe control={control} />
+        <RenderProbe />
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
           <TimingScene session={session} look={look} />
@@ -806,12 +807,12 @@ export default function ArcadeStage({
             {control === 'move_free' ? (
               <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
             ) : (
-              <World session={session} control={control} cast={cast} surface={surface} scene={look} />
+              <World session={session} control={control} cast={cast} surface={surface} scene={look} enabled={enabled} />
             )}
           </>
         )}
       </Canvas>
-      {fires && <FireButton session={session} />}
+      {fires && enabled && <FireButton session={session} />}
     </div>
   );
 }

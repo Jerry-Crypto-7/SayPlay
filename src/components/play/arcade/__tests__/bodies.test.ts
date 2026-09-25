@@ -1,0 +1,54 @@
+/**
+ * Seznam kreslených těl (P28B T2): střela, kterou jádro za běhu přidá
+ * `spawn()`, musí v seznamu být – seznam ze startu ji neznal a střelnice
+ * střílela neviditelně.
+ */
+
+import { describe, expect, it } from 'vitest';
+
+import shooterFixture from '@/play/arcade/__fixtures__/shooter.json';
+import { arcadeWorldOf } from '@/play/arcade/compile';
+import { BODY, BUTTON, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { readGameSpec } from '@/play/spec';
+
+import { bodiesOf, bodiesStale } from '../bodies';
+import { TICK_MS, createArcadeSession } from '../session';
+
+const range = (() => {
+  const spec = readGameSpec(shooterFixture);
+  if (!spec.ok) throw new Error(spec.issues.join('; '));
+  const built = arcadeWorldOf(spec.value, 1);
+  if (!built.ok) throw new Error(built.issues.join('; '));
+  return built.world;
+})();
+
+describe('drawn bodies', () => {
+  it('a shot spawned mid-run makes the list stale and the rebuilt list holds it', () => {
+    const session = createArcadeSession(range);
+    const before = bodiesOf(session);
+    expect(bodiesStale(before, session)).toBe(false);
+    session.press(BUTTON.TAP);
+    session.advance(TICK_MS * 2);
+    const state = session.state();
+    const count = state[HEADER.bodyCount] as number;
+    const spawned = Array.from({ length: count }, (_, index) => index).filter(
+      (index) => index >= before.length && ((state[bodyBase(index) + BODY.flags] as number) & FLAG.alive) !== 0,
+    );
+    expect(spawned.length).toBeGreaterThan(0);
+    expect(bodiesStale(before, session)).toBe(true);
+    const after = bodiesOf(session);
+    for (const index of spawned) expect(after[index]).toMatchObject({ index, role: ROLE.projectile });
+    expect(bodiesStale(after, session)).toBe(false);
+  });
+
+  it('a restart shrinks the list back', () => {
+    const session = createArcadeSession(range);
+    const start = bodiesOf(session).length;
+    session.press(BUTTON.TAP);
+    session.advance(TICK_MS * 2);
+    const grown = bodiesOf(session);
+    session.restart();
+    expect(bodiesStale(grown, session)).toBe(true);
+    expect(bodiesOf(session)).toHaveLength(start);
+  });
+});

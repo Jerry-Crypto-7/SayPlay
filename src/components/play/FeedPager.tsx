@@ -27,6 +27,7 @@ import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import { isTyping as typing } from './arcade/input';
 import { Feed, type FeedGame } from './Feed';
 import { loopEvent } from './loop-client';
 
@@ -43,10 +44,6 @@ interface GameDetail {
 }
 
 type FeedState = { readonly kind: 'loading' } | { readonly kind: 'error' } | { readonly kind: 'ready'; readonly games: readonly FeedGame[]; readonly next: string | null };
-
-/** Klávesa do pole formuláře patří větě, ne hře ani feedu. */
-const typing = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
 
 async function feedPage(cursor: string | null): Promise<{ games: FeedGame[]; next: string | null }> {
   const response = await fetch(`/api/play/games?recent=${String(PAGE)}${cursor === null ? '' : `&cursor=${encodeURIComponent(cursor)}`}`, { cache: 'no-store' });
@@ -143,16 +140,6 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
     observer.observe(element);
     return () => observer.disconnect();
   }, [feed.kind]);
-
-  // Psaní věty nesmí hrát hru pod formulářem: hra poslouchá klávesy na `window`
-  // a mezerník i písmena by si vzala. React klávesu dostal už na `document`.
-  useEffect(() => {
-    const guard = (event: KeyboardEvent) => {
-      if (typing(event.target)) event.stopPropagation();
-    };
-    document.addEventListener('keydown', guard);
-    return () => document.removeEventListener('keydown', guard);
-  }, []);
 
   // ↑/↓ listují, jen když klávesu nepoužila hra (ta volá `preventDefault`).
   // Hra se připojuje líně a její posluchače mohou přijít po tomhle, proto až po doběhnutí události.

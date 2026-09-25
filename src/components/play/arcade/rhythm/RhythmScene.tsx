@@ -20,6 +20,7 @@ import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
 
+import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { initialBody } from '../timing/TimingScene';
@@ -43,6 +44,7 @@ function useBeatSound(target: React.RefObject<HTMLDivElement | null>) {
       if (audio.current === null && typeof AudioContext !== 'undefined') audio.current = new AudioContext();
     };
     const onKey = (event: KeyboardEvent) => {
+      if (isTyping(event.target)) return;
       if (event.key.toLowerCase() === 'm' && !event.repeat) muted.current = !muted.current;
       else wake();
     };

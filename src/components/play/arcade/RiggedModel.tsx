@@ -96,9 +96,12 @@ export function RiggedModel({
     return { scene, mixer, actions };
   }, [gltf, character]);
 
+  // Mixer si drží akce a vazby na kosti klonu; bez `uncacheRoot` je feed po každém přepnutí nechá v paměti (P28B T6).
   useEffect(
     () => () => {
-      rig?.mixer.stopAllAction();
+      if (rig === null) return;
+      rig.mixer.stopAllAction();
+      rig.mixer.uncacheRoot(rig.scene);
     },
     [rig],
   );

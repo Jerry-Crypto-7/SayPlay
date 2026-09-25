@@ -20,6 +20,7 @@ import { BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { DUEL, DUEL_FOE, DUEL_PHASE } from '@/play/arcade/pieces/duel';
 
+import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { initialBody } from '../timing/TimingScene';
@@ -33,7 +34,7 @@ export function useDuelInput(session: ArcadeSession, target: React.RefObject<HTM
     const element = target.current;
     if (!active || element === null) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const button = STRIKE_KEYS.has(key) ? BUTTON.TAP : DODGE_KEYS.has(key) ? BUTTON.DOWN : 0;
       if (button === 0) return;
