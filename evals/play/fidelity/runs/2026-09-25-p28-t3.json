@@ -1,0 +1,1678 @@
+{
+ "header": {
+  "about": "P28D offline loss map over two sets reported separately: corpus.json (30) and the frozen judge-10.json (10). See README.md.",
+  "runId": "2026-09-25-p28-t3",
+  "measuredAt": "2026-09-25T09:03:40.217Z",
+  "commit": "8763059"
+ },
+ "corpus": {
+  "summary": {
+   "sentences": 30,
+   "compiled": 30,
+   "items": 110,
+   "inSpec": 0.791,
+   "read": 0.755,
+   "drawn": 0.691
+  },
+  "causes": [
+   {
+    "why": "not-in-spec",
+    "control": "runner",
+    "slot": "verb",
+    "sentences": 3,
+    "ids": [
+     "h07",
+     "h08",
+     "s069"
+    ]
+   },
+   {
+    "why": "not-in-spec",
+    "control": "throw",
+    "slot": "any",
+    "sentences": 3,
+    "ids": [
+     "h03",
+     "s050",
+     "s095"
+    ]
+   },
+   {
+    "why": "no-model",
+    "control": "tap_go",
+    "slot": "role",
+    "sentences": 2,
+    "ids": [
+     "h01",
+     "h04"
+    ]
+   },
+   {
+    "why": "not-in-spec",
+    "control": "platform",
+    "slot": "role",
+    "sentences": 2,
+    "ids": [
+     "s021",
+     "s022"
+    ]
+   },
+   {
+    "why": "no-model",
+    "control": "duel",
+    "slot": "role",
+    "sentences": 1,
+    "ids": [
+     "h05"
+    ]
+   }
+  ],
+  "sentences": [
+   {
+    "id": "s039",
+    "text": "zombie shooter in a mall",
+    "control": "shooter",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "zombie",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "mall",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "shoot",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s037",
+    "text": "A space marine shoots alien bugs in a mining colony",
+    "control": "shooter",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "space marine",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "alien bug",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "mining colony",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "shoot",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s002",
+    "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "knight",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "key",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "ghost",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "haunted castle",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "collect",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s003",
+    "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "hamster",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "roomba",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "supermarket",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "escape",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s006",
+    "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+    "control": "runner",
+    "addons": [
+     "collect"
+    ],
+    "compiled": true,
+    "items": [
+     {
+      "item": "corgi",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "sausage",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "sprinkler",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "park",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "run",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s008",
+    "text": "temple run but you're a banana running from a monkey",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "banana",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "monkey",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "run",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s022",
+    "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+    "control": "platform",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "robot",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "charger",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "tower",
+      "slot": "setting",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "climb",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s021",
+    "text": "obby game with lava and spinning bars",
+    "control": "platform",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "lava",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "spinning bar",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "jump",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s035",
+    "text": "like flappy bird but underwater",
+    "control": "flap",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "bird",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "underwater",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "flap",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s050",
+    "text": "throwing snowballs at kids behind a snow fort",
+    "control": "throw",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "snowball",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "kid",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "snow fort",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "throw",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s088",
+    "text": "angry birds but with cats and cardboard boxes",
+    "control": "throw",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "cat",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "cardboard box",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "launch",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s069",
+    "text": "candy crush but with gems in a cave",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "gem",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "cave",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "match",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "s056",
+    "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+    "control": "steer",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "scooter",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "pizza",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "traffic",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "race",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s058",
+    "text": "boat race through a jungle river full of crocodiles",
+    "control": "steer",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "boat",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "crocodile",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "jungle river",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "race",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s111",
+    "text": "a black hole that swallows a city, it gets bigger the more it eats",
+    "control": "move_free",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "black hole",
+      "slot": "hero",
+      "inSpec": true,
+      "read": false,
+      "drawn": false,
+      "why": "not-read-by-control"
+     },
+     {
+      "item": "city",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "swallow",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s095",
+    "text": "knife throwing at a spinning log",
+    "control": "throw",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "knife",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "log",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "throw",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s188",
+    "text": "A grandma karate fights a gang of pigeons in the park",
+    "control": "duel",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "grandma",
+      "slot": "hero",
+      "inSpec": true,
+      "read": false,
+      "drawn": false,
+      "why": "not-read-by-control"
+     },
+     {
+      "item": "pigeon",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "park",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "fight",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s144",
+    "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+    "control": "rhythm",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "frog",
+      "slot": "hero",
+      "inSpec": true,
+      "read": false,
+      "drawn": false,
+      "why": "not-read-by-control"
+     },
+     {
+      "item": "lily pad",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "pond",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "drum to the beat",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s155",
+    "text": "defend the castle from waves of goblins",
+    "control": "shooter",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "castle",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "goblin",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "defend",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "s099",
+    "text": "build the tallest pancake tower before it falls over",
+    "control": "timing",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "pancake",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "tower",
+      "slot": "any",
+      "inSpec": true,
+      "read": false,
+      "drawn": false,
+      "why": "not-read-by-control"
+     },
+     {
+      "item": "stack",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "h01",
+    "text": "a cat stealing fish from a market while dodging the fishmonger",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "cat",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "fish",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "fishmonger",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "market",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "steal",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "h02",
+    "text": "shopping cart race in a supermarket",
+    "control": "steer",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "shopping cart",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "supermarket",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "race",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "h03",
+    "text": "defend a castle from dragons by throwing snowballs",
+    "control": "throw",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "castle",
+      "slot": "setting",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "dragon",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "snowball",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "throw",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "h04",
+    "text": "a robot collects batteries on Mars",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "robot",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "battery",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "Mars",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "collect",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "h05",
+    "text": "boxing a kangaroo in the australian outback",
+    "control": "duel",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "kangaroo",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "outback",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "box",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "h06",
+    "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+    "control": "throw",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "astronaut",
+      "slot": "hero",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "crystal",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "alien",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "icy moon",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "collect",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "h07",
+    "text": "purple elephants doing taxes on a volcano",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "elephant",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "volcano",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "do taxes",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "h08",
+    "text": "a romantic dinner date on the moon",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "dinner",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "moon",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "date",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "h09",
+    "text": "escape from a haunted hospital with a flashlight",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "hospital",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "flashlight",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "escape",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "h10",
+    "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "penguin",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "glacier",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "seal",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "fish",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "slide",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   }
+  ]
+ },
+ "judge10": {
+  "summary": {
+   "sentences": 10,
+   "compiled": 10,
+   "items": 37,
+   "inSpec": 0.514,
+   "read": 0.486,
+   "drawn": 0.432
+  },
+  "causes": [
+   {
+    "why": "not-in-spec",
+    "control": "runner",
+    "slot": "any",
+    "sentences": 4,
+    "ids": [
+     "j01",
+     "j03",
+     "j04",
+     "j07"
+    ]
+   },
+   {
+    "why": "not-in-spec",
+    "control": "runner",
+    "slot": "verb",
+    "sentences": 3,
+    "ids": [
+     "j01",
+     "j03",
+     "j07"
+    ]
+   },
+   {
+    "why": "not-in-spec",
+    "control": "runner",
+    "slot": "setting",
+    "sentences": 2,
+    "ids": [
+     "j04",
+     "j07"
+    ]
+   },
+   {
+    "why": "not-in-spec",
+    "control": "shooter",
+    "slot": "setting",
+    "sentences": 2,
+    "ids": [
+     "j08",
+     "j09"
+    ]
+   },
+   {
+    "why": "not-in-spec",
+    "control": "tap_go",
+    "slot": "verb",
+    "sentences": 2,
+    "ids": [
+     "j02",
+     "j06"
+    ]
+   }
+  ],
+  "sentences": [
+   {
+    "id": "j01",
+    "text": "Explain quantum physics to my grandma.",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "grandma",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "quantum physics",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "explain",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "j02",
+    "text": "a sleepy cat naps in a cozy rainy café",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "cat",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "café",
+      "slot": "setting",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "nap",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "j03",
+    "text": "my startup pitch to investors in a glass skyscraper",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "investor",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "skyscraper",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "pitch",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "j04",
+    "text": "walk my dog along the beach while eating an ice cream",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "dog",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "ice cream",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "beach",
+      "slot": "setting",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "walk",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "j05",
+    "text": "pop ten balloons at a birthday party",
+    "control": "shooter",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "balloon",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "birthday party",
+      "slot": "setting",
+      "inSpec": true,
+      "read": false,
+      "drawn": false,
+      "why": "not-read-by-control"
+     },
+     {
+      "item": "pop",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "j06",
+    "text": "a chef flips pancakes in a busy kitchen",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "chef",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "pancake",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "kitchen",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "flip",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "j07",
+    "text": "a squirrel hoards acorns before winter comes",
+    "control": "runner",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "squirrel",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "acorn",
+      "slot": "any",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "winter",
+      "slot": "setting",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "hoard",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "j08",
+    "text": "a wizard defends a crystal tower from flying skeletons",
+    "control": "shooter",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "wizard",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "skeleton",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "tower",
+      "slot": "setting",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "defend",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   },
+   {
+    "id": "j09",
+    "text": "a dragon burns down villages and dodges arrows from knights",
+    "control": "shooter",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "dragon",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "knight",
+      "slot": "role",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "arrow",
+      "slot": "any",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "village",
+      "slot": "setting",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     },
+     {
+      "item": "dodge",
+      "slot": "verb",
+      "inSpec": false,
+      "read": false,
+      "drawn": false,
+      "why": "not-in-spec"
+     }
+    ]
+   },
+   {
+    "id": "j10",
+    "text": "an elf princess escapes a goblin castle through a dark forest",
+    "control": "tap_go",
+    "addons": [],
+    "compiled": true,
+    "items": [
+     {
+      "item": "elf princess",
+      "slot": "hero",
+      "inSpec": true,
+      "read": true,
+      "drawn": false,
+      "why": "no-model"
+     },
+     {
+      "item": "goblin",
+      "slot": "role",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "forest",
+      "slot": "setting",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     },
+     {
+      "item": "escape",
+      "slot": "verb",
+      "inSpec": true,
+      "read": true,
+      "drawn": true,
+      "why": "ok"
+     }
+    ]
+   }
+  ]
+ }
+}

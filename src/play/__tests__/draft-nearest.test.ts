@@ -12,7 +12,9 @@ import { describe, expect, it } from 'vitest';
 
 import { reportFor } from '@/app/api/play/_report';
 
+import { enemyModel, heroModel, propModels } from '../arcade/models';
 import { compileGame } from '../compile';
+import { fidelityChain } from '../fidelity/chain';
 import { draftGameSpec } from '../draft';
 import { nearestControl } from '../draft/controls';
 
@@ -66,6 +68,21 @@ describe('nearest arcade game for a sentence the draft does not know', () => {
     expect(label('purple elephants doing taxes on a volcano', 'player')).toBe('purple elephant');
     // Sloveso na -ing frázi končí: ne „swords cutting“.
     expect(draftGameSpec('like beat saber but with swords cutting fruit to music').roles.map((role) => role.label)).not.toContain('swords cutting');
+  });
+
+  // P28D T3 (F-05, F-27): podstatná jména věty přebijí rekvizity šablony a titul nekončí předložkou.
+  it('draws the knight, the dragon and targets, and titles the game without a dangling preposition', () => {
+    const spec = draftGameSpec('A knight rides a dragon over a burning castle and must pop ten balloons.');
+    expect(spec.control).toBe('shooter');
+    expect(heroModel(spec)).toBe('rigged:knight');
+    expect(enemyModel(spec)).toBe('cc0-dragon');
+    expect(spec.title).toBe('Knight Rides Dragon');
+    // Balónek katalog nemá: scéna nakreslí míč, řetěz věrnosti poctivě hlásí `no-model`.
+    const balloons = draftGameSpec('pop ten balloons at a birthday party');
+    expect(enemyModel(balloons)).toBe('ball');
+    expect(fidelityChain(balloons, [{ item: 'balloon', slot: 'any', match: ['balloon'] }])[0]).toMatchObject({ read: true, drawn: false, why: 'no-model' });
+    // Věž hodu z krabic: kostky kreslí model z popisku terče.
+    expect(propModels(draftGameSpec('angry birds but with cats and cardboard boxes')).target).toBe('crate');
   });
 
   it('every draft of the 30 + 10 fidelity sentences publishes: the robot wins it', () => {

@@ -71,7 +71,23 @@ const WORD_MODEL: Readonly<Record<string, string>> = {
   wolf: 'dog',
   chef: 'waiter',
   bee: 'wasp-nest',
+  marine: 'astronaut',
 };
+
+/**
+ * Zástupce pro věc, kterou katalog nemá (P28D T3): scéna nakreslí nejbližší
+ * kus místo výchozího robota nebo překážky, ale model popisek nejmenuje –
+ * řetěz věrnosti ho dál počítá jako `no-model`. Jen věci, ne postavy.
+ */
+const STAND_IN: Readonly<Record<string, string>> = {
+  balloon: 'ball',
+  sprinkler: 'cc0-fire-hydrant',
+};
+
+function standInOf(label: string): string | undefined {
+  const head = label.toLowerCase().match(/[a-z][a-z-]*/g)?.at(-1);
+  return head === undefined ? undefined : lookup(head, (form) => STAND_IN[form]);
+}
 
 /** Nejbližší kategorie postavy, kterou katalog nemá. */
 const CATEGORY: ReadonlyArray<readonly [model: string, words: readonly string[]]> = [
@@ -126,10 +142,10 @@ export function heroModel(spec: GameSpecV1): string {
   return riggedModelOf(label) ?? found ?? (spec.control === 'flap' ? 'bird' : 'explorer');
 }
 
-/** Nepřátelé střelnice: riggovaná postava nebo model z popisku role `enemy`, jinak robot. */
+/** Nepřátelé střelnice: riggovaná postava nebo model z popisku role `enemy`, pak zástupce věci, jinak robot. */
 export function enemyModel(spec: GameSpecV1): string {
   const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? '';
-  return riggedModelOf(label) ?? modelOf(label, true) ?? 'robot';
+  return riggedModelOf(label) ?? modelOf(label, true) ?? standInOf(label) ?? 'robot';
 }
 
 /** Pronásledovatel doplňku `+chaser` (P26D): model z popisku role druhu `chaser` („bear“), jinak jako nepřítel. */
@@ -146,7 +162,7 @@ export type PropRole = (typeof PROP_ROLES)[number];
 const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   coin: ['coin'],
   obstacle: OBSTACLE_KINDS,
-  target: ['target'],
+  target: ['target', 'wood-block'],
   // „rival car“ je auto soupeře; hráčovo závodní auto by soupeře od hráče nerozlišilo.
   rival: ['rival-car', 'race-car'],
 };
@@ -160,14 +176,18 @@ function rivalModel(label: string, control: string): string | undefined {
   return riggedModelOf(label) ?? modelOf(label, false);
 }
 
-/** Modely rekvizit z popisků rolí – jen přímá shoda s katalogem, bez kategorií. */
-export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> {
+/**
+ * Modely rekvizit z popisků rolí – jen přímá shoda s katalogem, bez kategorií.
+ * `standIns` (scéna ano, řetěz věrnosti ne) přidá zástupce věci bez modelu.
+ */
+export function propModels(spec: GameSpecV1, standIns = true): Partial<Record<PropRole, string>> {
   const out: Partial<Record<PropRole, string>> = {};
   const control = controlOf(spec);
   for (const id of PROP_ROLES) {
     const role = spec.roles.find((candidate) => candidate.id === id);
     if (role === undefined || !readsLabel(control, role)) continue;
-    const found = id === 'rival' ? rivalModel(role.label, control) : modelOf(role.label, false);
+    const exact = id === 'rival' ? rivalModel(role.label, control) : modelOf(role.label, false);
+    const found = exact ?? (standIns && id !== 'rival' ? standInOf(role.label) : undefined);
     if (found !== undefined && found !== 'bird' && !OWN_KINDS[id].includes(found)) out[id] = found;
   }
   return out;

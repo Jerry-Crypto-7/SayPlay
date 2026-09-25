@@ -139,9 +139,16 @@ function titleFrom(sentence: string, fallback: string): string {
     .split(/\s+/)
     .filter((word) => word !== '' && !TITLE_SKIP.has(word))
     .slice(0, 4);
+  // P28D T3 (F-27): „Knight Rides Dragon Over“ – předložka na konci titul utne uprostřed myšlenky.
+  while (words.length > 1 && TITLE_TAIL.has(words.at(-1)!)) words.pop();
   const title = words.length === 0 ? fallback : titleCase(words);
-  return title.slice(0, 80);
+  return cap(title, 80);
 }
+
+const TITLE_TAIL = new Set([
+  'over', 'under', 'into', 'onto', 'up', 'down', 'off', 'out', 'past', 'around', 'behind', 'between', 'toward', 'towards',
+  'about', 'along', 'against', 'inside', 'beyond', 'near', 'without', 'after', 'until', 'so', 'if', 'because', 'just',
+]);
 
 /** Výchozí menu podle prostředí věty, když jídla nejmenuje (nebo jen jedno). */
 const MENU_DEFAULTS: readonly (readonly [RegExp, readonly [string, string]])[] = [
@@ -262,8 +269,12 @@ function treatPatients(spec: GameSpecV1, read: Read, patient: string | undefined
   spec.tutorial.controlsHint = cap(`Tap the medicine or bandage, then tap the ${sick} who needs it.`, 80);
 }
 
+/** Zkrátí na hranici slova (P28D T3, F-27): „Knight Rides Dragon Ov…“ ne. */
 function cap(text: string, max: number): string {
-  return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > 0 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }
 
 /** „a key“, „an iron key“ – podle první hlásky, ne pravopisu (stačí na popisky rolí). */
@@ -826,6 +837,16 @@ function sentenceNouns(sentence: string): { hero: string | null; pickup: string 
   return { hero, pickup: nounAfter(PICKUP.exec(text)?.[1]), avoid: nounAfter(AVOID.exec(text)?.[1]), second };
 }
 
+/** Co střelnice trefuje (P28D T3): „pop ten balloons“, „shoot the cans“. */
+const HIT = /\b(?:pop|pops|popping|burst|bursts|bursting|shoot|shoots|shooting|hit|hits|hitting|zap|zaps|zapping)\s+(.+)/;
+/** Tvor věty, který není hrdina – střelnice bez jmenovaného nepřítele z něj udělá vlny. */
+const CREATURE = /\b(dragon|monster|ghost|zombie|alien|skeleton|goblin|orc|troll|vampire|dinosaur|shark|bat|bee|wasp|spider|witch|demon|robot)s?\b/g;
+
+function otherCreature(sentence: string, hero: string): string | null {
+  for (const match of sentence.toLowerCase().matchAll(CREATURE)) if (!hero.toLowerCase().includes(match[1]!)) return match[1]!;
+  return null;
+}
+
 /** Role, kterou druhé podstatné jméno převleku přejmenuje; řízení ne – jeho texty jmenují soupeřova auta. */
 const SECOND_ROLE: Partial<Record<ControlChoice['control'], string>> = { runner: 'obstacle', shooter: 'enemy', throw: 'target', duel: 'rival' };
 
@@ -857,7 +878,9 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   if (rival !== null) role(spec, 'rival').label = cap(rival, 60);
   // P26 T12: scéna z těchhle popisků volí model – terč, nepřítel a překážka z věty, ne ze šablony.
   const foe = roles.target ?? roles.threat?.label ?? namedFoe(sentence) ?? second;
-  if (choice.control === 'shooter' && foe !== null) role(spec, 'enemy').label = cap(foe, 60);
+  // P28D T3: střelnice čte jen hráče a nepřítele – tvor věty („rides a dragon“), jinak to, co se střílí („pop ten balloons“).
+  const wave = choice.control === 'shooter' ? (foe ?? otherCreature(sentence, role(spec, 'player').label) ?? nounAfter(HIT.exec(sentence.toLowerCase())?.[1])) : null;
+  if (wave !== null) role(spec, 'enemy').label = cap(wave, 60);
   const target = roles.target ?? namedFoe(sentence) ?? second;
   if (choice.control === 'throw' && choice.goal === null && target !== null) role(spec, 'target').label = cap(target, 60);
   const obstacle = roles.threat?.label ?? nouns.avoid ?? second;

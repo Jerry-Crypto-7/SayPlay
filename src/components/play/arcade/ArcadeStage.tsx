@@ -88,7 +88,8 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
-  if (view.role === ROLE.target && view.kind === 'target') return cast.props.target ?? view.kind;
+  // P28D T3: kostky věže hodu jsou terč – „cardboard boxes“ postaví věž z krabic.
+  if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return cast.props.target ?? view.kind;
   return view.kind;
 }
 

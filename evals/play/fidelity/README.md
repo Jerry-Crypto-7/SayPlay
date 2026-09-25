@@ -36,6 +36,18 @@
 - Judge-10 (untuned): 5 sentences moved off the grid; j07 ("squirrel hoards acorns") **lost** `read` 0.50 → 0.25 – the grid read "hoard" as collecting, the runner does not.
 - All 40 drafts compile and pass the robot (`src/play/__tests__/draft-nearest.test.ts`).
 
+## P28D T3 – sentence nouns beat default props (offline)
+
+`runs/2026-09-25-p28-t3.json`; `draft-chain.json` refreshed on the same build. The shooter's waves take a creature of the sentence ("rides a dragon") or the thing being popped; the throw tower is built from the target label ("cardboard boxes" → crates); "space marine" draws the astronaut. A thing the catalog lacks gets a **stand-in** in the scene (balloon → ball, sprinkler → fire hydrant) instead of the robot or hurdle, but the chain still counts it `no-model` – the stand-in is not the thing. Titles are cut at a word and never end on a preposition ("Knight Rides Dragon", not "… Over").
+
+| | corpus T2 | corpus T3 | judge-10 T2 | judge-10 T3 |
+|---|---|---|---|---|
+| read | 0.755 | 0.755 | 0.459 | 0.486 |
+| drawn | 0.673 | **0.691** | 0.432 | 0.432 |
+
+- AC `drawn` ≥ 0.583 + 0.10 = 0.683: met (0.691).
+- Kept on purpose: a kangaroo rival is not drawn as a fox (character categories stay off for props and rivals).
+
 ## The chain
 
 Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
