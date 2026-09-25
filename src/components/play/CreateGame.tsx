@@ -2,6 +2,7 @@
 
 /**
  * Formulář `/play`: věta → `POST /api/play/games` → `router.push('/play/<id>')`.
+ * Karta vzoru pošle svou větu rovnou (P28D T7).
  *
  * Stavový řádek ukazuje první dva kroky z `BUILD_STEPS` (odeslání, odpověď 201);
  * zbylé dva patří `/play/[id]`, kde se svět načítá a staví. Chyba dveří se
@@ -25,15 +26,14 @@ export function CreateGame() {
   const over = sentence.length > SENTENCE_LIMIT;
   const busy = phase.kind === 'busy';
 
-  async function submit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
-    if (trimmed.length === 0 || over || busy) return;
+  async function create(text: string): Promise<void> {
+    if (text.length === 0 || text.length > SENTENCE_LIMIT || busy) return;
     setPhase({ kind: 'busy', step: 0 });
     try {
       const response = await fetch('/api/play/games', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ sentence: trimmed }),
+        body: JSON.stringify({ sentence: text }),
       });
       const body = (await response.json()) as { url?: string; error?: { message?: string } };
       if (!response.ok || typeof body.url !== 'string') {
@@ -49,7 +49,13 @@ export function CreateGame() {
 
   return (
     <>
-      <form className="play-form" onSubmit={submit}>
+      <form
+        className="play-form"
+        onSubmit={(event: FormEvent<HTMLFormElement>) => {
+          event.preventDefault();
+          void create(trimmed);
+        }}
+      >
         <textarea
           className="play-sentence"
           data-testid="play-sentence"
@@ -90,8 +96,9 @@ export function CreateGame() {
               data-testid={`play-starter-${starter.archetype}`}
               disabled={busy}
               onClick={() => {
+                // P28D T7: vzor rovnou hraje; věta zůstane v poli, kdyby stavba selhala.
                 setSentence(starter.sentence);
-                setPhase({ kind: 'idle' });
+                void create(starter.sentence);
               }}
             >
               <span className="play-starter-label">{starter.label}</span>

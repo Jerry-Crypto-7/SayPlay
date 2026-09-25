@@ -20,13 +20,14 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import demo from './demo-game.json';
 import { Feed, type FeedGame } from './Feed';
 import { loopEvent } from './loop-client';
 
@@ -54,6 +55,18 @@ async function feedPage(cursor: string | null): Promise<{ games: FeedGame[]; nex
   const body = (await response.json()) as { games?: FeedGame[]; next?: string | null };
   if (!Array.isArray(body.games)) throw new Error('feed without games');
   return { games: body.games, next: typeof body.next === 'string' ? body.next : null };
+}
+
+/** Ukázková hra z `demo-game.json` – návrh z pevné věty, commitnutý (`__tests__/demo-game.test.ts`). */
+function DemoGame({ children }: { readonly children: ReactNode }) {
+  return (
+    <section className="play-pager" aria-label="Game feed" data-testid="feed-demo">
+      <div className="play-pager-slide">
+        <ArcadePlay versionId="demo" spec={demo.spec as unknown as GameSpecV1} arcade={demo.arcade as unknown as ArcadeWorld} lineage={[]} remixes={0} upgrade={null} offline />
+      </div>
+      {children}
+    </section>
+  );
 }
 
 export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<string, string>> }) {
@@ -135,7 +148,7 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
   );
   const pick = useCallback((versionId: string) => go(games.findIndex((game) => game.versionId === versionId)), [games, go]);
 
-  // Hra hraje, jen když je feed aspoň z poloviny vidět (nad ním je formulář).
+  // Hra hraje, jen když je feed aspoň z poloviny vidět (pod ním je formulář).
   useEffect(() => {
     const element = root.current;
     if (element === null || typeof IntersectionObserver === 'undefined') return;
@@ -184,25 +197,32 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
     if (Math.abs(dy) >= SWIPE_PX) go(index + (dy < 0 ? 1 : -1));
   };
 
+  // Bez hry z feedu hraje pevná ukázka (P28D T7): první obrazovka je hra, ne prázdný stav.
   if (feed.kind === 'loading') {
     return (
-      <p className="play-feed-empty play-pager-state" data-testid="feed-loading" role="status">
-        Loading games…
-      </p>
+      <DemoGame>
+        <p className="play-feed-empty" data-testid="feed-loading" role="status">
+          Loading games…
+        </p>
+      </DemoGame>
     );
   }
   if (feed.kind === 'error') {
     return (
-      <p className="play-feed-empty play-pager-state" data-testid="feed-error" role="status">
-        The feed is not available right now. You can still make a game above.
-      </p>
+      <DemoGame>
+        <p className="play-feed-empty" data-testid="feed-error" role="status">
+          The feed is not available right now. You can still make a game below.
+        </p>
+      </DemoGame>
     );
   }
   if (current === undefined) {
     return (
-      <p className="play-feed-empty play-pager-state" data-testid="play-feed-empty">
-        No games yet – write the first sentence.
-      </p>
+      <DemoGame>
+        <p className="play-feed-empty" data-testid="play-feed-empty">
+          No games yet – write the first sentence.
+        </p>
+      </DemoGame>
     );
   }
 
