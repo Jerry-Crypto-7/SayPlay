@@ -165,8 +165,9 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
     if (action !== null) controller.dispatch(action);
   }, [controller]);
 
-  // Klávesy 1–9 / mezerník / E jako záloha za karty.
+  // Klávesy 1–9 / mezerník / E jako záloha za karty – jen dokud hra běží (P28B T3).
   useEffect(() => {
+    if (!running) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const hit = keyAction(event.key, cards, selected);
@@ -176,7 +177,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [cards, selected, send]);
+  }, [cards, selected, send, running]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – ne za svědka ze sondy.
   const witnessed = useRef(false);

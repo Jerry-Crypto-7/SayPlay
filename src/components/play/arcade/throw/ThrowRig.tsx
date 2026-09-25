@@ -29,7 +29,7 @@ const AXIS_PER_PX = 12;
 /** Co musí být vidět: hřiště do ~26 m a výška ~9 m. */
 const VIEW = { from: -3, to: 27, tall: 10, y: 4 } as const;
 
-export function ThrowRig({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+export function ThrowRig({ session, surface, enabled }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly enabled: boolean }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const dots = useRef<(Mesh | null)[]>([]);
   const look = useMemo(() => new Vector3(), []);
@@ -72,7 +72,7 @@ export function ThrowRig({ session, surface }: { readonly session: ArcadeSession
 
   useEffect(() => {
     const element = surface.current;
-    if (element === null) return;
+    if (element === null || !enabled) return;
     let drag: { id: number; y: number } | null = null;
     const aimKeys = new Set<number>();
     let charging = false;
@@ -154,7 +154,7 @@ export function ThrowRig({ session, surface }: { readonly session: ArcadeSession
       element.removeEventListener('pointerup', onUp);
       element.removeEventListener('pointercancel', onUp);
     };
-  }, [session, surface]);
+  }, [session, surface, enabled]);
 
   return (
     <>

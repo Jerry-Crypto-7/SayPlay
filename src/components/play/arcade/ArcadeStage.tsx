@@ -379,6 +379,7 @@ interface WorldProps {
   readonly cast: Cast;
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly scene: Look;
+  readonly enabled: boolean;
 }
 
 /** Role, jejichž model se hýbe podle stavu těla (P26B); plošiny, auta a překážky jedou bez pózy. */
@@ -393,7 +394,7 @@ function applyPose(group: Group, pose: Pose): void {
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
-function World({ session, control, cast, surface, scene }: WorldProps) {
+function World({ session, control, cast, surface, scene, enabled }: WorldProps) {
   // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -481,8 +482,8 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
       ) : (
         <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
       )}
-      {control === 'shooter' && <ShooterRig session={session} surface={surface} />}
-      {control === 'throw' && <ThrowRig session={session} surface={surface} />}
+      {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} />}
+      {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
@@ -759,10 +760,13 @@ export default function ArcadeStage({
   session,
   cast,
   lookId = 'meadow',
+  enabled = true,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
   readonly lookId?: LookId;
+  /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
+  readonly enabled?: boolean;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -778,14 +782,14 @@ export default function ArcadeStage({
     rival === undefined
       ? undefined
       : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
-  useFireInput(session, fires);
-  useRunnerInput(session, surface, control === 'runner');
-  usePlatformInput(session, surface, control === 'platform');
-  useFlapInput(session, surface, control === 'flap');
-  useSteerInput(session, surface, control === 'steer');
-  useArenaInput(session, surface, control === 'move_free');
-  useTapInput(session, surface, control === 'timing' || control === 'rhythm');
-  useDuelInput(session, surface, control === 'duel');
+  useFireInput(session, fires && enabled);
+  useRunnerInput(session, surface, enabled && control === 'runner');
+  usePlatformInput(session, surface, enabled && control === 'platform');
+  useFlapInput(session, surface, enabled && control === 'flap');
+  useSteerInput(session, surface, enabled && control === 'steer');
+  useArenaInput(session, surface, enabled && control === 'move_free');
+  useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'));
+  useDuelInput(session, surface, enabled && control === 'duel');
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
@@ -809,12 +813,12 @@ export default function ArcadeStage({
             {control === 'move_free' ? (
               <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
             ) : (
-              <World session={session} control={control} cast={cast} surface={surface} scene={look} />
+              <World session={session} control={control} cast={cast} surface={surface} scene={look} enabled={enabled} />
             )}
           </>
         )}
       </Canvas>
-      {fires && <FireButton session={session} />}
+      {fires && enabled && <FireButton session={session} />}
     </div>
   );
 }

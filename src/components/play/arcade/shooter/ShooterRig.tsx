@@ -24,7 +24,7 @@ const MUZZLE_Y = SHOOTER.muzzleY / UNIT;
 const RETICLE_M = 20;
 const FIRE_KEYS = new Set([' ', 'arrowup', 'w']);
 
-export function ShooterRig({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+export function ShooterRig({ session, surface, enabled }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly enabled: boolean }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const reticle = useRef<Group | null>(null);
   const look = useMemo(() => new Vector3(), []);
@@ -53,7 +53,7 @@ export function ShooterRig({ session, surface }: { readonly session: ArcadeSessi
 
   useEffect(() => {
     const element = surface.current;
-    if (element === null) return;
+    if (element === null || !enabled) return;
     const raycaster = new Raycaster();
     const ground = new Plane(new Vector3(0, 1, 0), -MUZZLE_Y);
     const hit = new Vector3();
@@ -135,7 +135,7 @@ export function ShooterRig({ session, surface }: { readonly session: ArcadeSessi
       element.removeEventListener('pointerup', onUp);
       element.removeEventListener('pointercancel', onUp);
     };
-  }, [session, surface, camera]);
+  }, [session, surface, camera, enabled]);
 
   // Zaměřovač: průsvitný paprsek z hlavně a kříž s kroužkem ve 20 m.
   return (
