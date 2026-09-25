@@ -127,6 +127,36 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect.poll(async () => (await stage.screenshot()).equals(ended)).toBe(false);
   });
 
+  test('the runner draws at most 250 calls a frame, not the whole track (P28E-R1)', async ({ page }) => {
+    // Počítá `draw*` WebGL mezi dvěma snímky – totéž, co `renderer.info.render.calls`.
+    await page.addInitScript(() => {
+      const gl = WebGL2RenderingContext.prototype as unknown as Record<string, (...args: unknown[]) => unknown>;
+      const counts: number[] = [];
+      let calls = 0;
+      for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced', 'drawRangeElements']) {
+        const original = gl[name]!;
+        gl[name] = function (this: unknown, ...args: unknown[]) {
+          calls += 1;
+          return original.apply(this, args);
+        };
+      }
+      const frame = () => {
+        if (calls > 0) counts.push(calls);
+        calls = 0;
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+      (window as unknown as { __calls: number[] }).__calls = counts;
+    });
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    await page.getByTestId('play-demo-start').click();
+    await page.waitForTimeout(2_000);
+    const counts = await page.evaluate(() => [...(window as unknown as { __calls: number[] }).__calls].slice(-60).sort((a, b) => a - b));
+    expect(counts.length).toBeGreaterThan(10);
+    expect(counts[Math.floor(counts.length / 2)]).toBeLessThanOrEqual(250);
+  });
+
   test('a phone viewport has no horizontal scroll', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url);

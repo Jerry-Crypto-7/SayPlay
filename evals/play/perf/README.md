@@ -78,4 +78,19 @@ Drawn frames per second, median of 3 runs, same machine and build flow:
 
 \* The arena demo wins in about 2.5 s, so most of its 10 s play window is the result screen, which no longer draws. While the arena runs, fps p50 stays 60 and the max frame stays 50 ms (desktop) / 133 ms (phone).
 
+## R1 – runner stops drawing the whole track (`after-r1-2026-09-25.json`)
+
+Profiled on the emulated phone (CDP `Profiler`): the runner's frame went to React re-rendering every body of the track 20× a second (the HUD's tick re-rendered the canvas with a new `cast` object), then to three.js matrix updates and culling over the whole track. Three changes:
+
+- The arcade canvas is `memo` with a memoized `cast`; the HUD re-renders per tick, the canvas does not (the scene reads the session in `useFrame`).
+- The camera's far plane is the look's fog end. Past it every pixel is sky colour, so nothing visible is lost.
+- Bodies further than the far plane (+12 m) are hidden and left out of the matrix update.
+
+| runner | calls / frame | fps p50 / p5 phone (emul.) | fps p50 / p5 desktop |
+|---|---|---|---|
+| baseline | 416–442 | 10 / 5 | 60 / 60 |
+| after R1 | 188–198 | **30 / 12** | 60 / 60 |
+
+p5 ≥ 30 on the phone profile is still not reached: 35 % of the profile is native work (`(program)`, GPU commands under a ×4-slowed CPU) that this machine cannot attribute further; real phones (`devices.md`) decide whether it matters. `e2e/play-arcade.spec.ts` pins the median draw calls at ≤ 250 (the whole track was 490).
+
 Phone-profile numbers move by up to ~30 % between runs of the same build on this machine (grid, untouched by T2: fps p50 60 → 30, first draw 7.2 → 8.3 s); other sessions share the CPU. Compare desktop cells for small differences.
