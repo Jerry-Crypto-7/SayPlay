@@ -29,7 +29,7 @@ import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner } from '../UpgradeBanner';
 
-import { isTyping } from './input';
+import { pauseWhenAway } from './focus';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
 // WebGL kontext na serveru není – stejně jako mřížkové plátno.
@@ -173,36 +173,14 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
 
-  // Pauza při skryté záložce a mimo obrazovku feedu. Sama se hra nerozběhne:
-  // obnoví ji až vstup hráče, a to v zachytávací fázi, takže ten stisk už do hry padne
-  // (u poletování je to rovnou mávnutí). Rytmus nepípá, když tiky stojí.
+  // Pauza mimo obrazovku feedu, při skryté záložce a oknu bez fokusu (`focus.ts`).
+  // Rytmus nepípá, když tiky stojí.
   useEffect(() => {
     if (!active) {
       session.pause();
       return;
     }
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') session.pause();
-    };
-    const wake = () => {
-      if (session.paused() && document.visibilityState === 'visible') session.resume();
-    };
-    const onPointer = (event: PointerEvent) => {
-      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) wake();
-    };
-    const onKey = (event: KeyboardEvent) => {
-      // Klávesa do pole formuláře hru neobnoví – píše se tam věta, ne hraje.
-      if (!event.repeat && !isTyping(event.target)) wake();
-    };
-    onVisibility();
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('pointerdown', onPointer, true);
-    window.addEventListener('keydown', onKey, true);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('pointerdown', onPointer, true);
-      window.removeEventListener('keydown', onKey, true);
-    };
+    return pauseWhenAway(session, window, document);
   }, [active, session]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
