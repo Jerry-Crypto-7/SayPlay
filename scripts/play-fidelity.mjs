@@ -13,7 +13,7 @@
  *
  * Kroky jdou pouštět zvlášť a běh jde přerušit – hotová věta se přeskočí
  * (Node 22 potřebuje `--experimental-strip-types` kvůli tabulce v TypeScriptu):
- *   node --experimental-strip-types scripts/play-fidelity.mjs run    [--base http://127.0.0.1:3100] [--run <id>] [--only s039,h01]
+ *   node --experimental-strip-types scripts/play-fidelity.mjs run    [--base http://127.0.0.1:3100] [--run <id>] [--only s039,h01] [--set judge-10.json]
  *   node --experimental-strip-types scripts/play-fidelity.mjs judge  [--run <id>]
  *   node --experimental-strip-types scripts/play-fidelity.mjs report [--run <id>]
  *   node --experimental-strip-types scripts/play-fidelity.mjs summary [--run <id>]   (souhrn do runs/<id>.json, report.json nechá)
@@ -331,7 +331,8 @@ async function run(options) {
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
-    for (const sentence of loadCorpus(options.only)) {
+    // `--set judge-10.json` pustí zamčenou porotcovskou sadu (P28D); do vlastního `--run`, ať se vykazuje zvlášť.
+    for (const sentence of loadCorpus(options.only, typeof options.set === 'string' ? options.set : undefined)) {
       const path = join(runDir, `${sentence.id}.json`);
       if (existsSync(path)) continue;
       const result = await runOne(sentence, base, runDir, page);
