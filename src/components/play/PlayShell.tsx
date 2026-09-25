@@ -40,6 +40,7 @@ import { SentenceRead } from './SentenceRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
+import { RemixReadyChip, useRemixJob } from './RemixBox';
 import { TargetCards } from './TargetCards';
 import { UpgradeBanner } from './UpgradeBanner';
 import { idleProps, keyAction, playerActor, tapAction, targetCards } from './targets';
@@ -130,6 +131,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
     [controller, blueprint, spec],
   );
   const running = snapshot.runState === 'running';
+  const remix = useRemixJob(versionId, !running);
   const built = world?.kind === 'built';
 
   // Stavba světa: jednou na připojení, zrušená při odchodu ze stránky.
@@ -243,6 +245,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
       <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read.sentence} />
+      {running && <RemixReadyChip job={remix} />}
       <SentenceRead read={read} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
@@ -261,6 +264,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
           <p className="play-outcome-detail">at tick {snapshot.tick}</p>
           <PostRun
             versionId={versionId}
+            remix={remix}
             onReplay={() => {
               if (!witnessed.current) loopEvent('restart', versionId);
               witnessed.current = false;

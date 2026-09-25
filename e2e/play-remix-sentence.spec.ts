@@ -79,6 +79,40 @@ test('a sentence of your own opens a new version and leaves the original alone',
   expect(await specOf(request, parentId)).toEqual(original);
 });
 
+test('a remix sent before Replay comes back as a chip, not a jump (P28B T7)', async ({ page, request }) => {
+  // Střelnice po Replay stojí na tiku 0, dokud hráč neťukne – běh nedojde sám do konce.
+  const url = await publish(request, 'zombie shooter in a mall');
+  const parentId = url.split('/').at(-1)!;
+  const original = await specOf(request, parentId);
+  const made = await request.post(`/api/play/games/${parentId}/remix`, { data: { spec: { ...original, title: `${original.title} but faster` } } });
+  expect(made.status(), await made.text()).toBeLessThan(300);
+  const childId = ((await made.json()) as { url: string }).url.split('/').at(-1)!;
+
+  let done = false;
+  await page.route(`**/api/play/games/${parentId}/remix**`, (route) => {
+    if (route.request().method() === 'POST') return route.fulfill({ status: 202, json: { status: 'pending', job: JOB, deadlineAt: new Date(Date.now() + 60_000).toISOString() } });
+    return route.fulfill({ json: done ? { status: 'ready', versionId: childId, changed: ['Faster zombies'] } : { status: 'pending', job: JOB, deadlineAt: new Date(Date.now() + 60_000).toISOString() } });
+  });
+
+  await page.goto(url);
+  await win(page);
+  const box = page.getByTestId('remix-box');
+  await box.getByTestId('remix-input').fill('make enemies faster');
+  await box.getByTestId('remix-submit').click();
+  await expect(box.getByTestId('remix-state')).toHaveAttribute('data-kind', 'working');
+
+  await page.getByTestId('play-replay').click();
+  await expect(page.getByTestId('play-postrun')).toHaveCount(0);
+  done = true;
+  const chip = page.getByTestId('remix-ready');
+  await expect(chip).toBeVisible({ timeout: 15_000 });
+  await expect(chip).toContainText('Your remix is ready');
+  await expect(page).toHaveURL(new RegExp(`/play/${parentId}$`));
+
+  await chip.getByTestId('remix-ready-open').click();
+  await expect(page).toHaveURL(new RegExp(`/play/${childId}$`), { timeout: 30_000 });
+});
+
 test('a refused change says why and points back to the chips', async ({ page, request }) => {
   const url = await publish(request, 'Collect five glowing mushrooms then open a portal.');
   const parentId = url.split('/').at(-1)!;

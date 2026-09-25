@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { RemixFinalReason } from '@/app/api/play/_remix-jobs';
 
@@ -77,44 +77,87 @@ function followRemix(url: string, deadlineAt: number, onView: (view: RemixView) 
   };
 }
 
-export function RemixBox({ versionId }: { readonly versionId: string }) {
+export interface RemixJob {
+  readonly view: RemixView;
+  readonly sent: string;
+  submit(sentence: string): void;
+}
+
+/**
+ * Práce remixu patří obrazovce hry, ne boxu (P28B T7): Replay box odpojí,
+ * práce ale běží dál a hotová verze se během hraní ukáže čipem
+ * (`RemixReadyChip`). `showing` = obrazovka po hře je vidět – jen tehdy smí
+ * okamžitá odpověď (201) přejít na novou verzi sama.
+ */
+export function useRemixJob(versionId: string, showing: boolean): RemixJob {
   const router = useRouter();
-  const [text, setText] = useState('');
   const [sent, setSent] = useState('');
   const [view, setView] = useState<RemixView>({ kind: 'idle' });
-  const [now, setNow] = useState(() => Date.now());
   const stop = useRef<(() => void) | null>(null);
+  const shown = useRef(showing);
+  useEffect(() => {
+    shown.current = showing;
+  }, [showing]);
 
   useEffect(() => () => stop.current?.(), []);
 
+  const submit = useCallback(
+    async (sentence: string): Promise<void> => {
+      stop.current?.();
+      const control = new AbortController();
+      stop.current = () => control.abort();
+      const since = Date.now();
+      setSent(sentence);
+      setView({ kind: 'working', since });
+      const url = `/api/play/games/${versionId}/remix`;
+      try {
+        const response = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence }), signal: control.signal });
+        const body = (await response.json()) as { job?: unknown; deadlineAt?: unknown; url?: unknown; error?: { message?: string } };
+        if (control.signal.aborted) return;
+        if (response.status === 202 && typeof body.job === 'string') {
+          const deadline = typeof body.deadlineAt === 'string' ? Date.parse(body.deadlineAt) : Number.NaN;
+          stop.current = followRemix(`${url}?job=${body.job}`, Number.isFinite(deadline) ? deadline : since + 285_000, setView);
+          return;
+        }
+        if (response.ok && typeof body.url === 'string') {
+          if (shown.current) return router.push(body.url);
+          return setView({ kind: 'ready', versionId: body.url.split('/').at(-1) ?? '', changed: [] });
+        }
+        setView({ kind: 'refused', message: body.error?.message ?? 'This change could not become a game.' });
+      } catch {
+        if (!control.signal.aborted) setView({ kind: 'refused', message: 'The change could not be sent. Check your connection and try again.' });
+      }
+    },
+    [versionId, router],
+  );
+
+  return { view, sent, submit: (sentence) => void submit(sentence) };
+}
+
+/** Remix dorazil během hraní: nabídka místo přesměrování uprostřed běhu. */
+export function RemixReadyChip({ job }: { readonly job: RemixJob }) {
+  if (job.view.kind !== 'ready') return null;
+  return (
+    <aside className="play-upgrade" data-testid="remix-ready" role="status">
+      <span>Your remix is ready</span>
+      <Link className="play-button" data-testid="remix-ready-open" href={`/play/${job.view.versionId}`}>
+        Play it
+      </Link>
+    </aside>
+  );
+}
+
+export function RemixBox({ job }: { readonly job: RemixJob }) {
+  const { view, sent, submit } = job;
+  const [text, setText] = useState('');
+  const [now, setNow] = useState(() => Date.now());
+
   useEffect(() => {
     if (view.kind !== 'working') return;
+    setNow(Date.now());
     const ticker = setInterval(() => setNow(Date.now()), 1_000);
     return () => clearInterval(ticker);
   }, [view.kind]);
-
-  async function submit(sentence: string): Promise<void> {
-    stop.current?.();
-    stop.current = null;
-    const since = Date.now();
-    setSent(sentence);
-    setNow(since);
-    setView({ kind: 'working', since });
-    const url = `/api/play/games/${versionId}/remix`;
-    try {
-      const response = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence }) });
-      const body = (await response.json()) as { job?: unknown; deadlineAt?: unknown; url?: unknown; error?: { message?: string } };
-      if (response.status === 202 && typeof body.job === 'string') {
-        const deadline = typeof body.deadlineAt === 'string' ? Date.parse(body.deadlineAt) : Number.NaN;
-        stop.current = followRemix(`${url}?job=${body.job}`, Number.isFinite(deadline) ? deadline : since + 285_000, setView);
-        return;
-      }
-      if (response.ok && typeof body.url === 'string') return router.push(body.url);
-      setView({ kind: 'refused', message: body.error?.message ?? 'This change could not become a game.' });
-    } catch {
-      setView({ kind: 'refused', message: 'The change could not be sent. Check your connection and try again.' });
-    }
-  }
 
   const working = view.kind === 'working';
   const sentence = text.trim();

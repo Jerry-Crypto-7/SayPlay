@@ -27,6 +27,7 @@ import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
+import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
 import { pauseWhenAway } from './focus';
@@ -172,6 +173,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
+  const remix = useRemixJob(versionId, !running && demo === null);
 
   // Pauza mimo obrazovku feedu, při skryté záložce a oknu bez fokusu (`focus.ts`).
   // Rytmus nepípá, když tiky stojí.
@@ -225,6 +227,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       </ArcadeHud>
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
+      {running && <RemixReadyChip job={remix} />}
       {read !== undefined && <SentenceRead read={read} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {/* Konec ukázky není výhra hráče: bez „You won“, bez sdílení výsledku. */}
@@ -247,6 +250,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
           </p>
           <PostRun
             versionId={versionId}
+            remix={remix}
             onReplay={() => {
               if (session.humanRun()) loopEvent('restart', versionId);
               session.restart();
