@@ -80,6 +80,15 @@ test.describe('/play/[id] – play shell', () => {
     expect(inputs.some((input) => input.actionId !== 'moveTo')).toBe(true);
   });
 
+  test('a one-command prompt says what to tap and goes away on the first tap (P28C T5)', async ({ page }) => {
+    await page.goto(url);
+    const prompt = page.getByTestId('play-first-prompt');
+    await expect(prompt).toBeVisible({ timeout: 60_000 });
+    await expect(prompt).toHaveText(/^Tap (a|an|the) /);
+    await page.getByTestId('play-grid-stage').click({ position: { x: 5, y: 5 } });
+    await expect(prompt).toHaveCount(0);
+  });
+
   test('a phone viewport has no horizontal scroll', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url);

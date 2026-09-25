@@ -254,6 +254,39 @@
   height: 100%;
 }
 
+/* Výzva prvních sekund (P28C T5): jeden povel uprostřed, klepnutí jde skrz na plátno. */
+.play-first-prompt {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  z-index: 2;
+  max-width: calc(100% - 32px);
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: clamp(1.6rem, 5.5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  text-align: center;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 3px 12px rgb(0 0 0 / 0.6);
+  pointer-events: none;
+  animation: play-first-prompt 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes play-first-prompt {
+  to {
+    transform: translate(-50%, -50%) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-first-prompt {
+    animation: none;
+  }
+}
+
 /* Odezva (P28C T3): „+N“ vyletí nad hráčem a zhasne za 500 ms, zásah otřese obrazem 150 ms. */
 .play-score-pop {
   position: absolute;

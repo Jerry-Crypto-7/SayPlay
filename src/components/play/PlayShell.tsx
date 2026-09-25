@@ -33,7 +33,7 @@ import { installSoundControls, playSfx } from '@/play/audio';
 import { ArcadePlay } from './arcade/ArcadePlay';
 import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
-import { Hud, objectiveCounter } from './Hud';
+import { FirstPrompt, Hud, objectiveCounter } from './Hud';
 import type { LabFacts, ReadFacts } from './lab';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
@@ -387,6 +387,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
         ))}
       </div>
       <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
+      {running && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read.sentence} />
       <SentenceRead read={read} />

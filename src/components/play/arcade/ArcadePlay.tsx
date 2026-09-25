@@ -22,7 +22,7 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
-import { timerLeft } from '../Hud';
+import { FirstPrompt, timerLeft } from '../Hud';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
@@ -306,6 +306,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
+      {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
       {read !== undefined && <SentenceRead read={read} />}

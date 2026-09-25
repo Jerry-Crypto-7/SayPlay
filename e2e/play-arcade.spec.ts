@@ -138,6 +138,13 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(end.delay).toBeLessThanOrEqual(800);
   });
 
+  test('a one-command prompt says what to do and goes away on the first input (P28C T5)', async ({ page }) => {
+    await page.goto(url);
+    await expect(page.getByTestId('play-first-prompt')).toHaveText('Tap to jump', { timeout: 60_000 });
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('play-first-prompt')).toHaveCount(0);
+  });
+
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
     await page.goto(url);
     const stage = page.getByTestId('arcade-stage');
