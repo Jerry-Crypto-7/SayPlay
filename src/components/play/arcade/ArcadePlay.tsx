@@ -209,6 +209,42 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
     };
   }, [active, session]);
 
+  // Výloha vstupní stránky (P28D T7): dokud se hráč nedotkne, hraje dokola robot ověřovače –
+  // bez něj runner do tří sekund prohraje a první obrazovka ukáže „You lost“. První stisk
+  // nebo ťuk na scénu výlohu ukončí v zachytávací fázi, takže ten stisk už padne do hry hráče.
+  const [attract, setAttract] = useState(offline);
+  useEffect(() => {
+    if (!attract || !active) return;
+    let again: ReturnType<typeof setTimeout> | undefined;
+    if (session.demo() === null) session.startDemo();
+    const unsubscribe = session.subscribe(() => {
+      if (session.demo()?.ended === true && again === undefined) {
+        again = setTimeout(() => {
+          again = undefined;
+          session.startDemo();
+        }, 1000);
+      }
+    });
+    const take = () => {
+      setAttract(false);
+      session.restart();
+    };
+    const onPointer = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) take();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (!event.repeat && !typing(event.target)) take();
+    };
+    window.addEventListener('pointerdown', onPointer, true);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      clearTimeout(again);
+      unsubscribe();
+      window.removeEventListener('pointerdown', onPointer, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [attract, active, session]);
+
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
   useEffect(() => {
     if (active && !offline) loopImpression(versionId);
@@ -255,7 +291,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       {read !== undefined && <SentenceRead read={read} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
       {/* Konec ukázky není výhra hráče: bez „You won“, bez sdílení výsledku. */}
-      {!running && demo !== null && (
+      {!running && demo !== null && !attract && (
         <section className="play-outcome" data-testid="play-demo-outcome" data-verified={String(demo.verified)} role="status">
           <h2 className="play-outcome-title">Demo finished</h2>
           <p className="play-outcome-detail">

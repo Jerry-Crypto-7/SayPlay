@@ -177,7 +177,14 @@ test.describe('/play – vertical feed', () => {
     const top = await page.locator('canvas').boundingBox();
     const form = await page.locator('.play-sentence').boundingBox();
     expect(top!.y).toBeLessThan(form!.y);
+    // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže „You lost“ (runner prohraje do 3 s).
+    await expect(page.getByTestId('play-demo')).toBeVisible();
+    for (let second = 0; second < 8; second += 1) {
+      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('play-outcome')).toHaveCount(0);
+    }
     await page.keyboard.press('ArrowLeft');
+    await expect(page.getByTestId('play-demo')).toHaveCount(0);
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBeGreaterThan(0);
   });
 });
