@@ -18,7 +18,7 @@ import { describe, expect, it } from 'vitest';
 import { compileGame } from '@/play/compile';
 import { draftGameSpec } from '@/play/draft';
 import { readGameSpec } from '@/play/spec';
-import { verifyGame } from '@/play/verify';
+import { reportFor } from '@/app/api/play/_report';
 
 import { goldenPrompts } from '../golden';
 
@@ -94,7 +94,8 @@ function measure(entry: ReturnType<typeof goldenPrompts>[number]): Row {
     return { ...base, ...none, archetype, archetypeHit, specValid: true, reason: `${compiled.reason}: ${compiled.issues.join('; ')}`, keypointsTotal: spec.verification.length, compileMs };
   }
   const verifyStarted = performance.now();
-  const quality = verifyGame(compiled.value);
+  // Táž výhybka jako publikace: arkádová hra (P28D T1 k ní návrh vede častěji) jde přes `verifyArcade`.
+  const quality = reportFor(compiled.value);
   const verifyMs = round(performance.now() - verifyStarted);
   return {
     ...base,

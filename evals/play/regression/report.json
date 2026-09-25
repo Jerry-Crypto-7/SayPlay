@@ -1,13 +1,13 @@
 {
   "schema": "play-regression-report.v1",
-  "measuredAt": "2026-09-22T19:32:13.815Z",
+  "measuredAt": "2026-09-25T19:57:12.240Z",
   "seed": 1,
   "rows": [
     {
       "id": "chase_escape-1",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 27.4,
+      "draftMs": 25.8,
       "archetype": "chase_escape",
       "archetypeHit": true,
       "specValid": true,
@@ -19,14 +19,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 163.6,
-      "verifyMs": 62.3
+      "compileMs": 159.9,
+      "verifyMs": 29.2
     },
     {
       "id": "chase_escape-2",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 6.8,
+      "draftMs": 8.8,
       "archetype": "chase_escape",
       "archetypeHit": true,
       "specValid": true,
@@ -38,8 +38,8 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 159.4,
-      "verifyMs": 34.6
+      "compileMs": 118.5,
+      "verifyMs": 19.8
     },
     {
       "id": "chase_escape-3",
@@ -57,14 +57,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 39.3,
-      "verifyMs": 76.4
+      "compileMs": 101.8,
+      "verifyMs": 21.3
     },
     {
       "id": "chase_escape-4",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 1.6,
+      "draftMs": 2.5,
       "archetype": "chase_escape",
       "archetypeHit": true,
       "specValid": true,
@@ -76,14 +76,14 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 37.8,
-      "verifyMs": 159.7
+      "compileMs": 108.8,
+      "verifyMs": 21.1
     },
     {
       "id": "collect_exit-1",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 3.9,
+      "draftMs": 6,
       "archetype": "collect_exit",
       "archetypeHit": true,
       "specValid": true,
@@ -95,14 +95,14 @@
       "winsAtTick": 19,
       "entities": 7,
       "rules": 7,
-      "compileMs": 87.2,
-      "verifyMs": 40.3
+      "compileMs": 128.8,
+      "verifyMs": 30
     },
     {
       "id": "collect_exit-2",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 2.9,
+      "draftMs": 1.8,
       "archetype": "collect_exit",
       "archetypeHit": true,
       "specValid": true,
@@ -114,14 +114,14 @@
       "winsAtTick": 25,
       "entities": 10,
       "rules": 10,
-      "compileMs": 53.4,
-      "verifyMs": 80.7
+      "compileMs": 172,
+      "verifyMs": 56.3
     },
     {
       "id": "collect_exit-3",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 3.2,
+      "draftMs": 1.5,
       "archetype": "collect_exit",
       "archetypeHit": true,
       "specValid": true,
@@ -133,14 +133,14 @@
       "winsAtTick": 36,
       "entities": 10,
       "rules": 9,
-      "compileMs": 132,
-      "verifyMs": 99
+      "compileMs": 182.4,
+      "verifyMs": 48.6
     },
     {
       "id": "collect_exit-4",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 1,
+      "draftMs": 0.9,
       "archetype": "collect_exit",
       "archetypeHit": true,
       "specValid": true,
@@ -152,14 +152,14 @@
       "winsAtTick": 21,
       "entities": 8,
       "rules": 8,
-      "compileMs": 38.7,
-      "verifyMs": 117.1
+      "compileMs": 121.7,
+      "verifyMs": 29.4
     },
     {
       "id": "survival_timer-1",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 2.3,
+      "draftMs": 2.2,
       "archetype": "survival_timer",
       "archetypeHit": true,
       "specValid": true,
@@ -171,14 +171,14 @@
       "winsAtTick": 1201,
       "entities": 7,
       "rules": 21,
-      "compileMs": 401.7,
-      "verifyMs": 1197.9
+      "compileMs": 301.2,
+      "verifyMs": 656.5
     },
     {
       "id": "survival_timer-2",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 1.4,
+      "draftMs": 1.3,
       "archetype": "survival_timer",
       "archetypeHit": true,
       "specValid": true,
@@ -190,8 +190,8 @@
       "winsAtTick": 1801,
       "entities": 7,
       "rules": 21,
-      "compileMs": 392.1,
-      "verifyMs": 1388.2
+      "compileMs": 363.7,
+      "verifyMs": 1058.4
     },
     {
       "id": "survival_timer-3",
@@ -209,14 +209,14 @@
       "winsAtTick": 901,
       "entities": 7,
       "rules": 21,
-      "compileMs": 217.2,
-      "verifyMs": 664.1
+      "compileMs": 283,
+      "verifyMs": 534.3
     },
     {
       "id": "survival_timer-4",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 1,
+      "draftMs": 1.2,
       "archetype": "survival_timer",
       "archetypeHit": true,
       "specValid": true,
@@ -228,30 +228,11 @@
       "winsAtTick": 2401,
       "entities": 7,
       "rules": 21,
-      "compileMs": 413.3,
-      "verifyMs": 1554.7
+      "compileMs": 450.6,
+      "verifyMs": 1254.2
     },
     {
       "id": "checkpoint_race-1",
-      "bucket": "checkpoint_race",
-      "expectArchetype": "checkpoint_race",
-      "draftMs": 1.3,
-      "archetype": "checkpoint_race",
-      "archetypeHit": true,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 2,
-      "keypointsTotal": 2,
-      "winsAtTick": 41,
-      "entities": 6,
-      "rules": 7,
-      "compileMs": 26.4,
-      "verifyMs": 27.2
-    },
-    {
-      "id": "checkpoint_race-2",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
       "draftMs": 1.1,
@@ -263,17 +244,36 @@
       "publishEligible": true,
       "keypointsPassed": 2,
       "keypointsTotal": 2,
+      "winsAtTick": 41,
+      "entities": 6,
+      "rules": 7,
+      "compileMs": 99.9,
+      "verifyMs": 31.2
+    },
+    {
+      "id": "checkpoint_race-2",
+      "bucket": "checkpoint_race",
+      "expectArchetype": "checkpoint_race",
+      "draftMs": 3.2,
+      "archetype": "checkpoint_race",
+      "archetypeHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 2,
+      "keypointsTotal": 2,
       "winsAtTick": 30,
       "entities": 5,
       "rules": 6,
-      "compileMs": 20.8,
-      "verifyMs": 17.3
+      "compileMs": 73.7,
+      "verifyMs": 16.9
     },
     {
       "id": "checkpoint_race-3",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 0.8,
+      "draftMs": 1,
       "archetype": "checkpoint_race",
       "archetypeHit": true,
       "specValid": true,
@@ -285,14 +285,14 @@
       "winsAtTick": 49,
       "entities": 7,
       "rules": 8,
-      "compileMs": 41.2,
-      "verifyMs": 42.1
+      "compileMs": 112.9,
+      "verifyMs": 38.9
     },
     {
       "id": "checkpoint_race-4",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 0.9,
+      "draftMs": 1,
       "archetype": "checkpoint_race",
       "archetypeHit": true,
       "specValid": true,
@@ -304,8 +304,8 @@
       "winsAtTick": 22,
       "entities": 4,
       "rules": 5,
-      "compileMs": 18.9,
-      "verifyMs": 8.3
+      "compileMs": 68.1,
+      "verifyMs": 9.6
     },
     {
       "id": "delivery-1",
@@ -323,14 +323,14 @@
       "winsAtTick": 11,
       "entities": 4,
       "rules": 5,
-      "compileMs": 20.1,
-      "verifyMs": 10.2
+      "compileMs": 66.3,
+      "verifyMs": 8.4
     },
     {
       "id": "delivery-2",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 1.2,
+      "draftMs": 1.3,
       "archetype": "delivery",
       "archetypeHit": true,
       "specValid": true,
@@ -342,14 +342,14 @@
       "winsAtTick": 11,
       "entities": 4,
       "rules": 4,
-      "compileMs": 18.4,
-      "verifyMs": 6.5
+      "compileMs": 72.3,
+      "verifyMs": 6.8
     },
     {
       "id": "delivery-3",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 0.8,
+      "draftMs": 1.3,
       "archetype": "delivery",
       "archetypeHit": true,
       "specValid": true,
@@ -361,14 +361,14 @@
       "winsAtTick": 11,
       "entities": 4,
       "rules": 4,
-      "compileMs": 15.9,
-      "verifyMs": 5.8
+      "compileMs": 76.5,
+      "verifyMs": 6.2
     },
     {
       "id": "delivery-4",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 0.7,
+      "draftMs": 1,
       "archetype": "delivery",
       "archetypeHit": true,
       "specValid": true,
@@ -380,8 +380,8 @@
       "winsAtTick": 11,
       "entities": 4,
       "rules": 5,
-      "compileMs": 15.4,
-      "verifyMs": 8.2
+      "compileMs": 65.2,
+      "verifyMs": 18.1
     },
     {
       "id": "switch_puzzle-1",
@@ -399,8 +399,8 @@
       "winsAtTick": 10,
       "entities": 5,
       "rules": 13,
-      "compileMs": 22.3,
-      "verifyMs": 19.5
+      "compileMs": 127.7,
+      "verifyMs": 17
     },
     {
       "id": "switch_puzzle-2",
@@ -418,14 +418,14 @@
       "winsAtTick": 10,
       "entities": 5,
       "rules": 13,
-      "compileMs": 18.5,
-      "verifyMs": 18.7
+      "compileMs": 103,
+      "verifyMs": 19.8
     },
     {
       "id": "switch_puzzle-3",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 3.6,
+      "draftMs": 1,
       "archetype": "switch_puzzle",
       "archetypeHit": true,
       "specValid": true,
@@ -437,14 +437,14 @@
       "winsAtTick": 10,
       "entities": 5,
       "rules": 13,
-      "compileMs": 17.6,
-      "verifyMs": 11.7
+      "compileMs": 97.5,
+      "verifyMs": 13.7
     },
     {
       "id": "switch_puzzle-4",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 0.6,
+      "draftMs": 1,
       "archetype": "switch_puzzle",
       "archetypeHit": true,
       "specValid": true,
@@ -456,14 +456,14 @@
       "winsAtTick": 10,
       "entities": 5,
       "rules": 13,
-      "compileMs": 17.7,
-      "verifyMs": 15.6
+      "compileMs": 85.4,
+      "verifyMs": 14.2
     },
     {
       "id": "hazard_crossing-1",
       "bucket": "hazard_platforming",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 0.9,
+      "draftMs": 2.3,
       "archetype": "hazard_crossing",
       "archetypeHit": true,
       "specValid": true,
@@ -475,14 +475,14 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 43.5,
-      "verifyMs": 42.2
+      "compileMs": 186,
+      "verifyMs": 48.2
     },
     {
       "id": "hazard_crossing-2",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 0.6,
+      "draftMs": 1.4,
       "archetype": "hazard_crossing",
       "archetypeHit": true,
       "specValid": true,
@@ -494,14 +494,14 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 41.6,
-      "verifyMs": 49.8
+      "compileMs": 179.6,
+      "verifyMs": 74.9
     },
     {
       "id": "hazard_crossing-3",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 1,
+      "draftMs": 1.1,
       "archetype": "hazard_crossing",
       "archetypeHit": true,
       "specValid": true,
@@ -513,14 +513,14 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 46.9,
-      "verifyMs": 53.8
+      "compileMs": 239.1,
+      "verifyMs": 59.9
     },
     {
       "id": "hazard_crossing-4",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 0.8,
+      "draftMs": 1.1,
       "archetype": "hazard_crossing",
       "archetypeHit": true,
       "specValid": true,
@@ -532,14 +532,14 @@
       "winsAtTick": 32,
       "entities": 10,
       "rules": 21,
-      "compileMs": 41.5,
-      "verifyMs": 45.2
+      "compileMs": 244.9,
+      "verifyMs": 59.3
     },
     {
       "id": "combat_lite-1",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 1.8,
+      "draftMs": 2.7,
       "archetype": "combat_lite",
       "archetypeHit": true,
       "specValid": true,
@@ -551,8 +551,8 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 12,
-      "compileMs": 23.3,
-      "verifyMs": 6.8
+      "compileMs": 109.9,
+      "verifyMs": 7.1
     },
     {
       "id": "combat_lite-2",
@@ -570,14 +570,14 @@
       "winsAtTick": 9,
       "entities": 5,
       "rules": 10,
-      "compileMs": 20.9,
-      "verifyMs": 4.5
+      "compileMs": 81.8,
+      "verifyMs": 5
     },
     {
       "id": "combat_lite-3",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 0.6,
+      "draftMs": 0.9,
       "archetype": "combat_lite",
       "archetypeHit": true,
       "specValid": true,
@@ -589,14 +589,14 @@
       "winsAtTick": 13,
       "entities": 7,
       "rules": 14,
-      "compileMs": 25,
-      "verifyMs": 9.6
+      "compileMs": 110.2,
+      "verifyMs": 10.2
     },
     {
       "id": "combat_lite-4",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 0.8,
+      "draftMs": 1,
       "archetype": "combat_lite",
       "archetypeHit": true,
       "specValid": true,
@@ -608,52 +608,52 @@
       "winsAtTick": 15,
       "entities": 8,
       "rules": 16,
-      "compileMs": 24.6,
-      "verifyMs": 9.8
+      "compileMs": 138.2,
+      "verifyMs": 11.8
     },
     {
       "id": "ambiguity-1",
       "bucket": "ambiguity",
       "expectArchetype": null,
-      "draftMs": 0.6,
-      "archetype": "collect_exit",
+      "draftMs": 7,
+      "archetype": "hazard_crossing",
       "archetypeHit": null,
       "specValid": true,
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 19,
-      "entities": 7,
-      "rules": 7,
-      "compileMs": 21.2,
-      "verifyMs": 19.9
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 1522,
+      "entities": 73,
+      "rules": 3,
+      "compileMs": 49.1,
+      "verifyMs": 41.8
     },
     {
       "id": "contradiction-1",
       "bucket": "contradiction",
       "expectArchetype": null,
-      "draftMs": 0.7,
-      "archetype": "collect_exit",
+      "draftMs": 1.8,
+      "archetype": "hazard_crossing",
       "archetypeHit": null,
       "specValid": true,
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 11,
-      "entities": 3,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 1522,
+      "entities": 73,
       "rules": 3,
-      "compileMs": 10.3,
-      "verifyMs": 4.4
+      "compileMs": 22.5,
+      "verifyMs": 36.2
     },
     {
       "id": "scale-1",
       "bucket": "scale",
       "expectArchetype": null,
-      "draftMs": 0.7,
+      "draftMs": 1.3,
       "archetype": "chase_escape",
       "archetypeHit": null,
       "specValid": true,
@@ -665,33 +665,33 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 31.6,
-      "verifyMs": 15
+      "compileMs": 111.1,
+      "verifyMs": 17.8
     },
     {
       "id": "remix-1",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 0.7,
-      "archetype": "collect_exit",
+      "draftMs": 0.8,
+      "archetype": "hazard_crossing",
       "archetypeHit": null,
       "specValid": true,
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 19,
-      "entities": 7,
-      "rules": 7,
-      "compileMs": 23,
-      "verifyMs": 21
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 1522,
+      "entities": 73,
+      "rules": 3,
+      "compileMs": 11.6,
+      "verifyMs": 31
     },
     {
       "id": "remix-2",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 0.8,
+      "draftMs": 1,
       "archetype": "chase_escape",
       "archetypeHit": null,
       "specValid": true,
@@ -703,65 +703,65 @@
       "winsAtTick": 11,
       "entities": 6,
       "rules": 70,
-      "compileMs": 24.6,
-      "verifyMs": 20.7
+      "compileMs": 93.4,
+      "verifyMs": 16.6
     },
     {
       "id": "remix-3",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 0.7,
-      "archetype": "collect_exit",
+      "draftMs": 0.9,
+      "archetype": "hazard_crossing",
       "archetypeHit": null,
       "specValid": true,
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 19,
-      "entities": 7,
-      "rules": 7,
-      "compileMs": 28.6,
-      "verifyMs": 20
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 1522,
+      "entities": 73,
+      "rules": 3,
+      "compileMs": 16.1,
+      "verifyMs": 19.2
     },
     {
       "id": "count-1",
       "bucket": "count",
       "expectArchetype": null,
-      "draftMs": 0.6,
-      "archetype": "collect_exit",
+      "draftMs": 1.2,
+      "archetype": "hazard_crossing",
       "archetypeHit": null,
       "specValid": true,
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 23,
-      "entities": 9,
-      "rules": 9,
-      "compileMs": 35.3,
-      "verifyMs": 30.6
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 1522,
+      "entities": 32,
+      "rules": 3,
+      "compileMs": 7.8,
+      "verifyMs": 16.9
     },
     {
       "id": "relation-1",
       "bucket": "relation",
       "expectArchetype": null,
-      "draftMs": 0.9,
-      "archetype": "collect_exit",
+      "draftMs": 0.8,
+      "archetype": "hazard_crossing",
       "archetypeHit": null,
       "specValid": true,
       "compiled": true,
       "reason": null,
       "publishEligible": true,
-      "keypointsPassed": 3,
-      "keypointsTotal": 3,
-      "winsAtTick": 19,
-      "entities": 7,
-      "rules": 7,
-      "compileMs": 23.7,
-      "verifyMs": 16.5
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 1522,
+      "entities": 73,
+      "rules": 3,
+      "compileMs": 17,
+      "verifyMs": 20.6
     }
   ],
   "summary": {
@@ -771,7 +771,7 @@
     "total": 40,
     "archetypeHits": 32,
     "withExpect": 32,
-    "medianCompileMs": 26.4,
-    "p90CompileMs": 163.6
+    "medianCompileMs": 108.8,
+    "p90CompileMs": 244.9
   }
 }
