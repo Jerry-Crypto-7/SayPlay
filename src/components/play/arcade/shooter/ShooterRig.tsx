@@ -17,6 +17,7 @@ import { type Group, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 
 import { BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { SHOOTER, aimAt, aimVelocity } from '@/play/arcade/pieces/shooter';
 
+import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
 
 const MUZZLE_Y = SHOOTER.muzzleY / UNIT;
@@ -93,7 +94,7 @@ export function ShooterRig({ session, surface }: { readonly session: ArcadeSessi
     const sideOf = (key: string): number => (key === 'arrowleft' || key === 'a' ? BUTTON.LEFT : key === 'arrowright' || key === 'd' ? BUTTON.RIGHT : 0);
     const sync = (): void => session.holdButtons([...keys].reduce((mask, bit) => mask | bit, 0));
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const side = sideOf(key);
       if (side !== 0) {

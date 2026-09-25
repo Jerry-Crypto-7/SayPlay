@@ -20,6 +20,7 @@ import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract
 import type { Look } from '@/play/arcade/look';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
 
+import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
@@ -171,7 +172,7 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
       : key === 'arrowdown' || key === 's' ? 'down'
       : null;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = keyOf(event.key.toLowerCase());
       if (key === null) return;
       event.preventDefault();

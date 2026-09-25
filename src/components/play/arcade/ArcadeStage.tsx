@@ -36,6 +36,7 @@ import type { ControlId } from '@/play/spec';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Scenery } from './look/Scenery';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
+import { isTyping } from './input';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -581,7 +582,7 @@ function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivE
   useEffect(() => {
     if (!active) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const button =
         JUMP_KEYS.has(key) ? BUTTON.TAP
@@ -639,7 +640,7 @@ function usePlatformInput(session: ArcadeSession, target: React.RefObject<HTMLDi
     };
     const sideOf = (key: string): 'left' | 'right' | null => (key === 'arrowleft' || key === 'a' ? 'left' : key === 'arrowright' || key === 'd' ? 'right' : null);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const side = sideOf(key);
       if (side !== null) {
@@ -697,7 +698,7 @@ function useFlapInput(session: ArcadeSession, target: React.RefObject<HTMLDivEle
     const element = target.current;
     if (!active || element === null) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || !JUMP_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !JUMP_KEYS.has(event.key.toLowerCase())) return;
       event.preventDefault();
       session.press(BUTTON.TAP);
     };
@@ -718,7 +719,7 @@ function useFireInput(session: ArcadeSession, active: boolean): void {
   useEffect(() => {
     if (!active) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || !FIRE_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !FIRE_KEYS.has(event.key.toLowerCase())) return;
       event.preventDefault();
       session.press(BUTTON.FIRE);
     };

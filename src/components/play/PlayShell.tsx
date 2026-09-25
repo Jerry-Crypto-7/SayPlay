@@ -29,6 +29,7 @@ import type { RuntimeAction } from '@/worldstream/runtime-input';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import { isTyping } from './arcade/input';
 import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
@@ -167,7 +168,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
   // Klávesy 1–9 / mezerník / E jako záloha za karty.
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const hit = keyAction(event.key, cards, selected);
       if (hit === null) return;
       event.preventDefault();

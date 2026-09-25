@@ -19,6 +19,7 @@ import { AXIS_MAX, AXIS_MIN, BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play
 import { GRAVITY } from '@/play/arcade/kernel';
 import { THROW, launchVelocity } from '@/play/arcade/pieces/throw';
 
+import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
 
 const DOTS = 12;
@@ -107,7 +108,7 @@ export function ThrowRig({ session, surface }: { readonly session: ArcadeSession
 
     const aimOf = (key: string): number => (key === 'arrowup' || key === 'w' ? BUTTON.UP : key === 'arrowdown' || key === 's' ? BUTTON.DOWN : 0);
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = event.key.toLowerCase();
       const aim = aimOf(key);
       if (aim !== 0) {

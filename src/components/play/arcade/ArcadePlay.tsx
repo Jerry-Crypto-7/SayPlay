@@ -29,6 +29,7 @@ import { Lineage } from '../Lineage';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner } from '../UpgradeBanner';
 
+import { isTyping } from './input';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
 // WebGL kontext na serveru není – stejně jako mřížkové plátno.
@@ -159,10 +160,6 @@ export interface ArcadePlayProps {
   readonly active?: boolean;
 }
 
-/** Klávesa do pole formuláře hru neobnoví – píše se tam věta, ne hraje. */
-const typing = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
-
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true }: ArcadePlayProps) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -194,7 +191,8 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) wake();
     };
     const onKey = (event: KeyboardEvent) => {
-      if (!event.repeat && !typing(event.target)) wake();
+      // Klávesa do pole formuláře hru neobnoví – píše se tam věta, ne hraje.
+      if (!event.repeat && !isTyping(event.target)) wake();
     };
     onVisibility();
     document.addEventListener('visibilitychange', onVisibility);

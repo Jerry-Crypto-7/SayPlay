@@ -16,6 +16,7 @@ import { AXIS_MAX, BUTTON, UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
 
+import { isTyping } from '../input';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
@@ -107,7 +108,7 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     const keyOf = (key: string): 'left' | 'right' | 'brake' | null =>
       key === 'arrowleft' || key === 'a' ? 'left' : key === 'arrowright' || key === 'd' ? 'right' : BRAKE_KEYS.has(key) ? 'brake' : null;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
       const key = keyOf(event.key.toLowerCase());
       if (key === null) return;
       event.preventDefault();
