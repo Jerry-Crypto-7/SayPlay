@@ -34,6 +34,7 @@ import { CAPABILITIES } from '@/play/capabilities';
 import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
+import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { Scenery } from './look/Scenery';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { RhythmScene } from './rhythm/RhythmScene';
@@ -410,13 +411,14 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
   const look = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
+  const introClock = useIntroClock();
 
   // Role těl, pro která scéna postavila model – doplněk, který jádro hraje a scéna nekreslí, e2e takhle pozná.
   useEffect(() => {
     if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => view.kind !== 'gate').map((view) => ROLE_NAMES[view.role]))].join(' ');
   }, [views, surface]);
 
-  useFrame((_, delta) => {
+  useFrame((three, delta) => {
     const alpha = session.advance(delta * 1000);
     const state = session.state();
     const prev = session.prev();
@@ -467,6 +469,7 @@ function World({ session, control, cast, surface, scene }: WorldProps) {
         look.set(x * 0.4, 1.1, z + 9);
         camera.lookAt(look);
       }
+      if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock(three.clock.elapsedTime)));
       camera.updateMatrixWorld();
       // Kde je hráč na obrazovce (−1 vlevo … 1 vpravo) – e2e tím hlídá směr, z obrázku se to nepřečte.
       if (surface.current !== null) surface.current.dataset.playerX = projected.copy(player.position).project(camera).x.toFixed(3);
