@@ -18,6 +18,7 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
+import { LOOKS, lookOf } from '@/play/arcade/look';
 import type { GameVersion } from '@/play/contracts';
 import type { Honesty } from '@/play/draft/unsupported';
 import type { GameSpecV1 } from '@/play/spec';
@@ -29,6 +30,7 @@ import type { RuntimeAction } from '@/worldstream/runtime-input';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import { GridScenery } from './arcade/look/Scenery';
 import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
 import { Hud } from './Hud';
@@ -39,6 +41,7 @@ import { SentenceRead } from './SentenceRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
+import { gridOf } from './sight';
 import { TargetCards } from './TargetCards';
 import { UpgradeBanner } from './UpgradeBanner';
 import { idleProps, keyAction, playerActor, tapAction, targetCards } from './targets';
@@ -232,6 +235,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
         <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false}>
           {built && blueprint.world.sim !== null && (
             <>
+              <GridScenery look={LOOKS[lookOf(spec.theme)]} {...gridOf(blueprint.world.sim)} />
               <PatrolSight sim={blueprint.world.sim} controller={controller} />
               <OrderBubbles sim={blueprint.world.sim} roles={spec.roles} controller={controller} />
             </>

@@ -19,12 +19,11 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Camera, type Group, type Mesh, type Object3D, type PerspectiveCamera, type SkinnedMesh, Vector3 } from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { modelPath, type PropRole, riggedCharacter } from '@/play/arcade/models';
+import { type PropRole, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
@@ -35,6 +34,7 @@ import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
+import { loadModel } from './look/load';
 import { Scenery } from './look/Scenery';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { RhythmScene } from './rhythm/RhythmScene';
@@ -92,20 +92,6 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   // P28D T3: kostky věže hodu jsou terč – „cardboard boxes“ postaví věž z krabic.
   if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return cast.props.target ?? view.kind;
   return view.kind;
-}
-
-const modelCache = new Map<string, Promise<Object3D | null>>();
-
-function loadModel(id: string): Promise<Object3D | null> {
-  let pending = modelCache.get(id);
-  if (pending === undefined) {
-    pending = new GLTFLoader()
-      .loadAsync(modelPath(id))
-      .then((gltf) => gltf.scene as Object3D)
-      .catch(() => null);
-    modelCache.set(id, pending);
-  }
-  return pending;
 }
 
 /** Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose. */
@@ -525,7 +511,7 @@ function Backdrop({ control, length, look }: { readonly control: string; readonl
           <planeGeometry args={[80, span]} />
           <meshStandardMaterial color={look.water} roughness={0.3} />
         </mesh>
-        <Scenery look={look} layout="behind" inner={9} from={-20} to={length + 20} y={water} />
+        <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={water} size={1.6} />
       </>
     );
   }
@@ -538,7 +524,8 @@ function Backdrop({ control, length, look }: { readonly control: string; readonl
           <boxGeometry args={[3, 0.8, span]} />
           <meshStandardMaterial color={look.ground} roughness={1} />
         </mesh>
-        <Scenery look={look} layout="behind" inner={10} from={-20} to={length + 20} y={-0.4} />
+        {/* Boční kamera vidí kulisy za tratí malé a v mlze: dvojnásobná velikost (P28D T6). */}
+        <Scenery look={look} layout="behind" inner={12} from={-20} to={length + 20} y={-0.4} size={2} />
       </>
     );
   }
@@ -549,7 +536,7 @@ function Backdrop({ control, length, look }: { readonly control: string; readonl
           <planeGeometry args={[120, 120]} />
           <meshStandardMaterial color={look.ground} roughness={1} />
         </mesh>
-        {control === 'shooter' ? <Scenery look={look} layout="sides" inner={13} from={-4} to={60} /> : <Scenery look={look} layout="behind" inner={12} from={-10} to={45} />}
+        {control === 'shooter' ? <Scenery look={look} layout="sides" inner={14} from={-4} to={60} size={1.5} /> : <Scenery look={look} layout="behind" inner={13} from={-10} to={45} size={1.5} />}
       </>
     );
   }
