@@ -440,7 +440,7 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
     if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => view.kind !== 'gate').map((view) => ROLE_NAMES[view.role]))].join(' ');
   }, [views, surface]);
 
-  useFrame((three, delta) => {
+  useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
     if (bodiesStale(views, session)) setViews(bodiesOf(session));
     const state = session.state();
@@ -513,7 +513,7 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
         look.set(x * 0.4, 1.1, z + 9);
         camera.lookAt(look);
       }
-      if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock(three.clock.elapsedTime)));
+      if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock()));
       camera.updateMatrixWorld();
       // Kde je hráč na obrazovce (−1 vlevo … 1 vpravo) – e2e tím hlídá směr, z obrázku se to nepřečte.
       if (surface.current !== null) surface.current.dataset.playerX = projected.copy(player.position).project(camera).x.toFixed(3);

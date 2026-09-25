@@ -68,7 +68,7 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
     };
   }, [camera]);
 
-  useFrame((three, delta) => {
+  useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
     if (bodiesStale(discs, session)) setDiscs(bodiesOf(session));
     const state = session.state();
@@ -100,7 +100,7 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
       camera.position.set(me.position.x, distance * Math.sin(PITCH), me.position.z - distance * Math.cos(PITCH));
       look.set(me.position.x, 0, me.position.z);
       camera.lookAt(look);
-      applyIntro(camera, look, introLeft(introClock(three.clock.elapsedTime)));
+      applyIntro(camera, look, introLeft(introClock()));
       camera.updateMatrixWorld();
       if (surface.current !== null) surface.current.dataset.playerX = projected.copy(me.position).project(camera).x.toFixed(3);
     }

@@ -28,8 +28,13 @@ export function applyIntro(camera: PerspectiveCamera, look: Vector3, left: numbe
   camera.lookAt(look);
 }
 
-/** Vteřiny od prvního snímku; po prvním vstupu hned konec průletu. */
-export function useIntroClock(): (now: number) => number {
+/**
+ * Vteřiny od prvního snímku; po prvním vstupu hned konec průletu. Nástěnné
+ * hodiny, ne `three.clock`: plátno po konci běhu přepne na `frameloop="demand"`
+ * (P28E T2) a tím hodiny R3F vynuluje – průlet by se rozjel znovu a kamera
+ * odjela 2,8× dál. Kamera je mimo hash, wall-clock tu smí.
+ */
+export function useIntroClock(): () => number {
   const start = useRef<number | null>(null);
   const done = useRef(false);
   useEffect(() => {
@@ -43,8 +48,9 @@ export function useIntroClock(): (now: number) => number {
       window.removeEventListener('pointerdown', end);
     };
   }, []);
-  return (now) => {
+  return () => {
     if (done.current) return INTRO_S;
+    const now = performance.now() / 1000;
     start.current ??= now;
     return now - start.current;
   };
