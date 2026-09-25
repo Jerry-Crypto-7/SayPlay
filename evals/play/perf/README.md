@@ -93,4 +93,57 @@ Profiled on the emulated phone (CDP `Profiler`): the runner's frame went to Reac
 
 p5 ≥ 30 on the phone profile is still not reached: 35 % of the profile is native work (`(program)`, GPU commands under a ×4-slowed CPU) that this machine cannot attribute further; real phones (`devices.md`) decide whether it matters. `e2e/play-arcade.spec.ts` pins the median draw calls at ≤ 250 (the whole track was 490).
 
+## R2 – what the first frame waits for (`before-r2-2026-09-25.json` → `after-r2-2026-09-25.json`)
+
+A CDP `Profiler` (sampling every 0.5 ms) ran from navigation to the first draw and the first tick on the phone profile, 3 runs per game. The script was temporary and is not in the repo.
+
+**What it showed.** From about 0.25 s to the first frame the main thread is 90–100 % busy. There is one gap of about 0.25 s while the lazily loaded three.js chunks download. The first frame is CPU-bound. Bytes are not the problem.
+
+Busy time up to the first frame, split by what was on the stack (run 2 of 3):
+
+| share of busy time | runner (4.3 s) | arena (3.9 s) | grid (6.9 s) |
+|---|---|---|---|
+| React / R3F render and commit (incl. three.js objects built during render) | 31 % | 30 % | 26 % |
+| Native: JS parse and compile, style and layout, GPU commands | 27 % | 25 % | 45 % |
+| Module evaluation, not counting Zod | 22 % | 26 % | 10 % |
+| Module evaluation: building Zod schemas | 15 % | 12 % | 10 % |
+| three.js waiting for shaders to link | 2 % | 1 % | 1 % |
+
+Top 10 by self time (runner, run 2; minified names mapped to their source):
+
+| # | self time | what it is |
+|---|---|---|
+| 1 | 1165 ms (24 %) | `(program)`: native parse, compile, layout, GPU |
+| 2 | 631 ms (13 %) | the webpack `require` – mostly lazy compilation of module bodies on first use |
+| 3 | 122 ms | the Zod v4 `$constructor` init, run for every schema built at module load |
+| 4 | 85 ms | the R3F reconciler (a second React reconciler) commit loop |
+| 5 | 64 ms | three.js `WebGLProgram` shader check (`getProgramInfoLog`, waits for the link) |
+| 6 | 61 ms | `GLTFLoader` constructor and plugin registration |
+| 7 | 60 ms | Zod `ZodType` init (the classic API binds every method per schema) |
+| 8 | 55 ms | GC |
+| 9 | 55 ms | Zod `check` (constraints like `.min().max()` added per schema) |
+| 10 | 48 ms | other Zod core code (same chunk as #3) |
+
+Where the Zod time comes from (inclusive, runner): `src/shape/schema.ts` 120–180 ms, reached through the mesh worker's in-thread fallback that `PlayShell` imported for the grid. Then the arcade contract and pieces 50–100 ms, the worldstream and IR schemas 40–55 ms, and the asset and scene schemas 40–60 ms. In the grid, parsing the 761 KB asset catalog with `assetCatalogSchema.parse` at module load takes a further 490 ms.
+
+**Fix taken: the arcade no longer loads the grid game.** `PlayShell` imported `GridShell` statically, which brought the worldstream runtime, the mesh client, `src/shape/schema.ts` and the IR schemas into every arcade start. `GridShell` now has its own file and is loaded with `next/dynamic` (still rendered on the server). `timerLeft` moved out of `Hud.tsx` into `timer.ts`, so `ArcadePlay` no longer imports the grid HUD.
+
+T1 probe, phone profile (emulated), median of 3, same machine and same session, build before → after:
+
+| cell | first draw | first tick | JS transferred |
+|---|---|---|---|
+| runner | 5.1 → 5.1 s (runs 5.8/5.1/4.4 → 5.3/5.1/4.4) | 5.9 → 5.8 s | 559 → **485 KB** |
+| arena | 5.6 → **4.6 s** (6.2/5.6/5.2 → 4.7/4.6/4.3) | 5.9 → 4.8 s | 559 → **485 KB** |
+| grid-collect | 7.0 → 6.2 s (7.0/6.8/8.9 → 6.9/6.2/5.9) | 6.0 → 5.1 s | 696 → 697 KB |
+
+The profiling script's own runs (the profiler adds overhead) give runner 4.06 → 3.81 s, arena 3.97 → 3.77 s and grid 4.46 → 5.15 s. The grid moved in opposite directions in the two measurements, so it is within this machine's noise (see below). All 9 probe runs after the change ended `won` with no page errors. `e2e/play-shell.spec.ts` (grid) and `e2e/play-arcade.spec.ts` pass.
+
+**Decision.** The ≤ 3 s target is still not met on the emulated phone. The arcade saved 74 KB of JS and about 0.2 s of CPU (arena up to 1 s in the probe, but that is within noise). What remains is React/R3F render, native compile and three.js – no single cheap fix is left. These were measured and not done:
+
+- **Zod at module load, 0.4–0.5 s in the arcade**, spread across the arcade contract and its 20+ piece files. Moving to `zod/mini` or building schemas lazily touches every piece. DEFER until real phones show that the start matters.
+- **The grid parses the whole catalog, 0.49 s.** The catalog is the proxy's allowlist (`WORLDSTREAM_ASSETS`). Changing how it is validated is an access decision, so it is not done inside a performance task.
+- **The lazy three.js chunks download after hydration, a gap of about 0.25 s.** Preloading them only saves the gap.
+
+Real phones (`devices.md`) decide whether any of these is worth it.
+
 Phone-profile numbers move by up to ~30 % between runs of the same build on this machine (grid, untouched by T2: fps p50 60 → 30, first draw 7.2 → 8.3 s); other sessions share the CPU. Compare desktop cells for small differences.
