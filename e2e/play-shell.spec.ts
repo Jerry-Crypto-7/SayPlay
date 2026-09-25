@@ -52,6 +52,34 @@ test.describe('/play/[id] – play shell', () => {
     expect(last?.actionId).toBe('moveTo');
   });
 
+  test('the collecting game is won by tapping the things themselves on the canvas (P28C T4)', async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.targets().length > 0, undefined, { timeout: 60_000 });
+    const targets = await page.locator('[data-testid^="play-target-"]').count();
+    const tapped = new Set<string>();
+    let taps = 0;
+    while ((await page.getByTestId('play-outcome').count()) === 0 && taps <= targets + 1) {
+      // Sebrané věci na plátně zatím zůstávají (schová je P28B T8) – test si pamatuje, na co už klepl.
+      const next = (await page.evaluate(() => window.__playShell!.targets())).find((target) => !tapped.has(target.id));
+      if (next === undefined) break;
+      tapped.add(next.id);
+      const before = await page.evaluate(() => window.__playShell!.inputs().length);
+      await page.mouse.click(next.x, next.y);
+      taps += 1;
+      // Jedno klepnutí: dojdi (moveTo) a po příchodu seber nebo použij – dva vstupy, nebo konec hry.
+      await page.waitForFunction(
+        (count) => document.querySelector('[data-testid="play-outcome"]') !== null || window.__playShell!.inputs().length >= count + 2,
+        before,
+        { timeout: 30_000 },
+      );
+    }
+    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    expect(taps).toBeLessThanOrEqual(targets + 1);
+    const inputs = await page.evaluate(() => window.__playShell!.inputs());
+    expect(inputs.some((input) => input.actionId !== 'moveTo')).toBe(true);
+  });
+
   test('a phone viewport has no horizontal scroll', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url);

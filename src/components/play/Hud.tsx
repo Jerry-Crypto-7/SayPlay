@@ -14,6 +14,7 @@
 import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
 import type { GameSpecV1 } from '@/play/spec';
 
+import { MuteButton } from './MuteButton';
 import { ShareButton } from './ShareButton';
 
 export const TICKS_PER_SECOND = 20;
@@ -91,6 +92,7 @@ export function Hud({ spec, snapshot, versionId }: { readonly spec: GameSpecV1; 
           tick {snapshot.tick}
         </span>
       </p>
+      <MuteButton />
       {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );

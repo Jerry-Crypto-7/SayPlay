@@ -28,10 +28,12 @@ import { bindRuntime, type RuntimeController } from '@/worldstream/runtime-contr
 import type { RuntimeAction } from '@/worldstream/runtime-input';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
+import { installSoundControls, playSfx } from '@/play/audio';
+
 import { ArcadePlay } from './arcade/ArcadePlay';
 import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
-import { Hud } from './Hud';
+import { Hud, objectiveCounter } from './Hud';
 import type { LabFacts, ReadFacts } from './lab';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
@@ -39,15 +41,25 @@ import { SentenceRead } from './SentenceRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
+import type { ProjectTarget } from './TapTargets';
 import { TargetCards } from './TargetCards';
 import { UpgradeBanner } from './UpgradeBanner';
-import { idleProps, keyAction, playerActor, tapAction, targetCards } from './targets';
+import { idleProps, keyAction, playerActor, tapAction, type TargetCard, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
 // při prerenderu spadl na `document`.
 const WorldstreamCanvas = dynamic(() => import('@/components/worldstream/WorldstreamCanvas'), { ssr: false });
+const TapTargets = dynamic(() => import('./TapTargets').then((module) => module.TapTargets), { ssr: false });
 
 const TICK_MS = 50;
+/** Klepnutí dál než tohle od každého cíle je klepnutí do prázdna (px). */
+const TAP_RADIUS_PX = 96;
+/** Posun prstu, od kterého klepnutí není klepnutí, ale tah (px). */
+const TAP_SLOP_PX = 10;
+/** Tolik tiků bez kroku = hráč dál nejde; chůze stojí nejvýš tik čekání mezi kroky. */
+const STALL_TICKS = 3;
+/** Jako `SCORE_POP_MS` arkády; odtamtud se nebere, ať shell netáhne plátno arkády. */
+const SCORE_POP_MS = 500;
 /** Nejdelší hra podle schématu je 180 s; svědek nesmí točit déle. */
 const WITNESS_TICK_CAP = 180 * 20;
 
@@ -56,6 +68,12 @@ interface PlayProbe {
   tick(): number;
   /** Přehraje `witness.ops` světa od aktuálního tiku a dotočí běh do konce. */
   playWitness(): { readonly runState: string; readonly tick: number };
+  /**
+   * Cíle, na které jde klepnout, v pixelech okna (P28C T4) – táž projekce, kterou
+   * vybírá klepnutí na plátno; cíl zakrytý kartou nebo HUD tu není. Pořadí: jak na ně
+   * sahá svědek světa, zbytek za nimi.
+   */
+  targets(): readonly { readonly id: string; readonly x: number; readonly y: number }[];
 }
 
 declare global {
@@ -161,8 +179,100 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
 
   const send = useCallback((action: RuntimeAction | null, nextSelected: string) => {
     setSelected(nextSelected);
+    pending.current = null;
     if (action !== null) controller.dispatch(action);
   }, [controller]);
+
+  // Klepnutí na plátno (P28C T4): nejbližší cíl, dojdi a seber (nebo použij) jedním
+  // klepnutím. Druhá akce počká, až hráč dojde – o vzdálenosti a zámcích dál rozhoduje runtime.
+  const project = useRef<ProjectTarget | null>(null);
+  const pending = useRef<{ readonly action: RuntimeAction; readonly after: number } | null>(null);
+  const slots = useMemo(
+    () => new Map(blueprint.objects.map((object) => [object.binding?.entityId ?? object.stableId, object.stableId] as const)),
+    [blueprint],
+  );
+  const goTo = useCallback((card: TargetCard) => {
+    send(card.moveTo, card.id);
+    if (card.second !== null) pending.current = { action: card.second, after: controller.getSnapshot().tick };
+  }, [controller, send]);
+  useEffect(() => {
+    const actor = playerActor(controller.actions);
+    let still = 0;
+    let lastAt = '';
+    let watching: object | null = null;
+    return controller.subscribe(() => {
+      const next = pending.current;
+      const now = controller.getSnapshot();
+      if (next === null || actor === null || now.tick <= next.after || !now.canInput) return;
+      if (watching !== next) {
+        watching = next;
+        still = 0;
+        lastAt = '';
+      }
+      const player = now.entities.find((entity) => entity.stableId === actor);
+      const at = player === undefined ? '' : `${player.x},${player.y}`;
+      still = at === lastAt ? still + 1 : 0;
+      lastAt = at;
+      // Hráč došel (runtime vynuluje cíl chůze), nebo uvízl u cíle a dál nejde – o dosahu rozhodne runtime.
+      if (now.values[`e:${actor}:moveTo`] !== 0 && still < STALL_TICKS) return;
+      pending.current = null;
+      controller.dispatch(next.action);
+    });
+  }, [controller]);
+  const tapStart = useRef<{ x: number; y: number } | null>(null);
+  const nearestCard = (x: number, y: number): TargetCard | null => {
+    let best: TargetCard | null = null;
+    let bestDistance = TAP_RADIUS_PX;
+    for (const card of cards) {
+      const at = project.current?.(card.id);
+      if (at === null || at === undefined) continue;
+      const distance = Math.hypot(at.x - x, at.y - y);
+      if (distance <= bestDistance) {
+        best = card;
+        bestDistance = distance;
+      }
+    }
+    return best;
+  };
+
+  // Zvuk a „+1“ (P28C T2/T3): čítač cíle hry povyskočil → sebrání; konec běhu → výhra či prohra.
+  const [pops, setPops] = useState<readonly { readonly id: number; readonly amount: number; readonly x: number | null; readonly y: number | null }[]>([]);
+  useEffect(() => installSoundControls(), []);
+  useEffect(() => {
+    const counter = objectiveCounter(spec);
+    const read = (): number => (counter === null ? 0 : (controller.getSnapshot().values[`c:${counter}`] ?? 0));
+    let last = read();
+    let lastState = controller.getSnapshot().runState;
+    let next = 0;
+    const timers = new Set<number>();
+    const off = controller.subscribe(() => {
+      const value = read();
+      const runState = controller.getSnapshot().runState;
+      const gained = value - last;
+      const ended = lastState === 'running' && runState !== 'running';
+      last = value;
+      lastState = runState;
+      if (witnessed.current) return;
+      if (ended) playSfx(runState === 'won' ? 'win' : 'lose');
+      else if (gained > 0) playSfx('pickup');
+      if (gained > 0) {
+        // Nad hráčem – sebraný objekt už runtime schoval.
+        const actor = playerActor(controller.actions);
+        const at = actor === null ? null : (project.current?.(actor) ?? null);
+        const pop = { id: (next += 1), amount: gained, x: at?.x ?? null, y: at?.y ?? null };
+        setPops((current) => [...current, pop]);
+        const timer = window.setTimeout(() => {
+          timers.delete(timer);
+          setPops((current) => current.filter((entry) => entry.id !== pop.id));
+        }, SCORE_POP_MS);
+        timers.add(timer);
+      }
+    });
+    return () => {
+      off();
+      for (const timer of timers) window.clearTimeout(timer);
+    };
+  }, [controller, spec]);
 
   // Klávesy 1–9 / mezerník / E jako záloha za karty.
   useEffect(() => {
@@ -219,17 +329,45 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
         const end = controller.getSnapshot();
         return { runState: end.runState, tick: end.tick };
       },
+      targets: () => {
+        const order = [...new Set(witnessOps(blueprint.world.sim.witness).map((op) => op.action.target).filter((id) => id !== undefined))];
+        const rank = (id: string): number => (order.includes(id) ? order.indexOf(id) : order.length);
+        return [...cards]
+          .sort((a, b) => rank(a.id) - rank(b.id))
+          .flatMap((card) => {
+            const at = project.current?.(card.id) ?? null;
+            // Jen cíl, na který klepnutí doopravdy dopadne na plátno – ne pod kartu nebo HUD.
+            const reachable = at !== null && document.elementFromPoint(at.x, at.y)?.closest('[data-testid="play-grid-stage"]') != null;
+            return at === null || !reachable ? [] : [{ id: card.id, x: at.x, y: at.y }];
+          });
+      },
     };
     window.__playShell = probe;
     return () => {
       if (window.__playShell === probe) delete window.__playShell;
     };
-  }, [controller, blueprint]);
+  }, [controller, blueprint, cards]);
 
   return (
     <main className="play-shell">
-      <div className="play-stage" aria-hidden="true">
+      <div
+        className="play-stage"
+        aria-hidden="true"
+        data-testid="play-grid-stage"
+        onPointerDown={(event) => {
+          tapStart.current = { x: event.clientX, y: event.clientY };
+        }}
+        onPointerUp={(event) => {
+          const start = tapStart.current;
+          tapStart.current = null;
+          if (start === null || Math.hypot(event.clientX - start.x, event.clientY - start.y) > TAP_SLOP_PX) return;
+          if (!snapshot.canInput || !built) return;
+          const card = nearestCard(event.clientX, event.clientY);
+          if (card !== null) goTo(card);
+        }}
+      >
         <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false}>
+          <TapTargets slots={slots} project={project} />
           {built && blueprint.world.sim !== null && (
             <>
               <PatrolSight sim={blueprint.world.sim} controller={controller} />
@@ -237,6 +375,16 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
             </>
           )}
         </WorldstreamCanvas>
+        {pops.map((pop) => (
+          <span
+            key={pop.id}
+            className="play-score-pop"
+            data-testid="score-pop"
+            style={{ left: pop.x === null ? '50%' : `${pop.x}px`, ...(pop.y === null ? {} : { top: `${pop.y - 48}px` }) }}
+          >
+            +{pop.amount}
+          </span>
+        ))}
       </div>
       <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />

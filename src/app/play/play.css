@@ -406,6 +406,12 @@
   flex-wrap: wrap;
   gap: 8px;
   background: linear-gradient(to top, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0));
+  /* Mezery mezi kartami pouští klepnutí na plátno pod nimi (P28C T4); kartu chytá karta. */
+  pointer-events: none;
+}
+
+.play-targets .play-target {
+  pointer-events: auto;
 }
 
 .play-targets-empty {
@@ -573,6 +579,8 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    /* Pás se tu posouvá prstem do strany – musí tah chytat i v mezerách. */
+    pointer-events: auto;
   }
 
   .play-target {

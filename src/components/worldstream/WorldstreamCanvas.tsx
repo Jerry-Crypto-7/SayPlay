@@ -133,7 +133,8 @@ function measureSafeArea(canvas: HTMLCanvasElement): SafeArea {
   // 16. 9. 2026, přestal platit ve chvíli, kdy T2 zmenšila samo plátno — celý
   // ten příběh je u `safeAreaFromRects()`.
   return safeAreaFromRects(canvas.getBoundingClientRect(), {
-    bottom: box('.ws-dock'),
+    // Pás karet cílů mřížkové hry na `/play` (P28C T4) je dok téže role: cíl pod ním by nešel klepnout.
+    bottom: box('.ws-dock') ?? box('.play-targets'),
     left: box('.ws-controls'),
     right: box('.ws-inspect-panels'),
   });
