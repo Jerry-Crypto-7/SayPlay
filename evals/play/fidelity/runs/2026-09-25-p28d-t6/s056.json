@@ -1,0 +1,258 @@
+{
+ "id": "s056",
+ "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "scooter",
+   "slot": "hero",
+   "match": [
+    "scooter",
+    "moped",
+    "bike"
+   ]
+  },
+  {
+   "item": "pizza",
+   "slot": "any",
+   "match": [
+    "pizza"
+   ]
+  },
+  {
+   "item": "traffic",
+   "slot": "role",
+   "match": [
+    "car",
+    "traffic",
+    "truck",
+    "bus"
+   ]
+  },
+  {
+   "item": "race",
+   "slot": "verb",
+   "controls": [
+    "steer"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "3843cdb86bc6c9048a29bdde57a6c653",
+  "ms": 584,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 450
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Steer through the bends and cross the finish line before the rival cars.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "delivery scooter"
+    },
+    {
+     "count": 5,
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "tire barrier"
+    },
+    {
+     "count": 3,
+     "id": "rival",
+     "kind": "patrol",
+     "label": "rival car"
+    },
+    {
+     "count": 3,
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "fast",
+    "setting": "traffic"
+   },
+   "title": "Pizza Delivery Scooter Races",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+    "goalLine": "Beat the rival cars to the finish line."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "6d9b7b6878b5673968414f43dcd57176",
+  "ms": 21304,
+  "deadlineAt": "2026-09-25T14:05:33.641Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "6d9b7b6878b5673968414f43dcd57176",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "normal",
+    "lengthM": 450
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Race through traffic to deliver before the pizza gets cold.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "pizza delivery scooter"
+    },
+    {
+     "count": 5,
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "traffic"
+    },
+    {
+     "count": 3,
+     "id": "rival",
+     "kind": "patrol",
+     "label": "rival car"
+    },
+    {
+     "count": 3,
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "city",
+    "mood": "fast",
+    "setting": "City streets filled with traffic"
+   },
+   "title": "Pizza Delivery Scooter Race",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+    "goalLine": "Race through traffic to deliver before the pizza gets cold."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "scooter": false,
+   "pizza": false,
+   "traffic": true,
+   "race": true
+  },
+  "ai": {
+   "scooter": false,
+   "pizza": false,
+   "traffic": true,
+   "race": true
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "scooter",
+    "visible": false,
+    "why": "Visible vehicles are cars; no recognizable scooter appears."
+   },
+   {
+    "item": "pizza",
+    "visible": false,
+    "why": "No recognizable pizza is visible."
+   },
+   {
+    "item": "traffic",
+    "visible": true,
+    "why": "Multiple cars and taxis occupy the roadway and roadside."
+   },
+   {
+    "item": "race",
+    "visible": true,
+    "why": "Several spoiler-equipped racing cars share a road viewed from behind."
+   }
+  ],
+  "ai": [
+   {
+    "item": "scooter",
+    "visible": false,
+    "why": "Vehicles have four wheels; no recognizable scooter is visible."
+   },
+   {
+    "item": "pizza",
+    "visible": false,
+    "why": "No recognizable pizza is visible."
+   },
+   {
+    "item": "traffic",
+    "visible": true,
+    "why": "Multiple cars and taxis populate the roadway and its edges."
+   },
+   {
+    "item": "race",
+    "visible": true,
+    "why": "Spoiler-equipped cars compete side by side on a barrier-lined road."
+   }
+  ]
+ }
+}

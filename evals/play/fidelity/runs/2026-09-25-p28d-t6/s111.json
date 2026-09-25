@@ -1,0 +1,232 @@
+{
+ "id": "s111",
+ "text": "a black hole that swallows a city, it gets bigger the more it eats",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "black hole",
+   "slot": "hero",
+   "match": [
+    "black hole",
+    "hole",
+    "vortex"
+   ]
+  },
+  {
+   "item": "city",
+   "slot": "setting",
+   "match": [
+    "city",
+    "town",
+    "street"
+   ]
+  },
+  {
+   "item": "swallow",
+   "slot": "verb",
+   "controls": [
+    "move_free"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "ba06bf4189b0e8ee3a1adc3759c822ae",
+  "ms": 139,
+  "spec": {
+   "archetype": "survival_timer",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "move_free",
+   "controlParams": {
+    "density": "normal",
+    "goal": "grow"
+   },
+   "mechanics": [
+    {
+     "id": "timer",
+     "params": {
+      "id": "clock",
+      "onEnd": "lose",
+      "seconds": 40
+     }
+    }
+   ],
+   "objective": {
+    "description": "Eat smaller fish to grow, keep away from bigger ones, and outgrow them all within 40 seconds.",
+    "kind": "survive",
+    "seconds": 40
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "black hole"
+    },
+    {
+     "count": 3,
+     "id": "hunter",
+     "kind": "hazard",
+     "label": "big fish"
+    },
+    {
+     "count": 12,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "plankton"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "city"
+   },
+   "title": "Black Hole Swallows City",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to swim. You are blue: eat yellow and green, flee red.",
+    "goalLine": "Outgrow every hunter within 40 seconds."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "d6fca502722a179867f200e8c2bbbfa9",
+  "ms": 20297,
+  "deadlineAt": "2026-09-25T14:07:17.254Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "d6fca502722a179867f200e8c2bbbfa9",
+  "spec": {
+   "archetype": "survival_timer",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "move_free",
+   "controlParams": {
+    "density": "normal",
+    "goal": "grow"
+   },
+   "mechanics": [
+    {
+     "id": "timer",
+     "params": {
+      "id": "clock",
+      "onEnd": "lose",
+      "seconds": 40
+     }
+    }
+   ],
+   "objective": {
+    "description": "Swallow the whole city, getting bigger the more you eat.",
+    "kind": "survive",
+    "seconds": 40
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "black hole"
+    },
+    {
+     "count": 3,
+     "id": "hunter",
+     "kind": "hazard",
+     "label": "big fish"
+    },
+    {
+     "count": 12,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "city"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "city",
+    "mood": "playful",
+    "setting": "city"
+   },
+   "title": "Black Hole Swallows a City",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to swim. You are blue: eat yellow and green, flee red.",
+    "goalLine": "Swallow the whole city, getting bigger the more you eat."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "black hole": false,
+   "city": true,
+   "swallow": false
+  },
+  "ai": {
+   "black hole": false,
+   "city": true,
+   "swallow": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "black hole",
+    "visible": false,
+    "why": "Colored solid discs appear, but no recognizable black hole."
+   },
+   {
+    "item": "city",
+    "visible": true,
+    "why": "Buildings, taxis, a streetlight, and a hydrant establish a city setting."
+   },
+   {
+    "item": "swallow",
+    "visible": false,
+    "why": "Nothing visibly consumes or swallows another object."
+   }
+  ],
+  "ai": [
+   {
+    "item": "black hole",
+    "visible": false,
+    "why": "Colored cylinders are visible, but no recognizable black hole."
+   },
+   {
+    "item": "city",
+    "visible": true,
+    "why": "Buildings, taxis, streetlights, and a fire hydrant establish an urban environment."
+   },
+   {
+    "item": "swallow",
+    "visible": false,
+    "why": "Nothing visibly consumes or engulfs another object."
+   }
+  ]
+ }
+}

@@ -167,17 +167,40 @@ test.describe('/play – vertical feed', () => {
     await expectShowing(page, rows[1]);
   });
 
-  test('an empty feed says so honestly', async ({ page }) => {
+  // P28D T7: prázdný feed pořád hraje – pevnou ukázkovou hru z repa – a říká, že jiné hry nejsou.
+  test('an empty feed says so honestly and plays the demo game', async ({ page }) => {
     await serveFeed(page, []);
     await page.goto('/play');
     await expect(page.getByTestId('play-feed-empty')).toHaveText('No games yet – write the first sentence.');
-    await expect(page.locator('canvas')).toHaveCount(0);
+    await expect(page.getByTestId('feed-demo').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
+    await expect(page.locator('.play-hud-title')).toHaveText('Fox Runs City Dodging');
+    await expect(page.locator('.play-hud-share')).toHaveCount(0);
   });
 
-  test('a feed outage says so and the form still works', async ({ page }) => {
+  test('a feed outage says so, plays the demo and the form still works', async ({ page }) => {
     await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }));
     await page.goto('/play');
-    await expect(page.getByTestId('feed-error')).toHaveText('The feed is not available right now. You can still make a game above.');
+    await expect(page.getByTestId('feed-error')).toHaveText('The feed is not available right now. You can still make a game below.');
+    await expect(page.getByTestId('feed-demo').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
     await expect(page.locator('.play-sentence')).toBeVisible();
+  });
+
+  // AC P28D T7: do 3 s po načtení je plátno nahoře a hra bere vstup bez klepnutí na „Play“.
+  test('the landing page plays a game within 3 s', async ({ page }) => {
+    await serveFeed(page, []);
+    await page.goto('/play');
+    await expect(page.locator('canvas')).toHaveCount(1, { timeout: 3_000 });
+    const top = await page.locator('canvas').boundingBox();
+    const form = await page.locator('.play-sentence').boundingBox();
+    expect(top!.y).toBeLessThan(form!.y);
+    // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže „You lost“ (runner prohraje do 3 s).
+    await expect(page.getByTestId('play-demo')).toBeVisible();
+    for (let second = 0; second < 8; second += 1) {
+      await page.waitForTimeout(1000);
+      await expect(page.getByTestId('play-outcome')).toHaveCount(0);
+    }
+    await page.keyboard.press('ArrowLeft');
+    await expect(page.getByTestId('play-demo')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBeGreaterThan(0);
   });
 });

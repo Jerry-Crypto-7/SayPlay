@@ -1,0 +1,398 @@
+{
+ "id": "s002",
+ "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "knight",
+   "slot": "hero",
+   "match": [
+    "knight"
+   ]
+  },
+  {
+   "item": "key",
+   "slot": "role",
+   "match": [
+    "key"
+   ]
+  },
+  {
+   "item": "ghost",
+   "slot": "role",
+   "match": [
+    "ghost",
+    "spirit",
+    "phantom"
+   ]
+  },
+  {
+   "item": "haunted castle",
+   "slot": "setting",
+   "match": [
+    "castle"
+   ]
+  },
+  {
+   "item": "collect",
+   "slot": "verb",
+   "controls": [],
+   "mechanics": [
+    "collectible",
+    "lock_key"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "a95e9e4204001bad70625e057dda3af1",
+  "ms": 775,
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 3,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "patrol",
+     "params": {
+      "disposition": "bold",
+      "role": "enemy",
+      "stops": 3,
+      "touchEffect": "lose"
+     }
+    }
+   ],
+   "objective": {
+    "count": 3,
+    "description": "Collect three keys, then reach the stone portal.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 3,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "key"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    },
+    {
+     "count": 2,
+     "id": "enemy",
+     "kind": "patrol",
+     "label": "ghost"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "calm",
+    "setting": "haunted castle"
+   },
+   "title": "Knight Collect Three Keys",
+   "tutorial": {
+    "controlsHint": "Tap a key to walk to it. Tap again to pick it up.",
+    "goalLine": "Collect 3 keys, then reach the exit. Avoid the ghosts."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 3
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 2
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "lost"
+     },
+     "id": "enemy_touch_loses",
+     "kind": "keypoint",
+     "mechanic": "patrol",
+     "setup": {
+      "placeAt": {
+       "enemy": "player"
+      }
+     },
+     "ticks": 5
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "2b871fa3557119ba6aaa1c16a827555c",
+  "ms": 16857,
+  "deadlineAt": "2026-09-25T13:56:30.101Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "2b871fa3557119ba6aaa1c16a827555c",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 3,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "patrol",
+     "params": {
+      "disposition": "bold",
+      "role": "enemy",
+      "stops": 3,
+      "touchEffect": "lose"
+     }
+    }
+   ],
+   "objective": {
+    "count": 3,
+    "description": "Collect three keys while dodging ghosts.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 3,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "keys"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    },
+    {
+     "count": 2,
+     "id": "enemy",
+     "kind": "patrol",
+     "label": "ghosts"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "look": "castle",
+    "mood": "calm",
+    "setting": "haunted castle"
+   },
+   "title": "Knight and the Three Keys",
+   "tutorial": {
+    "controlsHint": "Tap a key to walk to it. Tap again to pick it up.",
+    "goalLine": "Collect three keys while dodging ghosts."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 3
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 2
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "lost"
+     },
+     "id": "enemy_touch_loses",
+     "kind": "keypoint",
+     "mechanic": "patrol",
+     "setup": {
+      "placeAt": {
+       "enemy": "player"
+      }
+     },
+     "ticks": 5
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "knight": true,
+   "key": true,
+   "ghost": true,
+   "haunted castle": false,
+   "collect": false
+  },
+  "ai": {
+   "knight": true,
+   "key": true,
+   "ghost": true,
+   "haunted castle": false,
+   "collect": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "knight",
+    "visible": true,
+    "why": "Armored figure wears a plumed helmet and carries a shield."
+   },
+   {
+    "item": "key",
+    "visible": true,
+    "why": "Golden objects have circular bows, narrow shafts, and protruding teeth."
+   },
+   {
+    "item": "ghost",
+    "visible": true,
+    "why": "White floating sheet figures have dark eyes and ragged hems."
+   },
+   {
+    "item": "haunted castle",
+    "visible": false,
+    "why": "Scattered towers and a gray structure lack recognizable haunted castle surroundings."
+   },
+   {
+    "item": "collect",
+    "visible": false,
+    "why": "Scattered keys suggest collectibles, but no collection action is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "knight",
+    "visible": true,
+    "why": "Armored character wears a plumed helmet and carries a shield."
+   },
+   {
+    "item": "key",
+    "visible": true,
+    "why": "Golden objects have circular bows, shafts, and visible teeth."
+   },
+   {
+    "item": "ghost",
+    "visible": true,
+    "why": "White floating sheet figures have dark eyes and ragged hems."
+   },
+   {
+    "item": "haunted castle",
+    "visible": false,
+    "why": "Background structure lacks clearly recognizable haunted castle features."
+   },
+   {
+    "item": "collect",
+    "visible": false,
+    "why": "Scattered keys suggest collectibles, but no collecting action is shown."
+   }
+  ]
+ }
+}

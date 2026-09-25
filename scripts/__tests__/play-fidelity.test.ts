@@ -4,6 +4,7 @@
  * přečte jako nula nebo jako „prošlo“ – obojí vypadá věrohodně.
  */
 
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -33,6 +34,14 @@ describe('fidelity corpus', () => {
   it('the committed corpus holds 30 valid sentences', () => {
     expect(checkCorpus(CORPUS)).toEqual([]);
     expect(CORPUS.sentences).toHaveLength(30);
+  });
+
+  // P28D T1: porotcovská sada je zamčená před změnami; jiný hash = přeučení na měřicí sadě.
+  it('the judge-10 set is valid and unchanged since its freeze', () => {
+    const text = readFileSync(join(process.cwd(), 'evals', 'play', 'fidelity', 'judge-10.json'), 'utf8').replace(/\r\n/g, '\n');
+    expect(checkCorpus(JSON.parse(text))).toEqual([]);
+    expect(JSON.parse(text).sentences).toHaveLength(10);
+    expect(createHash('sha256').update(text).digest('hex')).toBe('fc108201c388715dc989de94eed7b8263dc18c5276ab49baf2b6f7cf11e71990');
   });
 
   it('a sentence without checklist items does not pass', () => {

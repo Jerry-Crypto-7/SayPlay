@@ -1,0 +1,601 @@
+{
+ "header": {
+  "about": "P27D T1 live fidelity run summary. report.json is left untouched. See README.md.",
+  "runId": "2026-09-25-p28d",
+  "measuredAt": "2026-09-25T12:18:52.833Z",
+  "commit": "04c524e",
+  "config": {
+   "WORLDSMITH_BRANCH": null,
+   "WORLDSMITH_MODEL_ENDPOINT": null,
+   "WORLDSMITH_MODEL": null,
+   "WORLDSMITH_MODEL_EFFORT": null,
+   "WORLDSMITH_MODEL_PROFILE": null,
+   "WORLDSMITH_UPSTREAM_TIMEOUT_MS": null,
+   "PLAY_DIRECTOR_MODE": null
+  }
+ },
+ "metrics": {
+  "n": 30,
+  "upgradeSuccess": {
+   "ok": 30,
+   "of": 30,
+   "failures": {}
+  },
+  "late": {
+   "any": 0,
+   "ai": 0
+  },
+  "specFidelity": {
+   "final": 0.838,
+   "draft": 0.759,
+   "ai": 0.838,
+   "inSpecFinal": 0.924,
+   "drawnFinal": 0.758,
+   "drawnDraft": 0.698
+  },
+  "recognizable": {
+   "final": {
+    "items": {
+     "hit": 26,
+     "of": 110
+    },
+    "hero": {
+     "hit": 7,
+     "of": 18
+    },
+    "setting": {
+     "hit": 1,
+     "of": 24
+    },
+    "judged": 30
+   },
+   "draft": {
+    "items": {
+     "hit": 25,
+     "of": 110
+    },
+    "hero": {
+     "hit": 7,
+     "of": 18
+    },
+    "setting": {
+     "hit": 1,
+     "of": 24
+    },
+    "judged": 30
+   }
+  },
+  "timing": {
+   "draftMsP50": 327,
+   "upgradeSecondsP50": 20.708,
+   "upgradeSecondsP90": 24.663
+  }
+ },
+ "sentences": [
+  {
+   "id": "h01",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "tap_go",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 0.8
+   },
+   "lost": [
+    "fishmonger: no-model"
+   ]
+  },
+  {
+   "id": "h02",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "steer",
+    "ai": "steer"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "h03",
+   "upgrade": "ai",
+   "upgradeSeconds": 16,
+   "late": false,
+   "controls": {
+    "draft": "throw",
+    "ai": "throw"
+   },
+   "final": {
+    "inSpec": 0.75,
+    "read": 0.75,
+    "drawn": 0.75
+   },
+   "lost": [
+    "snowball: not-in-spec"
+   ]
+  },
+  {
+   "id": "h04",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "tap_go",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 0.75
+   },
+   "lost": [
+    "battery: no-model"
+   ]
+  },
+  {
+   "id": "h05",
+   "upgrade": "ai",
+   "upgradeSeconds": 16,
+   "late": false,
+   "controls": {
+    "draft": "duel",
+    "ai": "duel"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 0.667
+   },
+   "lost": [
+    "kangaroo: no-model"
+   ]
+  },
+  {
+   "id": "h06",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "throw",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 0.8,
+    "read": 0.8,
+    "drawn": 0.8
+   },
+   "lost": [
+    "alien: not-in-spec"
+   ]
+  },
+  {
+   "id": "h07",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "runner",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 0.667,
+    "read": 0.667,
+    "drawn": 0.333
+   },
+   "lost": [
+    "elephant: no-model",
+    "do taxes: not-in-spec"
+   ]
+  },
+  {
+   "id": "h08",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "runner",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 0.667,
+    "read": 0.667,
+    "drawn": 0.667
+   },
+   "lost": [
+    "date: not-in-spec"
+   ]
+  },
+  {
+   "id": "h09",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "tap_go",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "h10",
+   "upgrade": "ai",
+   "upgradeSeconds": 22,
+   "late": false,
+   "controls": {
+    "draft": "tap_go",
+    "ai": "runner"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s002",
+   "upgrade": "ai",
+   "upgradeSeconds": 22,
+   "late": false,
+   "controls": {
+    "draft": "tap_go",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s003",
+   "upgrade": "ai",
+   "upgradeSeconds": 26,
+   "late": false,
+   "controls": {
+    "draft": "tap_go",
+    "ai": "runner"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s006",
+   "upgrade": "ai",
+   "upgradeSeconds": 25,
+   "late": false,
+   "controls": {
+    "draft": "runner",
+    "ai": "runner"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 0.8
+   },
+   "lost": [
+    "sprinkler: no-model"
+   ]
+  },
+  {
+   "id": "s008",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "runner",
+    "ai": "runner"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 0.667
+   },
+   "lost": [
+    "banana: no-model"
+   ]
+  },
+  {
+   "id": "s021",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "platform",
+    "ai": "platform"
+   },
+   "final": {
+    "inSpec": 0.667,
+    "read": 0.333,
+    "drawn": 0.333
+   },
+   "lost": [
+    "lava: not-in-spec",
+    "spinning bar: not-read-by-control"
+   ]
+  },
+  {
+   "id": "s022",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "platform",
+    "ai": "platform"
+   },
+   "final": {
+    "inSpec": 0.75,
+    "read": 0.5,
+    "drawn": 0.5
+   },
+   "lost": [
+    "charger: not-in-spec",
+    "tower: not-read-by-control"
+   ]
+  },
+  {
+   "id": "s035",
+   "upgrade": "ai",
+   "upgradeSeconds": 25,
+   "late": false,
+   "controls": {
+    "draft": "flap",
+    "ai": "flap"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s037",
+   "upgrade": "ai",
+   "upgradeSeconds": 22,
+   "late": false,
+   "controls": {
+    "draft": "shooter",
+    "ai": "shooter"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s039",
+   "upgrade": "ai",
+   "upgradeSeconds": 18,
+   "late": false,
+   "controls": {
+    "draft": "shooter",
+    "ai": "shooter"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s050",
+   "upgrade": "ai",
+   "upgradeSeconds": 12,
+   "late": false,
+   "controls": {
+    "draft": "throw",
+    "ai": "throw"
+   },
+   "final": {
+    "inSpec": 0.75,
+    "read": 0.75,
+    "drawn": 0.75
+   },
+   "lost": [
+    "snowball: not-in-spec"
+   ]
+  },
+  {
+   "id": "s056",
+   "upgrade": "ai",
+   "upgradeSeconds": 23,
+   "late": false,
+   "controls": {
+    "draft": "steer",
+    "ai": "steer"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 0.25
+   },
+   "lost": [
+    "scooter: no-model",
+    "pizza: no-model",
+    "traffic: no-model"
+   ]
+  },
+  {
+   "id": "s058",
+   "upgrade": "ai",
+   "upgradeSeconds": 22,
+   "late": false,
+   "controls": {
+    "draft": "steer",
+    "ai": "steer"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 0.75,
+    "drawn": 0.75
+   },
+   "lost": [
+    "crocodile: not-read-by-control"
+   ]
+  },
+  {
+   "id": "s069",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "runner",
+    "ai": "tap_go"
+   },
+   "final": {
+    "inSpec": 0.667,
+    "read": 0.667,
+    "drawn": 0.667
+   },
+   "lost": [
+    "match: not-in-spec"
+   ]
+  },
+  {
+   "id": "s088",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "throw",
+    "ai": "throw"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s095",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "throw",
+    "ai": "throw"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s099",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "timing",
+    "ai": "timing"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 0.333,
+    "drawn": 0.333
+   },
+   "lost": [
+    "pancake: not-read-by-control",
+    "tower: not-read-by-control"
+   ]
+  },
+  {
+   "id": "s111",
+   "upgrade": "ai",
+   "upgradeSeconds": 25,
+   "late": false,
+   "controls": {
+    "draft": "move_free",
+    "ai": "move_free"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 0.667,
+    "drawn": 0.667
+   },
+   "lost": [
+    "black hole: not-read-by-control"
+   ]
+  },
+  {
+   "id": "s144",
+   "upgrade": "ai",
+   "upgradeSeconds": 17,
+   "late": false,
+   "controls": {
+    "draft": "rhythm",
+    "ai": "rhythm"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 0.5,
+    "drawn": 0.5
+   },
+   "lost": [
+    "frog: not-read-by-control",
+    "lily pad: not-read-by-control"
+   ]
+  },
+  {
+   "id": "s155",
+   "upgrade": "ai",
+   "upgradeSeconds": 21,
+   "late": false,
+   "controls": {
+    "draft": "shooter",
+    "ai": "shooter"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 1,
+    "drawn": 1
+   },
+   "lost": []
+  },
+  {
+   "id": "s188",
+   "upgrade": "ai",
+   "upgradeSeconds": 16,
+   "late": false,
+   "controls": {
+    "draft": "duel",
+    "ai": "duel"
+   },
+   "final": {
+    "inSpec": 1,
+    "read": 0.75,
+    "drawn": 0.75
+   },
+   "lost": [
+    "grandma: not-read-by-control"
+   ]
+  }
+ ]
+}

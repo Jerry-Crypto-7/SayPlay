@@ -20,11 +20,22 @@ test.describe('/play/[id] – honesty strip', () => {
     const strip = page.getByTestId('play-honest');
     await expect(strip).toBeVisible();
     await expect(strip).toContainText("This one isn't playable yet – here's the closest game we can build");
-    await expect(page.getByTestId('play-honest-reason')).toContainText('a collect-and-escape game');
+    await expect(page.getByTestId('play-honest-reason')).toContainText('an endless runner');
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
 
     await strip.getByRole('button', { name: 'Got it' }).click();
     await expect(strip).toHaveCount(0);
+  });
+
+  // P28D T4 (R-12): věta, která hru nechce, dostane běžce o svém tématu a hlášku, jak psát příště.
+  test('a sentence without a game verb says so and still plays a runner titled from the sentence', async ({ page, request }) => {
+    const game = await publish(request, 'Explain quantum physics to my grandma.');
+    await page.goto(game.url);
+    await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’');
+    await expect(page.getByRole('heading', { name: 'Explain Quantum Physics Grandma' })).toBeVisible();
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
+    const outcome = await page.evaluate(() => window.__playShell!.playWitness());
+    expect(outcome.runState).toBe('won');
   });
 
   test('a runner sentence has no strip', async ({ page, request }) => {

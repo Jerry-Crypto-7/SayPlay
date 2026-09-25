@@ -1,41 +1,27 @@
 {
  "header": {
   "about": "P27A T2 offline loss map: the fidelity corpus through the word draft and the compiler, no network, no model. See README.md.",
-  "measuredAt": "2026-09-24T16:38:05.199Z",
-  "commit": "55bb0f8"
+  "measuredAt": "2026-09-25T09:03:47.789Z",
+  "commit": "8763059"
  },
  "summary": {
   "sentences": 30,
   "compiled": 30,
   "items": 110,
-  "inSpec": 0.691,
-  "read": 0.655,
-  "drawn": 0.591
+  "inSpec": 0.791,
+  "read": 0.755,
+  "drawn": 0.691
  },
  "causes": [
   {
    "why": "not-in-spec",
-   "control": "tap_go",
+   "control": "runner",
    "slot": "verb",
-   "sentences": 6,
+   "sentences": 3,
    "ids": [
     "h07",
     "h08",
-    "h10",
-    "s069",
-    "s095",
-    "s155"
-   ]
-  },
-  {
-   "why": "not-in-spec",
-   "control": "tap_go",
-   "slot": "any",
-   "sentences": 3,
-   "ids": [
-    "h09",
-    "s069",
-    "s095"
+    "s069"
    ]
   },
   {
@@ -46,7 +32,7 @@
    "ids": [
     "h03",
     "s050",
-    "s088"
+    "s095"
    ]
   },
   {
@@ -67,6 +53,15 @@
    "ids": [
     "s021",
     "s022"
+   ]
+  },
+  {
+   "why": "no-model",
+   "control": "duel",
+   "slot": "role",
+   "sentences": 1,
+   "ids": [
+    "h05"
    ]
   }
  ],
@@ -116,8 +111,8 @@
      "slot": "hero",
      "inSpec": true,
      "read": true,
-     "drawn": false,
-     "why": "no-model"
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "alien bug",
@@ -255,18 +250,18 @@
     {
      "item": "sausage",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "sprinkler",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
+     "inSpec": true,
+     "read": true,
      "drawn": false,
-     "why": "not-in-spec"
+     "why": "no-model"
     },
     {
      "item": "park",
@@ -304,10 +299,10 @@
     {
      "item": "monkey",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "run",
@@ -477,18 +472,18 @@
     {
      "item": "cat",
      "slot": "any",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "cardboard box",
      "slot": "any",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "launch",
@@ -503,17 +498,17 @@
   {
    "id": "s069",
    "text": "candy crush but with gems in a cave",
-   "control": "tap_go",
+   "control": "runner",
    "addons": [],
    "compiled": true,
    "items": [
     {
      "item": "gem",
      "slot": "any",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "cave",
@@ -651,7 +646,7 @@
   {
    "id": "s095",
    "text": "knife throwing at a spinning log",
-   "control": "tap_go",
+   "control": "throw",
    "addons": [],
    "compiled": true,
    "items": [
@@ -666,18 +661,18 @@
     {
      "item": "log",
      "slot": "any",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "throw",
      "slot": "verb",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     }
    ]
   },
@@ -766,7 +761,7 @@
   {
    "id": "s155",
    "text": "defend the castle from waves of goblins",
-   "control": "tap_go",
+   "control": "shooter",
    "addons": [],
    "compiled": true,
    "items": [
@@ -781,18 +776,18 @@
     {
      "item": "goblin",
      "slot": "role",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "defend",
      "slot": "verb",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     }
    ]
   },
@@ -1078,17 +1073,17 @@
   {
    "id": "h07",
    "text": "purple elephants doing taxes on a volcano",
-   "control": "tap_go",
+   "control": "runner",
    "addons": [],
    "compiled": true,
    "items": [
     {
      "item": "elephant",
      "slot": "hero",
-     "inSpec": false,
-     "read": false,
-     "drawn": false,
-     "why": "not-in-spec"
+     "inSpec": true,
+     "read": true,
+     "drawn": true,
+     "why": "ok"
     },
     {
      "item": "volcano",
@@ -1111,7 +1106,7 @@
   {
    "id": "h08",
    "text": "a romantic dinner date on the moon",
-   "control": "tap_go",
+   "control": "runner",
    "addons": [],
    "compiled": true,
    "items": [

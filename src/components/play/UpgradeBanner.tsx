@@ -158,14 +158,14 @@ export interface UpgradeNotice {
 }
 
 /** Co proužek řekne a nabídne; `null` = nic. Nejvýš jedna akce, žádná procenta. */
-export function noticeOf(view: UpgradeView, now: number): UpgradeNotice | null {
+export function noticeOf(view: UpgradeView, now: number, title: string | null = null): UpgradeNotice | null {
   switch (view.kind) {
     case 'idle':
       return null;
     case 'working':
       return { text: `Your AI version is being built – keep playing, nothing will change until you choose. ${Math.max(0, Math.floor((now - view.since) / 1000))} s`, action: null };
     case 'ready':
-      return { text: 'Your AI version is ready', action: { kind: 'open', label: 'Open it' } };
+      return { text: `The AI version is ready – play it${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: 'Play it' } };
     case 'final':
       return { text: FINAL_REASON_TEXT[view.reason], action: RETRYABLE.has(view.reason) ? { kind: 'retry', label: 'Try again' } : null };
     case 'offline':
@@ -202,7 +202,24 @@ export function UpgradeBanner({ request, sentence }: { readonly request: string 
     return () => clearInterval(ticker);
   }, [view.kind]);
 
-  const notice = noticeOf(view, Math.max(now, view.kind === 'working' ? view.since : now));
+  // Název AI verze (P28D T7): porotce má vědět, co se otevře; bez něj proužek nečeká.
+  const readyId = view.kind === 'ready' ? view.versionId : null;
+  const [title, setTitle] = useState<{ readonly id: string; readonly title: string } | null>(null);
+  useEffect(() => {
+    if (readyId === null) return;
+    let live = true;
+    fetch(`/api/play/games/${readyId}`)
+      .then((response) => (response.ok ? (response.json() as Promise<{ spec?: { title?: unknown } }>) : null))
+      .then((body) => {
+        if (live && typeof body?.spec?.title === 'string') setTitle({ id: readyId, title: body.spec.title });
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [readyId]);
+
+  const notice = noticeOf(view, Math.max(now, view.kind === 'working' ? view.since : now), title !== null && title.id === readyId ? title.title : null);
   if (notice === null) return null;
   const act = (): void => {
     if (view.kind !== 'ready') return retry();

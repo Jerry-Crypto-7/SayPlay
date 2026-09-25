@@ -41,9 +41,10 @@ import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
 import { lookFor, lookWords } from '../arcade/look';
+import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
-import { type ControlChoice, type ControlPick, pickControl } from './controls';
+import { type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
 import {
   CARE,
   FOOD,
@@ -139,9 +140,16 @@ function titleFrom(sentence: string, fallback: string): string {
     .split(/\s+/)
     .filter((word) => word !== '' && !TITLE_SKIP.has(word))
     .slice(0, 4);
+  // P28D T3 (F-27): „Knight Rides Dragon Over“ – předložka na konci titul utne uprostřed myšlenky.
+  while (words.length > 1 && TITLE_TAIL.has(words.at(-1)!)) words.pop();
   const title = words.length === 0 ? fallback : titleCase(words);
-  return title.slice(0, 80);
+  return cap(title, 80);
 }
+
+const TITLE_TAIL = new Set([
+  'over', 'under', 'into', 'onto', 'up', 'down', 'off', 'out', 'past', 'around', 'behind', 'between', 'toward', 'towards',
+  'about', 'along', 'against', 'inside', 'beyond', 'near', 'without', 'after', 'until', 'so', 'if', 'because', 'just',
+]);
 
 /** Výchozí menu podle prostředí věty, když jídla nejmenuje (nebo jen jedno). */
 const MENU_DEFAULTS: readonly (readonly [RegExp, readonly [string, string]])[] = [
@@ -262,8 +270,12 @@ function treatPatients(spec: GameSpecV1, read: Read, patient: string | undefined
   spec.tutorial.controlsHint = cap(`Tap the medicine or bandage, then tap the ${sick} who needs it.`, 80);
 }
 
+/** Zkrátí na hranici slova (P28D T3, F-27): „Knight Rides Dragon Ov…“ ne. */
 function cap(text: string, max: number): string {
-  return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > 0 ? cut.slice(0, space) : cut).trimEnd()}…`;
 }
 
 /** „a key“, „an iron key“ – podle první hlásky, ne pravopisu (stačí na popisky rolí). */
@@ -788,12 +800,63 @@ function withPlace(roles: SentenceRoles, sentence: string): SentenceRoles {
   return roles;
 }
 
+/** Podstatné jméno na začátku zbytku věty: bez členu a číslovky, nejvýš dvě slova, jednotné číslo. */
+const nounAfter = (rest: string | undefined): string | null => {
+  if (rest === undefined) return null;
+  const phrase = leadWords(rest.replace(/^(?:(?:a|an|the|some|all|my|your|lots of|a lot of|\d+|two|three|four|five|six|seven|eight|nine|ten)\s+)+/, ''));
+  // „swords cutting fruit“: sloveso na -ing frázi končí.
+  const words = phrase?.split(' ') ?? [];
+  const verb = words.findIndex((word) => ING_VERB.test(word));
+  const noun = verb === -1 ? words : words.slice(0, verb);
+  return noun.length === 0 ? null : singular(noun.join(' '));
+};
+
+const ING_VERB = /^(?!(?:king|ring|thing|wing|string|building|ceiling|swing|sling|spring|pudding|viking|painting|clearing)$)\w{2,}ing$/;
+
+/** Věta má narážku, kterou mřížka umí zahrát, i když ji skóre archetypů nepočítá (klid, hledání, pohyblivé zdi). */
+const gridCue = (text: string): boolean => GENTLE.test(text) || KID_FRIENDLY.test(text) || SEARCH.test(text) || MOVING_WALLS.test(text);
+
+const PICKUP = /\b(?:grab(?:s|bing)?|collect(?:s|ing)?|gather(?:s|ing)?|catch(?:es|ing)?|eat(?:s|ing)?|pick(?:s|ing)? up)\s+(.+)/;
+const AVOID = /\b(?:(?:jump|hop)(?:s|ing)? over|dodg(?:e|es|ing)|avoid(?:s|ing)?|(?:runs?|running)(?: away)? from|chased by)\s+(.+)/;
+const RESKIN = /\bbut with\s+(.+)/;
+// „purple elephants doing taxes“, „a squirrel hoarding nuts“: podmět bez slovesa, které `readRoles` zná.
+const SUBJECT = /^(?:(?:a|an|the) ([a-z]+(?: [a-z]+)?)|([a-z]+ [a-z]+s|[a-z]+s)) [a-z]+ing\b/;
+
+/**
+ * Podstatná jména věty pro role arkády (P28D T2), když je `readRoles` nenašel:
+ * co hráč sbírá („grabbing sausages“), čemu se vyhýbá („jumping over
+ * sprinklers“, „running from a monkey“), převlek žánru („angry birds but with
+ * cats and cardboard boxes“ → hrdina kočka, druhá role krabice) a podmět.
+ */
+function sentenceNouns(sentence: string): { hero: string | null; pickup: string | null; avoid: string | null; second: string | null } {
+  const text = sentence.toLowerCase().replace(/[^a-z0-9' -]/g, ' ').replace(/\s+/g, ' ').trim();
+  const reskin = RESKIN.exec(text)?.[1];
+  const second = reskin === undefined ? null : nounAfter(/\band\s+(.+)/.exec(reskin)?.[1]);
+  const subject = SUBJECT.exec(text);
+  const said = subject === null ? null : (subject[1] ?? subject[2])!;
+  const hero = nounAfter(reskin) ?? (said === null || /ing\b/.test(said) || TITLE_SKIP.has(said.split(' ')[0]!) ? null : singular(said));
+  return { hero, pickup: nounAfter(PICKUP.exec(text)?.[1]), avoid: nounAfter(AVOID.exec(text)?.[1]), second };
+}
+
+/** Co střelnice trefuje (P28D T3): „pop ten balloons“, „shoot the cans“. */
+const HIT = /\b(?:pop|pops|popping|burst|bursts|bursting|shoot|shoots|shooting|hit|hits|hitting|zap|zaps|zapping)\s+(.+)/;
+/** Tvor věty, který není hrdina – střelnice bez jmenovaného nepřítele z něj udělá vlny. */
+const CREATURE = /\b(dragon|monster|ghost|zombie|alien|skeleton|goblin|orc|troll|vampire|dinosaur|shark|bat|bee|wasp|spider|witch|demon|robot)s?\b/g;
+
+function otherCreature(sentence: string, hero: string): string | null {
+  for (const match of sentence.toLowerCase().matchAll(CREATURE)) if (!hero.toLowerCase().includes(match[1]!)) return match[1]!;
+  return null;
+}
+
+/** Role, kterou druhé podstatné jméno převleku přejmenuje; řízení ne – jeho texty jmenují soupeřova auta. */
+const SECOND_ROLE: Partial<Record<ControlChoice['control'], string>> = { runner: 'obstacle', shooter: 'enemy', throw: 'target', duel: 'rival' };
+
 /**
  * Arkádová hra (P25A běžec, P25C plošinovka a poletování, P25F řízení a aréna,
  * P25G střelba a hod, P25H načasování, rytmus a souboj): šablona fixtury
  * ovládání, přepíše se titul, popisky a parametry, které věta řekla.
  */
-function draftArcade(sentence: string, seed: number, choice: ControlPick): GameSpecV1 | null {
+function draftArcade(sentence: string, seed: number, choice: ControlPick, topic: string | null = null): GameSpecV1 | null {
   const spec = JSON.parse(JSON.stringify(ARCADE_TEMPLATES[choice.control])) as GameSpecV1;
   const roles = withPlace(readRoles(sentence), sentence);
   const rng = xoroshiro128plus(seed);
@@ -802,21 +865,29 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   // když věta hráče nejmenuje; běžec, plošinovka, střelnice a hod losují.
   const keepsHero = choice.control !== 'runner' && choice.control !== 'platform' && choice.control !== 'shooter' && choice.control !== 'throw';
   const fallback = keepsHero ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
-  role(spec, 'player').label = cap(roles.player ?? (choice.control === 'steer' ? raceHero(sentence) : null) ?? fallback, 60);
+  const nouns = sentenceNouns(sentence);
+  const second = SECOND_ROLE[choice.control] === undefined ? null : nouns.second;
+  // P28D T4: běžec bez herního slovesa je o tématu věty – hrdinou je, když ho scéna umí nakreslit („grandma“).
+  const topicHero = topic !== null && modelOf(topic, true) !== undefined ? topic : null;
+  role(spec, 'player').label = cap(roles.player ?? (choice.control === 'steer' ? raceHero(sentence) : null) ?? nouns.hero ?? topicHero ?? fallback, 60);
   const collectible = COLLECTIBLE_ROLE[choice.control];
-  if (roles.collectible !== null && collectible !== null) role(spec, collectible).label = cap(roles.collectible, 60);
+  const pickup = roles.collectible ?? (collectible === 'coin' ? nouns.pickup : null);
+  if (pickup !== null && collectible !== null) role(spec, collectible).label = cap(pickup, 60);
   if (roles.setting !== null) spec.theme.setting = cap(roles.setting, 80);
   // Místo bez předložky („flappy bird but underwater“, „a snow fort“) sada najde v celé větě (nález T11).
   const place = lookFor(spec.theme.setting) === null ? lookFor(sentence.toLowerCase()) : null;
   if (place !== null) spec.theme.look = place;
-  const rival = choice.control === 'duel' ? (roles.target ?? duelFoe(sentence)) : null;
+  const rival = choice.control === 'duel' ? (roles.target ?? duelFoe(sentence) ?? second) : null;
   if (rival !== null) role(spec, 'rival').label = cap(rival, 60);
   // P26 T12: scéna z těchhle popisků volí model – terč, nepřítel a překážka z věty, ne ze šablony.
-  const foe = roles.target ?? roles.threat?.label ?? namedFoe(sentence);
-  if (choice.control === 'shooter' && foe !== null) role(spec, 'enemy').label = cap(foe, 60);
-  const target = roles.target ?? namedFoe(sentence);
+  const foe = roles.target ?? roles.threat?.label ?? namedFoe(sentence) ?? second;
+  // P28D T3: střelnice čte jen hráče a nepřítele – tvor věty („rides a dragon“), jinak to, co se střílí („pop ten balloons“).
+  const wave = choice.control === 'shooter' ? (foe ?? otherCreature(sentence, role(spec, 'player').label) ?? nounAfter(HIT.exec(sentence.toLowerCase())?.[1])) : null;
+  if (wave !== null) role(spec, 'enemy').label = cap(wave, 60);
+  const target = roles.target ?? namedFoe(sentence) ?? second;
   if (choice.control === 'throw' && choice.goal === null && target !== null) role(spec, 'target').label = cap(target, 60);
-  if (choice.control === 'runner' && roles.threat !== null) role(spec, 'obstacle').label = cap(roles.threat.label, 60);
+  const obstacle = roles.threat?.label ?? nouns.avoid ?? second;
+  if (choice.control === 'runner' && obstacle !== null) role(spec, 'obstacle').label = cap(obstacle, 60);
   if (choice.control === 'timing') {
     if (choice.mode !== 'stack') {
       const text = TIMING_TEXT[choice.mode];
@@ -845,7 +916,8 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
     // P27A T5: terč z věty („at kids“, „from dragons“) kreslí jen cíl `target` – věž z kostek nebo koš by ho nahradily.
     const goal = choice.goal ?? (target === null ? null : 'target');
     spec.controlParams = { ...spec.controlParams, ...(choice.difficulty === null ? {} : { difficulty: choice.difficulty }), ...(goal === null ? {} : { goal }) };
-    if (choice.goal !== null) role(spec, 'target').label = THROW_GOAL_LABELS[choice.goal];
+    // P28D T2: věž je z kostek – „cats and cardboard boxes“ ji postaví z krabic.
+    if (choice.goal !== null) role(spec, 'target').label = choice.goal === 'tower' && second !== null ? cap(second, 60) : THROW_GOAL_LABELS[choice.goal];
   } else if (choice.difficulty !== null) spec.controlParams = { ...spec.controlParams, difficulty: choice.difficulty };
   // P26D T8: druhé sloveso věty („jump and shoot“) – `pickControl` vybral jen doplňky, které ovládání bere.
   if (choice.addons !== undefined) spec.addons = [...choice.addons];
@@ -856,11 +928,39 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   return result.ok ? result.value : null;
 }
 
+/** Nejdelší podstatné jméno věty (P28D T4); při shodě délky slovo, které scéna umí nakreslit. První slovo je sloveso nebo podmět. */
+function topicNoun(text: string): string | null {
+  const words = text.replace(/[^a-z ]/g, ' ').split(/\s+/).filter((word) => word !== '').slice(1);
+  const nouns = words.filter((word) => word.length >= 3 && !TITLE_SKIP.has(word) && !TITLE_TAIL.has(word) && !/(?:ing|ed|ly|ful|ous|ive|tic)$/.test(word));
+  const drawn = (word: string): number => (modelOf(word, true) === undefined ? 0 : 1);
+  return [...nouns].sort((a, b) => b.length - a.length || drawn(b) - drawn(a))[0] ?? null;
+}
+
+/** Věta, která hru chce, i když sloveso nemá („mini golf with windmills“, „scary game in a hospital“) – hláška by jí nesedla. */
+const GAME_WORDS =
+  /\b(?:games?|simulator|sim|golf|soccer|football|tennis|billiards|pool|bowling|sports?|dungeon|zelda|quest|rpg|adventure|puzzle|levels?|boss|points?|score|scary|horror|shots?|vs)\b/;
+
+/**
+ * Věta bez herního slovesa (P28D T4, R-12): ovládání ani mřížka nic neslyší
+ * a nejbližší arkáda nemá ani sloveso, ani podstatné jméno – hraje se běžec.
+ * Vrací téma běžce (nejdelší podstatné jméno), jinak `null`.
+ */
+export function noVerbTopic(sentence: string): string | null {
+  const text = sentence.toLowerCase();
+  if (GAME_WORDS.test(text)) return null;
+  if (pickControl(text) !== null || Object.values(scoreArchetypes(sentence)).some((score) => score > 0) || gridCue(text)) return null;
+  if (nearestControl(text).why !== 'default') return null;
+  return topicNoun(text) ?? 'your idea';
+}
+
 export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   const scores = scoreArchetypes(sentence);
-  const control = pickControl(sentence.toLowerCase());
+  // P28D T2: mřížka jen když její archetyp něco uslyšel; věta bez narážky dostane nejbližší arkádu, ne houby.
+  const text = sentence.toLowerCase();
+  const heard = Object.values(scores).some((score) => score > 0) || gridCue(text);
+  const control = pickControl(text) ?? (heard ? null : nearestControl(text).choice);
   if (control !== null) {
-    const arcade = draftArcade(sentence, seed, control);
+    const arcade = draftArcade(sentence, seed, control, noVerbTopic(sentence));
     if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false };
   }
   return draftGrid(sentence, seed, scores);

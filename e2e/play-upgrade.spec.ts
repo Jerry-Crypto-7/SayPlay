@@ -86,7 +86,7 @@ test('working → ready: the banner counts seconds, then offers the AI version w
   await expect(banner).not.toContainText('%');
 
   await expect(banner).toHaveAttribute('data-kind', 'ready', { timeout: 15_000 });
-  await expect(banner).toContainText('Your AI version is ready');
+  await expect(banner).toContainText('The AI version is ready – play it');
   // Hotová verze hru sama nevymění – hráč pořád hraje návrh.
   await page.waitForTimeout(2_500);
   expect(new URL(page.url()).pathname).toBe(draft.url);

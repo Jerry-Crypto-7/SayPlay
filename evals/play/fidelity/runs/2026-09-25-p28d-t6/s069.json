@@ -1,0 +1,263 @@
+{
+ "id": "s069",
+ "text": "candy crush but with gems in a cave",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "gem",
+   "slot": "any",
+   "match": [
+    "gem",
+    "jewel",
+    "crystal"
+   ]
+  },
+  {
+   "item": "cave",
+   "slot": "setting",
+   "match": [
+    "cave",
+    "cavern",
+    "mine"
+   ]
+  },
+  {
+   "item": "match",
+   "slot": "verb",
+   "controls": []
+  }
+ ],
+ "draft": {
+  "versionId": "781c21ebfe1bc671a614efe20ddc76a4",
+  "ms": 154,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Run to the finish line without hitting an obstacle.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "gem"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "hurdle"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "energetic",
+    "setting": "cave"
+   },
+   "title": "Candy Crush Gems Cave",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "3e1234e96843360153381b3c1dbf5d17",
+  "ms": 20832,
+  "deadlineAt": "2026-09-25T14:04:29.299Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "3e1234e96843360153381b3c1dbf5d17",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Match gems in the cave to reach the target score.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "gems"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "glowing mushroom"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "look": "cave",
+    "mood": "calm",
+    "setting": "A cave filled with gems"
+   },
+   "title": "Candy Crush: Cave Gems",
+   "tutorial": {
+    "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+    "goalLine": "Match gems in the cave to reach the target score."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "gem": true,
+   "cave": false,
+   "match": false
+  },
+  "ai": {
+   "gem": true,
+   "cave": false,
+   "match": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "gem",
+    "visible": true,
+    "why": "Faceted turquoise gems and a pale blue crystal are visible."
+   },
+   {
+    "item": "cave",
+    "visible": false,
+    "why": "Dark surroundings lack recognizable cave walls or rock formations."
+   },
+   {
+    "item": "match",
+    "visible": false,
+    "why": "No visible matching interaction or arrangement establishes a matching action."
+   }
+  ],
+  "ai": [
+   {
+    "item": "gem",
+    "visible": true,
+    "why": "Faceted turquoise gems and a large pale crystal are clearly visible."
+   },
+   {
+    "item": "cave",
+    "visible": false,
+    "why": "Open ground and distant structures lack recognizable cave walls or ceiling."
+   },
+   {
+    "item": "match",
+    "visible": false,
+    "why": "No visible matching interaction or puzzle arrangement establishes this action."
+   }
+  ]
+ }
+}

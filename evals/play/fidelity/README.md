@@ -7,6 +7,47 @@
 - `report.json` – live runs (`run` → `judge` → `report`): word draft and AI version through the running server, screenshots judged by a vision model. Never overwritten by the offline map.
 - `draft-chain.json` – the offline loss map (`node --experimental-strip-types scripts/play-fidelity.mjs --offline`). No network, no model, deterministic: two runs differ only in `header.measuredAt`.
 
+- `judge-10.json` – 10 sentences a juror might type (4 outside game genres, 3 with a verb the draft does not know, 3 fantasy), frozen on 2026-09-25 before any P28D change and reported separately so tuning on the 30 does not pass for a general gain. SHA-256 (LF line endings): `fc108201c388715dc989de94eed7b8263dc18c5276ab49baf2b6f7cf11e71990`, pinned by `scripts/__tests__/play-fidelity.test.ts`. `--offline --run <id>` writes both sets to `runs/<id>.json` and leaves `draft-chain.json` alone.
+
+## P28D baseline (offline, before any change)
+
+`runs/2026-09-25-p28-before.json`, build `82d924d`.
+
+| | corpus (30) | judge-10 |
+|---|---|---|
+| compiled | 30/30 | 10/10 |
+| inSpec | 0.691 | 0.378 |
+| read | 0.655 | 0.378 |
+| drawn | 0.591 | 0.324 |
+
+9 of the 10 judge sentences fall to the grid (`tap_go`); only the dragon sentence gets another control (shooter).
+
+## P28D T2 – nearest arcade game instead of mushrooms (offline)
+
+`runs/2026-09-25-p28-t2.json`. A sentence where neither the control words nor any grid cue speak (no archetype score, no calm/search/moving-wall cue) now gets the nearest arcade game – verb, then noun, else the runner (`nearestControl` in `src/play/draft/controls.ts`). The arcade draft also reads sentence nouns into the roles its control reads: pickups ("grabbing sausages"), obstacles ("jumping over sprinklers", "running from a monkey"), a genre reskin ("angry birds but with cats and cardboard boxes") and a bare subject ("purple elephants doing …").
+
+| | corpus before | corpus T2 | judge-10 before | judge-10 T2 |
+|---|---|---|---|---|
+| inSpec | 0.691 | 0.791 | 0.378 | 0.486 |
+| read | 0.655 | **0.755** | 0.378 | 0.459 |
+| drawn | 0.591 | 0.673 | 0.324 | 0.432 |
+
+- AC `read` ≥ 0.646 + 0.10 = 0.746: met (0.755). No corpus sentence lost `read`; 8 gained (s006, s008, s069, s088, s095, s155, h07, and s088's boxes).
+- Judge-10 (untuned): 5 sentences moved off the grid; j07 ("squirrel hoards acorns") **lost** `read` 0.50 → 0.25 – the grid read "hoard" as collecting, the runner does not.
+- All 40 drafts compile and pass the robot (`src/play/__tests__/draft-nearest.test.ts`).
+
+## P28D T3 – sentence nouns beat default props (offline)
+
+`runs/2026-09-25-p28-t3.json`; `draft-chain.json` refreshed on the same build. The shooter's waves take a creature of the sentence ("rides a dragon") or the thing being popped; the throw tower is built from the target label ("cardboard boxes" → crates); "space marine" draws the astronaut. A thing the catalog lacks gets a **stand-in** in the scene (balloon → ball, sprinkler → fire hydrant) instead of the robot or hurdle, but the chain still counts it `no-model` – the stand-in is not the thing. Titles are cut at a word and never end on a preposition ("Knight Rides Dragon", not "… Over").
+
+| | corpus T2 | corpus T3 | judge-10 T2 | judge-10 T3 |
+|---|---|---|---|---|
+| read | 0.755 | 0.755 | 0.459 | 0.486 |
+| drawn | 0.673 | **0.691** | 0.432 | 0.432 |
+
+- AC `drawn` ≥ 0.583 + 0.10 = 0.683: met (0.691).
+- Kept on purpose: a kangaroo rival is not drawn as a fox (character categories stay off for props and rivals).
+
 ## The chain
 
 Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
@@ -20,7 +61,7 @@ Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
 
 ## Known limits
 
-- **Arena (`move_free`) setting.** The top-down camera mostly sees the arena floor. The floor takes the set's track colour and the set's props stand past the arena edge, so they come into view only near the edge. `drawn: true` here means the scene draws the set, not that the first frame shows the props.
+- **Setting props are too primitive to name.** Since P28D T6 the arena camera tilts to 48° and every arcade scene opens with a 1.5 s fly-in, so the set's props are in frame – but they are boxes, cones and spheres, and the vision judge reads them as "sparse gray blocks" (city), "open gray roadway" (supermarket), "flat gray ground and blue cubes" (glacier). Live run `2026-09-25-p28d` below: setting still 1/24. The next lever is recognisable props (catalog models per set), not the camera.
 - **Grid verbs (`tap_go`, 6 sentences after P27A T5).** "do taxes", "date", "match", "throw", "defend", "slide" – the grid walks, collects and avoids. None of these is a control or a mechanic the grid has, so the draft cannot carry them without a new control.
 - **The thrown thing (`throw`, 3 sentences).** "snowballs", "cats", "cardboard boxes" – the throw scene reads only the player and target labels and always throws its own ball. Drawing the projectile from the sentence needs the scene to read a new label.
 - **Grid roles without a catalog model (`tap_go`, 2 sentences).** "fishmonger" and "battery" have no asset. The nearest tags are wrong on sight ("cell" is a germ), so they stay boxes until generation adds them.
@@ -69,5 +110,33 @@ Same 30 sentences, same model and config, build `b17cd5c` with `PLAY_DIRECTOR_MO
 - **Target not met:** the C2 working target is p50 ≤ 10 s; measured 12.4 s. The 28/30 usable target is met (30/30).
 - **What compact loses:** per AI version it reads slightly less (0.827 vs 0.860) and the judge saw the hero in 8 of 18 instead of 10. The full answer writes its own mechanics and parameters; compact keeps the template's. The gain is that no sentence falls back to the draft any more.
 - **Why it is faster (inference):** the answer is ~8 short fields instead of a full GameSpec, and the prompt is a control table instead of the whole registry. Nothing hung past the 285 s timeout in this run.
+
+## Live run 2026-09-25-p28d (P28D T6)
+
+Build `04c524e` (P28D T2–T6: nearest arcade game, sentence nouns, honest runner, grid scenery behind the arena, fly-in, tilted arena camera). Same server config as P27D T1 (`codex-cli` / `gpt-6-astra`, effort `high`, subscription). The frozen judge set ran as its own run, `run --set judge-10.json`. Summaries: `runs/2026-09-25-p28d.json`, `runs/2026-09-25-p28d-j10.json`.
+
+| | corpus p27 compact | corpus p28d | judge-10 p28d |
+|---|---|---|---|
+| AI version | 30/30 | 30/30 | 10/10 |
+| read (final / draft) | 0.827 / – | 0.838 / 0.759 | 0.632 / 0.507 |
+| drawn (final / draft) | – | 0.758 / 0.698 | 0.540 / 0.448 |
+| vision judge, items (final) | 26/110 | 26/110 | 6/37 |
+| vision judge, hero (final) | 8/18 | 7/18 | 1/5 |
+| vision judge, setting (final) | 1/24 | **1/24** | 2/9 |
+| upgrade p50 | 12.4 s | 20.7 s | – |
+
+- **T6 target missed:** setting ≥ 12/24 and items ≥ 40/110 were the goal; both stay where they were. The props are now in frame (see the arena shot `runs/2026-09-25-p28d/s111-ai-scene.png`), but the judge cannot name a primitive set – see Known limits.
+- **Structural numbers moved:** draft drawn 0.698 against 0.591 in the offline baseline, and the draft now reads 0.759 of the sentence.
+
+**T6 second pass – catalog scenery (run `2026-09-25-p28d-t6`, commit `690a7e6`).** Every set now mixes catalog models (townhouse, taxi, shelves, fridge, palms, penguin, rocket…) with primitives, a primitive volcano cone, and grid games get the set's props behind the far edges plus a ground in the set's colour. Same 30 + 10 sentences, same live config.
+
+| | corpus p28d | corpus p28d-t6 | judge-10 p28d | judge-10 p28d-t6 |
+|---|---|---|---|---|
+| read (final / draft) | 0.838 / 0.759 | 0.827 / 0.759 | 0.632 / 0.507 | 0.632 / 0.507 |
+| vision judge, items (final) | 26/110 | **33/110** | 6/37 | 6/37 |
+| vision judge, hero (final) | 7/18 | 8/18 | 1/5 | 1/5 |
+| vision judge, setting (final) | 1/24 | **6/24** | 2/9 | 2/9 |
+
+- **Measured ceiling, T6 target still missed:** setting 6/24 (goal 12), items 33/110 (goal 40). Recognisable props moved the corpus; judge-10 did not move. What is left is not the props: the grid keeps a dark sky and the family's abstract background (pillars, spires) dominates the frame, several places have no set at all (café, birthday party, pond, tower), and "market", "outback" or "snow fort" need one specific structure the catalog has no model for.
 
 **The offline map measures the word draft, not the AI version.** The draft is what a player sees in the first second; the AI upgrade usually carries more of the sentence. A loss here is a loss of the offline path, and only a live run (`report.json`) says what the AI version shows.

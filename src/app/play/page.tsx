@@ -10,7 +10,8 @@ import { ARCHETYPES } from '@/play/registry';
 const PITCHES: Readonly<Record<string, string>> = Object.fromEntries(Object.entries(ARCHETYPES).map(([id, archetype]) => [id, archetype.pitch]));
 
 /**
- * `/play` – nahoře věta dovnitř (bez účtu), pod ní svislý feed hratelných her
+ * `/play` – nahoře běžící hra z feedu (bez feedu ukázková, P28D T7), pod ní
+ * věta dovnitř (bez účtu). Svislý feed hratelných her
  * (P27B T4). Hra ve feedu je `<main>` sama, proto obal stránky není `main`.
  * `Suspense`: feed čte `?g=` přes `useSearchParams` a statická stránka bez
  * hranice by se celá vykreslila až v prohlížeči.
@@ -18,15 +19,15 @@ const PITCHES: Readonly<Record<string, string>> = Object.fromEntries(Object.entr
 export default function PlayPage() {
   return (
     <>
+      <h1 className="play-hero play-hero-top">{HERO}</h1>
+      <Suspense fallback={null}>
+        <FeedPager pitches={PITCHES} />
+      </Suspense>
       <div className="play-create">
-        <h1 className="play-hero">{HERO}</h1>
         <p className="play-subhead">{SUBHEAD}</p>
         <CreateGame />
         <PendingUpgradeCards />
       </div>
-      <Suspense fallback={null}>
-        <FeedPager pitches={PITCHES} />
-      </Suspense>
     </>
   );
 }

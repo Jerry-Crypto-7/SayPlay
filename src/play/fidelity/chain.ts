@@ -92,7 +92,8 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     else if (role === ROLE.chaser) bodies.add('chaser');
     else if (role === ROLE.collectible && kind === 'coin') bodies.add('coin');
     else if (role === ROLE.obstacle && ['hurdle', 'cone', 'crate'].includes(kind)) bodies.add('obstacle');
-    else if (role === ROLE.target && kind === 'target') bodies.add('target');
+    // Věž hodu je z kostek role terče – kreslí je model z popisku terče (P28D T3).
+    else if (role === ROLE.target && (kind === 'target' || kind === 'wood-block')) bodies.add('target');
   }
   return { bodies };
 }
@@ -110,7 +111,7 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   }
   if (role.id === 'enemy') return bodies.has('enemy') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === enemyModel(spec);
   if (role.kind === 'chaser') return bodies.has('chaser') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === chaserModel(spec);
-  if (role.id === 'coin' || role.id === 'obstacle' || role.id === 'target' || role.id === 'rival') return bodies.has(role.id) && propModels(spec)[role.id] !== undefined;
+  if (role.id === 'coin' || role.id === 'obstacle' || role.id === 'target' || role.id === 'rival') return bodies.has(role.id) && propModels(spec, false)[role.id] !== undefined;
   return false;
 }
 

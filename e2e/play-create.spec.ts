@@ -14,19 +14,24 @@ test.describe('/play – create', () => {
   test('the home address lands on /play', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/play$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Imagine a game. Play it.');
+    await expect(page.locator('.play-hero')).toHaveText('Imagine a game. Play it.');
   });
 
-  test('hero, starter card fills the sentence, Play it lands on /play/<id>', async ({ page }) => {
+  test('hero, typed sentence and Play it land on /play/<id>', async ({ page }) => {
     await page.goto('/play');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Imagine a game. Play it.');
+    await expect(page.locator('.play-hero')).toHaveText('Imagine a game. Play it.');
 
     const sentence = page.getByTestId('play-sentence');
     await expect(sentence).toHaveValue('');
-    await page.getByTestId('play-starter-collect_exit').click();
-    await expect(sentence).toHaveValue('Collect five glowing mushrooms then open a portal.');
-
+    await sentence.fill('Collect five glowing mushrooms then open a portal.');
     await page.getByTestId('play-create').click();
+    await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
+  });
+
+  // P28D T7: vzor je hra na jedno klepnutí, ne předvyplněné pole.
+  test('a starter card creates its game without a second click', async ({ page }) => {
+    await page.goto('/play');
+    await page.getByTestId('play-starter-collect_exit').click();
     await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
   });
 

@@ -54,8 +54,58 @@ export const PROP_KINDS = [
   'crystal',
   'iceblock',
   'buoy',
+  'volcano',
 ] as const;
 export type PropKind = (typeof PROP_KINDS)[number];
+
+/**
+ * Kulisy z katalogu (P28D T6) a jejich výška v metrech. Primitivy výš
+ * hodnotitel nepozná („sparse gray blocks“ = město, 1/24 prostředí), model
+ * taxíku nebo regálu ano. Jen modely s málo sítěmi; vícedílné se při
+ * načtení slijí po materiálech (`look/load.ts`).
+ */
+export const SCENERY_MODELS = {
+  'townhouse': 7,
+  'cc0-car-taxi': 1.6,
+  'cc0-fire-hydrant': 1,
+  'cc0-bench': 1,
+  'cc0-bush': 1.3,
+  'cc0-flower': 0.9,
+  'cc0-cabinet-shelves': 2.4,
+  'shopping-cart': 1.2,
+  'cc0-can-fridge': 2.3,
+  'potted-plant': 1.8,
+  'cc0-couch': 1.1,
+  'cc0-armchair': 1.2,
+  'cc0-lamp-standing': 2.2,
+  'steam-machine': 3.5,
+  'cc0-barrel-stack': 2,
+  'cc0-pallet': 0.5,
+  'cc0-tree-pine': 5,
+  'cc0-stump': 0.8,
+  'cc0-log-stack': 1.2,
+  'cc0-palm-tree': 5.5,
+  'cc0-bamboo': 4.5,
+  'cc0-bush-berries': 1.4,
+  'cc0-cactus-flowers': 3,
+  'cc0-boat-row': 1.2,
+  'cc0-clownfish': 1,
+  'cc0-tang': 1,
+  'penguin': 1.3,
+  'cc0-sled': 0.8,
+  'cc0-torch-lit': 2.2,
+  'cc0-rock-moss': 1.4,
+  'cc0-asteroid': 2.5,
+  'rocket': 6,
+  'stone-wall': 2.8,
+  'cc0-barrel': 1.3,
+  'cc0-pumpkin': 0.9,
+  'cc0-skull-candle': 1,
+} as const satisfies Readonly<Record<string, number>>;
+export type SceneryModel = keyof typeof SCENERY_MODELS;
+export type SceneryKind = PropKind | SceneryModel;
+
+export const isSceneryModel = (kind: SceneryKind): kind is SceneryModel => Object.hasOwn(SCENERY_MODELS, kind);
 
 export interface Look {
   /** Pozadí i barva mlhy. */
@@ -70,30 +120,30 @@ export interface Look {
   readonly track: string;
   /** Hladina pod plošinami. */
   readonly water: string;
-  readonly props: readonly PropKind[];
+  readonly props: readonly SceneryKind[];
   /** Hlavní a doplňková barva rekvizit. */
   readonly tint: readonly [string, string];
 }
 
 export const LOOKS: Readonly<Record<LookId, Look>> = {
-  meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'rock'], tint: ['#16a34a', '#78716c'] },
-  city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#64748b', track: '#1f2937', water: '#0369a1', props: ['building', 'lamp'], tint: ['#94a3b8', '#fbbf24'] },
-  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['shelf', 'lamp'], tint: ['#f97316', '#0ea5e9'] },
-  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['shelf', 'crate'], tint: ['#dc2626', '#16a34a'] },
-  living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['sofa', 'lamp'], tint: ['#0f766e', '#f59e0b'] },
-  factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['chimney', 'crate'], tint: ['#78716c', '#ea580c'] },
-  forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['pine', 'tree', 'rock'], tint: ['#14532d', '#57534e'] },
-  jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['palm', 'tree'], tint: ['#15803d', '#65a30d'] },
-  desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['cactus', 'rock'], tint: ['#65a30d', '#92400e'] },
-  beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['palm', 'rock'], tint: ['#16a34a', '#a8a29e'] },
-  ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['buoy', 'rock'], tint: ['#ef4444', '#64748b'] },
-  underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['coral', 'seaweed', 'rock'], tint: ['#fb7185', '#22c55e'] },
-  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#ffffff', '#bae6fd', 1.1], sun: 1.4, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'iceblock'], tint: ['#e2e8f0', '#7dd3fc'] },
-  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['rock', 'crystal'], tint: ['#2dd4bf', '#57534e'] },
-  volcano: { sky: '#7c2d12', fog: [15, 60], light: ['#fdba74', '#450a0a', 0.9], sun: 1.2, ground: '#292524', track: '#44403c', water: '#ea580c', props: ['rock', 'crystal'], tint: ['#1c1917', '#f97316'] },
-  space: { sky: '#020617', fog: [40, 140], light: ['#e2e8f0', '#7f1d1d', 0.7], sun: 1.6, ground: '#b45309', track: '#7c2d12', water: '#0f172a', props: ['crystal', 'rock'], tint: ['#22d3ee', '#78350f'] },
-  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['tower', 'rock'], tint: ['#a8a29e', '#dc2626'] },
-  graveyard: { sky: '#0f172a', fog: [10, 50], light: ['#94a3b8', '#1e293b', 0.7], sun: 0.6, ground: '#1e293b', track: '#334155', water: '#0c4a6e', props: ['grave', 'pine'], tint: ['#64748b', '#14532d'] },
+  meadow: { sky: '#bae6fd', fog: [30, 90], light: ['#e0f2fe', '#166534', 0.9], sun: 1.6, ground: '#15803d', track: '#334155', water: '#0284c7', props: ['tree', 'cc0-bench', 'cc0-bush', 'cc0-flower'], tint: ['#16a34a', '#78716c'] },
+  city: { sky: '#cbd5e1', fog: [25, 80], light: ['#f1f5f9', '#475569', 0.9], sun: 1.4, ground: '#64748b', track: '#1f2937', water: '#0369a1', props: ['townhouse', 'cc0-car-taxi', 'lamp', 'cc0-fire-hydrant', 'building'], tint: ['#94a3b8', '#fbbf24'] },
+  mall: { sky: '#fef3c7', fog: [20, 70], light: ['#fffbeb', '#d6d3d1', 1.1], sun: 1.1, ground: '#e7e5e4', track: '#d6d3d1', water: '#38bdf8', props: ['potted-plant', 'cc0-bench', 'shopping-cart', 'shelf', 'lamp'], tint: ['#f97316', '#0ea5e9'] },
+  supermarket: { sky: '#f1f5f9', fog: [20, 70], light: ['#ffffff', '#cbd5e1', 1.1], sun: 1.0, ground: '#e2e8f0', track: '#cbd5e1', water: '#38bdf8', props: ['cc0-cabinet-shelves', 'shopping-cart', 'cc0-can-fridge', 'shelf'], tint: ['#dc2626', '#16a34a'] },
+  living_room: { sky: '#fde68a', fog: [18, 60], light: ['#fff7ed', '#a16207', 1.0], sun: 1.1, ground: '#b45309', track: '#92400e', water: '#0ea5e9', props: ['cc0-couch', 'cc0-lamp-standing', 'cc0-armchair', 'potted-plant'], tint: ['#0f766e', '#f59e0b'] },
+  factory: { sky: '#a8a29e', fog: [20, 70], light: ['#e7e5e4', '#44403c', 0.8], sun: 1.3, ground: '#57534e', track: '#292524', water: '#155e75', props: ['steam-machine', 'cc0-barrel-stack', 'chimney', 'cc0-pallet'], tint: ['#78716c', '#ea580c'] },
+  forest: { sky: '#bbf7d0', fog: [20, 70], light: ['#dcfce7', '#14532d', 0.8], sun: 1.3, ground: '#166534', track: '#78350f', water: '#0e7490', props: ['cc0-tree-pine', 'tree', 'cc0-stump', 'cc0-log-stack'], tint: ['#14532d', '#57534e'] },
+  jungle: { sky: '#a7f3d0', fog: [15, 60], light: ['#ecfdf5', '#064e3b', 0.9], sun: 1.2, ground: '#065f46', track: '#713f12', water: '#0f766e', props: ['cc0-palm-tree', 'cc0-bamboo', 'cc0-bush-berries', 'tree'], tint: ['#15803d', '#65a30d'] },
+  desert: { sky: '#fde68a', fog: [40, 120], light: ['#fffbeb', '#b45309', 1.0], sun: 2.0, ground: '#d97706', track: '#b45309', water: '#0891b2', props: ['cc0-cactus-flowers', 'rock', 'cactus'], tint: ['#65a30d', '#92400e'] },
+  beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'rock', 'cc0-boat-row'], tint: ['#16a34a', '#a8a29e'] },
+  ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['cc0-boat-row', 'buoy', 'rock'], tint: ['#ef4444', '#64748b'] },
+  underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['coral', 'cc0-clownfish', 'seaweed', 'cc0-tang', 'rock'], tint: ['#fb7185', '#22c55e'] },
+  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#ffffff', '#bae6fd', 1.1], sun: 1.4, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'iceblock', 'cc0-sled'], tint: ['#e2e8f0', '#7dd3fc'] },
+  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['rock', 'crystal', 'cc0-torch-lit', 'cc0-rock-moss'], tint: ['#2dd4bf', '#57534e'] },
+  volcano: { sky: '#7c2d12', fog: [15, 60], light: ['#fdba74', '#450a0a', 0.9], sun: 1.2, ground: '#292524', track: '#44403c', water: '#ea580c', props: ['volcano', 'rock', 'crystal'], tint: ['#1c1917', '#f97316'] },
+  space: { sky: '#020617', fog: [40, 140], light: ['#e2e8f0', '#7f1d1d', 0.7], sun: 1.6, ground: '#b45309', track: '#7c2d12', water: '#0f172a', props: ['cc0-asteroid', 'crystal', 'rocket', 'rock'], tint: ['#22d3ee', '#78350f'] },
+  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['tower', 'stone-wall', 'cc0-torch-lit', 'cc0-barrel'], tint: ['#a8a29e', '#dc2626'] },
+  graveyard: { sky: '#0f172a', fog: [10, 50], light: ['#94a3b8', '#1e293b', 0.7], sun: 0.6, ground: '#1e293b', track: '#334155', water: '#0c4a6e', props: ['grave', 'pine', 'cc0-pumpkin', 'cc0-skull-candle'], tint: ['#64748b', '#14532d'] },
 };
 
 /**

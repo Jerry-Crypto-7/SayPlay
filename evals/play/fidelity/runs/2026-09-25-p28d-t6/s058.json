@@ -1,0 +1,259 @@
+{
+ "id": "s058",
+ "text": "boat race through a jungle river full of crocodiles",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "boat",
+   "slot": "hero",
+   "match": [
+    "boat",
+    "canoe",
+    "raft",
+    "kayak"
+   ]
+  },
+  {
+   "item": "crocodile",
+   "slot": "role",
+   "match": [
+    "crocodile",
+    "croc",
+    "alligator"
+   ]
+  },
+  {
+   "item": "jungle river",
+   "slot": "setting",
+   "match": [
+    "jungle",
+    "river"
+   ]
+  },
+  {
+   "item": "race",
+   "slot": "verb",
+   "controls": [
+    "steer"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "1df39517d861ab8d405630190e56233e",
+  "ms": 593,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "hard",
+    "lengthM": 450
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Steer through the bends and cross the finish line before the rival cars.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "boat"
+    },
+    {
+     "count": 5,
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "tire barrier"
+    },
+    {
+     "count": 3,
+     "id": "rival",
+     "kind": "patrol",
+     "label": "rival car"
+    },
+    {
+     "count": 3,
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "fast",
+    "setting": "jungle river full"
+   },
+   "title": "Boat Race Jungle River",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+    "goalLine": "Beat the rival cars to the finish line."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "30fad66e4039976e001d994e6607695c",
+  "ms": 16750,
+  "deadlineAt": "2026-09-25T14:06:34.457Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "30fad66e4039976e001d994e6607695c",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "steer",
+   "controlParams": {
+    "difficulty": "hard",
+    "lengthM": 450
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Win the boat race through the jungle river while avoiding crocodiles.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "boat"
+    },
+    {
+     "count": 5,
+     "id": "barrier",
+     "kind": "hazard",
+     "label": "crocodiles"
+    },
+    {
+     "count": 3,
+     "id": "rival",
+     "kind": "patrol",
+     "label": "rival car"
+    },
+    {
+     "count": 3,
+     "id": "turbo",
+     "kind": "collectible",
+     "label": "turbo"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "jungle",
+    "mood": "fast",
+    "setting": "A jungle river full of crocodiles"
+   },
+   "title": "Jungle River Boat Race",
+   "tutorial": {
+    "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+    "goalLine": "Win the boat race through the jungle river while avoiding crocodiles."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "boat": false,
+   "crocodile": false,
+   "jungle river": false,
+   "race": false
+  },
+  "ai": {
+   "boat": false,
+   "crocodile": false,
+   "jungle river": false,
+   "race": true
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "boat",
+    "visible": false,
+    "why": "Blue vehicles resemble cars; no clearly recognizable boat is visible."
+   },
+   {
+    "item": "crocodile",
+    "visible": false,
+    "why": "No recognizable crocodile appears in the scene."
+   },
+   {
+    "item": "jungle river",
+    "visible": false,
+    "why": "Tropical trees border a brown road, without recognizable river water."
+   },
+   {
+    "item": "race",
+    "visible": false,
+    "why": "Several vehicles appear, but no clear racing action is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "boat",
+    "visible": false,
+    "why": "No clearly recognizable boat is visible."
+   },
+   {
+    "item": "crocodile",
+    "visible": false,
+    "why": "No recognizable crocodile is visible."
+   },
+   {
+    "item": "jungle river",
+    "visible": false,
+    "why": "Trees border a brown roadway; no recognizable river is visible."
+   },
+   {
+    "item": "race",
+    "visible": true,
+    "why": "Multiple cars occupy a marked course, clearly suggesting a race."
+   }
+  ]
+ }
+}

@@ -1,0 +1,272 @@
+{
+ "id": "j03",
+ "text": "my startup pitch to investors in a glass skyscraper",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "investor",
+   "slot": "any",
+   "match": [
+    "investor",
+    "businessman",
+    "suit"
+   ]
+  },
+  {
+   "item": "skyscraper",
+   "slot": "setting",
+   "match": [
+    "skyscraper",
+    "office",
+    "tower"
+   ]
+  },
+  {
+   "item": "pitch",
+   "slot": "verb",
+   "controls": []
+  }
+ ],
+ "draft": {
+  "versionId": "c809623c115dea3f612ec22063f3c00c",
+  "ms": 151,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Run to the finish line without hitting an obstacle.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "startup pitch"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "hurdle"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "energetic",
+    "setting": "glass skyscraper"
+   },
+   "title": "Startup Pitch Investors Glass",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "47da13bbddf044a9b165eaf92a53e310",
+  "ms": 20297,
+  "deadlineAt": "2026-09-25T14:59:06.703Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "47da13bbddf044a9b165eaf92a53e310",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Deliver the startup pitch to investors.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "startup pitch"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "glowing mushroom"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "look": "city",
+    "mood": "calm",
+    "setting": "Inside a glass skyscraper"
+   },
+   "title": "Startup Pitch to Investors",
+   "tutorial": {
+    "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+    "goalLine": "Deliver the startup pitch to investors."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "c809623c115dea3f612ec22063f3c00c",
+  "sentence": "my startup pitch to investors in a glass skyscraper",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:33:21.160Z"
+ },
+ "judge": {
+  "draft": {
+   "investor": false,
+   "skyscraper": false,
+   "pitch": false
+  },
+  "ai": {
+   "investor": false,
+   "skyscraper": false,
+   "pitch": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "investor",
+    "visible": false,
+    "why": "The hat-wearing character has no recognizable investor attributes."
+   },
+   {
+    "item": "skyscraper",
+    "visible": false,
+    "why": "Buildings are low-rise or featureless blocks, not clearly recognizable skyscrapers."
+   },
+   {
+    "item": "pitch",
+    "visible": false,
+    "why": "No presentation, throwing motion, or other pitching action is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "investor",
+    "visible": false,
+    "why": "No recognizable investor; figures lack identifying details."
+   },
+   {
+    "item": "skyscraper",
+    "visible": false,
+    "why": "Large columned structure does not clearly resemble a skyscraper."
+   },
+   {
+    "item": "pitch",
+    "visible": false,
+    "why": "No visible presentation or pitching activity."
+   }
+  ]
+ }
+}

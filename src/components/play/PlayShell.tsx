@@ -18,6 +18,7 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
+import { LOOKS, lookOf } from '@/play/arcade/look';
 import type { GameVersion } from '@/play/contracts';
 import type { Honesty } from '@/play/draft/unsupported';
 import type { GameSpecV1 } from '@/play/spec';
@@ -32,6 +33,7 @@ import { installSoundControls, playSfx } from '@/play/audio';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
 import { isTyping } from './arcade/input';
+import { GridScenery } from './arcade/look/Scenery';
 import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
 import { FirstPrompt, Hud, TICKS_PER_SECOND, objectiveCounter, secondsOf } from './Hud';
@@ -43,6 +45,7 @@ import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import { PostRun } from './PostRun';
 import { RemixReadyChip, useRemixJob } from './RemixBox';
+import { gridOf } from './sight';
 import type { ProjectTarget } from './TapTargets';
 import { TargetCards } from './TargetCards';
 import { UpgradeBanner } from './UpgradeBanner';
@@ -384,6 +387,7 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
           <TapTargets slots={slots} project={project} />
           {built && blueprint.world.sim !== null && (
             <>
+              <GridScenery look={LOOKS[lookOf(spec.theme)]} {...gridOf(blueprint.world.sim)} />
               <PatrolSight sim={blueprint.world.sim} controller={controller} />
               <OrderBubbles sim={blueprint.world.sim} roles={spec.roles} controller={controller} />
             </>
