@@ -62,3 +62,20 @@ What the numbers say:
 - **T2 – render on demand when the game is not running: ADOPT** (F-33, the numbers above). Before/after below.
 - **T3 – catalog out of the client bundle: DEFER.** The trigger fired on time (first frame > 3 s), not on bytes (JS 559–696 KB < 1 MB). The chunk holding the catalog index is 65 KB transferred / 230 KB decoded of the runner's 825 KB; removing all of it saves at most ~0.15 s of 5.4 s. It cannot bring the first frame under 3 s; startup CPU has to be profiled first.
 - **T4 – meshopt compression: DEFER.** The trigger is GLB > 40 % of the first game's bytes; measured 31 % (runner), 7 % (grid), 0 % (arena).
+
+## T2 – render on demand (`after-t2-2026-09-25.json`)
+
+The arcade canvas draws every frame only while the run is live (`running` and not paused); otherwise it draws on demand, and every change of the session (restart, end of run, pause, resume) requests one frame. The animation mixer of rigged characters steps at most 0.1 s per frame, so the first frame after a pause does not jump through the pause. The grid has no pause and is not touched.
+
+Drawn frames per second, median of 3 runs, same machine and build flow:
+
+| cell | paused before → after | ended before → after | playing before → after |
+|---|---|---|---|
+| runner, desktop | 54 → **0** | 59 → **1** | 57 → 55 |
+| runner, phone (emul.) | 13 → **0** | 29 → **1** | 10 → 10 |
+| arena, desktop | 59 → **0** | 59 → **1** | 58 → 15 * |
+| arena, phone (emul.) | 56 → **0** | 58 → **1** | 50 → 6 * |
+
+\* The arena demo wins in about 2.5 s, so most of its 10 s play window is the result screen, which no longer draws. While the arena runs, fps p50 stays 60 and the max frame stays 50 ms (desktop) / 133 ms (phone).
+
+Phone-profile numbers move by up to ~30 % between runs of the same build on this machine (grid, untouched by T2: fps p50 60 → 30, first draw 7.2 → 8.3 s); other sessions share the CPU. Compare desktop cells for small differences.

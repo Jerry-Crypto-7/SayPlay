@@ -17,7 +17,7 @@
  */
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Group, type Mesh, type Object3D, type PerspectiveCamera, type SkinnedMesh, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
@@ -330,6 +330,13 @@ function frameOf(object: Object3D, camera: Camera, width: number, height: number
   const widthPx = ((maxX - minX) / 2) * width;
   const heightPx = ((maxY - minY) / 2) * height;
   return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, minX, maxX, minY, maxY, widthPx, heightPx, sizePx: Math.max(widthPx, heightPx), behind };
+}
+
+/** Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza. */
+function RedrawOnChange({ session }: { readonly session: ArcadeSession }) {
+  const invalidate = useThree((three) => three.invalidate);
+  useEffect(() => session.subscribe(() => invalidate()), [session, invalidate]);
+  return null;
 }
 
 function FrameProbe({ control }: { readonly control: string }) {
@@ -784,10 +791,13 @@ export default function ArcadeStage({
   useArenaInput(session, surface, control === 'move_free');
   useTapInput(session, surface, control === 'timing' || control === 'rhythm');
   useDuelInput(session, surface, control === 'duel');
+  // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
+  const live = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
+      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'}>
+        <RedrawOnChange session={session} />
         <FrameProbe control={control} />
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (

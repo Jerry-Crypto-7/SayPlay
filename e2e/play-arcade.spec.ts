@@ -113,6 +113,20 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
   });
 
+  test('after the run the scene draws on demand: the end state and Replay still redraw it (P28E T2)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    const stage = page.getByTestId('arcade-stage').locator('canvas');
+    const running = await stage.screenshot();
+    await page.evaluate(() => window.__playShell!.playWitness());
+    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    // Konec běhu přepne plátno na kreslení na požádání; poslední stav se přesto nakreslí.
+    await expect.poll(async () => (await stage.screenshot()).equals(running)).toBe(false);
+    const ended = await stage.screenshot();
+    await page.getByTestId('play-replay').click();
+    await expect.poll(async () => (await stage.screenshot()).equals(ended)).toBe(false);
+  });
+
   test('a phone viewport has no horizontal scroll', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url);
