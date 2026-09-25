@@ -1028,3 +1028,108 @@ button.play-feed-card {
   margin: 0;
   padding-left: 18px;
 }
+
+/* P28D T8: na telefonu patří obrazovka hře. HUD na dva krátké řádky (titul
+ * a počítadlo, pod nimi cíl s nápovědou useknuté na jeden řádek), rodokmen
+ * až po dohrání, rozbalovací řádky úzké, banner AI jako čip vpravo nahoře
+ * mimo HUD a karty cílů v jednom posuvném řádku. */
+@media (max-width: 599px) {
+  .play-hud {
+    margin: 8px;
+    padding: 6px 10px;
+    max-width: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 10px;
+    row-gap: 2px;
+  }
+
+  .play-hud-title {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .play-hud-progress {
+    order: 1;
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .play-hud-tick {
+    display: none;
+  }
+
+  .play-hud-goal,
+  .play-hud-hint {
+    order: 2;
+    min-width: 0;
+    margin: 0;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .play-hud-goal {
+    flex: 1 1 100%;
+  }
+
+  .play-hud-hint {
+    display: none;
+  }
+
+  .play-hud-phase,
+  .play-hud-share,
+  .play-hud-demo {
+    order: 3;
+    margin: 0;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+  }
+
+  .play-shell > .play-lineage {
+    display: none;
+  }
+
+  .play-lab {
+    margin: 4px 8px 0;
+    padding: 4px 10px;
+    max-width: none;
+  }
+
+  .play-lab:not([open]) summary {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .play-shell:has(> .play-upgrade) > .play-hud {
+    margin-right: calc(42vw + 16px);
+  }
+
+  .play-upgrade,
+  .play-upgrade[data-kind] {
+    left: auto;
+    right: 8px;
+    top: 8px;
+    transform: none;
+    max-width: 42vw;
+    padding: 4px 4px 4px 10px;
+    gap: 6px;
+    font-size: 0.75rem;
+    white-space: normal;
+  }
+
+  .play-targets {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .play-target {
+    flex: 0 0 auto;
+  }
+}
