@@ -41,6 +41,7 @@ import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
 import { lookFor, lookWords } from '../arcade/look';
+import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
 import { type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
@@ -855,7 +856,7 @@ const SECOND_ROLE: Partial<Record<ControlChoice['control'], string>> = { runner:
  * P25G střelba a hod, P25H načasování, rytmus a souboj): šablona fixtury
  * ovládání, přepíše se titul, popisky a parametry, které věta řekla.
  */
-function draftArcade(sentence: string, seed: number, choice: ControlPick): GameSpecV1 | null {
+function draftArcade(sentence: string, seed: number, choice: ControlPick, topic: string | null = null): GameSpecV1 | null {
   const spec = JSON.parse(JSON.stringify(ARCADE_TEMPLATES[choice.control])) as GameSpecV1;
   const roles = withPlace(readRoles(sentence), sentence);
   const rng = xoroshiro128plus(seed);
@@ -866,7 +867,9 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   const fallback = keepsHero ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
   const nouns = sentenceNouns(sentence);
   const second = SECOND_ROLE[choice.control] === undefined ? null : nouns.second;
-  role(spec, 'player').label = cap(roles.player ?? (choice.control === 'steer' ? raceHero(sentence) : null) ?? nouns.hero ?? fallback, 60);
+  // P28D T4: běžec bez herního slovesa je o tématu věty – hrdinou je, když ho scéna umí nakreslit („grandma“).
+  const topicHero = topic !== null && modelOf(topic, true) !== undefined ? topic : null;
+  role(spec, 'player').label = cap(roles.player ?? (choice.control === 'steer' ? raceHero(sentence) : null) ?? nouns.hero ?? topicHero ?? fallback, 60);
   const collectible = COLLECTIBLE_ROLE[choice.control];
   const pickup = roles.collectible ?? (collectible === 'coin' ? nouns.pickup : null);
   if (pickup !== null && collectible !== null) role(spec, collectible).label = cap(pickup, 60);
@@ -925,6 +928,31 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick): GameS
   return result.ok ? result.value : null;
 }
 
+/** Nejdelší podstatné jméno věty (P28D T4); při shodě délky slovo, které scéna umí nakreslit. První slovo je sloveso nebo podmět. */
+function topicNoun(text: string): string | null {
+  const words = text.replace(/[^a-z ]/g, ' ').split(/\s+/).filter((word) => word !== '').slice(1);
+  const nouns = words.filter((word) => word.length >= 3 && !TITLE_SKIP.has(word) && !TITLE_TAIL.has(word) && !/(?:ing|ed|ly|ful|ous|ive|tic)$/.test(word));
+  const drawn = (word: string): number => (modelOf(word, true) === undefined ? 0 : 1);
+  return [...nouns].sort((a, b) => b.length - a.length || drawn(b) - drawn(a))[0] ?? null;
+}
+
+/** Věta, která hru chce, i když sloveso nemá („mini golf with windmills“, „scary game in a hospital“) – hláška by jí nesedla. */
+const GAME_WORDS =
+  /\b(?:games?|simulator|sim|golf|soccer|football|tennis|billiards|pool|bowling|sports?|dungeon|zelda|quest|rpg|adventure|puzzle|levels?|boss|points?|score|scary|horror|shots?|vs)\b/;
+
+/**
+ * Věta bez herního slovesa (P28D T4, R-12): ovládání ani mřížka nic neslyší
+ * a nejbližší arkáda nemá ani sloveso, ani podstatné jméno – hraje se běžec.
+ * Vrací téma běžce (nejdelší podstatné jméno), jinak `null`.
+ */
+export function noVerbTopic(sentence: string): string | null {
+  const text = sentence.toLowerCase();
+  if (GAME_WORDS.test(text)) return null;
+  if (pickControl(text) !== null || Object.values(scoreArchetypes(sentence)).some((score) => score > 0) || gridCue(text)) return null;
+  if (nearestControl(text).why !== 'default') return null;
+  return topicNoun(text) ?? 'your idea';
+}
+
 export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   const scores = scoreArchetypes(sentence);
   // P28D T2: mřížka jen když její archetyp něco uslyšel; věta bez narážky dostane nejbližší arkádu, ne houby.
@@ -932,7 +960,7 @@ export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
   const heard = Object.values(scores).some((score) => score > 0) || gridCue(text);
   const control = pickControl(text) ?? (heard ? null : nearestControl(text).choice);
   if (control !== null) {
-    const arcade = draftArcade(sentence, seed, control);
+    const arcade = draftArcade(sentence, seed, control, noVerbTopic(sentence));
     if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false };
   }
   return draftGrid(sentence, seed, scores);

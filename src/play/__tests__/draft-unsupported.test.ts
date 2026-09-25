@@ -51,6 +51,30 @@ describe('unsupportedGame over the demand corpus', () => {
   });
 });
 
+// P28D T4 (R-12): věta bez herního slovesa dostane běžce o svém tématu a řekne to.
+describe('a sentence without a game verb', () => {
+  it('plays a runner about its longest noun and says so, with two example verbs', () => {
+    const sentence = 'Explain quantum physics to my grandma.';
+    const spec = draftGameSpec(sentence);
+    expect(spec.control).toBe('runner');
+    expect(spec.roles.find((role) => role.kind === 'player')?.label).toBe('grandma');
+    expect(spec.title).toBe('Explain Quantum Physics Grandma');
+    expect(unsupportedGame(sentence, spec)).toEqual({
+      kind: 'no_verb',
+      reason: 'No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’',
+      closest: 'an endless runner',
+    });
+    expect(unsupportedGame('a romantic dinner date on the moon', draftGameSpec('a romantic dinner date on the moon'))?.reason).toContain('runner about dinner');
+  });
+
+  it('stays quiet for a sentence with a verb, a noun cue, or once the AI version is another game', () => {
+    for (const sentence of ['pop ten balloons at a birthday party', 'a dragon in my garden', 'endless runner in a neon city', 'a knight collects keys in a castle']) {
+      expect(unsupportedGame(sentence, draftGameSpec(sentence)), sentence).toBeNull();
+    }
+    expect(unsupportedGame('Explain quantum physics to my grandma.', { archetype: 'combat_lite', control: 'shooter' })).toBeNull();
+  });
+});
+
 describe('unsupportedGame', () => {
   it('names the game the draft built instead', () => {
     const sentence = 'a match 3 game with fruits';
