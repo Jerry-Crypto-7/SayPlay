@@ -74,8 +74,13 @@ for (const game of GAMES) {
       const x = box.x + box.width / 2;
       const y = box.y + box.height / 2;
       if (game.control === 'shooter') {
-        // Střelnice čeká na první stisk; klik doprostřed = zamíří a vystřelí.
+        // Střelnice čeká na první stisk a ten jen spustí hru (P28B T5 – dřív první klik
+        // vystřelil, protože míření pustilo hodiny dřív, než se stisk spolkl).
         expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
+        await page.mouse.click(x, y);
+        await page.waitForFunction(() => window.__playShell!.tick() > 5);
+        expect(await shotsLeft()).toBe(before);
+        // Další klik doprostřed = zamíří a vystřelí.
         await page.mouse.click(x, y);
       } else {
         await page.mouse.move(x, y);
