@@ -7,6 +7,21 @@
 - `report.json` – live runs (`run` → `judge` → `report`): word draft and AI version through the running server, screenshots judged by a vision model. Never overwritten by the offline map.
 - `draft-chain.json` – the offline loss map (`node --experimental-strip-types scripts/play-fidelity.mjs --offline`). No network, no model, deterministic: two runs differ only in `header.measuredAt`.
 
+- `judge-10.json` – 10 sentences a juror might type (4 outside game genres, 3 with a verb the draft does not know, 3 fantasy), frozen on 2026-09-25 before any P28D change and reported separately so tuning on the 30 does not pass for a general gain. SHA-256 (LF line endings): `fc108201c388715dc989de94eed7b8263dc18c5276ab49baf2b6f7cf11e71990`, pinned by `scripts/__tests__/play-fidelity.test.ts`. `--offline --run <id>` writes both sets to `runs/<id>.json` and leaves `draft-chain.json` alone.
+
+## P28D baseline (offline, before any change)
+
+`runs/2026-09-25-p28-before.json`, build `82d924d`.
+
+| | corpus (30) | judge-10 |
+|---|---|---|
+| compiled | 30/30 | 10/10 |
+| inSpec | 0.691 | 0.378 |
+| read | 0.655 | 0.378 |
+| drawn | 0.591 | 0.324 |
+
+9 of the 10 judge sentences fall to the grid (`tap_go`); only the dragon sentence gets another control (shooter).
+
 ## The chain
 
 Every checklist item gets four stages, computed by `src/play/fidelity/chain.ts`:
