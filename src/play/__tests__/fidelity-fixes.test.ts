@@ -65,3 +65,15 @@ describe('vehicle named by "… race"', () => {
     expect(label(draftGameSpec('space race to the moon'), 'player')).not.toMatch(/space/);
   });
 });
+
+// P28D T3: řetěz počítá jen model z popisku. Náhradník (hydrant za postřikovač)
+// číslo věrnosti nezvedne; věž hodu z kostek kreslí model terče, takže krabice ano.
+describe('drawn counts the label model only', () => {
+  it('a stand-in model does not count as drawn (s006 sprinkler)', () => {
+    expect(itemOf('s006', 'sprinkler')).toEqual(['sprinkler', false, 'no-model']);
+  });
+
+  it('the throw tower of wood blocks draws the target label (s088 cardboard box)', () => {
+    expect(itemOf('s088', 'cardboard box')).toEqual(['cardboard box', true, 'ok']);
+  });
+});

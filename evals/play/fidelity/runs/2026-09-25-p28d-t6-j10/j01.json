@@ -1,0 +1,273 @@
+{
+ "id": "j01",
+ "text": "Explain quantum physics to my grandma.",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "grandma",
+   "slot": "any",
+   "match": [
+    "grandma",
+    "granny",
+    "grandmother",
+    "old woman"
+   ]
+  },
+  {
+   "item": "quantum physics",
+   "slot": "any",
+   "match": [
+    "atom",
+    "quantum",
+    "particle",
+    "electron"
+   ]
+  },
+  {
+   "item": "explain",
+   "slot": "verb",
+   "controls": []
+  }
+ ],
+ "draft": {
+  "versionId": "e8f81c802d1d186dacf914e38e4e6033",
+  "ms": 94,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Run to the finish line without hitting an obstacle.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "grandma"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "hurdle"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "energetic",
+    "setting": "sunny arcade track"
+   },
+   "title": "Explain Quantum Physics Grandma",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "5affd70b5e28fa580e3b49ad3122d24c",
+  "ms": 16150,
+  "deadlineAt": "2026-09-25T14:56:19.835Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "5affd70b5e28fa580e3b49ad3122d24c",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Help Grandma understand quantum physics.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "Grandma"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "glowing mushroom"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "calm",
+    "setting": "An interactive quantum physics lesson"
+   },
+   "title": "Quantum Physics for Grandma",
+   "tutorial": {
+    "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+    "goalLine": "Help Grandma understand quantum physics."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "e8f81c802d1d186dacf914e38e4e6033",
+  "sentence": "Explain quantum physics to my grandma.",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:33:15.680Z"
+ },
+ "judge": {
+  "draft": {
+   "grandma": false,
+   "quantum physics": false,
+   "explain": false
+  },
+  "ai": {
+   "grandma": false,
+   "quantum physics": false,
+   "explain": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "grandma",
+    "visible": false,
+    "why": "Figure wears a hat but has no recognizable grandmother features."
+   },
+   {
+    "item": "quantum physics",
+    "visible": false,
+    "why": "No recognizable quantum physics symbols, diagrams, or phenomena are visible."
+   },
+   {
+    "item": "explain",
+    "visible": false,
+    "why": "No visible teaching, explanation, dialogue, or explanatory gestures."
+   }
+  ],
+  "ai": [
+   {
+    "item": "grandma",
+    "visible": false,
+    "why": "No recognizable elderly woman is visible."
+   },
+   {
+    "item": "quantum physics",
+    "visible": false,
+    "why": "No recognizable quantum physics concepts or symbols are visible."
+   },
+   {
+    "item": "explain",
+    "visible": false,
+    "why": "No visible teaching, dialogue, or explanatory activity."
+   }
+  ]
+ }
+}

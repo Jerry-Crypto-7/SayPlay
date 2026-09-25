@@ -1,0 +1,299 @@
+{
+ "id": "j10",
+ "text": "an elf princess escapes a goblin castle through a dark forest",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "elf princess",
+   "slot": "hero",
+   "match": [
+    "elf",
+    "princess"
+   ]
+  },
+  {
+   "item": "goblin",
+   "slot": "role",
+   "match": [
+    "goblin",
+    "orc"
+   ]
+  },
+  {
+   "item": "forest",
+   "slot": "setting",
+   "match": [
+    "forest",
+    "woods",
+    "castle"
+   ]
+  },
+  {
+   "item": "escape",
+   "slot": "verb",
+   "controls": [
+    "runner"
+   ],
+   "mechanics": [
+    "chaser"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "31d1ff9ac61faa8ef8edd5954288d374",
+  "ms": 213,
+  "spec": {
+   "archetype": "chase_escape",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "chaser",
+     "params": {
+      "catchEffect": "lose",
+      "role": "roomba",
+      "speed": "normal"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "exit",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "stun",
+     "params": {
+      "seconds": 4,
+      "targetRole": "roomba",
+      "uses": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Reach the exit before the goblin castle catches you.",
+    "kind": "reach",
+    "role": "exit"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "princess escapes"
+    },
+    {
+     "count": 1,
+     "id": "roomba",
+     "kind": "chaser",
+     "label": "goblin castle"
+    },
+    {
+     "count": 1,
+     "id": "exit",
+     "kind": "exit",
+     "label": "exit doors"
+    },
+    {
+     "count": 3,
+     "id": "cart",
+     "kind": "prop",
+     "label": "shopping cart"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "frantic",
+    "setting": "dark forest"
+   },
+   "title": "Elf Princess Escapes Goblin",
+   "tutorial": {
+    "controlsHint": "Tap where to run. Use a cart to stun the goblin castle.",
+    "goalLine": "Escape through the exit. The goblin castle hunts you."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "use",
+       "target": "roomba"
+      }
+     ],
+     "assert": {
+      "firedMechanics": [
+       "stun"
+      ]
+     },
+     "id": "stun_freezes",
+     "kind": "keypoint",
+     "mechanic": "stun",
+     "setup": {
+      "placeAt": {
+       "roomba": "player"
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "795e43e206a767547dc814b681dddafe",
+  "ms": 16596,
+  "deadlineAt": "2026-09-25T15:06:30.605Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "795e43e206a767547dc814b681dddafe",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Escape the goblin castle through the dark forest.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "elf princess"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "goblin castle"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "forest",
+    "mood": "energetic",
+    "setting": "A dark forest outside a goblin castle"
+   },
+   "title": "Elf Princess: Escape from the Goblin Castle",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Escape the goblin castle through the dark forest."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "31d1ff9ac61faa8ef8edd5954288d374",
+  "sentence": "an elf princess escapes a goblin castle through a dark forest",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:33:43.335Z"
+ },
+ "judge": {
+  "draft": {
+   "elf princess": false,
+   "goblin": true,
+   "forest": true,
+   "escape": false
+  },
+  "ai": {
+   "elf princess": false,
+   "goblin": true,
+   "forest": true,
+   "escape": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "elf princess",
+    "visible": false,
+    "why": "No recognisable elf princess appears."
+   },
+   {
+    "item": "goblin",
+    "visible": true,
+    "why": "Small green humanoid has pointed ears and a goblin-like face."
+   },
+   {
+    "item": "forest",
+    "visible": true,
+    "why": "Dense conifer trees cover the rocky background."
+   },
+   {
+    "item": "escape",
+    "visible": false,
+    "why": "No visible movement or pursuit clearly conveys escaping."
+   }
+  ],
+  "ai": [
+   {
+    "item": "elf princess",
+    "visible": false,
+    "why": "Figure lacks recognizable elven or royal features."
+   },
+   {
+    "item": "goblin",
+    "visible": true,
+    "why": "Green humanoids have conspicuous pointed ears and goblin-like heads."
+   },
+   {
+    "item": "forest",
+    "visible": true,
+    "why": "Trees and stumps flank a path extending among distant trees."
+   },
+   {
+    "item": "escape",
+    "visible": false,
+    "why": "Static arrangement does not clearly establish fleeing or pursuit."
+   }
+  ]
+ }
+}

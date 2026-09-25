@@ -1,0 +1,52 @@
+{
+ "about": "P28D T1 judge-style set, frozen on 2026-09-25 before any P28D change: 10 sentences a juror might type – 4 outside game genres, 3 with a verb the draft does not know, 3 fantasy. Same checklist rules as corpus.json (2-4 nouns, exactly 1 verb, written before any run). Reported separately from the 30-sentence corpus and never edited after the freeze; its SHA-256 is in README.md.",
+ "sentences": [
+  { "id": "j01", "source": "judge", "text": "Explain quantum physics to my grandma.", "checklist": [
+   { "item": "grandma", "slot": "any", "match": ["grandma", "granny", "grandmother", "old woman"] },
+   { "item": "quantum physics", "slot": "any", "match": ["atom", "quantum", "particle", "electron"] },
+   { "item": "explain", "slot": "verb", "controls": [] } ] },
+  { "id": "j02", "source": "judge", "text": "a sleepy cat naps in a cozy rainy café", "checklist": [
+   { "item": "cat", "slot": "any", "match": ["cat", "kitten"] },
+   { "item": "café", "slot": "setting", "match": ["cafe", "café", "coffee"] },
+   { "item": "nap", "slot": "verb", "controls": [] } ] },
+  { "id": "j03", "source": "judge", "text": "my startup pitch to investors in a glass skyscraper", "checklist": [
+   { "item": "investor", "slot": "any", "match": ["investor", "businessman", "suit"] },
+   { "item": "skyscraper", "slot": "setting", "match": ["skyscraper", "office", "tower"] },
+   { "item": "pitch", "slot": "verb", "controls": [] } ] },
+  { "id": "j04", "source": "judge", "text": "walk my dog along the beach while eating an ice cream", "checklist": [
+   { "item": "dog", "slot": "any", "match": ["dog", "puppy"] },
+   { "item": "ice cream", "slot": "any", "match": ["ice cream", "icecream", "cone"] },
+   { "item": "beach", "slot": "setting", "match": ["beach", "sea", "shore"] },
+   { "item": "walk", "slot": "verb", "controls": ["runner", "move_free"] } ] },
+  { "id": "j05", "source": "judge", "text": "pop ten balloons at a birthday party", "checklist": [
+   { "item": "balloon", "slot": "any", "match": ["balloon"] },
+   { "item": "birthday party", "slot": "setting", "match": ["party", "birthday"] },
+   { "item": "pop", "slot": "verb", "controls": ["shooter", "throw"] } ] },
+  { "id": "j06", "source": "judge", "text": "a chef flips pancakes in a busy kitchen", "checklist": [
+   { "item": "chef", "slot": "hero", "match": ["chef", "cook"] },
+   { "item": "pancake", "slot": "any", "match": ["pancake"] },
+   { "item": "kitchen", "slot": "setting", "match": ["kitchen", "restaurant"] },
+   { "item": "flip", "slot": "verb", "controls": ["timing", "throw"] } ] },
+  { "id": "j07", "source": "judge", "text": "a squirrel hoards acorns before winter comes", "checklist": [
+   { "item": "squirrel", "slot": "hero", "match": ["squirrel"] },
+   { "item": "acorn", "slot": "any", "match": ["acorn", "nut"] },
+   { "item": "winter", "slot": "setting", "match": ["winter", "snow"] },
+   { "item": "hoard", "slot": "verb", "controls": [], "mechanics": ["collectible"] } ] },
+  { "id": "j08", "source": "judge", "text": "a wizard defends a crystal tower from flying skeletons", "checklist": [
+   { "item": "wizard", "slot": "hero", "match": ["wizard", "mage", "sorcerer"] },
+   { "item": "skeleton", "slot": "role", "match": ["skeleton", "undead"] },
+   { "item": "tower", "slot": "setting", "match": ["tower", "crystal"] },
+   { "item": "defend", "slot": "verb", "controls": ["shooter"], "mechanics": ["spawn_wave", "defeat"] } ] },
+  { "id": "j09", "source": "judge", "text": "a dragon burns down villages and dodges arrows from knights", "checklist": [
+   { "item": "dragon", "slot": "hero", "match": ["dragon"] },
+   { "item": "knight", "slot": "role", "match": ["knight", "archer", "soldier"] },
+   { "item": "arrow", "slot": "any", "match": ["arrow"] },
+   { "item": "village", "slot": "setting", "match": ["village", "town"] },
+   { "item": "dodge", "slot": "verb", "controls": ["move_free", "runner"] } ] },
+  { "id": "j10", "source": "judge", "text": "an elf princess escapes a goblin castle through a dark forest", "checklist": [
+   { "item": "elf princess", "slot": "hero", "match": ["elf", "princess"] },
+   { "item": "goblin", "slot": "role", "match": ["goblin", "orc"] },
+   { "item": "forest", "slot": "setting", "match": ["forest", "woods", "castle"] },
+   { "item": "escape", "slot": "verb", "controls": ["runner"], "mechanics": ["chaser"] } ] }
+ ]
+}

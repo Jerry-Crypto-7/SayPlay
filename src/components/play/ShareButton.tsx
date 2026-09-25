@@ -15,12 +15,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { loopEvent, SHARE_MARK } from './loop-client';
+
 type Share = 'idle' | 'copied' | 'manual';
 
 export function ShareButton({ versionId, title, label = 'Share', className = '' }: { readonly versionId: string; readonly title?: string; readonly label?: string; readonly className?: string }) {
   const button = useRef<HTMLButtonElement | null>(null);
   const [share, setShare] = useState<Share>('idle');
   const [href, setHref] = useState('');
+  const [volatile, setVolatile] = useState(false);
 
   useEffect(() => {
     const element = button.current;
@@ -33,12 +36,29 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
     };
   }, []);
 
+  /**
+   * Server bez sdíleného úložiště (P27D T5, D1) drží hry jen v paměti procesu
+   * a přizná to hlavičkou `x-play-store: memory`. Odkaz pak nesmí vypadat
+   * trvale – hráč se to dozví hned u sdílení.
+   */
+  async function checkLasting(): Promise<void> {
+    try {
+      const response = await fetch(`/api/play/games/${versionId}`, { cache: 'no-store' });
+      setVolatile(response.headers.get('x-play-store') === 'memory');
+    } catch {
+      // Nedostupné dveře o trvalosti nic neřeknou; odkaz sám se sdílí dál.
+    }
+  }
+
   async function run(): Promise<void> {
-    const url = `${window.location.origin}/play/${versionId}`;
+    // `?via=share` je jediný doklad, že odkaz došel: jeho otevření je `shared_open` (P27D T4).
+    const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}`;
     setHref(url);
+    void checkLasting();
     if (typeof navigator.share === 'function') {
       try {
         await navigator.share({ title: title ?? document.title, url });
+        loopEvent('share', versionId);
         return;
       } catch (error) {
         // Hráč nabídku zavřel – nic dalšího. Jiná chyba: zkusit schránku.
@@ -48,6 +68,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
     try {
       await navigator.clipboard.writeText(url);
       setShare('copied');
+      loopEvent('share', versionId);
     } catch {
       setShare('manual');
     }
@@ -61,6 +82,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
       {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}
       <span className="play-status" aria-live="polite">
         {share === 'copied' ? 'Link copied' : ''}
+        {volatile ? `${share === 'copied' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
       </span>
       {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
     </>

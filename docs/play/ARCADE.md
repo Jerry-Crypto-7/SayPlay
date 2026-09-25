@@ -50,6 +50,8 @@ Nepevné tělo je jen kontakt. Příznaky těla: `solid` (stojí se na něm, zas
 
 Každý kus nese `params` (zod), `cost` (těla, pravidla) a `roles`.
 
+**Rampa rychlosti (P28C T6).** `runner`, `flap` a `steer` nesou v parametrech ovládání značky `ramp` na třetině a dvou třetinách trati (`rampMarks`); za každou značkou je běh o 10 % rychlejší (`rampedSpeed`, u `steer` strop rychlosti). Generátory a kontroly hratelnosti počítají s rychlostí za značkou (odstup řad, stoupání mezi trubkami, dosah v zatáčce), robot flapu a steeru dostane tytéž značky. Svět bez značek – každý zkompilovaný před rampou – jede stálou rychlostí a jeho hash se nepohne.
+
 ## Kontrakt ověření (`verifyArcade`)
 
 Hra je publikovatelná, když platí vše:

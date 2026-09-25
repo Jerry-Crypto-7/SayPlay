@@ -1,0 +1,247 @@
+{
+ "id": "s022",
+ "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "robot",
+   "slot": "hero",
+   "match": [
+    "robot",
+    "bot"
+   ]
+  },
+  {
+   "item": "charger",
+   "slot": "role",
+   "match": [
+    "charger",
+    "charging",
+    "battery"
+   ]
+  },
+  {
+   "item": "tower",
+   "slot": "setting",
+   "match": [
+    "tower"
+   ]
+  },
+  {
+   "item": "climb",
+   "slot": "verb",
+   "controls": [
+    "platform"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "511ba829d354c2bb3df8be39f03d0998",
+  "ms": 747,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "platform",
+   "controlParams": {
+    "checkpoints": true,
+    "difficulty": "normal",
+    "lengthM": 90,
+    "movingPlatforms": true
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Jump across the platforms to the flag without touching the spikes.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "tiny robot"
+    },
+    {
+     "count": 5,
+     "id": "spikes",
+     "kind": "hazard",
+     "label": "spikes"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "flag"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "floating stone platforms"
+   },
+   "title": "Tiny Robot Climbs Tower",
+   "tutorial": {
+    "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+    "goalLine": "Reach the flag. Jump over gaps and spikes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "30c81021a442c48f7e7efcd569640992",
+  "ms": 21115,
+  "deadlineAt": "2026-09-25T14:01:21.057Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "30c81021a442c48f7e7efcd569640992",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "platform",
+   "controlParams": {
+    "checkpoints": true,
+    "difficulty": "normal",
+    "lengthM": 90,
+    "movingPlatforms": true
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Climb the tower of moving platforms to reach your charger.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "tiny robot"
+    },
+    {
+     "count": 5,
+     "id": "spikes",
+     "kind": "hazard",
+     "label": "spikes"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "coin"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "flag"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "A tower of moving platforms"
+   },
+   "title": "Tiny Robot Climbs Tower",
+   "tutorial": {
+    "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+    "goalLine": "Climb the tower of moving platforms to reach your charger."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "robot": true,
+   "charger": false,
+   "tower": false,
+   "climb": false
+  },
+  "ai": {
+   "robot": true,
+   "charger": false,
+   "tower": false,
+   "climb": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "robot",
+    "visible": true,
+    "why": "Boxy humanoid has an antenna, mechanical torso, and rigid rectangular limbs."
+   },
+   {
+    "item": "charger",
+    "visible": false,
+    "why": "No recognizable charger is visible."
+   },
+   {
+    "item": "tower",
+    "visible": false,
+    "why": "Floating grassy platforms and trees do not resemble a tower."
+   },
+   {
+    "item": "climb",
+    "visible": false,
+    "why": "The figure stands upright; no climbing action is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "robot",
+    "visible": true,
+    "why": "Blocky humanoid has a mechanical face and red-tipped antenna."
+   },
+   {
+    "item": "charger",
+    "visible": false,
+    "why": "No recognizable charger is visible."
+   },
+   {
+    "item": "tower",
+    "visible": false,
+    "why": "Floating grassy platforms and trees do not resemble a tower."
+   },
+   {
+    "item": "climb",
+    "visible": false,
+    "why": "Character stands upright; no climbing action is shown."
+   }
+  ]
+ }
+}

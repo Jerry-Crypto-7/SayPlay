@@ -1,0 +1,324 @@
+{
+ "id": "h04",
+ "text": "a robot collects batteries on Mars",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "robot",
+   "slot": "hero",
+   "match": [
+    "robot",
+    "rover",
+    "bot"
+   ]
+  },
+  {
+   "item": "battery",
+   "slot": "role",
+   "match": [
+    "battery",
+    "batteries",
+    "cell"
+   ]
+  },
+  {
+   "item": "Mars",
+   "slot": "setting",
+   "match": [
+    "mars",
+    "martian",
+    "red planet"
+   ]
+  },
+  {
+   "item": "collect",
+   "slot": "verb",
+   "controls": [],
+   "mechanics": [
+    "collectible"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "64ee620023d5ef4734221d5638191aeb",
+  "ms": 505,
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Collect five batteries, then reach the stone portal.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "robot"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "battery"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "calm",
+    "setting": "mars"
+   },
+   "title": "Robot Collects Batteries Mars",
+   "tutorial": {
+    "controlsHint": "Tap a battery to walk to it. Tap again to pick it up.",
+    "goalLine": "Collect 5 batteries, then reach the exit."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "8be90384d3c92d34c954f98e0ffa5780",
+  "ms": 20666,
+  "deadlineAt": "2026-09-25T14:14:27.691Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "8be90384d3c92d34c954f98e0ffa5780",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Collect all the batteries on Mars.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "robot"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "batteries"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "look": "desert",
+    "mood": "calm",
+    "setting": "Mars"
+   },
+   "title": "Robot Collects Batteries on Mars",
+   "tutorial": {
+    "controlsHint": "Tap a battery to walk to it. Tap again to pick it up.",
+    "goalLine": "Collect all the batteries on Mars."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "robot": true,
+   "battery": false,
+   "Mars": false,
+   "collect": false
+  },
+  "ai": {
+   "robot": true,
+   "battery": false,
+   "Mars": false,
+   "collect": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "robot",
+    "visible": true,
+    "why": "Boxy humanoid with antenna, rectangular head, and mechanical limbs."
+   },
+   {
+    "item": "battery",
+    "visible": false,
+    "why": "No recognizable battery is visible."
+   },
+   {
+    "item": "Mars",
+    "visible": false,
+    "why": "Flat reddish ground and sparse rocks do not clearly identify Mars."
+   },
+   {
+    "item": "collect",
+    "visible": false,
+    "why": "Floating crystals suggest pickups, but no collecting action is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "robot",
+    "visible": true,
+    "why": "Boxy humanoid has an antenna, mechanical limbs, and illuminated face."
+   },
+   {
+    "item": "battery",
+    "visible": false,
+    "why": "Green cylinders lack clearly recognizable battery details."
+   },
+   {
+    "item": "Mars",
+    "visible": false,
+    "why": "Flat orange terrain with cactus-like plants does not clearly identify Mars."
+   },
+   {
+    "item": "collect",
+    "visible": false,
+    "why": "No visible interaction or indicators establish collecting as the gameplay."
+   }
+  ]
+ }
+}

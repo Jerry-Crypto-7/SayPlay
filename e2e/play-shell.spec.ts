@@ -52,6 +52,43 @@ test.describe('/play/[id] – play shell', () => {
     expect(last?.actionId).toBe('moveTo');
   });
 
+  test('the collecting game is won by tapping the things themselves on the canvas (P28C T4)', async ({ page }) => {
+    test.setTimeout(180_000);
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.targets().length > 0, undefined, { timeout: 60_000 });
+    const targets = await page.locator('[data-testid^="play-target-"]').count();
+    const tapped = new Set<string>();
+    let taps = 0;
+    while ((await page.getByTestId('play-outcome').count()) === 0 && taps <= targets + 1) {
+      // Sebrané věci na plátně zatím zůstávají (schová je P28B T8) – test si pamatuje, na co už klepl.
+      const next = (await page.evaluate(() => window.__playShell!.targets())).find((target) => !tapped.has(target.id));
+      if (next === undefined) break;
+      tapped.add(next.id);
+      const before = await page.evaluate(() => window.__playShell!.inputs().length);
+      await page.mouse.click(next.x, next.y);
+      taps += 1;
+      // Jedno klepnutí: dojdi (moveTo) a po příchodu seber nebo použij – dva vstupy, nebo konec hry.
+      await page.waitForFunction(
+        (count) => document.querySelector('[data-testid="play-outcome"]') !== null || window.__playShell!.inputs().length >= count + 2,
+        before,
+        { timeout: 30_000 },
+      );
+    }
+    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    expect(taps).toBeLessThanOrEqual(targets + 1);
+    const inputs = await page.evaluate(() => window.__playShell!.inputs());
+    expect(inputs.some((input) => input.actionId !== 'moveTo')).toBe(true);
+  });
+
+  test('a one-command prompt says what to tap and goes away on the first tap (P28C T5)', async ({ page }) => {
+    await page.goto(url);
+    const prompt = page.getByTestId('play-first-prompt');
+    await expect(prompt).toBeVisible({ timeout: 60_000 });
+    await expect(prompt).toHaveText(/^Tap (a|an|the) /);
+    await page.getByTestId('play-grid-stage').click({ position: { x: 5, y: 5 } });
+    await expect(prompt).toHaveCount(0);
+  });
+
   test('a phone viewport has no horizontal scroll', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url);
@@ -68,6 +105,32 @@ test.describe('/play/[id] – play shell', () => {
     expect(outcome.runState).toBe('won');
     await expect(page.getByTestId('play-outcome')).toBeVisible();
     await expect(page.getByTestId('play-outcome')).toContainText('You won');
-    await expect(page.getByTestId('play-outcome')).toContainText(String(outcome.tick));
+    // Sekundy, ne tiky (P28B F-15): grid tiká 20× za sekundu.
+    await expect(page.getByTestId('play-outcome')).toContainText(`in ${(outcome.tick / 20).toFixed(1)} s`);
+    await expect(page.getByTestId('play-outcome')).not.toContainText('tick');
+    await expect(page.getByTestId('play-tick')).toHaveText('');
+  });
+
+  test('every pickup removes one item from the scene; none are left after the win (P28B F-16)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__worldstreamStage?.ready() === true, undefined, { timeout: 60_000 });
+    const shown = () => page.evaluate(() => window.__worldstreamStage!.slots().filter((slot) => slot.shown).length);
+    let before = await shown();
+    let pickups = 0;
+    for (;;) {
+      const step = await page.evaluate(() => window.__playShell!.playWitness(1));
+      if (step.last === 'pickup') {
+        pickups += 1;
+        // Zmenšení trvá 200 ms, pak se obal skryje.
+        await expect.poll(shown, { timeout: 5_000 }).toBe(before - 1);
+      }
+      before = await shown();
+      if (step.left === 0) break;
+    }
+    expect(pickups).toBeGreaterThanOrEqual(5);
+    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect.poll(shown).toBe(before);
+    // Snímek pro lidské oko; WebGL pixely se mezi stroji liší, takže se nesrovnává.
+    await test.info().attach('won-without-mushrooms', { body: await page.locator('canvas').first().screenshot(), contentType: 'image/png' });
   });
 });

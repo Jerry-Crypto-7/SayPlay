@@ -11,10 +11,10 @@
  * kreslení mezi ním a `state` interpoluje.
  */
 
-import { ARCADE_HZ, AXIS_MAX, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, BODY } from '@/play/arcade/contract';
-import { type ArcadeOutcome, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
+import { ARCADE_HZ, AXIS_MAX, type ArcadeEffect, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, BODY } from '@/play/arcade/contract';
+import { type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { runBot } from '@/play/arcade/verify';
+import { type BotRun, runBot } from '@/play/arcade/verify';
 
 export const TICK_MS = 1000 / ARCADE_HZ;
 /** Víc času najednou (skrytá záložka, zamrzlý snímek) se zahodí – hra se nedohraje bez hráče. */
@@ -63,6 +63,30 @@ export interface ArcadeSession {
   pause(): void;
   resume(): void;
   paused(): boolean;
+  /**
+   * Ukázka „Show me how“ (P27D T3): od tiku 0 v reálném čase přehraje záznam
+   * robota ověřovače. Stisky hráče se zahodí a do lidského záznamu nejde nic;
+   * konec ukázky nechá stav stát, dokud ho `restart` nepustí hráči.
+   */
+  startDemo(): void;
+  /** `null` = hraje člověk; `verified` = konec má výsledek i hash publikace (`null`, dokud běží). */
+  demo(): DemoState | null;
+  /** Hraje člověk: ne ukázka, ne záznam robota přehraný `playInputs` (P27D T4 – jen takový běh se počítá). */
+  humanRun(): boolean;
+  /**
+   * Efekty pravidel z tiků, které hraje člověk (P28C T1) – pro zvuk a odezvu.
+   * Ukázka ani přehrání `playInputs` posluchače nevolají; do stavu ani hashe
+   * posluchač nesahá.
+   */
+  onEvents(listener: ArcadeEventListener): () => void;
+}
+
+/** `tick` = tik, ve kterém efekty padly (před jeho přičtením). */
+export type ArcadeEventListener = (events: readonly ArcadeEffect[], tick: number) => void;
+
+export interface DemoState {
+  readonly ended: boolean;
+  readonly verified: boolean | null;
 }
 
 /**
@@ -70,8 +94,9 @@ export interface ArcadeSession {
  * jinak spadl dřív, než hráč hru uvidí). První stisk padne do tiku 0, takže
  * záznam i přehrání jsou tytéž jako bez čekání.
  *
- * `swallowFirst` (načasování, rytmus, souboj – P25H): první stisk jen pustí
+ * `swallowFirst` (načasování, rytmus, souboj – P25H, střelnice): první stisk jen pustí
  * hodiny a do záznamu nejde – ťuk v tiku 0 by u načasování byl minutím.
+ * Držená osa a tlačítka hodiny nepustí, jen se nastaví.
  */
 export function createArcadeSession(
   world: ArcadeWorld,
@@ -89,26 +114,46 @@ export function createArcadeSession(
   let accumulator = 0;
   let halted = false;
   let cached: ArcadeSnapshot | null = null;
+  // Ukázka: záznam robota, kurzor v něm a konec, proti kterému se ověří.
+  let script: BotRun | null = null;
+  let cursor = 0;
+  let demoView: DemoState | null = null;
+  // Běh dohraný `playInputs` (záznam robota přes sondu) do restartu – nehrál ho člověk.
+  let replayed = false;
   const listeners = new Set<() => void>();
+  const eventListeners = new Set<ArcadeEventListener>();
 
   const notify = (): void => {
     cached = null;
+    if (script !== null && outcomeOf(state) !== 'running' && demoView?.ended !== true) {
+      demoView = { ended: true, verified: outcomeOf(state) === script.outcome && hashArcade(state) === script.hash };
+    }
     for (const listener of listeners) listener();
   };
 
-  const tickOnce = (buttons: number, axis: number): void => {
+  const tickOnce = (buttons: number, axis: number, record = true): void => {
     if (outcomeOf(state) !== 'running') return;
     prev.set(state);
     const tick = state[HEADER.tick] as number;
-    if (buttons === 0 && axis === 0) step(state, NO_INPUT, program);
-    else {
-      log.push({ tick, buttons, axis });
-      step(state, { buttons, axis }, program);
-    }
+    const idle = buttons === 0 && axis === 0;
+    if (record && !idle) log.push({ tick, buttons, axis });
+    const effects = step(state, idle ? NO_INPUT : { buttons, axis }, program);
+    if (effects.length > 0 && script === null && !replayed) for (const listener of eventListeners) listener(effects, tick);
+  };
+
+  /** Krok ukázky: vstup robota pro tenhle tik – týž výběr jako `playInputs`. */
+  const scriptedTick = (inputs: readonly InputEvent[]): void => {
+    const tick = state[HEADER.tick] as number;
+    while (cursor < inputs.length && (inputs[cursor] as InputEvent).tick < tick) cursor += 1;
+    const event = inputs[cursor];
+    const now = event !== undefined && event.tick === tick ? event : NO_INPUT;
+    tickOnce(now.buttons, now.axis, false);
   };
 
   /** Jeden tik ze sebraných stisků: osa stisku přebije drženou (klik = zamiř a vystřel, i když se pustí dřív, než tik padne). */
   const flush = (): void => {
+    // Ukázku hraje robot: sebrané stisky hráče se nepoužijí a `restart` je zahodí.
+    if (script !== null) return scriptedTick(script.inputs);
     tickOnce(pending | heldButtons, pendingAxis !== 0 ? pendingAxis : held);
     pending = 0;
     pendingAxis = 0;
@@ -128,15 +173,17 @@ export function createArcadeSession(
       if (axis !== 0) pendingAxis = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
       if (buttons !== 0) started = true;
     },
+    // Se `swallowFirst` pouští hodiny jen stisk (a ten se spolkne): kdyby je pustilo
+    // míření, klik na střelnici (míř + střel) by první ranou vystřelil (P28B T5).
     hold: (axis) => {
       if (halted) return;
       held = Math.max(-AXIS_MAX, Math.min(AXIS_MAX, Math.trunc(axis)));
-      if (held !== 0) started = true;
+      if (held !== 0 && !swallowFirst) started = true;
     },
     holdButtons: (buttons) => {
       if (halted) return;
       heldButtons = buttons;
-      if (buttons !== 0) started = true;
+      if (buttons !== 0 && !swallowFirst) started = true;
     },
     advance: (ms) => {
       if (outcomeOf(state) !== 'running') return 1;
@@ -191,10 +238,15 @@ export function createArcadeSession(
       heldButtons = 0;
       started = !waitForInput;
       accumulator = 0;
+      script = null;
+      cursor = 0;
+      demoView = null;
+      replayed = false;
       notify();
     },
     playInputs: (inputs, horizon) => {
       session.restart();
+      replayed = true;
       let next = 0;
       while (outcomeOf(state) === 'running' && (state[HEADER.tick] as number) < horizon) {
         const tick = state[HEADER.tick] as number;
@@ -222,6 +274,40 @@ export function createArcadeSession(
       notify();
     },
     paused: () => halted,
+    startDemo: () => {
+      const bot = runBot(world);
+      session.restart();
+      script = bot;
+      demoView = { ended: false, verified: null };
+      // Ukázka nečeká na první ťuk: ten by jinak musel přijít od hráče.
+      started = true;
+      halted = false;
+      notify();
+    },
+    demo: () => demoView,
+    humanRun: () => script === null && !replayed,
+    onEvents: (listener) => {
+      eventListeners.add(listener);
+      return () => eventListeners.delete(listener);
+    },
   };
   return session;
+}
+
+/** Výloha vstupní stránky (P28D T7): ukázka robota hraje dokola, `pauseMs` po konci znovu. Vrací úklid. */
+export function loopDemo(session: ArcadeSession, pauseMs = 1000): () => void {
+  let again: ReturnType<typeof setTimeout> | undefined;
+  if (session.demo() === null) session.startDemo();
+  const unsubscribe = session.subscribe(() => {
+    if (session.demo()?.ended === true && again === undefined) {
+      again = setTimeout(() => {
+        again = undefined;
+        session.startDemo();
+      }, pauseMs);
+    }
+  });
+  return () => {
+    clearTimeout(again);
+    unsubscribe();
+  };
 }

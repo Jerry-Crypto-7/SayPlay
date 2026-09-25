@@ -1,0 +1,616 @@
+{
+  "measuredAt": "2026-09-25",
+  "profile": "moto-g-power-emulated",
+  "method": "two production builds served side by side (ports 3131/3132), probe run with PERF_REPEATS=1 alternating A and B, order flipped every round",
+  "comparisons": {
+    "c1-gamespec-out-of-arcade": {
+      "A": "061582d (before T5)",
+      "B": "cb1b42b",
+      "games": {
+        "runner": [
+          {
+            "round": 1,
+            "A": {
+              "firstDrawMs": 4560,
+              "firstTickMs": 4981,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 3015,
+              "firstTickMs": 3529,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 2,
+            "A": {
+              "firstDrawMs": 3097,
+              "firstTickMs": 3527,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2973,
+              "firstTickMs": 3486,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 3,
+            "A": {
+              "firstDrawMs": 3748,
+              "firstTickMs": 4244,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 3874,
+              "firstTickMs": 4351,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 4,
+            "A": {
+              "firstDrawMs": 3476,
+              "firstTickMs": 3917,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 3095,
+              "firstTickMs": 3524,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 5,
+            "A": {
+              "firstDrawMs": 2870,
+              "firstTickMs": 3202,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 3405,
+              "firstTickMs": 3860,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 6,
+            "A": {
+              "firstDrawMs": 3778,
+              "firstTickMs": 4187,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2840,
+              "firstTickMs": 3313,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          }
+        ],
+        "arena": [
+          {
+            "round": 1,
+            "A": {
+              "firstDrawMs": 3473,
+              "firstTickMs": 3609,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 3231,
+              "firstTickMs": 3334,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 2,
+            "A": {
+              "firstDrawMs": 4439,
+              "firstTickMs": 4580,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 3330,
+              "firstTickMs": 3440,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 3,
+            "A": {
+              "firstDrawMs": 3164,
+              "firstTickMs": 3304,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2523,
+              "firstTickMs": 2663,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 4,
+            "A": {
+              "firstDrawMs": 2931,
+              "firstTickMs": 3015,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2974,
+              "firstTickMs": 3058,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 5,
+            "A": {
+              "firstDrawMs": 3268,
+              "firstTickMs": 3392,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 3054,
+              "firstTickMs": 3183,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 6,
+            "A": {
+              "firstDrawMs": 2957,
+              "firstTickMs": 3019,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2945,
+              "firstTickMs": 3043,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            }
+          }
+        ]
+      }
+    },
+    "c2-preload-three": {
+      "A": "cb1b42b",
+      "B": "2b32072",
+      "games": {
+        "runner": [
+          {
+            "round": 1,
+            "A": {
+              "firstDrawMs": 2749,
+              "firstTickMs": 3272,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2665,
+              "firstTickMs": 3037,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 2,
+            "A": {
+              "firstDrawMs": 3471,
+              "firstTickMs": 3940,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2832,
+              "firstTickMs": 3296,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 3,
+            "A": {
+              "firstDrawMs": 2682,
+              "firstTickMs": 3070,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2687,
+              "firstTickMs": 3062,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 4,
+            "A": {
+              "firstDrawMs": 2938,
+              "firstTickMs": 3342,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2596,
+              "firstTickMs": 2931,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 5,
+            "A": {
+              "firstDrawMs": 2847,
+              "firstTickMs": 3260,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2778,
+              "firstTickMs": 3221,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 6,
+            "A": {
+              "firstDrawMs": 2853,
+              "firstTickMs": 3223,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2669,
+              "firstTickMs": 3028,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          }
+        ],
+        "arena": [
+          {
+            "round": 1,
+            "A": {
+              "firstDrawMs": 3035,
+              "firstTickMs": 3245,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2639,
+              "firstTickMs": 2722,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 2,
+            "A": {
+              "firstDrawMs": 3187,
+              "firstTickMs": 3329,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2433,
+              "firstTickMs": 2528,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 3,
+            "A": {
+              "firstDrawMs": 2561,
+              "firstTickMs": 2632,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2360,
+              "firstTickMs": 2419,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 4,
+            "A": {
+              "firstDrawMs": 2595,
+              "firstTickMs": 2668,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2657,
+              "firstTickMs": 2734,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 5,
+            "A": {
+              "firstDrawMs": 2545,
+              "firstTickMs": 2622,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2650,
+              "firstTickMs": 2726,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 6,
+            "A": {
+              "firstDrawMs": 2776,
+              "firstTickMs": 2850,
+              "jsTransferBytes": 489523,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2413,
+              "firstTickMs": 2497,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          }
+        ]
+      }
+    },
+    "total": {
+      "A": "061582d (before T5)",
+      "B": "2b32072",
+      "games": {
+        "runner": [
+          {
+            "round": 1,
+            "A": {
+              "firstDrawMs": 2820,
+              "firstTickMs": 3219,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2644,
+              "firstTickMs": 2942,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 2,
+            "A": {
+              "firstDrawMs": 3010,
+              "firstTickMs": 3457,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2613,
+              "firstTickMs": 2975,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 3,
+            "A": {
+              "firstDrawMs": 2635,
+              "firstTickMs": 3080,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2504,
+              "firstTickMs": 2904,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 4,
+            "A": {
+              "firstDrawMs": 3618,
+              "firstTickMs": 4075,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2646,
+              "firstTickMs": 2993,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 5,
+            "A": {
+              "firstDrawMs": 5628,
+              "firstTickMs": 6635,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 5332,
+              "firstTickMs": 6234,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          }
+        ],
+        "arena": [
+          {
+            "round": 1,
+            "A": {
+              "firstDrawMs": 2865,
+              "firstTickMs": 2928,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2433,
+              "firstTickMs": 2515,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 2,
+            "A": {
+              "firstDrawMs": 2569,
+              "firstTickMs": 2633,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2216,
+              "firstTickMs": 2286,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 3,
+            "A": {
+              "firstDrawMs": 2770,
+              "firstTickMs": 2832,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2469,
+              "firstTickMs": 2545,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 4,
+            "A": {
+              "firstDrawMs": 4130,
+              "firstTickMs": 4254,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 2479,
+              "firstTickMs": 2577,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          },
+          {
+            "round": 5,
+            "A": {
+              "firstDrawMs": 5516,
+              "firstTickMs": 5721,
+              "jsTransferBytes": 496853,
+              "endState": "won",
+              "errors": 0
+            },
+            "B": {
+              "firstDrawMs": 5961,
+              "firstTickMs": 6180,
+              "jsTransferBytes": 489532,
+              "endState": "won",
+              "errors": 0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "browser": "151.0.7922.34"
+}

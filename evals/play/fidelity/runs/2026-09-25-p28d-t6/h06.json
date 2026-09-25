@@ -1,0 +1,329 @@
+{
+ "id": "h06",
+ "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "astronaut",
+   "slot": "hero",
+   "match": [
+    "astronaut",
+    "spaceman"
+   ]
+  },
+  {
+   "item": "crystal",
+   "slot": "role",
+   "match": [
+    "crystal",
+    "gem",
+    "shard"
+   ]
+  },
+  {
+   "item": "alien",
+   "slot": "role",
+   "match": [
+    "alien"
+   ]
+  },
+  {
+   "item": "icy moon",
+   "slot": "setting",
+   "match": [
+    "moon",
+    "ice",
+    "icy",
+    "frozen"
+   ]
+  },
+  {
+   "item": "collect",
+   "slot": "verb",
+   "controls": [],
+   "mechanics": [
+    "collectible"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "88c4b2a6d9086dd7faf53cdf7b084a5b",
+  "ms": 92,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal",
+    "goal": "target"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Hit every target before you run out of throws.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "him"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "icy moon"
+   },
+   "title": "Tiny Astronaut Repairs Broken",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Hit every target before the throws run out."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "5931d40cffcd1e9dad43dacc0c34610f",
+  "ms": 41048,
+  "deadlineAt": "2026-09-25T14:17:14.224Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "5931d40cffcd1e9dad43dacc0c34610f",
+  "spec": {
+   "archetype": "collect_exit",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "collectible",
+     "params": {
+      "count": 5,
+      "counter": "collected",
+      "role": "mushroom"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "portal",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "patrol",
+     "params": {
+      "disposition": "bold",
+      "role": "enemy",
+      "stops": 3,
+      "touchEffect": "lose"
+     }
+    }
+   ],
+   "objective": {
+    "count": 5,
+    "description": "Collect glowing crystals to repair the broken spaceship.",
+    "kind": "collect",
+    "role": "mushroom"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "tiny astronaut"
+    },
+    {
+     "count": 5,
+     "id": "mushroom",
+     "kind": "collectible",
+     "label": "glowing crystal"
+    },
+    {
+     "count": 1,
+     "id": "portal",
+     "kind": "exit",
+     "label": "stone portal"
+    },
+    {
+     "count": 2,
+     "id": "enemy",
+     "kind": "patrol",
+     "label": "crack"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "look": "snow",
+    "mood": "calm",
+    "setting": "An icy moon"
+   },
+   "title": "Tiny Astronaut: Icy Moon Repairs",
+   "tutorial": {
+    "controlsHint": "Tap a glowing crystal to walk to it. Tap again to pick it up.",
+    "goalLine": "Collect glowing crystals to repair the broken spaceship."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "mushroom"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "collected": 5
+      },
+      "firedMechanics": [
+       "collectible"
+      ]
+     },
+     "id": "fifth_opens_portal",
+     "kind": "keypoint",
+     "mechanic": "collectible",
+     "setup": {
+      "counters": {
+       "collected": 4
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "lost"
+     },
+     "id": "enemy_touch_loses",
+     "kind": "keypoint",
+     "mechanic": "patrol",
+     "setup": {
+      "placeAt": {
+       "enemy": "player"
+      }
+     },
+     "ticks": 5
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    },
+    {
+     "assert": {
+      "replayEqual": true
+     },
+     "id": "replay",
+     "kind": "replay"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "astronaut": false,
+   "crystal": true,
+   "alien": false,
+   "icy moon": false,
+   "collect": false
+  },
+  "ai": {
+   "astronaut": true,
+   "crystal": true,
+   "alien": false,
+   "icy moon": false,
+   "collect": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "astronaut",
+    "visible": false,
+    "why": "Helmeted armored figure lacks clearly recognizable astronaut equipment."
+   },
+   {
+    "item": "crystal",
+    "visible": true,
+    "why": "Bright cyan faceted crystals float above the ground."
+   },
+   {
+    "item": "alien",
+    "visible": false,
+    "why": "No clearly recognizable alien creature is visible."
+   },
+   {
+    "item": "icy moon",
+    "visible": false,
+    "why": "Orange ground lacks ice, snow, or recognizable lunar features."
+   },
+   {
+    "item": "collect",
+    "visible": false,
+    "why": "Floating objects suggest pickups, but no collecting action is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "astronaut",
+    "visible": true,
+    "why": "Figure wears a spacesuit with a rounded helmet and dark visor."
+   },
+   {
+    "item": "crystal",
+    "visible": true,
+    "why": "Pale blue pointed, faceted crystal clusters stand on the ground."
+   },
+   {
+    "item": "alien",
+    "visible": false,
+    "why": "Small dark figures lack clearly recognizable alien features."
+   },
+   {
+    "item": "icy moon",
+    "visible": false,
+    "why": "Neutral beige ground lacks recognizable ice or lunar terrain."
+   },
+   {
+    "item": "collect",
+    "visible": false,
+    "why": "Scattered objects suggest possibilities, but no collecting action is shown."
+   }
+  ]
+ }
+}

@@ -24,8 +24,10 @@ describe('noticeOf', () => {
     expect(notice?.action).toBeNull();
   });
 
-  it('ready nabídne Open it', () => {
-    expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) }, 0)).toEqual({ text: 'Your AI version is ready', action: { kind: 'open', label: 'Open it' } });
+  it('ready řekne název hry a nabídne Play it (P28D T7)', () => {
+    expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) }, 0, 'Knight Rides Dragon')).toEqual({ text: 'The AI version is ready – play it: “Knight Rides Dragon”', action: { kind: 'open', label: 'Play it' } });
+    // Než název dorazí (nebo když nedorazí), proužek nečeká.
+    expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) }, 0)).toEqual({ text: 'The AI version is ready – play it', action: { kind: 'open', label: 'Play it' } });
   });
 
   it('všech 8 důvodů má vlastní větu', () => {

@@ -1,0 +1,271 @@
+{
+ "id": "s006",
+ "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "corgi",
+   "slot": "hero",
+   "match": [
+    "corgi",
+    "dog",
+    "puppy"
+   ]
+  },
+  {
+   "item": "sausage",
+   "slot": "role",
+   "match": [
+    "sausage",
+    "hot dog"
+   ]
+  },
+  {
+   "item": "sprinkler",
+   "slot": "role",
+   "match": [
+    "sprinkler"
+   ]
+  },
+  {
+   "item": "park",
+   "slot": "setting",
+   "match": [
+    "park"
+   ]
+  },
+  {
+   "item": "run",
+   "slot": "verb",
+   "controls": [
+    "runner"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "b69830c35db37ffa0640af1be4d3d041",
+  "ms": 438,
+  "spec": {
+   "addons": [
+    "collect"
+   ],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Run to the finish line without hitting an obstacle.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "corgi"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "sprinkler"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "sausage"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "energetic",
+    "setting": "park"
+   },
+   "title": "Corgi Runs Park Grabbing",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Reach the finish line. Jump, slide and switch lanes."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "0d437081af86ec02ec58002ef87ebea9",
+  "ms": 24734,
+  "deadlineAt": "2026-09-25T13:59:51.243Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "0d437081af86ec02ec58002ef87ebea9",
+  "spec": {
+   "addons": [
+    "collect"
+   ],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Grab sausages and keep running by jumping over sprinklers.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "corgi"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "sprinklers"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "sausages"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "meadow",
+    "mood": "energetic",
+    "setting": "park"
+   },
+   "title": "Corgi Sausage Run",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Grab sausages and keep running by jumping over sprinklers."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "corgi": false,
+   "sausage": false,
+   "sprinkler": false,
+   "park": true,
+   "run": false
+  },
+  "ai": {
+   "corgi": false,
+   "sausage": false,
+   "sprinkler": false,
+   "park": true,
+   "run": true
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "corgi",
+    "visible": false,
+    "why": "Rear-facing animal lacks clearly recognizable corgi features."
+   },
+   {
+    "item": "sausage",
+    "visible": false,
+    "why": "Small tan objects do not clearly resemble sausages."
+   },
+   {
+    "item": "sprinkler",
+    "visible": false,
+    "why": "Red objects resemble fire hydrants, with no visible sprinklers."
+   },
+   {
+    "item": "park",
+    "visible": true,
+    "why": "Grassy grounds, trees, benches, and a paved path suggest a park."
+   },
+   {
+    "item": "run",
+    "visible": false,
+    "why": "The animal shows no clear running stride or motion."
+   }
+  ],
+  "ai": [
+   {
+    "item": "corgi",
+    "visible": false,
+    "why": "Rear-facing animal lacks clearly recognizable corgi features."
+   },
+   {
+    "item": "sausage",
+    "visible": false,
+    "why": "Small tan objects lack clearly recognizable sausage details."
+   },
+   {
+    "item": "sprinkler",
+    "visible": false,
+    "why": "Red objects resemble fire hydrants; no recognizable sprinkler appears."
+   },
+   {
+    "item": "park",
+    "visible": true,
+    "why": "Grassy surroundings, trees, and benches clearly suggest a park."
+   },
+   {
+    "item": "run",
+    "visible": true,
+    "why": "Character faces an obstacle-filled lane course, suggesting a running game."
+   }
+  ]
+ }
+}

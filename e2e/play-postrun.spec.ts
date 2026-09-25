@@ -37,7 +37,8 @@ test.describe('/play/[id] – after the run', () => {
     await page.getByTestId('play-replay').click();
     // Přetočení na začátek je vidět na tiku HUD dřív, než běh znovu dojde do konce.
     await expect.poll(async () => Number(await page.getByTestId('play-tick').getAttribute('data-tick')), { intervals: [20] }).toBeLessThan(tick);
-    await expect(page.getByTestId('play-outcome')).toContainText(`at tick ${tick}`, { timeout: 30_000 });
+    // Hráč vidí sekundy (P28B F-15); stejný konec pinuje tik v atributu, text by 28,1 s nerozlišil od 28,14 s.
+    await expect(page.locator('.play-outcome-detail')).toHaveAttribute('data-tick', String(tick), { timeout: 30_000 });
     await expect(page.getByTestId('play-outcome')).toContainText('You won');
     expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(inputs);
   });

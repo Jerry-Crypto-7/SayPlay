@@ -42,6 +42,8 @@ import {
   type RulePiece,
   UNIT,
   bodyBase,
+  rampMarks,
+  rampedSpeed,
 } from '../contract';
 
 export const STEER_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -176,6 +178,8 @@ const controlParams = z
     topSpeed: z.int().min(150).max(360).default(STEER.topSpeed),
     drift: z.boolean().default(false),
     course: courseSchema.optional(),
+    /** Značky rampy (`rampMarks`): za každou vyšší strop rychlosti; bez nich stálý. */
+    ramp: z.tuple([z.int(), z.int()]).optional(),
   })
   .strict();
 export type SteerControlParams = z.infer<typeof controlParams>;
@@ -212,7 +216,7 @@ export const steerControl: ControlPiece<SteerControlParams> = {
     } else if (boost > 0) boost -= 1;
     state[base + BODY.aux0] = boost;
 
-    const top = params.topSpeed + (boost > 0 ? STEER.boost : 0);
+    const top = rampedSpeed(params.topSpeed, state[base + BODY.z] as number, params.ramp) + (boost > 0 ? STEER.boost : 0);
     const vz = state[base + BODY.vz] as number;
     state[base + BODY.vz] = (input.buttons & BUTTON.DOWN) !== 0 ? Math.max(0, vz - STEER.brake) : toward(vz, top, vz > top ? STEER.brake : STEER.accel);
 
@@ -245,8 +249,8 @@ export function lateralReach(length: number, speed: number, v0 = 0): number {
   return x;
 }
 
-/** Nejvyšší rychlost, se kterou hratelnost počítá: rychlejší spec + turbo. */
-const fastest = (topSpeed: number): number => topSpeed + STEER.boost;
+/** Nejvyšší rychlost, se kterou hratelnost počítá na místě `z`: rychlejší spec po rampě + turbo. */
+const fastest = (topSpeed: number, z = 0, ramp?: readonly number[]): number => rampedSpeed(topSpeed, z, ramp) + STEER.boost;
 
 /** Tiky, za které hráč ideálně (rovně, plným plynem) ujede `distance`. */
 export function idealTicks(distance: number, topSpeed: number): number {
@@ -303,8 +307,9 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
     const straights: { near: number; far: number; center: number }[] = [];
     let z: number = STEER_TRACK.runIn;
     let center = 0;
-    // Posun úseku nesmí přerůst boční dosah při nejvyšší rychlosti (rychlejší spec = mírnější zatáčky).
-    const maxShift = Math.min(tier.shift[1], lateralReach(STEER_TRACK.segment, fastest(params.topSpeed)) - STEER.clearance);
+    // Posun úseku nesmí přerůst boční dosah při nejvyšší rychlosti (rychlejší
+    // spec = mírnější zatáčky); počítá se s rychlostí za poslední značkou rampy.
+    const maxShift = Math.min(tier.shift[1], lateralReach(STEER_TRACK.segment, fastest(params.topSpeed, length, rampMarks(length))) - STEER.clearance);
     for (;;) {
       // Zatáčka: posun úseků do jedné strany, celkem víc než šířka trati.
       const shift = rng.int(Math.min(tier.shift[0], maxShift), maxShift);
@@ -381,12 +386,12 @@ export const rivalFinish: RulePiece<z.infer<typeof rivalFinishParams>> = {
 
 /** Ovládání závodu i s osou trati pro soupeře. */
 export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift'>): PieceRef {
-  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level) } };
+  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level), ramp: rampMarks(level.length) } };
 }
 
-/** Robot řidiče (`steer-bot.ts`) s tou samou osou trati. */
+/** Robot řidiče (`steer-bot.ts`) s tou samou osou trati a rampou. */
 export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift'>): PieceRef {
-  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level) } };
+  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level), ramp: rampMarks(level.length) } };
 }
 
 /** Pravidla závodu: turbo, cíl, soupeř v cíli. */
@@ -406,11 +411,10 @@ export function steerRules(level: ArcadeLevel): PieceRef[] {
  * Tvrzení „hratelné z konstrukce“ nad hotovou tratí: vrací porušení, prázdné
  * pole = hratelná. Rychlost je nejvyšší možná (spec + turbo).
  */
-export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.topSpeed): string[] {
+export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.topSpeed, ramp: readonly number[] | undefined = rampMarks(level.length)): string[] {
   const issues: string[] = [];
   const m = (units: number): string => `${(units / UNIT).toFixed(1)} m`;
   const segments = steerSegments(level);
-  const speed = fastest(topSpeed);
   const minPass = STEER.carW + 2 * STEER.clearance;
   if (segments.length === 0) return ['the track has no barriers'];
 
@@ -427,7 +431,7 @@ export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.top
     // Obrat směru: boční rychlost míří na opačnou stranu a musí se nejdřív zrušit.
     const before = segments[index - 2];
     const reverse = before !== undefined && Math.sign(prev.center - before.center) === -Math.sign(shift) && shift !== 0;
-    const reach = lateralReach(prev.far - prev.near, speed, reverse ? -STEER.latMax : 0) - STEER.clearance;
+    const reach = lateralReach(prev.far - prev.near, fastest(topSpeed, segment.near, ramp), reverse ? -STEER.latMax : 0) - STEER.clearance;
     if (Math.abs(shift) > reach) issues.push(`the bend at ${m(segment.near)} moves ${m(shift)} but the car can steer only ${m(reach)} at full speed`);
   });
 

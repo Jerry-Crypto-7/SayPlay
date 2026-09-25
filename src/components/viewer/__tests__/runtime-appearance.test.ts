@@ -19,4 +19,20 @@ describe('visible deterministic state', () => {
     expect(leaf.rotation.y).toBe(0); expect(material.emissiveIntensity).toBe(0);
     geometry.dispose(); material.dispose();
   });
+
+  it('shrinks a collected item away in 200 ms and brings it back after a rewind (P28B F-16)', () => {
+    const root = new Group(); root.scale.set(2, 2, 2);
+    const slot = { stableId:'mushroom_1Visual', source:{kind:'proxy'}, binding:{entityId:'mushroom_1'} } as unknown as SemanticSlot;
+    const at = (taken: number) => ({ entities:[{stableId:'mushroom_1',locked:false,active:true}], values:{'c:mushroom_1_taken':taken} }) as unknown as RuntimeSnapshot;
+    applyRuntimeAppearance(root, slot, at(0), 1000);
+    expect(root.scale.x).toBe(2); expect(root.visible).toBe(true);
+    applyRuntimeAppearance(root, slot, at(1), 1000);
+    expect(root.scale.x).toBe(2);
+    applyRuntimeAppearance(root, slot, at(1), 1100);
+    expect(root.scale.x).toBeCloseTo(1); expect(root.visible).toBe(true);
+    applyRuntimeAppearance(root, slot, at(1), 1200);
+    expect(root.scale.x).toBe(0); expect(root.visible).toBe(false);
+    applyRuntimeAppearance(root, slot, at(0), 1300);
+    expect(root.scale.x).toBe(2);
+  });
 });

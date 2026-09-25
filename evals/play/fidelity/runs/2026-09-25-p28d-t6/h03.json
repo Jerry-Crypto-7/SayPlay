@@ -1,0 +1,235 @@
+{
+ "id": "h03",
+ "text": "defend a castle from dragons by throwing snowballs",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "castle",
+   "slot": "setting",
+   "match": [
+    "castle",
+    "fortress",
+    "wall"
+   ]
+  },
+  {
+   "item": "dragon",
+   "slot": "role",
+   "match": [
+    "dragon",
+    "wyvern"
+   ]
+  },
+  {
+   "item": "snowball",
+   "slot": "any",
+   "match": [
+    "snowball"
+   ]
+  },
+  {
+   "item": "throw",
+   "slot": "verb",
+   "controls": [
+    "throw",
+    "shooter"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "9a3e1713d8b9a3eff419bf8d8e79bbd2",
+  "ms": 197,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal",
+    "goal": "target"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Hit every target before you run out of throws.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "dragon"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "sunny park lawn"
+   },
+   "title": "Defend Castle Dragons Throwing",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Hit every target before the throws run out."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "5124a8222cf3c227e74306eabfcd0f6f",
+  "ms": 24706,
+  "deadlineAt": "2026-09-25T14:13:42.167Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "5124a8222cf3c227e74306eabfcd0f6f",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal",
+    "goal": "target"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Defend the castle by hitting the dragons with snowballs.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "dragons"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "castle",
+    "mood": "playful",
+    "setting": "A castle under attack from dragons"
+   },
+   "title": "Defend the Castle with Snowballs",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Defend the castle by hitting the dragons with snowballs."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "castle": false,
+   "dragon": true,
+   "snowball": false,
+   "throw": false
+  },
+  "ai": {
+   "castle": false,
+   "dragon": true,
+   "snowball": false,
+   "throw": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "castle",
+    "visible": false,
+    "why": "No castle or castle-like environment is visible."
+   },
+   {
+    "item": "dragon",
+    "visible": true,
+    "why": "Small winged dragons sit on three orange pedestals."
+   },
+   {
+    "item": "snowball",
+    "visible": false,
+    "why": "No recognizable snowball is visible."
+   },
+   {
+    "item": "throw",
+    "visible": false,
+    "why": "No throwing motion or airborne thrown object is visible."
+   }
+  ],
+  "ai": [
+   {
+    "item": "castle",
+    "visible": false,
+    "why": "Isolated towers and walls do not clearly establish a castle environment."
+   },
+   {
+    "item": "dragon",
+    "visible": true,
+    "why": "Small winged dragons with tails stand on orange blocks."
+   },
+   {
+    "item": "snowball",
+    "visible": false,
+    "why": "No recognizable snowball appears."
+   },
+   {
+    "item": "throw",
+    "visible": false,
+    "why": "No throwing motion or airborne projectile is shown."
+   }
+  ]
+ }
+}

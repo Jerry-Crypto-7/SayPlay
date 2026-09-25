@@ -264,6 +264,8 @@ export interface StageSlotProbe {
    * pořízeného při stavbě. Během odhalení je to součet obou podob.
    */
   readonly triangles: number;
+  /** Kreslí se obal vůbec? Neaktivní entita a sebraný předmět (P28B F-16) ne. */
+  readonly shown: boolean;
   readonly transform: SlotTransform;
   readonly anchors: readonly AnchorSpec[];
   /**
@@ -775,9 +777,10 @@ export default function WorldstreamStage({
   const [build] = useState(() => buildStage(world, palette));
   useFrame(() => {
     if (!runtimeState) return;
+    const now = performance.now();
     for (const { slot } of build.slots) {
       const view = build.views.find(entry => entry.stableId === slot.stableId);
-      if (view) applyRuntimeAppearance(view.group, slot, runtimeState);
+      if (view) applyRuntimeAppearance(view.group, slot, runtimeState, now);
     }
   });
   const reconciled = useRef({ world, palette });
@@ -1216,6 +1219,7 @@ export default function WorldstreamStage({
             internalInstances:entry.form.kind==='mesh'?entry.form.repeat?.offsets.length??1:1,
             attached: view?.attached != null,
             triangles: trianglesUnder(group),
+            shown: group !== null && group.visible && group.scale.x > 0,
             transform: group === null ? transform : {
               scale: [group.scale.x, group.scale.y, group.scale.z],
               translation: [group.position.x, group.position.y, group.position.z],

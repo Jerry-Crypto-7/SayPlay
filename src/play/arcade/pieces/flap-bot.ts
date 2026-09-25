@@ -7,9 +7,9 @@
 
 import { z } from 'zod';
 
-import { type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
+import { type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
-import { FLAP, FLAP_RISE } from './flap';
+import { FLAP, FLAP_RISE, flapRampParams } from './flap';
 
 /** Ťuk, když je hráč (odhad) aspoň tolik pod středem mezery. */
 const BELOW = 250;
@@ -61,15 +61,13 @@ function targetOf(gaps: readonly Gap[]): number {
   return Math.max(low, Math.min(high, middle(far ?? near)));
 }
 
-const botParams = z.object({}).strict();
-
-export const flapBot: BotPiece<z.infer<typeof botParams>> = {
+export const flapBot: BotPiece<z.infer<typeof flapRampParams>> = {
   id: 'flap_bot',
-  params: botParams,
+  params: flapRampParams,
   roles: ['player', 'obstacle'],
   reactionTicks: 8,
   cost: () => ({ bodies: 0, rules: 0 }),
-  decide: ({ state, player, recent }): ArcadeInput => {
+  decide: ({ state, player, recent }, params): ArcadeInput => {
     const p = bodyBase(player);
     // Vlastní let „teď“: viděný stav + ťuky, které v něm ještě nejsou.
     let y = state[p + S.y] as number;
@@ -79,7 +77,8 @@ export const flapBot: BotPiece<z.infer<typeof botParams>> = {
       vy -= GRAVITY;
       y += vy;
     }
-    const pz = (state[p + S.z] as number) + FLAP.speed * recent.length;
+    const z0 = state[p + S.z] as number;
+    const pz = z0 + rampedSpeed(FLAP.speed, z0, params.ramp) * recent.length;
     // Za poslední trubkou drž výšku startu.
     const target = targetOf(gapsAhead(state, player, pz));
     // Ťuk o tik dřív, než by klesl pod práh: po dlouhém pádu jinak přestřelí.

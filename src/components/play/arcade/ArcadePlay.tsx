@@ -10,28 +10,40 @@
  */
 
 import dynamic from 'next/dynamic';
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { memo, type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
+import { installSoundControls, jumped, playSfx, presetsFor } from '@/play/audio';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
-import { timerLeft } from '../Hud';
+import { loopEvent, loopImpression } from '../loop-client';
+import { FirstPrompt } from '../FirstPrompt';
+import { secondsOf, timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
+import { MuteButton } from '../MuteButton';
 import { PostRun } from '../PostRun';
+import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
-import { createArcadeSession, type ArcadeSnapshot } from './session';
+import { pauseWhenAway } from './focus';
+import { isTyping } from './input';
+import { createArcadeSession, loopDemo, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
-// WebGL kontext na serveru není – stejně jako mřížkové plátno.
-const ArcadeStage = dynamic(() => import('./ArcadeStage'), { ssr: false });
+// WebGL kontext na serveru není – stejně jako mřížkové plátno. `memo`: HUD se překresluje
+// každý tik, plátno ne – scéna čte relaci sama v `useFrame` (P28E-R1: na emulovaném
+// telefonu srovnání stovek těl runneru 20× za sekundu bralo většinu snímku).
+const ArcadeStage = memo(dynamic(() => import('./ArcadeStage'), { ssr: false }));
+// Chunky three.js stahovat už při načtení modulu, ne až po hydrataci: `dynamic` začne
+// až při prvním renderu a do té doby síť stojí (P28E T5, mezera ~0,25 s na telefonu).
+if (typeof window !== 'undefined') void import('./ArcadeStage');
 
 
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
@@ -55,7 +67,7 @@ const COUNT_UNIT: Readonly<Record<string, string>> = { timing: 'rounds', rhythm:
 /** Aréna ukazuje uběhlé sekundy, střelba a hod zbývající rány, P25H splněné úkoly, jinak metry. */
 const progressLabel = (spec: GameSpecV1, snapshot: ArcadeSnapshot): string =>
   spec.control === 'move_free'
-    ? `${Math.floor(snapshot.tick / 60)} s`
+    ? `${Math.floor(snapshot.tick / ARCADE_HZ)} s`
     : aiming(spec)
       ? `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left`
       : `${snapshot.distanceM} ${COUNT_UNIT[spec.control ?? ''] ?? 'm'}`;
@@ -88,10 +100,32 @@ function AddonCounters({ world, snapshot }: { readonly world: ArcadeWorld; reado
   );
 }
 
-function ArcadeHud({ versionId, spec, world, snapshot, paused }: { readonly versionId: string; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean }) {
+/**
+ * „Show me how“ (P27D T3): přehraje záznam robota, kterým verze prošla
+ * publikací. Během ukázky je to napsané v HUD a jde ji zastavit.
+ */
+function DemoControl({ session, demo }: { readonly session: ArcadeSession; readonly demo: DemoState | null }) {
+  if (demo === null) {
+    return (
+      <button type="button" className="play-button play-hud-demo" data-testid="play-demo-start" onClick={() => session.startDemo()}>
+        Show me how
+      </button>
+    );
+  }
+  if (demo.ended) return null;
+  return (
+    <p className="play-hud-progress" data-testid="play-demo">
+      <span>Demo: the verified run of this version. Your score is not counted.</span>{' '}
+      <button type="button" className="play-button play-hud-demo" data-testid="play-demo-stop" onClick={() => session.restart()}>
+        Stop and play
+      </button>
+    </p>
+  );
+}
+
+function ArcadeHud({ versionId, spec, world, snapshot, paused, shareable, children }: { readonly versionId: string; readonly shareable: boolean; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
-  // Arkáda tiká 60× za sekundu (viz `progressLabel`).
-  const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
+  const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
   return (
     <header className="play-hud" aria-label="Game status">
       <h1 className="play-hud-title">{spec.title}</h1>
@@ -113,8 +147,10 @@ function ArcadeHud({ versionId, spec, world, snapshot, paused }: { readonly vers
         </span>
       </p>
       <AddonCounters world={world} snapshot={snapshot} />
+      {children}
+      <MuteButton />
       {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
-      {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
+      {shareable && snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );
 }
@@ -132,13 +168,13 @@ export interface ArcadePlayProps {
   readonly upgrade: string | null;
   /** Hra na obrazovce feedu; `false` ji pozastaví (P27B T3). */
   readonly active?: boolean;
+  /** Ukázková hra vstupní stránky (P28D T7) není v úložišti: bez sdílení, remixu a událostí smyčky. */
+  readonly offline?: boolean;
 }
 
-/** Klávesa do pole formuláře hru neobnoví – píše se tam věta, ne hraje. */
-const typing = (target: EventTarget | null): boolean =>
-  target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
+const END_PAUSE_MS = 600;
 
-export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true }: ArcadePlayProps) {
+export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
   // u načasování by to byl rovnou minutý pokus (u poletování je to první mávnutí).
@@ -147,39 +183,95 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
     return createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' });
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
+  const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
+  const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
+  const remix = useRemixJob(versionId, !running && demo === null);
+  // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (running) {
+      setSettled(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setSettled(true), END_PAUSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [running]);
 
-  // Pauza při skryté záložce a mimo obrazovku feedu. Sama se hra nerozběhne:
-  // obnoví ji až vstup hráče, a to v zachytávací fázi, takže ten stisk už do hry padne
-  // (u poletování je to rovnou mávnutí). Rytmus nepípá, když tiky stojí.
+  // Pauza mimo obrazovku feedu, při skryté záložce a oknu bez fokusu (`focus.ts`).
+  // Rytmus nepípá, když tiky stojí.
   useEffect(() => {
     if (!active) {
       session.pause();
       return;
     }
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') session.pause();
-    };
-    const wake = () => {
-      if (session.paused() && document.visibilityState === 'visible') session.resume();
+    return pauseWhenAway(session, window, document);
+  }, [active, session]);
+
+  // Výloha vstupní stránky (P28D T7): dokud se hráč nedotkne, hraje dokola robot ověřovače –
+  // bez něj runner do tří sekund prohraje a první obrazovka ukáže „You lost“. První stisk
+  // nebo ťuk na scénu výlohu ukončí v zachytávací fázi, takže ten stisk už padne do hry hráče.
+  const [attract, setAttract] = useState(offline);
+  useEffect(() => {
+    if (!attract || !active) return;
+    const stopLoop = loopDemo(session);
+    const take = () => {
+      setAttract(false);
+      session.restart();
     };
     const onPointer = (event: PointerEvent) => {
-      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) wake();
+      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) take();
     };
     const onKey = (event: KeyboardEvent) => {
-      if (!event.repeat && !typing(event.target)) wake();
+      if (!event.repeat && !isTyping(event.target)) take();
     };
-    onVisibility();
-    document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pointerdown', onPointer, true);
     window.addEventListener('keydown', onKey, true);
     return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
+      stopLoop();
       window.removeEventListener('pointerdown', onPointer, true);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [active, session]);
+  }, [attract, active, session]);
+
+  // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
+  useEffect(() => {
+    if (active && !offline) loopImpression(versionId);
+  }, [active, offline, versionId]);
+  useEffect(() => {
+    if (offline) return;
+    let reported = false;
+    return session.subscribe(() => {
+      if (!session.humanRun()) return;
+      const now = session.snapshot();
+      if (now.runState === 'running') reported = false;
+      if (session.inputs().length > 0) loopEvent('first_input', versionId);
+      if (now.runState !== 'running' && !reported) {
+        reported = true;
+        loopEvent(now.runState === 'won' ? 'win' : 'lose', versionId);
+      }
+    });
+  }, [offline, session, versionId]);
+
+  // Zvuk (P28C T2): efekty pravidel z tiků hráče a skok z rychlosti vzhůru – mimo stav.
+  useEffect(() => installSoundControls(), []);
+  useEffect(() => {
+    const offEvents = session.onEvents((events) => {
+      for (const preset of presetsFor(events)) playSfx(preset);
+    });
+    let lastTick = -1;
+    const offJump = session.subscribe(() => {
+      const tick = session.state()[HEADER.tick] as number;
+      if (tick === lastTick) return;
+      lastTick = tick;
+      if (session.humanRun() && jumped(session.prev(), session.state())) playSfx('jump');
+    });
+    return () => {
+      offEvents();
+      offJump();
+    };
+  }, [session]);
 
   useEffect(() => {
     const probe = {
@@ -189,8 +281,33 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
         const end = session.playInputs(session.botInputs(), ARCADE_LIMITS.maxTicks);
         return { runState: end.runState, tick: end.tick };
       },
+      /**
+       * Záznam robota zahraný „rukou“ (P28C T3): tytéž stisky tik po tiku cestou,
+       * kterou jde klávesnice, takže běh je hráčův a odezva i zvuk reagují.
+       * Stojí u prvního bodu (`score`) nebo na konci hry (`end`); `at` je
+       * `performance.now()` té chvíle.
+       */
+      handPlay: (until: 'score' | 'end') => {
+        const inputs = session.botInputs();
+        session.restart();
+        let next = 0;
+        const done = (): boolean => {
+          const now = session.snapshot();
+          return now.runState !== 'running' || now.tick >= ARCADE_LIMITS.maxTicks || (until === 'score' && now.score > 0);
+        };
+        while (!done()) {
+          const tick = session.snapshot().tick;
+          while (next < inputs.length && inputs[next]!.tick < tick) next += 1;
+          const event = inputs[next]?.tick === tick ? inputs[next] : undefined;
+          session.hold(event?.axis ?? 0);
+          session.press(event?.buttons ?? 0);
+          session.stepOnce();
+        }
+        const end = session.snapshot();
+        return { runState: end.runState, tick: end.tick, score: end.score, at: performance.now() };
+      },
     };
-    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick` a `playWitness`.
+    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick`, `playWitness` a `handPlay`.
     window.__playShell = probe as unknown as Window['__playShell'];
     return () => {
       if (window.__playShell === (probe as unknown)) delete window.__playShell;
@@ -199,19 +316,50 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   return (
     <main className="play-shell">
-      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} />
-      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} />
+      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} />
+      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline}>
+        {running && <DemoControl session={session} demo={demo} />}
+      </ArcadeHud>
+      {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
+      {running && <RemixReadyChip job={remix} />}
       {read !== undefined && <SentenceRead read={read} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
-      {!running && (
+      {/* Konec ukázky není výhra hráče: bez „You won“, bez sdílení výsledku. */}
+      {!running && demo !== null && !attract && (
+        <section className="play-outcome" data-testid="play-demo-outcome" data-verified={String(demo.verified)} role="status">
+          <h2 className="play-outcome-title">Demo finished</h2>
+          <p className="play-outcome-detail">
+            {demo.verified === true ? 'Same result and end state as the check this version passed.' : 'This replay did not match the check this version passed.'}
+          </p>
+          <button type="button" className="play-button" data-testid="play-demo-yours" onClick={() => session.restart()}>
+            Play it yourself
+          </button>
+        </section>
+      )}
+      {!running && demo === null && settled && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">
+            {/* Aréna už čas nese v `progressLabel`. */}
+            {spec.control === 'move_free' ? '' : `in ${secondsOf(snapshot.tick, ARCADE_HZ)} · `}
             {progressLabel(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
           </p>
-          <PostRun versionId={versionId} onReplay={() => session.restart()} />
+          {offline ? (
+            <button type="button" className="play-button" data-testid="play-again" onClick={() => session.restart()}>
+              Play again
+            </button>
+          ) : (
+            <PostRun
+              versionId={versionId}
+              remix={remix}
+              onReplay={() => {
+                if (session.humanRun()) loopEvent('restart', versionId);
+                session.restart();
+              }}
+            />
+          )}
         </section>
       )}
     </main>

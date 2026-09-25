@@ -1,0 +1,224 @@
+{
+ "id": "s099",
+ "text": "build the tallest pancake tower before it falls over",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "pancake",
+   "slot": "any",
+   "match": [
+    "pancake"
+   ]
+  },
+  {
+   "item": "tower",
+   "slot": "any",
+   "match": [
+    "tower",
+    "stack"
+   ]
+  },
+  {
+   "item": "stack",
+   "slot": "verb",
+   "controls": [
+    "timing"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "adf6d4fda6afded737aa2eb41d930d03",
+  "ms": 18,
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "timing",
+   "controlParams": {
+    "mode": "stack",
+    "rounds": 8,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Stop each swinging block over the tower. Stack eight to reach the top.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "crane"
+    },
+    {
+     "count": 8,
+     "id": "block",
+     "kind": "collectible",
+     "label": "block"
+    },
+    {
+     "count": 1,
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed drop"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "of the tower"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 45,
+   "theme": {
+    "mood": "cheerful",
+    "setting": "a windy hilltop at sunset"
+   },
+   "title": "Build Tallest Pancake Tower",
+   "tutorial": {
+    "controlsHint": "Tap or Space to drop the block.",
+    "goalLine": "Stop each block over the tower. Stack 8 to win."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "b42373c4b9cf033dde7673b1dfa16609",
+  "ms": 20238,
+  "deadlineAt": "2026-09-25T14:10:27.867Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "b42373c4b9cf033dde7673b1dfa16609",
+  "spec": {
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "timing",
+   "controlParams": {
+    "mode": "stack",
+    "rounds": 8,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Build the tallest pancake tower before it falls over.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "crane"
+    },
+    {
+     "count": 8,
+     "id": "block",
+     "kind": "collectible",
+     "label": "pancake"
+    },
+    {
+     "count": 1,
+     "id": "miss",
+     "kind": "hazard",
+     "label": "missed drop"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "of the tower"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 45,
+   "theme": {
+    "mood": "cheerful",
+    "setting": "On a table"
+   },
+   "title": "Tallest Pancake Tower",
+   "tutorial": {
+    "controlsHint": "Tap or Space to drop the block.",
+    "goalLine": "Build the tallest pancake tower before it falls over."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "pancake": false,
+   "tower": false,
+   "stack": false
+  },
+  "ai": {
+   "pancake": false,
+   "tower": false,
+   "stack": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "pancake",
+    "visible": false,
+    "why": "Dark layered shapes resemble rocks, not recognizable pancakes."
+   },
+   {
+    "item": "tower",
+    "visible": false,
+    "why": "No recognizable tower is shown."
+   },
+   {
+    "item": "stack",
+    "visible": false,
+    "why": "Layered objects appear, but no stacking action is evident."
+   }
+  ],
+  "ai": [
+   {
+    "item": "pancake",
+    "visible": false,
+    "why": "Dark rock piles do not clearly resemble pancakes."
+   },
+   {
+    "item": "tower",
+    "visible": false,
+    "why": "No recognizable tower is visible."
+   },
+   {
+    "item": "stack",
+    "visible": false,
+    "why": "Rock piles appear layered, but no stacking action is shown."
+   }
+  ]
+ }
+}

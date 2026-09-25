@@ -6,7 +6,9 @@
 import { describe, expect, it } from 'vitest';
 
 import corpus from '../../../evals/play/fidelity/corpus.json';
-import { LOOKS, LOOK_IDS, lookFor, lookOf } from '../arcade/look';
+import catalog from '@/assets/catalog-index.json';
+
+import { LOOKS, LOOK_IDS, SCENERY_MODELS, isSceneryModel, lookFor, lookOf } from '../arcade/look';
 import { readGameSpec } from '../spec';
 import runner from '../arcade/__fixtures__/runner.json';
 
@@ -57,6 +59,16 @@ describe('sada věrnosti', () => {
     expect(settings.length).toBeGreaterThanOrEqual(20);
     // „a tower of moving platforms“: věž je sama trať z plošin, ne prostředí kolem ní.
     expect(missing).toEqual(['tower']);
+  });
+});
+
+describe('kulisy z katalogu', () => {
+  it('každý model kulis katalog má a každá sada aspoň jeden nese (P28D T6)', () => {
+    const ids = new Set(catalog.assets.map((asset) => asset.assetId));
+    expect(Object.keys(SCENERY_MODELS).filter((id) => !ids.has(id))).toEqual([]);
+    const primitiveOnly = LOOK_IDS.filter((id) => !LOOKS[id].props.some(isSceneryModel));
+    // Sopka stojí na vlastním primitivu `volcano`: katalog kužel sopky nemá.
+    expect(primitiveOnly).toEqual(['volcano']);
   });
 });
 
