@@ -1106,7 +1106,9 @@ button.play-feed-card {
     text-overflow: ellipsis;
   }
 
-  .play-shell:has(> .play-upgrade) > .play-hud {
+  /* Čip s počítadlem sekund naroste i na čtyři řádky – uhne mu i řádek draftu a „How this game works“. */
+  .play-shell:has(> .play-upgrade) > .play-hud,
+  .play-shell:has(> .play-upgrade) > .play-lab {
     margin-right: calc(42vw + 16px);
   }
 
@@ -1116,6 +1118,7 @@ button.play-feed-card {
     right: 8px;
     top: 8px;
     transform: none;
+    box-sizing: border-box;
     max-width: 42vw;
     padding: 4px 4px 4px 10px;
     gap: 6px;
