@@ -35,6 +35,9 @@ import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type Demo
 // každý tik, plátno ne – scéna čte relaci sama v `useFrame` (P28E-R1: na emulovaném
 // telefonu srovnání stovek těl runneru 20× za sekundu bralo většinu snímku).
 const ArcadeStage = memo(dynamic(() => import('./ArcadeStage'), { ssr: false }));
+// Chunky three.js stahovat už při načtení modulu, ne až po hydrataci: `dynamic` začne
+// až při prvním renderu a do té doby síť stojí (P28E T5, mezera ~0,25 s na telefonu).
+if (typeof window !== 'undefined') void import('./ArcadeStage');
 
 
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
