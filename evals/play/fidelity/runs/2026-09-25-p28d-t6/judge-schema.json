@@ -1,0 +1,32 @@
+{
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "items"
+ ],
+ "properties": {
+  "items": {
+   "type": "array",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "item",
+     "visible",
+     "why"
+    ],
+    "properties": {
+     "item": {
+      "type": "string"
+     },
+     "visible": {
+      "type": "boolean"
+     },
+     "why": {
+      "type": "string"
+     }
+    }
+   }
+  }
+ }
+}

@@ -128,4 +128,15 @@ Build `04c524e` (P28D T2–T6: nearest arcade game, sentence nouns, honest runne
 - **T6 target missed:** setting ≥ 12/24 and items ≥ 40/110 were the goal; both stay where they were. The props are now in frame (see the arena shot `runs/2026-09-25-p28d/s111-ai-scene.png`), but the judge cannot name a primitive set – see Known limits.
 - **Structural numbers moved:** draft drawn 0.698 against 0.591 in the offline baseline, and the draft now reads 0.759 of the sentence.
 
+**T6 second pass – catalog scenery (run `2026-09-25-p28d-t6`, commit `690a7e6`).** Every set now mixes catalog models (townhouse, taxi, shelves, fridge, palms, penguin, rocket…) with primitives, a primitive volcano cone, and grid games get the set's props behind the far edges plus a ground in the set's colour. Same 30 + 10 sentences, same live config.
+
+| | corpus p28d | corpus p28d-t6 | judge-10 p28d | judge-10 p28d-t6 |
+|---|---|---|---|---|
+| read (final / draft) | 0.838 / 0.759 | 0.827 / 0.759 | 0.632 / 0.507 | 0.632 / 0.507 |
+| vision judge, items (final) | 26/110 | **33/110** | 6/37 | 6/37 |
+| vision judge, hero (final) | 7/18 | 8/18 | 1/5 | 1/5 |
+| vision judge, setting (final) | 1/24 | **6/24** | 2/9 | 2/9 |
+
+- **Measured ceiling, T6 target still missed:** setting 6/24 (goal 12), items 33/110 (goal 40). Recognisable props moved the corpus; judge-10 did not move. What is left is not the props: the grid keeps a dark sky and the family's abstract background (pillars, spires) dominates the frame, several places have no set at all (café, birthday party, pond, tower), and "market", "outback" or "snow fort" need one specific structure the catalog has no model for.
+
 **The offline map measures the word draft, not the AI version.** The draft is what a player sees in the first second; the AI upgrade usually carries more of the sentence. A loss here is a loss of the offline path, and only a live run (`report.json`) says what the AI version shows.

@@ -1,0 +1,246 @@
+{
+ "id": "j08",
+ "text": "a wizard defends a crystal tower from flying skeletons",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "wizard",
+   "slot": "hero",
+   "match": [
+    "wizard",
+    "mage",
+    "sorcerer"
+   ]
+  },
+  {
+   "item": "skeleton",
+   "slot": "role",
+   "match": [
+    "skeleton",
+    "undead"
+   ]
+  },
+  {
+   "item": "tower",
+   "slot": "setting",
+   "match": [
+    "tower",
+    "crystal"
+   ]
+  },
+  {
+   "item": "defend",
+   "slot": "verb",
+   "controls": [
+    "shooter"
+   ],
+   "mechanics": [
+    "spawn_wave",
+    "defeat"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "e61094e1c180c730cfa1a2a4c274d442",
+  "ms": 187,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Hit every target and stop every wave before it reaches you.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "wizard"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "flying skeleton"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "action",
+    "setting": "dusty shooting range at sunset"
+   },
+   "title": "Wizard Defends Crystal Tower",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Hit every target and stop the waves."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "827dfd11c7640202ce18a3843d657d5f",
+  "ms": 16313,
+  "deadlineAt": "2026-09-25T15:05:05.225Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "827dfd11c7640202ce18a3843d657d5f",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Defend the crystal tower from flying skeletons.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "wizard"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "flying skeletons"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "castle",
+    "mood": "action",
+    "setting": "At a crystal tower"
+   },
+   "title": "Wizard Defends Crystal Tower",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Defend the crystal tower from flying skeletons."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "e61094e1c180c730cfa1a2a4c274d442",
+  "sentence": "a wizard defends a crystal tower from flying skeletons",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:33:34.961Z"
+ },
+ "judge": {
+  "draft": {
+   "wizard": true,
+   "skeleton": false,
+   "tower": false,
+   "defend": false
+  },
+  "ai": {
+   "wizard": true,
+   "skeleton": false,
+   "tower": true,
+   "defend": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "wizard",
+    "visible": true,
+    "why": "Foreground character wears a large pointed wizard hat and robe."
+   },
+   {
+    "item": "skeleton",
+    "visible": false,
+    "why": "Distant figures lack clearly recognizable skeletal details."
+   },
+   {
+    "item": "tower",
+    "visible": false,
+    "why": "Open grassy ground with trees; no tower is visible."
+   },
+   {
+    "item": "defend",
+    "visible": false,
+    "why": "No clear defensive action or protected objective is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "wizard",
+    "visible": true,
+    "why": "Foreground character wears a pointed wizard hat and flowing robe."
+   },
+   {
+    "item": "skeleton",
+    "visible": false,
+    "why": "Distant figures lack clearly recognizable exposed bones or skeletal anatomy."
+   },
+   {
+    "item": "tower",
+    "visible": true,
+    "why": "Several tall stone towers with pointed red roofs frame the environment."
+   },
+   {
+    "item": "defend",
+    "visible": false,
+    "why": "No clear defensive action or attack on a protected objective appears."
+   }
+  ]
+ }
+}

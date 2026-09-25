@@ -1,0 +1,302 @@
+{
+ "id": "j06",
+ "text": "a chef flips pancakes in a busy kitchen",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "chef",
+   "slot": "hero",
+   "match": [
+    "chef",
+    "cook"
+   ]
+  },
+  {
+   "item": "pancake",
+   "slot": "any",
+   "match": [
+    "pancake"
+   ]
+  },
+  {
+   "item": "kitchen",
+   "slot": "setting",
+   "match": [
+    "kitchen",
+    "restaurant"
+   ]
+  },
+  {
+   "item": "flip",
+   "slot": "verb",
+   "controls": [
+    "timing",
+    "throw"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "79a4e4e7d999bc546c025c7d3c14be36",
+  "ms": 443,
+  "spec": {
+   "archetype": "delivery",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "carry",
+     "params": {
+      "destinationRole": "customer",
+      "fragile": false,
+      "itemRole": "burger",
+      "menu": [
+       "burger",
+       "fries"
+      ]
+     }
+    },
+    {
+     "id": "timer",
+     "params": {
+      "id": "shift",
+      "onEnd": "lose",
+      "seconds": 90
+     }
+    }
+   ],
+   "objective": {
+    "description": "Serve every customer the burger or fries they ordered before the shift ends.",
+    "kind": "deliver",
+    "role": "customer"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "chef"
+    },
+    {
+     "count": 1,
+     "id": "burger",
+     "kind": "item",
+     "label": "burger"
+    },
+    {
+     "count": 1,
+     "id": "fries",
+     "kind": "item",
+     "label": "fries"
+    },
+    {
+     "count": 2,
+     "id": "customer",
+     "kind": "destination",
+     "label": "hungry customer"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "careful",
+    "setting": "busy kitchen"
+   },
+   "title": "Chef Flips Pancakes Busy",
+   "tutorial": {
+    "controlsHint": "Tap a dish to grab it, then tap the customer who ordered it.",
+    "goalLine": "Serve each customer the dish they ordered before time runs out."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "burger"
+      },
+      {
+       "actionId": "use",
+       "target": "customer"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "orders_served": 1
+      }
+     },
+     "id": "right_order_scores",
+     "kind": "keypoint",
+     "mechanic": "carry"
+    },
+    {
+     "actions": [
+      {
+       "actionId": "pickup",
+       "target": "fries"
+      },
+      {
+       "actionId": "use",
+       "target": "customer"
+      }
+     ],
+     "assert": {
+      "counters": {
+       "orders_served": 0
+      }
+     },
+     "id": "wrong_order_ignored",
+     "kind": "keypoint",
+     "mechanic": "carry"
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "db70291e0f71b22f0fdf1d4e9879b835",
+  "ms": 20658,
+  "deadlineAt": "2026-09-25T15:02:46.586Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "db70291e0f71b22f0fdf1d4e9879b835",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Help the chef flip the pancakes and land them cleanly.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "chef"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "pancakes"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "busy kitchen"
+   },
+   "title": "Chef's Pancake Flip",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Help the chef flip the pancakes and land them cleanly."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "79a4e4e7d999bc546c025c7d3c14be36",
+  "sentence": "a chef flips pancakes in a busy kitchen",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:33:26.618Z"
+ },
+ "judge": {
+  "draft": {
+   "chef": false,
+   "pancake": false,
+   "kitchen": false,
+   "flip": false
+  },
+  "ai": {
+   "chef": false,
+   "pancake": false,
+   "kitchen": false,
+   "flip": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "chef",
+    "visible": false,
+    "why": "Figure lacks clearly recognizable chef attire or a chef's hat."
+   },
+   {
+    "item": "pancake",
+    "visible": false,
+    "why": "Visible food resembles a burger, not a pancake."
+   },
+   {
+    "item": "kitchen",
+    "visible": false,
+    "why": "Scattered cabinets on neutral ground do not establish a kitchen environment."
+   },
+   {
+    "item": "flip",
+    "visible": false,
+    "why": "No airborne food or clear flipping motion is visible."
+   }
+  ],
+  "ai": [
+   {
+    "item": "chef",
+    "visible": false,
+    "why": "Tiny figure lacks clearly recognizable chef attire or hat."
+   },
+   {
+    "item": "pancake",
+    "visible": false,
+    "why": "Thin reddish objects do not clearly resemble pancakes."
+   },
+   {
+    "item": "kitchen",
+    "visible": false,
+    "why": "Scattered cabinets and appliances on neutral ground lack a recognizable kitchen environment."
+   },
+   {
+    "item": "flip",
+    "visible": false,
+    "why": "No clearly visible flipping motion or airborne rotating food."
+   }
+  ]
+ }
+}

@@ -1,0 +1,235 @@
+{
+ "id": "s050",
+ "text": "throwing snowballs at kids behind a snow fort",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "snowball",
+   "slot": "any",
+   "match": [
+    "snowball"
+   ]
+  },
+  {
+   "item": "kid",
+   "slot": "role",
+   "match": [
+    "kid",
+    "child",
+    "children"
+   ]
+  },
+  {
+   "item": "snow fort",
+   "slot": "setting",
+   "match": [
+    "snow",
+    "fort",
+    "winter"
+   ]
+  },
+  {
+   "item": "throw",
+   "slot": "verb",
+   "controls": [
+    "throw"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "45c4a16e20f23a84df8ca2c2a39458d5",
+  "ms": 151,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal",
+    "goal": "target"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Hit every target before you run out of throws.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "kid"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "playful",
+    "setting": "snow fort"
+   },
+   "title": "Throwing Snowballs Kids",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Hit every target before the throws run out."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "2d2322c78eed73a8a3c901f628aad967",
+  "ms": 20467,
+  "deadlineAt": "2026-09-25T14:03:14.746Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "2d2322c78eed73a8a3c901f628aad967",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "throw",
+   "controlParams": {
+    "difficulty": "normal",
+    "goal": "target"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 3,
+    "description": "Hit every kid behind the snow fort with snowballs.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 3,
+     "id": "target",
+     "kind": "target",
+     "label": "kids"
+    },
+    {
+     "count": 1,
+     "id": "ball",
+     "kind": "item",
+     "label": "ball"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "snow",
+    "mood": "playful",
+    "setting": "A snow fort with kids behind it"
+   },
+   "title": "Snow Fort Snowballs",
+   "tutorial": {
+    "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+    "goalLine": "Hit every kid behind the snow fort with snowballs."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "snowball": false,
+   "kid": true,
+   "snow fort": false,
+   "throw": false
+  },
+  "ai": {
+   "snowball": false,
+   "kid": true,
+   "snow fort": false,
+   "throw": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "snowball",
+    "visible": false,
+    "why": "No recognizable snowball is visible."
+   },
+   {
+    "item": "kid",
+    "visible": true,
+    "why": "Small cartoon children wear red caps and blue shirts."
+   },
+   {
+    "item": "snow fort",
+    "visible": false,
+    "why": "Plain gray ground and blue blocks do not resemble snow fortifications."
+   },
+   {
+    "item": "throw",
+    "visible": false,
+    "why": "No throwing pose or airborne thrown object is visible."
+   }
+  ],
+  "ai": [
+   {
+    "item": "snowball",
+    "visible": false,
+    "why": "No recognizable snowball is visible."
+   },
+   {
+    "item": "kid",
+    "visible": true,
+    "why": "Small childlike figures wear red caps and blue shirts."
+   },
+   {
+    "item": "snow fort",
+    "visible": false,
+    "why": "Plain ground and isolated blocks do not resemble a snow fort."
+   },
+   {
+    "item": "throw",
+    "visible": false,
+    "why": "No throwing pose or airborne projectile is visible."
+   }
+  ]
+ }
+}

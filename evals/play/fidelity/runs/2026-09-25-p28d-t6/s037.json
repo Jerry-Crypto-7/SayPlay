@@ -1,0 +1,235 @@
+{
+ "id": "s037",
+ "text": "A space marine shoots alien bugs in a mining colony",
+ "source": "corpus",
+ "checklist": [
+  {
+   "item": "space marine",
+   "slot": "hero",
+   "match": [
+    "marine",
+    "soldier",
+    "astronaut"
+   ]
+  },
+  {
+   "item": "alien bug",
+   "slot": "role",
+   "match": [
+    "bug",
+    "alien",
+    "insect"
+   ]
+  },
+  {
+   "item": "mining colony",
+   "slot": "setting",
+   "match": [
+    "mine",
+    "mining",
+    "colony"
+   ]
+  },
+  {
+   "item": "shoot",
+   "slot": "verb",
+   "controls": [
+    "shooter"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "3befa0c161ffdaead20a5b932ec1523f",
+  "ms": 230,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Hit every target and stop every wave before it reaches you.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "space marine"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "alien bug"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "action",
+    "setting": "mining colony"
+   },
+   "title": "Space Marine Shoots Alien",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Hit every target and stop the waves."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "450c3b076197bb706faa94d0d6c2708f",
+  "ms": 16342,
+  "deadlineAt": "2026-09-25T13:55:53.954Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "450c3b076197bb706faa94d0d6c2708f",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Shoot all the alien bugs in the mining colony.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "space marine"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "alien bugs"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "space",
+    "mood": "action",
+    "setting": "mining colony"
+   },
+   "title": "Space Marine Shoots Alien Bugs",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Shoot all the alien bugs in the mining colony."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "space marine": false,
+   "alien bug": false,
+   "mining colony": false,
+   "shoot": true
+  },
+  "ai": {
+   "space marine": false,
+   "alien bug": false,
+   "mining colony": false,
+   "shoot": true
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "space marine",
+    "visible": false,
+    "why": "Generic gray humanoid lacks recognizable space marine armor or equipment."
+   },
+   {
+    "item": "alien bug",
+    "visible": false,
+    "why": "No clearly recognizable alien insect is visible."
+   },
+   {
+    "item": "mining colony",
+    "visible": false,
+    "why": "Industrial machinery on plain ground does not clearly establish mining colony."
+   },
+   {
+    "item": "shoot",
+    "visible": true,
+    "why": "Central crosshair and multiple bullseye targets clearly suggest shooting."
+   }
+  ],
+  "ai": [
+   {
+    "item": "space marine",
+    "visible": false,
+    "why": "Generic gray humanoid lacks recognizable space marine equipment or details."
+   },
+   {
+    "item": "alien bug",
+    "visible": false,
+    "why": "Distant tiny shapes are not clearly recognizable as alien bugs."
+   },
+   {
+    "item": "mining colony",
+    "visible": false,
+    "why": "Rockets and scattered rocks lack recognizable mining infrastructure."
+   },
+   {
+    "item": "shoot",
+    "visible": true,
+    "why": "Central crosshair and multiple bullseye targets clearly indicate shooting."
+   }
+  ]
+ }
+}

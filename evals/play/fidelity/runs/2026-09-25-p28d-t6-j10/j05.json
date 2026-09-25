@@ -1,0 +1,220 @@
+{
+ "id": "j05",
+ "text": "pop ten balloons at a birthday party",
+ "source": "judge",
+ "checklist": [
+  {
+   "item": "balloon",
+   "slot": "any",
+   "match": [
+    "balloon"
+   ]
+  },
+  {
+   "item": "birthday party",
+   "slot": "setting",
+   "match": [
+    "party",
+    "birthday"
+   ]
+  },
+  {
+   "item": "pop",
+   "slot": "verb",
+   "controls": [
+    "shooter",
+    "throw"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "68379728264a734e220953d1e70c8d32",
+  "ms": 190,
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Hit every target and stop every wave before it reaches you.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "balloon"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "action",
+    "setting": "birthday party"
+   },
+   "title": "Pop Ten Balloons Birthday",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Hit every target and stop the waves."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "1b5080a1547d9e32915c56331b9f35a8",
+  "ms": 20621,
+  "deadlineAt": "2026-09-25T15:01:52.936Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "1b5080a1547d9e32915c56331b9f35a8",
+  "spec": {
+   "archetype": "combat_lite",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "shooter",
+   "controlParams": {
+    "difficulty": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "count": 4,
+    "description": "Pop ten balloons at a birthday party.",
+    "kind": "defeat_targets",
+    "role": "target"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "knight"
+    },
+    {
+     "count": 4,
+     "id": "target",
+     "kind": "target",
+     "label": "target"
+    },
+    {
+     "count": 1,
+     "id": "enemy",
+     "kind": "hazard",
+     "label": "balloons"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "mood": "action",
+    "setting": "birthday party"
+   },
+   "title": "Pop Ten Balloons",
+   "tutorial": {
+    "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+    "goalLine": "Pop ten balloons at a birthday party."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": {
+  "draftId": "68379728264a734e220953d1e70c8d32",
+  "sentence": "pop ten balloons at a birthday party",
+  "outcome": "MODEL_UNAVAILABLE",
+  "stage": "model",
+  "reason": "BRANCH_UNCONFIGURED",
+  "detail": "no upstream endpoint or key is configured; nothing was called",
+  "raw": null,
+  "at": "2026-09-25T10:35:22.405Z"
+ },
+ "judge": {
+  "draft": {
+   "balloon": false,
+   "birthday party": false,
+   "pop": false
+  },
+  "ai": {
+   "balloon": false,
+   "birthday party": false,
+   "pop": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "balloon",
+    "visible": false,
+    "why": "Small colored spheres are not clearly recognizable as balloons."
+   },
+   {
+    "item": "birthday party",
+    "visible": false,
+    "why": "Grassy field lacks recognizable birthday decorations or party setting."
+   },
+   {
+    "item": "pop",
+    "visible": false,
+    "why": "No visible bursting balloon or clear popping action."
+   }
+  ],
+  "ai": [
+   {
+    "item": "balloon",
+    "visible": false,
+    "why": "Small colored spheres lack clearly recognizable balloon features."
+   },
+   {
+    "item": "birthday party",
+    "visible": false,
+    "why": "Grassy field with trees and targets lacks birthday party decorations."
+   },
+   {
+    "item": "pop",
+    "visible": false,
+    "why": "No visible bursting balloon or popping effect."
+   }
+  ]
+ }
+}

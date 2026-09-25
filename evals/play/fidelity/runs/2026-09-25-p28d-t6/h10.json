@@ -1,0 +1,310 @@
+{
+ "id": "h10",
+ "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+ "source": "hostile",
+ "checklist": [
+  {
+   "item": "penguin",
+   "slot": "hero",
+   "match": [
+    "penguin"
+   ]
+  },
+  {
+   "item": "glacier",
+   "slot": "setting",
+   "match": [
+    "glacier",
+    "ice",
+    "icy",
+    "snow",
+    "arctic",
+    "antarctic"
+   ]
+  },
+  {
+   "item": "seal",
+   "slot": "role",
+   "match": [
+    "seal"
+   ]
+  },
+  {
+   "item": "fish",
+   "slot": "role",
+   "match": [
+    "fish"
+   ]
+  },
+  {
+   "item": "slide",
+   "slot": "verb",
+   "controls": [
+    "runner"
+   ]
+  }
+ ],
+ "draft": {
+  "versionId": "4b19194f7729d31caf7ed6bca29199b3",
+  "ms": 342,
+  "spec": {
+   "archetype": "chase_escape",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "mechanics": [
+    {
+     "id": "chaser",
+     "params": {
+      "catchEffect": "lose",
+      "role": "roomba",
+      "speed": "normal"
+     }
+    },
+    {
+     "id": "zone_trigger",
+     "params": {
+      "effect": "win",
+      "role": "exit",
+      "when": "enter"
+     }
+    },
+    {
+     "id": "stun",
+     "params": {
+      "seconds": 4,
+      "targetRole": "roomba",
+      "uses": 3
+     }
+    }
+   ],
+   "objective": {
+    "description": "Reach the exit before the giant Roomba catches you.",
+    "kind": "reach",
+    "role": "exit"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "penguin"
+    },
+    {
+     "count": 1,
+     "id": "roomba",
+     "kind": "chaser",
+     "label": "giant Roomba"
+    },
+    {
+     "count": 1,
+     "id": "exit",
+     "kind": "exit",
+     "label": "exit doors"
+    },
+    {
+     "count": 3,
+     "id": "cart",
+     "kind": "prop",
+     "label": "shopping cart"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 90,
+   "theme": {
+    "mood": "frantic",
+    "setting": "glacier"
+   },
+   "title": "Penguin Slides Down Glacier",
+   "tutorial": {
+    "controlsHint": "Tap where to run. Use a cart to stun the giant Roomba.",
+    "goalLine": "Escape through the exit. The giant Roomba hunts you."
+   },
+   "verification": [
+    {
+     "actions": [
+      {
+       "actionId": "use",
+       "target": "roomba"
+      }
+     ],
+     "assert": {
+      "firedMechanics": [
+       "stun"
+      ]
+     },
+     "id": "stun_freezes",
+     "kind": "keypoint",
+     "mechanic": "stun",
+     "setup": {
+      "placeAt": {
+       "roomba": "player"
+      }
+     }
+    },
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "upgrade": {
+  "status": "ready",
+  "versionId": "fdfe5f327c2cacec8351ba289ca578eb",
+  "ms": 20586,
+  "deadlineAt": "2026-09-25T14:23:34.968Z",
+  "late": false
+ },
+ "ai": {
+  "versionId": "fdfe5f327c2cacec8351ba289ca578eb",
+  "spec": {
+   "addons": [
+    "collect"
+   ],
+   "archetype": "hazard_crossing",
+   "budgets": {
+    "maxEntities": 40,
+    "maxRules": 120,
+    "maxTriangles": 200000
+   },
+   "control": "runner",
+   "controlParams": {
+    "density": "normal",
+    "lengthM": 250,
+    "speed": "normal"
+   },
+   "mechanics": [],
+   "objective": {
+    "description": "Slide down the glacier, jump over seals, and catch fish.",
+    "kind": "reach",
+    "role": "finish"
+   },
+   "roles": [
+    {
+     "count": 1,
+     "id": "player",
+     "kind": "player",
+     "label": "penguin"
+    },
+    {
+     "count": 1,
+     "id": "obstacle",
+     "kind": "hazard",
+     "label": "seals"
+    },
+    {
+     "count": 1,
+     "id": "coin",
+     "kind": "collectible",
+     "label": "fish"
+    },
+    {
+     "count": 1,
+     "id": "finish",
+     "kind": "exit",
+     "label": "finish line"
+    }
+   ],
+   "schema": "gamespec.v1",
+   "targetDurationSec": 60,
+   "theme": {
+    "look": "snow",
+    "mood": "energetic",
+    "setting": "On a glacier"
+   },
+   "title": "Penguin Glacier Slide",
+   "tutorial": {
+    "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+    "goalLine": "Slide down the glacier, jump over seals, and catch fish."
+   },
+   "verification": [
+    {
+     "assert": {
+      "runState": "won"
+     },
+     "id": "winnable",
+     "kind": "reachability"
+    }
+   ]
+  }
+ },
+ "raw": null,
+ "judge": {
+  "draft": {
+   "penguin": true,
+   "glacier": false,
+   "seal": false,
+   "fish": false,
+   "slide": false
+  },
+  "ai": {
+   "penguin": true,
+   "glacier": false,
+   "seal": false,
+   "fish": false,
+   "slide": false
+  }
+ },
+ "judgeWhy": {
+  "draft": [
+   {
+    "item": "penguin",
+    "visible": true,
+    "why": "Black birds with pale bellies, orange beaks and feet resemble penguins."
+   },
+   {
+    "item": "glacier",
+    "visible": false,
+    "why": "Rocky terrain and conifers lack recognizable glacial ice or snow."
+   },
+   {
+    "item": "seal",
+    "visible": false,
+    "why": "No recognizable seal is visible."
+   },
+   {
+    "item": "fish",
+    "visible": false,
+    "why": "No recognizable fish is visible."
+   },
+   {
+    "item": "slide",
+    "visible": false,
+    "why": "No clear sliding movement or sliding gameplay is shown."
+   }
+  ],
+  "ai": [
+   {
+    "item": "penguin",
+    "visible": true,
+    "why": "Black birds with flippers, orange beaks and feet clearly resemble penguins."
+   },
+   {
+    "item": "glacier",
+    "visible": false,
+    "why": "Flat gray terrain lacks recognizable glacier formations."
+   },
+   {
+    "item": "seal",
+    "visible": false,
+    "why": "No clearly recognizable seal is visible."
+   },
+   {
+    "item": "fish",
+    "visible": false,
+    "why": "Small shapes inside containers are not clearly recognizable as fish."
+   },
+   {
+    "item": "slide",
+    "visible": false,
+    "why": "Upright penguins on a track do not clearly demonstrate sliding."
+   }
+  ]
+ }
+}
