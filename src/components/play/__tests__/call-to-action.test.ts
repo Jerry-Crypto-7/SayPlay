@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { callToAction } from '../Hud';
+import { callToAction } from '../FirstPrompt';
 
 describe('callToAction', () => {
   it.each([

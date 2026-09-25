@@ -17,7 +17,7 @@
  */
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Group, type Mesh, type Object3D, type PerspectiveCamera, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
@@ -316,6 +316,31 @@ function frameOf(object: Object3D, camera: Camera, width: number, height: number
   return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, minX, maxX, minY, maxY, widthPx, heightPx, sizePx: Math.max(widthPx, heightPx), behind };
 }
 
+/**
+ * Kamera končí tam, kde mlha (P28E-R1). Za koncem mlhy má každý pixel barvu oblohy,
+ * takže to, co ořízne vzdálená rovina, by vypadalo stejně – jen se to nekreslí.
+ * Běžec tak nekreslí celou trať (Moto G Power emulace: 416 volání na snímek, 10 fps).
+ * Mlha i vzdálená rovina měří hloubku v prostoru kamery, hranice sedí přesně.
+ */
+/** Rezerva k vzdálené rovině: kamera se dorovná až po tělech a největší tělo je kolem 10 m. */
+const FAR_MARGIN_M = 12;
+
+function FarAtFog({ far }: { readonly far: number }) {
+  const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  useEffect(() => {
+    camera.far = far;
+    camera.updateProjectionMatrix();
+  }, [camera, far]);
+  return null;
+}
+
+/** Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza. */
+function RedrawOnChange({ session }: { readonly session: ArcadeSession }) {
+  const invalidate = useThree((three) => three.invalidate);
+  useEffect(() => session.subscribe(() => invalidate()), [session, invalidate]);
+  return null;
+}
+
 function FrameProbe({ control }: { readonly control: string }) {
   const get = useThree((three) => three.get);
   useEffect(() => {
@@ -432,7 +457,13 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
       const group = groups.current[view.index];
       if (group === null || group === undefined) continue;
       const base = bodyBase(view.index);
-      group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
+      const z = lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT;
+      // Tělo za koncem mlhy (`FarAtFog`) by kamera stejně ořízla; skryté vypadne i z přepočtu
+      // matic, který jinak prochází celou trať každý snímek (P28E-R1). Kamera je ze snímku předtím.
+      const inRange = Math.abs(z - camera.position.z) <= camera.far + FAR_MARGIN_M;
+      group.visible = inRange && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
+      group.matrixWorldAutoUpdate = inRange;
+      if (!inRange) continue;
       const fade = fading.current.get(view.index);
       if (fade !== undefined) {
         const t = (performance.now() - fade) / PICKUP_MS;
@@ -448,7 +479,7 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
       group.position.set(
         -lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
         lerp(prev[base + BODY.y] as number, state[base + BODY.y] as number, alpha) / UNIT,
-        lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT,
+        z,
       );
       // Skluz snižuje tělo – model se přikrčí stejně.
       if (view.role === ROLE.player) group.scale.y = (state[base + BODY.h] as number) / UNIT / view.h;
@@ -862,10 +893,13 @@ export default function ArcadeStage({
   useArenaInput(session, surface, enabled && control === 'move_free');
   useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'));
   useDuelInput(session, surface, enabled && control === 'duel');
+  // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
+  const live = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]}>
+      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'}>
+        <RedrawOnChange session={session} />
         <FrameProbe control={control} />
         <RenderProbe />
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
@@ -879,6 +913,7 @@ export default function ArcadeStage({
           <>
             <color attach="background" args={[look.sky]} />
             <fog attach="fog" args={[look.sky, ...look.fog]} />
+            <FarAtFog far={look.fog[1]} />
             <hemisphereLight args={[...look.light]} />
             {/* Boční scény svítí ze strany kamery (−x). */}
             <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={look.sun} />

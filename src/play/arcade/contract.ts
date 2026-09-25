@@ -152,6 +152,15 @@ export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
 
 /**
+ * Doplňky arkády (P26D): druhá mechanika nad základním ovládáním („jump and
+ * shoot“). Která ovládání který berou, říká `CAPABILITIES[control].addons`.
+ * Žijí tady, ne v `spec.ts`, aby hra v prohlížeči nestavěla schémata celého
+ * GameSpec kvůli jednomu seznamu (P28E T5); `spec.ts` je re-exportuje.
+ */
+export const ADDONS = ['shoot', 'collect', 'chaser', 'lives'] as const;
+export type AddonId = (typeof ADDONS)[number];
+
+/**
  * Celý stav instance: `HEADER_SIZE` slotů hlavičky, pak `maxBodies × BODY_STRIDE`
  * slotů těl. Nic mimo tohle pole hash nevidí a nic jiného se mezi tiky nenese.
  */

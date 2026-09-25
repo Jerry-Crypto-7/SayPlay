@@ -10,7 +10,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
+import { memo, type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
@@ -22,7 +22,8 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
-import { FirstPrompt, secondsOf, timerLeft } from '../Hud';
+import { FirstPrompt } from '../FirstPrompt';
+import { secondsOf, timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
@@ -36,8 +37,13 @@ import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
-// WebGL kontext na serveru není – stejně jako mřížkové plátno.
-const ArcadeStage = dynamic(() => import('./ArcadeStage'), { ssr: false });
+// WebGL kontext na serveru není – stejně jako mřížkové plátno. `memo`: HUD se překresluje
+// každý tik, plátno ne – scéna čte relaci sama v `useFrame` (P28E-R1: na emulovaném
+// telefonu srovnání stovek těl runneru 20× za sekundu bralo většinu snímku).
+const ArcadeStage = memo(dynamic(() => import('./ArcadeStage'), { ssr: false }));
+// Chunky three.js stahovat už při načtení modulu, ne až po hydrataci: `dynamic` začne
+// až při prvním renderu a do té doby síť stojí (P28E T5, mezera ~0,25 s na telefonu).
+if (typeof window !== 'undefined') void import('./ArcadeStage');
 
 
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
@@ -177,6 +183,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
     return createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' });
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
+  const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
@@ -319,7 +326,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   return (
     <main className="play-shell">
-      <ArcadeStage session={session} cast={{ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }} lookId={lookOf(spec.theme)} enabled={active && running} />
+      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>

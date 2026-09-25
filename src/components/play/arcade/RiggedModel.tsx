@@ -22,6 +22,8 @@ import type { ClipState } from '@/play/arcade/motion';
 const RIGGED_HEIGHT_M = 1.8;
 /** Prolnutí klipů (s). */
 const FADE_S = 0.15;
+/** Nejdelší krok animace za jeden snímek. */
+const MAX_MIXER_STEP_S = 0.1;
 /** Klipy, které dohrají jednou a zůstanou v poslední póze. */
 const ONCE: ReadonlySet<ClipState> = new Set(['shoot', 'hit', 'die']);
 /** Náhrada za stav, na který postava klip nemá. */
@@ -120,7 +122,9 @@ export function RiggedModel({
       playing.current = wanted;
       onClip?.(wanted);
     }
-    rig.mixer.update(delta);
+    // Pauza a konec běhu kreslí na požádání (P28E T2): první snímek po nich nese celou
+    // dobu stání a animace by přes ni skočila. Stání se nepřehrává.
+    rig.mixer.update(Math.min(delta, MAX_MIXER_STEP_S));
   });
 
   if (rig !== null) return <primitive object={rig.scene} scale={h / RIGGED_HEIGHT_M} />;

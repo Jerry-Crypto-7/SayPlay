@@ -11,10 +11,12 @@
 
 import { z } from 'zod';
 
-import { ADDONS, type AddonId, type GameSpecV1 } from '@/play/spec';
+import type { GameSpecV1 } from '@/play/spec';
 
 import {
+  ADDONS,
   ARCADE_LIMITS,
+  type AddonId,
   type ArcadeInput,
   type ArcadeLevel,
   type ArcadeObservation,
