@@ -9,9 +9,9 @@
  * posune entitu. `intent` se čte z tématu, cíle a vysvětlení mechanik.
  *
  * Řádky entit se věší pod nový kořen `group` (nejvýš 16 potomků, proto po
- * šestnácti do podskupin); rodina má do 17 řádků, `clearArena` přidá 3 a spec
+ * šestnácti do podskupin); rodina má do 17 řádků, `clearArena` přidá 4 a spec
  * do 64 entit, strop `GEOM_LIMITS.maxNodes = 96` tedy drží i v nejhorším
- * případě (17 + 3 + 64 + 5).
+ * případě (17 + 4 + 64 + 5).
  */
 
 import { cellToWorld } from '@/components/viewer/projection';
@@ -50,23 +50,46 @@ const ARENA_CEILING = 40;
  * pod nulou, jejichž vrcholy prorážely podlahu jako šedé střepy.
  */
 const CARVE_FLOOR = -1.5;
+/**
+ * Jak daleko od středu sahá rodina na ose x nebo z, změřeno 25. 9. 2026
+ * (`scenery-carve.test.ts`) a zaokrouhleno nahoru.
+ *
+ * Řez bere trojúhelníky podle těžiště, takže velké stěny a strmý terén rodiny,
+ * které zasáhl, zůstaly jako zubaté šedé střepy přes pozadí (F-28). Rodina
+ * proto stojí úhlopříčně za plochou (kamera přichází od +x/+z) tak daleko, že
+ * ji řez nezasáhne vůbec. Řez zůstává: slévá rodinu do jednoho kusu, jinak by
+ * každý strom byl vlastní draw call.
+ */
+export const FAMILY_REACH: Readonly<Record<string, number>> = { terraces: 25.5, spires: 12.5, grove: 11.5, works: 19 };
+/** Rodina se zvedne nad rovnou zem, ať se její plochý terén s tou pod plochou nepere. */
+const FAMILY_LIFT = 0.03;
+/** Nejdelší strana terénu, kterou schéma geometrie přijme. */
+const TERRAIN_SPAN = 64;
 
-/** Kulisy bez ničeho nad hrací plochou a pod ní rovný terén, ať řez nenechá díru. */
-function clearArena(base: GeomProgram, layout: Layout): GeomProgram {
+/** Kulisy stranou hrací plochy a pod ní rovný terén až k nim. */
+function clearArena(base: GeomProgram, layout: Layout, familyId: string): GeomProgram {
   const width = layout.width + ARENA_MARGIN * 2;
   const depth = layout.height + ARENA_MARGIN * 2;
   const shift = (CAMERA_SIDE_MARGIN - ARENA_MARGIN) / 2;
+  // Stačí oddělení na jedné ose: na kratší straně plochy, ať kulisa nestojí dál, než musí.
+  const away = Math.min(width, depth) / 2 + (FAMILY_REACH[familyId] as number) + 0.5;
+  // Zem od kamery (+x/+z) ke středu rodiny; dál ji nese terén rodiny sám.
+  const near = (low: number) => Math.min(TERRAIN_SPAN, low / 2 + CAMERA_SIDE_MARGIN + away);
+  const ground: [number, number] = [near(layout.width), near(layout.height)];
+  const groundAt: [number, number, number] = [layout.width / 2 + CAMERA_SIDE_MARGIN - ground[0] / 2, 0, layout.height / 2 + CAMERA_SIDE_MARGIN - ground[1] / 2];
   const nodes: GeomNode[] = [
     ...base.nodes,
-    {
-      kind: 'carve',
-      child: base.root,
-      at: [shift, CARVE_FLOOR + ARENA_CEILING / 2, shift],
-      size: [width + shift * 2, ARENA_CEILING, depth + shift * 2],
-    },
-    { kind: 'terrain', variant: 'flat', extent: [width + shift * 2, depth + shift * 2], amplitude: 0, seed: 0, at: [shift, 0, shift] },
+    { kind: 'terrain', variant: 'flat', extent: ground, amplitude: 0, seed: 0, at: groundAt },
   ];
-  nodes.push({ kind: 'group', children: [nodes.length - 2, nodes.length - 1] });
+  const floor = nodes.length - 1;
+  nodes.push({ kind: 'anchorTo', child: base.root, target: floor, site: 'top', offset: [-away - groundAt[0], FAMILY_LIFT, -away - groundAt[2]] });
+  nodes.push({
+    kind: 'carve',
+    child: nodes.length - 1,
+    at: [shift, CARVE_FLOOR + ARENA_CEILING / 2, shift],
+    size: [width + shift * 2, ARENA_CEILING, depth + shift * 2],
+  });
+  nodes.push({ kind: 'group', children: [nodes.length - 1, floor] });
   return { version: base.version, nodes, root: nodes.length - 1 };
 }
 
@@ -143,7 +166,7 @@ export function assembleBlueprint(spec: GameSpecV1, seed: number, compilation: S
     if (asset === null) pieces.push({ id, node: pieceNode(kind, targetBounds) });
     entries.push({ base, asset });
   }
-  const { geometry, nodeOf } = extendGeometry(clearArena(family.compose(seed), layout), pieces);
+  const { geometry, nodeOf } = extendGeometry(clearArena(family.compose(seed), layout, family.id), pieces);
   const objects: SemanticObject[] = entries.map(({ base, asset }) => ({
     ...base,
     source: asset ?? { kind: 'geom', node: nodeOf.get(base.stableId) as number },
