@@ -15,6 +15,7 @@ import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-contro
 import type { GameSpecV1 } from '@/play/spec';
 
 import { ShareButton } from './ShareButton';
+import { timerLeft } from './timer';
 
 export const TICKS_PER_SECOND = 20;
 
@@ -39,12 +40,6 @@ export function objectiveCounter(spec: GameSpecV1): string | null {
  * Odpočet mechaniky `timer` (P26 T8): časovač od AI hráč jinak neviděl a hra
  * skončila „z ničeho nic“. `null`, když spec časovač nemá.
  */
-export function timerLeft(spec: GameSpecV1, elapsedSeconds: number): string | null {
-  const timer = spec.mechanics.find((entry) => entry.id === 'timer');
-  const seconds = timer?.params.seconds;
-  return typeof seconds === 'number' ? `${Math.max(0, seconds - elapsedSeconds)}s left` : null;
-}
-
 export function progressLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'tick' | 'values'>): string {
   const seconds = Math.floor(snapshot.tick / TICKS_PER_SECOND);
   const clock = timerLeft(spec, seconds);

@@ -21,7 +21,7 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
-import { timerLeft } from '../Hud';
+import { timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
