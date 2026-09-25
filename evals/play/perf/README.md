@@ -144,6 +144,33 @@ The profiling script's own runs (the profiler adds overhead) give runner 4.06 �
 - **The grid parses the whole catalog, 0.49 s.** The catalog is the proxy's allowlist (`WORLDSTREAM_ASSETS`). Changing how it is validated is an access decision, so it is not done inside a performance task.
 - **The lazy three.js chunks download after hydration, a gap of about 0.25 s.** Preloading them only saves the gap.
 
-Real phones (`devices.md`) decide whether any of these is worth it.
+Real phones (`devices.md`) decide whether any of these is worth it. (Superseded: real phones were skipped, T5 below tried the candidates on the emulated phone.)
 
 Phone-profile numbers move by up to ~30 % between runs of the same build on this machine (grid, untouched by T2: fps p50 60 → 30, first draw 7.2 → 8.3 s); other sessions share the CPU. Compare desktop cells for small differences.
+
+## Real phones: not measured
+
+The user decided on 2026-09-25 to skip the iOS Safari and Android check. `devices.md` does not exist. Every phone number in this file is the emulated profile: this machine's GPU, the CPU slowed ×4. Nothing here says how the game runs on a real phone.
+
+## T5 – start-up candidates from the R2 profile (`ab-t5-2026-09-25.json`)
+
+**How it was measured.** Back-to-back runs were not usable. Another project's e2e suite shared the CPU (load 66–100 %), and a plain before → after run showed the runner 0.8 s *slower* after a change that removes work. So two production builds were served side by side (ports 3131 and 3132), and the T1 probe ran one repeat on A, then one on B, flipping the order every round. Each number below is the median of the paired B − A differences on the phone profile (emulated), runner and arena. All 68 runs ended `won` with no page errors.
+
+| candidate | runner first draw | runner first tick | arena first draw | arena first tick | rounds | decision |
+|---|---|---|---|---|---|---|
+| (1) GameSpec schemas out of the arcade start (`cb1b42b`) | −0.25 s | −0.22 s | −0.23 s | −0.24 s | 6 | kept |
+| (2) three.js chunks requested at module load (`2b32072`) | −0.13 s | −0.22 s | −0.28 s | −0.28 s | 6 | kept |
+| (3) catalog parse in the grid | – | – | – | – | – | not tried |
+
+- **(1)** The Zod time in the arcade did not come from the pieces. `addons.ts` imported one constant, `ADDONS`, from `spec.ts`. That import brought in the whole GameSpec schema, the mechanic registry and `worlddoc`, about 170 of the roughly 370 schema calls on the arcade start path. `ADDONS` now lives in `arcade/contract.ts` and `spec.ts` re-exports it. JS transferred 497 → 490 KB. The piece schemas (about 200 calls) stay; building them lazily touches 20+ files for at most the remaining half of this gain. `src/components/play/__tests__/arcade-bundle.test.ts` fails if `ArcadePlay` reaches `spec.ts`, `registry.ts` or `worlddoc.ts` again.
+- **(2)** `next/dynamic` asks for the `ArcadeStage` chunks only on first render, after hydration. `ArcadePlay` now starts the same import as soon as its module loads. Runner first draw improved by less than the plan's 0.2 s threshold. It was kept because the first tick, when the game can be played, improved by 0.22 s, and B was faster in 9 of 12 draw pairs and 10 of 12 tick pairs.
+- **(3)** The only way to take the 0.49 s catalog parse off the grid's first frame is to validate the allowlist differently or not at all in the browser. Deferring the parse to the first `resolve` does not help, because the grid resolves assets in its first render. The plan allowed this candidate only without an allowlist change, so it was not tried.
+
+**Before T5 → after T5**, same method, 5 rounds (`total` in the JSON):
+
+| cell (phone, emulated) | first draw, median A → B | first tick, median A → B | paired median |
+|---|---|---|---|
+| runner | 3.01 → **2.64 s** | 3.46 → **2.97 s** | draw −0.30 s, tick −0.40 s |
+| arena | 2.87 → **2.47 s** | 2.93 → **2.54 s** | draw −0.35 s, tick −0.35 s |
+
+**Target ≤ 3 s: met in the median on this machine, not in every run.** One of the 5 rounds hit a load spike where both builds took 5.3–6.6 s. These absolute numbers are lower than the R2 table above (4.6–5.1 s) because the machine was quieter during this run, not only because of T5. The paired differences are the part that belongs to T5. The grid was not re-measured (not in the AC, untouched by T5).
