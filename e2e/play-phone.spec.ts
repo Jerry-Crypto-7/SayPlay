@@ -43,7 +43,8 @@ for (const game of GAMES) {
 
     const { boxes, height } = await page.evaluate(() => {
       const found: Box[] = [];
-      for (const el of document.querySelectorAll<HTMLElement>('.play-shell > :not(.play-stage), .play-honest')) {
+      // Výzva prvních sekund (P28C T5) leží schválně uprostřed a do 4 s zmizí – není to panel, který ubírá plochu.
+      for (const el of document.querySelectorAll<HTMLElement>('.play-shell > :not(.play-stage):not(.play-first-prompt), .play-honest')) {
         const style = getComputedStyle(el);
         const r = el.getBoundingClientRect();
         if (style.display === 'none' || style.visibility === 'hidden' || r.width === 0 || r.height === 0) continue;
