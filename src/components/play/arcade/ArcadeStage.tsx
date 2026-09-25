@@ -793,7 +793,7 @@ export default function ArcadeStage({
         {control === 'timing' ? (
           <TimingScene session={session} look={look} />
         ) : control === 'rhythm' ? (
-          <RhythmScene session={session} surface={surface} look={look} />
+          <RhythmScene session={session} look={look} />
         ) : control === 'duel' ? (
           <DuelScene session={session} look={look} rivalModel={rivalModel} />
         ) : (

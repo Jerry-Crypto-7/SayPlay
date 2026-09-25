@@ -13,9 +13,10 @@ import dynamic from 'next/dynamic';
 import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
+import { installSoundControls, jumped, playSfx, presetsFor } from '@/play/audio';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -26,6 +27,7 @@ import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
+import { MuteButton } from '../MuteButton';
 import { PostRun } from '../PostRun';
 import { UpgradeBanner } from '../UpgradeBanner';
 
@@ -138,6 +140,7 @@ function ArcadeHud({ versionId, spec, world, snapshot, paused, children }: { rea
       </p>
       <AddonCounters world={world} snapshot={snapshot} />
       {children}
+      <MuteButton />
       {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
       {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
@@ -224,6 +227,25 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       }
     });
   }, [session, versionId]);
+
+  // Zvuk (P28C T2): efekty pravidel z tiků hráče a skok z rychlosti vzhůru – mimo stav.
+  useEffect(() => installSoundControls(), []);
+  useEffect(() => {
+    const offEvents = session.onEvents((events) => {
+      for (const preset of presetsFor(events)) playSfx(preset);
+    });
+    let lastTick = -1;
+    const offJump = session.subscribe(() => {
+      const tick = session.state()[HEADER.tick] as number;
+      if (tick === lastTick) return;
+      lastTick = tick;
+      if (session.humanRun() && jumped(session.prev(), session.state())) playSfx('jump');
+    });
+    return () => {
+      offEvents();
+      offJump();
+    };
+  }, [session]);
 
   useEffect(() => {
     const probe = {

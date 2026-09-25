@@ -6,7 +6,7 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (191)
+## Knihovny (192)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -201,6 +201,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | ws@7.5.13 | https://registry.npmjs.org/ws/-/ws-7.5.13.tgz | Einar Otto Stangvik (http://2x.io) | MIT | copyright notice; plné znění licence | Copyright (c) 2011 Einar Otto Stangvik <einaros@gmail.com> |
 | zod@4.4.3 | https://registry.npmjs.org/zod/-/zod-4.4.3.tgz | Colin McDonnell | MIT | copyright notice; plné znění licence | Copyright (c) 2025 Colin McDonnell |
 | zustand@5.0.14 | https://registry.npmjs.org/zustand/-/zustand-5.0.14.tgz | Paul Henschel | MIT | copyright notice; plné znění licence | Copyright (c) 2019 Paul Henschel |
+| zzfx (vendored) | https://github.com/KilledByAPixel/ZzFX (sample generator zzfxG, vendored and ported to TypeScript in src/play/audio/zzfx.ts) | Frank Force | MIT | copyright notice; plné znění licence | ZzFX - Zuper Zmall Zound Zynth, Copyright (c) 2019 Frank Force, MIT |
 
 ### Knihovny — licence posouzené jednotlivě
 
@@ -238,6 +239,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **OpenAI Codex CLI@0.145.0** (Apache-2.0): Externí lokální nástroj instalovaný uživatelem ve WSL2; jeho binárka není zkopírována do repozitáře ani distribuována s tímto handoffem. Verze ověřena oficiálním CLI, licence proti upstream tagu rust-v0.145.0 dne 8. 9. 2026. Odvozený veřejný modelový katalog má vlastní položku níže. Licence kódu CLI není oprávnění k modelové službě ani ke sdílení osobního účtu.
 - **opener@1.5.2** ((WTFPL OR MIT)): Duální licence (WTFPL OR MIT). Bereme větev MIT, která má jasné znění i notice; WTFPL se neuplatňuje.
 - **satori@0.25.0** (MPL-2.0): Turns the preview layout into SVG inside @vercel/og for the game link preview (P27B T6); server-only, unmodified, not in package-lock.json.
+- **zzfx (vendored)** (MIT): Generates the five game sounds (jump, pickup, hit, win, lose) and the rhythm beeps in the browser (P28C T2); ported to TypeScript with the MIT notice kept in the file header. Vendored, so invisible to package-lock.json.
 
 ### Knihovny — bez deklarovaného autora (101)
 

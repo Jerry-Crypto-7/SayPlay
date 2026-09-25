@@ -857,8 +857,9 @@ button.play-feed-card {
   font-size: 0.9rem;
 }
 
-/* „Show me how“ (P27D T3): stejně jako sdílení chytá ťuk samo, plátno ho nedostane. */
-.play-hud-demo {
+/* „Show me how“ (P27D T3) a ztlumení (P28C T2): stejně jako sdílení chytají ťuk samy, plátno ho nedostane. */
+.play-hud-demo,
+.play-hud-mute {
   pointer-events: auto;
   margin-top: 8px;
   margin-right: 8px;

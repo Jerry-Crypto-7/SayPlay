@@ -95,6 +95,24 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(before);
   });
 
+  test('the first click wakes the sound and M mutes it for the next visit too (P28C T2)', async ({ page }) => {
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    // Bez gesta hráče prohlížeč zvuk nepustí – kontext ještě nevznikl.
+    expect(await page.evaluate(() => window.__playAudio!.state())).toBe('none');
+    await page.getByTestId('arcade-stage').click();
+    await expect.poll(() => page.evaluate(() => window.__playAudio!.state())).toBe('running');
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound on');
+    await page.keyboard.press('m');
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
+    expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('muted');
+    await page.reload();
+    await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
+    await page.getByTestId('play-mute').click();
+    await expect(page.getByTestId('play-mute')).toHaveAttribute('aria-pressed', 'false');
+    expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('on');
+  });
+
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
     await page.goto(url);
     const stage = page.getByTestId('arcade-stage');
