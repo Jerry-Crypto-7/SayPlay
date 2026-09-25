@@ -162,6 +162,8 @@ export interface ArcadePlayProps {
   readonly active?: boolean;
 }
 
+const END_PAUSE_MS = 600;
+
 /** Klávesa do pole formuláře hru neobnoví – píše se tam věta, ne hraje. */
 const typing = (target: EventTarget | null): boolean =>
   target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select') !== null);
@@ -178,6 +180,16 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
+  // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (running) {
+      setSettled(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setSettled(true), END_PAUSE_MS);
+    return () => window.clearTimeout(timer);
+  }, [running]);
 
   // Pauza při skryté záložce a mimo obrazovku feedu. Sama se hra nerozběhne:
   // obnoví ji až vstup hráče, a to v zachytávací fázi, takže ten stisk už do hry padne
@@ -255,8 +267,33 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
         const end = session.playInputs(session.botInputs(), ARCADE_LIMITS.maxTicks);
         return { runState: end.runState, tick: end.tick };
       },
+      /**
+       * Záznam robota zahraný „rukou“ (P28C T3): tytéž stisky tik po tiku cestou,
+       * kterou jde klávesnice, takže běh je hráčův a odezva i zvuk reagují.
+       * Stojí u prvního bodu (`score`) nebo na konci hry (`end`); `at` je
+       * `performance.now()` té chvíle.
+       */
+      handPlay: (until: 'score' | 'end') => {
+        const inputs = session.botInputs();
+        session.restart();
+        let next = 0;
+        const done = (): boolean => {
+          const now = session.snapshot();
+          return now.runState !== 'running' || now.tick >= ARCADE_LIMITS.maxTicks || (until === 'score' && now.score > 0);
+        };
+        while (!done()) {
+          const tick = session.snapshot().tick;
+          while (next < inputs.length && inputs[next]!.tick < tick) next += 1;
+          const event = inputs[next]?.tick === tick ? inputs[next] : undefined;
+          session.hold(event?.axis ?? 0);
+          session.press(event?.buttons ?? 0);
+          session.stepOnce();
+        }
+        const end = session.snapshot();
+        return { runState: end.runState, tick: end.tick, score: end.score, at: performance.now() };
+      },
     };
-    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick` a `playWitness`.
+    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick`, `playWitness` a `handPlay`.
     window.__playShell = probe as unknown as Window['__playShell'];
     return () => {
       if (window.__playShell === (probe as unknown)) delete window.__playShell;
@@ -285,7 +322,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
           </button>
         </section>
       )}
-      {!running && demo === null && (
+      {!running && demo === null && settled && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">

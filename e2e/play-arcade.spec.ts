@@ -113,6 +113,31 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('on');
   });
 
+  test('a pickup pops "+1" and the result waits ~600 ms after the end (P28C T3)', async ({ page }) => {
+    type Hand = { handPlay: (until: 'score' | 'end') => { runState: string; score: number; at: number } };
+    await page.goto(url);
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
+    const scored = await page.evaluate(() => (window.__playShell as unknown as Hand).handPlay('score'));
+    expect(scored.score).toBeGreaterThan(0);
+    await page.waitForTimeout(100);
+    // Snímek 100 ms po sebrání: „+N“ visí nad hráčem (a za 500 ms zmizí sám).
+    expect(await page.evaluate(() => document.querySelector('[data-testid="score-pop"]')?.textContent ?? null)).toBe(`+${scored.score}`);
+
+    const end = await page.evaluate(async () => {
+      const run = (window.__playShell as unknown as Hand).handPlay('end');
+      return new Promise<{ runState: string; delay: number }>((resolve) => {
+        const poll = (): void => {
+          if (document.querySelector('[data-testid="play-outcome"]') !== null) resolve({ runState: run.runState, delay: performance.now() - run.at });
+          else requestAnimationFrame(poll);
+        };
+        poll();
+      });
+    });
+    expect(end.runState).toBe('won');
+    expect(end.delay).toBeGreaterThanOrEqual(550);
+    expect(end.delay).toBeLessThanOrEqual(800);
+  });
+
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
     await page.goto(url);
     const stage = page.getByTestId('arcade-stage');
