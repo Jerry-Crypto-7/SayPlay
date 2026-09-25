@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { type ReactNode, useEffect, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import type { GameVersion } from '@/play/contracts';
@@ -21,7 +21,7 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
-import { timerLeft } from '../Hud';
+import { secondsOf, timerLeft } from '../Hud';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
 import { ShareButton } from '../ShareButton';
@@ -58,7 +58,7 @@ const COUNT_UNIT: Readonly<Record<string, string>> = { timing: 'rounds', rhythm:
 /** Aréna ukazuje uběhlé sekundy, střelba a hod zbývající rány, P25H splněné úkoly, jinak metry. */
 const progressLabel = (spec: GameSpecV1, snapshot: ArcadeSnapshot): string =>
   spec.control === 'move_free'
-    ? `${Math.floor(snapshot.tick / 60)} s`
+    ? `${Math.floor(snapshot.tick / ARCADE_HZ)} s`
     : aiming(spec)
       ? `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left`
       : `${snapshot.distanceM} ${COUNT_UNIT[spec.control ?? ''] ?? 'm'}`;
@@ -116,8 +116,7 @@ function DemoControl({ session, demo }: { readonly session: ArcadeSession; reado
 
 function ArcadeHud({ versionId, spec, world, snapshot, paused, children }: { readonly versionId: string; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
-  // Arkáda tiká 60× za sekundu (viz `progressLabel`).
-  const clock = timerLeft(spec, Math.floor(snapshot.tick / 60));
+  const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
   return (
     <header className="play-hud" aria-label="Game status">
       <h1 className="play-hud-title">{spec.title}</h1>
@@ -246,6 +245,8 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
           <p className="play-outcome-detail">
+            {/* Aréna už čas nese v `progressLabel`. */}
+            {spec.control === 'move_free' ? '' : `in ${secondsOf(snapshot.tick, ARCADE_HZ)} · `}
             {progressLabel(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
           </p>
           <PostRun

@@ -32,7 +32,7 @@ import { ArcadePlay } from './arcade/ArcadePlay';
 import { isTyping } from './arcade/input';
 import { HonestyStrip } from './HonestyStrip';
 import { HowItWorks } from './HowItWorks';
-import { Hud } from './Hud';
+import { Hud, TICKS_PER_SECOND, secondsOf } from './Hud';
 import type { LabFacts, ReadFacts } from './lab';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
@@ -49,15 +49,18 @@ import { idleProps, keyAction, playerActor, tapAction, targetCards } from './tar
 // při prerenderu spadl na `document`.
 const WorldstreamCanvas = dynamic(() => import('@/components/worldstream/WorldstreamCanvas'), { ssr: false });
 
-const TICK_MS = 50;
+const TICK_MS = 1000 / TICKS_PER_SECOND;
 /** Nejdelší hra podle schématu je 180 s; svědek nesmí točit déle. */
-const WITNESS_TICK_CAP = 180 * 20;
+const WITNESS_TICK_CAP = 180 * TICKS_PER_SECOND;
 
 interface PlayProbe {
   inputs(): ReturnType<RuntimeController['getInputLog']>;
   tick(): number;
-  /** Přehraje `witness.ops` světa od aktuálního tiku a dotočí běh do konce. */
-  playWitness(): { readonly runState: string; readonly tick: number };
+  /**
+   * Přehraje dalších `count` kroků `witness.ops` (výchozí všechny); po
+   * posledním dotočí běh do konce. `last` je akce posledního zahraného kroku.
+   */
+  playWitness(count?: number): { readonly runState: string; readonly tick: number; readonly last: string | null; readonly left: number };
 }
 
 declare global {
@@ -201,27 +204,34 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
   // Sonda pro e2e.
   useEffect(() => {
     const actor = playerActor(controller.actions);
+    let cursor = 0;
+    let base = 0;
     const probe: PlayProbe = {
       inputs: () => controller.getInputLog(),
       tick: () => controller.getSnapshot().tick,
-      playWitness: () => {
+      playWitness: (count = Infinity) => {
         witnessed.current = true;
-        // Kroky svědka se posouvají o aktuální tik: hra už mohla chvíli běžet
-        // a couvnout nejde – vstup je dovolený jen na nejnovějším tiku.
-        const base = controller.getSnapshot().tick;
-        for (const op of witnessOps(blueprint.world.sim.witness)) {
+        // Kroky svědka se posouvají o tik prvního volání: hra už mohla chvíli
+        // běžet a couvnout nejde – vstup je dovolený jen na nejnovějším tiku.
+        if (cursor === 0) base = controller.getSnapshot().tick;
+        const ops = witnessOps(blueprint.world.sim.witness);
+        const batch = ops.slice(cursor, cursor + count);
+        for (const op of batch) {
           const at = base + op.tick;
           const now = controller.getSnapshot().tick;
           if (at > now) controller.advanceTicks(at - now);
           controller.dispatch(actor === null ? op.action : { ...op.action, actor });
         }
+        cursor += batch.length;
+        const last = batch.at(-1)?.action.actionId ?? null;
+        if (cursor < ops.length) return { runState: controller.getSnapshot().runState, tick: controller.getSnapshot().tick, last, left: ops.length - cursor };
         let guard = 0;
         while (controller.getSnapshot().runState === 'running' && guard < WITNESS_TICK_CAP) {
           controller.advanceTicks(1);
           guard += 1;
         }
         const end = controller.getSnapshot();
-        return { runState: end.runState, tick: end.tick };
+        return { runState: end.runState, tick: end.tick, last, left: 0 };
       },
     };
     window.__playShell = probe;
@@ -261,7 +271,9 @@ function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = f
       {!running && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
-          <p className="play-outcome-detail">at tick {snapshot.tick}</p>
+          <p className="play-outcome-detail" data-tick={snapshot.tick}>
+            {snapshot.runState === 'won' ? 'in' : 'after'} {secondsOf(snapshot.tick, TICKS_PER_SECOND)}
+          </p>
           <PostRun
             versionId={versionId}
             remix={remix}
