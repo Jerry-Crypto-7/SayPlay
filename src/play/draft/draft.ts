@@ -40,6 +40,7 @@ import shooterTemplate from '../arcade/__fixtures__/shooter.json';
 import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
+import type { Reading } from '../read/schema';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -91,6 +92,57 @@ export interface DraftMeta {
   readonly scores: Readonly<Record<ArchetypeId, number>>;
   /** Návrh neprošel `readGameSpec` a vrátila se fixtura archetypu. Korpus drží nulu. */
   readonly fellBack: boolean;
+  /** Kdo větu přečetl: lokální model (`src/play/read`), nebo klíčová slova lexikonu. */
+  readonly readBy: 'model' | 'keywords';
+}
+
+export interface DraftOptions {
+  /** Čtení věty lokálním modelem (P29B T4); `null` nebo chybí = jen klíčová slova. */
+  readonly reading?: Reading | null;
+}
+
+/** Slovo čtení bez členu: „a haunted castle“ → „haunted castle“; prázdné → `null`. */
+function bare(phrase: string | null): string | null {
+  const text = phrase?.toLowerCase().replace(/^(?:(?:a|an|the|some|my|your)\s+)+/, '').trim() ?? '';
+  return text === '' ? null : text;
+}
+
+/** Hrdina, kterého čtečka píše, když věta žádného nemá; klíčová slova pak mají přednost. */
+const GENERIC_HERO = /^(?:player|you|me|i|character|hero|protagonist|user|person)$/;
+
+/**
+ * Role věty ze čtení, doplněné klíčovými slovy (P29B T4): co čtení jmenuje,
+ * přebije lexikon, zbytek (spínače, brány, plížení…) zůstane z `readRoles`.
+ */
+function rolesFrom(sentence: string, reading: Reading | null): SentenceRoles {
+  const roles = readRoles(sentence);
+  if (reading === null) return roles;
+  const noun = (kind: Reading['roles'][number]['kind']) => {
+    const found = reading.roles.find((entry) => entry.kind === kind);
+    return found === undefined ? null : bare(found.noun);
+  };
+  const hero = bare(reading.hero);
+  const collectible = noun('collectible');
+  const chaser = noun('chaser');
+  const threat = noun('threat');
+  return {
+    ...roles,
+    player: hero !== null && !GENERIC_HERO.test(hero) ? hero : roles.player,
+    chaser: chaser ?? roles.chaser,
+    collectible: collectible === null ? roles.collectible : singular(collectible),
+    collectibleMany: collectible === null ? roles.collectibleMany : singular(collectible) !== collectible,
+    item: noun('item') ?? roles.item,
+    destination: noun('destination') ?? roles.destination,
+    target: noun('target') === null ? roles.target : singular(noun('target')!),
+    hazard: noun('hazard') ?? roles.hazard,
+    threat:
+      chaser !== null
+        ? { label: singular(chaser), mover: 'chaser', plural: singular(chaser) !== chaser }
+        : threat !== null
+          ? { label: singular(threat), mover: 'patrol', plural: singular(threat) !== threat }
+          : roles.threat,
+    setting: bare(reading.setting) ?? roles.setting,
+  };
 }
 
 /** Nejvyšší skóre; remíza jde pořadím `ARCHETYPE_IDS`, nic → `collect_exit`. */
@@ -704,14 +756,19 @@ const COUNT_ROLES: readonly (readonly [RegExp, string])[] = [
 ];
 
 /** „five coins“ → role `coin` s počtem 5, jen u rolí, které šablona má (a generátor čte, `capabilities.ts` `counts`). */
-function applySentenceCounts(spec: GameSpecV1, sentence: string): void {
+function applySentenceCounts(spec: GameSpecV1, sentence: string, reading: Reading | null): void {
   if (!CAPABILITIES[spec.control ?? 'tap_go'].counts) return;
-  for (const { count, noun } of readCountedNouns(sentence)) {
-    const id = COUNT_ROLES.find(([pattern]) => pattern.test(noun))?.[1] ?? '';
+  // Počty čtení jdou až po klíčových slovech, takže je přebijí (P29B T4).
+  const read = (reading?.roles ?? []).flatMap(({ kind, count }) => (count === null || READ_COUNT_ROLES[kind] === undefined ? [] : [{ count, id: READ_COUNT_ROLES[kind] }]));
+  const counted = [...readCountedNouns(sentence).map(({ count, noun }) => ({ count, id: COUNT_ROLES.find(([pattern]) => pattern.test(noun))?.[1] ?? '' })), ...read];
+  for (const { count, id } of counted) {
     const target = spec.roles.find((r) => r.id === id);
     if (target !== undefined) target.count = clamp(count, 1, 50);
   }
 }
+
+/** Druh role čtení → role arkády, jejíž počet generátor čte. */
+const READ_COUNT_ROLES: Partial<Record<Reading['roles'][number]['kind'], string>> = { collectible: 'coin', obstacle: 'obstacle', hazard: 'obstacle', target: 'target', threat: 'enemy', chaser: 'enemy' };
 
 const DUEL_VERB = /\b(?:box(?:es|ing)?|fights?|fighting|punch(?:es|ing)?|kick(?:s|ing)?|wrestl(?:es?|ing)|duel(?:s|ing)?|battl(?:es?|ing)|spar(?:s|ring)?)\s+(?:against\s+|with\s+)?(.+)/;
 const FOE_STOP = /^(?:in|on|at|with|while|and|to|for|from|by|near|inside|under|until|who|that|but|before|after)$/;
@@ -856,9 +913,10 @@ const SECOND_ROLE: Partial<Record<ControlChoice['control'], string>> = { runner:
  * P25G střelba a hod, P25H načasování, rytmus a souboj): šablona fixtury
  * ovládání, přepíše se titul, popisky a parametry, které věta řekla.
  */
-function draftArcade(sentence: string, seed: number, choice: ControlPick, topic: string | null = null): GameSpecV1 | null {
+function draftArcade(sentence: string, seed: number, choice: ControlPick, topic: string | null = null, reading: Reading | null = null): GameSpecV1 | null {
   const spec = JSON.parse(JSON.stringify(ARCADE_TEMPLATES[choice.control])) as GameSpecV1;
-  const roles = withPlace(readRoles(sentence), sentence);
+  const roles = withPlace(rolesFrom(sentence, reading), sentence);
+  const readObstacle = bare(reading?.roles.find((entry) => entry.kind === 'obstacle')?.noun ?? null);
   const rng = xoroshiro128plus(seed);
   spec.title = titleFrom(sentence, spec.title);
   // Postava šablony (ptáček, závodní auto, rybka, jeřáb, bubeník, bojovník) zůstane,
@@ -886,7 +944,7 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
   if (wave !== null) role(spec, 'enemy').label = cap(wave, 60);
   const target = roles.target ?? namedFoe(sentence) ?? second;
   if (choice.control === 'throw' && choice.goal === null && target !== null) role(spec, 'target').label = cap(target, 60);
-  const obstacle = roles.threat?.label ?? nouns.avoid ?? second;
+  const obstacle = (readObstacle === null ? null : singular(readObstacle)) ?? roles.threat?.label ?? nouns.avoid ?? second;
   if (choice.control === 'runner' && obstacle !== null) role(spec, 'obstacle').label = cap(obstacle, 60);
   if (choice.control === 'timing') {
     if (choice.mode !== 'stack') {
@@ -921,7 +979,7 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
   } else if (choice.difficulty !== null) spec.controlParams = { ...spec.controlParams, difficulty: choice.difficulty };
   // P26D T8: druhé sloveso věty („jump and shoot“) – `pickControl` vybral jen doplňky, které ovládání bere.
   if (choice.addons !== undefined) spec.addons = [...choice.addons];
-  applySentenceCounts(spec, sentence);
+  applySentenceCounts(spec, sentence, reading);
   const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
   if (choice.addons?.includes('shoot') === true && fireHint.length <= 80) spec.tutorial.controlsHint = fireHint;
   const result = readGameSpec(spec);
@@ -953,24 +1011,39 @@ export function noVerbTopic(sentence: string): string | null {
   return topicNoun(text) ?? 'your idea';
 }
 
-export function draftGameSpecWithMeta(sentence: string, seed = 1): DraftMeta {
+export function draftGameSpecWithMeta(sentence: string, seed = 1, options: DraftOptions = {}): DraftMeta {
+  const reading = options.reading ?? null;
   const scores = scoreArchetypes(sentence);
-  // P28D T2: mřížka jen když její archetyp něco uslyšel; věta bez narážky dostane nejbližší arkádu, ne houby.
   const text = sentence.toLowerCase();
+  // P29B T4: ovládání čtení přebije klíčová slova; jejich parametry zůstanou, když ukazují na totéž ovládání.
+  if (reading !== null) {
+    if (reading.control !== 'tap_go') {
+      const pick = pickControl(text);
+      const arcade = draftArcade(sentence, seed, pick?.control === reading.control ? pick : DEFAULT_CHOICE[reading.control], noVerbTopic(sentence), reading);
+      if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false, readBy: 'model' };
+    }
+    return draftGrid(sentence, seed, scores, reading);
+  }
+  // P28D T2: mřížka jen když její archetyp něco uslyšel; věta bez narážky dostane nejbližší arkádu, ne houby.
   const heard = Object.values(scores).some((score) => score > 0) || gridCue(text);
   const control = pickControl(text) ?? (heard ? null : nearestControl(text).choice);
   if (control !== null) {
     const arcade = draftArcade(sentence, seed, control, noVerbTopic(sentence));
-    if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false };
+    if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false, readBy: 'keywords' };
   }
   return draftGrid(sentence, seed, scores);
 }
 
-function draftGrid(sentence: string, seed: number, scores: Readonly<Record<ArchetypeId, number>>): DraftMeta {
+function draftGrid(sentence: string, seed: number, scores: Readonly<Record<ArchetypeId, number>>, reading: Reading | null = null): DraftMeta {
   const archetype = pickArchetype(scores);
   const spec = template(archetype);
-  const roles = withPlace(readRoles(sentence), sentence);
-  const numbers = readNumbers(sentence);
+  const roles = withPlace(rolesFrom(sentence, reading), sentence);
+  const said = readNumbers(sentence);
+  const numbers = {
+    seconds: reading?.numbers.seconds ?? said.seconds,
+    counts: reading !== null && reading.numbers.counts.length > 0 ? reading.numbers.counts : said.counts,
+  };
+  const readBy = reading === null ? 'keywords' : 'model';
   const rng = xoroshiro128plus(seed);
   const playerLabel = roles.player ?? PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
 
@@ -980,11 +1053,11 @@ function draftGrid(sentence: string, seed: number, scores: Readonly<Record<Arche
   FILLERS[archetype](spec, { roles, seconds: numbers.seconds, counts: numbers.counts, playerLabel, text: sentence.toLowerCase() });
 
   const result = readGameSpec(spec);
-  if (result.ok) return { spec: result.value, archetype, scores, fellBack: false };
+  if (result.ok) return { spec: result.value, archetype, scores, fellBack: false, readBy };
   const fallback = template(archetype);
   fallback.title = titleFrom(sentence, fallback.title);
   const normalized = readGameSpec(fallback);
-  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true };
+  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true, readBy };
 }
 
 /** Výchozí volba ovládání, když ho vybral model a slova věty ukazují jinam. */

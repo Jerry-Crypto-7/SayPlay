@@ -1,0 +1,661 @@
+{
+ "about": "P29B T3: 20 readings recorded from Qwen3-4B-Instruct-2507 Q5_K_M on the demand set (evals/play/read/report.json), two per control where the reader chose it.",
+ "readings": [
+  {
+   "id": "s001",
+   "sentence": "jumping arcade game with a lot of obstacles",
+   "reading": {
+    "control": "flap",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "flap"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "obstacles",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "arcade",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "collect",
+      "class": "tap_go"
+     },
+     {
+      "word": "dodge",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "a knight",
+    "roles": [
+     {
+      "noun": "keys",
+      "kind": "item",
+      "count": 3
+     },
+     {
+      "noun": "ghosts",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a haunted castle",
+    "mood": "spooky",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      3
+     ]
+    }
+   }
+  },
+  {
+   "id": "s003",
+   "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "escape",
+      "class": "tap_go"
+     },
+     {
+      "word": "hunts",
+      "class": "steer"
+     }
+    ],
+    "hero": "a hamster",
+    "roles": [
+     {
+      "noun": "Roomba",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "supermarket",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s004",
+   "sentence": "endless runner in a neon city",
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     }
+    ],
+    "hero": "runner",
+    "roles": [
+     {
+      "noun": "neon city",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "obstacles",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "vehicles",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "neon city",
+    "mood": "high energy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s013",
+   "sentence": "A penguin slides down an icy mountain collecting fish",
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "slides",
+      "class": "move_free"
+     },
+     {
+      "word": "collects",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "penguin",
+    "roles": [
+     {
+      "noun": "fish",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "icy mountain",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "icy mountain",
+    "mood": "cold, adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s019",
+   "sentence": "a platformer where you jump between floating islands in the sky",
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "platform"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "islands",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "sky",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s020",
+   "sentence": "like mario but you're a frog",
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "platform"
+     }
+    ],
+    "hero": "a frog",
+    "roles": [
+     {
+      "noun": "mario",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a overworld",
+    "mood": "funny",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s023",
+   "sentence": "jump king style game where falling is super punishing",
+   "reading": {
+    "control": "flap",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "flap"
+     }
+    ],
+    "hero": "jump king",
+    "roles": [
+     {
+      "noun": "falling",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "unknown",
+    "mood": "punishing",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s025",
+   "sentence": "a slime that bounces higher every time it eats a candy",
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "eat",
+      "class": "move_free"
+     }
+    ],
+    "hero": "a slime",
+    "roles": [
+     {
+      "noun": "candy",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "bounce",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "a candy-filled room",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   }
+  },
+  {
+   "id": "s026",
+   "sentence": "only up but in a candy land",
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "up",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "only up",
+    "roles": [
+     {
+      "noun": "candy land",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "candy land",
+    "mood": "sweet, playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s033",
+   "sentence": "geometry dash but 3d",
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "rhythm"
+     }
+    ],
+    "hero": null,
+    "roles": [
+     {
+      "noun": "platform",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "gap",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "3d environment",
+    "mood": "intense, fast",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s037",
+   "sentence": "A space marine shoots alien bugs in a mining colony",
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoots",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "space marine",
+    "roles": [
+     {
+      "noun": "alien bugs",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "mining colony",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "space mining colony",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s038",
+   "sentence": "shooting game",
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "enemy",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "target",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "game",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s040",
+   "sentence": "cowboy duel at high noon, first to shoot wins",
+   "reading": {
+    "control": "duel",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "cowboy",
+    "roles": [
+     {
+      "noun": "opponent",
+      "kind": "target",
+      "count": 1
+     }
+    ],
+    "setting": "high noon",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s042",
+   "sentence": "sniper game where you have to find the target in a crowd",
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "find",
+      "class": "tap_go"
+     },
+     {
+      "word": "sniper",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "sniper",
+    "roles": [
+     {
+      "noun": "target",
+      "kind": "target",
+      "count": 1
+     },
+     {
+      "noun": "crowd",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "crowd",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s044",
+   "sentence": "water gun fight in a backyard with my little brothers",
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "fight",
+      "class": "melee"
+     },
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "little brothers",
+    "roles": [
+     {
+      "noun": "water gun",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "backyard",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "backyard",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s045",
+   "sentence": "like krunker but with pirates",
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "pirates",
+    "roles": [
+     {
+      "noun": "enemy",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "ships",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "sea",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s050",
+   "sentence": "throwing snowballs at kids behind a snow fort",
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "snowballs",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "kids",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "snow fort",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "snow fort",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   }
+  },
+  {
+   "id": "s075",
+   "sentence": "connect pipes so the water reaches the flowers",
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "connect",
+      "class": "manipulate"
+     },
+     {
+      "word": "reach",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "pipes",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "water",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "flowers",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "water garden",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   }
+  },
+  {
+   "id": "s080",
+   "sentence": "a cat must knock things off shelves in the right order to reach the fish",
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "knock",
+      "class": "throw"
+     },
+     {
+      "word": "order",
+      "class": "timing"
+     }
+    ],
+    "hero": "a cat",
+    "roles": [
+     {
+      "noun": "shelves",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "fish",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a house",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   }
+  }
+ ]
+}
