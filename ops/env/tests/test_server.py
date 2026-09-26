@@ -123,6 +123,22 @@ def test_same_setting_comes_from_cache(env):
     assert len(gen.calls) == 1
 
 
+def test_restarted_service_serves_from_the_disk_cache(env):
+    client, _, _ = env()
+    wait_done(
+        client,
+        client.post(
+            "/panorama", json={"setting": "lava"}, headers={"X-Env-Key": KEY}
+        ).json()["jobId"],
+    )
+    restarted, gen, _ = env()
+    job = restarted.post(
+        "/panorama", json={"setting": "lava"}, headers={"X-Env-Key": KEY}
+    ).json()
+    assert wait_done(restarted, job["jobId"])["status"] == "done"
+    assert gen.calls == []
+
+
 def test_waits_for_a_lock_held_by_someone_else(env, tmp_path):
     client, gen, lock_dir = env()
     lock_dir.mkdir()
@@ -153,6 +169,46 @@ def test_generator_crash_fails_the_job_without_leaking_paths(env):
     assert body["status"] == "failed"
     assert "Users" not in body["reason"] and "model.py" in body["reason"]
     assert not lock_dir.exists()
+
+
+def test_half_written_owner_file_is_not_stale(tmp_path):
+    # gpu-lock.mjs zakládá adresář dřív, než zapíše owner.json: čerstvý prázdný zámek drží.
+    lock_dir = tmp_path / "gpu.lock"
+    lock_dir.mkdir()
+    (lock_dir / "owner.json").write_text("")
+    assert not server._stale(lock_dir)
+    old = time.time() - 120
+    os.utime(lock_dir, (old, old))
+    assert server._stale(lock_dir)
+
+
+def test_release_leaves_a_lock_taken_over_by_someone_else(tmp_path):
+    lock_dir = tmp_path / "gpu.lock"
+    with server.gpu_lock(lock_dir, 0.01):
+        (lock_dir / "owner.json").write_text(json.dumps({"pid": os.getppid()}))
+    assert lock_dir.exists()
+
+
+def test_reason_hides_forward_slash_paths_too():
+    reason = server.public_reason(OSError("cannot open 'C:/Users/someone/x.bin'"))
+    assert "someone" not in reason and "x.bin" in reason
+
+
+def test_repeated_requests_reuse_one_job(env):
+    client, _, _ = env()
+    ids = {
+        client.post(
+            "/panorama", json={"setting": "desert"}, headers={"X-Env-Key": KEY}
+        ).json()["jobId"]
+        for _ in range(5)
+    }
+    assert len(ids) == 1
+    first = ids.pop()
+    wait_done(client, first)
+    again = client.post(
+        "/panorama", json={"setting": "desert"}, headers={"X-Env-Key": KEY}
+    ).json()["jobId"]
+    assert again == first
 
 
 @pytest.mark.parametrize("setting", ["", "x" * 81, "../../etc", "a;rm -rf"])

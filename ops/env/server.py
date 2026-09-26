@@ -37,7 +37,7 @@ LOCK_DIR = Path("D:/claude/_shared/gpu.lock")
 STALE_SEC = 3 * 3600
 
 SETTING = re.compile(r"^[a-z0-9][a-z0-9 ,'-]{0,79}$")
-WINDOWS_PATH = re.compile(r"(?:[A-Za-z]:|\\\\[^\\\s]+)\\[^\s'\"]*")
+WINDOWS_PATH = re.compile(r"(?:[A-Za-z]:|\\\\[^\\/\s]+)[\\/][^\s'\"]*")
 
 Generator = Callable[[str, int], np.ndarray]
 
@@ -61,7 +61,7 @@ def slug(setting: str) -> str:
 
 def public_reason(error: Exception) -> str:
     """Typ výjimky + krátká zpráva bez cest disku (a tedy bez jména uživatele)."""
-    message = WINDOWS_PATH.sub(lambda m: m.group(0).rsplit("\\", 1)[-1], str(error))
+    message = WINDOWS_PATH.sub(lambda m: re.split(r"[\\/]", m.group(0))[-1], str(error))
     return f"{type(error).__name__}: {message}"[:300]
 
 
@@ -85,21 +85,26 @@ def _alive(pid: int) -> bool:
         return False
 
 
-def _stale(lock_dir: Path) -> bool:
+def _owner_pid(lock_dir: Path) -> int | None:
     try:
-        owner = json.loads((lock_dir / "owner.json").read_text(encoding="utf-8"))
-        return (
-            not _alive(int(owner["pid"]))
-            or time.time() - lock_dir.stat().st_mtime > STALE_SEC
+        return int(
+            json.loads((lock_dir / "owner.json").read_text(encoding="utf-8"))["pid"]
         )
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def _stale(lock_dir: Path) -> bool:
+    pid = _owner_pid(lock_dir)
+    try:
+        age = time.time() - lock_dir.stat().st_mtime
     except FileNotFoundError:
-        # Adresář bez owner.json starší než minuta = rozbitý zápis (stejně jako gpu-lock.mjs).
-        try:
-            return time.time() - lock_dir.stat().st_mtime > 60
-        except FileNotFoundError:
-            return False
-    except (ValueError, KeyError):
-        return True
+        return False
+    if pid is None:
+        # Chybějící, prázdný nebo rozepsaný owner.json: gpu-lock.mjs zakládá adresář
+        # dřív, než ho zapíše. Zastaralý až po minutě, stejně jako v gpu-lock.mjs.
+        return age > 60
+    return not _alive(pid) or age > STALE_SEC
 
 
 @contextmanager
@@ -126,9 +131,11 @@ def gpu_lock(lock_dir: Path, poll: float) -> Iterator[None]:
         (lock_dir / "owner.json").write_text(json.dumps(owner), encoding="utf-8")
         yield
     finally:
-        for child in lock_dir.iterdir():
-            child.unlink()
-        lock_dir.rmdir()
+        # Jen vlastní zámek: po 3 h ho mohl jiný čekatel prohlásit za zastaralý a převzít.
+        if _owner_pid(lock_dir) == os.getpid():
+            for child in lock_dir.iterdir():
+                child.unlink()
+            lock_dir.rmdir()
 
 
 @dataclass
@@ -222,9 +229,12 @@ def create_app(
             raise HTTPException(status_code=422, detail=str(error)) from error
         name = slug(setting)
         with lock:
+            # Jedna úloha na prostředí: opakovaný dotaz nevyrábí nové záznamy, jen selhaná se nahradí.
             active = by_slug.get(name)
-            if active and active.status in ("queued", "running"):
+            if active and active.status != "failed":
                 return {"jobId": active.id}
+            if active:
+                del jobs[active.id]
             job = Job(uuid.uuid4().hex, setting)
             hit = cached(name)
             if hit:
