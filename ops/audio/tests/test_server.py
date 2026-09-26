@@ -130,6 +130,27 @@ def test_a_running_job_answers_202_and_a_repeat_does_not_queue_twice(tmp_path):
     assert model.calls == 1
 
 
+def test_a_full_queue_is_429_and_queues_nothing(tmp_path, monkeypatch):
+    monkeypatch.setattr(server, "MAX_QUEUE", 2)
+    gate = threading.Event()
+    model = FakeModel(gate=gate)
+    client = make(tmp_path, model)
+    try:
+        client.post("/voice", json={"text": GOAL})
+        # První úloha drží kartu; fronta pak počítá jen čekající.
+        deadline = time.monotonic() + 5
+        while model.calls == 0 and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert model.calls == 1
+        for n in (1, 2):
+            assert client.post("/voice", json={"text": f"Goal {n}."}).status_code == 200
+        full = client.post("/voice", json={"text": "Goal 3."})
+        assert full.status_code == 429
+        assert voice.voice_id("Goal 3.") not in client.app.state.jobs
+    finally:
+        gate.set()
+
+
 def test_a_silent_model_fails_the_job_and_a_new_ask_retries(tmp_path):
     model = FakeModel(silent=True)
     client = make(tmp_path, model)

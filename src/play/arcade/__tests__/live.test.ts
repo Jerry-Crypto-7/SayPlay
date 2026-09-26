@@ -198,6 +198,16 @@ describe('accepting a live patch', () => {
     expect(verdict).toEqual({ ok: false, reason: 'That change would make the game impossible to win.' });
   });
 
+  it('a late patch is checked from the player state with the time the run already added', () => {
+    const limit = arena.rules.find((rule) => rule.id === 'time_limit')!.params.seconds as number;
+    const more: LiveEntry = { tick: 0, patch: { kind: 'count', counter: 'time', amount: 20 } };
+    // Hráč je za původním limitem – běh stojí jen díky přidanému času.
+    const state = arenaAt(late.tick);
+    state[HEADER.tick] = limit * 60 + 5;
+    const entry = { ...late, tick: limit * 60 + 5 };
+    expect(acceptLive(arena, state, [more], entry)).toEqual({ ok: true });
+  });
+
   it('a patch the bot state cannot take counts as unmet, not as checked', () => {
     // Házení: robot, který hází každý druhý tik, má v tiku 352 prázdno; hráč bez vstupu drží 12 kusů.
     const base = ARCADE_LIBRARY.bots[throwing.bot.id]!;

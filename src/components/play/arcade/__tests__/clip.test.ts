@@ -12,6 +12,8 @@ import { CLIP_MAX_MS, CLIP_TAIL_MS, clipType, startClip, type ClipDeps, type Cli
 
 class FakeRecorder implements ClipRecorderLike {
   static all: FakeRecorder[] = [];
+  /** Rekordér, který nic nenahrál (kodek selhal, plátno nekreslilo). */
+  static empty = false;
   state: 'inactive' | 'recording' = 'inactive';
   ondataavailable: ((event: { data: Blob }) => void) | null = null;
   onstop: (() => void) | null = null;
@@ -31,8 +33,8 @@ class FakeRecorder implements ClipRecorderLike {
     if (this.state === 'inactive') return;
     this.state = 'inactive';
     // Obsah „nahrávky“ nese dobu, od kdy běžela – test tak pozná, který úsek vyhrál.
-    const bytes = `${this.startedAt}-${this.clock.now}`;
-    this.ondataavailable?.({ data: new Blob([bytes], { type: this.options.mimeType }) });
+    const bytes = FakeRecorder.empty ? [] : [`${this.startedAt}-${this.clock.now}`];
+    this.ondataavailable?.({ data: new Blob(bytes, { type: this.options.mimeType }) });
     this.onstop?.();
   }
 }
@@ -65,6 +67,7 @@ class Clock {
 
 function setup(supported: readonly string[] = ['video/webm']) {
   FakeRecorder.all = [];
+  FakeRecorder.empty = false;
   const clock = new Clock();
   const stopped: string[] = [];
   const stream = { getTracks: () => [{ stop: () => stopped.push('video') }] };
@@ -138,6 +141,18 @@ describe('clip length', () => {
       // Ne useknutý pahýl: aspoň polovina stropu, když běh byl delší.
       expect(to - from, `run ${runMs}`).toBeGreaterThanOrEqual(CLIP_MAX_MS / 2);
     }
+  });
+});
+
+describe('empty recording', () => {
+  it('a recorder that captured no bytes yields no clip', async () => {
+    const { clock, canvas, deps } = setup();
+    FakeRecorder.empty = true;
+    const clip = startClip(canvas, deps)!;
+    clock.advance(5_000);
+    const done = clip.finish();
+    clock.advance(CLIP_TAIL_MS);
+    expect(await done).toBeNull();
   });
 });
 

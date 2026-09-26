@@ -10,7 +10,7 @@ import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
 import arenaFixture from '@/play/arcade/__fixtures__/arena.json';
 import duelFixture from '@/play/arcade/__fixtures__/duel.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { startLive } from '@/play/arcade/live';
+import { hostileRole, patchProblem, startLive } from '@/play/arcade/live';
 import { REMIX_MESSAGE, UNKNOWN_MESSAGE, liveIntentOf, resolveWish } from '@/play/director/live-intent';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
@@ -54,10 +54,20 @@ describe('a wish on a running game', () => {
   };
 
   it('“more enemies” becomes the game’s own threat, whatever its role is', () => {
-    const state = startLive(worldOf(runnerFixture)).state;
-    const patch = resolveWish({ kind: 'spawn', target: 'hostile', count: 3 }, state);
-    expect(patch).toMatchObject({ kind: 'spawn', count: 3 });
-    expect(['enemy', 'chaser', 'hazard', 'obstacle']).toContain((patch as { role: string }).role);
+    const roles = new Set<string>();
+    for (const fixture of [runnerFixture, arenaFixture, duelFixture]) {
+      const world = worldOf(fixture);
+      const state = startLive(world).state;
+      const role = hostileRole(state);
+      if (role === null) continue;
+      roles.add(role);
+      const patch = resolveWish({ kind: 'spawn', target: 'hostile', count: 3 }, state);
+      expect(patch).toEqual({ kind: 'spawn', role, count: 3 });
+      // Role, kterou hra nemá, by běh odmítl – přání by vypadalo splněné a nic by nepřibylo.
+      expect(patchProblem(world, state, patch!)).toBeNull();
+    }
+    // Aspoň dvě různé hrozby, jinak konstanta projde stejně jako čtení stavu.
+    expect(roles.size).toBeGreaterThanOrEqual(2);
   });
 
   it('“more coins” adds coins where the game has them, and is null where it has none', () => {

@@ -27,7 +27,7 @@ const OGG = new Uint8Array([0x4f, 0x67, 0x67, 0x53, 1, 2, 3]);
 type Call = { url: string; init: RequestInit | undefined };
 
 /** Atrapa služby: `POST /voice` odpoví nebo visí, `GET /voice/:id` vrátí Ogg / 202 / chybu sítě. */
-function service(answer: { post?: 'ok' | 'hang' | 'down'; get?: 'ogg' | 'pending' | 'broken' | 'down' } = {}) {
+function service(answer: { post?: 'ok' | 'hang' | 'down'; get?: 'ogg' | 'pending' | 'broken' | 'page' | 'down' } = {}) {
   const calls: Call[] = [];
   const fetchStub = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
     const url = String(input);
@@ -42,6 +42,8 @@ function service(answer: { post?: 'ok' | 'hang' | 'down'; get?: 'ogg' | 'pending
     if (answer.get === 'pending') return Response.json({ status: 'running' }, { status: 202 });
     // Tunel nebo proxy, která chybu vrátí s typem zvuku – tělo není nahrávka.
     if (answer.get === 'broken') return new Response(OGG, { status: 502, headers: { 'content-type': 'audio/ogg' } });
+    // Tunel, který místo služby vrátí svou stránku se statusem 200.
+    if (answer.get === 'page') return new Response('<html>tunnel</html>', { headers: { 'content-type': 'text/html' } });
     return new Response(OGG, { headers: { 'content-type': 'audio/ogg' } });
   });
   vi.stubGlobal('fetch', fetchStub);
@@ -118,6 +120,13 @@ describe('voice job on publish', () => {
     expect(new Headers(posts[0]!.init!.headers).get('x-audio-key')).toBe(KEY);
   });
 
+  it('publishing the same game again asks for the voice again', async () => {
+    const calls = service({ post: 'hang' });
+    expect((await publish('Voice again')).status).toBe(201);
+    expect((await publish('Voice again')).status).toBe(200);
+    expect(voicePosts(calls)).toHaveLength(2);
+  });
+
   it('a service that is down does not change the publication', async () => {
     service({ post: 'down' });
     expect((await publish('Voice down')).status).toBe(201);
@@ -152,7 +161,7 @@ describe('GET /api/play/games/:id/voice', () => {
   it('a voice still generating, a broken tunnel, a sleeping service or no service is 204 without cache', async () => {
     service({ get: 'pending' });
     const { id } = await publish('Voice pending');
-    for (const answer of ['pending', 'broken', 'down'] as const) {
+    for (const answer of ['pending', 'broken', 'page', 'down'] as const) {
       const calls = service({ get: answer });
       const response = await voice(id);
       expect(response.status).toBe(204);
