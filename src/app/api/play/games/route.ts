@@ -121,8 +121,10 @@ export async function POST(request: Request): Promise<Response> {
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
     // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
-    const drafted = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) }).spec;
-    const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin: { sentence, seed: seed ?? null } });
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) });
+    const drafted = meta.spec;
+    const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };
+    const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });
     if (draft.ok) {
       void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
       return publishedResponse(draft.value, true, unsupportedGame(sentence, drafted));

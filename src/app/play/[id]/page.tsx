@@ -98,7 +98,7 @@ export default async function PlayGamePage({ params }: Params) {
       remixes={children.length}
       aiVersion={game.relation === 'upgrade'}
       lab={labFacts(game.spec, game.report)}
-      read={readFacts(game.spec, authorshipOf(game), sentence)}
+      read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
       honesty={honesty}
       upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
     />

@@ -40,7 +40,12 @@ export interface PublishedGame {
    * Návrh z věty si nese větu a semínko volajícího (`null` = odvozené), aby
    * upgrade šel spustit i bez paměti procesu, která POST viděla (P23-D T2).
    */
-  readonly origin?: { readonly sentence: string; readonly seed: number | null };
+  readonly origin?: {
+    readonly sentence: string;
+    readonly seed: number | null;
+    /** Návrh postavený ze čtení lokálním modelem (P29B T6); chybí = z klíčových slov. */
+    readonly readBy?: 'model';
+  };
   /**
    * Věta u hry, kterou publikoval rovnou režisér, protože návrh ze slov nešel
    * hrát (P25E R1). Jen pro poctivou hlášku – na rozdíl od `origin` upgrade nespouští.

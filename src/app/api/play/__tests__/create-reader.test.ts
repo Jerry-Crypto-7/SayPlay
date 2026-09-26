@@ -11,7 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { direct } from '@/play/director';
 import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
 import type { Reading } from '@/play/read/schema';
-import { __resetProcessVersionStore } from '@/play/version';
+import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 import { upstreamBranch } from '@/server/upstream';
 
@@ -121,6 +121,24 @@ describe('create route reads the sentence before drafting', () => {
     await vi.advanceTimersByTimeAsync(1);
     vi.useRealTimers();
     expect((await pending).status).toBe(201);
+  });
+});
+
+describe('the draft remembers who read the sentence (T6)', () => {
+  const originOf = async (response: Response) => {
+    const { versionId } = (await response.json()) as { versionId: string };
+    return (await versionStoreFromEnv(process.env).get(versionId))!.origin;
+  };
+
+  it('stores readBy model only when the reading built the draft', async () => {
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', answering);
+    expect(await originOf(await create())).toEqual({ sentence: SENTENCE, seed: null, readBy: 'model' });
+  });
+
+  it('keeps the origin as before when the keywords built it', async () => {
+    vi.stubGlobal('fetch', answering);
+    expect(await originOf(await create())).toEqual({ sentence: SENTENCE, seed: null });
   });
 });
 

@@ -13,7 +13,11 @@ const BY: Readonly<Record<Authorship, readonly [string, string]>> = {
   remix: ['Remixed with one change', 'of'],
 };
 
+/** Návrh, jehož větu přečetl lokální model (P29B T6) – pořád návrh, ne hra od AI. */
+const READ_BY_MODEL = 'read by a local AI model from';
+
 export function SentenceRead({ read }: { readonly read: ReadFacts }) {
+  const from = read.authorship === 'draft' && read.readBy === 'model' ? READ_BY_MODEL : BY[read.authorship][1];
   const rows: readonly (readonly [string, string])[] = [
     ['Game', read.game],
     ['World', read.world],
@@ -23,10 +27,10 @@ export function SentenceRead({ read }: { readonly read: ReadFacts }) {
     ['Rules', read.rules.join(', ')],
   ];
   return (
-    <details className="play-lab play-read" data-testid="play-read" data-authorship={read.authorship}>
+    <details className="play-lab play-read" data-testid="play-read" data-authorship={read.authorship} data-read-by={read.readBy}>
       <summary data-testid="play-read-toggle">
         <span className={`play-read-by play-read-by-${read.authorship}`}>{BY[read.authorship][0]}</span>
-        {read.sentence !== null && <span className="play-read-sentence"> {BY[read.authorship][1]} “{read.sentence}”</span>}
+        {read.sentence !== null && <span className="play-read-sentence"> {from} “{read.sentence}”</span>}
       </summary>
       <dl className="play-read-rows">
         {rows.map(([name, value]) => (
