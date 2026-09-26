@@ -14,7 +14,6 @@ import { memo, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExte
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
-import { liveRemixSpec } from '@/play/arcade/live';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
@@ -28,7 +27,7 @@ import { FirstPrompt } from '../FirstPrompt';
 import { secondsOf, timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
-import { type LivePublish, type LiveShare, ShareButton } from '../ShareButton';
+import { type LivePublish, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
 import { PostRun } from '../PostRun';
@@ -36,6 +35,7 @@ import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
 import { type Clip, startClip } from './clip';
+import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
@@ -201,28 +201,6 @@ function aliveOf(state: ArrayLike<number>, role: ArcadeRole): number {
   return alive;
 }
 
-/**
- * Sdílení po živých změnách (P29D T10): verze se specem, který změny nese,
- * publikovaná dnešní remix route (rodič zůstává v rodokmenu). `null` = běh
- * žádné změny nemá; `partial` = něco z běhu do odkazu nejde. Když nejde nic,
- * sdílí se hraná verze – kopie rodiče pod novým id by nebyla nová hra.
- * Výjimka = verzi se nepodařilo publikovat.
- */
-async function publishLive(versionId: string, spec: GameSpecV1, world: ArcadeWorld, session: ArcadeSession): Promise<LiveShare | null> {
-  const patches = session.patches();
-  if (patches.length === 0) return null;
-  const { spec: child, dropped } = liveRemixSpec(
-    spec,
-    world,
-    patches.map((entry) => entry.patch),
-  );
-  if (JSON.stringify(child) === JSON.stringify(spec)) return { versionId, partial: true };
-  const response = await fetch(`/api/play/games/${versionId}/remix`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ spec: child }) });
-  const body = (await response.json()) as { url?: unknown };
-  if (!response.ok || typeof body.url !== 'string') throw new Error(`live version not published (${String(response.status)})`);
-  return { versionId: body.url.split('/').at(-1) ?? versionId, partial: dropped > 0 };
-}
-
 /** Odklad publikace po poslední živé změně – věty jdou často po dvou a každá by jinak vyrobila verzi. */
 const LIVE_PUBLISH_DELAY_MS = 800;
 
@@ -241,7 +219,12 @@ function useLivePublish(versionId: string, spec: GameSpecV1, world: ArcadeWorld,
       const settle = (live: LivePublish) => {
         if (!cancelled) setDone({ count, live });
       };
-      publishLive(versionId, spec, world, session).then(
+      publishLive(
+        versionId,
+        spec,
+        world,
+        session.patches().map((entry) => entry.patch),
+      ).then(
         (share) => settle({ state: 'ready', share }),
         () => settle({ state: 'failed' }),
       );
