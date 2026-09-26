@@ -16,7 +16,8 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
-import { installSoundControls, jumped, playSfx, presetsFor } from '@/play/audio';
+import { installSoundControls, jumped, playMusic, playSfx, presetsFor, setSoundLook } from '@/play/audio';
+import { musicFor } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -309,6 +310,16 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   // Zvuk (P28C T2): efekty pravidel z tiků hráče a skok z rychlosti vzhůru – mimo stav.
   useEffect(() => installSoundControls(), []);
+  // Vlastní hudba a zvuky looku (P29D T5) – ve feedu jen aktivní hra; bez gesta nic nestahuje.
+  useEffect(() => {
+    if (!active) return;
+    setSoundLook(lookOf(spec.theme));
+    const stop = playMusic(musicFor(spec.theme));
+    return () => {
+      stop();
+      setSoundLook(null);
+    };
+  }, [active, spec.theme]);
   useEffect(() => {
     const offEvents = session.onEvents((events) => {
       for (const preset of presetsFor(events)) playSfx(preset);

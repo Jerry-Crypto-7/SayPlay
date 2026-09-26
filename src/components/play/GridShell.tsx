@@ -25,7 +25,8 @@ import { buildProxyWorldFrom, type ProxyWorld } from '@/worldstream/proxy';
 import { bindRuntime, type RuntimeController } from '@/worldstream/runtime-controller';
 import type { RuntimeAction } from '@/worldstream/runtime-input';
 
-import { installSoundControls, playSfx } from '@/play/audio';
+import { installSoundControls, playMusic, playSfx, setSoundLook } from '@/play/audio';
+import { musicFor } from '@/play/audio/library';
 
 import { isTyping } from './arcade/input';
 import { GridScenery } from './arcade/look/Scenery';
@@ -206,6 +207,15 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
   // Zvuk a „+1“ (P28C T2/T3): čítač cíle hry povyskočil → sebrání; konec běhu → výhra či prohra.
   const [pops, setPops] = useState<readonly { readonly id: number; readonly amount: number; readonly x: number | null; readonly y: number | null }[]>([]);
   useEffect(() => installSoundControls(), []);
+  // Vlastní hudba a zvuky looku (P29D T5); bez gesta nic nestahuje.
+  useEffect(() => {
+    setSoundLook(lookOf(spec.theme));
+    const stop = playMusic(musicFor(spec.theme));
+    return () => {
+      stop();
+      setSoundLook(null);
+    };
+  }, [spec.theme]);
   useEffect(() => {
     const counter = objectiveCounter(spec);
     const read = (): number => (counter === null ? 0 : (controller.getSnapshot().values[`c:${counter}`] ?? 0));
