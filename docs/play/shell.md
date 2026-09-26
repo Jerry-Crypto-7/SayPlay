@@ -123,6 +123,17 @@ adresu; bez schránky ukáže pole s adresou. Měď čipů je opis `CHIP_LABELS`
 klientský bundl): mechaniky s vysvětlením a parametry, `Rules checked: N/M`,
 `Winnable at tick T` / `Not proven`, `Replay: identical` / `stub`, zkrácené id a předci.
 
+**Mikrofon (P29D T6):** `MicButton.tsx` vedle pole v `CreateGame` (`play-mic`) a v `RemixBox`
+(`remix-mic`) diktuje větu přes Web Speech (`@/input/speech`, anglicky); přepis se k napsanému
+přidá. Prohlížeč bez Web Speech (Firefox) tlačítko nevidí vůbec. Výzva `FirstPrompt` pole nemá
+– je to jen překryv s povelem –, takže mikrofon pro změnu uprostřed hry nese pole živé změny.
+**Offline přepis Moonshine se nepřidal (rozhodnuto 26. 9. 2026):** model sám by pravidlo splnil
+(MIT, kvantovaný `moonshine-tiny-ONNX` = enkodér 7,9 MB + dekodér 20,2 MB ≈ 28 MB ≤ 60 MB),
+ale cesta do prohlížeče vede přes `@huggingface/transformers` (Apache-2.0), který tahá `sharp`
+a s ním binárky `@img/sharp-libvips-*` pod **LGPL-3.0-or-later** – mimo MIT/Apache/BSD
+(`RULES.md` §4). Vlastní dekodér nad holým `onnxruntime-web` (MIT) by byl nový kus práce,
+ne přidání; do té doby zůstává tlačítko bez Web Speech skryté.
+
 ## Sonda `window.__playShell`
 
 Jen pro e2e, stejný vzor jako `__worldstreamStage`: `inputs()` (vstupní log runtime),
