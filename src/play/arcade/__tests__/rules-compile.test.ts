@@ -1,0 +1,172 @@
+/**
+ * Překlad pravidel ze specu na kusy jádra (P29A T2).
+ *
+ * Nejsilnější důkaz překladu je rovnost s ručním kusem: pravidlo „dotyk mince →
+ * skóre, mince zmizí“ musí dát tik po tiku tentýž stav jako `pickup`. Chyba
+ * pořadí fází by tu vypadala jako hratelná hra, jen s jiným hashem.
+ */
+
+import { describe, expect, it } from 'vitest';
+
+import { readGameSpec, type GameSpecV1 } from '@/play/spec';
+
+import runnerFixture from '../__fixtures__/runner.json';
+import arenaFixture from '../__fixtures__/arena.json';
+import { arcadeWorldOf } from '../compile';
+import { ARCADE_LIMITS, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, type ArcadeWorld, type InputEvent } from '../contract';
+import { hashArcade, instantiate, loadProgram, outcomeOf, step } from '../kernel';
+import { ARCADE_LIBRARY } from '../library';
+import { THING_ROLE_BASE, YARD, compileRules } from '../rules/compile';
+import { runBot } from '../verify';
+
+function read(input: unknown): GameSpecV1 {
+  const result = readGameSpec(input);
+  if (!result.ok) throw new Error(result.issues.join('; '));
+  return result.value;
+}
+
+function world(spec: GameSpecV1, seed = 1): ArcadeWorld {
+  const made = arcadeWorldOf(spec, seed);
+  if (!made.ok) throw new Error(made.issues.join('; '));
+  return made.world;
+}
+
+/** Hashe po každém tiku přehrání záznamu. */
+function hashes(w: ArcadeWorld, inputs: readonly InputEvent[], ticks: number): string[] {
+  const program = loadProgram(w, ARCADE_LIBRARY);
+  const state = instantiate(w);
+  const out: string[] = [];
+  let next = 0;
+  for (let tick = 0; tick < ticks; tick += 1) {
+    while (next < inputs.length && inputs[next]!.tick < tick) next += 1;
+    const event = inputs[next];
+    step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
+    out.push(hashArcade(state));
+  }
+  return out;
+}
+
+const bodiesOf = (w: ArcadeWorld, code: number): number[] => {
+  const state = instantiate(w);
+  const found: number[] = [];
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) if (state[bodyBase(i) + BODY.role] === code) found.push(i);
+  return found;
+};
+
+const yardSpec = {
+  ...arenaFixture,
+  controlParams: {},
+  mechanics: [],
+  roles: [
+    { id: 'player', kind: 'player', label: 'knight' },
+    { id: 'key', kind: 'key', label: 'golden key' },
+    { id: 'door', kind: 'door', label: 'castle door' },
+    { id: 'exit', kind: 'exit', label: 'tower stairs' },
+  ],
+  rules: [
+    { id: 'carry', verb: 'carry', when: { contact: ['player', 'key'] }, if: [{ notHolding: true }], do: [{ grab: 'other' }] },
+    { id: 'use', verb: 'use', when: { press: 'action' }, if: [{ holding: 'key' }], do: [{ score: 5 }] },
+    { id: 'open', verb: 'open', when: { contact: ['player', 'door'] }, if: [{ holding: 'key' }], do: [{ toggle: 'door' }] },
+    { id: 'deliver', verb: 'deliver', when: { contact: ['key', 'exit'] }, do: [{ win: true }] },
+  ],
+};
+
+describe('compileRules', () => {
+  it('a contact rule plays tick for tick like the hand-written pickup (600 ticks)', () => {
+    const spec = read(runnerFixture);
+    const hand = world(spec);
+    const rule = { id: 'coins', verb: 'collect', when: { contact: ['player', 'coin'] }, do: [{ score: 1 }, { despawn: 'other' }] };
+    const ruled = read({ ...runnerFixture, rules: [rule] });
+    const coin = { role: 'collectible' as const, kind: 'coin', x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false };
+    const player = { role: 'player' as const, kind: 'player', x: 0, y: 0, z: 0, w: 1, h: 1, d: 1, solid: false };
+    const compiled = compileRules(ruled, { bodies: [player, coin], length: 0 }, 1);
+    expect(compiled.level.bodies).toHaveLength(2);
+    expect(compiled.rules).toEqual([{ id: 'rule_contact', params: expect.objectContaining({ when: { contact: [ROLE.player, ROLE.collectible] } }) }]);
+    const swapped: ArcadeWorld = { ...hand, rules: [...hand.rules.filter((ref) => ref.id !== 'pickup'), ...compiled.rules] };
+    expect(swapped.rules.length).toBe(hand.rules.length);
+
+    const inputs = runBot(hand).inputs;
+    const a = hashes(hand, inputs, 600);
+    const b = hashes(swapped, inputs, 600);
+    expect(b).toEqual(a);
+    // Rovnost něco měří jen tehdy, když robot za 600 tiků nějakou minci sebral.
+    const program = loadProgram(swapped, ARCADE_LIBRARY);
+    const state = instantiate(swapped);
+    let next = 0;
+    for (let tick = 0; tick < 600; tick += 1) {
+      const event = inputs[next];
+      if (event !== undefined && event.tick === tick) next += 1;
+      step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
+    }
+    expect(state[HEADER.counters + COUNTER.score]).toBeGreaterThan(0);
+  });
+
+  it('keeps a spec without rules on the same world (hash of every fixture unchanged)', () => {
+    const spec = read(runnerFixture);
+    expect(compileRules(spec, { bodies: [], length: 0 }, 1)).toEqual({ rules: [], level: { bodies: [], length: 0 } });
+  });
+
+  it('a press rule with a holding condition fires only on the press, and only while holding', () => {
+    const w = world(read(yardSpec));
+    const program = loadProgram(w, ARCADE_LIBRARY);
+    const [key] = bodiesOf(w, THING_ROLE_BASE);
+    expect(key).toBeDefined();
+    const score = (s: Int32Array): number => s[HEADER.counters + COUNTER.score] as number;
+
+    const empty = instantiate(w);
+    step(empty, { buttons: BUTTON.TAP, axis: 0 }, program);
+    expect(score(empty)).toBe(0);
+
+    const holding = instantiate(w);
+    holding[HEADER.held] = key! + 1;
+    step(holding, NO_INPUT, program);
+    step(holding, { buttons: BUTTON.HOLD, axis: 0 }, program);
+    expect(score(holding)).toBe(0);
+    step(holding, { buttons: BUTTON.TAP, axis: 0 }, program);
+    expect(score(holding)).toBe(5);
+  });
+
+  it('a contact between two things fires without the player', () => {
+    const w = world(read(yardSpec));
+    const program = loadProgram(w, ARCADE_LIBRARY);
+    const [key] = bodiesOf(w, THING_ROLE_BASE);
+    const [exit] = bodiesOf(w, THING_ROLE_BASE + 2);
+    const state = instantiate(w);
+    step(state, NO_INPUT, program);
+    expect(outcomeOf(state)).toBe('running');
+    state[bodyBase(key!) + BODY.x] = state[bodyBase(exit!) + BODY.x] as number;
+    state[bodyBase(key!) + BODY.z] = state[bodyBase(exit!) + BODY.z] as number;
+    step(state, NO_INPUT, program);
+    expect(outcomeOf(state)).toBe('won');
+  });
+
+  it('builds the yard: a wall with the door in its gap, the goal behind it, the key in front', () => {
+    const w = world(read(yardSpec));
+    expect(w.control).toEqual({ id: 'move_free', params: { half: YARD.half } });
+    const state = instantiate(w);
+    const z = (i: number): number => state[bodyBase(i) + BODY.z] as number;
+    const x = (i: number): number => state[bodyBase(i) + BODY.x] as number;
+    const [key] = bodiesOf(w, THING_ROLE_BASE);
+    const [door] = bodiesOf(w, THING_ROLE_BASE + 1);
+    const [exit] = bodiesOf(w, THING_ROLE_BASE + 2);
+    const fences = bodiesOf(w, ROLE.obstacle);
+    expect(fences).toHaveLength(2);
+    expect(z(door!)).toBe(YARD.wallZ);
+    expect(z(exit!)).toBeGreaterThan(YARD.wallZ);
+    expect(z(key!)).toBeLessThan(YARD.wallZ);
+    // Zeď s dveřmi přehradí dvorek celý: mezera je přesně pod dveřmi.
+    const covered = fences.reduce((sum, f) => sum + (state[bodyBase(f) + BODY.w] as number), 0) + (state[bodyBase(door!) + BODY.w] as number);
+    expect(covered).toBe(2 * YARD.half);
+    expect(fences.every((f) => Math.abs(x(f) - x(door!)) * 2 >= (state[bodyBase(f) + BODY.w] as number) + (state[bodyBase(door!) + BODY.w] as number))).toBe(true);
+    expect(((state[bodyBase(door!) + BODY.flags] as number) & FLAG.solid) !== 0).toBe(true);
+    // Na dvorku nejsou buňky ani potrava arény.
+    expect(bodiesOf(w, ROLE.enemy)).toHaveLength(0);
+    expect(bodiesOf(w, ROLE.collectible)).toHaveLength(0);
+  });
+
+  it('the same spec and seed give the same world; the rule count stays inside the kernel limit', () => {
+    const spec = read(yardSpec);
+    expect(world(spec, 7)).toEqual(world(spec, 7));
+    expect(world(spec, 7).rules.length).toBeLessThanOrEqual(ARCADE_LIMITS.maxRules);
+  });
+});

@@ -1,7 +1,7 @@
 /**
  * Arkádové jádro (P25A, T2; v2 P25C): `step()`, hash a přehrání.
  *
- * Tik: vstup → ovládání → vezení na kinematickém tělese → integrace
+ * Tik: vstup → ovládání → pravidla `press` (P29A) → vezení na kinematickém tělese → integrace
  * (rychlost, gravitace) → stohování padajících těl → kolize AABB hráče s ostatními (pevné tělo zastaví
  * shora, zdola i z boku; přistání shora není náraz) → projektily (život,
  * zásah, odraz; P25G) → pravidla → úklid. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
@@ -111,6 +111,9 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
   check(library.bots, input.bot, 'bot');
   // Projektil musí zaniknout: konečná životnost je jediná mez jeho letu.
   bodies.forEach((body, index) => {
+    if (body.roleCode !== undefined && (body.role !== 'thing' || !Number.isInteger(body.roleCode) || body.roleCode < 32 || body.roleCode > 255)) {
+      issues.push(`bodies/${index}: roleCode belongs to a thing and lies in 32..255`);
+    }
     if (body.role !== 'projectile') {
       if (body.lifetime !== undefined || body.bounce !== undefined) issues.push(`bodies/${index}: lifetime and bounce belong to projectiles`);
       return;
@@ -145,7 +148,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
     state[base + BODY.w] = body.w;
     state[base + BODY.h] = body.h;
     state[base + BODY.d] = body.d;
-    state[base + BODY.role] = ROLE[body.role];
+    state[base + BODY.role] = body.roleCode ?? ROLE[body.role];
     state[base + BODY.kind] = kinds.indexOf(body.kind);
     if (body.kinematic === true) state[base + BODY.aux1] = body.period ?? 0;
     if (body.role === 'projectile') {
@@ -518,6 +521,13 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const player = state[HD.player] as number;
 
   program.control.piece.step(state, player, input, program.control.params);
+  // Stisk (P29A): hned za ovládáním, aby hod nebo zvednutí vyšlo už v tomto tiku.
+  const effects: ArcadeEffect[] = [];
+  for (const rule of program.rules) {
+    if (rule.piece.trigger === 'press') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1, input }, rule.params));
+  }
+  apply(state, effects, 0);
+  const pressed = effects.length;
   carry(state, count, player);
   const p = baseOf(player);
   const prevX = state[p + S.x] as number;
@@ -528,24 +538,23 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const contacts = collide(state, count, player, prevX, prevY, prevZ);
   const ended = projectiles(state, count, player);
 
-  const effects: ArcadeEffect[] = [];
   for (const other of contacts) {
     for (const rule of program.rules) {
-      if (rule.piece.trigger === 'contact') collect(effects, rule.piece.fire({ state, player, other, source: -1 }, rule.params));
+      if (rule.piece.trigger === 'contact') collect(effects, rule.piece.fire({ state, player, other, source: -1, input }, rule.params));
     }
   }
   for (let k = 0; k < ended.length; k += 2) {
     for (const rule of program.rules) {
-      if (rule.piece.trigger === 'hit') collect(effects, rule.piece.fire({ state, player, other: ended[k + 1] as number, source: ended[k] as number }, rule.params));
+      if (rule.piece.trigger === 'hit') collect(effects, rule.piece.fire({ state, player, other: ended[k + 1] as number, source: ended[k] as number, input }, rule.params));
     }
   }
   for (const rule of program.rules) {
-    if (rule.piece.trigger === 'tick') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1 }, rule.params));
+    if (rule.piece.trigger === 'tick') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1, input }, rule.params));
   }
-  apply(state, effects, 0);
+  apply(state, effects, pressed);
   const countersFrom = effects.length;
   for (const rule of program.rules) {
-    if (rule.piece.trigger === 'counter') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1 }, rule.params));
+    if (rule.piece.trigger === 'counter') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1, input }, rule.params));
   }
   apply(state, effects, countersFrom);
 

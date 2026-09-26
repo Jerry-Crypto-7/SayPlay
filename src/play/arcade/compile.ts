@@ -27,6 +27,7 @@ import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
 import { throwField, throwRules } from './pieces/throw';
 import { timingParts } from './pieces/timing';
+import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
@@ -120,10 +121,15 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   // Doplňky (P26D) dostanou hotové části základního ovládání.
   const base = { ...spec, controlParams: addonControlParams(spec) } as GameSpecV1;
-  const own = partsOf(base, seed, health);
+  // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
+  const own = rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
   const lives = 'health' in own ? own.health : health;
-  const { control, bot, level, rules, issues } = applyAddons(own, { spec, seed, health: lives });
+  const { control, bot, level: baseLevel, rules, issues } = applyAddons(own, { spec, seed, health: lives });
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
+  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
+  const ruled = compileRules(spec, baseLevel, seed);
+  const level = ruled.level;
+  rules.push(...ruled.rules);
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
 
   const built = buildWorld({ seed, control, rules, bot, level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);

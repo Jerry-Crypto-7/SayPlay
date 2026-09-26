@@ -75,6 +75,12 @@ export const HEADER = {
   respawnZ: 7,
   /** Čítače (`COUNTER`) od tohoto slotu. Náhodu spotřebuje jen generátor, jádro žádnou. */
   counters: 8,
+  /**
+   * Co hráč nese (P29A): index těla + 1, 0 = nic. Je to poslední, dosud nikým
+   * nepoužitý slot čítačů – nový slot hlavičky by posunul těla a pohnul hashi
+   * všech dnešních her, tenhle je v nich všech 0 = „nic nenese“.
+   */
+  held: 15,
 } as const;
 export const HEADER_SIZE = HEADER.counters + ARCADE_LIMITS.maxCounters;
 
@@ -147,6 +153,12 @@ export const ROLE = {
   projectile: 9,
   target: 10,
   checkpoint: 11,
+  /**
+   * Věc pravidel ze specu (P29A): skutečný kód nese `BodyInit.roleCode`
+   * (`THING_ROLE_BASE` a výš, jeden na roli specu), tohle jméno jen značí, že
+   * tělo patří pravidlům.
+   */
+  thing: 12,
 } as const;
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
@@ -260,8 +272,10 @@ export type ArcadeEffect =
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),
  * nebo dopadl na zem bez odrazu, dohasl či se dokutálel (`other` −1). Jádro ho
  * despawnuje samo, pravidlo jen rozhodne, co zásah znamená.
+ * `press` (P29A) = hned po ovládání, s vstupem tiku: pravidlo samo pozná, zda
+ * hráč stiskl, co ho zajímá.
  */
-export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit';
+export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit' | 'press';
 
 /** Co pravidlo vidí: stav jen ke čtení, hráč a u `contact` těl, se kterým se dotkl. */
 export interface RuleContext {
@@ -271,6 +285,8 @@ export interface RuleContext {
   readonly other: number;
   /** U `hit` projektil (už mrtvý, sloty čitelné), jinak −1. */
   readonly source: number;
+  /** Vstup tohoto tiku (P29A, spouštěč `press`). */
+  readonly input: ArcadeInput;
 }
 
 /** Pravidlo: spouštěč → efekty. Stav nemění samo, efekty aplikuje jádro. */
@@ -282,6 +298,8 @@ export interface RulePiece<P = unknown> extends PieceBase<P> {
 /** Počáteční tělo, jak ho vydá generátor. */
 export interface BodyInit {
   readonly role: ArcadeRole;
+  /** Jen role `thing` (P29A): kód role pravidla, který jádro zapíše místo `ROLE.thing`. */
+  readonly roleCode?: number;
   readonly kind: string;
   readonly x: number;
   readonly y: number;
