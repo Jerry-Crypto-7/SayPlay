@@ -13,10 +13,10 @@ import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 import runnerFixture from '../__fixtures__/runner.json';
 import arenaFixture from '../__fixtures__/arena.json';
 import { arcadeWorldOf } from '../compile';
-import { ARCADE_LIMITS, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, type ArcadeWorld, type InputEvent } from '../contract';
+import { ARCADE_LIMITS, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, stateSize, type ArcadeWorld, type InputEvent } from '../contract';
 import { hashArcade, instantiate, loadProgram, outcomeOf, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { PAIR_RULES_MAX, THING_ROLE_BASE, YARD, compileRules } from '../rules/compile';
+import { PAIR_CHECKS_MAX, PAIR_RULES_MAX, SPEC_RULES, THING_ROLE_BASE, YARD, compileRules } from '../rules/compile';
 import { runBot } from '../verify';
 
 function read(input: unknown): GameSpecV1 {
@@ -192,6 +192,24 @@ describe('compileRules', () => {
     expect(ok.ok).toBe(true);
     const made = arcadeWorldOf(read({ ...arenaFixture, rules: Array.from({ length: PAIR_RULES_MAX + 1 }, (_, i) => pair(i)) }), 1);
     expect(made.ok ? [] : made.issues).toEqual([expect.stringContaining(`at most ${PAIR_RULES_MAX} may`)]);
+  });
+
+  it('a pair-contact rule checks at most PAIR_CHECKS_MAX pairs a tick, however many bodies overlap', () => {
+    const made = world(read({ ...arenaFixture, rules: [{ id: 'bump', verb: 'bump', when: { contact: ['coin', 'hunter'] }, do: [{ score: 1 }] }] }));
+    const ref = made.rules.find((r) => r.id === 'rule_tick')!;
+    const [a, b] = (ref.params as { when: { contact: [number, number] } }).when.contact;
+    // 40 × 40 = 1600 překrývajících se dvojic, všechny na jednom místě.
+    const count = 80;
+    const state = new Int32Array(stateSize(count));
+    state[HEADER.bodyCount] = count;
+    for (let i = 0; i < count; i += 1) {
+      const base = bodyBase(i);
+      state[base + BODY.role] = i < 40 ? a : b;
+      state[base + BODY.flags] = FLAG.alive;
+      state[base + BODY.w] = state[base + BODY.h] = state[base + BODY.d] = 100;
+    }
+    const effects = SPEC_RULES.rule_tick.fire({ state, player: -1, other: -1, source: -1, input: NO_INPUT }, ref.params as never);
+    expect(effects.length).toBe(PAIR_CHECKS_MAX);
   });
 
   it('a press win and a loss later in the same tick end lost, as inside one apply; the press win alone stands', () => {
