@@ -26,7 +26,12 @@ function puzzle(required: readonly string[]) {
 }
 
 // Tři spínače, keypoint neprojde → návrh je 422 a věta čeká na režiséra.
-vi.mock('@/play/draft', async (original) => ({ ...(await original<object>()), draftGameSpec: () => puzzle(['red', 'blue', 'green']) }));
+// Route staví draft přes `draftGameSpecWithMeta` (P29B T5), režisér taky – podvrhují se obě.
+vi.mock('@/play/draft', async (original) => ({
+  ...(await original<object>()),
+  draftGameSpec: () => puzzle(['red', 'blue', 'green']),
+  draftGameSpecWithMeta: () => ({ spec: puzzle(['red', 'blue', 'green']) }),
+}));
 vi.mock('../_director', () => ({
   getDirector: () => async () => ({ ok: true, spec: puzzle(['red', 'blue']), source: 'authored', repairRounds: 0, fallbackReason: null, warnings: [], ms: 1, calls: 1 }),
 }));

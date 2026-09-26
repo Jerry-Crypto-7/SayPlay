@@ -183,7 +183,7 @@ describe('direct – cache', () => {
 
   it('a cached spec the critic blocks today is a miss – the model is called again', async () => {
     const stale = unrepairableByTable();
-    const cache = { id: 'stale', read: () => Promise.resolve(stale), write: () => Promise.resolve() };
+    const cache = { id: 'stale', read: () => Promise.resolve({ spec: stale, authoredBy: null }), write: () => Promise.resolve() };
     const branch = fakeBranch([answered(answerFixture('good-collect_exit'))]);
     const game = await run(branch, { cache });
     expect(game).toMatchObject({ source: 'authored', calls: 1 });

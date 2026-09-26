@@ -1,0 +1,7850 @@
+{
+ "about": "P29B T3: local reader vs keyword draft on the 200-sentence demand set (hand labels in evals/play/demand). See README.md.",
+ "measuredAt": "2026-09-26T12:10:55.585Z",
+ "commit": "ef37e8de",
+ "endpoint": "http://127.0.0.1:8791",
+ "model": null,
+ "sentences": 200,
+ "unread": 0,
+ "latencyMs": {
+  "p50": 1202,
+  "p95": 2132,
+  "max": 2627
+ },
+ "verbClass": {
+  "reader": {
+   "hit": 117,
+   "of": 200,
+   "share": 0.585
+  },
+  "regex": {
+   "hit": 145,
+   "of": 200,
+   "share": 0.725
+  }
+ },
+ "control": {
+  "reader": {
+   "hit": 109,
+   "of": 162,
+   "share": 0.673
+  },
+  "regex": {
+   "hit": 145,
+   "of": 162,
+   "share": 0.895
+  }
+ },
+ "judge10": {
+  "run": "p29b-reader",
+  "reader": 0.351,
+  "regex": 0.514,
+  "decision": "off",
+  "latencyMs": {
+   "p50": 1173,
+   "p95": 1529,
+   "max": 1629
+  }
+ },
+ "rows": [
+  {
+   "id": "s001",
+   "text": "jumping arcade game with a lot of obstacles",
+   "label": "platform",
+   "ms": 1175,
+   "reading": {
+    "control": "flap",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "flap"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "obstacles",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "arcade",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "flap",
+   "readerControl": "flap",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s002",
+   "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "label": "tap_go",
+   "ms": 1247,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "collect",
+      "class": "tap_go"
+     },
+     {
+      "word": "dodge",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "a knight",
+    "roles": [
+     {
+      "noun": "keys",
+      "kind": "item",
+      "count": 3
+     },
+     {
+      "noun": "ghosts",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a haunted castle",
+    "mood": "spooky",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      3
+     ]
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s003",
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "label": "tap_go",
+   "ms": 1071,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "escape",
+      "class": "tap_go"
+     },
+     {
+      "word": "hunts",
+      "class": "steer"
+     }
+    ],
+    "hero": "a hamster",
+    "roles": [
+     {
+      "noun": "Roomba",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "supermarket",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "runner",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s004",
+   "text": "endless runner in a neon city",
+   "label": "runner",
+   "ms": 1279,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     }
+    ],
+    "hero": "runner",
+    "roles": [
+     {
+      "noun": "neon city",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "obstacles",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "vehicles",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "neon city",
+    "mood": "high energy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s005",
+   "text": "like subway surfers but on a pirate ship",
+   "label": "runner",
+   "ms": 1235,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     }
+    ],
+    "hero": "pirate",
+    "roles": [
+     {
+      "noun": "treasure",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "pirate ship",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "enemy",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "pirate ship",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s006",
+   "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "label": "runner",
+   "ms": 1312,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "runs",
+      "class": "runner"
+     },
+     {
+      "word": "grabbing",
+      "class": "tap_go"
+     },
+     {
+      "word": "jumping",
+      "class": "flap"
+     }
+    ],
+    "hero": "corgi",
+    "roles": [
+     {
+      "noun": "sausages",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "sprinklers",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "a park",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s007",
+   "text": "run and dodge cars",
+   "label": "runner",
+   "ms": 1077,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     },
+     {
+      "word": "dodge",
+      "class": "timing"
+     }
+    ],
+    "hero": "run",
+    "roles": [
+     {
+      "noun": "cars",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "city street",
+    "mood": "fast, tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s008",
+   "text": "temple run but you're a banana running from a monkey",
+   "label": "runner",
+   "ms": 840,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     }
+    ],
+    "hero": "banana",
+    "roles": [
+     {
+      "noun": "monkey",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "temple",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s009",
+   "text": "a ninja running on rooftops sliding under laser beams",
+   "label": "runner",
+   "ms": 1081,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "running",
+      "class": "runner"
+     },
+     {
+      "word": "sliding",
+      "class": "timing"
+     }
+    ],
+    "hero": "ninja",
+    "roles": [
+     {
+      "noun": "laser beams",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "rooftops",
+    "mood": "fast, tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s010",
+   "text": "runner game where you collect people and your crowd gets bigger then fight the boss at the end",
+   "label": "runner",
+   "ms": 1312,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "collect",
+      "class": "tap_go"
+     },
+     {
+      "word": "fight",
+      "class": "melee"
+     }
+    ],
+    "hero": "you collect people",
+    "roles": [
+     {
+      "noun": "people",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "boss",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "unknown",
+    "mood": "energetic",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s011",
+   "text": "skateboard down a hill avoiding trash cans and grannies",
+   "label": "runner",
+   "ms": 1394,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "down",
+      "class": "runner"
+     },
+     {
+      "word": "avoiding",
+      "class": "timing"
+     },
+     {
+      "word": "skateboard",
+      "class": "steer"
+     }
+    ],
+    "hero": "skateboarder",
+    "roles": [
+     {
+      "noun": "trash cans",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "grannies",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a hillside",
+    "mood": "chaotic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s012",
+   "text": "i want to run on a rainbow road and collect stars",
+   "label": "runner",
+   "ms": 1028,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     },
+     {
+      "word": "collect",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "run on rainbow road",
+    "roles": [
+     {
+      "noun": "stars",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "rainbow road",
+    "mood": "bright, joyful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s013",
+   "text": "A penguin slides down an icy mountain collecting fish",
+   "label": "runner",
+   "ms": 1172,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "slides",
+      "class": "move_free"
+     },
+     {
+      "word": "collects",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "penguin",
+    "roles": [
+     {
+      "noun": "fish",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "icy mountain",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "icy mountain",
+    "mood": "cold, adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s014",
+   "text": "endles runner with zombies chasing u",
+   "label": "runner",
+   "ms": 1027,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     },
+     {
+      "word": "chase",
+      "class": "move_free"
+     }
+    ],
+    "hero": "you",
+    "roles": [
+     {
+      "noun": "zombies",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "urban environment",
+    "mood": "tense, fast",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s015",
+   "text": "a girl running late to school, jump over dogs and puddles",
+   "label": "runner",
+   "ms": 1093,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     },
+     {
+      "word": "jump",
+      "class": "timing"
+     }
+    ],
+    "hero": "a girl",
+    "roles": [
+     {
+      "noun": "dogs",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "puddles",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "school area",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s016",
+   "text": "runner where you pick gates that multiply or divide your army",
+   "label": "runner",
+   "ms": 1406,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "pick",
+      "class": "tap_go"
+     },
+     {
+      "word": "multiply",
+      "class": "move_free"
+     },
+     {
+      "word": "divide",
+      "class": "move_free"
+     }
+    ],
+    "hero": "you",
+    "roles": [
+     {
+      "noun": "gates",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "army",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "runner",
+    "mood": "strategic",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      2,
+      3
+     ]
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s017",
+   "text": "a mouse runs through a kitchen dodging knives and pans",
+   "label": "runner",
+   "ms": 1010,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "runs",
+      "class": "runner"
+     }
+    ],
+    "hero": "a mouse",
+    "roles": [
+     {
+      "noun": "knives",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "pans",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a kitchen",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s018",
+   "text": "lava floor runner",
+   "label": "runner",
+   "ms": 867,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     }
+    ],
+    "hero": "lava floor runner",
+    "roles": [
+     {
+      "noun": "lava",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "lava floor",
+    "mood": "hot, fast",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s019",
+   "text": "a platformer where you jump between floating islands in the sky",
+   "label": "platform",
+   "ms": 812,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "platform"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "islands",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "sky",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s020",
+   "text": "like mario but you're a frog",
+   "label": "platform",
+   "ms": 859,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "platform"
+     }
+    ],
+    "hero": "a frog",
+    "roles": [
+     {
+      "noun": "mario",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a overworld",
+    "mood": "funny",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s021",
+   "text": "obby game with lava and spinning bars",
+   "label": "platform",
+   "ms": 1181,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "platform"
+     },
+     {
+      "word": "spin",
+      "class": "timing"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "lava",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "spinning bars",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "obby",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s022",
+   "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "label": "platform",
+   "ms": 1343,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "climbs",
+      "class": "platform"
+     },
+     {
+      "word": "reaches",
+      "class": "move_free"
+     }
+    ],
+    "hero": "tiny robot",
+    "roles": [
+     {
+      "noun": "tower",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "moving platforms",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "charger",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a tower",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s023",
+   "text": "jump king style game where falling is super punishing",
+   "label": "platform",
+   "ms": 827,
+   "reading": {
+    "control": "flap",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "flap"
+     }
+    ],
+    "hero": "jump king",
+    "roles": [
+     {
+      "noun": "falling",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "unknown",
+    "mood": "punishing",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "flap",
+   "readerControl": "flap",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s024",
+   "text": "parkour on skyscrapers",
+   "label": "platform",
+   "ms": 905,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "parkour",
+      "class": "platform"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "skyscrapers",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "skyscrapers",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s025",
+   "text": "a slime that bounces higher every time it eats a candy",
+   "label": "platform",
+   "ms": 1399,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "eat",
+      "class": "move_free"
+     }
+    ],
+    "hero": "a slime",
+    "roles": [
+     {
+      "noun": "candy",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "bounce",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "a candy-filled room",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s026",
+   "text": "only up but in a candy land",
+   "label": "platform",
+   "ms": 944,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "up",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "only up",
+    "roles": [
+     {
+      "noun": "candy land",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "candy land",
+    "mood": "sweet, playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s027",
+   "text": "doodle jump but in space with asteroids",
+   "label": "platform",
+   "ms": 944,
+   "reading": {
+    "control": "flap",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "flap"
+     }
+    ],
+    "hero": "doodle",
+    "roles": [
+     {
+      "noun": "asteroids",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "space",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "flap",
+   "readerControl": "flap",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s028",
+   "text": "jump across rooftops of a medieval village at night",
+   "label": "platform",
+   "ms": 1202,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "platform"
+     }
+    ],
+    "hero": "hero jumps",
+    "roles": [
+     {
+      "noun": "rooftops",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "medieval village",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "medieval village",
+    "mood": "mysterious",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s029",
+   "text": "a squirrel jumping from tree to tree collecting acorns before winter",
+   "label": "platform",
+   "ms": 1481,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "platform"
+     },
+     {
+      "word": "collect",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "squirrel",
+    "roles": [
+     {
+      "noun": "acorns",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "trees",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "forest",
+    "mood": "cozy",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s030",
+   "text": "hard platformer with spikes everywhere that makes me rage",
+   "label": "platform",
+   "ms": 873,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "platform",
+      "class": "platform"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "spikes",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "unknown",
+    "mood": "rage",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s031",
+   "text": "fall guys style obstacle course",
+   "label": "platform",
+   "ms": 899,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "runner"
+     }
+    ],
+    "hero": "fall guys",
+    "roles": [
+     {
+      "noun": "obstacle",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "obstacle course",
+    "mood": "challenging",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s032",
+   "text": "a sock trying to climb out of a washing machine",
+   "label": "platform",
+   "ms": 887,
+   "reading": {
+    "control": "platform",
+    "verbs": [
+     {
+      "word": "climb",
+      "class": "platform"
+     }
+    ],
+    "hero": "a sock",
+    "roles": [
+     {
+      "noun": "washing machine",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "washing machine",
+    "mood": "absurd",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "platform",
+   "readerControl": "platform",
+   "regexControl": "platform"
+  },
+  {
+   "id": "s033",
+   "text": "geometry dash but 3d",
+   "label": "runner",
+   "ms": 1013,
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "rhythm"
+     }
+    ],
+    "hero": null,
+    "roles": [
+     {
+      "noun": "platform",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "gap",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "3d environment",
+    "mood": "intense, fast",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "rhythm",
+   "readerControl": "rhythm",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s034",
+   "text": "hop on lily pads across a pond without falling in",
+   "label": "tap_go",
+   "ms": 1221,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "hop",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "lily pads",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "pond",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "pond",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s035",
+   "text": "like flappy bird but underwater",
+   "label": "flap",
+   "ms": 1250,
+   "reading": {
+    "control": "flap",
+    "verbs": [
+     {
+      "word": "flap",
+      "class": "flap"
+     }
+    ],
+    "hero": "bird",
+    "roles": [
+     {
+      "noun": "pipes",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "water",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "underwater",
+    "mood": "challenging",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "flap",
+   "readerControl": "flap",
+   "regexControl": "flap"
+  },
+  {
+   "id": "s036",
+   "text": "a chicken crossing an endless road like crossy road",
+   "label": "tap_go",
+   "ms": 1144,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "cross",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "chicken",
+    "roles": [
+     {
+      "noun": "road",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "car",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "road",
+    "mood": "endless",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "runner",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s037",
+   "text": "A space marine shoots alien bugs in a mining colony",
+   "label": "aim_shoot",
+   "ms": 1108,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoots",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "space marine",
+    "roles": [
+     {
+      "noun": "alien bugs",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "mining colony",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "space mining colony",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s038",
+   "text": "shooting game",
+   "label": "aim_shoot",
+   "ms": 1073,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "enemy",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "target",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "game",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s039",
+   "text": "zombie shooter in a mall",
+   "label": "aim_shoot",
+   "ms": 1132,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shooter",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "zombie shooter",
+    "roles": [
+     {
+      "noun": "zombie",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "mall",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "mall",
+    "mood": "tense, fast",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s040",
+   "text": "cowboy duel at high noon, first to shoot wins",
+   "label": "aim_shoot",
+   "ms": 968,
+   "reading": {
+    "control": "duel",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "cowboy",
+    "roles": [
+     {
+      "noun": "opponent",
+      "kind": "target",
+      "count": 1
+     }
+    ],
+    "setting": "high noon",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "duel",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s041",
+   "text": "shoot balloons with a bow before they fly away",
+   "label": "aim_shoot",
+   "ms": 898,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "balloons",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "outdoor",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s042",
+   "text": "sniper game where you have to find the target in a crowd",
+   "label": "aim_shoot",
+   "ms": 1280,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "find",
+      "class": "tap_go"
+     },
+     {
+      "word": "sniper",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "sniper",
+    "roles": [
+     {
+      "noun": "target",
+      "kind": "target",
+      "count": 1
+     },
+     {
+      "noun": "crowd",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "crowd",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "steer",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s043",
+   "text": "a spaceship shooting asteroids and ufos, retro vibes",
+   "label": "aim_shoot",
+   "ms": 1045,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "spaceship",
+    "roles": [
+     {
+      "noun": "asteroids",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "ufos",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "space",
+    "mood": "retro",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s044",
+   "text": "water gun fight in a backyard with my little brothers",
+   "label": "aim_shoot",
+   "ms": 1190,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "fight",
+      "class": "melee"
+     },
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "little brothers",
+    "roles": [
+     {
+      "noun": "water gun",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "backyard",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "backyard",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "throw",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s045",
+   "text": "like krunker but with pirates",
+   "label": "aim_shoot",
+   "ms": 997,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "pirates",
+    "roles": [
+     {
+      "noun": "enemy",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "ships",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "sea",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s046",
+   "text": "shooting range with bottles and targets",
+   "label": "aim_shoot",
+   "ms": 1096,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "bottles",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "targets",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "shooting range",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s047",
+   "text": "A duck with a laser gun defends its pond from robot frogs",
+   "label": "aim_shoot",
+   "ms": 1223,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "defends",
+      "class": "move_free"
+     },
+     {
+      "word": "defends",
+      "class": "aim_shoot"
+     },
+     {
+      "word": "attacks",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "duck with laser gun",
+    "roles": [
+     {
+      "noun": "robot frogs",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "pond",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s048",
+   "text": "fps where u shoot paint at robots",
+   "label": "aim_shoot",
+   "ms": 837,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "u",
+    "roles": [
+     {
+      "noun": "robots",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "fps",
+    "mood": "action",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s049",
+   "text": "survive waves of monsters with an auto shooting wand like vampire survivors",
+   "label": "move_free",
+   "ms": 1474,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "survive",
+      "class": "move_free"
+     },
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     },
+     {
+      "word": "monsters",
+      "class": "throw"
+     }
+    ],
+    "hero": "auto shooting wand",
+    "roles": [
+     {
+      "noun": "monsters",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "caves, dark forests",
+    "mood": "tense, intense",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1,
+      2
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "shooter",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s050",
+   "text": "throwing snowballs at kids behind a snow fort",
+   "label": "throw",
+   "ms": 1197,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "snowballs",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "kids",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "snow fort",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "snow fort",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s051",
+   "text": "tank battle in a desert",
+   "label": "aim_shoot",
+   "ms": 1032,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "battle",
+      "class": "melee"
+     }
+    ],
+    "hero": "tank",
+    "roles": [
+     {
+      "noun": "desert",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "enemy",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "desert",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "steer",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s052",
+   "text": "shoot the ghosts in a haunted carnival shooting gallery",
+   "label": "aim_shoot",
+   "ms": 933,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "ghosts",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "haunted carnival",
+    "mood": "spooky",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s053",
+   "text": "car racing game",
+   "label": "steer",
+   "ms": 1200,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "racing",
+      "class": "steer"
+     }
+    ],
+    "hero": "player car",
+    "roles": [
+     {
+      "noun": "opponents",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "road",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "traffic",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "road",
+    "mood": "fast, tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s054",
+   "text": "drift around a mountain road at night",
+   "label": "steer",
+   "ms": 918,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "drift",
+      "class": "steer"
+     }
+    ],
+    "hero": "drift around",
+    "roles": [
+     {
+      "noun": "mountain road",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "mountain road",
+    "mood": "night",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s055",
+   "text": "like mario kart but with shopping carts",
+   "label": "steer",
+   "ms": 1241,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "shopping carts",
+    "roles": [
+     {
+      "noun": "other carts",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "obstacles",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "rivals",
+      "kind": "chaser",
+      "count": null
+     }
+    ],
+    "setting": "racing track",
+    "mood": "fast, fun",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s056",
+   "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+   "label": "steer",
+   "ms": 1214,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "races",
+      "class": "steer"
+     }
+    ],
+    "hero": "pizza delivery scooter",
+    "roles": [
+     {
+      "noun": "traffic",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "pizza",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "city traffic",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s057",
+   "text": "monster truck jumping over cars",
+   "label": "steer",
+   "ms": 951,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "jump",
+      "class": "timing"
+     },
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "monster truck",
+    "roles": [
+     {
+      "noun": "cars",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "road",
+    "mood": "exciting",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s058",
+   "text": "boat race through a jungle river full of crocodiles",
+   "label": "steer",
+   "ms": 901,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "race",
+      "class": "steer"
+     }
+    ],
+    "hero": "boat",
+    "roles": [
+     {
+      "noun": "crocodiles",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "jungle river",
+    "mood": "dangerous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s059",
+   "text": "racing snails lol",
+   "label": "timing",
+   "ms": 875,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "racing",
+      "class": "steer"
+     }
+    ],
+    "hero": "snails",
+    "roles": [
+     {
+      "noun": "snails",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "racing track",
+    "mood": "funny",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s060",
+   "text": "motorbike stunts on crazy ramps in the sky",
+   "label": "steer",
+   "ms": 1065,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "motorbike",
+    "roles": [
+     {
+      "noun": "ramps",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "sky",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "sky",
+    "mood": "crazy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s061",
+   "text": "parking game where you have to park without hitting anything",
+   "label": "steer",
+   "ms": 1016,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "park",
+      "class": "steer"
+     }
+    ],
+    "hero": "you",
+    "roles": [
+     {
+      "noun": "car",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "objects",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "parking lot",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s062",
+   "text": "escape the police in a stolen ice cream truck",
+   "label": "steer",
+   "ms": 1312,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "escape",
+      "class": "tap_go"
+     },
+     {
+      "word": "steal",
+      "class": "move_free"
+     },
+     {
+      "word": "drive",
+      "class": "steer"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "police",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "ice cream truck",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "city streets",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s063",
+   "text": "hill climb racing but with a bathtub on wheels",
+   "label": "steer",
+   "ms": 1155,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "climb",
+      "class": "steer"
+     },
+     {
+      "word": "racing",
+      "class": "steer"
+     }
+    ],
+    "hero": "bathtub",
+    "roles": [
+     {
+      "noun": "hill",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "wheels",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "racing track",
+    "mood": "funny",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s064",
+   "text": "formula 1 race in monaco",
+   "label": "steer",
+   "ms": 1235,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "race",
+      "class": "steer"
+     }
+    ],
+    "hero": "driver",
+    "roles": [
+     {
+      "noun": "opponents",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "track",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "curves",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "Monaco",
+    "mood": "fast, tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s065",
+   "text": "A kid races a sled down a snowy hill against a yeti",
+   "label": "steer",
+   "ms": 1069,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "races",
+      "class": "steer"
+     }
+    ],
+    "hero": "kid",
+    "roles": [
+     {
+      "noun": "sled",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "yeti",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "snowy hill",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s066",
+   "text": "bumper cars arena",
+   "label": "steer",
+   "ms": 1260,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "bumper cars",
+    "roles": [
+     {
+      "noun": "cars",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "other players",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "bumpers",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "arena",
+    "mood": "exciting",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s067",
+   "text": "horse race on a beach at sunset",
+   "label": "steer",
+   "ms": 1114,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "race",
+      "class": "steer"
+     }
+    ],
+    "hero": "horse",
+    "roles": [
+     {
+      "noun": "beach",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "sunset",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "beach",
+    "mood": "calm, vibrant",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s068",
+   "text": "a match 3 game with fruits",
+   "label": "manipulate",
+   "ms": 998,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "match",
+      "class": "manipulate"
+     }
+    ],
+    "hero": null,
+    "roles": [
+     {
+      "noun": "fruits",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "a game board",
+    "mood": "bright, playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s069",
+   "text": "candy crush but with gems in a cave",
+   "label": "manipulate",
+   "ms": 1538,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "move_free"
+     },
+     {
+      "word": "match",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "gems",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "cave",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "crush",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a cave",
+    "mood": "sweet, adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s070",
+   "text": "puzzle where you slide blocks to get the red car out",
+   "label": "manipulate",
+   "ms": 1019,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "slide",
+      "class": "move_free"
+     }
+    ],
+    "hero": "red car",
+    "roles": [
+     {
+      "noun": "blocks",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "puzzle room",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s071",
+   "text": "sort colored balls into tubes",
+   "label": "manipulate",
+   "ms": 1186,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "sort",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "colored balls",
+    "roles": [
+     {
+      "noun": "balls",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "tubes",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a room with tubes",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s072",
+   "text": "A lost robot must push boxes onto switches to open the door",
+   "label": "tap_go",
+   "ms": 1509,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "push",
+      "class": "move_free"
+     },
+     {
+      "word": "push",
+      "class": "move_free"
+     },
+     {
+      "word": "open",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "lost robot",
+    "roles": [
+     {
+      "noun": "boxes",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "switches",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "door",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a room",
+    "mood": "mysterious",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s073",
+   "text": "untangle ropes puzzle",
+   "label": "manipulate",
+   "ms": 1005,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "untangle",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "ropes",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "puzzle room",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s074",
+   "text": "find the hidden objects in a messy bedroom",
+   "label": "tap_go",
+   "ms": 1172,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "find",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "hidden objects",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "messy bedroom",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "bedroom",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s075",
+   "text": "connect pipes so the water reaches the flowers",
+   "label": "manipulate",
+   "ms": 1571,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "connect",
+      "class": "manipulate"
+     },
+     {
+      "word": "reach",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "pipes",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "water",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "flowers",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "water garden",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "timing",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s076",
+   "text": "a maze game where the walls move",
+   "label": "tap_go",
+   "ms": 863,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "walls",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "maze",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s077",
+   "text": "escape room in a spaceship",
+   "label": "tap_go",
+   "ms": 1144,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "escape",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "locks",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "code",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "spaceship",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "spaceship",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s078",
+   "text": "tetris but in 3D with furniture",
+   "label": "manipulate",
+   "ms": 1116,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "furniture",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "blocks",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "3D apartment",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s079",
+   "text": "unscrew the screws to drop all the plates like those ads",
+   "label": "manipulate",
+   "ms": 1314,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "unscrew",
+      "class": "throw"
+     },
+     {
+      "word": "drop",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "screws",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "plates",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "ad",
+    "mood": "action",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1,
+      2
+     ]
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s080",
+   "text": "a cat must knock things off shelves in the right order to reach the fish",
+   "label": "tap_go",
+   "ms": 1184,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "knock",
+      "class": "throw"
+     },
+     {
+      "word": "order",
+      "class": "timing"
+     }
+    ],
+    "hero": "a cat",
+    "roles": [
+     {
+      "noun": "shelves",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "fish",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a house",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "timing",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s081",
+   "text": "mahjong tiles but 3d",
+   "label": "manipulate",
+   "ms": 1096,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "move_free"
+     }
+    ],
+    "hero": null,
+    "roles": [
+     {
+      "noun": "tiles",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "mahjong",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "3d",
+    "mood": "strategic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s082",
+   "text": "guide light beams with mirrors to light up a temple",
+   "label": "manipulate",
+   "ms": 1314,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "guide",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "mirrors",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "light beams",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "temple",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "temple",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s083",
+   "text": "pull the pins to save the guy from lava",
+   "label": "manipulate",
+   "ms": 1014,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "pull",
+      "class": "throw"
+     }
+    ],
+    "hero": "the guy",
+    "roles": [
+     {
+      "noun": "pins",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "lava",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "lava",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s084",
+   "text": "matching game with cute animals",
+   "label": "manipulate",
+   "ms": 952,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "match",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "cute animals",
+    "roles": [
+     {
+      "noun": "animals",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "cute animals",
+    "mood": "cute",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s085",
+   "text": "park the cars in a jammed parking lot, tap them to drive out in the right order",
+   "label": "manipulate",
+   "ms": 1176,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "park",
+      "class": "tap_go"
+     },
+     {
+      "word": "drive",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "cars",
+    "roles": [
+     {
+      "noun": "parking lot",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "cars",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "jammed parking lot",
+    "mood": "chaotic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s086",
+   "text": "a word game where letters fall from the sky",
+   "label": "manipulate",
+   "ms": 1126,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "catch",
+      "class": "timing"
+     },
+     {
+      "word": "form",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "letters",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "words",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "sky",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "flap"
+  },
+  {
+   "id": "s087",
+   "text": "throw a basketball into a hoop from crazy angles",
+   "label": "throw",
+   "ms": 891,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "throw basketball",
+    "roles": [
+     {
+      "noun": "hoop",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "crazy angles",
+    "mood": "challenging",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s088",
+   "text": "angry birds but with cats and cardboard boxes",
+   "label": "throw",
+   "ms": 1048,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "angry cats",
+    "roles": [
+     {
+      "noun": "cardboard boxes",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "birds",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a backyard",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s089",
+   "text": "flip a bottle so it lands standing",
+   "label": "throw",
+   "ms": 892,
+   "reading": {
+    "control": "flap",
+    "verbs": [
+     {
+      "word": "flip",
+      "class": "throw"
+     }
+    ],
+    "hero": "bottle",
+    "roles": [
+     {
+      "noun": "bottle",
+      "kind": "target",
+      "count": 1
+     }
+    ],
+    "setting": "unknown",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "flap",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s090",
+   "text": "launch a guy from a cannon as far as possible",
+   "label": "throw",
+   "ms": 964,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "launch",
+      "class": "throw"
+     }
+    ],
+    "hero": "a guy",
+    "roles": [
+     {
+      "noun": "cannon",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a field",
+    "mood": "competitive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s091",
+   "text": "throw paper balls into the trash can in an office while the boss isnt looking",
+   "label": "throw",
+   "ms": 1176,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "paper balls",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "trash can",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "boss",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "office",
+    "mood": "mischievous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s092",
+   "text": "ragdoll falling down stairs and breaking bones for points",
+   "label": "throw",
+   "ms": 1385,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "falling",
+      "class": "move_free"
+     }
+    ],
+    "hero": "ragdoll",
+    "roles": [
+     {
+      "noun": "stairs",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "bones",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "inside a house",
+    "mood": "comical",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s093",
+   "text": "knock down towers with a wrecking ball",
+   "label": "throw",
+   "ms": 899,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "knock",
+      "class": "throw"
+     }
+    ],
+    "hero": "wrecking ball",
+    "roles": [
+     {
+      "noun": "towers",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "construction site",
+    "mood": "destructive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s094",
+   "text": "toss a pancake and catch it on the pan",
+   "label": "timing",
+   "ms": 1142,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "toss",
+      "class": "throw"
+     },
+     {
+      "word": "catch",
+      "class": "timing"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "pancake",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "pan",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "kitchen",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s095",
+   "text": "knife throwing at a spinning log",
+   "label": "timing",
+   "ms": 871,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "knife thrower",
+    "roles": [
+     {
+      "noun": "log",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "forest",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s096",
+   "text": "slingshot fruit at a giant blender",
+   "label": "throw",
+   "ms": 1393,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "slingshot",
+      "class": "throw"
+     },
+     {
+      "word": "fruit",
+      "class": "move_free"
+     },
+     {
+      "word": "blender",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "slingshot",
+    "roles": [
+     {
+      "noun": "fruit",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "blender",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a kitchen",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s097",
+   "text": "destroy everything in a house with a hammer, smash simulator",
+   "label": "tap_go",
+   "ms": 1155,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "destroy",
+      "class": "move_free"
+     },
+     {
+      "word": "smash",
+      "class": "throw"
+     }
+    ],
+    "hero": "hammer",
+    "roles": [
+     {
+      "noun": "house",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "furniture",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "house",
+    "mood": "aggressive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "throw",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s098",
+   "text": "stack blocks as high as u can",
+   "label": "timing",
+   "ms": 1021,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "stack",
+      "class": "timing"
+     }
+    ],
+    "hero": null,
+    "roles": [
+     {
+      "noun": "blocks",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "abstract",
+    "mood": "challenging",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s099",
+   "text": "build the tallest pancake tower before it falls over",
+   "label": "timing",
+   "ms": 1409,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "build",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "build pancake tower",
+    "roles": [
+     {
+      "noun": "pancake",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "tower",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "fall",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "kitchen",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s100",
+   "text": "tap at the right time to stop the moving platform",
+   "label": "timing",
+   "ms": 967,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "timing"
+     },
+     {
+      "word": "stop",
+      "class": "timing"
+     }
+    ],
+    "hero": null,
+    "roles": [
+     {
+      "noun": "platform",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "moving platform",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s101",
+   "text": "stack burgers on a plate as they fly across the screen",
+   "label": "timing",
+   "ms": 1046,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "stack",
+      "class": "timing"
+     }
+    ],
+    "hero": "stack burgers",
+    "roles": [
+     {
+      "noun": "burgers",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "plate",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "screen",
+    "mood": "fast",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s102",
+   "text": "A crane operator stacks containers on a ship in a storm",
+   "label": "timing",
+   "ms": 1228,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "stack",
+      "class": "timing"
+     }
+    ],
+    "hero": "crane operator",
+    "roles": [
+     {
+      "noun": "containers",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "ship",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "storm",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "ship in a storm",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s103",
+   "text": "one tap game where a ball bounces down a helix tower",
+   "label": "timing",
+   "ms": 956,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "a ball",
+    "roles": [
+     {
+      "noun": "helix tower",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a helix tower",
+    "mood": "calm, playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s104",
+   "text": "time your jumps through spinning rings",
+   "label": "timing",
+   "ms": 964,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "time",
+      "class": "timing"
+     },
+     {
+      "word": "jump",
+      "class": "timing"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "rings",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "spinning rings",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s105",
+   "text": "stack animals on top of each other on noah's ark",
+   "label": "timing",
+   "ms": 852,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "stack",
+      "class": "timing"
+     }
+    ],
+    "hero": "noah",
+    "roles": [
+     {
+      "noun": "animals",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "noah's ark",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s106",
+   "text": "cut the rope at the right moment to feed the monster",
+   "label": "timing",
+   "ms": 860,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "cut",
+      "class": "timing"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "monster",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "unknown",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s107",
+   "text": "hold to grow a bridge and let go to cross the gap",
+   "label": "timing",
+   "ms": 1147,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "hold",
+      "class": "throw"
+     },
+     {
+      "word": "let go",
+      "class": "throw"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "bridge",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "gap",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "bridge gap",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s108",
+   "text": "stack the jenga blocks without it falling",
+   "label": "manipulate",
+   "ms": 1124,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "stack",
+      "class": "timing"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "jenga blocks",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "falling",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "room",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s109",
+   "text": "like agar.io but you're a fish eating smaller fish",
+   "label": "move_free",
+   "ms": 980,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "eat",
+      "class": "move_free"
+     }
+    ],
+    "hero": "a fish",
+    "roles": [
+     {
+      "noun": "smaller fish",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "ocean",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s110",
+   "text": "snake game where you grow and cut off other snakes",
+   "label": "move_free",
+   "ms": 1088,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "grow",
+      "class": "move_free"
+     },
+     {
+      "word": "cut",
+      "class": "timing"
+     }
+    ],
+    "hero": "snake",
+    "roles": [
+     {
+      "noun": "snakes",
+      "kind": "threat",
+      "count": 1
+     }
+    ],
+    "setting": "digital arena",
+    "mood": "competitive",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s111",
+   "text": "a black hole that swallows a city, it gets bigger the more it eats",
+   "label": "move_free",
+   "ms": 1032,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "swallows",
+      "class": "move_free"
+     }
+    ],
+    "hero": "black hole",
+    "roles": [
+     {
+      "noun": "city",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a city",
+    "mood": "growing, consuming",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s112",
+   "text": "paper io style capture territory",
+   "label": "move_free",
+   "ms": 1049,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "capture",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "territory",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "paper",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "digital arena",
+    "mood": "competitive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s113",
+   "text": "sumo push everyone off an ice platform",
+   "label": "move_free",
+   "ms": 1046,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "push",
+      "class": "throw"
+     }
+    ],
+    "hero": "sumo wrestler",
+    "roles": [
+     {
+      "noun": "everyone",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "ice platform",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "ice platform",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s114",
+   "text": "A snowball rolls through a village getting bigger and flattening snowmen",
+   "label": "steer",
+   "ms": 935,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "rolls",
+      "class": "move_free"
+     }
+    ],
+    "hero": "snowball",
+    "roles": [
+     {
+      "noun": "snowmen",
+      "kind": "threat",
+      "count": 1
+     }
+    ],
+    "setting": "village",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s115",
+   "text": "battle royale with chickens",
+   "label": "move_free",
+   "ms": 965,
+   "reading": {
+    "control": "duel",
+    "verbs": [
+     {
+      "word": "battle",
+      "class": "melee"
+     }
+    ],
+    "hero": "chickens",
+    "roles": [
+     {
+      "noun": "chickens",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "battle royale",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "duel",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s116",
+   "text": "collect coins in an arena and bump other players out",
+   "label": "move_free",
+   "ms": 1164,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "collect",
+      "class": "move_free"
+     },
+     {
+      "word": "bump",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "coins",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "other players",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "arena",
+    "mood": "competitive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s117",
+   "text": "slither io but with dragons",
+   "label": "move_free",
+   "ms": 1045,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "slither",
+      "class": "move_free"
+     }
+    ],
+    "hero": "dragons",
+    "roles": [
+     {
+      "noun": "dragons",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "players",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "io arena",
+    "mood": "competitive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s118",
+   "text": "eat everything as a hungry shark",
+   "label": "move_free",
+   "ms": 900,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "eat",
+      "class": "move_free"
+     }
+    ],
+    "hero": "hungry shark",
+    "roles": [
+     {
+      "noun": "everything",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "ocean",
+    "mood": "hungry",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "move_free"
+  },
+  {
+   "id": "s119",
+   "text": "idle game where i build a donut empire",
+   "label": "idle",
+   "ms": 1288,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "build",
+      "class": "build_place"
+     },
+     {
+      "word": "idle",
+      "class": "idle"
+     }
+    ],
+    "hero": "build donut empire",
+    "roles": [
+     {
+      "noun": "donuts",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "empire",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a donut-themed world",
+    "mood": "calm, prosperous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "build_place",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s120",
+   "text": "merge swords to make stronger swords and fight monsters",
+   "label": "idle",
+   "ms": 1279,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "merge",
+      "class": "manipulate"
+     },
+     {
+      "word": "fight",
+      "class": "melee"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "swords",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "monsters",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "fantasy world",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "duel"
+  },
+  {
+   "id": "s121",
+   "text": "clicker game with cookies but in space",
+   "label": "idle",
+   "ms": 1194,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "click",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "cookie",
+    "roles": [
+     {
+      "noun": "cookies",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "space",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "space",
+    "mood": "calm, cozy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s122",
+   "text": "merge cute animals to get rare ones",
+   "label": "idle",
+   "ms": 1051,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "merge",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "cute animals",
+    "roles": [
+     {
+      "noun": "rare ones",
+      "kind": "collectible",
+      "count": null
+     }
+    ],
+    "setting": "animal world",
+    "mood": "cute",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s123",
+   "text": "A gold mine where I hire dwarves and upgrade the elevator",
+   "label": "idle",
+   "ms": 1544,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "hire",
+      "class": "idle"
+     },
+     {
+      "word": "upgrade",
+      "class": "manipulate"
+     },
+     {
+      "word": "elevator",
+      "class": "move_free"
+     }
+    ],
+    "hero": "dwarves",
+    "roles": [
+     {
+      "noun": "dwarves",
+      "kind": "ally",
+      "count": null
+     },
+     {
+      "noun": "elevator",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "gold",
+      "kind": "collectible",
+      "count": null
+     }
+    ],
+    "setting": "gold mine",
+    "mood": "productive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "idle",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s124",
+   "text": "tap to grow a garden that makes money while im away",
+   "label": "idle",
+   "ms": 1194,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "tap_go"
+     },
+     {
+      "word": "grow",
+      "class": "move_free"
+     }
+    ],
+    "hero": "garden",
+    "roles": [
+     {
+      "noun": "garden",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "money",
+      "kind": "collectible",
+      "count": null
+     }
+    ],
+    "setting": "garden",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s125",
+   "text": "idle factory making toys",
+   "label": "idle",
+   "ms": 1207,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "idle",
+      "class": "idle"
+     }
+    ],
+    "hero": "factory",
+    "roles": [
+     {
+      "noun": "toys",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "making",
+      "kind": "collectible",
+      "count": null
+     }
+    ],
+    "setting": "factory",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "idle",
+   "readerControl": "tap_go",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s126",
+   "text": "merge watermelons like suika game",
+   "label": "timing",
+   "ms": 1043,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "merge",
+      "class": "move_free"
+     }
+    ],
+    "hero": "watermelons",
+    "roles": [
+     {
+      "noun": "watermelons",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "game",
+    "mood": "fun",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s127",
+   "text": "penalty kicks against a goalkeeper",
+   "label": "throw",
+   "ms": 1391,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "kick",
+      "class": "throw"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "goalkeeper",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "football stadium",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "shooter",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s128",
+   "text": "basketball free throws",
+   "label": "throw",
+   "ms": 1760,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "basket",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "ball",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "basketball court",
+    "mood": "focused",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s129",
+   "text": "mini golf with windmills and loops",
+   "label": "throw",
+   "ms": 1722,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "golfer",
+    "roles": [
+     {
+      "noun": "windmills",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "loops",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "golf course",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s130",
+   "text": "bowling in a haunted alley",
+   "label": "throw",
+   "ms": 2388,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "bowling",
+      "class": "throw"
+     }
+    ],
+    "hero": "bowler",
+    "roles": [
+     {
+      "noun": "pins",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "ghosts",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "alley",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "haunted alley",
+    "mood": "spooky",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s131",
+   "text": "soccer game but the players are hamsters",
+   "label": "move_free",
+   "ms": 1522,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "hamsters",
+    "roles": [
+     {
+      "noun": "players",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "ball",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "soccer field",
+    "mood": "energetic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s132",
+   "text": "archery olympics",
+   "label": "aim_shoot",
+   "ms": 1840,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "shoot",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "archer",
+    "roles": [
+     {
+      "noun": "target",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "arrow",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "opponent",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "olympics",
+    "mood": "competitive",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "aim_shoot",
+   "readerControl": "steer",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s133",
+   "text": "ski jumping",
+   "label": "timing",
+   "ms": 1717,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "ski",
+      "class": "steer"
+     }
+    ],
+    "hero": "ski jumper",
+    "roles": [
+     {
+      "noun": "slope",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "run",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "wind",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "mountain",
+    "mood": "exciting",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s134",
+   "text": "table tennis vs a robot",
+   "label": "steer",
+   "ms": 1622,
+   "reading": {
+    "control": "duel",
+    "verbs": [
+     {
+      "word": "play",
+      "class": "melee"
+     },
+     {
+      "word": "hit",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "player vs robot",
+    "roles": [
+     {
+      "noun": "robot",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "table tennis ball",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "table tennis table",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "duel",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s135",
+   "text": "A surfer rides giant waves and does tricks while avoiding sharks",
+   "label": "steer",
+   "ms": 1856,
+   "reading": {
+    "control": "runner",
+    "verbs": [
+     {
+      "word": "rides",
+      "class": "runner"
+     },
+     {
+      "word": "does",
+      "class": "melee"
+     },
+     {
+      "word": "avoids",
+      "class": "timing"
+     }
+    ],
+    "hero": "surfer",
+    "roles": [
+     {
+      "noun": "sharks",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "waves",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "tricks",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "ocean",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "runner",
+   "readerControl": "runner",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s136",
+   "text": "rocket league with tractors",
+   "label": "steer",
+   "ms": 1342,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "steer",
+      "class": "steer"
+     }
+    ],
+    "hero": "tractors",
+    "roles": [
+     {
+      "noun": "rockets",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "opponents",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "arena",
+    "mood": "fast-paced",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s137",
+   "text": "fishing game on a frozen lake",
+   "label": "timing",
+   "ms": 1487,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "fishing",
+      "class": "throw"
+     }
+    ],
+    "hero": "fishing player",
+    "roles": [
+     {
+      "noun": "fish",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "ice",
+      "kind": "obstacle",
+      "count": null
+     }
+    ],
+    "setting": "frozen lake",
+    "mood": "cold, peaceful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "timing"
+  },
+  {
+   "id": "s138",
+   "text": "pool billiards trick shots",
+   "label": "throw",
+   "ms": 1621,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "balls",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "cue",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "trick",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "pool table",
+    "mood": "precise",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "throw",
+   "readerControl": "throw",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s139",
+   "text": "boxing match against a kangaroo",
+   "label": "melee",
+   "ms": 1364,
+   "reading": {
+    "control": "duel",
+    "verbs": [
+     {
+      "word": "fight",
+      "class": "melee"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "kangaroo",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "boxing ring",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "duel",
+   "regexControl": "duel"
+  },
+  {
+   "id": "s140",
+   "text": "tap to the beat with glowing tiles",
+   "label": "rhythm",
+   "ms": 861,
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "rhythm"
+     }
+    ],
+    "hero": null,
+    "roles": [],
+    "setting": null,
+    "mood": null,
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "rhythm",
+   "readerControl": "rhythm",
+   "regexControl": "rhythm"
+  },
+  {
+   "id": "s141",
+   "text": "like beat saber but with swords cutting fruit to music",
+   "label": "rhythm",
+   "ms": 1814,
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "cut",
+      "class": "timing"
+     },
+     {
+      "word": "tap",
+      "class": "rhythm"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "fruit",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "swords",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "a music-based arena",
+    "mood": "energetic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "rhythm",
+   "regexControl": "rhythm"
+  },
+  {
+   "id": "s142",
+   "text": "a dance battle in a disco",
+   "label": "rhythm",
+   "ms": 1670,
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "dance",
+      "class": "rhythm"
+     }
+    ],
+    "hero": "dancer",
+    "roles": [
+     {
+      "noun": "opponent",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "music",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "disco",
+    "mood": "energetic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "rhythm",
+   "readerControl": "rhythm",
+   "regexControl": "rhythm"
+  },
+  {
+   "id": "s143",
+   "text": "piano tiles but falling from space",
+   "label": "rhythm",
+   "ms": 1463,
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "rhythm"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "tiles",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "space",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "space",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "rhythm",
+   "readerControl": "rhythm",
+   "regexControl": "rhythm"
+  },
+  {
+   "id": "s144",
+   "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "label": "rhythm",
+   "ms": 1740,
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "plays",
+      "class": "rhythm"
+     }
+    ],
+    "hero": "drummer frog",
+    "roles": [
+     {
+      "noun": "lily pads",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "pond",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "pond",
+    "mood": "energetic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "rhythm",
+   "readerControl": "rhythm",
+   "regexControl": "rhythm"
+  },
+  {
+   "id": "s145",
+   "text": "music game where a ball rolls on a road to the beat and jumps on the drops",
+   "label": "rhythm",
+   "ms": 1730,
+   "reading": {
+    "control": "rhythm",
+    "verbs": [
+     {
+      "word": "roll",
+      "class": "move_free"
+     },
+     {
+      "word": "jump",
+      "class": "timing"
+     },
+     {
+      "word": "beat",
+      "class": "rhythm"
+     }
+    ],
+    "hero": "ball",
+    "roles": [
+     {
+      "noun": "drops",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "road",
+    "mood": "rhythmic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "rhythm",
+   "regexControl": "rhythm"
+  },
+  {
+   "id": "s146",
+   "text": "sneak past guards in a museum and steal a diamond",
+   "label": "tap_go",
+   "ms": 1624,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "sneak",
+      "class": "tap_go"
+     },
+     {
+      "word": "steal",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "guards",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "diamond",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "museum",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s147",
+   "text": "A kid sneaks down at night to steal cookies without waking mom",
+   "label": "tap_go",
+   "ms": 1630,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "sneaks",
+      "class": "tap_go"
+     },
+     {
+      "word": "steals",
+      "class": "move_free"
+     }
+    ],
+    "hero": "a kid",
+    "roles": [
+     {
+      "noun": "cookies",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "mom",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "nighttime house",
+    "mood": "quiet, stealthy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s148",
+   "text": "stealth game as a ninja cat",
+   "label": "tap_go",
+   "ms": 2166,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "stealth",
+      "class": "tap_go"
+     },
+     {
+      "word": "ninja",
+      "class": "move_free"
+     },
+     {
+      "word": "cat",
+      "class": "move_free"
+     }
+    ],
+    "hero": "ninja cat",
+    "roles": [
+     {
+      "noun": "enemies",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "guards",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "hidden paths",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "treasure",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "forest village",
+    "mood": "mysterious, tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s149",
+   "text": "hide and seek in a big house",
+   "label": "tap_go",
+   "ms": 1827,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "hide",
+      "class": "tap_go"
+     },
+     {
+      "word": "seek",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "player",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "seeker",
+      "kind": "chaser",
+      "count": null
+     },
+     {
+      "noun": "hiders",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "big house",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s150",
+   "text": "prison escape, avoid the flashlights",
+   "label": "tap_go",
+   "ms": 1557,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "escape",
+      "class": "tap_go"
+     },
+     {
+      "word": "avoid",
+      "class": "timing"
+     }
+    ],
+    "hero": "prison escape",
+    "roles": [
+     {
+      "noun": "flashlights",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "prison",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s151",
+   "text": "A cat steals fish from a market while dodging the owner",
+   "label": "tap_go",
+   "ms": 1893,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "steals",
+      "class": "tap_go"
+     },
+     {
+      "word": "dodging",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "a cat",
+    "roles": [
+     {
+      "noun": "fish",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "owner",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a market",
+    "mood": "urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s152",
+   "text": "sneak into the teachers room to change my grades lol",
+   "label": "tap_go",
+   "ms": 1886,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "sneak",
+      "class": "tap_go"
+     },
+     {
+      "word": "into",
+      "class": "tap_go"
+     },
+     {
+      "word": "change",
+      "class": "tap_go"
+     },
+     {
+      "word": "grades",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "student",
+    "roles": [
+     {
+      "noun": "teachers room",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "grades",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "school",
+    "mood": "funny",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s153",
+   "text": "red light green light like squid game",
+   "label": "tap_go",
+   "ms": 1268,
+   "reading": {
+    "control": "timing",
+    "verbs": [
+     {
+      "word": "light",
+      "class": "timing"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "red light",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "green light",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a game room",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "timing",
+   "readerControl": "timing",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s154",
+   "text": "tower defense with cats defending a sofa from mice",
+   "label": "build_place",
+   "ms": 1820,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "defend",
+      "class": "tap_go"
+     },
+     {
+      "word": "attack",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "cats",
+    "roles": [
+     {
+      "noun": "mice",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "sofa",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "house",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s155",
+   "text": "defend the castle from waves of goblins",
+   "label": "build_place",
+   "ms": 1394,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "defend",
+      "class": "move_free"
+     }
+    ],
+    "hero": "defend castle",
+    "roles": [
+     {
+      "noun": "goblins",
+      "kind": "threat",
+      "count": 1
+     }
+    ],
+    "setting": "castle",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s156",
+   "text": "plants vs zombies but with vegetables vs bugs",
+   "label": "build_place",
+   "ms": 1826,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "tap_go"
+     },
+     {
+      "word": "go",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "vegetables",
+    "roles": [
+     {
+      "noun": "zombies",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "bugs",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "plants",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "garden",
+    "mood": "tactical",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s157",
+   "text": "tower defense in space",
+   "label": "build_place",
+   "ms": 2132,
+   "reading": {
+    "control": "shooter",
+    "verbs": [
+     {
+      "word": "defend",
+      "class": "move_free"
+     },
+     {
+      "word": "attack",
+      "class": "aim_shoot"
+     }
+    ],
+    "hero": "defender",
+    "roles": [
+     {
+      "noun": "enemies",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "towers",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "projectiles",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "space",
+    "mood": "strategic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "shooter",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s158",
+   "text": "place snowmen to stop evil penguins from stealing presents",
+   "label": "build_place",
+   "ms": 1601,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "place",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "snowmen",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "penguins",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "presents",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "winter village",
+    "mood": "cozy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s159",
+   "text": "protect the cake from ants",
+   "label": "build_place",
+   "ms": 1418,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "protect",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "ants",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "cake",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a kitchen",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s160",
+   "text": "cooking game where you make burgers fast for customers",
+   "label": "tap_go",
+   "ms": 1994,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "make",
+      "class": "move_free"
+     },
+     {
+      "word": "cook",
+      "class": "move_free"
+     },
+     {
+      "word": "serve",
+      "class": "move_free"
+     },
+     {
+      "word": "fast",
+      "class": "move_free"
+     }
+    ],
+    "hero": "burger maker",
+    "roles": [
+     {
+      "noun": "customers",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "burgers",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "restaurant kitchen",
+    "mood": "fast paced",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s161",
+   "text": "like overcooked but in a food truck",
+   "label": "tap_go",
+   "ms": 2487,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "cook",
+      "class": "move_free"
+     },
+     {
+      "word": "serve",
+      "class": "move_free"
+     },
+     {
+      "word": "manage",
+      "class": "move_free"
+     },
+     {
+      "word": "run",
+      "class": "move_free"
+     }
+    ],
+    "hero": "food truck crew",
+    "roles": [
+     {
+      "noun": "customers",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "orders",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "ingredients",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "equipment",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "cooks",
+      "kind": "ally",
+      "count": null
+     },
+     {
+      "noun": "traffic",
+      "kind": "hazard",
+      "count": null
+     }
+    ],
+    "setting": "food truck kitchen",
+    "mood": "busy, chaotic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s162",
+   "text": "run a sushi restaurant with a conveyor belt",
+   "label": "tap_go",
+   "ms": 1272,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "move_free"
+     }
+    ],
+    "hero": "sushi restaurant",
+    "roles": [
+     {
+      "noun": "conveyor belt",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "restaurant",
+    "mood": "busy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s163",
+   "text": "A barista rushes orders during the morning coffee rush",
+   "label": "tap_go",
+   "ms": 1960,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "rushes",
+      "class": "tap_go"
+     },
+     {
+      "word": "orders",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "barista",
+    "roles": [
+     {
+      "noun": "orders",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "coffee",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "morning",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "coffee shop",
+    "mood": "busy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s164",
+   "text": "make pizza and deliver it",
+   "label": "tap_go",
+   "ms": 2199,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "make",
+      "class": "manipulate"
+     },
+     {
+      "word": "deliver",
+      "class": "move_free"
+     }
+    ],
+    "hero": "pizza maker",
+    "roles": [
+     {
+      "noun": "pizza",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "customer",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "delivery",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "city street",
+    "mood": "busy",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s165",
+   "text": "run a supermarket, stock shelves and scan items at the checkout",
+   "label": "tap_go",
+   "ms": 2314,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "run",
+      "class": "move_free"
+     },
+     {
+      "word": "stock",
+      "class": "manipulate"
+     },
+     {
+      "word": "scan",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "supermarket manager",
+    "roles": [
+     {
+      "noun": "shelves",
+      "kind": "obstacle",
+      "count": null
+     },
+     {
+      "noun": "items",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "customers",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "checkout",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "supermarket",
+    "mood": "busy",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s166",
+   "text": "farm game plant carrots harvest sell",
+   "label": "tap_go",
+   "ms": 2138,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "plant",
+      "class": "tap_go"
+     },
+     {
+      "word": "harvest",
+      "class": "tap_go"
+     },
+     {
+      "word": "sell",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "carrots",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "harvest",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "sell",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "farm",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s167",
+   "text": "manage a hotel for monsters",
+   "label": "idle",
+   "ms": 1273,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "manage",
+      "class": "move_free"
+     }
+    ],
+    "hero": "hotel manager",
+    "roles": [
+     {
+      "noun": "monsters",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "a hotel",
+    "mood": "calm, chaotic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s168",
+   "text": "bake a cake and decorate it",
+   "label": "build_place",
+   "ms": 1710,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "bake",
+      "class": "move_free"
+     },
+     {
+      "word": "decorate",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "cake",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "decorations",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "kitchen",
+    "mood": "cozy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s169",
+   "text": "a vet clinic where you heal cute pets",
+   "label": "tap_go",
+   "ms": 1385,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "heal",
+      "class": "move_free"
+     }
+    ],
+    "hero": "you",
+    "roles": [
+     {
+      "noun": "pets",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "vets",
+      "kind": "ally",
+      "count": null
+     }
+    ],
+    "setting": "a vet clinic",
+    "mood": "cute",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s170",
+   "text": "dress up a princess for the royal ball",
+   "label": "build_place",
+   "ms": 2429,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "dress",
+      "class": "manipulate"
+     },
+     {
+      "word": "up",
+      "class": "tap_go"
+     },
+     {
+      "word": "princess",
+      "class": "idle"
+     },
+     {
+      "word": "ball",
+      "class": "idle"
+     }
+    ],
+    "hero": "princess",
+    "roles": [
+     {
+      "noun": "princess",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "clothes",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "ball",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "royal palace",
+    "mood": "elegant",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "throw"
+  },
+  {
+   "id": "s171",
+   "text": "fashion show runway where you pick outfits that match the theme",
+   "label": "build_place",
+   "ms": 1604,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "pick",
+      "class": "tap_go"
+     },
+     {
+      "word": "match",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "outfits",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "theme",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "fashion show runway",
+    "mood": "elegant",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s172",
+   "text": "makeover game for a messy zombie",
+   "label": "build_place",
+   "ms": 2057,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "makeover",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "messy zombie",
+    "roles": [
+     {
+      "noun": "zombie",
+      "kind": "target",
+      "count": 1
+     },
+     {
+      "noun": "mess",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "items",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "zombie house",
+    "mood": "chaotic, humorous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "manipulate",
+   "readerControl": "move_free",
+   "regexControl": "shooter"
+  },
+  {
+   "id": "s173",
+   "text": "design my own room with cute furniture",
+   "label": "build_place",
+   "ms": 1790,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "design",
+      "class": "move_free"
+     },
+     {
+      "word": "create",
+      "class": "build_place"
+     },
+     {
+      "word": "place",
+      "class": "build_place"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "furniture",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "a room",
+    "mood": "cute",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s174",
+   "text": "nail salon asmr",
+   "label": "build_place",
+   "ms": 1214,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "tap_go"
+     }
+    ],
+    "hero": null,
+    "roles": [],
+    "setting": "nail salon",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s175",
+   "text": "scary game in an abandoned hospital",
+   "label": "tap_go",
+   "ms": 1812,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "patients",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "doctors",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "machines",
+      "kind": "hazard",
+      "count": null
+     },
+     {
+      "noun": "hallways",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "abandoned hospital",
+    "mood": "scary",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s176",
+   "text": "five nights at freddys but in a school",
+   "label": "tap_go",
+   "ms": 2627,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "watch",
+      "class": "tap_go"
+     },
+     {
+      "word": "move",
+      "class": "tap_go"
+     },
+     {
+      "word": "escape",
+      "class": "tap_go"
+     },
+     {
+      "word": "survive",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "ghosts",
+      "kind": "threat",
+      "count": 5
+     },
+     {
+      "noun": "school",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "lights",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "security",
+      "kind": "ally",
+      "count": null
+     }
+    ],
+    "setting": "a school",
+    "mood": "creepy",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      5
+     ]
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s177",
+   "text": "A girl explores a foggy forest with only a flashlight while something follows her",
+   "label": "tap_go",
+   "ms": 1544,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "explores",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "a girl",
+    "roles": [
+     {
+      "noun": "flashlight",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "something",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a foggy forest",
+    "mood": "mysterious, tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s178",
+   "text": "horror game where a creepy doll moves when u dont look",
+   "label": "tap_go",
+   "ms": 1085,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "look",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "creepy doll",
+    "roles": [
+     {
+      "noun": "doll",
+      "kind": "target",
+      "count": null
+     }
+    ],
+    "setting": "house",
+    "mood": "creepy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s179",
+   "text": "escape granny's house",
+   "label": "tap_go",
+   "ms": 1279,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "escape",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "granny",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "granny's house",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s180",
+   "text": "backrooms but you have to find the exit before the lights go out",
+   "label": "tap_go",
+   "ms": 1882,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "find",
+      "class": "tap_go"
+     },
+     {
+      "word": "exit",
+      "class": "tap_go"
+     },
+     {
+      "word": "lights",
+      "class": "tap_go"
+     },
+     {
+      "word": "go",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "you",
+    "roles": [
+     {
+      "noun": "exit",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "lights",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "backrooms",
+    "mood": "fearful, tense",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s181",
+   "text": "survive the night in a cabin with a monster outside",
+   "label": "tap_go",
+   "ms": 1199,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "survive",
+      "class": "move_free"
+     }
+    ],
+    "hero": "you",
+    "roles": [
+     {
+      "noun": "monster",
+      "kind": "threat",
+      "count": 1
+     }
+    ],
+    "setting": "a cabin",
+    "mood": "tense, isolated",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s182",
+   "text": "A dragon searches a volcano for its stolen egg",
+   "label": "tap_go",
+   "ms": 1490,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "searches",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "a dragon",
+    "roles": [
+     {
+      "noun": "egg",
+      "kind": "target",
+      "count": 1
+     },
+     {
+      "noun": "volcano",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a volcano",
+    "mood": "dangerous, urgent",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s183",
+   "text": "treasure hunt on a tropical island",
+   "label": "tap_go",
+   "ms": 1485,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "hunt",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "treasure",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "island",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "clues",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "tropical island",
+    "mood": "adventurous",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s184",
+   "text": "explore underwater ruins as a little submarine",
+   "label": "tap_go",
+   "ms": 1353,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "explore",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "little submarine",
+    "roles": [
+     {
+      "noun": "ruins",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "underwater",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "underwater",
+    "mood": "mysterious",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s185",
+   "text": "zelda like dungeon with a sword and keys",
+   "label": "tap_go",
+   "ms": 2201,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "move_free"
+     },
+     {
+      "word": "sword",
+      "class": "melee"
+     },
+     {
+      "word": "keys",
+      "class": "manipulate"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "sword",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "keys",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "dungeon",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "enemies",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "dungeon",
+    "mood": "mysterious",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s186",
+   "text": "sword fighting game with ninjas",
+   "label": "melee",
+   "ms": 1974,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "fight",
+      "class": "melee"
+     },
+     {
+      "word": "sword",
+      "class": "melee"
+     },
+     {
+      "word": "ninjas",
+      "class": "idle"
+     }
+    ],
+    "hero": "ninjas",
+    "roles": [
+     {
+      "noun": "ninjas",
+      "kind": "ally",
+      "count": null
+     },
+     {
+      "noun": "enemies",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "swords",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "ninja village",
+    "mood": "intense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "move_free",
+   "regexControl": "duel"
+  },
+  {
+   "id": "s187",
+   "text": "stickman fight on a rooftop",
+   "label": "melee",
+   "ms": 1338,
+   "reading": {
+    "control": "duel",
+    "verbs": [
+     {
+      "word": "fight",
+      "class": "melee"
+     }
+    ],
+    "hero": "stickman",
+    "roles": [
+     {
+      "noun": "rooftop",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "enemy",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "rooftop",
+    "mood": "tense",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "duel",
+   "regexControl": "duel"
+  },
+  {
+   "id": "s188",
+   "text": "A grandma karate fights a gang of pigeons in the park",
+   "label": "melee",
+   "ms": 1973,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "fights",
+      "class": "melee"
+     },
+     {
+      "word": "karate",
+      "class": "melee"
+     },
+     {
+      "word": "pigeons",
+      "class": "throw"
+     }
+    ],
+    "hero": "grandma",
+    "roles": [
+     {
+      "noun": "pigeons",
+      "kind": "threat",
+      "count": 1
+     },
+     {
+      "noun": "park",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "the park",
+    "mood": "funny, lively",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "move_free",
+   "regexControl": "duel"
+  },
+  {
+   "id": "s189",
+   "text": "pillow fight in a sleepover",
+   "label": "melee",
+   "ms": 1382,
+   "reading": {
+    "control": "throw",
+    "verbs": [
+     {
+      "word": "fight",
+      "class": "melee"
+     },
+     {
+      "word": "throw",
+      "class": "throw"
+     }
+    ],
+    "hero": "kids",
+    "roles": [
+     {
+      "noun": "pillows",
+      "kind": "threat",
+      "count": null
+     },
+     {
+      "noun": "sleepover",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "sleepover",
+    "mood": "playful",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "throw",
+   "regexControl": "duel"
+  },
+  {
+   "id": "s190",
+   "text": "goat simulator but you're a raccoon in a city",
+   "label": "move_free",
+   "ms": 1246,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "go",
+      "class": "steer"
+     }
+    ],
+    "hero": "raccoon",
+    "roles": [
+     {
+      "noun": "city",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "goat",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "city",
+    "mood": "funny",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "runner"
+  },
+  {
+   "id": "s191",
+   "text": "fly a paper plane through a house",
+   "label": "steer",
+   "ms": 939,
+   "reading": {
+    "control": "steer",
+    "verbs": [
+     {
+      "word": "fly",
+      "class": "steer"
+     }
+    ],
+    "hero": "paper plane",
+    "roles": [
+     {
+      "noun": "house",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a house",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "steer",
+   "readerControl": "steer",
+   "regexControl": "steer"
+  },
+  {
+   "id": "s192",
+   "text": "be a bee collecting pollen and bringing it to the hive",
+   "label": "tap_go",
+   "ms": 1276,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "collect",
+      "class": "tap_go"
+     },
+     {
+      "word": "bring",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "a bee",
+    "roles": [
+     {
+      "noun": "pollen",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "hive",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "a garden",
+    "mood": "calm",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s193",
+   "text": "survive on a raft in the ocean, catch debris and build",
+   "label": "move_free",
+   "ms": 1572,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "survive",
+      "class": "move_free"
+     },
+     {
+      "word": "catch",
+      "class": "throw"
+     },
+     {
+      "word": "build",
+      "class": "build_place"
+     }
+    ],
+    "hero": "survive on a raft",
+    "roles": [
+     {
+      "noun": "debris",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "raft",
+      "kind": "destination",
+      "count": null
+     }
+    ],
+    "setting": "ocean",
+    "mood": "adventure",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s194",
+   "text": "minecraft but tiny, mine and craft to survive the first night",
+   "label": "sandbox",
+   "ms": 1566,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "mine",
+      "class": "move_free"
+     },
+     {
+      "word": "craft",
+      "class": "manipulate"
+     },
+     {
+      "word": "survive",
+      "class": "move_free"
+     }
+    ],
+    "hero": "player",
+    "roles": [
+     {
+      "noun": "resources",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "night",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "tiny minecraft world",
+    "mood": "tense, survival",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      1
+     ]
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s195",
+   "text": "something relaxing with bubbles",
+   "label": "tap_go",
+   "ms": 926,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "move",
+      "class": "move_free"
+     }
+    ],
+    "hero": "bubbles",
+    "roles": [
+     {
+      "noun": "bubbles",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "a calm pond",
+    "mood": "relaxing",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "move_free",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s196",
+   "text": "a cozy game",
+   "label": "tap_go",
+   "ms": 858,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "a",
+      "class": "idle"
+     }
+    ],
+    "hero": null,
+    "roles": [],
+    "setting": null,
+    "mood": "cozy",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "idle",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s197",
+   "text": "something fun and colorful for my little sister",
+   "label": "tap_go",
+   "ms": 1149,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "tap",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "little sister",
+    "roles": [
+     {
+      "noun": "colorful items",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "enemies",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "a colorful world",
+    "mood": "fun, bright",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s198",
+   "text": "satisfying game where you pop stuff",
+   "label": "tap_go",
+   "ms": 974,
+   "reading": {
+    "control": "tap_go",
+    "verbs": [
+     {
+      "word": "pop",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "you",
+    "roles": [
+     {
+      "noun": "stuff",
+      "kind": "item",
+      "count": null
+     }
+    ],
+    "setting": "abstract",
+    "mood": "satisfying",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "tap_go",
+   "readerControl": "tap_go",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s199",
+   "text": "An open world where I'm a dragon rider, fight bosses, level up, upgrade my dragon and explore three kingdoms",
+   "label": "sandbox",
+   "ms": 1803,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "fight",
+      "class": "melee"
+     },
+     {
+      "word": "level",
+      "class": "idle"
+     },
+     {
+      "word": "upgrade",
+      "class": "build_place"
+     },
+     {
+      "word": "explore",
+      "class": "tap_go"
+     }
+    ],
+    "hero": "dragon rider",
+    "roles": [
+     {
+      "noun": "boss",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "dragon",
+      "kind": "ally",
+      "count": null
+     },
+     {
+      "noun": "kingdoms",
+      "kind": "destination",
+      "count": 3
+     }
+    ],
+    "setting": "three kingdoms",
+    "mood": "epic adventure",
+    "numbers": {
+     "seconds": null,
+     "counts": [
+      3
+     ]
+    }
+   },
+   "readerClass": "melee",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  },
+  {
+   "id": "s200",
+   "text": "A multiplayer city where I build my house, drive cars, rob banks and the cops chase me like GTA",
+   "label": "sandbox",
+   "ms": 1888,
+   "reading": {
+    "control": "move_free",
+    "verbs": [
+     {
+      "word": "build",
+      "class": "build_place"
+     },
+     {
+      "word": "drive",
+      "class": "steer"
+     },
+     {
+      "word": "rob",
+      "class": "throw"
+     },
+     {
+      "word": "chase",
+      "class": "steer"
+     }
+    ],
+    "hero": "I",
+    "roles": [
+     {
+      "noun": "house",
+      "kind": "destination",
+      "count": null
+     },
+     {
+      "noun": "cars",
+      "kind": "item",
+      "count": null
+     },
+     {
+      "noun": "banks",
+      "kind": "target",
+      "count": null
+     },
+     {
+      "noun": "cops",
+      "kind": "threat",
+      "count": null
+     }
+    ],
+    "setting": "city",
+    "mood": "action, chaotic",
+    "numbers": {
+     "seconds": null,
+     "counts": []
+    }
+   },
+   "readerClass": "build_place",
+   "readerControl": "move_free",
+   "regexControl": "tap_go"
+  }
+ ]
+}

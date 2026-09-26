@@ -60,6 +60,73 @@ export const MIN_CALL_MS = 75_000;
  */
 export const DEFAULT_DIRECTOR_CALLS_PER_CALLER = 12;
 
+/**
+ * Po kolika ms bez odpovědi primáru se pustí lokální záloha (P29B T8).
+ * Předplatné umí viset 285–317 s (`evals/play/fidelity/README.md`) a kompaktní
+ * odpověď má p50 12 s; 30 s nechá primáru dvojnásobek mediánu s rezervou.
+ * Jestli je mez správná, rozhodne živé měření za HALT – proto proměnná.
+ */
+export const DEFAULT_HEDGE_MS = 30_000;
+
+function hedgeMs(env: Record<string, string | undefined>): number {
+  const value = Number(env.PLAY_DIRECTOR_HEDGE_MS);
+  return Number.isFinite(value) && value >= 0 ? value : DEFAULT_HEDGE_MS;
+}
+
+type Call = (signal: AbortSignal) => Promise<GenerationOutcome>;
+
+/**
+ * Souběh primáru se zálohou: záloha startuje po `hedgeAfterMs`, nebo hned,
+ * když primár selže dřív. První úspěšná odpověď vyhraje a druhé volání se
+ * zruší. Když selžou obě, vrací se selhání primáru – o větě říká víc.
+ * Vyhozená výjimka je selhání, ne pád režie.
+ */
+export function hedged(primary: Call, fallback: Call | null, hedgeAfterMs: number): Promise<GenerationOutcome> {
+  const primaryCtl = new AbortController();
+  const settle = (call: Call, ctl: AbortController): Promise<GenerationOutcome> =>
+    call(ctl.signal).catch((thrown: unknown) => ({ ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: (thrown as Error).message, usage: null }));
+  if (fallback === null) return settle(primary, primaryCtl);
+
+  const fallbackCtl = new AbortController();
+  return new Promise((resolve) => {
+    let done = false;
+    let fallbackStarted = false;
+    let primaryFailure: GenerationOutcome | null = null;
+    let fallbackFailed = false;
+    let fallbackRun: Promise<GenerationOutcome> | null = null;
+    // Vrací se až po doběhnutí zrušeného volání (R1): rezervace primáru se tak
+    // vyrovná dřív, než trasa pustí slot. Zabíjený codex tím přidá nejvýš
+    // `CODEX_KILL_GRACE_MS` k odpovědi, která už stejně čekala přes mez.
+    const finish = (outcome: GenerationOutcome, loser: AbortController | null, loserRun: Promise<GenerationOutcome> | null) => {
+      done = true;
+      clearTimeout(timer);
+      loser?.abort();
+      void (loserRun ?? Promise.resolve()).then(() => resolve(outcome));
+    };
+    const startFallback = () => {
+      if (fallbackStarted || done) return;
+      fallbackStarted = true;
+      clearTimeout(timer);
+      fallbackRun = settle(fallback, fallbackCtl);
+      void fallbackRun.then((outcome) => {
+        if (done) return;
+        if (outcome.ok) finish(outcome, primaryCtl, primaryRun);
+        else if (primaryFailure !== null) finish(primaryFailure, null, null);
+        else fallbackFailed = true;
+      });
+    };
+    const timer = setTimeout(startFallback, hedgeAfterMs);
+    const primaryRun = settle(primary, primaryCtl);
+    void primaryRun.then((outcome) => {
+      if (done) return;
+      if (outcome.ok) return finish(outcome, fallbackStarted ? fallbackCtl : null, fallbackRun);
+      primaryFailure = outcome;
+      if (fallbackFailed) finish(outcome, null, null);
+      else startFallback();
+    });
+  });
+}
+
 function callsPerCaller(env: Record<string, string | undefined>): number {
   const value = Number(env.PLAY_DIRECTOR_CALLS_PER_CALLER);
   return Number.isInteger(value) && value > 0 ? value : DEFAULT_DIRECTOR_CALLS_PER_CALLER;
@@ -107,14 +174,27 @@ async function cappedBranch(
         onCallerLimit();
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: "the caller's daily director calls are used up", usage: null };
       }
-      try {
-        const outcome = await bounded.generate(call);
-        await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing));
-        return outcome;
-      } catch (thrown) {
-        await reservation.settle('unknown');
-        throw thrown;
-      }
+      // Zrušený primár nemá účtenku a strhne celou rezervaci (R1, rozhodnuto):
+      // poskytovatel mohl tokeny spálit až do zrušení a odhad z uplynulého času
+      // by byl nižší číslo, tedy nebezpečná strana stropu. U předplatného je
+      // cena 0 a mez drží počet volání, takže to nic nestojí.
+      const primary: Call = async (signal) => {
+        try {
+          const outcome = await bounded.generate(call, signal);
+          await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing));
+          return outcome;
+        } catch (thrown) {
+          await reservation.settle('unknown');
+          throw thrown;
+        }
+      };
+      // Záloha je lokální a zdarma: mimo strop i kvótu, jen v mezích rozpočtu trasy.
+      const local = config.fallback;
+      const fallback: Call | null =
+        local === undefined
+          ? null
+          : (signal) => upstreamBranch({ ...local, timeoutMs: Math.max(1, Math.min(local.timeoutMs, deadline - Date.now())) }).generate(call, signal);
+      return hedged(primary, fallback, hedgeMs(env));
     },
   };
 }

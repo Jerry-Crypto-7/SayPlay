@@ -29,10 +29,24 @@ export function directorKey(input: DirectorKeyInput): string {
   return createHash('sha256').update([normalizeSentence(input.sentence), input.promptVersion, input.model, input.endpoint].join('\n')).digest('hex');
 }
 
+/** Přijatý spec a kdo ho napsal (P29B R2); `null` = záznam z doby před atribucí. */
+export interface CachedGame {
+  readonly spec: GameSpecV1;
+  readonly authoredBy: string | null;
+}
+
 export interface DirectorCache {
   readonly id: string;
-  read(key: string): Promise<GameSpecV1 | null>;
-  write(key: string, spec: GameSpecV1): Promise<void>;
+  read(key: string): Promise<CachedGame | null>;
+  write(key: string, spec: GameSpecV1, authoredBy?: string | null): Promise<void>;
+}
+
+/** Záznam od R2 je obálka `{spec, authoredBy}`; starší záznam je holý spec. */
+function unwrapRecord(parsed: unknown): { readonly spec: unknown; readonly authoredBy: string | null } {
+  if (typeof parsed !== 'object' || parsed === null || !('spec' in parsed)) return { spec: parsed, authoredBy: null };
+  if (!Object.keys(parsed).every((key) => key === 'spec' || key === 'authoredBy')) return { spec: parsed, authoredBy: null };
+  const by = (parsed as { authoredBy?: unknown }).authoredBy;
+  return { spec: parsed.spec, authoredBy: typeof by === 'string' ? by : null };
 }
 
 export function directorCache(store: AnswerStore, log: (line: string) => void = (line) => console.warn(`[play] ${line}`)): DirectorCache {
@@ -54,16 +68,17 @@ export function directorCache(store: AnswerStore, log: (line: string) => void = 
         log('the director cache holds a record this server cannot read; treating it as a miss');
         return null;
       }
-      const result = readGameSpec(parsed);
+      const record = unwrapRecord(parsed);
+      const result = readGameSpec(record.spec);
       if (!result.ok) {
         log(`the director cache holds a spec this server rejects (${result.reason}); treating it as a miss`);
         return null;
       }
-      return result.value;
+      return { spec: result.value, authoredBy: record.authoredBy };
     },
-    async write(key, spec) {
+    async write(key, spec, authoredBy = null) {
       try {
-        await store.set(key, JSON.stringify(spec), ANSWER_TTL_SECONDS);
+        await store.set(key, JSON.stringify({ spec, authoredBy }), ANSWER_TTL_SECONDS);
       } catch (thrown) {
         log(`the director cache could not be written: ${String(thrown)}`);
       }

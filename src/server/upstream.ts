@@ -133,6 +133,11 @@ export interface UpstreamConfig {
    * pojistka proti špatně opsanému ceníku (`src/server/spend-cap.ts`).
    */
   readonly callCap: number | null;
+  /**
+   * Lokální záloha (P29B T7) z `WORLDSMITH_FALLBACK_ENDPOINT`; klíč chybí,
+   * když záloha není, aby se tvar dnešní konfigurace nehnul.
+   */
+  readonly fallback?: UpstreamConfig;
 }
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
@@ -161,6 +166,32 @@ const DEFAULT_TIMEOUT_MS = 120_000;
  */
 export const CODEX_CLI_ENDPOINT = 'codex-cli';
 const DEFAULT_CLI_TIMEOUT_MS = 240_000;
+
+/**
+ * **Třetí transport: lokální llama.cpp** (P29B T7). Hodnota koncového bodu
+ * `llamacpp:<kořen serveru>` znamená `llama-server` s OpenAI chat API
+ * a výstupem pod gramatikou z `outputSchema`. Dnes jen jako záloha režiséra
+ * (`WORLDSMITH_FALLBACK_ENDPOINT`): běží na vlastní GPU, takže je zdarma,
+ * nemá klíč a strop volání se na ni nevztahuje.
+ */
+export const LLAMACPP_PREFIX = 'llamacpp:';
+const DEFAULT_FALLBACK_MAX_OUTPUT_TOKENS = 4000;
+
+function fallbackConfigFromEnv(env: Record<string, string | undefined>): UpstreamConfig | null {
+  const endpoint = (env.WORLDSMITH_FALLBACK_ENDPOINT ?? '').trim();
+  if (!/^llamacpp:https?:\/\/\S+$/.test(endpoint)) return null;
+  return {
+    endpoint,
+    apiKey: '',
+    model: (env.WORLDSMITH_FALLBACK_MODEL ?? '').trim() || 'local-fallback',
+    effort: DEFAULT_EFFORT,
+    pricing: { usdPerMTokIn: 0, usdPerMTokOut: 0 },
+    maxOutputTokens: positiveNumber(env.WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS, DEFAULT_FALLBACK_MAX_OUTPUT_TOKENS),
+    timeoutMs: positiveNumber(env.WORLDSMITH_FALLBACK_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    profile: 'subscription',
+    callCap: null,
+  };
+}
 
 /**
  * **Proč `low` a ne výchozí hodnota poskytovatele.**
@@ -375,7 +406,9 @@ export function upstreamConfigFromEnv(env: Record<string, string | undefined>): 
   // vypnout živou větev, ne vyrábět odmítnutí na každém požadavku.
   if ((maxOutputTokens * usdPerMTokOut) / 1_000_000 <= 0) return null;
 
+  const fallback = fallbackConfigFromEnv(env);
   return {
+    ...(fallback === null ? {} : { fallback }),
     endpoint,
     apiKey,
     // Prázdný řetězec NENÍ chybějící hodnota, dokud to někdo nenapíše: `??` ho
@@ -453,7 +486,7 @@ export function upstreamBranch(
     id: UPSTREAM_BRANCH_ID,
     pricing: config.pricing,
     worstCaseUsd: (call) => worstCaseUsd(call, config),
-    generate: (call) => generate(call, config, fetchImpl),
+    generate: (call, signal) => generate(call, config, fetchImpl, signal),
   };
 }
 
@@ -769,7 +802,7 @@ export function killCodexTree(child: ChildProcess, afterKill: () => void): void 
   }
 }
 
-function runCodex(model: string, effort: string, input: string, timeoutMs: number, schema?: Readonly<Record<string, unknown>>): Promise<string> {
+function runCodex(model: string, effort: string, input: string, timeoutMs: number, schema?: Readonly<Record<string, unknown>>, signal?: AbortSignal): Promise<string> {
   const command = codexCommand();
   const cwd = mkdtempSync(join(tmpdir(), 'worldsmith-codex-'));
   if (schema !== undefined) writeFileSync(join(cwd, CODEX_SCHEMA_FILE), JSON.stringify(schema));
@@ -808,6 +841,9 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       grace = setTimeout(() => finish(null), CODEX_KILL_GRACE_MS);
     };
     const timer = setTimeout(() => stop('codex exec ran past the timeout'), timeoutMs);
+    const cancel = () => stop('the call was cancelled');
+    signal?.addEventListener('abort', cancel, { once: true });
+    if (signal?.aborted === true) cancel();
     child.stdout.on('data', (chunk: Buffer) => {
       outputBytes += chunk.length;
       if (outputBytes > MAX_CODEX_OUTPUT_BYTES) stop('codex exec wrote more than 8 MiB');
@@ -828,6 +864,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       done = true;
       clearTimeout(timer);
       clearTimeout(grace);
+      signal?.removeEventListener('abort', cancel);
       try {
         // Na Windows drží adresář ještě chvíli dozabíjený proces (EBUSY).
         rmSync(cwd, { recursive: true, force: true, maxRetries: 5 });
@@ -843,7 +880,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
   });
 }
 
-async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig): Promise<GenerationOutcome> {
+async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig, signal?: AbortSignal): Promise<GenerationOutcome> {
   let output: string;
   try {
     output = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => runCodex(
@@ -852,6 +889,7 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
       call.request.outputSchema,
+      signal,
     ));
   } catch (thrown) {
     return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${(thrown as Error).message}`, usage: null };
@@ -893,12 +931,67 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
   };
 }
 
+/** Timeout volání, a když přijde `signal`, i jeho zrušení. */
+function withCancel(timeoutMs: number, signal: AbortSignal | undefined): AbortSignal {
+  return signal === undefined ? AbortSignal.timeout(timeoutMs) : AbortSignal.any([AbortSignal.timeout(timeoutMs), signal]);
+}
+
+async function generateViaLlamaCpp(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
+  const root = config.endpoint.slice(LLAMACPP_PREFIX.length).replace(/\/+$/, '');
+  const schema = call.request.outputSchema;
+  let response: Response;
+  try {
+    response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(`${root}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: config.model,
+        max_tokens: config.maxOutputTokens,
+        temperature: 0,
+        messages: [
+          { role: 'system', content: call.request.system },
+          { role: 'user', content: call.request.user },
+        ],
+        response_format: schema === undefined ? { type: 'json_object' } : { type: 'json_schema', json_schema: { name: 'answer', strict: true, schema } },
+      }),
+      signal: withCancel(config.timeoutMs, signal),
+    }));
+  } catch (thrown) {
+    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the llama.cpp call did not complete: ${(thrown as Error).message}`, usage: null };
+  }
+  if (!response.ok)
+    return { ok: false, reason: response.status < 500 ? 'UPSTREAM_REJECTED' : 'UPSTREAM_UNAVAILABLE', detail: `upstream answered ${response.status}`, usage: null };
+
+  let payload: { choices?: { message?: { content?: unknown }; finish_reason?: unknown }[]; usage?: { prompt_tokens?: unknown; completion_tokens?: unknown } };
+  try {
+    payload = (await observePhaseAsync(serverPhaseObserver, 'provider-response-json', () => response.json())) as typeof payload;
+  } catch (thrown) {
+    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the llama.cpp answer is not JSON: ${(thrown as Error).message}`, usage: null };
+  }
+  const choice = payload?.choices?.[0];
+  const text = choice?.message?.content;
+  if (typeof text !== 'string') return { ok: false, reason: 'MALFORMED_RESPONSE', detail: 'the llama.cpp answer carries no message', usage: null };
+
+  const usage = readableUsage(usageOf({ usage: { input_tokens: payload.usage?.prompt_tokens, output_tokens: payload.usage?.completion_tokens } }), text, config.maxOutputTokens);
+  // Useknutá odpověď se nedoplňuje, stejně jako na cestě Messages.
+  const truncated = choice?.finish_reason === 'length';
+  let body: unknown;
+  try {
+    body = observePhase(serverPhaseObserver, 'provider-output-json-parse', () => (truncated ? JSON.parse(text) : parseAnswerText(text)));
+  } catch (thrown) {
+    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the llama.cpp text is not JSON${truncated ? ' (cut at max_tokens)' : ''}: ${(thrown as Error).message}`, usage, raw: text };
+  }
+  return { ok: true, body, usage, provenance: { branch: UPSTREAM_BRANCH_ID, source: 'llamacpp-http', synthetic: false, model: config.model } };
+}
+
 async function generate(
   call: GenerationCall,
   config: UpstreamConfig,
   fetchImpl: typeof fetch,
+  signal?: AbortSignal,
 ): Promise<GenerationOutcome> {
-  if (config.endpoint === CODEX_CLI_ENDPOINT) return generateViaCodexCli(call, config);
+  if (config.endpoint === CODEX_CLI_ENDPOINT) return generateViaCodexCli(call, config, signal);
+  if (config.endpoint.startsWith(LLAMACPP_PREFIX)) return generateViaLlamaCpp(call, config, fetchImpl, signal);
   let response: Response;
   try {
     response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(config.endpoint, {
@@ -917,7 +1010,7 @@ async function generate(
         system: call.request.system,
         messages: [{ role: 'user', content: call.request.user }],
       }),
-      signal: AbortSignal.timeout(config.timeoutMs),
+      signal: withCancel(config.timeoutMs, signal),
     }));
   } catch (thrown) {
     return {

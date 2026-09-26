@@ -30340,6 +30340,19 @@
       "reason": "vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá\". Žádný model tohoto jména neexistuje."
     },
     {
+      "name": "gpt-oss-20b",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://huggingface.co/ggml-org/gpt-oss-20b-GGUF gpt-oss-20b-MXFP4.gguf; license https://huggingface.co/openai/gpt-oss-20b/blob/main/LICENSE",
+      "authorOrProvider": "OpenAI (weights), ggml-org (GGUF conversion)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "license text and NOTICE if the weights are redistributed (they are not)"
+      ],
+      "attribution": "gpt-oss-20b © OpenAI, Apache-2.0",
+      "reviewNote": "P29B local fallback director: llama.cpp llama-server on the owner's RTX 3090 (ops/llm/start.ps1 -Role fallback), called only when the subscription director stalls. Local only, not in the repository or the bundle. License read from the model card, 2026-09-26."
+    },
+    {
       "name": "gpt-test",
       "kind": "model",
       "firstParty": true,
@@ -30390,6 +30403,32 @@
       ],
       "attribution": "Qwen3 © Alibaba Group, Apache-2.0",
       "reviewNote": "Text encoder shared by FLUX.2-klein-4B and Z-Image-Turbo (same sha256), shipped in the Apache-2.0 Z-Image repack. Local only, not in the repository."
+    },
+    {
+      "name": "Qwen3-4B-Instruct-2507",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF Qwen3-4B-Instruct-2507-Q5_K_M.gguf; license https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507/blob/main/LICENSE",
+      "authorOrProvider": "Qwen Team, Alibaba Cloud (weights), Unsloth (GGUF conversion)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "license text and NOTICE if the weights are redistributed (they are not)"
+      ],
+      "attribution": "Qwen3 © Alibaba Group, Apache-2.0",
+      "reviewNote": "P29B local sentence reader (src/play/read, ops/llm/start.ps1 -Role reader). Off by default after the T3 measurement (evals/play/read/README.md). Local only, not in the repository or the bundle. License read 2026-09-26."
+    },
+    {
+      "name": "Qwen3.6-35B-A3B",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF Qwen3.6-35B-A3B-UD-IQ3_S.gguf; license https://huggingface.co/Qwen/Qwen3.6-35B-A3B/blob/main/LICENSE",
+      "authorOrProvider": "Qwen Team, Alibaba Cloud (weights), Unsloth (GGUF conversion)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "license text and NOTICE if the weights are redistributed (they are not)"
+      ],
+      "attribution": "Qwen3.6 © Alibaba Group, Apache-2.0",
+      "reviewNote": "P29B fallback director candidate measured in T9 (evals/play/local-director.json) and not chosen; selectable with ops/llm/start.ps1 -Fallback qwen3.6-35b-a3b. Local only. License read 2026-09-26."
     },
     {
       "name": "TRELLIS.2-4B",

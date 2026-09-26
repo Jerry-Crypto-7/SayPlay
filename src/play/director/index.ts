@@ -20,7 +20,8 @@
 import type { GenerationBranch } from '@/server/pipeline';
 
 import type { DirectorResult, FallbackReason } from '../contracts';
-import { draftGameSpec } from '../draft';
+import { draftGameSpecWithMeta } from '../draft';
+import { readBeforeDraft, readerEnabled } from '../read/client';
 import type { GameSpecV1 } from '../spec';
 
 import type { DirectorCache } from './cache';
@@ -53,6 +54,8 @@ export type DirectedGame = DirectorResult & {
   readonly ms: number;
   /** Kolikrát se volal model. */
   readonly calls: number;
+  /** Modely, které spec napsaly, v pořadí (`a + b`, když opravu psal jiný); přežije cache (P29B T8, R2). */
+  readonly authoredBy?: string;
 };
 
 export interface DirectorDeps {
@@ -80,7 +83,9 @@ function warningsOf(spec: GameSpecV1): CriticIssue[] {
 
 export async function direct(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
   const started = deps.now();
-  const draft = draftGameSpec(sentence, deps.seed);
+  // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
+  const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
+  const draft = draftGameSpecWithMeta(sentence, deps.seed, { reading }).spec;
   deps.onDraft?.(draft);
   let calls = 0;
 
@@ -102,12 +107,33 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
-  if (cached !== null && blockingIssues(critique(cached)).length === 0) {
-    return { ok: true, spec: cached, source: 'cached', repairRounds: 0, fallbackReason: null, warnings: warningsOf(cached), ms: deps.now() - started, calls };
+  if (cached !== null && blockingIssues(critique(cached.spec)).length === 0) {
+    return {
+      ok: true,
+      spec: cached.spec,
+      source: 'cached',
+      repairRounds: 0,
+      fallbackReason: null,
+      warnings: warningsOf(cached.spec),
+      ms: deps.now() - started,
+      calls,
+      ...(cached.authoredBy === null ? {} : { authoredBy: cached.authoredBy }),
+    };
   }
+
+  // Kdo psal (P29B R2): primár, nebo lokální záloha – u každého volání, které spec pohnulo.
+  const authors: string[] = [];
+  // Psala-li lokální záloha, hra do cache nejde: klíč patří primáru a ten by se na větu už nikdy neptal.
+  let byFallback = false;
+  const credit = (provenance: Readonly<Record<string, string | boolean>>) => {
+    const model = provenance.model;
+    if (typeof model === 'string' && !authors.includes(model)) authors.push(model);
+    if (provenance.source === 'llamacpp-http') byFallback = true;
+  };
 
   calls += 1;
   const outcome = await deps.branch.generate({ prompt: sentence, request });
+  if (outcome.ok) credit(outcome.provenance);
   if (!outcome.ok)
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
@@ -152,6 +178,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     const applied = applyRepairAnswer(spec, answer.body);
     // Špatná záplata nechává spec i nálezy, jak byly – další kolo je dostane znovu.
     if (!applied.ok) continue;
+    credit(answer.provenance);
     spec = applied.spec;
     blocks = blockingIssues(critique(spec));
     checked = blocks.length === 0 ? checkOf(spec) : [];
@@ -159,8 +186,19 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
 
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
-  if (checked.length === 0) await deps.cache?.write(key, spec);
-  return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: null, warnings: warningsOf(spec), ms: deps.now() - started, calls };
+  const authoredBy = authors.length === 0 ? null : authors.join(' + ');
+  if (checked.length === 0 && !byFallback) await deps.cache?.write(key, spec, authoredBy);
+  return {
+    ok: true,
+    spec,
+    source: 'authored',
+    repairRounds,
+    fallbackReason: null,
+    warnings: warningsOf(spec),
+    ms: deps.now() - started,
+    calls,
+    ...(authoredBy === null ? {} : { authoredBy }),
+  };
 }
 
 export { directorCache, directorCacheFromEnv, directorKey, type DirectorCache } from './cache';
