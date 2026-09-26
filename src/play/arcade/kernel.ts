@@ -3,7 +3,7 @@
  *
  * Tik: vstup → ovládání → pravidla `press` (P29A) → vezení na kinematickém tělese → integrace
  * (rychlost, gravitace) → stohování padajících těl → kolize AABB hráče s ostatními (pevné tělo zastaví
- * shora, zdola i z boku; přistání shora není náraz) → projektily (život,
+ * shora, zdola i z boku; přistání shora není náraz) → nesené tělo na hlavu hráče (P29A) → projektily (život,
  * zásah, odraz; P25G) → pravidla → úklid. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
  * náhodu, takže stav v tiku *t* je funkce počátečního stavu a vstupů 0..*t*.
  * Každá smyčka jde přes těla nebo pravidla světa, a těch je nejvýš
@@ -38,6 +38,7 @@ import {
   ROLE,
   RUN_STATE,
   type RulePiece,
+  VERB_MOTION,
   bodyBase,
   stateSize,
 } from './contract';
@@ -238,6 +239,11 @@ function overlaps(state: ArcadeState, a: number, b: number): boolean {
   );
 }
 
+const brake = (v: number): number => (v > 0 ? Math.max(0, v - VERB_MOTION.friction) : Math.min(0, v + VERB_MOTION.friction));
+
+/** Index neseného těla, nebo −1. */
+const heldIndex = (state: ArcadeState): number => (state[HD.held] as number) - 1;
+
 function integrate(state: ArcadeState, count: number): void {
   for (let i = 0; i < count; i += 1) {
     const base = baseOf(i);
@@ -257,6 +263,11 @@ function integrate(state: ArcadeState, count: number): void {
       state[base + S.y] = 0;
       state[base + S.vy] = 0;
       state[base + S.flags] = (state[base + S.flags] as number) | F.grounded;
+    }
+    // Tření (P29A): strčené nebo hozené tělo na zemi zpomaluje o stálý krok, až stojí.
+    if ((flags & F.friction) !== 0 && (state[base + S.y] as number) <= 0) {
+      state[base + S.vx] = brake(state[base + S.vx] as number);
+      state[base + S.vz] = brake(state[base + S.vz] as number);
     }
     // Kyvadlo: kinematické tělo s periodou po `aux1` ticích obrátí směr.
     if ((flags & F.kinematic) !== 0 && (state[base + S.aux1] as number) > 0) {
@@ -334,8 +345,10 @@ function carry(state: ArcadeState, count: number, player: number): void {
 function collide(state: ArcadeState, count: number, player: number, prevX: number, prevY: number, prevZ: number): number[] {
   const p = baseOf(player);
   const contacts: number[] = [];
+  // Nesené tělo sedí hráči na hlavě: nezastaví ho ani se ho nedotkne.
+  const held = heldIndex(state);
   for (let i = 0; i < count; i += 1) {
-    if (i === player) continue;
+    if (i === player || i === held) continue;
     const base = baseOf(i);
     // Projektil hráče nezastaví ani se ho nedotkne: vylétá z něj.
     if (!alive(state, base) || state[base + S.role] === R.projectile || !overlaps(state, p, base)) continue;
@@ -479,6 +492,107 @@ function spawn(state: ArcadeState, effect: Extract<ArcadeEffect, { kind: 'spawn'
   state[to + S.flags] = ((state[to + S.flags] as number) | F.alive) & ~(F.grounded | F.sliding);
 }
 
+/** Nesené tělo na hlavu hráče a jeho směr do `aux` (směr hodu). Mrtvé nesené tělo hráč pouští. */
+function follow(state: ArcadeState, player: number): void {
+  const held = heldIndex(state);
+  if (held < 0) return;
+  const base = baseOf(held);
+  if (!alive(state, base)) {
+    state[HD.held] = 0;
+    return;
+  }
+  const p = baseOf(player);
+  state[base + S.x] = state[p + S.x] as number;
+  state[base + S.y] = (state[p + S.y] as number) + (state[p + S.h] as number);
+  state[base + S.z] = state[p + S.z] as number;
+  state[base + S.vx] = 0;
+  state[base + S.vy] = 0;
+  state[base + S.vz] = 0;
+  const vx = state[p + S.vx] as number;
+  const vz = state[p + S.vz] as number;
+  if (vx !== 0 || vz !== 0) {
+    state[base + S.aux0] = vx;
+    state[base + S.aux1] = vz;
+  }
+}
+
+/** Tělo, se kterým slovesa smí hýbat: živé, ne hráč, ne kinematické, ne projektil. */
+function movable(state: ArcadeState, body: number): boolean {
+  if (body < 0 || body >= (state[HD.bodyCount] as number) || body === state[HD.player]) return false;
+  const base = baseOf(body);
+  return ((state[base + S.flags] as number) & (F.alive | F.kinematic)) === F.alive && state[base + S.role] !== R.projectile;
+}
+
+function grab(state: ArcadeState, body: number): void {
+  if (heldIndex(state) >= 0 || !movable(state, body)) return;
+  const base = baseOf(body);
+  const p = baseOf(state[HD.player] as number);
+  // Směr, než se hráč pohne: od hráče k tělu – sebral ho tím, že do něj vešel.
+  const dx = (state[base + S.x] as number) - (state[p + S.x] as number);
+  const dz = (state[base + S.z] as number) - (state[p + S.z] as number);
+  state[base + S.aux0] = dx;
+  state[base + S.aux1] = dx === 0 && dz === 0 ? 1 : dz;
+  state[HD.held] = body + 1;
+  follow(state, state[HD.player] as number);
+}
+
+/** Pustí nesené tělo: hodem ve směru z `aux`, nebo položením před hráče po převažující ose. */
+function letGo(state: ArcadeState, thrown: boolean): void {
+  const held = heldIndex(state);
+  if (held < 0) return;
+  state[HD.held] = 0;
+  const base = baseOf(held);
+  const p = baseOf(state[HD.player] as number);
+  const ax = state[base + S.aux0] as number;
+  // Stav s `held` zapsaným zvenku (bez `grab`) směr nemá: vpřed.
+  const az = ax === 0 && state[base + S.aux1] === 0 ? 1 : (state[base + S.aux1] as number);
+  state[base + S.aux0] = 0;
+  state[base + S.aux1] = 0;
+  state[base + S.flags] = ((state[base + S.flags] as number) | F.gravity | F.friction) & ~F.grounded;
+  if (thrown) {
+    // `Math.sqrt` je v IEEE 754 přesně zaokrouhlená, takže dává všude stejné celé číslo.
+    const length = Math.sqrt(ax * ax + az * az);
+    state[base + S.vx] = Math.trunc((ax * VERB_MOTION.throwSpeed) / length);
+    state[base + S.vz] = Math.trunc((az * VERB_MOTION.throwSpeed) / length);
+    state[base + S.vy] = VERB_MOTION.throwLift;
+    return;
+  }
+  const alongX = Math.abs(ax) > Math.abs(az);
+  const reach = alongX
+    ? Math.ceil(((state[p + S.w] as number) + (state[base + S.w] as number)) / 2)
+    : Math.ceil(((state[p + S.d] as number) + (state[base + S.d] as number)) / 2);
+  state[base + S.x] = (state[p + S.x] as number) + (alongX ? Math.sign(ax) * reach : 0);
+  state[base + S.z] = (state[p + S.z] as number) + (alongX ? 0 : Math.sign(az) * reach);
+  state[base + S.y] = state[p + S.y] as number;
+}
+
+function push(state: ArcadeState, body: number): void {
+  if (!movable(state, body) || body === heldIndex(state)) return;
+  const base = baseOf(body);
+  const p = baseOf(state[HD.player] as number);
+  const dx = (state[base + S.x] as number) - (state[p + S.x] as number);
+  const dz = (state[base + S.z] as number) - (state[p + S.z] as number);
+  if (Math.abs(dx) > Math.abs(dz)) {
+    state[base + S.vx] = Math.sign(dx) * VERB_MOTION.pushSpeed;
+    state[base + S.vz] = 0;
+  } else {
+    state[base + S.vx] = 0;
+    state[base + S.vz] = (dz < 0 ? -1 : 1) * VERB_MOTION.pushSpeed;
+  }
+  state[base + S.flags] = (state[base + S.flags] as number) | F.friction;
+}
+
+function toggle(state: ArcadeState, role: number): void {
+  const count = state[HD.bodyCount] as number;
+  const player = state[HD.player] as number;
+  for (let i = 0; i < count; i += 1) {
+    const base = baseOf(i);
+    const flags = state[base + S.flags] as number;
+    if (i === player || state[base + S.role] !== role || (flags & F.switched) !== 0) continue;
+    state[base + S.flags] = (flags ^ F.alive) | F.switched;
+  }
+}
+
 function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: number): void {
   let won = false;
   let lost = false;
@@ -499,7 +613,12 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
       state[p + S.vy] = 0;
       state[p + S.vz] = 0;
       state[p + S.flags] = (state[p + S.flags] as number) | F.grounded;
-    } else if (effect.body >= 0 && effect.body < (state[HD.bodyCount] as number)) {
+    } else if (effect.kind === 'grab') grab(state, effect.body);
+    else if (effect.kind === 'release') letGo(state, false);
+    else if (effect.kind === 'throwHeld') letGo(state, true);
+    else if (effect.kind === 'push') push(state, effect.body);
+    else if (effect.kind === 'toggle') toggle(state, effect.role);
+    else if (effect.body >= 0 && effect.body < (state[HD.bodyCount] as number)) {
       const base = baseOf(effect.body);
       if (effect.kind === 'despawn') state[base + S.flags] = (state[base + S.flags] as number) & ~F.alive;
       else {
@@ -536,6 +655,7 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   integrate(state, count);
   settle(state, count, player);
   const contacts = collide(state, count, player, prevX, prevY, prevZ);
+  follow(state, player);
   const ended = projectiles(state, count, player);
 
   for (const other of contacts) {

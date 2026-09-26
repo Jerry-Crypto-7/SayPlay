@@ -91,7 +91,8 @@ export type RunStateCode = (typeof RUN_STATE)[keyof typeof RUN_STATE];
  * Pojmenované sloty jednoho těla. Osy: `x` do stran, `y` nahoru, `z` vpřed
  * (běžec běží po +z). `x/y/z` je střed spodní stěny AABB, `w/h/d` celé rozměry.
  * `aux0/aux1` jsou pracovní sloty ovládání (cílový pruh, časovač skluzu);
- * u projektilu `aux0` = odraz 0–`BOUNCE_MAX`, `aux1` = zbývající tiky života.
+ * u projektilu `aux0` = odraz 0–`BOUNCE_MAX`, `aux1` = zbývající tiky života;
+ * u neseného těla (P29A) `aux0/aux1` = poslední nenulová rychlost hráče `vx/vz` (směr hodu).
  */
 export const BODY = {
   x: 0,
@@ -128,7 +129,14 @@ export const FLAG = {
    * na něm stojí, se veze (pohyblivá plošina, auto, trubka).
    */
   kinematic: 1 << 5,
+  /** Na zemi ho brzdí tření (P29A): tělo po `push` a `throwHeld` dojede a zastaví se. */
+  friction: 1 << 6,
+  /** Efekt `toggle` ho už přepnul (P29A); druhý výstřel pravidla ho nevrátí. */
+  switched: 1 << 7,
 } as const;
+
+/** Slovesné efekty (P29A), jednotky za tik: hod vpřed, zdvih hodu, impuls strčení, tření za tik. */
+export const VERB_MOTION = { throwSpeed: 200, throwLift: 80, pushSpeed: 160, friction: 8 } as const;
 
 /**
  * Pevné sloty čítačů v hlavičce (`HEADER.counters + index`). `ammo` = náboje
@@ -266,7 +274,20 @@ export type ArcadeEffect =
   /** Hráč zpět na místo návratu (`HEADER.respawnX..Z`), bez rychlosti. */
   | { readonly kind: 'respawn' }
   /** Místo návratu = střed horní hrany těla `body`. */
-  | { readonly kind: 'checkpoint'; readonly body: number };
+  | { readonly kind: 'checkpoint'; readonly body: number }
+  /**
+   * Hráč tělo zvedne (P29A): `HEADER.held`, tělo jede každý tik na hlavě
+   * hráče, dokud ho nepustí. Když už něco nese, efekt se zahodí.
+   */
+  | { readonly kind: 'grab'; readonly body: number }
+  /** Nesené tělo položí před sebe na zem. */
+  | { readonly kind: 'release' }
+  /** Nesené tělo hodí ve směru, kam hráč naposled šel; dopadne a třením dojede. */
+  | { readonly kind: 'throwHeld' }
+  /** Impuls tělu `body` po převažující ose od hráče; třením dojede. */
+  | { readonly kind: 'push'; readonly body: number }
+  /** Každé ještě nepřepnuté tělo role `role` se jednou přepne: živé zmizí, skryté se objeví. */
+  | { readonly kind: 'toggle'; readonly role: number };
 
 /**
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),

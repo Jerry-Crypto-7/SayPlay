@@ -194,7 +194,12 @@ function effectsOf(ctx: RuleContext, rule: CompiledRule, self: number, other: nu
       if (from < 0) continue;
       const { x, z } = at(from);
       out.push({ kind: 'spawn', template: effect.spawn.template, x, y: 0, z, vx: 0, vy: 0, vz: 0 });
-    }
+    } else if ('grab' in effect || 'push' in effect) {
+      const body = bodyOf(state, 'grab' in effect ? effect.grab : effect.push, self, other);
+      if (body >= 0 && body !== player) out.push({ kind: 'grab' in effect ? 'grab' : 'push', body });
+    } else if ('release' in effect) out.push({ kind: 'release' });
+    else if ('throwHeld' in effect) out.push({ kind: 'throwHeld' });
+    else out.push({ kind: 'toggle', role: effect.toggle });
   }
   return out;
 }
