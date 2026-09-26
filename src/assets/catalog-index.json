@@ -9170,6 +9170,1504 @@
           0.41831
         ]
       }
+    },
+    {
+      "assetId": "gen3d-acorn",
+      "tags": [
+        "acorn"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-acorn-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31681,
+          0,
+          -0.31697
+        ],
+        "max": [
+          0.31681,
+          0.99925,
+          0.31697
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-alien-bug",
+      "tags": [
+        "alien bug"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-alien-bug-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.22274,
+          0,
+          -1.67059
+        ],
+        "max": [
+          1.22274,
+          0.99575,
+          1.67059
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-balloon",
+      "tags": [
+        "balloon",
+        "hot air balloon"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-balloon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25987,
+          0,
+          -0.25904
+        ],
+        "max": [
+          0.25987,
+          1.00001,
+          0.25904
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-banana",
+      "tags": [
+        "banana"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-banana-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10951,
+          0,
+          -0.23162
+        ],
+        "max": [
+          0.10951,
+          1.00001,
+          0.23162
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-battery",
+      "tags": [
+        "battery"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-battery-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25099,
+          0,
+          -0.25099
+        ],
+        "max": [
+          0.25099,
+          0.99999,
+          0.25099
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-billiard",
+      "tags": [
+        "billiard",
+        "billiards",
+        "pool table"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-billiard-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.07337,
+          0,
+          -1.93826
+        ],
+        "max": [
+          2.07337,
+          0.99342,
+          1.93826
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-blender",
+      "tags": [
+        "blender"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-blender-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23599,
+          0,
+          -0.23561
+        ],
+        "max": [
+          0.23599,
+          0.99999,
+          0.23561
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bone",
+      "tags": [
+        "bone"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-bone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21325,
+          0,
+          -0.1069
+        ],
+        "max": [
+          0.21325,
+          0.99944,
+          0.1069
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-bowling",
+      "tags": [
+        "bowling",
+        "bowling pin",
+        "skittle"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-bowling-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18629,
+          0,
+          -0.18629
+        ],
+        "max": [
+          0.18629,
+          0.9999,
+          0.18629
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cardboard-box",
+      "tags": [
+        "cardboard box"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-cardboard-box-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.70138,
+          0,
+          -0.56002
+        ],
+        "max": [
+          0.70138,
+          1.00001,
+          0.56002
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-coffee",
+      "tags": [
+        "coffee",
+        "mug",
+        "cup"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-coffee-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.71598,
+          0,
+          -0.54164
+        ],
+        "max": [
+          0.71598,
+          0.99921,
+          0.54164
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-container",
+      "tags": [
+        "container",
+        "bin",
+        "bucket"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-container-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4706,
+          0,
+          -0.4717
+        ],
+        "max": [
+          0.4706,
+          1,
+          0.4717
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cooking",
+      "tags": [
+        "cooking",
+        "saucepan"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-cooking-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.18856,
+          0,
+          -0.79261
+        ],
+        "max": [
+          1.18856,
+          0.99998,
+          0.79261
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cop",
+      "tags": [
+        "cop",
+        "policeman",
+        "officer"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-cop-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.2351,
+          0,
+          -0.13294
+        ],
+        "max": [
+          0.2351,
+          0.99999,
+          0.13294
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cowboy",
+      "tags": [
+        "cowboy"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-cowboy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26501,
+          0,
+          -0.17019
+        ],
+        "max": [
+          0.26501,
+          0.99966,
+          0.17019
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crane",
+      "tags": [
+        "crane"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-crane-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.5753,
+          0,
+          -0.15637
+        ],
+        "max": [
+          0.5753,
+          0.99948,
+          0.15637
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crocodile",
+      "tags": [
+        "crocodile",
+        "alligator",
+        "croc"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-crocodile-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.87794,
+          0,
+          -1.407
+        ],
+        "max": [
+          0.87794,
+          1.00001,
+          1.407
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-customer",
+      "tags": [
+        "customer",
+        "shopper"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-customer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25832,
+          0,
+          -0.12406
+        ],
+        "max": [
+          0.25832,
+          1.00001,
+          0.12406
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dance",
+      "tags": [
+        "dance",
+        "dancer"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-dance-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.10966,
+          0,
+          -0.27928
+        ],
+        "max": [
+          0.10966,
+          0.99914,
+          0.27928
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-debris",
+      "tags": [
+        "debris",
+        "rubble"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-debris-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.87018,
+          0,
+          -0.88754
+        ],
+        "max": [
+          0.87018,
+          0.99674,
+          0.88754
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-doll",
+      "tags": [
+        "doll"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-doll-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24507,
+          0,
+          -0.21488
+        ],
+        "max": [
+          0.24507,
+          0.99804,
+          0.21488
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dress",
+      "tags": [
+        "dress"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-dress-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29798,
+          0,
+          -0.29117
+        ],
+        "max": [
+          0.29798,
+          0.99924,
+          0.29117
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-drummer",
+      "tags": [
+        "drummer",
+        "drums",
+        "drum kit"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-drummer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6484,
+          0,
+          -0.47453
+        ],
+        "max": [
+          0.6484,
+          0.99735,
+          0.47453
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dwarve",
+      "tags": [
+        "dwarve",
+        "dwarf"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-dwarve-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.44911,
+          0,
+          -0.2667
+        ],
+        "max": [
+          0.44911,
+          0.99749,
+          0.2667
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-factory",
+      "tags": [
+        "factory"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-factory-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53495,
+          0,
+          -0.53723
+        ],
+        "max": [
+          0.53495,
+          0.99862,
+          0.53723
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-farm",
+      "tags": [
+        "farm",
+        "barn",
+        "farmhouse"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-farm-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.03191,
+          0,
+          -1.03191
+        ],
+        "max": [
+          1.03191,
+          0.99998,
+          1.03191
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fishing",
+      "tags": [
+        "fishing",
+        "fishing rod",
+        "rod"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-fishing-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07732,
+          0,
+          -0.04425
+        ],
+        "max": [
+          0.07732,
+          0.99946,
+          0.04425
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fishmonger",
+      "tags": [
+        "fishmonger"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-fishmonger-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24907,
+          0,
+          -0.12662
+        ],
+        "max": [
+          0.24907,
+          1.00001,
+          0.12662
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-food",
+      "tags": [
+        "food",
+        "sandwich"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-food-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.96662,
+          0,
+          -0.98472
+        ],
+        "max": [
+          0.96662,
+          1,
+          0.98472
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fps",
+      "tags": [
+        "fps"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-fps-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.19699,
+          0,
+          -1.23449
+        ],
+        "max": [
+          0.19699,
+          0.9975,
+          1.23449
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gang",
+      "tags": [
+        "gang",
+        "gangster",
+        "thug"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-gang-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26602,
+          0,
+          -0.14268
+        ],
+        "max": [
+          0.26602,
+          0.99998,
+          0.14268
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-garden",
+      "tags": [
+        "garden",
+        "shrub"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-garden-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.01175,
+          0,
+          -0.64192
+        ],
+        "max": [
+          1.01175,
+          0.99362,
+          0.64192
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-goat",
+      "tags": [
+        "goat"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-goat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28227,
+          0,
+          -0.54321
+        ],
+        "max": [
+          0.28227,
+          0.99924,
+          0.54321
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-golf",
+      "tags": [
+        "golf",
+        "golf club"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-golf-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.07877,
+          0,
+          -0.07868
+        ],
+        "max": [
+          0.07877,
+          0.99998,
+          0.07868
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-grandma",
+      "tags": [
+        "grandma",
+        "granny",
+        "grandmother"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-grandma-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.29383,
+          0,
+          -0.17205
+        ],
+        "max": [
+          0.29383,
+          0.99998,
+          0.17205
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-guard",
+      "tags": [
+        "guard",
+        "soldier"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-guard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23461,
+          0,
+          -0.12196
+        ],
+        "max": [
+          0.23461,
+          1.00001,
+          0.12196
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-helix",
+      "tags": [
+        "helix",
+        "dna"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-helix-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18682,
+          0,
+          -0.18758
+        ],
+        "max": [
+          0.18682,
+          0.99997,
+          0.18758
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-horse",
+      "tags": [
+        "horse"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-horse-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16804,
+          0,
+          -0.49035
+        ],
+        "max": [
+          0.16804,
+          0.9993,
+          0.49035
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hotel",
+      "tags": [
+        "hotel"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-hotel-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.94556,
+          0,
+          -0.94499
+        ],
+        "max": [
+          0.94556,
+          0.99996,
+          0.94499
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-king",
+      "tags": [
+        "king"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-king-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26139,
+          0,
+          -0.16011
+        ],
+        "max": [
+          0.26139,
+          1.00001,
+          0.16011
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-kingdom",
+      "tags": [
+        "kingdom",
+        "castle"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-kingdom-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.53096,
+          0,
+          -0.5005
+        ],
+        "max": [
+          0.53096,
+          1.00001,
+          0.5005
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-launch",
+      "tags": [
+        "launch"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-launch-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35459,
+          0,
+          -0.51818
+        ],
+        "max": [
+          0.35459,
+          0.99418,
+          0.51818
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-maze",
+      "tags": [
+        "maze",
+        "labyrinth"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-maze-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.80922,
+          0,
+          -2.80918
+        ],
+        "max": [
+          2.80922,
+          0.99912,
+          2.80918
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mirror",
+      "tags": [
+        "mirror"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-mirror-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.325,
+          0,
+          -0.08923
+        ],
+        "max": [
+          0.325,
+          1,
+          0.08923
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-mom",
+      "tags": [
+        "mom",
+        "mother",
+        "woman"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-mom-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18112,
+          0,
+          -0.11037
+        ],
+        "max": [
+          0.18112,
+          0.99995,
+          0.11037
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-motorbike",
+      "tags": [
+        "motorbike",
+        "motorcycle",
+        "bike"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-motorbike-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.34662,
+          0,
+          -0.79307
+        ],
+        "max": [
+          0.34662,
+          0.99866,
+          0.79307
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-museum",
+      "tags": [
+        "museum"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-museum-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59116,
+          0,
+          -0.94774
+        ],
+        "max": [
+          0.59116,
+          0.99923,
+          0.94774
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-office",
+      "tags": [
+        "office"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-office-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.88434,
+          0,
+          -0.5962
+        ],
+        "max": [
+          0.88434,
+          0.99164,
+          0.5962
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-outfit",
+      "tags": [
+        "outfit",
+        "clothes"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-outfit-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23975,
+          0,
+          -0.10011
+        ],
+        "max": [
+          0.23975,
+          0.99921,
+          0.10011
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-piano",
+      "tags": [
+        "piano"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-piano-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.97743,
+          0,
+          -0.64939
+        ],
+        "max": [
+          0.97743,
+          0.99831,
+          0.64939
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pool",
+      "tags": [
+        "pool",
+        "swimming pool"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-pool-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.38764,
+          0,
+          -1.22728
+        ],
+        "max": [
+          1.38764,
+          0.99926,
+          1.22728
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-princess",
+      "tags": [
+        "princess"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-princess-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.31879,
+          0,
+          -0.26071
+        ],
+        "max": [
+          0.31879,
+          0.99856,
+          0.26071
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-raft",
+      "tags": [
+        "raft"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-raft-lod1.glb",
+      "bounds": {
+        "min": [
+          -3.64384,
+          0,
+          -3.65749
+        ],
+        "max": [
+          3.64384,
+          0.99991,
+          3.65749
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ragdoll",
+      "tags": [
+        "ragdoll"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-ragdoll-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35955,
+          0,
+          -0.17084
+        ],
+        "max": [
+          0.35955,
+          0.99681,
+          0.17084
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rainbow",
+      "tags": [
+        "rainbow"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-rainbow-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.87229,
+          0,
+          -0.06547
+        ],
+        "max": [
+          0.87229,
+          0.99771,
+          0.06547
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ride",
+      "tags": [
+        "ride",
+        "jeep",
+        "buggy"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-ride-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.54817,
+          0,
+          -0.88279
+        ],
+        "max": [
+          0.54817,
+          0.99276,
+          0.88279
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-rider",
+      "tags": [
+        "rider",
+        "biker"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-rider-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.23195,
+          0,
+          -0.57233
+        ],
+        "max": [
+          0.23195,
+          0.99921,
+          0.57233
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ruin",
+      "tags": [
+        "ruin",
+        "ruins"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-ruin-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.88599,
+          0,
+          -0.84393
+        ],
+        "max": [
+          0.88599,
+          0.99212,
+          0.84393
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-salon",
+      "tags": [
+        "salon",
+        "office chair"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-salon-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28142,
+          0,
+          -0.28306
+        ],
+        "max": [
+          0.28142,
+          0.99942,
+          0.28306
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-scooter",
+      "tags": [
+        "scooter"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-scooter-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24472,
+          0,
+          -0.75303
+        ],
+        "max": [
+          0.24472,
+          0.99577,
+          0.75303
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sister",
+      "tags": [
+        "sister"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-sister-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21688,
+          0,
+          -0.13156
+        ],
+        "max": [
+          0.21688,
+          0.99833,
+          0.13156
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-skateboard",
+      "tags": [
+        "skateboard"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-skateboard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09716,
+          0,
+          -0.17182
+        ],
+        "max": [
+          0.09716,
+          0.99724,
+          0.17182
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ski",
+      "tags": [
+        "ski",
+        "skis"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-ski-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11668,
+          0,
+          -0.07191
+        ],
+        "max": [
+          0.11668,
+          0.99959,
+          0.07191
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-skyscraper",
+      "tags": [
+        "skyscraper"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-skyscraper-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1989,
+          0,
+          -0.19863
+        ],
+        "max": [
+          0.1989,
+          0.99754,
+          0.19863
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-slingshot",
+      "tags": [
+        "slingshot"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-slingshot-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.06952,
+          0,
+          -0.23183
+        ],
+        "max": [
+          0.06952,
+          0.99989,
+          0.23183
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-snake",
+      "tags": [
+        "snake",
+        "serpent"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-snake-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.56668,
+          0,
+          -0.87285
+        ],
+        "max": [
+          0.56668,
+          0.99903,
+          0.87285
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-stair",
+      "tags": [
+        "stair",
+        "stairs",
+        "staircase"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-stair-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24942,
+          0,
+          -0.45064
+        ],
+        "max": [
+          0.24942,
+          0.99995,
+          0.45064
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-suika",
+      "tags": [
+        "suika",
+        "watermelon"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-suika-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43488,
+          0,
+          -0.43382
+        ],
+        "max": [
+          0.43488,
+          0.99897,
+          0.43382
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-survivor",
+      "tags": [
+        "survivor"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-survivor-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.25415,
+          0,
+          -0.09439
+        ],
+        "max": [
+          0.25415,
+          0.99896,
+          0.09439
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sushi",
+      "tags": [
+        "sushi"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-sushi-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.23756,
+          0,
+          -0.95824
+        ],
+        "max": [
+          1.23756,
+          1.00001,
+          0.95824
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-teacher",
+      "tags": [
+        "teacher"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-teacher-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21795,
+          0,
+          -0.11646
+        ],
+        "max": [
+          0.21795,
+          1,
+          0.11646
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tennis",
+      "tags": [
+        "tennis",
+        "tennis racket",
+        "racket"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-tennis-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.18164,
+          0,
+          -0.04562
+        ],
+        "max": [
+          0.18164,
+          0.99991,
+          0.04562
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tropical",
+      "tags": [
+        "tropical",
+        "palm"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-tropical-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.48964,
+          0,
+          -0.50821
+        ],
+        "max": [
+          0.48964,
+          0.99916,
+          0.50821
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-tube",
+      "tags": [
+        "tube"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-tube-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.16814,
+          0,
+          -0.16807
+        ],
+        "max": [
+          0.16814,
+          1.00001,
+          0.16807
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wand",
+      "tags": [
+        "wand"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-wand-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.02942,
+          0,
+          -0.02958
+        ],
+        "max": [
+          0.02942,
+          1.00001,
+          0.02958
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-windmill",
+      "tags": [
+        "windmill"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-windmill-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37366,
+          0,
+          -0.23043
+        ],
+        "max": [
+          0.37366,
+          0.99425,
+          0.23043
+        ]
+      }
     }
   ]
 }
