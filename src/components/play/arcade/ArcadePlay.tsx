@@ -10,7 +10,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { memo, type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { memo, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
@@ -33,6 +33,7 @@ import { PostRun } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
+import { type Clip, startClip } from './clip';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
@@ -199,6 +200,48 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
     return () => window.clearTimeout(timer);
   }, [running]);
 
+  // Klip běhu (P29D T1): nahrává se od startu běhu hráče, po konci ještě dojezd plátna.
+  // Ukázka robota klip nemá; plátno se načítá dynamicky, proto se hledá při každém tiku, než je.
+  const shell = useRef<HTMLElement | null>(null);
+  const [clip, setClip] = useState<Blob | null>(null);
+  useEffect(() => {
+    if (offline || !active) return;
+    let recording: Clip | null = null;
+    let tried = false;
+    let wasRunning = false;
+    let gone = false;
+    const sync = (): void => {
+      const nowRunning = session.snapshot().runState === 'running' && session.demo() === null;
+      if (nowRunning && !wasRunning) {
+        recording?.cancel();
+        recording = null;
+        tried = false;
+        setClip(null);
+      }
+      if (nowRunning && !tried) {
+        const canvas = shell.current?.querySelector<HTMLCanvasElement>('[data-testid="arcade-stage"] canvas');
+        if (canvas) {
+          tried = true;
+          recording = startClip(canvas);
+        }
+      }
+      if (!nowRunning && wasRunning && recording !== null) {
+        const ended = recording;
+        recording = null;
+        if (session.demo() !== null) ended.cancel();
+        else void ended.finish().then((blob) => !gone && setClip(blob));
+      }
+      wasRunning = nowRunning;
+    };
+    sync();
+    const unsubscribe = session.subscribe(sync);
+    return () => {
+      gone = true;
+      unsubscribe();
+      recording?.cancel();
+    };
+  }, [active, offline, session]);
+
   // Pauza mimo obrazovku feedu, při skryté záložce a oknu bez fokusu (`focus.ts`).
   // Rytmus nepípá, když tiky stojí.
   useEffect(() => {
@@ -325,7 +368,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   }, [session]);
 
   return (
-    <main className="play-shell">
+    <main ref={shell} className="play-shell">
       <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline}>
         {running && <DemoControl session={session} demo={demo} />}
@@ -364,6 +407,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
             <PostRun
               versionId={versionId}
               remix={remix}
+              clip={clip}
               onReplay={() => {
                 if (session.humanRun()) loopEvent('restart', versionId);
                 session.restart();
