@@ -6,12 +6,12 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (192)
+## Knihovny (193)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
 | @babel/runtime@7.29.7 | https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.7.tgz | The Babel Team (https://babel.dev/team) | MIT | copyright notice; plné znění licence | Copyright (c) 2014-present Sebastian McKenzie and other contributors |
-| @dimforge/rapier3d-compat@0.12.0 | https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.12.0.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
+| @dimforge/rapier3d-compat@0.19.3 | https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.19.3.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k @dimforge/rapier3d-compat, viz https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.19.3.tgz |
 | @discoveryjs/json-ext@0.5.7 | https://registry.npmjs.org/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz | Roman Dvornov (https://github.com/lahmatiy) | MIT | copyright notice; plné znění licence | Copyright (c) 2020 Roman Dvornov <rdvornov@gmail.com> |
 | @emnapi/runtime@1.11.3 | https://registry.npmjs.org/@emnapi/runtime/-/runtime-1.11.3.tgz | toyobayashi | MIT | copyright notice; plné znění licence | Copyright (c) 2021-present Toyobayashi |
 | @gltf-transform/core@4.5.0 | https://registry.npmjs.org/@gltf-transform/core/-/core-4.5.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2024 Don McCurdy |
@@ -88,6 +88,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @types/react-reconciler@0.28.9 | https://registry.npmjs.org/@types/react-reconciler/-/react-reconciler-0.28.9.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/react@19.2.18 | https://registry.npmjs.org/@types/react/-/react-19.2.18.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/stats.js@0.17.4 | https://registry.npmjs.org/@types/stats.js/-/stats.js-0.17.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
+| @types/three › @dimforge/rapier3d-compat@0.12.0 | https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.12.0.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @types/three@0.185.4 | https://registry.npmjs.org/@types/three/-/three-0.185.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/webxr@0.5.24 | https://registry.npmjs.org/@types/webxr/-/webxr-0.5.24.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @vercel/og@0.11.1 | node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0, imported as next/og) | Vercel, Inc. | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | @vercel/og © Vercel, Inc., MPL-2.0 |
@@ -241,12 +242,12 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **satori@0.25.0** (MPL-2.0): Turns the preview layout into SVG inside @vercel/og for the game link preview (P27B T6); server-only, unmodified, not in package-lock.json.
 - **zzfx (vendored)** (MIT): Generates the five game sounds (jump, pickup, hit, win, lose) and the rhythm beeps in the browser (P28C T2); ported to TypeScript with the MIT notice kept in the file header. Vendored, so invisible to package-lock.json.
 
-### Knihovny — bez deklarovaného autora (101)
+### Knihovny — bez deklarovaného autora (102)
 
 Tyhle balíčky autora ve svém `package.json` neuvádějí. Atribuce se proto opírá
 o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
-- @dimforge/rapier3d-compat@0.12.0
+- @dimforge/rapier3d-compat@0.19.3
 - @img/colour@1.1.0
 - @img/sharp-darwin-arm64@0.35.3
 - @img/sharp-darwin-x64@0.35.3
@@ -306,6 +307,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - @types/react-reconciler@0.28.9
 - @types/react@19.2.18
 - @types/stats.js@0.17.4
+- @types/three › @dimforge/rapier3d-compat@0.12.0
 - @types/three@0.185.4
 - @types/webxr@0.5.24
 - @vitest/expect@4.1.10

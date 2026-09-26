@@ -23,7 +23,7 @@ GameVersion = hash(specHash, worldHash, seed, verze schématu/kompilátoru/runti
 | Integrace, feed, regresní harness, brány | `src/play/index.ts`, `evals/play/regression/**`, `docs/play/GATES.md` | P23-D (po sloučení A+B+C) |
 
 Pravidla, která drží paralelní běh bez konfliktů: **žádný plán nesahá do adresáře jiného
-plánu**, nepřidává závislost do `package.json`, nemění `vitest.config.mts`, `playwright.config.ts`,
+plánu**, nepřidává závislost do `package.json` (výjimka z rozhodnutí uživatele 26. 9. 2026: `@dimforge/rapier3d-compat` pro P29A, měření v `evals/play/rules/rapier.md`), nemění `vitest.config.mts`, `playwright.config.ts`,
 `src/app/page.tsx` ani `CLAUDE.md`. Dvojníka cizí vrstvy si každý plán píše u sebe v
 `__fixtures__` z fixtur základu. Sdílený typ chybí → nález do `CONTRACT-CHANGES.md`, ne úprava
 `contracts.ts`.
