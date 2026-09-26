@@ -128,6 +128,17 @@ describe('llama.cpp generate', () => {
     ]);
   });
 
+  it('sends WORLDSMITH_FALLBACK_KEY as a bearer token, and no authorization without it', async () => {
+    const seen: (string | undefined)[] = [];
+    const root = await stub((req, _body, res) => {
+      seen.push(req.headers.authorization);
+      res.end(chat('{"plan":"run"}'));
+    });
+    await upstreamBranch(fallbackOf({ WORLDSMITH_FALLBACK_ENDPOINT: `llamacpp:${root}`, WORLDSMITH_FALLBACK_KEY: 'gpu-key' })).generate(CALL);
+    await upstreamBranch(fallbackOf({ WORLDSMITH_FALLBACK_ENDPOINT: `llamacpp:${root}` })).generate(CALL);
+    expect(seen).toEqual(['Bearer gpu-key', undefined]);
+  });
+
   it('asks for a JSON object when the call has no schema', async () => {
     let format: unknown;
     const root = await stub((_req, body, res) => {

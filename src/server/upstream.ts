@@ -182,7 +182,8 @@ function fallbackConfigFromEnv(env: Record<string, string | undefined>): Upstrea
   if (!/^llamacpp:https?:\/\/\S+$/.test(endpoint)) return null;
   return {
     endpoint,
-    apiKey: '',
+    // Klíč `llama-server --api-key`; za veřejným tunelem povinný, lokálně smí chybět.
+    apiKey: (env.WORLDSMITH_FALLBACK_KEY ?? '').trim(),
     model: (env.WORLDSMITH_FALLBACK_MODEL ?? '').trim() || 'local-fallback',
     effort: DEFAULT_EFFORT,
     pricing: { usdPerMTokIn: 0, usdPerMTokOut: 0 },
@@ -943,7 +944,7 @@ async function generateViaLlamaCpp(call: GenerationCall, config: UpstreamConfig,
   try {
     response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(`${root}/v1/chat/completions`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: config.apiKey === '' ? { 'content-type': 'application/json' } : { 'content-type': 'application/json', authorization: `Bearer ${config.apiKey}` },
       body: JSON.stringify({
         model: config.model,
         max_tokens: config.maxOutputTokens,
