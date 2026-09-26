@@ -14,7 +14,7 @@
 
 import type * as RapierModule from '@dimforge/rapier3d-compat';
 
-import { ARCADE_HZ, UNIT } from '../contract';
+import { ARCADE_HZ, QUAT, UNIT } from '../contract';
 
 export type Rapier = typeof RapierModule.default;
 
@@ -35,8 +35,7 @@ export function loadRapier(): Promise<Rapier> {
 /** Rapier, pokud už je načtený; jinak `null` (jádro je synchronní, načíst se musí předem). */
 export const rapierIfLoaded = (): Rapier | null => loaded;
 
-/** Kvantování rotace: složky kvaternionu × 10 000. */
-export const QUAT = 10_000;
+export { QUAT };
 /** Celých čísel na jedno těleso v kvantovaném výstupu: x y z vx vy vz qx qy qz qw. */
 export const PHYSICS_STRIDE = 10;
 

@@ -133,7 +133,45 @@ export const FLAG = {
   friction: 1 << 6,
   /** Efekt `toggle` ho už přepnul (P29A); druhý výstřel pravidla ho nevrátí. */
   switched: 1 << 7,
+  /**
+   * Hýbe s ním Rapier (P29A): padá, klouže, odráží se a převrací se. Jádro ho
+   * neintegruje; po každém tiku do stavu zapíše kvantovanou polohu, rychlost
+   * a v `aux0/aux1` natočení (`packRotation`).
+   */
+  physics: 1 << 8,
+  /** Jen s `physics`: koule místo kvádru. */
+  ball: 1 << 9,
 } as const;
+
+/** Odraz fyzikálního tělesa v promile, uložený v bitech `flags` od tohoto bitu (10 bitů, 0–1000). */
+export const RESTITUTION_SHIFT = 12;
+export const RESTITUTION_MASK = 0x3ff;
+
+/**
+ * Podkroky Rapieru za tik (`numSolverIterations`). Gravitace se v nich
+ * přičítá po částech, takže poloha za tik klesne o `g·(k+1)/(2k)`, ne o celé
+ * `g` jako v jádře – s tím počítá předpověď hodu (`throwFlight`).
+ */
+export const PHYSICS_SUBSTEPS = 4;
+
+/** Kvantování natočení: složky kvaternionu × `QUAT`. */
+export const QUAT = 10_000;
+
+/**
+ * Natočení fyzikálního tělesa do dvou slotů (P29A): `aux0` = qx|qy, `aux1` =
+ * qz|(QUAT − qw), po 16 bitech, s `qw ≥ 0`. Bez natočení vyjdou obě nuly –
+ * stejně jako pracovní sloty každého jiného těla.
+ */
+export function packRotation(qx: number, qy: number, qz: number, qw: number): readonly [number, number] {
+  const s = qw < 0 ? -1 : 1;
+  const q = (v: number): number => Math.round(v * s * QUAT);
+  return [(q(qx) & 0xffff) | (q(qy) << 16), (q(qz) & 0xffff) | ((QUAT - q(qw)) << 16)];
+}
+
+/** Opak `packRotation`: kvaternion `[x, y, z, w]` (nenormalizovaný, složky × 1/`QUAT`). */
+export function unpackRotation(aux0: number, aux1: number): readonly [number, number, number, number] {
+  return [((aux0 << 16) >> 16) / QUAT, (aux0 >> 16) / QUAT, ((aux1 << 16) >> 16) / QUAT, (QUAT - (aux1 >> 16)) / QUAT];
+}
 
 /** Slovesné efekty (P29A), jednotky za tik: hod vpřed, zdvih hodu, impuls strčení, tření za tik. */
 export const VERB_MOTION = { throwSpeed: 200, throwLift: 80, pushSpeed: 160, friction: 8 } as const;
@@ -348,6 +386,12 @@ export interface BodyInit {
   readonly lifetime?: number;
   /** Jen role `projectile` s gravitací: odraz od země 0..`BOUNCE_MAX` (rychlost × bounce / 1000). */
   readonly bounce?: number;
+  /** `FLAG.physics` (P29A): hýbe s ním Rapier. Ne hráč, ne projektil, ne kinematické. */
+  readonly physics?: boolean;
+  /** Jen s `physics`: tvar koule (průměr = nejmenší rozměr). */
+  readonly ball?: boolean;
+  /** Jen s `physics`: odraz v promile 0–1000 (výchozí 0). */
+  readonly restitution?: number;
 }
 
 export interface ArcadeLevel {

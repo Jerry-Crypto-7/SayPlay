@@ -40,10 +40,12 @@ import {
   type RuleContext,
   type RulePiece,
   type RuleTrigger,
+  RESTITUTION_SHIFT,
   VERB_MOTION,
   bodyBase,
   stateSize,
 } from './contract';
+import { releasePhysics, stepPhysics } from './physics/step';
 
 /** Gravitace v jednotkách za tik² (8 → ~28,8 m/s², arkádově rychlý dopad). */
 export const GRAVITY = 8;
@@ -64,6 +66,8 @@ interface Bound<T> {
 export interface ArcadeProgram {
   readonly control: Bound<ControlPiece>;
   readonly rules: readonly Bound<RulePiece>[];
+  /** Svět má fyzikální těleso (i předlohu): tik spouští fázi Rapieru (P29A). */
+  readonly physics: boolean;
 }
 
 export type ArcadeOutcome = 'running' | 'won' | 'lost';
@@ -78,7 +82,15 @@ export function loadProgram(world: ArcadeWorld, library: ArcadeLibrary): ArcadeP
   return {
     control: bind(library.controls, world.control, 'control'),
     rules: world.rules.map((ref) => bind(library.rules, ref, 'rule')),
+    physics: worldHasPhysics(world),
   };
+}
+
+/** Hledá `FLAG.physics` v počátečním stavu; `arcade-v1` fyziku neznal. */
+export function worldHasPhysics(world: ArcadeWorld): boolean {
+  if ((world.runtimeVersion as string) === 'arcade-v1') return false;
+  for (let at = HEADER_SIZE + BODY.flags; at < world.initial.length; at += BODY_STRIDE) if (((world.initial[at] as number) & FLAG.physics) !== 0) return true;
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +129,12 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
     if (body.roleCode !== undefined && (body.role !== 'thing' || !Number.isInteger(body.roleCode) || body.roleCode < 32 || body.roleCode > 255)) {
       issues.push(`bodies/${index}: roleCode belongs to a thing and lies in 32..255`);
     }
+    if (body.physics === true && (index === 0 || body.role === 'projectile' || body.kinematic === true || body.gravity === true)) {
+      issues.push(`bodies/${index}: a physics body is not the player, a projectile, kinematic or kernel gravity`);
+    }
+    if (body.physics !== true && (body.ball !== undefined || body.restitution !== undefined)) issues.push(`bodies/${index}: ball and restitution belong to physics bodies`);
+    const restitution = body.restitution ?? 0;
+    if (!Number.isInteger(restitution) || restitution < 0 || restitution > 1000) issues.push(`bodies/${index}: restitution ${restitution} outside 0..1000`);
     if (body.role !== 'projectile') {
       if (body.lifetime !== undefined || body.bounce !== undefined) issues.push(`bodies/${index}: lifetime and bounce belong to projectiles`);
       return;
@@ -164,6 +182,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
       (body.solid ? FLAG.solid : 0) |
       (body.gravity === true ? FLAG.gravity : 0) |
       (body.kinematic === true ? FLAG.kinematic : 0) |
+      (body.physics === true ? FLAG.physics | (body.ball === true ? FLAG.ball : 0) | ((body.restitution ?? 0) << RESTITUTION_SHIFT) : 0) |
       player;
   });
 
@@ -251,6 +270,8 @@ function integrate(state: ArcadeState, count: number): void {
     const base = baseOf(i);
     if (!alive(state, base)) continue;
     const flags = state[base + S.flags] as number;
+    // Fyzikální těleso hýbe Rapier (`stepPhysics`), jádro ho neintegruje.
+    if ((flags & F.physics) !== 0) continue;
     // Kinematické tělo jede jen svou rychlostí: gravitace ani země na něj nepůsobí.
     const falls = (flags & (F.gravity | F.kinematic)) === F.gravity;
     if (falls) {
@@ -296,7 +317,7 @@ function settle(state: ArcadeState, count: number, player: number): void {
     if (i === player) continue;
     const base = baseOf(i);
     const flags = state[base + S.flags] as number;
-    if ((flags & (F.alive | F.gravity | F.kinematic)) !== (F.alive | F.gravity) || state[base + S.role] === R.projectile) continue;
+    if ((flags & (F.alive | F.gravity | F.kinematic | F.physics)) !== (F.alive | F.gravity) || state[base + S.role] === R.projectile) continue;
     const y = state[base + S.y] as number;
     if (y <= 0) continue;
     const prevY = y - (state[base + S.vy] as number);
@@ -672,6 +693,7 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const prevZ = state[p + S.z] as number;
   integrate(state, count);
   settle(state, count, player);
+  if (program.physics) stepPhysics(state, GRAVITY);
   const contacts = collide(state, count, player, prevX, prevY, prevZ);
   follow(state, player);
   const ended = projectiles(state, count, player);
@@ -687,6 +709,7 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   apply(state, effects, countersFrom);
 
   state[HD.tick] = (state[HD.tick] as number) + 1;
+  if (program.physics && state[HD.runState] !== RUN_STATE.running) releasePhysics(state);
   return effects;
 }
 

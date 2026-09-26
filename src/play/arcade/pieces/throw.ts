@@ -34,6 +34,7 @@ import {
   FLAG,
   type GeneratorPiece,
   HEADER,
+  PHYSICS_SUBSTEPS,
   type PieceRef,
   ROLE,
   type RulePiece,
@@ -160,24 +161,47 @@ export interface ThrowPlan {
  * dráhy za tik v pořadí indexů, dopad na zem = konec; odraz se nepočítá).
  * Vrací index prvního zasaženého těla, nebo −1.
  */
-export function simulateThrow(boxes: readonly ThrowBox[], plan: ThrowPlan): number {
-  let { vy } = launchVelocity(plan.aim, plan.charge);
+export function simulateThrow(boxes: readonly ThrowBox[], plan: ThrowPlan, physics = false): number {
   const { vz } = launchVelocity(plan.aim, plan.charge);
-  let y = THROW.launchY;
-  let z = THROW.launchZ;
   const s = THROW.ballSize;
-  for (let n = 1; n < THROW.ballLifetime; n += 1) {
-    vy -= GRAVITY;
-    y += vy;
-    z += vz;
+  for (const { y, z, vy } of throwFlight(plan, physics)) {
     const bottom = Math.min(y, y - vy);
     const top = Math.max(y, y - vy) + s;
     for (const box of boxes) {
       if (Math.abs(2 * z - vz - 2 * box.z) < s + Math.abs(vz) + box.d && Math.abs(-2 * box.x) < s + box.w && bottom < box.y + box.h && box.y < top) return box.index;
     }
-    if (y <= 0) return -1;
   }
   return -1;
+}
+
+/** Bod letu po tiku: spodek míčku, poloha vpřed, svislá rychlost. */
+export interface FlightPoint {
+  readonly y: number;
+  readonly z: number;
+  readonly vy: number;
+}
+
+/**
+ * Let míčku od hodu po tik, ve kterém spodek dosáhne země (včetně), nebo do
+ * konce života. Jádro: semi-implicitní Euler v celých číslech. `physics`
+ * (P29A): míč v Rapieru, jehož `PHYSICS_SUBSTEPS` podkroků ubere poloze za tik
+ * jen `g·(k+1)/(2k)` – do dopadu se od téhle dráhy liší nejvýš o jednotku.
+ */
+export function throwFlight(plan: ThrowPlan, physics = false): FlightPoint[] {
+  let { vy } = launchVelocity(plan.aim, plan.charge);
+  const { vz } = launchVelocity(plan.aim, plan.charge);
+  const lag = physics ? (GRAVITY * (PHYSICS_SUBSTEPS - 1)) / (2 * PHYSICS_SUBSTEPS) : 0;
+  let y = THROW.launchY;
+  let z = THROW.launchZ;
+  const points: FlightPoint[] = [];
+  for (let n = 1; n < THROW.ballLifetime; n += 1) {
+    vy -= GRAVITY;
+    y += vy + lag;
+    z += vz;
+    points.push({ y: physics ? Math.round(y) : y, z, vy });
+    if (y <= 0) break;
+  }
+  return points;
 }
 
 /** Nejmenší a největší osa, kterou řešič zkouší, a krok. */
