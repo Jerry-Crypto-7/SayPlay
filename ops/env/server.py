@@ -35,6 +35,9 @@ MAX_QUEUE = 20  # ~10 min práce karty; víc čekajících prostředí dostane 4
 CACHE_ROOT = Path("D:/caches/worldsmith-env")
 LOCK_DIR = Path("D:/claude/_shared/gpu.lock")
 STALE_SEC = 3 * 3600
+# Selhaná úloha drží hodinu: route hry se ptá POSTem při každém dotazu klienta a prostředí,
+# které na kartě padá vždy (OOM), by se jinak zařadilo znovu s každým dotazem.
+FAILED_COOLDOWN_SEC = 3600
 
 SETTING = re.compile(r"^[a-z0-9][a-z0-9 ,'-]{0,79}$")
 WINDOWS_PATH = re.compile(r"(?:[A-Za-z]:|\\\\[^\\/\s]+)[\\/][^\s'\"]*")
@@ -145,6 +148,7 @@ class Job:
     status: str = "queued"  # queued | running | done | failed
     meta: dict | None = None
     reason: str | None = None
+    failed_at: float | None = None
 
     def view(self) -> dict:
         body = {"jobId": self.id, "setting": self.setting, "status": self.status}
@@ -167,6 +171,8 @@ def create_app(
     cache_root: Path = CACHE_ROOT,
     lock_dir: Path = LOCK_DIR,
     lock_poll: float = 0.05,
+    failed_cooldown: float = FAILED_COOLDOWN_SEC,
+    clock: Callable[[], float] = time.monotonic,
 ) -> FastAPI:
     if not key:
         raise ValueError("ENV_KEY must be set")
@@ -203,6 +209,7 @@ def create_app(
                 job.status = "done"
             except Exception as error:  # noqa: BLE001 – úloha skončí failed s důvodem, nikdy nevisí
                 job.reason = public_reason(error)
+                job.failed_at = clock()
                 job.status = "failed"
             finally:
                 pending.task_done()
@@ -229,9 +236,14 @@ def create_app(
             raise HTTPException(status_code=422, detail=str(error)) from error
         name = slug(setting)
         with lock:
-            # Jedna úloha na prostředí: opakovaný dotaz nevyrábí nové záznamy, jen selhaná se nahradí.
+            # Jedna úloha na prostředí: opakovaný dotaz nevyrábí nové záznamy; selhaná se
+            # nahradí až po cool-downu, jinak ji vrací dál i se stavem failed.
             active = by_slug.get(name)
-            if active and active.status != "failed":
+            if active and (
+                active.status != "failed"
+                or active.failed_at is None
+                or clock() - active.failed_at < failed_cooldown
+            ):
                 return {"jobId": active.id}
             if active:
                 del jobs[active.id]

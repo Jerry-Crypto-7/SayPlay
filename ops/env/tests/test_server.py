@@ -171,6 +171,43 @@ def test_generator_crash_fails_the_job_without_leaking_paths(env):
     assert not lock_dir.exists()
 
 
+def test_failed_job_is_not_requeued_before_the_cooldown(tmp_path):
+    # Route hry se ptá POSTem při každém dotazu klienta: selhaná úloha se nesmí
+    # znovu pustit na kartu s každým z nich, jen po cool-downu.
+    now = [1000.0]
+    lock_dir = tmp_path / "gpu.lock"
+    gen = FakeGenerator(lock_dir, crash=True)
+    client = TestClient(
+        server.create_app(
+            KEY,
+            gen,
+            cache_root=tmp_path / "cache",
+            lock_dir=lock_dir,
+            failed_cooldown=60,
+            clock=lambda: now[0],
+        )
+    )
+
+    def post() -> str:
+        return client.post(
+            "/panorama", json={"setting": "volcano"}, headers={"X-Env-Key": KEY}
+        ).json()["jobId"]
+
+    first = post()
+    assert wait_done(client, first)["status"] == "failed"
+    now[0] += 59
+    for _ in range(5):
+        assert post() == first
+    assert wait_done(client, first)["status"] == "failed"
+    assert len(gen.calls) == 1
+
+    now[0] += 2
+    second = post()
+    assert second != first
+    assert wait_done(client, second)["status"] == "failed"
+    assert len(gen.calls) == 2
+
+
 def test_half_written_owner_file_is_not_stale(tmp_path):
     # gpu-lock.mjs zakládá adresář dřív, než zapíše owner.json: čerstvý prázdný zámek drží.
     lock_dir = tmp_path / "gpu.lock"
