@@ -1,0 +1,1372 @@
+{
+ "about": "P29C T3 panorama library, written by ops/env/batch.py catalog.",
+ "entries": [
+  {
+   "id": "meadow-1",
+   "look": "meadow",
+   "tags": [
+    "meadow",
+    "field",
+    "grass",
+    "flowers"
+   ],
+   "prompt": "green rolling meadow with wildflowers under a blue sky",
+   "url": "/assets/worldstream/env/meadow-1.webp",
+   "low": "/assets/worldstream/env/meadow-1-low.webp",
+   "horizon": "#badedb",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "meadow-2",
+   "look": "meadow",
+   "tags": [
+    "park",
+    "trees",
+    "garden"
+   ],
+   "prompt": "sunny city park with trees, paths and a fountain",
+   "url": "/assets/worldstream/env/meadow-2.webp",
+   "low": "/assets/worldstream/env/meadow-2-low.webp",
+   "horizon": "#63866e",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "meadow-3",
+   "look": "meadow",
+   "tags": [
+    "farm",
+    "field",
+    "barn",
+    "countryside",
+    "hill"
+   ],
+   "prompt": "farmland with red barn, hills and fields",
+   "url": "/assets/worldstream/env/meadow-3.webp",
+   "low": "/assets/worldstream/env/meadow-3-low.webp",
+   "horizon": "#b6c1bd",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "city-1",
+   "look": "city",
+   "tags": [
+    "city",
+    "street",
+    "road",
+    "traffic",
+    "town"
+   ],
+   "prompt": "modern city street with tall buildings and traffic",
+   "url": "/assets/worldstream/env/city-1.webp",
+   "low": "/assets/worldstream/env/city-1-low.webp",
+   "horizon": "#99a6af",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "city-2",
+   "look": "city",
+   "tags": [
+    "city",
+    "rooftop",
+    "skyscraper",
+    "sunset"
+   ],
+   "prompt": "city rooftops at sunset with skyscrapers",
+   "url": "/assets/worldstream/env/city-2.webp",
+   "low": "/assets/worldstream/env/city-2-low.webp",
+   "horizon": "#9d9087",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "city-3",
+   "look": "city",
+   "tags": [
+    "city",
+    "neon",
+    "night",
+    "street"
+   ],
+   "prompt": "neon city at night with glowing signs",
+   "url": "/assets/worldstream/env/city-3.webp",
+   "low": "/assets/worldstream/env/city-3-low.webp",
+   "horizon": "#8a86a4",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "mall-1",
+   "look": "mall",
+   "tags": [
+    "mall",
+    "shopping",
+    "shop"
+   ],
+   "prompt": "bright shopping mall interior with shop fronts and escalators",
+   "url": "/assets/worldstream/env/mall-1.webp",
+   "low": "/assets/worldstream/env/mall-1-low.webp",
+   "horizon": "#c4bfba",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "mall-2",
+   "look": "mall",
+   "tags": [
+    "mall",
+    "food court",
+    "shopping"
+   ],
+   "prompt": "mall food court with tables and plants",
+   "url": "/assets/worldstream/env/mall-2.webp",
+   "low": "/assets/worldstream/env/mall-2-low.webp",
+   "horizon": "#908676",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "mall-3",
+   "look": "mall",
+   "tags": [
+    "mall",
+    "plaza",
+    "shopping",
+    "store"
+   ],
+   "prompt": "glass-roofed shopping plaza with storefronts",
+   "url": "/assets/worldstream/env/mall-3.webp",
+   "low": "/assets/worldstream/env/mall-3-low.webp",
+   "horizon": "#b0bfca",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "supermarket-1",
+   "look": "supermarket",
+   "tags": [
+    "supermarket",
+    "grocery",
+    "store",
+    "shelves"
+   ],
+   "prompt": "supermarket aisles with shelves full of groceries",
+   "url": "/assets/worldstream/env/supermarket-1.webp",
+   "low": "/assets/worldstream/env/supermarket-1-low.webp",
+   "horizon": "#8a837c",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "supermarket-2",
+   "look": "supermarket",
+   "tags": [
+    "supermarket",
+    "checkout",
+    "store"
+   ],
+   "prompt": "supermarket checkout area with tills",
+   "url": "/assets/worldstream/env/supermarket-2.webp",
+   "low": "/assets/worldstream/env/supermarket-2-low.webp",
+   "horizon": "#989798",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "supermarket-3",
+   "look": "supermarket",
+   "tags": [
+    "market",
+    "bazaar",
+    "stall"
+   ],
+   "prompt": "outdoor street market with stalls and awnings",
+   "url": "/assets/worldstream/env/supermarket-3.webp",
+   "low": "/assets/worldstream/env/supermarket-3-low.webp",
+   "horizon": "#9e9798",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "living-room-1",
+   "look": "living_room",
+   "tags": [
+    "living room",
+    "house",
+    "home",
+    "sofa"
+   ],
+   "prompt": "cozy living room with sofa, lamp and bookshelves",
+   "url": "/assets/worldstream/env/living-room-1.webp",
+   "low": "/assets/worldstream/env/living-room-1-low.webp",
+   "horizon": "#8c817e",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "living-room-2",
+   "look": "living_room",
+   "tags": [
+    "bedroom",
+    "house",
+    "toy",
+    "home"
+   ],
+   "prompt": "messy kid bedroom with toys on the floor",
+   "url": "/assets/worldstream/env/living-room-2.webp",
+   "low": "/assets/worldstream/env/living-room-2-low.webp",
+   "horizon": "#b6afa8",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "living-room-3",
+   "look": "living_room",
+   "tags": [
+    "office",
+    "desk",
+    "work"
+   ],
+   "prompt": "office interior with desks and windows",
+   "url": "/assets/worldstream/env/living-room-3.webp",
+   "low": "/assets/worldstream/env/living-room-3-low.webp",
+   "horizon": "#c5cace",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "factory-1",
+   "look": "factory",
+   "tags": [
+    "factory",
+    "machine",
+    "industrial"
+   ],
+   "prompt": "industrial factory hall with machines and pipes",
+   "url": "/assets/worldstream/env/factory-1.webp",
+   "low": "/assets/worldstream/env/factory-1-low.webp",
+   "horizon": "#55575b",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "factory-2",
+   "look": "factory",
+   "tags": [
+    "warehouse",
+    "crates",
+    "storage"
+   ],
+   "prompt": "warehouse with stacked crates and pallets",
+   "url": "/assets/worldstream/env/factory-2.webp",
+   "low": "/assets/worldstream/env/factory-2-low.webp",
+   "horizon": "#807c7b",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "factory-3",
+   "look": "factory",
+   "tags": [
+    "laboratory",
+    "lab",
+    "science"
+   ],
+   "prompt": "science laboratory with glowing equipment",
+   "url": "/assets/worldstream/env/factory-3.webp",
+   "low": "/assets/worldstream/env/factory-3-low.webp",
+   "horizon": "#8b9aa8",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "forest-1",
+   "look": "forest",
+   "tags": [
+    "forest",
+    "woods",
+    "trees"
+   ],
+   "prompt": "dense green forest with tall trees and sunbeams",
+   "url": "/assets/worldstream/env/forest-1.webp",
+   "low": "/assets/worldstream/env/forest-1-low.webp",
+   "horizon": "#5a6f5e",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "forest-2",
+   "look": "forest",
+   "tags": [
+    "forest",
+    "dark",
+    "woods",
+    "night"
+   ],
+   "prompt": "dark misty forest at dusk",
+   "url": "/assets/worldstream/env/forest-2.webp",
+   "low": "/assets/worldstream/env/forest-2-low.webp",
+   "horizon": "#1b2a39",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "forest-3",
+   "look": "forest",
+   "tags": [
+    "forest",
+    "camp",
+    "campsite",
+    "tent"
+   ],
+   "prompt": "forest campsite with a tent and campfire",
+   "url": "/assets/worldstream/env/forest-3.webp",
+   "low": "/assets/worldstream/env/forest-3-low.webp",
+   "horizon": "#4e5f59",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "jungle-1",
+   "look": "jungle",
+   "tags": [
+    "jungle",
+    "rainforest",
+    "tropical"
+   ],
+   "prompt": "lush tropical jungle with vines and giant leaves",
+   "url": "/assets/worldstream/env/jungle-1.webp",
+   "low": "/assets/worldstream/env/jungle-1-low.webp",
+   "horizon": "#7b948b",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "jungle-2",
+   "look": "jungle",
+   "tags": [
+    "jungle",
+    "river",
+    "water"
+   ],
+   "prompt": "jungle river winding between trees",
+   "url": "/assets/worldstream/env/jungle-2.webp",
+   "low": "/assets/worldstream/env/jungle-2-low.webp",
+   "horizon": "#4c5e53",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "jungle-3",
+   "look": "jungle",
+   "tags": [
+    "swamp",
+    "marsh",
+    "jungle"
+   ],
+   "prompt": "misty swamp with mangroves",
+   "url": "/assets/worldstream/env/jungle-3.webp",
+   "low": "/assets/worldstream/env/jungle-3-low.webp",
+   "horizon": "#a0aeaf",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "desert-1",
+   "look": "desert",
+   "tags": [
+    "desert",
+    "dune",
+    "sand"
+   ],
+   "prompt": "sand dunes desert under a hot sun",
+   "url": "/assets/worldstream/env/desert-1.webp",
+   "low": "/assets/worldstream/env/desert-1-low.webp",
+   "horizon": "#e8dfc6",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "desert-2",
+   "look": "desert",
+   "tags": [
+    "canyon",
+    "desert",
+    "rock"
+   ],
+   "prompt": "red rock canyon desert",
+   "url": "/assets/worldstream/env/desert-2.webp",
+   "low": "/assets/worldstream/env/desert-2-low.webp",
+   "horizon": "#a49099",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "desert-3",
+   "look": "desert",
+   "tags": [
+    "outback",
+    "australia",
+    "desert",
+    "bush"
+   ],
+   "prompt": "australian outback with red earth and scrub",
+   "url": "/assets/worldstream/env/desert-3.webp",
+   "low": "/assets/worldstream/env/desert-3-low.webp",
+   "horizon": "#c4cacc",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "beach-1",
+   "look": "beach",
+   "tags": [
+    "beach",
+    "tropical",
+    "palm",
+    "sea"
+   ],
+   "prompt": "sunny tropical beach with palm trees and turquoise sea",
+   "url": "/assets/worldstream/env/beach-1.webp",
+   "low": "/assets/worldstream/env/beach-1-low.webp",
+   "horizon": "#aac8cd",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "beach-2",
+   "look": "beach",
+   "tags": [
+    "island",
+    "tropical",
+    "beach",
+    "ocean"
+   ],
+   "prompt": "small tropical island surrounded by ocean",
+   "url": "/assets/worldstream/env/beach-2.webp",
+   "low": "/assets/worldstream/env/beach-2-low.webp",
+   "horizon": "#73afc6",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "beach-3",
+   "look": "beach",
+   "tags": [
+    "beach",
+    "shore",
+    "coast",
+    "sea"
+   ],
+   "prompt": "seaside promenade beach with sand and waves",
+   "url": "/assets/worldstream/env/beach-3.webp",
+   "low": "/assets/worldstream/env/beach-3-low.webp",
+   "horizon": "#c7dde9",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "ocean-1",
+   "look": "ocean",
+   "tags": [
+    "ocean",
+    "sea",
+    "waves",
+    "water"
+   ],
+   "prompt": "open ocean with waves under a bright sky",
+   "url": "/assets/worldstream/env/ocean-1.webp",
+   "low": "/assets/worldstream/env/ocean-1-low.webp",
+   "horizon": "#def2f9",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "ocean-2",
+   "look": "ocean",
+   "tags": [
+    "harbor",
+    "boat",
+    "port",
+    "sea"
+   ],
+   "prompt": "harbor with boats and piers",
+   "url": "/assets/worldstream/env/ocean-2.webp",
+   "low": "/assets/worldstream/env/ocean-2-low.webp",
+   "horizon": "#98a9b3",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "ocean-3",
+   "look": "ocean",
+   "tags": [
+    "pirate",
+    "ship",
+    "sea",
+    "ocean"
+   ],
+   "prompt": "pirate sea with a wooden ship on the horizon",
+   "url": "/assets/worldstream/env/ocean-3.webp",
+   "low": "/assets/worldstream/env/ocean-3-low.webp",
+   "horizon": "#d9eef8",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "underwater-1",
+   "look": "underwater",
+   "tags": [
+    "underwater",
+    "reef",
+    "coral",
+    "sea"
+   ],
+   "prompt": "underwater coral reef with fish and light rays",
+   "url": "/assets/worldstream/env/underwater-1.webp",
+   "low": "/assets/worldstream/env/underwater-1-low.webp",
+   "horizon": "#65cbe7",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "underwater-2",
+   "look": "underwater",
+   "tags": [
+    "underwater",
+    "deep sea",
+    "seabed",
+    "kelp"
+   ],
+   "prompt": "deep sea floor with rocks and kelp",
+   "url": "/assets/worldstream/env/underwater-2.webp",
+   "low": "/assets/worldstream/env/underwater-2-low.webp",
+   "horizon": "#528ba3",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "underwater-3",
+   "look": "underwater",
+   "tags": [
+    "underwater",
+    "shipwreck",
+    "sunken",
+    "sea"
+   ],
+   "prompt": "sunken shipwreck underwater",
+   "url": "/assets/worldstream/env/underwater-3.webp",
+   "low": "/assets/worldstream/env/underwater-3-low.webp",
+   "horizon": "#92cada",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "snow-1",
+   "look": "snow",
+   "tags": [
+    "snow",
+    "forest",
+    "pine",
+    "winter"
+   ],
+   "prompt": "snowy pine forest in winter",
+   "url": "/assets/worldstream/env/snow-1.webp",
+   "low": "/assets/worldstream/env/snow-1-low.webp",
+   "horizon": "#a2b0ba",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "snow-2",
+   "look": "snow",
+   "tags": [
+    "snow",
+    "mountain",
+    "glacier",
+    "ice"
+   ],
+   "prompt": "snowy mountains and glacier",
+   "url": "/assets/worldstream/env/snow-2.webp",
+   "low": "/assets/worldstream/env/snow-2-low.webp",
+   "horizon": "#a3b2c3",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "snow-3",
+   "look": "snow",
+   "tags": [
+    "ice",
+    "frozen",
+    "lake",
+    "snow",
+    "winter"
+   ],
+   "prompt": "frozen lake with ice and snowbanks",
+   "url": "/assets/worldstream/env/snow-3.webp",
+   "low": "/assets/worldstream/env/snow-3-low.webp",
+   "horizon": "#d2e3f0",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "volcano-1",
+   "look": "volcano",
+   "tags": [
+    "volcano",
+    "lava",
+    "eruption"
+   ],
+   "prompt": "erupting volcano with lava rivers",
+   "url": "/assets/worldstream/env/volcano-1.webp",
+   "low": "/assets/worldstream/env/volcano-1-low.webp",
+   "horizon": "#aaaaae",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "volcano-2",
+   "look": "volcano",
+   "tags": [
+    "lava",
+    "magma",
+    "volcano",
+    "fire"
+   ],
+   "prompt": "lava field with glowing cracks and smoke",
+   "url": "/assets/worldstream/env/volcano-2.webp",
+   "low": "/assets/worldstream/env/volcano-2-low.webp",
+   "horizon": "#4a4349",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "volcano-3",
+   "look": "volcano",
+   "tags": [
+    "volcano",
+    "island",
+    "ash"
+   ],
+   "prompt": "dark volcanic island with ash clouds",
+   "url": "/assets/worldstream/env/volcano-3.webp",
+   "low": "/assets/worldstream/env/volcano-3-low.webp",
+   "horizon": "#b1c1cd",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "cave-1",
+   "look": "cave",
+   "tags": [
+    "cave",
+    "cavern",
+    "underground"
+   ],
+   "prompt": "underground cave with stalactites",
+   "url": "/assets/worldstream/env/cave-1.webp",
+   "low": "/assets/worldstream/env/cave-1-low.webp",
+   "horizon": "#788896",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "cave-2",
+   "look": "cave",
+   "tags": [
+    "cave",
+    "crystal",
+    "gems"
+   ],
+   "prompt": "crystal cave with glowing gems",
+   "url": "/assets/worldstream/env/cave-2.webp",
+   "low": "/assets/worldstream/env/cave-2-low.webp",
+   "horizon": "#5d779f",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "cave-3",
+   "look": "cave",
+   "tags": [
+    "mine",
+    "mining",
+    "tunnel",
+    "cave"
+   ],
+   "prompt": "abandoned mine tunnel with rails and lanterns",
+   "url": "/assets/worldstream/env/cave-3.webp",
+   "low": "/assets/worldstream/env/cave-3-low.webp",
+   "horizon": "#5e6167",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "space-1",
+   "look": "space",
+   "tags": [
+    "space",
+    "stars",
+    "galaxy",
+    "planet"
+   ],
+   "prompt": "outer space with stars, nebula and planets",
+   "url": "/assets/worldstream/env/space-1.webp",
+   "low": "/assets/worldstream/env/space-1-low.webp",
+   "horizon": "#9eb7ca",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "space-2",
+   "look": "space",
+   "tags": [
+    "mars",
+    "planet",
+    "space",
+    "red planet"
+   ],
+   "prompt": "red martian landscape with rocks and a dusty sky",
+   "url": "/assets/worldstream/env/space-2.webp",
+   "low": "/assets/worldstream/env/space-2-low.webp",
+   "horizon": "#bd9d98",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "space-3",
+   "look": "space",
+   "tags": [
+    "moon",
+    "lunar",
+    "space",
+    "crater"
+   ],
+   "prompt": "grey lunar surface with craters and earth in the sky",
+   "url": "/assets/worldstream/env/space-3.webp",
+   "low": "/assets/worldstream/env/space-3-low.webp",
+   "horizon": "#a1b9ce",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "castle-1",
+   "look": "castle",
+   "tags": [
+    "castle",
+    "medieval",
+    "kingdom",
+    "tower"
+   ],
+   "prompt": "medieval stone castle with towers and flags",
+   "url": "/assets/worldstream/env/castle-1.webp",
+   "low": "/assets/worldstream/env/castle-1-low.webp",
+   "horizon": "#b2c1c8",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "castle-2",
+   "look": "castle",
+   "tags": [
+    "castle",
+    "fortress",
+    "wall",
+    "medieval"
+   ],
+   "prompt": "castle courtyard with walls and torches",
+   "url": "/assets/worldstream/env/castle-2.webp",
+   "low": "/assets/worldstream/env/castle-2-low.webp",
+   "horizon": "#575357",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "castle-3",
+   "look": "castle",
+   "tags": [
+    "kingdom",
+    "castle",
+    "fantasy",
+    "hill"
+   ],
+   "prompt": "fantasy kingdom with castle on a hill",
+   "url": "/assets/worldstream/env/castle-3.webp",
+   "low": "/assets/worldstream/env/castle-3-low.webp",
+   "horizon": "#bbd0d5",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "graveyard-1",
+   "look": "graveyard",
+   "tags": [
+    "graveyard",
+    "cemetery",
+    "spooky",
+    "night"
+   ],
+   "prompt": "spooky graveyard at night with tombstones and fog",
+   "url": "/assets/worldstream/env/graveyard-1.webp",
+   "low": "/assets/worldstream/env/graveyard-1-low.webp",
+   "horizon": "#597892",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "graveyard-2",
+   "look": "graveyard",
+   "tags": [
+    "haunted",
+    "house",
+    "spooky",
+    "night"
+   ],
+   "prompt": "haunted house on a hill under a full moon",
+   "url": "/assets/worldstream/env/graveyard-2.webp",
+   "low": "/assets/worldstream/env/graveyard-2-low.webp",
+   "horizon": "#5886a8",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "graveyard-3",
+   "look": "graveyard",
+   "tags": [
+    "hospital",
+    "haunted",
+    "abandoned",
+    "spooky"
+   ],
+   "prompt": "abandoned haunted hospital corridor",
+   "url": "/assets/worldstream/env/graveyard-3.webp",
+   "low": "/assets/worldstream/env/graveyard-3-low.webp",
+   "horizon": "#656969",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-race-track",
+   "look": null,
+   "tags": [
+    "race track",
+    "racing",
+    "road",
+    "track"
+   ],
+   "prompt": "car race track with grandstands",
+   "url": "/assets/worldstream/env/set-race-track.webp",
+   "low": "/assets/worldstream/env/set-race-track-low.webp",
+   "horizon": "#bfd5e2",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-tower",
+   "look": null,
+   "tags": [
+    "tower",
+    "tall",
+    "height"
+   ],
+   "prompt": "tall stone tower rising into the clouds",
+   "url": "/assets/worldstream/env/set-tower.webp",
+   "low": "/assets/worldstream/env/set-tower-low.webp",
+   "horizon": "#b1ccdf",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-candy-land",
+   "look": null,
+   "tags": [
+    "candy",
+    "sweets",
+    "chocolate"
+   ],
+   "prompt": "candy land with lollipop trees and chocolate hills",
+   "url": "/assets/worldstream/env/set-candy-land.webp",
+   "low": "/assets/worldstream/env/set-candy-land-low.webp",
+   "horizon": "#d6eef6",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-pond",
+   "look": null,
+   "tags": [
+    "pond",
+    "lily pads",
+    "lake",
+    "water"
+   ],
+   "prompt": "calm pond with lily pads and reeds",
+   "url": "/assets/worldstream/env/set-pond.webp",
+   "low": "/assets/worldstream/env/set-pond-low.webp",
+   "horizon": "#96a57f",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-rooftops",
+   "look": null,
+   "tags": [
+    "rooftop",
+    "city",
+    "roof"
+   ],
+   "prompt": "city rooftops with chimneys and water tanks",
+   "url": "/assets/worldstream/env/set-rooftops.webp",
+   "low": "/assets/worldstream/env/set-rooftops-low.webp",
+   "horizon": "#cedbde",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-spaceship",
+   "look": null,
+   "tags": [
+    "spaceship",
+    "space station",
+    "space",
+    "sci-fi"
+   ],
+   "prompt": "inside a spaceship with control panels and windows to space",
+   "url": "/assets/worldstream/env/set-spaceship.webp",
+   "low": "/assets/worldstream/env/set-spaceship-low.webp",
+   "horizon": "#abb2b8",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-temple",
+   "look": null,
+   "tags": [
+    "temple",
+    "ruins",
+    "ancient",
+    "jungle"
+   ],
+   "prompt": "ancient jungle temple ruins",
+   "url": "/assets/worldstream/env/set-temple.webp",
+   "low": "/assets/worldstream/env/set-temple-low.webp",
+   "horizon": "#869a98",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-village",
+   "look": null,
+   "tags": [
+    "village",
+    "town",
+    "cottage",
+    "medieval"
+   ],
+   "prompt": "medieval village with cottages",
+   "url": "/assets/worldstream/env/set-village.webp",
+   "low": "/assets/worldstream/env/set-village-low.webp",
+   "horizon": "#9eb0b7",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-sky",
+   "look": null,
+   "tags": [
+    "sky",
+    "clouds",
+    "air"
+   ],
+   "prompt": "above the clouds in a bright blue sky",
+   "url": "/assets/worldstream/env/set-sky.webp",
+   "low": "/assets/worldstream/env/set-sky-low.webp",
+   "horizon": "#b5e5f7",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-hills",
+   "look": null,
+   "tags": [
+    "hill",
+    "countryside",
+    "grass"
+   ],
+   "prompt": "green rolling hills with a winding path",
+   "url": "/assets/worldstream/env/set-hills.webp",
+   "low": "/assets/worldstream/env/set-hills-low.webp",
+   "horizon": "#bfd5c7",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-school",
+   "look": null,
+   "tags": [
+    "school",
+    "classroom"
+   ],
+   "prompt": "school classroom with desks and a blackboard",
+   "url": "/assets/worldstream/env/set-school.webp",
+   "low": "/assets/worldstream/env/set-school-low.webp",
+   "horizon": "#807f79",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-hospital",
+   "look": null,
+   "tags": [
+    "hospital",
+    "ward",
+    "clinic"
+   ],
+   "prompt": "bright hospital ward",
+   "url": "/assets/worldstream/env/set-hospital.webp",
+   "low": "/assets/worldstream/env/set-hospital-low.webp",
+   "horizon": "#d1cfc9",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-haunted-castle",
+   "look": null,
+   "tags": [
+    "haunted",
+    "castle",
+    "spooky",
+    "night"
+   ],
+   "prompt": "haunted castle with ghosts at night",
+   "url": "/assets/worldstream/env/set-haunted-castle.webp",
+   "low": "/assets/worldstream/env/set-haunted-castle-low.webp",
+   "horizon": "#5280a1",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-mountain-road",
+   "look": null,
+   "tags": [
+    "mountain",
+    "road",
+    "cliff"
+   ],
+   "prompt": "mountain road with cliffs and pine trees",
+   "url": "/assets/worldstream/env/set-mountain-road.webp",
+   "low": "/assets/worldstream/env/set-mountain-road-low.webp",
+   "horizon": "#98abb1",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-skyscraper",
+   "look": null,
+   "tags": [
+    "skyscraper",
+    "office",
+    "tower",
+    "city"
+   ],
+   "prompt": "glass skyscraper office floor overlooking the city",
+   "url": "/assets/worldstream/env/set-skyscraper.webp",
+   "low": "/assets/worldstream/env/set-skyscraper-low.webp",
+   "horizon": "#d2dce1",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-kitchen",
+   "look": null,
+   "tags": [
+    "kitchen",
+    "restaurant",
+    "cooking"
+   ],
+   "prompt": "busy restaurant kitchen with stoves and pans",
+   "url": "/assets/worldstream/env/set-kitchen.webp",
+   "low": "/assets/worldstream/env/set-kitchen-low.webp",
+   "horizon": "#838281",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-mining-colony",
+   "look": null,
+   "tags": [
+    "colony",
+    "mine",
+    "mining",
+    "planet",
+    "space"
+   ],
+   "prompt": "sci-fi mining colony on an alien planet",
+   "url": "/assets/worldstream/env/set-mining-colony.webp",
+   "low": "/assets/worldstream/env/set-mining-colony-low.webp",
+   "horizon": "#c1c0c4",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-asteroid-field",
+   "look": null,
+   "tags": [
+    "asteroid",
+    "space",
+    "rocks"
+   ],
+   "prompt": "asteroid field in deep space",
+   "url": "/assets/worldstream/env/set-asteroid-field.webp",
+   "low": "/assets/worldstream/env/set-asteroid-field-low.webp",
+   "horizon": "#9fa8b2",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-pirate-ship",
+   "look": null,
+   "tags": [
+    "pirate",
+    "ship",
+    "sea"
+   ],
+   "prompt": "pirate ship deck on the open sea",
+   "url": "/assets/worldstream/env/set-pirate-ship.webp",
+   "low": "/assets/worldstream/env/set-pirate-ship-low.webp",
+   "horizon": "#cee6f2",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-arena",
+   "look": null,
+   "tags": [
+    "arena",
+    "stadium",
+    "crowd"
+   ],
+   "prompt": "sports arena with crowd stands and lights",
+   "url": "/assets/worldstream/env/set-arena.webp",
+   "low": "/assets/worldstream/env/set-arena-low.webp",
+   "horizon": "#7a8389",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-parking-lot",
+   "look": null,
+   "tags": [
+    "parking",
+    "cars",
+    "lot"
+   ],
+   "prompt": "jammed parking lot full of cars",
+   "url": "/assets/worldstream/env/set-parking-lot.webp",
+   "low": "/assets/worldstream/env/set-parking-lot-low.webp",
+   "horizon": "#ccd2d6",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-cafe",
+   "look": null,
+   "tags": [
+    "cafe",
+    "caf\u00e9",
+    "coffee",
+    "rain"
+   ],
+   "prompt": "cozy rainy cafe interior with window view",
+   "url": "/assets/worldstream/env/set-cafe.webp",
+   "low": "/assets/worldstream/env/set-cafe-low.webp",
+   "horizon": "#93918d",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-backyard",
+   "look": null,
+   "tags": [
+    "backyard",
+    "garden",
+    "yard",
+    "house"
+   ],
+   "prompt": "suburban backyard with fence, grass and a sprinkler",
+   "url": "/assets/worldstream/env/set-backyard.webp",
+   "low": "/assets/worldstream/env/set-backyard-low.webp",
+   "horizon": "#8f8c81",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-garden",
+   "look": null,
+   "tags": [
+    "garden",
+    "flowers",
+    "hedge"
+   ],
+   "prompt": "flower garden with hedges",
+   "url": "/assets/worldstream/env/set-garden.webp",
+   "low": "/assets/worldstream/env/set-garden-low.webp",
+   "horizon": "#bfd7d6",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-lake",
+   "look": null,
+   "tags": [
+    "lake",
+    "water",
+    "dock"
+   ],
+   "prompt": "mountain lake with a wooden dock",
+   "url": "/assets/worldstream/env/set-lake.webp",
+   "low": "/assets/worldstream/env/set-lake-low.webp",
+   "horizon": "#7b969e",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-sunset",
+   "look": null,
+   "tags": [
+    "sunset",
+    "evening",
+    "sky"
+   ],
+   "prompt": "golden sunset over hills",
+   "url": "/assets/worldstream/env/set-sunset.webp",
+   "low": "/assets/worldstream/env/set-sunset-low.webp",
+   "horizon": "#ecdab0",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-carnival",
+   "look": null,
+   "tags": [
+    "carnival",
+    "circus",
+    "fair",
+    "night"
+   ],
+   "prompt": "haunted carnival with rides and lights at night",
+   "url": "/assets/worldstream/env/set-carnival.webp",
+   "low": "/assets/worldstream/env/set-carnival-low.webp",
+   "horizon": "#7490ad",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-disco",
+   "look": null,
+   "tags": [
+    "disco",
+    "dance",
+    "club",
+    "party"
+   ],
+   "prompt": "disco dance floor with colored lights",
+   "url": "/assets/worldstream/env/set-disco.webp",
+   "low": "/assets/worldstream/env/set-disco-low.webp",
+   "horizon": "#605786",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-party",
+   "look": null,
+   "tags": [
+    "party",
+    "birthday",
+    "balloons"
+   ],
+   "prompt": "birthday party room with balloons and streamers",
+   "url": "/assets/worldstream/env/set-party.webp",
+   "low": "/assets/worldstream/env/set-party-low.webp",
+   "horizon": "#b5aca7",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-museum",
+   "look": null,
+   "tags": [
+    "museum",
+    "gallery",
+    "exhibit"
+   ],
+   "prompt": "museum hall with exhibits and paintings",
+   "url": "/assets/worldstream/env/set-museum.webp",
+   "low": "/assets/worldstream/env/set-museum-low.webp",
+   "horizon": "#706863",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-dungeon",
+   "look": null,
+   "tags": [
+    "dungeon",
+    "prison",
+    "stone"
+   ],
+   "prompt": "stone dungeon with torches and chains",
+   "url": "/assets/worldstream/env/set-dungeon.webp",
+   "low": "/assets/worldstream/env/set-dungeon-low.webp",
+   "horizon": "#6f6d6d",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-subway",
+   "look": null,
+   "tags": [
+    "subway",
+    "metro",
+    "train",
+    "station"
+   ],
+   "prompt": "subway station with train and tiles",
+   "url": "/assets/worldstream/env/set-subway.webp",
+   "low": "/assets/worldstream/env/set-subway-low.webp",
+   "horizon": "#646667",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-restaurant",
+   "look": null,
+   "tags": [
+    "restaurant",
+    "diner",
+    "tables"
+   ],
+   "prompt": "cozy restaurant dining room",
+   "url": "/assets/worldstream/env/set-restaurant.webp",
+   "low": "/assets/worldstream/env/set-restaurant-low.webp",
+   "horizon": "#8c7464",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-toy-room",
+   "look": null,
+   "tags": [
+    "toy",
+    "playroom",
+    "kids"
+   ],
+   "prompt": "giant toy room with blocks and toy cars",
+   "url": "/assets/worldstream/env/set-toy-room.webp",
+   "low": "/assets/worldstream/env/set-toy-room-low.webp",
+   "horizon": "#aba298",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-prison",
+   "look": null,
+   "tags": [
+    "prison",
+    "jail",
+    "yard"
+   ],
+   "prompt": "prison yard with fences and watchtowers",
+   "url": "/assets/worldstream/env/set-prison.webp",
+   "low": "/assets/worldstream/env/set-prison-low.webp",
+   "horizon": "#b3c3cd",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-cabin",
+   "look": null,
+   "tags": [
+    "cabin",
+    "woods",
+    "forest"
+   ],
+   "prompt": "log cabin in the woods",
+   "url": "/assets/worldstream/env/set-cabin.webp",
+   "low": "/assets/worldstream/env/set-cabin-low.webp",
+   "horizon": "#596b5c",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-alley",
+   "look": null,
+   "tags": [
+    "alley",
+    "city",
+    "street",
+    "night"
+   ],
+   "prompt": "narrow city alley with trash cans",
+   "url": "/assets/worldstream/env/set-alley.webp",
+   "low": "/assets/worldstream/env/set-alley-low.webp",
+   "horizon": "#857d7b",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-bridge",
+   "look": null,
+   "tags": [
+    "bridge",
+    "river"
+   ],
+   "prompt": "long suspension bridge over a river",
+   "url": "/assets/worldstream/env/set-bridge.webp",
+   "low": "/assets/worldstream/env/set-bridge-low.webp",
+   "horizon": "#b5cad4",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-storm",
+   "look": null,
+   "tags": [
+    "storm",
+    "lightning",
+    "rain"
+   ],
+   "prompt": "stormy sky with lightning over plains",
+   "url": "/assets/worldstream/env/set-storm.webp",
+   "low": "/assets/worldstream/env/set-storm-low.webp",
+   "horizon": "#8193a9",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  },
+  {
+   "id": "set-rainbow-road",
+   "look": null,
+   "tags": [
+    "rainbow",
+    "road",
+    "space"
+   ],
+   "prompt": "rainbow road floating in space",
+   "url": "/assets/worldstream/env/set-rainbow-road.webp",
+   "low": "/assets/worldstream/env/set-rainbow-road-low.webp",
+   "horizon": "#d6e2e3",
+   "license": "generated, FLUX.2 klein 4B, Apache-2.0"
+  }
+ ]
+}
