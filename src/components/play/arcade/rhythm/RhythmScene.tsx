@@ -21,6 +21,7 @@ import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
 import { playTone } from '@/play/audio';
 
+import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { initialBody } from '../timing/TimingScene';
@@ -93,9 +94,9 @@ export function RhythmScene({ session, look: scene }: { readonly session: Arcade
       <hemisphereLight args={['#e0f2fe', '#1e293b', 1.1]} />
       <directionalLight position={[2, 10, -6]} intensity={1.2} />
       {/* Prostředí (P27A T4): zem sady kolem pruhů a kulisy po stranách; pod pruhy zůstává tma, ať svítící noty čtou. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, TRACK_M / 2 - 2]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, TRACK_M / 2 - 2]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[60, TRACK_M + 10]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, TRACK_M / 2 - 2]}>
         <planeGeometry args={[RHYTHM.lanes * laneW + 0.4, TRACK_M]} />

@@ -21,6 +21,7 @@ import type { Look } from '@/play/arcade/look';
 import { DUEL, DUEL_FOE, DUEL_PHASE } from '@/play/arcade/pieces/duel';
 
 import { isTyping } from '../input';
+import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { initialBody } from '../timing/TimingScene';
@@ -155,9 +156,9 @@ export function DuelScene({ session, look: scene, rivalModel }: { readonly sessi
       <hemisphereLight args={['#e2e8f0', '#0f172a', 1]} />
       <directionalLight position={[-6, 10, -2]} intensity={1.5} />
       {/* Prostředí (P27A T4): zem sady a kulisy za ringem – boční kamera na −x je vidí za soupeři. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.12, midZ]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.12, midZ]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
       </mesh>
       <Scenery look={scene} layout="behind" inner={4} from={midZ - 12} to={midZ + 12} />
       <mesh position={[0, -0.1, midZ]}>

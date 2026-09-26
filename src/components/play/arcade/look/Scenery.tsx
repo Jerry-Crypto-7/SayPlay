@@ -13,6 +13,7 @@ import { Box3, type Object3D, Vector3 } from 'three';
 
 import { isSceneryModel, type Look, type PropKind, SCENERY_MODELS, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
 
+import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel } from './load';
 import { PlayEnv } from './play-env';
 
@@ -221,9 +222,9 @@ export function GridScenery({ look, width, height }: { readonly look: Look; read
         </Suspense>
       )}
       {/* Zem v barvě sady těsně nad terénem rodiny: béžová pod „icy moon“ ani sopkou prostředí neřekla. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]} receiveShadow renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[140, 140]} />
-        <meshStandardMaterial color={look.ground} roughness={1} />
+        <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
       </mesh>
       <group rotation={[0, Math.PI / 2, 0]} scale={GRID_SCALE}>
         <Scenery look={look} layout="behind" inner={at(height / 2 + GRID_GAP)} from={at(-width / 2 - 3)} to={at(width / 2)} />

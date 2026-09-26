@@ -20,6 +20,7 @@ import type { Look } from '@/play/arcade/look';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
 
 import { isTyping } from '../input';
+import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
@@ -115,9 +116,9 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
       <hemisphereLight args={['#fff7ed', '#78350f', 1]} />
       <directionalLight position={[3, 12, -8]} intensity={1.4} />
       {/* Zem a základna (věž stojí na ní, můstek začíná sloupem, lišta je deska). */}
-      <mesh position={[0, -0.05, 0]}>
+      <mesh position={[0, -0.05, 0]} renderOrder={UNDER_PANORAMA}>
         <boxGeometry args={[40, 0.1, 12]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
       </mesh>
       {/* Kulisy sady prostředí (P27A T4) v řadě za hrací plochou: otočená sada „behind“ jde přes x v hloubce +z. */}
       <group rotation={[0, -Math.PI / 2, 0]}>

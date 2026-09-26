@@ -19,13 +19,43 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef, useState } from 'react';
-import { BackSide, Color, Fog, type Mesh, type PerspectiveCamera, SRGBColorSpace, type Texture, TextureLoader } from 'three';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { BackSide, Color, Fog, type Mesh, type PerspectiveCamera, SphereGeometry, SRGBColorSpace, type Texture, TextureLoader, Vector3 } from 'three';
 
 import type { PlayEnvValue } from './play-env';
 
 /** Poloměr koule jako podíl vzdálené roviny kamery: celá koule je vždy vidět. */
 const RADIUS_OF_FAR = 0.9;
+
+/**
+ * Výška kamery nad zemí jako podíl poloměru, zaokrouhlená na čtvrtinu oktávy:
+ * geometrie podlahy se přestaví jen při znatelné změně (kamera věže stoupá).
+ */
+function floorStep(height: number, radius: number): number {
+  const share = Math.min(0.5, Math.max(0.002, height / radius));
+  return 2 ** (Math.round(Math.log2(share) * 4) / 4);
+}
+
+/**
+ * Koule, jejíž dolní půlka leží na rovině `floor` pod středem – postup
+ * `GroundedSkybox` z three/addons. Obsah panoramatu (stůl, dno jeskyně) je
+ * v dolní půlce: jako nekonečně vzdálená koule by ho zem scény celý zakryla,
+ * takhle leží pod hráčem a zem sady se kreslí pod ním (`UNDER_PANORAMA`).
+ */
+function groundedSphere(floor: number): SphereGeometry {
+  // Rozlišení jako GroundedSkybox: s hrubší sítí zubatí pás mezi podlahou a horizontem.
+  const geometry = new SphereGeometry(1, 256, 128);
+  const position = geometry.getAttribute('position');
+  const blend = (-floor * 3) / 2;
+  const point = new Vector3();
+  for (let i = 0; i < position.count; i++) {
+    point.fromBufferAttribute(position, i);
+    if (point.y >= 0) continue;
+    point.multiplyScalar(point.y < blend ? -floor / point.y : 1 - (point.y * point.y) / (3 * blend * blend));
+    position.setXYZ(i, point.x, point.y, point.z);
+  }
+  return geometry;
+}
 
 /** Jak často a jak dlouho se ptát na vlastní panorama (generování ~25–160 s na sdílené kartě). */
 const POLL_EVERY_MS = 5_000;
@@ -87,6 +117,7 @@ export function Panorama({ env }: { readonly env: PlayEnvValue }) {
   const drawn = useRef(false);
   const [started, setStarted] = useState(false);
   const [texture, setTexture] = useState<Texture | null>(null);
+  const [floor, setFloor] = useState(0.05);
   const custom = useCustomEnv(env.poll, started, env.horizon);
   const shown: Shown = custom ?? env;
 
@@ -101,7 +132,12 @@ export function Panorama({ env }: { readonly env: PlayEnvValue }) {
     const radius = camera.far * RADIUS_OF_FAR;
     sphere.current?.position.copy(camera.position);
     sphere.current?.scale.set(-radius, radius, radius);
+    // Zem scén leží na y = 0, podlaha panoramatu tedy výšku kamery pod středem.
+    const step = floorStep(camera.position.y, radius);
+    if (step !== floor) setFloor(step);
   });
+  const geometry = useMemo(() => groundedSphere(floor), [floor]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   // Náhled, pak plné. Předchozí textura zůstává na kouli, dokud nová nedorazí.
   useEffect(() => {
@@ -145,8 +181,7 @@ export function Panorama({ env }: { readonly env: PlayEnvValue }) {
 
   if (texture === null) return null;
   return (
-    <mesh ref={sphere} renderOrder={-1} frustumCulled={false}>
-      <sphereGeometry args={[1, 48, 24]} />
+    <mesh ref={sphere} geometry={geometry} renderOrder={-1} frustumCulled={false}>
       <meshBasicMaterial map={texture} side={BackSide} fog={false} depthWrite={false} toneMapped={false} />
     </mesh>
   );

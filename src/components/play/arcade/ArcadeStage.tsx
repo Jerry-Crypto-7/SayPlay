@@ -34,6 +34,7 @@ import type { ControlId } from '@/play/spec';
 
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { type BodyView, bodiesOf, bodiesStale } from './bodies';
+import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { loadModel } from './look/load';
 import { Panorama } from './look/Panorama';
@@ -594,9 +595,9 @@ function Backdrop({ control, length, look }: { readonly control: string; readonl
   if (control === 'shooter' || control === 'throw') {
     return (
       <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]} renderOrder={UNDER_PANORAMA}>
           <planeGeometry args={[120, 120]} />
-          <meshStandardMaterial color={look.ground} roughness={1} />
+          <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
         </mesh>
         {control === 'shooter' ? <Scenery look={look} layout="sides" inner={14} from={-4} to={60} size={1.5} /> : <Scenery look={look} layout="behind" inner={13} from={-10} to={45} size={1.5} />}
       </>
@@ -611,9 +612,9 @@ function Backdrop({ control, length, look }: { readonly control: string; readonl
         <planeGeometry args={[trackWidth + 0.6, trackLength]} />
         <meshStandardMaterial color={look.track} roughness={0.9} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, trackLength / 2 - 10]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, trackLength / 2 - 10]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[80, trackLength + 80]} />
-        <meshStandardMaterial color={look.ground} roughness={1} />
+        <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
       </mesh>
       <Scenery look={look} layout="sides" inner={trackWidth / 2 + 2.5} from={-10} to={trackLength - 10} />
       {[-0.5, 0.5].map((edge) => (

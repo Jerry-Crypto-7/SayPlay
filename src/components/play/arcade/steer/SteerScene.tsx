@@ -17,6 +17,7 @@ import type { Look } from '@/play/arcade/look';
 import type { SteerCourse } from '@/play/arcade/pieces/steer';
 
 import { isTyping } from '../input';
+import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
@@ -54,9 +55,9 @@ export function SteerBackdrop({ course, length, look }: { readonly course: Steer
   });
   return (
     <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, span / 2 - 30]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, span / 2 - 30]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[160, span + 60]} />
-        <meshStandardMaterial color={look.ground} roughness={1} />
+        <meshStandardMaterial color={look.ground} roughness={1} depthWrite={false} />
       </mesh>
       {segments.map((segment, i) => (
         <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>

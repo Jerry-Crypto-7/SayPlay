@@ -27,6 +27,7 @@ import { arenaAxis } from '@/play/arcade/pieces/arena';
 
 import { bodiesOf, bodiesStale } from '../bodies';
 import { isTyping } from '../input';
+import { UNDER_PANORAMA } from '../look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
@@ -158,9 +159,9 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
         {/* Podlaha v barvě dráhy sady, ne země: zelená kořist by na trávě splynula. Prostředí ukazují kulisy za hranou. */}
         <meshStandardMaterial color={scene.track} roughness={0.8} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.08, 0]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[side + 60, side + 60]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
       </mesh>
       {/* Kulisy sady prostředí (P27A T3) za hranou arény ze všech čtyř stran – jen vzhled, jádro o nich neví. */}
       {[0, Math.PI / 2].map((turn) => (
