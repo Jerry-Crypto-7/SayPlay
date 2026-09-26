@@ -14,8 +14,9 @@
 
 import { z } from 'zod';
 
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import { unsupportedGame } from '@/play/draft/unsupported';
+import { readBeforeDraft } from '@/play/read/client';
 import { decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
 
 import { getDirector } from '../_director';
@@ -119,7 +120,8 @@ export async function POST(request: Request): Promise<Response> {
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
-    const drafted = draftGameSpec(sentence);
+    // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
+    const drafted = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) }).spec;
     const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin: { sentence, seed: seed ?? null } });
     if (draft.ok) {
       void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });

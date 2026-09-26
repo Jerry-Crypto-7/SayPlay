@@ -20,7 +20,8 @@
 import type { GenerationBranch } from '@/server/pipeline';
 
 import type { DirectorResult, FallbackReason } from '../contracts';
-import { draftGameSpec } from '../draft';
+import { draftGameSpecWithMeta } from '../draft';
+import { readBeforeDraft, readerEnabled } from '../read/client';
 import type { GameSpecV1 } from '../spec';
 
 import type { DirectorCache } from './cache';
@@ -82,7 +83,9 @@ function warningsOf(spec: GameSpecV1): CriticIssue[] {
 
 export async function direct(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
   const started = deps.now();
-  const draft = draftGameSpec(sentence, deps.seed);
+  // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
+  const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
+  const draft = draftGameSpecWithMeta(sentence, deps.seed, { reading }).spec;
   deps.onDraft?.(draft);
   let calls = 0;
 
