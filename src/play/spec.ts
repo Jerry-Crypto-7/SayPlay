@@ -30,6 +30,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 
 import { ADDONS, type AddonId } from './arcade/contract';
 import { LOOK_IDS } from './arcade/look';
+import { ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
@@ -386,6 +387,13 @@ export const gameSpecSchema = z
     tutorial: tutorialSchema,
     verification: z.array(verificationSchema).min(1).max(20),
     budgets: budgetsSchema,
+    /**
+     * Pravidla pro slovesa, která žádný dílek neumí (P29A, jazyk v
+     * `arcade/rules/schema.ts`). Jen arkáda; bez výchozí hodnoty, jako `control`.
+     */
+    rules: rulesSchema.optional(),
+    /** Doplňky rolí pro pravidla (skryté na startu). */
+    things: thingsSchema.optional(),
   })
   .strict();
 
@@ -504,6 +512,14 @@ export function readGameSpec(input: unknown): GameSpecResult {
     mechanicIds.add(mechanic.id);
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
+
+  if (spec.rules !== undefined || spec.things !== undefined) {
+    if (spec.control === undefined || spec.control === 'tap_go') {
+      return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/rules: only an arcade game (any control but tap_go) takes rules'] };
+    }
+    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds);
+    if (ruleProblems.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues: ruleProblems };
+  }
 
   // Arkáda povinné mechaniky archetypu nečte (P26 T5, `capabilities.ts`) – vyžadovat
   // je by nutilo model psát, co hra nehraje.

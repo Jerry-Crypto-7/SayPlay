@@ -95,3 +95,19 @@ Krok jádra (22. 9. 2026, čistý Node 22, bundle přes rolldown, fixtura běžc
 Plošinovka a poletování (22. 9. 2026, P25C T6, pod vitestem a souběžně s `npm run build`, fixtury `platform.json` a `flap.json`, 5 opakování × 600 tiků se vstupy robota): **plošinovka 0,0035–0,0059 ms/tik, poletování 0,0030–0,0047 ms/tik** (běžec týmž měřením 0,0047–0,0075, první zahřívací vzorek 0,037). I se ~15× přirážkou vitestu cíl < 1 ms drží s rezervou přes 150×.
 
 Prohlížeč: `ArcadeStage` tiká pevným krokem 1/60 s z `useFrame` (akumulátor, strop 250 ms na snímek – skrytá záložka hru nedohraje) a těla interpoluje mezi dvěma posledními tiky. Scéna podle `control`: běžec kamera za hráčem, plošinovka a poletování boční kamera (stojí na −x, +z jde doprava; na výšku ustoupí, aby byla vidět trať vpředu). Plošinovka drží osu (`session.hold`, zapisuje se do každého tiku, kdy je nenulová); dotyk: levá čtvrtina vlevo, druhá vpravo, pravá polovina skok. Poletování čeká na první ťuk (`waitForInput`), jinak by ptáček spadl dřív, než ho hráč uvidí.
+
+## Pravidla (P29A)
+
+Sloveso z věty, které žádný dílek neumí, dopíše pravidlo – **data, ne kód**. Jazyk je v `src/play/arcade/rules/schema.ts`, ve specu pole `rules[]` (nejvýš 16 = `ARCADE_LIMITS.maxRules`) a `things[]`.
+
+Pravidlo = `{ id, verb, when, if?, do[] }`. Na tělesa odkazuje **jménem role** (`player` nebo `roles[].id`), nikdy indexem. Jen celá čísla, žádné výrazy ani smyčky.
+
+| Část | Tvary |
+|---|---|
+| `when` (spouštěč) | `{contact:[roleA,roleB]}` (dotyk, jedna role smí být `player`) · `{press:'action'\|'alt'}` · `{every:n}` (tiky) · `{counter:{name,atLeast}}` · `{hit:role}` (projektil zasáhl) |
+| `if[]` (vše musí platit) | `{holding:role}` · `{notHolding:true}` · `{counter:{name,atLeast\|below}}` · `{near:{role,within}}` (metry; vybere i tělo `other`) |
+| `do[]` (efekty) | `score` · `damage` · `win` · `lose` · `despawn:'other'\|'self'\|'held'` · `spawn:{role,at:'player'\|'other'}` · `count:{counter,amount}` · `respawn` · `checkpoint` · `grab` · `release` · `throwHeld` · `push` · `toggle:role` |
+
+`other` = druhá role kontaktu, zasažené tělo, nebo tělo z `near`; `self` = první role kontaktu, který není hráč; `held` = co hráč nese. Čítače pravidel: `score`, `items`, `health`. `things[]` = `{role, start:'present'|'hidden'}` – skryté tělo (most) se ukáže až po `toggle`.
+
+`verb` je jedno anglické slovo malými písmeny. Robot ho musí během vítězného běhu uvidět vystřelit, jinak hra neprojde (`VERB_UNPROVED`).

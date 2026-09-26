@@ -110,7 +110,8 @@ function renderShape(): string {
   const properties = top.properties as Record<string, JsonSchema>;
   const outline = Object.entries(properties)
     // Doplňky (P26D) řekne řádek ovládání u každého ovládání zvlášť.
-    .filter(([key]) => key !== 'verification' && key !== 'addons')
+    // Pravidla (P29A) popisuje vlastní gramatika s příklady, ne výpis schématu.
+    .filter(([key]) => key !== 'verification' && key !== 'addons' && key !== 'rules' && key !== 'things')
     .map(([key, value]) => `${key}: ${compactSchema(value)}`)
     .join('\n');
   return [

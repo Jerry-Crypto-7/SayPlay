@@ -43,3 +43,7 @@ Balíček GPT (prompty režiséra/kritika/opravy, zlatý korpus, měď produktu,
    ne rychlejším modelem. Astra přes Codex CLI zůstává (rozhodnutí 18. 9.), placené API až na finále.
 4. `chaser` se snižuje na pravidla `onSeen` + `inZone(player, Z) → moveTo(chaser, soket Z)` nad
    zónami mřížky – žádné nové primitivum tiku.
+
+## Pravidla vedle knihovny dílků (P29A, 26. 9. 2026)
+
+`GameSpec` smí nést `rules[]` a `things[]` (jazyk v `src/play/arcade/rules/schema.ts`, popis v `docs/play/ARCADE.md` → „Pravidla“). Obě pole jsou volitelná **bez výchozí hodnoty**, takže `specHash` dnešních her se nepohne; `readGameSpec` je přijme jen u arkády a odkazy na role soudí proti `roles[]` (`DANGLING_REFERENCE` s cestou pole). Výjimka z tabulky výše: základ (`spec.ts`) mění plán P29A na rozhodnutí uživatele z 26. 9.
