@@ -32,6 +32,41 @@ prvního sloupce 8,9/255 proti 7,7/255 mezi sousedními sloupci uvnitř obrazu �
 Obraz vyšel jako skutečné equirektangulární panorama (horizont kolem 55 % výšky) bez LoRA, takže
 záložní válcové pozadí z plánu není potřeba.
 
+## Dávka do knihovny
+
+```
+uv run --project ops/env python ops/env/batch.py settings      # seznam prostředí → evals/play/env/settings.json
+node D:/claude/_shared/gpu-lock.mjs -- uv run --project ops/env python ops/env/batch.py generate
+uv run --project ops/env python ops/env/batch.py catalog       # → src/play/arcade/look/env-catalog.json
+```
+
+`settings` sestaví seznam (looky × 3 varianty a prostředí z korpusů), `generate` z něj kreslí
+panoramata do `public/assets/worldstream/env/` pod GPU zámkem, `catalog` zapíše katalog (id, look,
+štítky, horizont). Dnes 94 panoramat, ~20 MB. Nové soubory v `public/` chtějí záznam v `disclosure.json` v témže commitu
+(`scripts/assets/register-disclosure.mjs`, pak `npm run disclosure`); hook `license-gate` čte i
+netrackované soubory, takže během dávky nejde commitnout nic.
+
+## Služba na požádání
+
+```
+ENV_KEY=<tajné> uv run --project ops/env python ops/env/server.py     # jen 127.0.0.1:8793
+```
+
+| Cesta | Co dělá |
+|---|---|
+| `POST /panorama {"setting": "…"}` | vrátí `jobId`; jedna úloha na prostředí, hotové bere z cache `D:/caches/worldsmith-env` |
+| `GET /jobs/{id}` | `queued / running / done / failed`; hotová nese `file`, `low`, `horizon` |
+| `GET /files/{name}` | WebP z cache |
+| `GET /health` | stav a délka fronty |
+
+Každá cesta chce hlavičku `X-Env-Key` shodnou s `ENV_KEY`, jinak 401; `/docs` a OpenAPI služba
+nemá. Fronta má strop 20 úloh (pak 429), generování drží sdílený GPU zámek, takže se nepotká
+s dávkami jiných stop. Selhaná úloha drží hodinu (`FAILED_COOLDOWN_SEC`): hra se ptá opakovaným
+`POST` a prostředí, které na kartě padá vždy, by se jinak zařadilo s každým dotazem znovu.
+
+Hra ji volá z `src/app/api/play/_env.ts` přes `PLAY_ENV_ENDPOINT` a `PLAY_ENV_KEY` (táž hodnota
+jako `ENV_KEY`); venku za tunelem. Vypnout jde pákou `env` ve vypínači (`src/server/kill-switch.ts`).
+
 ## Testy
 
 ```
