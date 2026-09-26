@@ -206,6 +206,17 @@ describe('getDirector with a local fallback', () => {
     await expect(heldAtReturn).resolves.toBe(0);
   });
 
+  it('PLAY_DIRECTOR_HEDGE_MS moves the moment the fallback starts', async () => {
+    stubEnv({ ...LIVE, PLAY_DIRECTOR_HEDGE_MS: '5000' });
+    const seen = stubFetch();
+    const game = getDirector(Date.now(), 'hedge-env')(SENTENCE);
+    await vi.advanceTimersByTimeAsync(4_999);
+    expect(seen.fallback).toBe(0);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(seen.fallback).toBe(1);
+    expect((await game).authoredBy).toBe('gpt-oss-20b');
+  });
+
   it('without WORLDSMITH_FALLBACK_ENDPOINT the stalled call just waits', async () => {
     const { WORLDSMITH_FALLBACK_ENDPOINT: _drop, ...primaryOnly } = LIVE;
     stubEnv(primaryOnly);

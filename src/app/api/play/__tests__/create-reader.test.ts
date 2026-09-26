@@ -106,9 +106,9 @@ describe('create route reads the sentence before drafting', () => {
     expect(await publishedSpec(await pending)).toEqual(draftGameSpec(SENTENCE));
   });
 
-  it('a budget that is not a positive whole number falls back to 1500 ms', async () => {
+  it.each(['soon', '0', '-5', '2.5', '20000'])('a budget of %s is not a whole number in 1..10000 and falls back to 1500 ms', async (budget) => {
     vi.stubEnv('PLAY_READER', 'on');
-    vi.stubEnv('PLAY_READER_BUDGET_MS', 'soon');
+    vi.stubEnv('PLAY_READER_BUDGET_MS', budget);
     vi.stubGlobal('fetch', silent);
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     let settled = false;
