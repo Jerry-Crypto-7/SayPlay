@@ -133,8 +133,13 @@ export function gameVersionId(fields: Omit<GameVersion, 'versionId' | 'createdAt
 /** Jak režisér skončil. `draft` je okamžitá šablona ze slov, `authored` odpověď modelu. */
 export type DirectorSource = 'draft' | 'authored' | 'cached';
 
-/** Proč režisér vrátil návrh ze slov místo odpovědi modelu. */
-export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED';
+/**
+ * Proč režisér vrátil návrh ze slov místo odpovědi modelu. `VERB_UNPROVED`
+ * (P29A T8) je jediný důvod i u `source: 'authored'`: pravidlo, které se ani po
+ * opravě nedalo složit nebo které robot nevystřelil, ze hry vypadlo a hraje se
+ * bez něj; `source: 'draft'` jen když ani hra bez pravidel neprošla.
+ */
+export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED' | 'VERB_UNPROVED';
 
 /**
  * Režisér neselže: výpadek modelu, nečitelná odpověď i neopravitelný spec

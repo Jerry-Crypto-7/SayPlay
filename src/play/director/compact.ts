@@ -172,14 +172,14 @@ export function composeCompact(sentence: string, body: unknown, seed = 1): Direc
   // se nezahodí potichu, aby opravné kolo vědělo proč.
   const rules = Array.isArray(body.rules) ? body.rules : [];
   const things = Array.isArray(body.things) ? body.things : [];
-  if (rules.length > 0 || things.length > 0) {
-    for (const entry of Array.isArray(body.ruleRoles) ? body.ruleRoles : []) {
-      if (!isRecord(entry) || spec.roles.some((role) => role.id === entry.id)) continue;
-      spec.roles.push({ ...(withoutNulls(entry) as GameRole), count: typeof entry.count === 'number' ? entry.count : 1 });
-    }
-    if (rules.length > 0) spec.rules = withoutNulls(rules) as GameSpecV1['rules'];
-    if (things.length > 0) spec.things = withoutNulls(things) as GameSpecV1['things'];
+  // Role zůstanou i bez pravidel: když se pravidla nedají složit (T8), opravné
+  // kolo je dopíše nad specem, který jejich role už má.
+  for (const entry of Array.isArray(body.ruleRoles) ? body.ruleRoles : []) {
+    if (!isRecord(entry) || spec.roles.some((role) => role.id === entry.id)) continue;
+    spec.roles.push({ ...(withoutNulls(entry) as GameRole), count: typeof entry.count === 'number' ? entry.count : 1 });
   }
+  if (rules.length > 0) spec.rules = withoutNulls(rules) as GameSpecV1['rules'];
+  if (things.length > 0) spec.things = withoutNulls(things) as GameSpecV1['things'];
 
   const result = readGameSpec(spec);
   if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };

@@ -30,9 +30,9 @@ describe('noticeOf', () => {
     expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) }, 0)).toEqual({ text: 'The AI version is ready – play it', action: { kind: 'open', label: 'Play it' } });
   });
 
-  it('všech 8 důvodů má vlastní větu', () => {
-    expect(REASONS).toHaveLength(8);
-    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(8);
+  it('všech 9 důvodů má vlastní větu', () => {
+    expect(REASONS).toHaveLength(9);
+    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(9);
     expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' }, 0)?.text).toContain('The AI is busy right now');
     expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' }, 0)?.text).toBe("The AI's version didn't pass our playability check.");
   });

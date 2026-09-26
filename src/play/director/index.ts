@@ -26,7 +26,7 @@ import type { GameSpecV1 } from '../spec';
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
 import { COMPACT_PROMPT_VERSION, buildCompactRequest, composeCompact } from './compact';
-import { type CriticIssue, blockingIssues, critique } from './critic';
+import { type CriticIssue, blockingIssues, critique, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { readDirectorAnswer, unwrapAnswer } from './read';
 import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
@@ -112,10 +112,16 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
   let spec: GameSpecV1;
+  // Pravidla, která se nedala složit (P29A T8): hra se složí bez nich a opravné kolo dostane důvod.
+  let ruleBlocks: CriticIssue[] = [];
   const body = compact ? outcome.body : unwrapAnswer(outcome.body);
   const read = compact ? composeCompact(sentence, body, deps.seed) : readDirectorAnswer(body);
+  const plain = !read.ok && compact && hasRules(body) ? composeCompact(sentence, { ...body, rules: [], things: [] }, deps.seed) : null;
   if (read.ok) {
     spec = read.spec;
+  } else if (plain?.ok === true) {
+    spec = plain.spec;
+    ruleBlocks = ruleInvalidIssues(read.detail, (body as { rules: unknown }).rules);
   } else if (compact) {
     // Složený spec vzniká ze šablony – co neprojde, oprava tabulkou nespraví.
     return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
@@ -133,9 +139,10 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
       blocks = blockingIssues(critique(spec));
     }
   }
+  blocks = [...blocks, ...ruleBlocks];
 
-  // Ověření robotem (P26 T10a) jen nad specem, který kritik pustil.
-  const checkOf = (candidate: GameSpecV1): readonly RepairIssue[] => (deps.check === undefined ? [] : deps.check(candidate));
+  // Ověření robotem (P26 T10a) jen nad specem, který kritik pustil; neprokázané sloveso jmenuje kritik (T8).
+  const checkOf = (candidate: GameSpecV1): readonly RepairIssue[] => (deps.check === undefined ? [] : verbIssues(deps.check(candidate), candidate));
   let checked = blocks.length === 0 ? checkOf(spec) : [];
   const maxRounds = deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS;
   let repairRounds = 0;
@@ -145,8 +152,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     const answer = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(spec, blocks.length > 0 ? blocks : checked) });
     if (!answer.ok) {
       // Spec, který kritik pustil, jde dál a odmítne ho až publikace (NOT_PLAYABLE) –
-      // výpadek opravného kola o větě nic neříká.
-      if (blocks.length === 0) break;
+      // výpadek opravného kola o větě nic neříká. Totéž hra, které chybí jen nesložená pravidla (T8).
+      if (blocks.every((issue) => issue.code === 'RULE_INVALID')) break;
       return fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: answer.reason, detail: `repair round ${repairRounds}: ${answer.detail}`, raw: answer.raw ?? null });
     }
     const applied = applyRepairAnswer(spec, answer.body);
@@ -156,11 +163,39 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     blocks = blockingIssues(critique(spec));
     checked = blocks.length === 0 ? checkOf(spec) : [];
   }
+
+  // Oprava pravidlům nepomohla (T8): pravidlo ze hry vypadne a hraje se bez něj –
+  // nejdřív jen neprokázaná slovesa, pak všechna pravidla, nakonec návrh ze slov.
+  // Neprokázané sloveso se nikdy nepublikuje a hra se kvůli pravidlu nerozbije.
+  const ruleFailure = [...blocks, ...checked].filter((issue) => issue.code === 'RULE_INVALID' || issue.code === 'VERB_UNPROVED');
+  const ruleFailed = blocks.every((issue) => issue.code === 'RULE_INVALID') && (ruleBlocks.length > 0 || (spec.rules !== undefined && checked.length > 0));
+  if (ruleFailed && (blocks.length > 0 || checked.length > 0)) {
+    const failure: DirectorFailure = { stage: 'critic', reason: 'VERB_UNPROVED', detail: ruleFailure.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; ') || checked.map((issue) => issue.code).join('; '), raw: spec };
+    const unproved = new Set(unprovedVerbs(checked));
+    const candidates = [withoutRules(spec, (rule) => unproved.has(rule.verb)), withoutRules(spec, () => true)];
+    for (const candidate of candidates) {
+      if (candidate === null || blockingIssues(critique(candidate)).length > 0 || checkOf(candidate).length > 0) continue;
+      return { ok: true, spec: candidate, source: 'authored', repairRounds, fallbackReason: 'VERB_UNPROVED', failure, warnings: warningsOf(candidate), ms: deps.now() - started, calls };
+    }
+    return fallback('VERB_UNPROVED', failure);
+  }
   if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
 
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
   if (checked.length === 0) await deps.cache?.write(key, spec);
   return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: null, warnings: warningsOf(spec), ms: deps.now() - started, calls };
+}
+
+const hasRules = (body: unknown): body is { rules: unknown[] } => typeof body === 'object' && body !== null && Array.isArray((body as { rules?: unknown }).rules) && (body as { rules: unknown[] }).rules.length > 0;
+
+/** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
+function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
+  const rules = spec.rules ?? [];
+  const kept = rules.filter((rule) => !drop(rule));
+  if (kept.length === rules.length && rules.length > 0) return null;
+  const { rules: _rules, things, ...rest } = spec;
+  if (kept.length > 0) return { ...rest, rules: kept, ...(things === undefined ? {} : { things }) };
+  return rest;
 }
 
 export { directorCache, directorCacheFromEnv, directorKey, type DirectorCache } from './cache';
