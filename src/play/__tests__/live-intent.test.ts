@@ -14,7 +14,7 @@ import { startLive } from '@/play/arcade/live';
 import { REMIX_MESSAGE, UNKNOWN_MESSAGE, liveIntentOf, resolveWish } from '@/play/director/live-intent';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
-import table from '../__fixtures__/live-intent.json';
+import table from '../director/__fixtures__/live-intent.json';
 
 function specOf(fixture: unknown): GameSpecV1 {
   const spec = readGameSpec(fixture);
