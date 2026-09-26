@@ -352,7 +352,23 @@ async function gameOf(base, id) {
   return body.game ?? body;
 }
 
+/**
+ * Počká na vlastní panorama (P29C), ať soudce vidí prostředí, které hráč uvidí po chvíli hraní.
+ * Hra se na něj ptá každých 5 s; bez čekání fotí měření knihovní oblohu, i když panorama vzniká.
+ */
+async function envOf(base, id) {
+  const until = Date.now() + 120_000;
+  for (;;) {
+    const response = await fetch(`${base}/api/play/games/${id}/env`, { cache: 'no-store' });
+    const status = response.ok ? (await response.json()).status : `http ${response.status}`;
+    if (status !== 'pending') return status;
+    if (Date.now() > until) return 'pending';
+    await sleep(3000);
+  }
+}
+
 async function shoot(page, base, id, path) {
+  const env = await envOf(base, id);
   await page.goto(`${base}/play/${id}`);
   await page.locator('canvas').first().waitFor({ timeout: 30_000 });
   await page.waitForTimeout(3500);
@@ -361,6 +377,7 @@ async function shoot(page, base, id, path) {
   await page.addStyleTag({ content: 'body * { visibility: hidden !important; } canvas { visibility: visible !important; }' });
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${path}-scene.png` });
+  return env;
 }
 
 async function runOne(sentence, base, runDir, page) {
@@ -398,8 +415,8 @@ async function runOne(sentence, base, runDir, page) {
     ai: ai ? { versionId: upgrade.versionId, spec: ai.spec } : null,
     raw: existsSync(failure) ? readJson(failure) : null,
   };
-  await shoot(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
-  if (ai) await shoot(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
+  result.draft.env = await shoot(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
+  if (ai) result.ai.env = await shoot(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   return result;
 }
 
@@ -419,7 +436,7 @@ async function run(options) {
       if (existsSync(path)) continue;
       const result = await runOne(sentence, base, runDir, page);
       writeJson(path, result);
-      console.log(`${sentence.id} ${result.ai ? 'ai' : `draft (${result.upgrade.reason ?? result.upgrade.status})`} ${Math.round(result.upgrade.ms / 1000)} s`);
+      console.log(`${sentence.id} ${result.ai ? 'ai' : `draft (${result.upgrade.reason ?? result.upgrade.status})`} ${Math.round(result.upgrade.ms / 1000)} s env ${result.ai?.env ?? result.draft.env}`);
     }
   } finally {
     await browser.close();
