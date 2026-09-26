@@ -208,6 +208,44 @@ def test_failed_job_is_not_requeued_before_the_cooldown(tmp_path):
     assert len(gen.calls) == 2
 
 
+def test_full_queue_after_the_cooldown_keeps_the_failed_job(tmp_path, monkeypatch):
+    # 429 při plné frontě nesmí smazat starou selhanou úlohu: by_slug by ukazoval
+    # na nic a každý další POST téhož prostředí by skončil 500.
+    monkeypatch.setattr(server, "MAX_QUEUE", 0)
+    now = [1000.0]
+    lock_dir = tmp_path / "gpu.lock"
+    client = TestClient(
+        server.create_app(
+            KEY,
+            FakeGenerator(lock_dir, crash=True),
+            cache_root=tmp_path / "cache",
+            lock_dir=lock_dir,
+            failed_cooldown=60,
+            clock=lambda: now[0],
+        )
+    )
+    monkeypatch.setattr(server, "MAX_QUEUE", 20)
+    first = client.post(
+        "/panorama", json={"setting": "volcano"}, headers={"X-Env-Key": KEY}
+    ).json()["jobId"]
+    assert wait_done(client, first)["status"] == "failed"
+    now[0] += 61
+    monkeypatch.setattr(server, "MAX_QUEUE", 0)
+    full = client.post(
+        "/panorama", json={"setting": "volcano"}, headers={"X-Env-Key": KEY}
+    )
+    assert full.status_code == 429
+    assert (
+        client.get(f"/jobs/{first}", headers={"X-Env-Key": KEY}).json()["status"]
+        == "failed"
+    )
+    monkeypatch.setattr(server, "MAX_QUEUE", 20)
+    again = client.post(
+        "/panorama", json={"setting": "volcano"}, headers={"X-Env-Key": KEY}
+    )
+    assert again.status_code == 200 and again.json()["jobId"] != first
+
+
 def test_half_written_owner_file_is_not_stale(tmp_path):
     # gpu-lock.mjs zakládá adresář dřív, než zapíše owner.json: čerstvý prázdný zámek drží.
     lock_dir = tmp_path / "gpu.lock"

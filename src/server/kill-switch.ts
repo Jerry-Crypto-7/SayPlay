@@ -38,6 +38,12 @@
  * strop platí i tam; nedojde tam **povel stop**. Kdo za incidentu vypíná, musí
  * proto stará nasazení zrušit, ne se spolehnout na to, že je povel umlčí.
  *
+ * ⚠ **Nové jméno páky je pro starší build překlep** (P29C, páka `env`). Build
+ * z doby před jejím zavedením zná `env` jako neznámé jméno a podle tabulky níž
+ * vypne upstream, relace i refine. `off: ["env"]` tedy během rolloveru nebo na
+ * starém preview zastaví i placenou práci – kdo chce vypnout jen panoramata,
+ * ať nejdřív ověří, že starší nasazení neběží.
+ *
  * ⚠ **Přidat `off` do existujícího souboru není vždy no-op — od
  * `T30-capsilence`.** Soubor, který nese `enabled` nebo `callCap` a `capUsd` ne,
  * je pro strop rozbitý, takže `{"enabled":true}` + přidané `off` skončí

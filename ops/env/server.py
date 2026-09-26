@@ -245,16 +245,18 @@ def create_app(
                 or clock() - active.failed_at < failed_cooldown
             ):
                 return {"jobId": active.id}
-            if active:
-                del jobs[active.id]
             job = Job(uuid.uuid4().hex, setting)
             hit = cached(name)
             if hit:
                 job.status, job.meta = "done", hit
             elif pending.qsize() >= MAX_QUEUE:
+                # Stará selhaná úloha zůstává: smazat ji před 429 by nechalo by_slug
+                # ukazovat na nic a každý další POST by padal na KeyError.
                 raise HTTPException(status_code=429, detail="queue is full")
             else:
                 pending.put(job)
+            if active:
+                del jobs[active.id]
             jobs[job.id] = by_slug[name] = job
         return {"jobId": job.id}
 
