@@ -37,7 +37,7 @@ export function measureEnvCoverage() {
   const sentences: Row[] = [...fidelity.sentences, ...judge.sentences].map((sentence) => {
     const { theme } = draftGameSpec(sentence.text);
     const env = envFor(theme, 1);
-    const asked = sentence.checklist.filter((item) => item.slot === 'setting').flatMap((item) => item.match);
+    const asked = sentence.checklist.filter((item) => item.slot === 'setting').flatMap((item) => item.match).filter((word): word is string => word !== undefined);
     return { id: sentence.id, text: sentence.text, setting: theme.setting, env: env.id, tags: env.tags, asked, shown: asked.length > 0 && shows(env.tags, asked) };
   });
   const scored = sentences.filter((row) => row.asked.length > 0);
