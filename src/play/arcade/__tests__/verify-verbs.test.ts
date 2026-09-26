@@ -55,6 +55,18 @@ describe('verifyArcade proves rule verbs', () => {
     expect(verbs?.failures.join(' ')).toContain('VERB_UNPROVED:throw');
   });
 
+  it('a rule that fires but changes nothing does not prove its verb: throw with empty hands', () => {
+    // Robot sbírá mince, takže pravidlo vystřelí – jenže hráč nic nenese a nic neletí.
+    const emptyThrow = { id: 'toss', verb: 'throw', when: { contact: ['player', 'coin'] }, do: [{ throwHeld: true }] };
+    const verdict = verifyArcade(world({ ...runnerFixture, rules: [collect, emptyThrow] }));
+    expect(verdict.bot.outcome).toBe('won');
+    expect(verdict.verbs).toEqual([
+      { verb: 'collect', fired: true, firstTick: expect.any(Number) },
+      { verb: 'throw', fired: false, firstTick: null },
+    ]);
+    expect(verdict.failures).toEqual([expect.stringContaining('VERB_UNPROVED:throw')]);
+  });
+
   it('two rules with one verb: the verb is proved when either fires', () => {
     const alsoCollect = { ...toss, id: 'toss2', verb: 'collect' };
     const verdict = verifyArcade(world({ ...runnerFixture, rules: [alsoCollect, collect] }));
