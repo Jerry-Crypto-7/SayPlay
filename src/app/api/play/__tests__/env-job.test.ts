@@ -6,7 +6,8 @@
  * chybě zůstává knihovní panorama.
  */
 
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -64,7 +65,7 @@ async function publish(setting: string): Promise<string> {
   );
   expect(response.status, await response.clone().text()).toBeLessThan(300);
   // Úloha jde po odpovědi (`after()` v testu nejde, práce doběhne sama) – nech ji doběhnout.
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 30));
   return ((await response.json()) as { versionId: string }).versionId;
 }
 
@@ -85,6 +86,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   delete process.env.PLAY_ENV_ENDPOINT;
   delete process.env.PLAY_ENV_KEY;
+  delete process.env.WORLDSMITH_CONTROL_FILE;
 });
 
 describe('which settings need a custom panorama', () => {
@@ -203,5 +205,28 @@ describe('GET /api/play/games/:id/env', () => {
     expect((await env('deadbeefdeadbeef')).status).toBe(404);
     expect((await env('not-an-id')).status).toBe(404);
     expect(stub.calls).toEqual([]);
+  });
+});
+
+describe('kill switch', () => {
+  function switchOff(...off: string[]) {
+    const file = join(mkdtempSync(join(tmpdir(), 'env-kill-')), 'control.json');
+    writeFileSync(file, JSON.stringify({ off }));
+    process.env.WORLDSMITH_CONTROL_FILE = file;
+  }
+
+  it('env off: publishing starts no job and the route never asks the service', async () => {
+    switchOff('env');
+    const id = await publish(UNKNOWN);
+    stub.status = 'done';
+    expect(await (await env(id)).json()).toEqual({ status: 'unavailable' });
+    expect((await env(id, '?file=full')).status).toBe(404);
+    expect(stub.calls).toEqual([]);
+  });
+
+  it('another lever leaves the panorama generation running', async () => {
+    switchOff('feed');
+    await publish(UNKNOWN);
+    expect(stub.calls.map((call) => call.path)).toEqual(['/panorama']);
   });
 });

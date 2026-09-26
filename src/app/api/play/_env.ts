@@ -17,6 +17,7 @@
 import { after } from 'next/server';
 
 import { settingInLibrary } from '@/play/arcade/look/env';
+import { killState } from '@/server/kill-switch';
 
 /** Kolik smí trvat jeden dotaz na službu; déle = služba není. */
 const SERVICE_TIMEOUT_MS = 3_000;
@@ -30,6 +31,13 @@ function serviceFromEnv(env: NodeJS.ProcessEnv = process.env): Service | null {
   const endpoint = env.PLAY_ENV_ENDPOINT?.trim().replace(/\/+$/, '');
   const key = env.PLAY_ENV_KEY?.trim();
   return endpoint && key ? { endpoint, key } : null;
+}
+
+/** Služba, pokud je nastavená a páka `env` (nebo `all`) ji nevypnula. */
+async function liveService(): Promise<Service | null> {
+  const service = serviceFromEnv();
+  if (service === null || (await killState(process.env)).env) return null;
+  return service;
 }
 
 /**
@@ -97,13 +105,14 @@ async function job(service: Service, setting: string): Promise<JobView | null> {
  * doběhne sama. Chyba služby se jen zapíše.
  */
 export function startCustomEnv(setting: string): void {
-  const service = serviceFromEnv();
   const text = serviceSetting(setting);
-  if (service === null || text === null || settingInLibrary(setting)) return;
-  const work = submit(service, text).then(
-    () => undefined,
-    (error: unknown) => console.warn(`[play] env service refused "${text}": ${String(error)}`),
-  );
+  if (serviceFromEnv() === null || text === null || settingInLibrary(setting)) return;
+  const work = liveService()
+    .then((service) => (service === null ? undefined : submit(service, text)))
+    .then(
+      () => undefined,
+      (error: unknown) => console.warn(`[play] env service refused "${text}": ${String(error)}`),
+    );
   try {
     after(work);
   } catch {
@@ -119,9 +128,9 @@ export type CustomEnvState =
 export async function customEnvState(setting: string): Promise<CustomEnvState> {
   const text = serviceSetting(setting);
   if (settingInLibrary(setting) || text === null) return { status: 'library' };
-  const service = serviceFromEnv();
-  if (service === null) return { status: 'unavailable' };
   try {
+    const service = await liveService();
+    if (service === null) return { status: 'unavailable' };
     const view = await job(service, text);
     if (view === null) return { status: 'unavailable' };
     if (view.status === 'failed') return { status: 'failed' };
@@ -135,9 +144,10 @@ export async function customEnvState(setting: string): Promise<CustomEnvState> {
 /** Soubor hotového panoramatu (`full` 2048×1024, `low` náhled) ze služby, nebo `null`. */
 export async function customEnvFile(setting: string, size: 'full' | 'low'): Promise<Response | null> {
   const text = serviceSetting(setting);
-  const service = serviceFromEnv();
-  if (service === null || text === null || settingInLibrary(setting)) return null;
+  if (text === null || settingInLibrary(setting)) return null;
   try {
+    const service = await liveService();
+    if (service === null) return null;
     const view = await job(service, text);
     const name = size === 'full' ? view?.file : view?.low;
     if (view?.status !== 'done' || name === undefined) return null;
