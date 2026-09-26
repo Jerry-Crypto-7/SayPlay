@@ -151,6 +151,9 @@ export const specNeedsPhysics = (spec: GameSpecV1): boolean => (spec.things ?? [
  * synchronní, takže tohle musí proběhnout před `compileArcade` i před prvním
  * tikem v prohlížeči (`worldHasPhysics`).
  */
+/** Přechodná chyba serveru, ne vada specu: režisér ji v opravném kole nedostane (`playabilityIssues`). */
+export const PHYSICS_NOT_LOADED = 'physics: the physics engine is not loaded yet (preloadPhysics)';
+
 export async function preloadPhysics(spec: GameSpecV1): Promise<void> {
   if (specNeedsPhysics(spec)) await loadRapier();
 }
@@ -160,7 +163,7 @@ export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult
   if (!made.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: made.issues };
   const { world } = made;
   // Bez načteného Rapieru by robot spadl na výjimce jádra; volající má zavolat `preloadPhysics`.
-  if (worldHasPhysics(world) && rapierIfLoaded() === null) return { ok: false, reason: 'WORLD_REJECTED', issues: ['physics: the physics engine is not loaded yet (preloadPhysics)'] };
+  if (worldHasPhysics(world) && rapierIfLoaded() === null) return { ok: false, reason: 'WORLD_REJECTED', issues: [PHYSICS_NOT_LOADED] };
   const bot = runBot(world);
   if (bot.outcome !== 'won') return { ok: false, reason: 'UNWINNABLE', issues: [`the bot ${bot.outcome === 'lost' ? 'lost' : 'did not finish'} at tick ${bot.tick}, ${bot.distanceM} m into the track`] };
   // Trať, kterou vyhraje i nečinný hráč, je vada rozvržení – dveře publikace

@@ -15,7 +15,7 @@
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
 import type { RepairIssue } from '@/play/director';
-import { preloadPhysics } from '@/play/arcade/compile';
+import { PHYSICS_NOT_LOADED, preloadPhysics } from '@/play/arcade/compile';
 import { loadRapier } from '@/play/arcade/physics/world';
 import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
@@ -197,6 +197,12 @@ function compileOnSeeds(spec: GameSpecV1, seeds: readonly number[]): CompileGame
  */
 export function playabilityIssues(spec: GameSpecV1, seeds: readonly number[]): RepairIssue[] {
   const compiled = compileOnSeeds(spec, seeds);
+  if (!compiled.ok && compiled.issues.includes(PHYSICS_NOT_LOADED)) {
+    // Rapier se nenačetl: vada serveru, ne specu – model by kvůli ní fyziku zahodil.
+    // Nálezy žádné; publikace (`publishReadSpec`) Rapier načte znovu a hru ověří sama.
+    loadRapier().catch(() => undefined);
+    return [];
+  }
   if (!compiled.ok) {
     return [{ code: compiled.reason, path: '', evidence: compiled.issues.join('; ').slice(0, 500), repairHint: 'change the spec so the game compiles and the robot player can win it' }];
   }

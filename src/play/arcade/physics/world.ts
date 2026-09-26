@@ -21,14 +21,22 @@ export type Rapier = typeof RapierModule.default;
 let loading: Promise<Rapier> | null = null;
 let loaded: Rapier | null = null;
 
-/** Načte a inicializuje Rapier jednou za proces; další volání vrátí týž slib. */
+/**
+ * Načte a inicializuje Rapier jednou za proces; další volání vrátí týž slib.
+ * Neúspěch se nezapamatuje – další volání zkusí načíst znovu.
+ */
 export function loadRapier(): Promise<Rapier> {
-  loading ??= import('@dimforge/rapier3d-compat').then(async (mod) => {
-    const rapier = mod.default;
-    await rapier.init();
-    loaded = rapier;
-    return rapier;
-  });
+  loading ??= import('@dimforge/rapier3d-compat')
+    .then(async (mod) => {
+      const rapier = mod.default;
+      await rapier.init();
+      loaded = rapier;
+      return rapier;
+    })
+    .catch((error: unknown) => {
+      loading = null;
+      throw error;
+    });
   return loading;
 }
 
