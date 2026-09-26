@@ -13,8 +13,10 @@
  * jde klip s odkazem; jinak se klip stáhne a odkaz zkopíruje. Událost
  * `share` říká `withClip`, jestli klip opravdu odešel.
  *
- * Po živých změnách (P29D T10) se nejdřív publikuje verze, která je nese
- * (`liveVersion`), a sdílí se její odkaz; rodič zůstává v rodokmenu.
+ * Po živých změnách (P29D T10) se sdílí verze, která je nese (`live`), a rodič
+ * zůstává v rodokmenu. Publikuje ji hra dopředu (R4): nabídka sdílení chce
+ * čerstvé gesto (iOS Safari, Chromium po ~5 s), takže stisk na síť nečeká,
+ * a dokud publikace běží, je tlačítko zablokované.
  *
  * Stisk nesmí do hry: plocha scény i klávesy hry poslouchají nativně, takže
  * ťuk i klávesu musí zastavit nativní posluchač (stejně jako tlačítko Fire).
@@ -44,25 +46,31 @@ export interface LiveShare {
   readonly partial: boolean;
 }
 
+/**
+ * Publikace živých změn běhu: `pending` = běží, `ready` = hotová (`share: null`
+ * = běh žádné nemá), `failed` = změny se nepodařilo uložit; sdílí se hraná
+ * verze a hráč se to dozví, stejně jako o změnách, které do odkazu nejdou.
+ */
+export type LivePublish =
+  | { readonly state: 'pending' }
+  | { readonly state: 'ready'; readonly share: LiveShare | null }
+  | { readonly state: 'failed' };
+
 export function ShareButton({
   versionId: playing,
   title,
   label = 'Share',
   className = '',
   clip = null,
-  liveVersion,
+  live,
 }: {
   readonly versionId: string;
   readonly title?: string;
   readonly label?: string;
   readonly className?: string;
   readonly clip?: Blob | null;
-  /**
-   * Verze s živými změnami běhu (P29D T10), `null` = běh žádné nemá. Výjimka =
-   * změny se nepodařilo uložit; sdílí se hraná verze a hráč se to dozví, stejně
-   * jako o změnách, které do odkazu nejdou (`partial`).
-   */
-  readonly liveVersion?: () => Promise<LiveShare | null>;
+  /** Verze s živými změnami běhu (P29D T10), `undefined` = běh žádné nemá. */
+  readonly live?: LivePublish;
 }) {
   const button = useRef<HTMLButtonElement | null>(null);
   const [share, setShare] = useState<Share>('idle');
@@ -96,17 +104,10 @@ export function ShareButton({
   }
 
   async function run(): Promise<void> {
-    let versionId = playing;
-    setLostLive('none');
-    if (liveVersion !== undefined) {
-      try {
-        const live = await liveVersion();
-        versionId = live?.versionId ?? playing;
-        if (live?.partial === true) setLostLive('some');
-      } catch {
-        setLostLive('all');
-      }
-    }
+    // Žádné `await` před `navigator.share` – jinak vyprší gesto (R4).
+    const shared = live?.state === 'ready' ? live.share : null;
+    const versionId = shared?.versionId ?? playing;
+    setLostLive(live?.state === 'failed' ? 'all' : shared?.partial === true ? 'some' : 'none');
     // `?via=share` je jediný doklad, že odkaz došel: jeho otevření je `shared_open` (P27D T4).
     const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}`;
     setHref(url);
@@ -138,7 +139,7 @@ export function ShareButton({
 
   return (
     <>
-      <button ref={button} type="button" className={`play-button play-share ${className}`.trim()} data-testid="play-share" onClick={() => void run()}>
+      <button ref={button} type="button" className={`play-button play-share ${className}`.trim()} data-testid="play-share" disabled={live?.state === 'pending'} aria-busy={live?.state === 'pending'} onClick={() => void run()}>
         {label}
       </button>
       {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}

@@ -110,10 +110,23 @@ test.describe('/play/[id] – live change', () => {
   test('sharing after live changes opens a version with rain and more threats from the start (T10)', async ({ browser }) => {
     const context = await browser.newContext();
     // Nabídka sdílení se v e2e obsluhovat nedá – zachytí se, co by dostala (jako `play-share.spec.ts`).
+    // Jako iOS Safari (R4): sdílení bez čerstvého gesta odmítne. Gesto platí jen do konce obsluhy kliku –
+    // volání po čekání na síť přijde až po něm.
     await context.addInitScript(() => {
       const shared: ShareData[] = [];
+      let gesture = false;
+      window.addEventListener('click', () => {
+        gesture = true;
+        setTimeout(() => (gesture = false), 0);
+      }, true);
       (window as unknown as { __shared: ShareData[] }).__shared = shared;
-      Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: ShareData) => void shared.push(data) });
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: ShareData) => {
+          if (!gesture) throw new DOMException('share needs a fresh gesture', 'NotAllowedError');
+          shared.push(data);
+        },
+      });
     });
     const page = await context.newPage();
     await open(page, url);
@@ -122,7 +135,11 @@ test.describe('/play/[id] – live change', () => {
     await expect(page.getByTestId('live-status')).toHaveAttribute('data-kind', 'live');
     await change(page, 'make it rain');
     await expect(page.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
-    await page.getByTestId('play-share').first().click();
+    // Během publikace je Share zablokované – dvojí ťuk nepublikuje dvakrát.
+    const share = page.getByTestId('play-share').first();
+    await expect(share).toBeDisabled();
+    await expect(share).toBeEnabled({ timeout: 15_000 });
+    await share.click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length), { timeout: 15_000 }).toBe(1);
     const link = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0].url!);
     const parentId = url.split('/').at(-1)!;

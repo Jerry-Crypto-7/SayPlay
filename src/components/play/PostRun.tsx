@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { RemixBox, type RemixJob } from './RemixBox';
-import { type LiveShare, ShareButton } from './ShareButton';
+import { type LivePublish, ShareButton } from './ShareButton';
 import { CHALLENGE_A_FRIEND, CHANGE_ONE_THING, POST_RUN_CHIPS } from './starters';
 
 /** Klip běhu ke stažení (P29D T1); prohlížeč bez nahrávání plátna klip nemá a tlačítko nevidí. */
@@ -37,14 +37,14 @@ export function PostRun({
   versionId,
   remix: job,
   clip = null,
-  liveVersion,
+  live,
   onReplay,
 }: {
   readonly versionId: string;
   readonly remix: RemixJob;
   readonly clip?: Blob | null;
   /** Verze se živými změnami běhu (P29D T10) – sdílí se místo hrané. */
-  readonly liveVersion?: () => Promise<LiveShare | null>;
+  readonly live?: LivePublish;
   readonly onReplay: () => void;
 }) {
   const router = useRouter();
@@ -110,7 +110,7 @@ export function PostRun({
       <RemixBox job={job} />
 
       {clip !== null && <SaveClip clip={clip} />}
-      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} clip={clip} liveVersion={liveVersion} />
+      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} clip={clip} live={live} />
     </section>
   );
 }

@@ -28,7 +28,7 @@ import { FirstPrompt } from '../FirstPrompt';
 import { secondsOf, timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
-import { type LiveShare, ShareButton } from '../ShareButton';
+import { type LivePublish, type LiveShare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
 import { PostRun } from '../PostRun';
@@ -135,12 +135,12 @@ function ArcadeHud({
   snapshot,
   paused,
   shareable,
-  liveVersion,
+  live,
   children,
 }: {
   readonly versionId: string;
   readonly shareable: boolean;
-  readonly liveVersion: () => Promise<LiveShare | null>; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
+  readonly live: LivePublish | undefined; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
   return (
@@ -167,7 +167,7 @@ function ArcadeHud({
       {children}
       <MuteButton />
       {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
-      {shareable && snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" liveVersion={liveVersion} />}
+      {shareable && snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" live={live} />}
     </header>
   );
 }
@@ -223,6 +223,38 @@ async function publishLive(versionId: string, spec: GameSpecV1, world: ArcadeWor
   return { versionId: body.url.split('/').at(-1) ?? versionId, partial: dropped > 0 };
 }
 
+/** Odklad publikace po poslední živé změně – věty jdou často po dvou a každá by jinak vyrobila verzi. */
+const LIVE_PUBLISH_DELAY_MS = 800;
+
+/**
+ * Verze s živými změnami se publikuje dopředu (R4), ne až po stisku Share:
+ * nabídka sdílení chce čerstvé gesto. Každá nová změna publikaci zruší a
+ * pustí znovu nad všemi; `undefined` = běh žádnou nemá.
+ */
+function useLivePublish(versionId: string, spec: GameSpecV1, world: ArcadeWorld, session: ArcadeSession, enabled: boolean): LivePublish | undefined {
+  const count = useSyncExternalStore(session.subscribe, () => session.patches().length, () => 0);
+  const [done, setDone] = useState<{ readonly count: number; readonly live: LivePublish } | null>(null);
+  useEffect(() => {
+    if (!enabled || count === 0) return;
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      const settle = (live: LivePublish) => {
+        if (!cancelled) setDone({ count, live });
+      };
+      publishLive(versionId, spec, world, session).then(
+        (share) => settle({ state: 'ready', share }),
+        () => settle({ state: 'failed' }),
+      );
+    }, LIVE_PUBLISH_DELAY_MS);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [versionId, spec, world, session, enabled, count]);
+  if (count === 0) return undefined;
+  return done?.count === count ? done.live : { state: 'pending' };
+}
+
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -237,7 +269,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
   const remix = useRemixJob(versionId, !running && demo === null);
-  const liveVersion = () => publishLive(versionId, spec, arcade, session);
+  const live = useLivePublish(versionId, spec, arcade, session, !offline);
   // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
   const [settled, setSettled] = useState(false);
   useEffect(() => {
@@ -432,7 +464,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   return (
     <main ref={shell} className="play-shell">
       <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
-      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} liveVersion={liveVersion}>
+      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} live={live}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
       {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
@@ -472,7 +504,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
               versionId={versionId}
               remix={remix}
               clip={clip}
-              liveVersion={liveVersion}
+              live={live}
               onReplay={() => {
                 if (session.humanRun()) loopEvent('restart', versionId);
                 session.restart();
