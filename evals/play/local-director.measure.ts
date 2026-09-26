@@ -51,7 +51,16 @@ function scores(spec: GameSpecV1, checklist: readonly ChecklistEntry[]) {
 
 async function measure(sentences: readonly Sentence[], config: UpstreamConfig) {
   const branch = upstreamBranch(config);
-  const rows = [];
+  const rows: {
+    id: string;
+    ms: number;
+    source: string;
+    fallbackReason: string | null;
+    repairRounds: number;
+    calls: number;
+    final: ReturnType<typeof scores>;
+    draft: ReturnType<typeof scores>;
+  }[] = [];
   for (const sentence of sentences) {
     const started = performance.now();
     const directed = await direct(sentence.text, { branch, now: Date.now, compact: true });
