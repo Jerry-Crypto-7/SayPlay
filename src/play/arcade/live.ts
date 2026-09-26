@@ -39,11 +39,11 @@ import {
 } from './contract';
 import { type ArcadeLibrary, type ArcadeProgram, type ReplayResult, hashArcade, instantiate, loadProgram, outcomeOf, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
+import type { GameSpecV1 } from '../spec';
 
-export const WEATHERS = ['clear', 'rain', 'snow', 'fog'] as const;
-export type Weather = (typeof WEATHERS)[number];
-export const TIMES_OF_DAY = ['day', 'dusk', 'night'] as const;
-export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
+import { TIMES_OF_DAY, type TimeOfDay, WEATHERS, type Weather } from './look';
+
+export { TIMES_OF_DAY, WEATHERS, type TimeOfDay, type Weather };
 
 /** Čítače, které jde živě přidat: životy, sekundy časového limitu, náboje. */
 export type LiveCounter = 'health' | 'time' | 'ammo';
@@ -269,14 +269,52 @@ export function acceptLive(world: ArcadeWorld, state: ArcadeState, log: readonly
   return botWins(world, [...log, entry], library) ? { ok: true } : { ok: false, reason: 'That change would make the game impossible to win.' };
 }
 
-/** Počasí a denní doba platné v tiku `tick` – poslední vizuální patch do něj. */
-export function visualAt(patches: readonly LiveEntry[], tick: number): { readonly weather: Weather; readonly timeOfDay: TimeOfDay } {
-  let weather: Weather = 'clear';
-  let timeOfDay: TimeOfDay = 'day';
+/** Počasí a denní doba platné v tiku `tick` – poslední vizuální patch do něj; bez něj `start` (sdílená verze nese svoje v `theme`). */
+export function visualAt(
+  patches: readonly LiveEntry[],
+  tick: number,
+  start: { readonly weather?: Weather; readonly timeOfDay?: TimeOfDay } = {},
+): { readonly weather: Weather; readonly timeOfDay: TimeOfDay } {
+  let weather: Weather = start.weather ?? 'clear';
+  let timeOfDay: TimeOfDay = start.timeOfDay ?? 'day';
   for (const { tick: at, patch } of [...patches].sort((a, b) => a.tick - b.tick)) {
     if (at > tick || patch.kind !== 'visual') continue;
     weather = patch.weather ?? weather;
     timeOfDay = patch.timeOfDay ?? timeOfDay;
   }
   return { weather, timeOfDay };
+}
+
+/** Strop počtu role ve specu (`roleSchema.count`). */
+const MAX_ROLE_COUNT = 50;
+
+/**
+ * Spec sdílené verze s živými změnami (P29D T10): přidaná těla zvednou počet
+ * role se stejným id (ten čte generátor ovládání – `countParams`), poslední
+ * počasí a denní doba jdou do `theme`. Počet vychází z toho, kolik těl role
+ * hra na startu opravdu má (`startCount`), ne ze specu – `count` 1 tam
+ * znamená „neřečeno“ a generátor jich postaví víc. Čítače (životy, čas,
+ * náboje) a role, kterou spec nemá, se nepřenášejí: patří jen běhu.
+ *
+ * Tady, ne v `director/remix.ts`: volá ji arkáda v prohlížeči, která schémata
+ * specu nenese (`arcade-bundle.test.ts`).
+ */
+export function liveRemixSpec(parent: GameSpecV1, patches: readonly LivePatch[], startCount: (role: ArcadeRole) => number): GameSpecV1 {
+  const child = structuredClone(parent);
+  const added = new Map<ArcadeRole, number>();
+  for (const patch of patches) {
+    if (patch.kind === 'spawn') added.set(patch.role, (added.get(patch.role) ?? 0) + patch.count);
+    if (patch.kind === 'visual') {
+      if (patch.weather !== undefined) child.theme.weather = patch.weather;
+      if (patch.timeOfDay !== undefined) child.theme.timeOfDay = patch.timeOfDay;
+    }
+  }
+  for (const [role, extra] of added) {
+    const target = child.roles.find((entry) => entry.id === role);
+    if (target !== undefined) target.count = Math.min(MAX_ROLE_COUNT, Math.max(target.count, startCount(role)) + extra);
+  }
+  // Jasno ve dne je výchozí stav – spec bez pole je táž hra, a tedy týž hash.
+  if (child.theme.weather === 'clear') delete child.theme.weather;
+  if (child.theme.timeOfDay === 'day') delete child.theme.timeOfDay;
+  return child;
 }

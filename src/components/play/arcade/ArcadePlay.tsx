@@ -13,7 +13,8 @@ import dynamic from 'next/dynamic';
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { liveRemixSpec } from '@/play/arcade/live';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { installSoundControls, jumped, playMusic, playSfx, presetsFor, setSoundLook } from '@/play/audio';
@@ -127,7 +128,19 @@ function DemoControl({ session, demo }: { readonly session: ArcadeSession; reado
   );
 }
 
-function ArcadeHud({ versionId, spec, world, snapshot, paused, shareable, children }: { readonly versionId: string; readonly shareable: boolean; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
+function ArcadeHud({
+  versionId,
+  spec,
+  world,
+  snapshot,
+  paused,
+  shareable,
+  liveVersion,
+  children,
+}: {
+  readonly versionId: string;
+  readonly shareable: boolean;
+  readonly liveVersion: () => Promise<string | null>; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
   return (
@@ -154,7 +167,7 @@ function ArcadeHud({ versionId, spec, world, snapshot, paused, shareable, childr
       {children}
       <MuteButton />
       {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
-      {shareable && snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
+      {shareable && snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" liveVersion={liveVersion} />}
     </header>
   );
 }
@@ -178,6 +191,35 @@ export interface ArcadePlayProps {
 
 const END_PAUSE_MS = 600;
 
+/** Živá těla role ve stavu – sonda e2e (T9) i počet na startu hry pro sdílení živých změn (T10). */
+function aliveOf(state: ArrayLike<number>, role: ArcadeRole): number {
+  let alive = 0;
+  for (let i = 0; i < state[HEADER.bodyCount]; i += 1) {
+    const base = bodyBase(i);
+    if (state[base + BODY.role] === ROLE[role] && (state[base + BODY.flags] & FLAG.alive) !== 0) alive += 1;
+  }
+  return alive;
+}
+
+/**
+ * Sdílení po živých změnách (P29D T10): verze se specem, který změny nese,
+ * publikovaná dnešní remix route (rodič zůstává v rodokmenu). `null` = běh
+ * žádné změny nemá; výjimka = verzi se nepodařilo publikovat.
+ */
+async function publishLive(versionId: string, spec: GameSpecV1, world: ArcadeWorld, session: ArcadeSession): Promise<string | null> {
+  const patches = session.patches();
+  if (patches.length === 0) return null;
+  const child = liveRemixSpec(
+    spec,
+    patches.map((entry) => entry.patch),
+    (role) => aliveOf(world.initial, role),
+  );
+  const response = await fetch(`/api/play/games/${versionId}/remix`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ spec: child }) });
+  const body = (await response.json()) as { url?: unknown };
+  if (!response.ok || typeof body.url !== 'string') throw new Error(`live version not published (${String(response.status)})`);
+  return body.url.split('/').at(-1) ?? versionId;
+}
+
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
@@ -192,6 +234,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
   const remix = useRemixJob(versionId, !running && demo === null);
+  const liveVersion = () => publishLive(versionId, spec, arcade, session);
   // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
   const [settled, setSettled] = useState(false);
   useEffect(() => {
@@ -344,15 +387,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       inputs: () => session.inputs(),
       tick: () => session.snapshot().tick,
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
-      bodies: (role: keyof typeof ROLE) => {
-        const state = session.state();
-        let alive = 0;
-        for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
-          const base = bodyBase(i);
-          if (state[base + BODY.role] === ROLE[role] && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0) alive += 1;
-        }
-        return alive;
-      },
+      bodies: (role: ArcadeRole) => aliveOf(session.state(), role),
       patches: () => session.patches().length,
       playWitness: () => {
         const end = session.playInputs(session.botInputs(), ARCADE_LIMITS.maxTicks);
@@ -393,8 +428,8 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   return (
     <main ref={shell} className="play-shell">
-      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} overlay={<Weather session={session} />} />
-      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline}>
+      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
+      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} liveVersion={liveVersion}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
       {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
@@ -434,6 +469,7 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
               versionId={versionId}
               remix={remix}
               clip={clip}
+              liveVersion={liveVersion}
               onReplay={() => {
                 if (session.humanRun()) loopEvent('restart', versionId);
                 session.restart();

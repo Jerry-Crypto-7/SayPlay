@@ -13,6 +13,9 @@
  * jde klip s odkazem; jinak se klip stáhne a odkaz zkopíruje. Událost
  * `share` říká `withClip`, jestli klip opravdu odešel.
  *
+ * Po živých změnách (P29D T10) se nejdřív publikuje verze, která je nese
+ * (`liveVersion`), a sdílí se její odkaz; rodič zůstává v rodokmenu.
+ *
  * Stisk nesmí do hry: plocha scény i klávesy hry poslouchají nativně, takže
  * ťuk i klávesu musí zastavit nativní posluchač (stejně jako tlačítko Fire).
  */
@@ -35,11 +38,31 @@ function download(file: File): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-export function ShareButton({ versionId, title, label = 'Share', className = '', clip = null }: { readonly versionId: string; readonly title?: string; readonly label?: string; readonly className?: string; readonly clip?: Blob | null }) {
+export function ShareButton({
+  versionId: playing,
+  title,
+  label = 'Share',
+  className = '',
+  clip = null,
+  liveVersion,
+}: {
+  readonly versionId: string;
+  readonly title?: string;
+  readonly label?: string;
+  readonly className?: string;
+  readonly clip?: Blob | null;
+  /**
+   * Verze s živými změnami běhu (P29D T10): id publikovaného dítěte, `null` =
+   * běh žádné nemá. Výjimka = změny se nepodařilo uložit; sdílí se hraná verze
+   * a hráč se to dozví.
+   */
+  readonly liveVersion?: () => Promise<string | null>;
+}) {
   const button = useRef<HTMLButtonElement | null>(null);
   const [share, setShare] = useState<Share>('idle');
   const [href, setHref] = useState('');
   const [volatile, setVolatile] = useState(false);
+  const [lostLive, setLostLive] = useState(false);
 
   useEffect(() => {
     const element = button.current;
@@ -57,7 +80,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '',
    * a přizná to hlavičkou `x-play-store: memory`. Odkaz pak nesmí vypadat
    * trvale – hráč se to dozví hned u sdílení.
    */
-  async function checkLasting(): Promise<void> {
+  async function checkLasting(versionId: string): Promise<void> {
     try {
       const response = await fetch(`/api/play/games/${versionId}`, { cache: 'no-store' });
       setVolatile(response.headers.get('x-play-store') === 'memory');
@@ -67,10 +90,19 @@ export function ShareButton({ versionId, title, label = 'Share', className = '',
   }
 
   async function run(): Promise<void> {
+    let versionId = playing;
+    setLostLive(false);
+    if (liveVersion !== undefined) {
+      try {
+        versionId = (await liveVersion()) ?? playing;
+      } catch {
+        setLostLive(true);
+      }
+    }
     // `?via=share` je jediný doklad, že odkaz došel: jeho otevření je `shared_open` (P27D T4).
     const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}`;
     setHref(url);
-    void checkLasting();
+    void checkLasting(versionId);
     // Klip běhu (P29D T2) jde s odkazem, kde nabídka sdílení soubory bere; jinak se stáhne a odkaz zkopíruje.
     const file = clip === null ? null : new File([clip], `worldstream-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
     const withFile = file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
@@ -104,6 +136,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '',
       <span className="play-status" aria-live="polite">
         {share === 'copied' ? 'Link copied' : share === 'saved' ? 'Clip saved, link copied' : ''}
         {volatile ? `${share === 'copied' || share === 'saved' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
+        {lostLive ? ' Your live changes could not be saved, so the link opens the game without them.' : ''}
       </span>
       {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
     </>

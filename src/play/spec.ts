@@ -29,7 +29,7 @@ import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
 import { ADDONS, type AddonId } from './arcade/contract';
-import { LOOK_IDS } from './arcade/look';
+import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
 import { CAPABILITIES } from './capabilities';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
@@ -213,6 +213,18 @@ export const themeSchema = z
   })
   .strict();
 
+/**
+ * `theme` uložené verze: navíc počasí a denní doba ze živých změn sdílené hry
+ * (P29D T10); bez nich jasno ve dne. Model je nepíše – jeho tvar
+ * (`director/prompt.ts`, `answer-schema.ts`) zůstává u `themeSchema`.
+ */
+export const storedThemeSchema = themeSchema
+  .extend({
+    weather: z.enum(WEATHERS).optional(),
+    timeOfDay: z.enum(TIMES_OF_DAY).optional(),
+  })
+  .strict();
+
 export const tutorialSchema = z
   .object({
     /** Do 80 znaků, anglicky, zobrazí se před první akcí. */
@@ -377,7 +389,7 @@ export const gameSpecSchema = z
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
-    theme: themeSchema,
+    theme: storedThemeSchema,
     objective: objectiveSchema,
     /** Právě jedna nesmí chybět; nad pěti se hra přestává vysvětlit jednou větou. */
     // Arkáda (P26 T5) smí být bez mechanik; mřížce aspoň jednu vynutí povinné mechaniky archetypu.

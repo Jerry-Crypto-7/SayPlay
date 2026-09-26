@@ -33,7 +33,20 @@ function SaveClip({ clip }: { readonly clip: Blob }) {
   );
 }
 
-export function PostRun({ versionId, remix: job, clip = null, onReplay }: { readonly versionId: string; readonly remix: RemixJob; readonly clip?: Blob | null; readonly onReplay: () => void }) {
+export function PostRun({
+  versionId,
+  remix: job,
+  clip = null,
+  liveVersion,
+  onReplay,
+}: {
+  readonly versionId: string;
+  readonly remix: RemixJob;
+  readonly clip?: Blob | null;
+  /** Verze se živými změnami běhu (P29D T10) – sdílí se místo hrané. */
+  readonly liveVersion?: () => Promise<string | null>;
+  readonly onReplay: () => void;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -97,7 +110,7 @@ export function PostRun({ versionId, remix: job, clip = null, onReplay }: { read
       <RemixBox job={job} />
 
       {clip !== null && <SaveClip clip={clip} />}
-      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} clip={clip} />
+      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} clip={clip} liveVersion={liveVersion} />
     </section>
   );
 }

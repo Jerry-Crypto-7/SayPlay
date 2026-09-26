@@ -25,7 +25,7 @@ import { CAPABILITIES } from '../capabilities';
 
 import { DIRECTOR_ANSWER_SCHEMA } from './answer-schema';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
-import { CONTROL_PARAMS, GAME_SPEC_SCHEMA, gameSpecSchema, verificationSchema, type GameSpecV1 } from '../spec';
+import { CONTROL_PARAMS, GAME_SPEC_SCHEMA, gameSpecSchema, themeSchema, verificationSchema, type GameSpecV1 } from '../spec';
 
 /** Doslova `docs/play/pack/director.md`; test drží shodu se souborem. */
 export const DIRECTOR_RULES =
@@ -106,7 +106,8 @@ function compactExample(fixture: unknown): string {
 }
 
 function renderShape(): string {
-  const top = z.toJSONSchema(gameSpecSchema) as JsonSchema;
+  // Počasí sdílené verze (P29D T10) model nepíše – tvar dostane `theme` bez něj.
+  const top = z.toJSONSchema(gameSpecSchema.extend({ theme: themeSchema })) as JsonSchema;
   const properties = top.properties as Record<string, JsonSchema>;
   const outline = Object.entries(properties)
     // Doplňky (P26D) řekne řádek ovládání u každého ovládání zvlášť.

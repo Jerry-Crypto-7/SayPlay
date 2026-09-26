@@ -95,6 +95,38 @@ test.describe('/play/[id] – live change', () => {
     await expect(page.getByTestId('live-box')).toHaveCount(0);
   });
 
+  test('sharing after live changes opens a version with rain and more threats from the start (T10)', async ({ browser }) => {
+    const context = await browser.newContext();
+    // Nabídka sdílení se v e2e obsluhovat nedá – zachytí se, co by dostala (jako `play-share.spec.ts`).
+    await context.addInitScript(() => {
+      const shared: ShareData[] = [];
+      (window as unknown as { __shared: ShareData[] }).__shared = shared;
+      Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: ShareData) => void shared.push(data) });
+    });
+    const page = await context.newPage();
+    await open(page, url);
+    const startHostiles = await hostiles(page);
+    await change(page, 'more enemies');
+    await expect(page.getByTestId('live-status')).toHaveAttribute('data-kind', 'live');
+    await change(page, 'make it rain');
+    await expect(page.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
+    await page.getByTestId('play-share').first().click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length), { timeout: 15_000 }).toBe(1);
+    const link = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0].url!);
+    const parentId = url.split('/').at(-1)!;
+    expect(link).toMatch(/\/play\/[0-9a-f]+\?via=share$/);
+    expect(link).not.toContain(parentId);
+
+    const friend = await browser.newPage();
+    await friend.goto(link);
+    await friend.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    await expect(friend.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
+    expect(await hostiles(friend)).toBeGreaterThan(startHostiles);
+    await expect(friend.getByTestId('play-lineage').locator(`a[href="/play/${parentId}"]`)).toBeVisible();
+    await friend.close();
+    await context.close();
+  });
+
   test('"add a dragon" cannot happen live and starts a remix instead', async ({ page, request }) => {
     const parentId = url.split('/').at(-1)!;
     const original = ((await (await request.get(`/api/play/games/${parentId}`)).json()) as { spec: Record<string, unknown> & { title: string } }).spec;
