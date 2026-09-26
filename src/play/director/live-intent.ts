@@ -18,7 +18,7 @@ import { type LiveCounter, type LivePatch, type TimeOfDay, type Weather, hostile
 import type { RemixClass } from '../contracts';
 import type { GameSpecV1 } from '../spec';
 
-import { MECHANIC_VERBS, OBJECTIVE_WORDS, PRESENTATION_WORDS, TOPOLOGY_WORDS, chipOf, classifyRemix } from './remix';
+import { MECHANIC_VERBS, OBJECTIVE_WORDS, PRESENTATION_WORDS, TOPOLOGY_WORDS, chipOf, classifyRemix } from './remix-words';
 
 /** Přání živé změny; hrozba se na roli převede až nad stavem běhu. */
 export type LiveWish =
