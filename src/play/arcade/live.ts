@@ -226,21 +226,24 @@ export function replayLive(world: ArcadeWorld, inputs: readonly InputEvent[], pa
 }
 
 /**
- * Robot ověřovače odehraje hru od tiku 0 se stejnými živými změnami ve
+ * Robot ověřovače dohraje běh `run` od jeho tiku se živými změnami ve
  * stejných ticích (týž tvar jako `runBot` ve `verify.ts`). Stav se může
  * zvětšit, proto se kopie pro zpoždění reakce při růstu dorovnají.
+ * `met` = patch `watched` robot opravdu potkal: hra ještě běžela a patch v tu
+ * chvíli šel (`patchProblem`) – jinak výhra o něm nic neříká (R5).
  */
-function botWins(world: ArcadeWorld, patches: readonly LiveEntry[], library: ArcadeLibrary): boolean {
+function botPlays(world: ArcadeWorld, run: LiveRun, patches: readonly LiveEntry[], library: ArcadeLibrary, watched: LivePatch): { readonly won: boolean; readonly met: boolean } {
   const bot = library.bots[world.bot.id];
-  if (bot === undefined) return false;
+  if (bot === undefined) return { won: false, met: false };
   const params = bot.params.parse(world.bot.params);
-  const run = startLive(world, library);
   const dueAt = cursorOf(patches);
   const delay = bot.reactionTicks;
   let history = Array.from({ length: delay + 1 }, () => run.state.slice());
   const issued: ArcadeInput[] = [];
   const player = run.state[HEADER.player] as number;
-  for (let tick = 0; tick < ARCADE_LIMITS.maxTicks && outcomeOf(run.state) === 'running'; tick += 1) {
+  const start = run.state[HEADER.tick] as number;
+  let met = false;
+  for (let tick = start; tick < ARCADE_LIMITS.maxTicks && outcomeOf(run.state) === 'running'; tick += 1) {
     if ((history[0] as ArcadeState).length !== run.state.length) {
       history = history.map((old) => {
         const grown = new Int32Array(run.state.length);
@@ -249,12 +252,24 @@ function botWins(world: ArcadeWorld, patches: readonly LiveEntry[], library: Arc
       });
     }
     (history[tick % (delay + 1)] as ArcadeState).set(run.state);
-    const seenAt = Math.max(0, tick - delay);
+    const seenAt = Math.max(start, tick - delay);
     const input = bot.decide({ state: history[seenAt % (delay + 1)] as ArcadeState, player, tick: seenAt, recent: issued.slice(issued.length - (tick - seenAt)) }, params);
     issued.push(input);
-    stepLive(world, run, input, dueAt(tick));
+    const due = dueAt(tick);
+    if (!met && due.includes(watched)) met = patchProblem(world, run.state, watched) === null;
+    stepLive(world, run, input, due);
   }
-  return outcomeOf(run.state) === 'won';
+  return { won: outcomeOf(run.state) === 'won', met };
+}
+
+/**
+ * Robot od stavu hráče: kopie stavu, program s časem prodlouženým dosavadními
+ * patchi (ty už ve stavu jsou) a nový patch v jeho tiku.
+ */
+function botFromHere(world: ArcadeWorld, state: ArcadeState, log: readonly LiveEntry[], entry: LiveEntry | null, library: ArcadeLibrary, watched: LivePatch): { readonly won: boolean; readonly met: boolean } {
+  let program = loadProgram(world, library);
+  for (const { patch } of log) if (patch.kind === 'count' && patch.counter === 'time') program = longer(program, patch.amount);
+  return botPlays(world, { state: state.slice(), program }, entry === null ? [] : [entry], library, watched);
 }
 
 export type LiveVerdict = { readonly ok: true } | { readonly ok: false; readonly reason: string };
@@ -263,12 +278,20 @@ export type LiveVerdict = { readonly ok: true } | { readonly ok: false; readonly
  * Přijme patch v tiku `tick` stavu `state`: musí dávat smysl pro tuhle hru a
  * robot ověřovače musí hru se všemi dosavadními změnami i s touhle pořád
  * vyhrát. Jinak důvod pro hráče.
+ *
+ * Robot hraje nejdřív od tiku 0. Když patch nepotká (vyhrál dřív, nebo roli
+ * v tu chvíli nemá), dohraje hru ze stavu hráče (R5). Prohraje-li odtud i bez
+ * patche, nedá se patch ověřit a poctivě se odmítne.
  */
 export function acceptLive(world: ArcadeWorld, state: ArcadeState, log: readonly LiveEntry[], entry: LiveEntry, library: ArcadeLibrary = ARCADE_LIBRARY): LiveVerdict {
   const problem = patchProblem(world, state, entry.patch);
   if (problem !== null) return { ok: false, reason: problem };
   if (entry.patch.kind === 'visual') return { ok: true };
-  return botWins(world, [...log, entry], library) ? { ok: true } : { ok: false, reason: 'That change would make the game impossible to win.' };
+  const impossible = { ok: false, reason: 'That change would make the game impossible to win.' } as const;
+  const fromStart = botPlays(world, startLive(world, library), [...log, entry], library, entry.patch);
+  if (fromStart.met) return fromStart.won ? { ok: true } : impossible;
+  if (botFromHere(world, state, log, entry, library, entry.patch).won) return { ok: true };
+  return botFromHere(world, state, log, null, library, entry.patch).won ? impossible : { ok: false, reason: 'The game cannot check that change from here.' };
 }
 
 /** Počasí a denní doba platné v tiku `tick` – poslední vizuální patch do něj; bez něj `start` (sdílená verze nese svoje v `theme`). */

@@ -9,11 +9,12 @@ import { describe, expect, it } from 'vitest';
 import arenaFixture from '@/play/arcade/__fixtures__/arena.json';
 import duelFixture from '@/play/arcade/__fixtures__/duel.json';
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
+import throwFixture from '@/play/arcade/__fixtures__/throw.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { createArcadeSession } from '@/components/play/arcade/session';
 import { readGameSpec } from '@/play/spec';
 
-import { type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
+import { type ArcadeWorld, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
 import { type ArcadeLibrary, replay } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { type LiveEntry, acceptLive, hostileRole, replayLive, startLive, stepLive, visualAt } from '../live';
@@ -30,6 +31,7 @@ function worldOf(fixture: unknown): ArcadeWorld {
 const runner = worldOf(runnerFixture);
 const arena = worldOf(arenaFixture);
 const duel = worldOf(duelFixture);
+const throwing = worldOf(throwFixture);
 
 const aliveOf = (state: Int32Array, role: number): number => {
   let n = 0;
@@ -162,6 +164,50 @@ describe('accepting a live patch', () => {
     const verdict = acceptLive(runner, startLive(runner).state, [], { tick: 60, patch: { kind: 'spawn', role: 'obstacle', count: 1 } }, idle);
     expect(verdict.ok).toBe(false);
     if (!verdict.ok) expect(verdict.reason).toMatch(/impossible to win/);
+  });
+
+  // R5: v aréně robot vyhraje v tiku 86, hráč bez vstupu hraje do 261 – patch v tiku 150 robot od nuly nepotká.
+  const arenaAt = (ticks: number) => {
+    const run = startLive(arena);
+    for (let t = 0; t < ticks; t += 1) stepLive(arena, run, NO_INPUT, []);
+    expect(run.state[HEADER.tick]).toBe(ticks);
+    return run.state;
+  };
+  const late = { tick: 150, patch: { kind: 'spawn', role: 'enemy', count: 2 } } as const;
+
+  it('a patch after the bot has won is checked from the player state', () => {
+    expect(runBot(arena).tick).toBeLessThan(late.tick);
+    expect(acceptLive(arena, arenaAt(late.tick), [], late)).toEqual({ ok: true });
+  });
+
+  it('a late patch the bot cannot win from the player state is refused', () => {
+    const base = ARCADE_LIBRARY.bots[arena.bot.id]!;
+    // Robot hraje do tiku 150 – od nuly vyhraje dřív, než patch padne; ze stavu hráče stojí.
+    const stops: ArcadeLibrary = { ...ARCADE_LIBRARY, bots: { ...ARCADE_LIBRARY.bots, [arena.bot.id]: { ...base, decide: (seen, params) => (seen.tick >= late.tick ? NO_INPUT : base.decide(seen, params)) } } };
+    const verdict = acceptLive(arena, arenaAt(late.tick), [], late, stops);
+    expect(verdict.ok).toBe(false);
+    if (!verdict.ok) expect(verdict.reason).toBe('The game cannot check that change from here.');
+  });
+
+  it('a late patch that breaks the game from the player state is refused as impossible', () => {
+    const base = ARCADE_LIBRARY.bots[arena.bot.id]!;
+    const start = aliveOf(startLive(arena).state, ROLE.enemy);
+    // Robot se vzdá, jakmile vidí víc nepřátel než na startu – bez patche vyhraje, s ním ne.
+    const scared: ArcadeLibrary = { ...ARCADE_LIBRARY, bots: { ...ARCADE_LIBRARY.bots, [arena.bot.id]: { ...base, decide: (seen, params) => (aliveOf(seen.state, ROLE.enemy) > start ? NO_INPUT : base.decide(seen, params)) } } };
+    const verdict = acceptLive(arena, arenaAt(late.tick), [], late, scared);
+    expect(verdict).toEqual({ ok: false, reason: 'That change would make the game impossible to win.' });
+  });
+
+  it('a patch the bot state cannot take counts as unmet, not as checked', () => {
+    // Házení: robot, který hází každý druhý tik, má v tiku 352 prázdno; hráč bez vstupu drží 12 kusů.
+    const base = ARCADE_LIBRARY.bots[throwing.bot.id]!;
+    const spam: ArcadeLibrary = { ...ARCADE_LIBRARY, bots: { ...ARCADE_LIBRARY.bots, [throwing.bot.id]: { ...base, decide: (seen) => (seen.tick % 2 === 0 ? { buttons: BUTTON.TAP, axis: 0 } : NO_INPUT) } } };
+    const run = startLive(throwing);
+    for (let t = 0; t < 360; t += 1) stepLive(throwing, run, NO_INPUT, []);
+    expect(run.state[HEADER.counters + COUNTER.ammo]).toBe(12);
+    // Od nuly robot patch nepotká (nemá náboje), ze stavu hráče náboje vystřílí a prohraje i bez patche.
+    const verdict = acceptLive(throwing, run.state, [], { tick: 360, patch: { kind: 'count', counter: 'ammo', amount: 5 } }, spam);
+    expect(verdict).toEqual({ ok: false, reason: 'The game cannot check that change from here.' });
   });
 
   it('refuses what the game does not have, with a reason', () => {
