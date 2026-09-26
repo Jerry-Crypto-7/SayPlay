@@ -78,6 +78,18 @@ test.describe('/play/[id] – live change', () => {
     await expect(page.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain', { timeout: 1_000 });
   });
 
+  test('a sentence the game can carry only in part says so and closes, instead of claiming a refusal', async ({ page }) => {
+    await open(page, url);
+    // Běžec nemá životy: déšť projde, život ne.
+    await change(page, 'make it rain and extra life');
+    const status = page.getByTestId('live-status');
+    await expect(status).toHaveAttribute('data-kind', 'live');
+    await expect(status).toContainText('Done in part. This game has no lives.');
+    await expect(page.getByTestId('live-box')).toHaveCount(0);
+    await expect(page.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
+    expect(await patches(page)).toBe(1);
+  });
+
   test('Enter opens the box, typing keeps every character and the game keeps running', async ({ page }) => {
     await open(page, url);
     await page.locator('body').click({ position: { x: 5, y: 5 } }).catch(() => undefined);

@@ -62,11 +62,15 @@ export function LiveBox({ session, spec, remix, enterOpens }: { readonly session
       remix.submit(sentence);
       return { kind: 'remix', message: REMIX_MESSAGE };
     }
-    for (const wish of intent.wishes) {
-      const patch = resolveWish(wish, session.state());
-      if (patch === null) return { kind: 'refused', message: 'This game has nothing like that to add.' };
-      const problem = session.live(patch);
-      if (problem !== null) return { kind: 'refused', message: problem };
+    // Nejdřív všechno přeložit, pak zapsat: věta, kterou hra celou neunese, nesmí půlku změnit a hlásit odmítnutí.
+    const patches = intent.wishes.map((wish) => resolveWish(wish, session.state()));
+    if (patches.some((patch) => patch === null)) return { kind: 'refused', message: 'This game has nothing like that to add.' };
+    let applied = 0;
+    for (const patch of patches) {
+      const problem = session.live(patch!);
+      // Robot může odmítnout až pozdější změnu – co už platí, se hlásí jako hotové, jinak by nové odeslání zdvojilo.
+      if (problem !== null) return applied === 0 ? { kind: 'refused', message: problem } : { kind: 'live', message: `Done in part. ${problem}` };
+      applied += 1;
     }
     return { kind: 'live', message: `Done: ${sentence}` };
   }
