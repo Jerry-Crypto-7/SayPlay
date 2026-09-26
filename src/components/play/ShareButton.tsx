@@ -9,6 +9,10 @@
  * zkopíruje, a když ani schránka nejde (oprávnění, nezabezpečený původ),
  * ukáže se v poli k ručnímu výběru.
  *
+ * Po dohrání nese i klip běhu (P29D T2): kde nabídka sdílení bere soubory,
+ * jde klip s odkazem; jinak se klip stáhne a odkaz zkopíruje. Událost
+ * `share` říká `withClip`, jestli klip opravdu odešel.
+ *
  * Stisk nesmí do hry: plocha scény i klávesy hry poslouchají nativně, takže
  * ťuk i klávesu musí zastavit nativní posluchač (stejně jako tlačítko Fire).
  */
@@ -17,9 +21,21 @@ import { useEffect, useRef, useState } from 'react';
 
 import { loopEvent, SHARE_MARK } from './loop-client';
 
-type Share = 'idle' | 'copied' | 'manual';
+type Share = 'idle' | 'copied' | 'saved' | 'manual';
 
-export function ShareButton({ versionId, title, label = 'Share', className = '' }: { readonly versionId: string; readonly title?: string; readonly label?: string; readonly className?: string }) {
+/** Stažení souboru přes dočasný odkaz – prohlížeč bez sdílení souborů si klip uloží. */
+function download(file: File): void {
+  const url = URL.createObjectURL(file);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = file.name;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+export function ShareButton({ versionId, title, label = 'Share', className = '', clip = null }: { readonly versionId: string; readonly title?: string; readonly label?: string; readonly className?: string; readonly clip?: Blob | null }) {
   const button = useRef<HTMLButtonElement | null>(null);
   const [share, setShare] = useState<Share>('idle');
   const [href, setHref] = useState('');
@@ -55,22 +71,27 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
     const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}`;
     setHref(url);
     void checkLasting();
-    if (typeof navigator.share === 'function') {
+    // Klip běhu (P29D T2) jde s odkazem, kde nabídka sdílení soubory bere; jinak se stáhne a odkaz zkopíruje.
+    const file = clip === null ? null : new File([clip], `worldstream-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
+    const withFile = file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+    if (typeof navigator.share === 'function' && (file === null || withFile)) {
       try {
-        await navigator.share({ title: title ?? document.title, url });
-        loopEvent('share', versionId);
+        await navigator.share(withFile ? { title: title ?? document.title, url, files: [file] } : { title: title ?? document.title, url });
+        loopEvent('share', versionId, { withClip: withFile });
         return;
       } catch (error) {
         // Hráč nabídku zavřel – nic dalšího. Jiná chyba: zkusit schránku.
         if (error instanceof DOMException && error.name === 'AbortError') return;
       }
     }
+    if (file !== null) download(file);
     try {
       await navigator.clipboard.writeText(url);
-      setShare('copied');
-      loopEvent('share', versionId);
+      setShare(file === null ? 'copied' : 'saved');
+      loopEvent('share', versionId, { withClip: file !== null });
     } catch {
       setShare('manual');
+      if (file !== null) loopEvent('share', versionId, { withClip: true });
     }
   }
 
@@ -81,8 +102,8 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
       </button>
       {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}
       <span className="play-status" aria-live="polite">
-        {share === 'copied' ? 'Link copied' : ''}
-        {volatile ? `${share === 'copied' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
+        {share === 'copied' ? 'Link copied' : share === 'saved' ? 'Clip saved, link copied' : ''}
+        {volatile ? `${share === 'copied' || share === 'saved' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
       </span>
       {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
     </>

@@ -97,7 +97,7 @@ export function PostRun({ versionId, remix: job, clip = null, onReplay }: { read
       <RemixBox job={job} />
 
       {clip !== null && <SaveClip clip={clip} />}
-      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} />
+      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} clip={clip} />
     </section>
   );
 }

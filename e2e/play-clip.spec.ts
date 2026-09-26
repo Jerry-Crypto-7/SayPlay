@@ -68,15 +68,82 @@ test.describe('/play/[id] – clip of the run', () => {
     expect(video.duration).toBeLessThanOrEqual(16);
   });
 
-  test('a browser without canvas capture shows no Save clip', async ({ page }) => {
+  test('a browser without canvas capture shows no Save clip and shares the link alone', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.addInitScript(() => {
       // @ts-expect-error – prohlížeč bez nahrávání plátna
       delete HTMLCanvasElement.prototype.captureStream;
     });
+    await recordBeacons(page);
     await page.goto(url);
     await playToEnd(page);
     await page.waitForTimeout(2_500);
     await expect(page.getByTestId('play-save-clip')).toHaveCount(0);
-    await expect(page.getByTestId('play-share')).toBeVisible();
+    await page.getByTestId('play-share').click();
+    await expect(page.getByText('Link copied')).toBeVisible();
+    expect(await shareEvents(page)).toEqual([{ name: 'share', withClip: false }]);
+  });
+
+  test('Share sends the clip with the link where the share sheet takes files (P29D T2)', async ({ page }) => {
+    await page.addInitScript(() => {
+      const shared: { url?: string; files: { name: string; type: string; size: number }[] }[] = [];
+      (window as unknown as { __shared: typeof shared }).__shared = shared;
+      Object.defineProperty(navigator, 'canShare', { configurable: true, value: (data: ShareData) => (data.files ?? []).every((file) => file.type.startsWith('video/')) });
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: async (data: ShareData) => void shared.push({ url: data.url, files: [...(data.files ?? [])].map((file) => ({ name: file.name, type: file.type, size: file.size })) }),
+      });
+    });
+    await recordBeacons(page);
+    await page.goto(url);
+    await playToEnd(page);
+    await expect(page.getByTestId('play-save-clip')).toBeVisible({ timeout: 10_000 });
+    await page.getByTestId('play-share').click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: unknown[] }).__shared.length)).toBe(1);
+    const [shared] = await page.evaluate(() => (window as unknown as { __shared: { url: string; files: { name: string; type: string; size: number }[] }[] }).__shared);
+    expect(shared!.url).toContain(url);
+    expect(shared!.files).toHaveLength(1);
+    expect(shared!.files[0]!.type).toMatch(/^video\//);
+    expect(shared!.files[0]!.size).toBeGreaterThan(0);
+    expect(await shareEvents(page)).toEqual([{ name: 'share', withClip: true }]);
+  });
+
+  test('without file sharing, Share downloads the clip and copies the link (P29D T2)', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'canShare', { configurable: true, value: undefined });
+      Object.defineProperty(navigator, 'share', { configurable: true, value: undefined });
+    });
+    await recordBeacons(page);
+    await page.goto(url);
+    await playToEnd(page);
+    await expect(page.getByTestId('play-save-clip')).toBeVisible({ timeout: 10_000 });
+    const download = page.waitForEvent('download');
+    await page.getByTestId('play-share').click();
+    expect((await download).suggestedFilename()).toMatch(/^worldstream-clip\.(mp4|webm)$/);
+    await expect(page.getByText('Clip saved, link copied')).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(url);
+    expect(await shareEvents(page)).toEqual([{ name: 'share', withClip: true }]);
   });
 });
+
+/** Události smyčky odchycené na `sendBeacon` – co by dostaly dveře `/api/play/events`. */
+async function recordBeacons(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const sent: Record<string, unknown>[] = [];
+    (window as unknown as { __beacons: typeof sent }).__beacons = sent;
+    Object.defineProperty(navigator, 'sendBeacon', {
+      configurable: true,
+      value: (_url: string, data: Blob) => {
+        void data.text().then((text) => sent.push(JSON.parse(text) as Record<string, unknown>));
+        return true;
+      },
+    });
+  });
+}
+
+async function shareEvents(page: Page): Promise<{ name: unknown; withClip: unknown }[]> {
+  await page.waitForTimeout(300);
+  const sent = await page.evaluate(() => (window as unknown as { __beacons: Record<string, unknown>[] }).__beacons);
+  return sent.filter((event) => event.name === 'share').map((event) => ({ name: event.name, withClip: event.withClip }));
+}
