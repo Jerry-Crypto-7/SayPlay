@@ -16,7 +16,7 @@ import { arcadeWorldOf } from '../compile';
 import { ARCADE_LIMITS, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase, type ArcadeWorld, type InputEvent } from '../contract';
 import { hashArcade, instantiate, loadProgram, outcomeOf, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { THING_ROLE_BASE, YARD, compileRules } from '../rules/compile';
+import { PAIR_RULES_MAX, THING_ROLE_BASE, YARD, compileRules } from '../rules/compile';
 import { runBot } from '../verify';
 
 function read(input: unknown): GameSpecV1 {
@@ -184,6 +184,27 @@ describe('compileRules', () => {
     const made = arcadeWorldOf(read({ ...arenaFixture, rules }), 1);
     expect(made.ok).toBe(false);
     expect(made.ok ? '' : made.issues.join(' ')).toMatch(/already uses \d+ built-in rules, so the spec may add at most \d+ \(it has 16\)/);
+  });
+
+  it('refuses more than PAIR_RULES_MAX rules that scan contacts between two things', () => {
+    const pair = (i: number) => ({ id: `p${i}`, verb: 'bump', when: { contact: ['coin', 'hunter'] }, do: [{ score: 1 }] });
+    const ok = arcadeWorldOf(read({ ...arenaFixture, rules: Array.from({ length: PAIR_RULES_MAX }, (_, i) => pair(i)) }), 1);
+    expect(ok.ok).toBe(true);
+    const made = arcadeWorldOf(read({ ...arenaFixture, rules: Array.from({ length: PAIR_RULES_MAX + 1 }, (_, i) => pair(i)) }), 1);
+    expect(made.ok ? [] : made.issues).toEqual([expect.stringContaining(`at most ${PAIR_RULES_MAX} may`)]);
+  });
+
+  it('a press win and a loss later in the same tick end lost, as inside one apply; the press win alone stands', () => {
+    const pressWin = { id: 'ring', verb: 'ring', when: { press: 'action' }, do: [{ win: true }] };
+    const doom = { id: 'doom', verb: 'doom', when: { every: 1 }, do: [{ lose: true }] };
+    const outcomeAfterPress = (rules: unknown[]): string => {
+      const w = world(read({ ...runnerFixture, rules }));
+      const state = instantiate(w);
+      step(state, { buttons: BUTTON.TAP, axis: 0 }, loadProgram(w, ARCADE_LIBRARY));
+      return outcomeOf(state);
+    };
+    expect(outcomeAfterPress([pressWin, doom])).toBe('lost');
+    expect(outcomeAfterPress([pressWin])).toBe('won');
   });
 
   it('the same spec and seed give the same world; the rule count stays inside the kernel limit', () => {

@@ -211,15 +211,28 @@ function evaluate(ctx: RuleContext, rule: CompiledRule, self: number, other: num
   return effectsOf(ctx, rule, self, picked);
 }
 
-/** Kontakt dvou věcí bez hráče: každá dvojice živých těl rolí `a`×`b`, která se překrývá. */
+/** Nejvýš tolik pravidel smí hlídat kontakt dvou věcí bez hráče (sken dvojic běží každý tik). */
+export const PAIR_RULES_MAX = 4;
+/** Nejvýš tolik dvojic prověří jedno pravidlo za tik; zbytek počká (pořadí podle indexu, deterministicky). */
+export const PAIR_CHECKS_MAX = 1024;
+
+/** Kontakt dvou věcí bez hráče: dvojice živých těl rolí `a`×`b`, která se překrývají, do stropu `PAIR_CHECKS_MAX`. */
 function pairContacts(ctx: RuleContext, rule: CompiledRule, a: number, b: number): ArcadeEffect[] {
   const { state } = ctx;
   const count = state[HEADER.bodyCount] as number;
-  const out: ArcadeEffect[] = [];
+  const as: number[] = [];
+  const bs: number[] = [];
   for (let i = 0; i < count; i += 1) {
-    if (roleAt(state, i) !== a || !isAlive(state, i)) continue;
-    for (let j = 0; j < count; j += 1) {
-      if (j === i || roleAt(state, j) !== b || !isAlive(state, j)) continue;
+    if (!isAlive(state, i)) continue;
+    if (roleAt(state, i) === a) as.push(i);
+    if (roleAt(state, i) === b) bs.push(i);
+  }
+  const out: ArcadeEffect[] = [];
+  let checks = 0;
+  for (const i of as) {
+    for (const j of bs) {
+      if (j === i) continue;
+      if (checks++ >= PAIR_CHECKS_MAX) return out;
       if (gap(state, i, j) > 0 || !overlapsY(state, i, j)) continue;
       out.push(...evaluate(ctx, rule, i, j));
     }
@@ -448,6 +461,8 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
   const issues = [...hidden]
     .filter((id) => (codes.get(id) as number) < THING_ROLE_BASE)
     .map((id) => `things: role "${id}" is built by the ${spec.control} game itself and is visible from the start, so start:"hidden" cannot apply – give the hidden thing its own role id and kind`);
+  const pairs = rules.filter((rule) => 'contact' in rule.when && codes.get(rule.when.contact[0]) !== ROLE.player && codes.get(rule.when.contact[1]) !== ROLE.player).length;
+  if (pairs > PAIR_RULES_MAX) issues.push(`rules: ${pairs} rules watch a contact between two things without the player; at most ${PAIR_RULES_MAX} may – merge them`);
   // Fyzikální věc (P29A T13): hýbe s ní Rapier. Jen věci pravidel – tělesa generátoru mají vlastní pohyb.
   const physical = new Set((spec.things ?? []).filter((thing) => thing.physics === true).map((thing) => thing.role));
   const physics = (id: string): Partial<BodyInit> => (physical.has(id) ? { physics: true } : {});

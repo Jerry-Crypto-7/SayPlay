@@ -631,17 +631,15 @@ function toggle(state: ArcadeState, role: number): boolean {
  * Použije efekty od `from`. Se stopou ohlásí pravidlo (`owners[i]`) jen za efekt,
  * který stav opravdu změnil – hod s prázdnou rukou ani přepnutí bez cíle sloveso nedokáže.
  */
-function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: number, owners?: readonly number[], trace?: RuleTrace): void {
-  let won = false;
-  let lost = false;
+function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: number, end: TickEnd, owners?: readonly number[], trace?: RuleTrace): void {
   for (let i = from; i < effects.length; i += 1) {
     const effect = effects[i] as ArcadeEffect;
     let changed = true;
     if (effect.kind === 'score') state[HD.counters + CT.score] = (state[HD.counters + CT.score] as number) + effect.amount;
     else if (effect.kind === 'damage') state[HD.counters + CT.health] = (state[HD.counters + CT.health] as number) - effect.amount;
     else if (effect.kind === 'count') state[HD.counters + CT[effect.counter]] = (state[HD.counters + CT[effect.counter]] as number) + effect.amount;
-    else if (effect.kind === 'lose') lost = true;
-    else if (effect.kind === 'win') won = true;
+    else if (effect.kind === 'lose') end.lost = true;
+    else if (effect.kind === 'win') end.won = true;
     else if (effect.kind === 'spawn') changed = spawn(state, effect);
     else if (effect.kind === 'respawn') {
       const p = baseOf(state[HD.player] as number);
@@ -670,9 +668,12 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     } else changed = false;
     if (changed && trace !== undefined) trace(owners?.[i] as number);
   }
-  // Prohra má přednost: náraz a páska v tomtéž tiku není výhra.
-  if (lost) state[HD.runState] = RUN_STATE.lost;
-  else if (won) state[HD.runState] = RUN_STATE.won;
+}
+
+/** Výhra a prohra z celého tiku; rozhodne se jednou na jeho konci (`step`). */
+interface TickEnd {
+  won: boolean;
+  lost: boolean;
 }
 
 /**
@@ -701,8 +702,9 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   // Stisk (P29A): hned za ovládáním, aby hod nebo zvednutí vyšlo už v tomto tiku.
   const effects: ArcadeEffect[] = [];
   const owners = trace === undefined ? undefined : [];
+  const end: TickEnd = { won: false, lost: false };
   fireRules(effects, owners, program, 'press', none);
-  apply(state, effects, 0, owners, trace);
+  apply(state, effects, 0, end, owners, trace);
   const pressed = effects.length;
   carry(state, count, player);
   const p = baseOf(player);
@@ -721,10 +723,13 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
     fireRules(effects, owners, program, 'hit', { state, player, other: ended[k + 1] as number, source: ended[k] as number, input });
   }
   fireRules(effects, owners, program, 'tick', none);
-  apply(state, effects, pressed, owners, trace);
+  apply(state, effects, pressed, end, owners, trace);
   const countersFrom = effects.length;
   fireRules(effects, owners, program, 'counter', none);
-  apply(state, effects, countersFrom, owners, trace);
+  apply(state, effects, countersFrom, end, owners, trace);
+  // Prohra má přednost v celém tiku: výhra stiskem a smrtelný náraz v témže tiku není výhra.
+  if (end.lost) state[HD.runState] = RUN_STATE.lost;
+  else if (end.won) state[HD.runState] = RUN_STATE.won;
 
   state[HD.tick] = (state[HD.tick] as number) + 1;
   if (program.physics && state[HD.runState] !== RUN_STATE.running) releasePhysics(state);
