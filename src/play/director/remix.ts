@@ -44,11 +44,12 @@ export const REMIX_CHIP_LABELS: Readonly<Record<RemixChip, string>> = {
 
 const CHIP_CLASS: Readonly<Record<RemixChip, RemixClass>> = { harder: 'parameter', swap_enemy: 'parameter', twist: 'mechanic', reskin: 'presentation' };
 
-const MECHANIC_VERBS = /\b(stun|stuns|freeze|freezes|carry|carries|press|presses|collect|collects|chase|chases)\b/i;
-const TOPOLOGY_WORDS = /\b(bigger|smaller|maze|rooms|islands|layout)\b/i;
-const OBJECTIVE_WORDS = /\b(instead|goal|win by|objective)\b/i;
-const PARAMETER_WORDS = /\b(twice as fast|faster|slower|more|fewer|\d+ seconds)\b/i;
-const PRESENTATION_WORDS = /\b(neon|sci-fi|forest|underwater|make it look|theme)\b/i;
+/** Návěští tříd remixu; sdílí je i živá změna (`live-intent.ts`), aby obě cesty četly větu stejně. */
+export const MECHANIC_VERBS = /\b(stun|stuns|freeze|freezes|carry|carries|press|presses|collect|collects|chase|chases)\b/i;
+export const TOPOLOGY_WORDS = /\b(bigger|smaller|maze|rooms|islands|layout)\b/i;
+export const OBJECTIVE_WORDS = /\b(instead|goal|win by|objective)\b/i;
+export const PARAMETER_WORDS = /\b(twice as fast|faster|slower|more|fewer|\d+ seconds)\b/i;
+export const PRESENTATION_WORDS = /\b(neon|sci-fi|forest|underwater|make it look|theme)\b/i;
 
 export function chipOf(sentence: string): RemixChip | null {
   const text = sentence.trim().toLowerCase();
