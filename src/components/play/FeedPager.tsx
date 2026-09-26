@@ -27,6 +27,7 @@ import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import { WithPlayEnv } from './arcade/look/play-env';
 import { isTyping as typing } from './arcade/input';
 import demo from './demo-game.json';
 import { Feed, type FeedGame } from './Feed';
@@ -59,7 +60,9 @@ function DemoGame({ children }: { readonly children: ReactNode }) {
   return (
     <section className="play-pager" aria-label="Game feed" data-testid="feed-demo">
       <div className="play-pager-slide">
-        <ArcadePlay versionId="demo" spec={demo.spec as unknown as GameSpecV1} arcade={demo.arcade as unknown as ArcadeWorld} lineage={[]} remixes={0} upgrade={null} offline />
+        <WithPlayEnv theme={(demo.spec as unknown as GameSpecV1).theme} versionId="demo">
+          <ArcadePlay versionId="demo" spec={demo.spec as unknown as GameSpecV1} arcade={demo.arcade as unknown as ArcadeWorld} lineage={[]} remixes={0} upgrade={null} offline />
+        </WithPlayEnv>
       </div>
       {children}
     </section>
@@ -231,17 +234,18 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
             {detail.spec.title} plays on its own page. <Link href={`/play/${current.versionId}`}>Open the game</Link>
           </p>
         ) : (
-          <ArcadePlay
-            key={current.versionId}
-            versionId={current.versionId}
-            spec={detail.spec}
-            arcade={detail.arcade}
-            lineage={detail.lineage}
-            remixes={detail.children.length}
-            aiVersion={detail.relation === 'upgrade'}
-            upgrade={null}
-            active={onScreen}
-          />
+          <WithPlayEnv key={current.versionId} theme={detail.spec.theme} versionId={current.versionId}>
+            <ArcadePlay
+              versionId={current.versionId}
+              spec={detail.spec}
+              arcade={detail.arcade}
+              lineage={detail.lineage}
+              remixes={detail.children.length}
+              aiVersion={detail.relation === 'upgrade'}
+              upgrade={null}
+              active={onScreen}
+            />
+          </WithPlayEnv>
         )}
         <div className="play-pager-rail" data-testid="feed-rail" onPointerDown={onRailDown} onPointerUp={onRailUp} onPointerCancel={() => (swipeFrom.current = null)}>
           <button type="button" className="play-pager-step" data-testid="feed-prev" onClick={() => go(index - 1)} disabled={index === 0} aria-label="Previous game">

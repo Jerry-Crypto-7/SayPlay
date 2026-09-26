@@ -17,7 +17,7 @@
  */
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Group, type Mesh, type Object3D, type PerspectiveCamera, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
@@ -36,6 +36,8 @@ import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { type BodyView, bodiesOf, bodiesStale } from './bodies';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { loadModel } from './look/load';
+import { Panorama } from './look/Panorama';
+import { PlayEnv } from './look/play-env';
 import { Scenery } from './look/Scenery';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping, runnerGesture } from './input';
@@ -879,6 +881,7 @@ export default function ArcadeStage({
   const control = base.id;
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
   const look = LOOKS[lookId];
+  const env = useContext(PlayEnv);
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
   // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
   const rival = cast.props.rival;
@@ -914,6 +917,8 @@ export default function ArcadeStage({
         <RedrawOnChange session={session} />
         <FrameProbe control={control} />
         <RenderProbe />
+        {/* Panorama prostředí z věty (P29C T5) za každou scénou; do prvního snímku jen barva oblohy. */}
+        {env !== null && <Panorama env={env} />}
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
           <TimingScene session={session} look={look} />

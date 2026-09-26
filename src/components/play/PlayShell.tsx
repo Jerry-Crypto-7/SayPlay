@@ -21,6 +21,7 @@ import type { GameSpecV1 } from '@/play/spec';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import { WithPlayEnv } from './arcade/look/play-env';
 import { HonestyStrip } from './HonestyStrip';
 import type { LabFacts, ReadFacts } from './lab';
 
@@ -52,7 +53,12 @@ export function PlayShell({
   ...rest
 }: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly honesty?: Honesty | null }) {
   if (blueprint === null && arcade === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
-  const shell = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+  const game = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+  const shell = (
+    <WithPlayEnv theme={rest.spec.theme} versionId={rest.versionId}>
+      {game}
+    </WithPlayEnv>
+  );
   if (honesty === null) return shell;
   // Proužek hru odsune, nepřekryje: HUD s cílem hry musí zůstat vidět.
   return (

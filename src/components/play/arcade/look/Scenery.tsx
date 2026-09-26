@@ -8,12 +8,17 @@
  * trať a jádro o nich neví.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useContext, useEffect, useMemo, useState } from 'react';
 import { Box3, type Object3D, Vector3 } from 'three';
 
 import { isSceneryModel, type Look, type PropKind, SCENERY_MODELS, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
 
 import { loadFlatModel } from './load';
+import { PlayEnv } from './play-env';
+
+// Líně: stránka gridu importuje tenhle soubor staticky a Panorama táhne @react-three/fiber
+// do úvodního balíku – první snímek gridu byl o ~220 ms později (P29C T5).
+const Panorama = lazy(() => import('./Panorama').then((module) => ({ default: module.Panorama })));
 
 /** `sides` = obě strany dráhy (kamera za hráčem), `behind` = za tratí (boční kamera na −x). */
 export type SceneryLayout = 'sides' | 'behind';
@@ -206,8 +211,15 @@ const GRID_GAP = 2.2;
  */
 export function GridScenery({ look, width, height }: { readonly look: Look; readonly width: number; readonly height: number }) {
   const at = (cells: number) => cells / GRID_SCALE;
+  // Panorama prostředí z věty (P29C T5); kontext prochází do plátna přes most R3F.
+  const env = useContext(PlayEnv);
   return (
     <group name="grid-scenery">
+      {env !== null && (
+        <Suspense fallback={null}>
+          <Panorama env={env} />
+        </Suspense>
+      )}
       {/* Zem v barvě sady těsně nad terénem rodiny: béžová pod „icy moon“ ani sopkou prostředí neřekla. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]} receiveShadow>
         <planeGeometry args={[140, 140]} />
