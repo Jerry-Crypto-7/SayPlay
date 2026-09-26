@@ -131,6 +131,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     spec = repaired.spec;
   }
 
+  // Slovesa, která první odpověď slíbila pravidly (i nesloženými).
+  const promised = hasRules(body) ? [...new Set(body.rules.map((rule) => (typeof rule === 'object' && rule !== null ? (rule as { verb?: unknown }).verb : undefined)).filter((verb): verb is string => typeof verb === 'string'))] : [];
   let blocks = blockingIssues(critique(spec));
   if (blocks.length > 0) {
     const repaired = repairDeterministically(spec, blocks);
@@ -181,6 +183,13 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   }
   if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
 
+  // Sloveso, které první odpověď slíbila pravidlem a hotová hra ho nenese (oprava ho
+  // smazala nebo pravidla vůbec nedoplnila), se nesmí tvářit jako plně autorská hra ani jít do cache.
+  const lost = promised.filter((verb) => !(spec.rules ?? []).some((rule) => rule.verb === verb));
+  if (lost.length > 0) {
+    const failure: DirectorFailure = { stage: 'critic', reason: 'VERB_UNPROVED', detail: `rule verbs dropped: ${lost.join(', ')}`, raw: spec };
+    return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: 'VERB_UNPROVED', failure, warnings: warningsOf(spec), ms: deps.now() - started, calls };
+  }
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
   if (checked.length === 0) await deps.cache?.write(key, spec);
   return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: null, warnings: warningsOf(spec), ms: deps.now() - started, calls };

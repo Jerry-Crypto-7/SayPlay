@@ -82,7 +82,8 @@ describe('the director repairs rules before publishing', () => {
     const sent = branch.calls[1]?.request.user ?? '';
     expect(sent).toContain('VERB_UNPROVED');
     expect(sent).toContain('dance');
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    // Oprava sloveso smazala: hra jde dál, ale nesmí se tvářit jako plně autorská (revize fáze 2).
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
     expect(game.spec.rules?.map((rule) => rule.verb)).toEqual(['pick', 'throw', 'ring']);
   });
 
@@ -119,6 +120,16 @@ describe('the director repairs rules before publishing', () => {
     const game = await direct(SENTENCE, { branch, now: () => (tick += 100), compact: true, check: strict, maxRepairRounds: 2 });
     expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
     expect(game.spec.rules).toBeUndefined();
+  });
+
+  it('an empty repair over invalid rules is not cached as a fully authored game', async () => {
+    const writes: GameSpecV1[] = [];
+    const cache = { id: 'test', read: async () => null, write: async (_: string, spec: GameSpecV1) => void writes.push(spec) };
+    let tick = 0;
+    const branch = fakeBranch([answered(answer({ rules: [{ ...RULES[0], when: { contact: ['player', 'bucket'] } }] })), answered([])]);
+    const game = await direct(SENTENCE, { branch, cache, now: () => (tick += 100), compact: true, check, maxRepairRounds: 2 });
+    expect(game.fallbackReason).toBe('VERB_UNPROVED');
+    expect(writes).toEqual([]);
   });
 
   it('a repair outage over invalid rules still plays the game without them', async () => {
