@@ -14,6 +14,7 @@ import collectGate from '../__fixtures__/rules/collect-gate.json';
 import giveFlower from '../__fixtures__/rules/give-flower.json';
 import leverBridge from '../__fixtures__/rules/lever-bridge.json';
 import pushCrate from '../__fixtures__/rules/push-crate.json';
+import setLantern from '../__fixtures__/rules/set-lantern.json';
 import throwRock from '../__fixtures__/rules/throw-rock.json';
 import { arcadeWorldOf } from '../compile';
 import { ARCADE_HZ, NO_INPUT, type ArcadeWorld } from '../contract';
@@ -73,6 +74,18 @@ describe('the robot plays rule games', () => {
         });
       }
       expect({ seed, picks }).toEqual({ seed, picks: 1 });
+    }
+  });
+
+  it('set lantern: the robot carries it to a low target and sets it down with the release rule', () => {
+    for (const seed of SEEDS) {
+      const verdict = verifyArcade(world(setLantern, seed));
+      expect({ seed, outcome: verdict.bot.outcome, failures: verdict.failures }).toEqual({ seed, outcome: 'won', failures: [] });
+      expect(verdict.verbs.map((proof) => [proof.verb, proof.fired])).toEqual([
+        ['take', true],
+        ['set', true],
+        ['light', true],
+      ]);
     }
   });
 

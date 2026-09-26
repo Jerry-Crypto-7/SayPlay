@@ -112,6 +112,22 @@ describe('director answer schema (strict mode)', () => {
     expect(problems).toEqual([]);
   });
 
+  it('turns the contact pair of a rule into an array of exactly two roles (strict mode has no tuples)', () => {
+    const contacts: Json[] = [];
+    walk(DIRECTOR_ANSWER_SCHEMA, (node, path) => {
+      if (path.endsWith('/properties/contact')) contacts.push(node);
+    });
+    expect(contacts.length).toBeGreaterThan(0);
+    for (const node of contacts) {
+      const pair = (Array.isArray(node.anyOf) ? (node.anyOf as Json[]).find((branch) => branch.type === 'array') : node) as Json;
+      expect(pair).toMatchObject({ type: 'array', minItems: 2, maxItems: 2 });
+      expect('prefixItems' in pair).toBe(false);
+      expect(validate(pair, ['player', 'coin'])).toEqual([]);
+      expect(validate(pair, ['player'])).not.toEqual([]);
+      expect(validate(pair, ['player', 'coin', 'door'])).not.toEqual([]);
+    }
+  });
+
   it.each([
     ['collect_exit', collectExit],
     ['chase_escape', chaseEscape],

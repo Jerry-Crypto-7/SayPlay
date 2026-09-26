@@ -72,6 +72,9 @@ describe('verifyArcade proves rule verbs', () => {
     const verdict = verifyArcade(world({ ...runnerFixture, rules: [alsoCollect, collect] }));
     expect(verdict.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: expect.any(Number) }]);
     expect(verdict.publishEligible).toBe(true);
+    // Obrácené pořadí: pálí první pravidlo, poslední mlčí – „poslední vyhrává“ by sloveso ztratilo.
+    const reversed = verifyArcade(world({ ...runnerFixture, rules: [collect, alsoCollect] }));
+    expect(reversed.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: verdict.verbs[0]!.firstTick }]);
   });
 
   it('a game without rules checks no verbs and reports exactly as before', () => {
