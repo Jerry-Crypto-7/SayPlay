@@ -670,10 +670,15 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
   }
 }
 
-/** Výhra a prohra z celého tiku; rozhodne se jednou na jeho konci (`step`). */
+/** Výhra a prohra z jednoho průchodu `step` (stisk + hlavní průchod, nebo čítače). */
 interface TickEnd {
   won: boolean;
   lost: boolean;
+}
+
+function settleRun(state: ArcadeState, end: TickEnd): void {
+  if (end.lost) state[HD.runState] = RUN_STATE.lost;
+  else if (end.won) state[HD.runState] = RUN_STATE.won;
 }
 
 /**
@@ -724,12 +729,15 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   }
   fireRules(effects, owners, program, 'tick', none);
   apply(state, effects, pressed, end, owners, trace);
+  // Stisk a hlavní průchod jsou jeden `apply` jako před P29A: prohra má přednost,
+  // výhra stiskem a smrtelný náraz v témže tiku není výhra.
+  settleRun(state, end);
+  // Průchod čítačů rozhoduje až po nich a smí výsledek přepsat (dosažené skóre porazí náraz téhož tiku).
   const countersFrom = effects.length;
+  const counted: TickEnd = { won: false, lost: false };
   fireRules(effects, owners, program, 'counter', none);
-  apply(state, effects, countersFrom, end, owners, trace);
-  // Prohra má přednost v celém tiku: výhra stiskem a smrtelný náraz v témže tiku není výhra.
-  if (end.lost) state[HD.runState] = RUN_STATE.lost;
-  else if (end.won) state[HD.runState] = RUN_STATE.won;
+  apply(state, effects, countersFrom, counted, owners, trace);
+  settleRun(state, counted);
 
   state[HD.tick] = (state[HD.tick] as number) + 1;
   if (program.physics && state[HD.runState] !== RUN_STATE.running) releasePhysics(state);

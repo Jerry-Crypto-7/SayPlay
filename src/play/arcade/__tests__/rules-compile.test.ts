@@ -205,6 +205,9 @@ describe('compileRules', () => {
     };
     expect(outcomeAfterPress([pressWin, doom])).toBe('lost');
     expect(outcomeAfterPress([pressWin])).toBe('won');
+    // Jako před P29A: výhra z průchodu čítačů přepíše prohru dřívějšího průchodu téhož tiku.
+    const scored = { id: 'scored', verb: 'score', when: { counter: { name: 'score', atLeast: 0 } }, do: [{ win: true }] };
+    expect(outcomeAfterPress([doom, scored])).toBe('won');
   });
 
   it('the same spec and seed give the same world; the rule count stays inside the kernel limit', () => {

@@ -213,7 +213,11 @@ function evaluate(ctx: RuleContext, rule: CompiledRule, self: number, other: num
 
 /** Nejvýš tolik pravidel smí hlídat kontakt dvou věcí bez hráče (sken dvojic běží každý tik). */
 export const PAIR_RULES_MAX = 4;
-/** Nejvýš tolik dvojic prověří jedno pravidlo za tik; zbytek počká (pořadí podle indexu, deterministicky). */
+/**
+ * Nejvýš tolik dvojic prověří jedno pravidlo za tik (pořadí podle indexu, deterministicky).
+ * Dvojice za stropem se nekontrolují nikdy – každý tik začíná od stejných indexů;
+ * robot ověřuje, co se opravdu stane, takže to hru nezfalšuje, jen pravidlo dělá méně.
+ */
 export const PAIR_CHECKS_MAX = 1024;
 
 /** Kontakt dvou věcí bez hráče: dvojice živých těl rolí `a`×`b`, která se překrývají, do stropu `PAIR_CHECKS_MAX`. */
