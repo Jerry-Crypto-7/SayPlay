@@ -99,6 +99,10 @@ describe('voice endpoint', () => {
     expect(narrationOf(spec.value)).toBe(GOAL);
     expect(narrationOf({ ...spec.value, tutorial: { ...spec.value.tutorial, goalLine: '  Go\n\tnow!  ' } })).toBe('Go now!');
     expect(narrationOf({ ...spec.value, tutorial: { ...spec.value.tutorial, goalLine: '   ' } })).toBeNull();
+    // Mezery Unicode, které Python a JavaScript čistí každý jinak, zůstanou – id sedí (pin z `test_server.py`).
+    const unicode = narrationOf({ ...spec.value, tutorial: { ...spec.value.tutorial, goalLine: 'Go\x85now﻿!' } });
+    expect(unicode).toBe('Go\x85now﻿!');
+    expect(voiceIdOf(unicode!)).toBe('7307cbf840740e71fcb7e0c52c0a3f77');
     expect(narrationOf({ ...spec.value, tutorial: { ...spec.value.tutorial, goalLine: 'x'.repeat(241) } })).toBeNull();
   });
 });
@@ -148,12 +152,18 @@ describe('GET /api/play/games/:id/voice', () => {
   it('a voice still generating, a broken tunnel, a sleeping service or no service is 204 without cache', async () => {
     service({ get: 'pending' });
     const { id } = await publish('Voice pending');
-    for (const setup of [() => service({ get: 'pending' }), () => service({ get: 'broken' }), () => service({ get: 'down' }), () => vi.stubEnv('PLAY_VOICE_ENDPOINT', '')]) {
-      setup();
+    for (const answer of ['pending', 'broken', 'down'] as const) {
+      const calls = service({ get: answer });
       const response = await voice(id);
       expect(response.status).toBe(204);
       expect(response.headers.get('cache-control')).toBe('no-store');
+      // Selhaná úloha se nezasekne: dveře službu požádají znovu (revize T11, nález 4).
+      expect(voicePosts(calls)).toHaveLength(1);
     }
+    vi.stubEnv('PLAY_VOICE_ENDPOINT', '');
+    const calls = service();
+    expect((await voice(id)).status).toBe(204);
+    expect(calls).toHaveLength(0);
   });
 
   it('an unknown or malformed game is 404 and the service is not asked', async () => {

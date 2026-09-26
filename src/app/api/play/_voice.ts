@@ -43,10 +43,13 @@ export function voiceEndpointFrom(env: Env = process.env): VoiceEndpoint | null 
   return { url: url.replace(/\/+$/, ''), key };
 }
 
-/** Věta k přečtení – totéž čištění jako `narration` ve `voice.py`; `null` = není co číst. */
+/**
+ * Věta k přečtení – totéž čištění jako `narration` ve `voice.py`; `null` = není co číst.
+ * Jen ASCII, ne `\s` ani `trim()`: ty berou za mezeru jiné znaky Unicode než Python.
+ */
 export function narrationOf(spec: GameSpecV1): string | null {
   // eslint-disable-next-line no-control-regex -- řídicí znaky se nahrazují mezerou jako v Pythonu
-  const text = spec.tutorial.goalLine.replace(/[\x00-\x1f\x7f]/g, ' ').replace(/\s+/g, ' ').trim();
+  const text = spec.tutorial.goalLine.replace(/[\x00-\x20\x7f]+/g, ' ').replace(/^ | $/g, '');
   return text === '' || text.length > MAX_CHARS ? null : text;
 }
 

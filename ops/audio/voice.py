@@ -36,8 +36,12 @@ class InvalidText(ValueError):
 
 
 def narration(text: str) -> str:
-    """Věta k přečtení: bez řídicích znaků, jedna mezera, nejvýš `MAX_CHARS`."""
-    clean = re.sub(r"\s+", " ", re.sub(r"[\x00-\x1f\x7f]", " ", text)).strip()
+    """Věta k přečtení: řídicí znaky ASCII a mezery → jedna mezera, nejvýš `MAX_CHARS`.
+
+    Jen ASCII, ne `\\s`: Python a JavaScript berou za mezeru jiné znaky Unicode
+    (`\\x85`, `\\ufeff`) a id nahrávky by se na obou stranách rozešlo.
+    """
+    clean = re.sub(r"[\x00-\x20\x7f]+", " ", text).strip(" ")
     if not clean:
         raise InvalidText("text is empty")
     if len(clean) > MAX_CHARS:
@@ -111,6 +115,26 @@ class GpuLock:
 
 
 def _alive(pid: int) -> bool:
+    """Běží proces `pid`? Na Windows `os.kill(pid, 0)` nic nezjišťuje – pošle Ctrl+C skupině procesů."""
+    if os.name == "nt":
+        import ctypes
+
+        kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+        handle = kernel.OpenProcess(
+            0x1000, False, pid
+        )  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return (
+                ctypes.get_last_error() == 5
+            )  # ERROR_ACCESS_DENIED = běží pod jiným účtem
+        try:
+            code = ctypes.c_ulong()
+            return (
+                bool(kernel.GetExitCodeProcess(handle, ctypes.byref(code)))
+                and code.value == 259
+            )  # STILL_ACTIVE
+        finally:
+            kernel.CloseHandle(handle)
     try:
         os.kill(pid, 0)
     except OSError:

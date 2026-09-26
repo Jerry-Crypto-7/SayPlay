@@ -14,6 +14,7 @@ import hmac
 import os
 import queue
 import re
+import sys
 import threading
 from collections.abc import Callable
 from contextlib import AbstractContextManager
@@ -29,6 +30,8 @@ from voice import GpuLock, InvalidText, Synthesize
 HOST, PORT = "127.0.0.1", 8794
 MAX_QUEUE = 50  # cíl je krátká věta, ~1 s na kartě; víc čekajících dostane 429
 VOICE_ID = re.compile(r"^[0-9a-f]{32}$")
+# Drží-li kartu jiná stopa déle, úloha selže a nevisí před ostatními; hra se zeptá znovu (dveře voice).
+LOCK_WAIT_SEC = 120
 
 
 class VoiceRequest(BaseModel):
@@ -47,7 +50,9 @@ def create_app(
     key: str,
     load_model: Callable[[], Synthesize] = voice.kokoro,
     cache_root: Path = voice.CACHE_ROOT,
-    gpu_lock: Callable[[], AbstractContextManager[object]] = GpuLock,
+    gpu_lock: Callable[[], AbstractContextManager[object]] = lambda: GpuLock(
+        wait_max=LOCK_WAIT_SEC
+    ),
 ) -> FastAPI:
     if not key:
         raise ValueError("AUDIO_KEY must be set")
@@ -77,7 +82,11 @@ def create_app(
             except Exception as error:  # noqa: BLE001 – úloha skončí failed s důvodem, nikdy nevisí
                 job.reason = f"{type(error).__name__}: {error}"[:200]
                 job.status = "failed"
+                print(f"voice job {job.id} failed: {job.reason}", file=sys.stderr)
             finally:
+                # Hotovou drží cache, selhanou nový dotaz zkusí znovu – slovník neroste s každou větou.
+                with lock:
+                    jobs.pop(job.id, None)
                 pending.task_done()
 
     # Vestavěné /docs, /redoc a /openapi.json by klíč obešly – služba je nemá.
@@ -89,6 +98,7 @@ def create_app(
         openapi_url=None,
     )
     threading.Thread(target=worker, daemon=True, name="voice-worker").start()
+    app.state.jobs = jobs
 
     @app.get("/health")
     def health() -> dict:

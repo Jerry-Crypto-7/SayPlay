@@ -4,12 +4,13 @@
  * Tytéž brány jako náhled (páka `snapshots`, strop frekvence na dveřích `play`)
  * a tatáž 404 pro neznámé i tvarově špatné id. Hotová nahrávka je Ogg a smí
  * být `immutable` (verze se nemění, id nahrávky je hash textu). Dokud hotová
- * není, nebo služba chybí, přijde 204 bez cache – hra mlčí a příště se zeptá znovu.
+ * není, nebo služba chybí, přijde 204 bez cache – hra mlčí, dveře službu
+ * požádají znovu a příští hra už nahrávku najde.
  */
 
 import { notFound, VERSION_ID_PATTERN } from '../../../_errors';
 import { admit, store } from '../../../_publish';
-import { fetchVoice } from '../../../_voice';
+import { fetchVoice, scheduleVoice } from '../../../_voice';
 
 export const runtime = 'nodejs';
 
@@ -24,7 +25,11 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   if (game === null) return notFound();
 
   const audio = await fetchVoice(game.spec);
-  if (audio === null) return new Response(null, { status: 204, headers: { 'cache-control': 'no-store' } });
+  if (audio === null) {
+    // Úloha mohla selhat (karta obsazená, služba spala): požádat znovu. Služba běžící úlohu nezdvojí a hotovou vrátí z cache.
+    scheduleVoice(game.spec);
+    return new Response(null, { status: 204, headers: { 'cache-control': 'no-store' } });
+  }
   return new Response(audio, {
     headers: {
       'content-type': 'audio/ogg',

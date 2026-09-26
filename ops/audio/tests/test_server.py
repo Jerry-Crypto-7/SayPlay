@@ -190,6 +190,35 @@ def test_an_id_cannot_walk_out_of_the_cache(tmp_path):
     assert client.get("/voice/..%2Fsecret").status_code == 404
 
 
+def test_settled_jobs_do_not_pile_up(tmp_path):
+    model = FakeModel()
+    client = make(tmp_path, model)
+    vid = client.post("/voice", json={"text": GOAL}).json()["id"]
+    assert wait_done(client, vid).status_code == 200
+    deadline = time.monotonic() + 5
+    while client.app.state.jobs and time.monotonic() < deadline:
+        time.sleep(0.02)
+    assert client.app.state.jobs == {}
+
+
+def test_liveness_asks_the_os_without_signalling():
+    assert voice._alive(os.getpid()) is True
+    assert voice._alive(999_999) is False
+
+
+UNICODE = "Go\x85now﻿!"
+
+
+def test_cleaning_touches_only_ascii_whitespace():
+    assert voice.narration("  Go\n\tnow!  ") == "Go now!"
+    # Python i JavaScript by tady `\s` čistily každý jinak – id by se rozešlo.
+    assert voice.narration(UNICODE) == UNICODE
+    # Týž řetězec pinuje `voice-job.test.ts`.
+    assert (
+        voice.voice_id(voice.narration(UNICODE)) == "7307cbf840740e71fcb7e0c52c0a3f77"
+    )
+
+
 def test_voice_id_matches_the_next_side():
     # Týž řetězec pinuje `src/app/api/play/__tests__/voice-job.test.ts`.
     assert voice.voice_id(GOAL) == "ce7085647d35e2245d58872bf1e061bc"
