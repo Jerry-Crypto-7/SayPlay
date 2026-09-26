@@ -4,6 +4,8 @@
  */
 
 import type { ChainItem, ChecklistEntry } from '../src/play/fidelity/chain';
+import type { Reading } from '../src/play/read/schema';
+import type { GameSpecV1 } from '../src/play/spec';
 
 export type { ChecklistEntry };
 export type FidelityItem = ChainItem;
@@ -23,11 +25,19 @@ export declare interface LossCause {
   readonly ids: readonly string[];
 }
 
-export declare function offlineChain(sentences: readonly { readonly id: string; readonly text: string; readonly checklist: readonly ChecklistEntry[] }[]): {
+type CorpusSentence = { readonly id: string; readonly text: string; readonly checklist: readonly ChecklistEntry[] };
+
+export declare function offlineChain(sentences: readonly CorpusSentence[], draftOf?: (sentence: CorpusSentence) => GameSpecV1): {
   readonly summary: { readonly sentences: number; readonly compiled: number; readonly items: number; readonly inSpec: number; readonly read: number; readonly drawn: number };
   readonly causes: readonly LossCause[];
   readonly sentences: readonly { readonly id: string; readonly control: string; readonly addons: readonly string[]; readonly compiled: boolean; readonly items: readonly FidelityItem[] }[];
 };
+
+export declare const READER_GATE: { readonly minGain: number; readonly maxP95Ms: number };
+
+export declare function readerDecision(input: { readonly reader: number; readonly regex: number; readonly p95Ms: number | null }): 'draft' | 'off';
+
+export declare function readerDraft(text: string, reading: Reading | null): GameSpecV1;
 
 interface Tally {
   readonly hit: number;

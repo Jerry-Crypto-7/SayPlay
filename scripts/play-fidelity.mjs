@@ -40,8 +40,9 @@ import { fileURLToPath } from 'node:url';
 // `ts-paths.mjs` (cesty `@/`, přípony, JSON), vitest sám.
 if (!process.env.VITEST) await import('./ts-paths.mjs');
 const { fidelityChain } = await import('../src/play/fidelity/chain.ts');
-const { draftGameSpec } = await import('../src/play/draft/index.ts');
+const { draftForControl, draftGameSpec } = await import('../src/play/draft/index.ts');
 const { compileGame } = await import('../src/play/compile/index.ts');
+const { readSentence } = await import('../src/play/read/client.ts');
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
@@ -167,9 +168,9 @@ const share = (hit, of) => (of === 0 ? 0 : Math.round((hit / of) * 1000) / 1000)
  * stupni řetězu, souhrn a nejčetnější příčiny ztráty (`why` × ovládání × slot)
  * podle počtu postižených vět. Deterministické – časové razítko přidá až zápis.
  */
-export function offlineChain(sentences) {
+export function offlineChain(sentences, draftOf = (sentence) => draftGameSpec(sentence.text)) {
   const rows = sentences.map((sentence) => {
-    const spec = draftGameSpec(sentence.text);
+    const spec = draftOf(sentence);
     return {
       id: sentence.id,
       text: sentence.text,
@@ -227,6 +228,87 @@ function offlineRun(runId) {
   writeJson(path, { header, corpus, judge10 });
   console.log(JSON.stringify({ corpus: corpus.summary, judge10: judge10.summary }, null, 1));
   console.log(`offline -> ${path}`);
+}
+
+// ---------------------------------------------------------------- čtečka proti klíčovým slovům (P29B T3)
+
+/**
+ * Rozhodovací pravidlo T3, napsané předem: čtečka jde do draftu jen když na
+ * judge-10 zvedne `read` aspoň o 0,10 proti klíčovým slovům a p95 latence
+ * čtení je do 1500 ms (rozpočet `PLAY_READER_BUDGET_MS`). Jinak zůstane
+ * vypnutá za přepínačem.
+ */
+export const READER_GATE = { minGain: 0.1, maxP95Ms: 1500 };
+
+export function readerDecision({ reader, regex, p95Ms }) {
+  // Tolerance na zaokrouhlení podílů na tři místa (`share`).
+  return reader + 1e-9 >= regex + READER_GATE.minGain && p95Ms <= READER_GATE.maxP95Ms ? 'draft' : 'off';
+}
+
+/**
+ * Draft pro měření T3: ovládání z čtení, zbytek z klíčových slov
+ * (`draftForControl`). Role a počty z čtení přidává až T4 v `draft.ts`;
+ * tohle měří největší páku – volbu ovládání – bez zásahu do produkční cesty.
+ */
+export function readerDraft(text, reading) {
+  if (reading === null) return draftGameSpec(text);
+  return draftForControl(text, reading.control) ?? draftGameSpec(text);
+}
+
+/** Přečte věty jednu po druhé (server má jeden slot) a změří latenci každé. */
+async function readAll(sentences, endpoint, timeoutMs) {
+  const out = new Map();
+  for (const sentence of sentences) {
+    const started = performance.now();
+    const reading = await readSentence(sentence.text, { endpoint, timeoutMs });
+    out.set(sentence.id, { reading, ms: Math.round(performance.now() - started) });
+  }
+  return out;
+}
+
+const quantileOf = (values, q) => {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted.length === 0 ? null : sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))];
+};
+
+/**
+ * `--offline --reader <url> [--run <id>]`: korpus i judge-10 přes čtečku a
+ * stejné věty přes klíčová slova, vedle sebe. Timeout čtení je tady štědrý
+ * (10 s), aby pomalá odpověď byla v latenci vidět místo tichého `null`.
+ */
+async function offlineReaderRun(runId, endpoint) {
+  const sets = { corpus: loadCorpus(), judge10: loadCorpus(undefined, 'judge-10.json') };
+  const result = {};
+  const latencies = [];
+  let unread = 0;
+  for (const [name, sentences] of Object.entries(sets)) {
+    const readings = await readAll(sentences, endpoint, 10_000);
+    for (const { reading, ms } of readings.values()) {
+      latencies.push(ms);
+      if (reading === null) unread += 1;
+    }
+    const reader = offlineChain(sentences, (sentence) => readerDraft(sentence.text, readings.get(sentence.id).reading));
+    for (const row of reader.sentences) Object.assign(row, readings.get(row.id));
+    result[name] = { reader, regex: offlineChain(sentences) };
+  }
+  const p95Ms = quantileOf(latencies, 0.95);
+  const decision = readerDecision({ reader: result.judge10.reader.summary.read, regex: result.judge10.regex.summary.read, p95Ms });
+  const header = {
+    about: 'P29B T3: the local reader against the keyword draft on corpus.json (30) and the frozen judge-10.json (10). Reader = control from the reading, the rest from keywords. See evals/play/read/README.md.',
+    runId,
+    endpoint,
+    measuredAt: new Date().toISOString(),
+    commit: commit(),
+    latencyMs: { p50: quantileOf(latencies, 0.5), p95: p95Ms, max: Math.max(...latencies) },
+    unread,
+    gate: READER_GATE,
+    decision,
+  };
+  const path = join(DIR, 'runs', `${runId}.json`);
+  writeJson(path, { header, ...result });
+  const summaries = Object.fromEntries(Object.entries(result).map(([name, pair]) => [name, { reader: pair.reader.summary, regex: pair.regex.summary }]));
+  console.log(JSON.stringify({ latencyMs: header.latencyMs, unread, decision, ...summaries }, null, 1));
+  console.log(`reader -> ${path}`);
 }
 
 function offline() {
@@ -509,7 +591,8 @@ const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(imp
 if (isMain) {
   const options = args();
   const step = options._[0];
-  if (options.offline && typeof options.run === 'string') offlineRun(options.run);
+  if (options.offline && typeof options.reader === 'string') await offlineReaderRun(typeof options.run === 'string' ? options.run : 'p29b-reader', options.reader);
+  else if (options.offline && typeof options.run === 'string') offlineRun(options.run);
   else if (options.offline) offline();
   else if (step === 'run') await run(options);
   else if (step === 'judge') judge(options);

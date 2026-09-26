@@ -10,7 +10,9 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { type ChecklistEntry, checkCorpus, specFidelity, summarize } from '../play-fidelity.mjs';
+import { draftGameSpec } from '@/play/draft';
+
+import { type ChecklistEntry, checkCorpus, offlineChain, readerDecision, readerDraft, specFidelity, summarize } from '../play-fidelity.mjs';
 
 const CORPUS = JSON.parse(readFileSync(join(process.cwd(), 'evals', 'play', 'fidelity', 'corpus.json'), 'utf8'));
 
@@ -100,5 +102,29 @@ describe('summarize', () => {
     expect(metrics.recognizable.final.setting).toEqual({ hit: 0, of: 2 });
     expect(metrics.recognizable.final.judged).toBe(2);
     expect(metrics.timing.upgradeSecondsP50).toBe(45);
+  });
+});
+
+// P29B T3: čtečka proti klíčovým slovům. Rozhodovací číslo zapíná produkční cestu,
+// takže práh a směr porovnání se pinují, ne odhadují.
+describe('reader gate', () => {
+  it('turns the reader on only with +0.10 judge-10 read and p95 within 1500 ms', () => {
+    expect(readerDecision({ reader: 0.56, regex: 0.459, p95Ms: 1500 })).toBe('draft');
+    expect(readerDecision({ reader: 0.55, regex: 0.459, p95Ms: 900 })).toBe('off');
+    expect(readerDecision({ reader: 0.9, regex: 0.459, p95Ms: 1501 })).toBe('off');
+    expect(readerDecision({ reader: 0.559, regex: 0.459, p95Ms: 100 })).toBe('draft');
+  });
+
+  it('drafts on the control the reading picked and falls back to keywords without one', () => {
+    const text = 'a corgi dodges traffic in a neon city';
+    const reading = { control: 'steer' as const, verbs: [], hero: 'corgi', roles: [], setting: 'neon city', mood: null, numbers: { seconds: null, counts: [] } };
+    expect(readerDraft(text, reading).control).toBe('steer');
+    expect(readerDraft(text, null)).toEqual(draftGameSpec(text));
+  });
+
+  it('offlineChain measures the spec the given draft builds', () => {
+    const [sentence] = CORPUS.sentences;
+    const chain = offlineChain([sentence], () => readerDraft(sentence.text, { control: 'rhythm', verbs: [], hero: null, roles: [], setting: null, mood: null, numbers: { seconds: null, counts: [] } }));
+    expect(chain.sentences[0].control).toBe('rhythm');
   });
 });
