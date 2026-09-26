@@ -15,6 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { loadRapier } from '@/play/arcade/physics/world';
 import { compileGame } from '@/play/compile';
 import { draftGameSpec } from '@/play/draft';
 import { readGameSpec } from '@/play/spec';
@@ -185,4 +186,37 @@ describe('regression harness – forty golden sentences, draft only', () => {
     writeFileSync(ARTIFACT, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
     writeFileSync(TABLE, table(report), 'utf8');
   }, 180_000);
+});
+
+/**
+ * Šest ručních her pravidel (P29A T14) a jedna s fyzikou: každá se zkompiluje,
+ * je publikovatelná a robot v ní vystřelí **každé** sloveso. Tiché přepsání
+ * verdiktu by jinak vypadalo jako hra, která jde – jen bez slovesa z věty.
+ */
+describe('regression harness – rules fixtures', () => {
+  const RULES_FIXTURES = ['carry-key', 'throw-rock', 'push-crate', 'give-flower', 'lever-bridge', 'collect-gate'] as const;
+  const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`../../../src/play/arcade/__fixtures__/rules/${name}.json`, import.meta.url), 'utf8'));
+
+  function verdictOf(raw: unknown): string {
+    const read = readGameSpec(raw);
+    if (!read.ok) return `spec: ${read.reason}`;
+    const compiled = compileGame(read.value, SEED);
+    if (!compiled.ok) return `${compiled.reason}: ${compiled.issues.join('; ')}`;
+    const quality = reportFor(compiled.value);
+    if (!quality.publishEligible) return 'not publishable';
+    const verbs = quality.verbs ?? [];
+    const silent = verbs.filter((proof) => !proof.fired).map((proof) => proof.verb);
+    if (verbs.length === 0) return 'no verbs';
+    return silent.length > 0 ? `unfired: ${silent.join(', ')}` : 'ok';
+  }
+
+  it.each(RULES_FIXTURES)('%s compiles, publishes and fires every verb', (name) => {
+    expect(verdictOf(fixture(name))).toBe('ok');
+  });
+
+  it('throw-rock with a physics rock does the same once Rapier is loaded', async () => {
+    const raw = { ...(fixture('throw-rock') as Record<string, unknown>), things: [{ role: 'rock', physics: true }] };
+    await loadRapier();
+    expect(verdictOf(raw)).toBe('ok');
+  });
 });

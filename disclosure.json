@@ -15,9 +15,9 @@
       "scope": "prod"
     },
     {
-      "name": "@dimforge/rapier3d-compat@0.12.0",
+      "name": "@dimforge/rapier3d-compat@0.19.3",
       "kind": "library",
-      "source": "https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.12.0.tgz",
+      "source": "https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.19.3.tgz",
       "authorOrProvider": "neuvedeno upstreamem",
       "license": "Apache-2.0",
       "requiredNotices": [
@@ -26,8 +26,8 @@
         "soubor NOTICE, pokud balíček nějaký nese",
         "označení změn"
       ],
-      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
-      "scope": "dev"
+      "attribution": "držitelé práv k @dimforge/rapier3d-compat, viz https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.19.3.tgz",
+      "scope": "prod"
     },
     {
       "name": "@discoveryjs/json-ext@0.5.7",
@@ -1097,6 +1097,21 @@
         "plné znění licence"
       ],
       "attribution": "Copyright (c) Microsoft Corporation.",
+      "scope": "dev"
+    },
+    {
+      "name": "@types/three › @dimforge/rapier3d-compat@0.12.0",
+      "kind": "library",
+      "source": "https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.12.0.tgz",
+      "authorOrProvider": "neuvedeno upstreamem",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "\"Licensor\" shall mean the copyright owner or entity authorized by",
       "scope": "dev"
     },
     {

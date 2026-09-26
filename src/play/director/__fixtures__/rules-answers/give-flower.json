@@ -1,0 +1,22 @@
+{
+  "sentence": "pick a red tulip and give it to grandma on the bench",
+  "answer": {
+    "plan": "Picking up and giving are not move_free verbs; two rules carry the flower to grandma.",
+    "control": "move_free",
+    "addons": [],
+    "look": null,
+    "setting": "village garden in spring",
+    "title": "A Flower for Grandma",
+    "labels": [{ "role": "player", "label": "child" }],
+    "goal": "Bring grandma a flower.",
+    "ruleRoles": [
+      { "id": "flower", "kind": "item", "label": "red tulip", "count": null },
+      { "id": "grandma", "kind": "destination", "label": "grandma on a bench", "count": null }
+    ],
+    "things": [],
+    "rules": [
+      { "id": "pick_flower", "verb": "pick", "when": { "contact": ["player", "flower"] }, "if": [{ "notHolding": true }], "do": [{ "grab": "other" }] },
+      { "id": "give_flower", "verb": "give", "when": { "contact": ["player", "grandma"] }, "if": [{ "holding": "flower" }], "do": [{ "despawn": "held" }, { "score": 1 }, { "win": true }] }
+    ]
+  }
+}

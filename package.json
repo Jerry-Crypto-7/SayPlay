@@ -39,6 +39,7 @@
     "evaluate:reality-compiler": "vitest run --config vitest.measure.mts evals/reality-compiler/review.measure.ts"
   },
   "dependencies": {
+    "@dimforge/rapier3d-compat": "0.19.3",
     "@mlc-ai/web-llm": "0.2.84",
     "@react-three/fiber": "9.7.x",
     "next": "16.3.x",

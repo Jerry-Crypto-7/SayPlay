@@ -1,9 +1,9 @@
 /**
  * Arkádové jádro (P25A, T2; v2 P25C): `step()`, hash a přehrání.
  *
- * Tik: vstup → ovládání → vezení na kinematickém tělese → integrace
+ * Tik: vstup → ovládání → pravidla `press` (P29A) → vezení na kinematickém tělese → integrace
  * (rychlost, gravitace) → stohování padajících těl → kolize AABB hráče s ostatními (pevné tělo zastaví
- * shora, zdola i z boku; přistání shora není náraz) → projektily (život,
+ * shora, zdola i z boku; přistání shora není náraz) → nesené tělo na hlavu hráče (P29A) → projektily (život,
  * zásah, odraz; P25G) → pravidla → úklid. Všechno jsou celá čísla v `Int32Array`; jádro nemá hodiny ani
  * náhodu, takže stav v tiku *t* je funkce počátečního stavu a vstupů 0..*t*.
  * Každá smyčka jde přes těla nebo pravidla světa, a těch je nejvýš
@@ -37,10 +37,15 @@ import {
   type PieceRef,
   ROLE,
   RUN_STATE,
+  type RuleContext,
   type RulePiece,
+  type RuleTrigger,
+  RESTITUTION_SHIFT,
+  VERB_MOTION,
   bodyBase,
   stateSize,
 } from './contract';
+import { releasePhysics, stepPhysics } from './physics/step';
 
 /** Gravitace v jednotkách za tik² (8 → ~28,8 m/s², arkádově rychlý dopad). */
 export const GRAVITY = 8;
@@ -61,6 +66,8 @@ interface Bound<T> {
 export interface ArcadeProgram {
   readonly control: Bound<ControlPiece>;
   readonly rules: readonly Bound<RulePiece>[];
+  /** Svět má fyzikální těleso (i předlohu): tik spouští fázi Rapieru (P29A). */
+  readonly physics: boolean;
 }
 
 export type ArcadeOutcome = 'running' | 'won' | 'lost';
@@ -75,7 +82,15 @@ export function loadProgram(world: ArcadeWorld, library: ArcadeLibrary): ArcadeP
   return {
     control: bind(library.controls, world.control, 'control'),
     rules: world.rules.map((ref) => bind(library.rules, ref, 'rule')),
+    physics: worldHasPhysics(world),
   };
+}
+
+/** Hledá `FLAG.physics` v počátečním stavu; `arcade-v1` fyziku neznal. */
+export function worldHasPhysics(world: ArcadeWorld): boolean {
+  if ((world.runtimeVersion as string) === 'arcade-v1') return false;
+  for (let at = HEADER_SIZE + BODY.flags; at < world.initial.length; at += BODY_STRIDE) if (((world.initial[at] as number) & FLAG.physics) !== 0) return true;
+  return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -111,6 +126,15 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
   check(library.bots, input.bot, 'bot');
   // Projektil musí zaniknout: konečná životnost je jediná mez jeho letu.
   bodies.forEach((body, index) => {
+    if (body.roleCode !== undefined && (body.role !== 'thing' || !Number.isInteger(body.roleCode) || body.roleCode < 32 || body.roleCode > 255)) {
+      issues.push(`bodies/${index}: roleCode belongs to a thing and lies in 32..255`);
+    }
+    if (body.physics === true && (index === 0 || body.role === 'projectile' || body.kinematic === true || body.gravity === true)) {
+      issues.push(`bodies/${index}: a physics body is not the player, a projectile, kinematic or kernel gravity`);
+    }
+    if (body.physics !== true && (body.ball !== undefined || body.restitution !== undefined)) issues.push(`bodies/${index}: ball and restitution belong to physics bodies`);
+    const restitution = body.restitution ?? 0;
+    if (!Number.isInteger(restitution) || restitution < 0 || restitution > 1000) issues.push(`bodies/${index}: restitution ${restitution} outside 0..1000`);
     if (body.role !== 'projectile') {
       if (body.lifetime !== undefined || body.bounce !== undefined) issues.push(`bodies/${index}: lifetime and bounce belong to projectiles`);
       return;
@@ -145,7 +169,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
     state[base + BODY.w] = body.w;
     state[base + BODY.h] = body.h;
     state[base + BODY.d] = body.d;
-    state[base + BODY.role] = ROLE[body.role];
+    state[base + BODY.role] = body.roleCode ?? ROLE[body.role];
     state[base + BODY.kind] = kinds.indexOf(body.kind);
     if (body.kinematic === true) state[base + BODY.aux1] = body.period ?? 0;
     if (body.role === 'projectile') {
@@ -158,6 +182,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
       (body.solid ? FLAG.solid : 0) |
       (body.gravity === true ? FLAG.gravity : 0) |
       (body.kinematic === true ? FLAG.kinematic : 0) |
+      (body.physics === true ? FLAG.physics | (body.ball === true ? FLAG.ball : 0) | ((body.restitution ?? 0) << RESTITUTION_SHIFT) : 0) |
       player;
   });
 
@@ -235,11 +260,18 @@ function overlaps(state: ArcadeState, a: number, b: number): boolean {
   );
 }
 
+const brake = (v: number): number => (v > 0 ? Math.max(0, v - VERB_MOTION.friction) : Math.min(0, v + VERB_MOTION.friction));
+
+/** Index neseného těla, nebo −1. */
+const heldIndex = (state: ArcadeState): number => (state[HD.held] as number) - 1;
+
 function integrate(state: ArcadeState, count: number): void {
   for (let i = 0; i < count; i += 1) {
     const base = baseOf(i);
     if (!alive(state, base)) continue;
     const flags = state[base + S.flags] as number;
+    // Fyzikální těleso hýbe Rapier (`stepPhysics`), jádro ho neintegruje.
+    if ((flags & F.physics) !== 0) continue;
     // Kinematické tělo jede jen svou rychlostí: gravitace ani země na něj nepůsobí.
     const falls = (flags & (F.gravity | F.kinematic)) === F.gravity;
     if (falls) {
@@ -254,6 +286,11 @@ function integrate(state: ArcadeState, count: number): void {
       state[base + S.y] = 0;
       state[base + S.vy] = 0;
       state[base + S.flags] = (state[base + S.flags] as number) | F.grounded;
+    }
+    // Tření (P29A): strčené nebo hozené tělo na zemi zpomaluje o stálý krok, až stojí.
+    if ((flags & F.friction) !== 0 && (state[base + S.y] as number) <= 0) {
+      state[base + S.vx] = brake(state[base + S.vx] as number);
+      state[base + S.vz] = brake(state[base + S.vz] as number);
     }
     // Kyvadlo: kinematické tělo s periodou po `aux1` ticích obrátí směr.
     if ((flags & F.kinematic) !== 0 && (state[base + S.aux1] as number) > 0) {
@@ -280,7 +317,7 @@ function settle(state: ArcadeState, count: number, player: number): void {
     if (i === player) continue;
     const base = baseOf(i);
     const flags = state[base + S.flags] as number;
-    if ((flags & (F.alive | F.gravity | F.kinematic)) !== (F.alive | F.gravity) || state[base + S.role] === R.projectile) continue;
+    if ((flags & (F.alive | F.gravity | F.kinematic | F.physics)) !== (F.alive | F.gravity) || state[base + S.role] === R.projectile) continue;
     const y = state[base + S.y] as number;
     if (y <= 0) continue;
     const prevY = y - (state[base + S.vy] as number);
@@ -331,8 +368,10 @@ function carry(state: ArcadeState, count: number, player: number): void {
 function collide(state: ArcadeState, count: number, player: number, prevX: number, prevY: number, prevZ: number): number[] {
   const p = baseOf(player);
   const contacts: number[] = [];
+  // Nesené tělo sedí hráči na hlavě: nezastaví ho ani se ho nedotkne.
+  const held = heldIndex(state);
   for (let i = 0; i < count; i += 1) {
-    if (i === player) continue;
+    if (i === player || i === held) continue;
     const base = baseOf(i);
     // Projektil hráče nezastaví ani se ho nedotkne: vylétá z něj.
     if (!alive(state, base) || state[base + S.role] === R.projectile || !overlaps(state, p, base)) continue;
@@ -438,10 +477,12 @@ function projectiles(state: ArcadeState, count: number, player: number): number[
   return ended;
 }
 
-function collect(effects: ArcadeEffect[], fired: readonly ArcadeEffect[]): void {
+/** Efekty pravidla do tiku; `owners` (jen se stopou) si ke každému pamatuje index pravidla. */
+function collect(effects: ArcadeEffect[], owners: number[] | undefined, fired: readonly ArcadeEffect[], rule: number): void {
   for (const effect of fired) {
     if (effects.length >= ARCADE_LIMITS.maxEffectsPerTick) return;
     effects.push(effect);
+    owners?.push(rule);
   }
 }
 
@@ -449,16 +490,16 @@ function collect(effects: ArcadeEffect[], fired: readonly ArcadeEffect[]): void 
  * Efekt `spawn`: slot = první mrtvý od `spawnBase` (těla úrovně se nikdy
  * nepřepíšou), jinak další volný v rezervě; plno → zahodit.
  */
-function spawn(state: ArcadeState, effect: Extract<ArcadeEffect, { kind: 'spawn' }>): void {
+function spawn(state: ArcadeState, effect: Extract<ArcadeEffect, { kind: 'spawn' }>): boolean {
   const count = state[HD.bodyCount] as number;
-  if (effect.template < 0 || effect.template >= count) return;
+  if (effect.template < 0 || effect.template >= count) return false;
   let slot = -1;
   for (let i = state[HD.spawnBase] as number; i < count && slot < 0; i += 1) if (!alive(state, baseOf(i))) slot = i;
   if (slot < 0 && baseOf(count + 1) <= state.length) {
     slot = count;
     state[HD.bodyCount] = count + 1;
   }
-  if (slot < 0) return;
+  if (slot < 0) return false;
   const from = baseOf(effect.template);
   const to = baseOf(slot);
   state.copyWithin(to, from, from + BODY_STRIDE);
@@ -474,19 +515,132 @@ function spawn(state: ArcadeState, effect: Extract<ArcadeEffect, { kind: 'spawn'
     state[to + S.aux1] = 0;
   }
   state[to + S.flags] = ((state[to + S.flags] as number) | F.alive) & ~(F.grounded | F.sliding);
+  return true;
 }
 
-function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: number): void {
-  let won = false;
-  let lost = false;
+/** Nesené tělo na hlavu hráče a jeho směr do `aux` (směr hodu). Mrtvé nesené tělo hráč pouští. */
+function follow(state: ArcadeState, player: number): void {
+  const held = heldIndex(state);
+  if (held < 0) return;
+  const base = baseOf(held);
+  if (!alive(state, base)) {
+    state[HD.held] = 0;
+    return;
+  }
+  const p = baseOf(player);
+  state[base + S.x] = state[p + S.x] as number;
+  state[base + S.y] = (state[p + S.y] as number) + (state[p + S.h] as number);
+  state[base + S.z] = state[p + S.z] as number;
+  state[base + S.vx] = 0;
+  state[base + S.vy] = 0;
+  state[base + S.vz] = 0;
+  const vx = state[p + S.vx] as number;
+  const vz = state[p + S.vz] as number;
+  if (vx !== 0 || vz !== 0) {
+    state[base + S.aux0] = vx;
+    state[base + S.aux1] = vz;
+  }
+}
+
+/** Tělo, se kterým slovesa smí hýbat: živé, ne hráč, ne kinematické, ne projektil. */
+function movable(state: ArcadeState, body: number): boolean {
+  if (body < 0 || body >= (state[HD.bodyCount] as number) || body === state[HD.player]) return false;
+  const base = baseOf(body);
+  return ((state[base + S.flags] as number) & (F.alive | F.kinematic)) === F.alive && state[base + S.role] !== R.projectile;
+}
+
+function grab(state: ArcadeState, body: number): boolean {
+  if (heldIndex(state) >= 0 || !movable(state, body)) return false;
+  const base = baseOf(body);
+  const p = baseOf(state[HD.player] as number);
+  // Směr, než se hráč pohne: od hráče k tělu – sebral ho tím, že do něj vešel.
+  const dx = (state[base + S.x] as number) - (state[p + S.x] as number);
+  const dz = (state[base + S.z] as number) - (state[p + S.z] as number);
+  state[base + S.aux0] = dx;
+  state[base + S.aux1] = dx === 0 && dz === 0 ? 1 : dz;
+  state[HD.held] = body + 1;
+  follow(state, state[HD.player] as number);
+  return true;
+}
+
+/** Pustí nesené tělo: hodem ve směru z `aux`, nebo položením před hráče po převažující ose. */
+function letGo(state: ArcadeState, thrown: boolean): boolean {
+  const held = heldIndex(state);
+  if (held < 0) return false;
+  state[HD.held] = 0;
+  const base = baseOf(held);
+  const p = baseOf(state[HD.player] as number);
+  const ax = state[base + S.aux0] as number;
+  // Stav s `held` zapsaným zvenku (bez `grab`) směr nemá: vpřed.
+  const az = ax === 0 && state[base + S.aux1] === 0 ? 1 : (state[base + S.aux1] as number);
+  state[base + S.aux0] = 0;
+  state[base + S.aux1] = 0;
+  // Fyzikální těleso padá a brzdí v Rapieru; jádro mu gravitaci ani tření nepřidá.
+  const flags = state[base + S.flags] as number;
+  state[base + S.flags] = (flags & F.physics) !== 0 ? flags : (flags | F.gravity | F.friction) & ~F.grounded;
+  if (thrown) {
+    // `Math.sqrt` je v IEEE 754 přesně zaokrouhlená, takže dává všude stejné celé číslo.
+    const length = Math.sqrt(ax * ax + az * az);
+    state[base + S.vx] = Math.trunc((ax * VERB_MOTION.throwSpeed) / length);
+    state[base + S.vz] = Math.trunc((az * VERB_MOTION.throwSpeed) / length);
+    state[base + S.vy] = VERB_MOTION.throwLift;
+    return true;
+  }
+  const alongX = Math.abs(ax) > Math.abs(az);
+  const reach = alongX
+    ? Math.ceil(((state[p + S.w] as number) + (state[base + S.w] as number)) / 2)
+    : Math.ceil(((state[p + S.d] as number) + (state[base + S.d] as number)) / 2);
+  state[base + S.x] = (state[p + S.x] as number) + (alongX ? Math.sign(ax) * reach : 0);
+  state[base + S.z] = (state[p + S.z] as number) + (alongX ? 0 : Math.sign(az) * reach);
+  state[base + S.y] = state[p + S.y] as number;
+  return true;
+}
+
+function push(state: ArcadeState, body: number): boolean {
+  if (!movable(state, body) || body === heldIndex(state)) return false;
+  const base = baseOf(body);
+  const p = baseOf(state[HD.player] as number);
+  const dx = (state[base + S.x] as number) - (state[p + S.x] as number);
+  const dz = (state[base + S.z] as number) - (state[p + S.z] as number);
+  if (Math.abs(dx) > Math.abs(dz)) {
+    state[base + S.vx] = Math.sign(dx) * VERB_MOTION.pushSpeed;
+    state[base + S.vz] = 0;
+  } else {
+    state[base + S.vx] = 0;
+    state[base + S.vz] = (dz < 0 ? -1 : 1) * VERB_MOTION.pushSpeed;
+  }
+  state[base + S.flags] = (state[base + S.flags] as number) | F.friction;
+  return true;
+}
+
+function toggle(state: ArcadeState, role: number): boolean {
+  const count = state[HD.bodyCount] as number;
+  const player = state[HD.player] as number;
+  let changed = false;
+  for (let i = 0; i < count; i += 1) {
+    const base = baseOf(i);
+    const flags = state[base + S.flags] as number;
+    if (i === player || state[base + S.role] !== role || (flags & F.switched) !== 0) continue;
+    state[base + S.flags] = (flags ^ F.alive) | F.switched;
+    changed = true;
+  }
+  return changed;
+}
+
+/**
+ * Použije efekty od `from`. Se stopou ohlásí pravidlo (`owners[i]`) jen za efekt,
+ * který stav opravdu změnil – hod s prázdnou rukou ani přepnutí bez cíle sloveso nedokáže.
+ */
+function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: number, end: TickEnd, owners?: readonly number[], trace?: RuleTrace): void {
   for (let i = from; i < effects.length; i += 1) {
     const effect = effects[i] as ArcadeEffect;
+    let changed = true;
     if (effect.kind === 'score') state[HD.counters + CT.score] = (state[HD.counters + CT.score] as number) + effect.amount;
     else if (effect.kind === 'damage') state[HD.counters + CT.health] = (state[HD.counters + CT.health] as number) - effect.amount;
     else if (effect.kind === 'count') state[HD.counters + CT[effect.counter]] = (state[HD.counters + CT[effect.counter]] as number) + effect.amount;
-    else if (effect.kind === 'lose') lost = true;
-    else if (effect.kind === 'win') won = true;
-    else if (effect.kind === 'spawn') spawn(state, effect);
+    else if (effect.kind === 'lose') end.lost = true;
+    else if (effect.kind === 'win') end.won = true;
+    else if (effect.kind === 'spawn') changed = spawn(state, effect);
     else if (effect.kind === 'respawn') {
       const p = baseOf(state[HD.player] as number);
       state[p + S.x] = state[HD.respawnX] as number;
@@ -496,28 +650,67 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
       state[p + S.vy] = 0;
       state[p + S.vz] = 0;
       state[p + S.flags] = (state[p + S.flags] as number) | F.grounded;
-    } else if (effect.body >= 0 && effect.body < (state[HD.bodyCount] as number)) {
+    } else if (effect.kind === 'grab') changed = grab(state, effect.body);
+    else if (effect.kind === 'release') changed = letGo(state, false);
+    else if (effect.kind === 'throwHeld') changed = letGo(state, true);
+    else if (effect.kind === 'push') changed = push(state, effect.body);
+    else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
+    else if (effect.body >= 0 && effect.body < (state[HD.bodyCount] as number)) {
       const base = baseOf(effect.body);
-      if (effect.kind === 'despawn') state[base + S.flags] = (state[base + S.flags] as number) & ~F.alive;
-      else {
+      if (effect.kind === 'despawn') {
+        changed = alive(state, base);
+        state[base + S.flags] = (state[base + S.flags] as number) & ~F.alive;
+      } else {
         state[HD.respawnX] = state[base + S.x] as number;
         state[HD.respawnY] = (state[base + S.y] as number) + (state[base + S.h] as number);
         state[HD.respawnZ] = state[base + S.z] as number;
       }
-    }
+    } else changed = false;
+    if (changed && trace !== undefined) trace(owners?.[i] as number);
   }
-  // Prohra má přednost: náraz a páska v tomtéž tiku není výhra.
-  if (lost) state[HD.runState] = RUN_STATE.lost;
-  else if (won) state[HD.runState] = RUN_STATE.won;
+}
+
+/** Výhra a prohra z jednoho průchodu `step` (stisk + hlavní průchod, nebo čítače). */
+interface TickEnd {
+  won: boolean;
+  lost: boolean;
+}
+
+function settleRun(state: ArcadeState, end: TickEnd): void {
+  if (end.lost) state[HD.runState] = RUN_STATE.lost;
+  else if (end.won) state[HD.runState] = RUN_STATE.won;
+}
+
+/**
+ * Stopa výstřelů (P29A): jádro ji zavolá s indexem pravidla světa pokaždé, když
+ * efekt toho pravidla změnil stav. Je mimo stav, takže hash ani replay nevidí.
+ */
+export type RuleTrace = (rule: number) => void;
+
+function fireRules(effects: ArcadeEffect[], owners: number[] | undefined, program: ArcadeProgram, trigger: RuleTrigger, ctx: RuleContext): void {
+  const rules = program.rules;
+  for (let r = 0; r < rules.length; r += 1) {
+    const rule = rules[r] as Bound<RulePiece>;
+    if (rule.piece.trigger !== trigger) continue;
+    collect(effects, owners, rule.piece.fire(ctx, rule.params), r);
+  }
 }
 
 /** Jeden tik. Po konci běhu (`won`/`lost`) nedělá nic. Vrací efekty, které pravidla v tiku vydala. */
-export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProgram): readonly ArcadeEffect[] {
+export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProgram, trace?: RuleTrace): readonly ArcadeEffect[] {
   if (state[HD.runState] !== RUN_STATE.running) return [];
   const count = state[HD.bodyCount] as number;
   const player = state[HD.player] as number;
+  const none = { state, player, other: -1, source: -1, input };
 
   program.control.piece.step(state, player, input, program.control.params);
+  // Stisk (P29A): hned za ovládáním, aby hod nebo zvednutí vyšlo už v tomto tiku.
+  const effects: ArcadeEffect[] = [];
+  const owners = trace === undefined ? undefined : [];
+  const end: TickEnd = { won: false, lost: false };
+  fireRules(effects, owners, program, 'press', none);
+  apply(state, effects, 0, end, owners, trace);
+  const pressed = effects.length;
   carry(state, count, player);
   const p = baseOf(player);
   const prevX = state[p + S.x] as number;
@@ -525,31 +718,29 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const prevZ = state[p + S.z] as number;
   integrate(state, count);
   settle(state, count, player);
+  if (program.physics) stepPhysics(state, GRAVITY);
   const contacts = collide(state, count, player, prevX, prevY, prevZ);
+  follow(state, player);
   const ended = projectiles(state, count, player);
 
-  const effects: ArcadeEffect[] = [];
-  for (const other of contacts) {
-    for (const rule of program.rules) {
-      if (rule.piece.trigger === 'contact') collect(effects, rule.piece.fire({ state, player, other, source: -1 }, rule.params));
-    }
-  }
+  for (const other of contacts) fireRules(effects, owners, program, 'contact', { state, player, other, source: -1, input });
   for (let k = 0; k < ended.length; k += 2) {
-    for (const rule of program.rules) {
-      if (rule.piece.trigger === 'hit') collect(effects, rule.piece.fire({ state, player, other: ended[k + 1] as number, source: ended[k] as number }, rule.params));
-    }
+    fireRules(effects, owners, program, 'hit', { state, player, other: ended[k + 1] as number, source: ended[k] as number, input });
   }
-  for (const rule of program.rules) {
-    if (rule.piece.trigger === 'tick') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1 }, rule.params));
-  }
-  apply(state, effects, 0);
+  fireRules(effects, owners, program, 'tick', none);
+  apply(state, effects, pressed, end, owners, trace);
+  // Stisk a hlavní průchod jsou jeden `apply` jako před P29A: prohra má přednost,
+  // výhra stiskem a smrtelný náraz v témže tiku není výhra.
+  settleRun(state, end);
+  // Průchod čítačů rozhoduje až po nich a smí výsledek přepsat (dosažené skóre porazí náraz téhož tiku).
   const countersFrom = effects.length;
-  for (const rule of program.rules) {
-    if (rule.piece.trigger === 'counter') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1 }, rule.params));
-  }
-  apply(state, effects, countersFrom);
+  const counted: TickEnd = { won: false, lost: false };
+  fireRules(effects, owners, program, 'counter', none);
+  apply(state, effects, countersFrom, counted, owners, trace);
+  settleRun(state, counted);
 
   state[HD.tick] = (state[HD.tick] as number) + 1;
+  if (program.physics && state[HD.runState] !== RUN_STATE.running) releasePhysics(state);
   return effects;
 }
 
@@ -581,5 +772,7 @@ export function replay(world: ArcadeWorld, inputs: readonly InputEvent[], librar
     const event = inputs[next];
     step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
   }
+  // Běh, který dojel na horizont, konec neohlásil: svět Rapieru se uvolní tady, ne až při úklidu paměti.
+  releasePhysics(state);
   return { hash: hashArcade(state), outcome: outcomeOf(state), tick: state[HD.tick] as number };
 }

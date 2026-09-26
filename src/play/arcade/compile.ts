@@ -15,8 +15,9 @@ import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
 import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef, rampMarks } from './contract';
-import { buildWorld, replay } from './kernel';
+import { buildWorld, replay, worldHasPhysics } from './kernel';
 import { ARCADE_LIBRARY } from './library';
+import { loadRapier, rapierIfLoaded } from './physics/world';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformLevel, platformRules } from './pieces/platform';
@@ -27,6 +28,7 @@ import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
 import { throwField, throwRules } from './pieces/throw';
 import { timingParts } from './pieces/timing';
+import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
@@ -120,20 +122,48 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   // Doplňky (P26D) dostanou hotové části základního ovládání.
   const base = { ...spec, controlParams: addonControlParams(spec) } as GameSpecV1;
-  const own = partsOf(base, seed, health);
+  // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
+  const own = rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
   const lives = 'health' in own ? own.health : health;
-  const { control, bot, level, rules, issues } = applyAddons(own, { spec, seed, health: lives });
+  const { control, bot, level: baseLevel, rules, issues } = applyAddons(own, { spec, seed, health: lives });
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
+  // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
+  const ruled = compileRules(spec, baseLevel, seed);
+  if (ruled.issues.length > 0) return { ok: false, issues: ruled.issues };
+  const level = ruled.level;
+  const builtIn = rules.length + (timer?.onEnd === 'lose' ? 1 : 0);
+  // Strop jádra platí na všechna pravidla dohromady; režisér musí vědět, kolik mu jich zbylo.
+  if (builtIn + ruled.rules.length > ARCADE_LIMITS.maxRules) {
+    return { ok: false, issues: [`rules: this ${spec.control} game already uses ${builtIn} built-in rules, so the spec may add at most ${ARCADE_LIMITS.maxRules - builtIn} (it has ${ruled.rules.length}) – merge or drop rules`] };
+  }
+  rules.push(...ruled.rules);
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
 
   const built = buildWorld({ seed, control, rules, bot, level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);
   return built.ok ? { ok: true, world: built.world } : built;
 }
 
+/** Chce spec fyzikální tělesa (P29A T13)? Jen pak se smí stahovat Rapier. */
+export const specNeedsPhysics = (spec: GameSpecV1): boolean => (spec.things ?? []).some((thing) => thing.physics === true);
+
+/**
+ * Načte Rapier, když ho hra potřebuje; hra bez fyziky modul nestáhne. Jádro je
+ * synchronní, takže tohle musí proběhnout před `compileArcade` i před prvním
+ * tikem v prohlížeči (`worldHasPhysics`).
+ */
+/** Přechodná chyba serveru, ne vada specu: režisér ji v opravném kole nedostane (`playabilityIssues`). */
+export const PHYSICS_NOT_LOADED = 'physics: the physics engine is not loaded yet (preloadPhysics)';
+
+export async function preloadPhysics(spec: GameSpecV1): Promise<void> {
+  if (specNeedsPhysics(spec)) await loadRapier();
+}
+
 export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult {
   const made = arcadeWorldOf(spec, seed);
   if (!made.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: made.issues };
   const { world } = made;
+  // Bez načteného Rapieru by robot spadl na výjimce jádra; volající má zavolat `preloadPhysics`.
+  if (worldHasPhysics(world) && rapierIfLoaded() === null) return { ok: false, reason: 'WORLD_REJECTED', issues: [PHYSICS_NOT_LOADED] };
   const bot = runBot(world);
   if (bot.outcome !== 'won') return { ok: false, reason: 'UNWINNABLE', issues: [`the bot ${bot.outcome === 'lost' ? 'lost' : 'did not finish'} at tick ${bot.tick}, ${bot.distanceM} m into the track`] };
   // Trať, kterou vyhraje i nečinný hráč, je vada rozvržení – dveře publikace

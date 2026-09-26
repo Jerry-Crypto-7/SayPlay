@@ -75,6 +75,12 @@ export const HEADER = {
   respawnZ: 7,
   /** Čítače (`COUNTER`) od tohoto slotu. Náhodu spotřebuje jen generátor, jádro žádnou. */
   counters: 8,
+  /**
+   * Co hráč nese (P29A): index těla + 1, 0 = nic. Je to poslední, dosud nikým
+   * nepoužitý slot čítačů – nový slot hlavičky by posunul těla a pohnul hashi
+   * všech dnešních her, tenhle je v nich všech 0 = „nic nenese“.
+   */
+  held: 15,
 } as const;
 export const HEADER_SIZE = HEADER.counters + ARCADE_LIMITS.maxCounters;
 
@@ -85,7 +91,8 @@ export type RunStateCode = (typeof RUN_STATE)[keyof typeof RUN_STATE];
  * Pojmenované sloty jednoho těla. Osy: `x` do stran, `y` nahoru, `z` vpřed
  * (běžec běží po +z). `x/y/z` je střed spodní stěny AABB, `w/h/d` celé rozměry.
  * `aux0/aux1` jsou pracovní sloty ovládání (cílový pruh, časovač skluzu);
- * u projektilu `aux0` = odraz 0–`BOUNCE_MAX`, `aux1` = zbývající tiky života.
+ * u projektilu `aux0` = odraz 0–`BOUNCE_MAX`, `aux1` = zbývající tiky života;
+ * u neseného těla (P29A) `aux0/aux1` = poslední nenulová rychlost hráče `vx/vz` (směr hodu).
  */
 export const BODY = {
   x: 0,
@@ -122,7 +129,52 @@ export const FLAG = {
    * na něm stojí, se veze (pohyblivá plošina, auto, trubka).
    */
   kinematic: 1 << 5,
+  /** Na zemi ho brzdí tření (P29A): tělo po `push` a `throwHeld` dojede a zastaví se. */
+  friction: 1 << 6,
+  /** Efekt `toggle` ho už přepnul (P29A); druhý výstřel pravidla ho nevrátí. */
+  switched: 1 << 7,
+  /**
+   * Hýbe s ním Rapier (P29A): padá, klouže, odráží se a převrací se. Jádro ho
+   * neintegruje; po každém tiku do stavu zapíše kvantovanou polohu, rychlost
+   * a v `aux0/aux1` natočení (`packRotation`).
+   */
+  physics: 1 << 8,
+  /** Jen s `physics`: koule místo kvádru. */
+  ball: 1 << 9,
 } as const;
+
+/** Odraz fyzikálního tělesa v promile, uložený v bitech `flags` od tohoto bitu (10 bitů, 0–1000). */
+export const RESTITUTION_SHIFT = 12;
+export const RESTITUTION_MASK = 0x3ff;
+
+/**
+ * Podkroky Rapieru za tik (`numSolverIterations`). Gravitace se v nich
+ * přičítá po částech, takže poloha za tik klesne o `g·(k+1)/(2k)`, ne o celé
+ * `g` jako v jádře – s tím počítá předpověď hodu (`throwFlight`).
+ */
+export const PHYSICS_SUBSTEPS = 4;
+
+/** Kvantování natočení: složky kvaternionu × `QUAT`. */
+export const QUAT = 10_000;
+
+/**
+ * Natočení fyzikálního tělesa do dvou slotů (P29A): `aux0` = qx|qy, `aux1` =
+ * qz|(QUAT − qw), po 16 bitech, s `qw ≥ 0`. Bez natočení vyjdou obě nuly –
+ * stejně jako pracovní sloty každého jiného těla.
+ */
+export function packRotation(qx: number, qy: number, qz: number, qw: number): readonly [number, number] {
+  const s = qw < 0 ? -1 : 1;
+  const q = (v: number): number => Math.round(v * s * QUAT);
+  return [(q(qx) & 0xffff) | (q(qy) << 16), (q(qz) & 0xffff) | ((QUAT - q(qw)) << 16)];
+}
+
+/** Opak `packRotation`: kvaternion `[x, y, z, w]` (nenormalizovaný, složky × 1/`QUAT`). */
+export function unpackRotation(aux0: number, aux1: number): readonly [number, number, number, number] {
+  return [((aux0 << 16) >> 16) / QUAT, (aux0 >> 16) / QUAT, ((aux1 << 16) >> 16) / QUAT, (QUAT - (aux1 >> 16)) / QUAT];
+}
+
+/** Slovesné efekty (P29A), jednotky za tik: hod vpřed, zdvih hodu, impuls strčení, tření za tik. */
+export const VERB_MOTION = { throwSpeed: 200, throwLift: 80, pushSpeed: 160, friction: 8 } as const;
 
 /**
  * Pevné sloty čítačů v hlavičce (`HEADER.counters + index`). `ammo` = náboje
@@ -147,6 +199,12 @@ export const ROLE = {
   projectile: 9,
   target: 10,
   checkpoint: 11,
+  /**
+   * Věc pravidel ze specu (P29A): skutečný kód nese `BodyInit.roleCode`
+   * (`THING_ROLE_BASE` a výš, jeden na roli specu), tohle jméno jen značí, že
+   * tělo patří pravidlům.
+   */
+  thing: 12,
 } as const;
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
@@ -254,14 +312,29 @@ export type ArcadeEffect =
   /** Hráč zpět na místo návratu (`HEADER.respawnX..Z`), bez rychlosti. */
   | { readonly kind: 'respawn' }
   /** Místo návratu = střed horní hrany těla `body`. */
-  | { readonly kind: 'checkpoint'; readonly body: number };
+  | { readonly kind: 'checkpoint'; readonly body: number }
+  /**
+   * Hráč tělo zvedne (P29A): `HEADER.held`, tělo jede každý tik na hlavě
+   * hráče, dokud ho nepustí. Když už něco nese, efekt se zahodí.
+   */
+  | { readonly kind: 'grab'; readonly body: number }
+  /** Nesené tělo položí před sebe na zem. */
+  | { readonly kind: 'release' }
+  /** Nesené tělo hodí ve směru, kam hráč naposled šel; dopadne a třením dojede. */
+  | { readonly kind: 'throwHeld' }
+  /** Impuls tělu `body` po převažující ose od hráče; třením dojede. */
+  | { readonly kind: 'push'; readonly body: number }
+  /** Každé ještě nepřepnuté tělo role `role` se jednou přepne: živé zmizí, skryté se objeví. */
+  | { readonly kind: 'toggle'; readonly role: number };
 
 /**
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),
  * nebo dopadl na zem bez odrazu, dohasl či se dokutálel (`other` −1). Jádro ho
  * despawnuje samo, pravidlo jen rozhodne, co zásah znamená.
+ * `press` (P29A) = hned po ovládání, s vstupem tiku: pravidlo samo pozná, zda
+ * hráč stiskl, co ho zajímá.
  */
-export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit';
+export type RuleTrigger = 'contact' | 'tick' | 'counter' | 'hit' | 'press';
 
 /** Co pravidlo vidí: stav jen ke čtení, hráč a u `contact` těl, se kterým se dotkl. */
 export interface RuleContext {
@@ -271,6 +344,8 @@ export interface RuleContext {
   readonly other: number;
   /** U `hit` projektil (už mrtvý, sloty čitelné), jinak −1. */
   readonly source: number;
+  /** Vstup tohoto tiku (P29A, spouštěč `press`). */
+  readonly input: ArcadeInput;
 }
 
 /** Pravidlo: spouštěč → efekty. Stav nemění samo, efekty aplikuje jádro. */
@@ -282,6 +357,8 @@ export interface RulePiece<P = unknown> extends PieceBase<P> {
 /** Počáteční tělo, jak ho vydá generátor. */
 export interface BodyInit {
   readonly role: ArcadeRole;
+  /** Jen role `thing` (P29A): kód role pravidla, který jádro zapíše místo `ROLE.thing`. */
+  readonly roleCode?: number;
   readonly kind: string;
   readonly x: number;
   readonly y: number;
@@ -309,6 +386,12 @@ export interface BodyInit {
   readonly lifetime?: number;
   /** Jen role `projectile` s gravitací: odraz od země 0..`BOUNCE_MAX` (rychlost × bounce / 1000). */
   readonly bounce?: number;
+  /** `FLAG.physics` (P29A): hýbe s ním Rapier. Ne hráč, ne projektil, ne kinematické. */
+  readonly physics?: boolean;
+  /** Jen s `physics`: tvar koule (průměr = nejmenší rozměr). */
+  readonly ball?: boolean;
+  /** Jen s `physics`: odraz v promile 0–1000 (výchozí 0). */
+  readonly restitution?: number;
 }
 
 export interface ArcadeLevel {

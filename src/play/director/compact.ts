@@ -12,20 +12,40 @@
  * neřekl, a nic, co by hra neukázala.
  */
 
+import { z } from 'zod';
+
 import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { LOOK_IDS, type LookId } from '../arcade/look';
+import { THINGS_MAX, rulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { CAPABILITIES } from '../capabilities';
 import { draftForControl } from '../draft';
-import { ADDONS, CONTROLS, readGameSpec, type ControlId, type GameSpecV1 } from '../spec';
+import { ADDONS, CONTROLS, ROLE_KINDS, readGameSpec, type ControlId, type GameRole, type GameSpecV1 } from '../spec';
 
+import { strictSchema } from './answer-schema';
+import { rulesPromptLines } from './prompt';
 import type { DirectorRead } from './read';
+
+const strictOf = (schema: z.ZodType): Record<string, unknown> => strictSchema(z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }) as Record<string, unknown>);
+
+/** Role, kterou potřebují jen pravidla (klíč, dveře, zvon) – šablona ovládání ji nemá. */
+const RULE_ROLE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['id', 'kind', 'label', 'count'],
+  properties: {
+    id: { type: 'string' },
+    kind: { type: 'string', enum: ROLE_KINDS.filter((kind) => kind !== 'player') },
+    label: { type: 'string' },
+    count: { anyOf: [{ type: 'integer', minimum: 1, maximum: 50 }, { type: 'null' }] },
+  },
+};
 
 export const COMPACT_ANSWER_SCHEMA: Record<string, unknown> = {
   type: 'object',
   additionalProperties: false,
-  required: ['plan', 'control', 'addons', 'look', 'setting', 'title', 'labels', 'goal'],
+  required: ['plan', 'control', 'addons', 'look', 'setting', 'title', 'labels', 'goal', 'ruleRoles', 'things', 'rules'],
   properties: {
     plan: { type: 'string' },
     control: { type: 'string', enum: [...CONTROLS] },
@@ -38,6 +58,9 @@ export const COMPACT_ANSWER_SCHEMA: Record<string, unknown> = {
       items: { type: 'object', additionalProperties: false, required: ['role', 'label'], properties: { role: { type: 'string' }, label: { type: 'string' } } },
     },
     goal: { type: 'string' },
+    ruleRoles: { type: 'array', maxItems: THINGS_MAX, items: RULE_ROLE_SCHEMA },
+    things: strictOf(thingsSchema),
+    rules: strictOf(rulesSchema),
   },
 };
 
@@ -53,7 +76,7 @@ function controlLines(): string {
 /** Systémový text bez věty; stavěný při volání, aby změna tabulky schopností prošla ven. */
 export function compactSystemPrompt(): string {
   return [
-    "Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, control, addons, look, setting, title, labels, goal}.",
+    "Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, control, addons, look, setting, title, labels, goal, ruleRoles, things, rules}.",
     'control: the control whose cues fit the main verb; "tap_go" is the tap-to-move grid (walk, pick up, use) for anything the others do not fit.',
     'addons: a 2nd verb of the sentence from that control\'s addons ("jump and shoot" = platform ["shoot"]), else [].',
     `look: the scene set that best shows the setting, or null: ${LOOK_IDS.join('|')}.`,
@@ -63,6 +86,7 @@ export function compactSystemPrompt(): string {
     "Keep the user's nouns, numbers and names. Improve the starting point, do not copy it blindly.",
     'CONTROLS:',
     controlLines(),
+    rulesPromptLines(),
   ].join('\n');
 }
 
@@ -97,6 +121,13 @@ function textOf(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null;
   const trimmed = value.trim();
   return trimmed === '' ? null : trimmed.slice(0, max).trim();
+}
+
+/** Přísný režim píše chybějící volitelné pole jako `null`; spec ho chce vynechané. */
+function withoutNulls(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(withoutNulls);
+  if (!isRecord(value)) return value;
+  return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== null).map(([key, item]) => [key, withoutNulls(item)]));
 }
 
 /** Kompaktní odpověď → hratelný spec nad šablonou ovládání. */
@@ -135,6 +166,20 @@ export function composeCompact(sentence: string, body: unknown, seed = 1): Direc
     spec.tutorial.goalLine = goal;
     spec.objective.description = goal;
   }
+
+  // Pravidla (P29A T7): přísný tvar nese volitelná pole jako null. Role jen pro
+  // pravidla se přidají ke šabloně; co nesedí, odmítne `readGameSpec` – pravidlo
+  // se nezahodí potichu, aby opravné kolo vědělo proč.
+  const rules = Array.isArray(body.rules) ? body.rules : [];
+  const things = Array.isArray(body.things) ? body.things : [];
+  // Role zůstanou i bez pravidel: když se pravidla nedají složit (T8), opravné
+  // kolo je dopíše nad specem, který jejich role už má.
+  for (const entry of Array.isArray(body.ruleRoles) ? body.ruleRoles : []) {
+    if (!isRecord(entry) || spec.roles.some((role) => role.id === entry.id)) continue;
+    spec.roles.push({ ...(withoutNulls(entry) as GameRole), count: typeof entry.count === 'number' ? entry.count : 1 });
+  }
+  if (rules.length > 0) spec.rules = withoutNulls(rules) as GameSpecV1['rules'];
+  if (things.length > 0) spec.things = withoutNulls(things) as GameSpecV1['things'];
 
   const result = readGameSpec(spec);
   if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };

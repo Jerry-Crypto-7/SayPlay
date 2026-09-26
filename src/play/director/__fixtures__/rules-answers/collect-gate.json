@@ -1,0 +1,24 @@
+{
+  "sentence": "collect three blue gems in the crystal cave and the iron gate opens",
+  "answer": {
+    "plan": "Collecting fits move_free, but a gate that opens after three gems needs rules.",
+    "control": "move_free",
+    "addons": [],
+    "look": null,
+    "setting": "crystal cave",
+    "title": "Three Gems",
+    "labels": [{ "role": "player", "label": "miner" }],
+    "goal": "Three gems open the gate.",
+    "ruleRoles": [
+      { "id": "gem", "kind": "collectible", "label": "blue gem", "count": 3 },
+      { "id": "gate", "kind": "door", "label": "iron gate", "count": null },
+      { "id": "exit", "kind": "exit", "label": "cave mouth", "count": null }
+    ],
+    "things": [],
+    "rules": [
+      { "id": "take_gem", "verb": "collect", "when": { "contact": ["player", "gem"] }, "if": null, "do": [{ "count": { "counter": "items", "amount": 1 } }, { "despawn": "other" }] },
+      { "id": "open_gate", "verb": "open", "when": { "counter": { "name": "items", "atLeast": 3 } }, "if": null, "do": [{ "toggle": "gate" }] },
+      { "id": "leave", "verb": "escape", "when": { "contact": ["player", "exit"] }, "if": null, "do": [{ "win": true }] }
+    ]
+  }
+}

@@ -29,6 +29,8 @@ export const CRITIC_CODES = [
   'UNFAIR_SPAWN',
   'UNVERIFIABLE',
   'BUDGET',
+  'RULE_INVALID',
+  'VERB_UNPROVED',
 ] as const;
 export type CriticCode = (typeof CRITIC_CODES)[number];
 
@@ -247,6 +249,62 @@ export function critique(spec: GameSpecV1): CriticIssue[] {
   }
 
   return issues;
+}
+
+const RULE_HINT = 'fix the rule with operations on /rules (roles are "player" or a role id; effects only from the rules language), or remove it';
+
+/**
+ * Pravidla, pro která se odpověď nedala složit (P29A T8): `detail` jsou hlášky
+ * `readGameSpec` spojené „; “. Každá hláška pod `/rules` nebo `/things` je nález;
+ * když žádná pod ně nemíří, jeden nález na celé pole. Model dostane i pravidla,
+ * jak je napsal – spec, nad kterým opravuje, je nemá.
+ */
+export function ruleInvalidIssues(detail: string, written: unknown): CriticIssue[] {
+  const asWritten = `rules as written: ${JSON.stringify(written)}`.slice(0, 400);
+  const parts = detail.split('; ').filter((part) => /^\/(rules|things)\b/.test(part));
+  const found = parts.length === 0 ? [`/rules: ${detail}`] : parts;
+  return found.map((part) => ({
+    code: 'RULE_INVALID',
+    severity: 'block',
+    path: part.slice(0, Math.max(part.indexOf(':'), 0)) || '/rules',
+    evidence: `${part.slice(0, 200)}; ${asWritten}`,
+    repairHint: RULE_HINT,
+  }));
+}
+
+const VERB_UNPROVED_MARK = /VERB_UNPROVED:([a-z][a-z-]*)/g;
+
+/**
+ * Ověření robotem hlásí neprokázané sloveso uvnitř nálezu keypointu
+ * (`VERB_UNPROVED:<sloveso>`, `arcade/verify.ts`). Kritik z něj udělá nález na
+ * pravidlo toho slovesa, aby model věděl, které pravidlo se ve hře nestalo;
+ * ostatní nálezy jdou dál beze změny.
+ */
+export function verbIssues<T extends Pick<CriticIssue, 'path' | 'evidence' | 'repairHint'> & { readonly code: string }>(checked: readonly T[], spec: GameSpecV1): (T | CriticIssue)[] {
+  const out: (T | CriticIssue)[] = [];
+  for (const issue of checked) {
+    const verbs = [...issue.evidence.matchAll(VERB_UNPROVED_MARK)].map((match) => match[1] as string);
+    if (verbs.length === 0) {
+      out.push(issue);
+      continue;
+    }
+    for (const verb of verbs) {
+      const index = (spec.rules ?? []).findIndex((rule) => rule.verb === verb);
+      out.push({
+        code: 'VERB_UNPROVED',
+        severity: 'block',
+        path: index < 0 ? '/rules' : `/rules/${String(index)}`,
+        evidence: `the robot won without the rule for "${verb}" ever firing`,
+        repairHint: `make the "${verb}" rule fire on the way to the win (a trigger the player meets, conditions that hold), or remove it`,
+      });
+    }
+  }
+  return out;
+}
+
+/** Slovesa z nálezů `VERB_UNPROVED`. */
+export function unprovedVerbs(issues: readonly { readonly code: string; readonly evidence: string }[]): string[] {
+  return issues.filter((issue) => issue.code === 'VERB_UNPROVED').map((issue) => /"([a-z-]+)"/.exec(issue.evidence)?.[1] ?? '').filter((verb) => verb !== '');
 }
 
 /** Jen blokující nálezy – to, co opravné kolo musí odstranit. */

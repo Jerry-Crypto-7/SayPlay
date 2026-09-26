@@ -10,13 +10,18 @@
  * Směry: kamera kouká dolů s „nahoru“ = +z, `x` jádra je zrcadlené jako
  * u ostatních scén, takže vpravo na obrazovce = +x jádra, nahoru = +z.
  * Vstup: šipky/WASD (i šikmo) a tah prstem od místa stisku = směr pohybu.
+ *
+ * Dvorek pravidel (P29A T6): věci pravidel (`thing:<id>`) a ploty jsou
+ * kvádry w×h×d, výška se čte ze stavu – nesená věc jede hráči na hlavě,
+ * hozená letí nad zemí, přepnuté dveře zmizí. Mezerník / ťuk = akce,
+ * `e` = druhá akce.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { type Group, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
-import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
 
@@ -33,6 +38,23 @@ const colorOf = (role: number): string =>
   role === ROLE.player ? COLOR.player : role === ROLE.collectible ? COLOR.food : role === ROLE.chaser ? COLOR.hunter : role === ROLE.projectile ? COLOR.shot : COLOR.prey;
 
 const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
+
+/** Věci pravidel: jantar, tyrkys, oranžová, nebeská, hnědá, břidlice – ne zelená kořist, ne fialová. */
+const THING_COLORS = ['#f59e0b', '#14b8a6', '#f97316', '#38bdf8', '#a16207', '#64748b'] as const;
+const FENCE_COLOR = '#78716c';
+
+/** Id role pravidla z druhu `thing:<id>`, jinak `null`. */
+const thingOf = (kind: string): string | null => (kind.startsWith('thing:') ? kind.slice(6) : null);
+
+/** Stálá barva podle jména role – tatáž věc má tutéž barvu v každé hře. */
+function thingColor(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  return THING_COLORS[hash % THING_COLORS.length] as string;
+}
+
+/** Nad zemí víc než tohle (m) = ve vzduchu (sonda `data-airborne`). */
+const AIRBORNE_M = 0.05;
 
 /** Kolik metrů od hráče do strany je vidět vždy. */
 const SEE_M = 9;
@@ -83,11 +105,33 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
       if (!group.visible) continue;
       const px = prev[base + BODY.x] as number;
       const pz = prev[base + BODY.z] as number;
-      group.position.set(-(px + ((state[base + BODY.x] as number) - px) * alpha) / UNIT, 0, (pz + ((state[base + BODY.z] as number) - pz) * alpha) / UNIT);
+      const py = prev[base + BODY.y] as number;
+      group.position.set(-(px + ((state[base + BODY.x] as number) - px) * alpha) / UNIT, (py + ((state[base + BODY.y] as number) - py) * alpha) / UNIT, (pz + ((state[base + BODY.z] as number) - pz) * alpha) / UNIT);
       const w = state[base + BODY.w] as number;
       group.scale.set(w / UNIT / disc.w, 1, w / UNIT / disc.w);
       const material = materials.current[disc.index];
       if (material !== null && material !== undefined && disc.role === ROLE.enemy) material.color.set(w > mine ? COLOR.hunter : COLOR.prey);
+    }
+    // Sonda pro e2e ze skupin, které opravdu kreslíme: nesená věc nad zemí, počty viditelných věcí, věci v letu.
+    if (surface.current !== null) {
+      const heldIndex = (state[HEADER.held] as number) - 1;
+      const counts = new Map<string, number>();
+      const airborne: string[] = [];
+      let held = '';
+      for (const disc of discs) {
+        const id = thingOf(disc.kind);
+        const group = groups.current[disc.index];
+        if (id === null || group === null || group === undefined || !group.visible) continue;
+        counts.set(id, (counts.get(id) ?? 0) + 1);
+        if (group.position.y <= AIRBORNE_M) continue;
+        if (disc.index === heldIndex) held = id;
+        else airborne.push(id);
+      }
+      const dataset = surface.current.dataset;
+      const things = [...counts].map(([id, n]) => `${id}:${n}`).join(' ');
+      if (dataset.held !== held) dataset.held = held;
+      if (dataset.things !== things) dataset.things = things;
+      if (dataset.airborne !== airborne.join(' ')) dataset.airborne = airborne.join(' ');
     }
     const me = groups.current[player];
     if (me !== null && me !== undefined) {
@@ -125,6 +169,17 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
         </group>
       ))}
       {discs.map((disc) => {
+        const thing = thingOf(disc.kind);
+        if (thing !== null || disc.role === ROLE.obstacle) {
+          return (
+            <group key={disc.index} ref={(group) => { groups.current[disc.index] = group; }} userData={{ frame: thing === null ? undefined : 'target' }}>
+              <mesh position={[0, disc.h / 2, 0]}>
+                <boxGeometry args={[disc.w, disc.h, disc.d]} />
+                <meshStandardMaterial ref={(material) => { materials.current[disc.index] = material; }} color={thing === null ? FENCE_COLOR : thingColor(thing)} roughness={0.6} />
+              </mesh>
+            </group>
+          );
+        }
         const color = colorOf(disc.role);
         const tall = disc.role === ROLE.collectible ? 0.15 : Math.min(0.5, disc.h);
         return (
@@ -170,6 +225,13 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
       : null;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return;
+      // Akce pravidel (P29A T6): mezerník = „action“, `e` = „alt“; F/J/Enter patří střelbě doplňku.
+      const button = event.key === ' ' ? BUTTON.TAP : event.key.toLowerCase() === 'e' ? BUTTON.FIRE : 0;
+      if (button !== 0) {
+        event.preventDefault();
+        if (!event.repeat) session.press(button);
+        return;
+      }
       const key = keyOf(event.key.toLowerCase());
       if (key === null) return;
       event.preventDefault();
@@ -199,6 +261,8 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
       sync();
     };
     const onUp = () => {
+      // Ťuk bez tahu = akce.
+      if (drag !== null && drag.dx === 0 && drag.dz === 0) session.press(BUTTON.TAP);
       drag = null;
       sync();
     };
@@ -213,7 +277,7 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
     element.addEventListener('pointerdown', onDown);
     element.addEventListener('pointermove', onMove);
     element.addEventListener('pointerup', onUp);
-    element.addEventListener('pointercancel', onUp);
+    element.addEventListener('pointercancel', release);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
@@ -221,7 +285,7 @@ export function useArenaInput(session: ArcadeSession, target: React.RefObject<HT
       element.removeEventListener('pointerdown', onDown);
       element.removeEventListener('pointermove', onMove);
       element.removeEventListener('pointerup', onUp);
-      element.removeEventListener('pointercancel', onUp);
+      element.removeEventListener('pointercancel', release);
     };
   }, [session, target, active]);
 }

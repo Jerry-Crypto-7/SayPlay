@@ -28,6 +28,7 @@ import { launch, throwControl, throwField } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
 import { judgeRule, timingControl, timingLevel } from './pieces/timing';
 import { timingBot } from './pieces/timing-bot';
+import { SPEC_RULES } from './rules/compile';
 
 const BASE_BOTS = {
   runner_bot: runnerBot,
@@ -57,7 +58,7 @@ const BASE_CONTROLS = {
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece },
-  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule },
+  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule, ...SPEC_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

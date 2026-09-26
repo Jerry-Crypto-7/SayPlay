@@ -15,6 +15,8 @@
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
 import type { RepairIssue } from '@/play/director';
+import { PHYSICS_NOT_LOADED, preloadPhysics } from '@/play/arcade/compile';
+import { loadRapier } from '@/play/arcade/physics/world';
 import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
@@ -29,6 +31,11 @@ import { reportFor } from './_report';
 
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
 export const MAX_SENTENCE_CHARS = 500;
+
+// Rapier pro fyzikální věci (P29A T13) se na serveru načítá hned: kontrola
+// hratelnosti v opravném kole režiséra je synchronní a čekat na něj nemůže.
+// Prohlížeč ho stahuje jen ke hře, která fyziku má (`ArcadePlay`).
+loadRapier().catch(() => undefined);
 
 /**
  * Semínko je celé číslo 1..2^31 − 1 (strop `sessionSeed` v blueprintu); bez něj
@@ -191,6 +198,12 @@ function compileOnSeeds(spec: GameSpecV1, seeds: readonly number[]): CompileGame
  */
 export function playabilityIssues(spec: GameSpecV1, seeds: readonly number[]): RepairIssue[] {
   const compiled = compileOnSeeds(spec, seeds);
+  if (!compiled.ok && compiled.issues.includes(PHYSICS_NOT_LOADED)) {
+    // Rapier se nenačetl: vada serveru, ne specu – model by kvůli ní fyziku zahodil.
+    // Nálezy žádné; publikace (`publishReadSpec`) Rapier načte znovu a hru ověří sama.
+    loadRapier().catch(() => undefined);
+    return [];
+  }
   if (!compiled.ok) {
     return [{ code: compiled.reason, path: '', evidence: compiled.issues.join('; ').slice(0, 500), repairHint: 'change the spec so the game compiles and the robot player can win it' }];
   }
@@ -217,6 +230,7 @@ export async function publishReadSpec(
   parentId: string | null,
   extras: PublishExtras = {},
 ): Promise<PublishResult> {
+  await preloadPhysics(spec);
   const compileStarted = performance.now();
   const compiled = compileOnSeeds(spec, seeds);
   const compileMs = performance.now() - compileStarted;

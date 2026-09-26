@@ -31,6 +31,7 @@ export type DraftFinalReason =
   | 'MODEL_UNAVAILABLE'
   | 'MALFORMED'
   | 'UNREPAIRED'
+  | 'VERB_UNPROVED'
   | 'UNCHANGED'
   | 'NOT_PLAYABLE'
   | 'STORE_UNAVAILABLE'
@@ -126,7 +127,7 @@ export const DRAFT_FINAL_TTL_SECONDS = 3600;
  * nic – uložené by na hodinu zmrazily cizí návrh a útočník by to uměl
  * vyvolat zdarma (revize R10). Další dotaz pak dostane nový pokus.
  */
-const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'UNCHANGED', 'NOT_PLAYABLE']);
+const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'UNCHANGED', 'NOT_PLAYABLE']);
 
 export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);

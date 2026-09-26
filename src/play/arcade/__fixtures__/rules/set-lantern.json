@@ -1,0 +1,24 @@
+{
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {},
+  "title": "Light the Shrine",
+  "archetype": "survival_timer",
+  "targetDurationSec": 60,
+  "theme": { "setting": "forest shrine at dusk", "mood": "calm" },
+  "objective": { "kind": "survive", "description": "Carry the lantern and set it down on the stone slab.", "seconds": 40 },
+  "mechanics": [],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "pilgrim" },
+    { "id": "lantern", "kind": "item", "label": "paper lantern" },
+    { "id": "slab", "kind": "zone", "label": "stone slab" }
+  ],
+  "rules": [
+    { "id": "take_lantern", "verb": "take", "when": { "contact": ["player", "lantern"] }, "if": [{ "notHolding": true }], "do": [{ "grab": "other" }] },
+    { "id": "set_lantern", "verb": "set", "when": { "press": "action" }, "if": [{ "holding": "lantern" }], "do": [{ "release": true }] },
+    { "id": "light", "verb": "light", "when": { "contact": ["lantern", "slab"] }, "do": [{ "score": 1 }, { "win": true }] }
+  ],
+  "tutorial": { "goalLine": "Set the lantern down on the stone slab.", "controlsHint": "Drag or arrows to walk, tap to set it down." },
+  "verification": [{ "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}

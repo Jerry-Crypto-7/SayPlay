@@ -35,7 +35,15 @@ export function strictSchema(node: Json): Json {
   if (node.const !== undefined) return { type: typeof node.const === 'number' ? 'number' : typeof node.const, enum: [node.const] };
   const out: Json = {};
   for (const [key, value] of Object.entries(node)) if (!DROPPED.has(key)) out[key] = value;
-  if (out.type === 'array' && isObject(out.items)) out.items = strictSchema(out.items);
+  // N-tice (`contact: [role, role]`) přísný režim nezná: pole stejných prvků s pevnou délkou.
+  if (Array.isArray(out.prefixItems)) {
+    const items = (out.prefixItems as Json[]).map(strictSchema);
+    const same = items.every((item) => JSON.stringify(item) === JSON.stringify(items[0]));
+    out.items = same ? items[0] : { anyOf: items };
+    out.minItems = items.length;
+    out.maxItems = items.length;
+    delete out.prefixItems;
+  } else if (out.type === 'array' && isObject(out.items)) out.items = strictSchema(out.items);
   if (out.type === 'object') {
     const properties = out.properties as Record<string, Json> | undefined;
     if (properties === undefined) {

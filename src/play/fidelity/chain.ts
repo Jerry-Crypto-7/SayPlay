@@ -20,10 +20,14 @@
 
 import { arcadeWorldOf } from '../arcade/compile';
 import { BODY, HEADER, ROLE, bodyBase } from '../arcade/contract';
+import { worldHasPhysics } from '../arcade/kernel';
 import { lookFor } from '../arcade/look';
+import { rapierIfLoaded } from '../arcade/physics/world';
+import { verifyArcade } from '../arcade/verify';
 import { chaserModel, enemyModel, heroModel, modelOf, propModels, riggedModelOf } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
+import type { VerbProof } from '../contracts';
 import type { AddonId, ControlId, GameRole, GameSpecV1 } from '../spec';
 
 export type FidelitySlot = 'hero' | 'role' | 'any' | 'setting' | 'verb';
@@ -115,8 +119,22 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   return false;
 }
 
-/** Položky seznamu nad jedním specem, každá se všemi čtyřmi stupni. */
-export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEntry[]): ChainItem[] {
+/** Slovesa pravidel, která robot během vítězného běhu vystřelil (seed 1, jako `arcadeScene`). */
+function robotVerbs(spec: GameSpecV1): readonly VerbProof[] {
+  const made = arcadeWorldOf(spec, 1);
+  // Svět s fyzikou bez načteného Rapieru robot neodehraje: slovesa zůstanou nedokázaná.
+  return made.ok && (!worldHasPhysics(made.world) || rapierIfLoaded() !== null) ? verifyArcade(made.world).verbs : [];
+}
+
+/**
+ * Položky seznamu nad jedním specem, každá se všemi čtyřmi stupni.
+ *
+ * Sloveso pokryté pravidlem (P29A T9) je ve specu, když pravidlo to sloveso
+ * nese, a čtené i kreslené teprve tehdy, když ho robot opravdu vystřelil –
+ * pravidlo, které se nestalo, čitelnost nezvedne. `verbs` = důkazy z ověření
+ * (`QualityReport.verbs`); chybí-li, robot se pustí jen nad specem s pravidly.
+ */
+export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEntry[], verbs?: readonly VerbProof[]): ChainItem[] {
   const control = controlOf(spec);
   const addons = spec.addons ?? [];
   const roles = spec.roles ?? [];
@@ -124,6 +142,8 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   const readsRole = (role: GameRole): boolean => readsLabel(control, role) || addonRole(role, addons);
   let built: ArcadeScene | undefined;
   const scene = (): ArcadeScene => (built ??= arcadeScene(spec));
+  let proofs = verbs;
+  const fired = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.fired);
 
   const stage = (entry: ChecklistEntry, inSpec: boolean, read: boolean, drawn: boolean): ChainItem => ({
     item: entry.item,
@@ -144,9 +164,10 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
         const verb = ADDON_VERB[addon];
         return (verb.control !== undefined && controls.includes(verb.control)) || (verb.mechanic !== undefined && mechanics.includes(verb.mechanic));
       });
-      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id));
-      // Sloveso se kreslí tím, že se hraje: čtené ovládání nebo mechanika je vidět hraním.
-      return stage(entry, byControl || byAddon || byMechanic.length > 0, read, read);
+      const byRule = (spec.rules ?? []).filter((rule) => mentions(rule.verb, [entry.item, ...(entry.match ?? [])])).map((rule) => rule.verb);
+      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(fired);
+      // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika nebo vystřelené pravidlo je vidět hraním.
+      return stage(entry, byControl || byAddon || byMechanic.length > 0 || byRule.length > 0, read, read);
     }
     const match = entry.match ?? [];
     if (entry.slot === 'setting') {

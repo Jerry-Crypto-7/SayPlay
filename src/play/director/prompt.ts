@@ -25,13 +25,42 @@ import { CAPABILITIES } from '../capabilities';
 
 import { DIRECTOR_ANSWER_SCHEMA } from './answer-schema';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
-import { CONTROL_PARAMS, GAME_SPEC_SCHEMA, gameSpecSchema, verificationSchema, type GameSpecV1 } from '../spec';
+import { CONTROL_PARAMS, GAME_SPEC_SCHEMA, ROLE_KINDS, gameSpecSchema, verificationSchema, type GameSpecV1 } from '../spec';
 
 /** Doslova `docs/play/pack/director.md`; test drží shodu se souborem. */
 export const DIRECTOR_RULES =
   'Return ONLY GameSpecV1. Use only supplied registry IDs. Never output code. Preserve explicit constraints. For vague prompts invent a coherent 45–180 second loop. One machine-checkable objective; <=2 losses; 2–4 core mechanics plus <=1 escalation. First meaningful action <=5s by design. Every requested mechanic gets a verification assertion. Infeasible requests preserve fantasy but substitute closest feasible registered mechanic.';
 
 export const ANSWER_SHAPE_LINE = `Answer with a single JSON object matching ${GAME_SPEC_SCHEMA} and nothing else.`;
+
+/**
+ * Gramatika pravidel pro režiséra (P29A T7, jazyk `arcade/rules/schema.ts`):
+ * pravidlo jen pro sloveso, které zvolené ovládání neumí, tři příklady podle
+ * ručních her robota (`arcade/__fixtures__/rules`). Stojí v kompaktním promptu,
+ * který je živá cesta; plný prompt drží svůj rozpočet bajtů.
+ */
+export function rulesPromptLines(): string {
+  const example = (roles: string, rules: string, things = '[]'): string => `{"ruleRoles":${roles},"things":${things},"rules":${rules}}`;
+  return [
+    'rules: only for a verb of the sentence the chosen control cannot play (carry, throw, push, open, pull, give…); else []. Never on "tap_go". Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins, or the game is refused.',
+    `when: {"contact":[role,role]} | {"press":"action"|"alt"} | {"every":ticks60Hz} | {"counter":{"name":"score"|"items"|"health","atLeast":n}} | {"hit":role}. if (all hold, or null): {"holding":role} | {"notHolding":true} | {"counter":{"name","atLeast"|"below"}} | {"near":{"role","within":m}}. do: {"score":n} {"damage":n} {"win":true} {"lose":true} {"despawn":"other"|"self"|"held"} {"spawn":{"role","at":"player"|"other"}} {"count":{"counter","amount"}} {"respawn":true} {"checkpoint":"other"|"self"} {"grab":"other"|"self"} {"release":true} {"throwHeld":true} {"push":"other"|"self"} {"toggle":role} (bodies of that role switch once: a door vanishes, a hidden one appears).`,
+    `A role is "player" or a role id; a role only the rules use goes in ruleRoles [{id, kind, label, count}] (kind: ${ROLE_KINDS.filter((kind) => kind !== 'player').join('|')}). things [{role, start:"hidden"}] = starts invisible until toggled; physics:true = it falls, slides, topples and flies when pushed or thrown. On "move_free" a rule that wins plays in a walled yard: carried things in front, the goal behind the gate.`,
+    'RULE EXAMPLES:',
+    example(
+      '[{"id":"key","kind":"key","label":"golden key","count":null},{"id":"door","kind":"door","label":"castle door","count":null},{"id":"stairs","kind":"exit","label":"tower stairs","count":null}]',
+      '[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]',
+    ),
+    example(
+      '[{"id":"rock","kind":"item","label":"round rock","count":null},{"id":"bell","kind":"target","label":"bronze bell","count":null}]',
+      '[{"id":"pick_rock","verb":"pick","when":{"contact":["player","rock"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"throw_rock","verb":"throw","when":{"press":"action"},"if":[{"holding":"rock"}],"do":[{"throwHeld":true}]},{"id":"ring","verb":"ring","when":{"contact":["rock","bell"]},"if":null,"do":[{"win":true}]}]',
+    ),
+    example(
+      '[{"id":"lever","kind":"switch","label":"rusty lever","count":null},{"id":"bridge","kind":"zone","label":"rope bridge","count":null}]',
+      '[{"id":"pull_lever","verb":"pull","when":{"contact":["player","lever"]},"if":null,"do":[{"toggle":"bridge"}]},{"id":"cross_bridge","verb":"cross","when":{"contact":["player","bridge"]},"if":null,"do":[{"win":true}]}]',
+      '[{"role":"bridge","start":"hidden"}]',
+    ),
+  ].join('\n');
+}
 
 const ID_PATTERN_SOURCE = '^[A-Za-z][A-Za-z0-9_.]{0,63}$';
 
@@ -110,7 +139,8 @@ function renderShape(): string {
   const properties = top.properties as Record<string, JsonSchema>;
   const outline = Object.entries(properties)
     // Doplňky (P26D) řekne řádek ovládání u každého ovládání zvlášť.
-    .filter(([key]) => key !== 'verification' && key !== 'addons')
+    // Pravidla (P29A) popisuje vlastní gramatika s příklady, ne výpis schématu.
+    .filter(([key]) => key !== 'verification' && key !== 'addons' && key !== 'rules' && key !== 'things')
     .map(([key, value]) => `${key}: ${compactSchema(value)}`)
     .join('\n');
   return [

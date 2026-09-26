@@ -94,6 +94,15 @@ export interface QualityReport {
   readonly replayEqual: boolean;
   readonly budgets: { readonly entities: number; readonly rules: number; readonly triangles: number | null };
   readonly publishEligible: boolean;
+  /** Slovesa pravidel arkády (P29A) a zda je robot během běhu viděl vystřelit; jen hra s pravidly. */
+  readonly verbs?: readonly VerbProof[];
+}
+
+/** Jedno sloveso z pravidel: vystřelilo během robotova běhu, a v kterém tiku poprvé. */
+export interface VerbProof {
+  readonly verb: string;
+  readonly fired: boolean;
+  readonly firstTick: number | null;
 }
 
 /** Neměnná publikovaná verze. `versionId` je hash všeho, na čem hra stojí. */
@@ -124,8 +133,13 @@ export function gameVersionId(fields: Omit<GameVersion, 'versionId' | 'createdAt
 /** Jak režisér skončil. `draft` je okamžitá šablona ze slov, `authored` odpověď modelu. */
 export type DirectorSource = 'draft' | 'authored' | 'cached';
 
-/** Proč režisér vrátil návrh ze slov místo odpovědi modelu. */
-export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED';
+/**
+ * Proč režisér vrátil návrh ze slov místo odpovědi modelu. `VERB_UNPROVED`
+ * (P29A T8) je jediný důvod i u `source: 'authored'`: pravidlo, které se ani po
+ * opravě nedalo složit nebo které robot nevystřelil, ze hry vypadlo a hraje se
+ * bez něj; `source: 'draft'` jen když ani hra bez pravidel neprošla.
+ */
+export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED' | 'VERB_UNPROVED';
 
 /**
  * Režisér neselže: výpadek modelu, nečitelná odpověď i neopravitelný spec
