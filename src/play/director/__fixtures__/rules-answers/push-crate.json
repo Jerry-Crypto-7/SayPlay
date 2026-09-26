@@ -1,0 +1,22 @@
+{
+  "sentence": "push the wooden crate onto the pressure plate in the warehouse",
+  "answer": {
+    "plan": "Pushing is not a move_free verb; the crate slides when shoved and the plate wins.",
+    "control": "move_free",
+    "addons": [],
+    "look": null,
+    "setting": "dusty warehouse floor",
+    "title": "Warehouse Plate",
+    "labels": [{ "role": "player", "label": "worker" }],
+    "goal": "Push the crate onto the plate.",
+    "ruleRoles": [
+      { "id": "crate", "kind": "prop", "label": "wooden crate", "count": null },
+      { "id": "plate", "kind": "switch", "label": "pressure plate", "count": null }
+    ],
+    "things": [],
+    "rules": [
+      { "id": "shove", "verb": "push", "when": { "contact": ["player", "crate"] }, "if": null, "do": [{ "push": "other" }] },
+      { "id": "press_plate", "verb": "activate", "when": { "contact": ["crate", "plate"] }, "if": null, "do": [{ "win": true }] }
+    ]
+  }
+}

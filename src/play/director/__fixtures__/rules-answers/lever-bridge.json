@@ -1,0 +1,22 @@
+{
+  "sentence": "pull the rusty lever to reveal a rope bridge and cross the canyon",
+  "answer": {
+    "plan": "The bridge starts hidden; pulling the lever toggles it in, crossing wins.",
+    "control": "move_free",
+    "addons": [],
+    "look": null,
+    "setting": "canyon edge with a rusty lever",
+    "title": "The Hidden Bridge",
+    "labels": [{ "role": "player", "label": "explorer" }],
+    "goal": "Pull the lever and cross the bridge.",
+    "ruleRoles": [
+      { "id": "lever", "kind": "switch", "label": "rusty lever", "count": null },
+      { "id": "bridge", "kind": "zone", "label": "rope bridge", "count": null }
+    ],
+    "things": [{ "role": "bridge", "start": "hidden" }],
+    "rules": [
+      { "id": "pull_lever", "verb": "pull", "when": { "contact": ["player", "lever"] }, "if": null, "do": [{ "toggle": "bridge" }] },
+      { "id": "cross_bridge", "verb": "cross", "when": { "contact": ["player", "bridge"] }, "if": null, "do": [{ "win": true }] }
+    ]
+  }
+}
