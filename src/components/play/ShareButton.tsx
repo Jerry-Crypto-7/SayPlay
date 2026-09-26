@@ -90,8 +90,8 @@ export function ShareButton({ versionId, title, label = 'Share', className = '',
       setShare(file === null ? 'copied' : 'saved');
       loopEvent('share', versionId, { withClip: file !== null });
     } catch {
+      // Odkaz nedošel (jen ruční pole) – `share` se nepočítá, s klipem ani bez něj.
       setShare('manual');
-      if (file !== null) loopEvent('share', versionId, { withClip: true });
     }
   }
 
