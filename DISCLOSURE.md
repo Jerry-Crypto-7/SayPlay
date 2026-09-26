@@ -2666,10 +2666,11 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **public/assets/worldstream/rigged/skeleton-rogue.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/skeleton-warrior.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 
-## Modely (16)
+## Modely (17)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
+| ACE-Step 1.5 | https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files (repack of https://huggingface.co/ACE-Step/Ace-Step1.5; code https://github.com/ace-step/ACE-Step-1.5) | ACE Studio and StepFun (ACE-Step), Comfy Org (repack) | MIT (weights), Apache-2.0 (code and repack) | copyright notice and license text if the weights are redistributed (they are not) | ACE-Step 1.5 © ACE Studio and StepFun |
 | BiRefNet (Lucida fine-tune) | https://huggingface.co/Comfy-Org/BiRefNet (revision 25511f8787e51912e1480706b4e47b8f467fbf72; base models https://huggingface.co/ZhengPeng7/BiRefNet and https://huggingface.co/egeorcun/lucida) | Peng Zheng et al. (BiRefNet), egeorcun (Lucida fine-tune), Comfy Org (repack) | MIT | copyright notice and license text if the weights are redistributed (they are not) | BiRefNet © Peng Zheng et al., MIT; Lucida fine-tune, MIT |
 | claude-opus-5 | https://docs.anthropic.com/en/docs/about-claude/models | Anthropic | komerční podmínky služby (Anthropic Commercial Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | Anthropic, https://www.anthropic.com/legal/commercial-terms |
 | DINOv3 ViT-L (TRELLIS.2 image encoder) | https://huggingface.co/Comfy-Org/TRELLIS.2 clip_vision/dino_v3_vit_l.safetensors; license https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md | Meta Platforms | LicenseRef-DINOv3 (DINOv3 License) | a copy of the DINOv3 License with any redistributed DINO Materials (none are redistributed); acknowledge the use of DINO Materials in research publications | DINOv3 © Meta Platforms, DINOv3 License |
@@ -2689,6 +2690,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 ### Modely — licence posouzené jednotlivě
 
+- **ACE-Step 1.5** (MIT (weights), Apache-2.0 (code and repack)): Generates the music loops offline through the local ComfyUI (turbo DiT, qwen 0.6b/1.7b encoders, ace_1.5 VAE). Model cards read via HF API 2026-09-26: Ace-Step1.5 MIT, Comfy-Org repack apache-2.0. Only generated audio ships.
 - **BiRefNet (Lucida fine-tune)** (MIT): Background removal between the image and TRELLIS.2. Used instead of RMBG-2.0, which is non-commercial. Both the repack card and the Lucida card declare MIT for weights and code, read 2026-09-24.
 - **claude-opus-5** (komerční podmínky služby (Anthropic Commercial Terms)): Od 6. 9. 2026 se NEVOLÁ a produktu se neúčastní. Do té chvíle stál v src/model/prompt.ts jako EMISSION_MODEL a proxy vracela pod tím jménem odpovědi gpt-5.6-sol; emisní cesta proto jmenuje ten model přímo. Položka zůstává, protože identifikátor je pořád v kódu — v testech a fixturách (evals/harness/**, evals/worldstream/__tests__/**, scripts/__tests__/**).
 - **DINOv3 ViT-L (TRELLIS.2 image encoder)** (LicenseRef-DINOv3 (DINOv3 License)): Custom model license, RULES.md §4 'check manually' class. Read 2026-09-24: non-exclusive, worldwide, royalty-free; commercial use permitted; prohibited uses are military/warfare, nuclear, espionage, weapons and ITAR / trade-control end uses. Not non-commercial and not research-only, so it is not removed from the path; the final call is the owner's at the P26C QA gate.
@@ -2742,7 +2744,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (500)
+## Vlastní, ne třetí strana (536)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -2752,6 +2754,42 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/aquarium-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/aquarium-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/aquarium.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/audio/music/beach-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/beach-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/castle-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/castle-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/cave-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/cave-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/city-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/city-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/desert-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/desert-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/factory-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/factory-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/forest-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/forest-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/graveyard-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/graveyard-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/jungle-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/jungle-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/living_room-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/living_room-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/mall-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/mall-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/meadow-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/meadow-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/ocean-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/ocean-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/snow-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/snow-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/space-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/space-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/supermarket-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/supermarket-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/underwater-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/underwater-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/volcano-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/volcano-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
 - **public/assets/worldstream/bar-stool-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/bar-stool-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/bar-stool.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
