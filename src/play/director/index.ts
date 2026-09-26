@@ -123,13 +123,17 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 
   // Kdo psal (P29B R2): primár, nebo lokální záloha – u každého volání, které spec pohnulo.
   const authors: string[] = [];
-  const credit = (model: unknown) => {
+  // Psala-li lokální záloha, hra do cache nejde: klíč patří primáru a ten by se na větu už nikdy neptal.
+  let byFallback = false;
+  const credit = (provenance: Readonly<Record<string, string | boolean>>) => {
+    const model = provenance.model;
     if (typeof model === 'string' && !authors.includes(model)) authors.push(model);
+    if (provenance.source === 'llamacpp-http') byFallback = true;
   };
 
   calls += 1;
   const outcome = await deps.branch.generate({ prompt: sentence, request });
-  if (outcome.ok) credit(outcome.provenance.model);
+  if (outcome.ok) credit(outcome.provenance);
   if (!outcome.ok)
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
@@ -174,7 +178,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     const applied = applyRepairAnswer(spec, answer.body);
     // Špatná záplata nechává spec i nálezy, jak byly – další kolo je dostane znovu.
     if (!applied.ok) continue;
-    credit(answer.provenance.model);
+    credit(answer.provenance);
     spec = applied.spec;
     blocks = blockingIssues(critique(spec));
     checked = blocks.length === 0 ? checkOf(spec) : [];
@@ -183,7 +187,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
   const authoredBy = authors.length === 0 ? null : authors.join(' + ');
-  if (checked.length === 0) await deps.cache?.write(key, spec, authoredBy);
+  if (checked.length === 0 && !byFallback) await deps.cache?.write(key, spec, authoredBy);
   return {
     ok: true,
     spec,

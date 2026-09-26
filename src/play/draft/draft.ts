@@ -1057,7 +1057,8 @@ function draftGrid(sentence: string, seed: number, scores: Readonly<Record<Arche
   const fallback = template(archetype);
   fallback.title = titleFrom(sentence, fallback.title);
   const normalized = readGameSpec(fallback);
-  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true, readBy };
+  // Fixtura archetypu ze čtení nic nevzala – štítek „read by a local AI model“ by lhal.
+  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true, readBy: 'keywords' };
 }
 
 /** Výchozí volba ovládání, když ho vybral model a slova věty ukazují jinam. */

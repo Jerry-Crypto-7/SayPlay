@@ -40,6 +40,18 @@ describe('authoredBy', () => {
     expect(again).toMatchObject({ source: 'cached', authoredBy: 'gpt-oss-20b' });
   });
 
+  // Revize P29B na hranici fáze: klíč cache patří primáru – hra od zálohy by ho navždy zastoupila.
+  it('does not cache a game the local fallback wrote, in the answer or in a repair round', async () => {
+    const local = (body: unknown) => ({ ...answered(body), provenance: { branch: 'fake', model: 'gpt-oss-20b', source: 'llamacpp-http' } });
+    const cache = directorCache(memoryAnswerStore());
+    expect(await direct(SENTENCE, { branch: fakeBranch([local(answerFixture('good-collect_exit'))]), cache, now })).toMatchObject({ source: 'authored', authoredBy: 'gpt-oss-20b' });
+    expect((await direct(SENTENCE, { branch: fakeBranch([]), cache, now })).source).not.toBe('cached');
+    const patch = [{ op: 'replace', path: '/mechanics/0/params/onEnd', value: 'win' }];
+    const repaired = directorCache(memoryAnswerStore());
+    expect(await direct(SENTENCE, { branch: fakeBranch([by(unrepairableByTable(), 'gpt-6-astra'), local(patch)]), cache: repaired, now })).toMatchObject({ source: 'authored', repairRounds: 1 });
+    expect((await direct(SENTENCE, { branch: fakeBranch([]), cache: repaired, now })).source).not.toBe('cached');
+  });
+
   it('adds the model that wrote the repair round', async () => {
     const patch = [{ op: 'replace', path: '/mechanics/0/params/onEnd', value: 'win' }];
     const game = await direct(SENTENCE, { branch: fakeBranch([by(unrepairableByTable(), 'gpt-6-astra'), by(patch, 'gpt-oss-20b')]), now });
