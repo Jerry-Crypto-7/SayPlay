@@ -88,6 +88,20 @@ Výsledek má tvar `QualityReport` (`src/play/contracts.ts`), takže publikace, 
 
 Hotové: `runner` (P25A), `platform` a `flap` (P25C). Ostatní řádky jsou plán fází 2–4 řídicího plánu.
 
+## Živé změny (P29D)
+
+Věta uprostřed hry („more enemies“, „make it rain“) mění běžící relaci bez nové adresy. Jádro se kvůli tomu nemění (`src/play/arcade/live.ts`):
+
+- **Záznam:** živá změna je `{tick, patch}` v logu relace vedle vstupů. V tiku, na který padla, se promění v existující `ArcadeEffect` (`spawn`, `count`), který vydá jednorázové pravidlo `tick` přidané k programu jen pro ten krok – efekty aplikuje jádro samo.
+- **Povolené patche:**
+  - `spawn` role, kterou hra už má – hrozby a sběr (`enemy`, `obstacle`, `hazard`, `collectible`, `chaser`), 1–5 najednou, aspoň 5 m od hráče (na trati před ním). Chybí-li ve stavu místo, stav se prodlouží.
+  - `count` – životy (1–3, jen s pravidlem `out_of_health`), náboje (1–20, jen když hra náboje má) a čas (1–30 s, jen s `time_limit` – přepíše parametr pravidla od toho tiku dál).
+  - `visual` – počasí (déšť, sníh, mlha) a denní doba. Do stavu nesahá, žije jen v logu (`visualAt`), hash nemění.
+- **Replay:** `replayLive` přehraje vstupy i patche od tiku 0 a dá týž hash jako živý běh; bez patchů je to přesně `replay` jádra, takže staré připíchnuté hashe drží. Patch o tik později dá jiný hash (test to drží).
+- **Ověření:** `acceptLive` přijme patch, jen když dává smysl pro tuhle hru (`patchProblem`, anglická hláška pro hráče) a robot ověřovače hru s ním pořád vyhraje. Robot hraje nejdřív od tiku 0; když patch nepotká (vyhrál dřív, nebo ho jeho stav nevzal), dohraje hru ze stavu hráče. Prohraje-li odtud i bez patche, patch se odmítne jako neověřitelný (`The game cannot check that change from here.`).
+- **Co jde remixem:** nová role, nové ovládání, jiný svět – `director/live-intent.ts` to pozná a spustí dnešní remix na novou verzi, hotovou ukáže čip `remix-ready`. Věta, kterou nejde přečíst, dostane poctivé „nerozumím“ s příklady, ne tichou změnu. Věta napůl („rain and extra life“ v běžci bez životů) provede, co jde, a řekne `Done in part.`
+- **Sdílení:** `liveRemixSpec` převede živé změny na spec dítěte (počty rolí od skutečného startu hry, počasí a denní doba do `theme`). Hra ho publikuje dopředu 800 ms po poslední změně přes `POST …/remix`, takže Share nečeká na síť. Co do specu nejde (životy, čas, běžec nad stropem 50 mincí), zůstane jen v běhu a hráč se to dozví.
+
 ## Výkon
 
 Krok jádra (22. 9. 2026, čistý Node 22, bundle přes rolldown, fixtura běžce, 5 semínek × 5 opakování, 600 tiků se vstupy robota): **medián 0,0024 ms/tik, nejhorší vzorek 0,013 ms/tik** – cíl < 1 ms drží s rezervou ~80×. Pod vitestem je jádro ~15× pomalejší (importy jsou gettery), proto se neměří tam.
