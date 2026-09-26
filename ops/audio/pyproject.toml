@@ -1,0 +1,20 @@
+[project]
+name = "worldsmith-audio"
+version = "0.1.0"
+description = "Local music loops, sound effects and narration for PLAY games on one GPU (ACE-Step 1.5 through ComfyUI)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy>=2.5.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
