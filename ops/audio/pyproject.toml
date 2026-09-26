@@ -4,12 +4,21 @@ version = "0.1.0"
 description = "Local music loops, sound effects and narration for PLAY games on one GPU (ACE-Step 1.5 through ComfyUI)"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "fastapi>=0.141.1",
   "numpy>=2.5.3",
+  "uvicorn>=0.30",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pytest>=8",
+]
+
+# Kokoro-82M (`voice.py`, hlasová služba `server.py`) – testy ho nepotřebují: `uv sync --group voice`.
+voice = [
+    "kokoro>=0.9.4",
+    "torch==2.9.1",
 ]
 
 # MOSS-SoundEffect (`sfx.py`) – jen pro generování, testy ho nepotřebují: `uv sync --group sfx`.

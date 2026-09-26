@@ -1,3 +1,6 @@
+import { readdirSync } from 'node:fs';
+import path from 'node:path';
+
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 /**
@@ -64,5 +67,54 @@ test.describe('/play/[id] – the game’s own music and sounds', () => {
     await page.keyboard.press('m');
     await expect(page.getByTestId('play-mute')).toHaveText('Sound on');
     expect(await page.evaluate(() => window.__playAudio!.musicGain())).toBeGreaterThan(0);
+  });
+
+  /*
+   * Hlas vypravěče (P29D T11). E2e server hlasovou službu nemá, takže dveře
+   * `…/voice` poctivě vrátí 204 a hra mlčí. Hotovou nahrávku podvrhne
+   * `page.route` – skutečný Ogg (14s smyčka hudby, ať při ztlumení ještě hraje).
+   */
+  const VOICE = '**/api/play/games/*/voice';
+  const MUSIC_DIR = path.join(__dirname, '..', 'public', 'assets', 'worldstream', 'audio', 'music');
+  const readyVoice = (page: Page) => page.route(VOICE, (route) => route.fulfill({ path: path.join(MUSIC_DIR, readdirSync(MUSIC_DIR)[0]!), contentType: 'audio/ogg' }));
+
+  test('voice: without the service the game asks only after the gesture and stays silent', async ({ page }) => {
+    const asked: number[] = [];
+    page.on('response', (response) => {
+      if (response.url().endsWith('/voice')) asked.push(response.status());
+    });
+    await page.goto(urls.arcade!);
+    await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    expect(asked).toEqual([]);
+    await gesture(page);
+    await expect.poll(() => asked, { timeout: 20_000 }).toEqual([204]);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.__playAudio!.narrated())).toEqual([]);
+  });
+
+  test('voice: a finished narration plays once after the gesture and mute cuts it', async ({ page }) => {
+    await readyVoice(page);
+    await page.goto(urls.arcade!);
+    await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    expect(await page.evaluate(() => window.__playAudio!.narration())).toBeNull();
+    await gesture(page);
+    await expect.poll(() => page.evaluate(() => window.__playAudio!.narration()), { timeout: 20_000 }).toMatch(/^\/api\/play\/games\/[0-9a-f]+\/voice$/);
+    await page.keyboard.press('m');
+    expect(await page.evaluate(() => window.__playAudio!.narration())).toBeNull();
+    await page.keyboard.press('m');
+    // Jednou za stránku – odtlumení ji znovu nespustí.
+    expect(await page.evaluate(() => window.__playAudio!.narration())).toBeNull();
+    expect(await page.evaluate(() => window.__playAudio!.narrated())).toHaveLength(1);
+  });
+
+  test('voice: a muted game never starts the narration', async ({ page }) => {
+    await readyVoice(page);
+    await page.addInitScript(() => localStorage.setItem('play:sound', 'muted'));
+    await page.goto(urls.arcade!);
+    await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    await gesture(page);
+    await expect.poll(() => page.evaluate(() => window.__playAudio!.state()), { timeout: 20_000 }).toBe('running');
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => window.__playAudio!.narrated())).toEqual([]);
   });
 });

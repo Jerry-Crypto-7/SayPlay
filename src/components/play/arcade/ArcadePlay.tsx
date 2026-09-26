@@ -17,8 +17,8 @@ import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG
 import { liveRemixSpec } from '@/play/arcade/live';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
-import { installSoundControls, jumped, playMusic, playSfx, presetsFor, setSoundLook } from '@/play/audio';
-import { musicFor } from '@/play/audio/library';
+import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
+import { musicFor, narrationUrl } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -400,6 +400,11 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
       setSoundLook(null);
     };
   }, [active, spec.theme]);
+  // Hlas vypravěče (P29D T11): cíl hry po prvním gestu, jen publikovaná verze a jen když je nahrávka hotová.
+  useEffect(() => {
+    if (!active || offline) return;
+    return playNarration(narrationUrl(versionId));
+  }, [active, offline, versionId]);
   useEffect(() => {
     const offEvents = session.onEvents((events) => {
       for (const preset of presetsFor(events)) playSfx(preset);

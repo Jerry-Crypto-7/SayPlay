@@ -25,6 +25,7 @@ import { ownerIdentityRejection } from '@/server/owner-identity';
 import { getCompiler } from './_compiler';
 import { fail, VERSION_ID_PATTERN } from './_errors';
 import { reportFor } from './_report';
+import { scheduleVoice } from './_voice';
 
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
 export const MAX_SENTENCE_CHARS = 500;
@@ -245,7 +246,11 @@ export async function publishReadSpec(
   };
 
   const existing = await versions.get(version.versionId);
-  if (existing !== null) return { ok: true, value: { status: 200, game: existing } };
+  if (existing !== null) {
+    // Táž hra podruhé: hlas mohl minule spadnout se službou – služba má cache, zeptat se znovu nic nestojí.
+    scheduleVoice(existing.spec);
+    return { ok: true, value: { status: 200, game: existing } };
+  }
 
   let outcome: PutOutcome;
   try {
@@ -259,6 +264,8 @@ export async function publishReadSpec(
     return { ok: false, response: fail(429, 'PUBLISH_QUOTA', "today's publishing quota is used up; try again tomorrow", { 'retry-after': '3600' }) };
   if (outcome === 'conflict')
     return { ok: false, response: fail(409, 'VERSION_CONFLICT', 'a different game already holds this version id') };
+  // Hlas vypravěče (P29D T11) na pozadí – publikace na něj nečeká a bez služby je stejná.
+  scheduleVoice(spec);
   return { ok: true, value: { status: outcome === 'stored' ? 201 : 200, game } };
 }
 

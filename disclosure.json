@@ -29387,6 +29387,19 @@
       "reason": "vymyšlený identifikátor v evals/harness/__tests__/kill-gate.test.ts. Existuje právě proto, aby ho registr NEznal — přejmenovat ho na tvar mimo `modelIdsIn` by test nechalo zeleně měřit nic."
     },
     {
+      "name": "Kokoro-82M",
+      "kind": "model",
+      "scope": "tool",
+      "source": "https://huggingface.co/hexgrad/Kokoro-82M (code https://github.com/hexgrad/kokoro, phonemes https://github.com/hexgrad/misaki)",
+      "authorOrProvider": "hexgrad",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice and license text if the weights are redistributed (they are not)"
+      ],
+      "attribution": "Kokoro-82M © hexgrad, Apache-2.0",
+      "reviewNote": "Reads each game's goal line aloud in the local voice service ops/audio/server.py (voice af_heart, 24 kHz). Model card read via HF API and kokoro/misaki via PyPI 2026-09-26: all Apache-2.0. misaki[en] pulls espeak-ng (GPL-3.0) as a local phonemizer fallback; it runs only on the local machine and never ships. Only generated audio reaches players."
+    },
+    {
       "name": "meshy-6",
       "kind": "model",
       "source": "https://docs.meshy.ai/en/api/text-to-3d",

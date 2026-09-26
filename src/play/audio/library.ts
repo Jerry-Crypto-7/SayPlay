@@ -37,6 +37,15 @@ export function sfxFor(look: LookId, event: SoundEvent, catalog: SfxCatalog = sf
   return catalog.sounds[look]?.[event] ?? null;
 }
 
+/**
+ * Hlas vypravěče hry (P29D T11): dveře, které vrátí nahrávku cíle z lokální
+ * služby, nebo 204, dokud není hotová (či služba chybí). Knihovna ho nemá –
+ * vzniká až při publikaci, proto adresa verze, ne katalog.
+ */
+export function narrationUrl(versionId: string): string {
+  return `/api/play/games/${versionId}/voice`;
+}
+
 /** `PLAY_MUSIC=off` při buildu vypne hudbu; zvuky zůstanou. */
 export function musicEnabled(flag: string | undefined = process.env.PLAY_MUSIC): boolean {
   return flag?.trim().toLowerCase() !== 'off';

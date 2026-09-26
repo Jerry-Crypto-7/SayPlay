@@ -90,6 +90,7 @@ export function setMuted(value: boolean): void {
     // Plné nebo zakázané úložiště: ztlumení platí do konce stránky.
   }
   if (music !== null) music.gain.gain.value = value ? 0 : MUSIC_VOLUME;
+  if (value) stopNarration();
   for (const listener of muteListeners) listener();
 }
 
@@ -142,6 +143,7 @@ function whenRunning(): void {
   if (context?.state !== 'running') return;
   preloadLook();
   syncMusic();
+  syncNarration();
 }
 
 function load(url: string): void {
@@ -158,6 +160,7 @@ function load(url: string): void {
       (buffer) => {
         files.set(url, buffer);
         if (url === wantedMusic) syncMusic();
+        if (url === wantedNarration) syncNarration();
       },
       () => files.set(url, 'missing'),
     );
@@ -221,6 +224,53 @@ export function playMusic(url: string | null): () => void {
   };
 }
 
+/*
+ * P29D T11: cíl hry přečtený hlasem vypravěče. Jednou za stránku, až po gestu
+ * a jen když je nahrávka hotová – dveře bez ní vrátí 204, dekódování selže a
+ * hra mlčí. Ztlumení ji zastaví a ztlumená hra ji vůbec nespustí.
+ */
+
+let wantedNarration: string | null = null;
+let narration: { readonly url: string; readonly source: AudioBufferSourceNode } | null = null;
+const narrated = new Set<string>();
+
+function stopNarration(): void {
+  if (narration === null) return;
+  narration.source.stop();
+  narration.source.disconnect();
+  narration = null;
+}
+
+function syncNarration(): void {
+  if (narration !== null && narration.url !== wantedNarration) stopNarration();
+  const url = wantedNarration;
+  if (url === null || narrated.has(url) || context === null || context.state !== 'running' || isMuted()) return;
+  const file = files.get(url);
+  if (file === undefined) load(url);
+  if (typeof file !== 'object') return;
+  narrated.add(url);
+  const source = context.createBufferSource();
+  source.buffer = file;
+  source.connect(context.destination);
+  source.addEventListener('ended', () => {
+    if (narration?.source === source) narration = null;
+  });
+  source.start();
+  narration = { url, source };
+}
+
+/** Přečte cíl hry z `url` (viz `narrationUrl`); vrácená funkce ho utne. Bez gesta čeká jako hudba. */
+export function playNarration(url: string | null): () => void {
+  if (!PLAY_SFX || url === null) return () => {};
+  wantedNarration = url;
+  syncNarration();
+  return () => {
+    if (wantedNarration !== url) return;
+    wantedNarration = null;
+    syncNarration();
+  };
+}
+
 /** Krátký čistý tón (pípnutí rytmu na beat a při trefě). */
 export function playTone(frequency: number, volume: number): void {
   play(`tone:${frequency}:${volume}`, [volume * 3, 0, frequency, 0, 0, 0.12]);
@@ -253,6 +303,8 @@ export function installSoundControls(): () => void {
       muted: isMuted,
       music: () => music?.url ?? null,
       musicGain: () => music?.gain.gain.value ?? null,
+      narration: () => narration?.url ?? null,
+      narrated: () => [...narrated],
       loaded: () => [...files].filter(([, file]) => typeof file === 'object').map(([url]) => url),
     };
     removeControls = () => {
@@ -276,6 +328,6 @@ export function installSoundControls(): () => void {
 declare global {
   interface Window {
     /** Sonda e2e: stav `AudioContext` (`none`, dokud nevznikl) a ztlumení. */
-    __playAudio?: { state: () => string; muted: () => boolean; music: () => string | null; musicGain: () => number | null; loaded: () => string[] };
+    __playAudio?: { state: () => string; muted: () => boolean; music: () => string | null; musicGain: () => number | null; narration: () => string | null; narrated: () => string[]; loaded: () => string[] };
   }
 }

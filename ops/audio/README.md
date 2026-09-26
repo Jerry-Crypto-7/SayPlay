@@ -30,6 +30,19 @@ Lokální generování zvuku na RTX 3090. Do produktu jde jen výsledek (`public
 - **Výstup:** `src/play/audio/sfx-catalog.json` (`sounds[look][event]` → URL).
 - **Poslech:** testy hlídají ticho, délku a hlasitost, ne to, jestli „skok“ zní jako skok. To ověří až člověk ve hře.
 
+## Hlas vypravěče – Kokoro-82M
+
+- **Licence:** váhy [Apache-2.0](https://huggingface.co/hexgrad/Kokoro-82M) (karta modelu), kód [`kokoro` 0.9.4 Apache-2.0](https://github.com/hexgrad/kokoro), převod na fonémy [`misaki` Apache-2.0](https://github.com/hexgrad/misaki). Ověřeno přes HF API a PyPI 26. 9. 2026. **Pozor:** `misaki[en]` si pro neznámá slova táhne `espeakng-loader` a `phonemizer-fork` (espeak-ng, **GPL-3.0**). Běží jen lokálně jako nástroj; do produktu jde jen vygenerovaný zvuk, žádný kód ani váhy – stejně jako ComfyUI u hudby.
+- **Prostředí:** `uv sync --project ops/audio --group voice --group dev` (s `--group sfx` navíc, když má zůstat i MOSS – `uv sync` drží jen jmenované skupiny). První běh stáhne `en_core_web_sm` a váhy do `HF_HOME`.
+- **Služba:**
+  ```
+  AUDIO_KEY=... HF_HOME=D:/caches/huggingface uv run --project ops/audio python ops/audio/server.py
+  ```
+  Jen `127.0.0.1:8794`, každá cesta chce `X-Audio-Key`. `POST /voice {"text"}` založí úlohu (fronta jedné úlohy, nejvýš 50 čekajících), `GET /voice/{id}` vrátí Ogg, 202 (generuje se) nebo 404. Id = prvních 32 hex ze SHA-256 `af_heart\n<text>` – Next ho počítá stejně (`src/app/api/play/_voice.ts`), takže nahrávku najde bez paměti. Model se načte až s první úlohou; generování drží sdílený zámek karty `D:/claude/_shared/gpu.lock` (týž protokol jako `gpu-lock.mjs`, mrtvého vlastníka převezme). Cache: `ops/audio/.voice-cache/` (gitignorovaná).
+- **Napojení:** Next zná službu z `PLAY_VOICE_ENDPOINT` + `PLAY_VOICE_KEY` (tunel). Publikace pošle cíl hry a nečeká; hra si nahrávku vyžádá po prvním gestu přes `GET /api/play/games/:id/voice` (204, dokud není hotová). Bez služby hra mlčí.
+- **Postup:** cíl hry (`tutorial.goalLine`, nejvýš 240 znaků) → Kokoro (`lang_code="a"`, hlas `af_heart`, 24 kHz) → `normalize` (−18 dBFS RMS) → Ogg Vorbis mono q 3. Ticho je chyba úlohy, ne nahrávka.
+- **Naměřeno 26. 9. 2026 na 3090:** načtení modelu 46,6 s (se stažením jazykového modelu), první věta 3,6 s, další **0,44 s**; 3,1–3,8 s řeči, 19–23 kB na větu.
+
 ## Testy
 
 ```
