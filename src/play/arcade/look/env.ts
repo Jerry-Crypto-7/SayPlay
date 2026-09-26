@@ -44,6 +44,11 @@ export function envTagsIn(entry: EnvEntry, setting: string): string[] {
   return entry.tags.filter((tag) => PATTERNS.get(tag)!.test(text));
 }
 
+/** Nese některé panorama knihovny slovo tohohle prostředí? Když ne, dogeneruje se vlastní (P29C T7). */
+export function settingInLibrary(setting: string): boolean {
+  return ENV_ENTRIES.some((entry) => envTagsIn(entry, setting).length > 0);
+}
+
 /** Seed výběru z id hry (FNV-1a): tatáž hra má vždy totéž pozadí, různé hry téhož místa se liší. */
 export function seedOf(id: string): number {
   let hash = 0x811c9dc5;

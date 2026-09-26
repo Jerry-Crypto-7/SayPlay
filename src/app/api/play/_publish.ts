@@ -23,6 +23,7 @@ import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
 
 import { getCompiler } from './_compiler';
+import { startCustomEnv } from './_env';
 import { fail, VERSION_ID_PATTERN } from './_errors';
 import { reportFor } from './_report';
 
@@ -259,6 +260,8 @@ export async function publishReadSpec(
     return { ok: false, response: fail(429, 'PUBLISH_QUOTA', "today's publishing quota is used up; try again tomorrow", { 'retry-after': '3600' }) };
   if (outcome === 'conflict')
     return { ok: false, response: fail(409, 'VERSION_CONFLICT', 'a different game already holds this version id') };
+  // Prostředí, které knihovna nezná, se začne generovat hned (P29C T7); neblokuje.
+  if (outcome === 'stored') startCustomEnv(spec.theme.setting);
   return { ok: true, value: { status: outcome === 'stored' ? 201 : 200, game } };
 }
 
