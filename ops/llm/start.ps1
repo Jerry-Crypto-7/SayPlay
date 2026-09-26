@@ -6,7 +6,9 @@
 # Bez -Then server bezi dal a skript vypise jeho PID (zastavit: Stop-Process -Id <PID>).
 # S -Then "<prikaz>" pocka na /health, pusti prikaz, server zastavi podle PID a vrati
 # navratovy kod prikazu. Mereni jde cele pod zamkem GPU:
-#   node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role reader -Then "node ..."
+#   node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role reader -Then evals/play/read/measure-all.cmd
+# Zamek preda prikaz shellu, ktery ho rozdeli podle mezer a && provede sam (mimo server):
+# za -Then proto patri jeden skript bez mezer, nikdy "node ... && node ...".
 param(
   [ValidateSet('reader', 'fallback')][string]$Role = 'reader',
   # Zvoleny model zalohy (T9): viz ops/llm/README.md a evals/play/read/README.md.
@@ -49,6 +51,8 @@ if (-not $healthy) {
 }
 Write-Output "healthy: http://127.0.0.1:$($pick.Port)"
 if ($Then -eq '') { exit 0 }
+# Skript z -Then smi mit lomitka (evals/play/read/measure-all.cmd); cmd /c potrebuje zpetna.
+if (Test-Path -LiteralPath $Then -PathType Leaf) { $Then = "`"$((Resolve-Path -LiteralPath $Then).Path)`"" }
 
 try {
   cmd /c $Then
