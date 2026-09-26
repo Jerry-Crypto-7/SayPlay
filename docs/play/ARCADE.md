@@ -111,3 +111,18 @@ Pravidlo = `{ id, verb, when, if?, do[] }`. Na tělesa odkazuje **jménem role**
 `other` = druhá role kontaktu, zasažené tělo, nebo tělo z `near`; `self` = první role kontaktu, který není hráč; `held` = co hráč nese. Čítače pravidel: `score`, `items`, `health`. `things[]` = `{role, start:'present'|'hidden'}` – skryté tělo (most) se ukáže až po `toggle`.
 
 `verb` je jedno anglické slovo malými písmeny. Robot ho musí během vítězného běhu uvidět vystřelit, jinak hra neprojde (`VERB_UNPROVED`).
+
+### Důkaz slovesa
+
+`step(…, trace)` hlásí index pravidla pokaždé, když vydá efekt; `runBot` si pamatuje první tik výstřelu a `verifyArcade` z toho skládá `verbs[]` (`{verb, fired}`) v pořadí prvního výskytu. Kritik vrátí nevystřelené sloveso do opravného kola režiséra, `fidelityChain` počítá sloveso za čtené a kreslené až po výstřelu. Hash ani replay stopu nevidí. Regrese: `evals/play/regression/golden.test.ts` drží, že šest ručních her z `src/play/arcade/__fixtures__/rules/` (a hod kamenem s fyzikou) se zkompiluje, publikuje a vystřelí každé sloveso.
+
+### Fyzika (Rapier)
+
+`things[]` s `physics: true` udělá z věci pravidel fyzikální těleso (`FLAG.physics`): padá, klouže, odráží se a převrací věže. Hýbe s ním `@dimforge/rapier3d-compat` (`src/play/arcade/physics/step.ts`), ostatní dál jádro.
+
+- **Stav zůstává v `Int32Array`.** Svět Rapieru patří jedné instanci stavu a vzniká při prvním tiku. Fáze běží mezi `integrate`/`settle` a `collide`; po ní jsou poloha a rychlost kvantované do jednotek, natočení v `aux0/aux1` (`packRotation`, qx|qy a qz|(10000 − qw) po 16 bitech). Co mezitím přepíše jádro nebo efekt (strčení, zvednutí, hod, návrat), Rapier převezme před dalším krokem. Hry bez fyziky fázi nespustí a mají staré hashe.
+- **Tik = 4 kroky Rapieru po 1/240 s** (`PHYSICS_SUBSTEPS`, jedna iterace řešiče). Jeden krok 1/60 s nechal míč zapadnout 13 cm pod zem; měkké CCD zapadnutí zastavilo, ale spolklo odraz. Gravitace se po podkrocích sčítá tak, že poloha za tik klesne o `g·5/8`, ne o celé `g` – s tím počítá `throwFlight(plan, true)`, které let fyzikálního míče předpoví do 1 jednotky až po tik dopadu.
+- **Nesené těleso** Rapier vypne a veze ho hráč; `release`/`throwHeld` ho vrátí s rychlostí ze stavu, jádro mu gravitaci ani tření nepřidá. Hráč v Rapieru není, jeho kolize řeší jádro; ostatní pevná tělesa jsou kinematické překážky.
+- **Determinismus:** Node a Chromium dávají bit po bitu totéž (T11, `evals/play/rules/rapier.md`).
+- **Načítání jen když je potřeba.** Modul se importuje dynamicky (`loadRapier`, ~0,6 MB). Jádro je synchronní, takže `compileArcade` svět s fyzikou bez načteného Rapieru odmítne (`preloadPhysics(spec)` napřed) a `ArcadePlay` počká na `usePhysicsReady`. Hra bez fyziky modul nestáhne (`physics-lazy.test.ts`). Server ho načítá hned při importu `_publish.ts`, protože kontrola hratelnosti v opravném kole režiséra je synchronní.
+- **Zatím chybí:** kreslení natočení (převrácená bedna je vidět jen posunutá) a `physics` u rolí, které staví generátor (ignoruje se).
