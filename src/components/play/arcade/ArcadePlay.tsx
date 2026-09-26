@@ -13,7 +13,7 @@ import dynamic from 'next/dynamic';
 import { memo, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { installSoundControls, jumped, playMusic, playSfx, presetsFor, setSoundLook } from '@/play/audio';
@@ -37,6 +37,8 @@ import { UpgradeBanner } from '../UpgradeBanner';
 import { type Clip, startClip } from './clip';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
+import { LiveBox } from './LiveBox';
+import { Weather } from './Weather';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
 // WebGL kontext na serveru není – stejně jako mřížkové plátno. `memo`: HUD se překresluje
@@ -341,6 +343,17 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
     const probe = {
       inputs: () => session.inputs(),
       tick: () => session.snapshot().tick,
+      /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
+      bodies: (role: keyof typeof ROLE) => {
+        const state = session.state();
+        let alive = 0;
+        for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+          const base = bodyBase(i);
+          if (state[base + BODY.role] === ROLE[role] && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0) alive += 1;
+        }
+        return alive;
+      },
+      patches: () => session.patches().length,
       playWitness: () => {
         const end = session.playInputs(session.botInputs(), ARCADE_LIMITS.maxTicks);
         return { runState: end.runState, tick: end.tick };
@@ -380,11 +393,13 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
 
   return (
     <main ref={shell} className="play-shell">
-      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} />
+      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} overlay={<Weather session={session} />} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
       {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
+      {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nestřílí (`+shoot`). */}
+      {running && active && demo === null && <LiveBox session={session} spec={spec} remix={remix} enterOpens={!arcade.rules.some((rule) => rule.id === 'blaster')} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
       {running && <RemixReadyChip job={remix} />}
