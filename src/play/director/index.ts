@@ -53,7 +53,7 @@ export type DirectedGame = DirectorResult & {
   readonly ms: number;
   /** Kolikrát se volal model. */
   readonly calls: number;
-  /** Jméno modelu, který napsal první odpověď (P29B T8: primár, nebo lokální záloha). */
+  /** Modely, které spec napsaly, v pořadí (`a + b`, když opravu psal jiný); přežije cache (P29B T8, R2). */
   readonly authoredBy?: string;
 };
 
@@ -104,12 +104,29 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
-  if (cached !== null && blockingIssues(critique(cached)).length === 0) {
-    return { ok: true, spec: cached, source: 'cached', repairRounds: 0, fallbackReason: null, warnings: warningsOf(cached), ms: deps.now() - started, calls };
+  if (cached !== null && blockingIssues(critique(cached.spec)).length === 0) {
+    return {
+      ok: true,
+      spec: cached.spec,
+      source: 'cached',
+      repairRounds: 0,
+      fallbackReason: null,
+      warnings: warningsOf(cached.spec),
+      ms: deps.now() - started,
+      calls,
+      ...(cached.authoredBy === null ? {} : { authoredBy: cached.authoredBy }),
+    };
   }
+
+  // Kdo psal (P29B R2): primár, nebo lokální záloha – u každého volání, které spec pohnulo.
+  const authors: string[] = [];
+  const credit = (model: unknown) => {
+    if (typeof model === 'string' && !authors.includes(model)) authors.push(model);
+  };
 
   calls += 1;
   const outcome = await deps.branch.generate({ prompt: sentence, request });
+  if (outcome.ok) credit(outcome.provenance.model);
   if (!outcome.ok)
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
@@ -154,6 +171,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     const applied = applyRepairAnswer(spec, answer.body);
     // Špatná záplata nechává spec i nálezy, jak byly – další kolo je dostane znovu.
     if (!applied.ok) continue;
+    credit(answer.provenance.model);
     spec = applied.spec;
     blocks = blockingIssues(critique(spec));
     checked = blocks.length === 0 ? checkOf(spec) : [];
@@ -161,8 +179,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
 
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
-  if (checked.length === 0) await deps.cache?.write(key, spec);
-  const authoredBy = outcome.provenance.model;
+  const authoredBy = authors.length === 0 ? null : authors.join(' + ');
+  if (checked.length === 0) await deps.cache?.write(key, spec, authoredBy);
   return {
     ok: true,
     spec,
@@ -172,7 +190,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     warnings: warningsOf(spec),
     ms: deps.now() - started,
     calls,
-    ...(typeof authoredBy === 'string' ? { authoredBy } : {}),
+    ...(authoredBy === null ? {} : { authoredBy }),
   };
 }
 
