@@ -38,6 +38,12 @@ function download(file: File): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+/** Verze, která nese živé změny běhu; `partial` = část z nich (životy, čas, těla, která hra na startu nepočítá) zůstala jen v běhu. */
+export interface LiveShare {
+  readonly versionId: string;
+  readonly partial: boolean;
+}
+
 export function ShareButton({
   versionId: playing,
   title,
@@ -52,17 +58,17 @@ export function ShareButton({
   readonly className?: string;
   readonly clip?: Blob | null;
   /**
-   * Verze s živými změnami běhu (P29D T10): id publikovaného dítěte, `null` =
-   * běh žádné nemá. Výjimka = změny se nepodařilo uložit; sdílí se hraná verze
-   * a hráč se to dozví.
+   * Verze s živými změnami běhu (P29D T10), `null` = běh žádné nemá. Výjimka =
+   * změny se nepodařilo uložit; sdílí se hraná verze a hráč se to dozví, stejně
+   * jako o změnách, které do odkazu nejdou (`partial`).
    */
-  readonly liveVersion?: () => Promise<string | null>;
+  readonly liveVersion?: () => Promise<LiveShare | null>;
 }) {
   const button = useRef<HTMLButtonElement | null>(null);
   const [share, setShare] = useState<Share>('idle');
   const [href, setHref] = useState('');
   const [volatile, setVolatile] = useState(false);
-  const [lostLive, setLostLive] = useState(false);
+  const [lostLive, setLostLive] = useState<'none' | 'some' | 'all'>('none');
 
   useEffect(() => {
     const element = button.current;
@@ -91,12 +97,14 @@ export function ShareButton({
 
   async function run(): Promise<void> {
     let versionId = playing;
-    setLostLive(false);
+    setLostLive('none');
     if (liveVersion !== undefined) {
       try {
-        versionId = (await liveVersion()) ?? playing;
+        const live = await liveVersion();
+        versionId = live?.versionId ?? playing;
+        if (live?.partial === true) setLostLive('some');
       } catch {
-        setLostLive(true);
+        setLostLive('all');
       }
     }
     // `?via=share` je jediný doklad, že odkaz došel: jeho otevření je `shared_open` (P27D T4).
@@ -137,7 +145,8 @@ export function ShareButton({
       <span className="play-status" aria-live="polite">
         {share === 'copied' ? 'Link copied' : share === 'saved' ? 'Clip saved, link copied' : ''}
         {volatile ? `${share === 'copied' || share === 'saved' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
-        {lostLive ? ' Your live changes could not be saved, so the link opens the game without them.' : ''}
+        {lostLive === 'all' ? ' Your live changes could not be saved, so the link opens the game without them.' : ''}
+        {lostLive === 'some' ? ' Some live changes (lives, time, or what this game cannot start with) stay in your run only.' : ''}
       </span>
       {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
     </>

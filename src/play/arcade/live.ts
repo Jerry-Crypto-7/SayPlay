@@ -27,6 +27,8 @@ import {
   BODY,
   BODY_STRIDE,
   COUNTER,
+  COUNTED_ROLES,
+  type CountedRole,
   FLAG,
   HEADER,
   HEADER_SIZE,
@@ -288,33 +290,58 @@ export function visualAt(
 /** Strop počtu role ve specu (`roleSchema.count`). */
 const MAX_ROLE_COUNT = 50;
 
+/** Kolik toho generátor na startu hry opravdu postavil: řady (`rows`) nebo těla role. */
+function startCountOf(world: ArcadeWorld, counted: CountedRole): number {
+  const state = world.initial;
+  const zs = new Set<number>();
+  let bodies = 0;
+  for (let i = 0; i < state[HEADER.bodyCount]; i += 1) {
+    const base = bodyBase(i);
+    if (state[base + S.role] !== ROLE[counted.role]) continue;
+    bodies += 1;
+    zs.add(state[base + S.z]);
+  }
+  return counted.key === 'rows' ? zs.size : bodies;
+}
+
 /**
  * Spec sdílené verze s živými změnami (P29D T10): přidaná těla zvednou počet
- * role se stejným id (ten čte generátor ovládání – `countParams`), poslední
- * počasí a denní doba jdou do `theme`. Počet vychází z toho, kolik těl role
- * hra na startu opravdu má (`startCount`), ne ze specu – `count` 1 tam
- * znamená „neřečeno“ a generátor jich postaví víc. Čítače (životy, čas,
- * náboje) a role, kterou spec nemá, se nepřenášejí: patří jen běhu.
+ * role, který čte generátor ovládání (`COUNTED_ROLES`), poslední počasí a
+ * denní doba jdou do `theme`. Počet vychází z toho, co hra na startu opravdu
+ * má (`startCountOf`), ne ze specu – `count` 1 tam znamená „neřečeno“ a
+ * generátor postaví víc. Čítače (životy, čas, náboje) a přidaná těla, která
+ * generátor tohohle ovládání nepočítá, patří jen běhu – jejich počet vrací
+ * `dropped`, aby se to hráč dozvěděl.
  *
  * Tady, ne v `director/remix.ts`: volá ji arkáda v prohlížeči, která schémata
  * specu nenese (`arcade-bundle.test.ts`).
  */
-export function liveRemixSpec(parent: GameSpecV1, patches: readonly LivePatch[], startCount: (role: ArcadeRole) => number): GameSpecV1 {
+export function liveRemixSpec(parent: GameSpecV1, world: ArcadeWorld, patches: readonly LivePatch[]): { readonly spec: GameSpecV1; readonly dropped: number } {
   const child = structuredClone(parent);
-  const added = new Map<ArcadeRole, number>();
+  const counted = COUNTED_ROLES[parent.control ?? ''] ?? [];
+  const added = new Map<CountedRole, number>();
+  let dropped = 0;
   for (const patch of patches) {
-    if (patch.kind === 'spawn') added.set(patch.role, (added.get(patch.role) ?? 0) + patch.count);
     if (patch.kind === 'visual') {
       if (patch.weather !== undefined) child.theme.weather = patch.weather;
       if (patch.timeOfDay !== undefined) child.theme.timeOfDay = patch.timeOfDay;
     }
+    if (patch.kind === 'count') dropped += 1;
+    if (patch.kind !== 'spawn') continue;
+    const entry = counted.find((candidate) => candidate.role === patch.role && child.roles.some((role) => role.id === candidate.roleId));
+    if (entry === undefined) dropped += 1;
+    else added.set(entry, (added.get(entry) ?? 0) + patch.count);
   }
-  for (const [role, extra] of added) {
-    const target = child.roles.find((entry) => entry.id === role);
-    if (target !== undefined) target.count = Math.min(MAX_ROLE_COUNT, Math.max(target.count, startCount(role)) + extra);
+  for (const [entry, extra] of added) {
+    const target = child.roles.find((role) => role.id === entry.roleId)!;
+    const from = Math.max(target.count, startCountOf(world, entry));
+    const to = Math.min(MAX_ROLE_COUNT, entry.max, from + extra);
+    // Hra, která na startu stojí u stropu, víc nepojme – strop by počet naopak snížil.
+    if (to > from) target.count = to;
+    else dropped += 1;
   }
   // Jasno ve dne je výchozí stav – spec bez pole je táž hra, a tedy týž hash.
   if (child.theme.weather === 'clear') delete child.theme.weather;
   if (child.theme.timeOfDay === 'day') delete child.theme.timeOfDay;
-  return child;
+  return { spec: child, dropped };
 }

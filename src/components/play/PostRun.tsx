@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { RemixBox, type RemixJob } from './RemixBox';
-import { ShareButton } from './ShareButton';
+import { type LiveShare, ShareButton } from './ShareButton';
 import { CHALLENGE_A_FRIEND, CHANGE_ONE_THING, POST_RUN_CHIPS } from './starters';
 
 /** Klip běhu ke stažení (P29D T1); prohlížeč bez nahrávání plátna klip nemá a tlačítko nevidí. */
@@ -44,7 +44,7 @@ export function PostRun({
   readonly remix: RemixJob;
   readonly clip?: Blob | null;
   /** Verze se živými změnami běhu (P29D T10) – sdílí se místo hrané. */
-  readonly liveVersion?: () => Promise<string | null>;
+  readonly liveVersion?: () => Promise<LiveShare | null>;
   readonly onReplay: () => void;
 }) {
   const router = useRouter();

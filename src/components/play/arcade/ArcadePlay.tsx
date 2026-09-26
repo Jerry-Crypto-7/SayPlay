@@ -28,7 +28,7 @@ import { FirstPrompt } from '../FirstPrompt';
 import { secondsOf, timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { SentenceRead } from '../SentenceRead';
-import { ShareButton } from '../ShareButton';
+import { type LiveShare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
 import { PostRun } from '../PostRun';
@@ -140,7 +140,7 @@ function ArcadeHud({
 }: {
   readonly versionId: string;
   readonly shareable: boolean;
-  readonly liveVersion: () => Promise<string | null>; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
+  readonly liveVersion: () => Promise<LiveShare | null>; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
   return (
@@ -191,7 +191,7 @@ export interface ArcadePlayProps {
 
 const END_PAUSE_MS = 600;
 
-/** Živá těla role ve stavu – sonda e2e (T9) i počet na startu hry pro sdílení živých změn (T10). */
+/** Živá těla role ve stavu – sonda e2e (T9). */
 function aliveOf(state: ArrayLike<number>, role: ArcadeRole): number {
   let alive = 0;
   for (let i = 0; i < state[HEADER.bodyCount]; i += 1) {
@@ -204,20 +204,23 @@ function aliveOf(state: ArrayLike<number>, role: ArcadeRole): number {
 /**
  * Sdílení po živých změnách (P29D T10): verze se specem, který změny nese,
  * publikovaná dnešní remix route (rodič zůstává v rodokmenu). `null` = běh
- * žádné změny nemá; výjimka = verzi se nepodařilo publikovat.
+ * žádné změny nemá; `partial` = něco z běhu do odkazu nejde. Když nejde nic,
+ * sdílí se hraná verze – kopie rodiče pod novým id by nebyla nová hra.
+ * Výjimka = verzi se nepodařilo publikovat.
  */
-async function publishLive(versionId: string, spec: GameSpecV1, world: ArcadeWorld, session: ArcadeSession): Promise<string | null> {
+async function publishLive(versionId: string, spec: GameSpecV1, world: ArcadeWorld, session: ArcadeSession): Promise<LiveShare | null> {
   const patches = session.patches();
   if (patches.length === 0) return null;
-  const child = liveRemixSpec(
+  const { spec: child, dropped } = liveRemixSpec(
     spec,
+    world,
     patches.map((entry) => entry.patch),
-    (role) => aliveOf(world.initial, role),
   );
+  if (JSON.stringify(child) === JSON.stringify(spec)) return { versionId, partial: true };
   const response = await fetch(`/api/play/games/${versionId}/remix`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ spec: child }) });
   const body = (await response.json()) as { url?: unknown };
   if (!response.ok || typeof body.url !== 'string') throw new Error(`live version not published (${String(response.status)})`);
-  return body.url.split('/').at(-1) ?? versionId;
+  return { versionId: body.url.split('/').at(-1) ?? versionId, partial: dropped > 0 };
 }
 
 export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
