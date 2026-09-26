@@ -36,9 +36,15 @@ describe('envFor', () => {
   });
 
   it('is deterministic for a seed and spreads over variants across seeds', () => {
-    const t = theme('a meadow');
-    expect(envFor(t, 5).id).toBe(envFor(t, 5).id);
-    const ids = new Set(Array.from({ length: 12 }, (_, seed) => envFor(theme('xyz nowhere'), seed).id));
+    // Nastavení bez štítku má víc kandidátů (varianty looku), takže náhodný výběr by tu zčervenal.
+    const t = theme('xyz nowhere');
+    const variants = catalog.entries.filter((entry) => entry.look === lookOf(t)).map((entry) => entry.id);
+    expect(variants.length).toBeGreaterThan(1);
+    for (let seed = 0; seed < 12; seed++) {
+      expect(envFor(t, seed).id).toBe(variants[seed % variants.length]);
+      expect(envFor(t, seed).id).toBe(envFor(t, seed).id);
+    }
+    const ids = new Set(Array.from({ length: 12 }, (_, seed) => envFor(t, seed).id));
     expect(ids.size).toBeGreaterThan(1);
   });
 
