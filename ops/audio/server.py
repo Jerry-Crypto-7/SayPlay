@@ -1,11 +1,11 @@
-"""Služba: cíl hry -> hlas vypravěče na lokální kartě, za klíčem, s cache a frontou jedné úlohy.
+"""Služba: cíl hry -> hlas vypravěče na lokálním procesoru, za klíčem, s cache a frontou jedné úlohy.
 
     AUDIO_KEY=... uv run --project ops/audio --group voice python ops/audio/server.py   # jen 127.0.0.1:8794
 
 POST /voice {"text": "Reach the flag."} -> {"id", "status"}; GET /voice/{id} -> Ogg,
 nebo 202 (ještě se generuje), nebo 404 (neznámé či selhané); GET /health.
 Každá cesta chce hlavičku X-Audio-Key shodnou s AUDIO_KEY, jinak 401.
-Generování drží sdílený zámek karty (`voice.GpuLock`), ať se nepotká s jinou stopou.
+Kartu nepotřebuje, takže nečeká na panoramata ani na zálohu režiséra.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import re
 import sys
 import threading
 from collections.abc import Callable
-from contextlib import AbstractContextManager
+from contextlib import AbstractContextManager, nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -25,13 +25,13 @@ import voice
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
-from voice import GpuLock, InvalidText, Synthesize
+from voice import InvalidText, Synthesize
 
 HOST, PORT = "127.0.0.1", 8794
-MAX_QUEUE = 50  # cíl je krátká věta, ~1 s na kartě; víc čekajících dostane 429
+MAX_QUEUE = (
+    50  # cíl je krátká věta, pár sekund na procesoru; víc čekajících dostane 429
+)
 VOICE_ID = re.compile(r"^[0-9a-f]{32}$")
-# Drží-li kartu jiná stopa déle, úloha selže a nevisí před ostatními; hra se zeptá znovu (dveře voice).
-LOCK_WAIT_SEC = 120
 
 
 class VoiceRequest(BaseModel):
@@ -50,9 +50,8 @@ def create_app(
     key: str,
     load_model: Callable[[], Synthesize] = voice.kokoro,
     cache_root: Path = voice.CACHE_ROOT,
-    gpu_lock: Callable[[], AbstractContextManager[object]] = lambda: GpuLock(
-        wait_max=LOCK_WAIT_SEC
-    ),
+    # Kokoro běží na procesoru (`voice.kokoro`), zámek karty tedy nedrží; `GpuLock` jen pro model na kartě.
+    gpu_lock: Callable[[], AbstractContextManager[object]] = nullcontext,
 ) -> FastAPI:
     if not key:
         raise ValueError("AUDIO_KEY must be set")

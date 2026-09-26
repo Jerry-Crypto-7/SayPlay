@@ -157,7 +157,9 @@ def kokoro() -> Synthesize:
         KPipeline,
     )
 
-    pipeline = KPipeline(lang_code="a", repo_id="hexgrad/Kokoro-82M")
+    # Na procesoru: 82M parametrů stačí na krátký cíl a karta zůstává panoramatům a záloze
+    # režiséra – se zámkem karty hlas při generování prostředí 26. 9. 2026 jen čekal a padal.
+    pipeline = KPipeline(lang_code="a", repo_id="hexgrad/Kokoro-82M", device="cpu")
 
     def synthesize(text: str) -> np.ndarray:
         parts = [
