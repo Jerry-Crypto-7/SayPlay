@@ -1,0 +1,1549 @@
+{
+ "about": "P29B T9: local fallback director (compact) on the fidelity corpus (30) and judge-10, llama.cpp on RTX 3090. See evals/play/read/README.md.",
+ "models": {
+  "gpt-oss-20b": {
+   "measuredAt": "2026-09-26T12:40:40.942Z",
+   "commit": "95dbe74c",
+   "endpoint": "http://127.0.0.1:8792",
+   "corpus": {
+    "summary": {
+     "sentences": 30,
+     "valid": {
+      "hit": 28,
+      "of": 30,
+      "share": 0.933
+     },
+     "latencyMs": {
+      "p50": 4533,
+      "p90": 11057,
+      "max": 26383
+     },
+     "read": 0.8,
+     "drawn": 0.755,
+     "draftRead": 0.755,
+     "draftDrawn": 0.718,
+     "fallbackReasons": {
+      "MALFORMED": 2
+     }
+    },
+    "rows": [
+     {
+      "id": "s039",
+      "ms": 5285,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s037",
+      "ms": 3710,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "s002",
+      "ms": 3678,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      },
+      "draft": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      }
+     },
+     {
+      "id": "s003",
+      "ms": 2627,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "s006",
+      "ms": 4220,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 5,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 5,
+       "read": 5,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "s008",
+      "ms": 3133,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s022",
+      "ms": 3922,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s021",
+      "ms": 7634,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "s035",
+      "ms": 11057,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s050",
+      "ms": 3739,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s088",
+      "ms": 7078,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s069",
+      "ms": 7735,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s056",
+      "ms": 5014,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "s058",
+      "ms": 3046,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s111",
+      "ms": 6792,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s095",
+      "ms": 3313,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s188",
+      "ms": 2571,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s144",
+      "ms": 4570,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s155",
+      "ms": 3933,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s099",
+      "ms": 6598,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "h01",
+      "ms": 8125,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      },
+      "draft": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      }
+     },
+     {
+      "id": "h02",
+      "ms": 8992,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "h03",
+      "ms": 26383,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h04",
+      "ms": 3338,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "h05",
+      "ms": 3482,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h06",
+      "ms": 6949,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 5,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "h07",
+      "ms": 3831,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h08",
+      "ms": 4533,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h09",
+      "ms": 25071,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h10",
+      "ms": 3400,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 5,
+       "read": 2,
+       "drawn": 2
+      }
+     }
+    ]
+   },
+   "judge10": {
+    "summary": {
+     "sentences": 10,
+     "valid": {
+      "hit": 10,
+      "of": 10,
+      "share": 1
+     },
+     "latencyMs": {
+      "p50": 5559,
+      "p90": 10762,
+      "max": 10762
+     },
+     "read": 0.676,
+     "drawn": 0.649,
+     "draftRead": 0.514,
+     "draftDrawn": 0.514,
+     "fallbackReasons": {}
+    },
+    "rows": [
+     {
+      "id": "j01",
+      "ms": 10762,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j02",
+      "ms": 7464,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j03",
+      "ms": 4832,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j04",
+      "ms": 5892,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j05",
+      "ms": 5559,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j06",
+      "ms": 3691,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j07",
+      "ms": 4150,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j08",
+      "ms": 4433,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "j09",
+      "ms": 4533,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 5,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j10",
+      "ms": 5790,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     }
+    ]
+   }
+  },
+  "qwen3.6-35b-a3b": {
+   "measuredAt": "2026-09-26T13:03:31.601Z",
+   "commit": "95dbe74c",
+   "endpoint": "http://127.0.0.1:8792",
+   "corpus": {
+    "summary": {
+     "sentences": 30,
+     "valid": {
+      "hit": 23,
+      "of": 30,
+      "share": 0.767
+     },
+     "latencyMs": {
+      "p50": 30782,
+      "p90": 38479,
+      "max": 50502
+     },
+     "read": 0.818,
+     "drawn": 0.773,
+     "draftRead": 0.755,
+     "draftDrawn": 0.718,
+     "fallbackReasons": {
+      "MALFORMED": 7
+     }
+    },
+    "rows": [
+     {
+      "id": "s039",
+      "ms": 28870,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s037",
+      "ms": 30937,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "s002",
+      "ms": 34425,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      },
+      "draft": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      }
+     },
+     {
+      "id": "s003",
+      "ms": 35135,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "s006",
+      "ms": 30782,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 5,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 5,
+       "read": 5,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "s008",
+      "ms": 29053,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s022",
+      "ms": 30030,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s021",
+      "ms": 28491,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "s035",
+      "ms": 29226,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s050",
+      "ms": 35169,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s088",
+      "ms": 26761,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s069",
+      "ms": 34736,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s056",
+      "ms": 28169,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "s058",
+      "ms": 25034,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s111",
+      "ms": 34616,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s095",
+      "ms": 28983,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s188",
+      "ms": 50502,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s144",
+      "ms": 31420,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "s155",
+      "ms": 27783,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "s099",
+      "ms": 30080,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "h01",
+      "ms": 34460,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      },
+      "draft": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      }
+     },
+     {
+      "id": "h02",
+      "ms": 36047,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "h03",
+      "ms": 29494,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h04",
+      "ms": 27881,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     },
+     {
+      "id": "h05",
+      "ms": 26900,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 3,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h06",
+      "ms": 38208,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 5,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "h07",
+      "ms": 38863,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h08",
+      "ms": 38479,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h09",
+      "ms": 36553,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "h10",
+      "ms": 29167,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 5,
+       "drawn": 5
+      },
+      "draft": {
+       "items": 5,
+       "read": 2,
+       "drawn": 2
+      }
+     }
+    ]
+   },
+   "judge10": {
+    "summary": {
+     "sentences": 10,
+     "valid": {
+      "hit": 6,
+      "of": 10,
+      "share": 0.6
+     },
+     "latencyMs": {
+      "p50": 36081,
+      "p90": 55424,
+      "max": 55424
+     },
+     "read": 0.649,
+     "drawn": 0.622,
+     "draftRead": 0.514,
+     "draftDrawn": 0.514,
+     "fallbackReasons": {
+      "MALFORMED": 4
+     }
+    },
+    "rows": [
+     {
+      "id": "j01",
+      "ms": 36081,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j02",
+      "ms": 28499,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j03",
+      "ms": 54433,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 2,
+       "drawn": 1
+      },
+      "draft": {
+       "items": 3,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j04",
+      "ms": 55424,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j05",
+      "ms": 31538,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 3,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 3,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j06",
+      "ms": 30295,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 4,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j07",
+      "ms": 35772,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      },
+      "draft": {
+       "items": 4,
+       "read": 1,
+       "drawn": 1
+      }
+     },
+     {
+      "id": "j08",
+      "ms": 28661,
+      "source": "authored",
+      "fallbackReason": null,
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 3,
+       "drawn": 3
+      }
+     },
+     {
+      "id": "j09",
+      "ms": 37870,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 5,
+       "read": 2,
+       "drawn": 2
+      },
+      "draft": {
+       "items": 5,
+       "read": 2,
+       "drawn": 2
+      }
+     },
+     {
+      "id": "j10",
+      "ms": 38471,
+      "source": "draft",
+      "fallbackReason": "MALFORMED",
+      "repairRounds": 0,
+      "calls": 1,
+      "final": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      },
+      "draft": {
+       "items": 4,
+       "read": 4,
+       "drawn": 4
+      }
+     }
+    ]
+   }
+  }
+ }
+}

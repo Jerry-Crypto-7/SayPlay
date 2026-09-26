@@ -33,7 +33,37 @@ měření přetáhla. T4–T5 proto dostanou čtení jen za přepínačem vypnut
 node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role reader -Then evals/play/read/measure-all.cmd
 ```
 
+## Záloha režiséra (T9)
+
+Měřeno 26. 9. 2026, kompaktní režisér (`direct(…, { compact: true })`) přes lokální
+llama.cpp, bez robota (měří se model, ne publikace), strop volání 120 s. Volné VRAM
+~15 GB (zbytek držely jiné procesy). Surová data: `evals/play/local-director.json`.
+
+| Model | Sada | Platná hra | p50 / p90 | `read` | `drawn` | draft ze slov `read` / `drawn` |
+|---|---|---|---|---|---|---|
+| **gpt-oss-20b** MXFP4 | korpus 30 | **28/30** | **4,5 / 11,1 s** | 0,800 | 0,755 | 0,755 / 0,718 |
+| **gpt-oss-20b** MXFP4 | judge-10 | **10/10** | **5,6 / 10,8 s** | **0,676** | **0,649** | 0,514 / 0,514 |
+| Qwen3.6-35B-A3B UD-IQ3_S | korpus 30 | 23/30 | 30,8 / 38,5 s | 0,818 | 0,773 | 0,755 / 0,718 |
+| Qwen3.6-35B-A3B UD-IQ3_S | judge-10 | 6/10 | 36,1 / 55,4 s | 0,649 | 0,622 | 0,514 / 0,514 |
+
+Neplatné odpovědi jsou u obou jen `MALFORMED` (JSON mimo kontrakt); pak zůstane draft ze slov.
+
+**Volba: gpt-oss-20b** (výchozí `-Fallback` v `ops/llm/start.ps1`). Je 6–7× rychlejší,
+dává víc platných her a na judge-10 i vyšší `read` a `drawn`. Qwen má na korpusu o 0,018
+lepší `read`, ale za cenu 30 s na větu a čtvrtiny neplatných odpovědí – jako záloha
+zaseknutého předplatného by čekání jen prodloužil.
+
+Spuštění (`evals/play/local-director.cmd`, model v `%P29B_FALLBACK%`):
+
+```
+set P29B_FALLBACK=gpt-oss-20b
+node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role fallback -Fallback gpt-oss-20b -Then evals/play/local-director.cmd
+```
+
 ## Výhrady (odhad, ne měření)
+
+- Srovnání zálohy s živým předplatným (gpt-6-astra) na stejné sadě tu neběželo. Číslo
+  judge-10 0,676 říká jen, že záloha je lepší než draft ze slov (0,514), ne jak blízko je předplatnému.
 
 - Klíčová slova mají na štítcích poptávky náskok, který nemusí být celý zásluhou: slovník
   draftu se ladil nad podobnými větami. Čtečka tu soutěží na hřišti klíčových slov.

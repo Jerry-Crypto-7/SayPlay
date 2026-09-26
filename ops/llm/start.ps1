@@ -11,7 +11,8 @@
 # za -Then proto patri jeden skript bez mezer, nikdy "node ... && node ...".
 param(
   [ValidateSet('reader', 'fallback')][string]$Role = 'reader',
-  # Zvoleny model zalohy (T9): viz ops/llm/README.md a evals/play/read/README.md.
+  # Zvoleny model zalohy (T9, 26. 9. 2026): gpt-oss-20b – p50 4,5 s, platnych 38/40, judge-10 read 0,676;
+  # qwen3.6-35b-a3b p50 31 s, platnych 29/40. Cisla: evals/play/local-director.json, evals/play/read/README.md.
   [ValidateSet('gpt-oss-20b', 'qwen3.6-35b-a3b')][string]$Fallback = 'gpt-oss-20b',
   [string]$Then = '',
   [int]$HealthTimeoutSec = 180
