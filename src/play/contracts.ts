@@ -94,6 +94,15 @@ export interface QualityReport {
   readonly replayEqual: boolean;
   readonly budgets: { readonly entities: number; readonly rules: number; readonly triangles: number | null };
   readonly publishEligible: boolean;
+  /** Slovesa pravidel arkády (P29A) a zda je robot během běhu viděl vystřelit; jen hra s pravidly. */
+  readonly verbs?: readonly VerbProof[];
+}
+
+/** Jedno sloveso z pravidel: vystřelilo během robotova běhu, a v kterém tiku poprvé. */
+export interface VerbProof {
+  readonly verb: string;
+  readonly fired: boolean;
+  readonly firstTick: number | null;
 }
 
 /** Neměnná publikovaná verze. `versionId` je hash všeho, na čem hra stojí. */

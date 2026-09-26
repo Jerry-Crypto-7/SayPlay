@@ -37,7 +37,9 @@ import {
   type PieceRef,
   ROLE,
   RUN_STATE,
+  type RuleContext,
   type RulePiece,
+  type RuleTrigger,
   VERB_MOTION,
   bodyBase,
   stateSize,
@@ -633,18 +635,34 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
   else if (won) state[HD.runState] = RUN_STATE.won;
 }
 
+/**
+ * Stopa výstřelů (P29A): jádro ji zavolá s indexem pravidla světa pokaždé, když
+ * pravidlo vydá aspoň jeden efekt. Je mimo stav, takže hash ani replay nevidí.
+ */
+export type RuleTrace = (rule: number) => void;
+
+function fireRules(effects: ArcadeEffect[], program: ArcadeProgram, trigger: RuleTrigger, ctx: RuleContext, trace: RuleTrace | undefined): void {
+  const rules = program.rules;
+  for (let r = 0; r < rules.length; r += 1) {
+    const rule = rules[r] as Bound<RulePiece>;
+    if (rule.piece.trigger !== trigger) continue;
+    const fired = rule.piece.fire(ctx, rule.params);
+    if (fired.length > 0 && trace !== undefined) trace(r);
+    collect(effects, fired);
+  }
+}
+
 /** Jeden tik. Po konci běhu (`won`/`lost`) nedělá nic. Vrací efekty, které pravidla v tiku vydala. */
-export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProgram): readonly ArcadeEffect[] {
+export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProgram, trace?: RuleTrace): readonly ArcadeEffect[] {
   if (state[HD.runState] !== RUN_STATE.running) return [];
   const count = state[HD.bodyCount] as number;
   const player = state[HD.player] as number;
+  const none = { state, player, other: -1, source: -1, input };
 
   program.control.piece.step(state, player, input, program.control.params);
   // Stisk (P29A): hned za ovládáním, aby hod nebo zvednutí vyšlo už v tomto tiku.
   const effects: ArcadeEffect[] = [];
-  for (const rule of program.rules) {
-    if (rule.piece.trigger === 'press') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1, input }, rule.params));
-  }
+  fireRules(effects, program, 'press', none, trace);
   apply(state, effects, 0);
   const pressed = effects.length;
   carry(state, count, player);
@@ -658,24 +676,14 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   follow(state, player);
   const ended = projectiles(state, count, player);
 
-  for (const other of contacts) {
-    for (const rule of program.rules) {
-      if (rule.piece.trigger === 'contact') collect(effects, rule.piece.fire({ state, player, other, source: -1, input }, rule.params));
-    }
-  }
+  for (const other of contacts) fireRules(effects, program, 'contact', { state, player, other, source: -1, input }, trace);
   for (let k = 0; k < ended.length; k += 2) {
-    for (const rule of program.rules) {
-      if (rule.piece.trigger === 'hit') collect(effects, rule.piece.fire({ state, player, other: ended[k + 1] as number, source: ended[k] as number, input }, rule.params));
-    }
+    fireRules(effects, program, 'hit', { state, player, other: ended[k + 1] as number, source: ended[k] as number, input }, trace);
   }
-  for (const rule of program.rules) {
-    if (rule.piece.trigger === 'tick') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1, input }, rule.params));
-  }
+  fireRules(effects, program, 'tick', none, trace);
   apply(state, effects, pressed);
   const countersFrom = effects.length;
-  for (const rule of program.rules) {
-    if (rule.piece.trigger === 'counter') collect(effects, rule.piece.fire({ state, player, other: -1, source: -1, input }, rule.params));
-  }
+  fireRules(effects, program, 'counter', none, trace);
   apply(state, effects, countersFrom);
 
   state[HD.tick] = (state[HD.tick] as number) + 1;
