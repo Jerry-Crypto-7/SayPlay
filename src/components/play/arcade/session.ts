@@ -14,6 +14,7 @@
 import { ARCADE_HZ, AXIS_MAX, type ArcadeEffect, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, BODY } from '@/play/arcade/contract';
 import { type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
+import { type LiveEntry, type LivePatch, acceptLive, stepLive } from '@/play/arcade/live';
 import { type BotRun, runBot } from '@/play/arcade/verify';
 
 export const TICK_MS = 1000 / ARCADE_HZ;
@@ -79,6 +80,13 @@ export interface ArcadeSession {
    * posluchač nesahá.
    */
   onEvents(listener: ArcadeEventListener): () => void;
+  /**
+   * Živá změna běžící hry (P29D T7) do nejbližšího tiku. Jen za hráče a jen
+   * ověřená (`acceptLive`): `null` = přijato, jinak důvod pro hráče.
+   */
+  live(patch: LivePatch): string | null;
+  /** Přijaté živé změny běhu; restart je zahodí. */
+  patches(): readonly LiveEntry[];
 }
 
 /** `tick` = tik, ve kterém efekty padly (před jeho přičtením). */
@@ -102,7 +110,10 @@ export function createArcadeSession(
   world: ArcadeWorld,
   { waitForInput = false, swallowFirst = false }: { readonly waitForInput?: boolean; readonly swallowFirst?: boolean } = {},
 ): ArcadeSession {
-  const program = loadProgram(world, ARCADE_LIBRARY);
+  // Program mění jen živé prodloužení času (P29D T7); restart vrací původní.
+  let program = loadProgram(world, ARCADE_LIBRARY);
+  // Živé změny `{tick, patch}` (P29D T7): replay je přehraje `replayLive` se stejným hashem.
+  let patchLog: LiveEntry[] = [];
   let state = instantiate(world);
   let prev = Int32Array.from(state);
   let log: InputEvent[] = [];
@@ -137,7 +148,22 @@ export function createArcadeSession(
     const tick = state[HEADER.tick] as number;
     const idle = buttons === 0 && axis === 0;
     if (record && !idle) log.push({ tick, buttons, axis });
-    const effects = step(state, idle ? NO_INPUT : { buttons, axis }, program);
+    const input = idle ? NO_INPUT : { buttons, axis };
+    const due = patchLog.filter((entry) => entry.tick === tick).map((entry) => entry.patch);
+    let effects: readonly ArcadeEffect[];
+    if (due.length === 0) effects = step(state, input, program);
+    else {
+      const run = { state, program };
+      effects = stepLive(world, run, input, due);
+      program = run.program;
+      // Nová těla mohla stav prodloužit; `prev` (interpolace) musí mít stejnou délku.
+      if (run.state !== state) {
+        const grown = new Int32Array(run.state.length);
+        grown.set(prev);
+        prev = grown;
+        state = run.state;
+      }
+    }
     if (effects.length > 0 && script === null && !replayed) for (const listener of eventListeners) listener(effects, tick);
   };
 
@@ -232,6 +258,8 @@ export function createArcadeSession(
       state = instantiate(world);
       prev = Int32Array.from(state);
       log = [];
+      patchLog = [];
+      program = loadProgram(world, ARCADE_LIBRARY);
       pending = 0;
       pendingAxis = 0;
       held = 0;
@@ -286,6 +314,16 @@ export function createArcadeSession(
     },
     demo: () => demoView,
     humanRun: () => script === null && !replayed,
+    live: (patch) => {
+      if (script !== null || replayed || outcomeOf(state) !== 'running') return 'The game is not being played right now.';
+      const entry: LiveEntry = { tick: state[HEADER.tick] as number, patch };
+      const verdict = acceptLive(world, state, patchLog, entry);
+      if (!verdict.ok) return verdict.reason;
+      patchLog.push(entry);
+      notify();
+      return null;
+    },
+    patches: () => patchLog,
     onEvents: (listener) => {
       eventListeners.add(listener);
       return () => eventListeners.delete(listener);
