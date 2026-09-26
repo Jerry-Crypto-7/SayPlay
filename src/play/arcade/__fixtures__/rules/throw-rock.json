@@ -1,0 +1,24 @@
+{
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {},
+  "title": "Bell Ringer",
+  "archetype": "survival_timer",
+  "targetDurationSec": 60,
+  "theme": { "setting": "mountain meadow with an old bell", "mood": "playful" },
+  "objective": { "kind": "survive", "description": "Pick up a rock and throw it at the bell.", "seconds": 40 },
+  "mechanics": [],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "shepherd" },
+    { "id": "rock", "kind": "item", "label": "round rock" },
+    { "id": "bell", "kind": "target", "label": "bronze bell" }
+  ],
+  "rules": [
+    { "id": "pick_rock", "verb": "pick", "when": { "contact": ["player", "rock"] }, "if": [{ "notHolding": true }], "do": [{ "grab": "other" }] },
+    { "id": "throw_rock", "verb": "throw", "when": { "press": "action" }, "if": [{ "holding": "rock" }], "do": [{ "throwHeld": true }] },
+    { "id": "ring", "verb": "ring", "when": { "contact": ["rock", "bell"] }, "do": [{ "score": 1 }, { "win": true }] }
+  ],
+  "tutorial": { "goalLine": "Throw the rock at the bell.", "controlsHint": "Drag or arrows to walk, tap to throw." },
+  "verification": [{ "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}

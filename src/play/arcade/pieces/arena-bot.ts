@@ -22,8 +22,8 @@ const WALL_BAND = 4 * UNIT;
 
 const toward = (value: number, target: number, step: number): number => (value < target ? Math.min(target, value + step) : Math.max(target, value - step));
 
-/** Poloha „teď“: viděný stav + vstupy, které v něm ještě nejsou (jako ovládání, bez stěn a kolizí). */
-function predict(state: Int32Array, player: number, recent: readonly ArcadeInput[]): { x: number; z: number } {
+/** Poloha a rychlost „teď“: viděný stav + vstupy, které v něm ještě nejsou (jako ovládání, bez stěn a kolizí). */
+export function predict(state: Int32Array, player: number, recent: readonly ArcadeInput[]): { x: number; z: number; vx: number; vz: number } {
   const p = bodyBase(player);
   let x = state[p + BODY.x] as number;
   let z = state[p + BODY.z] as number;
@@ -38,7 +38,7 @@ function predict(state: Int32Array, player: number, recent: readonly ArcadeInput
     x += vx;
     z += vz;
   }
-  return { x, z };
+  return { x, z, vx, vz };
 }
 
 const botParams = z.object({ half: z.int().min(5 * UNIT).max(40 * UNIT).default(ARENA.half) }).strict();

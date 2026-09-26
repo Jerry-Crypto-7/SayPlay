@@ -10,9 +10,10 @@
 
 import type { KeypointEvidence, QualityReport, VerbProof } from '@/play/contracts';
 
-import { ARCADE_LIMITS, type ArcadeInput, type ArcadeWorld, BODY, HEADER, type InputEvent, UNIT, bodyBase } from './contract';
+import { ARCADE_LIMITS, type ArcadeInput, type ArcadeObservation, type ArcadeWorld, BODY, HEADER, type InputEvent, UNIT, bodyBase } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
+import { rulesPlanner } from './rules/bot';
 
 export interface BotRun {
   readonly inputs: readonly InputEvent[];
@@ -29,10 +30,13 @@ export interface BotRun {
  * Odehraje hru robotem. Robot v tiku *t* vidí stav z tiku *t − reactionTicks*
  * (kruhový buffer kopií) a vlastní stisky z té doby, které ještě nevidí.
  */
-export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY): BotRun {
-  const bot = library.bots[world.bot.id];
-  if (bot === undefined) throw new Error(`arcade: unknown bot ${world.bot.id}`);
-  const params = bot.params.parse(world.bot.params);
+export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, options: { readonly planner?: boolean } = {}): BotRun {
+  const piece = library.bots[world.bot.id];
+  if (piece === undefined) throw new Error(`arcade: unknown bot ${world.bot.id}`);
+  const params = piece.params.parse(world.bot.params);
+  // Hru, kterou vyhrávají pravidla specu, hraje plánovač cílů (P29A); `planner: false` = kontrolní běh robotem světa.
+  const planner = options.planner === false ? null : rulesPlanner(world);
+  const bot = planner ?? { reactionTicks: piece.reactionTicks, decide: (observation: ArcadeObservation) => piece.decide(observation, params) };
   const program = loadProgram(world, library);
   const state = instantiate(world);
   const delay = bot.reactionTicks;
@@ -51,7 +55,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
     (history[tick % (delay + 1)] as Int32Array).set(state);
     const seenAt = Math.max(0, tick - delay);
     const seen = history[seenAt % (delay + 1)] as Int32Array;
-    const input = bot.decide({ state: seen, player, tick: seenAt, recent: issued.slice(issued.length - (tick - seenAt)) }, params);
+    const input = bot.decide({ state: seen, player, tick: seenAt, recent: issued.slice(issued.length - (tick - seenAt)) });
     issued.push(input);
     if (input.buttons !== 0 || input.axis !== 0) inputs.push({ tick, ...input });
     step(state, input, program, trace);
