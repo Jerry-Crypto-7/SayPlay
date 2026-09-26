@@ -53,11 +53,11 @@ interface Entry {
 class PhysicsSession {
   private readonly world: RapierModule.World;
   private readonly entries = new Map<number, Entry>();
+  // Pole zvlášť, ne vlastnost parametru: `node --experimental-strip-types` (scripts/play-fidelity.mjs) ji nepřeloží.
+  private readonly rapier: Rapier;
 
-  constructor(
-    private readonly rapier: Rapier,
-    gravity: number,
-  ) {
+  constructor(rapier: Rapier, gravity: number) {
+    this.rapier = rapier;
     this.world = new rapier.World({ x: 0, y: -(gravity * ARCADE_HZ * ARCADE_HZ) / UNIT, z: 0 });
     // Tik = `PHYSICS_SUBSTEPS` celých kroků Rapieru, každý s vlastním hledáním
     // kontaktů: míč letící 0,26 m za tik by při jednom kroku zapadl 13 cm pod
