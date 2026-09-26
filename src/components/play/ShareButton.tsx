@@ -109,7 +109,8 @@ export function ShareButton({
     if (typeof navigator.share === 'function' && (file === null || withFile)) {
       try {
         await navigator.share(withFile ? { title: title ?? document.title, url, files: [file] } : { title: title ?? document.title, url });
-        loopEvent('share', versionId, { withClip: withFile });
+        // Sdílení patří hrané verzi – tam leží i zobrazení a výhra běhu (revize fáze 2 P29D).
+        loopEvent('share', playing, { withClip: withFile });
         return;
       } catch (error) {
         // Hráč nabídku zavřel – nic dalšího. Jiná chyba: zkusit schránku.
@@ -120,7 +121,7 @@ export function ShareButton({
     try {
       await navigator.clipboard.writeText(url);
       setShare(file === null ? 'copied' : 'saved');
-      loopEvent('share', versionId, { withClip: file !== null });
+      loopEvent('share', playing, { withClip: file !== null });
     } catch {
       // Odkaz nedošel (jen ruční pole) – `share` se nepočítá, s klipem ani bez něj.
       setShare('manual');
