@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { RemixFinalReason } from '@/app/api/play/_remix-jobs';
 
+import { appendSpoken, MicButton } from './MicButton';
 import { POLL_MS } from './UpgradeBanner';
 
 /** Týž strop jako `MAX_REMIX_SENTENCE_CHARS` na serveru. */
@@ -181,6 +182,7 @@ export function RemixBox({ job }: { readonly job: RemixJob }) {
           disabled={working}
           onChange={(event) => setText(event.target.value)}
         />
+        <MicButton testId="remix-mic" disabled={working} onText={(spoken) => setText((previous) => appendSpoken(previous, spoken).slice(0, MAX_CHARS))} />
         <button type="submit" className="play-button" data-testid="remix-submit" disabled={working || sentence.length === 0}>
           Make it
         </button>

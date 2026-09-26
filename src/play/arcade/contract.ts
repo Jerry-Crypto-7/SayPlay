@@ -209,6 +209,28 @@ export const ROLE = {
 export type ArcadeRole = keyof typeof ROLE;
 export type ArcadeRoleCode = (typeof ROLE)[ArcadeRole];
 
+/** Role specu, jejíž `count` čte generátor ovládání (P26D T9): id role specu, role jejích těl, klíč parametru, strop generátoru. */
+export interface CountedRole {
+  readonly roleId: string;
+  readonly role: ArcadeRole;
+  readonly key: string;
+  readonly max: number;
+}
+
+/** Podle `control`; `compile.ts` z nich staví parametry, sdílení živých změn (P29D T10) do nich zapisuje. `rows` počítá řady, ne těla. */
+export const COUNTED_ROLES: Readonly<Record<string, readonly CountedRole[]>> = {
+  runner: [
+    { roleId: 'coin', role: 'collectible', key: 'coinCount', max: 60 },
+    { roleId: 'obstacle', role: 'obstacle', key: 'rows', max: 60 },
+  ],
+  platform: [{ roleId: 'coin', role: 'collectible', key: 'coinCount', max: 60 }],
+  flap: [{ roleId: 'coin', role: 'collectible', key: 'coinCount', max: 40 }],
+  shooter: [
+    { roleId: 'target', role: 'target', key: 'targets', max: 8 },
+    { roleId: 'enemy', role: 'enemy', key: 'enemies', max: 24 },
+  ],
+};
+
 /**
  * Doplňky arkády (P26D): druhá mechanika nad základním ovládáním („jump and
  * shoot“). Která ovládání který berou, říká `CAPABILITIES[control].addons`.

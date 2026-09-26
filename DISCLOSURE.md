@@ -2674,10 +2674,11 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **public/assets/worldstream/rigged/skeleton-rogue.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/skeleton-warrior.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 
-## Modely (19)
+## Modely (22)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
+| ACE-Step 1.5 | https://huggingface.co/Comfy-Org/ace_step_1.5_ComfyUI_files (repack of https://huggingface.co/ACE-Step/Ace-Step1.5; code https://github.com/ace-step/ACE-Step-1.5) | ACE Studio and StepFun (ACE-Step), Comfy Org (repack) | MIT (weights), Apache-2.0 (code and repack) | copyright notice and license text if the weights are redistributed (they are not) | ACE-Step 1.5 © ACE Studio and StepFun |
 | BiRefNet (Lucida fine-tune) | https://huggingface.co/Comfy-Org/BiRefNet (revision 25511f8787e51912e1480706b4e47b8f467fbf72; base models https://huggingface.co/ZhengPeng7/BiRefNet and https://huggingface.co/egeorcun/lucida) | Peng Zheng et al. (BiRefNet), egeorcun (Lucida fine-tune), Comfy Org (repack) | MIT | copyright notice and license text if the weights are redistributed (they are not) | BiRefNet © Peng Zheng et al., MIT; Lucida fine-tune, MIT |
 | claude-opus-5 | https://docs.anthropic.com/en/docs/about-claude/models | Anthropic | komerční podmínky služby (Anthropic Commercial Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | Anthropic, https://www.anthropic.com/legal/commercial-terms |
 | DINOv3 ViT-L (TRELLIS.2 image encoder) | https://huggingface.co/Comfy-Org/TRELLIS.2 clip_vision/dino_v3_vit_l.safetensors; license https://github.com/facebookresearch/dinov3/blob/main/LICENSE.md | Meta Platforms | LicenseRef-DINOv3 (DINOv3 License) | a copy of the DINOv3 License with any redistributed DINO Materials (none are redistributed); acknowledge the use of DINO Materials in research publications | DINOv3 © Meta Platforms, DINOv3 License |
@@ -2690,7 +2691,9 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 | gpt-5.6-terra | https://platform.openai.com/docs/models | OpenAI | komerční podmínky služby (OpenAI Business Terms) | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-6-astra | https://platform.openai.com/docs/models | OpenAI | Podmínky příslušné služby OpenAI; měření běželo přes uživatelské předplatné ChatGPT/Codex (Codex CLI 0.154.0, codex exec). Ověření podmínek pro veřejné soutěžní nasazení: MISSING. | žádné pro volajícího; výstupy modelu podléhají podmínkám služby | OpenAI, https://openai.com/policies/business-terms |
 | gpt-oss-20b | https://huggingface.co/ggml-org/gpt-oss-20b-GGUF gpt-oss-20b-MXFP4.gguf; license https://huggingface.co/openai/gpt-oss-20b/blob/main/LICENSE | OpenAI (weights), ggml-org (GGUF conversion) | Apache-2.0 | license text and NOTICE if the weights are redistributed (they are not) | gpt-oss-20b © OpenAI, Apache-2.0 |
+| Kokoro-82M | https://huggingface.co/hexgrad/Kokoro-82M (code https://github.com/hexgrad/kokoro, phonemes https://github.com/hexgrad/misaki) | hexgrad | Apache-2.0 | copyright notice and license text if the weights are redistributed (they are not) | Kokoro-82M © hexgrad, Apache-2.0 |
 | meshy-6 | https://docs.meshy.ai/en/api/text-to-3d | Meshy | Meshy Terms of Use; service model, no weights redistributed | Output licensing must be recorded before any asset is imported | Meshy, https://www.meshy.ai/terms-of-use |
+| MOSS-SoundEffect | https://huggingface.co/OpenMOSS-Team/MOSS-SoundEffect with codec https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer (code https://github.com/OpenMOSS/MOSS-TTS) | OpenMOSS team and MOSI.AI | Apache-2.0 | copyright notice and license text if the weights are redistributed (they are not) | MOSS-SoundEffect © OpenMOSS team, MOSI.AI, Apache-2.0 |
 | Qwen3-1.7B-q4f16_1-MLC | https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC | Qwen Team, Alibaba Cloud (váhy), MLC AI (kvantovaná konverze pro WebLLM) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Qwen3 © Alibaba Group, Apache-2.0; konverze do MLC formátu mlc-ai, https://huggingface.co/mlc-ai/Qwen3-1.7B-q4f16_1-MLC |
 | Qwen3-4B (text encoder) | https://huggingface.co/Comfy-Org/z_image_turbo split_files/text_encoders/qwen_3_4b.safetensors | Qwen Team, Alibaba Cloud | Apache-2.0 | license text and NOTICE if the weights are redistributed (they are not) | Qwen3 © Alibaba Group, Apache-2.0 |
 | Qwen3-4B-Instruct-2507 | https://huggingface.co/unsloth/Qwen3-4B-Instruct-2507-GGUF Qwen3-4B-Instruct-2507-Q5_K_M.gguf; license https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507/blob/main/LICENSE | Qwen Team, Alibaba Cloud (weights), Unsloth (GGUF conversion) | Apache-2.0 | license text and NOTICE if the weights are redistributed (they are not) | Qwen3 © Alibaba Group, Apache-2.0 |
@@ -2700,6 +2703,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 
 ### Modely — licence posouzené jednotlivě
 
+- **ACE-Step 1.5** (MIT (weights), Apache-2.0 (code and repack)): Generates the music loops offline through the local ComfyUI (turbo DiT, qwen 0.6b/1.7b encoders, ace_1.5 VAE). Model cards read via HF API 2026-09-26: Ace-Step1.5 MIT, Comfy-Org repack apache-2.0. Only generated audio ships.
 - **BiRefNet (Lucida fine-tune)** (MIT): Background removal between the image and TRELLIS.2. Used instead of RMBG-2.0, which is non-commercial. Both the repack card and the Lucida card declare MIT for weights and code, read 2026-09-24.
 - **claude-opus-5** (komerční podmínky služby (Anthropic Commercial Terms)): Od 6. 9. 2026 se NEVOLÁ a produktu se neúčastní. Do té chvíle stál v src/model/prompt.ts jako EMISSION_MODEL a proxy vracela pod tím jménem odpovědi gpt-5.6-sol; emisní cesta proto jmenuje ten model přímo. Položka zůstává, protože identifikátor je pořád v kódu — v testech a fixturách (evals/harness/**, evals/worldstream/__tests__/**, scripts/__tests__/**).
 - **DINOv3 ViT-L (TRELLIS.2 image encoder)** (LicenseRef-DINOv3 (DINOv3 License)): Custom model license, RULES.md §4 'check manually' class. Read 2026-09-24: non-exclusive, worldwide, royalty-free; commercial use permitted; prohibited uses are military/warfare, nuclear, espionage, weapons and ITAR / trade-control end uses. Not non-commercial and not research-only, so it is not removed from the path; the final call is the owner's at the P26C QA gate.
@@ -2712,7 +2716,9 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **gpt-5.6-terra** (komerční podmínky služby (OpenAI Business Terms)): Jmenuje ho jen měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že jméno modelu v kódu je.
 - **gpt-6-astra** (Podmínky příslušné služby OpenAI; měření běželo přes uživatelské předplatné ChatGPT/Codex (Codex CLI 0.154.0, codex exec). Ověření podmínek pro veřejné soutěžní nasazení: MISSING.): Od 13. 9. 2026 večer EMISSION_MODEL v src/model/prompt.ts — model, který WORLDSTREAM světy doopravdy píše. Rozhodnutí uživatele po galerii kvality (e2e/quality-gallery.spec.ts): 2–5× bohatší kompozice než gpt-5.6-luna, za medián 143 s na větu proti 35 s. claude-code-proxy ho nezná, volá se proto spuštěním Codex CLI (codex exec --json, transport codex-cli v src/server/upstream.ts, WORLDSMITH_MODEL_ENDPOINT=codex-cli), s ChatGPT přihlášením, medium effort, sandbox read-only, nástroje vypnuté, žádný API fallback. Spotřeba předplatného je evidována; jednotková USD cena není doložena. Schválení veřejného hostování prostřednictvím osobního předplatného: MISSING.
 - **gpt-oss-20b** (Apache-2.0): P29B local fallback director: llama.cpp llama-server on the owner's RTX 3090 (ops/llm/start.ps1 -Role fallback), called only when the subscription director stalls. Local only, not in the repository or the bundle. License read from the model card, 2026-09-26.
+- **Kokoro-82M** (Apache-2.0): Reads each game's goal line aloud in the local voice service ops/audio/server.py (voice af_heart, 24 kHz). Model card read via HF API and kokoro/misaki via PyPI 2026-09-26: all Apache-2.0. misaki[en] pulls espeak-ng (GPL-3.0) as a local phonemizer fallback; it runs only on the local machine and never ships. Only generated audio reaches players.
 - **meshy-6** (Meshy Terms of Use; service model, no weights redistributed): Pinned identifier in the prepared T12 adapter. No live generation or model weights used. See Meshy API entry; mocked lifecycle tests do not establish output quality or rights.
+- **MOSS-SoundEffect** (Apache-2.0): Generates the per-look sound effects offline (8B, loaded 4-bit nf4 on the shared RTX 3090). Model cards of MOSS-SoundEffect and MOSS-Audio-Tokenizer read via HF API 2026-09-26: both apache-2.0. Only generated audio ships.
 - **Qwen3-1.7B-q4f16_1-MLC** (Apache-2.0): Váhy modelu emisní cesty, které si prohlížeč stáhne za běhu (src/model/local/**, WebLLM). Nejsou v repozitáři ani v bundlu, proto to není položka kind: asset. Kvantizace q4f16_1, 979 MB. Sync je nechává být — z package-lock.json se váhy odvodit nedají.
 - **Qwen3-4B (text encoder)** (Apache-2.0): Text encoder shared by FLUX.2-klein-4B and Z-Image-Turbo (same sha256), shipped in the Apache-2.0 Z-Image repack. Local only, not in the repository.
 - **Qwen3-4B-Instruct-2507** (Apache-2.0): P29B local sentence reader (src/play/read, ops/llm/start.ps1 -Role reader). Off by default after the T3 measurement (evals/play/read/README.md). Local only, not in the repository or the bundle. License read 2026-09-26.
@@ -2756,7 +2762,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (688)
+## Vlastní, ne třetí strana (814)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -2766,6 +2772,132 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/aquarium-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/aquarium-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/aquarium.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/assets/worldstream/audio/music/beach-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/beach-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/castle-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/castle-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/cave-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/cave-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/city-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/city-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/desert-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/desert-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/factory-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/factory-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/forest-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/forest-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/graveyard-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/graveyard-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/jungle-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/jungle-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/living_room-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/living_room-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/mall-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/mall-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/meadow-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/meadow-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/ocean-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/ocean-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/snow-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/snow-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/space-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/space-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/supermarket-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/supermarket-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/underwater-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/underwater-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/volcano-calm.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/music/volcano-tense.ogg** (asset): Music loop generated locally by ops/audio/music.py with ACE-Step 1.5, crossfaded into a seamless loop.
+- **public/assets/worldstream/audio/sfx/beach-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/beach-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/beach-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/beach-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/beach-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/castle-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/castle-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/castle-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/castle-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/castle-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/cave-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/cave-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/cave-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/cave-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/cave-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/city-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/city-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/city-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/city-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/city-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/desert-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/desert-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/desert-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/desert-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/desert-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/factory-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/factory-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/factory-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/factory-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/factory-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/forest-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/forest-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/forest-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/forest-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/forest-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/graveyard-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/graveyard-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/graveyard-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/graveyard-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/graveyard-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/jungle-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/jungle-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/jungle-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/jungle-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/jungle-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/living_room-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/living_room-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/living_room-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/living_room-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/living_room-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/mall-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/mall-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/mall-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/mall-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/mall-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/meadow-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/meadow-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/meadow-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/meadow-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/meadow-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/ocean-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/ocean-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/ocean-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/ocean-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/ocean-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/snow-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/snow-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/snow-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/snow-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/snow-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/space-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/space-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/space-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/space-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/space-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/supermarket-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/supermarket-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/supermarket-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/supermarket-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/supermarket-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/underwater-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/underwater-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/underwater-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/underwater-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/underwater-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/volcano-hit.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/volcano-jump.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/volcano-lose.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/volcano-pickup.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
+- **public/assets/worldstream/audio/sfx/volcano-win.ogg** (asset): Sound effect generated locally by ops/audio/sfx.py with MOSS-SoundEffect, trimmed and loudness-normalised.
 - **public/assets/worldstream/bar-stool-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/bar-stool-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/bar-stool.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.

@@ -23,49 +23,26 @@ import { type Operation, applyPatch, createPatch } from 'rfc6902';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { aimHarder, aimSwap, beatHarder, difficultyHarder, hazardSwap, runnerHarder, runnerSwapObstacles, runnerTwist, targetSwap } from '../arcade/remix';
-import type { RemixClass } from '../contracts';
 import { pickControl } from '../draft/controls';
 import { ARCHETYPES, type MechanicId } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1, type GameRole } from '../spec';
 
 import { renderRegistry } from './prompt';
+import { OBJECTIVE_WORDS, type RemixChip, classifyRemix } from './remix-words';
 import { REPAIR_RULES, keypointFor } from './repair';
 
-export const REMIX_CHIPS = ['harder', 'twist', 'swap_enemy', 'reskin'] as const;
-export type RemixChip = (typeof REMIX_CHIPS)[number];
-
-/** Doslova `docs/play/pack/PRODUCT_COPY.md`; test drží shodu se souborem. */
-export const REMIX_CHIP_LABELS: Readonly<Record<RemixChip, string>> = {
-  harder: 'Make it harder',
-  twist: 'Add a twist',
-  swap_enemy: 'Swap the enemy',
-  reskin: 'Change the world, keep the rules',
-};
-
-const CHIP_CLASS: Readonly<Record<RemixChip, RemixClass>> = { harder: 'parameter', swap_enemy: 'parameter', twist: 'mechanic', reskin: 'presentation' };
-
-const MECHANIC_VERBS = /\b(stun|stuns|freeze|freezes|carry|carries|press|presses|collect|collects|chase|chases)\b/i;
-const TOPOLOGY_WORDS = /\b(bigger|smaller|maze|rooms|islands|layout)\b/i;
-const OBJECTIVE_WORDS = /\b(instead|goal|win by|objective)\b/i;
-const PARAMETER_WORDS = /\b(twice as fast|faster|slower|more|fewer|\d+ seconds)\b/i;
-const PRESENTATION_WORDS = /\b(neon|sci-fi|forest|underwater|make it look|theme)\b/i;
-
-export function chipOf(sentence: string): RemixChip | null {
-  const text = sentence.trim().toLowerCase();
-  return REMIX_CHIPS.find((chip) => chip === text || REMIX_CHIP_LABELS[chip].toLowerCase() === text) ?? null;
-}
-
-/** Deterministická třída věty; `parent` je tu pro kontrakt, pravidla zatím čtou jen text. */
-export function classifyRemix(sentence: string, _parent: GameSpecV1): RemixClass {
-  const chip = chipOf(sentence);
-  if (chip !== null) return CHIP_CLASS[chip];
-  if (MECHANIC_VERBS.test(sentence)) return 'mechanic';
-  if (TOPOLOGY_WORDS.test(sentence)) return 'topology';
-  if (OBJECTIVE_WORDS.test(sentence)) return 'objective';
-  if (PARAMETER_WORDS.test(sentence)) return 'parameter';
-  if (PRESENTATION_WORDS.test(sentence)) return 'presentation';
-  return 'mechanic';
-}
+export {
+  MECHANIC_VERBS,
+  OBJECTIVE_WORDS,
+  PARAMETER_WORDS,
+  PRESENTATION_WORDS,
+  REMIX_CHIPS,
+  REMIX_CHIP_LABELS,
+  type RemixChip,
+  TOPOLOGY_WORDS,
+  chipOf,
+  classifyRemix,
+} from './remix-words';
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;

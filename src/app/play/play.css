@@ -1224,3 +1224,111 @@ button.play-feed-card {
     flex: 0 0 auto;
   }
 }
+
+/* P29D – živá změna běžící hry (LiveBox) a počasí nad plátnem (Weather). */
+.play-live {
+  position: absolute;
+  z-index: 3;
+  left: 20px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  width: min(calc(100vw - 132px), 440px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.play-live-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.play-live-input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--play-line);
+  background: var(--play-panel);
+  color: var(--play-text);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.play-live-row .play-button {
+  flex: none;
+}
+
+.play-live-status {
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--play-panel);
+  color: var(--play-text);
+  font-size: 0.8rem;
+}
+
+.play-live-status[data-kind='refused'],
+.play-live-status[data-kind='unknown'] {
+  color: var(--play-muted);
+}
+
+.play-weather {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.play-weather[data-time='night'] {
+  background: rgba(10, 20, 40, 0.45);
+}
+
+.play-weather[data-time='dusk'] {
+  background: rgba(120, 60, 20, 0.22);
+}
+
+.play-weather[data-weather='rain'] {
+  background-image: repeating-linear-gradient(
+    105deg,
+    rgba(180, 210, 235, 0.28) 0 1px,
+    transparent 1px 14px
+  );
+  background-size: 100% 60px;
+  animation: play-rain 0.5s linear infinite;
+}
+
+.play-weather[data-weather='snow'] {
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.85) 1.5px, transparent 2px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.6) 1px, transparent 1.5px);
+  background-size: 48px 48px, 31px 31px;
+  animation: play-snow 4s linear infinite;
+}
+
+.play-weather[data-weather='fog'] {
+  background: linear-gradient(to top, rgba(220, 225, 230, 0.55), rgba(220, 225, 230, 0.15));
+}
+
+.play-weather[data-time='night'][data-weather='rain'] {
+  background-color: rgba(10, 20, 40, 0.45);
+}
+
+@keyframes play-rain {
+  to {
+    background-position: -16px 60px;
+  }
+}
+
+@keyframes play-snow {
+  to {
+    background-position: 0 48px, 8px 31px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-weather {
+    animation: none;
+  }
+}

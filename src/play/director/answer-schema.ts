@@ -18,7 +18,7 @@ import { z } from 'zod';
 
 import { CAPABILITIES } from '../capabilities';
 import { MECHANICS, MECHANIC_IDS, type MechanicEntry, type MechanicId } from '../registry';
-import { CONTROLS, CONTROL_PARAMS, gameSpecSchema, type ControlId } from '../spec';
+import { CONTROLS, CONTROL_PARAMS, gameSpecSchema, themeSchema, type ControlId } from '../spec';
 
 type Json = Record<string, unknown>;
 
@@ -74,9 +74,11 @@ function mechanicsOf(control: ControlId): z.ZodType {
 }
 
 function variant(control: ControlId): z.ZodType {
-  if (control === 'tap_go') return gameSpecSchema.omit({ controlParams: true }).extend({ control: z.literal('tap_go'), mechanics: mechanicsOf(control) });
+  // `theme` bez počasí sdílené verze (P29D T10) – to model nepíše.
+  if (control === 'tap_go') return gameSpecSchema.omit({ controlParams: true }).extend({ control: z.literal('tap_go'), theme: themeSchema, mechanics: mechanicsOf(control) });
   return gameSpecSchema.omit({ verification: true }).extend({
     control: z.literal(control),
+    theme: themeSchema,
     controlParams: CONTROL_PARAMS[control] as z.ZodType,
     mechanics: mechanicsOf(control),
   });

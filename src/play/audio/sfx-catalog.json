@@ -1,0 +1,138 @@
+{
+  "model": "MOSS-SoundEffect (Apache-2.0)",
+  "events": [
+    "jump",
+    "pickup",
+    "hit",
+    "win",
+    "lose"
+  ],
+  "sounds": {
+    "meadow": {
+      "jump": "/assets/worldstream/audio/sfx/meadow-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/meadow-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/meadow-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/meadow-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/meadow-lose.ogg"
+    },
+    "city": {
+      "jump": "/assets/worldstream/audio/sfx/city-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/city-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/city-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/city-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/city-lose.ogg"
+    },
+    "mall": {
+      "jump": "/assets/worldstream/audio/sfx/mall-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/mall-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/mall-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/mall-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/mall-lose.ogg"
+    },
+    "supermarket": {
+      "jump": "/assets/worldstream/audio/sfx/supermarket-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/supermarket-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/supermarket-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/supermarket-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/supermarket-lose.ogg"
+    },
+    "living_room": {
+      "jump": "/assets/worldstream/audio/sfx/living_room-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/living_room-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/living_room-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/living_room-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/living_room-lose.ogg"
+    },
+    "factory": {
+      "jump": "/assets/worldstream/audio/sfx/factory-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/factory-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/factory-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/factory-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/factory-lose.ogg"
+    },
+    "forest": {
+      "jump": "/assets/worldstream/audio/sfx/forest-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/forest-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/forest-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/forest-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/forest-lose.ogg"
+    },
+    "jungle": {
+      "jump": "/assets/worldstream/audio/sfx/jungle-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/jungle-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/jungle-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/jungle-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/jungle-lose.ogg"
+    },
+    "desert": {
+      "jump": "/assets/worldstream/audio/sfx/desert-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/desert-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/desert-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/desert-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/desert-lose.ogg"
+    },
+    "beach": {
+      "jump": "/assets/worldstream/audio/sfx/beach-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/beach-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/beach-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/beach-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/beach-lose.ogg"
+    },
+    "ocean": {
+      "jump": "/assets/worldstream/audio/sfx/ocean-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/ocean-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/ocean-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/ocean-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/ocean-lose.ogg"
+    },
+    "underwater": {
+      "jump": "/assets/worldstream/audio/sfx/underwater-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/underwater-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/underwater-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/underwater-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/underwater-lose.ogg"
+    },
+    "snow": {
+      "jump": "/assets/worldstream/audio/sfx/snow-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/snow-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/snow-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/snow-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/snow-lose.ogg"
+    },
+    "volcano": {
+      "jump": "/assets/worldstream/audio/sfx/volcano-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/volcano-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/volcano-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/volcano-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/volcano-lose.ogg"
+    },
+    "cave": {
+      "jump": "/assets/worldstream/audio/sfx/cave-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/cave-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/cave-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/cave-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/cave-lose.ogg"
+    },
+    "space": {
+      "jump": "/assets/worldstream/audio/sfx/space-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/space-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/space-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/space-lose.ogg"
+    },
+    "castle": {
+      "jump": "/assets/worldstream/audio/sfx/castle-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/castle-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/castle-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/castle-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/castle-lose.ogg"
+    },
+    "graveyard": {
+      "jump": "/assets/worldstream/audio/sfx/graveyard-jump.ogg",
+      "pickup": "/assets/worldstream/audio/sfx/graveyard-pickup.ogg",
+      "hit": "/assets/worldstream/audio/sfx/graveyard-hit.ogg",
+      "win": "/assets/worldstream/audio/sfx/graveyard-win.ogg",
+      "lose": "/assets/worldstream/audio/sfx/graveyard-lose.ogg"
+    }
+  }
+}

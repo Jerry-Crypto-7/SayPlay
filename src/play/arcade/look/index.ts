@@ -13,6 +13,12 @@
  * Nic fialového: odstíny 250–320° tu nejsou.
  */
 
+/** Počasí a denní doba nad sadou (P29D): živá změna je píše do logu, sdílená verze do `theme`. */
+export const WEATHERS = ['clear', 'rain', 'snow', 'fog'] as const;
+export type Weather = (typeof WEATHERS)[number];
+export const TIMES_OF_DAY = ['day', 'dusk', 'night'] as const;
+export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
+
 export const LOOK_IDS = [
   'meadow',
   'city',

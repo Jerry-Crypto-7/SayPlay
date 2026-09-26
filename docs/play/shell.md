@@ -99,6 +99,7 @@ oba backendy), remix (`director-remix.test.ts`), routy s osmi poli Oracle a `NOT
 | `/play/<id>` | `src/app/play/[id]/page.tsx`, `src/components/play/PlayShell.tsx` | hra: plátno, HUD, karty cílů, konec, po dohrání, rodokmen, „How this game works“ |
 | `/play/<neznámé id>` | `src/app/play/[id]/not-found.tsx` | 404 s větou `This game does not exist or has expired.` a odkazem na `/play` |
 | `GET /api/play/games/:id/og` | `src/app/api/play/games/[id]/og/route.ts`, `_og.ts` | PNG 1200×630 podle `spec.theme.mood`, `s-maxage=3600`; neznámé id 404 JSON |
+| `GET /api/play/games/:id/voice` | `src/app/api/play/games/[id]/voice/route.ts`, `_voice.ts` | cíl hry přečtený hlasem (Ogg, `immutable`), nebo 204 `no-store`, dokud není hotový; neznámé id 404 JSON |
 
 Stránka hry čte úložiště verzí přímo (ne přes HTTP), bez přihlášení a bez kroku „create“.
 `generateMetadata` dává `<title>` `<titul> – WORLDSTREAM PLAY`, `og:description` = `tutorial.goalLine`
@@ -122,6 +123,36 @@ adresu; bez schránky ukáže pole s adresou. Měď čipů je opis `CHIP_LABELS`
 **„How this game works“:** věty skládá server (`lab.ts` – registr mechanik zůstává mimo
 klientský bundl): mechaniky s vysvětlením a parametry, `Rules checked: N/M`,
 `Winnable at tick T` / `Not proven`, `Replay: identical` / `stub`, zkrácené id a předci.
+
+**Mikrofon (P29D T6):** `MicButton.tsx` vedle pole v `CreateGame` (`play-mic`) a v `RemixBox`
+(`remix-mic`) diktuje větu přes Web Speech (`@/input/speech`, anglicky); přepis se k napsanému
+přidá. Prohlížeč bez Web Speech (Firefox) tlačítko nevidí vůbec. Výzva `FirstPrompt` pole nemá
+– je to jen překryv s povelem –, takže mikrofon pro změnu uprostřed hry nese pole živé změny.
+**Offline přepis Moonshine se nepřidal (rozhodnuto 26. 9. 2026):** model sám by pravidlo splnil
+(MIT, kvantovaný `moonshine-tiny-ONNX` = enkodér 7,9 MB + dekodér 20,2 MB ≈ 28 MB ≤ 60 MB),
+ale cesta do prohlížeče vede přes `@huggingface/transformers` (Apache-2.0), který tahá `sharp`
+a s ním binárky `@img/sharp-libvips-*` pod **LGPL-3.0-or-later** – mimo MIT/Apache/BSD
+(`RULES.md` §4). Vlastní dekodér nad holým `onnxruntime-web` (MIT) by byl nový kus práce,
+ne přidání; do té doby zůstává tlačítko bez Web Speech skryté.
+
+**Živá změna (P29D T9):** `LiveBox.tsx` – tlačítko `Change` (`live-open`) nebo Enter mimo pole
+otevře pole (`live-input`) s mikrofonem (`live-mic`). Hra běží dál a klávesy psané do pole si
+nevezme. Enter v souboji, načasování a hrách se střelbou (`blaster`) patří hře, tam jen tlačítko. Výsledek hlásí `live-status`
+(`data-kind`: `live`, `remix`, `unknown`, `refused`). Počasí a denní dobu kreslí `Weather.tsx`
+jako CSS překryv nad plátnem. Pravidla patchů: `ARCADE.md` → „Živé změny“.
+
+**Klip (P29D T1–T2):** `arcade/clip.ts` nahrává plátno nativním `MediaRecorder` přes
+`captureStream` (bez závislosti), nejvýš 16 s včetně 1,5 s dojezdu po konci; ukázka robota klip
+nemá. Po hře `Save clip` (`play-save-clip`) a Share: kde nabídka sdílení bere soubory, jde klip
+s odkazem, jinak se klip stáhne a odkaz zkopíruje. Prohlížeč bez `captureStream` tlačítko nevidí.
+
+**Zvuk (P29D T5, T11):** hudba a efekty jsou předgenerovaná knihovna podle `lookOf(theme)`
+a nálady (`src/play/audio/library.ts`, katalogy z `ops/audio`). Nic se nestáhne před prvním
+gestem, chybějící soubor zní syntetickým ZzFX, `M` / `play-mute` ztlumí všechno a
+`PLAY_MUSIC=off` při buildu vypne hudbu. **Hlas vypravěče** přečte cíl hry jednou po prvním
+gestu, jen když je nahrávka hotová (dveře `…/voice`), ztlumená hra ho nespustí a ztlumení ho
+utne. Nahrávky dělá lokální Kokoro-82M (`ops/audio/server.py`) – bez `PLAY_VOICE_ENDPOINT`
+a `PLAY_VOICE_KEY` hra mlčí a publikace je stejná.
 
 ## Sonda `window.__playShell`
 

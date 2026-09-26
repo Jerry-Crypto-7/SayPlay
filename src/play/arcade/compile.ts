@@ -14,7 +14,7 @@ import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts'
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
-import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, type PieceRef, rampMarks } from './contract';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, COUNTED_ROLES, type PieceRef, rampMarks } from './contract';
 import { buildWorld, replay, worldHasPhysics } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { loadRapier, rapierIfLoaded } from './physics/world';
@@ -47,15 +47,9 @@ function countOf(spec: GameSpecV1, roleId: string): number | undefined {
 
 /** Počty rolí, které generátor ovládání čte (klíče jeho parametrů); `capabilities.ts` `counts` to tvrdí. */
 function countParams(spec: GameSpecV1): Record<string, number> {
-  // [role, klíč parametru, strop generátoru] – víc, než generátor unese, se ořízne (`within_limits`).
-  const pairs: Readonly<Record<string, readonly (readonly [string, string, number])[]>> = {
-    runner: [['coin', 'coinCount', 60], ['obstacle', 'rows', 60]],
-    platform: [['coin', 'coinCount', 60]],
-    flap: [['coin', 'coinCount', 40]],
-    shooter: [['target', 'targets', 8], ['enemy', 'enemies', 24]],
-  };
+  // Víc, než generátor unese, se ořízne (`within_limits`).
   const out: Record<string, number> = {};
-  for (const [roleId, key, max] of pairs[spec.control ?? ''] ?? []) {
+  for (const { roleId, key, max } of COUNTED_ROLES[spec.control ?? ''] ?? []) {
     const count = countOf(spec, roleId);
     if (count !== undefined) out[key] = Math.min(count, max);
   }

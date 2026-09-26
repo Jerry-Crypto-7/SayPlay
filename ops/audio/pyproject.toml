@@ -1,0 +1,49 @@
+[project]
+name = "worldsmith-audio"
+version = "0.1.0"
+description = "Local music loops, sound effects and narration for PLAY games on one GPU (ACE-Step 1.5 through ComfyUI)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "fastapi>=0.141.1",
+  "numpy>=2.5.3",
+  "uvicorn>=0.30",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8",
+]
+
+# Kokoro-82M (`voice.py`, hlasová služba `server.py`) – testy ho nepotřebují: `uv sync --group voice`.
+voice = [
+    "kokoro>=0.9.4",
+    "torch==2.9.1",
+]
+
+# MOSS-SoundEffect (`sfx.py`) – jen pro generování, testy ho nepotřebují: `uv sync --group sfx`.
+sfx = [
+    "torch==2.9.1",
+    "torchaudio==2.9.1",
+    "transformers>=5.0,<5.1",
+    "accelerate>=1.10",
+    "bitsandbytes>=0.48",
+    "safetensors>=0.6",
+    "tqdm>=4.66",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu128" }]
+torchaudio = [{ index = "pytorch-cu128" }]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

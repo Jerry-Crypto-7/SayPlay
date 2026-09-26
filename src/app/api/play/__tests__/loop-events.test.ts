@@ -31,8 +31,15 @@ describe('readLoopEvent', () => {
     ['a version id that is not hex', { name: 'win', versionId: 'hamster-escape', session: SESSION }],
     ['a session with free text', { name: 'win', versionId: VERSION, session: 'john.doe@example.com' }],
     ['an array', [{ name: 'win', versionId: VERSION, session: SESSION }]],
+    ['withClip on anything but share', { name: 'win', versionId: VERSION, session: SESSION, withClip: true }],
+    ['withClip that is not a boolean', { name: 'share', versionId: VERSION, session: SESSION, withClip: 'yes' }],
   ])('refuses %s', (_why, body) => {
     expect(readLoopEvent(body)).toBeNull();
+  });
+
+  it('a share says whether the clip went with it (P29D T2)', () => {
+    expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: true })).toEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: true });
+    expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: false })).toEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: false });
   });
 });
 

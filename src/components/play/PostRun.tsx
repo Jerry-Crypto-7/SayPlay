@@ -13,10 +13,40 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 import { RemixBox, type RemixJob } from './RemixBox';
-import { ShareButton } from './ShareButton';
+import { type LivePublish, ShareButton } from './ShareButton';
 import { CHALLENGE_A_FRIEND, CHANGE_ONE_THING, POST_RUN_CHIPS } from './starters';
 
-export function PostRun({ versionId, remix: job, onReplay }: { readonly versionId: string; readonly remix: RemixJob; readonly onReplay: () => void }) {
+/** Klip běhu ke stažení (P29D T1); prohlížeč bez nahrávání plátna klip nemá a tlačítko nevidí. */
+function SaveClip({ clip }: { readonly clip: Blob }) {
+  const [href, setHref] = useState<string | null>(null);
+  useEffect(() => {
+    const url = URL.createObjectURL(clip);
+    setHref(url);
+    return () => URL.revokeObjectURL(url);
+  }, [clip]);
+  if (href === null) return null;
+  const extension = clip.type.includes('mp4') ? 'mp4' : 'webm';
+  return (
+    <a className="play-button" data-testid="play-save-clip" href={href} download={`worldstream-clip.${extension}`}>
+      Save clip
+    </a>
+  );
+}
+
+export function PostRun({
+  versionId,
+  remix: job,
+  clip = null,
+  live,
+  onReplay,
+}: {
+  readonly versionId: string;
+  readonly remix: RemixJob;
+  readonly clip?: Blob | null;
+  /** Verze se živými změnami běhu (P29D T10) – sdílí se místo hrané. */
+  readonly live?: LivePublish;
+  readonly onReplay: () => void;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -79,7 +109,8 @@ export function PostRun({ versionId, remix: job, onReplay }: { readonly versionI
       {failure !== null && <p className="play-alert" role="alert">{failure}</p>}
       <RemixBox job={job} />
 
-      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} />
+      {clip !== null && <SaveClip clip={clip} />}
+      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} clip={clip} live={live} />
     </section>
   );
 }

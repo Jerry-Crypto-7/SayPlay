@@ -17,7 +17,7 @@
  */
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Group, type Mesh, type Object3D, type PerspectiveCamera, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
@@ -868,12 +868,16 @@ export default function ArcadeStage({
   cast,
   lookId = 'meadow',
   enabled = true,
+  overlay,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
   readonly lookId?: LookId;
   /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
   readonly enabled?: boolean;
+  /* P29D */
+  /** Vrstva nad plátnem (počasí a denní doba živé změny) – mimo scénu i hash. */
+  readonly overlay?: ReactNode;
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
@@ -942,6 +946,7 @@ export default function ArcadeStage({
           </>
         )}
       </Canvas>
+      {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {fires && enabled && <FireButton session={session} />}
     </div>

@@ -1,7 +1,8 @@
 /**
  * `POST /api/play/events` – jedna událost herní smyčky (P27D T4, B4).
  *
- * Tělo: `{ name, versionId, session }` a nic jiného (`src/play/loop-events.ts`);
+ * Tělo: `{ name, versionId, session }`, u `share` ještě volitelné `withClip`
+ * (boolean, P29D T2), a nic jiného (`src/play/loop-events.ts`);
  * klíč navíc, věta nebo volný text je 400. Odpověď `204`. Nic neplatí a nic
  * nezakládá, přesto má vlastní strop frekvence a páku `sessions` – kdo vypne
  * zakládání, nechce ani zápis statistik.
@@ -29,7 +30,7 @@ export async function POST(request: Request): Promise<Response> {
   const body = await readJsonBody(request);
   if (!body.ok) return body.response;
   const event = readLoopEvent(body.value);
-  if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session } and nothing else');
+  if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session }, plus an optional boolean withClip on share, and nothing else');
   recordLoopEvent(event);
   return new Response(null, { status: 204 });
 }

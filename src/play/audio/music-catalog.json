@@ -1,0 +1,78 @@
+{
+  "model": "ACE-Step 1.5 turbo (Apache-2.0 code, MIT weights)",
+  "loopSeconds": 14.0,
+  "loops": {
+    "meadow": {
+      "calm": "/assets/worldstream/audio/music/meadow-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/meadow-tense.ogg"
+    },
+    "city": {
+      "calm": "/assets/worldstream/audio/music/city-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/city-tense.ogg"
+    },
+    "mall": {
+      "calm": "/assets/worldstream/audio/music/mall-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/mall-tense.ogg"
+    },
+    "supermarket": {
+      "calm": "/assets/worldstream/audio/music/supermarket-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/supermarket-tense.ogg"
+    },
+    "living_room": {
+      "calm": "/assets/worldstream/audio/music/living_room-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/living_room-tense.ogg"
+    },
+    "factory": {
+      "calm": "/assets/worldstream/audio/music/factory-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/factory-tense.ogg"
+    },
+    "forest": {
+      "calm": "/assets/worldstream/audio/music/forest-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/forest-tense.ogg"
+    },
+    "jungle": {
+      "calm": "/assets/worldstream/audio/music/jungle-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/jungle-tense.ogg"
+    },
+    "desert": {
+      "calm": "/assets/worldstream/audio/music/desert-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/desert-tense.ogg"
+    },
+    "beach": {
+      "calm": "/assets/worldstream/audio/music/beach-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/beach-tense.ogg"
+    },
+    "ocean": {
+      "calm": "/assets/worldstream/audio/music/ocean-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/ocean-tense.ogg"
+    },
+    "underwater": {
+      "calm": "/assets/worldstream/audio/music/underwater-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/underwater-tense.ogg"
+    },
+    "snow": {
+      "calm": "/assets/worldstream/audio/music/snow-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/snow-tense.ogg"
+    },
+    "volcano": {
+      "calm": "/assets/worldstream/audio/music/volcano-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/volcano-tense.ogg"
+    },
+    "cave": {
+      "calm": "/assets/worldstream/audio/music/cave-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/cave-tense.ogg"
+    },
+    "space": {
+      "calm": "/assets/worldstream/audio/music/space-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/space-tense.ogg"
+    },
+    "castle": {
+      "calm": "/assets/worldstream/audio/music/castle-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/castle-tense.ogg"
+    },
+    "graveyard": {
+      "calm": "/assets/worldstream/audio/music/graveyard-calm.ogg",
+      "tense": "/assets/worldstream/audio/music/graveyard-tense.ogg"
+    }
+  }
+}

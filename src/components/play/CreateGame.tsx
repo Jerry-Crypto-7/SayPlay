@@ -13,6 +13,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
+import { appendSpoken, MicButton } from './MicButton';
 import { BUILD_STEPS, PLACEHOLDER, SENTENCE_LIMIT, STARTERS } from './starters';
 
 type Phase = { readonly kind: 'idle' } | { readonly kind: 'busy'; readonly step: 0 | 1 } | { readonly kind: 'failed'; readonly message: string };
@@ -70,6 +71,7 @@ export function CreateGame() {
           <span className="play-counter" data-over={over ? 'true' : 'false'} aria-live="polite">
             {sentence.length} / {SENTENCE_LIMIT}
           </span>
+          <MicButton disabled={busy} onText={(spoken) => setSentence((previous) => appendSpoken(previous, spoken).slice(0, SENTENCE_LIMIT))} />
           <button className="play-button" type="submit" data-testid="play-create" disabled={busy || trimmed.length === 0 || over}>
             Play it
           </button>

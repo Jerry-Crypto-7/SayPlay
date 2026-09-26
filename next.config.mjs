@@ -25,7 +25,8 @@ const nextConfig = {
   // podmínka T205b: nasazuje se artefakt beze změny, ne artefakt plus nastavení.
   // Bez pipeline (běžný `next build` z pracovního stromu) je hodnota `unbuilt`,
   // což je poctivější než prázdný řetězec: nedá se splést s hashem.
-  env: { WORLDSMITH_BUILD_TREE: process.env.WORLDSMITH_BUILD_TREE ?? 'unbuilt' },
+  // `PLAY_MUSIC=off` při buildu vypne hudbu her (P29D T5); zvuky zůstanou.
+  env: { WORLDSMITH_BUILD_TREE: process.env.WORLDSMITH_BUILD_TREE ?? 'unbuilt', PLAY_MUSIC: process.env.PLAY_MUSIC ?? 'on' },
   // Bez tohohle si Next vygeneruje náhodné `BUILD_ID` při každém buildu, takže
   // by dva buildy z téhož archivu nikdy nedaly shodný `sha256` — a krok 4
   // T205a (reprodukovatelnost) by neměřil vstupy buildu, jen náhodný řetězec.
