@@ -105,8 +105,12 @@ export type Rule = z.infer<typeof ruleSchema>;
 
 export const rulesSchema = z.array(ruleSchema).max(RULES_MAX);
 
-/** Doplněk role pro pravidla: `start: 'hidden'` = tělo ve hře je, ale ukáže se až po `toggle`. */
-export const thingSchema = z.object({ role: roleRef, start: z.enum(['present', 'hidden']).optional() }).strict();
+/**
+ * Doplněk role pro pravidla: `start: 'hidden'` = tělo ve hře je, ale ukáže se
+ * až po `toggle`; `physics: true` = hýbe s ním Rapier (padá, klouže, převrací
+ * se, strčení a hod letí fyzikou).
+ */
+export const thingSchema = z.object({ role: roleRef, start: z.enum(['present', 'hidden']).optional(), physics: z.boolean().optional() }).strict();
 export type Thing = z.infer<typeof thingSchema>;
 
 export const thingsSchema = z.array(thingSchema).max(THINGS_MAX);

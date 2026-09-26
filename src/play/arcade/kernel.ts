@@ -571,7 +571,9 @@ function letGo(state: ArcadeState, thrown: boolean): void {
   const az = ax === 0 && state[base + S.aux1] === 0 ? 1 : (state[base + S.aux1] as number);
   state[base + S.aux0] = 0;
   state[base + S.aux1] = 0;
-  state[base + S.flags] = ((state[base + S.flags] as number) | F.gravity | F.friction) & ~F.grounded;
+  // Fyzikální těleso padá a brzdí v Rapieru; jádro mu gravitaci ani tření nepřidá.
+  const flags = state[base + S.flags] as number;
+  state[base + S.flags] = (flags & F.physics) !== 0 ? flags : (flags | F.gravity | F.friction) & ~F.grounded;
   if (thrown) {
     // `Math.sqrt` je v IEEE 754 přesně zaokrouhlená, takže dává všude stejné celé číslo.
     const length = Math.sqrt(ax * ax + az * az);

@@ -20,7 +20,9 @@
 
 import { arcadeWorldOf } from '../arcade/compile';
 import { BODY, HEADER, ROLE, bodyBase } from '../arcade/contract';
+import { worldHasPhysics } from '../arcade/kernel';
 import { lookFor } from '../arcade/look';
+import { rapierIfLoaded } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
 import { chaserModel, enemyModel, heroModel, modelOf, propModels, riggedModelOf } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
@@ -120,7 +122,8 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
 /** Slovesa pravidel, která robot během vítězného běhu vystřelil (seed 1, jako `arcadeScene`). */
 function robotVerbs(spec: GameSpecV1): readonly VerbProof[] {
   const made = arcadeWorldOf(spec, 1);
-  return made.ok ? verifyArcade(made.world).verbs : [];
+  // Svět s fyzikou bez načteného Rapieru robot neodehraje: slovesa zůstanou nedokázaná.
+  return made.ok && (!worldHasPhysics(made.world) || rapierIfLoaded() !== null) ? verifyArcade(made.world).verbs : [];
 }
 
 /**

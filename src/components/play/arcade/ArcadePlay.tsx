@@ -14,8 +14,10 @@ import { memo, type ReactNode, useEffect, useMemo, useState, useSyncExternalStor
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, HEADER } from '@/play/arcade/contract';
+import { worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
+import { loadRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { installSoundControls, jumped, playSfx, presetsFor } from '@/play/audio';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
@@ -174,7 +176,33 @@ export interface ArcadePlayProps {
 
 const END_PAUSE_MS = 600;
 
-export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
+/**
+ * Hra s fyzikálními tělesy (P29A T13) čeká, než se stáhne Rapier – jádro je
+ * synchronní a bez něj by první tik spadl. Hra bez fyziky je připravená hned
+ * a modul vůbec nestáhne.
+ */
+export function usePhysicsReady(world: ArcadeWorld): boolean {
+  const needs = useMemo(() => worldHasPhysics(world), [world]);
+  const [ready, setReady] = useState(() => !needs || rapierIfLoaded() !== null);
+  useEffect(() => {
+    if (ready) return;
+    let live = true;
+    void loadRapier().then(() => {
+      if (live) setReady(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, [ready]);
+  return ready;
+}
+
+export function ArcadePlay(props: ArcadePlayProps) {
+  const ready = usePhysicsReady(props.arcade);
+  return ready ? <ArcadePlayReady {...props} /> : <div data-testid="arcade-physics-loading" aria-busy="true" style={{ position: 'fixed', inset: 0 }} />;
+}
+
+function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
   // u načasování by to byl rovnou minutý pokus (u poletování je to první mávnutí).

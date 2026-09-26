@@ -2,14 +2,20 @@
 
 import { useEffect, useMemo } from 'react';
 
+import { usePhysicsReady } from '@/components/play/arcade/ArcadePlay';
 import ArcadeStage from '@/components/play/arcade/ArcadeStage';
 import { createArcadeSession } from '@/components/play/arcade/session';
 import type { ArcadeWorld } from '@/play/arcade/contract';
 
 const NO_CAST = { player: '', enemy: '', chaser: '', props: {} } as const;
 
-/** Hraje svět ruční hry pravidel a pustí ukázku robota v reálném čase (P29A T6). */
+/** Hraje svět ruční hry pravidel a pustí ukázku robota v reálném čase (P29A T6); s fyzikou až po načtení Rapieru (T13). */
 export function RulesLab({ fixture, world }: { readonly fixture: string; readonly world: ArcadeWorld }) {
+  const ready = usePhysicsReady(world);
+  return ready ? <RulesLabStage fixture={fixture} world={world} /> : <div data-testid="arcade-physics-loading" aria-busy="true" />;
+}
+
+function RulesLabStage({ fixture, world }: { readonly fixture: string; readonly world: ArcadeWorld }) {
   const session = useMemo(() => createArcadeSession(world), [world]);
   useEffect(() => session.startDemo(), [session]);
   return (

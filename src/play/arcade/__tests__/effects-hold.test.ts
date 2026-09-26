@@ -5,11 +5,12 @@
  * test čte stav tik po tiku a poslední porovnává hash dvou přehrání.
  */
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { BODY, BUTTON, FLAG, HEADER, NO_INPUT, bodyBase, type ArcadeInput, type ArcadeState, type ArcadeWorld, type BodyInit, type InputEvent } from '../contract';
-import { buildWorld, instantiate, loadProgram, replay, step, type ArcadeProgram } from '../kernel';
+import { buildWorld, hashArcade, instantiate, loadProgram, replay, step, type ArcadeProgram } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
+import { loadRapier } from '../physics/world';
 import type { CompiledRule } from '../rules/compile';
 
 const KEY = 32;
@@ -43,7 +44,8 @@ const rule = (id: string, piece: string, params: Omit<CompiledRule, 'id' | 'verb
 });
 
 /** Hráč v počátku, klíč před ním, bedna vpravo, dveře vzadu, skrytý most vlevo. */
-function lab(): ArcadeWorld {
+function lab(physical = false): ArcadeWorld {
+  const physics: Partial<BodyInit> = physical ? { physics: true } : {};
   const built = buildWorld(
     {
       seed: 1,
@@ -53,8 +55,8 @@ function lab(): ArcadeWorld {
         length: 0,
         bodies: [
           { role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: 1000, h: 600, d: 1000, solid: false },
-          thing(KEY, 0, 2000, [500, 500, 500], false),
-          thing(CRATE, 4000, 0, [1000, 1000, 1000], true),
+          thing(KEY, 0, 2000, [500, 500, 500], false, physics),
+          thing(CRATE, 4000, 0, [1000, 1000, 1000], true, physics),
           thing(DOOR, 0, -6000, [2000, 2500, 500], true),
           thing(BRIDGE, -6000, 0, [3000, 100, 3000], false, { template: true }),
         ],
@@ -90,8 +92,8 @@ function run(state: ArcadeState, program: ArcadeProgram, input: ArcadeInput, tic
 }
 
 /** Dojde ke klíči a zvedne ho; vrátí stav a program. */
-function holding(): { state: ArcadeState; program: ArcadeProgram } {
-  const w = lab();
+function holding(physical = false): { state: ArcadeState; program: ArcadeProgram } {
+  const w = lab(physical);
   const program = loadProgram(w, ARCADE_LIBRARY);
   const state = instantiate(w);
   for (let i = 0; i < 60 && state[HEADER.held] === 0; i += 1) step(state, FORWARD, program);
@@ -198,5 +200,48 @@ describe('verb effects in the kernel', () => {
     expect(a).toEqual(b);
     const other = replay(w, script.filter((event) => event.tick !== 60), ARCADE_LIBRARY, 400);
     expect(other.hash).not.toBe(a.hash);
+  });
+});
+
+describe('verb effects on physics bodies go through Rapier (P29A T13)', () => {
+  beforeAll(async () => {
+    await loadRapier();
+  });
+
+  /** Hráč jde doprava, dokud bedna nedostane strčení; pak stojí. Vrací stav a rychlosti bedny po strčení. */
+  function shoved(): { state: ArcadeState; speeds: number[] } {
+    const w = lab(true);
+    const program = loadProgram(w, ARCADE_LIBRARY);
+    const state = instantiate(w);
+    for (let i = 0; i < 120 && at(state, C, 'vx') === 0; i += 1) step(state, RIGHT, program);
+    const speeds: number[] = [];
+    run(state, program, NO_INPUT, 180, () => speeds.push(at(state, C, 'vx')));
+    return { state, speeds };
+  }
+
+  it('push hands its impulse to Rapier: the crate slides, Rapier friction stops it, no kernel gravity', () => {
+    const { state, speeds } = shoved();
+    expect(speeds[0]).toBeGreaterThan(0);
+    expect(at(state, C, 'x')).toBeGreaterThan(5000);
+    expect(at(state, C, 'vx')).toBe(0);
+    // Rapierovo tření brzdí jinak než jádro (to ubírá přesně `VERB_MOTION.friction` za tik).
+    expect(speeds.slice(0, 5).some((v, k) => k > 0 && (speeds[k - 1] as number) - v !== 8)).toBe(true);
+    expect(flag(state, C, FLAG.gravity)).toBe(false);
+    expect(hashArcade(shoved().state)).toBe(hashArcade(state));
+  });
+
+  it('throwHeld flies a physics body through Rapier: up, forward, down to rest', () => {
+    const { state, program } = holding(true);
+    run(state, program, RIGHT, 10);
+    step(state, TAP, program);
+    expect(state[HEADER.held]).toBe(0);
+    const thrownFrom = at(state, P, 'x');
+    const heights: number[] = [];
+    run(state, program, NO_INPUT, 240, () => heights.push(at(state, K, 'y')));
+    expect(Math.max(...heights)).toBeGreaterThan(at(state, P, 'h'));
+    expect(Math.abs(at(state, K, 'y'))).toBeLessThanOrEqual(5);
+    expect(at(state, K, 'vx')).toBe(0);
+    expect(at(state, K, 'x')).toBeGreaterThan(thrownFrom + 1500);
+    expect(flag(state, K, FLAG.gravity)).toBe(false);
   });
 });

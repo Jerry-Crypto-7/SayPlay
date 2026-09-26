@@ -439,6 +439,9 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
   const codes = roleCodes(spec, level);
   const yard = rulesOwnGoal(spec);
   const hidden = new Set((spec.things ?? []).filter((thing) => thing.start === 'hidden').map((thing) => thing.role));
+  // Fyzikální věc (P29A T13): hýbe s ní Rapier. Jen věci pravidel – tělesa generátoru mají vlastní pohyb.
+  const physical = new Set((spec.things ?? []).filter((thing) => thing.physics === true).map((thing) => thing.role));
+  const physics = (id: string): Partial<BodyInit> => (physical.has(id) ? { physics: true } : {});
   const gates = toggled(rules);
   const goals = goalRoles(rules);
   const rng = createCompileRng(seed ^ 0x5eed);
@@ -449,7 +452,7 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
   const thingBody = (id: string, x: number, z: number, extra: Partial<BodyInit> = {}): BodyInit => {
     const role = spec.roles.find((r) => r.id === id)!;
     const [w, h, d, solid] = THING_SHAPE[role.kind];
-    return { role: 'thing', roleCode: codes.get(id) as number, kind: `thing:${id}`, x, y: 0, z, w, h, d, solid, ...(hidden.has(id) ? { template: true } : {}), ...extra };
+    return { role: 'thing', roleCode: codes.get(id) as number, kind: `thing:${id}`, x, y: 0, z, w, h, d, solid, ...(hidden.has(id) ? { template: true } : {}), ...physics(id), ...extra };
   };
   const countOf = (id: string): number => Math.min(THING_MAX_COUNT, spec.roles.find((r) => r.id === id)?.count ?? 1);
 
@@ -500,7 +503,7 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
       const [w, h, d, solid] = THING_SHAPE[role.kind];
       const roleCode = codes.get(id) as number;
       templates.set(id, bodies.length);
-      bodies.push({ role: 'thing', roleCode, kind: `thing:${id}`, x: 0, y: 0, z: 0, w, h, d, solid, template: true });
+      bodies.push({ role: 'thing', roleCode, kind: `thing:${id}`, x: 0, y: 0, z: 0, w, h, d, solid, template: true, ...physics(id) });
     }
   }
   const spawnSlots = templates.size > 0 ? Math.min((level.spawnSlots ?? 0) + RULE_SPAWN_SLOTS, ARCADE_LIMITS.maxBodies - bodies.length) : level.spawnSlots;
