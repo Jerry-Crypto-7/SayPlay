@@ -83,17 +83,22 @@ class PhysicsSession {
       .setRestitutionCombineRule(rapier.CoefficientCombineRule.Max);
     this.world.createCollider(collider, rigid);
     const entry: Entry = { rigid, dynamic, last: new Int32Array(SYNCED.length) };
-    this.teleport(state, base, entry);
+    this.teleport(state, base, entry, true);
     return entry;
   }
 
-  /** Rapier převezme polohu, rychlost a natočení ze stavu. */
-  private teleport(state: ArcadeState, base: number, entry: Entry): void {
+  /**
+   * Rapier převezme polohu, rychlost a natočení ze stavu. Překážka se posune
+   * plynule (Rapier z toho zná její rychlost); `snap` = vznik nebo návrat po
+   * vypnutí, kdy se musí objevit na místě, ne přejet z posledního.
+   */
+  private teleport(state: ArcadeState, base: number, entry: Entry, snap = false): void {
     const center = { x: m(state[base + BODY.x] as number), y: m((state[base + BODY.y] as number) + (state[base + BODY.h] as number) / 2), z: m(state[base + BODY.z] as number) };
     SYNCED.forEach((slot, k) => {
       entry.last[k] = state[base + slot] as number;
     });
     if (!entry.dynamic) {
+      if (snap) entry.rigid.setTranslation(center, true);
       entry.rigid.setNextKinematicTranslation(center);
       return;
     }
@@ -131,7 +136,7 @@ class PhysicsSession {
         this.entries.set(i, entry);
       } else if (!entry.rigid.isEnabled()) {
         entry.rigid.setEnabled(true);
-        this.teleport(state, base, entry);
+        this.teleport(state, base, entry, true);
       } else if (this.changed(state, base, entry)) this.teleport(state, base, entry);
     }
     for (let k = 0; k < PHYSICS_SUBSTEPS; k += 1) this.world.step();

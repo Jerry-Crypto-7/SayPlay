@@ -100,6 +100,14 @@ describe('physics bodies step through Rapier', () => {
     expect(slot(state, 4, 'y')).toBeLessThan(1500);
   });
 
+  it('a solid kernel obstacle starts where it stands, not at the origin (phase 3 review)', () => {
+    // Zeď daleko od počátku; kdyby v Rapieru začínala v počátku, první podkrok by jí bednu v počátku odstrčil.
+    const wall: BodyInit = { role: 'obstacle', kind: 'wall', x: 0, y: 0, z: 10000, w: 4000, h: 2000, d: 500, solid: true };
+    const state = run(world([box(0, 0, 0, 500), wall]), 30);
+    expect(Math.abs(slot(state, 1, 'x'))).toBeLessThanOrEqual(2);
+    expect(Math.abs(slot(state, 1, 'z'))).toBeLessThanOrEqual(2);
+  });
+
   it('the state stays in the Int32Array: hash and replay agree, and the ticks are not a no-op', () => {
     const scene = world([...[0, 1, 2, 3].map((k) => box(0, k * 500, 6000, 500)), box(0, 1000, 0, 400, { ball: true, vz: 250, restitution: 300 }), box(3000, 2000, 0, 500, { vx: -60 })]);
     const stepped = run(scene, 300);

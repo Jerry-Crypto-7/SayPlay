@@ -13,6 +13,7 @@ import type { KeypointEvidence, QualityReport, VerbProof } from '@/play/contract
 import { ARCADE_LIMITS, type ArcadeInput, type ArcadeObservation, type ArcadeWorld, BODY, HEADER, type InputEvent, UNIT, bodyBase } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
+import { releasePhysics } from './physics/step';
 import { rulesPlanner } from './rules/bot';
 
 export interface BotRun {
@@ -60,6 +61,8 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
     if (input.buttons !== 0 || input.axis !== 0) inputs.push({ tick, ...input });
     step(state, input, program, trace);
   }
+  // Robot, který na horizontu nevyhrál, konec neohlásil: svět Rapieru uvolnit hned.
+  releasePhysics(state);
   return {
     inputs,
     outcome: outcomeOf(state),

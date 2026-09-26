@@ -743,5 +743,7 @@ export function replay(world: ArcadeWorld, inputs: readonly InputEvent[], librar
     const event = inputs[next];
     step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
   }
+  // Běh, který dojel na horizont, konec neohlásil: svět Rapieru se uvolní tady, ne až při úklidu paměti.
+  releasePhysics(state);
   return { hash: hashArcade(state), outcome: outcomeOf(state), tick: state[HD.tick] as number };
 }
