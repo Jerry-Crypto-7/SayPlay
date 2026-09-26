@@ -6,29 +6,29 @@
   },
   "mentions": {
     "mentions": 163,
-    "before": 69,
-    "now": 99
+    "before": 84,
+    "now": 114
   },
   "nouns": {
     "distinct": 119,
-    "before": 42,
-    "now": 67
+    "before": 55,
+    "now": 80
   },
   "byRole": {
     "hero": {
       "mentions": 54,
-      "before": 25,
-      "now": 32
+      "before": 30,
+      "now": 37
     },
     "enemy": {
       "mentions": 18,
-      "before": 5,
-      "now": 8
+      "before": 9,
+      "now": 12
     },
     "collectible": {
       "mentions": 17,
-      "before": 11,
-      "now": 12
+      "before": 13,
+      "now": 14
     },
     "obstacle": {
       "mentions": 14,
@@ -37,33 +37,33 @@
     },
     "target": {
       "mentions": 21,
-      "before": 4,
-      "now": 7
+      "before": 5,
+      "now": 8
     },
     "checklist": {
       "mentions": 39,
-      "before": 15,
-      "now": 28
+      "before": 18,
+      "now": 31
     }
   },
   "bySet": {
     "demand": {
       "mentions": 94,
-      "now": 55,
+      "now": 63,
       "nouns": 82,
-      "nounsNow": 43
+      "nounsNow": 51
     },
     "fidelity": {
       "mentions": 69,
-      "now": 44,
+      "now": 51,
       "nouns": 65,
-      "nounsNow": 41
+      "nounsNow": 48
     },
     "hostile": {
       "mentions": 24,
-      "now": 16,
+      "now": 18,
       "nouns": 23,
-      "nounsNow": 15
+      "nounsNow": 17
     }
   },
   "gained": [
@@ -271,33 +271,33 @@
       }
     },
     "now": {
-      "models": 449,
+      "models": 525,
       "nouns": {
         "distinct": 119,
-        "now": 67
+        "now": 80
       },
       "mentions": {
         "mentions": 163,
-        "now": 99
+        "now": 114
       },
       "bySet": {
         "demand": {
           "mentions": 94,
-          "now": 55,
+          "now": 63,
           "nouns": 82,
-          "nounsNow": 43
+          "nounsNow": 51
         },
         "fidelity": {
           "mentions": 69,
-          "now": 44,
+          "now": 51,
           "nouns": 65,
-          "nounsNow": 41
+          "nounsNow": 48
         },
         "hostile": {
           "mentions": 24,
-          "now": 16,
+          "now": 18,
           "nouns": 23,
-          "nounsNow": 15
+          "nounsNow": 17
         }
       }
     }

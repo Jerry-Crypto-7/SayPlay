@@ -77,10 +77,10 @@ describe('nearest arcade game for a sentence the draft does not know', () => {
     expect(heroModel(spec)).toBe('rigged:knight');
     expect(enemyModel(spec)).toBe('cc0-dragon');
     expect(spec.title).toBe('Knight Rides Dragon');
-    // Balónek katalog nemá: scéna nakreslí míč, řetěz věrnosti poctivě hlásí `no-model`.
+    // Balónek má od e5b840b model z gen3d: scéna ho nakreslí a řetěz věrnosti ho započte.
     const balloons = draftGameSpec('pop ten balloons at a birthday party');
-    expect(enemyModel(balloons)).toBe('ball');
-    expect(fidelityChain(balloons, [{ item: 'balloon', slot: 'any', match: ['balloon'] }])[0]).toMatchObject({ read: true, drawn: false, why: 'no-model' });
+    expect(enemyModel(balloons)).toBe('gen3d-balloon');
+    expect(fidelityChain(balloons, [{ item: 'balloon', slot: 'any', match: ['balloon'] }])[0]).toMatchObject({ read: true, drawn: true });
     // Věž hodu z krabic: kostky kreslí model z popisku terče.
     expect(propModels(draftGameSpec('angry birds but with cats and cardboard boxes')).target).toBe('crate');
   });

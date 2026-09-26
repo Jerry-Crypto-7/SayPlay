@@ -35,7 +35,7 @@ describe('arcade model choice from role labels', () => {
     ['a small bird', 'bird'], // tag `bird` nese hnízdo, věta myslí ptáka
     ['space bunny', 'hamster'],
     ['grizzly bear', 'fox'], // kategorie zvíře
-    ['mall security guard', 'explorer'], // kategorie člověk
+    ['mall security guard', 'gen3d-guard'], // vlastní model z gen3d (e5b840b) přebije kategorii člověk
     ['angry bulldozer', 'robot'], // kategorie stroj
     ['battle tank', 'cc0-tank'], // CC0 tank, ne plynová bomba `cc0-gas-tank` (P26A T11)
   ])('%s → %s', (label, model) => {
@@ -43,10 +43,10 @@ describe('arcade model choice from role labels', () => {
   });
 
   it('a thing the catalog lacks gets no category and keeps the role default', () => {
-    expect(modelOf('balloon', true)).toBeUndefined();
-    expect(heroModel(withLabel(runner, 'player', 'balloon'))).toBe('explorer');
-    // P28D T3: věc bez modelu dostane zástupce (míč), ne robota; `modelOf` ho dál nevrací, řetěz věrnosti hlásí `no-model`.
-    expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('ball');
+    // Balónek má od e5b840b model z gen3d, věc bez modelu je teď vzducholoď.
+    expect(modelOf('zeppelin', true)).toBeUndefined();
+    expect(heroModel(withLabel(runner, 'player', 'zeppelin'))).toBe('explorer');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('gen3d-balloon');
     expect(enemyModel(withLabel(shooter, 'enemy', 'angry umbrellas'))).toBe('robot');
     expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'cc0-fire-hydrant' });
     expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'), false)).toEqual({});
