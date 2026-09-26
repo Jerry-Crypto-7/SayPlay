@@ -15,10 +15,25 @@ Lokální generování zvuku na RTX 3090. Do produktu jde jen výsledek (`public
 - **Naměřeno 26. 9. 2026 na 3090:** 36 smyček (18 looků × klidná/napjatá) po 14 s, **4,6 s na jeden pokus**, 4,6–29 s na smyčku včetně opakování kvůli švu, celý běh 6 min 45 s včetně čekání na zámek GPU, 132–178 kB na soubor, **5,4 MB celkem**, šev 0,09–2,78 dB.
 - **Výstup:** `src/play/audio/music-catalog.json` (`loops[look][mood]` → URL).
 
+## Zvukové efekty – MOSS-SoundEffect
+
+- **Licence:** váhy i kód [Apache-2.0](https://huggingface.co/OpenMOSS-Team/MOSS-SoundEffect) (karta modelu), zvukový kodek [MOSS-Audio-Tokenizer Apache-2.0](https://huggingface.co/OpenMOSS-Team/MOSS-Audio-Tokenizer), kód [github.com/OpenMOSS/MOSS-TTS](https://github.com/OpenMOSS/MOSS-TTS). Ověřeno přes HF API 26. 9. 2026. Záznam `MOSS-SoundEffect` je v `disclosure.json`.
+- **Prostředí:** `uv sync --project ops/audio --group sfx` (torch 2.9.1 cu128, transformers 5.0, bitsandbytes). Váhy v `D:/caches/huggingface/hub` (16 GB model + 6,7 GB kodek).
+- **VRAM:** 8B v bf16 (16 GB) se vedle ostatních stop na 3090 nevejde, proto `--bits 4` (nf4) a kodek na CPU (`--codec-device cpu`).
+- **Past na Windows:** procesor MOSS skládá id repa přes `os.path` → `OpenMOSS-Team\MOSS-SoundEffect` a HF ho odmítne; `sfx.py` proto předává lokální složky ze `snapshot_download`.
+- **Spuštění:**
+  ```
+  node D:/claude/_shared/gpu-lock.mjs -- uv run --project ops/audio python ops/audio/sfx.py --bits 4 --codec-device cpu
+  ```
+- **Postup jednoho zvuku:** popis události + zabarvení looku → model → `trim_silence` (−45 dB) → zkrácení na délku události (jump/hit 0,6 s, pickup 0,8 s, lose 2 s, win 2,5 s) se zeslabením 80 ms → `normalize` (−16 dBFS RMS) → Ogg Vorbis mono 24 kHz ≤ 25 kB.
+- **Naměřeno 26. 9. 2026 na 3090 (nf4, kodek na CPU):** 90 zvuků, průměr **7,6 s na zvuk** včetně dekódování, načtení modelu ~40 s, **778 kB celkem**, největší soubor 18 kB.
+- **Výstup:** `src/play/audio/sfx-catalog.json` (`sounds[look][event]` → URL).
+- **Poslech:** testy hlídají ticho, délku a hlasitost, ne to, jestli „skok“ zní jako skok. To ověří až člověk ve hře.
+
 ## Testy
 
 ```
 uv run --project ops/audio pytest ops/audio/tests
 ```
 
-`test_loop.py` drží šev smyčky, `test_music_catalog.py` pokrytí všech looků, rozpočet velikosti a záznam každého souboru v disclosure.
+`test_loop.py` drží šev smyčky, `test_music_catalog.py` pokrytí všech looků, rozpočet velikosti a záznam každého souboru v disclosure, `test_sfx.py` okamžitý nástup, délku a hlasitost zvuků a pokrytí 18 looků × 5 událostí.
