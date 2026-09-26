@@ -38,7 +38,7 @@ import { UpgradeBanner } from '../UpgradeBanner';
 import { type Clip, startClip } from './clip';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
-import { LiveBox } from './LiveBox';
+import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { Weather } from './Weather';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
@@ -433,8 +433,8 @@ export function ArcadePlay({ versionId, spec, arcade, lineage, remixes, aiVersio
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
       {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
-      {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nestřílí (`+shoot`). */}
-      {running && active && demo === null && <LiveBox session={session} spec={spec} remix={remix} enterOpens={!arcade.rules.some((rule) => rule.id === 'blaster')} />}
+      {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nehraje (střelba, úder, ťuk). */}
+      {running && active && demo === null && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
       {running && <RemixReadyChip job={remix} />}

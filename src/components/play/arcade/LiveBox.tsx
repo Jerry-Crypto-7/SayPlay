@@ -12,6 +12,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 
+import { baseControlOf } from '@/play/arcade/addons';
+import type { ArcadeWorld } from '@/play/arcade/contract';
 import { REMIX_MESSAGE, liveIntentOf, resolveWish } from '@/play/director/live-intent';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -21,6 +23,14 @@ import { isTyping } from './input';
 import type { ArcadeSession } from './session';
 
 const MAX_CHARS = 160;
+
+/** Ovládání, jejichž scéna bere Enter jako akci (`TimingScene` `TAP_KEYS`, `DuelScene` `STRIKE_KEYS`). */
+const ENTER_ACTS = new Set(['timing', 'duel']);
+
+/** Smí Enter otevřít pole? Ne tam, kde Enter hraje – úder by padl a pole by hráči sebralo klávesy. */
+export function enterOpensLiveBox(world: ArcadeWorld): boolean {
+  return !ENTER_ACTS.has(baseControlOf(world.control).id) && !world.rules.some((rule) => rule.id === 'blaster');
+}
 
 type Status = { readonly kind: 'live' | 'remix' | 'refused' | 'unknown'; readonly message: string };
 
