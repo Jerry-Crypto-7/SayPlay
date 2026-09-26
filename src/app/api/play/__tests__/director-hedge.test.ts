@@ -191,6 +191,21 @@ describe('getDirector with a local fallback', () => {
     expect(processSpendCap().snapshot()).toMatchObject({ callsMade: 1, reservedUsd: 0 });
   });
 
+  it('settles the cancelled primary before the director returns (R1)', async () => {
+    stubEnv(LIVE);
+    // Primár po zrušení doběhne až za sekundu – jako codex, který se zabíjí.
+    vi.stubGlobal('fetch', (url: string, init: RequestInit) => {
+      if (String(url).startsWith('http://127.0.0.1:8792'))
+        return Promise.resolve(Response.json({ choices: [{ message: { content: JSON.stringify(COMPACT) }, finish_reason: 'stop' }] }));
+      return new Promise((_resolve, reject) => {
+        init.signal?.addEventListener('abort', () => setTimeout(() => reject(new Error('aborted')), 1000));
+      });
+    });
+    const heldAtReturn = getDirector(Date.now(), 'hedge-settle')(SENTENCE).then(() => processSpendCap().snapshot().reservedUsd);
+    await vi.advanceTimersByTimeAsync(32_000);
+    await expect(heldAtReturn).resolves.toBe(0);
+  });
+
   it('without WORLDSMITH_FALLBACK_ENDPOINT the stalled call just waits', async () => {
     const { WORLDSMITH_FALLBACK_ENDPOINT: _drop, ...primaryOnly } = LIVE;
     stubEnv(primaryOnly);

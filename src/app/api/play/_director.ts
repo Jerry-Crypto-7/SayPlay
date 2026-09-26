@@ -93,29 +93,35 @@ export function hedged(primary: Call, fallback: Call | null, hedgeAfterMs: numbe
     let fallbackStarted = false;
     let primaryFailure: GenerationOutcome | null = null;
     let fallbackFailed = false;
-    const finish = (outcome: GenerationOutcome, loser: AbortController | null) => {
+    let fallbackRun: Promise<GenerationOutcome> | null = null;
+    // Vrací se až po doběhnutí zrušeného volání (R1): rezervace primáru se tak
+    // vyrovná dřív, než trasa pustí slot. Zabíjený codex tím přidá nejvýš
+    // `CODEX_KILL_GRACE_MS` k odpovědi, která už stejně čekala přes mez.
+    const finish = (outcome: GenerationOutcome, loser: AbortController | null, loserRun: Promise<GenerationOutcome> | null) => {
       done = true;
       clearTimeout(timer);
       loser?.abort();
-      resolve(outcome);
+      void (loserRun ?? Promise.resolve()).then(() => resolve(outcome));
     };
     const startFallback = () => {
       if (fallbackStarted || done) return;
       fallbackStarted = true;
       clearTimeout(timer);
-      void settle(fallback, fallbackCtl).then((outcome) => {
+      fallbackRun = settle(fallback, fallbackCtl);
+      void fallbackRun.then((outcome) => {
         if (done) return;
-        if (outcome.ok) finish(outcome, primaryCtl);
-        else if (primaryFailure !== null) finish(primaryFailure, null);
+        if (outcome.ok) finish(outcome, primaryCtl, primaryRun);
+        else if (primaryFailure !== null) finish(primaryFailure, null, null);
         else fallbackFailed = true;
       });
     };
     const timer = setTimeout(startFallback, hedgeAfterMs);
-    void settle(primary, primaryCtl).then((outcome) => {
+    const primaryRun = settle(primary, primaryCtl);
+    void primaryRun.then((outcome) => {
       if (done) return;
-      if (outcome.ok) return finish(outcome, fallbackStarted ? fallbackCtl : null);
+      if (outcome.ok) return finish(outcome, fallbackStarted ? fallbackCtl : null, fallbackRun);
       primaryFailure = outcome;
-      if (fallbackFailed) finish(outcome, null);
+      if (fallbackFailed) finish(outcome, null, null);
       else startFallback();
     });
   });
@@ -168,6 +174,10 @@ async function cappedBranch(
         onCallerLimit();
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: "the caller's daily director calls are used up", usage: null };
       }
+      // Zrušený primár nemá účtenku a strhne celou rezervaci (R1, rozhodnuto):
+      // poskytovatel mohl tokeny spálit až do zrušení a odhad z uplynulého času
+      // by byl nižší číslo, tedy nebezpečná strana stropu. U předplatného je
+      // cena 0 a mez drží počet volání, takže to nic nestojí.
       const primary: Call = async (signal) => {
         try {
           const outcome = await bounded.generate(call, signal);
