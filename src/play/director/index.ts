@@ -53,6 +53,8 @@ export type DirectedGame = DirectorResult & {
   readonly ms: number;
   /** Kolikrát se volal model. */
   readonly calls: number;
+  /** Jméno modelu, který napsal první odpověď (P29B T8: primár, nebo lokální záloha). */
+  readonly authoredBy?: string;
 };
 
 export interface DirectorDeps {
@@ -160,7 +162,18 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
   if (checked.length === 0) await deps.cache?.write(key, spec);
-  return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: null, warnings: warningsOf(spec), ms: deps.now() - started, calls };
+  const authoredBy = outcome.provenance.model;
+  return {
+    ok: true,
+    spec,
+    source: 'authored',
+    repairRounds,
+    fallbackReason: null,
+    warnings: warningsOf(spec),
+    ms: deps.now() - started,
+    calls,
+    ...(typeof authoredBy === 'string' ? { authoredBy } : {}),
+  };
 }
 
 export { directorCache, directorCacheFromEnv, directorKey, type DirectorCache } from './cache';

@@ -486,7 +486,7 @@ export function upstreamBranch(
     id: UPSTREAM_BRANCH_ID,
     pricing: config.pricing,
     worstCaseUsd: (call) => worstCaseUsd(call, config),
-    generate: (call) => generate(call, config, fetchImpl),
+    generate: (call, signal) => generate(call, config, fetchImpl, signal),
   };
 }
 
@@ -802,7 +802,7 @@ export function killCodexTree(child: ChildProcess, afterKill: () => void): void 
   }
 }
 
-function runCodex(model: string, effort: string, input: string, timeoutMs: number, schema?: Readonly<Record<string, unknown>>): Promise<string> {
+function runCodex(model: string, effort: string, input: string, timeoutMs: number, schema?: Readonly<Record<string, unknown>>, signal?: AbortSignal): Promise<string> {
   const command = codexCommand();
   const cwd = mkdtempSync(join(tmpdir(), 'worldsmith-codex-'));
   if (schema !== undefined) writeFileSync(join(cwd, CODEX_SCHEMA_FILE), JSON.stringify(schema));
@@ -841,6 +841,9 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       grace = setTimeout(() => finish(null), CODEX_KILL_GRACE_MS);
     };
     const timer = setTimeout(() => stop('codex exec ran past the timeout'), timeoutMs);
+    const cancel = () => stop('the call was cancelled');
+    signal?.addEventListener('abort', cancel, { once: true });
+    if (signal?.aborted === true) cancel();
     child.stdout.on('data', (chunk: Buffer) => {
       outputBytes += chunk.length;
       if (outputBytes > MAX_CODEX_OUTPUT_BYTES) stop('codex exec wrote more than 8 MiB');
@@ -861,6 +864,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
       done = true;
       clearTimeout(timer);
       clearTimeout(grace);
+      signal?.removeEventListener('abort', cancel);
       try {
         // Na Windows drží adresář ještě chvíli dozabíjený proces (EBUSY).
         rmSync(cwd, { recursive: true, force: true, maxRetries: 5 });
@@ -876,7 +880,7 @@ function runCodex(model: string, effort: string, input: string, timeoutMs: numbe
   });
 }
 
-async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig): Promise<GenerationOutcome> {
+async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig, signal?: AbortSignal): Promise<GenerationOutcome> {
   let output: string;
   try {
     output = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => runCodex(
@@ -885,6 +889,7 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
       `${call.request.system}\n\n${call.request.user}`,
       config.timeoutMs,
       call.request.outputSchema,
+      signal,
     ));
   } catch (thrown) {
     return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the codex call did not complete: ${(thrown as Error).message}`, usage: null };
@@ -926,7 +931,12 @@ async function generateViaCodexCli(call: GenerationCall, config: UpstreamConfig)
   };
 }
 
-async function generateViaLlamaCpp(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch): Promise<GenerationOutcome> {
+/** Timeout volání, a když přijde `signal`, i jeho zrušení. */
+function withCancel(timeoutMs: number, signal: AbortSignal | undefined): AbortSignal {
+  return signal === undefined ? AbortSignal.timeout(timeoutMs) : AbortSignal.any([AbortSignal.timeout(timeoutMs), signal]);
+}
+
+async function generateViaLlamaCpp(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
   const root = config.endpoint.slice(LLAMACPP_PREFIX.length).replace(/\/+$/, '');
   const schema = call.request.outputSchema;
   let response: Response;
@@ -944,7 +954,7 @@ async function generateViaLlamaCpp(call: GenerationCall, config: UpstreamConfig,
         ],
         response_format: schema === undefined ? { type: 'json_object' } : { type: 'json_schema', json_schema: { name: 'answer', strict: true, schema } },
       }),
-      signal: AbortSignal.timeout(config.timeoutMs),
+      signal: withCancel(config.timeoutMs, signal),
     }));
   } catch (thrown) {
     return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the llama.cpp call did not complete: ${(thrown as Error).message}`, usage: null };
@@ -978,9 +988,10 @@ async function generate(
   call: GenerationCall,
   config: UpstreamConfig,
   fetchImpl: typeof fetch,
+  signal?: AbortSignal,
 ): Promise<GenerationOutcome> {
-  if (config.endpoint === CODEX_CLI_ENDPOINT) return generateViaCodexCli(call, config);
-  if (config.endpoint.startsWith(LLAMACPP_PREFIX)) return generateViaLlamaCpp(call, config, fetchImpl);
+  if (config.endpoint === CODEX_CLI_ENDPOINT) return generateViaCodexCli(call, config, signal);
+  if (config.endpoint.startsWith(LLAMACPP_PREFIX)) return generateViaLlamaCpp(call, config, fetchImpl, signal);
   let response: Response;
   try {
     response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(config.endpoint, {
@@ -999,7 +1010,7 @@ async function generate(
         system: call.request.system,
         messages: [{ role: 'user', content: call.request.user }],
       }),
-      signal: AbortSignal.timeout(config.timeoutMs),
+      signal: withCancel(config.timeoutMs, signal),
     }));
   } catch (thrown) {
     return {

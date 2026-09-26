@@ -8,8 +8,11 @@
  * server na náhodném portu, žádná síť ven.
  */
 
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -85,6 +88,28 @@ describe('WORLDSMITH_FALLBACK_ENDPOINT', () => {
   });
 });
 
+describe('codex-cli cancel', () => {
+  it('kills a hanging codex process when the caller cancels', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'fake-codex-hang-'));
+    const file = join(dir, 'hang.cjs');
+    writeFileSync(file, 'setInterval(() => undefined, 1000);');
+    const previous = process.env.WORLDSMITH_CODEX_JS;
+    process.env.WORLDSMITH_CODEX_JS = file;
+    try {
+      const config = upstreamConfigFromEnv(LIVE_ENV);
+      if (config === null) throw new Error('konfigurace se měla načíst');
+      const ctl = new AbortController();
+      const outcome = upstreamBranch(config).generate(CALL, ctl.signal);
+      setTimeout(() => ctl.abort(), 300);
+      await expect(outcome).resolves.toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: expect.stringContaining('cancelled') });
+    } finally {
+      if (previous === undefined) delete process.env.WORLDSMITH_CODEX_JS;
+      else process.env.WORLDSMITH_CODEX_JS = previous;
+      rmSync(dir, { recursive: true, force: true, maxRetries: 5 });
+    }
+  }, 15_000);
+});
+
 describe('llama.cpp generate', () => {
   it('sends an OpenAI chat request with the output schema and returns the parsed body', async () => {
     let sent: Record<string, unknown> = {};
@@ -146,6 +171,14 @@ describe('llama.cpp generate', () => {
     const root = await stub((_req, _body, res) => res.end(chat('{"plan":"run"', 'length')));
     const outcome = await upstreamBranch(fallbackOf({ WORLDSMITH_FALLBACK_ENDPOINT: `llamacpp:${root}` })).generate(CALL);
     expect(outcome).toMatchObject({ ok: false, reason: 'MALFORMED_RESPONSE' });
+  });
+
+  it('stops when the caller cancels (T8: the losing side of the hedge)', async () => {
+    const root = await stub(() => undefined);
+    const ctl = new AbortController();
+    const outcome = upstreamBranch(fallbackOf({ WORLDSMITH_FALLBACK_ENDPOINT: `llamacpp:${root}` })).generate(CALL, ctl.signal);
+    setTimeout(() => ctl.abort(), 50);
+    await expect(outcome).resolves.toMatchObject({ ok: false, reason: 'UPSTREAM_UNAVAILABLE' });
   });
 
   it('reports a reply without a message as MALFORMED_RESPONSE', async () => {

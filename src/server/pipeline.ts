@@ -109,7 +109,8 @@ export interface GenerationBranch {
   readonly pricing: Pricing;
   /** Horní odhad ceny **před** voláním. Z něj se rezervuje. */
   worstCaseUsd(call: GenerationCall): number;
-  generate(call: GenerationCall): Promise<GenerationOutcome>;
+  /** `signal` zruší rozběhnuté volání (P29B T8: prohrávající strana souběhu se zálohou). */
+  generate(call: GenerationCall, signal?: AbortSignal): Promise<GenerationOutcome>;
 }
 
 /**
