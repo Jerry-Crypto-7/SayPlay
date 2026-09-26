@@ -389,7 +389,12 @@ const toggled = (rules: readonly Rule[]): Set<string> => new Set(rules.flatMap((
 export interface RulesCompiled {
   readonly rules: PieceRef[];
   readonly level: ArcadeLevel;
+  /** Co spec chce a tenhle svět neumí – jde režisérovi do opravného kola jako `WORLD_REJECTED`. */
+  readonly issues: string[];
 }
+
+/** Jméno role jádra ke kódu pod `THING_ROLE_BASE`. */
+const builtinRole = (code: number): ArcadeRole => (Object.keys(ROLE) as ArcadeRole[]).find((name) => ROLE[name] === code) as ArcadeRole;
 
 /** Pravidlo ze specu → `PieceRef` (kódy místo jmen); `templates` = role → index předlohy. */
 function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: ReadonlyMap<string, number>): PieceRef {
@@ -435,10 +440,14 @@ function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: 
  */
 export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number): RulesCompiled {
   const rules = spec.rules ?? [];
-  if (rules.length === 0 && (spec.things ?? []).length === 0) return { rules: [], level };
+  if (rules.length === 0 && (spec.things ?? []).length === 0) return { rules: [], level, issues: [] };
   const codes = roleCodes(spec, level);
   const yard = rulesOwnGoal(spec);
   const hidden = new Set((spec.things ?? []).filter((thing) => thing.start === 'hidden').map((thing) => thing.role));
+  // Skrytá může být jen věc pravidel: těleso generátoru stojí od začátku a `toggle` by ho schoval, ne odhalil.
+  const issues = [...hidden]
+    .filter((id) => (codes.get(id) as number) < THING_ROLE_BASE)
+    .map((id) => `things: role "${id}" is built by the ${spec.control} game itself and is visible from the start, so start:"hidden" cannot apply – give the hidden thing its own role id and kind`);
   // Fyzikální věc (P29A T13): hýbe s ní Rapier. Jen věci pravidel – tělesa generátoru mají vlastní pohyb.
   const physical = new Set((spec.things ?? []).filter((thing) => thing.physics === true).map((thing) => thing.role));
   const physics = (id: string): Partial<BodyInit> => (physical.has(id) ? { physics: true } : {});
@@ -502,13 +511,16 @@ export function compileRules(spec: GameSpecV1, level: ArcadeLevel, seed: number)
       const role = spec.roles.find((r) => r.id === id)!;
       const [w, h, d, solid] = THING_SHAPE[role.kind];
       const roleCode = codes.get(id) as number;
+      // Role jádra (mince → collectible) se rodí jako tělo té role, aby na ni platila pravidla dílků.
+      const identity = roleCode < THING_ROLE_BASE ? { role: builtinRole(roleCode) } : { role: 'thing' as const, roleCode };
       templates.set(id, bodies.length);
-      bodies.push({ role: 'thing', roleCode, kind: `thing:${id}`, x: 0, y: 0, z: 0, w, h, d, solid, template: true, ...physics(id) });
+      bodies.push({ ...identity, kind: `thing:${id}`, x: 0, y: 0, z: 0, w, h, d, solid, template: true, ...physics(id) });
     }
   }
   const spawnSlots = templates.size > 0 ? Math.min((level.spawnSlots ?? 0) + RULE_SPAWN_SLOTS, ARCADE_LIMITS.maxBodies - bodies.length) : level.spawnSlots;
   return {
     rules: rules.map((rule) => compileRule(rule, codes, templates)),
     level: { ...level, bodies, ...(spawnSlots === undefined ? {} : { spawnSlots }) },
+    issues,
   };
 }

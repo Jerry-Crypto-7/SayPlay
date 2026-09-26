@@ -103,7 +103,7 @@ describe('compileRules', () => {
 
   it('keeps a spec without rules on the same world (hash of every fixture unchanged)', () => {
     const spec = read(runnerFixture);
-    expect(compileRules(spec, { bodies: [], length: 0 }, 1)).toEqual({ rules: [], level: { bodies: [], length: 0 } });
+    expect(compileRules(spec, { bodies: [], length: 0 }, 1)).toEqual({ rules: [], level: { bodies: [], length: 0 }, issues: [] });
   });
 
   it('a press rule with a holding condition fires only on the press, and only while holding', () => {
@@ -162,6 +162,28 @@ describe('compileRules', () => {
     // Na dvorku nejsou buňky ani potrava arény.
     expect(bodiesOf(w, ROLE.enemy)).toHaveLength(0);
     expect(bodiesOf(w, ROLE.collectible)).toHaveLength(0);
+  });
+
+  it('spawning a role the game already builds (coin → collectible) makes a template of that kernel role', () => {
+    const spec = read({ ...arenaFixture, rules: [{ id: 'sow', verb: 'sow', when: { every: 120 }, do: [{ spawn: { role: 'coin', at: 'player' } }] }] });
+    const w = world(spec);
+    const state = instantiate(w);
+    // Předloha je jediná mrtvá mince na startu.
+    const templates = bodiesOf(w, ROLE.collectible).filter((i) => ((state[bodyBase(i) + BODY.flags] as number) & FLAG.alive) === 0);
+    expect(templates).toHaveLength(1);
+  });
+
+  it('refuses start:"hidden" on a role the game builds, with a reason the director can act on', () => {
+    const made = arcadeWorldOf(read({ ...arenaFixture, things: [{ role: 'coin', start: 'hidden' }] }), 1);
+    expect(made.ok).toBe(false);
+    expect(made.ok ? [] : made.issues).toEqual([expect.stringContaining('role "coin" is built by the move_free game itself')]);
+  });
+
+  it('counts the built-in rules against the kernel limit and says how many the spec may add', () => {
+    const rules = Array.from({ length: ARCADE_LIMITS.maxRules }, (_, i) => ({ id: `r${i}`, verb: 'tick', when: { every: 60 + i }, do: [{ score: 1 }] }));
+    const made = arcadeWorldOf(read({ ...arenaFixture, rules }), 1);
+    expect(made.ok).toBe(false);
+    expect(made.ok ? '' : made.issues.join(' ')).toMatch(/already uses \d+ built-in rules, so the spec may add at most \d+ \(it has 16\)/);
   });
 
   it('the same spec and seed give the same world; the rule count stays inside the kernel limit', () => {

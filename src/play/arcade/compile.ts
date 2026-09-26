@@ -129,7 +129,13 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
   // Pravidla ze specu za pravidly dílků; bez nich se úroveň ani seznam nemění.
   const ruled = compileRules(spec, baseLevel, seed);
+  if (ruled.issues.length > 0) return { ok: false, issues: ruled.issues };
   const level = ruled.level;
+  const builtIn = rules.length + (timer?.onEnd === 'lose' ? 1 : 0);
+  // Strop jádra platí na všechna pravidla dohromady; režisér musí vědět, kolik mu jich zbylo.
+  if (builtIn + ruled.rules.length > ARCADE_LIMITS.maxRules) {
+    return { ok: false, issues: [`rules: this ${spec.control} game already uses ${builtIn} built-in rules, so the spec may add at most ${ARCADE_LIMITS.maxRules - builtIn} (it has ${ruled.rules.length}) – merge or drop rules`] };
+  }
   rules.push(...ruled.rules);
   if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
 
