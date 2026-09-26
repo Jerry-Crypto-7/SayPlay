@@ -1,0 +1,675 @@
+{
+ "about": "P29C T4: envFor over the 30 + 10 fidelity sentences, theme from draftGameSpec, seed 1.",
+ "share": 0.818,
+ "hits": 27,
+ "scored": 33,
+ "sentences": [
+  {
+   "id": "s039",
+   "text": "zombie shooter in a mall",
+   "setting": "mall",
+   "env": "mall-2",
+   "tags": [
+    "mall",
+    "food court",
+    "shopping"
+   ],
+   "asked": [
+    "mall",
+    "shopping"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s037",
+   "text": "A space marine shoots alien bugs in a mining colony",
+   "setting": "mining colony",
+   "env": "set-mining-colony",
+   "tags": [
+    "colony",
+    "mine",
+    "mining",
+    "planet",
+    "space"
+   ],
+   "asked": [
+    "mine",
+    "mining",
+    "colony"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s002",
+   "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "setting": "haunted castle",
+   "env": "set-haunted-castle",
+   "tags": [
+    "haunted",
+    "castle",
+    "spooky",
+    "night"
+   ],
+   "asked": [
+    "castle"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s003",
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "setting": "supermarket",
+   "env": "supermarket-2",
+   "tags": [
+    "supermarket",
+    "checkout",
+    "store"
+   ],
+   "asked": [
+    "supermarket",
+    "grocery",
+    "store"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s006",
+   "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "setting": "park",
+   "env": "meadow-2",
+   "tags": [
+    "park",
+    "trees",
+    "garden"
+   ],
+   "asked": [
+    "park"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s008",
+   "text": "temple run but you're a banana running from a monkey",
+   "setting": "sunny arcade track",
+   "env": "set-race-track",
+   "tags": [
+    "race track",
+    "racing",
+    "road",
+    "track"
+   ],
+   "asked": [],
+   "shown": false
+  },
+  {
+   "id": "s022",
+   "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "setting": "floating stone platforms",
+   "env": "set-dungeon",
+   "tags": [
+    "dungeon",
+    "prison",
+    "stone"
+   ],
+   "asked": [
+    "tower"
+   ],
+   "shown": false
+  },
+  {
+   "id": "s021",
+   "text": "obby game with lava and spinning bars",
+   "setting": "floating stone platforms",
+   "env": "set-dungeon",
+   "tags": [
+    "dungeon",
+    "prison",
+    "stone"
+   ],
+   "asked": [],
+   "shown": false
+  },
+  {
+   "id": "s035",
+   "text": "like flappy bird but underwater",
+   "setting": "underwater",
+   "env": "underwater-2",
+   "tags": [
+    "underwater",
+    "deep sea",
+    "seabed",
+    "kelp"
+   ],
+   "asked": [
+    "underwater",
+    "sea",
+    "ocean",
+    "reef",
+    "deep"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s050",
+   "text": "throwing snowballs at kids behind a snow fort",
+   "setting": "snow fort",
+   "env": "snow-2",
+   "tags": [
+    "snow",
+    "mountain",
+    "glacier",
+    "ice"
+   ],
+   "asked": [
+    "snow",
+    "fort",
+    "winter"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s088",
+   "text": "angry birds but with cats and cardboard boxes",
+   "setting": "sunny park lawn",
+   "env": "meadow-2",
+   "tags": [
+    "park",
+    "trees",
+    "garden"
+   ],
+   "asked": [],
+   "shown": false
+  },
+  {
+   "id": "s069",
+   "text": "candy crush but with gems in a cave",
+   "setting": "cave",
+   "env": "cave-2",
+   "tags": [
+    "cave",
+    "crystal",
+    "gems"
+   ],
+   "asked": [
+    "cave",
+    "cavern",
+    "mine"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s056",
+   "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+   "setting": "traffic",
+   "env": "city-1",
+   "tags": [
+    "city",
+    "street",
+    "road",
+    "traffic",
+    "town"
+   ],
+   "asked": [],
+   "shown": false
+  },
+  {
+   "id": "s058",
+   "text": "boat race through a jungle river full of crocodiles",
+   "setting": "jungle river full",
+   "env": "jungle-2",
+   "tags": [
+    "jungle",
+    "river",
+    "water"
+   ],
+   "asked": [
+    "jungle",
+    "river"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s111",
+   "text": "a black hole that swallows a city, it gets bigger the more it eats",
+   "setting": "city",
+   "env": "city-2",
+   "tags": [
+    "city",
+    "rooftop",
+    "skyscraper",
+    "sunset"
+   ],
+   "asked": [
+    "city",
+    "town",
+    "street"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s095",
+   "text": "knife throwing at a spinning log",
+   "setting": "spinning log",
+   "env": "meadow-2",
+   "tags": [
+    "park",
+    "trees",
+    "garden"
+   ],
+   "asked": [],
+   "shown": false
+  },
+  {
+   "id": "s188",
+   "text": "A grandma karate fights a gang of pigeons in the park",
+   "setting": "park",
+   "env": "meadow-2",
+   "tags": [
+    "park",
+    "trees",
+    "garden"
+   ],
+   "asked": [
+    "park"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s144",
+   "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "setting": "pond",
+   "env": "set-pond",
+   "tags": [
+    "pond",
+    "lily pads",
+    "lake",
+    "water"
+   ],
+   "asked": [
+    "pond",
+    "lake",
+    "swamp"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s155",
+   "text": "defend the castle from waves of goblins",
+   "setting": "castle",
+   "env": "castle-2",
+   "tags": [
+    "castle",
+    "fortress",
+    "wall",
+    "medieval"
+   ],
+   "asked": [
+    "castle",
+    "fortress",
+    "wall"
+   ],
+   "shown": true
+  },
+  {
+   "id": "s099",
+   "text": "build the tallest pancake tower before it falls over",
+   "setting": "a windy hilltop at sunset",
+   "env": "set-sunset",
+   "tags": [
+    "sunset",
+    "evening",
+    "sky"
+   ],
+   "asked": [],
+   "shown": false
+  },
+  {
+   "id": "h01",
+   "text": "a cat stealing fish from a market while dodging the fishmonger",
+   "setting": "market",
+   "env": "supermarket-3",
+   "tags": [
+    "market",
+    "bazaar",
+    "stall"
+   ],
+   "asked": [
+    "market",
+    "bazaar",
+    "stall"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h02",
+   "text": "shopping cart race in a supermarket",
+   "setting": "supermarket",
+   "env": "supermarket-2",
+   "tags": [
+    "supermarket",
+    "checkout",
+    "store"
+   ],
+   "asked": [
+    "supermarket",
+    "grocery",
+    "store"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h03",
+   "text": "defend a castle from dragons by throwing snowballs",
+   "setting": "sunny park lawn",
+   "env": "meadow-2",
+   "tags": [
+    "park",
+    "trees",
+    "garden"
+   ],
+   "asked": [
+    "castle",
+    "fortress",
+    "wall"
+   ],
+   "shown": false
+  },
+  {
+   "id": "h04",
+   "text": "a robot collects batteries on Mars",
+   "setting": "mars",
+   "env": "space-2",
+   "tags": [
+    "mars",
+    "planet",
+    "space",
+    "red planet"
+   ],
+   "asked": [
+    "mars",
+    "martian",
+    "red planet"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h05",
+   "text": "boxing a kangaroo in the australian outback",
+   "setting": "australian outback",
+   "env": "desert-3",
+   "tags": [
+    "outback",
+    "australia",
+    "desert",
+    "bush"
+   ],
+   "asked": [
+    "outback",
+    "desert",
+    "australia",
+    "bush"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h06",
+   "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+   "setting": "icy moon",
+   "env": "space-3",
+   "tags": [
+    "moon",
+    "lunar",
+    "space",
+    "crater"
+   ],
+   "asked": [
+    "moon",
+    "ice",
+    "icy",
+    "frozen"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h07",
+   "text": "purple elephants doing taxes on a volcano",
+   "setting": "volcano",
+   "env": "volcano-2",
+   "tags": [
+    "lava",
+    "magma",
+    "volcano",
+    "fire"
+   ],
+   "asked": [
+    "volcano",
+    "lava",
+    "volcanic"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h08",
+   "text": "a romantic dinner date on the moon",
+   "setting": "moon",
+   "env": "space-3",
+   "tags": [
+    "moon",
+    "lunar",
+    "space",
+    "crater"
+   ],
+   "asked": [
+    "moon",
+    "lunar"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h09",
+   "text": "escape from a haunted hospital with a flashlight",
+   "setting": "haunted hospital",
+   "env": "graveyard-3",
+   "tags": [
+    "hospital",
+    "haunted",
+    "abandoned",
+    "spooky"
+   ],
+   "asked": [
+    "hospital",
+    "ward",
+    "clinic"
+   ],
+   "shown": true
+  },
+  {
+   "id": "h10",
+   "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+   "setting": "glacier",
+   "env": "snow-2",
+   "tags": [
+    "snow",
+    "mountain",
+    "glacier",
+    "ice"
+   ],
+   "asked": [
+    "glacier",
+    "ice",
+    "icy",
+    "snow",
+    "arctic",
+    "antarctic"
+   ],
+   "shown": true
+  },
+  {
+   "id": "j01",
+   "text": "Explain quantum physics to my grandma.",
+   "setting": "sunny arcade track",
+   "env": "set-race-track",
+   "tags": [
+    "race track",
+    "racing",
+    "road",
+    "track"
+   ],
+   "asked": [],
+   "shown": false
+  },
+  {
+   "id": "j02",
+   "text": "a sleepy cat naps in a cozy rainy café",
+   "setting": "cozy rainy caf",
+   "env": "set-cafe",
+   "tags": [
+    "cafe",
+    "café",
+    "coffee",
+    "rain"
+   ],
+   "asked": [
+    "cafe",
+    "café",
+    "coffee"
+   ],
+   "shown": true
+  },
+  {
+   "id": "j03",
+   "text": "my startup pitch to investors in a glass skyscraper",
+   "setting": "glass skyscraper",
+   "env": "city-2",
+   "tags": [
+    "city",
+    "rooftop",
+    "skyscraper",
+    "sunset"
+   ],
+   "asked": [
+    "skyscraper",
+    "office",
+    "tower"
+   ],
+   "shown": true
+  },
+  {
+   "id": "j04",
+   "text": "walk my dog along the beach while eating an ice cream",
+   "setting": "sunny arcade track",
+   "env": "set-race-track",
+   "tags": [
+    "race track",
+    "racing",
+    "road",
+    "track"
+   ],
+   "asked": [
+    "beach",
+    "sea",
+    "shore"
+   ],
+   "shown": false
+  },
+  {
+   "id": "j05",
+   "text": "pop ten balloons at a birthday party",
+   "setting": "birthday party",
+   "env": "set-party",
+   "tags": [
+    "party",
+    "birthday",
+    "balloons"
+   ],
+   "asked": [
+    "party",
+    "birthday"
+   ],
+   "shown": true
+  },
+  {
+   "id": "j06",
+   "text": "a chef flips pancakes in a busy kitchen",
+   "setting": "busy kitchen",
+   "env": "set-kitchen",
+   "tags": [
+    "kitchen",
+    "restaurant",
+    "cooking"
+   ],
+   "asked": [
+    "kitchen",
+    "restaurant"
+   ],
+   "shown": true
+  },
+  {
+   "id": "j07",
+   "text": "a squirrel hoards acorns before winter comes",
+   "setting": "sunny arcade track",
+   "env": "set-race-track",
+   "tags": [
+    "race track",
+    "racing",
+    "road",
+    "track"
+   ],
+   "asked": [
+    "winter",
+    "snow"
+   ],
+   "shown": false
+  },
+  {
+   "id": "j08",
+   "text": "a wizard defends a crystal tower from flying skeletons",
+   "setting": "dusty shooting range at sunset",
+   "env": "set-sunset",
+   "tags": [
+    "sunset",
+    "evening",
+    "sky"
+   ],
+   "asked": [
+    "tower",
+    "crystal"
+   ],
+   "shown": false
+  },
+  {
+   "id": "j09",
+   "text": "a dragon burns down villages and dodges arrows from knights",
+   "setting": "dusty shooting range at sunset",
+   "env": "set-sunset",
+   "tags": [
+    "sunset",
+    "evening",
+    "sky"
+   ],
+   "asked": [
+    "village",
+    "town"
+   ],
+   "shown": false
+  },
+  {
+   "id": "j10",
+   "text": "an elf princess escapes a goblin castle through a dark forest",
+   "setting": "dark forest",
+   "env": "forest-2",
+   "tags": [
+    "forest",
+    "dark",
+    "woods",
+    "night"
+   ],
+   "asked": [
+    "forest",
+    "woods",
+    "castle"
+   ],
+   "shown": true
+  }
+ ]
+}
