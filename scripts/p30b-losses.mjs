@@ -14,6 +14,12 @@
  *   node --experimental-strip-types scripts/p30b-losses.mjs --snapshot <corpus run dir> <judge-10 run dir>
  *   node --experimental-strip-types scripts/p30b-losses.mjs
  * Druhý příkaz zapíše `evals/play/p30b/losses.json` a `losses.md`.
+ *
+ * Zisk (T7) proti baseline v jiné pracovní kopii – kód T1 s dnešním pravidlem
+ * slovesa a tímto skriptem navrch, postup v `evals/play/p30b/README.md`:
+ *   node --experimental-strip-types <baseline checkout>/scripts/p30b-losses.mjs --rows <before.json>
+ *   node --experimental-strip-types scripts/p30b-losses.mjs --gain <before.json>
+ * Druhý příkaz zapíše `evals/play/p30b/after.json`.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -240,9 +246,73 @@ function losses() {
   console.log(JSON.stringify(baseline));
 }
 
+/** Řádky obou sad přes `measure` (`measureSet` té pracovní kopie, ze které se měří), vstupy vždy odsud. */
+function measureAll(measure) {
+  const live = readJson(join(OUT, 'live.json'));
+  return Object.entries(SETS).flatMap(([set, file]) =>
+    measure(readJson(join(FIDELITY, file)).sentences, live.sentences.filter((entry) => entry.set === set)).map((row) => ({ ...row, set })),
+  );
+}
+
+const itemKey = (row) => `${row.set}|${row.source}|${row.id}|${row.item}`;
+
+/**
+ * Každá položka před (`before`, baseline) a po (`after`, HEAD) po větách a
+ * součty `sada × zdroj × role`. Položky dává checklist korpusu, takže obě
+ * strany mají tytéž klíče.
+ */
+export function pairGain(before, after) {
+  const was = new Map(before.map((row) => [itemKey(row), row.drawn]));
+  if (was.size !== after.length) throw new Error(`baseline has ${was.size} items, HEAD ${after.length}`);
+  const totals = {};
+  for (const set of Object.keys(SETS)) {
+    totals[set] = {};
+    for (const source of ['draft', 'ai']) totals[set][source] = Object.fromEntries(ROLES.map((role) => [role, { of: 0, before: 0, after: 0 }]));
+  }
+  const sentences = new Map();
+  for (const row of after) {
+    const drew = was.get(itemKey(row));
+    if (drew === undefined) throw new Error(`item missing from the baseline: ${itemKey(row)}`);
+    const key = `${row.set}|${row.source}|${row.id}`;
+    const sentence = sentences.get(key) ?? { set: row.set, source: row.source, id: row.id, control: row.control, items: [] };
+    sentence.items.push({ item: row.item, role: row.role, before: drew, after: row.drawn, why: row.why });
+    sentences.set(key, sentence);
+    const tally = totals[row.set][row.source][row.role];
+    tally.of += 1;
+    tally.before += drew ? 1 : 0;
+    tally.after += row.drawn ? 1 : 0;
+  }
+  return { totals, sentences: [...sentences.values()] };
+}
+
+/**
+ * Řádky této pracovní kopie do souboru – baseline se měří ve vlastním procesu,
+ * protože zavaděč `ts-paths.mjs` vede `@/` do `src/` té kopie, která ho
+ * načetla první.
+ */
+function rowsRun(path) {
+  const changed = execFileSync('git', ['diff', '--name-only', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter(Boolean);
+  writeJson(path, { commit: commit(), changed, rows: measureAll(measureSet) });
+}
+
+function gainRun(path) {
+  const base = readJson(path);
+  const result = {
+    about: 'P30B T7: offline fidelity gain at HEAD over the T1 baseline. before = T1 code with the verb rule of T2, R1 and R2 on top (baseline.changed), so both sides count a verb as shown only when it changed the game; after = HEAD. Word draft and the frozen AI specs of live.json, corpus 30 + judge-10. See README.md.',
+    measuredAt: new Date().toISOString(),
+    commit: commit(),
+    baseline: { commit: base.commit, changed: base.changed },
+    ...pairGain(base.rows, measureAll(measureSet)),
+  };
+  writeJson(join(OUT, 'after.json'), result);
+  console.log(JSON.stringify(result.totals));
+}
+
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
   const [flag, corpusDir, judgeDir] = process.argv.slice(2);
   if (flag === '--snapshot') snapshot(resolve(corpusDir), resolve(judgeDir));
+  else if (flag === '--rows') rowsRun(resolve(corpusDir));
+  else if (flag === '--gain') gainRun(resolve(corpusDir));
   else losses();
 }
