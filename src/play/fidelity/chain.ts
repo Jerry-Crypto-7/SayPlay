@@ -24,7 +24,7 @@ import { worldHasPhysics } from '../arcade/kernel';
 import { lookFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
-import { chaserModel, enemyModel, heroModel, modelOf, propModels, riggedModelOf } from '../arcade/models';
+import { PROP_ROLES, chaserModel, enemyModel, heroModel, modelOf, namedProps, riggedModelOf, type PropRole } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
 import type { VerbProof } from '../contracts';
@@ -74,7 +74,7 @@ const mentions = (text: string, words: readonly string[]): boolean =>
 const PLAYER = (role: Pick<GameRole, 'kind'>): boolean => role.kind === 'player';
 
 /** Role arkády, které scéna kreslí modelem z popisku, a zda pro ně svět postavil těleso. */
-type DrawnBody = 'player' | 'enemy' | 'chaser' | 'coin' | 'obstacle' | 'target' | 'rival';
+type DrawnBody = 'player' | 'enemy' | 'chaser' | PropRole;
 interface ArcadeScene {
   readonly bodies: ReadonlySet<DrawnBody>;
 }
@@ -98,6 +98,10 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     else if (role === ROLE.obstacle && ['hurdle', 'cone', 'crate'].includes(kind)) bodies.add('obstacle');
     // Věž hodu je z kostek role terče – kreslí je model z popisku terče (P28D T3).
     else if (role === ROLE.target && (kind === 'target' || kind === 'wood-block')) bodies.add('target');
+    // P30B T4: mantinel závodu, nota rytmu a díl věže načasování (jezdec i položené díly jsou `block`).
+    else if (role === ROLE.obstacle && kind === 'tire-barrier') bodies.add('barrier');
+    else if (role === ROLE.target && kind === 'note') bodies.add('note');
+    else if (role === ROLE.platform && kind === 'block') bodies.add('block');
   }
   return { bodies };
 }
@@ -115,8 +119,9 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   }
   if (role.id === 'enemy') return bodies.has('enemy') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === enemyModel(spec);
   if (role.kind === 'chaser') return bodies.has('chaser') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === chaserModel(spec);
-  if (role.id === 'coin' || role.id === 'obstacle' || role.id === 'target' || role.id === 'rival') return bodies.has(role.id) && propModels(spec, false)[role.id] !== undefined;
-  return false;
+  // Popisek, který jmenuje tělo jádra („rival car“), se kreslí taky – jako u hrdiny, kterého popisek jmenuje.
+  const prop = PROP_ROLES.find((id) => id === role.id);
+  return prop !== undefined && bodies.has(prop) && namedProps(spec)[prop] !== undefined;
 }
 
 /** Slovesa pravidel, která robot během vítězného běhu vystřelil (seed 1, jako `arcadeScene`). */

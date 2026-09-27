@@ -49,7 +49,7 @@ import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
 import { SteerBackdrop, placeChase, useSteerInput } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
-import { TimingScene, useTapInput } from './timing/TimingScene';
+import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
 
 /** Barva náhradního kvádru podle id těla; nic fialového. */
 const FALLBACK_COLOR: Readonly<Record<string, string>> = {
@@ -94,13 +94,18 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
+  // P30B T4: mantinel závodu z popisku role `barrier` („crocodiles“ podél řeky).
+  if (view.role === ROLE.obstacle && view.kind === 'tire-barrier') return cast.props.barrier ?? view.kind;
   // P28D T3: kostky věže hodu jsou terč – „cardboard boxes“ postaví věž z krabic.
   if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return cast.props.target ?? view.kind;
   return view.kind;
 }
 
-/** Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose; postava výškou těla (`fitScale`). */
-function FittedModel({ id, w, h, d, fallback, character = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean }) {
+/**
+ * Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose; postava výškou těla (`fitScale`).
+ * `fill` kvádr vyplní v každé ose zvlášť – díl věže, kterému jádro mění šířku (P30B T4).
+ */
+function FittedModel({ id, w, h, d, fallback, character = false, fill = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean; readonly fill?: boolean }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
@@ -116,12 +121,14 @@ function FittedModel({ id, w, h, d, fallback, character = false }: { readonly id
     const copy = model.clone(true);
     const box = new Box3().setFromObject(copy);
     const size = box.getSize(new Vector3());
-    const scale = fitScale(size, { x: w, y: h, z: d }, character);
-    copy.scale.setScalar(scale);
+    const along = (length: number): number => Math.max(length, 1e-3);
+    const uniform = fitScale(size, { x: w, y: h, z: d }, character);
+    const scale = fill ? new Vector3(w / along(size.x), h / along(size.y), d / along(size.z)) : new Vector3(uniform, uniform, uniform);
+    copy.scale.copy(scale);
     const center = box.getCenter(new Vector3());
-    copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+    copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
     return copy;
-  }, [model, w, h, d, character]);
+  }, [model, w, h, d, character, fill]);
   if (fitted !== null) return <primitive object={fitted} />;
   return (
     <mesh position={[0, h / 2, 0]}>
@@ -903,6 +910,10 @@ export default function ArcadeStage({
     rival === undefined
       ? undefined
       : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
+  // P30B T4: nota rytmu a díl věže z popisku („lily pads“, „pancakes“); díl vyplní kvádr, šířku mu mění jádro.
+  const { note, block } = cast.props;
+  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
+  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
   useFireInput(session, fires && enabled);
   useRunnerInput(session, surface, enabled && control === 'runner');
   usePlatformInput(session, surface, enabled && control === 'platform');
@@ -934,9 +945,9 @@ export default function ArcadeStage({
         {env !== null && <Panorama env={env} />}
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
-          <TimingScene session={session} look={look} />
+          <TimingScene session={session} look={look} blockModel={blockModel} />
         ) : control === 'rhythm' ? (
-          <RhythmScene session={session} look={look} />
+          <RhythmScene session={session} look={look} noteModel={noteModel} />
         ) : control === 'duel' ? (
           <DuelScene session={session} look={look} rivalModel={rivalModel} />
         ) : (

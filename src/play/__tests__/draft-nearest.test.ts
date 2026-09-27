@@ -81,8 +81,8 @@ describe('nearest arcade game for a sentence the draft does not know', () => {
     const balloons = draftGameSpec('pop ten balloons at a birthday party');
     expect(enemyModel(balloons)).toBe('gen3d-balloon');
     expect(fidelityChain(balloons, [{ item: 'balloon', slot: 'any', match: ['balloon'] }])[0]).toMatchObject({ read: true, drawn: true });
-    // Věž hodu z krabic: kostky kreslí model z popisku terče.
-    expect(propModels(draftGameSpec('angry birds but with cats and cardboard boxes')).target).toBe('crate');
+    // Věž hodu z krabic: kostky kreslí model z popisku terče – od P30B T4 dvojslovný tag, kartonová krabice místo bedny.
+    expect(propModels(draftGameSpec('angry birds but with cats and cardboard boxes')).target).toBe('gen3d-cardboard-box');
   });
 
   it('every draft of the 30 + 10 fidelity sentences publishes: the robot wins it', () => {

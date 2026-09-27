@@ -12,7 +12,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import type { Group, Mesh, PerspectiveCamera } from 'three';
+import type { Group, Object3D, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
 import { BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
@@ -63,7 +63,11 @@ export function initialBody(world: ArcadeSession['world'], index: number) {
 /** Jak daleko za hrací plochou (m po +z) stojí řada kulis – za zemí hrací plochy. */
 const SCENERY_BEHIND = 7;
 
-export function TimingScene({ session, look: scene }: { readonly session: ArcadeSession; readonly look: Look }) {
+/** Model z popisku role vepsaný do kvádru těla (w × h × d, metry), postavený na zem. */
+export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
+
+/** `blockModel` (P30B T4): díl věže z popisku role `block` („pancakes“), vyplní kvádr dílu; jen u stavění věže. */
+export function TimingScene({ session, look: scene, blockModel }: { readonly session: ArcadeSession; readonly look: Look; readonly blockModel?: BodyModel }) {
   const world = session.world;
   const base = initialBody(world, 0);
   const sliderInit = initialBody(world, TIMING_SLOTS.slider);
@@ -72,7 +76,9 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
   const baseKind = base.kind;
   const sliderKind = sliderInit.kind;
   const slider = useRef<Group | null>(null);
-  const placed = useRef<(Mesh | null)[]>([]);
+  const placed = useRef<(Object3D | null)[]>([]);
+  // Jehla a prkno můstku nejsou díly věže – model z popisku nese jen `block`.
+  const blocks = sliderKind === 'block' ? blockModel : undefined;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
@@ -134,17 +140,28 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
         <boxGeometry args={[target.w, top + 1, 0.02]} />
         <meshBasicMaterial color="#16a34a" transparent opacity={0.28} />
       </mesh>
-      {Array.from({ length: marks }, (_, round) => (
-        <mesh key={round} ref={(mesh) => { placed.current[round] = mesh; }} visible={false}>
-          <boxGeometry args={[1, blockH, depth]} />
-          <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
-        </mesh>
-      ))}
+      {/* Položený díl má jednotkovou šířku a `scale.x` mu dá šířku z jádra; model dílu stojí na zemi, proto o půl výšky níž. */}
+      {Array.from({ length: marks }, (_, round) =>
+        blocks !== undefined ? (
+          <group key={round} ref={(group) => { placed.current[round] = group; }} visible={false}>
+            <group position={[0, -blockH / 2, 0]}>{blocks(1, blockH, depth)}</group>
+          </group>
+        ) : (
+          <mesh key={round} ref={(mesh) => { placed.current[round] = mesh; }} visible={false}>
+            <boxGeometry args={[1, blockH, depth]} />
+            <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
+          </mesh>
+        ),
+      )}
       <group ref={slider} userData={{ frame: 'hero' }}>
-        <mesh position={[0, blockH / 2, 0]}>
-          <boxGeometry args={[sliderInit.w, blockH, depth]} />
-          <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
-        </mesh>
+        {blocks !== undefined ? (
+          blocks(sliderInit.w, blockH, depth)
+        ) : (
+          <mesh position={[0, blockH / 2, 0]}>
+            <boxGeometry args={[sliderInit.w, blockH, depth]} />
+            <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
+          </mesh>
+        )}
       </group>
     </>
   );

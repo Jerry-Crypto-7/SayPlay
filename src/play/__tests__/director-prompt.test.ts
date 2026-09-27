@@ -64,14 +64,15 @@ describe('director prompt', () => {
   // P26 T12: scéna čte i popisky mince, překážky a terče, řádek je vyjmenuje: 12 684 B.
   // P26D T10: doplňky u ovládání a legenda (+~190 B) se vešly zkrácením řádku o mřížce
   // a vypuštěním věty o slovesech akcí, kterou schéma `actionId` už říká: 12 682 B.
-  it('stays under 12 700 bytes for all forty golden sentences (pin: 12 682 B)', () => {
+  // P30B T4: scéna kreslí popisek mantinelu závodu, noty rytmu a dílu věže (+9 B): 12 691 B.
+  it('stays under 12 700 bytes for all forty golden sentences (pin: 12 691 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const request = buildDirectorRequest(entry.prompt, draftGameSpec(entry.prompt));
       max = Math.max(max, Buffer.byteLength(request.system + request.user));
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(12_682);
+    expect(max).toBeLessThanOrEqual(12_691);
   });
 
   // P26D T10: doplňky jdou z tabulky schopností, ne z ručního seznamu. Legenda říká
@@ -99,9 +100,10 @@ describe('director prompt', () => {
     expect(shows('runner')).toBe('obstacle+coin');
     expect(shows('platform')).toBe('coin');
     expect(shows('shooter')).toBe('enemy');
-    expect(shows('steer')).toBe('rival');
+    expect(shows('steer')).toBe('rival+barrier');
     expect(shows('duel')).toBe('only rival');
-    expect(shows('timing')).toBe('no');
+    expect(shows('timing')).toBe('only block');
+    expect(shows('rhythm')).toBe('only note');
     expect(line).not.toContain('player+');
   });
 
