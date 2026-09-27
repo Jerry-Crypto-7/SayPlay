@@ -31,6 +31,7 @@
  */
 
 import { spawnSync, execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
@@ -46,6 +47,7 @@ const { readSentence } = await import('../src/play/read/client.ts');
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIR = join(ROOT, 'evals', 'play', 'fidelity');
+const P30 = join(ROOT, 'evals', 'play', 'p30');
 
 export const SLOTS = ['hero', 'role', 'any', 'setting', 'verb'];
 
@@ -63,6 +65,8 @@ export function checkCorpus(corpus) {
     const verbs = list.filter((entry) => entry.slot === 'verb');
     if (nouns.length < 2 || nouns.length > 4) issues.push(`${where}: ${nouns.length} nouns, needs 2–4`);
     if (verbs.length !== 1) issues.push(`${where}: ${verbs.length} verbs, needs exactly 1`);
+    // Soudce vrací verdikt podle názvu položky – dvě stejné by se přepsaly.
+    if (new Set(list.map((entry) => entry.item)).size !== list.length) issues.push(`${where}: duplicate checklist item`);
     for (const entry of list) {
       if (!SLOTS.includes(entry.slot)) issues.push(`${where}/${entry.item}: unknown slot ${entry.slot}`);
       if (entry.slot === 'verb' && !Array.isArray(entry.controls)) issues.push(`${where}/${entry.item}: a verb needs controls`);
@@ -222,8 +226,8 @@ function offlineRun(runId) {
     measuredAt: new Date().toISOString(),
     commit: commit(),
   };
-  const corpus = offlineChain(loadCorpus());
-  const judge10 = offlineChain(loadCorpus(undefined, 'judge-10.json'));
+  const corpus = offlineChain(loadSet());
+  const judge10 = offlineChain(loadSet('judge-10.json'));
   const path = join(DIR, 'runs', `${runId}.json`);
   writeJson(path, { header, corpus, judge10 });
   console.log(JSON.stringify({ corpus: corpus.summary, judge10: judge10.summary }, null, 1));
@@ -277,7 +281,7 @@ const quantileOf = (values, q) => {
  * (10 s), aby pomalá odpověď byla v latenci vidět místo tichého `null`.
  */
 async function offlineReaderRun(runId, endpoint) {
-  const sets = { corpus: loadCorpus(), judge10: loadCorpus(undefined, 'judge-10.json') };
+  const sets = { corpus: loadSet(), judge10: loadSet('judge-10.json') };
   const result = {};
   const latencies = [];
   let unread = 0;
@@ -312,7 +316,7 @@ async function offlineReaderRun(runId, endpoint) {
 }
 
 function offline() {
-  const body = offlineChain(loadCorpus());
+  const body = offlineChain(loadSet());
   const header = {
     about: 'P27A T2 offline loss map: the fidelity corpus through the word draft and the compiler, no network, no model. See README.md.',
     measuredAt: new Date().toISOString(),
@@ -339,10 +343,37 @@ const writeJson = (path, value) => writeFileSync(path, `${JSON.stringify(value, 
 const commit = () => execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim();
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
-function loadCorpus(only, file = 'corpus.json') {
-  const corpus = readJson(join(DIR, file));
+/** Věta pro porovnání sad (P30A T1): malá písmena, bez interpunkce, jedna mezera. */
+export function normalizeSentence(text) {
+  return text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Pečeť testovací sady (P30A T1). Rozhoduje obsah, ne cesta: věta se
+ * `source: "test"` otevře sadu jen s `--open-test-once` a jen jednou –
+ * `test-opened.json` se zapíše dřív, než odejde první věta.
+ */
+function breakSeal(file, { openTestOnce, runId, sealDir }) {
+  const seal = join(sealDir, 'test-opened.json');
+  if (existsSync(seal)) {
+    const opened = readJson(seal);
+    throw new Error(`test set already opened by run ${opened.runId} at ${opened.openedAt} (${seal}); a second opening would tune on it`);
+  }
+  if (!openTestOnce) throw new Error('test set is sealed; pass --open-test-once for the one final measurement');
+  const sha256 = createHash('sha256').update(readFileSync(file, 'utf8').replace(/\r\n/g, '\n')).digest('hex');
+  writeJson(seal, { openedAt: new Date().toISOString(), runId, commit: commit(), sha256 });
+}
+
+/**
+ * Sada podle `--set`: `dev` a `test` jsou sady P30A v `evals/play/p30/`, jiný
+ * název je soubor ve `fidelity/` (`judge-10.json`), bez názvu korpus.
+ */
+export function loadSet(name, { only, openTestOnce = false, runId = null, sealDir = P30 } = {}) {
+  const file = name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : resolve(DIR, name ?? 'corpus.json');
+  const corpus = readJson(file);
   const issues = checkCorpus(corpus);
   if (issues.length > 0) throw new Error(`${file} is invalid:\n${issues.join('\n')}`);
+  if (corpus.sentences.some((sentence) => sentence.source === 'test')) breakSeal(file, { openTestOnce, runId, sealDir });
   const ids = typeof only === 'string' ? new Set(only.split(',')) : null;
   return corpus.sentences.filter((sentence) => ids === null || ids.has(sentence.id));
 }
@@ -423,6 +454,9 @@ async function runOne(sentence, base, runDir, page) {
 async function run(options) {
   const base = options.base ?? 'http://127.0.0.1:3100';
   const runId = options.run ?? `${new Date().toISOString().slice(0, 10)}-${commit()}`;
+  // Sada před složkou a prohlížečem: odmítnutá pečeť nesmí nechat stopu běhu.
+  // `--set judge-10.json` / `dev` / `test` se vykazují ve vlastním `--run`.
+  const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true, runId });
   const runDir = join(DIR, 'runs', runId);
   mkdirSync(runDir, { recursive: true });
   const require = createRequire(import.meta.url);
@@ -430,8 +464,7 @@ async function run(options) {
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
-    // `--set judge-10.json` pustí zamčenou porotcovskou sadu (P28D); do vlastního `--run`, ať se vykazuje zvlášť.
-    for (const sentence of loadCorpus(options.only, typeof options.set === 'string' ? options.set : undefined)) {
+    for (const sentence of sentences) {
       const path = join(runDir, `${sentence.id}.json`);
       if (existsSync(path)) continue;
       const result = await runOne(sentence, base, runDir, page);
@@ -616,7 +649,7 @@ if (isMain) {
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
   else {
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--note <text>] | --offline');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--note <text>] | --offline');
     process.exit(2);
   }
 }
