@@ -41,6 +41,57 @@ export declare function readerDraft(text: string, reading: Reading | null): Game
 
 export declare function normalizeSentence(text: string): string;
 
+export declare const COMPARE_MODELS: Record<string, { readonly source: 'primary' | 'fallback'; readonly expect: RegExp }>;
+
+export declare function modelEnv(name: string, env: Record<string, string | undefined>, capUsd: number, concurrency?: number): Record<string, string>;
+
+export declare function billedFromLog(text: string): { readonly model: string; readonly usd: number | null }[];
+
+export interface MeasuredSentence {
+  readonly id: string;
+  readonly text: string;
+  readonly checklist: readonly ChecklistEntry[];
+  readonly error?: string;
+  readonly draft: { readonly versionId: string; readonly spec: unknown; readonly frameMs: number | null; readonly frameError: string | null };
+  readonly upgrade: { readonly status: string; readonly reason: string | null; readonly ms: number };
+  readonly ai: {
+    readonly versionId: string;
+    readonly spec: unknown;
+    readonly published: boolean;
+    readonly source: string | null;
+    readonly frameMs: number | null;
+    readonly frameError: string | null;
+  } | null;
+}
+
+export declare function measureSentence(
+  sentence: CorpusSentence,
+  options: {
+    readonly base: string;
+    readonly openGame: (url: string) => Promise<void>;
+    readonly fetchImpl?: typeof fetch;
+    readonly now?: () => number;
+    readonly wait?: (ms: number) => Promise<void>;
+    readonly pollMs?: number;
+    readonly timeoutMs?: number;
+  },
+): Promise<MeasuredSentence>;
+
+export interface ModelComparison {
+  readonly n: number;
+  readonly concurrency: number;
+  readonly errors: number;
+  readonly published: { readonly ok: number; readonly of: number; readonly share: number; readonly failures: Record<string, number> };
+  readonly sources: { readonly authored: number; readonly cached: number };
+  readonly fidelity: { readonly inSpec: number | null; readonly read: number | null; readonly drawn: number | null };
+  readonly firstPlayableFrameMs: { readonly aiP50: number | null; readonly aiP95: number | null; readonly draftP50: number | null; readonly draftP95: number | null };
+  readonly cost: { readonly calls: number; readonly unknownCalls: number; readonly usd: number; readonly perSentence: number | null; readonly perPublished: number | null };
+}
+
+export declare function compareSummary(
+  runs: Record<string, { readonly buildId: string; readonly concurrency: number; readonly results: readonly (MeasuredSentence | Pick<MeasuredSentence, 'id' | 'text' | 'checklist' | 'error'>)[]; readonly billed: readonly { readonly model: string; readonly usd: number | null }[] }>,
+): Record<string, ModelComparison>;
+
 export declare function loadSet(
   name: string | undefined,
   options?: { readonly only?: string; readonly openTestOnce?: boolean; readonly runId?: string | null; readonly sealDir?: string },

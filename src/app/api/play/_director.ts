@@ -24,7 +24,7 @@ import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import type { UpstreamRequest } from '@/model/prompt';
 import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
-import { costUsd, type Pricing, processFallbackSpendCap, processSpendCap, type Reserved } from '@/server/spend-cap';
+import { costUsd, processFallbackSpendCap, processSpendCap, type Reserved } from '@/server/spend-cap';
 import { upstreamBranch, type UpstreamConfig, upstreamConfigFromEnv } from '@/server/upstream';
 
 import { acquireSlot, releaseSlot } from '../worldstream/sessions/route';
@@ -169,18 +169,31 @@ async function callerAllows(caller: string, env: Record<string, string | undefin
 }
 
 /**
+ * Řádek logu s cenou jednoho volání (P30A T7). Srovnání modelů
+ * (`scripts/play-fidelity.mjs --models`) ho sčítá ze serveru, který spustí:
+ * kniha stropu je v paměti procesu a hra cenu nenese. `unknown` = volání bez
+ * účtenky, strop za něj strhl celou rezervaci.
+ */
+export function billedLine(model: string, usd: number | 'unknown'): string {
+  return `[play] director call billed model=${model} usd=${usd === 'unknown' ? 'unknown' : usd.toFixed(8)}`;
+}
+
+/**
  * Volání a vyrovnání jeho rezervace. Zrušené volání nemá účtenku a strhne celou
  * rezervaci (R1, rozhodnuto): poskytovatel mohl tokeny spálit až do zrušení
  * a odhad z uplynulého času by byl nižší číslo, tedy nebezpečná strana stropu.
  * U předplatného je cena 0 a mez drží počet volání, takže to nic nestojí.
  */
-async function billed(reservation: Reserved, pricing: Pricing, run: () => Promise<GenerationOutcome>): Promise<GenerationOutcome> {
+async function billed(reservation: Reserved, config: UpstreamConfig, run: () => Promise<GenerationOutcome>): Promise<GenerationOutcome> {
   try {
     const outcome = await run();
-    await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, pricing));
+    const usd = outcome.usage === null ? 'unknown' : costUsd(outcome.usage, config.pricing);
+    await reservation.settle(usd);
+    console.info(billedLine(config.model, usd));
     return outcome;
   } catch (thrown) {
     await reservation.settle('unknown');
+    console.info(billedLine(config.model, 'unknown'));
     throw thrown;
   }
 }
@@ -217,7 +230,7 @@ async function cappedBranch(
         onCallerLimit();
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: "the caller's daily director calls are used up", usage: null };
       }
-      const primary: Call = (signal) => billed(reservation, branch.pricing, () => bounded.generate(call, signal));
+      const primary: Call = (signal) => billed(reservation, config, () => bounded.generate(call, signal));
       // Záloha mimo kvótu volajícího, jen v mezích rozpočtu trasy. Placená
       // (`openai:`, P30A T3) platí z vlastního stropu `processFallbackSpendCap()`,
       // takže vyčerpaná záloha nechá hru na primáru a hlavní strop jí nic neubere;
@@ -245,7 +258,7 @@ async function cappedBranch(
               try {
                 const held = await processFallbackSpendCap().reserve(worstCaseUsd);
                 if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the fallback spend cap refused the call', usage: null };
-                const outcome = await billed(held, backup.pricing, () => side.generate(call, signal));
+                const outcome = await billed(held, backup, () => side.generate(call, signal));
                 // Role, ne transport: hru od zálohy režie nedá do cache pod klíč primáru.
                 return outcome.ok ? { ...outcome, provenance: { ...outcome.provenance, fallback: true } } : outcome;
               } finally {

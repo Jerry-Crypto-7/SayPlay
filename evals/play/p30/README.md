@@ -32,6 +32,17 @@ node --experimental-strip-types scripts/play-fidelity.mjs run --set test --open-
 
 Without `--open-test-once` the run refuses. With it, `test-opened.json` is written (time, run id, commit, SHA-256) before the first sentence leaves, and every later opening refuses. The seal keys on the content (`source: "test"`), so a copied file or `--only` does not sidestep it. A run that dies half way cannot be resumed; the opening is spent.
 
+## Fair model comparison (P30A T7)
+
+```
+npm run build
+node --experimental-strip-types scripts/play-fidelity.mjs --models astra,oss20b --set dev [--concurrency 5] [--cap-usd 3] [--port 3331]
+```
+
+Keys and endpoints come from `.env.local`: `oss20b` from `WORLDSMITH_MODEL_*`, `astra` from `WORLDSMITH_FALLBACK_*`, both must be `openai:` endpoints. Each model runs alone on its own `next start` over the same `.next` build: no backup model, its own in-memory games, cache and spend book, so neither model sees the other's games. Every sentence goes POST → the draft page → the upgrade, which is published only after the robot check, as in production → the AI version's page. The time is from sending the sentence to a playable game in the browser (the game probe mounted and one more frame drawn), not the POST answer. The cost is the sum of the server's `[play] director call billed` lines divided by sentences and by published games. `--cap-usd` is split evenly between the models, and the run refuses a cap under `concurrency × worst-case call × 1.5`, because a refused call would read as the model's failure. Summary in `compare-<run>.json`, raw results and server logs in `evals/play/fidelity/runs/compare-<run>/` (not committed).
+
+Dry run against a local mock provider on 2026-09-27 (3 sentences, 2 judges, no money): both models 3/3 published, the cost per game matched the mock's tokens exactly, and port 3331 was free after the run.
+
 ## Narrator voice without the home PC (P30A T5)
 
 `PLAY_VOICE_ENDPOINT=openai-speech:https://api.deepinfra.com/v1/openai`, `PLAY_VOICE_MODEL=hexgrad/Kokoro-82M`, voice `af_heart`, format `opus`. DeepInfra lists Kokoro-82M at **0.62 USD per 1M characters** (model page, read 2026-09-27). The goal line is capped at 240 characters (`MAX_CHARS` in `src/app/api/play/_voice.ts`), so one game costs at most **0.00015 USD** – under the 0.001 USD target. The recording is cached under the text hash in the shared store, so a goal is paid for once, not once per play.
