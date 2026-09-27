@@ -19,7 +19,7 @@ Nasazené demo nesmí volat nic, co běží na autorově počítači: žádný c
    node scripts/cloud/check-env.mjs .env.production
    ```
 
-   Vrátí 1 a vypíše jméno proměnné, když adresa míří na tunel, `127.0.0.1`, `localhost`, `codex-cli` nebo `llamacpp:`, když chybí některý dolarový strop nebo když je profil `subscription`. Hodnoty nevypisuje. `.env.production` pak smaž.
+   Vrátí 1 a vypíše jméno proměnné, když adresa míří na tunel, `127.0.0.1`, `localhost`, `codex-cli` nebo `llamacpp:`, když chybí některý dolarový strop, když je profil `subscription`, nebo když strop počtu volání (`WORLDSMITH_CALL_CAP`, `WORLDSMITH_FALLBACK_CALL_CAP`) chybí či kousne dřív než dolarový strop – u gpt-oss-20b by výchozích 200 volání skončilo po ~0,35 USD a dál by hrály jen návrhy ze slov. Hodnoty nevypisuje. `.env.production` pak smaž.
 4. **Nasazení**, pak vypnout tunely a PC a zahrát na telefonu pět nových vět. Hotovo je až to, ne zelená kontrola.
 
 ## Nová panoramata

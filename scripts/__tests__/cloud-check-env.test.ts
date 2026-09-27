@@ -25,6 +25,12 @@ const GOOD = {
   PLAY_VOICE_ENDPOINT: 'openai-speech:https://api.deepinfra.com/v1/openai',
   WORLDSMITH_SPEND_CAP_USD: '30',
   WORLDSMITH_FALLBACK_SPEND_CAP_USD: '20',
+  // Primár: 8000 tokenů × 0,20 USD/Mtok = 0,0016 USD na volání → 30 USD potřebuje 18 750 volání.
+  WORLDSMITH_USD_PER_MTOK_OUT: '0.2',
+  WORLDSMITH_CALL_CAP: '20000',
+  // Záloha: 8000 × 10 USD/Mtok = 0,08 USD → 20 USD potřebuje 250 volání.
+  WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT: '10',
+  WORLDSMITH_FALLBACK_CALL_CAP: '300',
 } as const;
 
 const names = (vars: Record<string, string>) => checkEnv(vars).map((problem) => problem.name);
@@ -79,8 +85,55 @@ describe('checkEnv', () => {
 
   it('lists every problem, not just the first', () => {
     expect(names({ WORLDSMITH_MODEL_PROFILE: 'subscription', WORLDSMITH_MODEL_ENDPOINT: 'codex-cli' }).sort()).toEqual(
-      ['WORLDSMITH_FALLBACK_SPEND_CAP_USD', 'WORLDSMITH_MODEL_ENDPOINT', 'WORLDSMITH_MODEL_PROFILE', 'WORLDSMITH_SPEND_CAP_USD'].sort(),
+      [
+        'WORLDSMITH_CALL_CAP',
+        'WORLDSMITH_FALLBACK_CALL_CAP',
+        'WORLDSMITH_FALLBACK_SPEND_CAP_USD',
+        'WORLDSMITH_MODEL_ENDPOINT',
+        'WORLDSMITH_MODEL_PROFILE',
+        'WORLDSMITH_SPEND_CAP_USD',
+      ].sort(),
     );
+  });
+});
+
+describe('checkEnv – the call cap must not bite before the dollar cap (T3a)', () => {
+  const LEDGERS = [
+    { who: 'primary', calls: 'WORLDSMITH_CALL_CAP', tokens: 'WORLDSMITH_MAX_OUTPUT_TOKENS', price: 'WORLDSMITH_USD_PER_MTOK_OUT', cap: 'WORLDSMITH_SPEND_CAP_USD', low: '18000', enough: '19000', halfCalls: '10000' },
+    { who: 'fallback', calls: 'WORLDSMITH_FALLBACK_CALL_CAP', tokens: 'WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS', price: 'WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT', cap: 'WORLDSMITH_FALLBACK_SPEND_CAP_USD', low: '240', enough: '260', halfCalls: '130' },
+  ] as const;
+
+  it.each(LEDGERS)('$who: refuses a missing, empty or unreadable call cap', ({ calls }) => {
+    const { [calls]: _dropped, ...without } = GOOD;
+    expect(names(without)).toEqual([calls]);
+    expect(names({ ...GOOD, [calls]: '' })).toEqual([calls]);
+    expect(names({ ...GOOD, [calls]: 'lots' })).toEqual([calls]);
+  });
+
+  it.each(LEDGERS)('$who: refuses a call cap below dollar cap / worst case, with 8000 output tokens by default', ({ calls, low, enough }) => {
+    expect(names({ ...GOOD, [calls]: low })).toEqual([calls]);
+    expect(checkEnv({ ...GOOD, [calls]: enough })).toEqual([]);
+  });
+
+  it.each(LEDGERS)('$who: reads its own output-token limit', ({ calls, tokens, halfCalls }) => {
+    // Dvojnásobek tokenů = dvakrát dražší nejhorší případ = stačí polovina volání.
+    expect(names({ ...GOOD, [calls]: halfCalls })).toEqual([calls]);
+    expect(checkEnv({ ...GOOD, [calls]: halfCalls, [tokens]: '16000' })).toEqual([]);
+  });
+
+  it.each(LEDGERS)('$who: a missing output price cannot vouch for the call cap', ({ price }) => {
+    const { [price]: _dropped, ...without } = GOOD;
+    expect(names(without)).toEqual([price]);
+  });
+
+  it.each(LEDGERS)('$who: a zero dollar cap needs no calls', ({ calls, cap, price }) => {
+    const { [price]: _dropped, ...without } = GOOD;
+    expect(checkEnv({ ...without, [cap]: '0', [calls]: '0' })).toEqual([]);
+  });
+
+  it('the primary and the fallback are checked against their own numbers', () => {
+    // Záloha drahá, primár levný: nízký strop zálohy nesmí projít kvůli ceně primáru a naopak.
+    expect(names({ ...GOOD, WORLDSMITH_FALLBACK_CALL_CAP: '19000', WORLDSMITH_CALL_CAP: '300' })).toEqual(['WORLDSMITH_CALL_CAP']);
   });
 });
 
