@@ -131,8 +131,63 @@ export function modelOf(label: string, character: boolean): string | undefined {
   return undefined;
 }
 
-/** Vozidla, která závod umí nést; jiný popisek řídí auto. */
-const VEHICLES: ReadonlySet<string> = new Set(['race-car', 'rival-car', 'plane', 'rocket', 'rowing-boat', 'shopping-cart', 'drone']);
+/** Vozidla, která závod umí nést; jiný popisek řídí auto. Katalogová (P30B T3): „scooter“, „canoe“ a „tractor“ už nejedou jako auto. */
+const VEHICLES: ReadonlySet<string> = new Set([
+  'race-car',
+  'rival-car',
+  'plane',
+  'rocket',
+  'rowing-boat',
+  'shopping-cart',
+  'drone',
+  'gen3d-scooter',
+  'gen3d-motorbike',
+  'gen3d-ride',
+  'gen3d-race-car',
+  'gen3d-raft',
+  'gen3d-wooden-ark-boat',
+  'gen3d-skateboard',
+  'cc0-ambulance',
+  'cc0-boat-row',
+  'cc0-bus',
+  'cc0-canoe',
+  'cc0-car-hatchback',
+  'cc0-car-police',
+  'cc0-car-sedan',
+  'cc0-car-stationwagon',
+  'cc0-car-taxi',
+  'cc0-craft-racer',
+  'cc0-delivery',
+  'cc0-enemy-ufo',
+  'cc0-firetruck',
+  'cc0-garbage-truck',
+  'cc0-hatchback-sports',
+  'cc0-kart-oobi',
+  'cc0-kart-oodi',
+  'cc0-race',
+  'cc0-school-bus',
+  'cc0-sled',
+  'cc0-tank',
+  'cc0-tractor',
+  'cc0-train',
+  'cc0-van',
+]);
+
+/** Kolikrát výšky těla smí postava sahat do šířky nebo hloubky, než se zmenší. */
+const CHARACTER_REACH = 1.5;
+
+/**
+ * Měřítko modelu vepsaného do těla (P30B T3). Věc se vepíše celá, nejužší osou;
+ * postava výškou těla, jen dlouhá nízká (had) se zastaví na `CHARACTER_REACH`
+ * výšky – jinak by široký slon stál ve třetině výšky a na snímku by nebyl poznat.
+ */
+export function fitScale(model: { x: number; y: number; z: number }, body: { x: number; y: number; z: number }, character: boolean): number {
+  const along = (size: number): number => Math.max(size, 1e-3);
+  const scale = character
+    ? Math.min(body.y / along(model.y), (CHARACTER_REACH * body.y) / along(Math.max(model.x, model.z)))
+    : Math.min(body.x / along(model.x), body.y / along(model.y), body.z / along(model.z));
+  return scale || 1;
+}
 
 /** Hrdina z popisku hráče: riggovaná postava, pak katalog; bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
 export function heroModel(spec: GameSpecV1): string {

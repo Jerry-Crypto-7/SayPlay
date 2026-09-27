@@ -23,7 +23,7 @@ import { Box3, type Camera, type Group, type Mesh, type Object3D, type Perspecti
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { type PropRole, riggedCharacter } from '@/play/arcade/models';
+import { type PropRole, fitScale, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
@@ -99,8 +99,8 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   return view.kind;
 }
 
-/** Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose. */
-function FittedModel({ id, w, h, d, fallback }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string }) {
+/** Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose; postava výškou těla (`fitScale`). */
+function FittedModel({ id, w, h, d, fallback, character = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
@@ -116,12 +116,12 @@ function FittedModel({ id, w, h, d, fallback }: { readonly id: string; readonly 
     const copy = model.clone(true);
     const box = new Box3().setFromObject(copy);
     const size = box.getSize(new Vector3());
-    const scale = Math.min(w / Math.max(size.x, 1e-3), h / Math.max(size.y, 1e-3), d / Math.max(size.z, 1e-3)) || 1;
+    const scale = fitScale(size, { x: w, y: h, z: d }, character);
     copy.scale.setScalar(scale);
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
     return copy;
-  }, [model, w, h, d]);
+  }, [model, w, h, d, character]);
   if (fitted !== null) return <primitive object={fitted} />;
   return (
     <mesh position={[0, h / 2, 0]}>
@@ -553,7 +553,15 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
             ) : (
               <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
                 {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}
-                <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+                {/* Postava stojí ve výšce těla (P30B T3); vozidlo má tělo nízké a dlouhé, to se dál vepisuje celé. */}
+                <FittedModel
+                  id={modelIdOf(view, cast)}
+                  w={view.w}
+                  h={view.h}
+                  d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d}
+                  fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
+                  character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
+                />
               </group>
             )}
           </group>

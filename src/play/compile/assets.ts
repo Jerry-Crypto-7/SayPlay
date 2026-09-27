@@ -14,6 +14,7 @@ import { representationCandidates } from '@/assets/resolver';
 import type { GeomNode } from '@/geom/program';
 import type { SemanticObject } from '@/worldstream/schema';
 
+import { modelOf } from '../arcade/models';
 import type { RoleKind } from '../spec';
 
 /** Kvádr tak, jak ho čte schéma blueprintu (měnitelné trojice, ne `Bounds3`). */
@@ -59,9 +60,24 @@ export const HEIGHT_BY_KIND: Readonly<Record<RoleKind, number>> = {
   zone: 0.2,
 };
 
-export function assetSource(stableId: string, label: string): SemanticObject['source'] | null {
+/** Druhy rolí, které mřížka staví jako postavu (kus `actor`) – jen ty smí dostat nejbližší kategorii. */
+const CHARACTER_KINDS: ReadonlySet<RoleKind> = new Set(['player', 'chaser', 'patrol', 'target']);
+
+const CATALOG_BY_ID = new Map(WORLDSTREAM_ASSETS.candidates().map((asset) => [asset.assetId, asset]));
+
+/**
+ * Asset pro popisek: shoda tagů jako u planneru, a bez ní týž výběr jako arkáda
+ * (`modelOf`, P30B T3) – množné číslo („purple elephants“), nejbližší model
+ * („squirrel“ → křeček) a u postav kategorie. Mřížka a arkáda tak kreslí
+ * hrdinu téže věty stejně.
+ */
+export function assetSource(stableId: string, label: string, kind: RoleKind = 'prop'): SemanticObject['source'] | null {
   const found = representationCandidates({ stableId, label, synonyms: [], role: 'prop', importance: 1 }, WORLDSTREAM_ASSETS);
-  return found.candidates[0]?.source ?? null;
+  const tagged = found.candidates[0]?.source;
+  if (tagged !== undefined) return tagged;
+  const id = modelOf(label, CHARACTER_KINDS.has(kind));
+  const asset = id === undefined ? undefined : CATALOG_BY_ID.get(id);
+  return asset === undefined ? null : { kind: 'asset', assetId: asset.assetId, version: asset.version, hash: asset.hash };
 }
 
 /** Řádek programu pro entitu bez assetu, postavený na dně jejího kvádru. */

@@ -162,7 +162,7 @@ export function assembleBlueprint(spec: GameSpecV1, seed: number, compilation: S
     const targetBounds = entityBounds(rect, HEIGHT_BY_KIND[kind], layout);
     const binding = { entityId: id, collider: targetBounds, sockets: [], parts: [] };
     const base = { stableId: id, label, synonyms: [], role: kind === 'player' ? ('hero' as const) : ('prop' as const), binding, targetBounds, importance: importanceOf(kind) };
-    const asset = assetSource(id, label);
+    const asset = assetSource(id, label, kind);
     if (asset === null) pieces.push({ id, node: pieceNode(kind, targetBounds) });
     entries.push({ base, asset });
   }

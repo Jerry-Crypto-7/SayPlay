@@ -105,7 +105,7 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
 /** Kreslí scéna tuhle roli modelem z jejího popisku? */
 function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: () => ArcadeScene): boolean {
   // Mřížka: entita role dostane asset katalogu, nebo primitiv (`compile/blueprint.ts`).
-  if (control === 'tap_go') return assetSource(role.id, role.label) !== null;
+  if (control === 'tap_go') return assetSource(role.id, role.label, role.kind) !== null;
   const { bodies } = scene();
   if (PLAYER(role)) {
     if (!bodies.has('player')) return false;
