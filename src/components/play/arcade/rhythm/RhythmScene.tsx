@@ -118,7 +118,7 @@ export function RhythmScene({ session, look: scene, noteModel }: { readonly sess
       {notes.map((note, i) => {
         const lane = LANE_OF(note.x * UNIT);
         return (
-          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]} userData={{ frame: 'target' }}>
+          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]} userData={{ frame: 'target', item: 'note' }}>
             {noteModel !== undefined ? (
               <>
                 <mesh position={[0, 0.02, 0]}>

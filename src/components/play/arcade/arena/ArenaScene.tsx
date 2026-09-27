@@ -59,8 +59,8 @@ const AIRBORNE_M = 0.05;
 
 /** Kolik metrů od hráče do strany je vidět vždy. */
 const SEE_M = 9;
-/** Na výšku (mobil) méně: při 9 m by byl hráč pod 24 px (P27A T6); nahoru a dolů je pak vidět víc. */
-const SEE_M_TALL = 6;
+/** Na výšku (mobil) méně: při 6 m měl hráč 3,7 % výšky obrazu (P27A T6, P30B T5); nahoru a dolů je pak vidět víc. */
+const SEE_M_TALL = 5;
 
 /** Jak daleko za hranou arény stojí první řada kulis (m). */
 const SCENERY_MARGIN = 1.5;

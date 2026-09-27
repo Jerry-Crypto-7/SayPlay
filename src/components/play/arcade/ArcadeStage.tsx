@@ -28,7 +28,7 @@ import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcad
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
-import type { SteerCourse } from '@/play/arcade/pieces/steer';
+import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { CAPABILITIES } from '@/play/capabilities';
 import type { ControlId } from '@/play/spec';
 
@@ -219,6 +219,21 @@ function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y: numbe
 }
 
 /**
+ * Boční kamera na výšku (P30B T5): kolmý záběr je úzký – hrdina přes 4 % výšky
+ * a zároveň ~11 m trati před ním se do něj nevejdou. Kamera se proto natočí
+ * o `yaw` po trati: hrdina je jí blíž (větší), trať před ním se zkrátí
+ * perspektivou. `dist` = vzdálenost k bodu pohledu, `lead` = o kolik metrů
+ * před hrdinou kamera míří.
+ */
+function placeAngled(camera: PerspectiveCamera, look: Vector3, z: number, y: number, dist: number, yaw: number, lead: number): void {
+  look.set(0, y, z + lead);
+  camera.position.set(-dist * Math.cos(yaw), y, z + lead - dist * Math.sin(yaw));
+  camera.lookAt(look);
+}
+
+const DEG = Math.PI / 180;
+
+/**
  * Sonda záběru (P27A T6): `window.__playFrame()` promítne hrdinu a nejbližší
  * živý cíl nebo hrozbu skutečnou kamerou scény. Scény značí objekty
  * `userData.frame = 'hero' | 'target'`; sonda čte jen to, co se opravdu kreslí
@@ -250,7 +265,15 @@ export interface FrameReport {
   readonly targets: number;
   /** Cíl minus hrdina ve světě (m) – podklad, když cíl vyjde mimo záběr. */
   readonly offset: { readonly x: number; readonly y: number; readonly z: number } | null;
+  /**
+   * Položky z věty (P30B T5) podle role, jejíž popisek tělo kreslí (`userData.item`):
+   * kolik jich je vidět a obdélník té, která je v záběru nejvíc.
+   */
+  readonly items: Readonly<Record<string, { readonly count: number; readonly box: FrameBox | null }>>;
 }
+
+/** Jak daleko od středu obrazu obdélník leží (NDC); za kamerou nekonečno. */
+const offCenter = (box: FrameBox): number => (box.behind ? Infinity : Math.max(Math.abs(box.x), Math.abs(box.y)));
 
 /** Sonda kreslení (P28B T2, T6): draw cally posledního snímku a živé zdroje GPU. */
 export interface RenderReport {
@@ -360,7 +383,15 @@ function FrameProbe({ control }: { readonly control: string }) {
       camera.updateMatrixWorld();
       let hero: Object3D | null = null;
       const candidates: Object3D[] = [];
+      const items: Record<string, { count: number; box: FrameBox | null }> = {};
       scene.traverse((node) => {
+        const item = node.userData.item as string | undefined;
+        if (item !== undefined && shown(node)) {
+          const entry = (items[item] ??= { count: 0, box: null });
+          const box = frameOf(node, camera, size.width, size.height);
+          entry.count += 1;
+          if (box !== null && (entry.box === null || offCenter(box) < offCenter(entry.box))) entry.box = box;
+        }
         if (node.userData.frame === 'hero' && shown(node)) hero = node;
         else if (node.userData.frame === 'target' && shown(node)) candidates.push(node);
       });
@@ -380,6 +411,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
+        items,
       };
     };
     // Bez podmínky, stejně jako `__playShell`: e2e ji čte na každé arkádové hře.
@@ -395,6 +427,22 @@ function FrameProbe({ control }: { readonly control: string }) {
 const FRAME_TARGET_ROLES: ReadonlySet<number> = new Set([ROLE.obstacle, ROLE.collectible, ROLE.chaser, ROLE.hazard, ROLE.enemy, ROLE.target]);
 const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
   view.role === ROLE.player ? 'hero' : FRAME_TARGET_ROLES.has(view.role) && view.kind !== 'tire-barrier' ? 'target' : undefined;
+
+/**
+ * Role věty, jejíž popisek tělo kreslí (P30B T5) – totéž rozhodnutí jako `modelIdOf`
+ * a `arcadeScene` v `fidelity/chain.ts`. Nota, díl věže a soupeř souboje mají vlastní scény.
+ */
+function itemTagOf(view: BodyView): 'enemy' | 'chaser' | PropRole | undefined {
+  if (view.role === ROLE.player) return undefined;
+  if (view.kind === 'enemy') return 'enemy';
+  if (view.kind === 'rival-car') return 'rival';
+  if (view.role === ROLE.chaser) return 'chaser';
+  if (view.role === ROLE.collectible && view.kind === 'coin') return 'coin';
+  if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return 'obstacle';
+  if (view.role === ROLE.obstacle && view.kind === 'tire-barrier') return 'barrier';
+  if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return 'target';
+  return undefined;
+}
 
 interface WorldProps {
   readonly session: ArcadeSession;
@@ -506,18 +554,21 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
       if (control === 'platform') {
         // Kamera za výškou hráče jen dojíždí, ať skok netřese obrazem.
         followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 4));
-        // Na výšku je obraz úzký: kamera smí dál (hráč pořád nad 24 px) a hráč jde víc doleva,
-        // ať je vidět nejbližší mince či hrot ~9 m před startem (P27A T6, `e2e/play-frame`).
-        if (camera.aspect < 1) placeSide(camera, look, z, followY.current + 1.2, 16, 7, 22, 0.7);
+        // Na výšku mírně natočená, ať je vidět nejbližší mince či hrot ~11 m před startem
+        // i vedle širokého hrdiny (P27A T6, P30B T5, `e2e/play-frame`); hrdina zůstává ~22 m od kamery.
+        if (camera.aspect < 1) placeAngled(camera, look, z, followY.current + 1.2, 24, 25 * DEG, 4.5);
         else placeSide(camera, look, z, followY.current + 1.2, 16, 7, 18, 0.4);
       } else if (control === 'flap') {
         // Na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera
-        // o kus dál, ať je vidět první trubka; na výšku HUD kryje celou šířku, takže ptáček
-        // jde doleva – dál kamera nesmí, ptáček by byl pod 24 px (P27A T6).
-        if (camera.aspect < 1) placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 14, FLAP.ceiling / UNIT + 1, 26, 0.7);
-        else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 24, FLAP.ceiling / UNIT + 1, 26, 0.1);
+        // tak daleko, ať je vidět první trubka i mince za ní (P30B T5). Na výšku by kolmá
+        // kamera ptáčka zmenšila na 3 % výšky: natočená do tří čtvrtin ho má přes 4 %
+        // a první trubku i minci pořád v záběru.
+        if (camera.aspect < 1) placeAngled(camera, look, z, FLAP.ceiling / UNIT / 2, 22, 50 * DEG, 5);
+        else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 30, FLAP.ceiling / UNIT + 1, 26, 0.1);
       } else if (control === 'steer') {
-        placeChase(camera, look, x, z);
+        // Osa trati je v jednotkách jádra a scéna ji zrcadlí (x → −x), stejně jako těla.
+        const course = session.world.control.params.course as SteerCourse | undefined;
+        placeChase(camera, look, x, z, course === undefined ? 0 : -centerAt(course, z * UNIT) / UNIT);
       } else if (control === 'shooter' || control === 'throw') {
         // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
       } else {
@@ -544,7 +595,7 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
-          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view) }}>
+          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
               <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
             ) : rigged[view.index] !== undefined ? (

@@ -7,7 +7,8 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
  * Hrdina a cíl v záběru (P27A T6). Každé arkádové ovládání z fixture, na
  * telefonu (390×844) i na počítači (1280×800): v 1., 3. a 5. sekundě musí
  * být střed hrdiny i nejbližšího cíle/hrozby v záběru (|x|, |y| ≤ 0,95 NDC)
- * a hrdina větší než 24 px. Čísla dává `window.__playFrame()` – promítnutí
+ * a hrdina větší než 24 px a aspoň 4 % výšky obrazu (P30B T5), i když je
+ * hrdinou široké zvíře z věty. Čísla dává `window.__playFrame()` – promítnutí
  * kvádrů objektů skutečnou kamerou scény, ne odhad z atributu. Screenshoty
  * jdou do `test-results/` jako podklad pro lidskou kontrolu.
  *
@@ -72,7 +73,7 @@ function checkBox(label: string, box: Box | null, hero: boolean): void {
   if (hero) expect.soft(box.sizePx, `${label}: ${box.sizePx.toFixed(1)} px is too small`).toBeGreaterThan(MIN_HERO_PX);
 }
 
-/** Výška hrdiny z věty (P30B T3); výchozí hrdinové na telefonu (ptáček 3,1 %, auto a aréna 3,7 %) čekají na kameru T5. */
+/** Výška hrdiny (P30B T3 pro hrdinu z věty, od T5 pro každého – kamera telefonu se kvůli tomu přiblížila). */
 function checkHeroHeight(label: string, box: Box | null, viewportHeight: number): void {
   if (box === null) return;
   expect.soft(box.heightPx / viewportHeight, `${label}: ${box.heightPx.toFixed(1)} px of ${viewportHeight} px is too short`).toBeGreaterThanOrEqual(MIN_HERO_HEIGHT);
@@ -106,9 +107,8 @@ for (const viewport of VIEWPORTS) {
           samples.push({ second, report });
           await stage.screenshot({ path: test.info().outputPath(`${fixture}${heroLabel === undefined ? '' : '-wide'}-${viewport.name}-${second}s.png`) });
           checkBox(`${name} ${viewport.name} ${second}s hero`, report.hero, true);
-          // Cíl vedle širokého hrdiny: plošinovka na telefonu má minci na x 1,11–1,14 – záběr kamery řeší P30B T5.
-          if (heroLabel === undefined) checkBox(`${name} ${viewport.name} ${second}s target (${report.targets} candidates)`, report.target, false);
-          else checkHeroHeight(`${name} ${viewport.name} ${second}s hero`, report.hero, viewport.height);
+          checkBox(`${name} ${viewport.name} ${second}s target (${report.targets} candidates)`, report.target, false);
+          checkHeroHeight(`${name} ${viewport.name} ${second}s hero`, report.hero, viewport.height);
         }
         await test.info().attach('frame.json', { body: JSON.stringify(samples, null, 2), contentType: 'application/json' });
       });
