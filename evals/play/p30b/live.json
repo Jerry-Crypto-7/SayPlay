@@ -1,0 +1,3671 @@
+{
+ "about": "P30B: frozen AI specs and the judge verdict on their screenshot, from the last live fidelity runs. The model is frozen for P30B, so every later measurement re-runs the offline chain over these specs at HEAD. See losses.md.",
+ "runs": {
+  "corpus": "2026-09-26-p29-ground",
+  "judge10": "2026-09-25-p28d-t6-j10"
+ },
+ "sentences": [
+  {
+   "id": "h01",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     },
+     {
+      "id": "patrol",
+      "params": {
+       "disposition": "bold",
+       "role": "enemy",
+       "stops": 3,
+       "touchEffect": "lose"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Steal all the fish while dodging the fishmonger.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "cat"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "fish"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "patrol",
+      "label": "fishmonger"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "supermarket",
+     "mood": "calm",
+     "setting": "fish market"
+    },
+    "title": "Cat at the Fish Market",
+    "tutorial": {
+     "controlsHint": "Tap a fish to walk to it. Tap again to pick it up.",
+     "goalLine": "Steal all the fish while dodging the fishmonger."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "lost"
+      },
+      "id": "enemy_touch_loses",
+      "kind": "keypoint",
+      "mechanic": "patrol",
+      "setup": {
+       "placeAt": {
+        "enemy": "player"
+       }
+      },
+      "ticks": 5
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "cat": true,
+    "fish": true,
+    "fishmonger": false,
+    "market": true,
+    "steal": false
+   }
+  },
+  {
+   "id": "h02",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "steer",
+    "controlParams": {
+     "difficulty": "normal",
+     "lengthM": 450
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Win the shopping cart race in the supermarket.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "shopping cart"
+     },
+     {
+      "count": 5,
+      "id": "barrier",
+      "kind": "hazard",
+      "label": "tire barrier"
+     },
+     {
+      "count": 3,
+      "id": "rival",
+      "kind": "patrol",
+      "label": "rival car"
+     },
+     {
+      "count": 3,
+      "id": "turbo",
+      "kind": "collectible",
+      "label": "turbo"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "supermarket",
+     "mood": "fast",
+     "setting": "supermarket"
+    },
+    "title": "Shopping Cart Race",
+    "tutorial": {
+     "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+     "goalLine": "Win the shopping cart race in the supermarket."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "shopping cart": true,
+    "supermarket": true,
+    "race": false
+   }
+  },
+  {
+   "id": "h03",
+   "set": "corpus",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "throw",
+    "controlParams": {
+     "difficulty": "normal",
+     "goal": "target"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 3,
+     "description": "Defend the castle by hitting every dragon with snowballs.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 3,
+      "id": "target",
+      "kind": "target",
+      "label": "dragons"
+     },
+     {
+      "count": 1,
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "castle",
+     "mood": "playful",
+     "setting": "A castle under attack by dragons"
+    },
+    "title": "Snowballs vs Dragons",
+    "tutorial": {
+     "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+     "goalLine": "Defend the castle by hitting every dragon with snowballs."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "castle": true,
+    "dragon": true,
+    "snowball": false,
+    "throw": false
+   }
+  },
+  {
+   "id": "h04",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Collect all the batteries on Mars.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "robot"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "battery"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "desert",
+     "mood": "calm",
+     "setting": "Mars"
+    },
+    "title": "Robot Collects Batteries on Mars",
+    "tutorial": {
+     "controlsHint": "Tap a battery to walk to it. Tap again to pick it up.",
+     "goalLine": "Collect all the batteries on Mars."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "robot": true,
+    "battery": true,
+    "Mars": false,
+    "collect": false
+   }
+  },
+  {
+   "id": "h05",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "duel",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "description": "Beat the kangaroo at boxing.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "fighter"
+     },
+     {
+      "count": 1,
+      "id": "rival",
+      "kind": "hazard",
+      "label": "kangaroo"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "knockout"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 45,
+    "theme": {
+     "look": "desert",
+     "mood": "tense",
+     "setting": "Australian outback"
+    },
+    "title": "Outback Kangaroo Boxing",
+    "tutorial": {
+     "controlsHint": "Tap right or Space to strike, tap left or Down to dodge.",
+     "goalLine": "Beat the kangaroo at boxing."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "kangaroo": false,
+    "outback": true,
+    "box": false
+   }
+  },
+  {
+   "id": "h06",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     },
+     {
+      "id": "patrol",
+      "params": {
+       "disposition": "bold",
+       "role": "enemy",
+       "stops": 3,
+       "touchEffect": "lose"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Collect glowing crystals to repair the broken spaceship.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "tiny astronaut"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing crystal"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     },
+     {
+      "count": 2,
+      "id": "enemy",
+      "kind": "patrol",
+      "label": "crack"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "snow",
+     "mood": "calm",
+     "setting": "icy moon"
+    },
+    "title": "Tiny Astronaut and the Broken Spaceship",
+    "tutorial": {
+     "controlsHint": "Tap a glowing crystal to walk to it. Tap again to pick it up.",
+     "goalLine": "Collect glowing crystals to repair the broken spaceship."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "lost"
+      },
+      "id": "enemy_touch_loses",
+      "kind": "keypoint",
+      "mechanic": "patrol",
+      "setup": {
+       "placeAt": {
+        "enemy": "player"
+       }
+      },
+      "ticks": 5
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "astronaut": true,
+    "crystal": true,
+    "alien": false,
+    "icy moon": false,
+    "collect": false
+   }
+  },
+  {
+   "id": "h07",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Help the purple elephants finish their taxes on the volcano.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "purple elephants"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "volcano",
+     "mood": "calm",
+     "setting": "On a volcano"
+    },
+    "title": "Purple Elephants Doing Taxes",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Help the purple elephants finish their taxes on the volcano."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "elephant": false,
+    "volcano": true,
+    "do taxes": false
+   }
+  },
+  {
+   "id": "h08",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Reach the romantic dinner date on the moon.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "dinner date"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "space",
+     "mood": "calm",
+     "setting": "On the moon"
+    },
+    "title": "Moonlight Dinner Date",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Reach the romantic dinner date on the moon."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "dinner": true,
+    "moon": false,
+    "date": false
+   }
+  },
+  {
+   "id": "h09",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 1,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     },
+     {
+      "id": "patrol",
+      "params": {
+       "disposition": "bold",
+       "role": "enemy",
+       "sight": true,
+       "stops": 3,
+       "touchEffect": "lose"
+      }
+     }
+    ],
+    "objective": {
+     "count": 1,
+     "description": "Escape the haunted hospital with the flashlight.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 1,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "flashlight"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "hospital exit"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "patrol",
+      "label": "haunted hospital"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "mood": "calm",
+     "setting": "haunted hospital"
+    },
+    "title": "Haunted Hospital Escape",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Escape the haunted hospital with the flashlight."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 1
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 0
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "lost"
+      },
+      "id": "spotted_loses",
+      "kind": "keypoint",
+      "mechanic": "patrol",
+      "setup": {
+       "placeAt": {
+        "player": "enemy"
+       }
+      },
+      "ticks": 3
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "hospital": false,
+    "flashlight": false,
+    "escape": false
+   }
+  },
+  {
+   "id": "h10",
+   "set": "corpus",
+   "spec": {
+    "addons": [
+     "collect"
+    ],
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "runner",
+    "controlParams": {
+     "density": "normal",
+     "lengthM": 250,
+     "speed": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Slide down the glacier, jump over seals and catch fish.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "penguin"
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "seals"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "fish"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "snow",
+     "mood": "energetic",
+     "setting": "glacier"
+    },
+    "title": "Penguin Slides Down Glacier",
+    "tutorial": {
+     "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+     "goalLine": "Slide down the glacier, jump over seals and catch fish."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "penguin": true,
+    "glacier": true,
+    "seal": false,
+    "fish": false,
+    "slide": false
+   }
+  },
+  {
+   "id": "s002",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 3,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     },
+     {
+      "id": "patrol",
+      "params": {
+       "disposition": "bold",
+       "role": "enemy",
+       "stops": 3,
+       "touchEffect": "lose"
+      }
+     }
+    ],
+    "objective": {
+     "count": 3,
+     "description": "Collect three keys while dodging ghosts.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 3,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "key"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     },
+     {
+      "count": 2,
+      "id": "enemy",
+      "kind": "patrol",
+      "label": "ghost"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "castle",
+     "mood": "calm",
+     "setting": "haunted castle"
+    },
+    "title": "Knight and the Three Keys",
+    "tutorial": {
+     "controlsHint": "Tap a key to walk to it. Tap again to pick it up.",
+     "goalLine": "Collect three keys while dodging ghosts."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 3
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 2
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "lost"
+      },
+      "id": "enemy_touch_loses",
+      "kind": "keypoint",
+      "mechanic": "patrol",
+      "setup": {
+       "placeAt": {
+        "enemy": "player"
+       }
+      },
+      "ticks": 5
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "knight": true,
+    "key": true,
+    "ghost": true,
+    "haunted castle": true,
+    "collect": false
+   }
+  },
+  {
+   "id": "s003",
+   "set": "corpus",
+   "spec": {
+    "archetype": "chase_escape",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "chaser",
+      "params": {
+       "catchEffect": "lose",
+       "role": "roomba",
+       "speed": "normal"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "exit",
+       "when": "enter"
+      }
+     },
+     {
+      "id": "stun",
+      "params": {
+       "seconds": 4,
+       "targetRole": "roomba",
+       "uses": 3
+      }
+     }
+    ],
+    "objective": {
+     "description": "Escape the supermarket before the giant Roomba catches you.",
+     "kind": "reach",
+     "role": "exit"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "hamster"
+     },
+     {
+      "count": 1,
+      "id": "roomba",
+      "kind": "chaser",
+      "label": "giant Roomba"
+     },
+     {
+      "count": 1,
+      "id": "exit",
+      "kind": "exit",
+      "label": "supermarket exit"
+     },
+     {
+      "count": 3,
+      "id": "cart",
+      "kind": "prop",
+      "label": "shopping cart"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "supermarket",
+     "mood": "frantic",
+     "setting": "Supermarket aisles patrolled by a giant Roomba"
+    },
+    "title": "Hamster Escape: Giant Roomba",
+    "tutorial": {
+     "controlsHint": "Tap where to run. Use a cart to stun the giant roomba.",
+     "goalLine": "Escape the supermarket before the giant Roomba catches you."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "use",
+        "target": "roomba"
+       }
+      ],
+      "assert": {
+       "firedMechanics": [
+        "stun"
+       ]
+      },
+      "id": "stun_freezes",
+      "kind": "keypoint",
+      "mechanic": "stun",
+      "setup": {
+       "placeAt": {
+        "roomba": "player"
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "hamster": true,
+    "roomba": true,
+    "supermarket": true,
+    "escape": false
+   }
+  },
+  {
+   "id": "s006",
+   "set": "corpus",
+   "spec": {
+    "addons": [
+     "collect"
+    ],
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "runner",
+    "controlParams": {
+     "density": "normal",
+     "lengthM": 250,
+     "speed": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Run through the park, grabbing sausages and jumping over sprinklers.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "corgi"
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "sprinkler"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "sausage"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "meadow",
+     "mood": "energetic",
+     "setting": "park"
+    },
+    "title": "Corgi Sausage Run",
+    "tutorial": {
+     "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+     "goalLine": "Run through the park, grabbing sausages and jumping over sprinklers."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "corgi": false,
+    "sausage": true,
+    "sprinkler": false,
+    "park": true,
+    "run": true
+   }
+  },
+  {
+   "id": "s008",
+   "set": "corpus",
+   "spec": {
+    "addons": [
+     "chaser"
+    ],
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "runner",
+    "controlParams": {
+     "density": "normal",
+     "lengthM": 250,
+     "speed": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Keep running as the banana and outrun the monkey.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "banana"
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "monkey"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "jungle",
+     "mood": "energetic",
+     "setting": "A jungle temple running path"
+    },
+    "title": "Temple Run: Banana Escape",
+    "tutorial": {
+     "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+     "goalLine": "Keep running as the banana and outrun the monkey."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "banana": true,
+    "monkey": false,
+    "run": true
+   }
+  },
+  {
+   "id": "s021",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "platform",
+    "controlParams": {
+     "checkpoints": true,
+     "difficulty": "normal",
+     "lengthM": 90
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Finish the obby without touching lava or spinning bars.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 5,
+      "id": "spikes",
+      "kind": "hazard",
+      "label": "spinning bars"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "flag"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "volcano",
+     "mood": "playful",
+     "setting": "An obby of platforms above lava with spinning bars"
+    },
+    "title": "Lava and Spinning Bars Obby",
+    "tutorial": {
+     "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+     "goalLine": "Finish the obby without touching lava or spinning bars."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "lava": false,
+    "spinning bar": false,
+    "jump": false
+   }
+  },
+  {
+   "id": "s022",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "platform",
+    "controlParams": {
+     "checkpoints": true,
+     "difficulty": "normal",
+     "lengthM": 90,
+     "movingPlatforms": true
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Climb the moving platforms to reach the robot's charger.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "tiny robot"
+     },
+     {
+      "count": 5,
+      "id": "spikes",
+      "kind": "hazard",
+      "label": "spikes"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "flag"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "mood": "playful",
+     "setting": "A tower of moving platforms with a charger at the top"
+    },
+    "title": "Tiny Robot's Charger Climb",
+    "tutorial": {
+     "controlsHint": "Arrows or A/D to move, Space or tap to jump.",
+     "goalLine": "Climb the moving platforms to reach the robot's charger."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "robot": false,
+    "charger": false,
+    "tower": false,
+    "climb": false
+   }
+  },
+  {
+   "id": "s035",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "flap",
+    "controlParams": {
+     "difficulty": "normal",
+     "lengthM": 120
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Guide the bird through as many underwater pipe gaps as possible.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "bird"
+     },
+     {
+      "count": 5,
+      "id": "pipe",
+      "kind": "hazard",
+      "label": "pipe"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "underwater",
+     "mood": "cheerful",
+     "setting": "Underwater"
+    },
+    "title": "Flappy Bird Underwater",
+    "tutorial": {
+     "controlsHint": "Tap or Space to flap.",
+     "goalLine": "Guide the bird through as many underwater pipe gaps as possible."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "bird": true,
+    "underwater": true,
+    "flap": false
+   }
+  },
+  {
+   "id": "s037",
+   "set": "corpus",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "shooter",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 4,
+     "description": "Shoot all the alien bugs in the mining colony.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "space marine"
+     },
+     {
+      "count": 4,
+      "id": "target",
+      "kind": "target",
+      "label": "target"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "alien bugs"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "space",
+     "mood": "action",
+     "setting": "mining colony"
+    },
+    "title": "Space Marine vs Alien Bugs",
+    "tutorial": {
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+     "goalLine": "Shoot all the alien bugs in the mining colony."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "space marine": false,
+    "alien bug": false,
+    "mining colony": false,
+    "shoot": true
+   }
+  },
+  {
+   "id": "s039",
+   "set": "corpus",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "shooter",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 4,
+     "description": "Shoot all the zombies in the mall.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 4,
+      "id": "target",
+      "kind": "target",
+      "label": "target"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "zombie"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "mall",
+     "mood": "action",
+     "setting": "mall"
+    },
+    "title": "Mall Zombie Shooter",
+    "tutorial": {
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+     "goalLine": "Shoot all the zombies in the mall."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "zombie": false,
+    "mall": true,
+    "shoot": true
+   }
+  },
+  {
+   "id": "s050",
+   "set": "corpus",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "throw",
+    "controlParams": {
+     "difficulty": "normal",
+     "goal": "target"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 3,
+     "description": "Hit all the kids behind the snow fort with snowballs.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 3,
+      "id": "target",
+      "kind": "target",
+      "label": "kids"
+     },
+     {
+      "count": 1,
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "snow",
+     "mood": "playful",
+     "setting": "Behind a snow fort"
+    },
+    "title": "Snowballs at the Snow Fort",
+    "tutorial": {
+     "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+     "goalLine": "Hit all the kids behind the snow fort with snowballs."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "snowball": false,
+    "kid": true,
+    "snow fort": false,
+    "throw": false
+   }
+  },
+  {
+   "id": "s056",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "steer",
+    "controlParams": {
+     "difficulty": "normal",
+     "lengthM": 450
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Race through traffic to deliver before the pizza gets cold.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "pizza delivery scooter"
+     },
+     {
+      "count": 5,
+      "id": "barrier",
+      "kind": "hazard",
+      "label": "traffic"
+     },
+     {
+      "count": 3,
+      "id": "rival",
+      "kind": "patrol",
+      "label": "rival car"
+     },
+     {
+      "count": 3,
+      "id": "turbo",
+      "kind": "collectible",
+      "label": "turbo"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "city",
+     "mood": "fast",
+     "setting": "City streets filled with traffic"
+    },
+    "title": "Pizza Delivery: Beat the Cold",
+    "tutorial": {
+     "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+     "goalLine": "Race through traffic to deliver before the pizza gets cold."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "scooter": false,
+    "pizza": false,
+    "traffic": true,
+    "race": true
+   }
+  },
+  {
+   "id": "s058",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "steer",
+    "controlParams": {
+     "difficulty": "hard",
+     "lengthM": 450
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Win the boat race through the jungle river while avoiding crocodiles.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "boat"
+     },
+     {
+      "count": 5,
+      "id": "barrier",
+      "kind": "hazard",
+      "label": "crocodiles"
+     },
+     {
+      "count": 3,
+      "id": "rival",
+      "kind": "patrol",
+      "label": "boat"
+     },
+     {
+      "count": 3,
+      "id": "turbo",
+      "kind": "collectible",
+      "label": "turbo"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "jungle",
+     "mood": "fast",
+     "setting": "A jungle river full of crocodiles"
+    },
+    "title": "Jungle River Boat Race",
+    "tutorial": {
+     "controlsHint": "Drag or arrows to steer. Down or a second finger brakes.",
+     "goalLine": "Win the boat race through the jungle river while avoiding crocodiles."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "boat": false,
+    "crocodile": false,
+    "jungle river": false,
+    "race": false
+   }
+  },
+  {
+   "id": "s069",
+   "set": "corpus",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Match three or more gems to clear them from the cave board.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "gem"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "cave",
+     "mood": "calm",
+     "setting": "A cave filled with gems"
+    },
+    "title": "Candy Crush: Gems in a Cave",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Match three or more gems to clear them from the cave board."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "gem": true,
+    "cave": false,
+    "match": false
+   }
+  },
+  {
+   "id": "s088",
+   "set": "corpus",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "throw",
+    "controlParams": {
+     "difficulty": "normal",
+     "goal": "tower"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 3,
+     "description": "Launch cats to knock down every cardboard box.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "cat"
+     },
+     {
+      "count": 3,
+      "id": "target",
+      "kind": "target",
+      "label": "cardboard box"
+     },
+     {
+      "count": 1,
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "meadow",
+     "mood": "playful",
+     "setting": "Sunny park lawn"
+    },
+    "things": [
+     {
+      "physics": true,
+      "role": "target",
+      "start": "present"
+     }
+    ],
+    "title": "Cats vs. Cardboard Boxes",
+    "tutorial": {
+     "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+     "goalLine": "Launch cats to knock down every cardboard box."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "cat": true,
+    "cardboard box": false,
+    "launch": false
+   }
+  },
+  {
+   "id": "s095",
+   "set": "corpus",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "throw",
+    "controlParams": {
+     "difficulty": "normal",
+     "goal": "target"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 3,
+     "description": "Hit the spinning log with your knives.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knife"
+     },
+     {
+      "count": 3,
+      "id": "target",
+      "kind": "target",
+      "label": "spinning log"
+     },
+     {
+      "count": 1,
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "mood": "playful",
+     "setting": "At a spinning log"
+    },
+    "title": "Knife Throwing at a Spinning Log",
+    "tutorial": {
+     "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+     "goalLine": "Hit the spinning log with your knives."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "knife": true,
+    "log": true,
+    "throw": false
+   }
+  },
+  {
+   "id": "s099",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "timing",
+    "controlParams": {
+     "mode": "stack",
+     "rounds": 8,
+     "speed": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Build the tallest pancake tower before it falls over.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "crane"
+     },
+     {
+      "count": 8,
+      "id": "block",
+      "kind": "collectible",
+      "label": "pancake"
+     },
+     {
+      "count": 1,
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed drop"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "of the tower"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 45,
+    "theme": {
+     "mood": "cheerful",
+     "setting": "A breakfast table"
+    },
+    "title": "Tallest Pancake Tower",
+    "tutorial": {
+     "controlsHint": "Tap or Space to drop the block.",
+     "goalLine": "Build the tallest pancake tower before it falls over."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "pancake": false,
+    "tower": false,
+    "stack": false
+   }
+  },
+  {
+   "id": "s111",
+   "set": "corpus",
+   "spec": {
+    "archetype": "survival_timer",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "move_free",
+    "controlParams": {
+     "density": "normal",
+     "goal": "grow"
+    },
+    "mechanics": [
+     {
+      "id": "timer",
+      "params": {
+       "id": "clock",
+       "onEnd": "lose",
+       "seconds": 40
+      }
+     }
+    ],
+    "objective": {
+     "description": "Swallow the city, getting bigger the more you eat.",
+     "kind": "survive",
+     "seconds": 40
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "black hole"
+     },
+     {
+      "count": 3,
+      "id": "hunter",
+      "kind": "hazard",
+      "label": "big fish"
+     },
+     {
+      "count": 12,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "city"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "city",
+     "mood": "playful",
+     "setting": "city"
+    },
+    "title": "Black Hole Swallows a City",
+    "tutorial": {
+     "controlsHint": "Drag or arrows to swim. You are blue: eat yellow and green, flee red.",
+     "goalLine": "Swallow the city, getting bigger the more you eat."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "black hole": false,
+    "city": true,
+    "swallow": false
+   }
+  },
+  {
+   "id": "s144",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "rhythm",
+    "controlParams": {
+     "beats": 48,
+     "bpm": 120,
+     "density": "normal"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "description": "Play the lily pads on the beat to light up the pond and finish the song.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "drummer frog"
+     },
+     {
+      "count": 12,
+      "id": "note",
+      "kind": "collectible",
+      "label": "lily pad"
+     },
+     {
+      "count": 1,
+      "id": "miss",
+      "kind": "hazard",
+      "label": "missed beat"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "last beat"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 30,
+    "theme": {
+     "look": "meadow",
+     "mood": "energetic",
+     "setting": "pond"
+    },
+    "title": "Drummer Frog's Lily Pad Beats",
+    "tutorial": {
+     "controlsHint": "Tap or Space on the beat. M toggles sound.",
+     "goalLine": "Play the lily pads on the beat to light up the pond and finish the song."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "frog": false,
+    "lily pad": true,
+    "pond": true,
+    "drum to the beat": false
+   }
+  },
+  {
+   "id": "s155",
+   "set": "corpus",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "shooter",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 4,
+     "description": "Defend the castle by defeating every wave of goblins.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 4,
+      "id": "target",
+      "kind": "target",
+      "label": "target"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "goblins"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "castle",
+     "mood": "action",
+     "setting": "castle"
+    },
+    "title": "Defend the Castle",
+    "tutorial": {
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+     "goalLine": "Defend the castle by defeating every wave of goblins."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "castle": true,
+    "goblin": false,
+    "defend": false
+   }
+  },
+  {
+   "id": "s188",
+   "set": "corpus",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "duel",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [
+     {
+      "id": "health",
+      "params": {
+       "max": 3
+      }
+     }
+    ],
+    "objective": {
+     "description": "Defeat the gang of pigeons with grandma's karate.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "grandma"
+     },
+     {
+      "count": 1,
+      "id": "rival",
+      "kind": "hazard",
+      "label": "gang of pigeons"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "knockout"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 45,
+    "theme": {
+     "look": "meadow",
+     "mood": "tense",
+     "setting": "park"
+    },
+    "title": "Grandma vs. the Gang of Pigeons",
+    "tutorial": {
+     "controlsHint": "Tap right or Space to strike, tap left or Down to dodge.",
+     "goalLine": "Defeat the gang of pigeons with grandma's karate."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "grandma": false,
+    "pigeon": false,
+    "park": true,
+    "fight": false
+   }
+  },
+  {
+   "id": "j01",
+   "set": "judge10",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Help Grandma understand quantum physics.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "Grandma"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "mood": "calm",
+     "setting": "An interactive quantum physics lesson"
+    },
+    "title": "Quantum Physics for Grandma",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Help Grandma understand quantum physics."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "grandma": false,
+    "quantum physics": false,
+    "explain": false
+   }
+  },
+  {
+   "id": "j02",
+   "set": "judge10",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Settle the sleepy cat down for a nap in the cozy rainy café.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "sleepy cat"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "warm cookie"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "cottage door"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "mood": "cozy",
+     "setting": "A cozy rainy café"
+    },
+    "title": "Sleepy Cat in a Rainy Café",
+    "tutorial": {
+     "controlsHint": "Tap a warm cookie to walk to it. Nothing here can hurt you.",
+     "goalLine": "Settle the sleepy cat down for a nap in the cozy rainy café."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "cat": true,
+    "café": false,
+    "nap": false
+   }
+  },
+  {
+   "id": "j03",
+   "set": "judge10",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Deliver the startup pitch to investors.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "startup pitch"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "city",
+     "mood": "calm",
+     "setting": "Inside a glass skyscraper"
+    },
+    "title": "Startup Pitch to Investors",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Deliver the startup pitch to investors."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "investor": false,
+    "skyscraper": false,
+    "pitch": false
+   }
+  },
+  {
+   "id": "j04",
+   "set": "judge10",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Walk the dog along the beach and eat an ice cream.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "dog"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "beach",
+     "mood": "calm",
+     "setting": "Along the beach"
+    },
+    "title": "Dog Walk and Ice Cream",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Walk the dog along the beach and eat an ice cream."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "dog": true,
+    "ice cream": false,
+    "beach": false,
+    "walk": false
+   }
+  },
+  {
+   "id": "j05",
+   "set": "judge10",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "shooter",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 4,
+     "description": "Pop ten balloons at a birthday party.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "knight"
+     },
+     {
+      "count": 4,
+      "id": "target",
+      "kind": "target",
+      "label": "target"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "balloons"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "mood": "action",
+     "setting": "birthday party"
+    },
+    "title": "Pop Ten Balloons",
+    "tutorial": {
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+     "goalLine": "Pop ten balloons at a birthday party."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "balloon": false,
+    "birthday party": false,
+    "pop": false
+   }
+  },
+  {
+   "id": "j06",
+   "set": "judge10",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "throw",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 3,
+     "description": "Help the chef flip the pancakes and land them cleanly.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "chef"
+     },
+     {
+      "count": 3,
+      "id": "target",
+      "kind": "target",
+      "label": "pancakes"
+     },
+     {
+      "count": 1,
+      "id": "ball",
+      "kind": "item",
+      "label": "ball"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "mood": "playful",
+     "setting": "busy kitchen"
+    },
+    "title": "Chef's Pancake Flip",
+    "tutorial": {
+     "controlsHint": "Hold to power up, drag up or down to aim, let go to throw.",
+     "goalLine": "Help the chef flip the pancakes and land them cleanly."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "chef": false,
+    "pancake": false,
+    "kitchen": false,
+    "flip": false
+   }
+  },
+  {
+   "id": "j07",
+   "set": "judge10",
+   "spec": {
+    "archetype": "collect_exit",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "mechanics": [
+     {
+      "id": "collectible",
+      "params": {
+       "count": 5,
+       "counter": "collected",
+       "role": "mushroom"
+      }
+     },
+     {
+      "id": "zone_trigger",
+      "params": {
+       "effect": "win",
+       "role": "portal",
+       "when": "enter"
+      }
+     }
+    ],
+    "objective": {
+     "count": 5,
+     "description": "Hoard acorns before winter comes.",
+     "kind": "collect",
+     "role": "mushroom"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "squirrel"
+     },
+     {
+      "count": 5,
+      "id": "mushroom",
+      "kind": "collectible",
+      "label": "glowing mushroom"
+     },
+     {
+      "count": 1,
+      "id": "portal",
+      "kind": "exit",
+      "label": "stone portal"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 90,
+    "theme": {
+     "look": "forest",
+     "mood": "calm",
+     "setting": "A forest before winter comes"
+    },
+    "title": "A Squirrel's Winter Hoard",
+    "tutorial": {
+     "controlsHint": "Tap a glowing mushroom to walk to it. Tap again to pick it up.",
+     "goalLine": "Hoard acorns before winter comes."
+    },
+    "verification": [
+     {
+      "actions": [
+       {
+        "actionId": "pickup",
+        "target": "mushroom"
+       }
+      ],
+      "assert": {
+       "counters": {
+        "collected": 5
+       },
+       "firedMechanics": [
+        "collectible"
+       ]
+      },
+      "id": "fifth_opens_portal",
+      "kind": "keypoint",
+      "mechanic": "collectible",
+      "setup": {
+       "counters": {
+        "collected": 4
+       }
+      }
+     },
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     },
+     {
+      "assert": {
+       "replayEqual": true
+      },
+      "id": "replay",
+      "kind": "replay"
+     }
+    ]
+   },
+   "seen": {
+    "squirrel": false,
+    "acorn": false,
+    "winter": false,
+    "hoard": false
+   }
+  },
+  {
+   "id": "j08",
+   "set": "judge10",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "shooter",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 4,
+     "description": "Defend the crystal tower from flying skeletons.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "wizard"
+     },
+     {
+      "count": 4,
+      "id": "target",
+      "kind": "target",
+      "label": "target"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "flying skeletons"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "castle",
+     "mood": "action",
+     "setting": "At a crystal tower"
+    },
+    "title": "Wizard Defends Crystal Tower",
+    "tutorial": {
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+     "goalLine": "Defend the crystal tower from flying skeletons."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "wizard": true,
+    "skeleton": false,
+    "tower": true,
+    "defend": false
+   }
+  },
+  {
+   "id": "j09",
+   "set": "judge10",
+   "spec": {
+    "archetype": "combat_lite",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "shooter",
+    "controlParams": {
+     "difficulty": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "count": 4,
+     "description": "Burn down villages and dodge arrows from knights.",
+     "kind": "defeat_targets",
+     "role": "target"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "dragon"
+     },
+     {
+      "count": 4,
+      "id": "target",
+      "kind": "target",
+      "label": "target"
+     },
+     {
+      "count": 1,
+      "id": "enemy",
+      "kind": "hazard",
+      "label": "villages"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "city",
+     "mood": "action",
+     "setting": "Villages defended by knights firing arrows"
+    },
+    "title": "Dragon Burns Down Villages",
+    "tutorial": {
+     "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires.",
+     "goalLine": "Burn down villages and dodge arrows from knights."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "dragon": false,
+    "knight": false,
+    "arrow": false,
+    "village": false,
+    "dodge": false
+   }
+  },
+  {
+   "id": "j10",
+   "set": "judge10",
+   "spec": {
+    "archetype": "hazard_crossing",
+    "budgets": {
+     "maxEntities": 40,
+     "maxRules": 120,
+     "maxTriangles": 200000
+    },
+    "control": "runner",
+    "controlParams": {
+     "density": "normal",
+     "lengthM": 250,
+     "speed": "normal"
+    },
+    "mechanics": [],
+    "objective": {
+     "description": "Escape the goblin castle through the dark forest.",
+     "kind": "reach",
+     "role": "finish"
+    },
+    "roles": [
+     {
+      "count": 1,
+      "id": "player",
+      "kind": "player",
+      "label": "elf princess"
+     },
+     {
+      "count": 1,
+      "id": "obstacle",
+      "kind": "hazard",
+      "label": "goblin castle"
+     },
+     {
+      "count": 1,
+      "id": "coin",
+      "kind": "collectible",
+      "label": "coin"
+     },
+     {
+      "count": 1,
+      "id": "finish",
+      "kind": "exit",
+      "label": "finish line"
+     }
+    ],
+    "schema": "gamespec.v1",
+    "targetDurationSec": 60,
+    "theme": {
+     "look": "forest",
+     "mood": "energetic",
+     "setting": "A dark forest outside a goblin castle"
+    },
+    "title": "Elf Princess: Escape from the Goblin Castle",
+    "tutorial": {
+     "controlsHint": "Tap or Space to jump, swipe or arrows to change lane.",
+     "goalLine": "Escape the goblin castle through the dark forest."
+    },
+    "verification": [
+     {
+      "assert": {
+       "runState": "won"
+      },
+      "id": "winnable",
+      "kind": "reachability"
+     }
+    ]
+   },
+   "seen": {
+    "elf princess": false,
+    "goblin": true,
+    "forest": true,
+    "escape": false
+   }
+  }
+ ]
+}
