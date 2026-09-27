@@ -50,16 +50,17 @@ const RESPAWN = [HEADER.respawnX, HEADER.respawnY, HEADER.respawnZ] as const;
 
 /**
  * Změna, kterou třída efektu slibuje. `after` je stav hned po tom efektu (stopa
- * jádra), `before` stav na začátku tiku; `null` = efekt se provedl naprázdno.
- * Výsledek hry (`win` / `lose`) rozhodne až konec tiku a posun těla po `push`
- * / `throwHeld` další tiky – ty měří volající.
+ * jádra); `null` = efekt se provedl naprázdno. Výsledek hry (`win` / `lose`)
+ * rozhodne až konec tiku a posun těla po `push` / `throwHeld` další tiky – ty
+ * měří volající.
  *
- * Tělo a držení (`spawn`, `despawn`, `grab`, `release`, `toggle`) se soudí
- * podmínkou na `after`, ne srovnáním s `before`: jádro je ohlásí jen za
- * provedený efekt, a co se v tiku stalo dřív (míč zanikl, spawn dostal jeho
- * slot), by srovnání se začátkem tiku schovalo (revize fáze 1 P30B).
+ * Mimo čítače se všechno soudí podmínkou na `after`, ne srovnáním se začátkem
+ * tiku: jádro efekt ohlásí jen za provedenou změnu, a co se v tiku stalo dřív
+ * (míč zanikl a spawn dostal jeho slot, hráč vyběhl ze startu, první značka
+ * posunula bod návratu), by srovnání se začátkem tiku schovalo nebo přičetlo
+ * (revize fáze 1 P30B, R1).
  */
-function changeOf(effect: ArcadeEffect, before: ArcadeState, after: ArcadeState, tick: number): string | null {
+function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number): string | null {
   const at = `at tick ${String(tick)}`;
   // Čítač jádro posune přesně o `amount`; jiné zdroje téhož tiku (běžec boduje minci sám) se nepočítají.
   const counter = (name: keyof typeof COUNTER, amount: number): string | null =>
@@ -86,27 +87,29 @@ function changeOf(effect: ArcadeEffect, before: ArcadeState, after: ArcadeState,
       }
       return null;
     }
+    // Kdo se držel na začátku tiku, důkaz nejmenuje: v tiku se to mohlo změnit (R1).
     case 'grab':
-      return heldOf(after) === effect.body ? `held ${heldName(heldOf(before))}→${heldName(heldOf(after))} ${at}` : null;
+      return heldOf(after) === effect.body ? `grabbed ${heldName(effect.body)} ${at}` : null;
     case 'release':
-      return heldOf(after) === -1 ? `held ${heldName(heldOf(before))}→nothing ${at}` : null;
+      return heldOf(after) === -1 ? `let go ${at}` : null;
     case 'toggle': {
-      // Jádro přepnuté tělo v tiku označí, ať ho druhé přepnutí nevrátí.
-      let switched = 0;
+      // Jádro přepnuté tělo označí, ať ho druhé přepnutí nevrátí. Příznak zůstává z dřívějších tiků
+      // i u kopií předlohy, proto důkaz tělesa nepočítá – že se v tiku něco přeplo, ručí stopa jádra.
       for (let body = 0; body < (after[HEADER.bodyCount] as number); body += 1) {
         const base = bodyBase(body);
-        if (after[base + BODY.role] === effect.role && ((after[base + BODY.flags] as number) & FLAG.switched) !== 0) switched += 1;
+        if (after[base + BODY.role] === effect.role && ((after[base + BODY.flags] as number) & FLAG.switched) !== 0) return `role ${String(effect.role)} switched ${at}`;
       }
-      return switched === 0 ? null : `${String(switched)} ${switched === 1 ? 'body' : 'bodies'} of role ${String(effect.role)} switched ${at}`;
+      return null;
     }
     case 'respawn': {
+      // Návrat odjinud hlásí jádro (i hráči, který tik začal na bodu návratu a pak se pohnul, R1).
       const p = bodyBase(after[HEADER.player] as number);
       const home = [BODY.x, BODY.y, BODY.z].every((slot, axis) => after[p + slot] === after[RESPAWN[axis] as number]);
-      const moved = [BODY.x, BODY.y, BODY.z].some((slot) => before[p + slot] !== after[p + slot]);
-      return home && moved ? `player back at the respawn point ${at}` : null;
+      return home ? `player back at the respawn point ${at}` : null;
     }
     case 'checkpoint':
-      return RESPAWN.every((slot) => before[slot] === after[slot]) ? null : `respawn point moved ${at}`;
+      // Posun bodu návratu hlásí jádro; srovnání se začátkem tiku by za posun vydalo i druhou značku na totéž místo.
+      return `respawn point moved ${at}`;
     case 'push':
     case 'throwHeld':
       return null;
@@ -121,8 +124,23 @@ function motionOf(verb: string, effect: ArcadeEffect, before: ArcadeState, tick:
   return { verb, body, x: before[base + BODY.x] as number, y: before[base + BODY.y] as number, z: before[base + BODY.z] as number, tick };
 }
 
-/** Ujelo tělo od výstřelu aspoň jednotku? Celočíselně, ať výsledek nezávisí na stroji. */
-function movedOf(motion: Motion, state: ArcadeState): string | null {
+/**
+ * Jak dlouho po výstřelu `push` / `throwHeld` se posun těla počítá (R1). Strčené tělo
+ * (160 j/tik, tření 8 j/tik) ujede metr za 8 tiků a do 20 se zastaví, hozené za 5.
+ */
+const MOTION_TICKS = 20;
+
+/**
+ * Okno pohybu (R1): jen živé, nenesené tělo a jen `MOTION_TICKS` po výstřelu. Jinak sloveso
+ * dokázal kterýkoli pozdější posun – kámen, se kterým push nehnul, pak nese hráč a hodí.
+ * Exportované pro test.
+ */
+export function motionOpen(motion: Motion, state: ArcadeState, tick: number): boolean {
+  return tick - motion.tick <= MOTION_TICKS && alive(state, motion.body) && heldOf(state) !== motion.body;
+}
+
+/** Ujelo tělo od výstřelu aspoň jednotku? Celočíselně, ať výsledek nezávisí na stroji. Exportované pro test. */
+export function movedOf(motion: Motion, state: ArcadeState): string | null {
   const base = bodyBase(motion.body);
   const dx = (state[base + BODY.x] as number) - motion.x;
   const dy = (state[base + BODY.y] as number) - motion.y;
@@ -168,7 +186,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
       endings.push([verb, effect.kind === 'win' ? 'won' : 'lost']);
       return;
     }
-    const change = changeOf(effect, before, state, now);
+    const change = changeOf(effect, state, now);
     if (change !== null) changes.set(verb, change);
     const motion = change === null ? motionOf(verb, effect, before, now) : null;
     if (motion !== null && !motions.some((known) => known.verb === verb && known.body === motion.body)) motions.push(motion);
@@ -190,9 +208,10 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
     endings.length = 0;
     for (let i = motions.length - 1; i >= 0; i -= 1) {
       const motion = motions[i] as Motion;
-      const moved = changes.has(motion.verb) ? null : movedOf(motion, state);
+      const open = motionOpen(motion, state, tick);
+      const moved = !open || changes.has(motion.verb) ? null : movedOf(motion, state);
       if (moved !== null) changes.set(motion.verb, moved);
-      if (changes.has(motion.verb)) motions.splice(i, 1);
+      if (!open || changes.has(motion.verb)) motions.splice(i, 1);
     }
   }
   // Robot, který na horizontu nevyhrál, konec neohlásil: svět Rapieru uvolnit hned.

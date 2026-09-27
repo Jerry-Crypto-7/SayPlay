@@ -20,10 +20,10 @@ import pushCrate from '../__fixtures__/rules/push-crate.json';
 import setLantern from '../__fixtures__/rules/set-lantern.json';
 import throwRock from '../__fixtures__/rules/throw-rock.json';
 import { arcadeWorldOf } from '../compile';
-import type { ArcadeWorld } from '../contract';
-import { replay } from '../kernel';
+import { BODY, FLAG, HEADER, UNIT, bodyBase, type ArcadeWorld } from '../contract';
+import { instantiate, replay } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
-import { arcadeReport, verifyArcade } from '../verify';
+import { arcadeReport, motionOpen, movedOf, verifyArcade } from '../verify';
 
 function world(input: unknown, seed = 1): ArcadeWorld {
   const spec = readGameSpec(input);
@@ -54,11 +54,13 @@ describe('a verb is proved by the state change its effect class promises', () =>
     ['win', onCoin('finish', [{ win: true }]), 'finish', /^won at tick \d+$/],
     ['lose', onCoin('trip', [{ lose: true }]), 'trip', /^lost at tick \d+$/],
     ['checkpoint', onCoin('mark', [{ checkpoint: 'other' }]), 'mark', /^respawn point moved at tick \d+$/],
-    ['grab', throwRock, 'pick', /^held nothing→body \d+ at tick \d+$/],
-    ['release', setLantern, 'set', /^held body \d+→nothing at tick \d+$/],
+    // Kdo se držel na začátku tiku, důkaz nejmenuje: v tiku se to mohlo změnit (R1).
+    ['grab', throwRock, 'pick', /^grabbed body \d+ at tick \d+$/],
+    ['release', setLantern, 'set', /^let go at tick \d+$/],
     ['throwHeld', throwRock, 'throw', /^body \d+ moved \d+\.\d m after tick \d+$/],
     ['push', pushCrate, 'push', /^body \d+ moved \d+\.\d m after tick \d+$/],
-    ['toggle', leverBridge, 'pull', /^\d+ bod(y|ies) of role \d+ switched at tick \d+$/],
+    // Bez počtu: příznak `switched` zůstává i z dřívějších tiků a u kopií předlohy (R1).
+    ['toggle', leverBridge, 'pull', /^role \d+ switched at tick \d+$/],
   ];
   for (const [cls, input, verb, evidence] of cases) {
     it(`${cls}: "${verb}" is proved with evidence of the change`, () => {
@@ -70,6 +72,12 @@ describe('a verb is proved by the state change its effect class promises', () =>
   it('respawn: the player put back at the respawn point is the change', () => {
     // Robot sebere minci a jádro ho vrátí na start; běh pak na horizontu nedoběhne, důkaz se ale měří.
     const { proof } = proofOf(onCoin('rewind', [{ respawn: true }]), 'rewind');
+    expect(proof).toMatchObject({ fired: true, changed: true, evidence: expect.stringMatching(/^player back at the respawn point at tick \d+$/) });
+  });
+
+  it('respawn: a player who left the respawn point during the tick and was put back is the change', () => {
+    // Každý tik: běžec vyrazí ze startu a pravidlo ho vrátí. Na začátku i na konci tiku stojí na startu (R1).
+    const { proof } = proofOf({ ...runnerFixture, rules: [{ id: 'rewind', verb: 'rewind', when: { every: 1 }, do: [{ respawn: true }] }] }, 'rewind');
     expect(proof).toMatchObject({ fired: true, changed: true, evidence: expect.stringMatching(/^player back at the respawn point at tick \d+$/) });
   });
 
@@ -123,6 +131,68 @@ describe('a rule that fires without changing anything does not prove its verb', 
     const { verdict, proof } = proofOf(input, 'give');
     expect(proof).toMatchObject({ changed: true, evidence: expect.stringMatching(/^body \d+ gone/) });
     expect(verdict.failures).toEqual([]);
+  });
+
+  // Revize fáze 1 P30B (R1): push, který přebije `grab` v tomtéž tiku, nic neudělal – kámen pak nese hráč
+  // a později letí hodem. Okno pohybu měří jen živé, nenesené tělo a po `MOTION_TICKS` se zavře.
+  it('a push the grab overrides in the same tick proves nothing, however far the rock later goes', () => {
+    const nudge = { id: 'nudge', verb: 'nudge', when: { contact: ['player', 'rock'] }, do: [{ push: 'other' }] };
+    const { verdict, proof } = proofOf({ ...throwRock, rules: [nudge, ...throwRock.rules] }, 'nudge');
+    expect(verdict.bot.outcome).toBe('won');
+    expect(proof).toMatchObject({ fired: true, changed: false, evidence: null });
+    expect(verdict.failures).toEqual([expect.stringContaining('VERB_NO_EFFECT:nudge')]);
+  });
+
+  it('a body that moved less than a metre inside the window proves nothing', () => {
+    const state = instantiate(world(pushCrate));
+    const crate = (state[HEADER.player] as number) === 0 ? 1 : 0;
+    const base = bodyBase(crate);
+    const motion = { verb: 'push', body: crate, x: state[base + BODY.x] as number, y: state[base + BODY.y] as number, z: state[base + BODY.z] as number, tick: 0 };
+    expect(movedOf(motion, state)).toBeNull();
+    state[base + BODY.x] = motion.x + UNIT - 1;
+    expect(movedOf(motion, state)).toBeNull();
+    state[base + BODY.x] = motion.x + UNIT;
+    expect(movedOf(motion, state)).toBe(`body ${String(crate)} moved 1.0 m after tick 0`);
+  });
+
+  it('the motion window closes on a held or dead body and after 20 ticks', () => {
+    const state = instantiate(world(pushCrate));
+    const crate = (state[HEADER.player] as number) === 0 ? 1 : 0;
+    const motion = { verb: 'push', body: crate, x: 0, y: 0, z: 0, tick: 100 };
+    expect(motionOpen(motion, state, 120)).toBe(true);
+    expect(motionOpen(motion, state, 121)).toBe(false);
+    state[HEADER.held] = crate + 1;
+    expect(motionOpen(motion, state, 101)).toBe(false);
+    state[HEADER.held] = 0;
+    state[bodyBase(crate) + BODY.flags] = (state[bodyBase(crate) + BODY.flags] as number) & ~FLAG.alive;
+    expect(motionOpen(motion, state, 101)).toBe(false);
+  });
+
+  it('damage 0 never reaches the robot: the spec refuses it', () => {
+    // Revize chtěla negativní test `damage: 0`; schéma pravidel ho odmítne dřív, než by šel změřit.
+    expect(() => world(onCoin('sting', [{ damage: 0 }]))).toThrow(/damage: Too small/);
+  });
+
+  it('a win the same tick overrules with a loss is no change for the winning verb', () => {
+    const input = { ...runnerFixture, rules: [
+      { id: 'finish', verb: 'finish', when: { contact: ['player', 'coin'] }, do: [{ win: true }] },
+      { id: 'trip', verb: 'trip', when: { contact: ['player', 'coin'] }, do: [{ lose: true }] },
+    ] };
+    const verdict = verifyArcade(world(input));
+    expect(verdict.bot.outcome).toBe('lost');
+    expect(verdict.verbs.find((proof) => proof.verb === 'finish')).toMatchObject({ fired: true, changed: false });
+    expect(verdict.verbs.find((proof) => proof.verb === 'trip')).toMatchObject({ changed: true, evidence: expect.stringMatching(/^lost at tick \d+$/) });
+  });
+
+  it('a checkpoint onto the respawn point it already is proves nothing', () => {
+    // `mark` posune bod návratu na minci, `remark` v tomtéž tiku na totéž místo – druhý nic nezměnil.
+    const input = { ...runnerFixture, rules: [
+      { id: 'mark', verb: 'mark', when: { contact: ['player', 'coin'] }, do: [{ checkpoint: 'other' }] },
+      { id: 'remark', verb: 'remark', when: { contact: ['player', 'coin'] }, do: [{ checkpoint: 'other' }] },
+    ] };
+    const verdict = verifyArcade(world(input));
+    expect(verdict.verbs.find((proof) => proof.verb === 'mark')).toMatchObject({ changed: true });
+    expect(verdict.verbs.find((proof) => proof.verb === 'remark')).toMatchObject({ changed: false, evidence: null });
   });
 
   it('a verb that never fires stays VERB_UNPROVED, not VERB_NO_EFFECT', () => {
