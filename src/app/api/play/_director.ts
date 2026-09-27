@@ -20,7 +20,7 @@ import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import type { UpstreamRequest } from '@/model/prompt';
 import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
-import { costUsd, processSpendCap } from '@/server/spend-cap';
+import { costUsd, type Pricing, processSpendCap, type Reserved } from '@/server/spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
 
 import { acquireSlot, releaseSlot } from '../worldstream/sessions/route';
@@ -142,6 +142,23 @@ async function callerAllows(caller: string, env: Record<string, string | undefin
   }
 }
 
+/**
+ * Volání a vyrovnání jeho rezervace. Zrušené volání nemá účtenku a strhne celou
+ * rezervaci (R1, rozhodnuto): poskytovatel mohl tokeny spálit až do zrušení
+ * a odhad z uplynulého času by byl nižší číslo, tedy nebezpečná strana stropu.
+ * U předplatného je cena 0 a mez drží počet volání, takže to nic nestojí.
+ */
+async function billed(reservation: Reserved, pricing: Pricing, run: () => Promise<GenerationOutcome>): Promise<GenerationOutcome> {
+  try {
+    const outcome = await run();
+    await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, pricing));
+    return outcome;
+  } catch (thrown) {
+    await reservation.settle('unknown');
+    throw thrown;
+  }
+}
+
 /** Živá větev obalená stropem; `null` = model se volat nebude. */
 async function cappedBranch(
   env: Record<string, string | undefined>,
@@ -174,26 +191,20 @@ async function cappedBranch(
         onCallerLimit();
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: "the caller's daily director calls are used up", usage: null };
       }
-      // Zrušený primár nemá účtenku a strhne celou rezervaci (R1, rozhodnuto):
-      // poskytovatel mohl tokeny spálit až do zrušení a odhad z uplynulého času
-      // by byl nižší číslo, tedy nebezpečná strana stropu. U předplatného je
-      // cena 0 a mez drží počet volání, takže to nic nestojí.
-      const primary: Call = async (signal) => {
-        try {
-          const outcome = await bounded.generate(call, signal);
-          await reservation.settle(outcome.usage === null ? 'unknown' : costUsd(outcome.usage, branch.pricing));
-          return outcome;
-        } catch (thrown) {
-          await reservation.settle('unknown');
-          throw thrown;
-        }
-      };
-      // Záloha je lokální a zdarma: mimo strop i kvótu, jen v mezích rozpočtu trasy.
-      const local = config.fallback;
+      const primary: Call = (signal) => billed(reservation, branch.pricing, () => bounded.generate(call, signal));
+      // Záloha mimo kvótu volajícího, jen v mezích rozpočtu trasy. Placená
+      // (`openai:`, P30A T2) jde přes tentýž strop; lokální llama.cpp má
+      // nejhorší případ 0, takže ji strop nepočítá a knihu nepotřebuje.
+      const backup = config.fallback;
       const fallback: Call | null =
-        local === undefined
+        backup === undefined
           ? null
-          : (signal) => upstreamBranch({ ...local, timeoutMs: Math.max(1, Math.min(local.timeoutMs, deadline - Date.now())) }).generate(call, signal);
+          : async (signal) => {
+              const side = upstreamBranch({ ...backup, timeoutMs: Math.max(1, Math.min(backup.timeoutMs, deadline - Date.now())) });
+              const held = await cap.reserve(side.worstCaseUsd(call));
+              if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the fallback call', usage: null };
+              return billed(held, backup.pricing, () => side.generate(call, signal));
+            };
       return hedged(primary, fallback, hedgeMs(env));
     },
   };

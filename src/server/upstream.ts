@@ -177,8 +177,19 @@ const DEFAULT_CLI_TIMEOUT_MS = 240_000;
 export const LLAMACPP_PREFIX = 'llamacpp:';
 const DEFAULT_FALLBACK_MAX_OUTPUT_TOKENS = 4000;
 
+/**
+ * **Čtvrtý transport: hostovaný poskytovatel s OpenAI chat API** (P30A T2).
+ * `openai:<kořen API>` (Together, Fireworks, OpenAI) volá tentýž
+ * `/v1/chat/completions` jako llama.cpp, jen se platí po tokenech: ceník
+ * z prostředí a tentýž strop utrácení jako každé placené volání. Primár se
+ * konfiguruje jako dřív (`WORLDSMITH_MODEL_*`), placená záloha vlastními
+ * `WORLDSMITH_FALLBACK_*` včetně ceny.
+ */
+export const OPENAI_PREFIX = 'openai:';
+
 function fallbackConfigFromEnv(env: Record<string, string | undefined>): UpstreamConfig | null {
   const endpoint = (env.WORLDSMITH_FALLBACK_ENDPOINT ?? '').trim();
+  if (/^openai:https?:\/\/\S+$/.test(endpoint)) return hostedFallbackFromEnv(endpoint, env);
   if (!/^llamacpp:https?:\/\/\S+$/.test(endpoint)) return null;
   return {
     endpoint,
@@ -190,6 +201,31 @@ function fallbackConfigFromEnv(env: Record<string, string | undefined>): Upstrea
     maxOutputTokens: positiveNumber(env.WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS, DEFAULT_FALLBACK_MAX_OUTPUT_TOKENS),
     timeoutMs: positiveNumber(env.WORLDSMITH_FALLBACK_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
     profile: 'subscription',
+    callCap: null,
+  };
+}
+
+/**
+ * Placená záloha (P30A T2). Táž doktrína jako primár v `upstreamConfigFromEnv`:
+ * bez klíče, modelu nebo kladné ceny výstupu to není záloha zdarma, ale
+ * nekonfigurace – a nekonfigurovaná záloha se nezapne vůbec.
+ */
+function hostedFallbackFromEnv(endpoint: string, env: Record<string, string | undefined>): UpstreamConfig | null {
+  const apiKey = (env.WORLDSMITH_FALLBACK_KEY ?? '').trim();
+  const model = (env.WORLDSMITH_FALLBACK_MODEL ?? '').trim();
+  const usdPerMTokOut = Number(env.WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT);
+  const maxOutputTokens = positiveNumber(env.WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS, DEFAULT_MAX_OUTPUT_TOKENS);
+  if (apiKey === '' || model === '') return null;
+  if (!Number.isFinite(usdPerMTokOut) || usdPerMTokOut <= 0 || (maxOutputTokens * usdPerMTokOut) / 1_000_000 <= 0) return null;
+  return {
+    endpoint,
+    apiKey,
+    model,
+    effort: effortLevel(env.WORLDSMITH_FALLBACK_EFFORT),
+    pricing: { usdPerMTokIn: inputPrice(env.WORLDSMITH_FALLBACK_USD_PER_MTOK_IN, usdPerMTokOut), usdPerMTokOut },
+    maxOutputTokens,
+    timeoutMs: positiveNumber(env.WORLDSMITH_FALLBACK_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    profile: 'api',
     callCap: null,
   };
 }
@@ -305,10 +341,11 @@ export function effortForCall(call: GenerationCall, config: UpstreamConfig): Eff
  * u předplatného vyžadoval cenu, která neexistuje, a překlep spadlý na
  * `subscription` by u placeného klíče **odpojil dolarový strop**. Nenastavená
  * proměnná je `api` — to je ta přísnější z těch dvou a je to dnešní chování.
+ * `metered` (P30A) je jiné jméno pro `api`: metrovaná cesta po tokenech.
  */
 function profileFrom(raw: string | undefined): UpstreamProfile | null {
   const value = (raw ?? '').trim().toLowerCase();
-  if (value === '') return 'api';
+  if (value === '' || value === 'metered') return 'api';
   return value === 'api' || value === 'subscription' ? value : null;
 }
 
@@ -937,52 +974,85 @@ function withCancel(timeoutMs: number, signal: AbortSignal | undefined): AbortSi
   return signal === undefined ? AbortSignal.timeout(timeoutMs) : AbortSignal.any([AbortSignal.timeout(timeoutMs), signal]);
 }
 
-async function generateViaLlamaCpp(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
-  const root = config.endpoint.slice(LLAMACPP_PREFIX.length).replace(/\/+$/, '');
+/**
+ * Stavy, u kterých poskytovatel nás, ne požadavek: špatný klíč, vyčerpaný limit
+ * nebo kredit. Pro režiséra je to výpadek modelu (záloha smí převzít), ne vadná
+ * věta – proto `UPSTREAM_UNAVAILABLE` jako 5xx, ostatní 4xx zůstávají odmítnutím.
+ */
+const REFUSED_US: Readonly<Record<number, string>> = {
+  401: 'the key was refused',
+  403: 'the key was refused',
+  429: 'rate limited or out of credit',
+};
+
+/**
+ * OpenAI chat API pro llama.cpp (`llamacpp:`) i hostovaného poskytovatele
+ * (`openai:`). Liší se tím, co hostovaný poskytovatel navíc chce: povinný klíč,
+ * `reasoning_effort` a u OpenAI API `max_completion_tokens`.
+ */
+async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
+  const hosted = config.endpoint.startsWith(OPENAI_PREFIX);
+  const name = hosted ? 'hosted' : 'llama.cpp';
+  const root = config.endpoint.slice(hosted ? OPENAI_PREFIX.length : LLAMACPP_PREFIX.length).replace(/\/+$/, '');
   const schema = call.request.outputSchema;
+  const format = schema === undefined ? { type: 'json_object' } : { type: 'json_schema', json_schema: { name: 'answer', strict: true, schema } };
+  const messages = [
+    { role: 'system', content: call.request.system },
+    { role: 'user', content: call.request.user },
+  ];
+  // Rozumující modely OpenAI API `max_tokens` i jinou teplotu než výchozí odmítnou
+  // čtyřistovkou; ostatní poskytovatelé dokumentují `max_tokens`. Teplota se
+  // hostovanému poskytovateli neposílá – gpt-oss ji doporučuje nechat výchozí.
+  const tokenField = hosted && new URL(root).hostname === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens';
+  const body = hosted
+    ? { model: config.model, [tokenField]: config.maxOutputTokens, reasoning_effort: effortForCall(call, config), messages, response_format: format }
+    : { model: config.model, max_tokens: config.maxOutputTokens, temperature: 0, messages, response_format: format };
   let response: Response;
   try {
     response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(`${root}/v1/chat/completions`, {
       method: 'POST',
       headers: config.apiKey === '' ? { 'content-type': 'application/json' } : { 'content-type': 'application/json', authorization: `Bearer ${config.apiKey}` },
-      body: JSON.stringify({
-        model: config.model,
-        max_tokens: config.maxOutputTokens,
-        temperature: 0,
-        messages: [
-          { role: 'system', content: call.request.system },
-          { role: 'user', content: call.request.user },
-        ],
-        response_format: schema === undefined ? { type: 'json_object' } : { type: 'json_schema', json_schema: { name: 'answer', strict: true, schema } },
-      }),
+      body: JSON.stringify(body),
       signal: withCancel(config.timeoutMs, signal),
     }));
   } catch (thrown) {
-    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the llama.cpp call did not complete: ${(thrown as Error).message}`, usage: null };
+    const error = thrown as Error;
+    const why = error.name === 'TimeoutError' ? `timed out after ${String(config.timeoutMs)} ms` : error.message;
+    return { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: `the ${name} call did not complete: ${why}`, usage: null };
   }
-  if (!response.ok)
-    return { ok: false, reason: response.status < 500 ? 'UPSTREAM_REJECTED' : 'UPSTREAM_UNAVAILABLE', detail: `upstream answered ${response.status}`, usage: null };
+  if (!response.ok) {
+    const refused = REFUSED_US[response.status];
+    return {
+      ok: false,
+      reason: response.status >= 500 || refused !== undefined ? 'UPSTREAM_UNAVAILABLE' : 'UPSTREAM_REJECTED',
+      detail: `upstream answered ${response.status}${refused === undefined ? '' : `: ${refused}`}`,
+      usage: null,
+    };
+  }
 
   let payload: { choices?: { message?: { content?: unknown }; finish_reason?: unknown }[]; usage?: { prompt_tokens?: unknown; completion_tokens?: unknown } };
   try {
     payload = (await observePhaseAsync(serverPhaseObserver, 'provider-response-json', () => response.json())) as typeof payload;
   } catch (thrown) {
-    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the llama.cpp answer is not JSON: ${(thrown as Error).message}`, usage: null };
+    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the ${name} answer is not JSON: ${(thrown as Error).message}`, usage: null };
   }
   const choice = payload?.choices?.[0];
+  // Jen `content`: gpt-oss přes API vrací vedle něj uvažování (`reasoning`,
+  // `reasoning_content`), a to je úvaha, ne odpověď – ani když `content` chybí.
   const text = choice?.message?.content;
-  if (typeof text !== 'string') return { ok: false, reason: 'MALFORMED_RESPONSE', detail: 'the llama.cpp answer carries no message', usage: null };
+  if (typeof text !== 'string') return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the ${name} answer carries no message`, usage: null };
 
+  // `completion_tokens` zahrnuje i tokeny uvažování, takže cena je celá.
   const usage = readableUsage(usageOf({ usage: { input_tokens: payload.usage?.prompt_tokens, output_tokens: payload.usage?.completion_tokens } }), text, config.maxOutputTokens);
   // Useknutá odpověď se nedoplňuje, stejně jako na cestě Messages.
   const truncated = choice?.finish_reason === 'length';
-  let body: unknown;
+  let answer: unknown;
   try {
-    body = observePhase(serverPhaseObserver, 'provider-output-json-parse', () => (truncated ? JSON.parse(text) : parseAnswerText(text)));
+    answer = observePhase(serverPhaseObserver, 'provider-output-json-parse', () => (truncated ? JSON.parse(text) : parseAnswerText(text)));
   } catch (thrown) {
-    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the llama.cpp text is not JSON${truncated ? ' (cut at max_tokens)' : ''}: ${(thrown as Error).message}`, usage, raw: text };
+    return { ok: false, reason: 'MALFORMED_RESPONSE', detail: `the ${name} text is not JSON${truncated ? ' (cut at max_tokens)' : ''}: ${(thrown as Error).message}`, usage, raw: text };
   }
-  return { ok: true, body, usage, provenance: { branch: UPSTREAM_BRANCH_ID, source: 'llamacpp-http', synthetic: false, model: config.model } };
+  return { ok: true, body: answer, usage, provenance: { branch: UPSTREAM_BRANCH_ID, source: hosted ? 'hosted-http' : 'llamacpp-http', synthetic: false, model: config.model } };
 }
 
 async function generate(
@@ -992,7 +1062,7 @@ async function generate(
   signal?: AbortSignal,
 ): Promise<GenerationOutcome> {
   if (config.endpoint === CODEX_CLI_ENDPOINT) return generateViaCodexCli(call, config, signal);
-  if (config.endpoint.startsWith(LLAMACPP_PREFIX)) return generateViaLlamaCpp(call, config, fetchImpl, signal);
+  if (config.endpoint.startsWith(LLAMACPP_PREFIX) || config.endpoint.startsWith(OPENAI_PREFIX)) return generateViaChat(call, config, fetchImpl, signal);
   let response: Response;
   try {
     response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(config.endpoint, {
