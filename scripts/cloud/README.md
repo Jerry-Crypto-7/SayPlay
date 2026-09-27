@@ -20,6 +20,8 @@ Nasazené demo nesmí volat nic, co běží na autorově počítači: žádný c
    ```
 
    Vrátí 1 a vypíše jméno proměnné, když adresa míří na tunel, `127.0.0.1`, `localhost`, `codex-cli` nebo `llamacpp:`, když chybí některý dolarový strop, když je profil `subscription`, nebo když strop počtu volání (`WORLDSMITH_CALL_CAP`, `WORLDSMITH_FALLBACK_CALL_CAP`) chybí či kousne dřív než dolarový strop – u gpt-oss-20b by výchozích 200 volání skončilo po ~0,35 USD a dál by hrály jen návrhy ze slov. Hodnoty nevypisuje. `.env.production` pak smaž.
+
+   **Co kontrola nevidí:** pojmenovaný cloudflared tunel na vlastní doméně (vypadá jako běžná adresa), hodnoty označené ve Vercelu jako *sensitive* (`vercel env pull` je vrátí prázdné) a prázdné klíče (ty se sem nepíšou záměrně). Poslední slovo má proto krok 4.
 4. **Nasazení**, pak vypnout tunely a PC a zahrát na telefonu pět nových vět. Hotovo je až to, ne zelená kontrola.
 
 ## Nová panoramata

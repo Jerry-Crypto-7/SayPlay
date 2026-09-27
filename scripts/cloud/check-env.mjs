@@ -6,7 +6,8 @@
  *
  * Vrátí 1 a vypíše jméno proměnné (nikdy hodnotu – nese klíče), když:
  * - adresa (`*_ENDPOINT`, `*_URL`) míří na domácí PC nebo osobní předplatné:
- *   `trycloudflare.com`, `127.0.0.1`, `localhost`, `codex-cli`, `llamacpp:`;
+ *   `trycloudflare.com`, `127.0.0.1`, `localhost`, `codex-cli`, `llamacpp:`,
+ *   nebo na místní či soukromou adresu (`0.0.0.0`, `[::1]`, 10.x, 172.16–31.x, 192.168.x);
  * - chybí nebo je nečitelný dolarový strop `WORLDSMITH_SPEND_CAP_USD`
  *   či `WORLDSMITH_FALLBACK_SPEND_CAP_USD`;
  * - `WORLDSMITH_MODEL_PROFILE` není `api` / `metered` / prázdný – `subscription`
@@ -25,6 +26,8 @@ import { pathToFileURL } from 'node:url';
 
 /** Co v adrese znamená domácí PC (tunel, místní služba) nebo předplatné (codex-cli, llama.cpp na 3090). */
 const HOME_PC = ['trycloudflare.com', '127.0.0.1', 'localhost', 'codex-cli', 'llamacpp:'];
+/** Místní a soukromé adresy (domácí síť), které z Vercelu nikdy nejsou vidět. */
+const PRIVATE_HOST = /\/\/(0\.0\.0\.0|\[::1\]|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/;
 /** Tatáž jména jako `profileFrom()` v `src/server/upstream.ts`, bez `subscription`. */
 const PROFILES = ['', 'api', 'metered'];
 
@@ -63,7 +66,7 @@ export function checkEnv(vars) {
   const problems = [];
   for (const [name, value] of Object.entries(vars)) {
     if (!isAddress(name)) continue;
-    const hit = HOME_PC.find((word) => value.toLowerCase().includes(word));
+    const hit = HOME_PC.find((word) => value.toLowerCase().includes(word)) ?? PRIVATE_HOST.exec(value)?.[1];
     if (hit !== undefined) problems.push({ name, reason: `points at the home PC or the subscription (${hit})` });
   }
   for (const { cap } of LEDGERS) {

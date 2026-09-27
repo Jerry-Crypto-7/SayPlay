@@ -58,8 +58,17 @@ describe('checkEnv', () => {
     ['codex-cli', 'WORLDSMITH_MODEL_ENDPOINT', 'codex-cli'],
     ['llamacpp:', 'WORLDSMITH_FALLBACK_ENDPOINT', 'llamacpp:https://llm.example.com'],
     ['a local store address', 'KV_REST_API_URL', 'http://localhost:8079'],
+    ['a home-network address', 'WORLDSMITH_MODEL_ENDPOINT', 'openai:http://192.168.1.20:18767'],
+    ['a 10.x address', 'PLAY_ENV_ENDPOINT', 'http://10.0.0.5:8793'],
+    ['a 172.16-31.x address', 'PLAY_ENV_ENDPOINT', 'http://172.20.0.1:8793'],
+    ['IPv6 loopback', 'PLAY_VOICE_ENDPOINT', 'http://[::1]:8794'],
+    ['0.0.0.0', 'PLAY_ENV_ENDPOINT', 'http://0.0.0.0:8793'],
   ])('refuses an endpoint on %s', (_what, name, value) => {
     expect(names({ ...GOOD, [name]: value })).toEqual([name]);
+  });
+
+  it('keeps public hosts that only look like private ranges', () => {
+    expect(checkEnv({ ...GOOD, PLAY_ENV_ENDPOINT: 'https://172.32.0.1', WORLDSMITH_MODEL_ENDPOINT: 'openai:https://api.example.com/v10.1' })).toEqual([]);
   });
 
   it('does not read a home-PC word in a variable that is not an address', () => {
