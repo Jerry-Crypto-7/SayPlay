@@ -26,6 +26,7 @@ import { ADDONS, CONTROLS, ROLE_KINDS, readGameSpec, type ControlId, type GameRo
 import { strictSchema } from './answer-schema';
 import { rulesPromptLines } from './prompt';
 import type { DirectorRead } from './read';
+import { examplesBlock, nearestExamples } from './retrieval';
 
 const strictOf = (schema: z.ZodType): Record<string, unknown> => strictSchema(z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }) as Record<string, unknown>);
 
@@ -105,11 +106,13 @@ function startingPoint(draft: GameSpecV1): Record<string, unknown> {
   };
 }
 
-export function buildCompactRequest(sentence: string, draft: GameSpecV1): UpstreamRequest {
+/** `examples` (P30A T8): za výchozí bod 3–5 ověřených her k podobným větám; bez nich je zpráva jako dřív. */
+export function buildCompactRequest(sentence: string, draft: GameSpecV1, examples = false): UpstreamRequest {
+  const user = `${sentence.trim()}\n\nStarting point (keep or improve): ${JSON.stringify(startingPoint(draft))}`;
   return {
     model: EMISSION_MODEL,
     system: compactSystemPrompt(),
-    user: `${sentence.trim()}\n\nStarting point (keep or improve): ${JSON.stringify(startingPoint(draft))}`,
+    user: examples ? `${user}\n\n${examplesBlock(nearestExamples(sentence, draft.control ?? 'tap_go'))}` : user,
     outputSchema: COMPACT_ANSWER_SCHEMA,
   };
 }

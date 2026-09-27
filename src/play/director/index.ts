@@ -30,6 +30,7 @@ import { COMPACT_PROMPT_VERSION, buildCompactRequest, composeCompact } from './c
 import { type CriticIssue, blockingIssues, critique, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { readDirectorAnswer, unwrapAnswer } from './read';
+import { EXAMPLES_VERSION } from './retrieval';
 import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
 
 export type { FallbackReason } from '../contracts';
@@ -75,6 +76,8 @@ export interface DirectorDeps {
   readonly check?: (spec: GameSpecV1) => readonly RepairIssue[];
   /** Kompaktní první odpověď (P27D T2, `compact.ts`); opravná kola zůstávají stejná. */
   readonly compact?: boolean;
+  /** Ověřené příklady v kompaktní první odpovědi (P30A T8, `retrieval.ts`); celý GameSpec je nebere. */
+  readonly examples?: boolean;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -102,8 +105,10 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   });
 
   const compact = deps.compact === true;
-  const request = compact ? buildCompactRequest(sentence, draft) : buildDirectorRequest(sentence, draft);
-  const promptVersion = compact ? COMPACT_PROMPT_VERSION : DIRECTOR_PROMPT_VERSION;
+  const examples = compact && deps.examples === true;
+  const request = compact ? buildCompactRequest(sentence, draft, examples) : buildDirectorRequest(sentence, draft);
+  // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí.
+  const promptVersion = compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION;
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.

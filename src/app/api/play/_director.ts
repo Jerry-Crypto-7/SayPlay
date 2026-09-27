@@ -317,7 +317,9 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
       // P27D T2: kompaktní první odpověď je výchozí – živě 30/30 hratelných, p50 12 s proti 45 s
       // a věrnost `drawn` 0,727 proti 0,702 (`evals/play/fidelity/README.md`). Celý GameSpec jen na objednávku.
       const compact = process.env.PLAY_DIRECTOR_MODE !== 'full';
-      return { ...(await direct(sentence, { branch, cache, now: Date.now, check, compact })), callerLimited };
+      // P30A T8: ověřené příklady jen na objednávku, dokud T10 nezměří, jestli pomáhají.
+      const examples = process.env.PLAY_DIRECTOR_EXAMPLES === 'on';
+      return { ...(await direct(sentence, { branch, cache, now: Date.now, check, compact, examples })), callerLimited };
     } finally {
       releaseSlot('play');
     }
