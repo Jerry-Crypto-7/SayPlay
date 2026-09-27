@@ -27,7 +27,7 @@
  * Férové srovnání modelů (P30A T7) – každý model na vlastním `next start` nad
  * týmž buildem, publikace robotem jako v produkci, první hratelný snímek
  * v prohlížeči, cena za hru; souhrn do `evals/play/p30/compare-<id>.json`:
- *   npm run build && node --experimental-strip-types scripts/play-fidelity.mjs --models astra,oss20b --set dev [--concurrency 5]
+ *   npm run build && node --experimental-strip-types scripts/play-fidelity.mjs --models astra,oss20b --set dev [--concurrency 2]
  *
  * Server musí být `next start` se živou větví a
  * `PLAY_DIRECTOR_CALLS_PER_CALLER` ≥ 30, jinak denní strop volajícího utne běh
@@ -37,7 +37,7 @@
 
 import { spawn, spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -495,6 +495,9 @@ export const COMPARE_MODELS = {
   astra: { source: 'fallback', expect: /astra/i },
 };
 
+/** Kolik režií pustí dveře `play` na jedné instanci (`DOOR_CEILING.play` v `src/app/api/worldstream/sessions/route.ts`, test drží shodu). */
+export const PLAY_DOOR_SLOTS = 2;
+
 /** Proměnná primáru a její dvojče u zálohy. */
 const MODEL_VARS = [
   ['WORLDSMITH_MODEL_ENDPOINT', 'WORLDSMITH_FALLBACK_ENDPOINT'],
@@ -517,6 +520,10 @@ const MODEL_VARS = [
  * procesu (`ledgerFromEnv`): lokální server je jediný proces, strop tedy drží.
  */
 export function modelEnv(name, env, capUsd, concurrency = 1) {
+  // Nad sloty dveří by režii odmítly dveře, ne model, a souhrn by návrh připsal
+  // modelu – pomalejšímu víc, protože drží slot déle (revize hranice fáze 2).
+  if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > PLAY_DOOR_SLOTS)
+    throw new Error(`--concurrency must be an integer 1–${PLAY_DOOR_SLOTS}: one next start is one instance, and its play door runs ${PLAY_DOOR_SLOTS} director calls at once – more judges would measure the door, not the model`);
   const profile = COMPARE_MODELS[name];
   if (profile === undefined) throw new Error(`unknown model ${name}; known: ${Object.keys(COMPARE_MODELS).join(', ')}`);
   const overlay = {};
@@ -553,11 +560,11 @@ export function modelEnv(name, env, capUsd, concurrency = 1) {
   };
 }
 
-const BILLED = /\[play\] director call billed model=(\S+) usd=(unknown|\d+(?:\.\d+)?)/g;
+const BILLED = /\[play\] director call billed model=(\S+) usd=(\d+(?:\.\d+)?)/g;
 
-/** Účtenky z logu serveru (`billedLine` v `src/app/api/play/_director.ts`); `usd: null` = volání bez účtenky. */
+/** Účtenky z logu serveru (`billedLine` v `src/app/api/play/_director.ts`): co strhl strop, u volání bez účtenky celá rezervace. */
 export function billedFromLog(text) {
-  return [...text.matchAll(BILLED)].map((match) => ({ model: match[1], usd: match[2] === 'unknown' ? null : Number(match[2]) }));
+  return [...text.matchAll(BILLED)].map((match) => ({ model: match[1], usd: Number(match[2]) }));
 }
 
 /**
@@ -631,8 +638,7 @@ function modelSummary(name, { results, billed, concurrency }) {
   const finals = played.map((result) => specFidelity(result.ai?.published === true ? result.ai.spec : result.draft.spec, result.checklist));
   const inSpec = (final) => final.items.filter((item) => item.inSpec).length / final.items.length;
   const frames = (pick) => played.map(pick).filter((ms) => typeof ms === 'number');
-  const known = billed.filter((call) => call.usd !== null);
-  const usd = known.reduce((sum, call) => sum + call.usd, 0);
+  const usd = billed.reduce((sum, call) => sum + call.usd, 0);
   return {
     n: results.length,
     concurrency,
@@ -648,7 +654,6 @@ function modelSummary(name, { results, billed, concurrency }) {
     },
     cost: {
       calls: billed.length,
-      unknownCalls: billed.length - known.length,
       usd: round(usd, 6),
       perSentence: results.length === 0 ? null : round(usd / results.length, 6),
       perPublished: published.length === 0 ? null : round(usd / published.length, 6),
@@ -710,6 +715,22 @@ async function startServer(port, overlay) {
   return { base, log: () => log, stop };
 }
 
+const commitMs = () => Number(execFileSync('git', ['log', '-1', '--format=%ct'], { cwd: ROOT, encoding: 'utf8' }).trim()) * 1000;
+
+/**
+ * Razítko buildu `.next`: obsah `BUILD_ID` a čas jeho zápisu. Samotné `BUILD_ID`
+ * je bez `WORLDSMITH_BUILD_TREE` vždycky `unbuilt` a nic nerozliší (revize
+ * hranice fáze 2). Build starší než poslední commit by měřil starý kód pod
+ * hlavičkou nového commitu, proto se odmítne.
+ */
+export function buildStamp(nextDir, commitMs) {
+  const file = join(nextDir, 'BUILD_ID');
+  if (!existsSync(file)) throw new Error('no .next build – run `npm run build` first');
+  const builtMs = statSync(file).mtimeMs;
+  if (builtMs < commitMs) throw new Error(`the .next build (${new Date(builtMs).toISOString()}) is older than the last commit – run \`npm run build\` again`);
+  return `${readFileSync(file, 'utf8').trim()}@${new Date(builtMs).toISOString()}`;
+}
+
 /** Věty přes `concurrency` porotců naráz; každý má vlastní kontext prohlížeče. */
 async function measureAll(sentences, base, concurrency) {
   const require = createRequire(import.meta.url);
@@ -746,7 +767,7 @@ async function measureAll(sentences, base, concurrency) {
 }
 
 /**
- * `--models astra,oss20b --set dev [--concurrency 5] [--cap-usd 3] [--port 3331] [--run <id>]`:
+ * `--models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331] [--run <id>]`:
  * každý model po řadě na vlastním `next start` nad TÝMŽ `.next` (nejdřív
  * `npm run build`), tytéž věty, tatáž publikace robotem jako produkce. Surová
  * data do `fidelity/runs/compare-<id>/`, souhrn do `evals/play/p30/compare-<id>.json`.
@@ -755,17 +776,16 @@ async function measureAll(sentences, base, concurrency) {
 async function compare(options) {
   const names = options.models.split(',').map((name) => name.trim()).filter((name) => name !== '');
   const concurrency = options.concurrency === undefined ? 1 : Number(options.concurrency);
-  if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > 10) throw new Error('--concurrency must be an integer 1–10');
   const capUsd = options['cap-usd'] === undefined ? 3 : Number(options['cap-usd']);
   if (!Number.isFinite(capUsd) || capUsd <= 0) throw new Error('--cap-usd must be a positive number');
   const runId = typeof options.run === 'string' ? options.run : `${new Date().toISOString().slice(0, 10)}-${commit()}-c${concurrency}`;
   // Klíče a koncové body z `.env.local` jako `next start`; všechno se ověří dřív, než se cokoli zaplatí.
   createRequire(import.meta.url)('@next/env').loadEnvConfig(ROOT, false, { info() {}, error: console.error });
   const envs = Object.fromEntries(names.map((name) => [name, modelEnv(name, process.env, capUsd / names.length, concurrency)]));
+  // Build před sadou: zastaralý build nesmí spotřebovat jediné otevření testovací sady.
+  const nextDir = join(ROOT, '.next');
+  const buildId = buildStamp(nextDir, commitMs());
   const sentences = loadSet(typeof options.set === 'string' ? options.set : undefined, { only: options.only, openTestOnce: options['open-test-once'] === true, runId });
-  const buildFile = join(ROOT, '.next', 'BUILD_ID');
-  if (!existsSync(buildFile)) throw new Error('no .next build – run `npm run build` first');
-  const buildId = readFileSync(buildFile, 'utf8').trim();
   const port = options.port === undefined ? 3331 : Number(options.port);
   const rawDir = join(DIR, 'runs', `compare-${runId}`);
   mkdirSync(rawDir, { recursive: true });
@@ -774,7 +794,8 @@ async function compare(options) {
     const server = await startServer(port, envs[name]);
     try {
       const results = await measureAll(sentences, server.base, concurrency);
-      runs[name] = { buildId, concurrency, results, billed: billedFromLog(server.log()) };
+      // Razítko znovu po běhu: přestavba mezi modely se v souhrnu ukáže jako jiný build.
+      runs[name] = { buildId: buildStamp(nextDir, 0), concurrency, results, billed: billedFromLog(server.log()) };
     } finally {
       await server.stop();
       writeFileSync(join(rawDir, `${name}-server.log`), server.log());
@@ -982,7 +1003,7 @@ if (isMain) {
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
   else {
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 5] [--cap-usd 3] [--port 3331]');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
   }
 }

@@ -43,9 +43,13 @@ export declare function normalizeSentence(text: string): string;
 
 export declare const COMPARE_MODELS: Record<string, { readonly source: 'primary' | 'fallback'; readonly expect: RegExp }>;
 
+export declare const PLAY_DOOR_SLOTS: number;
+
+export declare function buildStamp(nextDir: string, commitMs: number): string;
+
 export declare function modelEnv(name: string, env: Record<string, string | undefined>, capUsd: number, concurrency?: number): Record<string, string>;
 
-export declare function billedFromLog(text: string): { readonly model: string; readonly usd: number | null }[];
+export declare function billedFromLog(text: string): { readonly model: string; readonly usd: number }[];
 
 export interface MeasuredSentence {
   readonly id: string;
@@ -85,7 +89,7 @@ export interface ModelComparison {
   readonly sources: { readonly authored: number; readonly cached: number };
   readonly fidelity: { readonly inSpec: number | null; readonly read: number | null; readonly drawn: number | null };
   readonly firstPlayableFrameMs: { readonly aiP50: number | null; readonly aiP95: number | null; readonly draftP50: number | null; readonly draftP95: number | null };
-  readonly cost: { readonly calls: number; readonly unknownCalls: number; readonly usd: number; readonly perSentence: number | null; readonly perPublished: number | null };
+  readonly cost: { readonly calls: number; readonly usd: number; readonly perSentence: number | null; readonly perPublished: number | null };
 }
 
 export declare function compareSummary(

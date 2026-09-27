@@ -185,11 +185,11 @@ async function callerAllows(caller: string, env: Record<string, string | undefin
 /**
  * Řádek logu s cenou jednoho volání (P30A T7). Srovnání modelů
  * (`scripts/play-fidelity.mjs --models`) ho sčítá ze serveru, který spustí:
- * kniha stropu je v paměti procesu a hra cenu nenese. `unknown` = volání bez
- * účtenky, strop za něj strhl celou rezervaci.
+ * kniha stropu je v paměti procesu a hra cenu nenese. `usd` je to, co strhl
+ * strop – u volání bez účtenky celá rezervace.
  */
-export function billedLine(model: string, usd: number | 'unknown'): string {
-  return `[play] director call billed model=${model} usd=${usd === 'unknown' ? 'unknown' : usd.toFixed(8)}`;
+export function billedLine(model: string, usd: number): string {
+  return `[play] director call billed model=${model} usd=${usd.toFixed(8)}`;
 }
 
 /**
@@ -197,18 +197,17 @@ export function billedLine(model: string, usd: number | 'unknown'): string {
  * rezervaci (R1, rozhodnuto): poskytovatel mohl tokeny spálit až do zrušení
  * a odhad z uplynulého času by byl nižší číslo, tedy nebezpečná strana stropu.
  * U předplatného je cena 0 a mez drží počet volání, takže to nic nestojí.
+ * Řádek účtenky nese, co strop doopravdy strhl (oříznutou cenu, bez účtenky celou
+ * rezervaci), aby srovnání modelů neukázalo levnější model, který víc padá.
  */
 async function billed(reservation: Reserved, config: UpstreamConfig, run: () => Promise<GenerationOutcome>): Promise<GenerationOutcome> {
+  let outcome: GenerationOutcome | null = null;
   try {
-    const outcome = await run();
-    const usd = outcome.usage === null ? 'unknown' : costUsd(outcome.usage, config.pricing);
-    await reservation.settle(usd);
-    console.info(billedLine(config.model, usd));
+    outcome = await run();
     return outcome;
-  } catch (thrown) {
-    await reservation.settle('unknown');
-    console.info(billedLine(config.model, 'unknown'));
-    throw thrown;
+  } finally {
+    const charged = await reservation.settle(outcome === null || outcome.usage === null ? 'unknown' : costUsd(outcome.usage, config.pricing));
+    console.info(billedLine(config.model, charged));
   }
 }
 

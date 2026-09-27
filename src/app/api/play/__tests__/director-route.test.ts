@@ -29,7 +29,7 @@ vi.mock('@/play/director', async (importOriginal) => {
 });
 
 import { acquireSlot, releaseSlot, resetConcurrency, slotsDetail } from '../../worldstream/sessions/route';
-import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, minCallMs, OSS_MIN_CALL_MS } from '../_director';
+import { billedLine, DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, minCallMs, OSS_MIN_CALL_MS } from '../_director';
 
 const OSS = {
   WORLDSMITH_BRANCH: 'live',
@@ -278,6 +278,20 @@ describe('the paid backup has its own pool of slots (T2a, T2b)', () => {
     // Půjčený slot vrátit: test ho dveřím ubral, třetí režie ho vzala a vrátila.
     expect(acquireSlot('play')).toBe(true);
     expect(slotsDetail('play')).toContain('0 play');
+  });
+});
+
+describe('the billed line', () => {
+  it('carries what the cap charged, the whole reservation for a call without a receipt', async () => {
+    stubEnv({ ...OSS, WORLDSMITH_UPSTREAM_TIMEOUT_MS: '300' });
+    stubFetch({ 'api.together.xyz': 'hang' });
+    const lines: unknown[] = [];
+    const info = vi.spyOn(console, 'info').mockImplementation((line: unknown) => void lines.push(line));
+    expect((await getDirector(Date.now(), 'bill-caller')(SENTENCE)).source).toBe('draft');
+    info.mockRestore();
+    const charged = processSpendCap().snapshot().spentUsd;
+    expect(charged).toBeGreaterThan(0);
+    expect(lines).toEqual([billedLine('openai/gpt-oss-20b', charged)]);
   });
 });
 

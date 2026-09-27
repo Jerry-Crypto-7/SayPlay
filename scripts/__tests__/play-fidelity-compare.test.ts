@@ -7,12 +7,17 @@
  * srovnání odmítnou.
  */
 
+import { mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { billedLine } from '@/app/api/play/_director';
+import { DOOR_CEILING } from '@/app/api/worldstream/sessions/route';
 import { draftGameSpec } from '@/play/draft';
 
-import { billedFromLog, compareSummary, loadSet, type MeasuredSentence, measureSentence, modelEnv, specFidelity } from '../play-fidelity.mjs';
+import { billedFromLog, buildStamp, compareSummary, loadSet, type MeasuredSentence, measureSentence, modelEnv, PLAY_DOOR_SLOTS, specFidelity } from '../play-fidelity.mjs';
 
 const SENTENCES = loadSet('dev', { only: 's039,s037,s002' });
 
@@ -44,7 +49,8 @@ const RECORDED: Record<'astra' | 'oss20b', Record<string, Recorded>> = {
 
 const BILLED_LOG = {
   astra: ['ready', billedLine('gpt-6-astra', 0.0042), billedLine('gpt-6-astra', 0.0038), '[play] something else', billedLine('gpt-6-astra', 0.0044)].join('\n'),
-  oss20b: [billedLine('openai/gpt-oss-20b', 0.0002), billedLine('openai/gpt-oss-20b', 0.0003), billedLine('openai/gpt-oss-20b', 'unknown'), billedLine('openai/gpt-oss-20b', 0.0001)].join('\n'),
+  // 0,0024 = volání bez účtenky: strop strhl celou rezervaci a řádek to nese.
+  oss20b: [billedLine('openai/gpt-oss-20b', 0.0002), billedLine('openai/gpt-oss-20b', 0.0003), billedLine('openai/gpt-oss-20b', 0.0024), billedLine('openai/gpt-oss-20b', 0.0001)].join('\n'),
 };
 
 const json = (body: unknown) => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } });
@@ -155,8 +161,9 @@ describe('compareSummary over recorded responses of both models', () => {
     expect(summary.astra!.firstPlayableFrameMs).toMatchObject({ aiP50: 4200, aiP95: 5300, draftP50: 900 });
     expect(summary.oss20b!.firstPlayableFrameMs).toMatchObject({ aiP50: 2000, draftP50: 900 });
 
-    expect(summary.astra!.cost).toEqual({ calls: 3, unknownCalls: 0, usd: 0.0124, perSentence: 0.004133, perPublished: 0.004133 });
-    expect(summary.oss20b!.cost).toEqual({ calls: 4, unknownCalls: 1, usd: 0.0006, perSentence: 0.0002, perPublished: 0.0003 });
+    expect(summary.astra!.cost).toEqual({ calls: 3, usd: 0.0124, perSentence: 0.004133, perPublished: 0.004133 });
+    // Volání bez účtenky se počítá tím, co strhl strop – model, který víc padá, nevyjde levnější.
+    expect(summary.oss20b!.cost).toEqual({ calls: 4, usd: 0.003, perSentence: 0.001, perPublished: 0.0015 });
   });
 
   it('refuses a comparison that is not fair', async () => {
@@ -228,19 +235,47 @@ describe('modelEnv', () => {
   });
 
   it('refuses a cap that would refuse calls under the concurrency and blame the model', () => {
-    // astra: 8000 tokenů × 10 USD/Mtok = 0,08 USD na volání; pět porotců s rezervou 1,5 = 0,6 USD.
-    expect(() => modelEnv('astra', env, 0.5, 5)).toThrow(/under 5 concurrent worst-case calls \(0\.600 USD\); raise --cap-usd/);
-    expect(modelEnv('astra', env, 0.61, 5).WORLDSMITH_SPEND_CAP_USD).toBe('0.61');
-    expect(() => modelEnv('oss20b', env, 0.011, 5)).toThrow(/raise --cap-usd/);
+    // astra: 8000 tokenů × 10 USD/Mtok = 0,08 USD na volání; dva porotci s rezervou 1,5 = 0,24 USD.
+    expect(() => modelEnv('astra', env, 0.2, 2)).toThrow(/under 2 concurrent worst-case calls \(0\.240 USD\); raise --cap-usd/);
+    expect(modelEnv('astra', env, 0.25, 2).WORLDSMITH_SPEND_CAP_USD).toBe('0.25');
+    expect(() => modelEnv('oss20b', env, 0.004, 2)).toThrow(/raise --cap-usd/);
+  });
+
+  it('refuses more judges than the play door of one instance serves', () => {
+    // Třetí porotce by dostal návrh od dveří a souhrn by ho připsal modelu.
+    expect(PLAY_DOOR_SLOTS).toBe(DOOR_CEILING.play);
+    expect(modelEnv('oss20b', env, 100, PLAY_DOOR_SLOTS).WORLDSMITH_SPEND_CAP_USD).toBe('100');
+    for (const judges of [PLAY_DOOR_SLOTS + 1, 5, 0, 1.5]) expect(() => modelEnv('oss20b', env, 100, judges)).toThrow(/--concurrency must be an integer 1–2: .*measure the door, not the model/);
   });
 });
 
 describe('billedFromLog', () => {
   it("reads the director's billed line and skips everything else", () => {
-    const log = ['▲ Next.js', billedLine('openai/gpt-oss-20b', 0.000123456), '[play] upgrade of x ended NOT_PLAYABLE', billedLine('gpt-6-astra', 'unknown')].join('\n');
+    const log = ['▲ Next.js', billedLine('openai/gpt-oss-20b', 0.000123456), '[play] upgrade of x ended NOT_PLAYABLE', billedLine('gpt-6-astra', 0.12)].join('\n');
     expect(billedFromLog(log)).toEqual([
       { model: 'openai/gpt-oss-20b', usd: 0.00012346 },
-      { model: 'gpt-6-astra', usd: null },
+      { model: 'gpt-6-astra', usd: 0.12 },
     ]);
+  });
+});
+
+describe('buildStamp', () => {
+  it('tells two builds apart although BUILD_ID says unbuilt, and refuses one older than the last commit', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p30a-build-'));
+    try {
+      expect(() => buildStamp(dir, 0)).toThrow(/no \.next build/);
+      const file = join(dir, 'BUILD_ID');
+      writeFileSync(file, 'unbuilt');
+      utimesSync(file, new Date('2026-09-27T10:00:00Z'), new Date('2026-09-27T10:00:00Z'));
+      const first = buildStamp(dir, Date.parse('2026-09-27T09:00:00Z'));
+      expect(first).toBe('unbuilt@2026-09-27T10:00:00.000Z');
+      // Commit po buildu: měřil by se starý kód pod hlavičkou nového commitu.
+      expect(() => buildStamp(dir, Date.parse('2026-09-27T11:00:00Z'))).toThrow(/older than the last commit/);
+      // Přestavba mezi modely: týž obsah, jiné razítko, souhrn ho odmítne jako jiný build.
+      utimesSync(file, new Date('2026-09-27T12:00:00Z'), new Date('2026-09-27T12:00:00Z'));
+      expect(buildStamp(dir, 0)).not.toBe(first);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
