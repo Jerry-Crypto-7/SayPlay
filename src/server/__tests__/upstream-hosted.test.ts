@@ -14,6 +14,15 @@ import type { AddressInfo } from 'node:net';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { __resetProcessVersionStore } from '@/play/version';
+import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
+
+// Bez sdíleného úložiště dá `directorCacheFromEnv` každé režii novou paměť;
+// test cache potřebuje jednu na celý test.
+const answers = vi.hoisted(() => ({ store: null as AnswerStore | null }));
+vi.mock('@/play/director', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/play/director')>();
+  return { ...actual, directorCacheFromEnv: () => actual.directorCache(answers.store ?? memoryAnswerStore()) };
+});
 
 import { getDirector } from '../../app/api/play/_director';
 import { resetConcurrency } from '../../app/api/worldstream/sessions/route';
@@ -166,6 +175,16 @@ describe('openai: generate', () => {
     expect(seen[0].body).not.toHaveProperty('temperature');
   });
 
+  it('lowers xhigh and max to high, the top effort hosted gpt-oss knows', async () => {
+    const efforts: unknown[] = [];
+    const fake = ((_url: string, init: RequestInit) => {
+      efforts.push((JSON.parse(String(init.body)) as { reasoning_effort: unknown }).reasoning_effort);
+      return Promise.resolve(new Response(chat('{"plan":"run"}')));
+    }) as unknown as typeof fetch;
+    for (const effort of ['xhigh', 'max', 'low']) await upstreamBranch(configOf({ WORLDSMITH_MODEL_EFFORT: effort }), fake).generate(CALL);
+    expect(efforts).toEqual(['high', 'high', 'low']);
+  });
+
   it('reads the answer from content only, never from the reasoning next to it', async () => {
     const root = await stub((_req, _body, res) => res.end(chat('{"plan":"run"}')));
     const outcome = await upstreamBranch(configOf({ WORLDSMITH_MODEL_ENDPOINT: `openai:${root}` })).generate(CALL);
@@ -255,6 +274,7 @@ const USAGE = { inputTokens: 2000, outputTokens: 900 };
 
 describe('the director pays a hosted call through the process spend cap', () => {
   beforeEach(() => {
+    answers.store = memoryAnswerStore();
     __resetProcessVersionStore();
     resetRateWindows();
     resetConcurrency();
@@ -311,6 +331,18 @@ describe('the director pays a hosted call through the process spend cap', () => 
     const backupCost = costUsd(USAGE, { usdPerMTokIn: 1.25, usdPerMTokOut: 10 });
     expect(snapshot.spentUsd).toBeGreaterThan(backupCost);
     expect(snapshot.spentUsd).toBeLessThan(backupCost + 0.01);
+  });
+
+  it('never caches a game the paid fallback wrote under the primary key', async () => {
+    stubEnv({ ...HOSTED, ...ASTRA_BACKUP, WORLDSMITH_SPEND_CAP_USD: '5' });
+    stubFetch({ 'api.together.xyz': 503, 'api.openai.com': 'ok' });
+    expect((await getDirector(Date.now(), 'cache-caller')(SENTENCE)).authoredBy).toBe('gpt-6-astra');
+    // Primár je zpátky: věta se ho zeptá znovu, ne hry od zálohy z cache.
+    const held = stubFetch({ 'api.together.xyz': 'ok' });
+    expect(await getDirector(Date.now(), 'cache-caller')(SENTENCE)).toMatchObject({ source: 'authored', authoredBy: 'openai/gpt-oss-20b' });
+    expect(held).toHaveLength(1);
+    // Hra od primáru se do cache dostane – cache v testu doopravdy platí.
+    expect((await getDirector(Date.now(), 'cache-caller')(SENTENCE)).source).toBe('cached');
   });
 
   it('does not call the paid fallback when the cap refuses it', async () => {

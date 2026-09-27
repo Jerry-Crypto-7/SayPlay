@@ -986,6 +986,13 @@ const REFUSED_US: Readonly<Record<number, string>> = {
 };
 
 /**
+ * `reasoning_effort` hostovaného poskytovatele. gpt-oss přes API dokumentuje jen
+ * low/medium/high, takže vyšší úroveň z Messages (`xhigh`, `max`) by každé
+ * volání skončila čtyřistovkou; sníží se na nejvyšší, kterou znají všichni.
+ */
+const HOSTED_EFFORT: Readonly<Record<Effort, 'low' | 'medium' | 'high'>> = { low: 'low', medium: 'medium', high: 'high', xhigh: 'high', max: 'high' };
+
+/**
  * OpenAI chat API pro llama.cpp (`llamacpp:`) i hostovaného poskytovatele
  * (`openai:`). Liší se tím, co hostovaný poskytovatel navíc chce: povinný klíč,
  * `reasoning_effort` a u OpenAI API `max_completion_tokens`.
@@ -1005,7 +1012,7 @@ async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fet
   // hostovanému poskytovateli neposílá – gpt-oss ji doporučuje nechat výchozí.
   const tokenField = hosted && new URL(root).hostname === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens';
   const body = hosted
-    ? { model: config.model, [tokenField]: config.maxOutputTokens, reasoning_effort: effortForCall(call, config), messages, response_format: format }
+    ? { model: config.model, [tokenField]: config.maxOutputTokens, reasoning_effort: HOSTED_EFFORT[effortForCall(call, config)], messages, response_format: format }
     : { model: config.model, max_tokens: config.maxOutputTokens, temperature: 0, messages, response_format: format };
   let response: Response;
   try {

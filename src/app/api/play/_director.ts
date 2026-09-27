@@ -203,7 +203,9 @@ async function cappedBranch(
               const side = upstreamBranch({ ...backup, timeoutMs: Math.max(1, Math.min(backup.timeoutMs, deadline - Date.now())) });
               const held = await cap.reserve(side.worstCaseUsd(call));
               if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the fallback call', usage: null };
-              return billed(held, backup.pricing, () => side.generate(call, signal));
+              const outcome = await billed(held, backup.pricing, () => side.generate(call, signal));
+              // Role, ne transport: hru od zálohy režie nedá do cache pod klíč primáru.
+              return outcome.ok ? { ...outcome, provenance: { ...outcome.provenance, fallback: true } } : outcome;
             };
       return hedged(primary, fallback, hedgeMs(env));
     },

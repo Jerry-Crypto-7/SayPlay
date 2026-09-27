@@ -128,7 +128,9 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const credit = (provenance: Readonly<Record<string, string | boolean>>) => {
     const model = provenance.model;
     if (typeof model === 'string' && !authors.includes(model)) authors.push(model);
-    if (provenance.source === 'llamacpp-http') byFallback = true;
+    // Záloha se pozná podle role, kterou jí dá šev režiséra (`_director.ts`), ne podle
+    // transportu: od P30A může primár i záloha jet přes týž hostovaný `openai:`.
+    if (provenance.fallback === true) byFallback = true;
   };
 
   calls += 1;
