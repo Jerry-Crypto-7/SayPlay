@@ -6,7 +6,11 @@
  * S ní jde každé volání přes **týž procesní strop utrácení** jako WORLDSTREAM
  * (`processSpendCap()` na `globalThis`): rezervace nejhoršího případu před
  * voláním, vyrovnání po něm. Odmítnutý strop je pro režiséra výpadek modelu,
- * takže hráč dostane návrh, ne chybu.
+ * takže hráč dostane návrh, ne chybu. Placená záloha (P30A T3) platí z vlastního
+ * stropu `processFallbackSpendCap()`.
+ *
+ * Produkce (P30A): primár gpt-oss-20b přes sdílené API (`openai:`), záloha astra
+ * přes placené API. `codex-cli` (předplatné) zůstává jen pro vývoj.
  *
  * Objednávka se čte jako v `/api/generate` (`WORLDSMITH_BRANCH === 'live'`)
  * a vypínač `upstream` ji ruší – klíč zděděný z jiného projektu tak placenou
@@ -20,8 +24,8 @@ import { VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { killState } from '@/server/kill-switch';
 import type { UpstreamRequest } from '@/model/prompt';
 import type { GenerationBranch, GenerationOutcome } from '@/server/pipeline';
-import { costUsd, type Pricing, processSpendCap, type Reserved } from '@/server/spend-cap';
-import { upstreamBranch, upstreamConfigFromEnv } from '@/server/upstream';
+import { costUsd, type Pricing, processFallbackSpendCap, processSpendCap, type Reserved } from '@/server/spend-cap';
+import { upstreamBranch, type UpstreamConfig, upstreamConfigFromEnv } from '@/server/upstream';
 
 import { acquireSlot, releaseSlot } from '../worldstream/sessions/route';
 
@@ -41,6 +45,10 @@ export type Director = (sentence: string) => Promise<DirectedGame & { readonly c
  * (revize R7). Zbylých 30 s patří kompilaci a zápisu. Kompilace čtyř semínek
  * je naměřeně pod 2 s (P23-D T3: medián 25 ms, max 445 ms na semínko), vlastní
  * strop souběhu nepotřebuje.
+ *
+ * Rozpočet drží platforma (`maxDuration`), ne poskytovatel, takže je jeden pro
+ * všechny (P30A T3); podle poskytovatele se liší jen `minCallMs()` a timeout
+ * volání, který se na zbytek rozpočtu zkracuje.
  */
 export const DIRECTOR_BUDGET_MS = 270_000;
 
@@ -50,6 +58,24 @@ export const DIRECTOR_BUDGET_MS = 270_000;
  * placenou první odpověď (revize R7, kolo 2).
  */
 export const MIN_CALL_MS = 75_000;
+
+/**
+ * Totéž pro gpt-oss (P30A T3). Kompaktní odpověď na lokální RTX 3090 trvala
+ * naměřeně p50 4,5 s, p90 11 s a nejvýš 26,4 s (`evals/play/local-director.json`,
+ * 26. 9. 2026); 30 s je nad tím maximem. Hostovaný poskytovatel má být rychlejší,
+ * jestli je, změří T9/T10.
+ */
+export const OSS_MIN_CALL_MS = 30_000;
+
+/**
+ * Kolik rozpočtu musí zbývat, aby volání odešlo. Rozhoduje model, ne transport:
+ * astra přes placené API je stejně pomalá jako přes předplatné. Záloha zdarma
+ * (llama.cpp) mez nemá – nedoběhlé volání nic nestojí.
+ */
+export function minCallMs(config: UpstreamConfig): number {
+  if (config.pricing.usdPerMTokOut === 0) return 0;
+  return /gpt-oss-20b/i.test(config.model) ? OSS_MIN_CALL_MS : MIN_CALL_MS;
+}
 
 /**
  * Kolik placených volání režiséra smí jeden volající za den (R8). Věta stojí
@@ -178,7 +204,7 @@ async function cappedBranch(
     worstCaseUsd: (call) => branch.worstCaseUsd(call),
     async generate(call) {
       const left = deadline - Date.now();
-      if (left < MIN_CALL_MS) {
+      if (left < minCallMs(config)) {
         console.warn(`[play] director call skipped: ${String(Math.round(left / 1000))} s left of the route budget`);
         return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left in the route', usage: null };
       }
@@ -193,16 +219,19 @@ async function cappedBranch(
       }
       const primary: Call = (signal) => billed(reservation, branch.pricing, () => bounded.generate(call, signal));
       // Záloha mimo kvótu volajícího, jen v mezích rozpočtu trasy. Placená
-      // (`openai:`, P30A T2) jde přes tentýž strop; lokální llama.cpp má
-      // nejhorší případ 0, takže ji strop nepočítá a knihu nepotřebuje.
+      // (`openai:`, P30A T3) platí z vlastního stropu `processFallbackSpendCap()`,
+      // takže vyčerpaná záloha nechá hru na primáru a hlavní strop jí nic neubere;
+      // lokální llama.cpp má nejhorší případ 0 a projde i nulovým stropem.
       const backup = config.fallback;
       const fallback: Call | null =
         backup === undefined
           ? null
           : async (signal) => {
-              const side = upstreamBranch({ ...backup, timeoutMs: Math.max(1, Math.min(backup.timeoutMs, deadline - Date.now())) });
-              const held = await cap.reserve(side.worstCaseUsd(call));
-              if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'spend cap refused the fallback call', usage: null };
+              const rest = deadline - Date.now();
+              if (rest < minCallMs(backup)) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left for the fallback', usage: null };
+              const side = upstreamBranch({ ...backup, timeoutMs: Math.max(1, Math.min(backup.timeoutMs, rest)) });
+              const held = await processFallbackSpendCap().reserve(side.worstCaseUsd(call));
+              if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the fallback spend cap refused the call', usage: null };
               const outcome = await billed(held, backup.pricing, () => side.generate(call, signal));
               // Role, ne transport: hru od zálohy režie nedá do cache pod klíč primáru.
               return outcome.ok ? { ...outcome, provenance: { ...outcome.provenance, fallback: true } } : outcome;

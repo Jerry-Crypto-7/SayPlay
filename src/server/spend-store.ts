@@ -126,15 +126,21 @@ export function memoryLedger(id = 'memory'): SpendLedger {
  */
 const PROCESS_LEDGER_KEY = '__worldsmithSpendLedger';
 
-export function processLedger(): SpendLedger {
+/**
+ * `book` odděluje druhou knihu téhož procesu (P30A T3: strop placené zálohy
+ * režiséra). Prázdná je hlavní kniha pod dnešním klíčem.
+ */
+export function processLedger(book = ''): SpendLedger {
   const holder = globalThis as Record<string, unknown>;
-  holder[PROCESS_LEDGER_KEY] ??= memoryLedger('process-memory');
-  return holder[PROCESS_LEDGER_KEY] as SpendLedger;
+  const key = book === '' ? PROCESS_LEDGER_KEY : `${PROCESS_LEDGER_KEY}:${book}`;
+  holder[key] ??= memoryLedger('process-memory');
+  return holder[key] as SpendLedger;
 }
 
-/** Jen pro testy: zahodí procesovou knihu, aby další test začal na nule. */
+/** Jen pro testy: zahodí procesové knihy, aby další test začal na nule. */
 export function resetProcessLedger(): void {
-  delete (globalThis as Record<string, unknown>)[PROCESS_LEDGER_KEY];
+  const holder = globalThis as Record<string, unknown>;
+  for (const key of Object.keys(holder)) if (key.startsWith(PROCESS_LEDGER_KEY)) delete holder[key];
 }
 
 export interface HttpLedgerConfig {
@@ -434,6 +440,7 @@ export function isServerless(env: Record<string, string | undefined>): boolean {
 export function ledgerFromEnv(
   env: Record<string, string | undefined>,
   fetchImpl: typeof fetch = fetch,
+  book = '',
 ): SpendLedger | null {
   const shared = sharedStoreFromEnv(env);
   if (shared !== null)
@@ -441,7 +448,9 @@ export function ledgerFromEnv(
       {
         url: shared.url,
         token: shared.token,
-        prefix: storePrefix(env),
+        // Druhá kniha (`book`) visí pod předponou hlavní, takže preview i výslovná
+        // předpona ji oddělí stejně a její součet se s hlavním nikdy nesečte.
+        prefix: book === '' ? storePrefix(env) : `${storePrefix(env)}:${book}`,
         timeoutMs: DEFAULT_LEDGER_TIMEOUT_MS,
       },
       fetchImpl,
@@ -449,7 +458,7 @@ export function ledgerFromEnv(
 
   if (isServerless(env)) return null;
   const scope = environmentScope(env);
-  return scope === 'production' || scope === 'preview' ? processLedger() : null;
+  return scope === 'production' || scope === 'preview' ? processLedger(book) : null;
 }
 
 /**

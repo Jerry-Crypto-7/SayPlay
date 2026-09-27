@@ -955,18 +955,59 @@ const PROCESS_CAP_KEY = '__worldsmithSpendCap';
  */
 export function resetProcessSpendCap(): void {
   delete (globalThis as Record<string, unknown>)[PROCESS_CAP_KEY];
+  delete (globalThis as Record<string, unknown>)[FALLBACK_CAP_KEY];
   resetProcessLedger();
+}
+
+/**
+ * **Strop placené zálohy režiséra** (P30A T3) – druhý strop procesu, oddělený
+ * od `processSpendCap()`.
+ *
+ * Primár je levný (gpt-oss-20b po tokenech), záloha drahá (astra přes placené
+ * API), a jeden společný strop by znamenal, že pár pomalých odpovědí primáru
+ * nechá zálohu vyjíst rozpočet celého dema. Záloha proto platí z vlastní částky
+ * `WORLDSMITH_FALLBACK_SPEND_CAP_USD` a vlastní knihy (`FALLBACK_BOOK`); hlavní
+ * strop se jí nedotkne a ona jeho. Celková útrata je součet obou čísel.
+ *
+ * **Chybějící částka je nula, ne výchozích 5 USD** – na rozdíl od hlavního
+ * stropu tu žádná dnešní konfigurace nestojí na výchozí hodnotě, takže placená
+ * záloha bez napsaného stropu nepoběží vůbec. Záloha zdarma (llama.cpp,
+ * nejhorší případ 0) projde i nulovým stropem.
+ *
+ * **Bez ovládacího souboru a sdíleného povelu.** Povel hlavního stropu umí
+ * přepsat částku; kdyby ho četl i tenhle, zvednutí hlavního stropu by tiše
+ * zvedlo i zálohu. Změna je proměnná prostředí a redeploy.
+ */
+export function processFallbackSpendCap(): SpendCap {
+  const holder = globalThis as Record<string, unknown>;
+  holder[FALLBACK_CAP_KEY] ??= fallbackSpendCapFromEnv(process.env);
+  return holder[FALLBACK_CAP_KEY] as SpendCap;
+}
+
+const FALLBACK_CAP_KEY = '__worldsmithFallbackSpendCap';
+
+/** Kniha zálohy: klíče `<předpona>:fallback:*`, v procesu vlastní paměť. */
+export const FALLBACK_BOOK = 'fallback';
+
+export function fallbackSpendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
+  const parsed = Number(env.WORLDSMITH_FALLBACK_SPEND_CAP_USD);
+  const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  return new SpendCap({ enabled: true, capUsd, callCap: callCapFromEnv(env) }, null, ledgerFromEnv(env, fetch, FALLBACK_BOOK), null);
+}
+
+// Táž doktrína jako u dolarů: chybějící proměnná je výchozí hodnota, vadná je
+// NULA. Překlep jinak tiše zvedne strop, kdežto nula zastaví provoz a je vidět.
+function callCapFromEnv(env: Record<string, string | undefined>): number {
+  const rawCalls = env.WORLDSMITH_CALL_CAP;
+  const parsedCalls = rawCalls === undefined ? DEFAULT_CALL_CAP : Number(rawCalls);
+  return Number.isInteger(parsedCalls) && parsedCalls >= 0 ? parsedCalls : 0;
 }
 
 export function spendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
   const raw = env.WORLDSMITH_SPEND_CAP_USD;
   const parsed = raw === undefined ? DEFAULT_CAP_USD : Number(raw);
   const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-  // Táž doktrína jako u dolarů: chybějící proměnná je výchozí hodnota, vadná je
-  // NULA. Překlep jinak tiše zvedne strop, kdežto nula zastaví provoz a je vidět.
-  const rawCalls = env.WORLDSMITH_CALL_CAP;
-  const parsedCalls = rawCalls === undefined ? DEFAULT_CALL_CAP : Number(rawCalls);
-  const callCap = Number.isInteger(parsedCalls) && parsedCalls >= 0 ? parsedCalls : 0;
+  const callCap = callCapFromEnv(env);
   // **Kniha z prostředí, a `null` z ní znamená odmítat** — serverless bez
   // sdíleného úložiště, viz `ledgerFromEnv()`. Strop, který se resetuje
   // s chladným startem, je horší než žádný: tváří se, že platí.

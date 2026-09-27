@@ -28,7 +28,7 @@ import { getDirector } from '../../app/api/play/_director';
 import { resetConcurrency } from '../../app/api/worldstream/sessions/route';
 import type { GenerationCall } from '../pipeline';
 import { resetRateWindows } from '../rate-limit';
-import { costUsd, processSpendCap, resetProcessSpendCap } from '../spend-cap';
+import { costUsd, processFallbackSpendCap, processSpendCap, resetProcessSpendCap } from '../spend-cap';
 import { upstreamBranch, upstreamConfigFromEnv, type UpstreamConfig } from '../upstream';
 
 const HOSTED = {
@@ -49,6 +49,7 @@ const ASTRA_BACKUP = {
   WORLDSMITH_FALLBACK_EFFORT: 'low',
   WORLDSMITH_FALLBACK_USD_PER_MTOK_IN: '1.25',
   WORLDSMITH_FALLBACK_USD_PER_MTOK_OUT: '10',
+  WORLDSMITH_FALLBACK_SPEND_CAP_USD: '5',
 } as const;
 
 const SCHEMA = { type: 'object', additionalProperties: false, required: ['plan'], properties: { plan: { type: 'string' } } };
@@ -317,20 +318,19 @@ describe('the director pays a hosted call through the process spend cap', () => 
     expect(snapshot.spentUsd).toBeCloseTo(costUsd(USAGE, { usdPerMTokIn: 0.05, usdPerMTokOut: 0.2 }), 12);
   });
 
-  it('bills the paid openai: fallback through the same cap', async () => {
+  it('bills the paid openai: fallback through its own cap (P30A T3)', async () => {
     stubEnv({ ...HOSTED, ...ASTRA_BACKUP, WORLDSMITH_SPEND_CAP_USD: '5' });
     const held = stubFetch({ 'api.together.xyz': 503, 'api.openai.com': 'ok' });
     const game = await getDirector(Date.now(), 'backup-caller')(SENTENCE);
     expect(game.authoredBy).toBe('gpt-6-astra');
-    // Záloha startuje po selhání primáru a drží vlastní rezervaci.
-    expect(held).toHaveLength(2);
-    expect(held[1]).toBeGreaterThan(0);
-    const snapshot = processSpendCap().snapshot();
-    expect(snapshot).toMatchObject({ reservedUsd: 0, callsMade: 2 });
-    // Primár bez účtenky strhne celou rezervaci; záloha svou skutečnou cenu podle vlastního ceníku.
-    const backupCost = costUsd(USAGE, { usdPerMTokIn: 1.25, usdPerMTokOut: 10 });
-    expect(snapshot.spentUsd).toBeGreaterThan(backupCost);
-    expect(snapshot.spentUsd).toBeLessThan(backupCost + 0.01);
+    // Záloha startuje po selhání primáru; hlavní strop už je v tu chvíli vyrovnaný.
+    expect(held).toEqual([expect.any(Number), 0]);
+    // Primár bez účtenky strhne celou rezervaci z hlavního stropu; záloha svou
+    // skutečnou cenu podle vlastního ceníku ze svého.
+    expect(processSpendCap().snapshot()).toMatchObject({ reservedUsd: 0, callsMade: 1 });
+    const backup = processFallbackSpendCap().snapshot();
+    expect(backup).toMatchObject({ reservedUsd: 0, callsMade: 1 });
+    expect(backup.spentUsd).toBeCloseTo(costUsd(USAGE, { usdPerMTokIn: 1.25, usdPerMTokOut: 10 }), 12);
   });
 
   it('never caches a game the paid fallback wrote under the primary key', async () => {
@@ -345,9 +345,9 @@ describe('the director pays a hosted call through the process spend cap', () => 
     expect((await getDirector(Date.now(), 'cache-caller')(SENTENCE)).source).toBe('cached');
   });
 
-  it('does not call the paid fallback when the cap refuses it', async () => {
-    // Strop pustí primár (nejhorší případ ~0,0016 USD), ale ne zálohu (~0,08 USD).
-    stubEnv({ ...HOSTED, ...ASTRA_BACKUP, WORLDSMITH_SPEND_CAP_USD: '0.01' });
+  it('does not call the paid fallback when its cap refuses it', async () => {
+    // Strop zálohy nepustí její nejhorší případ (~0,08 USD).
+    stubEnv({ ...HOSTED, ...ASTRA_BACKUP, WORLDSMITH_SPEND_CAP_USD: '5', WORLDSMITH_FALLBACK_SPEND_CAP_USD: '0.01' });
     const held = stubFetch({ 'api.together.xyz': 503, 'api.openai.com': 'ok' });
     const game = await getDirector(Date.now(), 'refused-caller')(SENTENCE);
     expect(held).toHaveLength(1);
