@@ -233,11 +233,24 @@ async function cappedBranch(
               // a vypínač přepnutý mezitím by jinak placené volání nezastavil.
               if ((await killState(env)).upstream) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the upstream kill switch is on', usage: null };
               const side = upstreamBranch({ ...backup, timeoutMs: Math.max(1, Math.min(backup.timeoutMs, rest)) });
-              const held = await processFallbackSpendCap().reserve(side.worstCaseUsd(call));
-              if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the fallback spend cap refused the call', usage: null };
-              const outcome = await billed(held, backup.pricing, () => side.generate(call, signal));
-              // Role, ne transport: hru od zálohy režie nedá do cache pod klíč primáru.
-              return outcome.ok ? { ...outcome, provenance: { ...outcome.provenance, fallback: true } } : outcome;
+              const worstCaseUsd = side.worstCaseUsd(call);
+              // Placená záloha je druhé placené volání v letu, takže si bere vlastní
+              // slot dveří `play` (T2a, revize T2): jinak by jeden slot a jedna
+              // jednotka kvóty pustily dvě placená volání naráz. Bez volného slotu se
+              // nespustí a hra jede jen na primáru. Záloha zdarma (llama.cpp) slot
+              // nebere. Kvótu volajícího nebere ani placená: ta je mez vět na
+              // volajícího a věta je pořád jedna; peníze zálohy drží její strop.
+              const paid = worstCaseUsd > 0;
+              if (paid && !acquireSlot('play')) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'no free play slot for the paid fallback', usage: null };
+              try {
+                const held = await processFallbackSpendCap().reserve(worstCaseUsd);
+                if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the fallback spend cap refused the call', usage: null };
+                const outcome = await billed(held, backup.pricing, () => side.generate(call, signal));
+                // Role, ne transport: hru od zálohy režie nedá do cache pod klíč primáru.
+                return outcome.ok ? { ...outcome, provenance: { ...outcome.provenance, fallback: true } } : outcome;
+              } finally {
+                if (paid) releaseSlot('play');
+              }
             };
       return hedged(primary, fallback, hedgeMs(env));
     },

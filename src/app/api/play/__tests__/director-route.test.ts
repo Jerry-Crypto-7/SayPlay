@@ -28,7 +28,7 @@ vi.mock('@/play/director', async (importOriginal) => {
   return { ...actual, directorCacheFromEnv: () => actual.directorCache(answers.store ?? memoryAnswerStore()) };
 });
 
-import { resetConcurrency } from '../../worldstream/sessions/route';
+import { acquireSlot, releaseSlot, resetConcurrency, slotsDetail } from '../../worldstream/sessions/route';
 import { DIRECTOR_BUDGET_MS, getDirector, MIN_CALL_MS, minCallMs, OSS_MIN_CALL_MS } from '../_director';
 
 const OSS = {
@@ -202,6 +202,45 @@ describe('the minimum time left depends on the model', () => {
     expect((await getDirector(startedWith(40_000), 'late-caller')(SENTENCE)).source).toBe('draft');
     expect(called).toEqual(['api.together.xyz']);
     expect(processFallbackSpendCap().snapshot().callsMade).toBe(0);
+  });
+});
+
+describe('the paid backup holds its own play slot (T2a)', () => {
+  it('does not start when the primary took the last play slot', async () => {
+    // Primár visí do svého timeoutu; záloha by mohla hned, ale dveře `play` jsou plné.
+    stubEnv({ ...OSS, ...ASTRA_BACKUP, PLAY_DIRECTOR_HEDGE_MS: '0', WORLDSMITH_UPSTREAM_TIMEOUT_MS: '300' });
+    expect(acquireSlot('play')).toBe(true);
+    const { called } = stubFetch({ 'api.together.xyz': 'hang', 'api.openai.com': 'ok' });
+    expect((await getDirector(Date.now(), 'slot-caller')(SENTENCE)).source).toBe('draft');
+    expect(called).toEqual(['api.together.xyz']);
+    expect(processFallbackSpendCap().snapshot().callsMade).toBe(0);
+    releaseSlot('play');
+    expect(slotsDetail('play')).toContain('0 play');
+  });
+
+  it('starts with a free slot and gives it back when it is done', async () => {
+    stubEnv({ ...OSS, ...ASTRA_BACKUP, PLAY_DIRECTOR_HEDGE_MS: '0', WORLDSMITH_UPSTREAM_TIMEOUT_MS: '300' });
+    let held = '';
+    vi.stubGlobal('fetch', (url: string, init: RequestInit) => {
+      if (new URL(url).host === 'api.openai.com') {
+        held = slotsDetail('play');
+        return Promise.resolve(answer());
+      }
+      return new Promise((_, reject) => init.signal?.addEventListener('abort', () => reject(init.signal?.reason as Error)));
+    });
+    expect((await getDirector(Date.now(), 'slot-caller-2')(SENTENCE)).authoredBy).toBe('gpt-6-astra');
+    // Během volání zálohy drží dveře dva sloty: primár a záloha.
+    expect(held).toContain('2 play');
+    expect(slotsDetail('play')).toContain('0 play');
+  });
+
+  it('a free llama.cpp backup takes no slot', async () => {
+    stubEnv({ ...OSS, WORLDSMITH_FALLBACK_ENDPOINT: 'llamacpp:http://127.0.0.1:8792', PLAY_DIRECTOR_HEDGE_MS: '0', WORLDSMITH_UPSTREAM_TIMEOUT_MS: '300' });
+    expect(acquireSlot('play')).toBe(true);
+    const { called } = stubFetch({ 'api.together.xyz': 'hang', '127.0.0.1:8792': 'ok' });
+    expect((await getDirector(Date.now(), 'slot-caller-3')(SENTENCE)).source).toBe('authored');
+    expect(called).toContain('127.0.0.1:8792');
+    releaseSlot('play');
   });
 });
 
