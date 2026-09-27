@@ -715,11 +715,13 @@ function modelSummary(name, { results, billed, concurrency }) {
 
 /**
  * Souhrn srovnání. Férovost se kontroluje, ne předpokládá: jiný build nebo jiné
- * věty u některého modelu srovnání odmítnou.
+ * věty u některého modelu srovnání odmítnou. `buildId` je razítko z hlavičky,
+ * čtené před během – přestavba během prvního modelu dá oběma modelům totéž nové
+ * razítko a bez hlavičky by prošla.
  */
-export function compareSummary(runs) {
+export function compareSummary(runs, buildId) {
   const names = Object.keys(runs);
-  const builds = [...new Set(names.map((name) => runs[name].buildId))];
+  const builds = [...new Set([buildId, ...names.map((name) => runs[name].buildId)])];
   if (builds.length !== 1) throw new Error(`the models ran on different builds: ${builds.join(', ')}`);
   const sets = new Set(names.map((name) => runs[name].results.map((result) => result.id).sort().join(',')));
   if (sets.size !== 1) throw new Error('the models ran different sentences');
@@ -859,12 +861,15 @@ async function compare(options) {
     const server = await startServer(port, envs[name]);
     try {
       const results = await measureAll(sentences, server.base, concurrency, server.log);
-      // Razítko znovu po běhu: přestavba mezi modely se v souhrnu ukáže jako jiný build.
-      runs[name] = { buildId: buildStamp(nextDir, 0), concurrency, results, billed: billedFromLog(server.log()) };
+      runs[name] = { buildId: null, concurrency, results, billed: billedFromLog(server.log()) };
     } finally {
       await server.stop();
       writeFileSync(join(rawDir, `${name}-server.log`), server.log());
     }
+    // Zaplacená data na disk dřív, než čtení razítka může vyhodit (chybějící `BUILD_ID`).
+    writeJson(join(rawDir, `${name}.json`), runs[name]);
+    // Razítko znovu po běhu: přestavba během běhu se v souhrnu ukáže jako jiný build.
+    runs[name].buildId = buildStamp(nextDir, 0);
     writeJson(join(rawDir, `${name}.json`), runs[name]);
   }
   const header = {
@@ -890,7 +895,7 @@ async function compare(options) {
       }),
     ),
   }));
-  const models = compareSummary(runs);
+  const models = compareSummary(runs, buildId);
   const verdict = compareVerdict(models);
   const path = join(P30, `compare-${runId}.json`);
   writeJson(path, { header, valid: verdict.valid, invalid: verdict.reason, models, sentences: sentenceRows });

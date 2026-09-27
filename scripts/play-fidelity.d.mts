@@ -107,6 +107,7 @@ export interface ModelComparison {
 
 export declare function compareSummary(
   runs: Record<string, { readonly buildId: string; readonly concurrency: number; readonly results: readonly (MeasuredSentence | Pick<MeasuredSentence, 'id' | 'text' | 'checklist' | 'error'>)[]; readonly billed: readonly { readonly model: string; readonly usd: number | null }[] }>,
+  buildId: string,
 ): Record<string, ModelComparison>;
 
 export declare function compareVerdict(models: Record<string, ModelComparison>): { readonly valid: boolean; readonly reason: string | null; readonly exitCode: 0 | 1 };

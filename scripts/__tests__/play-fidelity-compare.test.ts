@@ -248,7 +248,7 @@ describe('the cause of a sentence without an AI version', () => {
   it('books a door refusal as door: not a model failure, out of fidelity, and the run is invalid', async () => {
     const results = await replay('oss20b', { ...RECORDED.oss20b, s002: refusedBy('no free play slot') });
     expect(results.map((result) => result.cause)).toEqual([null, 'model', 'door']);
-    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 2, results, billed: billedFromLog(BILLED_LOG.oss20b) } });
+    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 2, results, billed: billedFromLog(BILLED_LOG.oss20b) } }, 'b1');
     expect(summary.oss20b).toMatchObject({ n: 3, refused: { door: 1, cap: 0 }, published: { ok: 1, of: 2, share: 0.5, failures: { NOT_PLAYABLE: 1 } } });
     const scored = [aiSpec(SENTENCES[0]!.text), draftGameSpec(SENTENCES[1]!.text)].map((spec, at) => specFidelity(spec, SENTENCES[at]!.checklist).score);
     expect(summary.oss20b!.fidelity.read).toBeCloseTo((scored[0]! + scored[1]!) / 2, 3);
@@ -260,7 +260,7 @@ describe('the cause of a sentence without an AI version', () => {
   it('books a spend-cap refusal, also in a repair round, as cap, and the run is invalid', async () => {
     const results = await replay('oss20b', { ...RECORDED.oss20b, s002: refusedBy('repair round 1: spend cap refused the call') });
     expect(results.at(-1)!.cause).toBe('cap');
-    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.oss20b) } });
+    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.oss20b) } }, 'b1');
     expect(summary.oss20b).toMatchObject({ refused: { door: 0, cap: 1 }, published: { failures: { NOT_PLAYABLE: 1 } } });
     expect(compareVerdict(summary)).toMatchObject({ valid: false, exitCode: 1, reason: expect.stringMatching(/0 sentences refused by the play door, 1 by the spend or call cap/) });
   });
@@ -268,7 +268,7 @@ describe('the cause of a sentence without an AI version', () => {
   it('books MODEL_UNAVAILABLE without a door or cap line as the model, and the run stays valid', async () => {
     const results = await replay('oss20b', { ...RECORDED.oss20b, s002: refusedBy('upstream answered 503') });
     expect(results.at(-1)!.cause).toBe('model');
-    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.oss20b) } });
+    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.oss20b) } }, 'b1');
     expect(summary.oss20b).toMatchObject({ refused: { door: 0, cap: 0 }, published: { ok: 1, of: 3, failures: { NOT_PLAYABLE: 1, MODEL_UNAVAILABLE: 1 } } });
     expect(compareVerdict(summary)).toEqual({ valid: true, reason: null, exitCode: 0 });
   });
@@ -321,7 +321,7 @@ describe('compareSummary over recorded responses of both models', () => {
     const summary = compareSummary({
       astra: { buildId: 'b1', concurrency: 5, results: astra, billed: billedFromLog(BILLED_LOG.astra) },
       oss20b: { buildId: 'b1', concurrency: 5, results: oss20b, billed: billedFromLog(BILLED_LOG.oss20b) },
-    });
+    }, 'b1');
 
     expect(summary.astra!.published).toEqual({ ok: 3, of: 3, share: 1, failures: {} });
     // Hra, kterou robot odmítl, je návrh a nese důvod serveru.
@@ -347,18 +347,20 @@ describe('compareSummary over recorded responses of both models', () => {
     const oss20b = await replay('oss20b');
     const run = (results: readonly MeasuredSentence[], log: string, buildId = 'b1') => ({ buildId, concurrency: 1, results, billed: billedFromLog(log) });
 
-    expect(() => compareSummary({ astra: run(astra, BILLED_LOG.astra), oss20b: run(oss20b, BILLED_LOG.oss20b, 'b2') })).toThrow(/different builds/);
-    expect(() => compareSummary({ astra: run(astra.slice(1), BILLED_LOG.astra), oss20b: run(oss20b, BILLED_LOG.oss20b) })).toThrow(/different sentences/);
+    expect(() => compareSummary({ astra: run(astra, BILLED_LOG.astra), oss20b: run(oss20b, BILLED_LOG.oss20b, 'b2') }, 'b1')).toThrow(/different builds/);
+    // Přestavba během prvního modelu: oba modely nesou totéž nové razítko, liší se jen od hlavičky před během.
+    expect(() => compareSummary({ astra: run(astra, BILLED_LOG.astra, 'b2'), oss20b: run(oss20b, BILLED_LOG.oss20b, 'b2') }, 'b1')).toThrow(/different builds: b1, b2/);
+    expect(() => compareSummary({ astra: run(astra.slice(1), BILLED_LOG.astra), oss20b: run(oss20b, BILLED_LOG.oss20b) }, 'b1')).toThrow(/different sentences/);
     // Server pod jménem oss20b účtoval astru: měřil by se jiný model, než říká tabulka.
-    expect(() => compareSummary({ astra: run(astra, BILLED_LOG.astra), oss20b: run(oss20b, BILLED_LOG.astra) })).toThrow(/oss20b: the server billed gpt-6-astra/);
+    expect(() => compareSummary({ astra: run(astra, BILLED_LOG.astra), oss20b: run(oss20b, BILLED_LOG.astra) }, 'b1')).toThrow(/oss20b: the server billed gpt-6-astra/);
     // Autorské hry bez jediné účtenky: cena by se četla jako nula.
-    expect(() => compareSummary({ astra: run(astra, ''), oss20b: run(oss20b, BILLED_LOG.oss20b) })).toThrow(/no billed call/);
+    expect(() => compareSummary({ astra: run(astra, ''), oss20b: run(oss20b, BILLED_LOG.oss20b) }, 'b1')).toThrow(/no billed call/);
   });
 
   it('counts a sentence refused under load as an error, not as a model failure', async () => {
     const oss20b: (MeasuredSentence | Pick<MeasuredSentence, 'id' | 'text' | 'checklist' | 'error'>)[] = await replay('oss20b');
     oss20b[1] = { id: SENTENCES[1]!.id, text: SENTENCES[1]!.text, checklist: SENTENCES[1]!.checklist, error: 'POST 429 {"error":"RATE_LIMITED"}' };
-    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 5, results: oss20b, billed: billedFromLog(BILLED_LOG.oss20b) } });
+    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 5, results: oss20b, billed: billedFromLog(BILLED_LOG.oss20b) } }, 'b1');
     expect(summary.oss20b).toMatchObject({ n: 3, errors: 1, published: { ok: 2, failures: { ERROR: 1 } } });
   });
 });
