@@ -64,6 +64,35 @@ describe('the critic names rule problems', () => {
     expect(issues).toEqual([expect.objectContaining({ code: 'VERB_UNPROVED', path: '/rules/1' }), other]);
     expect(issues[0]?.evidence).toContain('throw');
   });
+
+  it('VERB_NO_EFFECT goes back like VERB_UNPROVED: named verb, its rule, a hint to make it change something', () => {
+    const spec = { rules: [{ verb: 'pick' }, { verb: 'wave' }] } as unknown as GameSpecV1;
+    const issues = verbIssues([{ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint failed: verbs_proved: VERB_NO_EFFECT:wave – fired, nothing changed', repairHint: '' }], spec);
+    expect(issues).toEqual([expect.objectContaining({ code: 'VERB_UNPROVED', severity: 'block', path: '/rules/1' })]);
+    expect(issues[0]?.evidence).toMatch(/^"wave" VERB_NO_EFFECT/);
+    expect(issues[0]?.repairHint).toContain('nonzero');
+  });
+});
+
+/** Pravidlo, které vystřelí při každém stisku a nic nezmění: skóre +0. */
+const WAVE = { id: 'wave', verb: 'wave', when: { press: 'action' }, if: null, do: [{ score: 0 }] };
+
+describe('the director repairs a verb that changes nothing', () => {
+  it('the no-effect verb goes to the model by name and a repair that removes it is accepted', async () => {
+    const { game, branch } = await run(answer({ rules: [...RULES, WAVE] }), [[{ op: 'remove', path: '/rules/3' }]]);
+    const sent = branch.calls[1]?.request.user ?? '';
+    expect(sent).toContain('VERB_NO_EFFECT');
+    expect(sent).toContain('wave');
+    expect(game.spec.rules?.map((rule) => rule.verb)).toEqual(['pick', 'throw', 'ring']);
+  });
+
+  it('when repair does not help, the no-effect rule is dropped and the game plays without it', async () => {
+    const noop = [{ op: 'replace', path: '/title', value: 'Bell Ringer' }];
+    const { game } = await run(answer({ rules: [...RULES, WAVE] }), [noop, noop]);
+    expect(game.fallbackReason).toBe('VERB_UNPROVED');
+    expect(game.spec.rules?.map((rule) => rule.verb)).toEqual(['pick', 'throw', 'ring']);
+    expect(check(game.spec)).toEqual([]);
+  });
 });
 
 describe('the director repairs rules before publishing', () => {

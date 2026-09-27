@@ -273,6 +273,7 @@ export function ruleInvalidIssues(detail: string, written: unknown): CriticIssue
 }
 
 const VERB_UNPROVED_MARK = /VERB_UNPROVED:([a-z][a-z-]*)/g;
+const VERB_NO_EFFECT_MARK = /VERB_NO_EFFECT:([a-z][a-z-]*)/g;
 
 /**
  * Ověření robotem hlásí neprokázané sloveso uvnitř nálezu keypointu
@@ -284,18 +285,32 @@ export function verbIssues<T extends Pick<CriticIssue, 'path' | 'evidence' | 're
   const out: (T | CriticIssue)[] = [];
   for (const issue of checked) {
     const verbs = [...issue.evidence.matchAll(VERB_UNPROVED_MARK)].map((match) => match[1] as string);
-    if (verbs.length === 0) {
+    const idle = [...issue.evidence.matchAll(VERB_NO_EFFECT_MARK)].map((match) => match[1] as string);
+    if (verbs.length === 0 && idle.length === 0) {
       out.push(issue);
       continue;
     }
-    for (const verb of verbs) {
+    const pathOf = (verb: string): string => {
       const index = (spec.rules ?? []).findIndex((rule) => rule.verb === verb);
+      return index < 0 ? '/rules' : `/rules/${String(index)}`;
+    };
+    for (const verb of verbs) {
       out.push({
         code: 'VERB_UNPROVED',
         severity: 'block',
-        path: index < 0 ? '/rules' : `/rules/${String(index)}`,
+        path: pathOf(verb),
         evidence: `the robot won without the rule for "${verb}" ever firing`,
         repairHint: `make the "${verb}" rule fire on the way to the win (a trigger the player meets, conditions that hold), or remove it`,
+      });
+    }
+    // Pravidlo, které vystřelí naprázdno (P30B T2), jde do opravy i do vyřazení stejnou cestou jako nevystřelené.
+    for (const verb of idle) {
+      out.push({
+        code: 'VERB_UNPROVED',
+        severity: 'block',
+        path: pathOf(verb),
+        evidence: `"${verb}" VERB_NO_EFFECT: the rule fired, but nothing in the game changed (a zero score or count, nothing moved, removed or switched)`,
+        repairHint: `make the "${verb}" rule change the game when it fires – a nonzero score or count, a body it removes, grabs, moves or reveals – or remove it`,
       });
     }
   }

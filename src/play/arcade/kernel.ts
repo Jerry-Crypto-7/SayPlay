@@ -666,7 +666,7 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
         state[HD.respawnZ] = state[base + S.z] as number;
       }
     } else changed = false;
-    if (changed && trace !== undefined) trace(owners?.[i] as number);
+    if (changed && trace !== undefined) trace(owners?.[i] as number, effect);
   }
 }
 
@@ -684,8 +684,9 @@ function settleRun(state: ArcadeState, end: TickEnd): void {
 /**
  * Stopa výstřelů (P29A): jádro ji zavolá s indexem pravidla světa pokaždé, když
  * efekt toho pravidla změnil stav. Je mimo stav, takže hash ani replay nevidí.
+ * Dostane i ten efekt a stav hned po něm – robot z něj měří, co se změnilo (P30B T2).
  */
-export type RuleTrace = (rule: number) => void;
+export type RuleTrace = (rule: number, effect: ArcadeEffect) => void;
 
 function fireRules(effects: ArcadeEffect[], owners: number[] | undefined, program: ArcadeProgram, trigger: RuleTrigger, ctx: RuleContext): void {
   const rules = program.rules;

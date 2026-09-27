@@ -42,8 +42,8 @@ describe('fidelity counts rule verbs the robot proved', () => {
 
   it('proofs from the report override the robot run', () => {
     const game = spec(throwRock);
-    expect(fidelityChain(game, [THROW], [{ verb: 'throw', fired: false, firstTick: null }])[0]?.read).toBe(false);
-    expect(fidelityChain(game, [THROW], [{ verb: 'throw', fired: true, firstTick: 40 }])[0]?.read).toBe(true);
+    expect(fidelityChain(game, [THROW], [{ verb: 'throw', fired: false, firstTick: null, changed: false, evidence: null }])[0]?.read).toBe(false);
+    expect(fidelityChain(game, [THROW], [{ verb: 'throw', fired: true, firstTick: 40, changed: true, evidence: 'body 3 moved 4.0 m after tick 40' }])[0]?.read).toBe(true);
   });
 
   it('a verb no rule carries stays not in spec', () => {

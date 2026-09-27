@@ -98,11 +98,18 @@ export interface QualityReport {
   readonly verbs?: readonly VerbProof[];
 }
 
-/** Jedno sloveso z pravidel: vystřelilo během robotova běhu, a v kterém tiku poprvé. */
+/**
+ * Jedno sloveso z pravidel: vystřelilo během robotova běhu, v kterém tiku
+ * poprvé, a zda se po výstřelu opravdu něco změnilo (P30B T2) – čítač, tělo,
+ * slot držení, poloha, výsledek. Dokázané je jen sloveso s `changed`.
+ */
 export interface VerbProof {
   readonly verb: string;
   readonly fired: boolean;
   readonly firstTick: number | null;
+  readonly changed: boolean;
+  /** Co se změnilo („score 0→1 at tick 57“); `null`, když nic. */
+  readonly evidence: string | null;
 }
 
 /** Neměnná publikovaná verze. `versionId` je hash všeho, na čem hra stojí. */

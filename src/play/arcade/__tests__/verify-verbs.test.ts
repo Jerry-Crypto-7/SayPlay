@@ -31,7 +31,7 @@ describe('verifyArcade proves rule verbs', () => {
   it('a verb that fires during the bot run is proved, with the first tick it fired', () => {
     const verdict = verifyArcade(world({ ...runnerFixture, rules: [collect] }));
     expect(verdict.bot.outcome).toBe('won');
-    expect(verdict.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: expect.any(Number) }]);
+    expect(verdict.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: expect.any(Number), changed: true, evidence: expect.any(String) }]);
     expect(verdict.verbs[0]!.firstTick).toBeGreaterThan(0);
     expect(verdict.failures).toEqual([]);
     expect(verdict.publishEligible).toBe(true);
@@ -41,8 +41,8 @@ describe('verifyArcade proves rule verbs', () => {
     const verdict = verifyArcade(world({ ...runnerFixture, rules: [collect, toss] }));
     expect(verdict.bot.outcome).toBe('won');
     expect(verdict.verbs).toEqual([
-      { verb: 'collect', fired: true, firstTick: expect.any(Number) },
-      { verb: 'throw', fired: false, firstTick: null },
+      { verb: 'collect', fired: true, firstTick: expect.any(Number), changed: true, evidence: expect.any(String) },
+      { verb: 'throw', fired: false, firstTick: null, changed: false, evidence: null },
     ]);
     expect(verdict.publishEligible).toBe(false);
     expect(verdict.failures.filter((failure) => failure.includes('VERB_UNPROVED'))).toEqual([expect.stringContaining('VERB_UNPROVED:throw')]);
@@ -61,8 +61,8 @@ describe('verifyArcade proves rule verbs', () => {
     const verdict = verifyArcade(world({ ...runnerFixture, rules: [collect, emptyThrow] }));
     expect(verdict.bot.outcome).toBe('won');
     expect(verdict.verbs).toEqual([
-      { verb: 'collect', fired: true, firstTick: expect.any(Number) },
-      { verb: 'throw', fired: false, firstTick: null },
+      { verb: 'collect', fired: true, firstTick: expect.any(Number), changed: true, evidence: expect.any(String) },
+      { verb: 'throw', fired: false, firstTick: null, changed: false, evidence: null },
     ]);
     expect(verdict.failures).toEqual([expect.stringContaining('VERB_UNPROVED:throw')]);
   });
@@ -70,11 +70,11 @@ describe('verifyArcade proves rule verbs', () => {
   it('two rules with one verb: the verb is proved when either fires', () => {
     const alsoCollect = { ...toss, id: 'toss2', verb: 'collect' };
     const verdict = verifyArcade(world({ ...runnerFixture, rules: [alsoCollect, collect] }));
-    expect(verdict.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: expect.any(Number) }]);
+    expect(verdict.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: expect.any(Number), changed: true, evidence: expect.any(String) }]);
     expect(verdict.publishEligible).toBe(true);
     // Obrácené pořadí: pálí první pravidlo, poslední mlčí – „poslední vyhrává“ by sloveso ztratilo.
     const reversed = verifyArcade(world({ ...runnerFixture, rules: [collect, alsoCollect] }));
-    expect(reversed.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: verdict.verbs[0]!.firstTick }]);
+    expect(reversed.verbs).toEqual([{ verb: 'collect', fired: true, firstTick: verdict.verbs[0]!.firstTick, changed: true, evidence: expect.any(String) }]);
   });
 
   it('a game without rules checks no verbs and reports exactly as before', () => {
