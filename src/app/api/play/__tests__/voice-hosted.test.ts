@@ -15,7 +15,9 @@ import { resetRateWindows } from '@/server/rate-limit';
 
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
 
-import { voiceEndpointFrom } from '../_voice';
+import { readGameSpec } from '@/play/spec';
+
+import { fetchVoice, scheduleVoice, voiceEndpointFrom } from '../_voice';
 import { POST as createGame } from '../games/route';
 import { GET as voiceOf } from '../games/[id]/voice/route';
 
@@ -79,6 +81,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
 });
@@ -125,30 +128,52 @@ describe('voice through the hosted speech API', () => {
     expect(speechPosts(calls)).toHaveLength(1);
   });
 
-  it('a provider that hangs does not hold the publication', async () => {
-    provider('hang');
+  it('a provider that hangs holds neither the publication nor buys a second call from waiting players', async () => {
+    const calls = provider('hang');
     const id = await publish('Hosted hang');
-    expect((await voice(id)).status).toBe(204);
+    const answers = await Promise.all([voice(id), voice(id), voice(id)]);
+    expect(answers.map((response) => response.status)).toEqual([204, 204, 204]);
+    await settle();
+    expect(speechPosts(calls)).toHaveLength(1);
   });
 
-  it('a failure, a foreign page or a dead network is silence and caches nothing', async () => {
+  it('a failure, a foreign page or a dead network is silence, caches nothing and is paid for at most once a minute', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
     for (const answer of ['error', 'page', 'down'] as const) {
       resetProcessAnswerStore();
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-      provider(answer);
+      const calls = provider(answer);
       const id = await publish(`Hosted ${answer}`);
       await settle();
-      const response = await voice(id);
-      expect(response.status, answer).toBe(204);
-      expect(response.headers.get('cache-control')).toBe('no-store');
+      for (let round = 0; round < 3; round += 1) {
+        const response = await voice(id);
+        expect(response.status, answer).toBe(204);
+        expect(response.headers.get('cache-control')).toBe('no-store');
+      }
       await settle();
-      // Nic se nezapeklo: až poskytovatel odpoví, dveře nahrávku dostanou.
-      provider('ogg');
+      // Poskytovatel mohl účtovat i za neuloženou nahrávku: opakované GET neplatí znovu.
+      expect(speechPosts(calls), answer).toHaveLength(1);
+      // Nic se nezapeklo: po minutě dveře zkusí znovu a nahrávku dostanou.
+      vi.setSystemTime(Date.now() + 61_000);
+      const retry = provider('ogg');
       expect((await voice(id)).status, answer).toBe(204);
       await settle();
+      expect(speechPosts(retry), answer).toHaveLength(1);
       expect((await voice(id)).status, answer).toBe(200);
       warn.mockRestore();
     }
+  });
+
+  it('on Vercel without a shared store it stays silent instead of paying once per instance', async () => {
+    const calls = provider();
+    const spec = readGameSpec(runnerFixture);
+    if (!spec.ok) throw new Error('fixture');
+    const env = { PLAY_VOICE_ENDPOINT: `openai-speech:${API}`, PLAY_VOICE_MODEL: MODEL, PLAY_VOICE_KEY: KEY, VERCEL: '1' };
+    expect(scheduleVoice(spec.value, env)).toBe(false);
+    expect(await fetchVoice(spec.value, env)).toBeNull();
+    expect(calls).toHaveLength(0);
+    // Mimo Vercel stačí paměť procesu.
+    expect(scheduleVoice(spec.value, { ...env, VERCEL: undefined })).toBe(true);
   });
 
   it('without the key or the model nothing is called and the game is silent', async () => {

@@ -22,7 +22,7 @@ import { after } from 'next/server';
 
 import type { GameSpecV1 } from '@/play/spec';
 import { ANSWER_CACHE_TIMEOUT_MS, ANSWER_TTL_SECONDS, type AnswerStore, httpAnswerStore, processAnswerStore } from '@/server/answer-cache';
-import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
+import { isServerless, sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
 export const VOICE = 'af_heart';
 const MAX_CHARS = 240;
@@ -32,6 +32,8 @@ const HOSTED = 'openai-speech:';
 const SPEECH_TIMEOUT_MS = 15_000;
 /** 240 znaků v Opusu je pod 100 kB; víc je cizí odpověď, ne nahrávka, a do úložiště nepatří. */
 const MAX_AUDIO_BYTES = 512 * 1024;
+/** Jedno placené volání na text za tuto dobu, i když skončí chybou (viz `synthesizeVoice`). */
+const RETRY_AFTER_SECONDS = 60;
 
 export interface VoiceEndpoint {
   readonly url: string;
@@ -95,24 +97,34 @@ export async function requestVoice(text: string, endpoint: VoiceEndpoint, fetchI
   }
 }
 
-/** Cache hlasu hostovaného API: sdílené úložiště jako u cache her, jinak paměť procesu. */
-function voiceStore(env: Env, fetchImpl: Fetch): AnswerStore {
+/**
+ * Cache hlasu hostovaného API: sdílené úložiště jako u cache her. Bez něj jen
+ * mimo serverless paměť procesu – na Vercelu by každá instance platila znovu,
+ * takže tam hostovaný hlas bez úložiště mlčí (`null`).
+ */
+function voiceStore(env: Env, fetchImpl: Fetch): AnswerStore | null {
   const shared = sharedStoreFromEnv(env);
-  if (shared === null) return processAnswerStore();
+  if (shared === null) return isServerless(env) ? null : processAnswerStore();
   return httpAnswerStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: ANSWER_CACHE_TIMEOUT_MS }, fetchImpl);
 }
 
 const voiceKey = (text: string): string => `voice:${voiceIdOf(text)}`;
+const pendingKey = (text: string): string => `${voiceKey(text)}:pending`;
 
 const isOgg = (audio: Uint8Array): boolean => audio.length > 4 && audio.length <= MAX_AUDIO_BYTES && String.fromCharCode(...audio.subarray(0, 4)) === 'OggS';
 
 /**
  * Nahrávka z hostovaného API do cache hlasu. Hotovou nečte znovu; úložiště,
  * které neodpoví, znamená nic neplatit – výsledek by nebylo kam uložit.
+ * Před placením jde do úložiště značka na `RETRY_AFTER_SECONDS`: souběžné
+ * GET ani GET po selhaném volání (poskytovatel účtoval, ale nahrávka se
+ * neuložila) do té doby neplatí znovu.
  */
 async function synthesizeVoice(text: string, endpoint: VoiceEndpoint, store: AnswerStore, fetchImpl: Fetch): Promise<boolean> {
   try {
     if ((await store.get(voiceKey(text))) !== null) return true;
+    if ((await store.get(pendingKey(text))) !== null) return false;
+    await store.set(pendingKey(text), '1', RETRY_AFTER_SECONDS);
     const response = await fetchImpl(`${endpoint.url}/audio/speech`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${endpoint.key}` },
@@ -144,7 +156,13 @@ export function scheduleVoice(spec: GameSpecV1, env: Env = process.env, fetchImp
   const endpoint = voiceEndpointFrom(env);
   const text = narrationOf(spec);
   if (endpoint === null || text === null) return false;
-  const task = endpoint.model === undefined ? requestVoice(text, endpoint, fetchImpl) : synthesizeVoice(text, endpoint, voiceStore(env, fetchImpl), fetchImpl);
+  let task: Promise<boolean>;
+  if (endpoint.model === undefined) task = requestVoice(text, endpoint, fetchImpl);
+  else {
+    const store = voiceStore(env, fetchImpl);
+    if (store === null) return false;
+    task = synthesizeVoice(text, endpoint, store, fetchImpl);
+  }
   try {
     after(task);
   } catch {
@@ -159,8 +177,10 @@ export async function fetchVoice(spec: GameSpecV1, env: Env = process.env, fetch
   const text = narrationOf(spec);
   if (endpoint === null || text === null) return null;
   if (endpoint.model !== undefined) {
+    const store = voiceStore(env, fetchImpl);
+    if (store === null) return null;
     try {
-      const stored = await voiceStore(env, fetchImpl).get(voiceKey(text));
+      const stored = await store.get(voiceKey(text));
       return stored === null ? null : new Uint8Array(Buffer.from(stored, 'base64'));
     } catch {
       return null;
