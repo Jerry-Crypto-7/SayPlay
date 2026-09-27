@@ -135,8 +135,9 @@ function robotVerbs(spec: GameSpecV1): readonly VerbProof[] {
  * Položky seznamu nad jedním specem, každá se všemi čtyřmi stupni.
  *
  * Sloveso pokryté pravidlem (P29A T9) je ve specu, když pravidlo to sloveso
- * nese, a čtené i kreslené teprve tehdy, když ho robot opravdu vystřelil –
- * pravidlo, které se nestalo, čitelnost nezvedne. `verbs` = důkazy z ověření
+ * nese, a čtené i kreslené teprve tehdy, když ho robot vystřelil a hra se tím
+ * změnila (P30B R2) – pravidlo, které se nestalo nebo nic neudělalo, čitelnost
+ * nezvedne. `verbs` = důkazy z ověření
  * (`QualityReport.verbs`); chybí-li, robot se pustí jen nad specem s pravidly.
  */
 export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEntry[], verbs?: readonly VerbProof[]): ChainItem[] {
@@ -148,7 +149,8 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   let built: ArcadeScene | undefined;
   const scene = (): ArcadeScene => (built ??= arcadeScene(spec));
   let proofs = verbs;
-  const fired = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.fired);
+  // Dokázané je sloveso, po kterém se hra změnila (`VerbProof.changed`, P30B R2), ne jen vystřelené pravidlo.
+  const proved = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.changed);
 
   const stage = (entry: ChecklistEntry, inSpec: boolean, read: boolean, drawn: boolean): ChainItem => ({
     item: entry.item,
@@ -170,7 +172,7 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
         return (verb.control !== undefined && controls.includes(verb.control)) || (verb.mechanic !== undefined && mechanics.includes(verb.mechanic));
       });
       const byRule = (spec.rules ?? []).filter((rule) => mentions(rule.verb, [entry.item, ...(entry.match ?? [])])).map((rule) => rule.verb);
-      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(fired);
+      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(proved);
       // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika nebo vystřelené pravidlo je vidět hraním.
       return stage(entry, byControl || byAddon || byMechanic.length > 0 || byRule.length > 0, read, read);
     }

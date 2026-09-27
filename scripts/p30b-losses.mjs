@@ -206,10 +206,11 @@ function markdown({ header, baseline, groups, rows }) {
     lines.push('');
   }
   const heroLost = rows.filter((row) => row.role === 'hero' && row.source === 'ai' && !row.recognized).length;
+  const gridSetting = groups.find((group) => group.key === 'ai|not-recognized|setting|tap_go')?.sentences ?? 0;
   lines.push(
     '## Co z toho plyne',
     '',
-    `- **Prostředí mřížky** je největší jednotlivá ztráta: 8 vět, u kterých řetěz tvrdí „nakresleno“ a porota vidí béžové nebo neutrální pole → T6.`,
+    `- **Prostředí mřížky** je největší jednotlivá ztráta: ${gridSetting} vět, u kterých řetěz tvrdí „nakresleno“ a porota vidí béžové nebo neutrální pole → T6.`,
     `- **Hrdina a položky** se ztrácejí hlavně tím, že jsou malé nebo daleko (${heroLost} hrdinů bez poznání v \`ai\`; porota píše „tiny“, „small“, „distant“) a u mřížky tím, že \`assetSource\` nezná množné číslo ani zástupce arkády („purple elephants“, „squirrel“ → \`no-model\`, src/play/compile/assets.ts:62-65) → T3, T4, T5.`,
     '- **Slovesa** na snímku poznat nejdou; jejich důkaz je změna stavu ve hře → T2.',
     '- Ztráty `not-in-spec` (draft i režisér) jsou mimo P30B: patří čtečce a režisérovi.',
