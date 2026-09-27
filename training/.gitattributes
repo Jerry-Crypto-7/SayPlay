@@ -1,0 +1,2 @@
+# Skripty běží v bashi ve WSL; CRLF by je rozbil.
+*.sh text eol=lf

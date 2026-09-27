@@ -1,0 +1,12 @@
+# Váhy, checkpointy a GGUF patří do D:/caches/p30c/, nikdy do repa.
+*.safetensors
+*.gguf
+*.bin
+*.pt
+*.pth
+*.ckpt
+checkpoints/
+outputs/
+unsloth_compiled_cache/
+.venv/
+__pycache__/

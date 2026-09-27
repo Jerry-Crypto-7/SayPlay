@@ -1,0 +1,21 @@
+[project]
+name = "p30c-training"
+version = "0.1.0"
+description = "P30C: QLoRA test of gpt-oss-20b with Unsloth on one RTX 3090 (WSL Ubuntu 24.04)"
+requires-python = ">=3.12,<3.13"
+# Přesné verze, jak je 27. 9. 2026 vyřešil `uv lock` (unsloth drží torch < 2.13
+# a sám vybírá transformers/trl); zbytek grafu drží uv.lock.
+dependencies = [
+  "unsloth[huggingface]==2026.9.11",
+  "unsloth-zoo==2026.9.7",
+  "torch==2.12.1",
+  "transformers==5.5.0",
+  "peft==0.21.0",
+  "trl==0.24.0",
+  "bitsandbytes==0.50.2",
+  "datasets==4.3.0",
+  "accelerate==1.15.0",
+]
+
+[tool.uv]
+package = false
