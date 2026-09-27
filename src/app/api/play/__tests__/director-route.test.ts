@@ -205,42 +205,79 @@ describe('the minimum time left depends on the model', () => {
   });
 });
 
-describe('the paid backup holds its own play slot (T2a)', () => {
-  it('does not start when the primary took the last play slot', async () => {
-    // Primár visí do svého timeoutu; záloha by mohla hned, ale dveře `play` jsou plné.
-    stubEnv({ ...OSS, ...ASTRA_BACKUP, PLAY_DIRECTOR_HEDGE_MS: '0', WORLDSMITH_UPSTREAM_TIMEOUT_MS: '300' });
-    expect(acquireSlot('play')).toBe(true);
-    const { called } = stubFetch({ 'api.together.xyz': 'hang', 'api.openai.com': 'ok' });
-    expect((await getDirector(Date.now(), 'slot-caller')(SENTENCE)).source).toBe('draft');
-    expect(called).toEqual(['api.together.xyz']);
-    expect(processFallbackSpendCap().snapshot().callsMade).toBe(0);
-    releaseSlot('play');
-    expect(slotsDetail('play')).toContain('0 play');
-  });
+describe('the paid backup has its own pool of slots (T2a, T2b)', () => {
+  const LLAMA = { WORLDSMITH_FALLBACK_ENDPOINT: 'llamacpp:http://127.0.0.1:8792' } as const;
 
-  it('starts with a free slot and gives it back when it is done', async () => {
-    stubEnv({ ...OSS, ...ASTRA_BACKUP, PLAY_DIRECTOR_HEDGE_MS: '0', WORLDSMITH_UPSTREAM_TIMEOUT_MS: '300' });
-    let held = '';
+  /** Primár odpoví stavem `primary`; volání zálohy čekají na `open()` a zrušené odmítnou. */
+  function gatedBackup(backupHost: string, primary: number) {
+    const called: string[] = [];
+    const waiting: (() => void)[] = [];
     vi.stubGlobal('fetch', (url: string, init: RequestInit) => {
-      if (new URL(url).host === 'api.openai.com') {
-        held = slotsDetail('play');
-        return Promise.resolve(answer());
-      }
-      return new Promise((_, reject) => init.signal?.addEventListener('abort', () => reject(init.signal?.reason as Error)));
+      const host = new URL(url).host;
+      called.push(host);
+      if (host !== backupHost) return Promise.resolve(new Response('{}', { status: primary }));
+      return new Promise((resolve, reject) => {
+        waiting.push(() => resolve(answer()));
+        init.signal?.addEventListener('abort', () => reject(init.signal?.reason as Error));
+      });
     });
-    expect((await getDirector(Date.now(), 'slot-caller-2')(SENTENCE)).authoredBy).toBe('gpt-6-astra');
-    // Během volání zálohy drží dveře dva sloty: primár a záloha.
-    expect(held).toContain('2 play');
+    return { called, waiting, open: () => waiting.splice(0).forEach((go) => go()) };
+  }
+
+  /** Dvě režie, jejichž primár selže; vrací se, až obě zálohy visí u poskytovatele. */
+  async function twoBackupsInFlight(backupHost: string) {
+    const up = gatedBackup(backupHost, 503);
+    const games = [getDirector(Date.now(), 'pool-a')(`${SENTENCE} one`), getDirector(Date.now(), 'pool-b')(`${SENTENCE} two`)];
+    await vi.waitFor(() => expect(up.waiting).toHaveLength(2));
+    return { up, games };
+  }
+
+  it('starts while two director calls hold both play slots', async () => {
+    stubEnv({ ...OSS, ...ASTRA_BACKUP, WORLDSMITH_FALLBACK_TIMEOUT_MS: '3000' });
+    const { up, games } = await twoBackupsInFlight('api.openai.com');
+    expect(slotsDetail('play')).toContain('2 play');
+    up.open();
+    expect((await Promise.all(games)).map((game) => game.authoredBy)).toEqual(['gpt-6-astra', 'gpt-6-astra']);
     expect(slotsDetail('play')).toContain('0 play');
   });
 
-  it('a free llama.cpp backup takes no slot', async () => {
-    stubEnv({ ...OSS, WORLDSMITH_FALLBACK_ENDPOINT: 'llamacpp:http://127.0.0.1:8792', PLAY_DIRECTOR_HEDGE_MS: '0', WORLDSMITH_UPSTREAM_TIMEOUT_MS: '300' });
-    expect(acquireSlot('play')).toBe(true);
-    const { called } = stubFetch({ 'api.together.xyz': 'hang', '127.0.0.1:8792': 'ok' });
-    expect((await getDirector(Date.now(), 'slot-caller-3')(SENTENCE)).source).toBe('authored');
-    expect(called).toContain('127.0.0.1:8792');
+  it('refuses a third paid backup while two are in flight', async () => {
+    stubEnv({ ...OSS, ...ASTRA_BACKUP, WORLDSMITH_FALLBACK_TIMEOUT_MS: '3000' });
+    const { up, games } = await twoBackupsInFlight('api.openai.com');
+    // Dveře širší než zásoba zálohy: jeden jejich slot se půjčí třetí režii.
     releaseSlot('play');
+    expect((await getDirector(Date.now(), 'pool-c')(`${SENTENCE} three`)).source).toBe('draft');
+    expect(up.called.filter((host) => host === 'api.openai.com')).toHaveLength(2);
+    expect(acquireSlot('play')).toBe(true);
+    up.open();
+    expect((await Promise.all(games)).map((game) => game.authoredBy)).toEqual(['gpt-6-astra', 'gpt-6-astra']);
+    expect(processFallbackSpendCap().snapshot()).toMatchObject({ callsMade: 2, reservedUsd: 0 });
+  });
+
+  it('gives its slot back when the backup fails or times out', async () => {
+    stubEnv({ ...OSS, ...ASTRA_BACKUP, WORLDSMITH_FALLBACK_TIMEOUT_MS: '300' });
+    for (const reply of [503, 'hang'] as const) {
+      const { called } = stubFetch({ 'api.together.xyz': 503, 'api.openai.com': reply });
+      for (const n of [1, 2, 3]) expect((await getDirector(Date.now(), `back-${reply}-${n}`)(`${SENTENCE} ${reply} ${n}`)).source).toBe('draft');
+      expect(called.filter((host) => host === 'api.openai.com')).toHaveLength(3);
+    }
+    stubEnv({ WORLDSMITH_FALLBACK_TIMEOUT_MS: '3000' });
+    const { up, games } = await twoBackupsInFlight('api.openai.com');
+    up.open();
+    expect((await Promise.all(games)).map((game) => game.authoredBy)).toEqual(['gpt-6-astra', 'gpt-6-astra']);
+  });
+
+  it('a free llama.cpp backup takes no slot, even with two in flight', async () => {
+    stubEnv({ ...OSS, ...LLAMA, WORLDSMITH_FALLBACK_TIMEOUT_MS: '3000' });
+    const { up, games } = await twoBackupsInFlight('127.0.0.1:8792');
+    releaseSlot('play');
+    const third = getDirector(Date.now(), 'pool-c')(`${SENTENCE} three`);
+    await vi.waitFor(() => expect(up.waiting).toHaveLength(3));
+    up.open();
+    expect((await Promise.all([...games, third])).map((game) => game.source)).toEqual(['authored', 'authored', 'authored']);
+    // Půjčený slot vrátit: test ho dveřím ubral, třetí režie ho vzala a vrátila.
+    expect(acquireSlot('play')).toBe(true);
+    expect(slotsDetail('play')).toContain('0 play');
   });
 });
 

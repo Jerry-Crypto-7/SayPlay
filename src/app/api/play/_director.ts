@@ -99,6 +99,20 @@ function hedgeMs(env: Record<string, string | undefined>): number {
   return Number.isFinite(value) && value >= 0 ? value : DEFAULT_HEDGE_MS;
 }
 
+/**
+ * Kolik placených záloh smí na instanci běžet naráz (T2b, revize hranice fáze 1).
+ *
+ * Záloha má vlastní zásobu, ne slot dveří `play`: dveře mají dva sloty a dvě
+ * režie je obsadí, takže záloha braná ze stejné zásoby by se při výpadku
+ * primáru odmítla u obou a obě hry by byly návrhy ze slov, ačkoli strop zálohy
+ * je netknutý. Dvě = jedna na každý dnešní slot dveří; širší dveře zálohu
+ * nerozšíří. Celkový strop souběžných placených volání ji nepočítá – drží počet
+ * vět v letu a záloha je druhé volání věty, která v něm už je; peníze zálohy
+ * drží její vlastní strop.
+ */
+export const MAX_PAID_FALLBACKS = 2;
+let paidFallbacks = 0;
+
 type Call = (signal: AbortSignal) => Promise<GenerationOutcome>;
 
 /**
@@ -247,14 +261,14 @@ async function cappedBranch(
               if ((await killState(env)).upstream) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the upstream kill switch is on', usage: null };
               const side = upstreamBranch({ ...backup, timeoutMs: Math.max(1, Math.min(backup.timeoutMs, rest)) });
               const worstCaseUsd = side.worstCaseUsd(call);
-              // Placená záloha je druhé placené volání v letu, takže si bere vlastní
-              // slot dveří `play` (T2a, revize T2): jinak by jeden slot a jedna
-              // jednotka kvóty pustily dvě placená volání naráz. Bez volného slotu se
-              // nespustí a hra jede jen na primáru. Záloha zdarma (llama.cpp) slot
-              // nebere. Kvótu volajícího nebere ani placená: ta je mez vět na
-              // volajícího a věta je pořád jedna; peníze zálohy drží její strop.
+              // Placená záloha je druhé placené volání v letu, takže bere slot
+              // z vlastní zásoby `MAX_PAID_FALLBACKS` (T2a, T2b), ne ze slotů dveří
+              // `play`. Bez volného slotu se nespustí a hra jede jen na primáru.
+              // Záloha zdarma (llama.cpp) slot nebere. Kvótu volajícího nebere ani
+              // placená: ta je mez vět na volajícího a věta je pořád jedna.
               const paid = worstCaseUsd > 0;
-              if (paid && !acquireSlot('play')) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'no free play slot for the paid fallback', usage: null };
+              if (paid && paidFallbacks >= MAX_PAID_FALLBACKS) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'no free slot for the paid fallback', usage: null };
+              if (paid) paidFallbacks += 1;
               try {
                 const held = await processFallbackSpendCap().reserve(worstCaseUsd);
                 if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the fallback spend cap refused the call', usage: null };
@@ -262,7 +276,7 @@ async function cappedBranch(
                 // Role, ne transport: hru od zálohy režie nedá do cache pod klíč primáru.
                 return outcome.ok ? { ...outcome, provenance: { ...outcome.provenance, fallback: true } } : outcome;
               } finally {
-                if (paid) releaseSlot('play');
+                if (paid) paidFallbacks -= 1;
               }
             };
       return hedged(primary, fallback, hedgeMs(env));
