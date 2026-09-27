@@ -217,6 +217,24 @@ describe('the upstream kill switch', () => {
     expect(game.source).toBe('draft');
     expect(called).toEqual([]);
   });
+
+  it('stops the backup when it is flipped while the primary is still out', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p30a-kill-'));
+    temporary.push(dir);
+    const file = join(dir, 'control.json');
+    stubEnv({ ...OSS, ...ASTRA_BACKUP, WORLDSMITH_CONTROL_FILE: file });
+    const called: string[] = [];
+    vi.stubGlobal('fetch', (url: string) => {
+      const host = new URL(url).host;
+      called.push(host);
+      // Operátor vypne model, zatímco primár ještě běží; primár pak selže.
+      writeFileSync(file, JSON.stringify({ off: ['upstream'] }), 'utf8');
+      return Promise.resolve(host === 'api.openai.com' ? answer() : new Response('{}', { status: 503 }));
+    });
+    expect((await getDirector(Date.now(), 'kill-late-caller')(SENTENCE)).source).toBe('draft');
+    expect(called).toEqual(['api.together.xyz']);
+    expect(processFallbackSpendCap().snapshot().callsMade).toBe(0);
+  });
 });
 
 describe('the backup book', () => {
@@ -247,5 +265,19 @@ describe('the backup book', () => {
     expect((await fallbackSpendCapFromEnv({ ...env, WORLDSMITH_FALLBACK_SPEND_CAP_USD: '1' }).reserve(0.01)).ok).toBe(true);
     // Záloha zdarma projde i nulovým stropem.
     expect((await fallbackSpendCapFromEnv(env).reserve(0)).ok).toBe(true);
+  });
+
+  it('counts its calls against its own call cap, not the main one', async () => {
+    const env = { WORLDSMITH_FALLBACK_SPEND_CAP_USD: '5', VERCEL_ENV: 'production' };
+    const once = fallbackSpendCapFromEnv({ ...env, WORLDSMITH_CALL_CAP: '5000', WORLDSMITH_FALLBACK_CALL_CAP: '1' });
+    const first = await once.reserve(0.01);
+    if (first.ok) await first.settle(0.01);
+    expect(first.ok).toBe(true);
+    expect(await once.reserve(0.01)).toMatchObject({ ok: false });
+
+    resetProcessSpendCap();
+    // Přitažený hlavní počet zálohu nezastaví; bez vlastní hodnoty platí výchozích 200.
+    const loose = fallbackSpendCapFromEnv({ ...env, WORLDSMITH_CALL_CAP: '1' });
+    for (let call = 0; call < 2; call++) expect((await loose.reserve(0.01)).ok).toBe(true);
   });
 });

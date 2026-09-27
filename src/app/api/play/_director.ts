@@ -229,6 +229,9 @@ async function cappedBranch(
           : async (signal) => {
               const rest = deadline - Date.now();
               if (rest < minCallMs(backup)) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'too little time left for the fallback', usage: null };
+              // Vypínač znovu až tady (revize T3): záloha startuje až po `hedgeMs`
+              // a vypínač přepnutý mezitím by jinak placené volání nezastavil.
+              if ((await killState(env)).upstream) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the upstream kill switch is on', usage: null };
               const side = upstreamBranch({ ...backup, timeoutMs: Math.max(1, Math.min(backup.timeoutMs, rest)) });
               const held = await processFallbackSpendCap().reserve(side.worstCaseUsd(call));
               if (!held.ok) return { ok: false, reason: 'UPSTREAM_REJECTED', detail: 'the fallback spend cap refused the call', usage: null };

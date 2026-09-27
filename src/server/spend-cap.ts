@@ -992,13 +992,15 @@ export const FALLBACK_BOOK = 'fallback';
 export function fallbackSpendCapFromEnv(env: Record<string, string | undefined>): SpendCap {
   const parsed = Number(env.WORLDSMITH_FALLBACK_SPEND_CAP_USD);
   const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-  return new SpendCap({ enabled: true, capUsd, callCap: callCapFromEnv(env) }, null, ledgerFromEnv(env, fetch, FALLBACK_BOOK), null);
+  // Vlastní počet volání (revize T3): levný primár potřebuje `WORLDSMITH_CALL_CAP`
+  // v tisících a záloha by s ním ztratila jedinou pojistku proti překlepu v ceníku.
+  const callCap = callCapFrom(env.WORLDSMITH_FALLBACK_CALL_CAP);
+  return new SpendCap({ enabled: true, capUsd, callCap }, null, ledgerFromEnv(env, fetch, FALLBACK_BOOK), null);
 }
 
 // Táž doktrína jako u dolarů: chybějící proměnná je výchozí hodnota, vadná je
 // NULA. Překlep jinak tiše zvedne strop, kdežto nula zastaví provoz a je vidět.
-function callCapFromEnv(env: Record<string, string | undefined>): number {
-  const rawCalls = env.WORLDSMITH_CALL_CAP;
+function callCapFrom(rawCalls: string | undefined): number {
   const parsedCalls = rawCalls === undefined ? DEFAULT_CALL_CAP : Number(rawCalls);
   return Number.isInteger(parsedCalls) && parsedCalls >= 0 ? parsedCalls : 0;
 }
@@ -1007,7 +1009,7 @@ export function spendCapFromEnv(env: Record<string, string | undefined>): SpendC
   const raw = env.WORLDSMITH_SPEND_CAP_USD;
   const parsed = raw === undefined ? DEFAULT_CAP_USD : Number(raw);
   const capUsd = Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
-  const callCap = callCapFromEnv(env);
+  const callCap = callCapFrom(env.WORLDSMITH_CALL_CAP);
   // **Kniha z prostředí, a `null` z ní znamená odmítat** — serverless bez
   // sdíleného úložiště, viz `ledgerFromEnv()`. Strop, který se resetuje
   // s chladným startem, je horší než žádný: tváří se, že platí.
