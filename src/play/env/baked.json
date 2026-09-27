@@ -9,7 +9,8 @@
     "workshop",
     "auto repair",
     "tool shed"
-   ]
+   ],
+   "horizon": "#444242"
   },
   {
    "id": "library",
@@ -21,7 +22,8 @@
     "bookstore",
     "bookshop",
     "reading room"
-   ]
+   ],
+   "horizon": "#564c4a"
   },
   {
    "id": "airport",
@@ -32,7 +34,8 @@
     "terminal",
     "airfield",
     "hangar"
-   ]
+   ],
+   "horizon": "#d2e0e8"
   },
   {
    "id": "zoo",
@@ -41,7 +44,8 @@
     "zoo",
     "enclosure",
     "petting"
-   ]
+   ],
+   "horizon": "#899a84"
   },
   {
    "id": "waterfall",
@@ -49,7 +53,8 @@
    "words": [
     "waterfall",
     "cascade"
-   ]
+   ],
+   "horizon": "#66786d"
   },
   {
    "id": "arctic",
@@ -62,7 +67,8 @@
     "north pole",
     "south pole",
     "iceberg"
-   ]
+   ],
+   "horizon": "#e2e7e9"
   },
   {
    "id": "savanna",
@@ -75,7 +81,8 @@
     "grassland",
     "africa",
     "african"
-   ]
+   ],
+   "horizon": "#c6c9c7"
   },
   {
    "id": "prairie",
@@ -88,7 +95,8 @@
     "saloon",
     "cowboy",
     "cactus"
-   ]
+   ],
+   "horizon": "#bac0c1"
   },
   {
    "id": "pyramid",
@@ -100,7 +108,8 @@
     "pharaoh",
     "tomb",
     "sphinx"
-   ]
+   ],
+   "horizon": "#dac8ab"
   },
   {
    "id": "highway",
@@ -110,7 +119,8 @@
     "freeway",
     "motorway",
     "interstate"
-   ]
+   ],
+   "horizon": "#a3968d"
   },
   {
    "id": "playground",
@@ -120,7 +130,8 @@
     "swing",
     "sandbox",
     "seesaw"
-   ]
+   ],
+   "horizon": "#c1d9d7"
   },
   {
    "id": "bathroom",
@@ -131,7 +142,8 @@
     "bath",
     "shower",
     "toilet"
-   ]
+   ],
+   "horizon": "#ced4d8"
   },
   {
    "id": "bakery",
@@ -142,7 +154,8 @@
     "pastry",
     "pastries",
     "bakeshop"
-   ]
+   ],
+   "horizon": "#7d5f50"
   },
   {
    "id": "construction",
@@ -152,14 +165,16 @@
     "crane",
     "scaffolding",
     "building site"
-   ]
+   ],
+   "horizon": "#c2d1db"
   },
   {
    "id": "lighthouse",
    "prompt": "lighthouse on a rocky coast at dusk",
    "words": [
     "lighthouse"
-   ]
+   ],
+   "horizon": "#a4a0ad"
   },
   {
    "id": "autumn",
@@ -170,7 +185,8 @@
     "leaves",
     "maple",
     "orchard"
-   ]
+   ],
+   "horizon": "#ae7c72"
   },
   {
    "id": "black-hole",
@@ -181,7 +197,8 @@
     "event horizon",
     "nebula",
     "void"
-   ]
+   ],
+   "horizon": "#6e808d"
   },
   {
    "id": "casino",
@@ -191,7 +208,8 @@
     "slot machine",
     "poker",
     "vegas"
-   ]
+   ],
+   "horizon": "#ab9b9e"
   },
   {
    "id": "theater",
@@ -203,7 +221,8 @@
     "cinema",
     "opera",
     "curtain"
-   ]
+   ],
+   "horizon": "#614249"
   },
   {
    "id": "concert",
@@ -213,7 +232,8 @@
     "festival",
     "rock show",
     "gig"
-   ]
+   ],
+   "horizon": "#9ea7b5"
   },
   {
    "id": "gym",
@@ -224,7 +244,8 @@
     "workout",
     "weights",
     "treadmill"
-   ]
+   ],
+   "horizon": "#d9e2e5"
   },
   {
    "id": "dentist",
@@ -233,7 +254,8 @@
     "dentist",
     "dental",
     "orthodontist"
-   ]
+   ],
+   "horizon": "#e1e5e5"
   },
   {
    "id": "breakfast-table",

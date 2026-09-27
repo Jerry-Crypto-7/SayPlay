@@ -2762,7 +2762,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (931)
+## Vlastní, ne třetí strana (981)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3691,6 +3691,56 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/workbench-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/workbench-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/workbench.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/play/env/airport-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/airport.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/arctic-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/arctic.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/autumn-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/autumn.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bakery-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bakery.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bathroom-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bathroom.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/black-hole-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/black-hole.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/breakfast-table-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/breakfast-table.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/cardboard-lawn-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/cardboard-lawn.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/casino-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/casino.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/concert-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/concert.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/construction-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/construction.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/dentist-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/dentist.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/garage-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/garage.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/gym-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/gym.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/highway-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/highway.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/library-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/library.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/lighthouse-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/lighthouse.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/playground-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/playground.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/prairie-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/prairie.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/pyramid-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/pyramid.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/savanna-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/savanna.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/spinning-log-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/spinning-log.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/theater-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/theater.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/waterfall-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/waterfall.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/zoo-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/zoo.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **claude-sonnet-5** (model): Doslovný identifikátor v src/server/__tests__/upstream.test.ts: test předává změněné model ID mock transportu a ověřuje request body. Tato položka neprohlašuje volání modelu Anthropic v lokálním subscription demu ani existenci modelu tohoto jména.
 - **gemini-9-pro** (model): vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts. Produkt žádný model Google nevolá; zapsat ho jako třetí stranu by bylo nepravdivé tvrzení o tom, co projekt používá.
 - **gpt-neexistuje** (model): vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá". Žádný model tohoto jména neexistuje.

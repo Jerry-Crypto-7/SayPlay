@@ -1,23 +1,2 @@
 # P30A T4: settings from src/play/env/baked.json without a baked panorama (scripts/cloud/bake-panoramas.mjs).
-garage	cluttered car garage workshop with tools and an old car
-library	quiet old library with tall wooden bookshelves
-airport	busy airport terminal with planes on the runway
-zoo	sunny zoo with animal enclosures and green paths
-waterfall	tall waterfall pouring into a green jungle pool
-arctic	arctic tundra with ice floes under a pale sky
-savanna	golden african savanna with acacia trees
-prairie	wild west prairie with a wooden ranch and cactus
-pyramid	ancient egyptian pyramids in golden desert light
-highway	long highway through the countryside at dusk
-playground	colorful playground with swings and a slide
-bathroom	clean bathroom with a bathtub and white tiles
-bakery	warm bakery with bread and pastries on shelves
-construction	construction site with cranes and scaffolding
-lighthouse	lighthouse on a rocky coast at dusk
-autumn	autumn forest with orange and red falling leaves
-black-hole	swirling black hole in deep space
-casino	glittering casino with slot machines and card tables
-theater	grand theater stage with red curtains
-concert	rock concert stage with lights and a cheering crowd
-gym	gym with weights and treadmills
-dentist	bright dentist office with a dental chair
+# none
