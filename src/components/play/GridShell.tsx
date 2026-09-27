@@ -18,7 +18,7 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
-import { LOOKS, lookOf } from '@/play/arcade/look';
+import { lookOf, sceneLook } from '@/play/arcade/look';
 import { createMeshClient } from '@/shape/mesh-client';
 import { createCachedMeshClient } from '@/shape/mesh-cache';
 import { buildProxyWorldFrom, type ProxyWorld } from '@/worldstream/proxy';
@@ -160,6 +160,8 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     () => new Map(blueprint.objects.map((object) => [object.binding?.entityId ?? object.stableId, object.stableId] as const)),
     [blueprint],
   );
+  // Zem a kulisy podle místa z věty (P30B T6): deska pod hrou i plocha za ní.
+  const scene = useMemo(() => sceneLook(spec.theme), [spec.theme]);
   const goTo = useCallback((card: TargetCard) => {
     send(card.moveTo, card.id);
     if (card.second !== null) pending.current = { action: card.second, after: controller.getSnapshot().tick };
@@ -352,11 +354,11 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
           if (card !== null) goTo(card);
         }}
       >
-        <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false}>
+        <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false} ground={scene.ground}>
           <TapTargets slots={slots} project={project} />
           {built && blueprint.world.sim !== null && (
             <>
-              <GridScenery look={LOOKS[lookOf(spec.theme)]} {...gridOf(blueprint.world.sim)} />
+              <GridScenery look={scene} {...gridOf(blueprint.world.sim)} />
               <PatrolSight sim={blueprint.world.sim} controller={controller} />
               <OrderBubbles sim={blueprint.world.sim} roles={spec.roles} controller={controller} />
             </>

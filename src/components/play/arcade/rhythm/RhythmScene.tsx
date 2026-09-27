@@ -24,7 +24,7 @@ import { playTone } from '@/play/audio';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
-import { initialBody } from '../timing/TimingScene';
+import { type BodyModel, initialBody } from '../timing/TimingScene';
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
@@ -34,7 +34,8 @@ const LANE_OF = (x: number): number => Math.round(x / RHYTHM.laneW + (RHYTHM.lan
 const FLASH_TICKS = 12;
 const TRACK_M = 60;
 
-export function RhythmScene({ session, look: scene }: { readonly session: ArcadeSession; readonly look: Look }) {
+/** `noteModel` (P30B T4): nota z popisku role `note` („lily pads“) na svítící desce v barvě pruhu. */
+export function RhythmScene({ session, look: scene, noteModel }: { readonly session: ArcadeSession; readonly look: Look; readonly noteModel?: BodyModel }) {
   const world = session.world;
   const count = world.initial[HEADER.bodyCount] as number;
   const notes = useMemo(() => Array.from({ length: count - 1 }, (_, i) => initialBody(world, i + 1)), [world, count]);
@@ -117,11 +118,21 @@ export function RhythmScene({ session, look: scene }: { readonly session: Arcade
       {notes.map((note, i) => {
         const lane = LANE_OF(note.x * UNIT);
         return (
-          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]} userData={{ frame: 'target' }}>
-            <mesh position={[0, note.h / 2, 0]}>
-              <boxGeometry args={[note.w, note.h, note.d]} />
-              <meshStandardMaterial color={LANE_COLORS[lane] ?? '#f59e0b'} emissive={LANE_COLORS[lane] ?? '#f59e0b'} emissiveIntensity={0.35} />
-            </mesh>
+          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]} userData={{ frame: 'target', item: 'note' }}>
+            {noteModel !== undefined ? (
+              <>
+                <mesh position={[0, 0.02, 0]}>
+                  <boxGeometry args={[note.w, 0.04, note.d]} />
+                  <meshStandardMaterial color={LANE_COLORS[lane] ?? '#f59e0b'} emissive={LANE_COLORS[lane] ?? '#f59e0b'} emissiveIntensity={0.35} />
+                </mesh>
+                <group position={[0, 0.04, 0]}>{noteModel(note.w, note.h, note.d)}</group>
+              </>
+            ) : (
+              <mesh position={[0, note.h / 2, 0]}>
+                <boxGeometry args={[note.w, note.h, note.d]} />
+                <meshStandardMaterial color={LANE_COLORS[lane] ?? '#f59e0b'} emissive={LANE_COLORS[lane] ?? '#f59e0b'} emissiveIntensity={0.35} />
+              </mesh>
+            )}
           </group>
         );
       })}

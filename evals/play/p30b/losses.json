@@ -1,0 +1,4380 @@
+{
+ "header": {
+  "about": "P30B T1 loss map: sentence-to-screen losses at HEAD over corpus.json (30) and judge-10.json (10). See losses.md.",
+  "measuredAt": "2026-09-27T09:33:40.279Z",
+  "commit": "fd8cd106",
+  "live": {
+   "corpus": "2026-09-26-p29-ground",
+   "judge10": "2026-09-25-p28d-t6-j10"
+  }
+ },
+ "baseline": {
+  "corpus": {
+   "draft": {
+    "hero": {
+     "of": 18,
+     "drawn": 13
+    },
+    "item": {
+     "of": 38,
+     "drawn": 19
+    },
+    "setting": {
+     "of": 24,
+     "drawn": 22
+    },
+    "verb": {
+     "of": 30,
+     "drawn": 25
+    }
+   },
+   "ai": {
+    "hero": {
+     "of": 18,
+     "drawn": 13,
+     "recognized": 9
+    },
+    "item": {
+     "of": 38,
+     "drawn": 24,
+     "recognized": 16
+    },
+    "setting": {
+     "of": 24,
+     "drawn": 23,
+     "recognized": 15
+    },
+    "verb": {
+     "of": 30,
+     "drawn": 27,
+     "recognized": 5
+    }
+   }
+  },
+  "judge10": {
+   "draft": {
+    "hero": {
+     "of": 5,
+     "drawn": 5
+    },
+    "item": {
+     "of": 13,
+     "drawn": 7
+    },
+    "setting": {
+     "of": 9,
+     "drawn": 3
+    },
+    "verb": {
+     "of": 10,
+     "drawn": 4
+    }
+   },
+   "ai": {
+    "hero": {
+     "of": 5,
+     "drawn": 4,
+     "recognized": 1
+    },
+    "item": {
+     "of": 13,
+     "drawn": 7,
+     "recognized": 3
+    },
+    "setting": {
+     "of": 9,
+     "drawn": 7,
+     "recognized": 2
+    },
+    "verb": {
+     "of": 10,
+     "drawn": 5,
+     "recognized": 0
+    }
+   }
+  }
+ },
+ "groups": [
+  {
+   "key": "ai|not-recognized|setting|tap_go",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "setting",
+   "control": "tap_go",
+   "ids": [
+    "h04",
+    "h06",
+    "h08",
+    "h09",
+    "j03",
+    "j04",
+    "j07",
+    "s069"
+   ],
+   "items": [
+    "s069:cave",
+    "h04:Mars",
+    "h06:icy moon",
+    "h08:moon",
+    "h09:hospital",
+    "j03:skyscraper",
+    "j04:beach",
+    "j07:winter"
+   ],
+   "sentences": 8,
+   "cause": "src/play/compile/look.ts:98-102 – mřížka volí rodinu kulis podle slova prostředí z `SETTING_MATERIAL` (look.ts:22-60); Mars, moon, hospital, winter, icy tam nejsou, rodinu tak vybere seed a hrací pole má paletu rodiny (`terraces` = `dunes`, src/geom/families/01-terraces.ts:19) – porota: „Beige ground … do not clearly identify Mars“.",
+   "task": "T6"
+  },
+  {
+   "key": "ai|not-in-spec|verb|tap_go",
+   "source": "ai",
+   "why": "not-in-spec",
+   "role": "verb",
+   "control": "tap_go",
+   "ids": [
+    "h07",
+    "h08",
+    "j01",
+    "j02",
+    "j03",
+    "j04",
+    "s069"
+   ],
+   "items": [
+    "s069:match",
+    "h07:do taxes",
+    "h08:date",
+    "j01:explain",
+    "j02:nap",
+    "j03:pitch",
+    "j04:walk"
+   ],
+   "sentences": 7,
+   "cause": "src/play/fidelity/chain.ts:158-170 – sloveso je ve specu jen přes ovládání, mechaniku, doplněk nebo pravidlo; režisér zvolil mřížku bez pravidla pro „do taxes“, „date“, „nap“, „pitch“, „walk“.",
+   "task": null,
+   "reason": "Výběr ovládání a pravidel dělá režisér (P30A) a knihovna pravidel; P30B režiséra nemění. T2 hlídá opačnou stranu: sloveso, které ve specu je, se musí opravdu stát."
+  },
+  {
+   "key": "ai|not-recognized|verb|tap_go",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "tap_go",
+   "ids": [
+    "h01",
+    "h04",
+    "h06",
+    "h09",
+    "j07",
+    "s002",
+    "s003"
+   ],
+   "items": [
+    "s002:collect",
+    "s003:escape",
+    "h01:steal",
+    "h04:collect",
+    "h06:collect",
+    "h09:escape",
+    "j07:hoard"
+   ],
+   "sentences": 7,
+   "cause": "scripts/play-fidelity.mjs:459 – porota soudí jeden snímek; „collect“, „escape“, „steal“, „hoard“ na stojícím obraze vidět nejdou. Ztráta měření, ne vykreslení.",
+   "task": "T2",
+   "reason": "T2 dokazuje sloveso změnou stavu ve hře místo snímku."
+  },
+  {
+   "key": "draft|not-in-spec|verb|runner",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "verb",
+   "control": "runner",
+   "ids": [
+    "h07",
+    "h08",
+    "j01",
+    "j03",
+    "j07",
+    "s069"
+   ],
+   "items": [
+    "s069:match",
+    "h07:do taxes",
+    "h08:date",
+    "j01:explain",
+    "j03:pitch",
+    "j07:hoard"
+   ],
+   "sentences": 6,
+   "cause": "src/play/draft/controls.ts:311 – slovní draft bez známého žánrového slova padne na běžce; abstraktní slovesa („explain“, „do taxes“, „pitch“) ovládání nenese.",
+   "task": null,
+   "reason": "Slovní draft a čtečka patří P29B/P30A; první snímek s draftem nahradí AI verze (medián 17 s, `2026-09-26-p29-ground`)."
+  },
+  {
+   "key": "ai|not-in-spec|item|tap_go",
+   "source": "ai",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "tap_go",
+   "ids": [
+    "h06",
+    "j01",
+    "j03",
+    "j04",
+    "j07"
+   ],
+   "items": [
+    "h06:alien",
+    "j01:quantum physics",
+    "j03:investor",
+    "j04:ice cream",
+    "j07:acorn"
+   ],
+   "sentences": 5,
+   "cause": "src/play/draft/draft.ts:252 + src/play/__fixtures__/collect_exit.json – šablona mřížky nese sbíranou „glowing mushroom“ a režisér ji nechá místo „acorn“ / „ice cream“; „alien“ a „investor“ roli nedostanou vůbec.",
+   "task": null,
+   "reason": "Roli do specu píše režisér (P30A); bez role ve specu nemá vykreslení co kreslit."
+  },
+  {
+   "key": "ai|not-recognized|item|shooter",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "item",
+   "control": "shooter",
+   "ids": [
+    "j05",
+    "j08",
+    "s037",
+    "s039",
+    "s155"
+   ],
+   "items": [
+    "s039:zombie",
+    "s037:alien bug",
+    "s155:goblin",
+    "j05:balloon",
+    "j08:skeleton"
+   ],
+   "sentences": 5,
+   "cause": "src/components/play/arcade/ArcadeStage.tsx:117-119 – `FittedModel` vepíše model do kvádru těla nejmenším poměrem os, takže široký nebo plochý model (balónek, kostlivec s křídly) je drobný; nepřátelé střelnice stojí daleko od kamery („Distant figures“, „Tiny green figures“).",
+   "task": "T4",
+   "reason": "T4 velikost položek, T5 záběr kamery na nepřátele."
+  },
+  {
+   "key": "ai|not-recognized|verb|throw",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "throw",
+   "ids": [
+    "h03",
+    "j06",
+    "s050",
+    "s088",
+    "s095"
+   ],
+   "items": [
+    "s050:throw",
+    "s088:launch",
+    "s095:throw",
+    "h03:throw",
+    "j06:flip"
+   ],
+   "sentences": 5,
+   "cause": "scripts/play-fidelity.mjs:459 – hod („throw“, „launch“, „flip“) je pohyb, jeden snímek ho neukáže.",
+   "task": "T2",
+   "reason": "T2 dokazuje sloveso změnou stavu (poloha projektilu, zmizelý terč)."
+  },
+  {
+   "key": "draft|not-in-spec|item|runner",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "runner",
+   "ids": [
+    "j01",
+    "j03",
+    "j04",
+    "j07"
+   ],
+   "items": [
+    "j01:quantum physics",
+    "j03:investor",
+    "j04:dog",
+    "j07:acorn"
+   ],
+   "sentences": 4,
+   "cause": "src/play/draft/controls.ts:311 – draft padne na běžce a role `obstacle` / `coin` dostanou popisky ze slovníku (src/play/draft/draft.ts:948), ne „investor“, „dog“, „acorn“.",
+   "task": null,
+   "reason": "Slovník draftu je mimo P30B (čtečka P29B); AI verze z těch čtyř nese jen „dog“ (j04, jako hráče)."
+  },
+  {
+   "key": "draft|not-in-spec|item|throw",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "throw",
+   "ids": [
+    "h03",
+    "h06",
+    "s050",
+    "s095"
+   ],
+   "items": [
+    "s050:snowball",
+    "s095:knife",
+    "h03:snowball",
+    "h06:crystal",
+    "h06:alien"
+   ],
+   "sentences": 4,
+   "cause": "src/play/capabilities.ts:78 – hod čte popisek jen hráče a terče; projektil je vždy míč („ball/item:ball“ i v AI verzi), takže „snowball“ a „knife“ nemají kam jít.",
+   "task": null,
+   "reason": "Chce novou schopnost hodu (projektil z popisku) a spec, který projektil nese (režisér P30A). Kandidát na navazující úlohu, ne T3–T6."
+  },
+  {
+   "key": "ai|not-recognized|item|tap_go",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "item",
+   "control": "tap_go",
+   "ids": [
+    "h01",
+    "h09",
+    "j01"
+   ],
+   "items": [
+    "h01:fishmonger",
+    "h09:flashlight",
+    "j01:grandma"
+   ],
+   "sentences": 3,
+   "cause": "src/play/compile/assets.ts:44-60 – mřížka staví sbírané a věci na 0,6 m a kamera obíhá ve vzdálenosti max(12, 1,4 × rozpětí) (src/play/compile/look.ts:110); baterka i rybář jsou na snímku pár pixelů. Živý běh navíc předcházel povýšení gen3d-fishmonger a gen3d-grandma (fd8cd106).",
+   "task": "T4",
+   "reason": "T4 velikost a model položek mřížky, T5 kamera."
+  },
+  {
+   "key": "ai|not-recognized|verb|shooter",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "shooter",
+   "ids": [
+    "j05",
+    "j08",
+    "s155"
+   ],
+   "items": [
+    "s155:defend",
+    "j05:pop",
+    "j08:defend"
+   ],
+   "sentences": 3
+  },
+  {
+   "key": "draft|not-in-spec|item|tap_go",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "tap_go",
+   "ids": [
+    "h09",
+    "h10",
+    "j06"
+   ],
+   "items": [
+    "h09:flashlight",
+    "h10:seal",
+    "h10:fish",
+    "j06:pancake"
+   ],
+   "sentences": 3
+  },
+  {
+   "key": "draft|not-in-spec|verb|tap_go",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "verb",
+   "control": "tap_go",
+   "ids": [
+    "h10",
+    "j02",
+    "j06"
+   ],
+   "items": [
+    "h10:slide",
+    "j02:nap",
+    "j06:flip"
+   ],
+   "sentences": 3
+  },
+  {
+   "key": "ai|no-model|hero|tap_go",
+   "source": "ai",
+   "why": "no-model",
+   "role": "hero",
+   "control": "tap_go",
+   "ids": [
+    "h07",
+    "j07"
+   ],
+   "items": [
+    "h07:elephant",
+    "j07:squirrel"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-in-spec|item|platform",
+   "source": "ai",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "platform",
+   "ids": [
+    "s021",
+    "s022"
+   ],
+   "items": [
+    "s022:charger",
+    "s021:lava"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-in-spec|item|throw",
+   "source": "ai",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "throw",
+   "ids": [
+    "h03",
+    "s050"
+   ],
+   "items": [
+    "s050:snowball",
+    "h03:snowball"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|hero|runner",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "hero",
+   "control": "runner",
+   "ids": [
+    "j10",
+    "s006"
+   ],
+   "items": [
+    "s006:corgi",
+    "j10:elf princess"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|hero|shooter",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "hero",
+   "control": "shooter",
+   "ids": [
+    "j09",
+    "s037"
+   ],
+   "items": [
+    "s037:space marine",
+    "j09:dragon"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|item|runner",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "item",
+   "control": "runner",
+   "ids": [
+    "h10",
+    "s008"
+   ],
+   "items": [
+    "s008:monkey",
+    "h10:seal",
+    "h10:fish"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|item|throw",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "item",
+   "control": "throw",
+   "ids": [
+    "j06",
+    "s088"
+   ],
+   "items": [
+    "s088:cardboard box",
+    "j06:pancake"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|setting|shooter",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "setting",
+   "control": "shooter",
+   "ids": [
+    "j09",
+    "s037"
+   ],
+   "items": [
+    "s037:mining colony",
+    "j09:village"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|setting|throw",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "setting",
+   "control": "throw",
+   "ids": [
+    "j06",
+    "s050"
+   ],
+   "items": [
+    "s050:snow fort",
+    "j06:kitchen"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|verb|duel",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "duel",
+   "ids": [
+    "h05",
+    "s188"
+   ],
+   "items": [
+    "s188:fight",
+    "h05:box"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|verb|platform",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "platform",
+   "ids": [
+    "s021",
+    "s022"
+   ],
+   "items": [
+    "s022:climb",
+    "s021:jump"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|verb|runner",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "runner",
+   "ids": [
+    "h10",
+    "j10"
+   ],
+   "items": [
+    "h10:slide",
+    "j10:escape"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|not-recognized|verb|steer",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "steer",
+   "ids": [
+    "h02",
+    "s058"
+   ],
+   "items": [
+    "s058:race",
+    "h02:race"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "draft|not-in-spec|item|platform",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "platform",
+   "ids": [
+    "s021",
+    "s022"
+   ],
+   "items": [
+    "s022:charger",
+    "s021:lava",
+    "s021:spinning bar"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "draft|not-in-spec|item|steer",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "steer",
+   "ids": [
+    "s056",
+    "s058"
+   ],
+   "items": [
+    "s056:pizza",
+    "s058:crocodile"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "draft|not-in-spec|setting|runner",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "setting",
+   "control": "runner",
+   "ids": [
+    "j04",
+    "j07"
+   ],
+   "items": [
+    "j04:beach",
+    "j07:winter"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "draft|not-in-spec|setting|shooter",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "setting",
+   "control": "shooter",
+   "ids": [
+    "j08",
+    "j09"
+   ],
+   "items": [
+    "j08:tower",
+    "j09:village"
+   ],
+   "sentences": 2
+  },
+  {
+   "key": "ai|no-model|hero|steer",
+   "source": "ai",
+   "why": "no-model",
+   "role": "hero",
+   "control": "steer",
+   "ids": [
+    "s056"
+   ],
+   "items": [
+    "s056:scooter"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|no-model|item|duel",
+   "source": "ai",
+   "why": "no-model",
+   "role": "item",
+   "control": "duel",
+   "ids": [
+    "h05"
+   ],
+   "items": [
+    "h05:kangaroo"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|no-model|item|runner",
+   "source": "ai",
+   "why": "no-model",
+   "role": "item",
+   "control": "runner",
+   "ids": [
+    "s006"
+   ],
+   "items": [
+    "s006:sprinkler"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|no-model|item|steer",
+   "source": "ai",
+   "why": "no-model",
+   "role": "item",
+   "control": "steer",
+   "ids": [
+    "s056"
+   ],
+   "items": [
+    "s056:pizza",
+    "s056:traffic"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-in-spec|item|shooter",
+   "source": "ai",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "shooter",
+   "ids": [
+    "j09"
+   ],
+   "items": [
+    "j09:knight",
+    "j09:arrow"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-in-spec|setting|tap_go",
+   "source": "ai",
+   "why": "not-in-spec",
+   "role": "setting",
+   "control": "tap_go",
+   "ids": [
+    "j02"
+   ],
+   "items": [
+    "j02:café"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-in-spec|verb|shooter",
+   "source": "ai",
+   "why": "not-in-spec",
+   "role": "verb",
+   "control": "shooter",
+   "ids": [
+    "j09"
+   ],
+   "items": [
+    "j09:dodge"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|hero|duel",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "hero",
+   "control": "duel",
+   "ids": [
+    "s188"
+   ],
+   "items": [
+    "s188:grandma"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|hero|move_free",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "hero",
+   "control": "move_free",
+   "ids": [
+    "s111"
+   ],
+   "items": [
+    "s111:black hole"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|hero|rhythm",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "hero",
+   "control": "rhythm",
+   "ids": [
+    "s144"
+   ],
+   "items": [
+    "s144:frog"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|item|platform",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "item",
+   "control": "platform",
+   "ids": [
+    "s021"
+   ],
+   "items": [
+    "s021:spinning bar"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|item|rhythm",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "item",
+   "control": "rhythm",
+   "ids": [
+    "s144"
+   ],
+   "items": [
+    "s144:lily pad"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|item|steer",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "item",
+   "control": "steer",
+   "ids": [
+    "s058"
+   ],
+   "items": [
+    "s058:crocodile"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|item|timing",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "item",
+   "control": "timing",
+   "ids": [
+    "s099"
+   ],
+   "items": [
+    "s099:pancake",
+    "s099:tower"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|setting|platform",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "setting",
+   "control": "platform",
+   "ids": [
+    "s022"
+   ],
+   "items": [
+    "s022:tower"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-read-by-control|setting|shooter",
+   "source": "ai",
+   "why": "not-read-by-control",
+   "role": "setting",
+   "control": "shooter",
+   "ids": [
+    "j05"
+   ],
+   "items": [
+    "j05:birthday party"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|hero|platform",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "hero",
+   "control": "platform",
+   "ids": [
+    "s022"
+   ],
+   "items": [
+    "s022:robot"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|hero|steer",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "hero",
+   "control": "steer",
+   "ids": [
+    "s058"
+   ],
+   "items": [
+    "s058:boat"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|hero|throw",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "hero",
+   "control": "throw",
+   "ids": [
+    "j06"
+   ],
+   "items": [
+    "j06:chef"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|item|duel",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "item",
+   "control": "duel",
+   "ids": [
+    "s188"
+   ],
+   "items": [
+    "s188:pigeon"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|setting|steer",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "setting",
+   "control": "steer",
+   "ids": [
+    "s058"
+   ],
+   "items": [
+    "s058:jungle river"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|verb|flap",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "flap",
+   "ids": [
+    "s035"
+   ],
+   "items": [
+    "s035:flap"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|verb|move_free",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "move_free",
+   "ids": [
+    "s111"
+   ],
+   "items": [
+    "s111:swallow"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|verb|rhythm",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "rhythm",
+   "ids": [
+    "s144"
+   ],
+   "items": [
+    "s144:drum to the beat"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "ai|not-recognized|verb|timing",
+   "source": "ai",
+   "why": "not-recognized",
+   "role": "verb",
+   "control": "timing",
+   "ids": [
+    "s099"
+   ],
+   "items": [
+    "s099:stack"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|no-model|hero|steer",
+   "source": "draft",
+   "why": "no-model",
+   "role": "hero",
+   "control": "steer",
+   "ids": [
+    "s056"
+   ],
+   "items": [
+    "s056:scooter"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|no-model|item|duel",
+   "source": "draft",
+   "why": "no-model",
+   "role": "item",
+   "control": "duel",
+   "ids": [
+    "h05"
+   ],
+   "items": [
+    "h05:kangaroo"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|no-model|item|runner",
+   "source": "draft",
+   "why": "no-model",
+   "role": "item",
+   "control": "runner",
+   "ids": [
+    "s006"
+   ],
+   "items": [
+    "s006:sprinkler"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|no-model|item|steer",
+   "source": "draft",
+   "why": "no-model",
+   "role": "item",
+   "control": "steer",
+   "ids": [
+    "s056"
+   ],
+   "items": [
+    "s056:traffic"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|hero|throw",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "hero",
+   "control": "throw",
+   "ids": [
+    "h06"
+   ],
+   "items": [
+    "h06:astronaut"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|item|rhythm",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "rhythm",
+   "ids": [
+    "s144"
+   ],
+   "items": [
+    "s144:lily pad"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|item|shooter",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "shooter",
+   "ids": [
+    "j09"
+   ],
+   "items": [
+    "j09:knight"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|item|timing",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "item",
+   "control": "timing",
+   "ids": [
+    "s099"
+   ],
+   "items": [
+    "s099:pancake"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|setting|platform",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "setting",
+   "control": "platform",
+   "ids": [
+    "s022"
+   ],
+   "items": [
+    "s022:tower"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|setting|tap_go",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "setting",
+   "control": "tap_go",
+   "ids": [
+    "j02"
+   ],
+   "items": [
+    "j02:café"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|setting|throw",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "setting",
+   "control": "throw",
+   "ids": [
+    "h03"
+   ],
+   "items": [
+    "h03:castle"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|verb|shooter",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "verb",
+   "control": "shooter",
+   "ids": [
+    "j09"
+   ],
+   "items": [
+    "j09:dodge"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-in-spec|verb|throw",
+   "source": "draft",
+   "why": "not-in-spec",
+   "role": "verb",
+   "control": "throw",
+   "ids": [
+    "h06"
+   ],
+   "items": [
+    "h06:collect"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-read-by-control|hero|duel",
+   "source": "draft",
+   "why": "not-read-by-control",
+   "role": "hero",
+   "control": "duel",
+   "ids": [
+    "s188"
+   ],
+   "items": [
+    "s188:grandma"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-read-by-control|hero|move_free",
+   "source": "draft",
+   "why": "not-read-by-control",
+   "role": "hero",
+   "control": "move_free",
+   "ids": [
+    "s111"
+   ],
+   "items": [
+    "s111:black hole"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-read-by-control|hero|rhythm",
+   "source": "draft",
+   "why": "not-read-by-control",
+   "role": "hero",
+   "control": "rhythm",
+   "ids": [
+    "s144"
+   ],
+   "items": [
+    "s144:frog"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-read-by-control|item|timing",
+   "source": "draft",
+   "why": "not-read-by-control",
+   "role": "item",
+   "control": "timing",
+   "ids": [
+    "s099"
+   ],
+   "items": [
+    "s099:tower"
+   ],
+   "sentences": 1
+  },
+  {
+   "key": "draft|not-read-by-control|setting|shooter",
+   "source": "draft",
+   "why": "not-read-by-control",
+   "role": "setting",
+   "control": "shooter",
+   "ids": [
+    "j05"
+   ],
+   "items": [
+    "j05:birthday party"
+   ],
+   "sentences": 1
+  }
+ ],
+ "rows": [
+  {
+   "source": "draft",
+   "id": "s039",
+   "control": "shooter",
+   "item": "zombie",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s039",
+   "control": "shooter",
+   "item": "mall",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s039",
+   "control": "shooter",
+   "item": "shoot",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s037",
+   "control": "shooter",
+   "item": "space marine",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s037",
+   "control": "shooter",
+   "item": "alien bug",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s037",
+   "control": "shooter",
+   "item": "mining colony",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s037",
+   "control": "shooter",
+   "item": "shoot",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "knight",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "key",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "ghost",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "haunted castle",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "collect",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "hamster",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "roomba",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "supermarket",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "escape",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s006",
+   "control": "runner",
+   "item": "corgi",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s006",
+   "control": "runner",
+   "item": "sausage",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s006",
+   "control": "runner",
+   "item": "sprinkler",
+   "role": "item",
+   "drawn": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s006",
+   "control": "runner",
+   "item": "park",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s006",
+   "control": "runner",
+   "item": "run",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s008",
+   "control": "runner",
+   "item": "banana",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s008",
+   "control": "runner",
+   "item": "monkey",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s008",
+   "control": "runner",
+   "item": "run",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s022",
+   "control": "platform",
+   "item": "robot",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s022",
+   "control": "platform",
+   "item": "charger",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s022",
+   "control": "platform",
+   "item": "tower",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s022",
+   "control": "platform",
+   "item": "climb",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s021",
+   "control": "platform",
+   "item": "lava",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s021",
+   "control": "platform",
+   "item": "spinning bar",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s021",
+   "control": "platform",
+   "item": "jump",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s035",
+   "control": "flap",
+   "item": "bird",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s035",
+   "control": "flap",
+   "item": "underwater",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s035",
+   "control": "flap",
+   "item": "flap",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s050",
+   "control": "throw",
+   "item": "snowball",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s050",
+   "control": "throw",
+   "item": "kid",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s050",
+   "control": "throw",
+   "item": "snow fort",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s050",
+   "control": "throw",
+   "item": "throw",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s088",
+   "control": "throw",
+   "item": "cat",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s088",
+   "control": "throw",
+   "item": "cardboard box",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s088",
+   "control": "throw",
+   "item": "launch",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s069",
+   "control": "runner",
+   "item": "gem",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s069",
+   "control": "runner",
+   "item": "cave",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s069",
+   "control": "runner",
+   "item": "match",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s056",
+   "control": "steer",
+   "item": "scooter",
+   "role": "hero",
+   "drawn": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s056",
+   "control": "steer",
+   "item": "pizza",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s056",
+   "control": "steer",
+   "item": "traffic",
+   "role": "item",
+   "drawn": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s056",
+   "control": "steer",
+   "item": "race",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s058",
+   "control": "steer",
+   "item": "boat",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s058",
+   "control": "steer",
+   "item": "crocodile",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s058",
+   "control": "steer",
+   "item": "jungle river",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s058",
+   "control": "steer",
+   "item": "race",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s111",
+   "control": "move_free",
+   "item": "black hole",
+   "role": "hero",
+   "drawn": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s111",
+   "control": "move_free",
+   "item": "city",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s111",
+   "control": "move_free",
+   "item": "swallow",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s095",
+   "control": "throw",
+   "item": "knife",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s095",
+   "control": "throw",
+   "item": "log",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s095",
+   "control": "throw",
+   "item": "throw",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s188",
+   "control": "duel",
+   "item": "grandma",
+   "role": "hero",
+   "drawn": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s188",
+   "control": "duel",
+   "item": "pigeon",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s188",
+   "control": "duel",
+   "item": "park",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s188",
+   "control": "duel",
+   "item": "fight",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "frog",
+   "role": "hero",
+   "drawn": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "lily pad",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "pond",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "drum to the beat",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s155",
+   "control": "shooter",
+   "item": "castle",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s155",
+   "control": "shooter",
+   "item": "goblin",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s155",
+   "control": "shooter",
+   "item": "defend",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s099",
+   "control": "timing",
+   "item": "pancake",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s099",
+   "control": "timing",
+   "item": "tower",
+   "role": "item",
+   "drawn": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "s099",
+   "control": "timing",
+   "item": "stack",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "cat",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "fish",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "fishmonger",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "market",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "steal",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h02",
+   "control": "steer",
+   "item": "shopping cart",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h02",
+   "control": "steer",
+   "item": "supermarket",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h02",
+   "control": "steer",
+   "item": "race",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h03",
+   "control": "throw",
+   "item": "castle",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h03",
+   "control": "throw",
+   "item": "dragon",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h03",
+   "control": "throw",
+   "item": "snowball",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h03",
+   "control": "throw",
+   "item": "throw",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "robot",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "battery",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "Mars",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "collect",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h05",
+   "control": "duel",
+   "item": "kangaroo",
+   "role": "item",
+   "drawn": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h05",
+   "control": "duel",
+   "item": "outback",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h05",
+   "control": "duel",
+   "item": "box",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h06",
+   "control": "throw",
+   "item": "astronaut",
+   "role": "hero",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h06",
+   "control": "throw",
+   "item": "crystal",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h06",
+   "control": "throw",
+   "item": "alien",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h06",
+   "control": "throw",
+   "item": "icy moon",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h06",
+   "control": "throw",
+   "item": "collect",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h07",
+   "control": "runner",
+   "item": "elephant",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h07",
+   "control": "runner",
+   "item": "volcano",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h07",
+   "control": "runner",
+   "item": "do taxes",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h08",
+   "control": "runner",
+   "item": "dinner",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h08",
+   "control": "runner",
+   "item": "moon",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h08",
+   "control": "runner",
+   "item": "date",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h09",
+   "control": "tap_go",
+   "item": "hospital",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h09",
+   "control": "tap_go",
+   "item": "flashlight",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h09",
+   "control": "tap_go",
+   "item": "escape",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h10",
+   "control": "tap_go",
+   "item": "penguin",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h10",
+   "control": "tap_go",
+   "item": "glacier",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h10",
+   "control": "tap_go",
+   "item": "seal",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h10",
+   "control": "tap_go",
+   "item": "fish",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "h10",
+   "control": "tap_go",
+   "item": "slide",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s039",
+   "control": "shooter",
+   "item": "zombie",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s039",
+   "control": "shooter",
+   "item": "mall",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s039",
+   "control": "shooter",
+   "item": "shoot",
+   "role": "verb",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s037",
+   "control": "shooter",
+   "item": "space marine",
+   "role": "hero",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s037",
+   "control": "shooter",
+   "item": "alien bug",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s037",
+   "control": "shooter",
+   "item": "mining colony",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s037",
+   "control": "shooter",
+   "item": "shoot",
+   "role": "verb",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "knight",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "key",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "ghost",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "haunted castle",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s002",
+   "control": "tap_go",
+   "item": "collect",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "hamster",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "roomba",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "supermarket",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s003",
+   "control": "tap_go",
+   "item": "escape",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s006",
+   "control": "runner",
+   "item": "corgi",
+   "role": "hero",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s006",
+   "control": "runner",
+   "item": "sausage",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s006",
+   "control": "runner",
+   "item": "sprinkler",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s006",
+   "control": "runner",
+   "item": "park",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s006",
+   "control": "runner",
+   "item": "run",
+   "role": "verb",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s008",
+   "control": "runner",
+   "item": "banana",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s008",
+   "control": "runner",
+   "item": "monkey",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s008",
+   "control": "runner",
+   "item": "run",
+   "role": "verb",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s022",
+   "control": "platform",
+   "item": "robot",
+   "role": "hero",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s022",
+   "control": "platform",
+   "item": "charger",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s022",
+   "control": "platform",
+   "item": "tower",
+   "role": "setting",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s022",
+   "control": "platform",
+   "item": "climb",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s021",
+   "control": "platform",
+   "item": "lava",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s021",
+   "control": "platform",
+   "item": "spinning bar",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s021",
+   "control": "platform",
+   "item": "jump",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s035",
+   "control": "flap",
+   "item": "bird",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s035",
+   "control": "flap",
+   "item": "underwater",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s035",
+   "control": "flap",
+   "item": "flap",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s050",
+   "control": "throw",
+   "item": "snowball",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s050",
+   "control": "throw",
+   "item": "kid",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s050",
+   "control": "throw",
+   "item": "snow fort",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s050",
+   "control": "throw",
+   "item": "throw",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s088",
+   "control": "throw",
+   "item": "cat",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s088",
+   "control": "throw",
+   "item": "cardboard box",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s088",
+   "control": "throw",
+   "item": "launch",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s069",
+   "control": "tap_go",
+   "item": "gem",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s069",
+   "control": "tap_go",
+   "item": "cave",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s069",
+   "control": "tap_go",
+   "item": "match",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s056",
+   "control": "steer",
+   "item": "scooter",
+   "role": "hero",
+   "drawn": false,
+   "recognized": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s056",
+   "control": "steer",
+   "item": "pizza",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s056",
+   "control": "steer",
+   "item": "traffic",
+   "role": "item",
+   "drawn": false,
+   "recognized": true,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s056",
+   "control": "steer",
+   "item": "race",
+   "role": "verb",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s058",
+   "control": "steer",
+   "item": "boat",
+   "role": "hero",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s058",
+   "control": "steer",
+   "item": "crocodile",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s058",
+   "control": "steer",
+   "item": "jungle river",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s058",
+   "control": "steer",
+   "item": "race",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s111",
+   "control": "move_free",
+   "item": "black hole",
+   "role": "hero",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s111",
+   "control": "move_free",
+   "item": "city",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s111",
+   "control": "move_free",
+   "item": "swallow",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s095",
+   "control": "throw",
+   "item": "knife",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s095",
+   "control": "throw",
+   "item": "log",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s095",
+   "control": "throw",
+   "item": "throw",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s188",
+   "control": "duel",
+   "item": "grandma",
+   "role": "hero",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s188",
+   "control": "duel",
+   "item": "pigeon",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s188",
+   "control": "duel",
+   "item": "park",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s188",
+   "control": "duel",
+   "item": "fight",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "frog",
+   "role": "hero",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "lily pad",
+   "role": "item",
+   "drawn": false,
+   "recognized": true,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "pond",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s144",
+   "control": "rhythm",
+   "item": "drum to the beat",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s155",
+   "control": "shooter",
+   "item": "castle",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s155",
+   "control": "shooter",
+   "item": "goblin",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s155",
+   "control": "shooter",
+   "item": "defend",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s099",
+   "control": "timing",
+   "item": "pancake",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s099",
+   "control": "timing",
+   "item": "tower",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "s099",
+   "control": "timing",
+   "item": "stack",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "cat",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "fish",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "fishmonger",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "market",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h01",
+   "control": "tap_go",
+   "item": "steal",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h02",
+   "control": "steer",
+   "item": "shopping cart",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h02",
+   "control": "steer",
+   "item": "supermarket",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h02",
+   "control": "steer",
+   "item": "race",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h03",
+   "control": "throw",
+   "item": "castle",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h03",
+   "control": "throw",
+   "item": "dragon",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h03",
+   "control": "throw",
+   "item": "snowball",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h03",
+   "control": "throw",
+   "item": "throw",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "robot",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "battery",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "Mars",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h04",
+   "control": "tap_go",
+   "item": "collect",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h05",
+   "control": "duel",
+   "item": "kangaroo",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h05",
+   "control": "duel",
+   "item": "outback",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h05",
+   "control": "duel",
+   "item": "box",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h06",
+   "control": "tap_go",
+   "item": "astronaut",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h06",
+   "control": "tap_go",
+   "item": "crystal",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h06",
+   "control": "tap_go",
+   "item": "alien",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h06",
+   "control": "tap_go",
+   "item": "icy moon",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h06",
+   "control": "tap_go",
+   "item": "collect",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h07",
+   "control": "tap_go",
+   "item": "elephant",
+   "role": "hero",
+   "drawn": false,
+   "recognized": false,
+   "why": "no-model",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h07",
+   "control": "tap_go",
+   "item": "volcano",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h07",
+   "control": "tap_go",
+   "item": "do taxes",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h08",
+   "control": "tap_go",
+   "item": "dinner",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h08",
+   "control": "tap_go",
+   "item": "moon",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h08",
+   "control": "tap_go",
+   "item": "date",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h09",
+   "control": "tap_go",
+   "item": "hospital",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h09",
+   "control": "tap_go",
+   "item": "flashlight",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h09",
+   "control": "tap_go",
+   "item": "escape",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h10",
+   "control": "runner",
+   "item": "penguin",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h10",
+   "control": "runner",
+   "item": "glacier",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h10",
+   "control": "runner",
+   "item": "seal",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h10",
+   "control": "runner",
+   "item": "fish",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "ai",
+   "id": "h10",
+   "control": "runner",
+   "item": "slide",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "corpus"
+  },
+  {
+   "source": "draft",
+   "id": "j01",
+   "control": "runner",
+   "item": "grandma",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j01",
+   "control": "runner",
+   "item": "quantum physics",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j01",
+   "control": "runner",
+   "item": "explain",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j02",
+   "control": "tap_go",
+   "item": "cat",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j02",
+   "control": "tap_go",
+   "item": "café",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j02",
+   "control": "tap_go",
+   "item": "nap",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j03",
+   "control": "runner",
+   "item": "investor",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j03",
+   "control": "runner",
+   "item": "skyscraper",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j03",
+   "control": "runner",
+   "item": "pitch",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j04",
+   "control": "runner",
+   "item": "dog",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j04",
+   "control": "runner",
+   "item": "ice cream",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j04",
+   "control": "runner",
+   "item": "beach",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j04",
+   "control": "runner",
+   "item": "walk",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j05",
+   "control": "shooter",
+   "item": "balloon",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j05",
+   "control": "shooter",
+   "item": "birthday party",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-read-by-control",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j05",
+   "control": "shooter",
+   "item": "pop",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j06",
+   "control": "tap_go",
+   "item": "chef",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j06",
+   "control": "tap_go",
+   "item": "pancake",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j06",
+   "control": "tap_go",
+   "item": "kitchen",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j06",
+   "control": "tap_go",
+   "item": "flip",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j07",
+   "control": "runner",
+   "item": "squirrel",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j07",
+   "control": "runner",
+   "item": "acorn",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j07",
+   "control": "runner",
+   "item": "winter",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j07",
+   "control": "runner",
+   "item": "hoard",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j08",
+   "control": "shooter",
+   "item": "wizard",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j08",
+   "control": "shooter",
+   "item": "skeleton",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j08",
+   "control": "shooter",
+   "item": "tower",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j08",
+   "control": "shooter",
+   "item": "defend",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j09",
+   "control": "shooter",
+   "item": "dragon",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j09",
+   "control": "shooter",
+   "item": "knight",
+   "role": "item",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j09",
+   "control": "shooter",
+   "item": "arrow",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j09",
+   "control": "shooter",
+   "item": "village",
+   "role": "setting",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j09",
+   "control": "shooter",
+   "item": "dodge",
+   "role": "verb",
+   "drawn": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j10",
+   "control": "tap_go",
+   "item": "elf princess",
+   "role": "hero",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j10",
+   "control": "tap_go",
+   "item": "goblin",
+   "role": "item",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j10",
+   "control": "tap_go",
+   "item": "forest",
+   "role": "setting",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "draft",
+   "id": "j10",
+   "control": "tap_go",
+   "item": "escape",
+   "role": "verb",
+   "drawn": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j01",
+   "control": "tap_go",
+   "item": "grandma",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j01",
+   "control": "tap_go",
+   "item": "quantum physics",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j01",
+   "control": "tap_go",
+   "item": "explain",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j02",
+   "control": "tap_go",
+   "item": "cat",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j02",
+   "control": "tap_go",
+   "item": "café",
+   "role": "setting",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j02",
+   "control": "tap_go",
+   "item": "nap",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j03",
+   "control": "tap_go",
+   "item": "investor",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j03",
+   "control": "tap_go",
+   "item": "skyscraper",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j03",
+   "control": "tap_go",
+   "item": "pitch",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j04",
+   "control": "tap_go",
+   "item": "dog",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j04",
+   "control": "tap_go",
+   "item": "ice cream",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j04",
+   "control": "tap_go",
+   "item": "beach",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j04",
+   "control": "tap_go",
+   "item": "walk",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j05",
+   "control": "shooter",
+   "item": "balloon",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j05",
+   "control": "shooter",
+   "item": "birthday party",
+   "role": "setting",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-read-by-control",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j05",
+   "control": "shooter",
+   "item": "pop",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j06",
+   "control": "throw",
+   "item": "chef",
+   "role": "hero",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j06",
+   "control": "throw",
+   "item": "pancake",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j06",
+   "control": "throw",
+   "item": "kitchen",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j06",
+   "control": "throw",
+   "item": "flip",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j07",
+   "control": "tap_go",
+   "item": "squirrel",
+   "role": "hero",
+   "drawn": false,
+   "recognized": false,
+   "why": "no-model",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j07",
+   "control": "tap_go",
+   "item": "acorn",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j07",
+   "control": "tap_go",
+   "item": "winter",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j07",
+   "control": "tap_go",
+   "item": "hoard",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j08",
+   "control": "shooter",
+   "item": "wizard",
+   "role": "hero",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j08",
+   "control": "shooter",
+   "item": "skeleton",
+   "role": "item",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j08",
+   "control": "shooter",
+   "item": "tower",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j08",
+   "control": "shooter",
+   "item": "defend",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j09",
+   "control": "shooter",
+   "item": "dragon",
+   "role": "hero",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j09",
+   "control": "shooter",
+   "item": "knight",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j09",
+   "control": "shooter",
+   "item": "arrow",
+   "role": "item",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j09",
+   "control": "shooter",
+   "item": "village",
+   "role": "setting",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j09",
+   "control": "shooter",
+   "item": "dodge",
+   "role": "verb",
+   "drawn": false,
+   "recognized": false,
+   "why": "not-in-spec",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j10",
+   "control": "runner",
+   "item": "elf princess",
+   "role": "hero",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j10",
+   "control": "runner",
+   "item": "goblin",
+   "role": "item",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j10",
+   "control": "runner",
+   "item": "forest",
+   "role": "setting",
+   "drawn": true,
+   "recognized": true,
+   "why": "ok",
+   "set": "judge10"
+  },
+  {
+   "source": "ai",
+   "id": "j10",
+   "control": "runner",
+   "item": "escape",
+   "role": "verb",
+   "drawn": true,
+   "recognized": false,
+   "why": "not-recognized",
+   "set": "judge10"
+  }
+ ]
+}

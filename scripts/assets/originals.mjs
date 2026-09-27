@@ -422,5 +422,48 @@ export function buildModels(lod = 0) {
   }
   add('classroom', 'Classroom with desks and a chalkboard', ['classroom', 'lecture-room', 'schoolroom', 'school'], classroom,
     { supportSurfaces: [{ id: 'teacher-desk', center: [0, 0.81, -1.5], width: 1.4, depth: 0.7 }] });
+
+  // P30B T4: kropítko pro běžce („jumping over sprinklers“) – vygenerované QA 27. 9. zamítla.
+  // Čte se vodou: dva oblouky kapek z trysek na rameni a proud nahoru, rozpětí přes šířku překážky.
+  const plastic = material('sprinkler-green', '#2f8f4e', { roughness: 0.55 });
+  const yellow = material('nozzle-yellow', '#e3b21f', { roughness: 0.45 });
+  const spray = material('water-spray', '#5cc3e6', { transparent: true, opacity: 0.8, roughness: 0.1 });
+  const drop = () => new T.SphereGeometry(1, lod ? 6 : 10, lod ? 4 : 6);
+  const sprinkler = root('sprinkler');
+  cylinder(sprinkler, 'base', 0.16, 0.18, 0.04, [0, 0.02, 0], plastic);
+  cylinder(sprinkler, 'body', 0.05, 0.07, 0.24, [0, 0.16, 0], plastic);
+  cylinder(sprinkler, 'head', 0.075, 0.075, 0.05, [0, 0.305, 0], yellow);
+  cylinder(sprinkler, 'arm', 0.022, 0.022, 0.4, [0, 0.335, 0], metal).rotation.z = Math.PI / 2;
+  for (const side of [-1, 1]) {
+    cone(sprinkler, 'nozzle', 0.035, 0.08, [side * 0.2, 0.365, 0], yellow).rotation.z = -side * 0.6;
+    // Kapka i na oblouku x = 0,22 + 0,36 t, y = 0,38 + 1,2 t − 1,45 t², protažená po tečně.
+    for (let i = 1; i <= 7; i++) {
+      const t = i / 7, size = 0.034 - 0.002 * i;
+      const d = mesh(sprinkler, `spray-${side}-${i}`, drop(), spray, [side * (0.22 + 0.36 * t), 0.38 + 1.2 * t - 1.45 * t * t, 0], [size, size * 1.8, size]);
+      d.rotation.z = Math.atan2(1.2 - 2.9 * t, side * 0.36) - Math.PI / 2;
+    }
+  }
+  for (let i = 0; i < 3; i++) mesh(sprinkler, `jet-${i}`, drop(), spray, [0, 0.42 + i * 0.09, 0], [0.026, 0.045, 0.026]);
+  add('sprinkler', 'Lawn sprinkler spraying water', ['sprinkler', 'sprinklers', 'lawn-sprinkler', 'garden-sprinkler'], sprinkler);
+
+  // P30B T4: klokan-boxer pro souboj („boxing a kangaroo“) – vygenerovaný neprošel bránou kvality.
+  // Silueta: vzpřímené tělo, dlouhé uši, velká chodidla, ocas opřený o zem, červené rukavice před hrudí.
+  const belly = material('pale-fur', '#d8bf94', { roughness: 0.95 });
+  const kangaroo = root('kangaroo');
+  const tail = cylinder(kangaroo, 'tail', 0.09, 0.03, 0.62, [0, 0.2, -0.36], fur); tail.rotation.x = 1.1;
+  for (const side of [-1, 1]) {
+    ellipsoid(kangaroo, 'thigh', [0.1, 0.18, 0.16], [side * 0.12, 0.24, -0.04], fur);
+    ellipsoid(kangaroo, 'foot', [0.055, 0.04, 0.2], [side * 0.13, 0.04, 0.08], fur);
+    const arm = cylinder(kangaroo, 'arm', 0.03, 0.035, 0.22, [side * 0.13, 0.84, 0.1], fur); arm.rotation.x = 1.2;
+    ellipsoid(kangaroo, 'glove', [0.075, 0.07, 0.085], [side * 0.13, 0.82, 0.24], red);
+    const ear = ellipsoid(kangaroo, 'ear', [0.035, 0.11, 0.02], [side * 0.065, 1.32, 0.0], fur); ear.rotation.z = -side * 0.25;
+    ellipsoid(kangaroo, 'eye', [0.016, 0.02, 0.012], [side * 0.05, 1.19, 0.15], dark);
+  }
+  ellipsoid(kangaroo, 'body', [0.19, 0.34, 0.17], [0, 0.66, -0.02], fur).rotation.x = 0.15;
+  ellipsoid(kangaroo, 'belly', [0.13, 0.24, 0.08], [0, 0.62, 0.09], belly);
+  ellipsoid(kangaroo, 'head', [0.1, 0.1, 0.12], [0, 1.15, 0.05], fur);
+  ellipsoid(kangaroo, 'snout', [0.06, 0.055, 0.08], [0, 1.11, 0.16], fur);
+  ellipsoid(kangaroo, 'nose', [0.025, 0.018, 0.015], [0, 1.13, 0.235], dark);
+  add('kangaroo', 'Boxing kangaroo with red gloves', ['kangaroo', 'kangaroos', 'roo', 'roos', 'wallaby'], kangaroo);
   return models;
 }

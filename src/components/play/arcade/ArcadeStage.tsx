@@ -23,12 +23,12 @@ import { Box3, type Camera, type Group, type Mesh, type Object3D, type Perspecti
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { type PropRole, riggedCharacter } from '@/play/arcade/models';
+import { type PropRole, fitScale, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
-import type { SteerCourse } from '@/play/arcade/pieces/steer';
+import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { CAPABILITIES } from '@/play/capabilities';
 import type { ControlId } from '@/play/spec';
 
@@ -49,7 +49,7 @@ import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
 import { SteerBackdrop, placeChase, useSteerInput } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
-import { TimingScene, useTapInput } from './timing/TimingScene';
+import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
 
 /** Barva náhradního kvádru podle id těla; nic fialového. */
 const FALLBACK_COLOR: Readonly<Record<string, string>> = {
@@ -94,13 +94,18 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
+  // P30B T4: mantinel závodu z popisku role `barrier` („crocodiles“ podél řeky).
+  if (view.role === ROLE.obstacle && view.kind === 'tire-barrier') return cast.props.barrier ?? view.kind;
   // P28D T3: kostky věže hodu jsou terč – „cardboard boxes“ postaví věž z krabic.
   if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return cast.props.target ?? view.kind;
   return view.kind;
 }
 
-/** Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose. */
-function FittedModel({ id, w, h, d, fallback }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string }) {
+/**
+ * Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose; postava výškou těla (`fitScale`).
+ * `fill` kvádr vyplní v každé ose zvlášť – díl věže, kterému jádro mění šířku (P30B T4).
+ */
+function FittedModel({ id, w, h, d, fallback, character = false, fill = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean; readonly fill?: boolean }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
@@ -116,12 +121,14 @@ function FittedModel({ id, w, h, d, fallback }: { readonly id: string; readonly 
     const copy = model.clone(true);
     const box = new Box3().setFromObject(copy);
     const size = box.getSize(new Vector3());
-    const scale = Math.min(w / Math.max(size.x, 1e-3), h / Math.max(size.y, 1e-3), d / Math.max(size.z, 1e-3)) || 1;
-    copy.scale.setScalar(scale);
+    const along = (length: number): number => Math.max(length, 1e-3);
+    const uniform = fitScale(size, { x: w, y: h, z: d }, character);
+    const scale = fill ? new Vector3(w / along(size.x), h / along(size.y), d / along(size.z)) : new Vector3(uniform, uniform, uniform);
+    copy.scale.copy(scale);
     const center = box.getCenter(new Vector3());
-    copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+    copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
     return copy;
-  }, [model, w, h, d]);
+  }, [model, w, h, d, character, fill]);
   if (fitted !== null) return <primitive object={fitted} />;
   return (
     <mesh position={[0, h / 2, 0]}>
@@ -131,20 +138,24 @@ function FittedModel({ id, w, h, d, fallback }: { readonly id: string; readonly 
   );
 }
 
-/** Tělesa bez modelu: plošina (hlína + tráva), řada hrotů, trubka, strop, ptáček. */
-function Primitive({ id, w, h, d }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number }) {
-  if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} />;
+/**
+ * Tělesa bez modelu: plošina (hlína + tráva, nebo hmota sady), řada hrotů,
+ * trubka, strop, ptáček. Pohyblivá plošina si barvu nechává: hráč z ní čte pohyb.
+ */
+function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block'] }) {
+  if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
   if (id === 'platform' || id === 'platform-moving') {
     const top = Math.min(0.25, h / 3);
+    const [side, surface] = id === 'platform' ? (block ?? ['#92400e', '#16a34a']) : ['#475569', '#f59e0b'];
     return (
       <>
         <mesh position={[0, (h - top) / 2, 0]}>
           <boxGeometry args={[w, h - top, d]} />
-          <meshStandardMaterial color={id === 'platform' ? '#92400e' : '#475569'} roughness={0.9} />
+          <meshStandardMaterial color={side} roughness={0.9} />
         </mesh>
         <mesh position={[0, h - top / 2, 0]}>
           <boxGeometry args={[w, top, d]} />
-          <meshStandardMaterial color={id === 'platform' ? '#16a34a' : '#f59e0b'} roughness={0.8} />
+          <meshStandardMaterial color={surface} roughness={0.8} />
         </mesh>
       </>
     );
@@ -212,6 +223,21 @@ function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y: numbe
 }
 
 /**
+ * Boční kamera na výšku (P30B T5): kolmý záběr je úzký – hrdina přes 4 % výšky
+ * a zároveň ~11 m trati před ním se do něj nevejdou. Kamera se proto natočí
+ * o `yaw` po trati: hrdina je jí blíž (větší), trať před ním se zkrátí
+ * perspektivou. `dist` = vzdálenost k bodu pohledu, `lead` = o kolik metrů
+ * před hrdinou kamera míří.
+ */
+function placeAngled(camera: PerspectiveCamera, look: Vector3, z: number, y: number, dist: number, yaw: number, lead: number): void {
+  look.set(0, y, z + lead);
+  camera.position.set(-dist * Math.cos(yaw), y, z + lead - dist * Math.sin(yaw));
+  camera.lookAt(look);
+}
+
+const DEG = Math.PI / 180;
+
+/**
  * Sonda záběru (P27A T6): `window.__playFrame()` promítne hrdinu a nejbližší
  * živý cíl nebo hrozbu skutečnou kamerou scény. Scény značí objekty
  * `userData.frame = 'hero' | 'target'`; sonda čte jen to, co se opravdu kreslí
@@ -243,7 +269,15 @@ export interface FrameReport {
   readonly targets: number;
   /** Cíl minus hrdina ve světě (m) – podklad, když cíl vyjde mimo záběr. */
   readonly offset: { readonly x: number; readonly y: number; readonly z: number } | null;
+  /**
+   * Položky z věty (P30B T5) podle role, jejíž popisek tělo kreslí (`userData.item`):
+   * kolik jich je vidět a obdélník té, která je v záběru nejvíc.
+   */
+  readonly items: Readonly<Record<string, { readonly count: number; readonly box: FrameBox | null }>>;
 }
+
+/** Jak daleko od středu obrazu obdélník leží (NDC); za kamerou nekonečno. */
+const offCenter = (box: FrameBox): number => (box.behind ? Infinity : Math.max(Math.abs(box.x), Math.abs(box.y)));
 
 /** Sonda kreslení (P28B T2, T6): draw cally posledního snímku a živé zdroje GPU. */
 export interface RenderReport {
@@ -353,7 +387,15 @@ function FrameProbe({ control }: { readonly control: string }) {
       camera.updateMatrixWorld();
       let hero: Object3D | null = null;
       const candidates: Object3D[] = [];
+      const items: Record<string, { count: number; box: FrameBox | null }> = {};
       scene.traverse((node) => {
+        const item = node.userData.item as string | undefined;
+        if (item !== undefined && shown(node)) {
+          const entry = (items[item] ??= { count: 0, box: null });
+          const box = frameOf(node, camera, size.width, size.height);
+          entry.count += 1;
+          if (box !== null && (entry.box === null || offCenter(box) < offCenter(entry.box))) entry.box = box;
+        }
         if (node.userData.frame === 'hero' && shown(node)) hero = node;
         else if (node.userData.frame === 'target' && shown(node)) candidates.push(node);
       });
@@ -373,6 +415,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
+        items,
       };
     };
     // Bez podmínky, stejně jako `__playShell`: e2e ji čte na každé arkádové hře.
@@ -388,6 +431,22 @@ function FrameProbe({ control }: { readonly control: string }) {
 const FRAME_TARGET_ROLES: ReadonlySet<number> = new Set([ROLE.obstacle, ROLE.collectible, ROLE.chaser, ROLE.hazard, ROLE.enemy, ROLE.target]);
 const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
   view.role === ROLE.player ? 'hero' : FRAME_TARGET_ROLES.has(view.role) && view.kind !== 'tire-barrier' ? 'target' : undefined;
+
+/**
+ * Role věty, jejíž popisek tělo kreslí (P30B T5) – totéž rozhodnutí jako `modelIdOf`
+ * a `arcadeScene` v `fidelity/chain.ts`. Nota, díl věže a soupeř souboje mají vlastní scény.
+ */
+function itemTagOf(view: BodyView): 'enemy' | 'chaser' | PropRole | undefined {
+  if (view.role === ROLE.player) return undefined;
+  if (view.kind === 'enemy') return 'enemy';
+  if (view.kind === 'rival-car') return 'rival';
+  if (view.role === ROLE.chaser) return 'chaser';
+  if (view.role === ROLE.collectible && view.kind === 'coin') return 'coin';
+  if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return 'obstacle';
+  if (view.role === ROLE.obstacle && view.kind === 'tire-barrier') return 'barrier';
+  if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return 'target';
+  return undefined;
+}
 
 interface WorldProps {
   readonly session: ArcadeSession;
@@ -499,18 +558,21 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
       if (control === 'platform') {
         // Kamera za výškou hráče jen dojíždí, ať skok netřese obrazem.
         followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 4));
-        // Na výšku je obraz úzký: kamera smí dál (hráč pořád nad 24 px) a hráč jde víc doleva,
-        // ať je vidět nejbližší mince či hrot ~9 m před startem (P27A T6, `e2e/play-frame`).
-        if (camera.aspect < 1) placeSide(camera, look, z, followY.current + 1.2, 16, 7, 22, 0.7);
+        // Na výšku mírně natočená, ať je vidět nejbližší mince či hrot ~11 m před startem
+        // i vedle širokého hrdiny (P27A T6, P30B T5, `e2e/play-frame`); hrdina zůstává ~22 m od kamery.
+        if (camera.aspect < 1) placeAngled(camera, look, z, followY.current + 1.2, 24, 25 * DEG, 4.5);
         else placeSide(camera, look, z, followY.current + 1.2, 16, 7, 18, 0.4);
       } else if (control === 'flap') {
         // Na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera
-        // o kus dál, ať je vidět první trubka; na výšku HUD kryje celou šířku, takže ptáček
-        // jde doleva – dál kamera nesmí, ptáček by byl pod 24 px (P27A T6).
-        if (camera.aspect < 1) placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 14, FLAP.ceiling / UNIT + 1, 26, 0.7);
-        else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 24, FLAP.ceiling / UNIT + 1, 26, 0.1);
+        // tak daleko, ať je vidět první trubka i mince za ní (P30B T5). Na výšku by kolmá
+        // kamera ptáčka zmenšila na 3 % výšky: natočená do tří čtvrtin ho má přes 4 %
+        // a první trubku i minci pořád v záběru.
+        if (camera.aspect < 1) placeAngled(camera, look, z, FLAP.ceiling / UNIT / 2, 22, 50 * DEG, 5);
+        else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 30, FLAP.ceiling / UNIT + 1, 26, 0.1);
       } else if (control === 'steer') {
-        placeChase(camera, look, x, z);
+        // Osa trati je v jednotkách jádra a scéna ji zrcadlí (x → −x), stejně jako těla.
+        const course = session.world.control.params.course as SteerCourse | undefined;
+        placeChase(camera, look, x, z, course === undefined ? 0 : -centerAt(course, z * UNIT) / UNIT);
       } else if (control === 'shooter' || control === 'throw') {
         // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
       } else {
@@ -537,9 +599,9 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
-          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view) }}>
+          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
-              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
+              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
             ) : rigged[view.index] !== undefined ? (
               // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
               <RiggedModel
@@ -553,7 +615,15 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
             ) : (
               <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
                 {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}
-                <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
+                {/* Postava stojí ve výšce těla (P30B T3); vozidlo má tělo nízké a dlouhé, to se dál vepisuje celé. */}
+                <FittedModel
+                  id={modelIdOf(view, cast)}
+                  w={view.w}
+                  h={view.h}
+                  d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d}
+                  fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
+                  character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
+                />
               </group>
             )}
           </group>
@@ -868,12 +938,15 @@ export default function ArcadeStage({
   session,
   cast,
   lookId = 'meadow',
+  look: scene,
   enabled = true,
   overlay,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
   readonly lookId?: LookId;
+  /** Sada upravená místem z věty (`sceneLook`, P30B T6); bez ní sada `lookId`. */
+  readonly look?: Look;
   /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
   readonly enabled?: boolean;
   /* P29D */
@@ -885,7 +958,7 @@ export default function ArcadeStage({
   const base = baseControlOf(session.world.control);
   const control = base.id;
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
-  const look = LOOKS[lookId];
+  const look = scene ?? LOOKS[lookId];
   const env = useContext(PlayEnv);
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
   // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
@@ -895,6 +968,10 @@ export default function ArcadeStage({
     rival === undefined
       ? undefined
       : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
+  // P30B T4: nota rytmu a díl věže z popisku („lily pads“, „pancakes“); díl vyplní kvádr, šířku mu mění jádro.
+  const { note, block } = cast.props;
+  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
+  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
   useFireInput(session, fires && enabled);
   useRunnerInput(session, surface, enabled && control === 'runner');
   usePlatformInput(session, surface, enabled && control === 'platform');
@@ -926,9 +1003,9 @@ export default function ArcadeStage({
         {env !== null && <Panorama env={env} />}
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
-          <TimingScene session={session} look={look} />
+          <TimingScene session={session} look={look} blockModel={blockModel} />
         ) : control === 'rhythm' ? (
-          <RhythmScene session={session} look={look} />
+          <RhythmScene session={session} look={look} noteModel={noteModel} />
         ) : control === 'duel' ? (
           <DuelScene session={session} look={look} rivalModel={rivalModel} />
         ) : (

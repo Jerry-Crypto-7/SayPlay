@@ -42,10 +42,13 @@ describe('fidelityChain', () => {
   it('names the duel rival from the sentence and draws it only with its own model', () => {
     const kangaroo = draftGameSpec('boxing a kangaroo in the australian outback');
     expect(kangaroo.control).toBe('duel');
+    // Klokan má od P30B T4 vlastní model; vombat žádný – liška za něj se jako nakreslený nepočítá.
     expect(fidelityChain(kangaroo, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'] }, { item: 'outback', slot: 'setting', match: ['outback'] }])).toMatchObject([
-      { inSpec: true, read: true, drawn: false, why: 'no-model' },
+      { inSpec: true, read: true, drawn: true, why: 'ok' },
       { drawn: true, why: 'ok' },
     ]);
+    const wombat: GameSpecV1 = { ...kangaroo, roles: kangaroo.roles.map((role) => (role.id === 'rival' ? { ...role, label: 'wombat' } : role)) };
+    expect(fidelityChain(wombat, [{ item: 'wombat', slot: 'role', match: ['wombat'] }])[0]).toMatchObject({ inSpec: true, read: true, drawn: false, why: 'no-model' });
     const pigeons = draftGameSpec('A grandma karate fights a gang of pigeons in the park');
     expect(fidelityChain(pigeons, [{ item: 'pigeon', slot: 'role', match: ['pigeon'] }])[0]).toMatchObject({ drawn: true, why: 'ok' });
   });

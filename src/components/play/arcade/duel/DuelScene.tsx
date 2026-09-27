@@ -169,7 +169,7 @@ export function DuelScene({ session, look: scene, rivalModel }: { readonly sessi
       <group position={[0, 0, hero.z]} userData={{ frame: 'hero' }}>
         <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
       </group>
-      <group position={[0, 0, rival.z]} userData={{ frame: 'target' }}>
+      <group position={[0, 0, rival.z]} userData={{ frame: 'target', item: 'rival' }}>
         {/* Model hledí k hráči (−z). */}
         <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} model={rivalModel === undefined ? undefined : <group rotation={[0, Math.PI, 0]}>{rivalModel(rival.w, rival.h, rival.d)}</group>} />
       </group>

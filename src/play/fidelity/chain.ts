@@ -24,7 +24,7 @@ import { worldHasPhysics } from '../arcade/kernel';
 import { lookFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
-import { chaserModel, enemyModel, heroModel, modelOf, propModels, riggedModelOf } from '../arcade/models';
+import { PROP_ROLES, chaserModel, enemyModel, heroModel, modelOf, namedProps, riggedModelOf, type PropRole } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
 import type { VerbProof } from '../contracts';
@@ -74,7 +74,7 @@ const mentions = (text: string, words: readonly string[]): boolean =>
 const PLAYER = (role: Pick<GameRole, 'kind'>): boolean => role.kind === 'player';
 
 /** Role arkády, které scéna kreslí modelem z popisku, a zda pro ně svět postavil těleso. */
-type DrawnBody = 'player' | 'enemy' | 'chaser' | 'coin' | 'obstacle' | 'target' | 'rival';
+type DrawnBody = 'player' | 'enemy' | 'chaser' | PropRole;
 interface ArcadeScene {
   readonly bodies: ReadonlySet<DrawnBody>;
 }
@@ -98,6 +98,10 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     else if (role === ROLE.obstacle && ['hurdle', 'cone', 'crate'].includes(kind)) bodies.add('obstacle');
     // Věž hodu je z kostek role terče – kreslí je model z popisku terče (P28D T3).
     else if (role === ROLE.target && (kind === 'target' || kind === 'wood-block')) bodies.add('target');
+    // P30B T4: mantinel závodu, nota rytmu a díl věže načasování (jezdec i položené díly jsou `block`).
+    else if (role === ROLE.obstacle && kind === 'tire-barrier') bodies.add('barrier');
+    else if (role === ROLE.target && kind === 'note') bodies.add('note');
+    else if (role === ROLE.platform && kind === 'block') bodies.add('block');
   }
   return { bodies };
 }
@@ -105,7 +109,7 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
 /** Kreslí scéna tuhle roli modelem z jejího popisku? */
 function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: () => ArcadeScene): boolean {
   // Mřížka: entita role dostane asset katalogu, nebo primitiv (`compile/blueprint.ts`).
-  if (control === 'tap_go') return assetSource(role.id, role.label) !== null;
+  if (control === 'tap_go') return assetSource(role.id, role.label, role.kind) !== null;
   const { bodies } = scene();
   if (PLAYER(role)) {
     if (!bodies.has('player')) return false;
@@ -115,8 +119,9 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   }
   if (role.id === 'enemy') return bodies.has('enemy') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === enemyModel(spec);
   if (role.kind === 'chaser') return bodies.has('chaser') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === chaserModel(spec);
-  if (role.id === 'coin' || role.id === 'obstacle' || role.id === 'target' || role.id === 'rival') return bodies.has(role.id) && propModels(spec, false)[role.id] !== undefined;
-  return false;
+  // Popisek, který jmenuje tělo jádra („rival car“), se kreslí taky – jako u hrdiny, kterého popisek jmenuje.
+  const prop = PROP_ROLES.find((id) => id === role.id);
+  return prop !== undefined && bodies.has(prop) && namedProps(spec)[prop] !== undefined;
 }
 
 /** Slovesa pravidel, která robot během vítězného běhu vystřelil (seed 1, jako `arcadeScene`). */
@@ -130,8 +135,9 @@ function robotVerbs(spec: GameSpecV1): readonly VerbProof[] {
  * Položky seznamu nad jedním specem, každá se všemi čtyřmi stupni.
  *
  * Sloveso pokryté pravidlem (P29A T9) je ve specu, když pravidlo to sloveso
- * nese, a čtené i kreslené teprve tehdy, když ho robot opravdu vystřelil –
- * pravidlo, které se nestalo, čitelnost nezvedne. `verbs` = důkazy z ověření
+ * nese, a čtené i kreslené teprve tehdy, když ho robot vystřelil a hra se tím
+ * změnila (P30B R2) – pravidlo, které se nestalo nebo nic neudělalo, čitelnost
+ * nezvedne. `verbs` = důkazy z ověření
  * (`QualityReport.verbs`); chybí-li, robot se pustí jen nad specem s pravidly.
  */
 export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEntry[], verbs?: readonly VerbProof[]): ChainItem[] {
@@ -143,7 +149,8 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   let built: ArcadeScene | undefined;
   const scene = (): ArcadeScene => (built ??= arcadeScene(spec));
   let proofs = verbs;
-  const fired = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.fired);
+  // Dokázané je sloveso, po kterém se hra změnila (`VerbProof.changed`, P30B R2), ne jen vystřelené pravidlo.
+  const proved = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.changed);
 
   const stage = (entry: ChecklistEntry, inSpec: boolean, read: boolean, drawn: boolean): ChainItem => ({
     item: entry.item,
@@ -165,7 +172,7 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
         return (verb.control !== undefined && controls.includes(verb.control)) || (verb.mechanic !== undefined && mechanics.includes(verb.mechanic));
       });
       const byRule = (spec.rules ?? []).filter((rule) => mentions(rule.verb, [entry.item, ...(entry.match ?? [])])).map((rule) => rule.verb);
-      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(fired);
+      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(proved);
       // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika nebo vystřelené pravidlo je vidět hraním.
       return stage(entry, byControl || byAddon || byMechanic.length > 0 || byRule.length > 0, read, read);
     }

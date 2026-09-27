@@ -643,6 +643,8 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     else if (effect.kind === 'spawn') changed = spawn(state, effect);
     else if (effect.kind === 'respawn') {
       const p = baseOf(state[HD.player] as number);
+      // Stopa jen za návrat odjinud (P30B R1): hráč, který na bodu návratu už stojí, se nepohnul.
+      changed = state[p + S.x] !== state[HD.respawnX] || state[p + S.y] !== state[HD.respawnY] || state[p + S.z] !== state[HD.respawnZ];
       state[p + S.x] = state[HD.respawnX] as number;
       state[p + S.y] = state[HD.respawnY] as number;
       state[p + S.z] = state[HD.respawnZ] as number;
@@ -661,12 +663,16 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
         changed = alive(state, base);
         state[base + S.flags] = (state[base + S.flags] as number) & ~F.alive;
       } else {
-        state[HD.respawnX] = state[base + S.x] as number;
-        state[HD.respawnY] = (state[base + S.y] as number) + (state[base + S.h] as number);
-        state[HD.respawnZ] = state[base + S.z] as number;
+        const x = state[base + S.x] as number;
+        const y = (state[base + S.y] as number) + (state[base + S.h] as number);
+        const z = state[base + S.z] as number;
+        changed = x !== state[HD.respawnX] || y !== state[HD.respawnY] || z !== state[HD.respawnZ];
+        state[HD.respawnX] = x;
+        state[HD.respawnY] = y;
+        state[HD.respawnZ] = z;
       }
     } else changed = false;
-    if (changed && trace !== undefined) trace(owners?.[i] as number);
+    if (changed && trace !== undefined) trace(owners?.[i] as number, effect);
   }
 }
 
@@ -684,8 +690,9 @@ function settleRun(state: ArcadeState, end: TickEnd): void {
 /**
  * Stopa výstřelů (P29A): jádro ji zavolá s indexem pravidla světa pokaždé, když
  * efekt toho pravidla změnil stav. Je mimo stav, takže hash ani replay nevidí.
+ * Dostane i ten efekt a stav hned po něm – robot z něj měří, co se změnilo (P30B T2).
  */
-export type RuleTrace = (rule: number) => void;
+export type RuleTrace = (rule: number, effect: ArcadeEffect) => void;
 
 function fireRules(effects: ArcadeEffect[], owners: number[] | undefined, program: ArcadeProgram, trigger: RuleTrigger, ctx: RuleContext): void {
   const rules = program.rules;

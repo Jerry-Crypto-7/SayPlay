@@ -673,6 +673,51 @@
       }
     },
     {
+      "assetId": "sprinkler",
+      "tags": [
+        "sprinkler",
+        "sprinklers",
+        "lawn-sprinkler",
+        "garden-sprinkler"
+      ],
+      "path": "/assets/worldstream/sprinkler-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.6006738049570682,
+          4.470348362317633e-10,
+          -0.18000000715255737
+        ],
+        "max": [
+          0.6006738049570682,
+          0.6557628553509279,
+          0.18000000715255737
+        ]
+      }
+    },
+    {
+      "assetId": "kangaroo",
+      "tags": [
+        "kangaroo",
+        "kangaroos",
+        "roo",
+        "roos",
+        "wallaby"
+      ],
+      "path": "/assets/worldstream/kangaroo-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22,
+          0,
+          -0.6498821670824563
+        ],
+        "max": [
+          0.22,
+          1.4265803663881709,
+          0.325
+        ]
+      }
+    },
+    {
       "assetId": "knight",
       "tags": [
         "knight",

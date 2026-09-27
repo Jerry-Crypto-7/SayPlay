@@ -6,24 +6,24 @@
   },
   "mentions": {
     "mentions": 163,
-    "before": 84,
-    "now": 114
+    "before": 93,
+    "now": 125
   },
   "nouns": {
     "distinct": 119,
-    "before": 55,
-    "now": 80
+    "before": 61,
+    "now": 88
   },
   "byRole": {
     "hero": {
       "mentions": 54,
-      "before": 30,
-      "now": 37
+      "before": 32,
+      "now": 39
     },
     "enemy": {
       "mentions": 18,
       "before": 9,
-      "now": 12
+      "now": 13
     },
     "collectible": {
       "mentions": 17,
@@ -37,33 +37,33 @@
     },
     "target": {
       "mentions": 21,
-      "before": 5,
-      "now": 8
+      "before": 10,
+      "now": 13
     },
     "checklist": {
       "mentions": 39,
-      "before": 18,
-      "now": 31
+      "before": 20,
+      "now": 34
     }
   },
   "bySet": {
     "demand": {
       "mentions": 94,
-      "now": 63,
+      "now": 69,
       "nouns": 82,
-      "nounsNow": 51
+      "nounsNow": 57
     },
     "fidelity": {
       "mentions": 69,
-      "now": 51,
+      "now": 56,
       "nouns": 65,
-      "nounsNow": 48
+      "nounsNow": 53
     },
     "hostile": {
       "mentions": 24,
-      "now": 18,
+      "now": 19,
       "nouns": 23,
-      "nounsNow": 17
+      "nounsNow": 18
     }
   },
   "gained": [
@@ -133,6 +133,11 @@
       "mentions": 1
     },
     {
+      "noun": "lily pad",
+      "model": "cc0-lily-pad",
+      "mentions": 1
+    },
+    {
       "noun": "log",
       "model": "cc0-wood-log",
       "mentions": 1
@@ -188,25 +193,17 @@
       "mentions": 1
     },
     {
+      "noun": "trash can",
+      "model": "cc0-trash-can",
+      "mentions": 1
+    },
+    {
       "noun": "zombie",
       "model": "cc0-zombie",
       "mentions": 1
     }
   ],
-  "aliasedAway": [
-    {
-      "noun": "lily pad",
-      "cc0": "cc0-lily-pad",
-      "drawn": "cc0-lily",
-      "mentions": 1
-    },
-    {
-      "noun": "trash can",
-      "cc0": "cc0-trash-can",
-      "drawn": "cc0-barrier-trash",
-      "mentions": 1
-    }
-  ],
+  "aliasedAway": [],
   "states": {
     "before-CC0 (7c411db)": {
       "models": 86,
@@ -243,18 +240,18 @@
       "models": 102,
       "nouns": {
         "distinct": 119,
-        "now": 57
+        "now": 58
       },
       "mentions": {
         "mentions": 163,
-        "now": 85
+        "now": 86
       },
       "bySet": {
         "demand": {
           "mentions": 94,
-          "now": 47,
+          "now": 48,
           "nouns": 82,
-          "nounsNow": 36
+          "nounsNow": 37
         },
         "fidelity": {
           "mentions": 69,
@@ -271,33 +268,33 @@
       }
     },
     "now": {
-      "models": 525,
+      "models": 566,
       "nouns": {
         "distinct": 119,
-        "now": 80
+        "now": 88
       },
       "mentions": {
         "mentions": 163,
-        "now": 114
+        "now": 125
       },
       "bySet": {
         "demand": {
           "mentions": 94,
-          "now": 63,
+          "now": 69,
           "nouns": 82,
-          "nounsNow": 51
+          "nounsNow": 57
         },
         "fidelity": {
           "mentions": 69,
-          "now": 51,
+          "now": 56,
           "nouns": 65,
-          "nounsNow": 48
+          "nounsNow": 53
         },
         "hostile": {
           "mentions": 24,
-          "now": 18,
+          "now": 19,
           "nouns": 23,
-          "nounsNow": 17
+          "nounsNow": 18
         }
       }
     }

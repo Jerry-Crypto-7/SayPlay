@@ -48,8 +48,9 @@ describe('arcade model choice from role labels', () => {
     expect(heroModel(withLabel(runner, 'player', 'zeppelin'))).toBe('explorer');
     expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('gen3d-balloon');
     expect(enemyModel(withLabel(shooter, 'enemy', 'angry umbrellas'))).toBe('robot');
-    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'cc0-fire-hydrant' });
-    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'), false)).toEqual({});
+    // Zástupci (hydrant za kropítko) skončili v P30B T4: kropítko má vlastní model, věc bez modelu zůstane tělem jádra.
+    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'sprinkler' });
+    expect(propModels(withLabel(runner, 'obstacle', 'deadlines'))).toEqual({});
   });
 
   it('a flappy bird is the bird, not the nest', () => {
@@ -68,8 +69,9 @@ describe('arcade model choice from role labels', () => {
   // P27A T4: soupeř souboje a závodu z popisku – jen model, který popisek jmenuje, žádná kategorie.
   it('names the duel and race rival from its label, honestly', () => {
     expect(propModels(withLabel(duel, 'rival', 'fox'))).toEqual({ rival: 'fox' });
-    // Klokana katalog nemá: kategorie „zvíře“ by nakreslila lišku, soupeř zůstane postavou z primitiv.
-    expect(propModels(withLabel(duel, 'rival', 'kangaroo'))).toEqual({});
+    // Klokan má od P30B T4 vlastní model; vombata katalog nemá – kategorie „zvíře“ by nakreslila lišku, soupeř zůstane postavou z primitiv.
+    expect(propModels(withLabel(duel, 'rival', 'kangaroo'))).toEqual({ rival: 'kangaroo' });
+    expect(propModels(withLabel(duel, 'rival', 'wombat'))).toEqual({});
     expect(propModels(withLabel(steer, 'rival', 'rival plane'))).toEqual({ rival: 'plane' });
     // Soupeř závodu je vozidlo; zvíře jako auto neřídí.
     expect(propModels(withLabel(steer, 'rival', 'fox'))).toEqual({});

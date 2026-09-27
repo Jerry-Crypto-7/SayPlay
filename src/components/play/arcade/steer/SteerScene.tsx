@@ -25,15 +25,17 @@ import type { ArcadeSession } from '../session';
  * Kamera za autem: dojíždí za ním do strany, kouká kus před něj. Na výšku
  * (mobil) je nízká kamera tak úzká, že soupeř nebo turbo vedle auta (~6 m
  * do strany) leží mimo obraz – stoupne a ustoupí do strmého pohledu shora,
- * auto zůstává přes 24 px (P27A T6, `e2e/play-frame`).
+ * auto zůstává přes 24 px (P27A T6, `e2e/play-frame`). Vychýlení se měří od
+ * středu trati `road`, ne od počátku: auto u mantinelu a soupeř u druhého
+ * kraje se na výšku vejdou jen s kamerou napůl nad silnicí (P30B T5).
  */
-export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, z: number): void {
+export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, z: number, road: number): void {
   if (camera.aspect < 1) {
-    camera.position.set(x * 0.8, 18, z - 18);
-    look.set(x * 0.6, 0, z + 8);
+    camera.position.set(road + (x - road) * 0.5, 18, z - 18);
+    look.set(road + (x - road) * 0.4, 0, z + 8);
   } else {
-    camera.position.set(x * 0.8, 4.2, z - 8.5);
-    look.set(x * 0.6, 0.8, z + 12);
+    camera.position.set(road + (x - road) * 0.8, 4.2, z - 8.5);
+    look.set(road + (x - road) * 0.6, 0.8, z + 12);
   }
   camera.lookAt(look);
 }
@@ -63,7 +65,8 @@ export function SteerBackdrop({ course, length, look }: { readonly course: Steer
         <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
             <planeGeometry args={[half * 2, segment.far - segment.near + 0.05]} />
-            <meshStandardMaterial color={look.track} roughness={0.9} />
+            {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po asfaltu sady. */}
+            <meshStandardMaterial color={look.afloat === true ? look.water : look.track} roughness={look.afloat === true ? 0.3 : 0.9} />
           </mesh>
           <Scenery look={look} layout="sides" inner={half + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
           {[-1, 1].map((side) => (

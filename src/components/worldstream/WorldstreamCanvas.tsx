@@ -38,6 +38,7 @@ import WorldstreamLighting, {
 import type { SceneEnvironment } from '@/scene/environment';
 import { boundLookPreset, deriveLookPreset, type LookBinding, type LookDescriptor, type LookPreset } from '@/worldstream/look';
 import WorldstreamStage from '@/components/viewer/WorldstreamStage';
+import { PALETTES, type Palette } from '@/kit';
 import { FRAMING_FOV, frameScene, safeAreaFromRects, type Bounds, type SafeArea } from '@/worldstream/framing';
 import { applyDiagramProjection, frameDiagram } from '@/worldstream/diagram-framing';
 import { readVariable, type RuntimeController, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
@@ -376,7 +377,7 @@ function LookTransition({ bindings, environment, controller }: { readonly bindin
   return null;
 }
 
-export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight, guide = true, children }: {
+export default function WorldstreamCanvas({ world, controller = null, sceneId = null, reset = 0, framing = 'scene', onPresented, sharedCamera, adaptiveAssets, focusId,cutaway=true, routeHighlight, guide = true, ground, children }: {
   readonly world: ProxyWorld | null;
   readonly controller?: RuntimeController | null;
   readonly sceneId?: string | null;
@@ -391,6 +392,11 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
   readonly routeHighlight?: readonly string[];
   /** Figura průvodce. PLAY ji vypíná: vedle hráčovy postavy čte jako druhý hrdina (QA 22. 9. 2026). */
   readonly guide?: boolean;
+  /**
+   * Barva rovné země pod hrou (slot `sand` palety). PLAY ji bere z prostředí věty
+   * (P30B T6); bez ní béžová přístavu, kterou porota viděla i na Marsu.
+   */
+  readonly ground?: string;
   /** Vrstvy navíc uvnitř scény – PLAY tu kreslí výhled stráže a přání zákazníků (P25E). */
   readonly children?: ReactNode;
 }) {
@@ -401,6 +407,8 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
 
   const stand = useMemo(() => (world === null || !guide ? null : guideStand(world)), [world, guide]);
   const markers = useMemo(() => (world === null ? [] : routeMarkers(world, routeHighlight ?? [])), [world, routeHighlight]);
+  // Jedna paleta na barvu: scéna přebarvuje všechno, když dostane jiný objekt.
+  const palette = useMemo(() => (ground === undefined ? undefined : { ...PALETTES.harbor, sand: ground }), [ground]);
   // Sonda pro e2e, stejným způsobem jako `__worldstreamStage`. Ptá se na to,
   // co se z obrázku plátna přečíst nedá: **stojí tu postava a které zastávky
   // scéna doopravdy zvýraznila** — zvýraznit jde jen slot, který má hmotu,
@@ -424,7 +432,7 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
       {world?.kind === 'built' && world.lookBindings !== undefined && world.lookBindings.length > 0 &&
         <LookTransition bindings={world.lookBindings} environment={world.environment} controller={controller} />}
       <FrameCamera world={world} controller={controller} sceneId={sceneId} reset={reset} framing={framing} sharedCamera={sharedCamera} focusId={focusId} />
-      {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />}
+      {world !== null && world.kind === 'built' && <RuntimeStage key={sceneId} world={world} controller={controller} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} palette={palette} />}
       {stand !== null && <GuideFigure at={stand} />}
       <RouteRings markers={markers} />
       {children}
@@ -435,9 +443,9 @@ export default function WorldstreamCanvas({ world, controller = null, sceneId = 
 const subscribeEmpty = () => () => {};
 const emptySnapshot = () => null;
 
-function RuntimeStage({ world, controller, onPresented, adaptiveAssets,cutaway }: { readonly world: ProxyWorld; readonly controller: RuntimeController | null;
-  readonly onPresented?: (world: ProxyWorld) => void; readonly adaptiveAssets?: boolean;readonly cutaway?:boolean }) {
+function RuntimeStage({ world, controller, onPresented, adaptiveAssets,cutaway, palette }: { readonly world: ProxyWorld; readonly controller: RuntimeController | null;
+  readonly onPresented?: (world: ProxyWorld) => void; readonly adaptiveAssets?: boolean;readonly cutaway?:boolean; readonly palette?: Palette }) {
   const state = useSyncExternalStore(controller?.subscribe ?? subscribeEmpty,
     controller?.getSnapshot ?? emptySnapshot, emptySnapshot);
-  return <WorldstreamStage world={world} runtimeState={state} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} />;
+  return <WorldstreamStage world={world} runtimeState={state} onPresented={onPresented} adaptiveAssets={adaptiveAssets} cutaway={cutaway} palette={palette} />;
 }

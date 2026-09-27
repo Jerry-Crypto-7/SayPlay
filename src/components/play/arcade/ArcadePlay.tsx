@@ -15,7 +15,7 @@ import { memo, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExte
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
 import { worldHasPhysics } from '@/play/arcade/kernel';
-import { lookOf } from '@/play/arcade/look';
+import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { loadRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
@@ -401,6 +401,8 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
 
   // Zvuk (P28C T2): efekty pravidel z tiků hráče a skok z rychlosti vzhůru – mimo stav.
   useEffect(() => installSoundControls(), []);
+  // Sada upravená místem z věty (P30B T6): bloky, plošiny a hladina pod závodem.
+  const scene = useMemo(() => sceneLook(spec.theme), [spec.theme]);
   // Vlastní hudba a zvuky looku (P29D T5) – ve feedu jen aktivní hra; bez gesta nic nestahuje.
   useEffect(() => {
     if (!active) return;
@@ -479,7 +481,7 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
 
   return (
     <main ref={shell} className="play-shell">
-      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
+      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} look={scene} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} live={live}>
         {running && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
