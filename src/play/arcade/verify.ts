@@ -53,6 +53,11 @@ const RESPAWN = [HEADER.respawnX, HEADER.respawnY, HEADER.respawnZ] as const;
  * jádra), `before` stav na začátku tiku; `null` = efekt se provedl naprázdno.
  * Výsledek hry (`win` / `lose`) rozhodne až konec tiku a posun těla po `push`
  * / `throwHeld` další tiky – ty měří volající.
+ *
+ * Tělo a držení (`spawn`, `despawn`, `grab`, `release`, `toggle`) se soudí
+ * podmínkou na `after`, ne srovnáním s `before`: jádro je ohlásí jen za
+ * provedený efekt, a co se v tiku stalo dřív (míč zanikl, spawn dostal jeho
+ * slot), by srovnání se začátkem tiku schovalo (revize fáze 1 P30B).
  */
 function changeOf(effect: ArcadeEffect, before: ArcadeState, after: ArcadeState, tick: number): string | null {
   const at = `at tick ${String(tick)}`;
@@ -70,21 +75,27 @@ function changeOf(effect: ArcadeEffect, before: ArcadeState, after: ArcadeState,
     case 'lose':
       return null;
     case 'despawn':
-      return effect.body >= 0 && effect.body < (before[HEADER.bodyCount] as number) && alive(before, effect.body) && !alive(after, effect.body) ? `body ${String(effect.body)} gone ${at}` : null;
+      return effect.body >= 0 && effect.body < (after[HEADER.bodyCount] as number) && !alive(after, effect.body) ? `body ${String(effect.body)} gone ${at}` : null;
     case 'spawn': {
-      const was = before[HEADER.bodyCount] as number;
-      for (let body = before[HEADER.spawnBase] as number; body < (after[HEADER.bodyCount] as number); body += 1) {
-        if ((body >= was || !alive(before, body)) && alive(after, body)) return `body ${String(body)} appeared ${at}`;
+      // Nové tělo stojí přesně tam, kam ho efekt poslal, a má roli předlohy.
+      const role = after[bodyBase(effect.template) + BODY.role];
+      for (let body = after[HEADER.spawnBase] as number; body < (after[HEADER.bodyCount] as number); body += 1) {
+        const base = bodyBase(body);
+        const placed = after[base + BODY.x] === effect.x && after[base + BODY.y] === effect.y && after[base + BODY.z] === effect.z;
+        if (alive(after, body) && placed && after[base + BODY.role] === role) return `body ${String(body)} appeared ${at}`;
       }
       return null;
     }
     case 'grab':
+      return heldOf(after) === effect.body ? `held ${heldName(heldOf(before))}→${heldName(heldOf(after))} ${at}` : null;
     case 'release':
-      return heldOf(before) === heldOf(after) ? null : `held ${heldName(heldOf(before))}→${heldName(heldOf(after))} ${at}`;
+      return heldOf(after) === -1 ? `held ${heldName(heldOf(before))}→nothing ${at}` : null;
     case 'toggle': {
+      // Jádro přepnuté tělo v tiku označí, ať ho druhé přepnutí nevrátí.
       let switched = 0;
-      for (let body = 0; body < (before[HEADER.bodyCount] as number); body += 1) {
-        if (before[bodyBase(body) + BODY.role] === effect.role && alive(before, body) !== alive(after, body)) switched += 1;
+      for (let body = 0; body < (after[HEADER.bodyCount] as number); body += 1) {
+        const base = bodyBase(body);
+        if (after[base + BODY.role] === effect.role && ((after[base + BODY.flags] as number) & FLAG.switched) !== 0) switched += 1;
       }
       return switched === 0 ? null : `${String(switched)} ${switched === 1 ? 'body' : 'bodies'} of role ${String(effect.role)} switched ${at}`;
     }

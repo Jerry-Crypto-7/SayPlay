@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 
 import runnerFixture from '../__fixtures__/runner.json';
+import throwFixture from '../__fixtures__/throw.json';
 import giveFlower from '../__fixtures__/rules/give-flower.json';
 import leverBridge from '../__fixtures__/rules/lever-bridge.json';
 import pushCrate from '../__fixtures__/rules/push-crate.json';
@@ -70,6 +71,19 @@ describe('a verb is proved by the state change its effect class promises', () =>
     // Robot sebere minci a jádro ho vrátí na start; běh pak na horizontu nedoběhne, důkaz se ale měří.
     const { proof } = proofOf(onCoin('rewind', [{ respawn: true }]), 'rewind');
     expect(proof).toMatchObject({ fired: true, changed: true, evidence: expect.stringMatching(/^player back at the respawn point at tick \d+$/) });
+  });
+
+  // Revize fáze 1 P30B: míč zanikne v tomtéž tiku, kdy zasáhne terč, a spawn mince dostane jeho uvolněný
+  // slot. Srovnání se stavem ze začátku tiku tu změnu schovalo a robot platnou hru odmítl (VERB_NO_EFFECT).
+  it('spawn into a slot freed earlier in the same tick is still the change', () => {
+    const bloom = {
+      ...throwFixture,
+      roles: [...throwFixture.roles, { id: 'coin', kind: 'collectible', label: 'candy' }],
+      rules: [{ id: 'bloom', verb: 'bloom', when: { hit: 'target' }, do: [{ spawn: { role: 'coin', at: 'other' } }] }],
+    };
+    const { verdict, proof } = proofOf(bloom, 'bloom');
+    expect(proof).toMatchObject({ fired: true, changed: true, evidence: expect.stringMatching(/^body \d+ appeared at tick \d+$/) });
+    expect(verdict.failures.map((failure) => failure.code)).not.toContain('VERB_NO_EFFECT');
   });
 
   it('the rule fixtures that win by verbs still prove every verb by a change', () => {
