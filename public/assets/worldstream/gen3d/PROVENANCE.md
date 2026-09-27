@@ -85,3 +85,42 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-tube` | tube | tube | 4748 / 2374 |
 | `gen3d-wand` | wand | wand | 4748 / 2374 |
 | `gen3d-windmill` | windmill | windmill | 4477 / 2182 |
+| `gen3d-billboard` | billboard | billboard, ads | 4743 / 2368 |
+| `gen3d-wooden-ark-boat` | wooden ark boat | wooden ark boat, ark | 4658 / 2312 |
+| `gen3d-double-bed` | double bed | double bed, bedroom | 4387 / 2123 |
+| `gen3d-leather-belt` | leather belt | leather belt, belt | 4748 / 2364 |
+| `gen3d-circus-tent` | circus tent | circus tent, carnival | 4640 / 2314 |
+| `gen3d-cash-register` | cash register | cash register, checkout | 4653 / 2320 |
+| `gen3d-space-colony-dome` | space colony dome | space colony dome, colony, dome | 4327 / 2158 |
+| `gen3d-crafting-table` | crafting table | crafting table, craft | 4219 / 2108 |
+| `gen3d-ice-cream-cone` | ice cream cone | ice cream cone, ice cream, cream | 4748 / 2374 |
+| `gen3d-knight-shield` | knight shield | knight shield, defending | 4738 / 2364 |
+| `gen3d-deer` | deer | deer, doe | 4734 / 2362 |
+| `gen3d-race-car` | race car | race car, drift | 4351 / 2056 |
+| `gen3d-fencing-sword` | fencing sword | fencing sword, duel | 4748 / 2374 |
+| `gen3d-roman-temple` | roman temple | roman temple, empire, temple | 4257 / 2006 |
+| `gen3d-hard-hat` | hard hat | hard hat, helmet | 4750 / 2374 |
+| `gen3d-first-aid-kit` | first aid kit | first aid kit, heal, medkit | 4573 / 2192 |
+| `gen3d-soccer-ball` | soccer ball | soccer ball, kick | 4629 / 2285 |
+| `gen3d-gold-trophy` | gold trophy | gold trophy, league, trophy | 4599 / 2264 |
+| `gen3d-armored-knight` | armored knight | armored knight, medieval | 4605 / 2247 |
+| `gen3d-pickaxe` | pickaxe | pickaxe, mining | 4744 / 2368 |
+| `gen3d-paint-bucket` | paint bucket | paint bucket, paint | 4707 / 2336 |
+| `gen3d-soccer-goal` | soccer goal | soccer goal, penalty | 4355 / 2156 |
+| `gen3d-soda-can` | soda can | soda can, pop | 4744 / 2368 |
+| `gen3d-gemstone` | gemstone | gemstone, rare | 4746 / 2372 |
+| `gen3d-restaurant-table` | restaurant table | restaurant table, restaurant | 4748 / 2374 |
+| `gen3d-arcade-cabinet` | arcade cabinet | arcade cabinet, retro, arcade | 4735 / 2354 |
+| `gen3d-money-bag` | money bag | money bag, rob | 4519 / 2182 |
+| `gen3d-laser-sword` | laser sword | laser sword, saber | 4748 / 2374 |
+| `gen3d-computer-monitor` | computer monitor | computer monitor, screen | 4738 / 2366 |
+| `gen3d-metal-screw` | metal screw | metal screw, screw | 4748 / 2374 |
+| `gen3d-magnifying-glass` | magnifying glass | magnifying glass, search | 4702 / 2340 |
+| `gen3d-sledgehammer` | sledgehammer | sledgehammer, smash | 4748 / 2374 |
+| `gen3d-space-soldier` | space soldier | space soldier, space marine | 4628 / 2207 |
+| `gen3d-dumbbell` | dumbbell | dumbbell, stronger, weights | 4748 / 2374 |
+| `gen3d-checkered-flag` | checkered flag | checkered flag, territory | 4748 / 2374 |
+| `gen3d-teddy-bear` | teddy bear | teddy bear, toy | 4486 / 2210 |
+| `gen3d-screwdriver` | screwdriver | screwdriver, unscrew | 4748 / 2374 |
+| `gen3d-alarm-clock` | alarm clock | alarm clock, waking, clock | 4502 / 2203 |
+| `gen3d-wrecking-ball` | wrecking ball | wrecking ball, wrecking | 4748 / 2374 |

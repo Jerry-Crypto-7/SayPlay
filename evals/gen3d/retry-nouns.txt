@@ -1,0 +1,58 @@
+# QA 26. 9. 2026: zamítnutá slova dávky přeložená na konkrétní předmět. Tvar: předmět  # původní slovo.
+# Slova bez předmětu (during, him, possible, let, …) se negenerují znovu.
+billboard  # ads
+wooden ark boat  # ark
+bank building  # bank
+double bed  # bedroom
+leather belt  # belt
+circus tent  # carnival
+cash register  # checkout
+hospital building  # clinic
+space colony dome  # colony
+crafting table  # craft
+ice cream cone  # cream
+knight shield  # defending
+disco ball  # disco
+deer  # doe
+race car  # drift
+fencing sword  # duel
+roman temple  # empire
+formula one car  # formula
+wooden fort  # fort
+framed painting  # gallery
+hard hat  # hard
+first aid kit  # heal
+treasure chest  # item
+soccer ball  # kick
+gold trophy  # league
+envelope  # letter
+mahjong tile  # mahjong
+armored knight  # medieval
+pickaxe  # mining
+paint bucket  # paint
+soccer goal  # penalty
+soda can  # pop
+jail cell  # prison
+skate ramp  # ramp
+gemstone  # rare
+hammock  # relaxing
+restaurant table  # restaurant
+arcade cabinet  # retro
+money bag  # rob
+laser sword  # saber
+computer monitor  # screen
+metal screw  # screw
+magnifying glass  # search
+sleeping bag  # sleepover
+sledgehammer  # smash
+space soldier  # space marine
+lawn sprinkler  # sprinkler
+red squirrel  # squirrel
+dumbbell  # stronger
+checkered flag  # territory
+teddy bear  # toy
+screwdriver  # unscrew
+alarm clock  # waking
+washing machine  # washing
+wrecking ball  # wrecking
+yeti monster  # yeti

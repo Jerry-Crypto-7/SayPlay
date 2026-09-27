@@ -10668,6 +10668,794 @@
           0.23043
         ]
       }
+    },
+    {
+      "assetId": "gen3d-billboard",
+      "tags": [
+        "billboard",
+        "ads"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-billboard-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.59552,
+          0,
+          -0.15301
+        ],
+        "max": [
+          0.59552,
+          1.00001,
+          0.15301
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wooden-ark-boat",
+      "tags": [
+        "wooden ark boat",
+        "ark"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-wooden-ark-boat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58383,
+          0,
+          -1.54494
+        ],
+        "max": [
+          0.58383,
+          0.99996,
+          1.54494
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-double-bed",
+      "tags": [
+        "double bed",
+        "bedroom"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-double-bed-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.95547,
+          0,
+          -1.03012
+        ],
+        "max": [
+          0.95547,
+          0.99544,
+          1.03012
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-leather-belt",
+      "tags": [
+        "leather belt",
+        "belt"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-leather-belt-lod1.glb",
+      "bounds": {
+        "min": [
+          -2.01477,
+          0,
+          -1.98781
+        ],
+        "max": [
+          2.01477,
+          0.99984,
+          1.98781
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-circus-tent",
+      "tags": [
+        "circus tent",
+        "carnival"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-circus-tent-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.58302,
+          0,
+          -0.61492
+        ],
+        "max": [
+          0.58302,
+          0.99428,
+          0.61492
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-cash-register",
+      "tags": [
+        "cash register",
+        "checkout"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-cash-register-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.94251,
+          0,
+          -1.50355
+        ],
+        "max": [
+          0.94251,
+          0.99998,
+          1.50355
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-space-colony-dome",
+      "tags": [
+        "space colony dome",
+        "colony",
+        "dome"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-space-colony-dome-lod1.glb",
+      "bounds": {
+        "min": [
+          -1.05278,
+          0,
+          -1.0193
+        ],
+        "max": [
+          1.05278,
+          0.99541,
+          1.0193
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-crafting-table",
+      "tags": [
+        "crafting table",
+        "craft"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-crafting-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.8743,
+          0,
+          -1.00461
+        ],
+        "max": [
+          0.8743,
+          0.98888,
+          1.00461
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-ice-cream-cone",
+      "tags": [
+        "ice cream cone",
+        "ice cream",
+        "cream"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-ice-cream-cone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.21935,
+          0,
+          -0.21914
+        ],
+        "max": [
+          0.21935,
+          0.99829,
+          0.21914
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-knight-shield",
+      "tags": [
+        "knight shield",
+        "defending"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-knight-shield-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.35603,
+          0,
+          -0.10657
+        ],
+        "max": [
+          0.35603,
+          1.00001,
+          0.10657
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-deer",
+      "tags": [
+        "deer",
+        "doe"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-deer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.1904,
+          0,
+          -0.30418
+        ],
+        "max": [
+          0.1904,
+          0.99929,
+          0.30418
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-race-car",
+      "tags": [
+        "race car",
+        "drift"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-race-car-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.76061,
+          0,
+          -1.11728
+        ],
+        "max": [
+          0.76061,
+          0.99479,
+          1.11728
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-fencing-sword",
+      "tags": [
+        "fencing sword",
+        "duel"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-fencing-sword-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.11486,
+          0,
+          -0.11511
+        ],
+        "max": [
+          0.11486,
+          1,
+          0.11511
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-roman-temple",
+      "tags": [
+        "roman temple",
+        "empire",
+        "temple"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-roman-temple-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.64311,
+          0,
+          -0.64252
+        ],
+        "max": [
+          0.64311,
+          0.99871,
+          0.64252
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-hard-hat",
+      "tags": [
+        "hard hat",
+        "helmet"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-hard-hat-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.77493,
+          0,
+          -0.87413
+        ],
+        "max": [
+          0.77493,
+          1,
+          0.87413
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-first-aid-kit",
+      "tags": [
+        "first aid kit",
+        "heal",
+        "medkit"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-first-aid-kit-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43025,
+          0,
+          -0.19268
+        ],
+        "max": [
+          0.43025,
+          0.99836,
+          0.19268
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-soccer-ball",
+      "tags": [
+        "soccer ball",
+        "kick"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-soccer-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.49626,
+          0,
+          -0.5018
+        ],
+        "max": [
+          0.49626,
+          1.00001,
+          0.5018
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gold-trophy",
+      "tags": [
+        "gold trophy",
+        "league",
+        "trophy"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-gold-trophy-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.37857,
+          0,
+          -0.23348
+        ],
+        "max": [
+          0.37857,
+          0.99997,
+          0.23348
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-armored-knight",
+      "tags": [
+        "armored knight",
+        "medieval"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-armored-knight-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.24477,
+          0,
+          -0.13001
+        ],
+        "max": [
+          0.24477,
+          0.99958,
+          0.13001
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-pickaxe",
+      "tags": [
+        "pickaxe",
+        "mining"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-pickaxe-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.28749,
+          0,
+          -0.0558
+        ],
+        "max": [
+          0.28749,
+          1,
+          0.0558
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-paint-bucket",
+      "tags": [
+        "paint bucket",
+        "paint"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-paint-bucket-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.62964,
+          0,
+          -0.60943
+        ],
+        "max": [
+          0.62964,
+          0.99967,
+          0.60943
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-soccer-goal",
+      "tags": [
+        "soccer goal",
+        "penalty"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-soccer-goal-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.7751,
+          0,
+          -0.40611
+        ],
+        "max": [
+          0.7751,
+          0.99692,
+          0.40611
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-soda-can",
+      "tags": [
+        "soda can",
+        "pop"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-soda-can-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.22123,
+          0,
+          -0.22122
+        ],
+        "max": [
+          0.22123,
+          1.00001,
+          0.22122
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-gemstone",
+      "tags": [
+        "gemstone",
+        "rare"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-gemstone-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.43428,
+          0,
+          -0.44943
+        ],
+        "max": [
+          0.43428,
+          0.99999,
+          0.44943
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-restaurant-table",
+      "tags": [
+        "restaurant table",
+        "restaurant"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-restaurant-table-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.86831,
+          0,
+          -1.01046
+        ],
+        "max": [
+          0.86831,
+          1.00001,
+          1.01046
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-arcade-cabinet",
+      "tags": [
+        "arcade cabinet",
+        "retro",
+        "arcade"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-arcade-cabinet-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.20734,
+          0,
+          -0.2211
+        ],
+        "max": [
+          0.20734,
+          0.99998,
+          0.2211
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-money-bag",
+      "tags": [
+        "money bag",
+        "rob"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-money-bag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.45928,
+          0,
+          -0.45698
+        ],
+        "max": [
+          0.45928,
+          0.99959,
+          0.45698
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-laser-sword",
+      "tags": [
+        "laser sword",
+        "saber"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-laser-sword-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09824,
+          0,
+          -0.09816
+        ],
+        "max": [
+          0.09824,
+          0.9991,
+          0.09816
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-computer-monitor",
+      "tags": [
+        "computer monitor",
+        "screen"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-computer-monitor-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.60429,
+          0,
+          -0.15958
+        ],
+        "max": [
+          0.60429,
+          0.99705,
+          0.15958
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-metal-screw",
+      "tags": [
+        "metal screw",
+        "screw"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-metal-screw-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.13791,
+          0,
+          -0.13781
+        ],
+        "max": [
+          0.13791,
+          0.99972,
+          0.13781
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-magnifying-glass",
+      "tags": [
+        "magnifying glass",
+        "search"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-magnifying-glass-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.32112,
+          0,
+          -0.06665
+        ],
+        "max": [
+          0.32112,
+          0.99904,
+          0.06665
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-sledgehammer",
+      "tags": [
+        "sledgehammer",
+        "smash"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-sledgehammer-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.27862,
+          0,
+          -0.21663
+        ],
+        "max": [
+          0.27862,
+          1,
+          0.21663
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-space-soldier",
+      "tags": [
+        "space soldier",
+        "space marine"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-space-soldier-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26784,
+          0,
+          -0.15303
+        ],
+        "max": [
+          0.26784,
+          0.99992,
+          0.15303
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-dumbbell",
+      "tags": [
+        "dumbbell",
+        "stronger",
+        "weights"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-dumbbell-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.97545,
+          0,
+          -0.49322
+        ],
+        "max": [
+          0.97545,
+          0.99952,
+          0.49322
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-checkered-flag",
+      "tags": [
+        "checkered flag",
+        "territory"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-checkered-flag-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.4949,
+          0,
+          -0.03639
+        ],
+        "max": [
+          0.4949,
+          0.99922,
+          0.03639
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-teddy-bear",
+      "tags": [
+        "teddy bear",
+        "toy"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-teddy-bear-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.47565,
+          0,
+          -0.33086
+        ],
+        "max": [
+          0.47565,
+          1.00001,
+          0.33086
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-screwdriver",
+      "tags": [
+        "screwdriver",
+        "unscrew"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-screwdriver-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.09318,
+          0,
+          -0.0932
+        ],
+        "max": [
+          0.09318,
+          0.99997,
+          0.0932
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-alarm-clock",
+      "tags": [
+        "alarm clock",
+        "waking",
+        "clock"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-alarm-clock-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.40788,
+          0,
+          -0.15949
+        ],
+        "max": [
+          0.40788,
+          0.99664,
+          0.15949
+        ]
+      }
+    },
+    {
+      "assetId": "gen3d-wrecking-ball",
+      "tags": [
+        "wrecking ball",
+        "wrecking"
+      ],
+      "path": "/assets/worldstream/gen3d/gen3d-wrecking-ball-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.26465,
+          0,
+          -0.2642
+        ],
+        "max": [
+          0.26465,
+          0.99978,
+          0.2642
+        ]
+      }
     }
   ]
 }
