@@ -31,3 +31,7 @@ node --experimental-strip-types scripts/play-fidelity.mjs run --set test --open-
 ```
 
 Without `--open-test-once` the run refuses. With it, `test-opened.json` is written (time, run id, commit, SHA-256) before the first sentence leaves, and every later opening refuses. The seal keys on the content (`source: "test"`), so a copied file or `--only` does not sidestep it. A run that dies half way cannot be resumed; the opening is spent.
+
+## Narrator voice without the home PC (P30A T5)
+
+`PLAY_VOICE_ENDPOINT=openai-speech:https://api.deepinfra.com/v1/openai`, `PLAY_VOICE_MODEL=hexgrad/Kokoro-82M`, voice `af_heart`, format `opus`. DeepInfra lists Kokoro-82M at **0.62 USD per 1M characters** (model page, read 2026-09-27). The goal line is capped at 240 characters (`MAX_CHARS` in `src/app/api/play/_voice.ts`), so one game costs at most **0.00015 USD** – under the 0.001 USD target. The recording is cached under the text hash in the shared store, so a goal is paid for once, not once per play.
