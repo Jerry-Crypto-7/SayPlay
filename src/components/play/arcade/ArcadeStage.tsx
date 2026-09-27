@@ -138,20 +138,24 @@ function FittedModel({ id, w, h, d, fallback, character = false, fill = false }:
   );
 }
 
-/** Tělesa bez modelu: plošina (hlína + tráva), řada hrotů, trubka, strop, ptáček. */
-function Primitive({ id, w, h, d }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number }) {
-  if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} />;
+/**
+ * Tělesa bez modelu: plošina (hlína + tráva, nebo hmota sady), řada hrotů,
+ * trubka, strop, ptáček. Pohyblivá plošina si barvu nechává: hráč z ní čte pohyb.
+ */
+function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block'] }) {
+  if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
   if (id === 'platform' || id === 'platform-moving') {
     const top = Math.min(0.25, h / 3);
+    const [side, surface] = id === 'platform' ? (block ?? ['#92400e', '#16a34a']) : ['#475569', '#f59e0b'];
     return (
       <>
         <mesh position={[0, (h - top) / 2, 0]}>
           <boxGeometry args={[w, h - top, d]} />
-          <meshStandardMaterial color={id === 'platform' ? '#92400e' : '#475569'} roughness={0.9} />
+          <meshStandardMaterial color={side} roughness={0.9} />
         </mesh>
         <mesh position={[0, h - top / 2, 0]}>
           <boxGeometry args={[w, top, d]} />
-          <meshStandardMaterial color={id === 'platform' ? '#16a34a' : '#f59e0b'} roughness={0.8} />
+          <meshStandardMaterial color={surface} roughness={0.8} />
         </mesh>
       </>
     );
@@ -597,7 +601,7 @@ function World({ session, control, cast, surface, scene, enabled }: WorldProps) 
         view.kind === 'gate' ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
-              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
+              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
             ) : rigged[view.index] !== undefined ? (
               // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
               <RiggedModel
@@ -934,12 +938,15 @@ export default function ArcadeStage({
   session,
   cast,
   lookId = 'meadow',
+  look: scene,
   enabled = true,
   overlay,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
   readonly lookId?: LookId;
+  /** Sada upravená místem z věty (`sceneLook`, P30B T6); bez ní sada `lookId`. */
+  readonly look?: Look;
   /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
   readonly enabled?: boolean;
   /* P29D */
@@ -951,7 +958,7 @@ export default function ArcadeStage({
   const base = baseControlOf(session.world.control);
   const control = base.id;
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
-  const look = LOOKS[lookId];
+  const look = scene ?? LOOKS[lookId];
   const env = useContext(PlayEnv);
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
   // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.

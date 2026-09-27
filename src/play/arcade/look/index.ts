@@ -129,6 +129,10 @@ export interface Look {
   readonly props: readonly SceneryKind[];
   /** Hlavní a doplňková barva rekvizit. */
   readonly tint: readonly [string, string];
+  /** Hmota pevných plošin a bloků: bok a horní plocha (P30B T6). Bez ní hlína s trávou a dřevo. */
+  readonly block?: readonly [side: string, top: string];
+  /** Závod jede po hladině, dráha má barvu vody (P30B T6, „jungle river“). Píše jen `sceneLook`. */
+  readonly afloat?: boolean;
 }
 
 export const LOOKS: Readonly<Record<LookId, Look>> = {
@@ -144,11 +148,11 @@ export const LOOKS: Readonly<Record<LookId, Look>> = {
   beach: { sky: '#7dd3fc', fog: [40, 120], light: ['#f0f9ff', '#fcd34d', 1.0], sun: 1.9, ground: '#fcd34d', track: '#fde68a', water: '#0ea5e9', props: ['cc0-palm-tree', 'rock', 'cc0-boat-row'], tint: ['#16a34a', '#a8a29e'] },
   ocean: { sky: '#7dd3fc', fog: [30, 100], light: ['#f0f9ff', '#0369a1', 1.0], sun: 1.7, ground: '#0284c7', track: '#0c4a6e', water: '#0369a1', props: ['cc0-boat-row', 'buoy', 'rock'], tint: ['#ef4444', '#64748b'] },
   underwater: { sky: '#0e7490', fog: [8, 45], light: ['#67e8f9', '#164e63', 1.0], sun: 0.8, ground: '#155e75', track: '#0f766e', water: '#083344', props: ['coral', 'cc0-clownfish', 'seaweed', 'cc0-tang', 'rock'], tint: ['#fb7185', '#22c55e'] },
-  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#ffffff', '#bae6fd', 1.1], sun: 1.4, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'iceblock', 'cc0-sled'], tint: ['#e2e8f0', '#7dd3fc'] },
-  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['rock', 'crystal', 'cc0-torch-lit', 'cc0-rock-moss'], tint: ['#2dd4bf', '#57534e'] },
+  snow: { sky: '#e0f2fe', fog: [25, 80], light: ['#ffffff', '#bae6fd', 1.1], sun: 1.4, ground: '#f8fafc', track: '#cbd5e1', water: '#7dd3fc', props: ['pine', 'penguin', 'iceblock', 'cc0-sled'], tint: ['#e2e8f0', '#7dd3fc'], block: ['#cbd5e1', '#f8fafc'] },
+  cave: { sky: '#1c1917', fog: [8, 40], light: ['#a8a29e', '#0c0a09', 0.8], sun: 0.7, ground: '#44403c', track: '#292524', water: '#155e75', props: ['rock', 'crystal', 'cc0-torch-lit', 'cc0-rock-moss'], tint: ['#2dd4bf', '#57534e'], block: ['#292524', '#57534e'] },
   volcano: { sky: '#7c2d12', fog: [15, 60], light: ['#fdba74', '#450a0a', 0.9], sun: 1.2, ground: '#292524', track: '#44403c', water: '#ea580c', props: ['volcano', 'rock', 'crystal'], tint: ['#1c1917', '#f97316'] },
   space: { sky: '#020617', fog: [40, 140], light: ['#e2e8f0', '#7f1d1d', 0.7], sun: 1.6, ground: '#b45309', track: '#7c2d12', water: '#0f172a', props: ['cc0-asteroid', 'crystal', 'rocket', 'rock'], tint: ['#22d3ee', '#78350f'] },
-  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['tower', 'stone-wall', 'cc0-torch-lit', 'cc0-barrel'], tint: ['#a8a29e', '#dc2626'] },
+  castle: { sky: '#bfdbfe', fog: [30, 90], light: ['#eff6ff', '#3f6212', 0.9], sun: 1.5, ground: '#4d7c0f', track: '#78716c', water: '#1d4ed8', props: ['tower', 'stone-wall', 'cc0-torch-lit', 'cc0-barrel'], tint: ['#a8a29e', '#dc2626'], block: ['#57534e', '#a8a29e'] },
   graveyard: { sky: '#0f172a', fog: [10, 50], light: ['#94a3b8', '#1e293b', 0.7], sun: 0.6, ground: '#1e293b', track: '#334155', water: '#0c4a6e', props: ['grave', 'pine', 'cc0-pumpkin', 'cc0-skull-candle'], tint: ['#64748b', '#14532d'] },
 };
 
@@ -174,6 +178,8 @@ const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
   ['mall', /\bmall\b|shopping|arcade hall|plaza/],
   ['living_room', /living room|house|\bhome\b|bedroom|apartment|office|classroom|school|toy/],
   ['city', /city|street|town|downtown|road|traffic|rooftop|neon|subway|highway|urban|skyscraper/],
+  // Věž až za městem a kuchyní: „pancake tower in a kitchen“ je kuchyně, samotná věž hrad (P30B T6).
+  ['castle', /\btower\b/],
   ['meadow', /park|meadow|garden|farm|field|pond|countryside|hill/],
 ];
 
@@ -197,4 +203,28 @@ export function lookFor(setting: string, mood = ''): LookId | null {
 /** Sada, kterou scéna vykreslí: volba modelu, jinak slova, jinak louka. */
 export function lookOf(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId }): LookId {
   return theme.look ?? lookFor(theme.setting, theme.mood) ?? 'meadow';
+}
+
+/**
+ * Místo z věty, které sada nemá (P30B T6): porota u „Mars“, „moon“ a
+ * „hospital“ viděla zem, která místo neřekla. Přebije jen barvu země, první
+ * shoda vyhrává; `null` = zem sady („icy moon“ je sníh, ne regolit).
+ */
+const PLACE_GROUNDS: readonly (readonly [RegExp, string | null])[] = [
+  [/\bic[ey]\b|frozen|glacier/, null],
+  [/\bmoon\b|lunar/, '#a3a3a3'],
+  [/\bmars\b|martian/, '#b5532f'],
+  [/hospital|clinic/, '#d3ddd9'],
+];
+
+/** Voda pod závodem: loď po řece nejede po asfaltu. */
+const WATERWAY = /\brivers?\b|canal|\blake\b|rapids|\bsea\b|ocean/;
+
+/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem). */
+export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId }): Look {
+  const look = LOOKS[lookOf(theme)];
+  const setting = theme.setting.toLowerCase();
+  const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
+  const afloat = WATERWAY.test(setting);
+  return ground === look.ground && !afloat ? look : { ...look, ground, afloat };
 }

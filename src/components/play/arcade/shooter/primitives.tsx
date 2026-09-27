@@ -11,7 +11,8 @@ export const SHOT_PRIMITIVES: ReadonlySet<string> = new Set(['bullet', 'ball', '
 /** Kroužky terče zvenku dovnitř. */
 const RINGS = ['#dc2626', '#f8fafc', '#dc2626', '#f8fafc', '#facc15'] as const;
 
-export function ShotPrimitive({ id, w, h, d }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number }) {
+/** `block` = hmota bloku ze sady prostředí (P30B T6: pevnost ze sněhu, ne z beden). */
+export function ShotPrimitive({ id, w, h, d, block }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: string }) {
   if (id === 'bullet' || id === 'ball') {
     const r = Math.min(w, h, d) / 2;
     return (
@@ -47,7 +48,7 @@ export function ShotPrimitive({ id, w, h, d }: { readonly id: string; readonly w
       </mesh>
     );
   }
-  const color = id === 'wood-block' ? '#b45309' : id === 'wall' ? '#78716c' : '#94a3b8';
+  const color = id === 'wood-block' ? (block ?? '#b45309') : id === 'wall' ? '#78716c' : '#94a3b8';
   return (
     <mesh position={[0, h / 2, 0]}>
       <boxGeometry args={[w * 0.98, h * 0.98, d * 0.98]} />

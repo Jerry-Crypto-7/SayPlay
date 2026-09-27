@@ -65,7 +65,8 @@ export function SteerBackdrop({ course, length, look }: { readonly course: Steer
         <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
             <planeGeometry args={[half * 2, segment.far - segment.near + 0.05]} />
-            <meshStandardMaterial color={look.track} roughness={0.9} />
+            {/* Závod po řece jede po hladině (`afloat`, P30B T6), jinak po asfaltu sady. */}
+            <meshStandardMaterial color={look.afloat === true ? look.water : look.track} roughness={look.afloat === true ? 0.3 : 0.9} />
           </mesh>
           <Scenery look={look} layout="sides" inner={half + SCENERY_MARGIN} from={-(segment.far - segment.near) / 2} to={(segment.far - segment.near) / 2 - 2} />
           {[-1, 1].map((side) => (
