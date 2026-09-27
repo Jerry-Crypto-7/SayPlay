@@ -47,9 +47,17 @@ export declare const PLAY_DOOR_SLOTS: number;
 
 export declare function buildStamp(nextDir: string, commitMs: number): string;
 
-export declare function modelEnv(name: string, env: Record<string, string | undefined>, capUsd: number, concurrency?: number): Record<string, string>;
+export declare function modelEnv(name: string, env: Record<string, string | undefined>, capUsd: number, concurrency?: number, sentences?: number): Record<string, string>;
+
+export declare function setSize(name: string | undefined, only?: string): number;
 
 export declare function billedFromLog(text: string): { readonly model: string; readonly usd: number }[];
+
+export type UpgradeCause = 'door' | 'cap' | 'model';
+
+export declare function upgradeEnds(log: string, draftId: string): UpgradeCause[];
+
+export declare function attemptsInFlight(log: string, draftId: string): number;
 
 export interface MeasuredSentence {
   readonly id: string;
@@ -58,6 +66,7 @@ export interface MeasuredSentence {
   readonly error?: string;
   readonly draft: { readonly versionId: string; readonly spec: unknown; readonly frameMs: number | null; readonly frameError: string | null };
   readonly upgrade: { readonly status: string; readonly reason: string | null; readonly ms: number };
+  readonly cause: UpgradeCause | null;
   readonly ai: {
     readonly versionId: string;
     readonly spec: unknown;
@@ -73,11 +82,14 @@ export declare function measureSentence(
   options: {
     readonly base: string;
     readonly openGame: (url: string) => Promise<void>;
+    readonly leave: () => Promise<unknown>;
+    readonly log: () => string;
     readonly fetchImpl?: typeof fetch;
     readonly now?: () => number;
     readonly wait?: (ms: number) => Promise<void>;
     readonly pollMs?: number;
     readonly timeoutMs?: number;
+    readonly settleMs?: number;
   },
 ): Promise<MeasuredSentence>;
 
@@ -85,6 +97,7 @@ export interface ModelComparison {
   readonly n: number;
   readonly concurrency: number;
   readonly errors: number;
+  readonly refused: { readonly door: number; readonly cap: number };
   readonly published: { readonly ok: number; readonly of: number; readonly share: number; readonly failures: Record<string, number> };
   readonly sources: { readonly authored: number; readonly cached: number };
   readonly fidelity: { readonly inSpec: number | null; readonly read: number | null; readonly drawn: number | null };
@@ -95,6 +108,8 @@ export interface ModelComparison {
 export declare function compareSummary(
   runs: Record<string, { readonly buildId: string; readonly concurrency: number; readonly results: readonly (MeasuredSentence | Pick<MeasuredSentence, 'id' | 'text' | 'checklist' | 'error'>)[]; readonly billed: readonly { readonly model: string; readonly usd: number | null }[] }>,
 ): Record<string, ModelComparison>;
+
+export declare function compareVerdict(models: Record<string, ModelComparison>): { readonly valid: boolean; readonly reason: string | null; readonly exitCode: 0 | 1 };
 
 export declare function loadSet(
   name: string | undefined,

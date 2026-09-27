@@ -291,6 +291,16 @@ async function cappedBranch(
 const NO_MODEL: GenerationBranch = upstreamBranch(null);
 
 /**
+ * Totéž pro plné dveře, jen s vlastním důvodem (P30A T7b): řádek konce upgradu
+ * pak říká „no free play slot“ místo „no upstream endpoint“ a srovnání modelů
+ * podle něj pozná, že návrh dostala věta od dveří, ne od modelu.
+ */
+const DOOR_FULL: GenerationBranch = {
+  ...NO_MODEL,
+  generate: () => Promise.resolve({ ok: false, reason: 'UPSTREAM_REJECTED', detail: 'no free play slot', usage: null }),
+};
+
+/**
  * Jedno placené volání s vlastním požadavkem (P27C T4, remix vlastní větou):
  * tytéž brány jako `getDirector` – objednávka, vypínač `upstream`, strop
  * utrácení, počet volajícího, rozpočet trasy a slot dveří `play`. Bez
@@ -325,7 +335,8 @@ export function getDirector(startedAt: number, caller: string, check?: DirectorD
     const branch = await cappedBranch(process.env, deadline, caller, () => {
       callerLimited = true;
     });
-    if (branch === null || !acquireSlot('play')) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
+    if (branch === null) return { ...(await direct(sentence, { branch: NO_MODEL, cache, now: Date.now })), callerLimited };
+    if (!acquireSlot('play')) return { ...(await direct(sentence, { branch: DOOR_FULL, cache, now: Date.now })), callerLimited };
     try {
       // P27D T2: kompaktní první odpověď je výchozí – živě 30/30 hratelných, p50 12 s proti 45 s
       // a věrnost `drawn` 0,727 proti 0,702 (`evals/play/fidelity/README.md`). Celý GameSpec jen na objednávku.

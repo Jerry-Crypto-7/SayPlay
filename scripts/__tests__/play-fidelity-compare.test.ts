@@ -4,20 +4,38 @@
  * výsledném čísle nebylo vidět: čas se měří do hratelné hry v prohlížeči, ne
  * do odpovědi POST; hra, kterou robot nepustil, se nepočítá jako hotová; cena
  * se čte z účtenek serveru toho modelu; jiný build, jiné věty nebo cizí model
- * srovnání odmítnou.
+ * srovnání odmítnou. Věta, kterou odmítly dveře nebo strop, se modelu
+ * nepřipíše a běh zneplatní (T7b).
  */
 
-import { mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { billedLine } from '@/app/api/play/_director';
-import { DOOR_CEILING } from '@/app/api/worldstream/sessions/route';
+import { billedLine, getDirector } from '@/app/api/play/_director';
+import { type DraftFinalReason, upgradeAttemptLine, upgradeEndedLine } from '@/app/api/play/_upgrade';
+import { acquireSlot, DOOR_CEILING, resetConcurrency } from '@/app/api/worldstream/sessions/route';
 import { draftGameSpec } from '@/play/draft';
+import { __resetProcessVersionStore } from '@/play/version';
+import { resetProcessSpendCap } from '@/server/spend-cap';
 
-import { billedFromLog, buildStamp, compareSummary, loadSet, type MeasuredSentence, measureSentence, modelEnv, PLAY_DOOR_SLOTS, specFidelity } from '../play-fidelity.mjs';
+import {
+  attemptsInFlight,
+  billedFromLog,
+  buildStamp,
+  compareSummary,
+  compareVerdict,
+  loadSet,
+  type MeasuredSentence,
+  measureSentence,
+  modelEnv,
+  PLAY_DOOR_SLOTS,
+  setSize,
+  specFidelity,
+  upgradeEnds,
+} from '../play-fidelity.mjs';
 
 const SENTENCES = loadSet('dev', { only: 's039,s037,s002' });
 
@@ -26,6 +44,10 @@ interface Recorded {
   readonly upgrades: readonly Record<string, unknown>[];
   /** AI verze, když ji server publikoval (`publishEligible` = robot ji pustil). */
   readonly ai?: { readonly spec: unknown; readonly publishEligible: boolean; readonly source: 'authored' | 'cached' };
+  /** Proč pokus skončil návrhem – server to zapíše řádkem `ended`. */
+  readonly failure?: { readonly stage: 'model' | 'publish'; readonly reason: string; readonly detail: string };
+  /** Pokus, který stránka návrhu spustila těsně před koncem a který doběhne `afterMs` po poslední odpovědi. */
+  readonly lingering?: { readonly afterMs: number; readonly detail: string };
 }
 
 const pending = { status: 'pending', deadlineAt: '2026-09-27T12:05:00.000Z' };
@@ -42,7 +64,7 @@ const RECORDED: Record<'astra' | 'oss20b', Record<string, Recorded>> = {
   oss20b: {
     s039: { upgrades: [ready('s039')], ai: { spec: aiSpec('zombie shooter in a mall'), publishEligible: true, source: 'authored' } },
     // Robot hru odmítl: server vrátí konec na návrhu, ne AI verzi.
-    s037: { upgrades: [pending, { status: 'draft-final', reason: 'NOT_PLAYABLE' }] },
+    s037: { upgrades: [pending, { status: 'draft-final', reason: 'NOT_PLAYABLE' }], failure: { stage: 'publish', reason: 'UNWINNABLE', detail: 'the robot did not reach the goal' } },
     s002: { upgrades: [ready('s002')], ai: { spec: aiSpec('A knight must collect three keys in a haunted castle while dodging ghosts.'), publishEligible: true, source: 'authored' } },
   },
 };
@@ -55,11 +77,22 @@ const BILLED_LOG = {
 
 const json = (body: unknown) => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } });
 
+interface RecordedServer {
+  readonly fetch: typeof fetch;
+  /** Log serveru, jak ho skript vidí v čase `clock.t`: řádky začátku a konce pokusu, `ended` s příčinou. */
+  readonly log: () => string;
+}
+
 /** Server přehrávající nahrané odpovědi; každý dotaz posune hodiny o 100 ms. */
-function recordedServer(recorded: Record<string, Recorded>, clock: { t: number }): typeof fetch {
+function recordedServer(recorded: Record<string, Recorded>, clock: { t: number }): RecordedServer {
   const games = new Map<string, unknown>();
   const upgrades = new Map<string, Record<string, unknown>[]>();
-  return (async (input: RequestInfo | URL, init?: RequestInit) => {
+  const lines: { at: number; text: string }[] = [];
+  const settle = (id: string, at: number, answer: Record<string, unknown>, failure: Recorded['failure']) => {
+    if (answer.status === 'draft-final' && failure !== undefined) lines.push({ at, text: upgradeEndedLine(id, answer.reason as DraftFinalReason, failure) });
+    lines.push({ at, text: upgradeAttemptLine(id, 'settled') });
+  };
+  const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
     clock.t += 100;
     const path = new URL(String(input)).pathname;
     if (init?.method === 'POST') {
@@ -67,44 +100,87 @@ function recordedServer(recorded: Record<string, Recorded>, clock: { t: number }
       const id = SENTENCES.find((sentence) => sentence.text === text)!.id;
       games.set(id, { spec: draftGameSpec(text), report: { publishEligible: true }, timings: { source: 'draft' } });
       upgrades.set(id, [...recorded[id]!.upgrades]);
+      lines.push({ at: clock.t, text: upgradeAttemptLine(id, 'started') });
       const ai = recorded[id]!.ai;
       if (ai !== undefined) games.set(`ai-${id}`, { spec: ai.spec, report: { publishEligible: ai.publishEligible }, timings: { source: ai.source } });
       return json({ versionId: id });
     }
-    if (path.endsWith('/upgrade')) return json(upgrades.get(path.split('/')[4]!)!.shift());
+    if (path.endsWith('/upgrade')) {
+      const id = path.split('/')[4]!;
+      const answer = upgrades.get(id)!.shift()!;
+      if (answer.status !== 'pending') {
+        settle(id, clock.t, answer, recorded[id]!.failure);
+        const lingering = recorded[id]!.lingering;
+        if (lingering !== undefined) {
+          lines.push({ at: clock.t, text: upgradeAttemptLine(id, 'started') });
+          settle(id, clock.t + lingering.afterMs, { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }, { stage: 'model', reason: 'UPSTREAM_REJECTED', detail: lingering.detail });
+        }
+      }
+      return json(answer);
+    }
     return json({ game: games.get(path.split('/').at(-1)!) });
   }) as typeof fetch;
+  return {
+    fetch: fetchImpl,
+    log: () =>
+      lines
+        .filter((line) => line.at <= clock.t)
+        .map((line) => line.text)
+        .join('\n'),
+  };
 }
 
-async function replay(model: 'astra' | 'oss20b'): Promise<MeasuredSentence[]> {
+type Events = string[];
+
+/** Jedna věta nad nahraným serverem; `events` zapisuje POST, otevření stránek a odchody na `about:blank`. */
+async function measureRecorded(sentence: (typeof SENTENCES)[number], recorded: Record<string, Recorded>, events: Events = [], settleMs?: number): Promise<{ result: MeasuredSentence; clock: { t: number } }> {
+  const clock = { t: 0 };
+  const server = recordedServer(recorded, clock);
+  const result = await measureSentence(sentence, {
+    base: 'http://127.0.0.1:3331',
+    fetchImpl: ((input: RequestInfo | URL, init?: RequestInit) => {
+      if (init?.method === 'POST') events.push('POST');
+      return server.fetch(input, init);
+    }) as typeof fetch,
+    log: server.log,
+    leave: async () => {
+      events.push('leave');
+    },
+    now: () => clock.t,
+    wait: async (ms) => {
+      clock.t += ms;
+    },
+    // Stránka hry je hratelná 800 ms po otevření.
+    openGame: async (url) => {
+      events.push(`open ${url.split('/').at(-1)}`);
+      clock.t += 800;
+    },
+    ...(settleMs === undefined ? {} : { settleMs }),
+  });
+  return { result, clock };
+}
+
+async function replay(model: 'astra' | 'oss20b', recorded: Record<string, Recorded> = RECORDED[model]): Promise<MeasuredSentence[]> {
   const out: MeasuredSentence[] = [];
-  for (const sentence of SENTENCES) {
-    const clock = { t: 0 };
-    out.push(
-      await measureSentence(sentence, {
-        base: 'http://127.0.0.1:3331',
-        fetchImpl: recordedServer(RECORDED[model], clock),
-        now: () => clock.t,
-        wait: async (ms) => {
-          clock.t += ms;
-        },
-        // Stránka hry je hratelná 800 ms po otevření.
-        openGame: async () => {
-          clock.t += 800;
-        },
-      }),
-    );
-  }
+  for (const sentence of SENTENCES) out.push((await measureRecorded(sentence, recorded)).result);
   return out;
 }
+
+const refusedBy = (detail: string): Recorded => ({
+  upgrades: [pending, { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }],
+  failure: { stage: 'model', reason: 'UPSTREAM_REJECTED', detail },
+});
 
 describe('measureSentence', () => {
   it('times the first playable frame in the browser, not the POST answer', async () => {
     const clock = { t: 0 };
     const opened: { url: string; at: number }[] = [];
+    const server = recordedServer(RECORDED.astra, clock);
     const result = await measureSentence(SENTENCES[0]!, {
       base: 'http://127.0.0.1:3331',
-      fetchImpl: recordedServer(RECORDED.astra, clock),
+      fetchImpl: server.fetch,
+      log: server.log,
+      leave: async () => {},
       now: () => clock.t,
       wait: async (ms) => {
         clock.t += ms;
@@ -125,9 +201,12 @@ describe('measureSentence', () => {
 
   it('keeps a game whose page never became playable, without a frame time', async () => {
     const clock = { t: 0 };
+    const server = recordedServer(RECORDED.oss20b, clock);
     const result = await measureSentence(SENTENCES[0]!, {
       base: 'http://127.0.0.1:3331',
-      fetchImpl: recordedServer(RECORDED.oss20b, clock),
+      fetchImpl: server.fetch,
+      log: server.log,
+      leave: async () => {},
       now: () => clock.t,
       wait: async () => {},
       openGame: async (url) => {
@@ -135,6 +214,103 @@ describe('measureSentence', () => {
       },
     });
     expect(result.ai).toMatchObject({ published: true, frameMs: null, frameError: expect.stringContaining('timeout') });
+  });
+
+  it('leaves the page for about:blank before the next sentence, the draft page right after the upgrade ends', async () => {
+    const events: Events = [];
+    await measureRecorded(SENTENCES[0]!, RECORDED.astra, events);
+    await measureRecorded(SENTENCES[1]!, RECORDED.oss20b, events);
+    // Stránka návrhu se ptá na upgrade každé 2 s a po přechodném konci spustí nový pokus.
+    expect(events).toEqual(['POST', 'open s039', 'leave', 'open ai-s039', 'leave', 'POST', 'open s037', 'leave']);
+  });
+
+  it('waits until the attempt the draft page started has ended, and books its cause', async () => {
+    // Skript vidí přechodný konec modelu; stránka mezitím spustila další pokus, který o 60 s později odmítnou dveře.
+    const recorded = { ...RECORDED.oss20b, s039: { ...refusedBy('upstream answered 503'), lingering: { afterMs: 60_000, detail: 'no free play slot' } } };
+    const events: Events = [];
+    const { result, clock } = await measureRecorded(SENTENCES[0]!, recorded, events);
+    expect(clock.t).toBeGreaterThanOrEqual(2100 + 60_000);
+    expect(events.at(-1)).toBe('leave');
+    // Bez čekání by věta šla na vrub modelu.
+    expect(result.cause).toBe('door');
+  });
+
+  it('stops waiting for an attempt that never ends after settleMs', async () => {
+    const recorded = { ...RECORDED.oss20b, s039: { ...refusedBy('upstream answered 503'), lingering: { afterMs: Number.POSITIVE_INFINITY, detail: 'never' } } };
+    const { result, clock } = await measureRecorded(SENTENCES[0]!, recorded, [], 30_000);
+    expect(clock.t).toBeGreaterThanOrEqual(2100 + 30_000);
+    expect(clock.t).toBeLessThan(2100 + 32_000);
+    expect(result.cause).toBe('model');
+  });
+});
+
+describe('the cause of a sentence without an AI version', () => {
+  it('books a door refusal as door: not a model failure, out of fidelity, and the run is invalid', async () => {
+    const results = await replay('oss20b', { ...RECORDED.oss20b, s002: refusedBy('no free play slot') });
+    expect(results.map((result) => result.cause)).toEqual([null, 'model', 'door']);
+    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 2, results, billed: billedFromLog(BILLED_LOG.oss20b) } });
+    expect(summary.oss20b).toMatchObject({ n: 3, refused: { door: 1, cap: 0 }, published: { ok: 1, of: 2, share: 0.5, failures: { NOT_PLAYABLE: 1 } } });
+    const scored = [aiSpec(SENTENCES[0]!.text), draftGameSpec(SENTENCES[1]!.text)].map((spec, at) => specFidelity(spec, SENTENCES[at]!.checklist).score);
+    expect(summary.oss20b!.fidelity.read).toBeCloseTo((scored[0]! + scored[1]!) / 2, 3);
+    const verdict = compareVerdict(summary);
+    expect(verdict).toMatchObject({ valid: false, exitCode: 1 });
+    expect(verdict.reason).toMatch(/oss20b: 1 sentences refused by the play door, 0 by the spend or call cap/);
+  });
+
+  it('books a spend-cap refusal, also in a repair round, as cap, and the run is invalid', async () => {
+    const results = await replay('oss20b', { ...RECORDED.oss20b, s002: refusedBy('repair round 1: spend cap refused the call') });
+    expect(results.at(-1)!.cause).toBe('cap');
+    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.oss20b) } });
+    expect(summary.oss20b).toMatchObject({ refused: { door: 0, cap: 1 }, published: { failures: { NOT_PLAYABLE: 1 } } });
+    expect(compareVerdict(summary)).toMatchObject({ valid: false, exitCode: 1, reason: expect.stringMatching(/0 sentences refused by the play door, 1 by the spend or call cap/) });
+  });
+
+  it('books MODEL_UNAVAILABLE without a door or cap line as the model, and the run stays valid', async () => {
+    const results = await replay('oss20b', { ...RECORDED.oss20b, s002: refusedBy('upstream answered 503') });
+    expect(results.at(-1)!.cause).toBe('model');
+    const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 1, results, billed: billedFromLog(BILLED_LOG.oss20b) } });
+    expect(summary.oss20b).toMatchObject({ refused: { door: 0, cap: 0 }, published: { ok: 1, of: 3, failures: { NOT_PLAYABLE: 1, MODEL_UNAVAILABLE: 1 } } });
+    expect(compareVerdict(summary)).toEqual({ valid: true, reason: null, exitCode: 0 });
+  });
+
+  it('counts only the attempts of its own draft', () => {
+    const log = [upgradeAttemptLine('a', 'started'), upgradeAttemptLine('b', 'started'), upgradeEndedLine('b', 'MODEL_UNAVAILABLE', { stage: 'model', reason: 'UPSTREAM_REJECTED', detail: 'no free play slot' }), upgradeAttemptLine('b', 'settled')].join('\n');
+    expect(attemptsInFlight(log, 'a')).toBe(1);
+    expect(attemptsInFlight(log, 'b')).toBe(0);
+    expect(upgradeEnds(log, 'a')).toEqual([]);
+    expect(upgradeEnds(log, 'b')).toEqual(['door']);
+  });
+});
+
+describe("the director's own refusal details", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+    resetConcurrency();
+    resetProcessSpendCap();
+  });
+
+  it('are what the comparison books as door, cap and model', async () => {
+    const live = { WORLDSMITH_BRANCH: 'live', WORLDSMITH_MODEL_ENDPOINT: 'https://upstream.invalid/v1/messages', WORLDSMITH_MODEL_KEY: 'test-key', WORLDSMITH_USD_PER_MTOK_OUT: '15', WORLDSMITH_SPEND_CAP_USD: '5', PLAY_DIRECTOR_CALLS_PER_CALLER: '1' };
+    for (const [key, value] of Object.entries(live)) vi.stubEnv(key, value);
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('upstream down', { status: 503 })));
+    __resetProcessVersionStore();
+    resetProcessSpendCap();
+    const causeOf = async (caller: string) => {
+      const game = await getDirector(Date.now(), caller)('A hamster escapes a supermarket while a giant Roomba hunts it.');
+      expect(game.source).toBe('draft');
+      return upgradeEnds(upgradeEndedLine('d', game.fallbackReason as DraftFinalReason, game.failure!), 'd');
+    };
+
+    expect(await causeOf('caller-a')).toEqual(['model']);
+    // Druhé volání téhož volajícího: vyčerpaný denní počet je strop volání.
+    expect(await causeOf('caller-a')).toEqual(['cap']);
+    for (let slot = 0; slot < DOOR_CEILING.play; slot += 1) expect(acquireSlot('play')).toBe(true);
+    expect(await causeOf('caller-b')).toEqual(['door']);
+    resetConcurrency();
+    vi.stubEnv('WORLDSMITH_SPEND_CAP_USD', '0');
+    resetProcessSpendCap();
+    expect(await causeOf('caller-c')).toEqual(['cap']);
   });
 });
 
@@ -239,6 +415,23 @@ describe('modelEnv', () => {
     expect(() => modelEnv('astra', env, 0.2, 2)).toThrow(/under 2 concurrent worst-case calls \(0\.240 USD\); raise --cap-usd/);
     expect(modelEnv('astra', env, 0.25, 2).WORLDSMITH_SPEND_CAP_USD).toBe('0.25');
     expect(() => modelEnv('oss20b', env, 0.004, 2)).toThrow(/raise --cap-usd/);
+  });
+
+  it('refuses a cap under the whole run – sentences × one worst-case call × 1.5 – before anything is paid', () => {
+    // astra: 60 vět × 0,08 USD × 1,5 = 7,2 USD; strop 1,5 USD by vyčerpala uprostřed a zbytek by šel na vrub modelu.
+    expect(() => modelEnv('astra', env, 1.5, 1, 60)).toThrow(/under 60 sentences × one worst-case call \(7\.200 USD\); raise --cap-usd or lower WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS/);
+    expect(modelEnv('astra', env, 7.2, 1, 60).WORLDSMITH_SPEND_CAP_USD).toBe('7.2');
+    // Menší výstup: 60 × 1000 tokenů × 10 USD/Mtok × 1,5 = 0,9 USD.
+    expect(modelEnv('astra', { ...env, WORLDSMITH_FALLBACK_MAX_OUTPUT_TOKENS: '1000' }, 1.5, 1, 60).WORLDSMITH_SPEND_CAP_USD).toBe('1.5');
+  });
+
+  it('counts the sentences of a run without opening the sealed test set', () => {
+    const seal = join(process.cwd(), 'evals', 'play', 'p30', 'test-opened.json');
+    const sealed = existsSync(seal);
+    expect(setSize('dev')).toBe(loadSet('dev').length);
+    expect(setSize('dev', 's039,s037')).toBe(2);
+    expect(setSize('test')).toBe(200);
+    expect(existsSync(seal)).toBe(sealed);
   });
 
   it('refuses more judges than the play door of one instance serves', () => {

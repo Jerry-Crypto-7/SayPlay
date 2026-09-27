@@ -156,13 +156,31 @@ export interface UpgradeFailure {
 }
 
 /**
+ * Řádek konce neúspěšného pokusu. Srovnání modelů (`scripts/play-fidelity.mjs
+ * --models`) z něj čte příčinu: plné dveře, strop, nebo model.
+ */
+export function upgradeEndedLine(draftId: string, reason: DraftFinalReason, failure: Pick<UpgradeFailure, 'stage' | 'reason' | 'detail'>): string {
+  return `[play] upgrade of ${draftId} ended ${reason} at ${failure.stage}: ${failure.reason} – ${failure.detail.slice(0, 300)}`;
+}
+
+/**
+ * Začátek a konec každého pokusu (P30A T7b). Srovnání modelů podle nich čeká,
+ * až pokus věty doběhne, než pustí další větu – visící pokus by držel slot dveří
+ * a další věta by dostala návrh od dveří. Oba jdou přes `console.warn` jako
+ * řádek `ended`: v jednom proudu ho konec nikdy nepředběhne.
+ */
+export function upgradeAttemptLine(draftId: string, phase: 'started' | 'settled'): string {
+  return `[play] upgrade attempt ${phase} ${draftId}`;
+}
+
+/**
  * Záznam selhání (P26 T3): řádek logu vždy, soubor
  * `data/play/failures/<draftId>.json` jen mimo Vercel – tam je souborový
  * systém jen pro čtení. Bez záznamu se nedá říct, proč model za 40 s
  * nic nedodal, a tři nejčastější příčiny nejdou seřadit.
  */
 export function recordUpgradeFailure(draftId: string, sentence: string, reason: DraftFinalReason, failure: UpgradeFailure, env: Record<string, string | undefined> = process.env): void {
-  console.warn(`[play] upgrade of ${draftId} ended ${reason} at ${failure.stage}: ${failure.reason} – ${failure.detail.slice(0, 300)}`);
+  console.warn(upgradeEndedLine(draftId, reason, failure));
   // Testy zapisují jen do složky, kterou samy určí – jinak by jejich podvržená
   // selhání přimíchaly do záznamů, ze kterých sada věrnosti počítá příčiny.
   if (env.VERCEL !== undefined || (env.VITEST !== undefined && env.PLAY_FAILURES_DIR === undefined)) return;
@@ -225,12 +243,14 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   // divák by na `draft-final` přestal pollovat, ač jeho vlastní pokus by běžel.
   if (known !== undefined) return known.done.then((outcome) => (isTransient(outcome) ? pendingSince(known.startedAt) : outcome));
 
+  console.warn(upgradeAttemptLine(draftId, 'started'));
   const attempt = runUpgrade(versions, draft, request).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };
   });
   const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null };
   const remembered = attempt.then((outcome) => {
+    console.warn(upgradeAttemptLine(draftId, 'settled'));
     if (isTransient(outcome)) {
       if (map.get(draftId) === job) map.delete(draftId);
       return;

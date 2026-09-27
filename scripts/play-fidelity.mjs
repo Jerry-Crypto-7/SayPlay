@@ -373,14 +373,24 @@ function breakSeal(file, { openTestOnce, runId, sealDir }) {
  * Sada podle `--set`: `dev` a `test` jsou sady P30A v `evals/play/p30/`, jiný
  * název je soubor ve `fidelity/` (`judge-10.json`), bez názvu korpus.
  */
+const setFile = (name) => (name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : resolve(DIR, name ?? 'corpus.json'));
+const picked = (sentences, only) => {
+  const ids = typeof only === 'string' ? new Set(only.split(',')) : null;
+  return sentences.filter((sentence) => ids === null || ids.has(sentence.id));
+};
+
 export function loadSet(name, { only, openTestOnce = false, runId = null, sealDir = P30 } = {}) {
-  const file = name === 'dev' ? join(P30, 'dev.json') : name === 'test' ? join(P30, 'test-200.json') : resolve(DIR, name ?? 'corpus.json');
+  const file = setFile(name);
   const corpus = readJson(file);
   const issues = checkCorpus(corpus);
   if (issues.length > 0) throw new Error(`${file} is invalid:\n${issues.join('\n')}`);
   if (corpus.sentences.some((sentence) => sentence.source === 'test')) breakSeal(file, { openTestOnce, runId, sealDir });
-  const ids = typeof only === 'string' ? new Set(only.split(',')) : null;
-  return corpus.sentences.filter((sentence) => ids === null || ids.has(sentence.id));
+  return picked(corpus.sentences, only);
+}
+
+/** Kolik vět běh změří, bez pečeti: strop se ověří dřív, než odmítnutý běh spotřebuje jediné otevření testovací sady (P30A T7b). */
+export function setSize(name, only) {
+  return picked(readJson(setFile(name)).sentences, only).length;
 }
 
 async function gameOf(base, id, fetchImpl = fetch) {
@@ -519,7 +529,7 @@ const MODEL_VARS = [
  * by druhý model dostal hotové hry prvního. `VERCEL_ENV=production` dá knihu
  * procesu (`ledgerFromEnv`): lokální server je jediný proces, strop tedy drží.
  */
-export function modelEnv(name, env, capUsd, concurrency = 1) {
+export function modelEnv(name, env, capUsd, concurrency = 1, sentences = 1) {
   // Nad sloty dveří by režii odmítly dveře, ne model, a souhrn by návrh připsal
   // modelu – pomalejšímu víc, protože drží slot déle (revize hranice fáze 2).
   if (!Number.isInteger(concurrency) || concurrency < 1 || concurrency > PLAY_DOOR_SLOTS)
@@ -538,8 +548,12 @@ export function modelEnv(name, env, capUsd, concurrency = 1) {
   // odmítal a srovnání by to přičetlo modelu (suchý běh 27. 9.: astra 1 ze 3 při
   // 0,1 USD a dvou porotcích). ×1,5 kryje vstupní tokeny vedle výstupních.
   const maxOut = Number(overlay.WORLDSMITH_MAX_OUTPUT_TOKENS) > 0 ? Number(overlay.WORLDSMITH_MAX_OUTPUT_TOKENS) : 8000;
-  const needUsd = concurrency * ((maxOut * Number(overlay.WORLDSMITH_USD_PER_MTOK_OUT)) / 1e6) * 1.5;
-  if (!(capUsd >= needUsd)) throw new Error(`${name}: ${capUsd} USD per model is under ${concurrency} concurrent worst-case calls (${needUsd.toFixed(3)} USD); raise --cap-usd`);
+  const worstUsd = ((maxOut * Number(overlay.WORLDSMITH_USD_PER_MTOK_OUT)) / 1e6) * 1.5;
+  if (!(capUsd >= concurrency * worstUsd)) throw new Error(`${name}: ${capUsd} USD per model is under ${concurrency} concurrent worst-case calls (${(concurrency * worstUsd).toFixed(3)} USD); raise --cap-usd`);
+  // Kniha sčítá útratu celého běhu, ne jen volání v letu: vyčerpaná uprostřed by
+  // zbytek vět odmítla a běh by skončil neplatný (revize hranice fáze 2, nález B).
+  if (!(capUsd >= sentences * worstUsd))
+    throw new Error(`${name}: ${capUsd} USD per model is under ${sentences} sentences × one worst-case call (${(sentences * worstUsd).toFixed(3)} USD); raise --cap-usd or lower ${from('WORLDSMITH_MAX_OUTPUT_TOKENS')}`);
   return {
     ...overlay,
     WORLDSMITH_BRANCH: 'live',
@@ -567,13 +581,43 @@ export function billedFromLog(text) {
   return [...text.matchAll(BILLED)].map((match) => ({ model: match[1], usd: Number(match[2]) }));
 }
 
+const ENDED = /\[play\] upgrade of (\S+) ended ([^\r\n]*)/g;
+const ATTEMPT = /\[play\] upgrade attempt (started|settled) (\S+)/g;
+/** Odmítnutí dveřmi `play` (hlavní slot i slot placené zálohy) a stropem útraty nebo volání (`src/app/api/play/_director.ts`). */
+const DOOR_REFUSAL = /no free (?:play )?slot/;
+const CAP_REFUSAL = /spend cap refused the call|daily director calls are used up/;
+
+/**
+ * Příčiny neúspěšných pokusů o upgrade jednoho návrhu z logu serveru
+ * (`upgradeEndedLine` v `src/app/api/play/_upgrade.ts`), po řadě: `door`,
+ * `cap`, jinak `model` (P30A T7b).
+ */
+export function upgradeEnds(log, draftId) {
+  return [...log.matchAll(ENDED)].filter((match) => match[1] === draftId).map((match) => (DOOR_REFUSAL.test(match[2]) ? 'door' : CAP_REFUSAL.test(match[2]) ? 'cap' : 'model'));
+}
+
+/** Kolik pokusů o upgrade návrhu server začal a ještě nedokončil (`upgradeAttemptLine`). */
+export function attemptsInFlight(log, draftId) {
+  let open = 0;
+  for (const match of log.matchAll(ATTEMPT)) if (match[2] === draftId) open += match[1] === 'started' ? 1 : -1;
+  return open;
+}
+
 /**
  * Jedna věta jako porotce: POST věty, návrh v prohlížeči, čekání na AI verzi
  * (ta prošla publikační kontrolou robotem, jinak by `ready` nebyla) a její
  * první hratelný snímek. Časy běží od odeslání věty; snímek hlásí `openGame`,
  * až je hra v prohlížeči hratelná – ne odpověď POST.
+ *
+ * Než věta skončí, stránka odejde (`leave`, `about:blank`) a skript počká, až
+ * server dokončí každý rozběhnutý pokus o upgrade, nejvýš `settleMs`: stránka
+ * návrhu se ptá každé 2 s a dotaz po přechodném konci spustí nový pokus, který
+ * by držel slot dveří a další věta by dostala návrh od dveří (revize hranice
+ * fáze 2, nález A). `cause` pak říká, proč věta nemá AI verzi: `door`, `cap`
+ * (ty o modelu nic neříkají), nebo `model`; u publikované hry `null`, pokud
+ * cestou nenarazila na dveře nebo strop.
  */
-export async function measureSentence(sentence, { base, openGame, fetchImpl = fetch, now = Date.now, wait = sleep, pollMs = 1000, timeoutMs = 330_000 }) {
+export async function measureSentence(sentence, { base, openGame, leave, log, fetchImpl = fetch, now = Date.now, wait = sleep, pollMs = 1000, timeoutMs = 330_000, settleMs = 300_000 }) {
   const started = now();
   const frame = async (id) => {
     try {
@@ -598,39 +642,46 @@ export async function measureSentence(sentence, { base, openGame, fetchImpl = fe
     await wait(pollMs);
   }
   const upgradeMs = now() - started;
+  await leave();
   const draft = await gameOf(base, created.versionId, fetchImpl);
   const ai = upgrade.status === 'ready' ? await gameOf(base, upgrade.versionId, fetchImpl) : null;
+  const aiFrame = ai === null ? null : await frame(upgrade.versionId);
+  if (aiFrame !== null) await leave();
+  const settleBy = now() + settleMs;
+  while (attemptsInFlight(log(), created.versionId) > 0 && now() < settleBy) await wait(pollMs);
+  const published = ai?.report?.publishEligible === true;
   return {
     id: sentence.id,
     text: sentence.text,
     checklist: sentence.checklist,
     draft: { versionId: created.versionId, spec: draft.spec, ...draftFrame },
     upgrade: { status: upgrade.status, reason: upgrade.reason ?? null, ms: upgradeMs },
-    ai:
-      ai === null
-        ? null
-        : {
-            versionId: upgrade.versionId,
-            spec: ai.spec,
-            published: ai.report?.publishEligible === true,
-            source: ai.timings?.source ?? null,
-            ...(await frame(upgrade.versionId)),
-          },
+    cause: upgradeEnds(log(), created.versionId).find((end) => end !== 'model') ?? (published ? null : 'model'),
+    ai: ai === null ? null : { versionId: upgrade.versionId, spec: ai.spec, published, source: ai.timings?.source ?? null, ...aiFrame },
   };
 }
 
+/** Věta, kterou odmítly dveře nebo strop: o modelu nic neříká (P30A T7b). */
+const refusedCause = (result) => result.cause === 'door' || result.cause === 'cap';
+
 const round = (value, places) => (value === null ? null : Math.round(value * 10 ** places) / 10 ** places);
 
-/** Souhrn jednoho modelu; hra, kterou robot nepustil, se počítá jako návrh. */
+/**
+ * Souhrn jednoho modelu; hra, kterou robot nepustil, se počítá jako návrh.
+ * Věta odmítnutá dveřmi nebo stropem (`cause`) jde do `refused` a ven z podílu,
+ * věrnosti i časů – selhání modelu jsou jen `model` (P30A T7b).
+ */
 function modelSummary(name, { results, billed, concurrency }) {
   const wrong = billed.find((call) => !COMPARE_MODELS[name].expect.test(call.model));
   if (wrong !== undefined) throw new Error(`${name}: the server billed ${wrong.model} – it did not measure ${name}`);
-  const played = results.filter((result) => result.error === undefined);
-  const published = played.filter((result) => result.ai?.published === true);
-  const authored = published.filter((result) => result.ai.source === 'authored').length;
+  const authored = results.filter((result) => result.ai?.published === true && result.ai.source === 'authored').length;
   if (authored > 0 && billed.length === 0) throw new Error(`${name}: ${authored} authored games but no billed call in the server log – the cost would read as zero`);
+  const refused = { door: results.filter((result) => result.cause === 'door').length, cap: results.filter((result) => result.cause === 'cap').length };
+  const scored = results.filter((result) => !refusedCause(result));
+  const played = scored.filter((result) => result.error === undefined);
+  const published = played.filter((result) => result.ai?.published === true);
   const failures = {};
-  for (const result of results) {
+  for (const result of scored) {
     if (result.ai?.published === true) continue;
     const reason = result.error !== undefined ? 'ERROR' : result.ai !== null ? 'UNPUBLISHED' : (result.upgrade.reason ?? result.upgrade.status);
     failures[reason] = (failures[reason] ?? 0) + 1;
@@ -642,8 +693,9 @@ function modelSummary(name, { results, billed, concurrency }) {
   return {
     n: results.length,
     concurrency,
-    errors: results.length - played.length,
-    published: { ok: published.length, of: results.length, share: share(published.length, results.length), failures },
+    errors: scored.length - played.length,
+    refused,
+    published: { ok: published.length, of: scored.length, share: share(published.length, scored.length), failures },
     sources: { authored, cached: published.filter((result) => result.ai.source === 'cached').length },
     fidelity: { inSpec: mean(finals.map(inSpec)), read: mean(finals.map((final) => final.score)), drawn: mean(finals.map((final) => final.drawnScore)) },
     firstPlayableFrameMs: {
@@ -672,6 +724,18 @@ export function compareSummary(runs) {
   const sets = new Set(names.map((name) => runs[name].results.map((result) => result.id).sort().join(',')));
   if (sets.size !== 1) throw new Error('the models ran different sentences');
   return Object.fromEntries(names.map((name) => [name, modelSummary(name, runs[name])]));
+}
+
+/**
+ * Platí běh? Jediná věta odmítnutá dveřmi nebo stropem znamená, že čísla měří
+ * instanci nebo rozpočet, ne model – souhrn nese `valid: false` s důvodem
+ * a běh končí nenulovým kódem; taková čísla se necitují (P30A T7b).
+ */
+export function compareVerdict(models) {
+  const reasons = Object.entries(models)
+    .filter(([, summary]) => summary.refused.door + summary.refused.cap > 0)
+    .map(([name, summary]) => `${name}: ${summary.refused.door} sentences refused by the play door, ${summary.refused.cap} by the spend or call cap`);
+  return reasons.length === 0 ? { valid: true, reason: null, exitCode: 0 } : { valid: false, reason: `${reasons.join('; ')} – these numbers describe the instance or the budget, not the model; do not cite them`, exitCode: 1 };
 }
 
 /** Hra je v prohlížeči hratelná: sonda hry připojená (`window.__playShell`), plátno na stránce a jeden snímek vykreslený navíc. */
@@ -731,8 +795,8 @@ export function buildStamp(nextDir, commitMs) {
   return `${readFileSync(file, 'utf8').trim()}@${new Date(builtMs).toISOString()}`;
 }
 
-/** Věty přes `concurrency` porotců naráz; každý má vlastní kontext prohlížeče. */
-async function measureAll(sentences, base, concurrency) {
+/** Věty přes `concurrency` porotců naráz; každý má vlastní kontext prohlížeče. `log` = log serveru, ze kterého se čtou příčiny. */
+async function measureAll(sentences, base, concurrency, log) {
   const require = createRequire(import.meta.url);
   const { chromium } = require('@playwright/test');
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
@@ -746,13 +810,13 @@ async function measureAll(sentences, base, concurrency) {
         const sentence = sentences[next++];
         let result;
         try {
-          result = await measureSentence(sentence, { base, openGame: (url) => playableFrame(page, url) });
+          result = await measureSentence(sentence, { base, openGame: (url) => playableFrame(page, url), leave: () => page.goto('about:blank'), log });
         } catch (thrown) {
           // Odmítnutá věta pod souběhem (429, 503) je výsledek měření, ne pád běhu.
           result = { id: sentence.id, text: sentence.text, checklist: sentence.checklist, error: thrown.message.slice(0, 300) };
         }
         results.set(sentence.id, result);
-        console.log(`${sentence.id} ${result.error ?? (result.ai?.published ? `ai ${result.ai.frameMs === null ? `no frame: ${result.ai.frameError}` : `${Math.round(result.ai.frameMs / 1000)} s`}` : `draft (${result.upgrade.reason ?? result.upgrade.status})`)}`);
+        console.log(`${sentence.id} ${result.error ?? (result.ai?.published ? `ai ${result.ai.frameMs === null ? `no frame: ${result.ai.frameError}` : `${Math.round(result.ai.frameMs / 1000)} s`}` : `draft (${result.upgrade.reason ?? result.upgrade.status})`)}${refusedCause(result) ? ` – refused by the ${result.cause}` : ''}`);
       }
     } finally {
       await context.close();
@@ -781,7 +845,8 @@ async function compare(options) {
   const runId = typeof options.run === 'string' ? options.run : `${new Date().toISOString().slice(0, 10)}-${commit()}-c${concurrency}`;
   // Klíče a koncové body z `.env.local` jako `next start`; všechno se ověří dřív, než se cokoli zaplatí.
   createRequire(import.meta.url)('@next/env').loadEnvConfig(ROOT, false, { info() {}, error: console.error });
-  const envs = Object.fromEntries(names.map((name) => [name, modelEnv(name, process.env, capUsd / names.length, concurrency)]));
+  const size = setSize(typeof options.set === 'string' ? options.set : undefined, options.only);
+  const envs = Object.fromEntries(names.map((name) => [name, modelEnv(name, process.env, capUsd / names.length, concurrency, size)]));
   // Build před sadou: zastaralý build nesmí spotřebovat jediné otevření testovací sady.
   const nextDir = join(ROOT, '.next');
   const buildId = buildStamp(nextDir, commitMs());
@@ -793,7 +858,7 @@ async function compare(options) {
   for (const name of names) {
     const server = await startServer(port, envs[name]);
     try {
-      const results = await measureAll(sentences, server.base, concurrency);
+      const results = await measureAll(sentences, server.base, concurrency, server.log);
       // Razítko znovu po běhu: přestavba mezi modely se v souhrnu ukáže jako jiný build.
       runs[name] = { buildId: buildStamp(nextDir, 0), concurrency, results, billed: billedFromLog(server.log()) };
     } finally {
@@ -821,13 +886,17 @@ async function compare(options) {
         const result = runs[name].results.find((row) => row.id === sentence.id);
         if (result.error !== undefined) return [name, { error: result.error }];
         const final = specFidelity(result.ai?.published === true ? result.ai.spec : result.draft.spec, result.checklist);
-        return [name, { outcome: result.ai?.published === true ? result.ai.source : (result.upgrade.reason ?? result.upgrade.status), aiFrameMs: result.ai?.frameMs ?? null, draftFrameMs: result.draft.frameMs, read: final.score, drawn: final.drawnScore }];
+        return [name, { outcome: result.ai?.published === true ? result.ai.source : (result.upgrade.reason ?? result.upgrade.status), cause: result.cause, aiFrameMs: result.ai?.frameMs ?? null, draftFrameMs: result.draft.frameMs, read: final.score, drawn: final.drawnScore }];
       }),
     ),
   }));
+  const models = compareSummary(runs);
+  const verdict = compareVerdict(models);
   const path = join(P30, `compare-${runId}.json`);
-  writeJson(path, { header, models: compareSummary(runs), sentences: sentenceRows });
+  writeJson(path, { header, valid: verdict.valid, invalid: verdict.reason, models, sentences: sentenceRows });
   console.log(`compare -> ${path}`);
+  if (!verdict.valid) console.error(`INVALID RUN: ${verdict.reason}`);
+  return verdict.exitCode;
 }
 
 const JUDGE_SCHEMA = {
@@ -997,7 +1066,7 @@ if (isMain) {
   if (options.offline && typeof options.reader === 'string') await offlineReaderRun(typeof options.run === 'string' ? options.run : 'p29b-reader', options.reader);
   else if (options.offline && typeof options.run === 'string') offlineRun(options.run);
   else if (options.offline) offline();
-  else if (typeof options.models === 'string') await compare(options);
+  else if (typeof options.models === 'string') process.exitCode = await compare(options);
   else if (step === 'run') await run(options);
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
