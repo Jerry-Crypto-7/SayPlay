@@ -83,7 +83,7 @@ describe('a verb is proved by the state change its effect class promises', () =>
     };
     const { verdict, proof } = proofOf(bloom, 'bloom');
     expect(proof).toMatchObject({ fired: true, changed: true, evidence: expect.stringMatching(/^body \d+ appeared at tick \d+$/) });
-    expect(verdict.failures.map((failure) => failure.code)).not.toContain('VERB_NO_EFFECT');
+    expect(verdict.failures.join(' ')).not.toContain('VERB_NO_EFFECT');
   });
 
   it('the rule fixtures that win by verbs still prove every verb by a change', () => {
