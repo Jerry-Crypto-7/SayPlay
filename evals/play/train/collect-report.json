@@ -6,36 +6,36 @@
  "k": 4,
  "temperature": 0.8,
  "summary": {
-  "sentences": 312,
-  "withPassingCandidate": 251,
-  "candidates": 1248,
+  "sentences": 320,
+  "withPassingCandidate": 256,
+  "candidates": 1280,
   "robotPass": {
-   "greedy": "95/312",
-   "sampled": "432/936"
+   "greedy": "96/320",
+   "sampled": "439/960"
   },
   "fallbackReasons": {
-   "VERB_UNPROVED": 272,
-   "MALFORMED": 186
+   "VERB_UNPROVED": 280,
+   "MALFORMED": 193
   },
   "robotFailures": {
-   "KEYPOINT_FAILED": 206,
-   "UNWINNABLE": 45,
+   "KEYPOINT_FAILED": 214,
+   "UNWINNABLE": 46,
    "WORLD_REJECTED": 8,
    "LAYOUT_FAILED": 4
   },
   "chosenFrom": {
-   "sampled": 171,
-   "greedy": 80
+   "sampled": 175,
+   "greedy": 81
   },
-  "msP50": 15966,
-  "msP90": 27288,
+  "msP50": 15973,
+  "msP90": 27050,
   "chosenControls": {
    "runner": 65,
-   "shooter": 31,
+   "shooter": 33,
    "tap_go": 30,
-   "platform": 25,
-   "steer": 22,
-   "throw": 21,
+   "platform": 26,
+   "steer": 23,
+   "throw": 22,
    "timing": 15,
    "flap": 14,
    "rhythm": 12,
@@ -43,17 +43,17 @@
    "move_free": 5
   },
   "families": {
-   "calm": "23/32",
-   "collect": "18/29",
-   "race": "21/24",
-   "jump": "21/21",
-   "shoot": "19/21",
+   "calm": "23/33",
+   "collect": "18/30",
+   "race": "22/25",
+   "jump": "22/22",
+   "shoot": "20/22",
    "escape": "12/20",
    "run": "20/20",
-   "throw": "12/19",
-   "stack": "18/19",
+   "throw": "13/20",
+   "stack": "18/20",
    "steal": "8/15",
-   "defend": "12/14",
+   "defend": "13/15",
    "rhythm": "12/12",
    "fight": "11/12",
    "grow": "11/12",
@@ -63,10 +63,10 @@
    "build": "7/10"
   },
   "chosenScore": {
-   "items": 928,
-   "inSpec": 851,
-   "read": 762,
-   "drawn": 639
+   "items": 945,
+   "inSpec": 866,
+   "read": 776,
+   "drawn": 650
   }
  },
  "sentences": [
@@ -23321,6 +23321,81 @@
    ]
   },
   {
+   "id": "t311",
+   "family": "defend",
+   "chosen": 0,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 1447053453,
+     "temperature": 0,
+     "ms": 10663,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "shooter",
+     "completionTokens": 1637,
+     "robot": "pass",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 4,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 1,
+     "seed": 1463831072,
+     "temperature": 0.8,
+     "ms": 10243,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "shooter",
+     "completionTokens": 1705,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 4,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 2,
+     "seed": 1480608691,
+     "temperature": 0.8,
+     "ms": 14698,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "shooter",
+     "completionTokens": 2405,
+     "robot": "pass",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 4,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 3,
+     "seed": 1497386310,
+     "temperature": 0.8,
+     "ms": 12064,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "shooter",
+     "completionTokens": 1942,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 4,
+      "drawn": 2
+     }
+    }
+   ]
+  },
+  {
    "id": "t312",
    "family": "escape",
    "chosen": 0,
@@ -23466,6 +23541,531 @@
       "inSpec": 4,
       "read": 4,
       "drawn": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "t314",
+   "family": "throw",
+   "chosen": 2,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 137211784,
+     "temperature": 0,
+     "ms": 24702,
+     "source": "draft",
+     "fallbackReason": "MALFORMED",
+     "control": "throw",
+     "completionTokens": 4000,
+     "robot": null,
+     "score": {
+      "items": 3,
+      "inSpec": 1,
+      "read": 1,
+      "drawn": 1
+     }
+    },
+    {
+     "k": 1,
+     "seed": 120434165,
+     "temperature": 0.8,
+     "ms": 24593,
+     "source": "draft",
+     "fallbackReason": "MALFORMED",
+     "control": "throw",
+     "completionTokens": 4000,
+     "robot": null,
+     "score": {
+      "items": 3,
+      "inSpec": 1,
+      "read": 1,
+      "drawn": 1
+     }
+    },
+    {
+     "k": 2,
+     "seed": 170767022,
+     "temperature": 0.8,
+     "ms": 16730,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "throw",
+     "completionTokens": 2690,
+     "robot": "pass",
+     "score": {
+      "items": 3,
+      "inSpec": 2,
+      "read": 2,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 3,
+     "seed": 153989403,
+     "temperature": 0.8,
+     "ms": 14913,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "throw",
+     "completionTokens": 2351,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "t315",
+   "family": "stack",
+   "chosen": null,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 294373531,
+     "temperature": 0,
+     "ms": 13461,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "tap_go",
+     "completionTokens": 2105,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 1,
+     "seed": 311151150,
+     "temperature": 0.8,
+     "ms": 22594,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "tap_go",
+     "completionTokens": 3578,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 2,
+     "seed": 327928769,
+     "temperature": 0.8,
+     "ms": 17757,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "tap_go",
+     "completionTokens": 2821,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 3,
+     "seed": 344706388,
+     "temperature": 0.8,
+     "ms": 24859,
+     "source": "draft",
+     "fallbackReason": "MALFORMED",
+     "control": "tap_go",
+     "completionTokens": 4000,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "t316",
+   "family": "jump",
+   "chosen": 3,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 836712768,
+     "temperature": 0,
+     "ms": 21277,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "platform",
+     "completionTokens": 3421,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 2,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 1,
+     "seed": 819935149,
+     "temperature": 0.8,
+     "ms": 11589,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "platform",
+     "completionTokens": 1862,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 2,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 2,
+     "seed": 803157530,
+     "temperature": 0.8,
+     "ms": 9020,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "platform",
+     "completionTokens": 1456,
+     "robot": null,
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 2,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 3,
+     "seed": 786379911,
+     "temperature": 0.8,
+     "ms": 7877,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "platform",
+     "completionTokens": 1297,
+     "robot": "pass",
+     "score": {
+      "items": 3,
+      "inSpec": 2,
+      "read": 2,
+      "drawn": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "t317",
+   "family": "shoot",
+   "chosen": 3,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 726764121,
+     "temperature": 0,
+     "ms": 25103,
+     "source": "draft",
+     "fallbackReason": "MALFORMED",
+     "control": "shooter",
+     "completionTokens": 4000,
+     "robot": null,
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 2,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 1,
+     "seed": 743541740,
+     "temperature": 0.8,
+     "ms": 19178,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "shooter",
+     "completionTokens": 3071,
+     "robot": null,
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 3
+     }
+    },
+    {
+     "k": 2,
+     "seed": 693208883,
+     "temperature": 0.8,
+     "ms": 8420,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "shooter",
+     "completionTokens": 1353,
+     "robot": "pass",
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 2,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 3,
+     "seed": 709986502,
+     "temperature": 0.8,
+     "ms": 16678,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "shooter",
+     "completionTokens": 2676,
+     "robot": "pass",
+     "score": {
+      "items": 3,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "t318",
+   "family": "race",
+   "chosen": 1,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 595131700,
+     "temperature": 0,
+     "ms": 24952,
+     "source": "draft",
+     "fallbackReason": "MALFORMED",
+     "control": "steer",
+     "completionTokens": 4000,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 2,
+      "read": 1,
+      "drawn": 1
+     }
+    },
+    {
+     "k": 1,
+     "seed": 578354081,
+     "temperature": 0.8,
+     "ms": 14404,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "steer",
+     "completionTokens": 2316,
+     "robot": "pass",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 3,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 2,
+     "seed": 628686938,
+     "temperature": 0.8,
+     "ms": 19778,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "steer",
+     "completionTokens": 3234,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 3,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 3,
+     "seed": 611909319,
+     "temperature": 0.8,
+     "ms": 13421,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "steer",
+     "completionTokens": 2158,
+     "robot": "pass",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 3,
+      "drawn": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "t319",
+   "family": "collect",
+   "chosen": null,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 1291788693,
+     "temperature": 0,
+     "ms": 24751,
+     "source": "draft",
+     "fallbackReason": "MALFORMED",
+     "control": "tap_go",
+     "completionTokens": 4000,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 3,
+      "read": 3,
+      "drawn": 3
+     }
+    },
+    {
+     "k": 1,
+     "seed": 1308566312,
+     "temperature": 0.8,
+     "ms": 16591,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "tap_go",
+     "completionTokens": 2644,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 4,
+      "drawn": 3
+     }
+    },
+    {
+     "k": 2,
+     "seed": 1325343931,
+     "temperature": 0.8,
+     "ms": 21321,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "tap_go",
+     "completionTokens": 3427,
+     "robot": null,
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 4,
+      "drawn": 3
+     }
+    },
+    {
+     "k": 3,
+     "seed": 1342121550,
+     "temperature": 0.8,
+     "ms": 22001,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "runner",
+     "completionTokens": 3553,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 4,
+      "inSpec": 4,
+      "read": 4,
+      "drawn": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "t320",
+   "family": "calm",
+   "chosen": null,
+   "candidates": [
+    {
+     "k": 0,
+     "seed": 1742655083,
+     "temperature": 0,
+     "ms": 24522,
+     "source": "draft",
+     "fallbackReason": "MALFORMED",
+     "control": "runner",
+     "completionTokens": 4000,
+     "robot": null,
+     "score": {
+      "items": 3,
+      "inSpec": 1,
+      "read": 1,
+      "drawn": 1
+     }
+    },
+    {
+     "k": 1,
+     "seed": 1759432702,
+     "temperature": 0.8,
+     "ms": 20301,
+     "source": "authored",
+     "fallbackReason": "VERB_UNPROVED",
+     "control": "tap_go",
+     "completionTokens": 3271,
+     "robot": null,
+     "score": {
+      "items": 3,
+      "inSpec": 2,
+      "read": 2,
+      "drawn": 1
+     }
+    },
+    {
+     "k": 2,
+     "seed": 1776210321,
+     "temperature": 0.8,
+     "ms": 9002,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "runner",
+     "completionTokens": 1446,
+     "robot": "KEYPOINT_FAILED",
+     "score": {
+      "items": 3,
+      "inSpec": 2,
+      "read": 2,
+      "drawn": 2
+     }
+    },
+    {
+     "k": 3,
+     "seed": 1792987940,
+     "temperature": 0.8,
+     "ms": 13140,
+     "source": "authored",
+     "fallbackReason": null,
+     "control": "timing",
+     "completionTokens": 2124,
+     "robot": "UNWINNABLE",
+     "score": {
+      "items": 3,
+      "inSpec": 2,
+      "read": 1,
+      "drawn": 1
      }
     }
    ]
