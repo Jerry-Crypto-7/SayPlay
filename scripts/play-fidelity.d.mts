@@ -39,6 +39,13 @@ export declare function readerDecision(input: { readonly reader: number; readonl
 
 export declare function readerDraft(text: string, reading: Reading | null): GameSpecV1;
 
+export declare function normalizeSentence(text: string): string;
+
+export declare function loadSet(
+  name: string | undefined,
+  options?: { readonly only?: string; readonly openTestOnce?: boolean; readonly runId?: string | null; readonly sealDir?: string },
+): (CorpusSentence & { readonly source?: string })[];
+
 interface Tally {
   readonly hit: number;
   readonly of: number;
