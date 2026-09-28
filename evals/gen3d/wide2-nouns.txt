@@ -1,0 +1,79 @@
+# Pátá dávka 28. 9. 2026: běžné herní předměty a zvířata, která exactModel v knihovně nenašel
+# (překážky, sběratelné věci, zbraně). test-200 se nečetl. Tvar popisu u 8 dnes neúspěšných slov je konkrétnější.
+red heart pickup
+circular saw blade
+metal padlock
+iron cannonball
+brass bullet
+landmine
+iron cage
+iron chain
+coil spring
+jump pad
+black bat with spread wings
+fighter jet
+small songbird
+young prince
+market stall shop
+road sign
+witch cauldron
+wooden magic staff
+gold necklace
+sealed letter
+paper envelope
+red cherries
+bunch of grapes
+milk carton
+sitting green frog cartoon
+squirrel with bushy tail
+submarine with periscope
+tiger standing cartoon
+wolf standing cartoon
+bunny rabbit sitting
+tortoise
+glowing light bulb
+lizard
+moose
+donkey
+giant squid
+stag beetle
+mosquito
+housefly
+dragonfly
+pink flamingo
+peacock
+white swan
+black crow
+otter
+skunk
+hedgehog cartoon
+gold star pickup
+toucan
+bison
+chameleon
+jaguar
+hyena
+meerkat
+armadillo
+sloth bear
+narwhal
+manta ray
+pufferfish
+axolotl
+carousel
+hot tub
+jukebox
+piggy bank
+hourglass
+globe
+typewriter
+harp
+accordion
+banjo
+tuba
+xylophone
+bagpipes
+saxophone
+cello
+tambourine
+maracas

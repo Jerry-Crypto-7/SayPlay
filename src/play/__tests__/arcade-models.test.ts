@@ -31,12 +31,15 @@ describe('arcade model choice from role labels', () => {
     ['brave little puppies', 'dog'], // synonymum v množném čísle
     ['kitten', 'cat'], // tag katalogu
     ['zombies', 'cc0-zombie'], // přesný model CC0 přebije náhradu
-    ['ogres', 'goblin'], // bez modelu náhradní příšera
+    ['ogres', 'gen3d-ogre'], // od 28. 9. vlastní model z gen3d
+    ['demons', 'goblin'], // bez modelu náhradní příšera
     ['a small bird', 'bird'], // tag `bird` nese hnízdo, věta myslí ptáka
     ['space bunny', 'hamster'],
-    ['grizzly bear', 'fox'], // kategorie zvíře
+    ['grizzly bear', 'gen3d-bear'], // od 28. 9. vlastní model z gen3d
+    ['wild lizard', 'fox'], // kategorie zvíře
     ['mall security guard', 'gen3d-guard'], // vlastní model z gen3d (e5b840b) přebije kategorii člověk
-    ['angry bulldozer', 'robot'], // kategorie stroj
+    ['angry bulldozer', 'gen3d-bulldozer'], // od 28. 9. vlastní model z gen3d
+    ['angry forklift', 'robot'], // kategorie stroj
     ['battle tank', 'cc0-tank'], // CC0 tank, ne plynová bomba `cc0-gas-tank` (P26A T11)
   ])('%s → %s', (label, model) => {
     expect(modelOf(label, true)).toBe(model);
@@ -47,7 +50,7 @@ describe('arcade model choice from role labels', () => {
     expect(modelOf('zeppelin', true)).toBeUndefined();
     expect(heroModel(withLabel(runner, 'player', 'zeppelin'))).toBe('explorer');
     expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('gen3d-balloon');
-    expect(enemyModel(withLabel(shooter, 'enemy', 'angry umbrellas'))).toBe('robot');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry staplers'))).toBe('robot');
     // Zástupci (hydrant za kropítko) skončili v P30B T4: kropítko má vlastní model, věc bez modelu zůstane tělem jádra.
     expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'sprinkler' });
     expect(propModels(withLabel(runner, 'obstacle', 'deadlines'))).toEqual({});
@@ -60,7 +63,7 @@ describe('arcade model choice from role labels', () => {
   it('props take only a direct catalog match, never a category or the core kind', () => {
     expect(propModels(withLabel(runner, 'coin', 'gems'))).toEqual({ coin: 'crystal' });
     expect(propModels(withLabel(runner, 'obstacle', 'traffic cones'))).toEqual({});
-    expect(propModels(withLabel(runner, 'obstacle', 'grizzly bears'))).toEqual({});
+    expect(propModels(withLabel(runner, 'obstacle', 'wild moose'))).toEqual({});
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
     // Střelnice popisek terče nekreslí (tabulka schopností), takže ho nečte ani výběr.
     expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({});

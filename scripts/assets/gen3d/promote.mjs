@@ -28,8 +28,9 @@ export const isGen3d = (asset) => asset.assetId.startsWith('gen3d-');
 
 /** Hranice zaokrouhlené ven na 10 µm, jako u CC0: LOD1 z LOD0 vyčnívá o miliontiny metru. */
 const outward = (bounds) => ({
-  min: bounds.min.map((value, axis) => (axis === 1 ? value : Math.floor((value - 2e-6) * 1e5) / 1e5)),
-  max: bounds.max.map((value) => Math.ceil((value + 2e-6) * 1e5) / 1e5),
+  // Rezerva 1e-5: zjednodušené LOD1 harmoniky přesáhlo zdrojové meze o 3,4e-6.
+  min: bounds.min.map((value, axis) => (axis === 1 ? value : Math.floor((value - 1e-5) * 1e5) / 1e5)),
+  max: bounds.max.map((value) => Math.ceil((value + 1e-5) * 1e5) / 1e5),
 });
 
 const idOf = (noun) => `gen3d-${noun.replaceAll(' ', '-')}`;

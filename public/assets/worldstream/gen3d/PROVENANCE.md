@@ -156,3 +156,188 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-spider-web` | spider web | spider web, cobweb, web | 4734 / 2363 |
 | `gen3d-throne` | throne | throne, queen | 4562 / 2261 |
 | `gen3d-crown` | crown | crown, royal | 4649 / 2305 |
+| `gen3d-karate-fighter` | karate fighter | karate fighter, karate | 4650 / 2275 |
+| `gen3d-crane-operator` | crane operator | crane operator | 4567 / 2232 |
+| `gen3d-witch` | witch | witch | 4520 / 2240 |
+| `gen3d-hedgehog` | hedgehog | hedgehog | 4310 / 1997 |
+| `gen3d-sloth` | sloth | sloth | 4719 / 2346 |
+| `gen3d-grandpa` | grandpa | grandpa | 4750 / 2370 |
+| `gen3d-mermaid` | mermaid | mermaid | 4720 / 2340 |
+| `gen3d-jellyfish` | jellyfish | jellyfish | 4750 / 2372 |
+| `gen3d-pearl` | pearl | pearl | 4748 / 2374 |
+| `gen3d-bear` | bear | bear | 4429 / 2195 |
+| `gen3d-sumo-wrestler` | sumo wrestler | sumo wrestler | 4748 / 2372 |
+| `gen3d-ice-igloo` | ice igloo | ice igloo, igloo | 4690 / 2334 |
+| `gen3d-termite-hill` | termite hill | termite hill, termite mound | 4250 / 2114 |
+| `gen3d-medical-stretcher` | medical stretcher | medical stretcher, stretcher | 4733 / 2363 |
+| `gen3d-moon-lander` | moon lander | moon lander, lunar lander | 3834 / 1892 |
+| `gen3d-gravestone` | gravestone | gravestone, tombstone, grave | 4533 / 2240 |
+| `gen3d-gorilla` | gorilla | gorilla | 4718 / 2302 |
+| `gen3d-polar-bear` | polar bear | polar bear | 4447 / 2156 |
+| `gen3d-parrot` | parrot | parrot | 4698 / 2296 |
+| `gen3d-flying-bat` | flying bat | flying bat, bat | 4734 / 2360 |
+| `gen3d-spider` | spider | spider | 4693 / 2341 |
+| `gen3d-scorpion` | scorpion | scorpion | 4632 / 2269 |
+| `gen3d-butterfly` | butterfly | butterfly | 4642 / 2317 |
+| `gen3d-ladybug` | ladybug | ladybug | 4586 / 2273 |
+| `gen3d-whale` | whale | whale | 4748 / 2374 |
+| `gen3d-lobster` | lobster | lobster | 4562 / 2157 |
+| `gen3d-seahorse` | seahorse | seahorse | 4309 / 2074 |
+| `gen3d-koala` | koala | koala | 4686 / 2298 |
+| `gen3d-panda` | panda | panda | 4385 / 2172 |
+| `gen3d-camel` | camel | camel | 4597 / 2265 |
+| `gen3d-dinosaur` | dinosaur | dinosaur, dino | 4460 / 2227 |
+| `gen3d-unicorn` | unicorn | unicorn | 4517 / 2195 |
+| `gen3d-griffin` | griffin | griffin | 4447 / 2125 |
+| `gen3d-ogre` | ogre | ogre | 4744 / 2337 |
+| `gen3d-elf` | elf | elf | 4585 / 2277 |
+| `gen3d-fairy` | fairy | fairy | 4739 / 2358 |
+| `gen3d-werewolf` | werewolf | werewolf | 4487 / 2192 |
+| `gen3d-mummy` | mummy | mummy | 4724 / 2338 |
+| `gen3d-archer` | archer | archer | 4661 / 2283 |
+| `gen3d-viking` | viking | viking | 4686 / 2290 |
+| `gen3d-samurai` | samurai | samurai | 4580 / 2168 |
+| `gen3d-cyborg` | cyborg | cyborg | 4657 / 2255 |
+| `gen3d-superhero` | superhero | superhero | 4746 / 2362 |
+| `gen3d-villain` | villain | villain | 4711 / 2308 |
+| `gen3d-firefighter` | firefighter | firefighter | 4687 / 2334 |
+| `gen3d-doctor` | doctor | doctor | 4698 / 2334 |
+| `gen3d-nurse` | nurse | nurse | 4745 / 2345 |
+| `gen3d-farmer` | farmer | farmer | 4526 / 2233 |
+| `gen3d-detective` | detective | detective | 4553 / 2231 |
+| `gen3d-thief` | thief | thief | 4526 / 2148 |
+| `gen3d-clown` | clown | clown | 4739 / 2364 |
+| `gen3d-baby` | baby | baby | 4521 / 2194 |
+| `gen3d-student` | student | student | 4715 / 2312 |
+| `gen3d-bulldozer` | bulldozer | bulldozer | 4090 / 1993 |
+| `gen3d-helicopter` | helicopter | helicopter | 4744 / 2360 |
+| `gen3d-sailboat` | sailboat | sailboat | 4569 / 2270 |
+| `gen3d-tram` | tram | tram | 4474 / 2235 |
+| `gen3d-bicycle` | bicycle | bicycle | 4729 / 2285 |
+| `gen3d-motorboat` | motorboat | motorboat | 4598 / 2216 |
+| `gen3d-book` | book | book | 4748 / 2374 |
+| `gen3d-backpack` | backpack | backpack | 4170 / 2062 |
+| `gen3d-camera` | camera | camera | 4696 / 2302 |
+| `gen3d-smartphone` | smartphone | smartphone, phone | 4750 / 2374 |
+| `gen3d-television` | television | television, tv | 3742 / 1730 |
+| `gen3d-violin` | violin | violin | 4738 / 2350 |
+| `gen3d-trumpet` | trumpet | trumpet | 4697 / 2314 |
+| `gen3d-microphone` | microphone | microphone | 4565 / 2250 |
+| `gen3d-baseball-bat` | baseball bat | baseball bat | 4748 / 2374 |
+| `gen3d-hockey-stick` | hockey stick | hockey stick | 4748 / 2374 |
+| `gen3d-boxing-glove` | boxing glove | boxing glove | 4493 / 2134 |
+| `gen3d-dice` | dice | dice | 4698 / 2260 |
+| `gen3d-cheese` | cheese | cheese | 4664 / 2274 |
+| `gen3d-lollipop` | lollipop | lollipop | 4748 / 2374 |
+| `gen3d-strawberry` | strawberry | strawberry | 4716 / 2332 |
+| `gen3d-pineapple` | pineapple | pineapple | 4620 / 2247 |
+| `gen3d-teapot` | teapot | teapot | 4650 / 2278 |
+| `gen3d-bookshelf` | bookshelf | bookshelf | 4367 / 2173 |
+| `gen3d-fountain` | fountain | fountain | 4600 / 2206 |
+| `gen3d-treehouse` | treehouse | treehouse | 4283 / 2020 |
+| `gen3d-volcano` | volcano | volcano | 4742 / 2370 |
+| `gen3d-iceberg` | iceberg | iceberg | 4575 / 2174 |
+| `gen3d-sunflower` | sunflower | sunflower | 4666 / 2272 |
+| `gen3d-rose` | rose | rose | 4689 / 2337 |
+| `gen3d-crystal-cluster` | crystal cluster | crystal cluster | 4746 / 2372 |
+| `gen3d-planet` | planet | planet | 4748 / 2374 |
+| `gen3d-tornado` | tornado | tornado | 4523 / 2257 |
+| `gen3d-lightning-bolt` | lightning bolt | lightning bolt, lightning | 4721 / 2342 |
+| `gen3d-trampoline` | trampoline | trampoline | 4489 / 2112 |
+| `gen3d-ladder` | ladder | ladder | 4750 / 2374 |
+| `gen3d-anchor` | anchor | anchor | 4750 / 2374 |
+| `gen3d-compass` | compass | compass | 4715 / 2304 |
+| `gen3d-telescope` | telescope | telescope | 4661 / 2304 |
+| `gen3d-microscope` | microscope | microscope | 4748 / 2372 |
+| `gen3d-magnet` | magnet | magnet | 4664 / 2304 |
+| `gen3d-battery-pack` | battery pack | battery pack | 4270 / 2103 |
+| `gen3d-cog-gear` | cog gear | cog gear, gear, cog | 4748 / 2374 |
+| `gen3d-rake` | rake | rake | 4748 / 2374 |
+| `gen3d-wheelbarrow` | wheelbarrow | wheelbarrow | 4748 / 2374 |
+| `gen3d-ninja-warrior` | ninja warrior | ninja warrior, ninja | 4397 / 2085 |
+| `gen3d-snow-yeti` | snow yeti | snow yeti, yeti | 4461 / 2157 |
+| `gen3d-white-snowball` | white snowball | white snowball, snowball | 4748 / 2374 |
+| `gen3d-soccer-goalkeeper` | soccer goalkeeper | soccer goalkeeper, goalkeeper, goalie | 4739 / 2346 |
+| `gen3d-chocolate-chip-cookie` | chocolate chip cookie | chocolate chip cookie, cookie | 4748 / 2374 |
+| `gen3d-pirate-captain` | pirate captain | pirate captain, pirate | 4705 / 2242 |
+| `gen3d-red-ant` | red ant | red ant, ant | 4716 / 2345 |
+| `gen3d-garden-snail` | garden snail | garden snail, snail | 4452 / 2071 |
+| `gen3d-wrapped-candy` | wrapped candy | wrapped candy, candy, sweet | 4740 / 2362 |
+| `gen3d-snowman-with-hat` | snowman with hat | snowman with hat, snowman | 4383 / 2051 |
+| `gen3d-black-hole-portal` | black hole portal | black hole portal, black hole | 4266 / 2114 |
+| `gen3d-brown-owl` | brown owl | brown owl, owl | 4327 / 2122 |
+| `gen3d-satellite-radar-dish` | satellite radar dish | satellite radar dish, radar dish, satellite dish, radar | 4546 / 2171 |
+| `gen3d-male-lion` | male lion | male lion, lion | 4572 / 2177 |
+| `gen3d-dairy-cow` | dairy cow | dairy cow, cow | 4588 / 2234 |
+| `gen3d-bald-eagle` | bald eagle | bald eagle, eagle | 4722 / 2284 |
+| `gen3d-bottlenose-dolphin` | bottlenose dolphin | bottlenose dolphin, dolphin | 4482 / 2143 |
+| `gen3d-red-crab` | red crab | red crab, crab | 4703 / 2322 |
+| `gen3d-fire-phoenix-bird` | fire phoenix bird | fire phoenix bird, phoenix | 4468 / 2204 |
+| `gen3d-lab-scientist` | lab scientist | lab scientist, scientist | 4746 / 2372 |
+| `gen3d-stage-magician` | stage magician | stage magician, magician | 4451 / 2086 |
+| `gen3d-paper-scroll` | paper scroll | paper scroll, scroll | 4748 / 2374 |
+| `gen3d-open-umbrella` | open umbrella | open umbrella, umbrella | 4746 / 2372 |
+| `gen3d-diamond-kite` | diamond kite | diamond kite, kite | 4748 / 2374 |
+| `gen3d-chess-king-piece` | chess king piece | chess king piece, chess piece, chess | 4748 / 2374 |
+| `gen3d-stone-water-well` | stone water well | stone water well, water well, well | 4445 / 2068 |
+| `gen3d-large-boulder` | large boulder | large boulder, boulder | 4749 / 2368 |
+| `gen3d-street-mailbox` | street mailbox | street mailbox, mailbox | 4718 / 2303 |
+| `gen3d-red-heart-pickup` | red heart pickup | red heart pickup, heart pickup, extra life | 4748 / 2374 |
+| `gen3d-circular-saw-blade` | circular saw blade | circular saw blade, saw blade | 4748 / 2374 |
+| `gen3d-iron-cannonball` | iron cannonball | iron cannonball, cannonball | 4748 / 2374 |
+| `gen3d-brass-bullet` | brass bullet | brass bullet, bullet | 4748 / 2374 |
+| `gen3d-iron-cage` | iron cage | iron cage, cage | 4631 / 2204 |
+| `gen3d-iron-chain` | iron chain | iron chain, chain | 4750 / 2374 |
+| `gen3d-coil-spring` | coil spring | coil spring, spring | 4709 / 2284 |
+| `gen3d-jump-pad` | jump pad | jump pad, launch pad | 4749 / 2373 |
+| `gen3d-fighter-jet` | fighter jet | fighter jet, jet | 4734 / 2356 |
+| `gen3d-small-songbird` | small songbird | small songbird, songbird | 4728 / 2356 |
+| `gen3d-young-prince` | young prince | young prince, prince | 4702 / 2300 |
+| `gen3d-market-stall-shop` | market stall shop | market stall shop, shop, store | 4588 / 2280 |
+| `gen3d-road-sign` | road sign | road sign | 4470 / 2173 |
+| `gen3d-witch-cauldron` | witch cauldron | witch cauldron, cauldron | 4748 / 2374 |
+| `gen3d-wooden-magic-staff` | wooden magic staff | wooden magic staff, staff, magic staff | 4736 / 2368 |
+| `gen3d-gold-necklace` | gold necklace | gold necklace, necklace | 4668 / 2258 |
+| `gen3d-sealed-letter` | sealed letter | sealed letter, letter | 4431 / 2138 |
+| `gen3d-paper-envelope` | paper envelope | paper envelope, envelope | 4748 / 2366 |
+| `gen3d-red-cherry` | red cherry | red cherry, cherry, cherries | 4746 / 2370 |
+| `gen3d-bunch-of-grape` | bunch of grape | bunch of grape, grape, grapes | 3970 / 2120 |
+| `gen3d-milk-carton` | milk carton | milk carton | 4687 / 2318 |
+| `gen3d-tiger-standing-cartoon` | tiger standing cartoon | tiger standing cartoon, tiger | 4181 / 1995 |
+| `gen3d-tortoise` | tortoise | tortoise, turtle | 4352 / 2098 |
+| `gen3d-glowing-light-bulb` | glowing light bulb | glowing light bulb, lightbulb, light bulb, bulb | 4748 / 2374 |
+| `gen3d-donkey` | donkey | donkey | 4537 / 2248 |
+| `gen3d-giant-squid` | giant squid | giant squid, squid | 4137 / 1992 |
+| `gen3d-stag-beetle` | stag beetle | stag beetle, beetle | 4745 / 2366 |
+| `gen3d-mosquito` | mosquito | mosquito | 4362 / 2130 |
+| `gen3d-housefly` | housefly | housefly, fly | 4725 / 2331 |
+| `gen3d-dragonfly` | dragonfly | dragonfly | 4742 / 2320 |
+| `gen3d-pink-flamingo` | pink flamingo | pink flamingo, flamingo | 4546 / 2215 |
+| `gen3d-white-swan` | white swan | white swan, swan | 4391 / 2133 |
+| `gen3d-black-crow` | black crow | black crow, crow, raven | 4682 / 2317 |
+| `gen3d-otter` | otter | otter | 4571 / 2266 |
+| `gen3d-skunk` | skunk | skunk | 4560 / 2259 |
+| `gen3d-gold-star-pickup` | gold star pickup | gold star pickup, star pickup | 4588 / 2222 |
+| `gen3d-toucan` | toucan | toucan | 4298 / 2108 |
+| `gen3d-chameleon` | chameleon | chameleon | 4735 / 2346 |
+| `gen3d-narwhal` | narwhal | narwhal | 4534 / 2192 |
+| `gen3d-manta-ray` | manta ray | manta ray, stingray | 4708 / 2304 |
+| `gen3d-pufferfish` | pufferfish | pufferfish, blowfish | 4606 / 2240 |
+| `gen3d-axolotl` | axolotl | axolotl | 4394 / 2100 |
+| `gen3d-carousel` | carousel | carousel | 3898 / 1702 |
+| `gen3d-hot-tub` | hot tub | hot tub | 4604 / 2280 |
+| `gen3d-jukebox` | jukebox | jukebox | 4396 / 2155 |
+| `gen3d-piggy-bank` | piggy bank | piggy bank | 4734 / 2358 |
+| `gen3d-hourglass` | hourglass | hourglass | 4686 / 2295 |
+| `gen3d-globe` | globe | globe | 4465 / 2275 |
+| `gen3d-typewriter` | typewriter | typewriter | 4132 / 1916 |
+| `gen3d-harp` | harp | harp | 4692 / 2287 |
+| `gen3d-accordion` | accordion | accordion | 4637 / 2267 |
+| `gen3d-banjo` | banjo | banjo | 4723 / 2332 |
+| `gen3d-tuba` | tuba | tuba | 4654 / 2323 |
+| `gen3d-xylophone` | xylophone | xylophone | 4388 / 2194 |
+| `gen3d-bagpipe` | bagpipe | bagpipe, bagpipes | 4748 / 2374 |
+| `gen3d-saxophone` | saxophone | saxophone | 4724 / 2310 |
+| `gen3d-cello` | cello | cello | 4727 / 2359 |
+| `gen3d-tambourine` | tambourine | tambourine | 4013 / 1865 |
+| `gen3d-maraca` | maraca | maraca, maracas | 4748 / 2374 |

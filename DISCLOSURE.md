@@ -2762,7 +2762,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (1033)
+## Vlastní, ne třetí strana (1588)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3360,6 +3360,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **vlastní zdroje nad prahem literálů** (dataset): Testy, fixtury, prompty, texty rozhraní a samotné skripty brány, které nesou víc než 4 096 B literálů. Napsané v tomhle repozitáři, nikdo třetí je nevlastní. V registru jsou proto, že `submission-check` kontrola 6 (d) žádá položku pro každý soubor nad prahem — váha literálů neumí odlišit první stranu od třetí, a to je vlastnost prahu, ne vada zápisu.
 - **public/assets/worldstream/gen3d/PROVENANCE.md** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/_sheet.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-accordion-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-accordion-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-accordion.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-acorn-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-acorn-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-acorn.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3369,24 +3372,60 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-alien-bug-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-alien-bug-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-alien-bug.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-anchor-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-anchor-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-anchor.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-arcade-cabinet-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-arcade-cabinet-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-arcade-cabinet.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-archer-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-archer-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-archer.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-armored-knight-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-armored-knight-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-armored-knight.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-awning-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-awning-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-awning.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-axolotl-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-axolotl-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-axolotl.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-baby-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-baby-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-baby.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-backpack-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-backpack-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-backpack.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bagpipe-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bagpipe-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bagpipe.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bald-eagle-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bald-eagle-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bald-eagle.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-balloon-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-balloon-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-balloon.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-banana-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-banana-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-banana.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-banjo-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-banjo-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-banjo.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-baseball-bat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-baseball-bat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-baseball-bat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-battery-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-battery-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-battery-pack-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-battery-pack-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-battery-pack.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-battery.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bear-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bear-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bear.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bicycle-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bicycle-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bicycle.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-billboard-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-billboard-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-billboard.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3396,45 +3435,117 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-birthday-cake-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-birthday-cake-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-birthday-cake.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-black-crow-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-black-crow-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-black-crow.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-black-hole-portal-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-black-hole-portal-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-black-hole-portal.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-blender-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-blender-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-blender.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-book-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-book-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-book.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bookshelf-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bookshelf-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bookshelf.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bottlenose-dolphin-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bottlenose-dolphin-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bottlenose-dolphin.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bowling-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bowling-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bowling.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-boxing-glove-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-boxing-glove-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-boxing-glove.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-brass-bullet-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-brass-bullet-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-brass-bullet.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-brown-owl-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-brown-owl-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-brown-owl.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bulldozer-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bulldozer-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bulldozer.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bunch-of-grape-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bunch-of-grape-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-bunch-of-grape.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bus-stop-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bus-stop-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-bus-stop.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-butterfly-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-butterfly-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-butterfly.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cactus-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cactus-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cactus.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cafe-table-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cafe-table-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cafe-table.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-camel-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-camel-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-camel.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-camera-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-camera-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-camera.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cardboard-box-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cardboard-box-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cardboard-box.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-carousel-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-carousel-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-carousel.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cash-register-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cash-register-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cash-register.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cave-entrance-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cave-entrance-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-cave-entrance.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cello-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cello-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cello.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chameleon-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chameleon-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chameleon.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-checkered-flag-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-checkered-flag-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-checkered-flag.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cheese-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cheese-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cheese.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chess-king-piece-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chess-king-piece-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chess-king-piece.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chocolate-chip-cookie-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chocolate-chip-cookie-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-chocolate-chip-cookie.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-circular-saw-blade-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-circular-saw-blade-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-circular-saw-blade.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-circus-tent-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-circus-tent-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-circus-tent.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-clown-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-clown-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-clown.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-coffee-cup-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-coffee-cup-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-coffee-cup.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-coffee-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-coffee-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-coffee.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cog-gear-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cog-gear-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cog-gear.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-coil-spring-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-coil-spring-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-coil-spring.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-compass-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-compass-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-compass.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-computer-monitor-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-computer-monitor-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-computer-monitor.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3455,6 +3566,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-crafting-table.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-crane-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-crane-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-crane-operator-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-crane-operator-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-crane-operator.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-crane.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-crocodile-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-crocodile-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
@@ -3462,9 +3576,18 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-crown-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-crown-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-crown.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-crystal-cluster-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-crystal-cluster-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-crystal-cluster.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-customer-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-customer-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-customer.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cyborg-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cyborg-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-cyborg.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dairy-cow-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dairy-cow-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dairy-cow.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-dance-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-dance-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-dance.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3474,12 +3597,33 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-deer-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-deer-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-deer.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-detective-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-detective-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-detective.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-diamond-kite-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-diamond-kite-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-diamond-kite.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dice-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dice-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dice.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dinosaur-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dinosaur-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dinosaur.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-doctor-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-doctor-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-doctor.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-doll-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-doll-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-doll.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-donkey-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-donkey-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-donkey.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-double-bed-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-double-bed-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-double-bed.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dragonfly-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dragonfly-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-dragonfly.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-drawbridge-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-drawbridge-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-drawbridge.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3495,18 +3639,36 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-dwarve-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-dwarve-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-dwarve.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-elf-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-elf-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-elf.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-espresso-machine-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-espresso-machine-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-espresso-machine.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-factory-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-factory-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-factory.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fairy-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fairy-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fairy.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-farm-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-farm-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-farm.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-farmer-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-farmer-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-farmer.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fencing-sword-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fencing-sword-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fencing-sword.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fighter-jet-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fighter-jet-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fighter-jet.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fire-phoenix-bird-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fire-phoenix-bird-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fire-phoenix-bird.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-firefighter-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-firefighter-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-firefighter.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-first-aid-kit-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-first-aid-kit-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-first-aid-kit.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3516,12 +3678,18 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-fishmonger-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fishmonger-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fishmonger.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-flying-bat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-flying-bat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-flying-bat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-food-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-food-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-food-truck-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-food-truck-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-food-truck.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-food.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fountain-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fountain-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-fountain.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fps-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fps-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-fps.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3533,34 +3701,76 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-gang.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-garden-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-garden-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-garden-snail-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-garden-snail-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-garden-snail.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-garden.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gemstone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gemstone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gemstone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-giant-squid-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-giant-squid-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-giant-squid.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gift-box-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gift-box-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gift-box.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-globe-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-globe-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-globe.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-glowing-light-bulb-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-glowing-light-bulb-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-glowing-light-bulb.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-goat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-goat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-goat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gold-necklace-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gold-necklace-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gold-necklace.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gold-star-pickup-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gold-star-pickup-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gold-star-pickup.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gold-trophy-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gold-trophy-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-gold-trophy.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-golf-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-golf-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-golf.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gorilla-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gorilla-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gorilla.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-grandma-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-grandma-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-grandma.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-grandpa-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-grandpa-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-grandpa.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gravestone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gravestone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-gravestone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-griffin-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-griffin-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-griffin.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-guard-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-guard-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-guard.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hard-hat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hard-hat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hard-hat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-harp-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-harp-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-harp.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hedgehog-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hedgehog-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hedgehog.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-helicopter-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-helicopter-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-helicopter.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-helix-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-helix-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-helix.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hockey-stick-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hockey-stick-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hockey-stick.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-horse-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-horse-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-horse.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3570,12 +3780,48 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-hot-dog-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hot-dog-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hot-dog.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hot-tub-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hot-tub-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hot-tub.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hotel-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hotel-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-hotel.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hourglass-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hourglass-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-hourglass.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-housefly-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-housefly-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-housefly.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ice-cream-cone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ice-cream-cone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ice-cream-cone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ice-igloo-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ice-igloo-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ice-igloo.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iceberg-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iceberg-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iceberg.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-cage-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-cage-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-cage.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-cannonball-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-cannonball-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-cannonball.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-chain-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-chain-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-iron-chain.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jellyfish-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jellyfish-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jellyfish.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jukebox-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jukebox-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jukebox.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jump-pad-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jump-pad-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-jump-pad.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-karate-fighter-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-karate-fighter-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-karate-fighter.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-king-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-king-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-king.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3585,6 +3831,21 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-knight-shield-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-knight-shield-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-knight-shield.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-koala-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-koala-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-koala.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lab-scientist-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lab-scientist-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lab-scientist.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ladder-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ladder-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ladder.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ladybug-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ladybug-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ladybug.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-large-boulder-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-large-boulder-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-large-boulder.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-laser-sword-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-laser-sword-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-laser-sword.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3597,21 +3858,60 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-lighthouse-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-lighthouse-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-lighthouse.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lightning-bolt-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lightning-bolt-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lightning-bolt.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lobster-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lobster-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lobster.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lollipop-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lollipop-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-lollipop.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-magic-wand-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-magic-wand-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-magic-wand.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-magnet-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-magnet-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-magnet.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-magnifying-glass-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-magnifying-glass-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-magnifying-glass.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-male-lion-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-male-lion-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-male-lion.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-manta-ray-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-manta-ray-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-manta-ray.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-maraca-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-maraca-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-maraca.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-market-stall-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-market-stall-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-market-stall-shop-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-market-stall-shop-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-market-stall-shop.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-market-stall.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-maze-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-maze-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-maze.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-medical-stretcher-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-medical-stretcher-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-medical-stretcher.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mermaid-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mermaid-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mermaid.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-metal-screw-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-metal-screw-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-metal-screw.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-microphone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-microphone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-microphone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-microscope-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-microscope-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-microscope.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-milk-carton-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-milk-carton-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-milk-carton.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-mine-cart-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-mine-cart-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-mine-cart.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3624,45 +3924,111 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-money-bag-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-money-bag-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-money-bag.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-moon-lander-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-moon-lander-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-moon-lander.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-moon-rock-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-moon-rock-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-moon-rock.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mosquito-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mosquito-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mosquito.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-motorbike-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-motorbike-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-motorbike.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-motorboat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-motorboat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-motorboat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mummy-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mummy-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-mummy.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-museum-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-museum-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-museum.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-narwhal-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-narwhal-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-narwhal.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ninja-warrior-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ninja-warrior-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ninja-warrior.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-nurse-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-nurse-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-nurse.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-octopus-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-octopus-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-octopus.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-office-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-office-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-office.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ogre-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ogre-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-ogre.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-open-umbrella-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-open-umbrella-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-open-umbrella.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-otter-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-otter-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-otter.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-outfit-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-outfit-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-outfit.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-paint-bucket-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-paint-bucket-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-paint-bucket.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-panda-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-panda-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-panda.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-paper-envelope-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-paper-envelope-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-paper-envelope.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-paper-scroll-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-paper-scroll-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-paper-scroll.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-parrot-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-parrot-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-parrot.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-party-balloon-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-party-balloon-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-party-balloon.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pearl-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pearl-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pearl.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-piano-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-piano-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-piano.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pickaxe-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pickaxe-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pickaxe.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-piggy-bank-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-piggy-bank-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-piggy-bank.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pineapple-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pineapple-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pineapple.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pink-flamingo-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pink-flamingo-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pink-flamingo.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pirate-captain-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pirate-captain-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pirate-captain.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pirate-ship-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pirate-ship-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pirate-ship.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-planet-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-planet-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-planet.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-polar-bear-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-polar-bear-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-polar-bear.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pool-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pool-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-pool.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-princess-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-princess-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-princess.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pufferfish-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pufferfish-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-pufferfish.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-race-car-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-race-car-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-race-car.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3675,6 +4041,21 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-rainbow-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-rainbow-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-rainbow.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-rake-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-rake-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-rake.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-ant-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-ant-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-ant.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-cherry-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-cherry-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-cherry.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-crab-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-crab-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-crab.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-heart-pickup-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-heart-pickup-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-red-heart-pickup.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-restaurant-table-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-restaurant-table-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-restaurant-table.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3684,27 +4065,54 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-rider-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-rider-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-rider.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-road-sign-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-road-sign-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-road-sign.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-robot-dog-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-robot-dog-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-robot-dog.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-roman-temple-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-roman-temple-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-roman-temple.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-rose-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-rose-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-rose.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ruin-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ruin-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ruin.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sailboat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sailboat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sailboat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-salon-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-salon-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-salon.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-samurai-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-samurai-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-samurai.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sandcastle-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sandcastle-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sandcastle.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-satellite-radar-dish-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-satellite-radar-dish-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-satellite-radar-dish.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-saxophone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-saxophone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-saxophone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-scooter-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-scooter-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-scooter.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-scorpion-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-scorpion-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-scorpion.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-screwdriver-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-screwdriver-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-screwdriver.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-seahorse-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-seahorse-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-seahorse.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sealed-letter-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sealed-letter-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sealed-letter.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sister-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sister-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sister.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3714,6 +4122,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-ski-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ski-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-ski.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-skunk-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-skunk-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-skunk.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-skyscraper-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-skyscraper-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-skyscraper.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3723,15 +4134,33 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-slingshot-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-slingshot-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-slingshot.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sloth-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sloth-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sloth.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-small-songbird-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-small-songbird-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-small-songbird.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-smartphone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-smartphone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-smartphone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-snake-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-snake-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-snake.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-snow-yeti-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-snow-yeti-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-snow-yeti.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-snowman-with-hat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-snowman-with-hat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-snowman-with-hat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soccer-ball-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soccer-ball-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soccer-ball.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soccer-goal-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soccer-goal-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soccer-goal.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-soccer-goalkeeper-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-soccer-goalkeeper-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-soccer-goalkeeper.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soda-can-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soda-can-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-soda-can.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3741,15 +4170,45 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-space-soldier-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-space-soldier-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-space-soldier.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-spider-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-spider-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-spider-web-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-spider-web-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-spider-web.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-spider.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stag-beetle-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stag-beetle-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stag-beetle.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stage-magician-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stage-magician-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stage-magician.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-stair-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-stair-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-stair.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stone-water-well-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stone-water-well-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-stone-water-well.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-strawberry-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-strawberry-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-strawberry.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-street-mailbox-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-street-mailbox-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-street-mailbox.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-student-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-student-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-student.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-suika-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-suika-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-suika.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sumo-wrestler-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sumo-wrestler-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sumo-wrestler.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sunflower-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sunflower-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-sunflower.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-superhero-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-superhero-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-superhero.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-surfboard-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-surfboard-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-surfboard.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
@@ -3759,45 +4218,141 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/gen3d/gen3d-sushi-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sushi-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-sushi.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tambourine-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tambourine-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tambourine.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-teacher-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-teacher-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-teacher.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-teapot-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-teapot-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-teapot.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-teddy-bear-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-teddy-bear-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-teddy-bear.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-telescope-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-telescope-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-telescope.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-television-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-television-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-television.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tennis-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tennis-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tennis.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-termite-hill-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-termite-hill-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-termite-hill.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-thief-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-thief-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-thief.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-throne-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-throne-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-throne.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tiger-standing-cartoon-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tiger-standing-cartoon-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tiger-standing-cartoon.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tornado-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tornado-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tornado.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tortoise-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tortoise-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tortoise.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-toucan-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-toucan-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-toucan.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-traffic-light-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-traffic-light-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-traffic-light.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tram-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tram-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tram.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-trampoline-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-trampoline-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-trampoline.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-treasure-map-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-treasure-map-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-treasure-map.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-treehouse-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-treehouse-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-treehouse.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tropical-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tropical-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tropical.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-trumpet-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-trumpet-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-trumpet.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tuba-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tuba-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-tuba.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tube-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tube-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-tube.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-typewriter-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-typewriter-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-typewriter.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-unicorn-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-unicorn-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-unicorn.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-vending-machine-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-vending-machine-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-vending-machine.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-viking-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-viking-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-viking.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-villain-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-villain-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-villain.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-violin-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-violin-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-violin.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-volcano-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-volcano-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-volcano.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wand-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wand-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wand.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-werewolf-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-werewolf-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-werewolf.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-whale-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-whale-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-whale.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wheelbarrow-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wheelbarrow-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wheelbarrow.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-white-snowball-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-white-snowball-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-white-snowball.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-white-swan-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-white-swan-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-white-swan.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-windmill-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-windmill-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-windmill.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-witch-cauldron-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-witch-cauldron-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-witch-cauldron.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-witch-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-witch-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-witch.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wizard-hat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wizard-hat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wizard-hat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wooden-ark-boat-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wooden-ark-boat-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wooden-ark-boat.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wooden-magic-staff-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wooden-magic-staff-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wooden-magic-staff.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wrapped-candy-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wrapped-candy-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-wrapped-candy.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wrecking-ball-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wrecking-ball-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
 - **public/assets/worldstream/gen3d/gen3d-wrecking-ball.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-xylophone-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-xylophone-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-xylophone.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
+- **public/assets/worldstream/gen3d/gen3d-young-prince-lod0.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-young-prince-lod1.glb** (asset): Model generated locally by ops/gen3d from a sentence noun, approved by human QA, LOD1 by scripts/assets/cc0/normalize.mjs.
+- **public/assets/worldstream/gen3d/gen3d-young-prince.png** (asset): Preview render, contact sheet or provenance table of the generated models, written by scripts/assets/gen3d/promote.mjs.
