@@ -1,0 +1,50 @@
+# Cílená dávka 27. 9. 2026: stavby a předměty, které prozradí místo (porotce poznal prostředí
+# jen v 6 z 24 her), plus běžné herní věci, které katalog nemá. Filtrováno proti katalogu a cache.
+market stall
+fruit stand
+awning
+igloo
+cave entrance
+stalagmite
+hospital bed
+stretcher
+lighthouse
+stone tower
+moon rock
+lunar lander
+mars rover
+satellite dish
+jungle tree
+reed
+cafe table
+coffee cup
+espresso machine
+birthday cake
+party balloon
+gift box
+party hat
+termite mound
+eucalyptus tree
+campfire
+mine cart
+pirate ship
+castle gate
+drawbridge
+haystack
+bus stop
+traffic light
+vending machine
+food truck
+hot dog
+robot dog
+cactus
+surfboard
+sandcastle
+octopus
+treasure map
+wizard hat
+magic wand
+tombstone
+spider web
+throne
+crown

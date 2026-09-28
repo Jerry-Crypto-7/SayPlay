@@ -124,3 +124,35 @@ TRELLIS.2-4B MIT, BiRefNet MIT, DINOv3 image encoder under the DINOv3 License (s
 | `gen3d-screwdriver` | screwdriver | screwdriver, unscrew | 4748 / 2374 |
 | `gen3d-alarm-clock` | alarm clock | alarm clock, waking, clock | 4502 / 2203 |
 | `gen3d-wrecking-ball` | wrecking ball | wrecking ball, wrecking | 4748 / 2374 |
+| `gen3d-market-stall` | market stall | market stall, market, stall, bazaar | 4092 / 2030 |
+| `gen3d-fruit-stand` | fruit stand | fruit stand, greengrocer | 3756 / 2235 |
+| `gen3d-awning` | awning | awning | 4621 / 2303 |
+| `gen3d-cave-entrance` | cave entrance | cave entrance, cave, cavern | 4748 / 2374 |
+| `gen3d-hospital-bed` | hospital bed | hospital bed, hospital, patient | 4069 / 1983 |
+| `gen3d-lighthouse` | lighthouse | lighthouse, coast | 4739 / 2365 |
+| `gen3d-moon-rock` | moon rock | moon rock, moon, lunar | 4748 / 2374 |
+| `gen3d-cafe-table` | cafe table | cafe table, cafe, café | 4748 / 2374 |
+| `gen3d-coffee-cup` | coffee cup | coffee cup | 4340 / 2071 |
+| `gen3d-espresso-machine` | espresso machine | espresso machine, espresso, barista | 4386 / 2192 |
+| `gen3d-birthday-cake` | birthday cake | birthday cake | 4438 / 2209 |
+| `gen3d-party-balloon` | party balloon | party balloon, party | 4748 / 2374 |
+| `gen3d-gift-box` | gift box | gift box | 3611 / 1651 |
+| `gen3d-mine-cart` | mine cart | mine cart, mine | 4527 / 2225 |
+| `gen3d-pirate-ship` | pirate ship | pirate ship, galleon | 4710 / 2252 |
+| `gen3d-drawbridge` | drawbridge | drawbridge, moat | 4655 / 2321 |
+| `gen3d-bus-stop` | bus stop | bus stop | 4694 / 2338 |
+| `gen3d-traffic-light` | traffic light | traffic light, crossroads | 4648 / 2316 |
+| `gen3d-vending-machine` | vending machine | vending machine, vending | 4750 / 2374 |
+| `gen3d-food-truck` | food truck | food truck, street food | 4287 / 2081 |
+| `gen3d-hot-dog` | hot dog | hot dog | 4309 / 2114 |
+| `gen3d-robot-dog` | robot dog | robot dog, robodog | 4271 / 2039 |
+| `gen3d-cactus` | cactus | cactus, desert | 4750 / 2374 |
+| `gen3d-surfboard` | surfboard | surfboard, surf, surfer | 4748 / 2374 |
+| `gen3d-sandcastle` | sandcastle | sandcastle, beach, sand | 4675 / 2302 |
+| `gen3d-octopus` | octopus | octopus | 4451 / 2214 |
+| `gen3d-treasure-map` | treasure map | treasure map, map | 4474 / 2120 |
+| `gen3d-wizard-hat` | wizard hat | wizard hat, witch hat | 4748 / 2374 |
+| `gen3d-magic-wand` | magic wand | magic wand, spell | 4748 / 2374 |
+| `gen3d-spider-web` | spider web | spider web, cobweb, web | 4734 / 2363 |
+| `gen3d-throne` | throne | throne, queen | 4562 / 2261 |
+| `gen3d-crown` | crown | crown, royal | 4649 / 2305 |
