@@ -68,8 +68,8 @@ describe('kulisy z katalogu', () => {
     const ids = new Set(catalog.assets.map((asset) => asset.assetId));
     expect(Object.keys(SCENERY_MODELS).filter((id) => !ids.has(id))).toEqual([]);
     const primitiveOnly = LOOK_IDS.filter((id) => !LOOKS[id].props.some(isSceneryModel));
-    // Sopka stojí na vlastním primitivu `volcano`: katalog kužel sopky nemá.
-    expect(primitiveOnly).toEqual(['volcano']);
+    // Od 28. 9. má i sopka model z gen3d, primitiv `volcano` zůstal vedle něj.
+    expect(primitiveOnly).toEqual([]);
   });
 });
 
