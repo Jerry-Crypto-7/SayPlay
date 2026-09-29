@@ -94,6 +94,14 @@ describe('P32-0 T4 kernel seams', () => {
     expect(!made.ok && made.issues).toEqual([modeNotBuilt(id)]);
   });
 
+  // Revize T4 kolo 2: `chaser` četl `level.bodies[0]` z prázdné úrovně pahýlu → TypeError → 500.
+  // Základ z `escape`: jeho ovládání `chaser` bere, takže doplněk projde čtením a dojde až ke kompilaci.
+  it.each(MODES)('%s: a stub with the chaser addon still refuses cleanly (generator %s)', (_sample, id) => {
+    const spec = read(delegate({ ...compileGenre(SAMPLE.escape as GenreSpec), addons: ['chaser'] } as never, { generator: id }));
+    const made = arcadeWorldOf(spec, 1);
+    expect(!made.ok && made.issues).toEqual([modeNotBuilt(id)]);
+  });
+
   it('the platformer takes feel: 2 through tuning, validated by the platform generator, not by spec.ts', () => {
     const plain = compileGenre(SAMPLE.platformer as GenreSpec);
     const felt = read(delegate(plain, { tuning: { feel: 2 } }));

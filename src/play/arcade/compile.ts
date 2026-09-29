@@ -163,6 +163,8 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult
   const base = { ...plain, controlParams: addonControlParams(plain) } as GameSpecV1;
   // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
   const own = mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
+  // Pahýl módu vrací prázdnou úroveň s issue; doplňky by z ní četly tělo hráče (revize T4 kolo 2).
+  if (own.issues !== undefined && own.issues.length > 0) return { ok: false, issues: own.issues };
   const lives = 'health' in own ? own.health : health;
   const { control, bot, level: baseLevel, rules, issues } = applyAddons(own, { spec, seed, health: lives });
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
