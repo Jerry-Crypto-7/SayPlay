@@ -399,6 +399,23 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
     });
   }, [offline, session, versionId]);
 
+  // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
+  // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness
+  // `scripts/p32/shots.mjs` měří od kliknutí právě k ní – první snímek plátna
+  // ještě neznamená, že hra poslouchá (Rapier, spolknutý první stisk).
+  useEffect(() => {
+    let done = false;
+    return session.subscribe(() => {
+      if (done || !session.humanRun()) return;
+      const first = session.inputs()[0];
+      const stage = shell.current?.querySelector('[data-testid="arcade-stage"]');
+      if (first === undefined || !stage) return;
+      done = true;
+      stage.setAttribute('data-input-tick', String(first.tick));
+      stage.setAttribute('data-input-at', String(Date.now()));
+    });
+  }, [session]);
+
   // Zvuk (P28C T2): efekty pravidel z tiků hráče a skok z rychlosti vzhůru – mimo stav.
   useEffect(() => installSoundControls(), []);
   // Sada upravená místem z věty (P30B T6): bloky, plošiny a hladina pod závodem.
