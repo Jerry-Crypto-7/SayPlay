@@ -301,7 +301,11 @@
   pointer-events: auto;
 }
 
+/* Popisek na podložce: bílý text se stínem na světlém nebi scény nejde přečíst. */
 .play-rail .play-icon-button-caption {
+  padding: 0 var(--p-space-1);
+  border-radius: var(--p-radius-s);
+  background: var(--p-surface-1);
   white-space: nowrap;
 }
 
