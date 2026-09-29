@@ -10,6 +10,10 @@
  * banán) kategorii nemá – kvádr ani kovboj by ji nepředstavovaly poctivě; tu
  * dodá až generování (T13/T15).
  *
+ * Hráče, nepřítele a soupeře vybírá od P32C `heroChoice` z manifestu hrdinů
+ * (`src/play/assets/entries/*`): identita, blízká identita, třída, výchozí
+ * model role – a hlásí, na které úrovni vybral.
+ *
  * Čisté funkce mimo React (P26 T5): tabulka schopností `src/play/capabilities.ts`
  * tvrdí, které popisky vykreslení čte, a test to ověřuje právě tady.
  */
@@ -18,7 +22,12 @@ import catalog from '@/assets/catalog-index.json';
 
 import rigged from '@/assets/rigged.json';
 
+import { BASE_ENTRIES } from '../assets/entries/base';
+import { CATALOG_ENTRIES } from '../assets/entries/catalog';
+import type { AssetEntry } from '../assets/manifest';
 import { controlOf, readsLabel } from '../capabilities';
+import type { GenreId, ModelClass } from '../genre/contract';
+import { GENRE_MODULES } from '../genre/index';
 import type { GameSpecV1 } from '../spec';
 import type { ClipState } from './motion';
 import { OBSTACLE_KINDS } from './pieces/runner';
@@ -101,69 +110,47 @@ function lookup<T>(word: string, index: (form: string) => T | undefined): T | un
   return undefined;
 }
 
+const wordsOf = (label: string): string[] => label.toLowerCase().match(/[a-z][a-z-]*/g) ?? [];
+
 /**
- * Model katalogu (nebo primitiv `bird`), který popisek jmenuje; kategorie jen u postav.
- * Dvojslovný tag vyhrává nad hlavou fráze (P30B T4): „lily pads“ je leknín, ne květ lilie,
- * „tire barrier“ mantinel z pneumatik, ne kamenná zeď.
+ * Model katalogu (nebo primitiv `bird`), který popisek jmenuje tagem; s `near` i náhrada
+ * z `WORD_MODEL`. Dvojslovný tag vyhrává nad hlavou fráze (P30B T4): „lily pads“ je leknín,
+ * ne květ lilie, „tire barrier“ mantinel z pneumatik, ne kamenná zeď.
  */
-export function modelOf(label: string, character: boolean): string | undefined {
-  const words = label.toLowerCase().match(/[a-z][a-z-]*/g) ?? [];
+function tagModel(label: string, near: boolean): string | undefined {
+  const words = wordsOf(label);
   for (let index = words.length - 1; index >= 0; index -= 1) {
     const word = words[index] as string;
     const before = words[index - 1];
     const pair = before === undefined ? undefined : lookup(word, (form) => BY_TAG.get(`${before} ${form}`) ?? BY_TAG.get(`${before}-${form}`));
-    const found = pair ?? lookup(word, (form) => WORD_SENSE[form] ?? BY_TAG.get(form) ?? WORD_MODEL[form]);
+    const found = pair ?? lookup(word, (form) => WORD_SENSE[form] ?? BY_TAG.get(form) ?? (near ? WORD_MODEL[form] : undefined));
     if (found !== undefined) return found;
   }
-  if (!character) return undefined;
-  for (const word of [...words].reverse()) {
+  return undefined;
+}
+
+/** Nejbližší model ze `WORD_MODEL` pro první slovo odzadu, které tam je. */
+function nearModel(label: string): string | undefined {
+  for (const word of wordsOf(label).reverse()) {
+    const found = lookup(word, (form) => WORD_MODEL[form]);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/** Zástupce kategorie postavy (zvíře, člověk, stroj) pro první slovo odzadu, které nějakou má. */
+function categoryModel(label: string): string | undefined {
+  for (const word of wordsOf(label).reverse()) {
     const found = lookup(word, (form) => CATEGORY_OF.get(form));
     if (found !== undefined) return found;
   }
   return undefined;
 }
 
-/** Vozidla, která závod umí nést; jiný popisek řídí auto. Katalogová (P30B T3): „scooter“, „canoe“ a „tractor“ už nejedou jako auto. */
-const VEHICLES: ReadonlySet<string> = new Set([
-  'race-car',
-  'rival-car',
-  'plane',
-  'rocket',
-  'rowing-boat',
-  'shopping-cart',
-  'drone',
-  'gen3d-scooter',
-  'gen3d-motorbike',
-  'gen3d-ride',
-  'gen3d-race-car',
-  'gen3d-raft',
-  'gen3d-wooden-ark-boat',
-  'gen3d-skateboard',
-  'cc0-ambulance',
-  'cc0-boat-row',
-  'cc0-bus',
-  'cc0-canoe',
-  'cc0-car-hatchback',
-  'cc0-car-police',
-  'cc0-car-sedan',
-  'cc0-car-stationwagon',
-  'cc0-car-taxi',
-  'cc0-craft-racer',
-  'cc0-delivery',
-  'cc0-enemy-ufo',
-  'cc0-firetruck',
-  'cc0-garbage-truck',
-  'cc0-hatchback-sports',
-  'cc0-kart-oobi',
-  'cc0-kart-oodi',
-  'cc0-race',
-  'cc0-school-bus',
-  'cc0-sled',
-  'cc0-tank',
-  'cc0-tractor',
-  'cc0-train',
-  'cc0-van',
-]);
+/** Model katalogu (nebo primitiv `bird`), který popisek jmenuje; kategorie jen u postav. */
+export function modelOf(label: string, character: boolean): string | undefined {
+  return tagModel(label, true) ?? (character ? categoryModel(label) : undefined);
+}
 
 /** Kolikrát výšky těla smí postava sahat do šířky nebo hloubky, než se zmenší. */
 const CHARACTER_REACH = 1.5;
@@ -181,24 +168,19 @@ export function fitScale(model: { x: number; y: number; z: number }, body: { x: 
   return scale || 1;
 }
 
-/** Hrdina z popisku hráče: riggovaná postava, pak katalog; bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
+/** Hrdina z popisku hráče (`heroChoice`); bez shody ptáček u poletování, auto v závodě, jinak `explorer`. */
 export function heroModel(spec: GameSpecV1): string {
-  const label = spec.roles.find((role) => role.kind === 'player')?.label ?? '';
-  const found = modelOf(label, spec.control !== 'steer');
-  if (spec.control === 'steer') return found !== undefined && VEHICLES.has(found) ? found : 'race-car';
-  return riggedModelOf(label) ?? found ?? (spec.control === 'flap' ? 'bird' : 'explorer');
+  return heroChoice(spec.roles.find((role) => role.kind === 'player')?.label ?? '', spec.genre?.id, spec.control).model;
 }
 
-/** Nepřátelé střelnice: riggovaná postava nebo model z popisku role `enemy`, jinak robot. */
+/** Nepřátelé střelnice: model z popisku role `enemy` (`heroChoice`), jinak robot. */
 export function enemyModel(spec: GameSpecV1): string {
-  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? '';
-  return riggedModelOf(label) ?? modelOf(label, true) ?? 'robot';
+  return heroChoice(spec.roles.find((role) => role.id === 'enemy')?.label ?? '', undefined, spec.control, 'enemy').model;
 }
 
 /** Pronásledovatel doplňku `+chaser` (P26D): model z popisku role druhu `chaser` („bear“), jinak jako nepřítel. */
 export function chaserModel(spec: GameSpecV1): string {
-  const label = spec.roles.find((role) => role.kind === 'chaser')?.label ?? '';
-  return riggedModelOf(label) ?? modelOf(label, true) ?? enemyModel(spec);
+  return choose(spec.roles.find((role) => role.kind === 'chaser')?.label ?? '', ANY, { withClass: true })?.model ?? enemyModel(spec);
 }
 
 /**
@@ -222,13 +204,9 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   block: ['wood-block'],
 };
 
-/** Model soupeře: riggovaná postava nebo přímá shoda s katalogem; v závodě jen vozidlo. */
+/** Model soupeře: přesná nebo blízká identita, žádná třída; v závodě jen vozidlo, loď nebo letadlo. */
 function rivalModel(label: string, control: string): string | undefined {
-  if (control === 'steer') {
-    const found = modelOf(label, false);
-    return found !== undefined && VEHICLES.has(found) ? found : undefined;
-  }
-  return riggedModelOf(label) ?? modelOf(label, false);
+  return choose(label, control === 'steer' ? { identity: rides, rest: rides } : ANY, { withClass: false })?.model;
 }
 
 /**
@@ -256,15 +234,145 @@ export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> 
 /** Id modelu riggované postavy s klipy (`src/assets/rigged.json`, P26B) nese tuhle předponu, ať se nesrazí s katalogem. */
 export const RIGGED_PREFIX = 'rigged:';
 
+/** Stav, na který model klip nemá (manifest, `src/play/assets/manifest.ts`): pohyb dopočítá kód. */
+export const PROCEDURAL_CLIP = 'procedural';
+
+/** Jak blízko má model k popisku (P32C T2) – pro panel čtení. */
+export type ChoiceLevel = 'identity' | 'near' | 'class' | 'fallback';
+
+export interface ModelChoice {
+  /** Id modelu scény: `rigged:` + postava s klipy, jinak id katalogu nebo primitiv. */
+  readonly model: string;
+  readonly level: ChoiceLevel;
+  /** Záznam manifestu; věc mimo manifest (ponožka) a primitiv `bird` ho nemají. */
+  readonly entry: AssetEntry | undefined;
+}
+
+/** Manifest hrdinů (P32C): riggované postavy a tučňák napřed, pak modely katalogu. */
+const MANIFEST: readonly AssetEntry[] = [...BASE_ENTRIES, ...CATALOG_ENTRIES];
+
+const animated = (entry: AssetEntry): boolean => Object.values(entry.clips).some((clip) => clip !== PROCEDURAL_CLIP);
+
+/** Model s klipy kreslí `RiggedModel` (předpona), statický `FittedModel` podle id katalogu. */
+const sceneId = (entry: AssetEntry): string => (animated(entry) ? `${RIGGED_PREFIX}${entry.id}` : entry.id);
+
+const bareId = (id: string): string => id.replace(/^(cc0|gen3d)-/, '');
+
+/** Slovo identity nebo holé id („rival-car“) → záznamy v pořadí manifestu. */
+const BY_IDENTITY: ReadonlyMap<string, readonly AssetEntry[]> = (() => {
+  const index = new Map<string, AssetEntry[]>();
+  for (const entry of MANIFEST) {
+    for (const word of new Set([...entry.identity, bareId(entry.id)])) index.set(word, [...(index.get(word) ?? []), entry]);
+  }
+  return index;
+})();
+
+const ENTRY_OF_MODEL: ReadonlyMap<string, AssetEntry> = new Map(MANIFEST.map((entry) => [sceneId(entry), entry]));
+
+/** Třída modelu scény; věc mimo manifest je rekvizita, primitiv `bird` pták. */
+const classOfModel = (model: string): ModelClass => ENTRY_OF_MODEL.get(model)?.class ?? (model === 'bird' ? 'bird' : 'prop');
+
+/** Co závod unese bez žánru: hráč jede, tělo jádra je vozidlo. */
+const RIDE: ReadonlySet<ModelClass> = new Set(['vehicle', 'boat', 'aircraft']);
+const rides = (kind: ModelClass): boolean => RIDE.has(kind);
+
+interface Bounds {
+  /** Třídy, které smí vybrat přesná identita. */
+  readonly identity: (kind: ModelClass) => boolean;
+  /** Třídy pro blízkou identitu, jízdu z přívlastku a třídu. */
+  readonly rest: (kind: ModelClass) => boolean;
+}
+
+const ANY: Bounds = { identity: () => true, rest: () => true };
+
+/**
+ * Záznam manifestu, který popisek jmenuje. Čte se od hlavy fráze jako `modelOf`
+ * a dvojslovo („polar bear“) vyhrává nad hlavou. Když slovo nese víc záznamů,
+ * rozhodne, kolik dalších slov popisku znají („skeleton warriors“ → kostlivec),
+ * pak klipy (postava, která se hýbe), pak holé id („robot“ je robot, ne vysavač).
+ * Slovo, jehož záznamy hranice nepustí, hledání ukončí – přívlastek před ním
+ * hlavu nepřebije.
+ */
+function identityEntry(label: string, fits: (kind: ModelClass) => boolean): AssetEntry | undefined {
+  const words = wordsOf(label);
+  const said = new Set(words.flatMap((word) => [word, ...singulars(word)]));
+  for (let index = words.length - 1; index >= 0; index -= 1) {
+    const word = words[index] as string;
+    const before = words[index - 1];
+    const found = (before === undefined ? undefined : lookup(word, (form) => BY_IDENTITY.get(`${before}-${form}`))) ?? lookup(word, (form) => BY_IDENTITY.get(form));
+    if (found === undefined) continue;
+    const own = new Set([word, ...singulars(word)]);
+    const score = (entry: AssetEntry): number => 4 * entry.identity.filter((tag) => said.has(tag)).length + (animated(entry) ? 2 : 0) + (own.has(bareId(entry.id)) ? 1 : 0);
+    const pool = found.filter((entry) => fits(entry.class));
+    return pool.length === 0 ? undefined : pool.reduce((top, entry) => (score(entry) > score(top) ? entry : top));
+  }
+  return undefined;
+}
+
+/** Jízda, kterou popisek jmenuje přívlastkem jejího dvojslova: „pirate“ → „pirate ship“. */
+function rideOf(label: string, fits: (kind: ModelClass) => boolean): AssetEntry | undefined {
+  for (const word of wordsOf(label).reverse()) {
+    const forms = new Set([word, ...singulars(word)]);
+    const found = MANIFEST.find((entry) => fits(entry.class) && entry.identity.some((tag) => tag.includes('-') && tag.split('-').some((part) => forms.has(part))));
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/**
+ * Model z popisku v pořadí věrnosti: přesná identita z manifestu nebo věc
+ * z katalogu, blízká identita (`WORD_MODEL`), v závodě jízda z přívlastku,
+ * zástupce třídy a nakonec výchozí model role.
+ */
+function choose(label: string, bounds: Bounds, options: { readonly withClass: boolean; readonly ride?: boolean; readonly fallback?: string }): ModelChoice | undefined {
+  const pick = (model: string | undefined, level: ChoiceLevel, fits: (kind: ModelClass) => boolean): ModelChoice | undefined =>
+    model !== undefined && fits(classOfModel(model)) ? { model, level, entry: ENTRY_OF_MODEL.get(model) } : undefined;
+  const named = identityEntry(label, bounds.identity);
+  const ride = options.ride === true ? rideOf(label, bounds.rest) : undefined;
+  return (
+    (named === undefined ? undefined : { model: sceneId(named), level: 'identity', entry: named }) ??
+    pick(tagModel(label, false), 'identity', bounds.identity) ??
+    pick(nearModel(label), 'near', bounds.rest) ??
+    (ride === undefined ? undefined : { model: sceneId(ride), level: 'near', entry: ride }) ??
+    (options.withClass ? pick(categoryModel(label), 'class', bounds.rest) : undefined) ??
+    (options.fallback === undefined ? undefined : { model: options.fallback, level: 'fallback', entry: ENTRY_OF_MODEL.get(options.fallback) })
+  );
+}
+
+/**
+ * Model pro hráče nebo nepřítele z popisku role (P32C T2). Přesná identita
+ * vyhrává i nad žánrem (ponožka z věty je hrdina i v běžci); žánr omezuje jen
+ * blízkou identitu a třídu na `heroClasses`. Závod bere jen to, co žánr za
+ * hrdinu pustí, a bez žánru jen vozidlo, loď nebo letadlo – pirát nejede autem.
+ */
+export function heroChoice(label: string, genre: GenreId | undefined, control: string | undefined, role: 'player' | 'enemy' = 'player'): ModelChoice {
+  if (role === 'enemy') return choose(label, ANY, { withClass: true, fallback: 'robot' }) as ModelChoice;
+  const classes: ReadonlySet<ModelClass> | undefined = genre === undefined ? undefined : new Set(GENRE_MODULES[genre].heroClasses);
+  const allowed = (kind: ModelClass): boolean => classes === undefined || classes.has(kind);
+  const steer = control === 'steer';
+  const bounds: Bounds = steer ? { identity: classes === undefined ? rides : allowed, rest: classes === undefined ? rides : allowed } : { identity: () => true, rest: allowed };
+  const fallback = steer ? 'race-car' : control === 'flap' ? 'bird' : 'explorer';
+  return choose(label, bounds, { withClass: true, ride: steer, fallback }) as ModelChoice;
+}
+
 export interface RiggedCharacter {
   readonly id: string;
   readonly path: string;
   readonly tags: readonly string[];
-  /** Stav hry → jméno klipu v GLB; `idle` a `run` jsou vždy. */
+  /** Stav hry → jméno klipu v GLB z manifestu; `procedural` = klip chybí, pohyb dopočítá `RiggedModel`. */
   readonly clips: Partial<Record<ClipState, string>>;
 }
 
-const RIGGED: ReadonlyMap<string, RiggedCharacter> = new Map(rigged.characters.map((character) => [character.id, character]));
+/** Klip střelby manifest nezná (stavy `CLIP_STATES` v `assets/manifest.ts`); bere se z `rigged.json`. */
+const SHOOT_CLIP: ReadonlyMap<string, string | undefined> = new Map(rigged.characters.map((character) => [character.id, (character.clips as Partial<Record<ClipState, string>>).shoot]));
+
+/** Postavy s klipy: každý záznam manifestu, který aspoň jeden klip má. */
+const RIGGED: ReadonlyMap<string, RiggedCharacter> = new Map(
+  MANIFEST.filter(animated).map((entry) => {
+    const shoot = SHOOT_CLIP.get(entry.id);
+    return [entry.id, { id: entry.id, path: entry.file, tags: entry.identity, clips: { ...entry.clips, ...(shoot === undefined ? {} : { shoot }) } }];
+  }),
+);
 
 /** Tag → riggované postavy, které ho nesou (v pořadí manifestu). */
 const RIGGED_BY_TAG: ReadonlyMap<string, readonly (typeof rigged.characters)[number][]> = (() => {

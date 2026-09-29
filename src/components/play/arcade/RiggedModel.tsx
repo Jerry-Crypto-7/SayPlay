@@ -5,17 +5,18 @@
  * `SkeletonUtils.clone` – `clone(true)` by nechal skin ukazovat na kosti
  * originálu a všechny kopie by se hýbaly jako jedna. `AnimationMixer` běží
  * v `useFrame`, mimo hashovaný stav; klip volí scéna funkcí `clipOf` ze stavu
- * těla a tady se jen prolne. Stav, který postava klip nemá (hit u Kenney),
- * hraje nejbližší náhradu.
+ * těla a tady se jen prolne. Klipy mapuje manifest (P32C T2); stav, na který
+ * postava klip nemá (`procedural`, hit u Kenney), hraje nejbližší náhradu
+ * a pohyb stavu (poskok, zásah, pád) k ní dopočítá `proceduralPose`.
  */
 
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type AnimationAction, AnimationMixer, LoopOnce, type Object3D } from 'three';
+import { type AnimationAction, AnimationMixer, type Group, LoopOnce, type Object3D } from 'three';
 import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
-import type { RiggedCharacter } from '@/play/arcade/models';
+import { PROCEDURAL_CLIP, type RiggedCharacter } from '@/play/arcade/models';
 import type { ClipState } from '@/play/arcade/motion';
 
 /** Výška postavy v GLB – `scripts/assets/rigged/build.mjs` ji tak normalizuje. */
@@ -35,6 +36,17 @@ const FALLBACK: Readonly<Record<ClipState, readonly ClipState[]>> = {
   hit: ['hit', 'idle'],
   die: ['die', 'idle'],
 };
+
+/**
+ * Pohyb stavu bez klipu, přičtený k postavě (`since` = sekundy ve stavu, `h` výška těla):
+ * běh poskakuje, skok se natáhne, zásah cukne dozadu, smrt postavu položí. Klid nic nepřidá.
+ */
+export function proceduralPose(group: Group, state: ClipState | null, since: number, h: number): void {
+  group.position.y = state === 'run' ? h * 0.05 * Math.abs(Math.sin(since * 12)) : 0;
+  group.rotation.x = state === 'hit' ? -0.35 * Math.max(0, 1 - since / 0.3) : state === 'die' ? -(Math.PI / 2) * Math.min(1, since / 0.4) : 0;
+  const stretch = state === 'jump' ? 0.08 : 0;
+  group.scale.set(1 - stretch / 2, 1 + stretch, 1 - stretch / 2);
+}
 
 const cache = new Map<string, Promise<GLTF | null>>();
 
@@ -86,6 +98,7 @@ export function RiggedModel({
     const mixer = new AnimationMixer(scene);
     const actions = new Map<ClipState, AnimationAction>();
     for (const [state, name] of Object.entries(character.clips) as [ClipState, string][]) {
+      if (name === PROCEDURAL_CLIP) continue;
       const source = gltf.animations.find((animation) => animation.name === name);
       if (source === undefined) continue;
       const action = mixer.clipAction(source);
@@ -109,9 +122,16 @@ export function RiggedModel({
   );
 
   const playing = useRef<ClipState | null>(null);
+  const holder = useRef<Group>(null);
+  /** Stav těla a jak dlouho v něm je – pro pohyb stavu, na který postava klip nemá. */
+  const held = useRef<{ state: ClipState; since: number } | null>(null);
   useFrame((_, delta) => {
     if (rig === null) return;
-    const wanted = FALLBACK[clip()].find((state) => rig.actions.has(state)) ?? 'idle';
+    const now = clip();
+    const step = Math.min(delta, MAX_MIXER_STEP_S);
+    held.current = held.current?.state === now ? { state: now, since: held.current.since + step } : { state: now, since: 0 };
+    if (holder.current !== null) proceduralPose(holder.current, rig.actions.has(now) ? null : now, held.current.since, h);
+    const wanted = FALLBACK[now].find((candidate) => rig.actions.has(candidate)) ?? 'idle';
     if (wanted !== playing.current) {
       const next = rig.actions.get(wanted);
       const before = playing.current === null ? undefined : rig.actions.get(playing.current);
@@ -124,10 +144,16 @@ export function RiggedModel({
     }
     // Pauza a konec běhu kreslí na požádání (P28E T2): první snímek po nich nese celou
     // dobu stání a animace by přes ni skočila. Stání se nepřehrává.
-    rig.mixer.update(Math.min(delta, MAX_MIXER_STEP_S));
+    rig.mixer.update(step);
   });
 
-  if (rig !== null) return <primitive object={rig.scene} scale={h / RIGGED_HEIGHT_M} />;
+  if (rig !== null) {
+    return (
+      <group ref={holder}>
+        <primitive object={rig.scene} scale={h / RIGGED_HEIGHT_M} />
+      </group>
+    );
+  }
   return (
     <mesh position={[0, h / 2, 0]}>
       <boxGeometry args={[h * 0.4, h, h * 0.4]} />
