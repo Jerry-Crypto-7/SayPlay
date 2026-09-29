@@ -866,7 +866,7 @@ describe('5. secret se nedostane do klientského bundlu', () => {
     for (const path of readers) expect(path.startsWith('src/server/'), path).toBe(true);
   });
 
-  it('kořenový next.config.mjs vpisuje do bundlu jen jednu povolenou proměnnou', async () => {
+  it('kořenový next.config.mjs vpisuje do bundlu jen povolené proměnné', async () => {
     // **Prefix `NEXT_PUBLIC_` tady není potřeba, a to je celý ten nález.**
     // Blok `env:` vpisuje hodnotu do každého klientského chunku pod jménem, jaké
     // se mu napíše, takže `env: { WORLDSMITH_MODEL_KEY: … }` je únik, který
@@ -885,7 +885,8 @@ describe('5. secret se nedostane do klientského bundlu', () => {
     const configUrl = new URL('../../../next.config.mjs', import.meta.url).href;
     const loaded = (await import(configUrl)) as { readonly default: { readonly env?: Record<string, string> } };
 
-    expect(Object.keys(loaded.default.env ?? {})).toEqual(['WORLDSMITH_BUILD_TREE']);
+    // `PLAY_MUSIC` je přepínač hudby her (P29D T5), hodnota `on`/`off`, ne secret.
+    expect(Object.keys(loaded.default.env ?? {})).toEqual(['WORLDSMITH_BUILD_TREE', 'PLAY_MUSIC']);
   });
 
   it('hermetický build klíč vůbec nevidí — není na allowlistu', () => {
