@@ -108,6 +108,18 @@ export const ESCAPE = {
   chaserHeight: 1400,
   /** Rychlost pronásledovatele za tik – vždy pod hráčovou (`ARENA.speed`), jinak z něj nejde utéct. */
   chaserSpeed: { min: 50, max: 90, default: 70 },
+  /**
+   * Řízení (T2): předvídání nejvýš `lead` tiků, zrychlení za tik a osu (zatáčka
+   * tedy trvá – hráč může kličkovat), sondy dopředu a odstup od ostatních.
+   */
+  lead: ARCADE_HZ / 2,
+  chaserAccel: 6,
+  probes: [UNIT, 2 * UNIT] as readonly number[],
+  /** Kolik směrů po 11,25° na každou stranu sonda zkusí, než to vzdá. */
+  probeTurns: 12,
+  /** Odstup: od bližšího než `separation` tlačí až `separationPush` (tah za hráčem má 1000) – při dotyku převáží. */
+  separation: 3 * UNIT,
+  separationPush: 4000,
   itemSize: 500,
   /** Věc leží aspoň tak daleko od startu hráče, od místa pronásledovatele, od jiné věci a od stěny. */
   itemClearance: { start: 2 * UNIT, chaser: 5 * UNIT, item: 2 * UNIT, wall: UNIT },
@@ -178,7 +190,13 @@ const toward = (value: number, target: number, step: number): number => (value <
 // ---------------------------------------------------------------------------
 // Ovládání
 
-export const chaseParams = z.object({ speed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max) }).strict();
+export const chaseParams = z
+  .object({
+    speed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max),
+    /** Horizont předvídání v ticích: míří tam, kde hráč bude, nejvýš tak daleko dopředu. */
+    lead: z.int().min(0).max(2 * ARCADE_HZ),
+  })
+  .strict();
 export type ChaseParams = z.infer<typeof chaseParams>;
 
 const controlParams = z
@@ -236,10 +254,58 @@ function moveCells(state: Int32Array, player: number, half: number): void {
   }
 }
 
+/** Celočíselná délka vektoru (`Math.sqrt` je v IEEE 754 přesně zaokrouhlená – všude stejné číslo). */
+const length = (dx: number, dz: number): number => Math.floor(Math.sqrt(dx * dx + dz * dz));
+
+/** Pevná tělesa, kterým se pronásledovatel vyhne: `[x, z, w, d]` po čtveřicích. */
+function solidsOf(state: Int32Array, count: number): number[] {
+  const solids: number[] = [];
+  for (let i = 0; i < count; i += 1) {
+    const base = bodyBase(i);
+    if (((state[base + BODY.flags] as number) & (FLAG.alive | FLAG.solid)) !== (FLAG.alive | FLAG.solid)) continue;
+    solids.push(state[base + BODY.x] as number, state[base + BODY.z] as number, state[base + BODY.w] as number, state[base + BODY.d] as number);
+  }
+  return solids;
+}
+
+/** Stojí by tělo `w × d` se středem `(x, z)` ve stěně arény nebo v pevném tělese? */
+function blocked(x: number, zz: number, w: number, d: number, half: number, solids: readonly number[]): boolean {
+  if (Math.abs(x) * 2 + w > half * 2 || Math.abs(zz) * 2 + d > half * 2) return true;
+  for (let k = 0; k < solids.length; k += 4) {
+    if (Math.abs(x - solids[k]!) * 2 < w + solids[k + 2]! && Math.abs(zz - solids[k + 1]!) * 2 < d + solids[k + 3]!) return true;
+  }
+  return false;
+}
+
 /**
- * Pronásledovatelé útěku (P32E T1): v ochraně stojí a ovládání ji odpočítá,
- * pak jdou přímo na hráče (T2 je naučí předvídat a obcházet). Stěna arény je
- * nepustí ven stejně jako buňky agaru.
+ * Sondy dopředu: směr nejblíž chtěnému, ve kterém obě sondy leží volně. Když
+ * tělo už zatáčí na jednu stranu (rychlost je jediná paměť řízení), prohledá
+ * napřed celou tu stranu – podél stěny tak jede jedním směrem a v kapse
+ * nekmitá. Z klidu vyhraje strana s menší zatáčkou. Všechno zavřené → chtěný směr.
+ */
+function probeDirection(direction: number, x: number, zz: number, w: number, d: number, vx: number, vz: number, half: number, solids: readonly number[]): number {
+  const free = (k: number): boolean => ESCAPE.probes.every((reach) => !blocked(x + Math.trunc((DIRECTIONS[k]!.dx * reach) / 1000), zz + Math.trunc((DIRECTIONS[k]!.dz * reach) / 1000), w, d, half, solids));
+  if (free(direction)) return direction;
+  const want = DIRECTIONS[direction]!;
+  const cross = vx * want.dz - vz * want.dx;
+  const turned = (s: number, turn: number): number => (((direction + s * turn) % 32) + 32) % 32;
+  const sides = cross === 0 ? [] : [cross < 0 ? -1 : 1];
+  for (const s of sides) {
+    for (let turn = 1; turn <= ESCAPE.probeTurns; turn += 1) if (free(turned(s, turn))) return turned(s, turn);
+  }
+  for (let turn = 1; turn <= ESCAPE.probeTurns; turn += 1) {
+    for (const s of [1, -1]) if (free(turned(s, turn))) return turned(s, turn);
+  }
+  return direction;
+}
+
+/**
+ * Pronásledovatelé útěku (P32E T1–T2): v ochraně stojí a ovládání ji odpočítá.
+ * Pak celočíselné řízení: míří tam, kde hráč bude (nejvýš `lead` tiků dopředu),
+ * odstupují od ostatních pronásledovatelů, sondami obcházejí stěny a pevná
+ * tělesa a rychlost mění nejvýš o `chaserAccel` za tik a osu. Stav řízení je jen
+ * rychlost těla – nic mimo snímek. Do stěny ani do tělesa nevjedou nikdy: složka
+ * rychlosti, která by je tam zanesla, se vynuluje (klouzání podél).
  */
 function steerChasers(state: Int32Array, player: number, half: number, chase: ChaseParams): void {
   const at = HEADER.counters + COUNTER[GRACE_COUNTER];
@@ -247,9 +313,16 @@ function steerChasers(state: Int32Array, player: number, half: number, chase: Ch
   if (grace > 0) state[at] = grace - 1;
   const count = state[HEADER.bodyCount] as number;
   const p = bodyBase(player);
+  const px = state[p + BODY.x] as number;
+  const pz = state[p + BODY.z] as number;
+  const chasers: number[] = [];
   for (let i = 0; i < count; i += 1) {
     const base = bodyBase(i);
-    if (state[base + BODY.role] !== ROLE.chaser || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    if (state[base + BODY.role] === ROLE.chaser && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0) chasers.push(i);
+  }
+  const solids = grace > 0 || chasers.length === 0 ? [] : solidsOf(state, count);
+  for (const i of chasers) {
+    const base = bodyBase(i);
     if (grace > 0) {
       state[base + BODY.vx] = 0;
       state[base + BODY.vz] = 0;
@@ -257,11 +330,54 @@ function steerChasers(state: Int32Array, player: number, half: number, chase: Ch
     }
     const x = state[base + BODY.x] as number;
     const zz = state[base + BODY.z] as number;
-    const direction = directionToward((state[p + BODY.x] as number) - x, (state[p + BODY.z] as number) - zz);
+    const w = state[base + BODY.w] as number;
+    const d = state[base + BODY.d] as number;
+    const vx = state[base + BODY.vx] as number;
+    const vz = state[base + BODY.vz] as number;
+    // Předvídání: kam hráč dojde, než k němu pronásledovatel doběhne.
+    const ahead = Math.min(chase.lead, Math.floor(length(px - x, pz - zz) / chase.speed));
+    const wx = px + (state[p + BODY.vx] as number) * ahead - x;
+    const wz = pz + (state[p + BODY.vz] as number) * ahead - zz;
+    const aim = Math.max(1, length(wx, wz));
+    let sx = Math.trunc((wx * 1000) / aim);
+    let sz = Math.trunc((wz * 1000) / aim);
+    // Odstup: od každého bližšího než `separation` tím silněji, čím je blíž.
+    for (const j of chasers) {
+      if (j === i) continue;
+      const other = bodyBase(j);
+      const ox = x - (state[other + BODY.x] as number);
+      const oz = zz - (state[other + BODY.z] as number);
+      const gap = length(ox, oz);
+      if (gap >= ESCAPE.separation) continue;
+      const push = Math.trunc(((ESCAPE.separation - gap) * ESCAPE.separationPush) / ESCAPE.separation);
+      // Na stejném místě rozhodne pořadí těl, ať se rozejdou na opačné strany.
+      if (gap === 0) sx += j < i ? push : -push;
+      else {
+        sx += Math.trunc((ox * push) / gap);
+        sz += Math.trunc((oz * push) / gap);
+      }
+    }
+    const want = directionToward(sx, sz);
+    const direction = want < 0 ? -1 : probeDirection(want, x, zz, w, d, vx, vz, half, solids);
     const dir = direction < 0 ? { dx: 0, dz: 0 } : DIRECTIONS[direction]!;
-    const size = state[base + BODY.w] as number;
-    state[base + BODY.vx] = bounce(x, Math.trunc((dir.dx * chase.speed) / 1000), size, half);
-    state[base + BODY.vz] = bounce(zz, Math.trunc((dir.dz * chase.speed) / 1000), size, half);
+    let nvx = toward(vx, Math.trunc((dir.dx * chase.speed) / 1000), ESCAPE.chaserAccel);
+    let nvz = toward(vz, Math.trunc((dir.dz * chase.speed) / 1000), ESCAPE.chaserAccel);
+    // Zrychlení po osách by v zatáčce přetáhlo rychlost přes strop – zkrátit na `speed` (délka zaokrouhlená nahoru).
+    const over = Math.ceil(Math.sqrt(nvx * nvx + nvz * nvz));
+    if (over > chase.speed) {
+      nvx = Math.trunc((nvx * chase.speed) / over);
+      nvz = Math.trunc((nvz * chase.speed) / over);
+    }
+    if (blocked(x + nvx, zz + nvz, w, d, half, solids)) {
+      if (!blocked(x + nvx, zz, w, d, half, solids)) nvz = 0;
+      else if (!blocked(x, zz + nvz, w, d, half, solids)) nvx = 0;
+      else {
+        nvx = 0;
+        nvz = 0;
+      }
+    }
+    state[base + BODY.vx] = nvx;
+    state[base + BODY.vz] = nvz;
   }
 }
 
@@ -696,7 +812,7 @@ export const arenaEscape: ModeGeneratorPiece<EscapeParams> = {
   generate: (seed, params) => openArena(seed, params.chasers, params.chaserSpeed, params.items),
   parts: (seed, params, health) => {
     const level = arenaEscape.generate(seed, params);
-    const chase = { speed: params.chaserSpeed };
+    const chase: ChaseParams = { speed: params.chaserSpeed, lead: ESCAPE.lead };
     const rules: PieceRef[] = [
       { id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage', grace: ESCAPE.graceTicks } },
       params.items > 0 ? { id: 'grow_to', params: { points: params.items, wake: true } } : { id: 'survive_time', params: { seconds: params.seconds, wake: true } },
