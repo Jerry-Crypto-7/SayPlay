@@ -74,8 +74,7 @@
       "id": "pet-polar-bear",
       "name": "Cube Polar Bear",
       "tags": [
-        "polar-bear",
-        "bear"
+        "polar-bear"
       ],
       "path": "/assets/worldstream/rigged/pet-polar-bear.glb",
       "clips": {

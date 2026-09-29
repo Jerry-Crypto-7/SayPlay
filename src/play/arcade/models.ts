@@ -24,6 +24,7 @@ import rigged from '@/assets/rigged.json';
 
 import { BASE_ENTRIES } from '../assets/entries/base';
 import { CATALOG_ENTRIES } from '../assets/entries/catalog';
+import { RIGGED_P32_ENTRIES } from '../assets/entries/rigged-p32';
 import type { AssetEntry } from '../assets/manifest';
 import { controlOf, readsLabel } from '../capabilities';
 import type { GenreId, ModelClass } from '../genre/contract';
@@ -248,8 +249,8 @@ export interface ModelChoice {
   readonly entry: AssetEntry | undefined;
 }
 
-/** Manifest hrdinů (P32C): riggované postavy a tučňák napřed, pak modely katalogu. */
-const MANIFEST: readonly AssetEntry[] = [...BASE_ENTRIES, ...CATALOG_ENTRIES];
+/** Manifest hrdinů (P32C): riggované postavy a tučňák napřed, animovaní hrdinové vět P32, pak modely katalogu. */
+const MANIFEST: readonly AssetEntry[] = [...BASE_ENTRIES, ...RIGGED_P32_ENTRIES, ...CATALOG_ENTRIES];
 
 const animated = (entry: AssetEntry): boolean => Object.values(entry.clips).some((clip) => clip !== PROCEDURAL_CLIP);
 
@@ -378,33 +379,16 @@ const RIGGED: ReadonlyMap<string, RiggedCharacter> = new Map(
   }),
 );
 
-/** Tag → riggované postavy, které ho nesou (v pořadí manifestu). */
-const RIGGED_BY_TAG: ReadonlyMap<string, readonly (typeof rigged.characters)[number][]> = (() => {
-  const index = new Map<string, (typeof rigged.characters)[number][]>();
-  for (const character of rigged.characters) for (const tag of character.tags) index.set(tag, [...(index.get(tag) ?? []), character]);
-  return index;
-})();
-
 /**
- * Riggovaná postava, kterou popisek jmenuje (P26B T6). Čte se od hlavy fráze
- * jako `modelOf`: první slovo odzadu, které zná postava, vyhrává; slovo, které
- * zná jen katalog („cat runner“ → kočka), výběr ukončí – postava s klipy
- * nesmí přebít zvíře nebo věc z věty. Když hlavu nese víc postav („warriors“),
- * rozhodnou ostatní slova („skeleton warriors“ → kostlivec).
+ * Postava s klipy, kterou popisek jmenuje (P26B T6; od P32C T4 z manifestu
+ * stejně jako `heroChoice`, i s postavami `rigged-p32.json`). Čte se od hlavy
+ * fráze: slovo, které jmenuje jen model bez klipů („cat runner“ před T4),
+ * dá `undefined`; když hlavu nese víc postav („warriors“), rozhodnou ostatní
+ * slova („skeleton warriors“ → kostlivec).
  */
 export function riggedModelOf(label: string): string | undefined {
-  const words = label.toLowerCase().match(/[a-z][a-z-]*/g) ?? [];
-  const forms = new Set(words.flatMap((word) => [word, ...singulars(word)]));
-  for (const word of [...words].reverse()) {
-    const candidates = lookup(word, (form) => RIGGED_BY_TAG.get(form));
-    if (candidates !== undefined) {
-      const score = (character: (typeof candidates)[number]): number => character.tags.filter((tag) => forms.has(tag)).length;
-      const best = candidates.reduce((top, character) => (score(character) > score(top) ? character : top));
-      return `${RIGGED_PREFIX}${best.id}`;
-    }
-    if (lookup(word, (form) => WORD_MODEL[form] ?? BY_TAG.get(form)) !== undefined) return undefined;
-  }
-  return undefined;
+  const named = identityEntry(label, ANY.identity);
+  return named !== undefined && animated(named) ? sceneId(named) : undefined;
 }
 
 /** Riggovaná postava za id modelu, nebo `undefined` pro model katalogu. */

@@ -28,15 +28,15 @@ const CONTROL: Readonly<Record<string, string>> = {
 const genreOf = (genre: string): GenreId => genre.split('.')[0] as GenreId;
 const moves = (choice: ReturnType<typeof heroChoice>): boolean => choice.entry !== undefined && choice.entry.clips.run !== 'procedural';
 
-/** Hrdina a nepřátelé devíti vět: model, úroveň výběru a jestli má model klipy. */
+/** Hrdina a nepřátelé devíti vět: model, úroveň výběru a jestli má model klipy (P32C T4: sady Kenney z T3). */
 const EXPECTED: Readonly<Record<string, { readonly model: string; readonly clips: boolean }>> = {
-  penguin: { model: 'penguin', clips: false },
-  'firefighter robot': { model: 'robot', clips: false },
+  penguin: { model: 'rigged:pet-penguin', clips: true },
+  'firefighter robot': { model: 'rigged:blocky-robot', clips: true },
   wizard: { model: 'rigged:mage', clips: true },
   'pirate ship': { model: 'gen3d-pirate-ship', clips: false },
-  cat: { model: 'cat', clips: false },
+  cat: { model: 'rigged:pet-cat', clips: true },
   chef: { model: 'waiter', clips: false },
-  dog: { model: 'dog', clips: false },
+  dog: { model: 'rigged:pet-dog', clips: true },
   knight: { model: 'rigged:knight', clips: true },
   rocket: { model: 'rocket', clips: false },
 };
@@ -44,8 +44,8 @@ const EXPECTED: Readonly<Record<string, { readonly model: string; readonly clips
 /** Nepřátelé vět: duchové (čaroděj), lední medvěd (kočka), žralok (výchozí nepřítel moře). */
 const FOES = ['ghost', 'polar bear', 'shark'];
 
-/** Živé postavy bez klipů – co T3 hledá v animovaných sadách CC0. Loď a raketa se hýbou procedurálně a stačí to. */
-const STATIC = ['penguin', 'firefighter robot', 'cat', 'chef', 'dog', 'ghost', 'polar bear', 'shark'];
+/** Živé postavy bez klipů: jen ty z `evals/play/p32/kits-missing.md`. Loď a raketa se hýbou procedurálně a stačí to. */
+const STATIC = ['chef', 'shark'];
 
 describe('hero choice by identity, then class (P32C T2)', () => {
   it.each(sentences.sentences.map((sentence) => [sentence.hero, sentence.genre] as const))('%s (%s) is picked by identity', (hero, genre) => {
@@ -56,8 +56,8 @@ describe('hero choice by identity, then class (P32C T2)', () => {
   });
 
   it.each([
-    ['ghost', 'ghost'],
-    ['polar bear', 'gen3d-polar-bear'],
+    ['ghost', 'rigged:graveyard-ghost'],
+    ['polar bear', 'rigged:pet-polar-bear'],
     ['shark', 'cc0-shark'],
   ])('the foe %s is picked by identity', (label, model) => {
     expect(heroChoice(label, undefined, 'move_free', 'enemy')).toMatchObject({ level: 'identity', model });
