@@ -18,6 +18,8 @@ import { z } from 'zod';
 
 import { modelRulesSchema } from '../arcade/rules/schema';
 import { CAPABILITIES } from '../capabilities';
+import { type GenreModule, genreSpecSchema } from '../genre/contract';
+import { GENRE_MODULES } from '../genre/index';
 import { MECHANICS, MECHANIC_IDS, type MechanicEntry, type MechanicId } from '../registry';
 import { CONTROLS, CONTROL_PARAMS, gameSpecSchema, themeSchema, type ControlId } from '../spec';
 
@@ -97,5 +99,31 @@ export const DIRECTOR_ANSWER_SCHEMA: Json = {
   properties: {
     plan: { type: 'string' },
     spec: { anyOf: CONTROLS.map((control) => strictSchema(toJson(variant(control)))) },
+  },
+};
+
+/**
+ * Varianta `GenreSpec` pro režiséra (P32B T4): jen režimy `ready` a parametry
+ * s mezemi modulu jako pojmenovaná pole, ne volný slovník. Žánr bez hrajícího
+ * režimu v odpovědi není; `null` = nic nenabízí.
+ */
+function genreVariant(module: GenreModule): Json | null {
+  const modes = module.modes.filter((mode) => module.availability(mode) === 'ready');
+  if (modes.length === 0) return null;
+  const base = genreSpecSchema.options.find((option) => option.shape.genre.value === module.id)!;
+  const bounds = Object.entries(module.paramBounds);
+  const params = z.object(Object.fromEntries(bounds.map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
+  const variant = bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() });
+  return strictSchema(toJson(variant.extend({ mode: z.enum(modes as [string, ...string[]]) })));
+}
+
+/** Odpověď režiséra na novou hru: `{plan, spec}` se `GenreSpec`; hru z něj složí modul žánru (`readGenreAnswer`). */
+export const GENRE_ANSWER_SCHEMA: Json = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['plan', 'spec'],
+  properties: {
+    plan: { type: 'string' },
+    spec: { anyOf: Object.values(GENRE_MODULES).flatMap((module) => genreVariant(module as GenreModule) ?? []) },
   },
 };

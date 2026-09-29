@@ -16,6 +16,8 @@
  */
 
 import { modelWhenSchema } from '../arcade/rules/schema';
+import type { GenreSpec } from '../genre/contract';
+import { compileGenre, readGenreSpec } from '../genre/index';
 import { MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1 } from '../spec';
 
@@ -76,6 +78,25 @@ export function readDirectorAnswer(body: unknown): DirectorRead {
   const unknown = unknownMechanicIds(body);
   if (unknown.length > 0) return { ok: false, reason: 'MECHANIC_REJECTED', detail: `unknown mechanic: ${unknown.join(', ')}` };
   return readModelSpec(body);
+}
+
+export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly genre: GenreSpec } | Extract<DirectorRead, { ok: false }>;
+
+/**
+ * Odpověď režiséra na novou hru (P32B T4): `{plan, spec}` se `GenreSpec`
+ * (`GENRE_ANSWER_SCHEMA`) nebo holý `GenreSpec` z větve bez schématu → bez
+ * polí `null` → `readGenreSpec` (tvar a meze parametrů) → `compileGenre` →
+ * `readModelSpec`. Hru tak vždy skládá modul žánru, model píše jen výběr.
+ */
+export function readGenreAnswer(body: unknown): GenreRead {
+  if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
+  const raw = typeof body.plan === 'string' && isRecord(body.spec) ? body.spec : body;
+  const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
+  if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
+  const genre = readGenreSpec(restore(raw));
+  if (!genre.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: genre.issues.join('; ') };
+  const game = readModelSpec(compileGenre(genre.value));
+  return game.ok ? { ok: true, spec: game.spec, genre: genre.value } : game;
 }
 
 /**
