@@ -529,7 +529,8 @@ function ArcadePlayGame({
   }, [session]);
 
   return (
-    <main ref={shell} className="play-shell">
+    // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
+    <main ref={shell} className="play-shell" style={{ background: scene.sky }}>
       <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} look={scene} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} live={live}>
         {running && physicsReady && <DemoControl session={session} demo={demo} />}
