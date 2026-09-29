@@ -18,20 +18,73 @@
   overflow-x: hidden;
   background: var(--play-bg);
   color: var(--play-text);
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--p-font);
+}
+
+/* P33 */
+/* Tokeny rozhraní (P33 T2): mezery po 4 px, tři poloměry, pět velikostí
+ * písma, tři průhledné plochy a dva stíny. Pravidla PLAY sahají jen na ně –
+ * `p33-tokens.test.ts` hlídá velikosti písma a ruční průhlednosti. Písmo je
+ * systémové: Inter i Manrope mají licenci OFL-1.1, kterou RULES.md §4
+ * nepovoluje (výběr písma čeká na vlastníka, viz plán P33). */
+.play-root {
+  --p-font: system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --p-space-1: 4px;
+  --p-space-2: 8px;
+  --p-space-3: 12px;
+  --p-space-4: 16px;
+  --p-space-5: 20px;
+  --p-space-6: 24px;
+  --p-space-7: 28px;
+  --p-space-8: 32px;
+
+  --p-radius-s: 8px;
+  --p-radius-m: 12px;
+  --p-radius-l: 16px;
+  --p-radius-pill: 999px;
+
+  --p-text-xs: 0.8125rem;
+  --p-text-s: 0.9375rem;
+  --p-text-m: 1.0625rem;
+  --p-text-l: 1.375rem;
+  --p-text-xl: 2.25rem;
+
+  --p-surface-1: rgba(15, 23, 42, 0.6);
+  --p-surface-2: rgba(15, 23, 42, 0.8);
+  --p-surface-3: rgba(15, 23, 42, 0.92);
+  --p-fill-soft: rgba(241, 245, 249, 0.12);
+  --p-danger-soft: rgba(220, 38, 38, 0.12);
+
+  --p-shadow-1: 0 2px 8px rgb(0 0 0 / 0.35);
+  --p-shadow-2: 0 12px 32px rgb(0 0 0 / 0.45);
+  --p-shadow-text: 0 2px 10px rgb(0 0 0 / 0.6);
+
+  /* Tóny počasí nad plátnem (P29D). */
+  --p-tint-night: rgba(10, 20, 40, 0.45);
+  --p-tint-dusk: rgba(120, 60, 20, 0.22);
+  --p-tint-rain: rgba(180, 210, 235, 0.28);
+  --p-tint-snow: rgba(255, 255, 255, 0.85);
+  --p-tint-snow-soft: rgba(255, 255, 255, 0.6);
+  --p-tint-fog: rgba(220, 225, 230, 0.55);
+  --p-tint-fog-soft: rgba(220, 225, 230, 0.15);
+
+  --p-tap: 44px;
+
+  -webkit-font-smoothing: antialiased;
 }
 
 .play-create {
   max-width: 760px;
   margin: 0 auto;
-  padding: 48px 20px 64px;
+  padding: 48px var(--p-space-5) 64px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--p-space-5);
 }
 
 .play-hero {
-  font-size: clamp(2rem, 6vw, 3.25rem);
+  font-size: clamp(var(--p-text-l), 6vw, var(--p-text-xl));
   line-height: 1.1;
   margin: 0;
   letter-spacing: -0.02em;
@@ -40,14 +93,14 @@
 .play-subhead {
   margin: 0;
   color: var(--play-muted);
-  font-size: 1.1rem;
+  font-size: var(--p-text-m);
   line-height: 1.5;
 }
 
 .play-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--p-space-3);
 }
 
 .play-sentence {
@@ -55,13 +108,13 @@
   min-height: 96px;
   resize: vertical;
   box-sizing: border-box;
-  padding: 14px 16px;
-  border-radius: 12px;
+  padding: var(--p-space-3) var(--p-space-4);
+  border-radius: var(--p-radius-m);
   border: 1px solid var(--play-line);
   background: var(--play-panel);
   color: var(--play-text);
   font: inherit;
-  font-size: 1.05rem;
+  font-size: var(--p-text-m);
 }
 
 .play-sentence:focus {
@@ -73,12 +126,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--p-space-3);
 }
 
 .play-counter {
   color: var(--play-muted);
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
   font-variant-numeric: tabular-nums;
 }
 
@@ -86,10 +139,16 @@
   color: var(--play-danger);
 }
 
+/* Tlačítko je zaoblený obdélník (směr TikTok), ne pilulka; výška palce 44 px. */
 .play-button {
+  min-height: var(--p-tap);
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 0;
-  border-radius: 999px;
-  padding: 12px 24px;
+  border-radius: var(--p-radius-m);
+  padding: var(--p-space-3) var(--p-space-6);
   background: var(--play-action);
   color: #fff;
   font: inherit;
@@ -109,22 +168,22 @@
 .play-status {
   margin: 0;
   color: var(--play-accent);
-  font-size: 0.95rem;
+  font-size: var(--p-text-s);
 }
 
 .play-alert {
   margin: 0;
-  padding: 10px 14px;
-  border-radius: 10px;
-  background: rgba(220, 38, 38, 0.12);
+  padding: var(--p-space-3) var(--p-space-4);
+  border-radius: var(--p-radius-m);
+  background: var(--p-danger-soft);
   border: 1px solid var(--play-danger);
   color: var(--play-text);
 }
 
 .play-starters-title {
-  margin: 12px 0 0;
+  margin: var(--p-space-3) 0 0;
   color: var(--play-muted);
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -132,7 +191,7 @@
 .play-starters {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
+  gap: var(--p-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -140,17 +199,18 @@
 
 .play-starter {
   width: 100%;
+  min-height: var(--p-tap);
   text-align: left;
   border: 1px solid var(--play-line);
-  border-radius: 12px;
+  border-radius: var(--p-radius-m);
   background: var(--play-panel);
   color: var(--play-text);
-  padding: 12px 14px;
+  padding: var(--p-space-3) var(--p-space-4);
   font: inherit;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--p-space-2);
 }
 
 .play-starter:hover {
@@ -160,22 +220,22 @@
 .play-starter-label {
   font-weight: 600;
   color: var(--play-accent);
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
 
 .play-starter-sentence {
   color: var(--play-muted);
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
   line-height: 1.35;
 }
 
 .play-feed-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  margin: 8px 0 0;
+  gap: var(--p-space-3);
+  margin: var(--p-space-2) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -185,10 +245,10 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
+  gap: var(--p-space-2);
+  padding: var(--p-space-3) var(--p-space-4);
   border: 1px solid var(--play-line);
-  border-radius: 12px;
+  border-radius: var(--p-radius-m);
   background: var(--play-panel);
   color: var(--play-text);
   text-decoration: none;
@@ -205,25 +265,25 @@
 
 .play-feed-pitch {
   color: var(--play-muted);
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
   line-height: 1.35;
 }
 
 .play-feed-remixes {
   margin-top: auto;
   color: var(--play-accent);
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
   font-variant-numeric: tabular-nums;
 }
 
 .play-feed-empty {
-  margin: 8px 0 0;
+  margin: var(--p-space-2) 0 0;
   color: var(--play-muted);
 }
 
 @media (max-width: 480px) {
   .play-create {
-    padding: 28px 16px 40px;
+    padding: var(--p-space-7) var(--p-space-4) 40px;
   }
 
   .play-starters {
@@ -260,17 +320,17 @@
   top: 44%;
   left: 50%;
   z-index: 2;
-  max-width: calc(100% - 32px);
+  max-width: calc(100% - var(--p-space-8));
   margin: 0;
   transform: translate(-50%, -50%);
-  font-size: clamp(1.6rem, 5.5vw, 3.2rem);
+  font-size: clamp(var(--p-text-l), 6vw, var(--p-text-xl));
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1.1;
   text-align: center;
   text-transform: uppercase;
   color: #fff;
-  text-shadow: 0 3px 12px rgb(0 0 0 / 0.6);
+  text-shadow: var(--p-shadow-text);
   pointer-events: none;
   animation: play-first-prompt 1.2s ease-in-out infinite alternate;
 }
@@ -292,10 +352,10 @@
   position: absolute;
   top: 34%;
   transform: translateX(-50%);
-  font-size: 2rem;
+  font-size: var(--p-text-xl);
   font-weight: 800;
   color: #fde047;
-  text-shadow: 0 2px 6px rgb(0 0 0 / 0.55);
+  text-shadow: var(--p-shadow-text);
   pointer-events: none;
   animation: play-score-pop 500ms ease-out forwards;
 }
@@ -336,8 +396,8 @@
 /* Střelba doplňku +shoot: palec vpravo dole, mimo HUD a obrazovku po hře. */
 .play-fire {
   position: absolute;
-  right: 20px;
-  bottom: 24px;
+  right: var(--p-space-5);
+  bottom: var(--p-space-6);
   z-index: 1;
   width: 72px;
   height: 72px;
@@ -352,19 +412,19 @@
 .play-hud {
   position: relative;
   z-index: 1;
-  margin: 16px;
-  padding: 12px 16px;
+  margin: var(--p-space-4);
+  padding: var(--p-space-3) var(--p-space-4);
   max-width: 420px;
-  border-radius: 12px;
-  background: rgba(15, 23, 42, 0.78);
+  border-radius: var(--p-radius-m);
+  background: var(--p-surface-2);
   border: 1px solid var(--play-line);
   backdrop-filter: blur(6px);
   pointer-events: none;
 }
 
 .play-hud-title {
-  margin: 0 0 4px;
-  font-size: 1rem;
+  margin: 0 0 var(--p-space-1);
+  font-size: var(--p-text-m);
   font-weight: 600;
   color: var(--play-muted);
   white-space: nowrap;
@@ -374,20 +434,20 @@
 
 .play-hud-goal {
   margin: 0;
-  font-size: 1.15rem;
+  font-size: var(--p-text-m);
   font-weight: 600;
   line-height: 1.3;
 }
 
 .play-hud-hint {
-  margin: 4px 0 0;
+  margin: var(--p-space-1) 0 0;
   color: var(--play-muted);
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
 }
 
 .play-hud-phase {
-  margin: 6px 0 0;
-  font-size: 1rem;
+  margin: var(--p-space-2) 0 0;
+  font-size: var(--p-text-m);
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -401,10 +461,10 @@
 }
 
 .play-hud-progress {
-  margin: 8px 0 0;
+  margin: var(--p-space-2) 0 0;
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--p-space-3);
   font-variant-numeric: tabular-nums;
   color: var(--play-accent);
   font-weight: 600;
@@ -413,32 +473,32 @@
 .play-hud-tick {
   color: var(--play-muted);
   font-weight: 400;
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
 }
 
 .play-building {
   position: relative;
   z-index: 1;
-  margin: 0 16px;
+  margin: 0 var(--p-space-4);
   color: var(--play-accent);
-  font-size: 0.95rem;
+  font-size: var(--p-text-s);
 }
 
 .play-shell .play-alert {
   position: relative;
   z-index: 1;
-  margin: 0 16px;
+  margin: 0 var(--p-space-4);
 }
 
 .play-targets {
   position: relative;
   z-index: 1;
   margin-top: auto;
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  padding: var(--p-space-3) var(--p-space-4) calc(var(--p-space-3) + env(safe-area-inset-bottom));
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  background: linear-gradient(to top, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0));
+  gap: var(--p-space-2);
+  background: linear-gradient(to top, var(--p-surface-3), transparent);
   /* Mezery mezi kartami pouští klepnutí na plátno pod nimi (P28C T4); kartu chytá karta. */
   pointer-events: none;
 }
@@ -450,16 +510,18 @@
 .play-targets-empty {
   position: relative;
   z-index: 1;
-  margin: auto 16px 16px;
+  margin: auto var(--p-space-4) var(--p-space-4);
   color: var(--play-muted);
 }
 
 .play-target {
+  min-height: var(--p-tap);
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 999px;
+  gap: var(--p-space-2);
+  padding: var(--p-space-2) var(--p-space-4);
+  border-radius: var(--p-radius-pill);
   border: 1px solid var(--play-line);
   background: var(--play-panel);
   color: var(--play-text);
@@ -488,9 +550,9 @@
   justify-content: center;
   min-width: 22px;
   height: 22px;
-  border-radius: 999px;
-  background: rgba(241, 245, 249, 0.12);
-  font-size: 0.8rem;
+  border-radius: var(--p-radius-pill);
+  background: var(--p-fill-soft);
+  font-size: var(--p-text-xs);
   font-variant-numeric: tabular-nums;
 }
 
@@ -502,7 +564,7 @@
 
 .play-target-next {
   color: var(--play-accent);
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -517,10 +579,11 @@
   left: 50%;
   top: 40%;
   transform: translate(-50%, -50%);
-  padding: 24px 32px;
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.9);
+  padding: var(--p-space-6) var(--p-space-8);
+  border-radius: var(--p-radius-l);
+  background: var(--p-surface-3);
   border: 1px solid var(--play-accent);
+  box-shadow: var(--p-shadow-2);
   text-align: center;
 }
 
@@ -528,15 +591,16 @@
   position: absolute;
   z-index: 3;
   left: 50%;
-  top: 16px;
+  top: var(--p-space-4);
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 8px 8px 16px;
-  border-radius: 999px;
+  gap: var(--p-space-3);
+  padding: var(--p-space-2) var(--p-space-2) var(--p-space-2) var(--p-space-4);
+  border-radius: var(--p-radius-pill);
   background: var(--play-panel);
   border: 1px solid var(--play-accent);
+  box-shadow: var(--p-shadow-1);
   white-space: nowrap;
 }
 
@@ -557,11 +621,11 @@
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
+  gap: var(--p-space-3);
+  padding: var(--p-space-3) var(--p-space-4);
   background: var(--play-panel);
   border-bottom: 2px solid var(--play-accent);
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
   line-height: 1.4;
 }
 
@@ -576,9 +640,10 @@
 
 .play-honest-close {
   flex: 0 0 auto;
+  min-height: var(--p-tap);
   border: 1px solid var(--play-line);
-  border-radius: 999px;
-  padding: 6px 14px;
+  border-radius: var(--p-radius-m);
+  padding: var(--p-space-2) var(--p-space-4);
   background: transparent;
   color: var(--play-text);
   font: inherit;
@@ -587,31 +652,31 @@
 
 .play-outcome-title {
   margin: 0;
-  font-size: 2rem;
+  font-size: var(--p-text-xl);
   letter-spacing: -0.02em;
 }
 
 .play-outcome-detail {
-  margin: 6px 0 0;
+  margin: var(--p-space-2) 0 0;
   color: var(--play-muted);
   font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 480px) {
   .play-hud {
-    margin: 10px;
-    padding: 10px 12px;
+    margin: var(--p-space-3);
+    padding: var(--p-space-3);
     max-width: none;
   }
 
   .play-hud-goal {
-    font-size: 1rem;
+    font-size: var(--p-text-m);
   }
 
   .play-targets {
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    padding: var(--p-space-3) var(--p-space-3) calc(var(--p-space-3) + env(safe-area-inset-bottom));
     /* Pás se tu posouvá prstem do strany – musí tah chytat i v mezerách. */
     pointer-events: auto;
   }
@@ -621,8 +686,8 @@
   }
 
   .play-outcome {
-    width: calc(100% - 32px);
-    padding: 20px;
+    width: calc(100% - var(--p-space-8));
+    padding: var(--p-space-5);
   }
 }
 
@@ -630,12 +695,12 @@
 .play-lineage {
   position: relative;
   z-index: 1;
-  margin: 0 16px;
+  margin: 0 var(--p-space-4);
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--p-space-3);
   color: var(--play-muted);
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
 }
 
 .play-lineage a {
@@ -647,16 +712,16 @@
 }
 
 .play-postrun {
-  margin-top: 16px;
+  margin-top: var(--p-space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: var(--p-space-3);
 }
 
 .play-postrun-title {
-  margin: 8px 0 0;
-  font-size: 0.85rem;
+  margin: var(--p-space-2) 0 0;
+  font-size: var(--p-text-xs);
   letter-spacing: 0.08em;
   color: var(--play-muted);
 }
@@ -665,17 +730,19 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: var(--p-space-2);
 }
 
 .play-chip {
+  min-height: var(--p-tap);
+  box-sizing: border-box;
   border: 1px solid var(--play-line);
-  border-radius: 999px;
-  padding: 8px 14px;
+  border-radius: var(--p-radius-pill);
+  padding: var(--p-space-2) var(--p-space-4);
   background: var(--play-panel);
   color: var(--play-text);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
   cursor: pointer;
 }
 
@@ -700,13 +767,13 @@
 .play-share-url {
   width: 100%;
   box-sizing: border-box;
-  padding: 8px 10px;
-  border-radius: 8px;
+  padding: var(--p-space-2) var(--p-space-3);
+  border-radius: var(--p-radius-s);
   border: 1px solid var(--play-line);
   background: var(--play-panel);
   color: var(--play-text);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
 }
 
 @media (max-width: 480px) {
@@ -718,7 +785,7 @@
 }
 
 a.play-button {
-  display: inline-block;
+  display: inline-flex;
   text-decoration: none;
 }
 
@@ -726,13 +793,13 @@ a.play-button {
 .play-lab {
   position: relative;
   z-index: 1;
-  margin: 8px 16px 0;
+  margin: var(--p-space-2) var(--p-space-4) 0;
   max-width: 420px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: rgba(15, 23, 42, 0.78);
+  padding: var(--p-space-2) var(--p-space-3);
+  border-radius: var(--p-radius-m);
+  background: var(--p-surface-2);
   border: 1px solid var(--play-line);
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
   color: var(--play-muted);
 }
 
@@ -747,10 +814,10 @@ a.play-button {
 }
 
 .play-lab-mechanics {
-  margin: 8px 0;
-  padding-left: 18px;
+  margin: var(--p-space-2) 0;
+  padding-left: var(--p-space-5);
   display: grid;
-  gap: 6px;
+  gap: var(--p-space-2);
 }
 
 .play-lab-mechanics strong {
@@ -761,12 +828,12 @@ a.play-button {
 .play-lab-params {
   display: block;
   color: var(--play-accent);
-  font-size: 0.8rem;
+  font-size: var(--p-text-xs);
 }
 
 .play-lab-quality,
 .play-lab-version {
-  margin: 4px 0 0;
+  margin: var(--p-space-1) 0 0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -794,15 +861,15 @@ a.play-button {
 }
 
 .play-read-rows {
-  margin: 8px 0 0;
+  margin: var(--p-space-2) 0 0;
   display: grid;
-  gap: 4px;
+  gap: var(--p-space-1);
 }
 
 .play-read-rows div {
   display: grid;
   grid-template-columns: 72px 1fr;
-  gap: 8px;
+  gap: var(--p-space-2);
 }
 
 .play-read-rows dt {
@@ -815,13 +882,13 @@ a.play-button {
 }
 
 .play-read-note {
-  margin: 8px 0 0;
-  font-size: 0.8rem;
+  margin: var(--p-space-2) 0 0;
+  font-size: var(--p-text-xs);
 }
 
 @media (max-width: 480px) {
   .play-lab {
-    margin: 6px 10px 0;
+    margin: var(--p-space-2) var(--p-space-3) 0;
     max-width: none;
   }
 }
@@ -834,18 +901,18 @@ a.play-button {
 .play-hero-top {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 20px 12px;
+  padding: var(--p-space-5) var(--p-space-5) var(--p-space-3);
   box-sizing: border-box;
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-size: clamp(var(--p-text-l), 4vw, var(--p-text-xl));
 }
 
 .play-pager {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 16px;
+  gap: var(--p-space-4);
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 var(--p-space-5);
   box-sizing: border-box;
 }
 
@@ -853,7 +920,7 @@ a.play-button {
   position: relative;
   height: min(52dvh, 560px);
   border: 1px solid var(--play-line);
-  border-radius: 12px;
+  border-radius: var(--p-radius-m);
   overflow: hidden;
   background: var(--play-panel);
 }
@@ -868,7 +935,7 @@ a.play-button {
 
 .play-pager-note {
   margin: 0;
-  padding: 24px 72px 24px 24px;
+  padding: var(--p-space-6) 72px var(--p-space-6) var(--p-space-6);
   color: var(--play-muted);
   line-height: 1.5;
 }
@@ -885,23 +952,24 @@ a.play-button {
   z-index: 3;
   width: 56px;
   box-sizing: border-box;
-  padding: 12px 0;
+  padding: var(--p-space-3) 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(to left, rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0));
+  background: linear-gradient(to left, var(--p-surface-1), transparent);
   touch-action: none;
 }
 
 .play-pager-step {
-  width: 44px;
-  height: 44px;
+  width: var(--p-tap);
+  height: var(--p-tap);
+  min-height: var(--p-tap);
   border-radius: 50%;
   border: 1px solid var(--play-line);
   background: var(--play-panel);
   color: var(--play-text);
-  font-size: 1.2rem;
+  font-size: var(--p-text-l);
   cursor: pointer;
 }
 
@@ -912,16 +980,16 @@ a.play-button {
 
 .play-pager-count {
   color: var(--play-muted);
-  font-size: 0.8rem;
+  font-size: var(--p-text-xs);
   font-variant-numeric: tabular-nums;
 }
 
 .play-feed-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--p-space-2);
   max-height: min(72dvh, 700px);
-  margin: 8px 0 0;
+  margin: var(--p-space-2) 0 0;
   padding: 0;
   overflow-y: auto;
   list-style: none;
@@ -941,28 +1009,28 @@ button.play-feed-card {
 /* Sdílení v HUD (T5): HUD pouští ťuky skrz na plátno, tlačítko je chytá samo. */
 .play-hud-share {
   pointer-events: auto;
-  margin-top: 8px;
-  padding: 6px 14px;
-  font-size: 0.9rem;
+  margin-top: var(--p-space-2);
+  padding: var(--p-space-2) var(--p-space-4);
+  font-size: var(--p-text-s);
 }
 
 /* „Show me how“ (P27D T3) a ztlumení (P28C T2): stejně jako sdílení chytají ťuk samy, plátno ho nedostane. */
 .play-hud-demo,
 .play-hud-mute {
   pointer-events: auto;
-  margin-top: 8px;
-  margin-right: 8px;
-  padding: 6px 14px;
-  font-size: 0.9rem;
+  margin-top: var(--p-space-2);
+  margin-right: var(--p-space-2);
+  padding: var(--p-space-2) var(--p-space-4);
+  font-size: var(--p-text-s);
 }
 
 .play-hud .play-status {
   display: block;
-  font-size: 0.85rem;
+  font-size: var(--p-text-xs);
 }
 
 .play-hud .play-share-url {
-  margin-top: 6px;
+  margin-top: var(--p-space-2);
   pointer-events: auto;
 }
 
@@ -990,13 +1058,13 @@ button.play-feed-card {
   width: max-content;
   max-width: min(92vw, 560px);
   white-space: normal;
-  border-radius: 16px;
-  font-size: 0.9rem;
+  border-radius: var(--p-radius-l);
+  font-size: var(--p-text-s);
   line-height: 1.35;
 }
 
 .play-upgrade[data-kind='working'] {
-  padding: 8px 16px;
+  padding: var(--p-space-2) var(--p-space-4);
   border-color: var(--play-line);
   font-variant-numeric: tabular-nums;
 }
@@ -1018,16 +1086,16 @@ button.play-feed-card {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: var(--p-space-2);
 }
 
 .play-pending-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 10px 10px 16px;
-  border-radius: 12px;
+  gap: var(--p-space-3);
+  padding: var(--p-space-3) var(--p-space-3) var(--p-space-3) var(--p-space-4);
+  border-radius: var(--p-radius-m);
   background: var(--play-panel);
   border: 1px solid var(--play-accent);
 }
@@ -1046,24 +1114,26 @@ button.play-feed-card {
   width: min(92vw, 480px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--p-space-2);
 }
 
 .play-remix-row {
   display: flex;
-  gap: 8px;
+  gap: var(--p-space-2);
 }
 
 .play-remix-input {
   flex: 1;
   min-width: 0;
-  padding: 8px 12px;
-  border-radius: 999px;
+  min-height: var(--p-tap);
+  box-sizing: border-box;
+  padding: var(--p-space-2) var(--p-space-3);
+  border-radius: var(--p-radius-m);
   border: 1px solid var(--play-line);
   background: var(--play-panel);
   color: var(--play-text);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
 }
 
 .play-remix-row .play-button {
@@ -1072,22 +1142,22 @@ button.play-feed-card {
 
 .play-remix-count {
   align-self: flex-end;
-  font-size: 0.75rem;
+  font-size: var(--p-text-xs);
   color: var(--play-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .play-remix-state {
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: var(--p-space-3) var(--p-space-4);
+  border-radius: var(--p-radius-m);
   border: 1px solid var(--play-line);
   background: var(--play-panel);
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
   line-height: 1.35;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: var(--p-space-2);
 }
 
 .play-remix-state p {
@@ -1114,7 +1184,7 @@ button.play-feed-card {
 
 .play-remix-changed {
   margin: 0;
-  padding-left: 18px;
+  padding-left: var(--p-space-5);
 }
 
 /* P28D T8: na telefonu patří obrazovka hře. HUD na dva krátké řádky (titul
@@ -1123,13 +1193,13 @@ button.play-feed-card {
  * mimo HUD a karty cílů v jednom posuvném řádku. */
 @media (max-width: 599px) {
   .play-hud {
-    margin: 8px;
-    padding: 6px 10px;
+    margin: var(--p-space-2);
+    padding: var(--p-space-2) var(--p-space-3);
     max-width: none;
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
-    column-gap: 10px;
+    column-gap: var(--p-space-3);
     row-gap: 2px;
   }
 
@@ -1137,13 +1207,13 @@ button.play-feed-card {
     flex: 1 1 0;
     min-width: 0;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--p-text-s);
   }
 
   .play-hud-progress {
     order: 1;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: var(--p-text-s);
   }
 
   .play-hud-tick {
@@ -1155,7 +1225,7 @@ button.play-feed-card {
     order: 2;
     min-width: 0;
     margin: 0;
-    font-size: 0.8rem;
+    font-size: var(--p-text-xs);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1174,8 +1244,8 @@ button.play-feed-card {
   .play-hud-demo {
     order: 3;
     margin: 0;
-    padding: 2px 10px;
-    font-size: 0.8rem;
+    padding: 0 var(--p-space-3);
+    font-size: var(--p-text-xs);
   }
 
   .play-shell > .play-lineage {
@@ -1183,8 +1253,8 @@ button.play-feed-card {
   }
 
   .play-lab {
-    margin: 4px 8px 0;
-    padding: 4px 10px;
+    margin: var(--p-space-1) var(--p-space-2) 0;
+    padding: var(--p-space-1) var(--p-space-3);
     max-width: none;
   }
 
@@ -1197,27 +1267,27 @@ button.play-feed-card {
   /* Čip s počítadlem sekund naroste i na čtyři řádky – uhne mu i řádek draftu a „How this game works“. */
   .play-shell:has(> .play-upgrade) > .play-hud,
   .play-shell:has(> .play-upgrade) > .play-lab {
-    margin-right: calc(42vw + 16px);
+    margin-right: calc(42vw + var(--p-space-4));
   }
 
   .play-upgrade,
   .play-upgrade[data-kind] {
     left: auto;
-    right: 8px;
-    top: 8px;
+    right: var(--p-space-2);
+    top: var(--p-space-2);
     transform: none;
     box-sizing: border-box;
     max-width: 42vw;
-    padding: 4px 4px 4px 10px;
-    gap: 6px;
-    font-size: 0.75rem;
+    padding: var(--p-space-1) var(--p-space-1) var(--p-space-1) var(--p-space-3);
+    gap: var(--p-space-2);
+    font-size: var(--p-text-xs);
     white-space: normal;
   }
 
   .play-targets {
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    padding: var(--p-space-2) var(--p-space-3) calc(var(--p-space-2) + env(safe-area-inset-bottom));
   }
 
   .play-target {
@@ -1229,31 +1299,33 @@ button.play-feed-card {
 .play-live {
   position: absolute;
   z-index: 3;
-  left: 20px;
-  bottom: calc(24px + env(safe-area-inset-bottom));
+  left: var(--p-space-5);
+  bottom: calc(var(--p-space-6) + env(safe-area-inset-bottom));
   width: min(calc(100vw - 132px), 440px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--p-space-2);
 }
 
 .play-live-row {
   display: flex;
-  gap: 8px;
+  gap: var(--p-space-2);
   width: 100%;
 }
 
 .play-live-input {
   flex: 1;
   min-width: 0;
-  padding: 8px 12px;
-  border-radius: 999px;
+  min-height: var(--p-tap);
+  box-sizing: border-box;
+  padding: var(--p-space-2) var(--p-space-3);
+  border-radius: var(--p-radius-m);
   border: 1px solid var(--play-line);
   background: var(--play-panel);
   color: var(--play-text);
   font: inherit;
-  font-size: 0.9rem;
+  font-size: var(--p-text-s);
 }
 
 .play-live-row .play-button {
@@ -1262,11 +1334,11 @@ button.play-feed-card {
 
 .play-live-status {
   margin: 0;
-  padding: 4px 10px;
-  border-radius: 8px;
+  padding: var(--p-space-1) var(--p-space-3);
+  border-radius: var(--p-radius-s);
   background: var(--play-panel);
   color: var(--play-text);
-  font-size: 0.8rem;
+  font-size: var(--p-text-xs);
 }
 
 .play-live-status[data-kind='refused'],
@@ -1282,17 +1354,17 @@ button.play-feed-card {
 }
 
 .play-weather[data-time='night'] {
-  background: rgba(10, 20, 40, 0.45);
+  background: var(--p-tint-night);
 }
 
 .play-weather[data-time='dusk'] {
-  background: rgba(120, 60, 20, 0.22);
+  background: var(--p-tint-dusk);
 }
 
 .play-weather[data-weather='rain'] {
   background-image: repeating-linear-gradient(
     105deg,
-    rgba(180, 210, 235, 0.28) 0 1px,
+    var(--p-tint-rain) 0 1px,
     transparent 1px 14px
   );
   background-size: 100% 60px;
@@ -1301,18 +1373,18 @@ button.play-feed-card {
 
 .play-weather[data-weather='snow'] {
   background-image:
-    radial-gradient(circle, rgba(255, 255, 255, 0.85) 1.5px, transparent 2px),
-    radial-gradient(circle, rgba(255, 255, 255, 0.6) 1px, transparent 1.5px);
+    radial-gradient(circle, var(--p-tint-snow) 1.5px, transparent 2px),
+    radial-gradient(circle, var(--p-tint-snow-soft) 1px, transparent 1.5px);
   background-size: 48px 48px, 31px 31px;
   animation: play-snow 4s linear infinite;
 }
 
 .play-weather[data-weather='fog'] {
-  background: linear-gradient(to top, rgba(220, 225, 230, 0.55), rgba(220, 225, 230, 0.15));
+  background: linear-gradient(to top, var(--p-tint-fog), var(--p-tint-fog-soft));
 }
 
 .play-weather[data-time='night'][data-weather='rain'] {
-  background-color: rgba(10, 20, 40, 0.45);
+  background-color: var(--p-tint-night);
 }
 
 @keyframes play-rain {
