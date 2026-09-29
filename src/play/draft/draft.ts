@@ -1027,15 +1027,23 @@ const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair
 const TARGET_DEFAULT: Readonly<Record<string, string>> = { light: 'candle', extinguish: 'fire', free: 'cage', press: 'switch', deliver: 'parcel', hit: 'target', cook: 'pancake', repair: 'machine', make: 'block' };
 
 /** „before the ghosts catch him“: kdo hráče chytá, i když `readRoles` pronásledovatele nenašel. */
-const CATCH_BEFORE = /\bbefore (?:the |a |an )?([a-z]+(?: [a-z]+)?) (?:catch|catches|get|gets|reach|reaches|grab|grabs)\b/;
+const CATCH_BEFORE = /\bbefore (?:the |a |an )?([a-z]+(?: [a-z]+)?) (?:catch|catches|get|gets|reach|reaches|grab|grabs) (?:him|her|you|me|them|us|it|the player)\b/;
 /** „Two knights duel“: počítaný podmět je hrdina i soupeř. */
 const COUNTED_SUBJECT = /^(?:two|three|four|five|\d+) ((?:[a-z]+ )?[a-z]+s)\b/;
+/** „like flappy bird“: jméno hry jmenuje hrdinu, když ho věta jinak nemá. */
+const FLAPPY = /\bflapp?y ([a-z]+)\b/;
+/** „catch him“, „destroy everything“: zájmeno není věc, kterou by scéna nakreslila. */
+const NOT_A_THING = /^(?:any|every|some|no)(?:thing|one|body)$|^(?:stuff|things?|all|it|them|him|her|us|me|you)$/;
 
 /** Popisek čtení bez členu a bez obecného „player“; prázdné → `null`. */
 function cleanLabel(phrase: string | null | undefined): string | null {
   const text = bare(phrase ?? null);
   return text === null || GENERIC_HERO.test(text) ? null : cap(text, 60);
 }
+
+const thing = (label: string | null | undefined): string | null => (label === null || label === undefined || NOT_A_THING.test(label) ? null : label);
+/** „escape from a haunted hospital“: místo, odkud se utíká, není pronásledovatel; „a goblin castle“ ale jmenuje goblina. */
+const foeIn = (label: string | null | undefined): string | null => (label === null || label === undefined ? null : isPlace(label) ? otherCreature(label, '') : label);
 
 /**
  * Věta → `GenreSpec` žánru a režimu `choice` (P32B T2): role dá `draftFill`
@@ -1054,20 +1062,42 @@ function draftGenre(sentence: string, seed: number, reading: Reading | null, cho
   const topicHero = topic !== null && modelOf(topic, true) !== undefined ? topic : null;
   const rng = xoroshiro128plus(seed);
   const hero =
-    cleanLabel(fill.hero) ?? pair ?? cleanLabel(roles.player) ?? (choice.genre === 'voyage' ? raceHero(sentence) : null) ?? nouns.hero ?? topicHero ?? PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
+    cleanLabel(fill.hero) ??
+    pair ??
+    cleanLabel(roles.player) ??
+    (choice.genre === 'voyage' ? raceHero(sentence) : null) ??
+    nouns.hero ??
+    FLAPPY.exec(text)?.[1] ??
+    topicHero ??
+    PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
   const catcher = CATCH_BEFORE.exec(text)?.[1];
   const fight = choice.genre === 'arena' && choice.mode === 'fight';
-  const enemy = fight
-    ? (roles.target ?? duelFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
-    : (cleanLabel(fill.enemy) ?? roles.threat?.label ?? (catcher === undefined ? null : singular(catcher)) ?? nouns.avoid ?? namedFoe(sentence));
-  const collectible = cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup;
   const verb = ranking.verb ?? 'use';
-  const setting = cleanLabel(fill.setting) ?? roles.setting ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
-  const place = lookFor(setting) === null ? lookFor(text) : null;
   const said = ranking.after === null ? null : nounPhrase(ranking.after.replace(/^(?:on|at|up|down|out|to|into)\s+/, ''), 2);
-  // „without hitting anything“, „destroy everything“: zájmeno není věc, kterou by scéna nakreslila.
-  const object = said === null || /^(?:any|every|some|no)(?:thing|one|body)$|^(?:stuff|things?|all|it|them)$/.test(said) ? null : said;
-  const seconds = readNumbers(sentence).seconds;
+  const object = thing(said);
+  // Úkol: u hodu a střelby je předmětem terč („throw balls at rubber ducks“, „shooter against asteroids“), jinak předmět slovesa.
+  const aimed = verb === 'hit' || ranking.verb === null ? thing(roles.target) : null;
+  const target = choice.genre === 'quest' ? singular(aimed ?? object ?? namedFoe(sentence) ?? nouns.second ?? TARGET_DEFAULT[verb] ?? 'star') : null;
+  const foe = fight
+    ? (roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
+    : (foeIn(cleanLabel(fill.enemy)) ??
+      foeIn(roles.threat?.label) ??
+      (catcher === undefined ? null : singular(catcher)) ??
+      nouns.avoid ??
+      namedFoe(sentence) ??
+      // „races through traffic“: předložková fráze, která jmenuje tvora nebo nástrahu, ne místo.
+      (roles.setting !== null && NOT_A_PLACE.test(roles.setting.split(' ').at(-1)!) ? roles.setting : null));
+  // „zombie shooter“: co se střílí, je terč úkolu, ne ještě jednou nepřítel. Popisek role je jeden kus („cones“ → „cone“).
+  const enemy = foe === null || singular(foe) === target ? null : singular(foe);
+  const found = thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
+  const collectible = found === null ? null : singular(found);
+  // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.
+  const named = new Set([target, enemy, collectible].flatMap((label) => (label === null ? [] : [singular(label)])));
+  const placeOf = (phrase: string | null, known: boolean): string | null => (phrase === null || named.has(singular(phrase)) || (known && lookFor(phrase) === null) ? null : phrase);
+  const filled = cleanLabel(fill.setting);
+  const setting = placeOf(filled, true) ?? placeOf(roles.setting, true) ?? placeOf(filled, false) ?? placeOf(roles.setting, false) ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
+  const place = lookFor(setting) === null ? lookFor(text) : null;
+  const seconds = reading?.numbers.seconds ?? readNumbers(sentence).seconds;
   const bounds = module.paramBounds.seconds;
   const candidate = {
     genre: choice.genre,
@@ -1075,9 +1105,7 @@ function draftGenre(sentence: string, seed: number, reading: Reading | null, cho
     hero: cap(hero, 60),
     ...(enemy === null ? {} : { enemy: cap(enemy, 60) }),
     ...(collectible === null ? {} : { collectible: cap(collectible, 60) }),
-    ...(choice.genre === 'quest'
-      ? { target: { label: cap(object === null ? (TARGET_DEFAULT[verb] ?? 'star') : singular(object), 60), verb: verb.slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }
-      : {}),
+    ...(target === null ? {} : { target: { label: cap(target, 60), verb: verb.slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }),
     setting: cap(setting, 80),
     ...(place === null ? {} : { palette: place }),
     ...(seconds === null || bounds === undefined ? {} : { params: { seconds: clamp(seconds, bounds.min, bounds.max) } }),

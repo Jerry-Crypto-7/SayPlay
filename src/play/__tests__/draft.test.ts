@@ -12,11 +12,15 @@ import { describe, expect, it } from 'vitest';
 import { goldenPrompts, packBucketPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { draftForControl, draftGameSpec, draftGameSpecWithMeta, readNumbers, readRoles } from '../draft';
+import { type ChecklistEntry, fidelityChain } from '../fidelity/chain';
 import { genreDoubles } from '../genre/__tests__/doubles';
 import { type GameSpecV1, readGameSpec } from '../spec';
 
 const corpus = goldenPrompts();
 const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly id: string; readonly text: string }[];
+const fidelitySet = (file: string) =>
+  (JSON.parse(readFileSync(`evals/play/fidelity/${file}`, 'utf8')) as { sentences: { id: string; text: string; checklist: ChecklistEntry[] }[] }).sentences;
+const baseline = JSON.parse(readFileSync('evals/play/p30b/losses.json', 'utf8')) as { rows: { source: string; id: string; item: string; role: string; drawn: boolean }[] };
 const LEGACY_CONTROLS = ['tap_go', 'flap', 'shooter', 'throw', 'timing', 'rhythm'];
 
 describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
@@ -47,6 +51,20 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       expect(meta.spec.genre?.id, sentence).toBe(meta.genre?.genre);
       expect(LEGACY_CONTROLS, sentence).not.toContain(meta.spec.control);
     }
+  });
+
+  // Kreslení žánrové hry patří modulu (P32B T6); draft musí hrdinu a položku z věty aspoň zapsat.
+  it('names every hero and item the template draft drew in the P30B baseline', () => {
+    const fidelity = [...fidelitySet('corpus.json'), ...fidelitySet('judge-10.json')];
+    const drew = baseline.rows.filter((row) => row.source === 'draft' && row.drawn && (row.role === 'hero' || row.role === 'item'));
+    expect(drew.length).toBe(44);
+    const missing = drew.filter((row) => {
+      const sentence = fidelity.find((entry) => entry.id === row.id)!;
+      const slots = row.role === 'hero' ? ['hero'] : ['role', 'any'];
+      const entry = sentence.checklist.find((item) => item.item === row.item && slots.includes(item.slot))!;
+      return !fidelityChain(draftGameSpec(sentence.text), [entry])[0]!.inSpec;
+    });
+    expect(missing.map((row) => `${row.id}|${row.item}`)).toEqual([]);
   });
 
   it('keeps the archetype and control templates for remixes of saved legacy games', () => {

@@ -15,6 +15,8 @@ import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import type { Reading } from '../read/schema';
 import recorded from '../read/__fixtures__/readings.json';
 
+import { legacyDraft } from './legacy-draft';
+
 const reading = (over: Partial<Reading>): Reading => ({
   control: 'runner',
   verbs: [],
@@ -38,20 +40,21 @@ describe('draft from the local reading', () => {
     expect(meta.spec).toEqual(draftGameSpec(sentence));
   });
 
-  it('takes the control from the reading over the keywords', () => {
-    const sentence = 'a knight collects keys in a castle';
-    expect(draftGameSpec(sentence).control).toBeUndefined();
-    const meta = draftGameSpecWithMeta(sentence, 1, { reading: reading({ control: 'shooter' }) });
-    expect(meta.spec.control).toBe('shooter');
+  // P32B T2: ovládání nové hry vybírá žánr; sloveso čtení rozhodne, když klíčová slova žádné neslyší.
+  it('takes the genre from the verb of the reading when the keywords hear none', () => {
+    const sentence = 'something with a knight';
+    expect(draftGameSpecWithMeta(sentence).genre?.genre).not.toBe('platformer');
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading: reading({ verbs: [{ word: 'jump', class: 'platform' }] }) });
+    expect(meta.genre?.genre).toBe('platformer');
+    expect(meta.spec.control).toBe('platform');
     expect(meta.readBy).toBe('model');
   });
 
-  it('a tap_go reading drafts the grid with the roles it read', () => {
+  it('the hero, the setting and the items of the reading land in the genre spec', () => {
     const meta = draftGameSpecWithMeta('something with a knight and three keys', 1, {
       reading: reading({ control: 'tap_go', hero: 'a knight', roles: [{ noun: 'keys', kind: 'collectible', count: 3 }], setting: 'a haunted castle' }),
     });
-    expect(meta.spec.control).toBeUndefined();
-    expect(meta.archetype).toBe('collect_exit');
+    expect(meta.genre).toMatchObject({ hero: 'knight', collectible: 'key', setting: 'haunted castle' });
     expect(label(meta.spec, 'player')).toBe('knight');
     expect(meta.spec.theme.setting).toBe('haunted castle');
     expect(meta.spec.roles.map((role) => role.label)).toContain('key');
@@ -77,20 +80,17 @@ describe('draft from the local reading', () => {
     expect(label(spec, 'player')).toBe('corgi');
   });
 
-  it('counts come from the reading, over the counts the keywords found', () => {
-    const sentence = 'run through a city and grab 5 coins';
-    expect(count(draftGameSpec(sentence), 'coin')).toBe(5);
-    const read = draftGameSpecWithMeta(sentence, 1, { reading: reading({ roles: [{ noun: 'coins', kind: 'collectible', count: 12 }] }) }).spec;
-    expect(count(read, 'coin')).toBe(12);
+  // `GenreSpec` počty nenese (kontrakt P32-0); počty z věty čte jen šablona remixu – požadavek na kontrakt je v plánu P32B.
+  it('the remix template takes counts from the sentence; the genre draft takes the obstacle the reading names', () => {
+    expect(count(legacyDraft('run through a city and grab 5 coins'), 'coin')).toBe(5);
     const threats = draftGameSpecWithMeta('run through a city', 1, { reading: reading({ roles: [{ noun: 'cones', kind: 'obstacle', count: 7 }] }) }).spec;
     expect(label(threats, 'obstacle')).toBe('cone');
-    expect(count(threats, 'obstacle')).toBe(7);
   });
 
-  it('seconds of the reading set the grid timer', () => {
+  it('seconds of the reading set the round length', () => {
     const meta = draftGameSpecWithMeta('survive the storm', 1, { reading: reading({ control: 'tap_go', numbers: { seconds: 45, counts: [] } }) });
-    expect(meta.archetype).toBe('survival_timer');
-    expect(JSON.stringify(meta.spec)).toContain('45');
+    expect(meta.genre).toMatchObject({ genre: 'arena', mode: 'escape', params: { seconds: 45 } });
+    expect(meta.spec.objective).toMatchObject({ kind: 'survive', seconds: 45 });
   });
 
   it('every draft of the 20 recorded readings publishes: the robot wins it', () => {

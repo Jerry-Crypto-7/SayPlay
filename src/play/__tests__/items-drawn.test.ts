@@ -3,10 +3,14 @@
  *
  * Mapa ztrát T1 (`evals/play/p30b/losses.json`) je baseline: slovní draft i
  * zmrazené AI specy (`live.json`) přes řetěz věrnosti na HEAD. Položka, kterou
- * baseline kreslil, kreslená zůstává, a kreslených položek (draft + ai, korpus
- * + judge-10) je aspoň o deset víc. Zisk jde z knihovny a vykreslení: závod,
- * rytmus a načasování kreslí popisek svých těl, soupeř souboje je postava
- * s nejbližší kategorií, auto soupeře je „traffic“ a kropítko má vlastní model.
+ * baseline kreslil, kreslená zůstává, a kreslených položek (korpus + judge-10)
+ * je víc. Zisk jde z knihovny a vykreslení: závod, rytmus a načasování kreslí
+ * popisek svých těl, soupeř souboje je postava s nejbližší kategorií, auto
+ * soupeře je „traffic“ a kropítko má vlastní model.
+ *
+ * Od P32B T2 hlídá úbytek a zisk jen zdroj AI: slovní draft nové hry je žánr
+ * a co z něj scéna nakreslí, rozhoduje modul žánru (P32B T6 nad skutečnými
+ * moduly); že draft položku z věty do specu zapíše, hlídá `draft.test.ts`.
  */
 
 import { readFileSync } from 'node:fs';
@@ -40,7 +44,7 @@ const sentences = [
   ...read<{ sentences: Sentence[] }>('evals', 'play', 'fidelity', 'judge-10.json').sentences,
 ];
 const live = new Map(read<{ sentences: { id: string; spec: GameSpecV1 }[] }>('evals', 'play', 'p30b', 'live.json').sentences.map((entry) => [entry.id, entry.spec]));
-const baseline = read<{ rows: Row[] }>('evals', 'play', 'p30b', 'losses.json').rows.filter((row) => row.role === 'item');
+const baseline = read<{ rows: Row[] }>('evals', 'play', 'p30b', 'losses.json').rows.filter((row) => row.role === 'item' && row.source === 'ai');
 
 const key = (row: Pick<Row, 'source' | 'id' | 'item'>): string => `${row.source}|${row.id}|${row.item}`;
 
@@ -85,10 +89,11 @@ describe('the items from the sentence are drawn with their own model', () => {
     expect(found.filter((row) => now.get(row) !== true)).toEqual([]);
   });
 
-  it('draws at least ten more items than the baseline, draft and ai together', () => {
+  // Podíl AI na zisku P30B (31 → 38); draft měl zbytek do +10.
+  it('draws at least seven more ai items than the baseline', () => {
     const before = baseline.filter((row) => row.drawn).length;
     const after = baseline.filter((row) => now.get(key(row)) === true).length;
-    expect(after).toBeGreaterThanOrEqual(before + 10);
+    expect(after).toBeGreaterThanOrEqual(before + 7);
   });
 });
 

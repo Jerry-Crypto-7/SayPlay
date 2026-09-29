@@ -11,12 +11,15 @@ import type { GameSpecV1 } from '@/play/spec';
 
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
 
+import { legacyDraft } from './legacy-draft';
+
 const stages = (items: ReturnType<typeof fidelityChain>) => items.map((item) => [item.item, item.inSpec, item.read, item.drawn, item.why]);
 
 describe('fidelityChain', () => {
   it('counts a verb fulfilled by an addon as read', () => {
     const shoot: ChecklistEntry = { item: 'shoot', slot: 'verb', controls: ['shooter'] };
-    const spec = draftGameSpec('jump and shoot the zombies');
+    // Doplňky („+shoot“) přidává jen šablona remixu (P32B T2); žánr dvě slovesa nesčítá.
+    const spec = legacyDraft('jump and shoot the zombies');
     expect(spec.control).toBe('platform');
     expect(spec.addons).toEqual(['shoot']);
     expect(stages(fidelityChain(spec, [shoot]))).toEqual([['shoot', true, true, true, 'ok']]);
