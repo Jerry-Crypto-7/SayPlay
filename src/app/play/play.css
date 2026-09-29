@@ -311,27 +311,7 @@
   }
 }
 
-.play-stage-shake {
-  animation: play-stage-shake 150ms linear;
-}
-
-@keyframes play-stage-shake {
-  25% {
-    transform: translate(-7px, 3px);
-  }
-  50% {
-    transform: translate(6px, -4px);
-  }
-  75% {
-    transform: translate(-4px, 2px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .play-stage-shake {
-    animation: none;
-  }
-}
+/* P32A: otřes po zásahu dělá kamera scény (`effects/Effects.tsx`), CSS třída `play-stage-shake` zmizela. */
 
 /* Střelba doplňku +shoot: palec vpravo dole, mimo HUD a obrazovku po hře. */
 .play-fire {

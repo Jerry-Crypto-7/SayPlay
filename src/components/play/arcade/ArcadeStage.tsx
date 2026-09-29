@@ -37,6 +37,7 @@ import { RunnerWorld } from './runner/RunnerWorld';
 import type { ArcadeSession } from './session';
 import { useSteerInput } from './steer/SteerScene';
 import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
+import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
 
 /**
@@ -403,9 +404,8 @@ function FireButton({ session }: { readonly session: ArcadeSession }) {
   );
 }
 
-/** Jak dlouho visí „+1“ nad hráčem a jak dlouho třese obraz po zásahu (P28C T3). */
+/** Jak dlouho visí „+1“ nad hráčem (P28C T3). */
 export const SCORE_POP_MS = 500;
-const SHAKE_MS = 150;
 
 interface ScorePop {
   readonly id: number;
@@ -416,8 +416,8 @@ interface ScorePop {
 
 /**
  * Odezva nad plátnem (P28C T3), společná všem scénám: „+N“ nad hráčem při
- * bodu a otřes obrazu při zásahu. Je to DOM nad plátnem – žádný draw call
- * navíc, kamera scény ani stav relace se nemění. Poloha „+N“ je `data-player-x`,
+ * bodu. Je to DOM nad plátnem – žádný draw call navíc, stav relace se nemění.
+ * Otřes po zásahu dělá kamera (`effects/Effects.tsx`, P32A T4). Poloha „+N“ je `data-player-x`,
  * který píše scéna běžce, plošinovky, poletování a závodu; ostatní scény ho
  * nemají a „+N“ je uprostřed.
  */
@@ -440,14 +440,6 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
         const pop = { id: (next += 1), amount, left: 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50 };
         setPops((current) => [...current, pop]);
         later(SCORE_POP_MS, () => setPops((current) => current.filter((entry) => entry.id !== pop.id)));
-      }
-      const element = surface.current;
-      if (element !== null && events.some((event) => event.kind === 'damage')) {
-        // Znovu spustit animaci i při zásahu v jejím průběhu: bez přepočtu stylu by třída jen zůstala.
-        element.classList.remove('play-stage-shake');
-        void element.offsetWidth;
-        element.classList.add('play-stage-shake');
-        later(SHAKE_MS, () => element.classList.remove('play-stage-shake'));
       }
     });
     return () => {
@@ -529,8 +521,10 @@ const StageCanvas = memo(function StageCanvas({
           )}
         </>
       )}
+      {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
+      {look.terrain?.cap !== undefined && <Snowfall />}
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
-      <Effects session={session} />
+      <Effects session={session} look={look} surface={surface} />
     </Canvas>
   );
 });
