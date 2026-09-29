@@ -1,9 +1,11 @@
 {
-  "$comment": "Kam model míří (P32C T1): výchozí osa podle sady, `models` přepisuje jednotlivé modely. Katalog u všech 783 modelů udává front +Z; přepis patří sem, až ho galerie hrdinů (T5) změří sondou orientace. Čte scripts/assets/p32-manifest.mjs.",
+  "$comment": "Kam model míří (P32C T1): výchozí osa podle sady, `models` přepisuje jednotlivé modely. Katalog u všech 783 modelů udává front +Z; přepis patří sem, když galerie hrdinů (T5, evals/play/p32/heroes) ukáže model bokem nebo zády – natočení se soudí okem, sonda v galerii se jen zapisuje. gen3d-pirate-ship (30. 9.): kýl leží podél x (trup shora 0,70 × 0,42, čelen na obou koncích osy x), příď k +x podle vlajky na stěžni a rozvětveného čelenu. Čte scripts/assets/p32-manifest.mjs.",
   "sets": {
     "original": "+z",
     "cc0": "+z",
     "gen3d": "+z"
   },
-  "models": {}
+  "models": {
+    "gen3d-pirate-ship": "+x"
+  }
 }
