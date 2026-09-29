@@ -86,6 +86,8 @@ describe('hero choice by identity, then class (P32C T2)', () => {
   it('reports near, class and fallback when the sentence names no model', () => {
     // Blízká identita ve stejné třídě: vlk → pes, jen protože vlk v manifestu není.
     expect(heroChoice('grey wolf', 'runner', 'runner')).toMatchObject({ model: 'dog', level: 'near' });
+    // Blízká identita před třídou: „lizard“ má třídu (liška), „wolf“ blízkou identitu (pes) – vyhraje pes.
+    expect(heroChoice('lizard wolf', 'runner', 'runner')).toMatchObject({ model: 'dog', level: 'near' });
     expect(heroChoice('wild lizard', 'runner', 'runner')).toMatchObject({ model: 'fox', level: 'class' });
     // Plavba zvíře připouští, stroj ne: vysokozdvižný vozík v závodě zůstane autem.
     expect(heroChoice('wild lizard', 'voyage', 'steer')).toMatchObject({ model: 'fox', level: 'class' });

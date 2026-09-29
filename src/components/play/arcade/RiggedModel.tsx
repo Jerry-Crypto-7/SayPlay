@@ -48,6 +48,22 @@ export function proceduralPose(group: Group, state: ClipState | null, since: num
   group.scale.set(1 - stretch / 2, 1 + stretch, 1 - stretch / 2);
 }
 
+/** Stav těla a jak dlouho v něm je (s). */
+export interface HeldState {
+  readonly state: ClipState;
+  readonly since: number;
+}
+
+/**
+ * Jeden snímek `useFrame` pro pohyb bez klipu: čas ve stavu roste, nový stav ho
+ * vynuluje, a `proceduralPose` dostane stav jen tehdy, když na něj postava klip nemá.
+ */
+export function poseTick(group: Group | null, held: HeldState | null, now: ClipState, hasClip: (state: ClipState) => boolean, step: number, h: number): HeldState {
+  const next = held?.state === now ? { state: now, since: held.since + step } : { state: now, since: 0 };
+  if (group !== null) proceduralPose(group, hasClip(now) ? null : now, next.since, h);
+  return next;
+}
+
 const cache = new Map<string, Promise<GLTF | null>>();
 
 function loadRigged(path: string): Promise<GLTF | null> {
@@ -124,13 +140,12 @@ export function RiggedModel({
   const playing = useRef<ClipState | null>(null);
   const holder = useRef<Group>(null);
   /** Stav těla a jak dlouho v něm je – pro pohyb stavu, na který postava klip nemá. */
-  const held = useRef<{ state: ClipState; since: number } | null>(null);
+  const held = useRef<HeldState | null>(null);
   useFrame((_, delta) => {
     if (rig === null) return;
     const now = clip();
     const step = Math.min(delta, MAX_MIXER_STEP_S);
-    held.current = held.current?.state === now ? { state: now, since: held.current.since + step } : { state: now, since: 0 };
-    if (holder.current !== null) proceduralPose(holder.current, rig.actions.has(now) ? null : now, held.current.since, h);
+    held.current = poseTick(holder.current, held.current, now, (state) => rig.actions.has(state), step, h);
     const wanted = FALLBACK[now].find((candidate) => rig.actions.has(candidate)) ?? 'idle';
     if (wanted !== playing.current) {
       const next = rig.actions.get(wanted);
