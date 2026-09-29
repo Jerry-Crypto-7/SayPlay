@@ -9,7 +9,7 @@ export interface ShotsOptions {
   fpsSeconds: number;
   playableTimeoutMs: number;
   /** CDP zpomalení CPU desktopové fáze; 1 = bez zátěže. */
-  desktopCpuThrottle: number;
+  desktopCpuThrottle?: number;
 }
 
 export type LoadCategory = 'html' | 'js' | 'api' | 'glb' | 'panorama' | 'rapier' | 'audio' | 'other';
