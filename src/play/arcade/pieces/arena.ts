@@ -17,6 +17,12 @@
  * **Hratelné z konstrukce:** kolem startu leží věnec potravy a větší buňky
  * startují daleko – hladová cesta po nejbližší potravě vyroste nad první
  * větší buňku dřív, než k hráči dojede. `checkArenaLevel` to přepočítá.
+ *
+ * **Útěk a sběr (P32E T1)** jsou režimy téže arény (generátory `arena_escape`
+ * a `arena_collect`, konec souboru): hráč pevné velikosti sbírá věci a v útěku
+ * ho honí pronásledovatelé. Ovládání, pravidla i robot jsou tytéž kusy – nový
+ * svět je pozná podle parametrů (`size`, `chase`, `grace`, `wake`), které agar
+ * nikdy nenese, takže uložené agar hry mají parametry i hash beze změny.
  */
 
 import { z } from 'zod';
@@ -26,6 +32,7 @@ import { createCompileRng } from '@/play/compile/rng';
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
+  type ArcadeCounter,
   type ArcadeEffect,
   type ArcadeLevel,
   AXIS_MAX,
@@ -36,6 +43,7 @@ import {
   FLAG,
   type GeneratorPiece,
   HEADER,
+  type ModeGeneratorPiece,
   type PieceRef,
   ROLE,
   type RulePiece,
@@ -73,6 +81,43 @@ export const ARENA = {
   hunterPoints: 3,
   reactionTicks: 8,
 } as const;
+
+/**
+ * Útěk a sběr (P32E T1). **Férový start** (29. 9.: čaroděj prohrál za 3,2 s,
+ * pes chytil lišku za 3,5 s): pronásledovatelé startují za zády hráče (−z;
+ * kamera stojí za ním a dívá se po +z) tak daleko, aby nečinného hráče
+ * nedostihli dřív než za `idleContactTicks`, a celou ochranu `graceTicks` stojí.
+ */
+export const ESCAPE = {
+  /** Ochrana na startu a po chycení se životem navíc: pronásledovatelé stojí, chycení neplatí. */
+  graceTicks: 2 * ARCADE_HZ,
+  /** Nečinného hráče první pronásledovatel nesmí dostihnout dřív (UI audit 29. 9.). */
+  idleContactTicks: 5 * ARCADE_HZ,
+  /** Pronásledovatel startuje aspoň tolik procent poloviny strany arény od hráče. */
+  minDistancePct: 40,
+  /** Náhodný přídavek ke startovní vzdálenosti pronásledovatele. */
+  distanceJitter: UNIT,
+  /** Výseč za zády: ± tolik směrů po 11,25° od přímého −z (směr 16); sousední pronásledovatelé aspoň `chaserSpacing` směrů od sebe. */
+  backArc: 5,
+  chaserSpacing: 2,
+  chaserSize: 1200,
+  chaserHeight: 1400,
+  /** Rychlost pronásledovatele za tik – vždy pod hráčovou (`ARENA.speed`), jinak z něj nejde utéct. */
+  chaserSpeed: { min: 50, max: 90, default: 70 },
+  itemSize: 500,
+  /** Věc leží aspoň tak daleko od startu hráče, od místa pronásledovatele, od jiné věci a od stěny. */
+  itemClearance: { start: 2 * UNIT, chaser: 5 * UNIT, item: 2 * UNIT, wall: UNIT },
+} as const;
+
+/**
+ * Čítač ochrany: jediný, který v aréně nic jiného nečte – `cooldown` a `trigger`
+ * patří střelbě doplňku `+shoot`, `items` pravidlům specu. Ovládání ho odpočítává,
+ * `arena_eat` v něm chycení nepočítá a chycení se životem navíc ho znovu nabije.
+ */
+export const GRACE_COUNTER: ArcadeCounter = 'reserve';
+
+/** Zbývající tiky ochrany. */
+export const graceLeft = (state: Int32Array): number => state[HEADER.counters + COUNTER[GRACE_COUNTER]] as number;
 
 // ---------------------------------------------------------------------------
 // Směry
@@ -129,7 +174,18 @@ const toward = (value: number, target: number, step: number): number => (value <
 // ---------------------------------------------------------------------------
 // Ovládání
 
-const controlParams = z.object({ half: z.int().min(5 * UNIT).max(40 * UNIT).default(ARENA.half) }).strict();
+const chaseParams = z.object({ speed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max) }).strict();
+export type ChaseParams = z.infer<typeof chaseParams>;
+
+const controlParams = z
+  .object({
+    half: z.int().min(5 * UNIT).max(40 * UNIT).default(ARENA.half),
+    /** Útěk a sběr: hráč má pevnou velikost; bez ní roste se skóre (agar). */
+    size: z.int().min(ESCAPE.itemSize).max(ARENA.maxSize).optional(),
+    /** Útěk: pronásledovatele vede ovládání a odpočítává ochranu (`GRACE_COUNTER`). */
+    chase: chaseParams.optional(),
+  })
+  .strict();
 export type ArenaControlParams = z.infer<typeof controlParams>;
 
 /** Deterministický „náhodný“ směr bloudění z indexu a tiku (celá čísla, žádná náhoda za běhu). */
@@ -176,15 +232,44 @@ function moveCells(state: Int32Array, player: number, half: number): void {
   }
 }
 
-/** Ovládání volného pohybu: osa = směr, velikost ze skóre, hráč zůstane v aréně. */
+/**
+ * Pronásledovatelé útěku (P32E T1): v ochraně stojí a ovládání ji odpočítá,
+ * pak jdou přímo na hráče (T2 je naučí předvídat a obcházet). Stěna arény je
+ * nepustí ven stejně jako buňky agaru.
+ */
+function steerChasers(state: Int32Array, player: number, half: number, chase: ChaseParams): void {
+  const at = HEADER.counters + COUNTER[GRACE_COUNTER];
+  const grace = state[at] as number;
+  if (grace > 0) state[at] = grace - 1;
+  const count = state[HEADER.bodyCount] as number;
+  const p = bodyBase(player);
+  for (let i = 0; i < count; i += 1) {
+    const base = bodyBase(i);
+    if (state[base + BODY.role] !== ROLE.chaser || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    if (grace > 0) {
+      state[base + BODY.vx] = 0;
+      state[base + BODY.vz] = 0;
+      continue;
+    }
+    const x = state[base + BODY.x] as number;
+    const zz = state[base + BODY.z] as number;
+    const direction = directionToward((state[p + BODY.x] as number) - x, (state[p + BODY.z] as number) - zz);
+    const dir = direction < 0 ? { dx: 0, dz: 0 } : DIRECTIONS[direction]!;
+    const size = state[base + BODY.w] as number;
+    state[base + BODY.vx] = bounce(x, Math.trunc((dir.dx * chase.speed) / 1000), size, half);
+    state[base + BODY.vz] = bounce(zz, Math.trunc((dir.dz * chase.speed) / 1000), size, half);
+  }
+}
+
+/** Ovládání volného pohybu: osa = směr, velikost ze skóre (nebo pevná), hráč zůstane v aréně. */
 export const moveFreeControl: ControlPiece<ArenaControlParams> = {
   id: 'move_free',
   params: controlParams,
-  roles: ['player', 'enemy', 'collectible'],
+  roles: ['player', 'enemy', 'collectible', 'chaser'],
   cost: () => ({ bodies: 1, rules: 0 }),
   step: (state, player, input, params) => {
     const base = bodyBase(player);
-    const size = sizeOf(state[HEADER.counters + COUNTER.score] as number);
+    const size = params.size ?? sizeOf(state[HEADER.counters + COUNTER.score] as number);
     state[base + BODY.w] = size;
     state[base + BODY.d] = size;
 
@@ -203,6 +288,7 @@ export const moveFreeControl: ControlPiece<ArenaControlParams> = {
     state[base + BODY.vz] = Math.max(-limit - zz, Math.min(limit - zz, vz));
 
     moveCells(state, player, params.half);
+    if (params.chase !== undefined) steerChasers(state, player, params.half, params.chase);
   },
 };
 
