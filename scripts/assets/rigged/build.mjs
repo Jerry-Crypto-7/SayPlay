@@ -14,7 +14,9 @@
  * velikosti se nezařadí a důvod jde do `excluded` v manifestu.
  *
  * Píše `public/assets/worldstream/rigged/<id>.glb`, `PROVENANCE.md` vedle nich,
- * manifest `src/assets/rigged.json` a položky těch souborů v `disclosure.json`.
+ * manifesty `src/assets/rigged.json` (P26B) a `src/assets/rigged-p32.json`
+ * (hrdinové vět P32, `P32_CHARACTERS`) a položky těch souborů v `disclosure.json`.
+ * Vnější textura větší než `MAX_TEXTURE` se při vkládání zmenší.
  */
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
@@ -23,6 +25,7 @@ import { fileURLToPath } from 'node:url';
 
 import { Box3, Matrix4, Quaternion, Vector3 } from 'three';
 import validator from 'gltf-validator';
+import sharp from 'sharp';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..', '..', '..');
@@ -30,6 +33,9 @@ const OUT_DIR = path.join(ROOT, 'public', 'assets', 'worldstream', 'rigged');
 const PUBLIC_PREFIX = '/assets/worldstream/rigged';
 export const MAX_TRIANGLES = 12_500;
 export const MAX_BYTES = 1.5 * 1024 * 1024;
+/** Rozpočet hrdiny P32 (plán P32C): GLB do 400 KB, textury do 512 px. */
+export const HERO_MAX_BYTES = 400 * 1024;
+export const MAX_TEXTURE = 512;
 /** Výška postavy po normalizaci (m); scéna ji stejně vepíše do kvádru těla. */
 const HEIGHT_M = 1.8;
 const REQUIRED = ['idle', 'run'];
@@ -62,6 +68,25 @@ export const CHARACTERS = [
   { id: 'girl-b', name: 'Girl B', source: 'kenney-mini-characters', file: 'Models/GLB format/character-female-b.glb', tags: ['girl', 'kid', 'woman', 'person', 'human', 'student'], clips: KENNEY_MINI },
   { id: 'girl-c', name: 'Girl C', source: 'kenney-mini-characters', file: 'Models/GLB format/character-female-c.glb', tags: ['girl', 'kid', 'woman', 'person', 'human'], clips: KENNEY_MINI },
   { id: 'mannequin', name: 'Mannequin', source: 'quaternius-ual', file: 'AnimationLibrary_Godot_Standard.gltf', tags: ['mannequin', 'dummy', 'robot', 'android'], clips: UAL },
+];
+
+/** Kenney Cube Pets: kostičková zvířata, klipy pohybují díly těla; skok, zásah ani smrt nemají. */
+const CUBE_PET = { idle: 'idle', run: 'run' };
+const KENNEY_CHARACTER = { idle: 'idle', run: 'sprint', jump: 'jump', die: 'die' };
+
+/**
+ * Hrdinové a nepřátelé vět P32, kteří měli jen statický model (P32C T2, `STATIC`
+ * v `hero-choice.test.ts`). Id se liší od modelů katalogu (`cat`, `ghost`), ať
+ * manifest drží obě položky. Kuchař a žralok nejdou stáhnout headless –
+ * `evals/play/p32/kits-missing.md`.
+ */
+export const P32_CHARACTERS = [
+  { id: 'pet-penguin', name: 'Cube Penguin', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-penguin.glb', tags: ['penguin'], clips: CUBE_PET },
+  { id: 'pet-cat', name: 'Cube Cat', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-cat.glb', tags: ['cat', 'kitten', 'kitty'], clips: CUBE_PET },
+  { id: 'pet-dog', name: 'Cube Dog', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-dog.glb', tags: ['dog', 'puppy', 'pup', 'hound'], clips: CUBE_PET },
+  { id: 'pet-polar-bear', name: 'Cube Polar Bear', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-polar.glb', tags: ['polar-bear', 'bear'], clips: CUBE_PET },
+  { id: 'graveyard-ghost', name: 'Graveyard Ghost', source: 'kenney-graveyard-kit', file: 'Models/GLB format/character-ghost.glb', tags: ['ghost', 'spirit', 'phantom', 'spook'], clips: KENNEY_CHARACTER },
+  { id: 'blocky-robot', name: 'Blocky Robot', source: 'kenney-blocky-characters', file: 'Models/GLB format/character-g.glb', tags: ['robot', 'android', 'droid', 'bot'], clips: KENNEY_CHARACTER },
 ];
 
 // ---------------------------------------------------------------------------
@@ -112,7 +137,9 @@ async function load(file) {
   let length = bin.length;
   for (const image of doc.images ?? []) {
     if (image.uri === undefined) continue;
-    const data = await readFile(path.join(path.dirname(file), decodeURIComponent(image.uri)));
+    const original = await readFile(path.join(path.dirname(file), decodeURIComponent(image.uri)));
+    const { width, height } = await sharp(original).metadata();
+    const data = Math.max(width, height) > MAX_TEXTURE ? await sharp(original).resize(MAX_TEXTURE, MAX_TEXTURE, { fit: 'inside' }).toBuffer() : original;
     const pad = (4 - (length % 4)) % 4;
     chunks.push(Buffer.alloc(pad), data);
     doc.bufferViews.push({ buffer: 0, byteOffset: length + pad, byteLength: data.length });
@@ -229,7 +256,7 @@ function triangles(doc) {
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 /** Jedna postava → `{ ok, bytes, entry }` nebo `{ ok: false, reason }`. */
-export async function buildCharacter(character, cacheDir) {
+export async function buildCharacter(character, cacheDir, maxBytes = MAX_BYTES) {
   const file = path.join(cacheDir, character.source, ...character.file.split('/'));
   const { doc, bin } = await load(file);
   const names = new Set((doc.animations ?? []).map((animation) => animation.name));
@@ -242,7 +269,7 @@ export async function buildCharacter(character, cacheDir) {
   standOnBase(doc);
   doc.asset = { ...doc.asset, generator: 'worldstream scripts/assets/rigged/build.mjs' };
   const bytes = writeGlb(doc, packed);
-  if (bytes.length > MAX_BYTES) return { ok: false, reason: `${bytes.length} bytes over the ${MAX_BYTES} budget` };
+  if (bytes.length > maxBytes) return { ok: false, reason: `${bytes.length} bytes over the ${maxBytes} budget` };
   const report = await validator.validateBytes(new Uint8Array(bytes), { uri: `${character.id}.glb`, maxIssues: 50 });
   if (report.issues.numErrors > 0) return { ok: false, reason: `glTF validator: ${report.issues.messages.filter((m) => m.severity === 0).map((m) => m.code).join(', ')}` };
   return { ok: true, bytes, clips, triangles: tris, sourceFile: file };
@@ -254,54 +281,62 @@ async function main() {
   const sources = new Map(fetched.sources.map((source) => [source.id, source]));
   await rm(OUT_DIR, { recursive: true, force: true });
   await mkdir(OUT_DIR, { recursive: true });
-  const characters = [];
-  const excluded = [];
-  for (const character of CHARACTERS) {
-    const source = sources.get(character.source);
-    if (source?.status !== 'fetched') {
-      excluded.push({ id: character.id, reason: `source ${character.source} was not fetched` });
-      continue;
-    }
-    const sourceFile = source.files.find((f) => f.path === `${character.source}/${character.file}`);
-    const built = await buildCharacter(character, cacheDir);
-    if (!built.ok) {
-      excluded.push({ id: character.id, reason: built.reason });
-      console.log(`excluded  ${character.id}  – ${built.reason}`);
-      continue;
-    }
-    await writeFile(path.join(OUT_DIR, `${character.id}.glb`), built.bytes);
-    characters.push({
-      id: character.id,
-      name: character.name,
-      tags: character.tags,
-      path: `${PUBLIC_PREFIX}/${character.id}.glb`,
-      clips: built.clips,
-      triangles: built.triangles,
-      bytes: built.bytes.length,
-      sha256: sha256(built.bytes),
-      license: source.license,
-      author: source.author,
-      pack: source.name,
-      page: source.page,
-      sourceUrl: sourceFile?.url ?? null,
-      sourceSha256: sourceFile?.sha256 ?? null,
-    });
-    console.log(`built     ${character.id}  ${built.triangles} tris  ${(built.bytes.length / 1024).toFixed(0)} KB  ${Object.keys(built.clips).join(',')}`);
-  }
 
-  const manifest = {
-    $comment: 'Riggované CC0 postavy s klipy (P26B T4). Generuje scripts/assets/rigged/build.mjs – needitovat ručně. clips: stav hry → jméno klipu v GLB.',
-    version: 1,
-    characters,
-    excluded,
+  /** Sestaví seznam postav do `OUT_DIR` a vrátí záznamy manifestu a vyřazené s důvodem. */
+  const buildAll = async (list, maxBytes, plan) => {
+    const characters = [];
+    const excluded = [];
+    for (const character of list) {
+      const source = sources.get(character.source);
+      if (source?.status !== 'fetched') {
+        excluded.push({ id: character.id, reason: `source ${character.source} was not fetched` });
+        continue;
+      }
+      const sourceFile = source.files.find((f) => f.path === `${character.source}/${character.file}`);
+      const built = await buildCharacter(character, cacheDir, maxBytes);
+      if (!built.ok) {
+        excluded.push({ id: character.id, reason: built.reason });
+        console.log(`excluded  ${character.id}  – ${built.reason}`);
+        continue;
+      }
+      await writeFile(path.join(OUT_DIR, `${character.id}.glb`), built.bytes);
+      characters.push({
+        id: character.id,
+        name: character.name,
+        tags: character.tags,
+        path: `${PUBLIC_PREFIX}/${character.id}.glb`,
+        clips: built.clips,
+        triangles: built.triangles,
+        bytes: built.bytes.length,
+        sha256: sha256(built.bytes),
+        license: source.license,
+        author: source.author,
+        pack: source.name,
+        page: source.page,
+        sourceUrl: sourceFile?.url ?? null,
+        sourceSha256: sourceFile?.sha256 ?? null,
+        plan,
+      });
+      console.log(`built     ${character.id}  ${built.triangles} tris  ${(built.bytes.length / 1024).toFixed(0)} KB  ${Object.keys(built.clips).join(',')}`);
+    }
+    return { characters, excluded };
   };
-  await writeFile(path.join(ROOT, 'src', 'assets', 'rigged.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const base = await buildAll(CHARACTERS, MAX_BYTES, 'P26B');
+  const p32 = await buildAll(P32_CHARACTERS, HERO_MAX_BYTES, 'P32C');
+  const manifest = (comment, built) => `${JSON.stringify({ $comment: comment, version: 1, characters: built.characters.map(({ plan, ...character }) => character), excluded: built.excluded }, null, 2)}\n`;
+  await writeFile(path.join(ROOT, 'src', 'assets', 'rigged.json'), manifest('Riggované CC0 postavy s klipy (P26B T4). Generuje scripts/assets/rigged/build.mjs – needitovat ručně. clips: stav hry → jméno klipu v GLB.', base));
+  await writeFile(
+    path.join(ROOT, 'src', 'assets', 'rigged-p32.json'),
+    manifest('Animovaní hrdinové vět P32 (P32C T3), rozpočet 400 KB a textury 512 px. Generuje scripts/assets/rigged/build.mjs – needitovat ručně. clips: stav hry → jméno klipu v GLB; chybějící stav pohne kód.', p32),
+  );
+  const characters = [...base.characters, ...p32.characters];
 
   const packs = [...new Set(characters.map((c) => c.pack))];
   const provenance = [
     '# Riggované postavy – původ',
     '',
-    'Generuje `scripts/assets/rigged/build.mjs` ze souborů, které stáhl `scripts/assets/rigged/fetch.mjs` (sha256 zdrojů v `scripts/assets/rigged/fetched.json`). Úpravy: jen namapované klipy, textury vložené do GLB, kořenový uzel na podstavu a výšku 1,8 m. Geometrie ani klipy se nemění.',
+    'Generuje `scripts/assets/rigged/build.mjs` ze souborů, které stáhl `scripts/assets/rigged/fetch.mjs` (sha256 zdrojů v `scripts/assets/rigged/fetched.json`). Úpravy: jen namapované klipy, textury vložené do GLB (vnější nad 512 px zmenšené), kořenový uzel na podstavu a výšku 1,8 m. Geometrie ani klipy se nemění.',
     '',
     ...packs.map((pack) => {
       const first = characters.find((c) => c.pack === pack);
@@ -321,7 +356,7 @@ async function main() {
       name: `public${character.path}`,
       kind: 'asset',
       firstParty: false,
-      reason: `Rigged animated character "${character.name}" for arcade roles (P26B); clips reduced to the game states, textures embedded, re-rooted on its base.`,
+      reason: `Rigged animated character "${character.name}" for arcade roles (${character.plan}); clips reduced to the game states, textures embedded, re-rooted on its base.`,
       source: `${character.pack} – ${character.sourceUrl}`,
       authorOrProvider: character.author,
       license: character.license,
@@ -345,7 +380,7 @@ async function main() {
     scope: 'prod',
   });
   await writeFile(disclosureFile, `${JSON.stringify(disclosure, null, 2)}\n`);
-  console.log(`${characters.length} characters, ${excluded.length} excluded`);
+  console.log(`${characters.length} characters, ${base.excluded.length + p32.excluded.length} excluded`);
 }
 
 if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

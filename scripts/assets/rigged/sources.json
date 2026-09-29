@@ -85,6 +85,46 @@
       "kind": "kenney",
       "license": "CC0-1.0",
       "page": "https://kenney.nl/assets/animated-characters-survivors"
+    },
+    {
+      "id": "kenney-cube-pets",
+      "name": "Kenney Cube Pets",
+      "author": "Kenney",
+      "kind": "kenney",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "$comment": "P32C T3: penguin, cat, dog, polar bear s klipy idle/walk/run. Text licence je License.txt v zipu."
+    },
+    {
+      "id": "kenney-graveyard-kit",
+      "name": "Kenney Graveyard Kit",
+      "author": "Kenney",
+      "kind": "kenney",
+      "license": "CC0-1.0",
+      "page": "https://kenney.nl/assets/graveyard-kit",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "$comment": "P32C T3: character-ghost.glb s klipy idle/sprint/jump/die. Text licence je License.txt v zipu."
+    },
+    {
+      "id": "quaternius-uacp",
+      "name": "Quaternius Ultimate Animated Character Pack",
+      "author": "Quaternius",
+      "kind": "skip",
+      "license": "CC0-1.0",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "skipReason": "P32C T3 chef: files only on Google Drive (https://drive.google.com/drive/folders/1sNi1AfenfPRrvRt5yfaj5QMMd6KKcUJ5), downloads hit the Drive quota page; see evals/play/p32/kits-missing.md"
+    },
+    {
+      "id": "quaternius-fish",
+      "name": "Quaternius Animated Fish Pack",
+      "author": "Quaternius",
+      "kind": "skip",
+      "license": "CC0-1.0",
+      "page": "https://quaternius.itch.io/lowpoly-animated-fish",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "skipReason": "P32C T3 shark: itch.io click-through download, FBX only (Shark.fbx, one clip Armature|Swim) and the pipeline reads glTF; see evals/play/p32/kits-missing.md"
     }
   ]
 }
