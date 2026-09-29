@@ -230,6 +230,9 @@ export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1, accept
   const rng = xoroshiro128plus(seed);
   const pick = (max: number): number => uniformInt(rng, 0, max - 1);
   const child = clone(parent);
+  // Parametry hry s delegovaným generátorem (P32-0 T4) patří generátoru režimu; čipy je číst neumějí.
+  const delegated = parent.controlParams !== undefined && ('generator' in parent.controlParams || 'tuning' in parent.controlParams);
+  if (delegated && chip !== 'reskin') return [];
   if (parent.control === 'runner' && chip !== 'reskin') {
     if (chip === 'harder') runnerHarder(child);
     else if (chip === 'twist') runnerTwist(child, pick, accept);

@@ -147,7 +147,8 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   const generator = generatorOf(spec);
-  const mode: ModeGeneratorPiece | undefined = MODE_GENERATORS[generator];
+  // Jen vlastní klíče: `generator: "constructor"` by jinak našel `Object` z prototypu (revize fáze P32-0).
+  const mode: ModeGeneratorPiece | undefined = Object.hasOwn(MODE_GENERATORS, generator) ? MODE_GENERATORS[generator] : undefined;
   const delegation = (spec.controlParams ?? {}) as { readonly generator?: string; readonly tuning?: unknown };
   if (delegation.generator !== undefined && mode === undefined && generator !== CONTROL_GENERATORS[spec.control ?? '']) {
     return { ok: false, issues: [`/controlParams/generator: no generator ${generator} for the ${spec.control} control`] };

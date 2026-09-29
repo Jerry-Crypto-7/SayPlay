@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { canonicalHash } from '@/ir/worlddoc';
+import { remixPatch } from '@/play/director/remix';
 import { type GenreSpec } from '@/play/genre/contract';
 import { compileGenre } from '@/play/genre/index';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
@@ -89,6 +90,23 @@ describe('P32-0 T4 kernel seams', () => {
   it('an unknown generator is refused, not silently replaced', () => {
     const made = arcadeWorldOf(read(delegate(compileGenre(SAMPLE.escape as GenreSpec), { generator: 'maze_walk' })), 1);
     expect(!made.ok && made.issues.join(' ')).toContain('no generator maze_walk');
+  });
+
+  it('a generator named after an Object prototype key is refused, not a crash', () => {
+    // Jiné klíče prototypu (`toString`, `__proto__`) odmítne už vzor jména v `spec.ts`.
+    for (const generator of ['constructor']) {
+      const made = arcadeWorldOf(read(delegate(compileGenre(SAMPLE.escape as GenreSpec), { generator })), 1);
+      expect(!made.ok && made.issues.join(' '), generator).toContain(`no generator ${generator}`);
+    }
+  });
+
+  it('remix chips leave a game with a delegated generator alone instead of crashing', () => {
+    const runner = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope' });
+    for (const extra of [{ generator: 'runner_track' }, { tuning: { coins: false } }]) {
+      const spec = read(delegate(runner, extra));
+      for (const chip of ['harder', 'twist', 'swap_enemy'] as const) expect(remixPatch(chip, spec, 1), `${chip} ${JSON.stringify(extra)}`).toEqual([]);
+    }
+    expect(remixPatch('harder', read(runner), 1).length).toBeGreaterThan(0);
   });
 
   it('a spec without the new fields reads back unchanged, so its hash does not move', () => {
