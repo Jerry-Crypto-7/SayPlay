@@ -32,6 +32,7 @@ import { ADDONS, type AddonId } from './arcade/contract';
 import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
 import { ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
+import { ALL_GENRE_MODES, GENRES, GENRE_MODES, isGenreMode } from './genre/contract';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
@@ -387,6 +388,15 @@ export const gameSpecSchema = z
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),
+    /**
+     * Žánr, ze kterého spec vznikl (P32, `genre/contract.ts`). Bez výchozí
+     * hodnoty, jako `control`: spec bez něj má stejný `gameSpecHash` jako dřív.
+     * Režim musí patřit žánru – soudí `readGameSpec`.
+     */
+    genre: z
+      .object({ id: z.enum(GENRES), mode: z.enum(ALL_GENRE_MODES), compilerVersion: z.string().min(1).max(32) })
+      .strict()
+      .optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
@@ -496,6 +506,9 @@ export function readGameSpec(input: unknown): GameSpecResult {
     if (!own.success) {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: own.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (${spec.control})`) };
     }
+  }
+  if (spec.genre !== undefined && !isGenreMode(spec.genre.id, spec.genre.mode)) {
+    return { ok: false, reason: 'MALFORMED_SPEC', issues: [`/genre/mode: ${spec.genre.id} has modes ${GENRE_MODES[spec.genre.id].join(', ')}, not ${spec.genre.mode}`] };
   }
   if (spec.addons !== undefined) {
     const allowed: readonly AddonId[] = CAPABILITIES[spec.control ?? 'tap_go'].addons;

@@ -75,8 +75,9 @@ function mechanicsOf(control: ControlId): z.ZodType {
 
 function variant(control: ControlId): z.ZodType {
   // `theme` bez počasí sdílené verze (P29D T10) – to model nepíše.
-  if (control === 'tap_go') return gameSpecSchema.omit({ controlParams: true }).extend({ control: z.literal('tap_go'), theme: themeSchema, mechanics: mechanicsOf(control) });
-  return gameSpecSchema.omit({ verification: true }).extend({
+  // `genre` (P32) zapisuje překlad žánru, ne model – dokud režisér píše GameSpec, v odpovědi není.
+  if (control === 'tap_go') return gameSpecSchema.omit({ controlParams: true, genre: true }).extend({ control: z.literal('tap_go'), theme: themeSchema, mechanics: mechanicsOf(control) });
+  return gameSpecSchema.omit({ verification: true, genre: true }).extend({
     control: z.literal(control),
     theme: themeSchema,
     controlParams: CONTROL_PARAMS[control] as z.ZodType,
