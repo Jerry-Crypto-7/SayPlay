@@ -36,7 +36,7 @@ export interface ValleyPalette {
   readonly rock: string;
 }
 
-const mix = (from: string, to: string, t: number): string => `#${new Color(from).lerp(new Color(to), t).getHexString()}`;
+export const mix = (from: string, to: string, t: number): string => `#${new Color(from).lerp(new Color(to), t).getHexString()}`;
 
 /** Barvy údolí: povrch je země sady, dráha, stín a skála z `look.terrain`, jinak odvozené. */
 export function valleyPalette(look: Look): ValleyPalette {
@@ -49,15 +49,15 @@ export function valleyPalette(look: Look): ValleyPalette {
   };
 }
 
-/** Celočíselný hash dvou souřadnic do [0, 1). */
-function hash(x: number, y: number): number {
+/** Celočíselný hash dvou souřadnic do [0, 1). Sdílí ho i ostatní generátory terénu (T9). */
+export function hash(x: number, y: number): number {
   let h = Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263);
   h = Math.imul(h ^ (h >>> 13), 1274126177);
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
 
 /** Hladký šum hodnot v [0, 1). */
-function noise(x: number, y: number): number {
+export function noise(x: number, y: number): number {
   const xi = Math.floor(x);
   const yi = Math.floor(y);
   const fx = x - xi;
@@ -71,7 +71,7 @@ function noise(x: number, y: number): number {
   return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
 }
 
-const smooth = (t: number): number => {
+export const smooth = (t: number): number => {
   const c = Math.min(1, Math.max(0, t));
   return c * c * (3 - 2 * c);
 };
