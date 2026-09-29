@@ -1184,6 +1184,20 @@ const DEFAULT_CHOICE: Readonly<Record<ControlChoice['control'], ControlChoice>> 
 };
 
 /**
+ * `GenreSpec`, který věta dá v zadaném režimu (P32B T5): role ze slov, jinak
+ * výchozí z prostředí. Kontrola věrnosti z něj čte hrdinu a nepřítele věty,
+ * oprava režiséra jím nahradí role, které odpověď napsala mimo větu. `null` =
+ * režim se nepřeloží.
+ */
+export function draftGenreFor(sentence: string, genre: GenreId, mode: string, options: DraftOptions = {}): GenreSpec | null {
+  const reading = options.reading ?? null;
+  const modules = options.modules ?? GENRE_MODULES;
+  const ranking = classifyGenre(sentence, reading, modules);
+  const choice = ranking.ranked.find((entry) => entry.genre === genre && entry.mode === mode);
+  return choice === undefined ? null : (draftGenre(sentence, reading, choice, ranking, modules)?.genre ?? null);
+}
+
+/**
  * Návrh ze slov pro ovládání, které vybral někdo jiný (P27D T2, kompaktní
  * režie): parametry z věty, když slova ukazují na totéž ovládání, jinak
  * výchozí volba. `null` jen když šablona s popisky věty neprojde schématem.

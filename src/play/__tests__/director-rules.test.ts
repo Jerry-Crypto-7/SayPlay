@@ -54,6 +54,14 @@ describe('reading refuses what no transport enforces', () => {
     expect(readDirectorAnswer(carryKey).ok).toBe(true);
   });
 
+  it('a repair patch with the stub interact trigger is refused whole, like a first answer (B-R6)', () => {
+    const game = readDirectorAnswer(carryKey);
+    if (!game.ok) throw new Error(game.detail);
+    const patched = applyRepairAnswer(game.spec, [{ op: 'replace', path: '/rules/0/when', value: { interact: { role: 'key', radius: 2, hold: 30, states: 2 } } }]);
+    expect(patched).toMatchObject({ ok: false, reason: 'MALFORMED_SPEC' });
+    expect(!patched.ok && patched.detail).toContain('/rules/0/when: interact does nothing yet');
+  });
+
   it('rules a repair round puts on the tap-to-move grid are refused, not dropped', () => {
     const grid = draftForControl(SENTENCE, 'tap_go');
     if (grid === null) throw new Error('no grid draft');

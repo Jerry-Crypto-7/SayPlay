@@ -49,9 +49,16 @@ function robot(spec: GameSpecV1): RepairIssue[] {
   return verifyArcade(made.world).failures.map((failure) => ({ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: `keypoint failed: ${failure}`, repairHint: 'fix the game or the claim' }));
 }
 
+/**
+ * První odpověď věrná větě (P32B T5): hlavní sloveso „throw“ hraje jen náhradu
+ * (quest.spatial), věrný `ready` režim je sběr v Aréně z „pick up“. Nevěrnou
+ * odpověď by kontrola věrnosti přepnula a robot by nad hrou ze žánru nikdy nevystřelil.
+ */
+const ANSWER = genreAnswer({ mode: 'collect' });
+
 /** Hra, kterou modul žánru složí z první odpovědi – bez pravidel. */
 const FIRST = (() => {
-  const read = readGenreAnswer(genreAnswer());
+  const read = readGenreAnswer(ANSWER);
   if (!read.ok) throw new Error(read.detail);
   return read.spec;
 })();
@@ -79,7 +86,7 @@ const WAVE = { id: 'wave', verb: 'wave', when: { press: 'action' }, do: [{ score
 
 async function run(repairs: readonly ScriptedOutcome[], check = asking(robot), cache?: Parameters<typeof direct>[1]['cache']) {
   let tick = 0;
-  const branch = fakeBranch([answered(genreAnswer()), ...repairs]);
+  const branch = fakeBranch([answered(ANSWER), ...repairs]);
   const game = await direct(SENTENCE, { branch, now: () => (tick += 100), check, maxRepairRounds: 2, ...(cache === undefined ? {} : { cache }) });
   return { game, branch };
 }

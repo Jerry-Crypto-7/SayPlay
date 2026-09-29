@@ -19,11 +19,18 @@ import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { POST as createGame } from '../games/route';
 
 // Každý `GenreSpec` složí modul žánru hratelně; nehratelnou hru pro opravné kolo
-// podvrhne až tahle záměna překladu – jako by modul žánru hru rozbil.
+// podvrhne až tahle záměna přečtené odpovědi – jako by modul žánru hru rozbil.
+// Od P32B T5 skládá `readGenreAnswer` hru modulem přímo, `compileGenre` nevolá.
 const genre = vi.hoisted(() => ({ unplayable: null as unknown }));
-vi.mock('@/play/genre/index', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/play/genre/index')>();
-  return { ...actual, compileGenre: (spec: Parameters<typeof actual.compileGenre>[0]) => genre.unplayable ?? actual.compileGenre(spec) };
+vi.mock('@/play/director/read', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/play/director/read')>();
+  const readGenreAnswer: typeof actual.readGenreAnswer = (body, modules) => {
+    const read = actual.readGenreAnswer(body, modules);
+    if (genre.unplayable === null || !read.ok) return read;
+    const game = actual.readModelSpec(genre.unplayable);
+    return game.ok ? { ...read, spec: game.spec } : game;
+  };
+  return { ...actual, readGenreAnswer };
 });
 
 const KEY = 'sk-test-d1-never-leaves-the-server';
@@ -120,7 +127,9 @@ describe('final API profile over a provider double (D1)', () => {
 
   it('repair: an unplayable answer gets one repair round and the repaired game is published', async () => {
     genre.unplayable = brokenSwitch();
-    upstream.script = [genreAnswer(), [{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }]];
+    // Odpověď věrná větě (P32B T5) – nevěrnou by režisér přepnul na jiný žánr místo opravného kola.
+    const faithful = genreAnswer({ hero: 'hamster', enemy: 'giant roomba', setting: 'supermarket', palette: 'supermarket' });
+    upstream.script = [faithful, [{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }]];
     const { outcome } = await create();
     expect(outcome.status).toBe('ready');
     expect(upstream.requests).toHaveLength(2);

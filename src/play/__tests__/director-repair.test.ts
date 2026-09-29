@@ -11,12 +11,18 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import sentenceSet from '../../../evals/play/p32/sentences.json';
 import combatLite from '../__fixtures__/combat_lite.json';
 import shooter from '../arcade/__fixtures__/shooter.json';
 import { GOOD_ANSWERS, answerFixture } from '../director/__fixtures__';
+import { answered, fakeBranch } from '../director/__fixtures__/branch';
 import { blockingIssues, critique } from '../director/critic';
+import { direct } from '../director/index';
 import { readDirectorAnswer } from '../director/read';
 import { MAX_REPAIR_ROUNDS, REPAIR_RULES, applyRepairAnswer, buildRepairRequest, repairDeterministically } from '../director/repair';
+import { draftGameSpecWithMeta } from '../draft';
+import { genreDoubles } from '../genre/__tests__/doubles';
+import { heroClass } from '../genre/roles';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const RULES_FILE = fileURLToPath(new URL('../../../docs/play/pack/repair.md', import.meta.url));
@@ -200,5 +206,65 @@ describe('model repair round', () => {
     const invalid = applyRepairAnswer(spec, [{ op: 'replace', path: '/objective/count', value: 99 }]);
     expect(invalid.ok).toBe(false);
     if (!invalid.ok) expect(invalid.reason).toBe('MALFORMED_SPEC');
+  });
+});
+
+/**
+ * Oprava žánrové odpovědi (P32B T5) nad dvojníky modulů. Oprava, která vrátí
+ * odpověď beze změny, vypadá zeleně – proto se drží, kde oprava skončí: úkol
+ * nebo Aréna u čaroděje, loď u piráta, žánr draftu u slovesa, které žánry
+ * neznají, a nikdy „could not fix“.
+ */
+describe('genre-switching repair of the director', () => {
+  const text = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
+  const answer = (spec: Record<string, unknown>) => ({ plan: 'scripted', spec });
+  const run = (sentence: string, body: unknown, modules = genreDoubles()) => direct(sentence, { branch: fakeBranch([answered(body)]), now: () => 0, modules });
+  const labels = (spec: GameSpecV1, kind: string): string[] => spec.roles.filter((role) => role.kind === kind).map((role) => role.label);
+  const wizardOnVoyage = answer({ genre: 'voyage', mode: 'race', hero: 'wizard', collectible: 'candle', setting: 'haunted castle' });
+
+  it('moves a wizard on a voyage with candles to the quest', async () => {
+    const game = await run(text('wizard'), wizardOnVoyage);
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, calls: 1 });
+    expect(game.failure).toBeUndefined();
+    expect(game.spec.genre).toMatchObject({ id: 'quest', mode: 'spatial' });
+    expect(labels(game.spec, 'player')).toEqual(['wizard']);
+    expect(labels(game.spec, 'collectible')).toEqual(['candle']);
+  });
+
+  it('moves the same wizard to the arena of ghosts and candles when the quest only plays a stand-in', async () => {
+    const game = await run(text('wizard'), wizardOnVoyage, genreDoubles(['quest.spatial', 'quest.station']));
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    // Hra vznikla přepnutím žánru, ne pádem na draft (ten nese `failure`).
+    expect(game.failure).toBeUndefined();
+    expect(game.spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
+    expect(labels(game.spec, 'hazard')).toEqual(['ghost']);
+    expect(labels(game.spec, 'collectible')).toEqual(['candle']);
+  });
+
+  it('gives the pirate a ship instead of a race car', async () => {
+    const game = await run(text('pirate'), answer({ genre: 'voyage', mode: 'race', hero: 'race car', setting: 'ocean' }));
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    // Hra vznikla přepnutím žánru, ne pádem na draft (ten nese `failure`).
+    expect(game.failure).toBeUndefined();
+    expect(game.spec.genre).toMatchObject({ id: 'voyage', mode: 'race' });
+    expect(heroClass(labels(game.spec, 'player')[0]!)).toBe('boat');
+  });
+
+  it('plays the draft genre when the sentence has a verb no genre knows', async () => {
+    const sentence = 'A robot juggles oranges';
+    const drafted = draftGameSpecWithMeta(sentence, 1, { modules: genreDoubles() }).genre!;
+    const game = await run(sentence, answer({ genre: 'quest', mode: 'station', hero: 'robot', target: { label: 'orange', verb: 'juggle', states: 3 }, setting: 'circus' }));
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    // Hra vznikla přepnutím žánru, ne pádem na draft (ten nese `failure`).
+    expect(game.failure).toBeUndefined();
+    expect(game.spec.genre).toMatchObject({ id: drafted.genre, mode: drafted.mode });
+    expect(labels(game.spec, 'player')).toEqual(['robot']);
+  });
+
+  it('ends on the draft itself when no mode plays, never on "could not fix"', async () => {
+    const modules = genreDoubles(['runner.default', 'platformer.default', 'arena.escape', 'arena.collect', 'arena.fight', 'voyage.race', 'voyage.land', 'quest.spatial', 'quest.station']);
+    const game = await run(text('wizard'), wizardOnVoyage, modules);
+    expect(game.spec).toEqual(draftGameSpecWithMeta(text('wizard'), 1, { modules }).spec);
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, failure: { stage: 'critic', reason: 'UNFAITHFUL' } });
   });
 });

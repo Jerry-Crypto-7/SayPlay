@@ -13,26 +13,27 @@
  *
  * `MALFORMED` = odpověď se nedala přečíst (model odpověděl něčím jiným než
  * `GenreSpec`, nebo ho modul nepřeložil); modelová kola nad ní nemají z čeho
- * záplatovat. `UNREPAIRED` = spec se přečetl, ale blokující nálezy přežily i
- * poslední kolo. `MODEL_UNAVAILABLE` = větev nevrátila odpověď, v prvním
- * volání nebo v opravném kole.
+ * záplatovat. `MODEL_UNAVAILABLE` = větev nevrátila odpověď, v prvním volání
+ * nebo v opravném kole. `UNREPAIRED` režisér od P32B T5 nevrací: odpověď mimo
+ * větu přepne žánr (`switchGenre`) a co neprojde ničím, dohraje žánr draftu.
  */
 
 import type { GenerationBranch } from '@/server/pipeline';
 
 import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpecWithMeta } from '../draft';
+import type { GenreModules } from '../genre/classify';
 import { readBeforeDraft, readerEnabled } from '../read/client';
 import type { GameSpecV1 } from '../spec';
 
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
 import { COMPACT_PROMPT_VERSION, buildCompactRequest } from './compact';
-import { type CriticIssue, blockingIssues, critique, unprovedVerbs, verbIssues } from './critic';
+import { type CriticIssue, blockingIssues, critique, fidelity, unprovedVerbs, verbIssues } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
 import { readGenreAnswer } from './read';
 import { EXAMPLES_VERSION } from './retrieval';
-import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
+import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically, switchGenre } from './repair';
 
 export type { FallbackReason } from '../contracts';
 
@@ -79,6 +80,8 @@ export interface DirectorDeps {
   readonly compact?: boolean;
   /** Ověřené příklady v kompaktní první odpovědi (P30A T8, `retrieval.ts`); plný prompt je nebere. */
   readonly examples?: boolean;
+  /** Moduly žánrů pro draft, čtení odpovědi a kontrolu věrnosti; testy sem dávají dvojníky (`genre/__tests__/doubles.ts`). */
+  readonly modules?: GenreModules;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -89,7 +92,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const started = deps.now();
   // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
   const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
-  const drafted = draftGameSpecWithMeta(sentence, deps.seed, { reading });
+  const genreOptions = { reading, ...(deps.modules === undefined ? {} : { modules: deps.modules }) };
+  const drafted = draftGameSpecWithMeta(sentence, deps.seed, genreOptions);
   const draft = drafted.spec;
   deps.onDraft?.(draft);
   let calls = 0;
@@ -147,9 +151,36 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
   // Hru skládá modul žánru – co se nepřečte nebo nepřeloží, oprava tabulkou nespraví.
-  const read = readGenreAnswer(outcome.body);
+  const read = readGenreAnswer(outcome.body, deps.modules);
   if (!read.ok) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
   let spec: GameSpecV1 = read.spec;
+
+  /**
+   * Poslední záloha opravy žánrové odpovědi (T5): žánr draftu. Hláška „could
+   * not fix“ (`UNREPAIRED`) pro žánrový spec neexistuje – hra je rychlá verze a
+   * obálka ji ohlásí jako „the quick version is already its take“ (UNCHANGED).
+   * Do cache nejde: příští pokus dostane novou šanci.
+   */
+  const draftGenre = (failure: DirectorFailure, repairRounds: number): DirectedGame => ({
+    ok: true,
+    spec: draft,
+    source: 'authored',
+    repairRounds,
+    fallbackReason: null,
+    failure,
+    warnings: warningsOf(draft),
+    ms: deps.now() - started,
+    calls,
+  });
+
+  // Kontrola věrnosti (T5): hrdina, nepřítel a sloveso věty, režim `ready`; neprošlá odpověď přepne žánr podle klasifikátoru.
+  const unfaithful = fidelity(read.genre, sentence, genreOptions);
+  if (unfaithful.length > 0) {
+    const switched = switchGenre(read.genre, sentence, genreOptions);
+    const detail = unfaithful.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; ');
+    if (switched === null) return draftGenre({ stage: 'critic', reason: 'UNFAITHFUL', detail, raw: read.genre }, 0);
+    spec = switched.spec;
+  }
 
   let blocks = blockingIssues(critique(spec));
   if (blocks.length > 0) {
@@ -199,7 +230,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     }
     return fallback('VERB_UNPROVED', failure);
   }
-  if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
+  if (blocks.length > 0) return draftGenre({ stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec }, repairRounds);
 
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
   const authoredBy = authors.length === 0 ? null : authors.join(' + ');

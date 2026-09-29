@@ -16,8 +16,9 @@
  */
 
 import { modelWhenSchema } from '../arcade/rules/schema';
-import type { GenreSpec } from '../genre/contract';
-import { compileGenre, readGenreSpec } from '../genre/index';
+import type { GenreModules } from '../genre/classify';
+import type { GenreModule, GenreSpec } from '../genre/contract';
+import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1 } from '../spec';
 
@@ -65,18 +66,24 @@ export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly
 /**
  * Odpověď režiséra na novou hru (P32B T4): `{plan, spec}` se `GenreSpec`
  * (`GENRE_ANSWER_SCHEMA`) nebo holý `GenreSpec` z větve bez schématu → bez
- * polí `null` → `readGenreSpec` (tvar a meze parametrů) → `compileGenre` →
- * `readModelSpec`. Hru tak vždy skládá modul žánru, model píše jen výběr.
+ * polí `null` → `readGenreSpec` (tvar a meze parametrů) → modul žánru
+ * (`compileGenreSpec`) → `readModelSpec`. Hru tak vždy skládá modul žánru, model píše jen výběr.
+ * `modules` jsou pro testy (dvojníci); meze parametrů drží vždy skutečné moduly.
  */
-export function readGenreAnswer(body: unknown): GenreRead {
+export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MODULES): GenreRead {
   if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
   const raw = typeof body.plan === 'string' && isRecord(body.spec) ? body.spec : body;
   const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
   const genre = readGenreSpec(withoutNulls(raw));
   if (!genre.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: genre.issues.join('; ') };
-  const game = readModelSpec(compileGenre(genre.value));
+  const game = compileGenreSpec(genre.value, modules);
   return game.ok ? { ok: true, spec: game.spec, genre: genre.value } : game;
+}
+
+/** `GenreSpec` → hra modulem jeho žánru, přečtená jako spec od modelu. */
+export function compileGenreSpec(genre: GenreSpec, modules: GenreModules = GENRE_MODULES): DirectorRead {
+  return readModelSpec((modules[genre.genre] as GenreModule).compile(genre as never));
 }
 
 /**

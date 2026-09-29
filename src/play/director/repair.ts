@@ -26,12 +26,16 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 import { CAPABILITIES, controlOf, readsMechanic } from '../capabilities';
+import { draftGenreFor } from '../draft/draft';
+import { classifyGenre } from '../genre/classify';
+import type { GenreSpec } from '../genre/contract';
+import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
-import { readGameSpec, type ControlId, type GameSpecReason, type GameSpecV1, type VerificationAssertion } from '../spec';
+import { readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
 
-import type { CriticIssue } from './critic';
+import { type CriticIssue, type FidelityOptions, blockingIssues, critique, fidelity } from './critic';
 import { renderRegistry } from './prompt';
-import type { DirectorReadReason } from './read';
+import { type DirectorReadReason, compileGenreSpec, readModelSpec } from './read';
 
 export const MAX_REPAIR_ROUNDS = 2;
 
@@ -468,7 +472,7 @@ export function buildRepairRequest(spec: GameSpecV1, issues: readonly RepairIssu
   };
 }
 
-export type RepairAnswerReason = 'NOT_AN_ARRAY' | 'BAD_OPERATION' | 'SCHEMA_TOUCHED' | 'PATCH_FAILED' | GameSpecReason;
+export type RepairAnswerReason = 'NOT_AN_ARRAY' | 'BAD_OPERATION' | 'SCHEMA_TOUCHED' | 'PATCH_FAILED' | DirectorReadReason;
 
 const OPERATIONS = new Set(['add', 'remove', 'replace', 'move', 'copy', 'test']);
 
@@ -486,7 +490,50 @@ export function applyRepairAnswer(spec: GameSpecV1, body: unknown): { ok: true; 
   const errors = applyPatch(work, body as Operation[]);
   const failed = errors.findIndex((error) => error !== null);
   if (failed >= 0) return { ok: false, reason: 'PATCH_FAILED', detail: `operation ${String(failed)}: ${errors[failed]?.message ?? 'failed'}` };
-  const result = readGameSpec(work);
-  if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };
-  return { ok: true, spec: result.value };
+  // Záplata je jediná cesta pravidel do nové hry (P32B T4): čte se jako první odpověď, bez pahýlu `interact` (B-R6).
+  return readModelSpec(work);
+}
+
+// ---------------------------------------------------------------------------
+// Přepnutí žánru (P32B T5)
+
+/** Kandidát s rolí z draftu téhož režimu místo té, kterou kontrola věrnosti jmenuje. */
+function withSentenceRoles(candidate: GenreSpec, words: GenreSpec, wrong: ReadonlySet<string>): GenreSpec {
+  const { enemy: _enemy, ...rest } = candidate;
+  const enemy = wrong.has('/enemy') ? words.enemy : candidate.enemy;
+  return { ...rest, hero: wrong.has('/hero') ? words.hero : candidate.hero, ...(enemy === undefined ? {} : { enemy }) } as GenreSpec;
+}
+
+/**
+ * Oprava žánrové odpovědi, která neprošla kontrolou věrnosti: režimy v pořadí
+ * klasifikátoru (`classifyGenre().ranked`) s rolemi z odpovědi. Hrdinu nebo
+ * nepřítele, které kontrola jmenuje, vezme z draftu téhož režimu, úkol bez
+ * předmětu dostane předmět z věty; parametry jdou dál jen v žánru odpovědi,
+ * meze má každý žánr svoje. Vrací první režim, který projde věrností, modulem
+ * i kritikem; `null` = neprošel žádný a režisér vezme žánr draftu.
+ */
+export function switchGenre(answer: GenreSpec, sentence: string, options: FidelityOptions = {}): { readonly genre: GenreSpec; readonly spec: GameSpecV1 } | null {
+  const reading = options.reading ?? null;
+  const modules = options.modules ?? GENRE_MODULES;
+  const { params, target, ...roles } = answer;
+  for (const choice of classifyGenre(sentence, reading, modules).ranked) {
+    const words = draftGenreFor(sentence, choice.genre, choice.mode, { reading, modules });
+    if (words === null) continue;
+    const task = target ?? words.target;
+    const moved = {
+      ...roles,
+      genre: choice.genre,
+      mode: choice.mode,
+      ...(task === undefined ? {} : { target: task }),
+      ...(params === undefined || choice.genre !== answer.genre ? {} : { params }),
+    } as GenreSpec;
+    const wrong = new Set(fidelity(moved, sentence, { reading, modules }).map((issue) => issue.path));
+    const candidate = withSentenceRoles(moved, words, wrong);
+    if (fidelity(candidate, sentence, { reading, modules }).length > 0) continue;
+    const read = readGenreSpec(candidate);
+    if (!read.ok) continue;
+    const game = compileGenreSpec(read.value, modules);
+    if (game.ok && blockingIssues(critique(game.spec)).length === 0) return { genre: read.value, spec: game.spec };
+  }
+  return null;
 }

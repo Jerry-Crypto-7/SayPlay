@@ -10,8 +10,12 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { GOOD_ANSWERS, answerFixture } from '../director/__fixtures__';
-import { CRITIC_CODES, UNISSUED_PACK_CODES, blockingIssues, critique, type CriticIssue } from '../director/critic';
+import { CRITIC_CODES, UNISSUED_PACK_CODES, blockingIssues, critique, fidelity, type CriticIssue } from '../director/critic';
+import { draftGameSpecWithMeta } from '../draft';
+import { genreDoubles } from '../genre/__tests__/doubles';
+import type { GenreSpec } from '../genre/contract';
 import { ARCHETYPE_IDS } from '../registry';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
@@ -122,5 +126,56 @@ describe('critique', () => {
     const tight = clone(base('collect_exit'));
     tight.budgets.maxEntities = 8;
     expect(critique(tight).find((entry) => entry.code === 'BUDGET')?.severity).toBe('warn');
+  });
+});
+
+/**
+ * Kontrola věrnosti žánrové odpovědi (P32B T5) nad dvojníky modulů. Kontrola,
+ * která nic nenajde, pustí pirátskou loď do auta – proto na každý kód jedna
+ * odpověď mimo větu, a draft každé věty sady jako odpověď, která projde.
+ */
+describe('fidelity of a GenreSpec answer', () => {
+  const modules = genreDoubles();
+  const text = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
+  const codes = (genre: GenreSpec, id: string, options = { modules }): string[] => fidelity(genre, text(id), options).map((issue) => issue.code);
+
+  it('passes the draft of every sentence of the set', () => {
+    for (const { id } of sentenceSet.sentences) {
+      const genre = draftGameSpecWithMeta(text(id), 1, { modules }).genre;
+      expect(genre, id).not.toBeNull();
+      expect(codes(genre!, id), id).toEqual([]);
+    }
+  });
+
+  it('refuses a pirate ship as the hero of a runner', () => {
+    expect(codes({ genre: 'runner', mode: 'default', hero: 'pirate ship', setting: 'ocean' }, 'pirate')).toContain('HERO_UNFIT');
+  });
+
+  it('refuses a race car where the sentence sails a pirate ship', () => {
+    expect(codes({ genre: 'voyage', mode: 'race', hero: 'race car', setting: 'ocean' }, 'pirate')).toContain('HERO_NOT_SAID');
+  });
+
+  it('refuses a voyage for a wizard who lights candles', () => {
+    expect(codes({ genre: 'voyage', mode: 'race', hero: 'wizard', collectible: 'candle', setting: 'haunted castle' }, 'wizard')).toContain('VERB_OUTSIDE_MODE');
+  });
+
+  it('refuses an enemy that is neither in the sentence nor the default of the setting', () => {
+    const cat = draftGameSpecWithMeta(text('cat'), 1, { modules }).genre!;
+    expect(codes({ ...cat, enemy: 'giant Roomba' }, 'cat')).toEqual(['ENEMY_NOT_SAID']);
+    const knights = draftGameSpecWithMeta(text('knights'), 1, { modules }).genre!;
+    expect(codes({ ...knights, enemy: 'dragon' }, 'knights')).toContain('ENEMY_NOT_SAID');
+    // Věta bez nepřítele: projde jen výchozí nepřítel prostředí (město → auto), vzorová Roomba ne.
+    const dog = { genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city' } as const;
+    expect(codes({ ...dog, enemy: 'car' }, 'dog')).toEqual([]);
+    expect(codes({ ...dog, enemy: 'giant Roomba' }, 'dog')).toEqual(['ENEMY_NOT_SAID']);
+  });
+
+  it('refuses a mode that only plays a stand-in, and then proves the best ready mode', () => {
+    const stand = { modules: genreDoubles(['quest.spatial', 'quest.station']) };
+    const chef = { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'cook', states: 3 }, setting: 'kitchen' } as const;
+    expect(codes(chef, 'chef', stand)).toContain('MODE_NOT_READY');
+    const wizard = draftGameSpecWithMeta(text('wizard'), 1, stand).genre!;
+    expect(`${wizard.genre}.${wizard.mode}`).toBe('arena.escape');
+    expect(codes(wizard, 'wizard', stand)).toEqual([]);
   });
 });

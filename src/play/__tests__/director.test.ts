@@ -57,6 +57,16 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'voyage.race': 'steer',
 };
 
+/** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
+const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
+  'runner.default': 'A fox runs through a dark forest past a wolf',
+  'platformer.default': 'A fox jumps across a dark forest past a wolf',
+  'arena.escape': 'A fox escapes a wolf in a dark forest',
+  'arena.collect': 'A fox collects acorns in a dark forest while a wolf prowls',
+  'arena.fight': 'A fox fights a wolf in a dark forest',
+  'voyage.race': 'A fox drives through a dark forest past a wolf',
+};
+
 function clock(): () => number {
   let tick = 0;
   return () => {
@@ -86,9 +96,12 @@ describe('direct – the model answers', () => {
 
   it('every ready mode is authored on the control its genre module compiles, with the hero the answer named', async () => {
     expect(GENRE_ANSWERS.map(({ name }) => name).sort()).toEqual(Object.keys(CONTROL_OF_MODE).sort());
+    expect(Object.keys(SENTENCE_OF_MODE).sort()).toEqual(Object.keys(CONTROL_OF_MODE).sort());
     for (const { name, answer } of GENRE_ANSWERS) {
-      const game = await run(fakeBranch([answered(answer)]));
+      const game = await run(fakeBranch([answered(answer)]), {}, SENTENCE_OF_MODE[name]);
       expect(game, name).toMatchObject({ source: 'authored', fallbackReason: null, calls: 1 });
+      // Věrná odpověď se nepřepíná: hra je přesně ta, kterou z odpovědi složí modul žánru.
+      expect(game.spec, name).toEqual(compiled(answer));
       expect(game.spec.control, name).toBe(CONTROL_OF_MODE[name]);
       expect(game.spec.roles.find((role) => role.kind === 'player')?.label, name).toBe('fox');
     }
@@ -163,7 +176,7 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
     expect(game).toMatchObject({ source: 'draft', fallbackReason: 'MALFORMED', calls: 1 });
   });
 
-  it('a blocking issue that survives the last round → draft + UNREPAIRED after exactly 3 calls, never 4', async () => {
+  it('a blocking issue that survives the last round → the draft genre, authored, failure UNREPAIRED after exactly 3 calls, never 4', async () => {
     const branch = fakeBranch([
       answered(genreAnswer()),
       answered(CONTRADICT),
@@ -176,7 +189,9 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
       answered(UNCONTRADICT),
     ]);
     const game = await run(branch, { check });
-    expect(game).toMatchObject({ source: 'draft', fallbackReason: 'UNREPAIRED', repairRounds: 0, calls: 3, failure: { stage: 'critic' } });
+    // Hláška „could not fix“ pro žánrový spec neexistuje (P32B T5): hraje se žánr draftu, bez důvodu zálohy.
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 2, calls: 3, failure: { stage: 'critic', reason: 'UNREPAIRED' } });
+    expect(game.spec).toEqual(draftGameSpec(SENTENCE));
     expect(game.failure?.detail).toContain('CONTRADICTION');
     expect(branch.calls).toHaveLength(3);
   });
@@ -244,10 +259,11 @@ describe('direct – cache', () => {
     expect(game.spec).toEqual(compiled());
   });
 
-  it('a draft fallback is never written – the next direct calls the model again', async () => {
+  it('an unrepaired game played as the draft genre is never written – the next direct calls the model again', async () => {
     const cache = directorCache(memoryAnswerStore(), () => undefined);
     const first = await run(fakeBranch([answered(genreAnswer()), answered(CONTRADICT), answered({})]), { cache, check });
-    expect(first.fallbackReason).toBe('UNREPAIRED');
+    expect(first).toMatchObject({ source: 'authored', fallbackReason: null, failure: { reason: 'UNREPAIRED' } });
+    expect(first.spec).toEqual(draftGameSpec(SENTENCE));
     const branch = fakeBranch([answered(genreAnswer())]);
     const second = await run(branch, { cache });
     expect(second).toMatchObject({ source: 'authored', calls: 1 });

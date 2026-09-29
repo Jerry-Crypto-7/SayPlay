@@ -38,6 +38,8 @@ export interface GenreRanking {
   readonly verb: string | null;
   /** Zbytek věty za hlavním slovesem – tam začíná jeho předmět („… candles before the ghosts“). */
   readonly after: string | null;
+  /** Režim, který hlavní sloveso podle tabulky `VERBS` hraje; `null` když věta žádné z tabulky nemá. Čte ho kontrola věrnosti. */
+  readonly pick: { readonly genre: GenreId; readonly mode: GenreMode } | null;
 }
 
 export type GenreModules = { readonly [G in GenreId]: GenreModule<G> };
@@ -218,5 +220,6 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     fallback: availability(ranked[0]) === 'fallback',
     verb: main?.verb ?? reading?.verbs[0]?.word ?? null,
     after: main === undefined ? null : text.slice(main.end).trim() || null,
+    pick: main === undefined ? null : (main.pick ?? pickup()),
   };
 }
