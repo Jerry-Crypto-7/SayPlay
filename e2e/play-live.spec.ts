@@ -151,6 +151,7 @@ test.describe('/play/[id] – live change', () => {
     await friend.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     await expect(friend.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
     expect(await hostiles(friend)).toBeGreaterThan(startHostiles);
+    await friend.getByTestId('play-info').click();
     await expect(friend.getByTestId('play-lineage').locator(`a[href="/play/${parentId}"]`)).toBeVisible();
     await friend.close();
     await context.close();
@@ -180,9 +181,13 @@ test.describe('/play/[id] – live change', () => {
     expect(await patches(page)).toBe(0);
     // Běžec bez vstupu může prohrát dřív, než práce doběhne: hotovou verzi pak
     // ukáže box po hře místo čipu (P28B T7). Obojí je táž práce z `useRemixJob`.
+    // Od P33 T4 leží box po hře v listu za „Change it“ karty výsledku.
     const chip = page.getByTestId('remix-ready-open');
-    await expect(chip.or(page.getByTestId('remix-changed'))).toBeVisible({ timeout: 15_000 });
+    await expect(chip.or(page.getByTestId('play-outcome'))).toBeVisible({ timeout: 15_000 });
     if (await chip.isVisible()) await expect(chip).toHaveAttribute('href', `/play/${childId}`);
-    else await expect(page.getByTestId('remix-changed')).toContainText('A dragon joins');
+    else {
+      await page.getByRole('button', { name: 'Change it' }).click();
+      await expect(page.getByTestId('remix-changed')).toContainText('A dragon joins', { timeout: 15_000 });
+    }
   });
 });

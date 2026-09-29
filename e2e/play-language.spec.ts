@@ -42,10 +42,11 @@ test('every PLAY screen speaks English: create, game, after the run, lab', async
   await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
   await expectEnglish(page, 'hra');
 
-  await page.getByTestId('play-lab-toggle').click();
-  await expect(page.getByTestId('play-lab')).toHaveAttribute('open', '');
+  // Od P33 T7 je „How to play“ oddíl listu „About this game“; list se před dohráním zavře.
+  await page.getByTestId('play-info').click();
   await expect(page.getByTestId('play-lab')).toContainText('Rules checked');
   await expectEnglish(page, 'Lab');
+  await page.keyboard.press('Escape');
 
   const outcome = await page.evaluate(() => window.__playShell!.playWitness());
   expect(outcome.runState).toBe('won');

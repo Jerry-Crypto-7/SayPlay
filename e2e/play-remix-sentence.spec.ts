@@ -74,6 +74,7 @@ test('a sentence of your own opens a new version and leaves the original alone',
 
   await box.getByTestId('remix-open').click();
   await expect(page).toHaveURL(new RegExp(`/play/${childId}$`), { timeout: 30_000 });
+  await page.getByTestId('play-info').click();
   const lineage = page.getByTestId('play-lineage');
   await expect(lineage).toContainText('Remixed from');
   await expect(lineage.locator(`a[href="/play/${parentId}"]`)).toBeVisible();

@@ -1118,18 +1118,47 @@ a.play-button {
   font-variant-numeric: tabular-nums;
 }
 
-/* „From your sentence“: sbalený řádek nese autorství i větu, rozbalený to, co z ní vzniklo. */
-.play-read summary {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+/* „About this game“ (P33 T7): jeden řádek-tlačítko nad hrou místo tří
+ * proužků; věta, jak se hraje a rodokmen jsou v listu za ním. Dvě třídy,
+ * aby řádek přebil `.play-lab`, jehož okraje (i telefonní) si nechává. */
+.play-lab.play-info {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: var(--p-space-2);
+  min-height: var(--p-tap);
+  padding: 0 var(--p-space-4) 0 var(--p-space-3);
+  color: var(--play-text);
+  font: inherit;
+  font-size: var(--p-text-s);
+  font-weight: 600;
+  cursor: pointer;
 }
 
-.play-read[open] summary {
-  white-space: normal;
+.play-lab.play-info:hover {
+  border-color: var(--play-action);
 }
 
-.play-read-by {
+.play-info-heading {
+  margin: 0 0 var(--p-space-2);
+  color: var(--play-muted);
+  font-size: var(--p-text-s);
+  font-weight: 600;
+}
+
+.play-info-part {
+  font-size: var(--p-text-s);
+}
+
+.play-info-part + .play-info-part,
+.play-info-sheet .play-lineage {
+  margin: 0;
+  padding-top: var(--p-space-4);
+  border-top: 1px solid var(--play-line);
+}
+
+.play-info-sheet .play-read-by {
+  margin: 0;
   font-weight: 600;
 }
 
@@ -1612,6 +1641,11 @@ button.play-feed-card {
 
   .play-shell > .play-lineage {
     display: none;
+  }
+
+  /* Řádek „About this game“ (P33 T7) přiléhá k HUD – každý pixel nad hrou je hře ubraný. */
+  .play-shell:has(> .play-info) > .play-hud {
+    margin-bottom: 0;
   }
 
   .play-lab {

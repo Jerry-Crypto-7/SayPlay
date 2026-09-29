@@ -46,19 +46,23 @@ async function publish(request: APIRequestContext, sentence: string): Promise<st
   return ((await response.json()) as { url: string }).url;
 }
 
+// Od P33 T7 je panel oddílem listu „About this game“ a texty jsou bez žargonu:
+// „Instant draft from the keywords in…“ je „Quick version from your sentence“.
 test('a draft read by the local model says so', async ({ page, request }) => {
   await page.goto(await publish(request, 'A penguin slides across the ice grabbing fish'));
+  await page.getByTestId('play-info').click();
   const read = page.getByTestId('play-read');
   await expect(read).toHaveAttribute('data-read-by', 'model');
   await expect(read).toHaveAttribute('data-authorship', 'draft');
-  await expect(page.getByTestId('play-read-toggle')).toContainText('Instant draft read by a local AI model from');
-  await expect(page.getByTestId('play-read-toggle')).not.toContainText('keywords');
+  await expect(page.getByTestId('play-read-by')).toContainText('Quick version read by a local AI model');
+  await expect(page.getByTestId('play-read-by')).not.toContainText('from your sentence');
 });
 
-test('a draft from the keywords keeps saying keywords', async ({ page, request }) => {
+test('a draft from the keywords never claims an AI read it', async ({ page, request }) => {
   await page.goto(await publish(request, 'A corgi runs through a park grabbing sausages'));
+  await page.getByTestId('play-info').click();
   const read = page.getByTestId('play-read');
   await expect(read).toHaveAttribute('data-read-by', 'keywords');
-  await expect(page.getByTestId('play-read-toggle')).toContainText('Instant draft from the keywords in');
-  await expect(page.getByTestId('play-read-toggle')).not.toContainText('AI model');
+  await expect(page.getByTestId('play-read-by')).toContainText('Quick version from your sentence');
+  await expect(page.getByTestId('play-read-by')).not.toContainText('AI');
 });
