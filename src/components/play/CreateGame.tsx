@@ -4,12 +4,12 @@
  * Formulář `/play`: věta → `POST /api/play/games` → `router.push('/play/<id>')`.
  * Karta vzoru pošle svou větu rovnou (P28D T7).
  *
- * Po odeslání stojí pod polem všechny čtyři kroky `BUILD_STEPS` (P33 T9):
- * první dva patří `/play` (odeslání, odpověď 201), zbylé dva `/play/[id]`,
- * kde se svět načítá a staví – tady čekají. Chyba dveří se ukáže větou z
- * `error.message` s tlačítkem `Try again` a věta v poli zůstane – člověk ji
- * opraví, ne napíše znovu. Na telefonu leží pole pod feedem; plovoucí
- * `+ New game` k němu posune, dokud pole není vidět.
+ * Po odeslání překryje stránku načítací obrazovka (`BuildingScreen`, P33 T14)
+ * se všemi čtyřmi kroky `BUILD_STEPS` (T9): první dva patří `/play`
+ * (odeslání, odpověď 201), zbylé dva `/play/[id]`, kde se svět načítá a staví
+ * – tady čekají. Chyba dveří se ukáže větou z `error.message` s tlačítkem
+ * `Try again` a věta v poli zůstane – člověk ji opraví, ne napíše znovu. Z
+ * feedu k poli posune plovoucí `+ New game`, dokud pole není vidět.
  */
 
 import { useRouter } from 'next/navigation';
@@ -17,9 +17,10 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import type { ArchetypeId } from '@/play/registry';
 
+import { moodTone } from './Feed';
 import { appendSpoken, MicButton } from './MicButton';
 import { BUILD_STEPS, PLACEHOLDER, SENTENCE_LIMIT, STARTERS } from './starters';
-import { Button, Icon, type IconName } from './ui';
+import { BuildingScreen, Button, Icon, type IconName } from './ui';
 
 type Phase = { readonly kind: 'idle' } | { readonly kind: 'busy'; readonly step: 0 | 1 } | { readonly kind: 'failed'; readonly message: string };
 
@@ -127,7 +128,12 @@ export function CreateGame() {
             Play it
           </Button>
         </div>
-        {phase.kind === 'busy' && <BuildSteps active={phase.step} />}
+        {/* Od odeslání do první scény celá obrazovka (T14): název z věty, tón nálady, kroky stavby. */}
+        {phase.kind === 'busy' && (
+          <BuildingScreen title={trimmed} tone={moodTone(trimmed)}>
+            <BuildSteps active={phase.step} />
+          </BuildingScreen>
+        )}
         {phase.kind === 'failed' && (
           <p className="play-alert" role="alert">
             <span>{phase.message}</span>

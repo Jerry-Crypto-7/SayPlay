@@ -49,6 +49,7 @@ import { gridOf } from './sight';
 import type { ProjectTarget } from './TapTargets';
 import { TargetCards } from './TargetCards';
 import { secondsOf } from './timer';
+import { BuildingScreen } from './ui';
 import { UpgradeBanner } from './UpgradeBanner';
 import { avoidCards, idleProps, keyAction, playerActor, roleKinds, tapAction, type TargetCard, targetCards } from './targets';
 
@@ -366,7 +367,8 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
   }, [controller, blueprint, cards]);
 
   return (
-    <main className="play-shell">
+    // Pod plátnem obloha sady jako u arkády (P32D T6, P33 T14): do prvního snímku ne tmavá plocha.
+    <main className="play-shell" style={{ background: scene.sky }}>
       <div
         className="play-stage"
         aria-hidden="true"
@@ -418,7 +420,9 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
       {running && <RemixReadyChip job={remix} />}
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
-        <p className="play-building" data-testid="play-building" aria-live="polite">Building the world…</p>
+        <div className="play-building" data-testid="play-building">
+          <BuildingScreen />
+        </div>
       )}
       {fault !== null && (
         <p className="play-alert" role="alert">This game could not be built: {fault}</p>

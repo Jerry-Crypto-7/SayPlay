@@ -1,3 +1,4 @@
+export { BuildingScreen } from './BuildingScreen';
 export { Button, type ButtonVariant } from './Button';
 export { Chip } from './Chip';
 export { IconButton } from './IconButton';

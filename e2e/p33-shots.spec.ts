@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
@@ -23,7 +23,7 @@ const SIZES = [
   { name: 'desktop', width: 1440, height: 900 },
 ] as const;
 
-const STATES = ['home-0s', 'home-5s', 'game-0s', 'game-5s', 'targets', 'result', 'remix-open', 'create-error', 'create-progress'] as const;
+const STATES = ['home-0s', 'home-5s', 'game-0s', 'game-5s', 'targets', 'result', 'remix-open', 'create-error', 'create-progress', 'build-300ms'] as const;
 type State = (typeof STATES)[number];
 
 test.describe.configure({ mode: 'serial' });
@@ -37,6 +37,29 @@ async function publish(request: APIRequestContext): Promise<string> {
 async function shot(page: Page, size: string, state: State): Promise<void> {
   mkdirSync(DIR, { recursive: true });
   await page.screenshot({ path: join(DIR, `${state}-${size}.png`) });
+}
+
+/**
+ * Podíl tmavých pixelů snímku (jas pod 40 z 255). Dekóduje se ve vlastní
+ * prázdné stránce: hlavní stránka může zrovna přecházet na hru.
+ */
+async function darkShare(page: Page, png: Buffer): Promise<number> {
+  const probe = await page.context().newPage();
+  try {
+    return await probe.evaluate(async (b64) => {
+      const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+      const bitmap = await createImageBitmap(new Blob([bytes], { type: 'image/png' }));
+      const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+      const context = canvas.getContext('2d')!;
+      context.drawImage(bitmap, 0, 0);
+      const { data } = context.getImageData(0, 0, bitmap.width, bitmap.height);
+      let dark = 0;
+      for (let i = 0; i < data.length; i += 4) if (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2] < 40) dark += 1;
+      return dark / (data.length / 4);
+    }, png.toString('base64'));
+  } finally {
+    await probe.close();
+  }
 }
 
 /** Hra je vidět: plátno stojí a ani mřížka, ani fyzika už se nenačítá. */
@@ -131,6 +154,19 @@ for (const size of SIZES) {
       await expect(steps).toBeVisible();
       await steps.scrollIntoViewIfNeeded();
       await shot(page, size.name, 'create-progress');
+    });
+
+    // P33 T14: mezi odesláním věty a první scénou nikdy tmavá prázdnota – 300 ms po kliknutí
+    // (dveře odpovídají doopravdy) nesmí být tmavých víc než 90 % pixelů.
+    test('300 ms after Play it the screen is not a dark void', async ({ page }) => {
+      await page.goto('/play');
+      await page.getByTestId('play-sentence').fill(SENTENCE);
+      await page.getByTestId('play-create').click();
+      await page.waitForTimeout(300);
+      const png = await page.screenshot();
+      mkdirSync(DIR, { recursive: true });
+      writeFileSync(join(DIR, `build-300ms-${size.name}.png`), png);
+      expect(await darkShare(page, png)).toBeLessThanOrEqual(0.9);
     });
   });
 }
