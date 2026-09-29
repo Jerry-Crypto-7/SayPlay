@@ -8,12 +8,12 @@ import { describe, expect, it } from 'vitest';
 
 import fixture from '@/play/arcade/__fixtures__/runner.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { type ArcadeWorld, BODY, HEADER, type InputEvent, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import { hashArcade } from '@/play/arcade/kernel';
 import { readGameSpec } from '@/play/spec';
 
 import { type EffectsSource, type VisualEvent, createEffectsBus } from '../effects/bus';
-import { type ArcadeSession, createArcadeSession } from '../session';
+import { type ArcadeEventListener, type ArcadeSession, createArcadeSession } from '../session';
 
 function worldOf(mechanics: readonly unknown[] = []): ArcadeWorld {
   const spec = readGameSpec({ ...fixture, mechanics });
@@ -103,6 +103,30 @@ describe('effects bus (P32-0 T5)', () => {
     expect(bus.live()).toEqual([]);
     expect(bus.shake()).toBe(0);
     bus.dispose();
+  });
+
+  it('flashes a hit only where the kernel applies it: a live body and a positive amount', () => {
+    // Jádro zásah neživého těla a záporný zásah zahodí (revize P32-0 T4-R3); záblesk tam by ukázal něco, co se nestalo.
+    const state = Int32Array.from(world.initial);
+    const dead = 2;
+    expect((state[bodyBase(1) + BODY.flags] as number) & FLAG.alive).toBe(FLAG.alive);
+    state[bodyBase(dead) + BODY.flags] = (state[bodyBase(dead) + BODY.flags] as number) & ~FLAG.alive;
+    let emit: ArcadeEventListener = () => undefined;
+    const source: EffectsSource = {
+      onEvents: (listener) => {
+        emit = listener;
+        return () => undefined;
+      },
+      subscribe: () => () => undefined,
+      state: () => state,
+      prev: () => state,
+    };
+    const heard = heardFrom(source, () => {
+      emit([{ kind: 'hit', body: 1, by: 0, amount: 2 }], 0);
+      emit([{ kind: 'hit', body: 1, by: 0, amount: -2 }], 1);
+      emit([{ kind: 'hit', body: dead, by: 0, amount: 2 }], 2);
+    });
+    expect(heard.map((event) => [event.tick, event.body, event.kind])).toEqual([[0, 1, 'hit']]);
   });
 
   it('never writes the simulation: a frozen state passes and the hash does not move', () => {

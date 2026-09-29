@@ -85,7 +85,8 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
   for (const effect of effects) {
     if (effect.kind === 'damage') add('hit', player);
     else if (effect.kind === 'spawn') spawns += 1;
-    else if (effect.kind === 'hit' && inWorld(effect.body)) add('hit', effect.body);
+    // Jako jádro: zásah jen živého těla (před tikem – smrtící rána tělo zabije až po sobě) a jen kladný.
+    else if (effect.kind === 'hit' && inWorld(effect.body) && aliveIn(prev, effect.body) && effect.amount > 0) add('hit', effect.body);
     // Jen tělo, které tímhle tikem opravdu zmizelo – despawn mrtvého těla stav nemění.
     else if (effect.kind === 'despawn' && inWorld(effect.body) && aliveIn(prev, effect.body) && !aliveIn(state, effect.body)) {
       add(state[bodyBase(effect.body) + BODY.role] === ROLE.collectible ? 'pickup' : 'death', effect.body);
