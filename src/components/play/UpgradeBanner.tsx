@@ -135,17 +135,20 @@ export function useUpgrade(url: string | null): { readonly view: UpgradeView; re
   return { view: url !== null && state.url === url ? state.view : IDLE, retry: () => setAttempt((count) => count + 1) };
 }
 
-/** Proč AI verze nevyšla – jedna věta pro hráče na každý důvod serveru. */
+/**
+ * Proč AI verze nevyšla – jedna věta pro hráče na každý důvod serveru. Bez
+ * obviňování (P33 T5): hráč slyší, co zůstává, ne čí je to chyba.
+ */
 export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
   MODEL_UNAVAILABLE: 'The AI is busy right now – you are playing the quick version.',
-  MALFORMED: 'The AI sent back an answer we could not read, so the quick version stays.',
-  UNREPAIRED: 'The AI made a mistake it could not fix, so the quick version stays.',
-  VERB_UNPROVED: "The AI's new action never happened in a test run, so the quick version stays.",
+  MALFORMED: "The quick version stays – the AI's answer didn't come through cleanly.",
+  UNREPAIRED: "The quick version stays – the AI one didn't pass our checks.",
+  VERB_UNPROVED: "The quick version stays – the AI's new action never showed up in a test run.",
   UNCHANGED: 'The AI had nothing to add – the quick version is already its take.',
-  NOT_PLAYABLE: "The AI's version didn't pass our playability check.",
-  STORE_UNAVAILABLE: 'We could not save the AI version right now.',
+  NOT_PLAYABLE: "The quick version stays – the AI one wasn't playable in our test run.",
+  STORE_UNAVAILABLE: "The quick version stays – we couldn't save the AI one right now.",
   NOT_FROM_SENTENCE: 'This game was not made from a sentence, so there is no AI version.',
-  FAILED: 'Something went wrong while building the AI version.',
+  FAILED: 'The quick version stays – something went wrong on our side.',
 };
 
 /**
@@ -165,14 +168,14 @@ export function noticeOf(view: UpgradeView, now: number, title: string | null = 
     case 'idle':
       return null;
     case 'working':
-      return { text: `Your AI version is being built – keep playing, nothing will change until you choose. ${Math.max(0, Math.floor((now - view.since) / 1000))} s`, action: null };
+      return { text: `AI version in progress · ${Math.max(0, Math.floor((now - view.since) / 1000))} s`, action: null };
     case 'ready':
-      return { text: `The AI version is ready – play it${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: 'Play it' } };
+      return { text: `AI version ready${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: 'Play AI version' } };
     case 'final':
       return { text: FINAL_REASON_TEXT[view.reason], action: RETRYABLE.has(view.reason) ? { kind: 'retry', label: 'Try again' } : null };
     case 'offline':
     case 'lost':
-      return { text: 'We lost track of the AI – check again', action: { kind: 'retry', label: 'Check again' } };
+      return { text: 'We lost track of the AI version.', action: { kind: 'retry', label: 'Check again' } };
   }
 }
 
@@ -181,7 +184,8 @@ function draftIdOf(request: string): string | null {
 }
 
 /**
- * Proužek nad hrou pro každý stav AI verze. Rozehraná hra se nevymění – nová
+ * Stav AI verze nad hrou (P33 T5): malý štítek vpravo nahoře, hotová verze
+ * toast dole nad lištou cílů. Rozehraná hra se nevymění – nová
  * se otevře jen tlačítkem. Rozběhnutou práci si prohlížeč zapamatuje (T3),
  * `final` jen jednou ukáže a zapomene.
  */
@@ -231,6 +235,8 @@ export function UpgradeBanner({ request, sentence }: { readonly request: string 
   return (
     <aside className="play-upgrade" data-testid="upgrade-state" data-kind={view.kind} role="status">
       <span>{notice.text}</span>
+      {/* Průběh bez procent: lhůta serveru je strop, ne odhad. */}
+      {view.kind === 'working' && <span className="play-upgrade-bar" aria-hidden="true" />}
       {notice.action !== null && (
         <button className="play-button" type="button" data-testid="upgrade-action" onClick={act}>
           {notice.action.label}

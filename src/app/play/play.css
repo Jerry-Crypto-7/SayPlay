@@ -1312,31 +1312,113 @@ button.play-feed-card {
 }
 
 /* P27C */
-/* Stav AI verze: delší věty se zalomí, přechodné a ztracené stavy nesvítí akcentem. */
+/* Stav AI verze (P33 T5): malý štítek vpravo nahoře, mimo HUD a střed hry;
+ * jen hotová verze je toast dole nad lištou cílů (68 px), s akcentem. */
 .play-upgrade[data-kind] {
+  left: auto;
+  right: var(--p-space-4);
+  top: var(--p-space-4);
+  transform: none;
+  box-sizing: border-box;
   width: max-content;
-  max-width: min(92vw, 560px);
+  max-width: min(36vw, 360px);
+  padding: var(--p-space-1) var(--p-space-1) var(--p-space-1) var(--p-space-3);
+  flex-wrap: wrap;
+  gap: var(--p-space-2);
   white-space: normal;
-  border-radius: var(--p-radius-l);
-  font-size: var(--p-text-s);
+  border-radius: var(--p-radius-m);
+  border-color: var(--play-line);
+  color: var(--play-muted);
+  font-size: var(--p-text-xs);
   line-height: 1.35;
 }
 
+/* Úzký štítek dá tlačítko pod větu, místo aby větu stlačil do sloupce. */
+.play-upgrade[data-kind] > span:first-child {
+  flex: 1 1 12em;
+}
+
 .play-upgrade[data-kind='working'] {
-  padding: var(--p-space-2) var(--p-space-4);
-  border-color: var(--play-line);
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--p-space-1);
+  padding: var(--p-space-2) var(--p-space-3);
   font-variant-numeric: tabular-nums;
 }
 
-.play-upgrade[data-kind='final'],
-.play-upgrade[data-kind='offline'],
-.play-upgrade[data-kind='lost'] {
-  border-color: var(--play-line);
-  color: var(--play-muted);
+.play-upgrade[data-kind='working'] > span:first-child {
+  flex: none;
+}
+
+.play-upgrade-bar {
+  position: relative;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--p-radius-pill);
+  background: var(--p-fill-soft);
+}
+
+.play-upgrade-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  border-radius: inherit;
+  background: var(--play-accent);
+  animation: play-upgrade-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes play-upgrade-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-upgrade-bar::after {
+    width: 100%;
+    animation: none;
+  }
+}
+
+.play-upgrade[data-kind='ready'] {
+  left: 50%;
+  right: auto;
+  top: auto;
+  bottom: calc(var(--p-tap) + var(--p-space-6) + var(--p-space-4));
+  transform: translateX(-50%);
+  max-width: min(calc(100% - var(--p-space-8)), 480px);
+  padding: var(--p-space-2) var(--p-space-2) var(--p-space-2) var(--p-space-4);
+  gap: var(--p-space-3);
+  border-color: var(--play-accent);
+  color: var(--play-text);
+  font-size: var(--p-text-s);
+}
+
+/* Karta výsledku leží dole na stejném místě – toast jí uhne do štítku vpravo nahoře. */
+.play-shell:has(> .play-outcome) > .play-upgrade[data-kind='ready'] {
+  left: auto;
+  right: var(--p-space-4);
+  top: var(--p-space-4);
+  bottom: auto;
+  transform: none;
+  max-width: min(36vw, 360px);
+  font-size: var(--p-text-xs);
 }
 
 .play-upgrade[data-kind] .play-button {
   flex: none;
+  padding: var(--p-space-2) var(--p-space-3);
+  font-size: var(--p-text-xs);
+}
+
+.play-upgrade[data-kind='ready'] .play-button {
+  min-height: var(--p-tap);
+  padding-inline: var(--p-space-4);
+  font-size: var(--p-text-s);
 }
 
 /* Karty pozdě hotových AI verzí na /play (T3), nad feedem. */
@@ -1529,17 +1611,25 @@ button.play-feed-card {
   }
 
   .play-upgrade,
-  .play-upgrade[data-kind] {
+  .play-upgrade[data-kind]:not([data-kind='ready']),
+  .play-shell:has(> .play-outcome) > .play-upgrade[data-kind='ready'] {
     left: auto;
     right: var(--p-space-2);
     top: var(--p-space-2);
     transform: none;
     box-sizing: border-box;
     max-width: 42vw;
-    padding: var(--p-space-1) var(--p-space-1) var(--p-space-1) var(--p-space-3);
-    gap: var(--p-space-2);
     font-size: var(--p-text-xs);
     white-space: normal;
+  }
+
+  /* Hotová AI verze: toast přes šířku nad lištou cílů. */
+  .play-upgrade[data-kind='ready'] {
+    left: var(--p-space-2);
+    right: var(--p-space-2);
+    transform: none;
+    width: auto;
+    max-width: none;
   }
 
   .play-targets {

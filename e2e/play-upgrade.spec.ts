@@ -81,12 +81,14 @@ test('working → ready: the banner counts seconds, then offers the AI version w
   await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'working');
-  await expect(banner).toContainText('Your AI version is being built – keep playing, nothing will change until you choose.');
+  // Texty od P33 T5: malý štítek místo dlouhé věty přes hru, hotová verze jako toast s tlačítkem `Play AI version`.
+  await expect(banner).toContainText('AI version in progress');
   await expect(banner).toContainText(/\d+ s$/);
   await expect(banner).not.toContainText('%');
 
   await expect(banner).toHaveAttribute('data-kind', 'ready', { timeout: 15_000 });
-  await expect(banner).toContainText('The AI version is ready – play it');
+  await expect(banner).toContainText('AI version ready');
+  await expect(page.getByTestId('upgrade-action')).toHaveText('Play AI version');
   // Hotová verze hru sama nevymění – hráč pořád hraje návrh.
   await page.waitForTimeout(2_500);
   expect(new URL(page.url()).pathname).toBe(draft.url);
@@ -103,7 +105,8 @@ test('working → final: the banner says why, and one double-clicked retry asks 
   await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
-  await expect(banner).toContainText("The AI's version didn't pass our playability check.");
+  // Text od P33 T5: věta bez obviňování, co zůstává.
+  await expect(banner).toContainText("The quick version stays – the AI one wasn't playable in our test run.");
   // Verdikt o větě: nový pokus by dopadl stejně, tlačítko nic neslibuje.
   await expect(page.getByTestId('upgrade-action')).toHaveCount(0);
 

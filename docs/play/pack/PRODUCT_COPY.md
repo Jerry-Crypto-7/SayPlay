@@ -7,3 +7,4 @@ Post-run: CHANGE ONE THING
 Chips: Make it harder / Add a twist / Swap the enemy / Change the world, keep the rules.
 Share: CHALLENGE A FRIEND
 Lab: How this game works
+AI version: AI version in progress / AI version ready / Play AI version / The quick version stays – the AI one didn't pass our checks.

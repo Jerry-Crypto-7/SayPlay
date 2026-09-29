@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 
 /**
  * Hra na telefonu dostane obrazovku (P28D T8, F-26): na 390×844 zabírají
@@ -66,3 +66,54 @@ for (const game of GAMES) {
     }
   });
 }
+
+/** Co z HUD, lišty cílů a karty výsledku leží pod štítkem AI verze. */
+async function underNotice(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const notice = document.querySelector('[data-testid="upgrade-state"]')!.getBoundingClientRect();
+    const hits: string[] = [];
+    for (const el of document.querySelectorAll<HTMLElement>('.play-hud, .play-targets, .play-outcome')) {
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) continue;
+      if (Math.min(notice.right, r.right) > Math.max(notice.left, r.left) && Math.min(notice.bottom, r.bottom) > Math.max(notice.top, r.top)) hits.push(el.className);
+    }
+    return hits;
+  });
+}
+
+// P33 T5: štítek AI verze se rozmístil podle stavu (běží vpravo nahoře, hotová verze dole nad lištou,
+// s kartou výsledku zase nahoře). Překryv je vidět jen na úzké obrazovce – drží ho tahle kontrola.
+test('phone 390×844: the AI-version notice never covers the HUD, the targets or the result card', async ({ page, request }) => {
+  const created = await request.post('/api/play/games', { data: { sentence: GAMES[0].sentence } });
+  expect(created.status(), await created.text()).toBeLessThan(300);
+  const draft = (await created.json()) as { url: string; upgrade: string };
+  const other = await request.post('/api/play/games', { data: { sentence: GAMES[1].sentence } });
+  const target = ((await other.json()) as { versionId: string }).versionId;
+  let ready = false;
+  await page.route(`**${draft.upgrade}`, (route) =>
+    route.fulfill({ json: ready ? { status: 'ready', versionId: target } : { status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() } }),
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(draft.url);
+  await page.locator('canvas').first().waitFor({ timeout: 60_000 });
+  const notice = page.getByTestId('upgrade-state');
+  const check = async (state: string): Promise<void> => {
+    if (DIR !== '') {
+      mkdirSync(DIR, { recursive: true });
+      await page.screenshot({ path: join(DIR, `notice-${state}.png`) });
+    }
+    expect(await underNotice(page), state).toEqual([]);
+  };
+
+  await expect(notice).toHaveAttribute('data-kind', 'working', { timeout: 15_000 });
+  await check('working');
+
+  ready = true;
+  await expect(notice).toHaveAttribute('data-kind', 'ready', { timeout: 15_000 });
+  await check('ready');
+
+  await page.evaluate(() => window.__playShell!.playWitness());
+  await expect(page.getByTestId('play-outcome')).toBeVisible({ timeout: 30_000 });
+  await page.waitForTimeout(300);
+  await check('ready-result');
+});
