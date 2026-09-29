@@ -53,6 +53,26 @@ function read(input: unknown): GameSpecV1 {
   return result.value;
 }
 
+const PLAYER = { role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: 1000, h: 1000, d: 1000, solid: false } as const;
+const CANDLE = { role: 'target', kind: 'candle', x: 5000, y: 0, z: 0, w: 500, h: 500, d: 500, solid: false, hp: 5 } as const;
+
+/** Svět s pravidlem, které v tiku `at` vydá dané efekty – efekty jádra dřív, než je vydá kus souboje nebo úkolu. */
+function scriptedWorld(level: ArcadeLevel, plan: readonly { readonly at: number; readonly effects: readonly unknown[] }[]) {
+  const script = z.object({ at: z.int(), effects: z.array(z.unknown()) });
+  const scripted: RulePiece<{ plan: z.infer<typeof script>[] }> = {
+    id: 'scripted',
+    params: z.object({ plan: z.array(script) }),
+    roles: ['player'],
+    trigger: 'tick',
+    cost: () => ({ bodies: 0, rules: 1 }),
+    fire: (ctx, params) => (params.plan.find((entry) => entry.at === ctx.state[HEADER.tick])?.effects ?? []) as never,
+  };
+  const library: ArcadeLibrary = { ...ARCADE_LIBRARY, rules: { ...ARCADE_LIBRARY.rules, scripted } };
+  const built = buildWorld({ seed: 1, control: { id: 'fight', params: {} }, rules: [{ id: 'scripted', params: { plan } }], bot: { id: 'fight_bot', params: {} }, level }, library);
+  if (!built.ok) throw new Error(built.issues.join('; '));
+  return { state: instantiate(built.world), program: loadProgram(built.world, library) };
+}
+
 describe('P32-0 T4 kernel seams', () => {
   it('registers a stub generator for every planned mode, in MODE_GENERATORS and in the library', () => {
     expect(Object.keys(MODE_GENERATORS).sort()).toEqual(MODES.map(([, id]) => id).sort());
@@ -147,33 +167,12 @@ describe('P32-0 T4 kernel seams', () => {
   });
 
   it('the kernel applies hit to HP (floor 0) and stateChange to the target state (0..2)', () => {
-    const level: ArcadeLevel = {
-      bodies: [
-        { role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: 1000, h: 1000, d: 1000, solid: false },
-        { role: 'target', kind: 'candle', x: 5000, y: 0, z: 0, w: 500, h: 500, d: 500, solid: false, hp: 5 },
-      ],
-      length: 0,
-    };
-    const script = z.object({ at: z.int(), effects: z.array(z.unknown()) });
-    const scripted: RulePiece<{ plan: z.infer<typeof script>[] }> = {
-      id: 'scripted',
-      params: z.object({ plan: z.array(script) }),
-      roles: ['player'],
-      trigger: 'tick',
-      cost: () => ({ bodies: 0, rules: 1 }),
-      fire: (ctx, params) => (params.plan.find((entry) => entry.at === ctx.state[HEADER.tick])?.effects ?? []) as never,
-    };
-    const library: ArcadeLibrary = { ...ARCADE_LIBRARY, rules: { ...ARCADE_LIBRARY.rules, scripted } };
-    const plan = [
+    const { state, program } = scriptedWorld({ bodies: [PLAYER, CANDLE], length: 0 }, [
       { at: 0, effects: [{ kind: 'hit', body: 1, by: 0, amount: 2 }] },
       { at: 1, effects: [{ kind: 'hit', body: 1, by: 0, amount: 9 }] },
       { at: 2, effects: [{ kind: 'stateChange', body: 1, state: 1 }] },
       { at: 3, effects: [{ kind: 'stateChange', body: 1, state: 7 }, { kind: 'hit', body: 9, by: 0, amount: 1 }] },
-    ];
-    const built = buildWorld({ seed: 1, control: { id: 'fight', params: {} }, rules: [{ id: 'scripted', params: { plan } }], bot: { id: 'fight_bot', params: {} }, level }, library);
-    if (!built.ok) throw new Error(built.issues.join('; '));
-    const program = loadProgram(built.world, library);
-    const state = instantiate(built.world);
+    ]);
     expect(bodyHp(state, 1)).toBe(5);
     const seen: number[][] = [];
     for (let tick = 0; tick < 4; tick += 1) {
@@ -188,6 +187,32 @@ describe('P32-0 T4 kernel seams', () => {
     ]);
     // Ostatní bity `flags` zůstaly: tělo žije dál.
     expect((state[bodyBase(1) + BODY.flags] as number) & FLAG.alive).toBe(FLAG.alive);
+  });
+
+  it('hit and stateChange touch only live bodies, and a negative hit does not heal', () => {
+    // Zásah předlohy by snížil HP každé další kopii; záporný `amount` léčil až na HP_MAX (revize T4).
+    const bodies = [PLAYER, CANDLE, { ...CANDLE, template: true }, { ...CANDLE, x: 9000 }];
+    const { state, program } = scriptedWorld({ bodies, length: 0, spawnSlots: 1 }, [
+      { at: 0, effects: [{ kind: 'despawn', body: 3 }, { kind: 'hit', body: 1, by: 0, amount: -3 }] },
+      {
+        at: 1,
+        effects: [
+          { kind: 'hit', body: 2, by: 0, amount: 2 },
+          { kind: 'stateChange', body: 2, state: 1 },
+          { kind: 'hit', body: 3, by: 0, amount: 2 },
+          { kind: 'stateChange', body: 3, state: 2 },
+        ],
+      },
+      { at: 2, effects: [{ kind: 'spawn', template: 2, x: 7000, y: 0, z: 0, vx: 0, vy: 0, vz: 0 }] },
+      { at: 3, effects: [{ kind: 'hit', body: 4, by: 0, amount: 1 }, { kind: 'stateChange', body: 4, state: 1 }] },
+    ]);
+    for (let tick = 0; tick < 4; tick += 1) step(state, NO_INPUT, program);
+    expect([1, 2, 3, 4].map((body) => [bodyHp(state, body), targetStateOf(state, body)])).toEqual([
+      [5, 0],
+      [5, 0],
+      [5, 0],
+      [4, 1],
+    ]);
   });
 
   it('buildWorld refuses HP outside 1..HP_MAX', () => {

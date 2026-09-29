@@ -666,9 +666,12 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     else if (effect.kind === 'push') changed = push(state, effect.body);
     else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
     else if (effect.body < 0 || effect.body >= (state[HD.bodyCount] as number)) changed = false;
+    // Předloha spawnu ani mrtvé tělo zásah nenese – kopie by zdědily jeho HP (revize P32-0 T4).
+    else if ((effect.kind === 'hit' || effect.kind === 'stateChange') && !alive(state, baseOf(effect.body))) changed = false;
     else if (effect.kind === 'hit') {
       const before = bodyHp(state, effect.body);
-      setBodyHp(state, effect.body, before - effect.amount);
+      // Záporný zásah neléčí.
+      setBodyHp(state, effect.body, before - Math.max(0, effect.amount));
       changed = bodyHp(state, effect.body) !== before;
     } else if (effect.kind === 'stateChange') {
       const before = targetStateOf(state, effect.body);
