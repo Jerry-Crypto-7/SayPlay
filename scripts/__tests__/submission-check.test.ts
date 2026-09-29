@@ -98,22 +98,21 @@ describe('current source submission disclosure contract, not semantic certificat
   // přepíše a tenhle seznam ne, nahrazení přestane cokoli měnit a popis zůstane
   // vyhovující: výsledek je `[]` místo jednoho `id`, a případ zčervená.
   it.each([
-    ['sentence-scope', 'becomes a 3D world', 'becomes a flat picture'],
-    ['authored-fallback', 'the nearest authored world', 'a substitute world'],
-    ['second-sentence-limit', 'any other target is refused', 'any other target is accepted'],
-    ['no-time-rewind', 'are not on the judge path', 'are on the judge path'],
-    ['semantic-limit', 'does not certify semantic correctness', 'guarantees semantic correctness'],
-    ['geometry-limit', 'Geometry is schematic.', 'Geometry is physically exact.'],
-    ['latency-provenance', 'Creation timings include process and transport overhead', 'Creation timings are provider compute time'],
-    ['independent-review', 'independent semantic review', 'automated validation'],
+    ['sentence-scope', 'becomes a short 3D game', 'becomes a short video'],
+    ['gamespec-only', 'never writes code', 'writes the game code'],
+    ['draft-fallback', 'is unavailable', 'is busy'],
+    ['recognisability', 'A vision judge recognised', 'A reviewer liked'],
+    ['semantic-limit', 'does not prove that the game matches', 'proves that the game matches'],
+    ['hosted-cost', 'behind a spend cap', 'on a flat fee'],
+    ['independent-review', 'there is no human playtest yet', 'players love it'],
   ])('rejects missing %s even when a legacy guarantee is present', (id, original, replacement) => {
     expect(descriptionContractProblems(`${description().replace(original, replacement)}\n${GUARANTEE}`)).toEqual([
       expect.stringContaining(id),
     ]);
   });
   it('accepts wording and markdown changes instead of requiring an exact quote', () => {
-    const text = description().replace('a 3D world', 'a **3D** world')
-      .replace('does not certify semantic correctness', 'cannot guarantee semantic accuracy');
+    const text = description().replace('a short 3D game', 'a short **3D** game')
+      .replace('does not prove that the game matches', 'cannot guarantee that the game matches');
     expect(descriptionContractProblems(text)).toEqual([]);
   });
   it('does not count disclosure hidden inside comments or code', () => {

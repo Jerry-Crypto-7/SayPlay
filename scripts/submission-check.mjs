@@ -319,46 +319,44 @@ export function mp4DurationSeconds(buffer) {
   return timescale > 0 ? duration / timescale : null;
 }
 
-/** Current English submission copy contract for WORLDSTREAM — the product the
- * judge actually opens: a sentence becomes a 3D world with executable rules.
+/** Current English submission copy contract for WORLDSTREAM PLAY — the product
+ * the judge actually opens on `/play`: a sentence becomes a short 3D game.
  *
- * **Přepsáno 16. 9. 2026 (P18 T10).** Do té doby tenhle seznam vymáhal slovník
- * Reality Compiler pilotu — „seven parameter groups", „one timer intervention",
- * „short source". Ta věta popisuje jiný produkt, než jaký je na demo adrese, a
- * kontrola tím nutila popis lhát: zelená brána nad popisem cizího produktu je
- * horší než červená. Sedm položek níž jsou omezení **tohoto** produktu a každé
- * je doložené — `docs/demo/judge-runbook.md` (náhrada uvařeným světem, limit
- * druhé věty, chybějící přetáčení času), `evals/worldstream/latency-report.json`
- * (původ časů) a hodnocení G1 (2 z 10 poznaných místností).
+ * **Přepsáno 29. 9. 2026 (P31 T1).** Do té doby seznam vymáhal omezení starého
+ * světového kompilátoru (`/studio`) — nejbližší uvařený svět, přetáčení času,
+ * schematická geometrie. PLAY nic z toho nemá, takže kontrola nutila popis
+ * mluvit o jiném produktu; zelená brána nad popisem cizího produktu je horší
+ * než červená (tentýž důvod jako přepis 16. 9. v P18 T10). Sedm položek níž
+ * jsou omezení **PLAY** a každé je doložené — `README.md` (Known issues: bez
+ * AI zůstane hra slovním draftem, žádný lidský playtest), `src/play/director`
+ * (model píše jen GameSpec) a `evals/play/p30b/losses.md` (vizuální porota
+ * poznala hrdinu v 9 z 18 snímků).
  *
  * Jsou to disclosure požadavky, ne automatická sémantická revize. Formulace i
  * rozvržení se smí měnit; smysl celého popisu pořád soudí člověk.
  */
 const DESCRIPTION_DISCLOSURES = [
-  ['sentence-scope', /\bsentence\b[^.!?]{0,120}\b(?:3D|three.dimensional)\b/i,
-    /\bdeterministic\b[^.!?]{0,80}\brules?\b/i],
-  // Porotce smí psát vlastní věty (`RULES.md` §3.3). Že na neznámou větu
-  // odpoví nejbližší uvařený svět, je ta nejdůležitější věc, kterou o sobě
-  // tenhle produkt musí říct nahlas — a musí říct i to, že to přizná na obrazovce.
-  ['authored-fallback', /\bnearest\b[^.!?]{0,80}\bauthored world\b/i,
-    /\bauthored world\b[^.!?]{0,80}\blabels?\b/i],
-  ['second-sentence-limit', /\bsecond sentence\b/i, /\b(?:refused|rejected|declined)\b/i],
-  ['no-time-rewind', /\btime rewind\b[^.!?]{0,120}\bnot on\b/i],
-  // Nejdůležitější omezení tohohle produktu a jediné, které se z hotového
-  // snímku nepozná: svět projde všemi strukturálními kontrolami a přitom
-  // neznamená, co věta říkala. G1 (16. 9. 2026) to naměřila jako 2 z 10.
-  ['semantic-limit', /\b(?:not a semantic guarantee|(?:does not|cannot) (?:certify|guarantee|establish) semantic (?:correctness|accuracy))\b/i],
-  ['geometry-limit', /\bgeometry\b[^.!?]{0,35}\bschematic\b/i],
-  ['latency-provenance', /\b(?:CLI|generation|creation) timings?\b[^.!?]{0,100}\b(?:include|includes)\b[^.!?]{0,100}\b(?:process|transport) overhead\b/i,
-    /\bauthored store\b[^.!?]{0,60}\bnot a live model\b/i],
-  ['independent-review', /\bindependent semantic review\b/i, /\b(?:usability|human|five.person)\b[^.!?]{0,100}\b(?:evidence|study|review)\b/i],
+  ['sentence-scope', /\bsentence\b[^.!?]{0,120}\b(?:3D|three.dimensional)\b[^.!?]{0,40}\bgames?\b/i,
+    /\bdeterministic\b[^.!?]{0,80}\bruntime\b/i],
+  ['gamespec-only', /\bmodel\b[^.!?]{0,120}\bnever writes code\b/i],
+  // Porotce smí psát vlastní věty (`RULES.md` §3.3) a první, co uvidí, je
+  // slovní draft. Že bez AI verze zůstane u draftu, musí popis říct nahlas.
+  ['draft-fallback', /\bword draft\b/i,
+    /\b(?:AI|model|director)\b[^.!?]{0,60}\b(?:unavailable|not available|is down)\b/i],
+  // Nejdůležitější omezení a jediné, které se z výhry robota nepozná: hra jde
+  // vyhrát a přitom nemusí vypadat jako věta. P30B to naměřila jako 9 z 18.
+  ['recognisability', /\bvision (?:model|judge)\b[^.!?]{0,80}\brecogni[sz]ed\b/i],
+  ['semantic-limit', /\b(?:do not|does not|cannot) (?:certify|guarantee|prove)\b[^.!?]{0,80}\b(?:matches|means)\b[^.!?]{0,40}\bsentence\b/i],
+  ['hosted-cost', /\bgpt-oss\b/i, /\bspend cap\b/i],
+  ['independent-review', /\bno human playtest\b|\b(?:human|usability)\b[^.!?]{0,100}\b(?:playtest|study|evidence)\b/i,
+    /\bautomated\b/i],
 ];
 
 export function descriptionContractProblems(text) {
   // Comments/code are not disclosures visible in the written submission.
   const prose = proseOf(text.replace(/<!--[\s\S]*?-->/g, '').replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, ''));
   return DESCRIPTION_DISCLOSURES.filter(([, ...patterns]) => !patterns.every(pattern => pattern.test(prose)))
-    .map(([id]) => `chybí aktuální disclosure ${id} (WORLDSTREAM)`);
+    .map(([id]) => `chybí aktuální disclosure ${id} (PLAY)`);
 }
 
 /** Text bez rozdílů, které nejsou obsahem: zalomení, dvojité mezery, nbsp. */
