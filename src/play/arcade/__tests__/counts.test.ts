@@ -6,7 +6,8 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { draftGameSpec } from '../../draft';
+// P32B T2: šablony ovládání staví jen remix uložených legacy her – zkouší se přes něj.
+import { legacyDraft } from '../../__tests__/legacy-draft';
 import { readGameSpec, type GameSpecV1 } from '../../spec';
 import flap from '../__fixtures__/flap.json';
 import platform from '../__fixtures__/platform.json';
@@ -47,8 +48,8 @@ function withCounts(fixture: unknown, counts: Readonly<Record<string, number>>):
 
 describe('arcade role counts and sentence density', () => {
   it('a runner with a lot of obstacles has sharply more obstacles than a plain one', () => {
-    const dense = draftGameSpec('a runner with a lot of obstacles');
-    const plain = draftGameSpec('a runner in the city');
+    const dense = legacyDraft('a runner with a lot of obstacles');
+    const plain = legacyDraft('a runner in the city');
     expect(dense.control).toBe('runner');
     expect(plain.control).toBe('runner');
     const many = count(bodies(dense), 'obstacle');
@@ -61,7 +62,7 @@ describe('arcade role counts and sentence density', () => {
     ['a platformer with 5 coins', 'platform'],
     ['flappy bird with five coins', 'flap'],
   ] as const)('„%s“ builds exactly 5 coins', (sentence, control) => {
-    const spec = draftGameSpec(sentence);
+    const spec = legacyDraft(sentence);
     expect(spec.control).toBe(control);
     expect(spec.roles.find((role) => role.id === 'coin')?.count).toBe(5);
     expect(count(bodies(spec), 'collectible', 'coin')).toBe(5);

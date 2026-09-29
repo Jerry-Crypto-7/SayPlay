@@ -41,6 +41,9 @@ import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
 import type { Reading } from '../read/schema';
+import { type GenreChoice, type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
+import type { GenreId, GenreModule, GenreSpec } from '../genre/contract';
+import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -94,11 +97,17 @@ export interface DraftMeta {
   readonly fellBack: boolean;
   /** Kdo větu přečetl: lokální model (`src/play/read`), nebo klíčová slova lexikonu. */
   readonly readBy: 'model' | 'keywords';
+  /** `GenreSpec`, ze kterého hra vznikla (P32B T2); `null` na staré cestě mřížky. Oprava režiséra ho bere jako poslední zálohu. */
+  readonly genre: GenreSpec | null;
+  /** Proč klasifikátor vybral žánr („main verb "light", cue "light"“) – pro panel čtení. */
+  readonly genreWhy: string | null;
 }
 
 export interface DraftOptions {
   /** Čtení věty lokálním modelem (P29B T4); `null` nebo chybí = jen klíčová slova. */
   readonly reading?: Reading | null;
+  /** Moduly žánrů; testy sem dávají dvojníky (`genre/__tests__/doubles.ts`). */
+  readonly modules?: GenreModules;
 }
 
 /** Slovo čtení bez členu: „a haunted castle“ → „haunted castle“; prázdné → `null`. */
@@ -1011,27 +1020,87 @@ export function noVerbTopic(sentence: string): string | null {
   return topicNoun(text) ?? 'your idea';
 }
 
+/** Prostředí, když ho věta neříká; kuchař vaří v kuchyni, ne na vesnici. */
+const GENRE_SETTING: Readonly<Record<GenreId, string>> = { runner: 'forest trail', platformer: 'floating islands', arena: 'meadow', voyage: 'open country', quest: 'village' };
+const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
+/** Předmět úkolu, když ho věta za slovesem nejmenuje. */
+const TARGET_DEFAULT: Readonly<Record<string, string>> = { light: 'candle', extinguish: 'fire', free: 'cage', press: 'switch', deliver: 'parcel', hit: 'target', cook: 'pancake', repair: 'machine', make: 'block' };
+
+/** „before the ghosts catch him“: kdo hráče chytá, i když `readRoles` pronásledovatele nenašel. */
+const CATCH_BEFORE = /\bbefore (?:the |a |an )?([a-z]+(?: [a-z]+)?) (?:catch|catches|get|gets|reach|reaches|grab|grabs)\b/;
+/** „Two knights duel“: počítaný podmět je hrdina i soupeř. */
+const COUNTED_SUBJECT = /^(?:two|three|four|five|\d+) ((?:[a-z]+ )?[a-z]+s)\b/;
+
+/** Popisek čtení bez členu a bez obecného „player“; prázdné → `null`. */
+function cleanLabel(phrase: string | null | undefined): string | null {
+  const text = bare(phrase ?? null);
+  return text === null || GENERIC_HERO.test(text) ? null : cap(text, 60);
+}
+
+/**
+ * Věta → `GenreSpec` žánru a režimu `choice` (P32B T2): role dá `draftFill`
+ * modulu, mezery doplní čtečky věty z tohohle souboru, co chybí úplně, bere se
+ * výchozí. `null`, když výsledek neprojde mezemi modulu nebo `readGameSpec`.
+ */
+function draftGenre(sentence: string, seed: number, reading: Reading | null, choice: GenreChoice, ranking: GenreRanking, modules: GenreModules): { readonly genre: GenreSpec; readonly spec: GameSpecV1 } | null {
+  const module = modules[choice.genre] as GenreModule;
+  const fill = module.draftFill(sentence, reading) as Partial<GenreSpec>;
+  const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
+  const roles = withPlace(rolesFrom(sentence, reading), sentence);
+  const nouns = sentenceNouns(sentence);
+  const counted = COUNTED_SUBJECT.exec(text)?.[1];
+  const pair = counted === undefined ? null : singular(counted);
+  const topic = choice.score === 0 ? noVerbTopic(sentence) : null;
+  const topicHero = topic !== null && modelOf(topic, true) !== undefined ? topic : null;
+  const rng = xoroshiro128plus(seed);
+  const hero =
+    cleanLabel(fill.hero) ?? pair ?? cleanLabel(roles.player) ?? (choice.genre === 'voyage' ? raceHero(sentence) : null) ?? nouns.hero ?? topicHero ?? PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
+  const catcher = CATCH_BEFORE.exec(text)?.[1];
+  const fight = choice.genre === 'arena' && choice.mode === 'fight';
+  const enemy = fight
+    ? (roles.target ?? duelFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
+    : (cleanLabel(fill.enemy) ?? roles.threat?.label ?? (catcher === undefined ? null : singular(catcher)) ?? nouns.avoid ?? namedFoe(sentence));
+  const collectible = cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup;
+  const verb = ranking.verb ?? 'use';
+  const setting = cleanLabel(fill.setting) ?? roles.setting ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
+  const place = lookFor(setting) === null ? lookFor(text) : null;
+  const said = ranking.after === null ? null : nounPhrase(ranking.after.replace(/^(?:on|at|up|down|out|to|into)\s+/, ''), 2);
+  // „without hitting anything“, „destroy everything“: zájmeno není věc, kterou by scéna nakreslila.
+  const object = said === null || /^(?:any|every|some|no)(?:thing|one|body)$|^(?:stuff|things?|all|it|them)$/.test(said) ? null : said;
+  const seconds = readNumbers(sentence).seconds;
+  const bounds = module.paramBounds.seconds;
+  const candidate = {
+    genre: choice.genre,
+    mode: choice.mode,
+    hero: cap(hero, 60),
+    ...(enemy === null ? {} : { enemy: cap(enemy, 60) }),
+    ...(collectible === null ? {} : { collectible: cap(collectible, 60) }),
+    ...(choice.genre === 'quest'
+      ? { target: { label: cap(object === null ? (TARGET_DEFAULT[verb] ?? 'star') : singular(object), 60), verb: verb.slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }
+      : {}),
+    setting: cap(setting, 80),
+    ...(place === null ? {} : { palette: place }),
+    ...(seconds === null || bounds === undefined ? {} : { params: { seconds: clamp(seconds, bounds.min, bounds.max) } }),
+  };
+  const read = readGenreSpec(candidate);
+  if (!read.ok) return null;
+  const game = readGameSpec(module.compile(read.value as never));
+  return game.ok ? { genre: read.value, spec: game.value } : null;
+}
+
 export function draftGameSpecWithMeta(sentence: string, seed = 1, options: DraftOptions = {}): DraftMeta {
   const reading = options.reading ?? null;
+  const modules = options.modules ?? GENRE_MODULES;
   const scores = scoreArchetypes(sentence);
-  const text = sentence.toLowerCase();
-  // P29B T4: ovládání čtení přebije klíčová slova; jejich parametry zůstanou, když ukazují na totéž ovládání.
-  if (reading !== null) {
-    if (reading.control !== 'tap_go') {
-      const pick = pickControl(text);
-      const arcade = draftArcade(sentence, seed, pick?.control === reading.control ? pick : DEFAULT_CHOICE[reading.control], noVerbTopic(sentence), reading);
-      if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false, readBy: 'model' };
-    }
-    return draftGrid(sentence, seed, scores, reading);
+  const readBy = reading === null ? 'keywords' : 'model';
+  // P32B T2: nová hra jde přes žánr – první režim z pořadí klasifikátoru, který se přeloží.
+  const ranking = classifyGenre(sentence, reading, modules);
+  for (const choice of ranking.ranked) {
+    const drafted = draftGenre(sentence, seed, reading, choice, ranking, modules);
+    if (drafted !== null) return { spec: drafted.spec, archetype: drafted.spec.archetype, scores, fellBack: false, readBy, genre: drafted.genre, genreWhy: choice.why };
   }
-  // P28D T2: mřížka jen když její archetyp něco uslyšel; věta bez narážky dostane nejbližší arkádu, ne houby.
-  const heard = Object.values(scores).some((score) => score > 0) || gridCue(text);
-  const control = pickControl(text) ?? (heard ? null : nearestControl(text).choice);
-  if (control !== null) {
-    const arcade = draftArcade(sentence, seed, control, noVerbTopic(sentence));
-    if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false, readBy: 'keywords' };
-  }
-  return draftGrid(sentence, seed, scores);
+  // Žádný režim se nepřeložil – mřížka archetypu jako před P32; korpus drží nulu.
+  return { ...draftGrid(sentence, seed, scores, reading), fellBack: true };
 }
 
 function draftGrid(sentence: string, seed: number, scores: Readonly<Record<ArchetypeId, number>>, reading: Reading | null = null): DraftMeta {
@@ -1053,12 +1122,12 @@ function draftGrid(sentence: string, seed: number, scores: Readonly<Record<Arche
   FILLERS[archetype](spec, { roles, seconds: numbers.seconds, counts: numbers.counts, playerLabel, text: sentence.toLowerCase() });
 
   const result = readGameSpec(spec);
-  if (result.ok) return { spec: result.value, archetype, scores, fellBack: false, readBy };
+  if (result.ok) return { spec: result.value, archetype, scores, fellBack: false, readBy, genre: null, genreWhy: null };
   const fallback = template(archetype);
   fallback.title = titleFrom(sentence, fallback.title);
   const normalized = readGameSpec(fallback);
   // Fixtura archetypu ze čtení nic nevzala – štítek „read by a local AI model“ by lhal.
-  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true, readBy: 'keywords' };
+  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true, readBy: 'keywords', genre: null, genreWhy: null };
 }
 
 /** Výchozí volba ovládání, když ho vybral model a slova věty ukazují jinam. */

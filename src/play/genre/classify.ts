@@ -36,6 +36,8 @@ export interface GenreRanking {
   readonly fallback: boolean;
   /** Hlavní sloveso věty (základní tvar), `null` když věta žádné z tabulky nemá. */
   readonly verb: string | null;
+  /** Zbytek věty za hlavním slovesem – tam začíná jeho předmět („… candles before the ghosts“). */
+  readonly after: string | null;
 }
 
 export type GenreModules = { readonly [G in GenreId]: GenreModule<G> };
@@ -97,7 +99,7 @@ const VERBS: readonly Verb[] = [
   v('jump', 'move', PLATFORMER, /\bjump(?:s|ing)?\b|\bhop(?:s|ping)?\b|\bleap(?:s|ing)?\b|\bbounc(?:e|es|ing)\b|\bplatform(?:er|s)?\b/),
   v('climb', 'move', PLATFORMER, /\bclimb(?:s|ing)?\b|\bcross(?:es|ing)? (?:the |a |an )?(?:[a-z]+ )?(?:islands?|platforms?|stones?|lava|river|gaps?|chasms?|pits?)\b/),
   v('sail', 'move', RACE, /\bsail(?:s|ing)?\b|\brow(?:s|ing)? (?:a |the )?boat\b|\bcruis(?:e|es|ing)\b|\bnavigat(?:e|es|ing)\b/),
-  v('fly', 'move', RACE, /\bfl(?:y|ies|ying)\b|\bglid(?:e|es|ing)\b|\bsoar(?:s|ing)?\b|\bpilot(?:s|ing)?\b/),
+  v('fly', 'move', RACE, /\bfl(?:y|ies|ying)\b|\bflap(?:s|ping)?\b|\bglid(?:e|es|ing)\b|\bsoar(?:s|ing)?\b|\bpilot(?:s|ing)?\b/),
   v('drive', 'move', RACE, /\bdriv(?:e|es|ing)\b|\bsteer(?:s|ing)?\b|\brac(?:e|es|ing|er)\b|\bzoom(?:s|ing)?\b/),
   v('ride', 'move', RACE, /\brid(?:e|es|ing)\b/),
   v('walk', 'move', RACE, /\bwalk(?:s|ing)?\b|\bstroll(?:s|ing)?\b|\bwander(?:s|ing)?\b|\btravel(?:s|ling|ing)?\b|\bswim(?:s|ming)?\b/),
@@ -167,7 +169,7 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
 
   const heard = VERBS.flatMap((entry) => {
     const match = entry.pattern.exec(text);
-    return match === null ? [] : [{ ...entry, at: match.index }];
+    return match === null ? [] : [{ ...entry, at: match.index, end: match.index + match[0].length }];
   });
   const main = [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
   const firstMove = heard.filter((entry) => entry.kind === 'move').sort((a, b) => a.at - b.at)[0];
@@ -215,5 +217,6 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     ranked,
     fallback: availability(ranked[0]) === 'fallback',
     verb: main?.verb ?? reading?.verbs[0]?.word ?? null,
+    after: main === undefined ? null : text.slice(main.end).trim() || null,
   };
 }

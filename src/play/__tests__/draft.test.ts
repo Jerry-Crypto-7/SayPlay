@@ -10,10 +10,60 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { goldenPrompts, packBucketPrompts } from '../../../evals/play/golden';
-import { draftGameSpec, draftGameSpecWithMeta, readNumbers, readRoles } from '../draft';
+import sentenceSet from '../../../evals/play/p32/sentences.json';
+import { draftForControl, draftGameSpec, draftGameSpecWithMeta, readNumbers, readRoles } from '../draft';
+import { genreDoubles } from '../genre/__tests__/doubles';
 import { type GameSpecV1, readGameSpec } from '../spec';
 
 const corpus = goldenPrompts();
+const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly id: string; readonly text: string }[];
+const LEGACY_CONTROLS = ['tap_go', 'flap', 'shooter', 'throw', 'timing', 'rhythm'];
+
+describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
+  it.each(sentenceSet.sentences)('gives $id the genre, mode and hero the sentence says', (entry) => {
+    const [genre, mode] = entry.genre.split('.');
+    const meta = draftGameSpecWithMeta(entry.text, 1, { modules: genreDoubles() });
+    expect(meta.fellBack).toBe(false);
+    expect(meta.genre).toMatchObject({ genre, ...(mode === undefined ? {} : { mode }) });
+    expect(meta.genre?.hero).toContain(entry.hero);
+    expect(meta.spec.genre).toMatchObject({ id: genre });
+    expect(meta.spec.roles.find((role) => role.kind === 'player')?.label).toBe(meta.genre?.hero);
+    expect(meta.genreWhy).not.toBe('');
+  });
+
+  it('reads the object of a quest verb and the pursuer named after “before”', () => {
+    const wizard = draftGameSpecWithMeta('A tiny wizard rides a broom through a haunted castle and must light five candles before the ghosts catch him', 1, { modules: genreDoubles() }).genre;
+    expect(wizard).toMatchObject({ target: { label: 'candle', verb: 'light', states: 2 }, enemy: 'ghost' });
+    const chef = draftGameSpecWithMeta('A chef cooks pancakes', 1, { modules: genreDoubles() }).genre;
+    expect(chef).toMatchObject({ target: { label: 'pancake', verb: 'cook', states: 3 }, setting: 'kitchen' });
+    expect(draftGameSpecWithMeta('Two knights duel in a castle', 1, { modules: genreDoubles() }).genre).toMatchObject({ hero: 'knight', enemy: 'knight' });
+  });
+
+  it('drafts every corpus sentence through a genre module, never onto a legacy control', () => {
+    for (const sentence of [...corpus.map((entry) => entry.prompt), ...demand.map((entry) => entry.text)]) {
+      const meta = draftGameSpecWithMeta(sentence, 1);
+      expect(meta.fellBack, sentence).toBe(false);
+      expect(meta.genre, sentence).not.toBeNull();
+      expect(meta.spec.genre?.id, sentence).toBe(meta.genre?.genre);
+      expect(LEGACY_CONTROLS, sentence).not.toContain(meta.spec.control);
+    }
+  });
+
+  it('keeps the archetype and control templates for remixes of saved legacy games', () => {
+    const collect = grid('Collect five glowing mushrooms then open a portal');
+    expect(collect.archetype).toBe('collect_exit');
+    expect(collect.control ?? 'tap_go').toBe('tap_go');
+    expect(draftForControl('zombie shooter in a mall', 'shooter')?.control).toBe('shooter');
+    expect(draftForControl('zombie shooter in a mall', 'shooter')?.genre).toBeUndefined();
+  });
+});
+
+/**
+ * Mřížka archetypů po P32B T2 žije jen pro remix uložených legacy her
+ * (`draftForControl(…, 'tap_go')`); testy níž, které čtou její archetyp,
+ * počty a texty, proto jdou přes ni místo přes návrh nové hry.
+ */
+const grid = (sentence: string): GameSpecV1 => draftForControl(sentence, 'tap_go') as GameSpecV1;
 
 describe('draftGameSpec', () => {
   it('yields a valid GameSpec for all forty sentences without ever falling back to the fixture', () => {
@@ -26,9 +76,9 @@ describe('draftGameSpec', () => {
 
   it('hits the expected archetype on 32 of 32 corpus sentences and 8 of 8 pack bucket sentences (pin)', () => {
     const expected = corpus.filter((entry) => entry.expectArchetype !== null);
-    const hits = expected.filter((entry) => draftGameSpecWithMeta(entry.prompt).archetype === entry.expectArchetype);
+    const hits = expected.filter((entry) => grid(entry.prompt).archetype === entry.expectArchetype);
     expect(hits.length).toBe(32);
-    const bucketHits = packBucketPrompts().filter((entry) => draftGameSpecWithMeta(entry.prompt).archetype === entry.expectArchetype);
+    const bucketHits = packBucketPrompts().filter((entry) => grid(entry.prompt).archetype === entry.expectArchetype);
     expect(bucketHits.length).toBe(8);
   });
 
@@ -41,31 +91,33 @@ describe('draftGameSpec', () => {
   });
 
   it('reads counts and seconds out of the sentence into the mechanics', () => {
-    const mushrooms = draftGameSpec('Collect five glowing mushrooms then open a portal');
+    const mushrooms = grid('Collect five glowing mushrooms then open a portal');
     expect(mushrooms.mechanics.find((m) => m.id === 'collectible')?.params.count).toBe(5);
     expect(mushrooms.objective.count).toBe(5);
     expect(mushrooms.roles.find((r) => r.kind === 'collectible')?.label).toBe('glowing mushroom');
 
-    const survive = draftGameSpec('Survive 60 seconds while red floor tiles pulse dangerously.');
+    const survive = grid('Survive 60 seconds while red floor tiles pulse dangerously.');
     expect(survive.mechanics.find((m) => m.id === 'timer')?.params.seconds).toBe(60);
     expect(survive.objective.seconds).toBe(60);
 
-    const minutes = draftGameSpec('Stay alive for two minutes in a haunted kitchen where the stove flares up.');
+    const minutes = grid('Stay alive for two minutes in a haunted kitchen where the stove flares up.');
     expect(minutes.objective.seconds).toBe(120);
+    // Žánr bere sekundy věty do mezí svého modulu (Aréna 20–80 s).
+    expect(draftGameSpecWithMeta('Survive 60 seconds while red floor tiles pulse dangerously.').genre?.params).toEqual({ seconds: 60 });
 
     // Milion občanů se ořízne do mezí schématu, ne odmítne.
-    const city = draftGameSpec('Collect one million coins in the city.');
+    const city = grid('Collect one million coins in the city.');
     expect(city.mechanics.find((m) => m.id === 'collectible')?.params.count).toBe(20);
   });
 
   it('puts the right article in front of the renamed role', () => {
-    expect(draftGameSpec('A lone knight gathers three iron keys inside a haunted castle.').tutorial.controlsHint).toMatch(/^Tap an iron key /);
-    expect(draftGameSpec('A knight must collect three keys in a haunted castle.').tutorial.controlsHint).toMatch(/^Tap a key /);
+    expect(grid('A lone knight gathers three iron keys inside a haunted castle.').tutorial.controlsHint).toMatch(/^Tap an iron key /);
+    expect(grid('A knight must collect three keys in a haunted castle.').tutorial.controlsHint).toMatch(/^Tap a key /);
   });
 
   it('builds the title from content words, not filler', () => {
-    expect(draftGameSpec('jumping arcade game with a lot of obstacles').title).toBe('Jumping Arcade Obstacles');
-    expect(draftGameSpec('A knight must collect three keys in a haunted castle.').title).toBe('Knight Collect Three Keys');
+    expect(grid('jumping arcade game with a lot of obstacles').title).toBe('Jumping Arcade Obstacles');
+    expect(grid('A knight must collect three keys in a haunted castle.').title).toBe('Knight Collect Three Keys');
   });
 
   // Hráč s větou o klíčích dostal „Tap a mushroom“ (QA 22. 9. 2026): text
@@ -73,7 +125,7 @@ describe('draftGameSpec', () => {
   it('never leaves a template label in the texts after the sentence renamed that role', () => {
     let renamed = 0;
     for (const entry of corpus) {
-      const meta = draftGameSpecWithMeta(entry.prompt, 1);
+      const meta = { spec: grid(entry.prompt), archetype: grid(entry.prompt).archetype };
       const template = JSON.parse(readFileSync(new URL(`../__fixtures__/${meta.archetype}.json`, import.meta.url), 'utf8')) as GameSpecV1;
       const texts = [meta.spec.tutorial.controlsHint, meta.spec.tutorial.goalLine, meta.spec.objective.description].join(' ').toLowerCase();
       for (const role of meta.spec.roles) {
