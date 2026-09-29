@@ -55,6 +55,52 @@ async function changedShare(a: Buffer, b: Buffer): Promise<number> {
   return changed / (left!.data.length / 3);
 }
 
+/**
+ * Jak moc je pás řádků obrazu (podíl výšky od–do) modrý: průměr B − R. Kreslená
+ * obloha má nahoře zenit sady, u obzoru světlý obzor; plochá barva pozadí má obojí stejné.
+ */
+async function blueness(png: Buffer, from: number, to: number): Promise<number> {
+  const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  let sum = 0;
+  let count = 0;
+  for (let y = Math.floor(info.height * from); y < Math.floor(info.height * to); y += 1) {
+    for (let x = 0; x < info.width; x += 1) {
+      const at = (y * info.width + x) * 3;
+      sum += data[at + 2]! - data[at]!;
+      count += 1;
+    }
+  }
+  return sum / count;
+}
+
+/** Fotopanorama knihovny a předpečené prostředí (P29C, P30A). */
+const PANORAMA = /\/(assets\/worldstream\/env|play\/env)\/[^?]*\.webp/;
+
+/**
+ * Arkáda fotopanorama nestahuje (P32A T6): prostředí z věty vybírá paletu
+ * a kulisy. Nastavení, pro která knihovna panorama má, ať by se stahovalo.
+ */
+for (const [fixture, setting] of [
+  ['runner', 'a snowy forest'],
+  ['timing', 'a glacier'],
+] as const) {
+  test(`${fixture} in "${setting}" fetches no photo panorama`, async ({ page, request }) => {
+    test.setTimeout(120_000);
+    const base = JSON.parse(readFileSync(join(process.cwd(), 'src/play/arcade/__fixtures__', `${fixture}.json`), 'utf8')) as { theme: Record<string, unknown> } & Record<string, unknown>;
+    const response = await request.post('/api/play/games', { data: { spec: { ...base, theme: { ...base.theme, setting } } } });
+    expect(response.status(), await response.text()).toBeLessThan(300);
+    const requested: string[] = [];
+    page.on('request', (sent) => requested.push(sent.url()));
+    await page.goto(((await response.json()) as { url: string }).url);
+    // Časovka bez ťuku netiká: stačí, že hra běží a síť se uklidní (panorama šlo až po prvním snímku).
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playRender !== undefined && window.__playRender().calls > 0, undefined, { timeout: 60_000 });
+    await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => undefined);
+    await page.waitForTimeout(2_000);
+    expect(requested.length, 'síťový log něco zachytil').toBeGreaterThan(0);
+    expect(requested.filter((url) => PANORAMA.test(url))).toEqual([]);
+  });
+}
+
 test.describe('desktop 1280×800', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
@@ -79,7 +125,13 @@ test.describe('desktop 1280×800', () => {
     await page.addStyleTag({ content: ONLY_CANVAS });
 
     const before = readFileSync(join(process.cwd(), 'e2e/__screenshots__/p32-split/runner-desktop.png'));
-    const share = await changedShare(await canvas.screenshot({ path: test.info().outputPath('runner-desktop.png') }), before);
+    const shot = await canvas.screenshot({ path: test.info().outputPath('runner-desktop.png') });
+    const share = await changedShare(shot, before);
     expect(share, 'podíl pixelů, které rig změnil proti snímku před ním').toBeGreaterThan(0.05);
+    // Louka: zenit #3a86d8 nahoře, obzor #d7ecf8 těsně nad zemí (obzor je v ~40 % výšky).
+    // Naměřeno 29. 9.: kreslená obloha 37 (záře slunce horní pás zesvětlí), plochá barva pozadí 7.
+    const top = await blueness(shot, 0, 0.04);
+    const nearHorizon = await blueness(shot, 0.3, 0.34);
+    expect(top - nearHorizon, `obloha nahoře (${top.toFixed(0)}) modřejší než u obzoru (${nearHorizon.toFixed(0)})`).toBeGreaterThan(20);
   });
 });

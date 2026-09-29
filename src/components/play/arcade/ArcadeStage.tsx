@@ -14,7 +14,7 @@
  */
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { type ReactNode, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
@@ -28,8 +28,6 @@ import { ActionButton, actionsOf, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
 import { StyleRig } from './look/rig/StyleRig';
-import { Panorama } from './look/Panorama';
-import { PlayEnv } from './look/play-env';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping, runnerGesture } from './input';
 import { PlatformWorld } from './platform/PlatformWorld';
@@ -492,7 +490,6 @@ export default function ArcadeStage({
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
   const actions = useMemo(() => actionsOf(session.world), [session]);
   const look = scene ?? LOOKS[lookId];
-  const env = useContext(PlayEnv);
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
   // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
   const rival = cast.props.rival;
@@ -535,8 +532,7 @@ export default function ArcadeStage({
         <RedrawOnChange session={session} />
         <FrameProbe control={control} />
         <RenderProbe />
-        {/* Panorama prostředí z věty (P29C T5) za každou scénou; do prvního snímku jen barva oblohy. */}
-        {env !== null && <Panorama env={env} />}
+        {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
         {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
         {control === 'timing' ? (
           <TimingScene session={session} look={look} blockModel={blockModel} />
