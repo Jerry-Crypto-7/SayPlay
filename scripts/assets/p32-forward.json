@@ -1,0 +1,9 @@
+{
+  "$comment": "Kam model míří (P32C T1): výchozí osa podle sady, `models` přepisuje jednotlivé modely. Katalog u všech 783 modelů udává front +Z; přepis patří sem, až ho galerie hrdinů (T5) změří sondou orientace. Čte scripts/assets/p32-manifest.mjs.",
+  "sets": {
+    "original": "+z",
+    "cc0": "+z",
+    "gen3d": "+z"
+  },
+  "models": {}
+}
