@@ -85,7 +85,9 @@ describe('create route reads the sentence before drafting', () => {
     expect(answering).toHaveBeenCalledOnce();
     expect(String(answering.mock.calls[0]?.[0])).toBe('http://reader.test/v1/chat/completions');
     expect(spec).toEqual(draftGameSpecWithMeta(SENTENCE, 1, { reading: READING }).spec);
-    expect((spec as { control?: string }).control).toBe('shooter');
+    // Od P32B T2 čtení nevybírá ovládání, ale jeho role jdou do žánru: duchy klíčová slova neznají.
+    expect(spec).not.toEqual(draftGameSpec(SENTENCE));
+    expect((spec as { roles: { label: string }[] }).roles.map((role) => role.label)).toContain('ghost');
   });
 
   it('a silent reader delays the game by the budget at most, then the keywords draft it', async () => {

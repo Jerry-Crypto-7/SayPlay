@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SENTENCE_CHARS } from '@/app/api/play/_publish';
 import { ARCHETYPES } from '@/play/registry';
 import { REMIX_CHIP_LABELS as CHIP_LABELS, REMIX_CHIPS as CHIPS } from '@/play/director/remix';
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpecWithMeta } from '@/play/draft';
 
 import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, PLACEHOLDER, POST_RUN_CHIPS, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
 
@@ -31,8 +31,25 @@ describe('startovní karty', () => {
     expect(STARTERS.map((starter) => starter.archetype).sort()).toEqual(Object.keys(ARCHETYPES).sort());
   });
 
-  it('věta karty přistane v návrhu ze slov na svém archetypu', () => {
-    for (const starter of STARTERS) expect(draftGameSpec(starter.sentence).archetype, starter.archetype).toBe(starter.archetype);
+  // P32B T2: návrh nové hry vybírá žánr, archetyp mřížky už ne – karta musí přistát v žánru, který slibuje její štítek.
+  it('věta karty přistane v návrhu ze slov v žánru svého štítku', () => {
+    const promised: Readonly<Record<string, string>> = {
+      Chase: 'arena.escape',
+      Collect: 'arena.collect',
+      Survive: 'arena.escape',
+      Race: 'voyage.race',
+      Deliver: 'quest.spatial',
+      Puzzle: 'quest.spatial',
+      Cross: 'platformer.default',
+      Fight: 'arena.fight',
+    };
+    for (const starter of STARTERS) {
+      const meta = draftGameSpecWithMeta(starter.sentence);
+      expect(meta.fellBack, starter.label).toBe(false);
+      expect(`${meta.genre?.genre}.${meta.genre?.mode}`, starter.label).toBe(promised[starter.label]);
+      // „Cross floating islands“: sloveso karty není hrdina.
+      expect(meta.genre?.hero, starter.label).not.toBe(starter.label.toLowerCase());
+    }
   });
 
   it('věty jsou zlaté prompty z balíčku (hazard_platforming → hazard_crossing)', () => {

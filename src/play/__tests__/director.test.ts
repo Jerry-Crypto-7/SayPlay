@@ -15,6 +15,7 @@ import { directorCache, directorCacheFromEnv, directorKey } from '../director/ca
 import { blockingIssues, critique } from '../director/critic';
 import { direct, type DirectedGame } from '../director/index';
 import { DIRECTOR_PROMPT_VERSION } from '../director/prompt';
+import { draftGameSpec } from '../draft';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const SENTENCE = 'Collect five glowing mushrooms in a moonlit forest, then escape through the portal';
@@ -110,7 +111,8 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
       },
     });
     expect(game).toMatchObject({ ok: true, source: 'draft', fallbackReason: 'MODEL_UNAVAILABLE', repairRounds: 0, calls: 1 });
-    expect(order).toEqual(['draft:collect_exit', 'generate']);
+    // Draft nové hry je od P32B T2 žánr; archetyp mu dává modul žánru, ne mřížka.
+    expect(order).toEqual([`draft:${draftGameSpec(SENTENCE).archetype}`, 'generate']);
     expect(readGameSpec(game.spec).ok).toBe(true);
   });
 

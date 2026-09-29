@@ -885,8 +885,8 @@ const gridCue = (text: string): boolean => GENTLE.test(text) || KID_FRIENDLY.tes
 const PICKUP = /\b(?:grab(?:s|bing)?|collect(?:s|ing)?|gather(?:s|ing)?|catch(?:es|ing)?|eat(?:s|ing)?|pick(?:s|ing)? up)\s+(.+)/;
 const AVOID = /\b(?:(?:jump|hop)(?:s|ing)? over|dodg(?:e|es|ing)|avoid(?:s|ing)?|(?:runs?|running)(?: away)? from|chased by)\s+(.+)/;
 const RESKIN = /\bbut with\s+(.+)/;
-// „purple elephants doing taxes“, „a squirrel hoarding nuts“: podmět bez slovesa, které `readRoles` zná.
-const SUBJECT = /^(?:(?:a|an|the) ([a-z]+(?: [a-z]+)?)|([a-z]+ [a-z]+s|[a-z]+s)) [a-z]+ing\b/;
+// „purple elephants doing taxes“, „a squirrel hoarding nuts“: podmět bez slovesa, které `readRoles` zná. „Cross floating islands“ – „-ss“ množné číslo není.
+const SUBJECT = /^(?:(?:a|an|the) ([a-z]+(?: [a-z]+)?)|([a-z]+ [a-z]*[a-rt-z]s|[a-z]*[a-rt-z]s)) [a-z]+ing\b/;
 
 /**
  * Podstatná jména věty pro role arkády (P28D T2), když je `readRoles` nenašel:
