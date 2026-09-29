@@ -373,7 +373,7 @@ export const CONTROL_PARAMS = {
  * Delegovaný výběr generátoru (P32-0 T4): překlad žánru smí k parametrům
  * ovládání přidat `generator` (id z `MODE_GENERATORS`) a `tuning` (parametry
  * režimu). `tuning` validuje zod schéma toho generátoru v `arcade/compile.ts`,
- * ne tady. Bez výchozích hodnot: spec bez nich má stejný hash jako dřív.
+ * ne tady; klíč, který soudí `CONTROL_PARAMS`, ale nést nesmí. Bez výchozích hodnot: spec bez nich má stejný hash jako dřív.
  * Režisér je nepíše – `CONTROL_PARAMS` (jeho zadání) je nemá.
  */
 const DELEGATION = {
@@ -530,6 +530,16 @@ export function readGameSpec(input: unknown): GameSpecResult {
     const own = SPEC_CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);
     if (!own.success) {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: own.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (${spec.control})`) };
+    }
+    // `tuning` přebije parametry až v kompilaci: klíč, který soudí tohle schéma (meze, cíl arény proti časovači), by obešel (revize T4).
+    const shape = CONTROL_PARAMS[spec.control].shape;
+    const shadowed = Object.keys(own.data.tuning ?? {}).filter((key) => Object.hasOwn(shape, key));
+    if (shadowed.length > 0) {
+      return {
+        ok: false,
+        reason: 'MALFORMED_SPEC',
+        issues: shadowed.map((key) => `/controlParams/tuning/${key}: ${spec.control} takes ${key} in controlParams itself – tuning carries only the generator's own keys`),
+      };
     }
   }
   if (spec.genre !== undefined && !isGenreMode(spec.genre.id, spec.genre.mode)) {

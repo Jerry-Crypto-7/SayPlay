@@ -13,7 +13,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { remixPatch } from '@/play/director/remix';
 import { type GenreSpec } from '@/play/genre/contract';
 import { compileGenre } from '@/play/genre/index';
-import { type GameSpecV1, readGameSpec } from '@/play/spec';
+import { CONTROL_PARAMS, type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import { arcadeWorldOf, compileArcade, generatorOf } from '../compile';
 import { type ArcadeLevel, BODY, BUTTON, FLAG, HEADER, HP_MAX, NO_INPUT, type RulePiece, TARGET_STATE_MAX, bodyBase, bodyHp, targetStateOf } from '../contract';
@@ -85,6 +85,21 @@ describe('P32-0 T4 kernel seams', () => {
     expect(made.ok && before.ok && canonicalHash(made.world)).toBe(before.ok && canonicalHash(before.world));
     const wrong = arcadeWorldOf(read(delegate(plain, { tuning: { feel: 3 } })), 1);
     expect(!wrong.ok && wrong.issues.join(' ')).toMatch(/feel.*platform_level/);
+  });
+
+  it('tuning may not carry a key the control already validates in spec.ts, so it cannot slip past its bounds', () => {
+    // 30 s výherní časovač + `tuning: {seconds: 60}` hrál na růst; timing `tuning: {tolerance: 50}` obešel mez 100 (revize T4).
+    const runner = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope' });
+    const plains = [runner, ...Object.values(SAMPLE).map((sample) => compileGenre(sample))];
+    const controls = new Set(plains.map((plain) => plain.control));
+    expect([...controls].sort()).toEqual(['duel', 'move_free', 'platform', 'runner', 'steer']);
+    for (const plain of plains) {
+      const control = plain.control as keyof typeof CONTROL_PARAMS;
+      for (const key of Object.keys(CONTROL_PARAMS[control].shape)) {
+        const result = readGameSpec(delegate(plain, { tuning: { [key]: 1 } }));
+        expect(!result.ok && result.issues.join(' '), `${control}.${key}`).toContain(`/controlParams/tuning/${key}`);
+      }
+    }
   });
 
   it('an unknown generator is refused, not silently replaced', () => {
