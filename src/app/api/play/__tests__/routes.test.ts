@@ -22,7 +22,7 @@ import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
 import { GAME_COMPILER_VERSION } from '@/play/contracts';
 import { STARTERS } from '@/components/play/starters';
 import { draftGameSpec } from '@/play/draft';
-import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { __resetProcessVersionStore, RECENT_CAP, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -455,6 +455,11 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
       goal: firstSpec.tutorial.goalLine,
       mood: firstSpec.theme.mood,
     });
+    // Řádek zapsaný před D-R1 cíl ani náladu nemá: přijde `null`, ne chybějící klíč.
+    const versions = versionStoreFromEnv(process.env);
+    const legacy = (await versions.recent(RECENT_CAP)).map((row) => ({ ...row, goal: undefined, mood: undefined }));
+    vi.spyOn(versions, 'recent').mockResolvedValueOnce(legacy);
+    expect((await feed('?recent=24')).body.games[1]).toMatchObject({ versionId: a, goal: null, mood: null });
     expect(body.games[0].remixes).toBe(0);
     expect((await feed('?recent=1')).body.games).toHaveLength(1);
   });
