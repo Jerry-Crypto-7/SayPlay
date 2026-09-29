@@ -59,6 +59,21 @@ Plán říká: když čistý Chrome dá ≤ 3 s, fáze 2 se zúží na černou o
   - **Kód mřížky:** 21 chunků, které se stahují až po kliknutí, pod zátěží zaberou ~8 s. Arkádové hry, jejichž kód je načtený předem, jsou pod zátěží skoro 2× rychlejší (6,6 s proti 11,6–13,1 s).
   - **Černá obrazovka:** baseline ji neměří, T6 ji ověří.
 
+## T4 – hry s fyzikálními tělesy (Rapier)
+
+Offline věta tělesa nedá, proto dvě hotové hry ze specu (`baseline-physics.json`: kámen k hodu a bedna k posunu, `things[].physics`). Harness je publikuje `POST /api/play/games {spec}` a měří jen studené otevření odkazu a telefon – kliknutí na „Play it“ tu není. Jeden běh na hru, čistý Chromium.
+
+| hra | studené otevření: ovladatelná (před → po) | první snímek (před → po) | telefon: první snímek (před → po) |
+|---|---:|---:|---:|
+| rock-physics | 1078 → 642 | 966 → 561 | 2183 → 2053 |
+| crate-physics | 823 → 470 | 797 → 446 | 2240 → 2168 |
+
+- **Fakt:** před T4 se scéna začala stavět až po stažení a spuštění Rapieru (chunk `f739f9f4.*.js`, 831 kB, stažený do 0,26–0,38 s); modely scény startovaly v 0,83–1,05 s. Po T4 se plátno a HUD vykreslí hned a modely jdou souběžně s Rapierem (bedna: první GLB v 0,48 s místo 0,83 s).
+- **Fakt:** s Rapierem uměle zdrženým o 3 s ukáže stránka scénu a HUD, tik stojí na 0 a stisk z čekání padne do tiku 0 po načtení; chyba hydratace v konzoli žádná.
+- **Inference:** zisk ~0,35–0,45 s na desktopu je souběh scény s Rapierem; na telefonu je menší, protože tam čas bere hlavně procesor. Jeden běh na hru – rozptyl mezi běhy je desítky ms.
+
+Běhy: `runs/t4-before/` (kód `5b23a253`) a `runs/t4/`.
+
 ## Jak zopakovat
 
 ```

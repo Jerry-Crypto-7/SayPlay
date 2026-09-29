@@ -5,8 +5,10 @@ import { cache } from 'react';
 
 import { VERSION_ID_PATTERN } from '@/app/api/play/_errors';
 import { admit } from '@/app/api/play/_publish';
+import { PrefetchPhysics } from '@/components/play/arcade/ArcadePlay';
 import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
+import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
 import { type Honesty, sentenceOf, unsupportedGame } from '@/play/draft/unsupported';
 import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
@@ -87,20 +89,24 @@ export default async function PlayGamePage({ params }: Params) {
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
+  // Rapier (P32D T4) se začne stahovat v renderu stránky, souběžně se scénou – hra bez těles ho nestáhne.
   return (
-    <PlayShell
-      key={game.version.versionId}
-      versionId={game.version.versionId}
-      spec={game.spec}
-      blueprint={game.blueprint}
-      {...(game.arcade === undefined ? {} : { arcade: game.arcade })}
-      lineage={lineage.length > 0 ? lineage : [game.version]}
-      remixes={children.length}
-      aiVersion={game.relation === 'upgrade'}
-      lab={labFacts(game.spec, game.report)}
-      read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
-      honesty={honesty}
-      upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
-    />
+    <>
+      <PrefetchPhysics needed={game.arcade !== undefined && worldHasPhysics(game.arcade)} />
+      <PlayShell
+        key={game.version.versionId}
+        versionId={game.version.versionId}
+        spec={game.spec}
+        blueprint={game.blueprint}
+        {...(game.arcade === undefined ? {} : { arcade: game.arcade })}
+        lineage={lineage.length > 0 ? lineage : [game.version]}
+        remixes={children.length}
+        aiVersion={game.relation === 'upgrade'}
+        lab={labFacts(game.spec, game.report)}
+        read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
+        honesty={honesty}
+        upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
+      />
+    </>
   );
 }
