@@ -194,14 +194,15 @@ test.describe('/play – vertical feed', () => {
     await expect(page.locator('.play-sentence')).toBeVisible();
   });
 
-  // AC P28D T7: do 3 s po načtení je plátno nahoře a hra bere vstup bez klepnutí na „Play“.
+  // AC P28D T7: do 3 s po načtení hraje plátno a hra bere vstup bez klepnutí na „Play“.
+  // Od P33 T9 stojí na desktopu pole pro větu nad feedem (jádro produktu); telefon má hru první – `play-create`.
   test('the landing page plays a game within 3 s', async ({ page }) => {
     await serveFeed(page, []);
     await page.goto('/play');
     await expect(page.locator('canvas')).toHaveCount(1, { timeout: 3_000 });
-    const top = await page.locator('canvas').boundingBox();
+    const game = await page.locator('canvas').boundingBox();
     const form = await page.locator('.play-sentence').boundingBox();
-    expect(top!.y).toBeLessThan(form!.y);
+    expect(form!.y).toBeLessThan(game!.y);
     // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže „You lost“ (runner prohraje do 3 s).
     await expect(page.getByTestId('play-demo')).toBeVisible();
     for (let second = 0; second < 8; second += 1) {

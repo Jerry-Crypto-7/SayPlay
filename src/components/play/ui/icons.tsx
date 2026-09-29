@@ -32,6 +32,28 @@ const PATHS = {
   ),
   warn: <path d="M12 4l9 16H3zM12 10v4M12 17v.5" />,
   play: <path d="M8 5v14l11-7z" />,
+  // Druhy startovních her (T9): útěk, přežití, doručení, přepínač, přeskok, souboj.
+  run: <path d="M9 12h11M15 7l5 5-5 5M3 8h4M2 12h3M3 16h4" />,
+  timer: (
+    <>
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l2.5 2.5M9 2h6" />
+    </>
+  ),
+  box: <path d="M4 8l8-4 8 4v8l-8 4-8-4zM4 8l8 4 8-4M12 12v8" />,
+  toggle: (
+    <>
+      <rect x="2" y="7" width="20" height="10" rx="5" />
+      <circle cx="16" cy="12" r="2.5" />
+    </>
+  ),
+  jump: <path d="M2 19h5M17 19h5M5 16c3-10 11-10 14 0" />,
+  target: (
+    <>
+      <circle cx="12" cy="12" r="7" />
+      <path d="M12 2v5M12 17v5M2 12h5M17 12h5" />
+    </>
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof PATHS;

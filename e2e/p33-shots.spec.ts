@@ -23,7 +23,7 @@ const SIZES = [
   { name: 'desktop', width: 1440, height: 900 },
 ] as const;
 
-const STATES = ['home-0s', 'home-5s', 'game-0s', 'game-5s', 'targets', 'result', 'remix-open', 'create-error'] as const;
+const STATES = ['home-0s', 'home-5s', 'game-0s', 'game-5s', 'targets', 'result', 'remix-open', 'create-error', 'create-progress'] as const;
 type State = (typeof STATES)[number];
 
 test.describe.configure({ mode: 'serial' });
@@ -114,6 +114,22 @@ for (const size of SIZES) {
       await expect(alert).toBeVisible();
       await alert.scrollIntoViewIfNeeded();
       await shot(page, size.name, 'create-error');
+    });
+
+    // P33 T9: odpověď dveří se zdrží, aby byl vidět průběh stavby.
+    test('create progress state', async ({ page }) => {
+      await page.route('**/api/play/games', async (route) => {
+        if (route.request().method() !== 'POST') return route.continue();
+        await new Promise((resolve) => setTimeout(resolve, 10_000));
+        return route.abort();
+      });
+      await page.goto('/play');
+      await page.getByTestId('play-sentence').fill(SENTENCE);
+      await page.getByTestId('play-create').click();
+      const steps = page.getByTestId('play-status');
+      await expect(steps).toBeVisible();
+      await steps.scrollIntoViewIfNeeded();
+      await shot(page, size.name, 'create-progress');
     });
   });
 }

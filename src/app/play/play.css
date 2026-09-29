@@ -267,7 +267,8 @@
   gap: var(--p-space-1);
 }
 
-.play-field input {
+.play-field input,
+.play-field textarea {
   width: 100%;
   padding-right: calc(var(--p-tap) + var(--p-space-2));
 }
@@ -336,6 +337,124 @@
   color: var(--play-text);
 }
 
+/* Průběh stavby hry (P33 T9): čtyři kroky pod sebou, hotové teal,
+ * aktivní jantarový a pulzuje, čekající šedé. */
+.play-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--p-text-s);
+}
+
+.play-steps li {
+  display: flex;
+  align-items: center;
+  gap: var(--p-space-3);
+  color: var(--play-muted);
+}
+
+.play-steps li::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--play-line);
+}
+
+.play-steps li[data-state='done'] {
+  color: var(--play-text);
+}
+
+.play-steps li[data-state='done']::before {
+  border-color: var(--play-action);
+  background: var(--play-action);
+}
+
+.play-steps li[data-state='active'] {
+  color: var(--play-accent);
+  font-weight: 600;
+}
+
+.play-steps li[data-state='active']::before {
+  border-color: var(--play-accent);
+  animation: play-step-pulse 0.8s ease-in-out infinite alternate;
+}
+
+@keyframes play-step-pulse {
+  to {
+    background: var(--play-accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-steps li[data-state='active']::before {
+    animation: none;
+    background: var(--play-accent);
+  }
+}
+
+/* Chyba stavby nese vlastní `Try again` vedle věty dveří. */
+.play-form .play-alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--p-space-3);
+}
+
+/* Telefon: pole leží pod feedem, `+ New game` k němu posune, dokud není vidět. */
+.play-button.play-new-game {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .play-button.play-new-game {
+    position: fixed;
+    right: var(--p-space-2);
+    bottom: calc(96px + env(safe-area-inset-bottom));
+    z-index: 5;
+    display: inline-flex;
+    padding-inline: var(--p-space-4);
+    box-shadow: var(--p-shadow-2);
+  }
+
+  .play-button.play-new-game[data-hidden='true'] {
+    display: none;
+  }
+}
+
+/* Desktop: titul, pole a vzory v jednom sloupci nad feedem (P33 T9), bez
+ * zásahu do `page.tsx`; na telefonu zůstává hra první. */
+@media (min-width: 701px) {
+  .play-root:has(> .play-create) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .play-root > .play-hero-top,
+  .play-root > .play-create,
+  .play-root > .play-pager {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .play-root > .play-hero-top {
+    order: -2;
+    max-width: 760px;
+    padding-top: var(--p-space-8);
+  }
+
+  .play-root > .play-create {
+    order: -1;
+    padding-top: 0;
+    padding-bottom: var(--p-space-8);
+  }
+}
+
 .play-create {
   max-width: 760px;
   margin: 0 auto;
@@ -365,18 +484,24 @@
   gap: var(--p-space-3);
 }
 
+/* Pole je první, co oko najde (P33 T9): velké písmo, silnější okraj. */
 .play-sentence {
   width: 100%;
-  min-height: 96px;
+  min-height: 112px;
   resize: vertical;
   box-sizing: border-box;
-  padding: var(--p-space-3) var(--p-space-4);
-  border-radius: var(--p-radius-m);
-  border: 1px solid var(--play-line);
+  padding: var(--p-space-4) var(--p-space-4);
+  border-radius: var(--p-radius-l);
+  border: 2px solid var(--play-line);
   background: var(--play-panel);
   color: var(--play-text);
   font: inherit;
-  font-size: var(--p-text-m);
+  font-size: var(--p-text-l);
+  line-height: 1.35;
+}
+
+.play-sentence::placeholder {
+  color: var(--play-muted);
 }
 
 .play-sentence:focus {
@@ -387,11 +512,12 @@
 .play-form-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: var(--p-space-3);
 }
 
 .play-counter {
+  margin-right: auto;
   color: var(--play-muted);
   font-size: var(--p-text-s);
   font-variant-numeric: tabular-nums;
@@ -446,9 +572,8 @@
 .play-starters-title {
   margin: var(--p-space-3) 0 0;
   color: var(--play-muted);
-  font-size: var(--p-text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: var(--p-text-s);
+  font-weight: 600;
 }
 
 .play-starters {
@@ -476,20 +601,22 @@
   gap: var(--p-space-2);
 }
 
-.play-starter:hover {
+.play-starter:hover:not(:disabled) {
   border-color: var(--play-action);
 }
 
-.play-starter-label {
-  font-weight: 600;
+.play-starter:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Karta vzoru (P33 T9): ikona druhu hry a jedna věta, žádný štítek verzálkami. */
+.play-starter .play-icon {
   color: var(--play-accent);
-  font-size: var(--p-text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
 }
 
 .play-starter-sentence {
-  color: var(--play-muted);
+  color: var(--play-text);
   font-size: var(--p-text-s);
   line-height: 1.35;
 }

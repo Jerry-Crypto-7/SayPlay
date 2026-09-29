@@ -4,28 +4,73 @@
  * Formulář `/play`: věta → `POST /api/play/games` → `router.push('/play/<id>')`.
  * Karta vzoru pošle svou větu rovnou (P28D T7).
  *
- * Stavový řádek ukazuje první dva kroky z `BUILD_STEPS` (odeslání, odpověď 201);
- * zbylé dva patří `/play/[id]`, kde se svět načítá a staví. Chyba dveří se
- * ukáže větou z `error.message` a věta v poli zůstane – člověk ji opraví, ne
- * napíše znovu.
+ * Po odeslání stojí pod polem všechny čtyři kroky `BUILD_STEPS` (P33 T9):
+ * první dva patří `/play` (odeslání, odpověď 201), zbylé dva `/play/[id]`,
+ * kde se svět načítá a staví – tady čekají. Chyba dveří se ukáže větou z
+ * `error.message` s tlačítkem `Try again` a věta v poli zůstane – člověk ji
+ * opraví, ne napíše znovu. Na telefonu leží pole pod feedem; plovoucí
+ * `+ New game` k němu posune, dokud pole není vidět.
  */
 
 import { useRouter } from 'next/navigation';
-import { useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+
+import type { ArchetypeId } from '@/play/registry';
 
 import { appendSpoken, MicButton } from './MicButton';
 import { BUILD_STEPS, PLACEHOLDER, SENTENCE_LIMIT, STARTERS } from './starters';
+import { Button, Icon, type IconName } from './ui';
 
 type Phase = { readonly kind: 'idle' } | { readonly kind: 'busy'; readonly step: 0 | 1 } | { readonly kind: 'failed'; readonly message: string };
 
+/** Počítadlo znaků se ukáže až u stropu – do té doby jen ruší. */
+const COUNTER_FROM = 400;
+
+/** Ikona druhu hry na kartě vzoru. */
+const STARTER_ICONS: Partial<Record<ArchetypeId, IconName>> = {
+  chase_escape: 'run',
+  collect_exit: 'collect',
+  survival_timer: 'timer',
+  checkpoint_race: 'flag',
+  delivery: 'box',
+  switch_puzzle: 'toggle',
+  hazard_crossing: 'jump',
+  combat_lite: 'target',
+};
+
+/** Průběh stavby: všechny čtyři kroky, hotové odškrtnuté, aktivní zvýrazněný. */
+export function BuildSteps({ active }: { readonly active: number }) {
+  return (
+    <ol className="play-steps" data-testid="play-status" aria-live="polite">
+      {BUILD_STEPS.map((step, index) => (
+        <li key={step} data-state={index < active ? 'done' : index === active ? 'active' : 'todo'} aria-current={index === active ? 'step' : undefined}>
+          {step}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export function CreateGame() {
   const router = useRouter();
+  const form = useRef<HTMLFormElement | null>(null);
+  const field = useRef<HTMLTextAreaElement | null>(null);
   const [sentence, setSentence] = useState('');
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
+  const [formSeen, setFormSeen] = useState(false);
 
   const trimmed = sentence.trim();
   const over = sentence.length > SENTENCE_LIMIT;
   const busy = phase.kind === 'busy';
+
+  // Plovoucí `+ New game` jen tehdy, když pole není na obrazovce.
+  useEffect(() => {
+    const element = form.current;
+    if (element === null || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(([entry]) => setFormSeen(entry?.isIntersecting ?? false));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   async function create(text: string): Promise<void> {
     if (text.length === 0 || text.length > SENTENCE_LIMIT || busy) return;
@@ -51,39 +96,44 @@ export function CreateGame() {
   return (
     <>
       <form
+        ref={form}
         className="play-form"
         onSubmit={(event: FormEvent<HTMLFormElement>) => {
           event.preventDefault();
           void create(trimmed);
         }}
       >
-        <textarea
-          className="play-sentence"
-          data-testid="play-sentence"
-          aria-label="Describe your game"
-          placeholder={PLACEHOLDER}
-          value={sentence}
-          maxLength={SENTENCE_LIMIT}
-          disabled={busy}
-          onChange={(event) => setSentence(event.target.value)}
-        />
-        <div className="play-form-row">
-          <span className="play-counter" data-over={over ? 'true' : 'false'} aria-live="polite">
-            {sentence.length} / {SENTENCE_LIMIT}
-          </span>
+        <div className="play-field">
+          <textarea
+            ref={field}
+            className="play-sentence"
+            data-testid="play-sentence"
+            aria-label="Describe your game"
+            placeholder={PLACEHOLDER}
+            value={sentence}
+            maxLength={SENTENCE_LIMIT}
+            disabled={busy}
+            onChange={(event) => setSentence(event.target.value)}
+          />
           <MicButton disabled={busy} onText={(spoken) => setSentence((previous) => appendSpoken(previous, spoken).slice(0, SENTENCE_LIMIT))} />
-          <button className="play-button" type="submit" data-testid="play-create" disabled={busy || trimmed.length === 0 || over}>
-            Play it
-          </button>
         </div>
-        {phase.kind === 'busy' && (
-          <p className="play-status" data-testid="play-status" aria-live="polite">
-            {BUILD_STEPS[phase.step]}…
-          </p>
-        )}
+        <div className="play-form-row">
+          {sentence.length >= COUNTER_FROM && (
+            <span className="play-counter" data-over={over ? 'true' : 'false'} aria-live="polite">
+              {sentence.length} / {SENTENCE_LIMIT}
+            </span>
+          )}
+          <Button variant="accent" size="l" type="submit" data-testid="play-create" disabled={busy || trimmed.length === 0 || over}>
+            Play it
+          </Button>
+        </div>
+        {phase.kind === 'busy' && <BuildSteps active={phase.step} />}
         {phase.kind === 'failed' && (
           <p className="play-alert" role="alert">
-            {phase.message}
+            <span>{phase.message}</span>
+            <Button variant="quiet" disabled={trimmed.length === 0 || over} onClick={() => void create(trimmed)}>
+              Try again
+            </Button>
           </p>
         )}
       </form>
@@ -103,12 +153,25 @@ export function CreateGame() {
                 void create(starter.sentence);
               }}
             >
-              <span className="play-starter-label">{starter.label}</span>
+              <Icon name={STARTER_ICONS[starter.archetype] ?? 'play'} />
               <span className="play-starter-sentence">{starter.sentence}</span>
             </button>
           </li>
         ))}
       </ul>
+
+      <Button
+        className="play-new-game"
+        data-testid="play-new-game"
+        data-hidden={formSeen ? 'true' : 'false'}
+        onClick={() => {
+          form.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          field.current?.focus({ preventScroll: true });
+        }}
+      >
+        <Icon name="plus" />
+        New game
+      </Button>
     </>
   );
 }
