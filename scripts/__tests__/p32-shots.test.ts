@@ -174,6 +174,11 @@ describe('shoot', () => {
     expect((one.timeToPlayableMs ?? 0) - (one.timeToFirstFrameMs ?? 0)).toBeGreaterThanOrEqual(ACCEPT_MS - 50);
     expect(one.timeToPlayableMs).toBeLessThan(10_000);
     expect(Number.isInteger(one.inputTick)).toBe(true);
+    // Studené otevření odkazu: plátno hned, vstup až po ACCEPT_MS – od navigace, ne od kliknutí.
+    expect(one.open.timeToFirstFrameMs).toBeGreaterThan(0);
+    expect(one.open.timeToPlayableMs).toBeGreaterThanOrEqual(ACCEPT_MS);
+    expect((one.open.timeToPlayableMs ?? 0) - (one.open.timeToFirstFrameMs ?? 0)).toBeGreaterThanOrEqual(ACCEPT_MS - 100);
+    expect(one.open.phoneFirstFrameMs).toBeGreaterThan(0);
     expect(one.fpsMedian).toBeGreaterThan(0);
     expect(one.fpsSamples.length).toBeGreaterThanOrEqual(1);
     expect(one.network.some((entry: { category: string; startMs: number }) => entry.category === 'api' && entry.startMs >= 0)).toBe(true);
@@ -204,5 +209,6 @@ describe('shoot', () => {
     expect(one.timeToPlayableMs).toBeGreaterThanOrEqual(NAVIGATE_MS + ACCEPT_MS);
     expect(one.timeToPlayableMs).toBeLessThan(10_000);
     expect(one.timeToFirstFrameMs).toBeGreaterThanOrEqual(NAVIGATE_MS);
+    expect(one.open.timeToPlayableMs).toBeGreaterThanOrEqual(ACCEPT_MS);
   }, 90_000);
 });

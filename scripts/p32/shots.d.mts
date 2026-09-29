@@ -34,6 +34,8 @@ export interface SentenceResult {
   inputTick: number | null;
   /** Která sonda dala `timeToPlayableMs`. */
   probe: 'arcade-stage' | 'grid-input-log' | null;
+  /** Studené otevření odkazu hry, od začátku navigace; telefon jen první snímek. */
+  open: { timeToPlayableMs: number | null; timeToFirstFrameMs: number | null; phoneFirstFrameMs: number | null };
   fpsMedian: number | null;
   fpsSamples: number[];
   shots: { draftDesktop: string | null; draftPhone: string | null; aiDesktop: string | null; aiPhone: string | null };

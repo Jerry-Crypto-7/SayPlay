@@ -15,11 +15,15 @@
  *    `timeToFirstFrameMs` = od kliknutí k prvnímu WebGL volání kreslení na
  *    plátně nové hry. Obě chvíle zapisuje prohlížeč (`Date.now()`), stejné
  *    hodiny jako klik.
- * 2. Pixel 7 se 4× zpomaleným CPU (CDP `Emulation.setCPUThrottlingRate`):
- *    snímek téže hry a `fpsMedian` – medián snímků za sekundu přes
- *    `--fps-seconds`. Po celou dobu hraje robot („Show me how“): po konci běhu
- *    kreslí plátno jen na požádání a prázdná smyčka by ukázala 60.
- * 3. S `--live` počká na AI verzi (nejdéle 120 s) a vyfotí ji na obou.
+ *    S `--live` pak počká na AI verzi (nejdéle 120 s) a vyfotí ji.
+ * 2. Studené otevření odkazu `/play/<id>` v novém kontextu (`open`): tytéž
+ *    dva časy od začátku navigace. `/play` před kliknutím načte hru feedu a
+ *    s ní většinu kódu, takže čas od kliknutí studený start neukáže.
+ * 3. Pixel 7 se 4× zpomaleným CPU (CDP `Emulation.setCPUThrottlingRate`):
+ *    první snímek od navigace, snímek téže hry (a AI verze) a `fpsMedian` –
+ *    medián snímků za sekundu přes `--fps-seconds`. Po celou dobu hraje robot
+ *    („Show me how“): po konci běhu kreslí plátno jen na požádání a prázdná
+ *    smyčka by ukázala 60.
  *
  * Síťový log z desktopu (od kliknutí) nese kategorii načítání: html, js, api,
  * glb, panorama, rapier, audio, other – z něj baseline skládá fáze.
@@ -131,6 +135,10 @@ function instrument() {
     requestAnimationFrame(() => watchGrid(until));
   };
   if (pendingClick) watchGrid(Date.now() + 120_000);
+  else if (window.__p32Armed) {
+    sessionStorage.removeItem(GRID);
+    watchGrid(Date.now() + 120_000);
+  }
   document.addEventListener(
     'click',
     (event) => {
@@ -292,6 +300,8 @@ async function shootSentence(browser, options, sentence, log) {
     inputTick: null,
     /** Která sonda čas dala: `arcade-stage` (arkáda) nebo `grid-input-log` (mřížka). */
     probe: null,
+    /** Studené otevření odkazu `/play/<id>` v čistém kontextu, od začátku navigace. */
+    open: { timeToPlayableMs: null, timeToFirstFrameMs: null, phoneFirstFrameMs: null },
     fpsMedian: null,
     fpsSamples: [],
     shots: { draftDesktop: null, draftPhone: null, aiDesktop: null, aiPhone: null },
@@ -377,7 +387,30 @@ async function shootSentence(browser, options, sentence, log) {
     await desktop.close();
   }
 
-  // 2. Telefon: snímek téže hry a FPS se zpomaleným CPU.
+  // 2. Studené otevření odkazu hry: nic z `/play` v cache, čas od začátku navigace
+  //    (`performance.timeOrigin`). Tak přijde hráč ze sdíleného odkazu.
+  if (entry.gamePath !== null) {
+    const cold = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    await cold.addInitScript(instrument);
+    try {
+      const page = await cold.newPage();
+      if (options.desktopCpuThrottle > 1) await (await cold.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: options.desktopCpuThrottle });
+      await page.goto(`${options.base}${entry.gamePath}`, { waitUntil: 'domcontentloaded' });
+      const origin = await page.evaluate(() => performance.timeOrigin);
+      const deadline = origin + options.playableTimeoutMs;
+      const probe = await inputUntilProbe(page, origin, deadline);
+      if (probe === null) errors.push(`open: input probe never fired within ${String(options.playableTimeoutMs)} ms of navigation`);
+      else entry.open.timeToPlayableMs = Math.round(probe.at - origin);
+      const drawAt = await firstDrawAt(page, Math.max(deadline, Date.now() + 2000));
+      if (drawAt !== null) entry.open.timeToFirstFrameMs = Math.round(drawAt - origin);
+    } catch (error) {
+      errors.push(`open: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
+    } finally {
+      await cold.close();
+    }
+  }
+
+  // 3. Telefon: snímek téže hry a FPS se zpomaleným CPU.
   if (entry.gamePath !== null) {
     const phone = await browser.newContext({ ...devices['Pixel 7'] });
     await phone.addInitScript(instrument);
@@ -386,7 +419,8 @@ async function shootSentence(browser, options, sentence, log) {
       const cdp = await phone.newCDPSession(page);
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: CPU_THROTTLING });
       await page.goto(`${options.base}${entry.gamePath}`, { waitUntil: 'load' });
-      await firstDrawAt(page, Date.now() + options.playableTimeoutMs);
+      const phoneDraw = await firstDrawAt(page, Date.now() + options.playableTimeoutMs);
+      if (phoneDraw !== null) entry.open.phoneFirstFrameMs = Math.round(phoneDraw - (await page.evaluate(() => performance.timeOrigin)));
       await page.waitForTimeout(SETTLE_MS);
       const draft = shotPath('draft-phone');
       await page.screenshot({ path: draft.path });
@@ -411,7 +445,7 @@ async function shootSentence(browser, options, sentence, log) {
 
   entry.error = errors.length === 0 ? null : errors.join('; ');
   log(
-    `[p32-shots] ${sentence.id}: playable ${String(entry.timeToPlayableMs ?? '–')} ms, first frame ${String(entry.timeToFirstFrameMs ?? '–')} ms, fps ${String(entry.fpsMedian ?? '–')}${entry.ai ? `, ai ${entry.ai.status}` : ''}${entry.error ? ` – ERROR ${entry.error}` : ''}`,
+    `[p32-shots] ${sentence.id}: playable ${String(entry.timeToPlayableMs ?? '–')} ms, first frame ${String(entry.timeToFirstFrameMs ?? '–')} ms, cold open ${String(entry.open.timeToPlayableMs ?? '–')}/${String(entry.open.timeToFirstFrameMs ?? '–')} ms, phone first frame ${String(entry.open.phoneFirstFrameMs ?? '–')} ms, fps ${String(entry.fpsMedian ?? '–')}${entry.ai ? `, ai ${entry.ai.status}` : ''}${entry.error ? ` – ERROR ${entry.error}` : ''}`,
   );
   return entry;
 }
