@@ -10,7 +10,7 @@
 
 import type { KeypointEvidence, QualityReport, VerbProof } from '@/play/contracts';
 
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, UNIT, bodyBase } from './contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, UNIT, bodyBase, bodyHp, targetStateOf } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
@@ -113,6 +113,11 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number): strin
     case 'push':
     case 'throwHeld':
       return null;
+    // Švy P32-0 T4: jádro efekt ohlásí jen za skutečnou změnu HP nebo stavu cíle.
+    case 'hit':
+      return `body ${String(effect.body)} hit, hp now ${String(bodyHp(after, effect.body))} ${at}`;
+    case 'stateChange':
+      return `body ${String(effect.body)} now in state ${String(targetStateOf(after, effect.body))} ${at}`;
   }
 }
 

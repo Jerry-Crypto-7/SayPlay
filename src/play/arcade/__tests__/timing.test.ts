@@ -189,6 +189,8 @@ describe('načasování – robot a ověření', () => {
     // Spec takovou toleranci ani nepustí.
     expect(readGameSpec(timingSpec({ speed: 'fast', tolerance: 60 })).ok).toBe(false);
     expect(readGameSpec(timingSpec({ speed: 'fast', tolerance: TIMING.minSpecTolerance })).ok).toBe(true);
+    // Ani přes `tuning`: přebil by toleranci, kterou spec už posoudil, mezí generátoru 10 (revize P32-0 T4).
+    expect(readGameSpec(timingSpec({ tolerance: 300, tuning: { tolerance: 50 } })).ok).toBe(false);
   });
 });
 

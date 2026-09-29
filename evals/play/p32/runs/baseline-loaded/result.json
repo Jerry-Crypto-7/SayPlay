@@ -1,0 +1,3232 @@
+{
+  "schema": "p32-shots/1",
+  "label": "baseline-loaded",
+  "base": "http://127.0.0.1:3354",
+  "set": "evals/play/p32/baseline-sentences.json",
+  "live": false,
+  "startedAt": "2026-09-29T16:14:24.708Z",
+  "finishedAt": "2026-09-29T16:19:39.536Z",
+  "settings": {
+    "desktop": "1280x720",
+    "desktopCpuThrottling": 6,
+    "phone": "Pixel 7",
+    "cpuThrottling": 4,
+    "fpsSeconds": 1,
+    "renderer": "native"
+  },
+  "sentences": [
+    {
+      "id": "penguin",
+      "text": "A penguin slides down an icy mountain, collects snowflakes and avoids rocks",
+      "gamePath": "/play/f8cd673394a0f4e43612e62236a5ec01",
+      "timeToPlayableMs": 11571,
+      "timeToFirstFrameMs": 9122,
+      "inputTick": 15,
+      "probe": "grid-input-log",
+      "open": {
+        "timeToPlayableMs": 7292,
+        "timeToFirstFrameMs": 7481,
+        "phoneFirstFrameMs": 4017
+      },
+      "fpsMedian": 55.1,
+      "fpsSamples": [
+        55.1
+      ],
+      "shots": {
+        "draftDesktop": "penguin-draft-desktop.png",
+        "draftPhone": "penguin-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 22,
+          "endMs": 306,
+          "bytes": 252,
+          "failed": false
+        },
+        {
+          "path": "/play/f8cd673394a0f4e43612e62236a5ec01?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 524,
+          "endMs": 543,
+          "bytes": 4592,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 783,
+          "endMs": 799,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 796,
+          "endMs": 815,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4278-70e6eb4b7dd4620d.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2757,
+          "endMs": 2800,
+          "bytes": 6182,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7210-dd083685af077f24.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2761,
+          "endMs": 2797,
+          "bytes": 1347,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1358-66df3c588723f1c5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2766,
+          "endMs": 2799,
+          "bytes": 2526,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7529-c634eb4e5fa7ed8e.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2772,
+          "endMs": 2825,
+          "bytes": 4982,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7591-bf45d35156a40b40.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2776,
+          "endMs": 2826,
+          "bytes": 2915,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6972-f9bb3e63881f7437.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2780,
+          "endMs": 2824,
+          "bytes": 2198,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4154-7c57734170a9bf7f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2795,
+          "endMs": 2866,
+          "bytes": 27876,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/2804-5685920e76daace5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2796,
+          "endMs": 2855,
+          "bytes": 3167,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4337-3b24e1d1a20879ea.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2801,
+          "endMs": 2860,
+          "bytes": 6240,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9792-94cbd7bc4f125082.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2821,
+          "endMs": 2871,
+          "bytes": 9488,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6310.a8dfc102d260e29f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 2823,
+          "endMs": 2895,
+          "bytes": 12535,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1617-324138e9d078b9d3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5611,
+          "endMs": 5646,
+          "bytes": 7026,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6416-af9578fb42944d0a.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5613,
+          "endMs": 5644,
+          "bytes": 3752,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7518-f02135b3aa42652b.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5616,
+          "endMs": 5663,
+          "bytes": 206958,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4814-ececcc8c779f7e97.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5618,
+          "endMs": 5645,
+          "bytes": 1855,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9474-856cf7d46b52f803.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5622,
+          "endMs": 5666,
+          "bytes": 15972,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/8808-18e858ce6a86aa71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5625,
+          "endMs": 5659,
+          "bytes": 1744,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7853-b01483b64437f2cf.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5643,
+          "endMs": 5687,
+          "bytes": 4009,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6721,
+          "endMs": 6730,
+          "bytes": 5643,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6730,
+          "endMs": 6738,
+          "bytes": 5356,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6737,
+          "endMs": 6745,
+          "bytes": 6789,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6744,
+          "endMs": 6752,
+          "bytes": 6707,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6751,
+          "endMs": 6758,
+          "bytes": 11497,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/space-calm.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6758,
+          "endMs": 6766,
+          "bytes": 142395,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 6771,
+          "endMs": 6780,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/5848.d97d8abefc1ae6e3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 8887,
+          "endMs": 8917,
+          "bytes": 740,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-space-colony-dome-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8977,
+          "endMs": 8985,
+          "bytes": 18747,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/penguin-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8997,
+          "endMs": 9005,
+          "bytes": 18207,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stone-portal-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9000,
+          "endMs": 9005,
+          "bytes": 4278,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stone-portal-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9629,
+          "endMs": 9633,
+          "bytes": 3723,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/f8cd673394a0f4e43612e62236a5ec01/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 9698,
+          "endMs": 9709,
+          "bytes": 64,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/forest-2-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10388,
+          "endMs": 10393,
+          "bytes": 12572,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/forest-2.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10635,
+          "endMs": 10639,
+          "bytes": 129304,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 11537,
+          "endMs": 11546,
+          "bytes": 0,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "firefighter",
+      "text": "A firefighter robot sprays water on burning trees and jumps over fallen logs",
+      "gamePath": "/play/abfc64c1dc499b0d26a6ea9ba4686a10",
+      "timeToPlayableMs": 12121,
+      "timeToFirstFrameMs": 9098,
+      "inputTick": 15,
+      "probe": "grid-input-log",
+      "open": {
+        "timeToPlayableMs": 4968,
+        "timeToFirstFrameMs": 6753,
+        "phoneFirstFrameMs": 3198
+      },
+      "fpsMedian": 52.4,
+      "fpsSamples": [
+        52.4
+      ],
+      "shots": {
+        "draftDesktop": "firefighter-draft-desktop.png",
+        "draftPhone": "firefighter-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 29,
+          "endMs": 407,
+          "bytes": 262,
+          "failed": false
+        },
+        {
+          "path": "/play/abfc64c1dc499b0d26a6ea9ba4686a10?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 628,
+          "endMs": 639,
+          "bytes": 5120,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 822,
+          "endMs": 830,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 840,
+          "endMs": 851,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4278-70e6eb4b7dd4620d.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1857,
+          "endMs": 1862,
+          "bytes": 6182,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7210-dd083685af077f24.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1862,
+          "endMs": 1866,
+          "bytes": 1347,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1358-66df3c588723f1c5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1866,
+          "endMs": 1870,
+          "bytes": 2526,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7529-c634eb4e5fa7ed8e.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1870,
+          "endMs": 1874,
+          "bytes": 4982,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7591-bf45d35156a40b40.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1873,
+          "endMs": 1877,
+          "bytes": 2915,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6972-f9bb3e63881f7437.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1880,
+          "endMs": 1885,
+          "bytes": 2198,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4154-7c57734170a9bf7f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1885,
+          "endMs": 1894,
+          "bytes": 27876,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/2804-5685920e76daace5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1890,
+          "endMs": 1897,
+          "bytes": 3167,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4337-3b24e1d1a20879ea.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1898,
+          "endMs": 1908,
+          "bytes": 6240,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9792-94cbd7bc4f125082.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1904,
+          "endMs": 1909,
+          "bytes": 9488,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6310.a8dfc102d260e29f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1908,
+          "endMs": 1913,
+          "bytes": 12535,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1617-324138e9d078b9d3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5776,
+          "endMs": 5782,
+          "bytes": 7026,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6416-af9578fb42944d0a.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5780,
+          "endMs": 5784,
+          "bytes": 3752,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7518-f02135b3aa42652b.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5784,
+          "endMs": 5809,
+          "bytes": 206958,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4814-ececcc8c779f7e97.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5791,
+          "endMs": 5796,
+          "bytes": 1855,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9474-856cf7d46b52f803.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5795,
+          "endMs": 5800,
+          "bytes": 15972,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/8808-18e858ce6a86aa71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5800,
+          "endMs": 5804,
+          "bytes": 1744,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7853-b01483b64437f2cf.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5804,
+          "endMs": 5809,
+          "bytes": 4009,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/meadow-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6521,
+          "endMs": 6530,
+          "bytes": 6249,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/meadow-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6522,
+          "endMs": 6530,
+          "bytes": 6305,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/meadow-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6523,
+          "endMs": 6532,
+          "bytes": 5754,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/meadow-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6524,
+          "endMs": 6533,
+          "bytes": 12663,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/meadow-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6526,
+          "endMs": 6534,
+          "bytes": 6773,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/meadow-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6527,
+          "endMs": 6536,
+          "bytes": 138042,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 6550,
+          "endMs": 6563,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/5848.d97d8abefc1ae6e3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 8758,
+          "endMs": 8762,
+          "bytes": 740,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-bench-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8850,
+          "endMs": 8860,
+          "bytes": 6380,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8866,
+          "endMs": 8879,
+          "bytes": 7398,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-flower-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8883,
+          "endMs": 8913,
+          "bytes": 134794,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-firefighter-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8919,
+          "endMs": 8935,
+          "bytes": 61562,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-water-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8926,
+          "endMs": 8940,
+          "bytes": 22830,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stepping-stone-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8932,
+          "endMs": 8943,
+          "bytes": 4670,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/finish-flag-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 8936,
+          "endMs": 8945,
+          "bytes": 6057,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-water-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9377,
+          "endMs": 9382,
+          "bytes": 13165,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stepping-stone-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9380,
+          "endMs": 9385,
+          "bytes": 2224,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/finish-flag-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9382,
+          "endMs": 9386,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/abfc64c1dc499b0d26a6ea9ba4686a10/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 9599,
+          "endMs": 9610,
+          "bytes": 64,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/meadow-2-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 9762,
+          "endMs": 9766,
+          "bytes": 23590,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/5bf094ad-dbdb-4d6b-a150-706295474974",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 9981,
+          "endMs": 9983,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/405382df-e5c7-4aa1-878e-7f44f07fb777",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 10186,
+          "endMs": 10188,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/meadow-2.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10441,
+          "endMs": 10446,
+          "bytes": 207134,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/de9fbe2f-3b92-4f21-985c-725c6d921b7f",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 10464,
+          "endMs": 10465,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/09960c85-1374-402b-808a-5f22fb604e75",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 10488,
+          "endMs": 10489,
+          "bytes": -68,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 12096,
+          "endMs": 12103,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 12306,
+          "endMs": 12313,
+          "bytes": 0,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "wizard",
+      "text": "A tiny wizard rides a broom through a haunted castle and must light five candles before the ghosts catch him",
+      "gamePath": "/play/370218b08e897ee727e644184c8c2356",
+      "timeToPlayableMs": 12730,
+      "timeToFirstFrameMs": 9976,
+      "inputTick": 16,
+      "probe": "grid-input-log",
+      "open": {
+        "timeToPlayableMs": 10996,
+        "timeToFirstFrameMs": 7885,
+        "phoneFirstFrameMs": 3474
+      },
+      "fpsMedian": 55.5,
+      "fpsSamples": [
+        55.5
+      ],
+      "shots": {
+        "draftDesktop": "wizard-draft-desktop.png",
+        "draftPhone": "wizard-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 22,
+          "endMs": 239,
+          "bytes": 252,
+          "failed": false
+        },
+        {
+          "path": "/play/370218b08e897ee727e644184c8c2356?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 452,
+          "endMs": 464,
+          "bytes": 5768,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 614,
+          "endMs": 618,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 625,
+          "endMs": 629,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4278-70e6eb4b7dd4620d.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1348,
+          "endMs": 1358,
+          "bytes": 6182,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7210-dd083685af077f24.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1349,
+          "endMs": 1357,
+          "bytes": 1347,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1358-66df3c588723f1c5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1349,
+          "endMs": 1357,
+          "bytes": 2526,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7529-c634eb4e5fa7ed8e.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1350,
+          "endMs": 1361,
+          "bytes": 4982,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7591-bf45d35156a40b40.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1352,
+          "endMs": 1363,
+          "bytes": 2915,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6972-f9bb3e63881f7437.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1354,
+          "endMs": 1366,
+          "bytes": 2198,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4154-7c57734170a9bf7f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1357,
+          "endMs": 1371,
+          "bytes": 27876,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/2804-5685920e76daace5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1357,
+          "endMs": 1370,
+          "bytes": 3167,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4337-3b24e1d1a20879ea.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1358,
+          "endMs": 1371,
+          "bytes": 6240,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9792-94cbd7bc4f125082.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1361,
+          "endMs": 1375,
+          "bytes": 9488,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6310.a8dfc102d260e29f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1361,
+          "endMs": 1376,
+          "bytes": 12535,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1617-324138e9d078b9d3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5768,
+          "endMs": 5773,
+          "bytes": 7026,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6416-af9578fb42944d0a.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5771,
+          "endMs": 5774,
+          "bytes": 3752,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7518-f02135b3aa42652b.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5774,
+          "endMs": 5798,
+          "bytes": 206958,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4814-ececcc8c779f7e97.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5778,
+          "endMs": 5782,
+          "bytes": 1855,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9474-856cf7d46b52f803.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5783,
+          "endMs": 5788,
+          "bytes": 15972,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/8808-18e858ce6a86aa71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5786,
+          "endMs": 5790,
+          "bytes": 1744,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7853-b01483b64437f2cf.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5790,
+          "endMs": 5793,
+          "bytes": 4009,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7039,
+          "endMs": 7049,
+          "bytes": 4544,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7046,
+          "endMs": 7053,
+          "bytes": 8061,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7053,
+          "endMs": 7061,
+          "bytes": 6349,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7061,
+          "endMs": 7068,
+          "bytes": 11671,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7070,
+          "endMs": 7078,
+          "bytes": 12089,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/castle-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7082,
+          "endMs": 7095,
+          "bytes": 157276,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 7107,
+          "endMs": 7125,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/370218b08e897ee727e644184c8c2356/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 8276,
+          "endMs": 8287,
+          "bytes": 64,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/5848.d97d8abefc1ae6e3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 9758,
+          "endMs": 9762,
+          "bytes": 740,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/stone-wall-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9810,
+          "endMs": 9814,
+          "bytes": 1649,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-torch-lit-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9810,
+          "endMs": 9815,
+          "bytes": 49564,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-barrel-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9816,
+          "endMs": 9823,
+          "bytes": 11459,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-wizard-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9834,
+          "endMs": 9841,
+          "bytes": 34363,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/roomba-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9837,
+          "endMs": 9842,
+          "bytes": 8766,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/exit-door-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9841,
+          "endMs": 9845,
+          "bytes": 3938,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/shopping-cart-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9844,
+          "endMs": 9848,
+          "bytes": 6052,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/roomba-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 10170,
+          "endMs": 10176,
+          "bytes": 3539,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/exit-door-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 10176,
+          "endMs": 10181,
+          "bytes": 3344,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/shopping-cart-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 10181,
+          "endMs": 10188,
+          "bytes": 3849,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/set-haunted-castle-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10477,
+          "endMs": 10484,
+          "bytes": 20176,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/28183e63-d615-4467-9f33-ff403be877fd",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 10592,
+          "endMs": 10593,
+          "bytes": -65,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/set-haunted-castle.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 11254,
+          "endMs": 11259,
+          "bytes": 161808,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/e708cc9b-e69b-4ab5-a15a-07ce2b622343",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 11268,
+          "endMs": 11269,
+          "bytes": -67,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/c376ee99-4f77-4667-a0f0-bf6f0f3192f4",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 11284,
+          "endMs": 11285,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 12704,
+          "endMs": 12712,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 13074,
+          "endMs": 13081,
+          "bytes": 0,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "pirate",
+      "text": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure",
+      "gamePath": "/play/163359dded0f91252d91c24eaac82c7c",
+      "timeToPlayableMs": 12429,
+      "timeToFirstFrameMs": 9579,
+      "inputTick": 11,
+      "probe": "grid-input-log",
+      "open": {
+        "timeToPlayableMs": 11775,
+        "timeToFirstFrameMs": 8212,
+        "phoneFirstFrameMs": 3490
+      },
+      "fpsMedian": 59.1,
+      "fpsSamples": [
+        59.1
+      ],
+      "shots": {
+        "draftDesktop": "pirate-draft-desktop.png",
+        "draftPhone": "pirate-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 24,
+          "endMs": 353,
+          "bytes": 259,
+          "failed": false
+        },
+        {
+          "path": "/play/163359dded0f91252d91c24eaac82c7c?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 580,
+          "endMs": 591,
+          "bytes": 5069,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 756,
+          "endMs": 760,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 768,
+          "endMs": 771,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4278-70e6eb4b7dd4620d.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3068,
+          "endMs": 3074,
+          "bytes": 6182,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7210-dd083685af077f24.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3073,
+          "endMs": 3079,
+          "bytes": 1347,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1358-66df3c588723f1c5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3079,
+          "endMs": 3084,
+          "bytes": 2526,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7529-c634eb4e5fa7ed8e.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3086,
+          "endMs": 3093,
+          "bytes": 4982,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7591-bf45d35156a40b40.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3090,
+          "endMs": 3094,
+          "bytes": 2915,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6972-f9bb3e63881f7437.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3094,
+          "endMs": 3098,
+          "bytes": 2198,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4154-7c57734170a9bf7f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3098,
+          "endMs": 3105,
+          "bytes": 27876,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/2804-5685920e76daace5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3102,
+          "endMs": 3106,
+          "bytes": 3167,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4337-3b24e1d1a20879ea.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3106,
+          "endMs": 3110,
+          "bytes": 6240,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9792-94cbd7bc4f125082.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3110,
+          "endMs": 3115,
+          "bytes": 9488,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6310.a8dfc102d260e29f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 3119,
+          "endMs": 3127,
+          "bytes": 12535,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1617-324138e9d078b9d3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5554,
+          "endMs": 5560,
+          "bytes": 7026,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6416-af9578fb42944d0a.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5559,
+          "endMs": 5565,
+          "bytes": 3752,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7518-f02135b3aa42652b.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5562,
+          "endMs": 5599,
+          "bytes": 206958,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4814-ececcc8c779f7e97.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5563,
+          "endMs": 5568,
+          "bytes": 1855,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9474-856cf7d46b52f803.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5564,
+          "endMs": 5570,
+          "bytes": 15972,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/8808-18e858ce6a86aa71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5564,
+          "endMs": 5570,
+          "bytes": 1744,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7853-b01483b64437f2cf.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5564,
+          "endMs": 5571,
+          "bytes": 4009,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/beach-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7865,
+          "endMs": 7875,
+          "bytes": 5443,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/beach-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7874,
+          "endMs": 7883,
+          "bytes": 6891,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/beach-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7885,
+          "endMs": 7897,
+          "bytes": 6695,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/beach-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7889,
+          "endMs": 7897,
+          "bytes": 17091,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/beach-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7904,
+          "endMs": 7916,
+          "bytes": 7566,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/beach-calm.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 7916,
+          "endMs": 7928,
+          "bytes": 160690,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 7939,
+          "endMs": 7952,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/5848.d97d8abefc1ae6e3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 9262,
+          "endMs": 9268,
+          "bytes": 740,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-palm-tree-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9369,
+          "endMs": 9377,
+          "bytes": 32927,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-boat-row-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9376,
+          "endMs": 9383,
+          "bytes": 11749,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-sandcastle-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9382,
+          "endMs": 9390,
+          "bytes": 32394,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-pirate-captain-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9409,
+          "endMs": 9416,
+          "bytes": 59105,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/coin-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9412,
+          "endMs": 9417,
+          "bytes": 2858,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stone-portal-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9416,
+          "endMs": 9420,
+          "bytes": 4278,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-iron-cannonball-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9420,
+          "endMs": 9427,
+          "bytes": 75716,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/coin-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9756,
+          "endMs": 9759,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stone-portal-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9761,
+          "endMs": 9766,
+          "bytes": 3723,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-iron-cannonball-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9765,
+          "endMs": 9769,
+          "bytes": 38444,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/163359dded0f91252d91c24eaac82c7c/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 10114,
+          "endMs": 10125,
+          "bytes": 64,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/beach-2-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10293,
+          "endMs": 10297,
+          "bytes": 20230,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/beach-2.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 11108,
+          "endMs": 11112,
+          "bytes": 161282,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/1e8c35fd-aa14-4fe9-a8d0-fc4805fda369",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 11144,
+          "endMs": 11145,
+          "bytes": -67,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 12376,
+          "endMs": 12387,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 12925,
+          "endMs": 12932,
+          "bytes": 0,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "cat",
+      "text": "A cat collects glowing fish on a frozen lake while a polar bear chases it",
+      "gamePath": "/play/dd58427af94a57de2dcab024a60c69d0",
+      "timeToPlayableMs": 13078,
+      "timeToFirstFrameMs": 9343,
+      "inputTick": 18,
+      "probe": "grid-input-log",
+      "open": {
+        "timeToPlayableMs": 10437,
+        "timeToFirstFrameMs": 6752,
+        "phoneFirstFrameMs": 3130
+      },
+      "fpsMedian": 46,
+      "fpsSamples": [
+        46
+      ],
+      "shots": {
+        "draftDesktop": "cat-draft-desktop.png",
+        "draftPhone": "cat-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 22,
+          "endMs": 391,
+          "bytes": 254,
+          "failed": false
+        },
+        {
+          "path": "/play/dd58427af94a57de2dcab024a60c69d0?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 620,
+          "endMs": 630,
+          "bytes": 6027,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 815,
+          "endMs": 820,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 831,
+          "endMs": 836,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4278-70e6eb4b7dd4620d.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1736,
+          "endMs": 1741,
+          "bytes": 6182,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7210-dd083685af077f24.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1740,
+          "endMs": 1744,
+          "bytes": 1347,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1358-66df3c588723f1c5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1743,
+          "endMs": 1746,
+          "bytes": 2526,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7529-c634eb4e5fa7ed8e.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1746,
+          "endMs": 1749,
+          "bytes": 4982,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7591-bf45d35156a40b40.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1749,
+          "endMs": 1752,
+          "bytes": 2915,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6972-f9bb3e63881f7437.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1751,
+          "endMs": 1754,
+          "bytes": 2198,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4154-7c57734170a9bf7f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1754,
+          "endMs": 1758,
+          "bytes": 27876,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/2804-5685920e76daace5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1756,
+          "endMs": 1759,
+          "bytes": 3167,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4337-3b24e1d1a20879ea.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1759,
+          "endMs": 1762,
+          "bytes": 6240,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9792-94cbd7bc4f125082.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1762,
+          "endMs": 1765,
+          "bytes": 9488,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6310.a8dfc102d260e29f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1765,
+          "endMs": 1769,
+          "bytes": 12535,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1617-324138e9d078b9d3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5731,
+          "endMs": 5742,
+          "bytes": 7026,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6416-af9578fb42944d0a.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5738,
+          "endMs": 5743,
+          "bytes": 3752,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7518-f02135b3aa42652b.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5742,
+          "endMs": 5768,
+          "bytes": 206958,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4814-ececcc8c779f7e97.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5748,
+          "endMs": 5752,
+          "bytes": 1855,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9474-856cf7d46b52f803.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5752,
+          "endMs": 5756,
+          "bytes": 15972,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/8808-18e858ce6a86aa71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5755,
+          "endMs": 5758,
+          "bytes": 1744,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7853-b01483b64437f2cf.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5759,
+          "endMs": 5763,
+          "bytes": 4009,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/snow-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6834,
+          "endMs": 6843,
+          "bytes": 6515,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/snow-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6842,
+          "endMs": 6850,
+          "bytes": 6203,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/snow-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6850,
+          "endMs": 6858,
+          "bytes": 6136,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/snow-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6856,
+          "endMs": 6863,
+          "bytes": 13796,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/snow-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6863,
+          "endMs": 6871,
+          "bytes": 9846,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/snow-calm.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6871,
+          "endMs": 6879,
+          "bytes": 149270,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 6883,
+          "endMs": 6892,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/5848.d97d8abefc1ae6e3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 9143,
+          "endMs": 9155,
+          "bytes": 740,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-iceberg-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9222,
+          "endMs": 9231,
+          "bytes": 32939,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/cat-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9238,
+          "endMs": 9244,
+          "bytes": 17037,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/aquarium-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9240,
+          "endMs": 9244,
+          "bytes": 6118,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stone-portal-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9242,
+          "endMs": 9245,
+          "bytes": 4278,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-bear-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9244,
+          "endMs": 9249,
+          "bytes": 39977,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/aquarium-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9433,
+          "endMs": 9438,
+          "bytes": 3627,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/stone-portal-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9436,
+          "endMs": 9440,
+          "bytes": 3723,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-bear-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9438,
+          "endMs": 9442,
+          "bytes": 16572,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/dd58427af94a57de2dcab024a60c69d0/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 9795,
+          "endMs": 9810,
+          "bytes": 64,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/snow-3-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10204,
+          "endMs": 10208,
+          "bytes": 10382,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/snow-3.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10946,
+          "endMs": 10951,
+          "bytes": 84568,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 13048,
+          "endMs": 13060,
+          "bytes": 0,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "chef",
+      "text": "A chef cooks pancakes",
+      "gamePath": "/play/776ab14357fbbafc0773bb3f4b7eadc4",
+      "timeToPlayableMs": 11822,
+      "timeToFirstFrameMs": 9428,
+      "inputTick": 14,
+      "probe": "grid-input-log",
+      "open": {
+        "timeToPlayableMs": 4875,
+        "timeToFirstFrameMs": 6676,
+        "phoneFirstFrameMs": 3434
+      },
+      "fpsMedian": 58.1,
+      "fpsSamples": [
+        58.1
+      ],
+      "shots": {
+        "draftDesktop": "chef-draft-desktop.png",
+        "draftPhone": "chef-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 17,
+          "endMs": 247,
+          "bytes": 244,
+          "failed": false
+        },
+        {
+          "path": "/play/776ab14357fbbafc0773bb3f4b7eadc4?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 538,
+          "endMs": 558,
+          "bytes": 4650,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 779,
+          "endMs": 783,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 788,
+          "endMs": 791,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4278-70e6eb4b7dd4620d.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1673,
+          "endMs": 1678,
+          "bytes": 6182,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7210-dd083685af077f24.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1677,
+          "endMs": 1680,
+          "bytes": 1347,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1358-66df3c588723f1c5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1680,
+          "endMs": 1683,
+          "bytes": 2526,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7529-c634eb4e5fa7ed8e.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1681,
+          "endMs": 1684,
+          "bytes": 4982,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7591-bf45d35156a40b40.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1684,
+          "endMs": 1687,
+          "bytes": 2915,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6972-f9bb3e63881f7437.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1687,
+          "endMs": 1689,
+          "bytes": 2198,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4154-7c57734170a9bf7f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1689,
+          "endMs": 1694,
+          "bytes": 27876,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/2804-5685920e76daace5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1692,
+          "endMs": 1695,
+          "bytes": 3167,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4337-3b24e1d1a20879ea.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1694,
+          "endMs": 1698,
+          "bytes": 6240,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9792-94cbd7bc4f125082.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1697,
+          "endMs": 1700,
+          "bytes": 9488,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6310.a8dfc102d260e29f.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 1700,
+          "endMs": 1703,
+          "bytes": 12535,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/1617-324138e9d078b9d3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5651,
+          "endMs": 5657,
+          "bytes": 7026,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/6416-af9578fb42944d0a.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5655,
+          "endMs": 5659,
+          "bytes": 3752,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7518-f02135b3aa42652b.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5659,
+          "endMs": 5685,
+          "bytes": 206958,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/4814-ececcc8c779f7e97.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5663,
+          "endMs": 5666,
+          "bytes": 1855,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/9474-856cf7d46b52f803.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5666,
+          "endMs": 5672,
+          "bytes": 15972,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/8808-18e858ce6a86aa71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5670,
+          "endMs": 5675,
+          "bytes": 1744,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/7853-b01483b64437f2cf.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 5676,
+          "endMs": 5681,
+          "bytes": 4009,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/supermarket-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6668,
+          "endMs": 6679,
+          "bytes": 6834,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/supermarket-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6673,
+          "endMs": 6681,
+          "bytes": 6824,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/supermarket-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6685,
+          "endMs": 6695,
+          "bytes": 6975,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/supermarket-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6691,
+          "endMs": 6701,
+          "bytes": 11176,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/supermarket-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6701,
+          "endMs": 6710,
+          "bytes": 15194,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/supermarket-calm.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 6711,
+          "endMs": 6721,
+          "bytes": 140337,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 6727,
+          "endMs": 6738,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/776ab14357fbbafc0773bb3f4b7eadc4/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 7993,
+          "endMs": 8005,
+          "bytes": 64,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/5848.d97d8abefc1ae6e3.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 8995,
+          "endMs": 9001,
+          "bytes": 740,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-cabinet-shelves-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9250,
+          "endMs": 9259,
+          "bytes": 6272,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/shopping-cart-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9258,
+          "endMs": 9271,
+          "bytes": 3849,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-can-fridge-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9267,
+          "endMs": 9297,
+          "bytes": 32776,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/waiter-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9293,
+          "endMs": 9300,
+          "bytes": 18875,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-burger-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9297,
+          "endMs": 9302,
+          "bytes": 19429,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-fries-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9301,
+          "endMs": 9305,
+          "bytes": 5860,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-customer-lod0.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9305,
+          "endMs": 9312,
+          "bytes": 70182,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-burger-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9571,
+          "endMs": 9577,
+          "bytes": 19203,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-fries-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9576,
+          "endMs": 9580,
+          "bytes": 5311,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-customer-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 9579,
+          "endMs": 9584,
+          "bytes": 36446,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/set-kitchen-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 9936,
+          "endMs": 9941,
+          "bytes": 22922,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/set-kitchen.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 10479,
+          "endMs": 10489,
+          "bytes": 196196,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/2cbb8f9c-dd59-4cc0-92fa-de9b8fd9a859",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 10508,
+          "endMs": 10509,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/e2eb2392-aa1c-4acd-b892-a6179e8bf374",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 10606,
+          "endMs": 10607,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 11791,
+          "endMs": 11801,
+          "bytes": 0,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "dog",
+      "text": "A dog walks through a city",
+      "gamePath": "/play/65327be4050cc03489c0431595642f18",
+      "timeToPlayableMs": 6930,
+      "timeToFirstFrameMs": 6611,
+      "inputTick": 0,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 4164,
+        "timeToFirstFrameMs": 3788,
+        "phoneFirstFrameMs": 2125
+      },
+      "fpsMedian": 35.9,
+      "fpsSamples": [
+        35.9
+      ],
+      "shots": {
+        "draftDesktop": "dog-draft-desktop.png",
+        "draftPhone": "dog-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 20,
+          "endMs": 114,
+          "bytes": 393,
+          "failed": false
+        },
+        {
+          "path": "/play/65327be4050cc03489c0431595642f18?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 376,
+          "endMs": 388,
+          "bytes": 3161,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 617,
+          "endMs": 621,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 629,
+          "endMs": 633,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 5647,
+          "endMs": 5660,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/65327be4050cc03489c0431595642f18/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 5662,
+          "endMs": 5672,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/dog-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6405,
+          "endMs": 6416,
+          "bytes": 2755,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/crate-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6412,
+          "endMs": 6420,
+          "bytes": 4069,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/hurdle-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6421,
+          "endMs": 6430,
+          "bytes": 3415,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/cone-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6429,
+          "endMs": 6437,
+          "bytes": 2313,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 6933,
+          "endMs": 6957,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/city-2-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 7314,
+          "endMs": 7318,
+          "bytes": 20804,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/city-2.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 7498,
+          "endMs": 7503,
+          "bytes": 187462,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/65327be4050cc03489c0431595642f18/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 8157,
+          "endMs": 8170,
+          "bytes": 64,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "knights",
+      "text": "Two knights duel in a castle",
+      "gamePath": "/play/551c2ef88abb022291ad5950ae452a9a",
+      "timeToPlayableMs": 6663,
+      "timeToFirstFrameMs": 6223,
+      "inputTick": 29,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 4185,
+        "timeToFirstFrameMs": 3981,
+        "phoneFirstFrameMs": 1814
+      },
+      "fpsMedian": 41.4,
+      "fpsSamples": [
+        41.4
+      ],
+      "shots": {
+        "draftDesktop": "knights-draft-desktop.png",
+        "draftPhone": "knights-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 17,
+          "endMs": 50,
+          "bytes": 255,
+          "failed": false
+        },
+        {
+          "path": "/play/551c2ef88abb022291ad5950ae452a9a?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 349,
+          "endMs": 358,
+          "bytes": 2684,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 549,
+          "endMs": 553,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 562,
+          "endMs": 566,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 5700,
+          "endMs": 5713,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5707,
+          "endMs": 5716,
+          "bytes": 4544,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5716,
+          "endMs": 5725,
+          "bytes": 8061,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5725,
+          "endMs": 5735,
+          "bytes": 6349,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5735,
+          "endMs": 5745,
+          "bytes": 11671,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/castle-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5743,
+          "endMs": 5752,
+          "bytes": 12089,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/castle-tense.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5754,
+          "endMs": 5772,
+          "bytes": 157276,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/551c2ef88abb022291ad5950ae452a9a/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 5765,
+          "endMs": 5776,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/stone-wall-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6358,
+          "endMs": 6363,
+          "bytes": 1649,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-torch-lit-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6364,
+          "endMs": 6372,
+          "bytes": 49564,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-barrel-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6373,
+          "endMs": 6382,
+          "bytes": 11459,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/rigged/rogue-hooded.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6381,
+          "endMs": 6400,
+          "bytes": 217216,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 6668,
+          "endMs": 6679,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/castle-2-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 6766,
+          "endMs": 6771,
+          "bytes": 22654,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/80c90fb4-a230-4bda-82d2-7ed3de88b182",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 6876,
+          "endMs": 6877,
+          "bytes": -67,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/a784e5a7-0394-48bc-a123-0cb5ef0a32b4",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 6897,
+          "endMs": 6899,
+          "bytes": -66,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/castle-2.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 6916,
+          "endMs": 6921,
+          "bytes": 186022,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/41793eac-ba69-4433-948f-06dd4d537237",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 7043,
+          "endMs": 7045,
+          "bytes": -67,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/551c2ef88abb022291ad5950ae452a9a/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 7760,
+          "endMs": 7780,
+          "bytes": 64,
+          "failed": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "id": "rocket",
+      "text": "A rocket lands on Mars",
+      "gamePath": "/play/c6f890c660b7cefb99352b9785dce42c",
+      "timeToPlayableMs": 6586,
+      "timeToFirstFrameMs": 6377,
+      "inputTick": 0,
+      "probe": "arcade-stage",
+      "open": {
+        "timeToPlayableMs": 3978,
+        "timeToFirstFrameMs": 3639,
+        "phoneFirstFrameMs": 1805
+      },
+      "fpsMedian": 42.9,
+      "fpsSamples": [
+        42.9
+      ],
+      "shots": {
+        "draftDesktop": "rocket-draft-desktop.png",
+        "draftPhone": "rocket-draft-phone.png",
+        "aiDesktop": null,
+        "aiPhone": null
+      },
+      "ai": null,
+      "network": [
+        {
+          "path": "/api/play/games",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 18,
+          "endMs": 121,
+          "bytes": 397,
+          "failed": false
+        },
+        {
+          "path": "/play/c6f890c660b7cefb99352b9785dce42c?_rsc=QcbQXlok0Dzyyx9o",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 388,
+          "endMs": 397,
+          "bytes": 3136,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/not-found-4d6427cfcb404f71.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 573,
+          "endMs": 576,
+          "bytes": 189,
+          "failed": false
+        },
+        {
+          "path": "/_next/static/chunks/app/play/%5Bid%5D/page-959412ef0c11bea5.js",
+          "category": "js",
+          "resourceType": "script",
+          "startMs": 583,
+          "endMs": 586,
+          "bytes": 875,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 5742,
+          "endMs": 5757,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-jump.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5754,
+          "endMs": 5764,
+          "bytes": 5643,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-pickup.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5761,
+          "endMs": 5774,
+          "bytes": 5356,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-hit.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5769,
+          "endMs": 5778,
+          "bytes": 6789,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-win.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5778,
+          "endMs": 5786,
+          "bytes": 6707,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/sfx/space-lose.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5784,
+          "endMs": 5792,
+          "bytes": 11497,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/audio/music/space-calm.ogg",
+          "category": "audio",
+          "resourceType": "fetch",
+          "startMs": 5793,
+          "endMs": 5800,
+          "bytes": 142395,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/c6f890c660b7cefb99352b9785dce42c/voice",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 5803,
+          "endMs": 5813,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/cc0/cc0-asteroid-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6518,
+          "endMs": 6526,
+          "bytes": 13040,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/gen3d/gen3d-space-colony-dome-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6534,
+          "endMs": 6547,
+          "bytes": 18747,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/rocket-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6536,
+          "endMs": 6543,
+          "bytes": 2873,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/crate-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6543,
+          "endMs": 6550,
+          "bytes": 4069,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/hurdle-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6549,
+          "endMs": 6556,
+          "bytes": 3415,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/game/cone-lod1.glb",
+          "category": "glb",
+          "resourceType": "fetch",
+          "startMs": 6555,
+          "endMs": 6561,
+          "bytes": 2313,
+          "failed": false
+        },
+        {
+          "path": "/api/play/events",
+          "category": "api",
+          "resourceType": "ping",
+          "startMs": 6591,
+          "endMs": 6609,
+          "bytes": 0,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/space-2-low.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 7284,
+          "endMs": 7288,
+          "bytes": 16748,
+          "failed": false
+        },
+        {
+          "path": "http://127.0.0.1:3354/227ab1a6-6ae7-4f5a-abc5-574ba5622e24",
+          "category": "other",
+          "resourceType": "fetch",
+          "startMs": 7358,
+          "endMs": 7359,
+          "bytes": -67,
+          "failed": false
+        },
+        {
+          "path": "/assets/worldstream/env/space-2.webp",
+          "category": "panorama",
+          "resourceType": "image",
+          "startMs": 7560,
+          "endMs": 7564,
+          "bytes": 145620,
+          "failed": false
+        },
+        {
+          "path": "/api/play/games/c6f890c660b7cefb99352b9785dce42c/upgrade",
+          "category": "api",
+          "resourceType": "fetch",
+          "startMs": 8108,
+          "endMs": 8119,
+          "bytes": 64,
+          "failed": false
+        }
+      ],
+      "error": null
+    }
+  ]
+}

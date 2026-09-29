@@ -31,6 +31,8 @@ import {
   type GeneratorPiece,
   HEADER,
   HEADER_SIZE,
+  HP_MAX,
+  HP_SHIFT,
   type InputEvent,
   NO_INPUT,
   PROJECTILE_LIFETIME,
@@ -43,7 +45,11 @@ import {
   RESTITUTION_SHIFT,
   VERB_MOTION,
   bodyBase,
+  bodyHp,
+  setBodyHp,
+  setTargetState,
   stateSize,
+  targetStateOf,
 } from './contract';
 import { releasePhysics, stepPhysics } from './physics/step';
 
@@ -135,6 +141,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
     if (body.physics !== true && (body.ball !== undefined || body.restitution !== undefined)) issues.push(`bodies/${index}: ball and restitution belong to physics bodies`);
     const restitution = body.restitution ?? 0;
     if (!Number.isInteger(restitution) || restitution < 0 || restitution > 1000) issues.push(`bodies/${index}: restitution ${restitution} outside 0..1000`);
+    if (body.hp !== undefined && (!Number.isInteger(body.hp) || body.hp < 1 || body.hp > HP_MAX)) issues.push(`bodies/${index}: hp ${body.hp} outside 1..${HP_MAX}`);
     if (body.role !== 'projectile') {
       if (body.lifetime !== undefined || body.bounce !== undefined) issues.push(`bodies/${index}: lifetime and bounce belong to projectiles`);
       return;
@@ -183,6 +190,7 @@ export function buildWorld(input: BuildWorldInput, library: ArcadeLibrary): Buil
       (body.gravity === true ? FLAG.gravity : 0) |
       (body.kinematic === true ? FLAG.kinematic : 0) |
       (body.physics === true ? FLAG.physics | (body.ball === true ? FLAG.ball : 0) | ((body.restitution ?? 0) << RESTITUTION_SHIFT) : 0) |
+      ((body.hp ?? 0) << HP_SHIFT) |
       player;
   });
 
@@ -657,7 +665,19 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     else if (effect.kind === 'throwHeld') changed = letGo(state, true);
     else if (effect.kind === 'push') changed = push(state, effect.body);
     else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
-    else if (effect.body >= 0 && effect.body < (state[HD.bodyCount] as number)) {
+    else if (effect.body < 0 || effect.body >= (state[HD.bodyCount] as number)) changed = false;
+    // Předloha spawnu ani mrtvé tělo zásah nenese – kopie by zdědily jeho HP (revize P32-0 T4).
+    else if ((effect.kind === 'hit' || effect.kind === 'stateChange') && !alive(state, baseOf(effect.body))) changed = false;
+    else if (effect.kind === 'hit') {
+      const before = bodyHp(state, effect.body);
+      // Záporný zásah neléčí.
+      setBodyHp(state, effect.body, before - Math.max(0, effect.amount));
+      changed = bodyHp(state, effect.body) !== before;
+    } else if (effect.kind === 'stateChange') {
+      const before = targetStateOf(state, effect.body);
+      setTargetState(state, effect.body, effect.state);
+      changed = targetStateOf(state, effect.body) !== before;
+    } else {
       const base = baseOf(effect.body);
       if (effect.kind === 'despawn') {
         changed = alive(state, base);
@@ -671,7 +691,7 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
         state[HD.respawnY] = y;
         state[HD.respawnZ] = z;
       }
-    } else changed = false;
+    }
     if (changed && trace !== undefined) trace(owners?.[i] as number, effect);
   }
 }

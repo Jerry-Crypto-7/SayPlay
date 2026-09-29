@@ -18,14 +18,15 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { LOOK_IDS, type LookId } from '../arcade/look';
-import { THINGS_MAX, rulesSchema, thingsSchema } from '../arcade/rules/schema';
+import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { CAPABILITIES } from '../capabilities';
 import { draftForControl } from '../draft';
-import { ADDONS, CONTROLS, ROLE_KINDS, readGameSpec, type ControlId, type GameRole, type GameSpecV1 } from '../spec';
+import { ADDONS, CONTROLS, ROLE_KINDS, type ControlId, type GameRole, type GameSpecV1 } from '../spec';
 
 import { strictSchema } from './answer-schema';
 import { rulesPromptLines } from './prompt';
-import type { DirectorRead } from './read';
+import { type DirectorRead, readModelSpec } from './read';
+import { examplesBlock, nearestExamples } from './retrieval';
 
 const strictOf = (schema: z.ZodType): Record<string, unknown> => strictSchema(z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }) as Record<string, unknown>);
 
@@ -60,7 +61,7 @@ export const COMPACT_ANSWER_SCHEMA: Record<string, unknown> = {
     goal: { type: 'string' },
     ruleRoles: { type: 'array', maxItems: THINGS_MAX, items: RULE_ROLE_SCHEMA },
     things: strictOf(thingsSchema),
-    rules: strictOf(rulesSchema),
+    rules: strictOf(modelRulesSchema),
   },
 };
 
@@ -105,11 +106,13 @@ function startingPoint(draft: GameSpecV1): Record<string, unknown> {
   };
 }
 
-export function buildCompactRequest(sentence: string, draft: GameSpecV1): UpstreamRequest {
+/** `examples` (P30A T8): za výchozí bod 3–5 ověřených her k podobným větám; bez nich je zpráva jako dřív. */
+export function buildCompactRequest(sentence: string, draft: GameSpecV1, examples = false): UpstreamRequest {
+  const user = `${sentence.trim()}\n\nStarting point (keep or improve): ${JSON.stringify(startingPoint(draft))}`;
   return {
     model: EMISSION_MODEL,
     system: compactSystemPrompt(),
-    user: `${sentence.trim()}\n\nStarting point (keep or improve): ${JSON.stringify(startingPoint(draft))}`,
+    user: examples ? `${user}\n\n${examplesBlock(nearestExamples(sentence, draft.control ?? 'tap_go'))}` : user,
     outputSchema: COMPACT_ANSWER_SCHEMA,
   };
 }
@@ -181,7 +184,5 @@ export function composeCompact(sentence: string, body: unknown, seed = 1): Direc
   if (rules.length > 0) spec.rules = withoutNulls(rules) as GameSpecV1['rules'];
   if (things.length > 0) spec.things = withoutNulls(things) as GameSpecV1['things'];
 
-  const result = readGameSpec(spec);
-  if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };
-  return { ok: true, spec: result.value };
+  return readModelSpec(spec);
 }

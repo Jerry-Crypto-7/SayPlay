@@ -141,7 +141,8 @@ function renderShape(): string {
   const outline = Object.entries(properties)
     // Doplňky (P26D) řekne řádek ovládání u každého ovládání zvlášť.
     // Pravidla (P29A) popisuje vlastní gramatika s příklady, ne výpis schématu.
-    .filter(([key]) => key !== 'verification' && key !== 'addons' && key !== 'rules' && key !== 'things')
+    // `genre` (P32) zapisuje překlad žánru, ne model.
+    .filter(([key]) => key !== 'verification' && key !== 'addons' && key !== 'rules' && key !== 'things' && key !== 'genre')
     .map(([key, value]) => `${key}: ${compactSchema(value)}`)
     .join('\n');
   return [

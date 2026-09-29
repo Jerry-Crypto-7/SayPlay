@@ -827,6 +827,16 @@
   touch-action: none;
 }
 
+/* Úder a použití (P32-0 T5, `ActionButton.tsx`): stejné kolo jako střelba, nad ní. */
+.play-action {
+  bottom: 108px;
+  background: var(--play-action);
+}
+
+.play-action + .play-action {
+  bottom: 192px;
+}
+
 .play-hud {
   position: relative;
   z-index: 1;

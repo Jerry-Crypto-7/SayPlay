@@ -103,7 +103,7 @@ const REQUIRED_FIELDS = ['name', 'kind', 'source', 'authorOrProvider', 'license'
  * Licence, které projdou samy. Permisivní, notice-only, žádný dopad na to, pod
  * čím smí být náš vlastní kód.
  */
-const ALLOWED = new Set(['MIT', 'ISC', '0BSD', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'CC0-1.0', 'Unlicense']);
+const ALLOWED = new Set(['MIT', 'ISC', '0BSD', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'CC0-1.0', 'Unlicense', 'Zlib']);
 
 /**
  * Licence, které projdou **jen s dopsaným `reviewNote`**. Copyleft a licence s
@@ -129,6 +129,7 @@ const NOTICES = {
   'BSD-2-Clause': ['copyright notice', 'plné znění licence', 'disclaimer'],
   'BSD-3-Clause': ['copyright notice', 'plné znění licence', 'disclaimer', 'zákaz použití jména autora k propagaci'],
   '0BSD': ['žádné — 0BSD notice nevyžaduje'],
+  Zlib: ['licenční notice ve zdrojové distribuci', 'označení změn', 'nevydávat za vlastní dílo'],
   'Apache-2.0': ['copyright notice', 'plné znění licence', 'soubor NOTICE, pokud balíček nějaký nese', 'označení změn'],
   'CC0-1.0': ['žádné — CC0 se vzdává i práva na atribuci'],
   Unlicense: ['žádné — Unlicense notice nevyžaduje'],
@@ -860,6 +861,16 @@ function packageCopyright(path) {
   return '';
 }
 
+/**
+ * Licence, kterou balíček v `package.json` nedeklaruje, ale nese ji v souboru
+ * `LICENSE`. Klíč je přesná verze: nová verze se musí přečíst znovu, jinak by
+ * záznam přežil změnu licence upstreamu a brána by ji nepoznala.
+ */
+const UNDECLARED_LICENSES = {
+  // drei → detect-gpu; LICENSE: „MIT License, Copyright (c) 2019 Tim van Scherpenzeel“, přečteno 29. 9. 2026.
+  'webgl-constants@1.1.1': 'MIT',
+};
+
 function noticesFor(license) {
   if (NOTICES[license]) return NOTICES[license];
   // Složená licence (`Apache-2.0 AND LGPL-3.0-or-later`) nese notices všech částí.
@@ -873,6 +884,7 @@ function deriveLibraries() {
   return lockPackages().map((pkg) => {
     const author = packageAuthor(pkg.path);
     const copyright = packageCopyright(pkg.path);
+    const license = pkg.license || UNDECLARED_LICENSES[`${pkg.name}@${pkg.version}`] || '';
     return {
       name: `${pkg.name}@${pkg.version}`,
       kind: 'library',
@@ -881,8 +893,8 @@ function deriveLibraries() {
       // autora nedeklaruje, je pravdivá odpověď právě tahle věta — a v
       // DISCLOSURE.md se takové položky vypisují zvlášť, aby nezapadly.
       authorOrProvider: author || 'neuvedeno upstreamem',
-      license: pkg.license || '',
-      requiredNotices: noticesFor(pkg.license || ''),
+      license,
+      requiredNotices: noticesFor(license),
       attribution: copyright || `držitelé práv k ${pkg.name}, viz ${pkg.resolved || 'npm'}`,
       scope: pkg.dev ? 'dev' : 'prod',
     };

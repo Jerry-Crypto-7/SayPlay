@@ -42,6 +42,7 @@ import {
   UNIT,
   bodyBase,
 } from '../contract';
+import { modeStub } from './mode-stub';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
 export type ArenaDensity = (typeof ARENA_DENSITIES)[number];
@@ -453,3 +454,7 @@ export function checkArenaLevel(level: ArcadeLevel, half: number = ARENA.half): 
   if (level.bodies.length > ARCADE_LIMITS.maxBodies) issues.push(`${level.bodies.length} bodies exceed the ${ARCADE_LIMITS.maxBodies} body limit`);
   return issues;
 }
+
+/** Režimy `arena.escape` a `arena.collect` (pahýly P32-0 T4, naplní P32E T1). */
+export const arenaEscape = modeStub('arena_escape');
+export const arenaCollect = modeStub('arena_collect');

@@ -19,7 +19,7 @@ import { draftGameSpec } from '@/play/draft';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
-import { recordUpgradeFailure } from '../_upgrade';
+import { recordUpgradeFailure, upgradeAttemptLine } from '../_upgrade';
 
 const director = vi.hoisted(() => ({
   script: [] as unknown[],
@@ -329,6 +329,29 @@ describe('GET …/upgrade', () => {
     director.script = [answered(answerFixture('good-collect_exit'))];
     const outcome = await settled(created.body.versionId);
     expect(outcome.status).toBe('ready');
+  });
+
+  // Srovnání modelů (`scripts/play-fidelity.mjs`) podle těch řádků čeká na doběhnutí
+  // pokusu a čte jeho příčinu; konec nesmí příčinu předběhnout, proto týž proud.
+  it('každý pokus zapíše začátek, příčinu a konec v tomto pořadí do console.warn (P30A T7b)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      director.script = [failed('UPSTREAM_REJECTED', 'no free play slot')];
+      const created = await publish({ sentence: SENTENCE });
+      const id = created.body.versionId as string;
+      expect((await settled(id)).reason).toBe('MODEL_UNAVAILABLE');
+      director.script = [answered(answerFixture('good-collect_exit'))];
+      expect((await settled(id)).status).toBe('ready');
+      const ended = `[play] upgrade of ${id} ended MODEL_UNAVAILABLE at model: UPSTREAM_REJECTED – no free play slot`;
+      const kinds = warn.mock.calls
+        .map(([line]) => String(line))
+        .map((line) => (line === upgradeAttemptLine(id, 'started') ? 'S' : line === ended ? 'X' : line === upgradeAttemptLine(id, 'settled') ? 'E' : null))
+        .filter((kind) => kind !== null);
+      // Počet neúspěšných pokusů závisí na tom, kdy se test zeptá; pořadí v každém ne.
+      expect(kinds.join('')).toMatch(/^(SXE)+SE$/);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('vyčerpaný počet diváka se nepamatuje – další dotaz dostane vlastní pokus (revize R8)', async () => {

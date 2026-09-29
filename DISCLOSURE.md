@@ -6,7 +6,7 @@
 Seznam všeho, co projekt používá a nenapsal si sám, podle `RULES.md` §2:
 zdroj, autor nebo poskytovatel, licence a povinné notices.
 
-## Knihovny (196)
+## Knihovny (242)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -45,7 +45,9 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @img/sharp-win32-ia32@0.35.3 | https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.35.3.tgz | neuvedeno upstreamem | Apache-2.0 AND LGPL-3.0-or-later | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn; právo příjemce knihovnu nahradit nebo přelinkovat; dostupnost zdrojů knihovny | držitelé práv k @img/sharp-win32-ia32, viz https://registry.npmjs.org/@img/sharp-win32-ia32/-/sharp-win32-ia32-0.35.3.tgz |
 | @img/sharp-win32-x64@0.35.3 | https://registry.npmjs.org/@img/sharp-win32-x64/-/sharp-win32-x64-0.35.3.tgz | Lovell Fuller | Apache-2.0 AND LGPL-3.0-or-later | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn; právo příjemce knihovnu nahradit nebo přelinkovat; dostupnost zdrojů knihovny | "Licensor" shall mean the copyright owner or entity authorized by the copyright |
 | @jridgewell/sourcemap-codec@1.5.5 | https://registry.npmjs.org/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.5.5.tgz | Justin Ridgewell | MIT | copyright notice; plné znění licence | Copyright 2024 Justin Ridgewell <justin@ridgewell.name> |
+| @mediapipe/tasks-vision@0.10.17 | https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-0.10.17.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k @mediapipe/tasks-vision, viz https://registry.npmjs.org/@mediapipe/tasks-vision/-/tasks-vision-0.10.17.tgz |
 | @mlc-ai/web-llm@0.2.84 | https://registry.npmjs.org/@mlc-ai/web-llm/-/web-llm-0.2.84.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
+| @monogrid/gainmap-js@3.4.0 | https://registry.npmjs.org/@monogrid/gainmap-js/-/gainmap-js-3.4.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @monogrid/gainmap-js, viz https://registry.npmjs.org/@monogrid/gainmap-js/-/gainmap-js-3.4.0.tgz |
 | @next/bundle-analyzer@16.3.1 | https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @next/bundle-analyzer, viz https://registry.npmjs.org/@next/bundle-analyzer/-/bundle-analyzer-16.3.1.tgz |
 | @next/env@16.3.0 | https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz | Next.js Team | MIT | copyright notice; plné znění licence | držitelé práv k @next/env, viz https://registry.npmjs.org/@next/env/-/env-16.3.0.tgz |
 | @next/swc-darwin-arm64@16.3.0 | https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @next/swc-darwin-arm64, viz https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-16.3.0.tgz |
@@ -59,7 +61,9 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @oxc-project/types@0.144.0 | https://registry.npmjs.org/@oxc-project/types/-/types-0.144.0.tgz | Boshen and oxc contributors | MIT | copyright notice; plné znění licence | Copyright (c) 2024-present VoidZero Inc. & Contributors |
 | @playwright/test@1.62.1 | https://registry.npmjs.org/@playwright/test/-/test-1.62.1.tgz | Microsoft Corporation | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @polka/url@1.0.0-next.29 | https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.29.tgz | Luke Edwards | MIT | copyright notice; plné znění licence | držitelé práv k @polka/url, viz https://registry.npmjs.org/@polka/url/-/url-1.0.0-next.29.tgz |
+| @react-three/drei@10.7.9 | https://registry.npmjs.org/@react-three/drei/-/drei-10.7.9.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @react-three/drei, viz https://registry.npmjs.org/@react-three/drei/-/drei-10.7.9.tgz |
 | @react-three/fiber@9.7.0 | https://registry.npmjs.org/@react-three/fiber/-/fiber-9.7.0.tgz | Paul Henschel (https://github.com/drcmda) | MIT | copyright notice; plné znění licence | držitelé práv k @react-three/fiber, viz https://registry.npmjs.org/@react-three/fiber/-/fiber-9.7.0.tgz |
+| @react-three/postprocessing@3.1.3 | https://registry.npmjs.org/@react-three/postprocessing/-/postprocessing-3.1.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @react-three/postprocessing, viz https://registry.npmjs.org/@react-three/postprocessing/-/postprocessing-3.1.3.tgz |
 | @resvg/resvg-wasm@2.4.0 | node_modules/next/dist/compiled/@vercel/og/resvg.wasm (vendored inside next@16.3.0) | Yisi Yu (yisibl) and resvg contributors | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | resvg-js © yisibl, MPL-2.0 |
 | @rolldown/binding-android-arm64@1.2.4 | https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @rolldown/binding-android-arm64, viz https://registry.npmjs.org/@rolldown/binding-android-arm64/-/binding-android-arm64-1.2.4.tgz |
 | @rolldown/binding-darwin-arm64@1.2.4 | https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @rolldown/binding-darwin-arm64, viz https://registry.npmjs.org/@rolldown/binding-darwin-arm64/-/binding-darwin-arm64-1.2.4.tgz |
@@ -80,10 +84,12 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @swc/helpers@0.5.15 | https://registry.npmjs.org/@swc/helpers/-/helpers-0.5.15.tgz | 강동윤 | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @tweenjs/tween.js@23.1.3 | https://registry.npmjs.org/@tweenjs/tween.js/-/tween.js-23.1.3.tgz | tween.js contributors (https://github.com/tweenjs/tween.js/graphs/contributors) | MIT | copyright notice; plné znění licence | Copyright (c) 2010-2012 Tween.js authors. |
 | @types/deep-eql@4.0.2 | https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
+| @types/draco3d@1.4.10 | https://registry.npmjs.org/@types/draco3d/-/draco3d-1.4.10.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @types/draco3d, viz https://registry.npmjs.org/@types/draco3d/-/draco3d-1.4.10.tgz |
 | @types/estree@1.0.9 | https://registry.npmjs.org/@types/estree/-/estree-1.0.9.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/chai@5.2.3 | https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/ndarray@1.1.0 | https://registry.npmjs.org/@types/ndarray/-/ndarray-1.1.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/node@26.2.0 | https://registry.npmjs.org/@types/node/-/node-26.2.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
+| @types/offscreencanvas@2019.7.3 | https://registry.npmjs.org/@types/offscreencanvas/-/offscreencanvas-2019.7.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @types/offscreencanvas, viz https://registry.npmjs.org/@types/offscreencanvas/-/offscreencanvas-2019.7.3.tgz |
 | @types/react-dom@19.2.4 | https://registry.npmjs.org/@types/react-dom/-/react-dom-19.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/react-reconciler@0.28.9 | https://registry.npmjs.org/@types/react-reconciler/-/react-reconciler-0.28.9.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/react@19.2.18 | https://registry.npmjs.org/@types/react/-/react-19.2.18.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
@@ -91,6 +97,8 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | @types/three › @dimforge/rapier3d-compat@0.12.0 | https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.12.0.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | @types/three@0.185.4 | https://registry.npmjs.org/@types/three/-/three-0.185.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
 | @types/webxr@0.5.24 | https://registry.npmjs.org/@types/webxr/-/webxr-0.5.24.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Microsoft Corporation. |
+| @use-gesture/core@10.3.1 | https://registry.npmjs.org/@use-gesture/core/-/core-10.3.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @use-gesture/core, viz https://registry.npmjs.org/@use-gesture/core/-/core-10.3.1.tgz |
+| @use-gesture/react@10.3.1 | https://registry.npmjs.org/@use-gesture/react/-/react-10.3.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k @use-gesture/react, viz https://registry.npmjs.org/@use-gesture/react/-/react-10.3.1.tgz |
 | @vercel/og@0.11.1 | node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0, imported as next/og) | Vercel, Inc. | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | @vercel/og © Vercel, Inc., MPL-2.0 |
 | @vitest/expect@4.1.10 | https://registry.npmjs.org/@vitest/expect/-/expect-4.1.10.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors |
 | @vitest/mocker@4.1.10 | https://registry.npmjs.org/@vitest/mocker/-/mocker-4.1.10.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors |
@@ -104,16 +112,22 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | assertion-error@2.0.1 | https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz | Jake Luer (http://qualiancy.com) | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Jake Luer jake@qualiancy.com (http://qualiancy.com) |
 | base64-js@1.5.1 | https://registry.npmjs.org/base64-js/-/base64-js-1.5.1.tgz | T. Jameson Little | MIT | copyright notice; plné znění licence | Copyright (c) 2014 Jameson Little |
 | baseline-browser-mapping@2.11.13 | https://registry.npmjs.org/baseline-browser-mapping/-/baseline-browser-mapping-2.11.13.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
+| bidi-js@1.1.0 | https://registry.npmjs.org/bidi-js/-/bidi-js-1.1.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k bidi-js, viz https://registry.npmjs.org/bidi-js/-/bidi-js-1.1.0.tgz |
 | buffer@6.0.3 | https://registry.npmjs.org/buffer/-/buffer-6.0.3.tgz | Feross Aboukhadijeh | MIT | copyright notice; plné znění licence | Copyright (c) Feross Aboukhadijeh, and other contributors. |
+| camera-controls@3.1.2 | https://registry.npmjs.org/camera-controls/-/camera-controls-3.1.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k camera-controls, viz https://registry.npmjs.org/camera-controls/-/camera-controls-3.1.2.tgz |
 | caniuse-lite@1.0.30001809 | https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001809.tgz | Ben Briggs | CC-BY-4.0 | atribuce autora; odkaz na licenci; označení změn | original works of authorship and other material subject to copyright |
 | client-only@0.0.1 | https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k client-only, viz https://registry.npmjs.org/client-only/-/client-only-0.0.1.tgz |
 | commander@7.2.0 | https://registry.npmjs.org/commander/-/commander-7.2.0.tgz | TJ Holowaychuk | MIT | copyright notice; plné znění licence | Copyright (c) 2011 TJ Holowaychuk <tj@vision-media.ca> |
 | convert-source-map@2.0.0 | https://registry.npmjs.org/convert-source-map/-/convert-source-map-2.0.0.tgz | Thorsten Lorenz | MIT | copyright notice; plné znění licence | Copyright 2013 Thorsten Lorenz. |
+| cross-env@7.0.3 | https://registry.npmjs.org/cross-env/-/cross-env-7.0.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k cross-env, viz https://registry.npmjs.org/cross-env/-/cross-env-7.0.3.tgz |
+| cross-spawn@7.0.6 | https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k cross-spawn, viz https://registry.npmjs.org/cross-spawn/-/cross-spawn-7.0.6.tgz |
 | csstype@3.2.3 | https://registry.npmjs.org/csstype/-/csstype-3.2.3.tgz | Fredrik Nicol | MIT | copyright notice; plné znění licence | Copyright (c) 2017-2018 Fredrik Nicol |
 | cwise-compiler@1.1.3 | https://registry.npmjs.org/cwise-compiler/-/cwise-compiler-1.1.3.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
 | debounce@1.2.1 | https://registry.npmjs.org/debounce/-/debounce-1.2.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2012-2018 The Debounce Contributors. See CONTRIBUTORS. |
+| detect-gpu@5.0.70 | https://registry.npmjs.org/detect-gpu/-/detect-gpu-5.0.70.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k detect-gpu, viz https://registry.npmjs.org/detect-gpu/-/detect-gpu-5.0.70.tgz |
 | detect-libc@2.1.2 | https://registry.npmjs.org/detect-libc/-/detect-libc-2.1.2.tgz | Lovell Fuller | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | diffusers@0.40.0 | https://pypi.org/project/diffusers/0.40.0/ (ops/env/uv.lock) | Hugging Face | Apache-2.0 | copyright notice and license text if redistributed (it is not) | Diffusers © Hugging Face, Apache-2.0 |
+| draco3d@1.5.7 | https://registry.npmjs.org/draco3d/-/draco3d-1.5.7.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k draco3d, viz https://registry.npmjs.org/draco3d/-/draco3d-1.5.7.tgz |
 | duplexer@0.1.2 | https://registry.npmjs.org/duplexer/-/duplexer-0.1.2.tgz | Raynos | MIT | copyright notice; plné znění licence | Copyright (c) 2012 Raynos. |
 | es-module-lexer@2.3.1 | https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-2.3.1.tgz | Guy Bedford | MIT | copyright notice; plné znění licence | Copyright (C) 2018-2022 Guy Bedford |
 | escape-string-regexp@4.0.0 | https://registry.npmjs.org/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz | Sindre Sorhus | MIT | copyright notice; plné znění licence | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |
@@ -123,17 +137,23 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | fdir@6.5.0 | https://registry.npmjs.org/fdir/-/fdir-6.5.0.tgz | thecodrr | MIT | copyright notice; plné znění licence | Copyright 2023 Abdullah Atta |
 | fflate@0.8.3 | https://registry.npmjs.org/fflate/-/fflate-0.8.3.tgz | Arjun Barrett | MIT | copyright notice; plné znění licence | Copyright (c) 2026 Arjun Barrett |
 | fsevents@2.3.2 | https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k fsevents, viz https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz |
+| glsl-noise@0.0.0 | https://registry.npmjs.org/glsl-noise/-/glsl-noise-0.0.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k glsl-noise, viz https://registry.npmjs.org/glsl-noise/-/glsl-noise-0.0.0.tgz |
 | gltf-validator@2.0.0-dev.3.10 | https://registry.npmjs.org/gltf-validator/-/gltf-validator-2.0.0-dev.3.10.tgz | The Khronos Group Inc. | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | gltfpack@1.2.0 | https://www.npmjs.com/package/gltfpack (run as npx -y gltfpack@1.2.0 by ops/gen3d) | Arseny Kapoulkine | MIT | copyright notice and license text if redistributed (it is not) | gltfpack / meshoptimizer © Arseny Kapoulkine, MIT |
 | gzip-size@6.0.0 | https://registry.npmjs.org/gzip-size/-/gzip-size-6.0.0.tgz | Sindre Sorhus | MIT | copyright notice; plné znění licence | Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com) |
+| hls.js@1.7.3 | https://registry.npmjs.org/hls.js/-/hls.js-1.7.3.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k hls.js, viz https://registry.npmjs.org/hls.js/-/hls.js-1.7.3.tgz |
 | html-escaper@2.0.2 | https://registry.npmjs.org/html-escaper/-/html-escaper-2.0.2.tgz | Andrea Giammarchi | MIT | copyright notice; plné znění licence | Copyright (C) 2017-present by Andrea Giammarchi - @WebReflection |
 | chai@6.2.2 | https://registry.npmjs.org/chai/-/chai-6.2.2.tgz | Jake Luer | MIT | copyright notice; plné znění licence | Copyright (c) 2017 Chai.js Assertion Library |
 | ieee754@1.2.1 | https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz | Feross Aboukhadijeh | BSD-3-Clause | copyright notice; plné znění licence; disclaimer; zákaz použití jména autora k propagaci | Copyright 2008 Fair Oaks Labs, Inc. |
+| immediate@3.0.6 | https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k immediate, viz https://registry.npmjs.org/immediate/-/immediate-3.0.6.tgz |
 | iota-array@1.0.0 | https://registry.npmjs.org/iota-array/-/iota-array-1.0.0.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
 | is-buffer@1.1.6 | https://registry.npmjs.org/is-buffer/-/is-buffer-1.1.6.tgz | Feross Aboukhadijeh | MIT | copyright notice; plné znění licence | Copyright (c) Feross Aboukhadijeh |
 | is-plain-object@5.0.0 | https://registry.npmjs.org/is-plain-object/-/is-plain-object-5.0.0.tgz | Jon Schlinkert (https://github.com/jonschlinkert) | MIT | copyright notice; plné znění licence | Copyright (c) 2014-2017, Jon Schlinkert. |
+| is-promise@2.2.2 | https://registry.npmjs.org/is-promise/-/is-promise-2.2.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k is-promise, viz https://registry.npmjs.org/is-promise/-/is-promise-2.2.2.tgz |
+| isexe@2.0.0 | https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz | neuvedeno upstreamem | ISC | copyright notice; plné znění licence | držitelé práv k isexe, viz https://registry.npmjs.org/isexe/-/isexe-2.0.0.tgz |
 | its-fine@2.0.0 | https://registry.npmjs.org/its-fine/-/its-fine-2.0.0.tgz | Cody Bennett (https://github.com/codyjasonbennett) | MIT | copyright notice; plné znění licence | Copyright (c) 2022-2025 Poimandres |
 | ktx-parse@1.1.0 | https://registry.npmjs.org/ktx-parse/-/ktx-parse-1.1.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2020 Don McCurdy |
+| lie@3.3.0 | https://registry.npmjs.org/lie/-/lie-3.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k lie, viz https://registry.npmjs.org/lie/-/lie-3.3.0.tgz |
 | lightningcss-android-arm64@1.33.0 | https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-android-arm64, viz https://registry.npmjs.org/lightningcss-android-arm64/-/lightningcss-android-arm64-1.33.0.tgz |
 | lightningcss-darwin-arm64@1.33.0 | https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-darwin-arm64, viz https://registry.npmjs.org/lightningcss-darwin-arm64/-/lightningcss-darwin-arm64-1.33.0.tgz |
 | lightningcss-darwin-x64@1.33.0 | https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | držitelé práv k lightningcss-darwin-x64, viz https://registry.npmjs.org/lightningcss-darwin-x64/-/lightningcss-darwin-x64-1.33.0.tgz |
@@ -147,9 +167,12 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | lightningcss-win32-x64-msvc@1.33.0 | https://registry.npmjs.org/lightningcss-win32-x64-msvc/-/lightningcss-win32-x64-msvc-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | applicable copyright doctrines of fair use, fair dealing, or other |
 | lightningcss@1.33.0 | https://registry.npmjs.org/lightningcss/-/lightningcss-1.33.0.tgz | neuvedeno upstreamem | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | applicable copyright doctrines of fair use, fair dealing, or other |
 | loglevel@1.9.2 | https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz | Tim Perry | MIT | copyright notice; plné znění licence | držitelé práv k loglevel, viz https://registry.npmjs.org/loglevel/-/loglevel-1.9.2.tgz |
+| maath@0.10.8 | https://registry.npmjs.org/maath/-/maath-0.10.8.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k maath, viz https://registry.npmjs.org/maath/-/maath-0.10.8.tgz |
 | magic-string@0.30.21 | https://registry.npmjs.org/magic-string/-/magic-string-0.30.21.tgz | Rich Harris | MIT | copyright notice; plné znění licence | Copyright 2018 Rich Harris |
+| meshline@3.3.1 | https://registry.npmjs.org/meshline/-/meshline-3.3.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k meshline, viz https://registry.npmjs.org/meshline/-/meshline-3.3.1.tgz |
 | meshoptimizer@1.1.1 | https://registry.npmjs.org/meshoptimizer/-/meshoptimizer-1.1.1.tgz | Arseny Kapoulkine | MIT | copyright notice; plné znění licence | Copyright (c) 2016-2026 Arseny Kapoulkine |
 | mrmime@2.0.1 | https://registry.npmjs.org/mrmime/-/mrmime-2.0.1.tgz | Luke Edwards | MIT | copyright notice; plné znění licence | Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (https://lukeed.com) |
+| n8ao@2.0.1 | https://registry.npmjs.org/n8ao/-/n8ao-2.0.1.tgz | neuvedeno upstreamem | ISC | copyright notice; plné znění licence | držitelé práv k n8ao, viz https://registry.npmjs.org/n8ao/-/n8ao-2.0.1.tgz |
 | nanoid@3.3.18 | https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz | Andrey Sitnik | MIT | copyright notice; plné znění licence | Copyright 2017 Andrey Sitnik <andrey@sitnik.ru> |
 | ndarray-lanczos@0.3.0 | https://registry.npmjs.org/ndarray-lanczos/-/ndarray-lanczos-0.3.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2021 Don McCurdy |
 | ndarray-ops@1.2.2 | https://registry.npmjs.org/ndarray-ops/-/ndarray-ops-1.2.2.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
@@ -159,30 +182,44 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | obug@2.1.4 | https://registry.npmjs.org/obug/-/obug-2.1.4.tgz | Kevin Deng | MIT | copyright notice; plné znění licence | Copyright © 2025-PRESENT Kevin Deng (https://github.com/sxzz) |
 | OpenAI Codex CLI@0.145.0 | https://raw.githubusercontent.com/openai/codex/rust-v0.145.0/LICENSE | OpenAI | Apache-2.0 | při redistribuci přiložit licenci, zachovat relevantní notices a označit změny | Copyright 2025 OpenAI |
 | opener@1.5.2 | https://registry.npmjs.org/opener/-/opener-1.5.2.tgz | Domenic Denicola (https://domenic.me/) | (WTFPL OR MIT) | žádné — WTFPL notice nevyžaduje; copyright notice; plné znění licence | Copyright © 2012–2020 Domenic Denicola <d@domenic.me> |
+| path-key@3.1.1 | https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k path-key, viz https://registry.npmjs.org/path-key/-/path-key-3.1.1.tgz |
 | pathe@2.0.3 | https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Pooya Parsa <pooya@pi0.io> - Daniel Roe <daniel@roe.dev> |
 | picocolors@1.1.1 | https://registry.npmjs.org/picocolors/-/picocolors-1.1.1.tgz | Alexey Raspopov | ISC | copyright notice; plné znění licence | Copyright (c) 2021-2024 Oleksii Raspopov, Kostiantyn Denysov, Anton Verinov |
 | picomatch@4.0.5 | https://registry.npmjs.org/picomatch/-/picomatch-4.0.5.tgz | Jon Schlinkert (https://github.com/jonschlinkert) | MIT | copyright notice; plné znění licence | Copyright (c) 2017-present, Jon Schlinkert. |
 | playwright-core@1.62.1 | https://registry.npmjs.org/playwright-core/-/playwright-core-1.62.1.tgz | Microsoft Corporation | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | playwright@1.62.1 | https://registry.npmjs.org/playwright/-/playwright-1.62.1.tgz | Microsoft Corporation | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by |
 | postcss@8.5.23 | https://registry.npmjs.org/postcss/-/postcss-8.5.23.tgz | Andrey Sitnik | MIT | copyright notice; plné znění licence | Copyright 2013 Andrey Sitnik <andrey@sitnik.es> |
+| postprocessing@6.39.5 | https://registry.npmjs.org/postprocessing/-/postprocessing-6.39.5.tgz | neuvedeno upstreamem | Zlib | licenční notice ve zdrojové distribuci; označení změn; nevydávat za vlastní dílo | držitelé práv k postprocessing, viz https://registry.npmjs.org/postprocessing/-/postprocessing-6.39.5.tgz |
+| potpack@1.0.2 | https://registry.npmjs.org/potpack/-/potpack-1.0.2.tgz | neuvedeno upstreamem | ISC | copyright notice; plné znění licence | držitelé práv k potpack, viz https://registry.npmjs.org/potpack/-/potpack-1.0.2.tgz |
+| promise-worker-transferable@1.0.4 | https://registry.npmjs.org/promise-worker-transferable/-/promise-worker-transferable-1.0.4.tgz | neuvedeno upstreamem | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | držitelé práv k promise-worker-transferable, viz https://registry.npmjs.org/promise-worker-transferable/-/promise-worker-transferable-1.0.4.tgz |
 | property-graph@4.1.0 | https://registry.npmjs.org/property-graph/-/property-graph-4.1.0.tgz | Don McCurdy | MIT | copyright notice; plné znění licence | Copyright (c) 2021 Don McCurdy |
 | pure-rand@8.4.2 | https://registry.npmjs.org/pure-rand/-/pure-rand-8.4.2.tgz | Nicolas DUBIEN | MIT | copyright notice; plné znění licence | Copyright (c) 2018 Nicolas DUBIEN |
+| quarks.core@0.17.1 | https://registry.npmjs.org/quarks.core/-/quarks.core-0.17.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k quarks.core, viz https://registry.npmjs.org/quarks.core/-/quarks.core-0.17.1.tgz |
 | react-dom@19.2.8 | https://registry.npmjs.org/react-dom/-/react-dom-19.2.8.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
 | react-use-measure@2.1.7 | https://registry.npmjs.org/react-use-measure/-/react-use-measure-2.1.7.tgz | Paul Henschel | MIT | copyright notice; plné znění licence | Copyright (c) 2019-2025 Poimandres |
 | react@19.2.8 | https://registry.npmjs.org/react/-/react-19.2.8.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
+| require-from-string@2.0.2 | https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k require-from-string, viz https://registry.npmjs.org/require-from-string/-/require-from-string-2.0.2.tgz |
 | rfc6902@5.3.0 | https://registry.npmjs.org/rfc6902/-/rfc6902-5.3.0.tgz | Christopher Brown (http://henrian.com) | MIT | copyright notice; plné znění licence | držitelé práv k rfc6902, viz https://registry.npmjs.org/rfc6902/-/rfc6902-5.3.0.tgz |
 | rolldown@1.2.4 | https://registry.npmjs.org/rolldown/-/rolldown-1.2.4.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2024-present VoidZero Inc. & Contributors |
 | satori@0.25.0 | node_modules/next/dist/compiled/@vercel/og (vendored inside next@16.3.0) | Shu Ding / Vercel, Inc. | MPL-2.0 | plné znění licence; zdroje modifikovaných souborů, pokud se modifikují | satori © Vercel, Inc., MPL-2.0 |
 | semver@7.8.5 | https://registry.npmjs.org/semver/-/semver-7.8.5.tgz | GitHub Inc. | ISC | copyright notice; plné znění licence | Copyright (c) Isaac Z. Schlueter and Contributors |
 | sharp@0.35.3 | https://registry.npmjs.org/sharp/-/sharp-0.35.3.tgz | Lovell Fuller | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by the copyright |
+| shebang-command@2.0.0 | https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k shebang-command, viz https://registry.npmjs.org/shebang-command/-/shebang-command-2.0.0.tgz |
+| shebang-regex@3.0.0 | https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k shebang-regex, viz https://registry.npmjs.org/shebang-regex/-/shebang-regex-3.0.0.tgz |
 | scheduler@0.27.0 | https://registry.npmjs.org/scheduler/-/scheduler-0.27.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
 | siginfo@2.0.0 | https://registry.npmjs.org/siginfo/-/siginfo-2.0.0.tgz | Emil Bay | ISC | copyright notice; plné znění licence | Copyright (c) 2017, Emil Bay <github@tixz.dk> |
 | sirv@2.0.4 | https://registry.npmjs.org/sirv/-/sirv-2.0.4.tgz | Luke Edwards | MIT | copyright notice; plné znění licence | držitelé práv k sirv, viz https://registry.npmjs.org/sirv/-/sirv-2.0.4.tgz |
 | source-map-js@1.2.1 | https://registry.npmjs.org/source-map-js/-/source-map-js-1.2.1.tgz | Valentin 7rulnik Semirulnik | BSD-3-Clause | copyright notice; plné znění licence; disclaimer; zákaz použití jména autora k propagaci | Copyright (c) 2009-2011, Mozilla Foundation and contributors |
 | stackback@0.0.2 | https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz | Roman Shtylman | MIT | copyright notice; plné znění licence | držitelé práv k stackback, viz https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz |
+| stats-gl@2.4.2 | https://registry.npmjs.org/stats-gl/-/stats-gl-2.4.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k stats-gl, viz https://registry.npmjs.org/stats-gl/-/stats-gl-2.4.2.tgz |
+| stats.js@0.17.0 | https://registry.npmjs.org/stats.js/-/stats.js-0.17.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k stats.js, viz https://registry.npmjs.org/stats.js/-/stats.js-0.17.0.tgz |
 | std-env@4.2.0 | https://registry.npmjs.org/std-env/-/std-env-4.2.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Pooya Parsa <pooya@pi0.io> |
 | styled-jsx@5.1.6 | https://registry.npmjs.org/styled-jsx/-/styled-jsx-5.1.6.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2016-present Vercel, Inc. |
 | suspend-react@0.1.3 | https://registry.npmjs.org/suspend-react/-/suspend-react-0.1.3.tgz | Paul Henschel | MIT | copyright notice; plné znění licence | Copyright (c) 2021 Paul Henschel |
+| three-mesh-bvh@0.8.3 | https://registry.npmjs.org/three-mesh-bvh/-/three-mesh-bvh-0.8.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k three-mesh-bvh, viz https://registry.npmjs.org/three-mesh-bvh/-/three-mesh-bvh-0.8.3.tgz |
+| three-stdlib › fflate@0.6.11 | https://registry.npmjs.org/fflate/-/fflate-0.6.11.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k three-stdlib › fflate, viz https://registry.npmjs.org/fflate/-/fflate-0.6.11.tgz |
+| three-stdlib@2.36.1 | https://registry.npmjs.org/three-stdlib/-/three-stdlib-2.36.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k three-stdlib, viz https://registry.npmjs.org/three-stdlib/-/three-stdlib-2.36.1.tgz |
+| three.quarks@0.17.1 | https://registry.npmjs.org/three.quarks/-/three.quarks-0.17.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k three.quarks, viz https://registry.npmjs.org/three.quarks/-/three.quarks-0.17.1.tgz |
 | three@0.185.1 | https://registry.npmjs.org/three/-/three-0.185.1.tgz | mrdoob | MIT | copyright notice; plné znění licence | Copyright © 2010-2026 three.js authors |
 | tinybench@2.9.0 | https://registry.npmjs.org/tinybench/-/tinybench-2.9.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) 2022 Tinylibs |
 | tinyexec@1.3.0 | https://registry.npmjs.org/tinyexec/-/tinyexec-1.3.0.tgz | James Garbutt (https://github.com/43081j) | MIT | copyright notice; plné znění licence | Copyright (c) 2024 Tinylibs |
@@ -191,16 +228,25 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 | torch@2.6.0 | https://download.pytorch.org/whl/cu124 (ops/env/uv.lock) | PyTorch Foundation | BSD-3-Clause | copyright notice and license text if redistributed (it is not) | PyTorch © PyTorch Foundation, BSD-3-Clause |
 | totalist@3.0.1 | https://registry.npmjs.org/totalist/-/totalist-3.0.1.tgz | Luke Edwards | MIT | copyright notice; plné znění licence | Copyright (c) Luke Edwards <luke.edwards05@gmail.com> (lukeed.com) |
 | transformers@5.17.0 | https://pypi.org/project/transformers/5.17.0/ (ops/env/uv.lock) | Hugging Face | Apache-2.0 | copyright notice and license text if redistributed (it is not) | Transformers © Hugging Face, Apache-2.0 |
+| troika-three-text@0.52.5 | https://registry.npmjs.org/troika-three-text/-/troika-three-text-0.52.5.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k troika-three-text, viz https://registry.npmjs.org/troika-three-text/-/troika-three-text-0.52.5.tgz |
+| troika-three-utils@0.52.5 | https://registry.npmjs.org/troika-three-utils/-/troika-three-utils-0.52.5.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k troika-three-utils, viz https://registry.npmjs.org/troika-three-utils/-/troika-three-utils-0.52.5.tgz |
+| troika-worker-utils@0.52.0 | https://registry.npmjs.org/troika-worker-utils/-/troika-worker-utils-0.52.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k troika-worker-utils, viz https://registry.npmjs.org/troika-worker-utils/-/troika-worker-utils-0.52.0.tgz |
 | tslib@2.8.1 | https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz | Microsoft Corp. | 0BSD | žádné — 0BSD notice nevyžaduje | Copyright (c) Microsoft Corporation. |
+| tunnel-rat › zustand@4.5.7 | https://registry.npmjs.org/zustand/-/zustand-4.5.7.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k tunnel-rat › zustand, viz https://registry.npmjs.org/zustand/-/zustand-4.5.7.tgz |
+| tunnel-rat@0.1.2 | https://registry.npmjs.org/tunnel-rat/-/tunnel-rat-0.1.2.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k tunnel-rat, viz https://registry.npmjs.org/tunnel-rat/-/tunnel-rat-0.1.2.tgz |
 | typescript@6.0.3 | https://registry.npmjs.org/typescript/-/typescript-6.0.3.tgz | Microsoft Corp. | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | "Licensor" shall mean the copyright owner or entity authorized by the copyright owner that is granting the License. |
 | undici-types@8.3.0 | https://registry.npmjs.org/undici-types/-/undici-types-8.3.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Matteo Collina and Undici contributors |
 | uniq@1.0.1 | https://registry.npmjs.org/uniq/-/uniq-1.0.1.tgz | Mikola Lysenko | MIT | copyright notice; plné znění licence | Copyright (c) 2013 Mikola Lysenko |
 | use-sync-external-store@1.6.0 | https://registry.npmjs.org/use-sync-external-store/-/use-sync-external-store-1.6.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | Copyright (c) Meta Platforms, Inc. and affiliates. |
+| utility-types@3.11.0 | https://registry.npmjs.org/utility-types/-/utility-types-3.11.0.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k utility-types, viz https://registry.npmjs.org/utility-types/-/utility-types-3.11.0.tgz |
 | vite › fsevents@2.3.3 | https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k vite › fsevents, viz https://registry.npmjs.org/fsevents/-/fsevents-2.3.3.tgz |
 | vite › postcss@8.5.26 | https://registry.npmjs.org/postcss/-/postcss-8.5.26.tgz | Andrey Sitnik | MIT | copyright notice; plné znění licence | Copyright 2013 Andrey Sitnik <andrey@sitnik.es> |
 | vite@8.2.1 | https://registry.npmjs.org/vite/-/vite-8.2.1.tgz | Evan You | MIT | copyright notice; plné znění licence | Copyright (c) 2019-present, VoidZero Inc. and Vite contributors |
 | vitest@4.1.10 | https://registry.npmjs.org/vitest/-/vitest-4.1.10.tgz | Anthony Fu | MIT | copyright notice; plné znění licence | Copyright (c) 2021-Present VoidZero Inc. and Vitest contributors |
+| webgl-constants@1.1.1 | https://registry.npmjs.org/webgl-constants/-/webgl-constants-1.1.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k webgl-constants, viz https://registry.npmjs.org/webgl-constants/-/webgl-constants-1.1.1.tgz |
+| webgl-sdf-generator@1.1.1 | https://registry.npmjs.org/webgl-sdf-generator/-/webgl-sdf-generator-1.1.1.tgz | neuvedeno upstreamem | MIT | copyright notice; plné znění licence | držitelé práv k webgl-sdf-generator, viz https://registry.npmjs.org/webgl-sdf-generator/-/webgl-sdf-generator-1.1.1.tgz |
 | webpack-bundle-analyzer@4.10.1 | https://registry.npmjs.org/webpack-bundle-analyzer/-/webpack-bundle-analyzer-4.10.1.tgz | Yury Grunin | MIT | copyright notice; plné znění licence | Copyright JS Foundation and other contributors |
+| which@2.0.2 | https://registry.npmjs.org/which/-/which-2.0.2.tgz | neuvedeno upstreamem | ISC | copyright notice; plné znění licence | držitelé práv k which, viz https://registry.npmjs.org/which/-/which-2.0.2.tgz |
 | why-is-node-running@2.3.0 | https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz | Mathias Buus (@mafintosh) | MIT | copyright notice; plné znění licence | Copyright (c) 2016 Mathias Buus |
 | ws@7.5.13 | https://registry.npmjs.org/ws/-/ws-7.5.13.tgz | Einar Otto Stangvik (http://2x.io) | MIT | copyright notice; plné znění licence | Copyright (c) 2011 Einar Otto Stangvik <einaros@gmail.com> |
 | zod@4.4.3 | https://registry.npmjs.org/zod/-/zod-4.4.3.tgz | Colin McDonnell | MIT | copyright notice; plné znění licence | Copyright (c) 2025 Colin McDonnell |
@@ -248,7 +294,7 @@ zdroj, autor nebo poskytovatel, licence a povinné notices.
 - **transformers@5.17.0** (Apache-2.0): Text encoder runtime of FLUX.2 klein 4B in ops/env. Python dependency in ops/env/uv.lock, not in package-lock.json; accelerate 1.15.0 (Apache-2.0) and pillow 12.3.0 (MIT-CMU) come with it.
 - **zzfx (vendored)** (MIT): Generates the five game sounds (jump, pickup, hit, win, lose) and the rhythm beeps in the browser (P28C T2); ported to TypeScript with the MIT notice kept in the file header. Vendored, so invisible to package-lock.json.
 
-### Knihovny — bez deklarovaného autora (102)
+### Knihovny — bez deklarovaného autora (148)
 
 Tyhle balíčky autora ve svém `package.json` neuvádějí. Atribuce se proto opírá
 o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
@@ -279,7 +325,9 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - @img/sharp-webcontainers-wasm32@0.35.3
 - @img/sharp-win32-arm64@0.35.3
 - @img/sharp-win32-ia32@0.35.3
+- @mediapipe/tasks-vision@0.10.17
 - @mlc-ai/web-llm@0.2.84
+- @monogrid/gainmap-js@3.4.0
 - @next/bundle-analyzer@16.3.1
 - @next/swc-darwin-arm64@16.3.0
 - @next/swc-darwin-x64@16.3.0
@@ -289,6 +337,8 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - @next/swc-linux-x64-musl@16.3.0
 - @next/swc-win32-arm64-msvc@16.3.0
 - @next/swc-win32-x64-msvc@16.3.0
+- @react-three/drei@10.7.9
+- @react-three/postprocessing@3.1.3
 - @rolldown/binding-android-arm64@1.2.4
 - @rolldown/binding-darwin-arm64@1.2.4
 - @rolldown/binding-darwin-x64@1.2.4
@@ -305,10 +355,12 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - @rolldown/binding-win32-x64-msvc@1.2.4
 - @rolldown/pluginutils@1.0.1
 - @types/deep-eql@4.0.2
+- @types/draco3d@1.4.10
 - @types/estree@1.0.9
 - @types/chai@5.2.3
 - @types/ndarray@1.1.0
 - @types/node@26.2.0
+- @types/offscreencanvas@2019.7.3
 - @types/react-dom@19.2.4
 - @types/react-reconciler@0.28.9
 - @types/react@19.2.18
@@ -316,6 +368,8 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - @types/three › @dimforge/rapier3d-compat@0.12.0
 - @types/three@0.185.4
 - @types/webxr@0.5.24
+- @use-gesture/core@10.3.1
+- @use-gesture/react@10.3.1
 - @vitest/expect@4.1.10
 - @vitest/mocker@4.1.10
 - @vitest/pretty-format@4.1.10
@@ -326,10 +380,22 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - acorn-walk@8.3.5
 - acorn@8.18.0
 - baseline-browser-mapping@2.11.13
+- bidi-js@1.1.0
+- camera-controls@3.1.2
 - client-only@0.0.1
+- cross-env@7.0.3
+- cross-spawn@7.0.6
 - debounce@1.2.1
+- detect-gpu@5.0.70
+- draco3d@1.5.7
 - expect-type@1.4.0
 - fsevents@2.3.2
+- glsl-noise@0.0.0
+- hls.js@1.7.3
+- immediate@3.0.6
+- is-promise@2.2.2
+- isexe@2.0.0
+- lie@3.3.0
 - lightningcss-android-arm64@1.33.0
 - lightningcss-darwin-arm64@1.33.0
 - lightningcss-darwin-x64@1.33.0
@@ -342,19 +408,45 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - lightningcss-win32-arm64-msvc@1.33.0
 - lightningcss-win32-x64-msvc@1.33.0
 - lightningcss@1.33.0
+- maath@0.10.8
+- meshline@3.3.1
+- n8ao@2.0.1
 - next@16.3.0
+- path-key@3.1.1
 - pathe@2.0.3
+- postprocessing@6.39.5
+- potpack@1.0.2
+- promise-worker-transferable@1.0.4
+- quarks.core@0.17.1
 - react-dom@19.2.8
 - react@19.2.8
+- require-from-string@2.0.2
 - rolldown@1.2.4
+- shebang-command@2.0.0
+- shebang-regex@3.0.0
 - scheduler@0.27.0
+- stats-gl@2.4.2
+- stats.js@0.17.0
 - std-env@4.2.0
 - styled-jsx@5.1.6
+- three-mesh-bvh@0.8.3
+- three-stdlib › fflate@0.6.11
+- three-stdlib@2.36.1
+- three.quarks@0.17.1
 - tinybench@2.9.0
 - tinyrainbow@3.1.1
+- troika-three-text@0.52.5
+- troika-three-utils@0.52.5
+- troika-worker-utils@0.52.0
+- tunnel-rat › zustand@4.5.7
+- tunnel-rat@0.1.2
 - undici-types@8.3.0
 - use-sync-external-store@1.6.0
+- utility-types@3.11.0
 - vite › fsevents@2.3.3
+- webgl-constants@1.1.1
+- webgl-sdf-generator@1.1.1
+- which@2.0.2
 
 ## Assety (1157)
 
@@ -2766,7 +2858,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (1588)
+## Vlastní, ne třetí strana (1638)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -4352,6 +4444,56 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/workbench-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/workbench-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/workbench.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/play/env/airport-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/airport.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/arctic-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/arctic.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/autumn-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/autumn.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bakery-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bakery.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bathroom-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/bathroom.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/black-hole-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/black-hole.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/breakfast-table-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/breakfast-table.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/cardboard-lawn-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/cardboard-lawn.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/casino-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/casino.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/concert-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/concert.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/construction-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/construction.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/dentist-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/dentist.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/garage-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/garage.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/gym-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/gym.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/highway-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/highway.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/library-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/library.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/lighthouse-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/lighthouse.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/playground-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/playground.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/prairie-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/prairie.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/pyramid-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/pyramid.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/savanna-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/savanna.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/spinning-log-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/spinning-log.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/theater-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/theater.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/waterfall-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/waterfall.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/zoo-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
+- **public/play/env/zoo.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **claude-sonnet-5** (model): Doslovný identifikátor v src/server/__tests__/upstream.test.ts: test předává změněné model ID mock transportu a ověřuje request body. Tato položka neprohlašuje volání modelu Anthropic v lokálním subscription demu ani existenci modelu tohoto jména.
 - **gemini-9-pro** (model): vymyšlený identifikátor v scripts/__tests__/submission-check-gate.test.ts. Produkt žádný model Google nevolá; zapsat ho jako třetí stranu by bylo nepravdivé tvrzení o tom, co projekt používá.
 - **gpt-neexistuje** (model): vymyšlený identifikátor v evals/harness/__tests__/live.test.ts: oracle větve „poskytovatel takový model nemá". Žádný model tohoto jména neexistuje.

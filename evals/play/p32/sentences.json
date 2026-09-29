@@ -1,0 +1,15 @@
+{
+  "about": "P32 acceptance set, fixed 2026-09-29 before any genre code (P32-0 T7). 9 open sentences; `sealed` gets 3 more from the controlling session in O10, written blind by astra, and they cover the platformer. `genre` is `<genre>` or `<genre>.<mode>` from src/play/genre/contract.ts. `verb` is the goal-carrying verb, which wins over the others in the sentence. Metrics: README.md.",
+  "sentences": [
+    { "id": "penguin", "text": "A penguin slides down an icy mountain, collects snowflakes and avoids rocks", "genre": "runner", "hero": "penguin", "verb": "slide" },
+    { "id": "firefighter", "text": "A firefighter robot sprays water on burning trees and jumps over fallen logs", "genre": "quest.spatial", "hero": "firefighter robot", "verb": "extinguish", "note": "jumping over logs is an obstacle, not the goal" },
+    { "id": "wizard", "text": "A tiny wizard rides a broom through a haunted castle and must light five candles before the ghosts catch him", "genre": "quest.spatial", "hero": "wizard", "verb": "light", "note": "with chasers (the ghosts)" },
+    { "id": "pirate", "text": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure", "genre": "voyage.race", "hero": "pirate ship", "verb": "sail", "note": "the treasure is the goal" },
+    { "id": "cat", "text": "A cat collects glowing fish on a frozen lake while a polar bear chases it", "genre": "arena.escape", "hero": "cat", "verb": "collect" },
+    { "id": "chef", "text": "A chef cooks pancakes", "genre": "quest.station", "hero": "chef", "verb": "cook", "note": "cook or flip" },
+    { "id": "dog", "text": "A dog walks through a city", "genre": "voyage.race", "hero": "dog", "verb": "walk", "note": "free movement through the city with checkpoints" },
+    { "id": "knights", "text": "Two knights duel in a castle", "genre": "arena.fight", "hero": "knight", "verb": "duel" },
+    { "id": "rocket", "text": "A rocket lands on Mars", "genre": "voyage.land", "hero": "rocket", "verb": "land" }
+  ],
+  "sealed": []
+}

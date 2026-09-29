@@ -8,6 +8,7 @@ import leverBridge from '@/play/arcade/__fixtures__/rules/lever-bridge.json';
 import pushCrate from '@/play/arcade/__fixtures__/rules/push-crate.json';
 import throwRock from '@/play/arcade/__fixtures__/rules/throw-rock.json';
 import { arcadeWorldOf, preloadPhysics } from '@/play/arcade/compile';
+import { loadRapier } from '@/play/arcade/physics/world';
 import { runBot } from '@/play/arcade/verify';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 
@@ -41,7 +42,7 @@ export default async function RulesLabPage({ searchParams }: { readonly searchPa
   const made = arcadeWorldOf(spec.value as GameSpecV1, 1);
   if (!made.ok) throw new Error(made.issues.join('; '));
   if (replay === '1') {
-    await preloadPhysics(spec.value as GameSpecV1);
+    await preloadPhysics(spec.value as GameSpecV1, loadRapier);
     const run = runBot(made.world);
     return <RulesReplay world={made.world} inputs={run.inputs} nodeHash={run.hash} />;
   }

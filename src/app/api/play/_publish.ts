@@ -231,7 +231,7 @@ export async function publishReadSpec(
   parentId: string | null,
   extras: PublishExtras = {},
 ): Promise<PublishResult> {
-  await preloadPhysics(spec);
+  await preloadPhysics(spec, loadRapier);
   const compileStarted = performance.now();
   const compiled = compileOnSeeds(spec, seeds);
   const compileMs = performance.now() - compileStarted;

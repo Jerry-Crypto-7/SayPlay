@@ -10,14 +10,14 @@
  */
 
 import dynamic from 'next/dynamic';
-import { memo, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
-import { loadRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
+import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
 import { musicFor, narrationUrl } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
@@ -194,29 +194,47 @@ export interface ArcadePlayProps {
 const END_PAUSE_MS = 600;
 
 /**
- * Hra s fyzikálními tělesy (P29A T13) čeká, než se stáhne Rapier – jádro je
- * synchronní a bez něj by první tik spadl. Hra bez fyziky je připravená hned
- * a modul vůbec nestáhne.
+ * Je Rapier pro tenhle svět načtený (P29A T13)? Jádro je synchronní a bez něj
+ * by první tik hry s fyzikálními tělesy spadl. Hra bez fyziky je připravená
+ * hned a modul vůbec nestáhne. Server i hydratace hlásí „nenačtený“ – server
+ * má Rapier načtený vlastní a jinak by se dva první rendery rozešly.
  */
 export function usePhysicsReady(world: ArcadeWorld): boolean {
   const needs = useMemo(() => worldHasPhysics(world), [world]);
-  const [ready, setReady] = useState(() => !needs || rapierIfLoaded() !== null);
-  useEffect(() => {
-    if (ready) return;
-    let live = true;
-    void loadRapier().then(() => {
-      if (live) setReady(true);
-    });
-    return () => {
-      live = false;
-    };
-  }, [ready]);
-  return ready;
+  const subscribe = useCallback(
+    (changed: () => void) => {
+      if (!needs) return () => {};
+      let live = true;
+      loadRapier().then(
+        () => live && changed(),
+        () => undefined,
+      );
+      return () => {
+        live = false;
+      };
+    },
+    [needs],
+  );
+  return useSyncExternalStore(subscribe, () => !needs || rapierIfLoaded() !== null, () => !needs);
 }
 
+/**
+ * Stránka hry ví o fyzice ze světa dřív, než se vykreslí hra (P32D T4):
+ * stahování Rapieru začne už v renderu stránky, souběžně se scénou.
+ */
+export function PrefetchPhysics({ needed }: { readonly needed: boolean }): null {
+  if (typeof window !== 'undefined') prefetchRapier(needed);
+  return null;
+}
+
+/**
+ * Plátno a HUD hned, i když Rapier ještě dotéká (P32D T4): hodiny relace do
+ * jeho načtení stojí na tiku 0 (`holdUntilRapier`) a ukázka robota i živá
+ * změna, které jádrem krokují samy, se nabídnou až s ním.
+ */
 export function ArcadePlay(props: ArcadePlayProps) {
-  const ready = usePhysicsReady(props.arcade);
-  return ready ? <ArcadePlayReady {...props} /> : <div data-testid="arcade-physics-loading" aria-busy="true" style={{ position: 'fixed', inset: 0 }} />;
+  const physicsReady = usePhysicsReady(props.arcade);
+  return <ArcadePlayGame {...props} physicsReady={physicsReady} />;
 }
 
 /** Živá těla role ve stavu – sonda e2e (T9). */
@@ -266,13 +284,27 @@ function useLivePublish(versionId: string, spec: GameSpecV1, world: ArcadeWorld,
   return done?.count === count ? done.live : { state: 'pending' };
 }
 
-function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
+function ArcadePlayGame({
+  versionId,
+  spec,
+  arcade,
+  lineage,
+  remixes,
+  aiVersion = false,
+  lab,
+  read,
+  upgrade,
+  active = true,
+  offline = false,
+  physicsReady,
+}: ArcadePlayProps & { readonly physicsReady: boolean }) {
   // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
   // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
   // u načasování by to byl rovnou minutý pokus (u poletování je to první mávnutí).
   const [session] = useState(() => {
     const control = baseControlOf(arcade.control).id;
-    return createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' });
+    const created = createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' });
+    return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
@@ -349,7 +381,7 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
   // nebo ťuk na scénu výlohu ukončí v zachytávací fázi, takže ten stisk už padne do hry hráče.
   const [attract, setAttract] = useState(offline);
   useEffect(() => {
-    if (!attract || !active) return;
+    if (!attract || !active || !physicsReady) return;
     let again: ReturnType<typeof setTimeout> | undefined;
     if (session.demo() === null) session.startDemo();
     const unsubscribe = session.subscribe(() => {
@@ -378,7 +410,7 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
       window.removeEventListener('pointerdown', onPointer, true);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [attract, active, session]);
+  }, [attract, active, physicsReady, session]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
   useEffect(() => {
@@ -398,6 +430,23 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
       }
     });
   }, [offline, session, versionId]);
+
+  // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
+  // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness
+  // `scripts/p32/shots.mjs` měří od kliknutí právě k ní – první snímek plátna
+  // ještě neznamená, že hra poslouchá (Rapier, spolknutý první stisk).
+  useEffect(() => {
+    let done = false;
+    return session.subscribe(() => {
+      if (done || !session.humanRun()) return;
+      const first = session.inputs()[0];
+      const stage = shell.current?.querySelector('[data-testid="arcade-stage"]');
+      if (first === undefined || !stage) return;
+      done = true;
+      stage.setAttribute('data-input-tick', String(first.tick));
+      stage.setAttribute('data-input-at', String(Date.now()));
+    });
+  }, [session]);
 
   // Zvuk (P28C T2): efekty pravidel z tiků hráče a skok z rychlosti vzhůru – mimo stav.
   useEffect(() => installSoundControls(), []);
@@ -480,14 +529,15 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
   }, [session]);
 
   return (
-    <main ref={shell} className="play-shell">
+    // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
+    <main ref={shell} className="play-shell" style={{ background: scene.sky }}>
       <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} look={scene} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} live={live}>
-        {running && <DemoControl session={session} demo={demo} />}
+        {running && physicsReady && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
       {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nehraje (střelba, úder, ťuk). */}
-      {running && active && demo === null && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} />}
+      {running && active && demo === null && physicsReady && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
       {running && <RemixReadyChip job={remix} />}

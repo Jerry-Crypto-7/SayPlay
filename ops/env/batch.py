@@ -592,7 +592,32 @@ def cmd_catalog() -> None:
     print(f"{len(entries)} entries -> {CATALOG}")
 
 
+def cmd_bake() -> None:
+    """P30A T4: `bake <jobs.json> <outdir>` – předpečená panoramata pro
+    `src/play/env/baked.json`. Úlohy `[{id, prompt}]` z `scripts/cloud/bake-panoramas.mjs`;
+    vedle obrázků zapíše `<id>.json` s horizontem. Hotové přeskočí."""
+    todo = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+    out = Path(sys.argv[3])
+    for job in todo:
+        if (out / f"{job['id']}.webp").exists():
+            continue
+        started = time.perf_counter()
+        meta = write(
+            generate(job["prompt"], 0), out, job["id"], MAX_BYTES, MAX_LOW_BYTES
+        )
+        (out / f"{job['id']}.json").write_text(
+            json.dumps({**meta, "setting": job["prompt"]}), encoding="utf-8"
+        )
+        print(
+            f"{job['id']}: {time.perf_counter() - started:.1f} s, {meta['bytes']} B",
+            flush=True,
+        )
+
+
 if __name__ == "__main__":
-    {"settings": cmd_settings, "generate": cmd_generate, "catalog": cmd_catalog}[
-        sys.argv[1]
-    ]()
+    {
+        "settings": cmd_settings,
+        "generate": cmd_generate,
+        "catalog": cmd_catalog,
+        "bake": cmd_bake,
+    }[sys.argv[1]]()
