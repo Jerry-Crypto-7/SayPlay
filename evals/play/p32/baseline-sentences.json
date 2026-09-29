@@ -1,0 +1,15 @@
+{
+  "note": "Lokální kopie sady P32-0 T7 pro baseline P32D T3 – sada ještě není ve větvi. Po sloučení p32-base platí evals/play/p32/sentences.json.",
+  "sentences": [
+    { "id": "penguin", "text": "A penguin slides down an icy mountain, collects snowflakes and avoids rocks", "genre": "runner", "hero": "penguin", "verb": "slide" },
+    { "id": "firefighter", "text": "A firefighter robot sprays water on burning trees and jumps over fallen logs", "genre": "quest.spatial", "hero": "firefighter robot", "verb": "extinguish" },
+    { "id": "wizard", "text": "A tiny wizard rides a broom through a haunted castle and must light five candles before the ghosts catch him", "genre": "quest.spatial", "hero": "wizard", "verb": "light" },
+    { "id": "pirate", "text": "A pirate ship dodges cannonballs while sailing between islands to find buried treasure", "genre": "voyage.race", "hero": "pirate ship", "verb": "sail" },
+    { "id": "cat", "text": "A cat collects glowing fish on a frozen lake while a polar bear chases it", "genre": "arena.escape", "hero": "cat", "verb": "collect" },
+    { "id": "chef", "text": "A chef cooks pancakes", "genre": "quest.station", "hero": "chef", "verb": "cook" },
+    { "id": "dog", "text": "A dog walks through a city", "genre": "voyage.race", "hero": "dog", "verb": "walk" },
+    { "id": "knights", "text": "Two knights duel in a castle", "genre": "arena.fight", "hero": "knight", "verb": "duel" },
+    { "id": "rocket", "text": "A rocket lands on Mars", "genre": "voyage.land", "hero": "rocket", "verb": "land" }
+  ],
+  "sealed": []
+}
