@@ -134,6 +134,12 @@ export const runtime = 'nodejs';
  * 120 s, skončí za milisekundy: PLAY návrhem, ostatní dveře chybovou cestou.
  * Snížit dno na dva nejde – rozbilo by rezervu dveří a mez mostu platí napříč
  * instancemi, kdežto tahle jen na jednu. S API klíčem na finále platí osm celé.
+ *
+ * ⚠ **Jedna výjimka od 27. 9. 2026 (P30A T2b): placená záloha režiséra PLAY.**
+ * Je to druhé volání věty, která tu už drží slot dveří `play`, a bere slot
+ * z vlastní zásoby `MAX_PAID_FALLBACKS` v `src/app/api/play/_director.ts`, ne
+ * odsud. Instance tak má v letu nejvýš osm placených volání plus dvě zálohy;
+ * peníze záloh drží její vlastní strop utrácení.
  */
 export const MAX_CONCURRENT_GENERATIONS = 8;
 
@@ -199,7 +205,8 @@ export type PaidDoor = 'world' | 'generate' | 'refine' | 'play';
  *
  * ⚠ **Součet stropů je NAD dnem (7 proti 6), takže brána na součet doopravdy
  * rozhoduje** — a je to tak správně: je to jediné, co drží celkový počet
- * placených volání bez ohledu na to, kolik dveří přibude. Do 4. 9. 2026 byl
+ * placených volání bez ohledu na to, kolik dveří přibude (výjimka: placená
+ * záloha režiséra, viz `MAX_CONCURRENT_GENERATIONS`). Do 4. 9. 2026 byl
  * součet roven dnu, brána nikdy nekousla první a mutant, který ji vypustil,
  * proto přežil. Hlídá to týž test.
  */
@@ -243,7 +250,8 @@ export function slotsDetail(door: PaidDoor): string {
  * Vzít slot pro jedno placené volání v letu. Vrací `false`, když je plno.
  *
  * **Jeden strop na všechny dveře** — zakládání relace, `/api/generate`,
- * preview druhé věty i režie PLAY. Oddělené stropy nejsou jeden strop: kdo
+ * preview druhé věty i režie PLAY (její placená záloha má vlastní zásobu, viz
+ * `MAX_CONCURRENT_GENERATIONS`). Oddělené stropy nejsou jeden strop: kdo
  * chce platit za víc volání naráz, střídá adresy. Proto se součet všech čtyř
  * čítačů porovnává proti `MAX_CONCURRENT_GENERATIONS` **vždycky**, ať přijdou které
  * dveře chtějí. Kontrola a zvýšení jsou v jednom synchronním kroku, takže mezi

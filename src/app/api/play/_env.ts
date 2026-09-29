@@ -10,13 +10,16 @@
  * na disku), takže route jen zopakuje `POST` a přečte úlohu – na serverless
  * není co ztratit mezi instancemi.
  *
- * Bez služby, po chybě nebo po vypršení času zůstává knihovní panorama:
- * nic odsud hru nezdrží ani nerozbije.
+ * Bez služby nebo po její chybě dostane hra nejbližší předpečené panorama
+ * (`src/play/env/library.ts`, P30A T4) – tak hraje i nasazené demo s vypnutým
+ * PC. Když žádné nesedí, zůstává knihovní panorama: nic odsud hru nezdrží ani
+ * nerozbije.
  */
 
 import { after } from 'next/server';
 
 import { settingInLibrary } from '@/play/arcade/look/env';
+import { nearestBaked } from '@/play/env/library';
 import { killState } from '@/server/kill-switch';
 
 /** Kolik smí trvat jeden dotaz na službu; déle = služba není. */
@@ -122,22 +125,29 @@ export function startCustomEnv(setting: string): void {
 
 export type CustomEnvState =
   | { readonly status: 'library' | 'unavailable' | 'pending' | 'failed' }
-  | { readonly status: 'ready'; readonly id: string; readonly horizon: string | null };
+  /** `url`/`low` jen u předpečeného panoramatu (statický soubor); jinak soubory jdou route. */
+  | { readonly status: 'ready'; readonly id: string; readonly horizon: string | null; readonly url?: string; readonly low?: string };
 
-/** Stav vlastního panoramatu pro prostředí hry. Chyba i ticho služby = `unavailable`. */
+/** Nejbližší předpečené panorama, když služba není nebo selhala; žádné nesedí = `otherwise`. */
+function bakedOr(setting: string, otherwise: CustomEnvState): CustomEnvState {
+  const baked = nearestBaked(setting);
+  return baked === null ? otherwise : { status: 'ready', id: `baked-${baked.id}`, horizon: baked.horizon, url: baked.url, low: baked.low };
+}
+
+/** Stav vlastního panoramatu pro prostředí hry. Chyba i ticho služby = předpečené, jinak `unavailable`. */
 export async function customEnvState(setting: string): Promise<CustomEnvState> {
   const text = serviceSetting(setting);
   if (settingInLibrary(setting) || text === null) return { status: 'library' };
   try {
     const service = await liveService();
-    if (service === null) return { status: 'unavailable' };
+    if (service === null) return bakedOr(setting, { status: 'unavailable' });
     const view = await job(service, text);
-    if (view === null) return { status: 'unavailable' };
-    if (view.status === 'failed') return { status: 'failed' };
+    if (view === null) return bakedOr(setting, { status: 'unavailable' });
+    if (view.status === 'failed') return bakedOr(setting, { status: 'failed' });
     if (view.status !== 'done') return { status: 'pending' };
     return { status: 'ready', id: `custom-${view.id ?? text.replace(/[^a-z0-9]+/g, '-')}`, horizon: view.horizon ?? null };
   } catch {
-    return { status: 'unavailable' };
+    return bakedOr(setting, { status: 'unavailable' });
   }
 }
 

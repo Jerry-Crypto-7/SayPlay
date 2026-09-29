@@ -4,7 +4,8 @@
  *
  *   { status: 'library' }                      knihovna prostředí zná, nic se negeneruje
  *   { status: 'pending' }                      služba na něm pracuje
- *   { status: 'ready', id, url, low, horizon } hotové, soubory jdou touto route
+ *   { status: 'ready', id, url, low, horizon } hotové, soubory jdou touto route;
+ *                                              bez služby předpečené z `public/play/env/`
  *   { status: 'failed' | 'unavailable' }       zůstává knihovní panorama
  *
  * `?file=full|low` vrátí obrázek. Klíč služby prohlížeč nikdy nevidí.
@@ -33,6 +34,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 
   const state = await customEnvState(setting);
   const base = `/api/play/games/${id}/env`;
-  const body = state.status === 'ready' ? { ...state, url: `${base}?file=full`, low: `${base}?file=low` } : state;
+  // Předpečené panorama nese vlastní statickou adresu a ta vyhraje.
+  const body = state.status === 'ready' ? { url: `${base}?file=full`, low: `${base}?file=low`, ...state } : state;
   return Response.json(body, { headers: { 'cache-control': 'no-store' } });
 }

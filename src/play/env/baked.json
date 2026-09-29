@@ -1,0 +1,295 @@
+{
+ "about": "P30A T4 pre-baked panoramas for settings the arcade library (src/play/arcade/look/env-catalog.json) has no tag for. Vocabulary written by hand from the general list and the gaps in evals/play/p30/dev.json and the play corpora; `horizon` is filled by scripts/cloud/bake-panoramas.mjs once public/play/env/<id>.webp exists. An entry without `horizon` is not baked yet and is never picked.",
+ "entries": [
+  {
+   "id": "garage",
+   "prompt": "cluttered car garage workshop with tools and an old car",
+   "words": [
+    "garage",
+    "workshop",
+    "auto repair",
+    "tool shed"
+   ],
+   "horizon": "#444242"
+  },
+  {
+   "id": "library",
+   "prompt": "quiet old library with tall wooden bookshelves",
+   "words": [
+    "library",
+    "bookshelf",
+    "bookshelves",
+    "bookstore",
+    "bookshop",
+    "reading room"
+   ],
+   "horizon": "#564c4a"
+  },
+  {
+   "id": "airport",
+   "prompt": "busy airport terminal with planes on the runway",
+   "words": [
+    "airport",
+    "runway",
+    "terminal",
+    "airfield",
+    "hangar"
+   ],
+   "horizon": "#d2e0e8"
+  },
+  {
+   "id": "zoo",
+   "prompt": "sunny zoo with animal enclosures and green paths",
+   "words": [
+    "zoo",
+    "enclosure",
+    "petting"
+   ],
+   "horizon": "#899a84"
+  },
+  {
+   "id": "waterfall",
+   "prompt": "tall waterfall pouring into a green jungle pool",
+   "words": [
+    "waterfall",
+    "cascade"
+   ],
+   "horizon": "#66786d"
+  },
+  {
+   "id": "arctic",
+   "prompt": "arctic tundra with ice floes under a pale sky",
+   "words": [
+    "arctic",
+    "antarctic",
+    "polar",
+    "tundra",
+    "north pole",
+    "south pole",
+    "iceberg"
+   ],
+   "horizon": "#e2e7e9"
+  },
+  {
+   "id": "savanna",
+   "prompt": "golden african savanna with acacia trees",
+   "words": [
+    "savanna",
+    "savannah",
+    "safari",
+    "acacia",
+    "grassland",
+    "africa",
+    "african"
+   ],
+   "horizon": "#c6c9c7"
+  },
+  {
+   "id": "prairie",
+   "prompt": "wild west prairie with a wooden ranch and cactus",
+   "words": [
+    "prairie",
+    "wild west",
+    "western",
+    "ranch",
+    "saloon",
+    "cowboy",
+    "cactus"
+   ],
+   "horizon": "#bac0c1"
+  },
+  {
+   "id": "pyramid",
+   "prompt": "ancient egyptian pyramids in golden desert light",
+   "words": [
+    "pyramid",
+    "egypt",
+    "egyptian",
+    "pharaoh",
+    "tomb",
+    "sphinx"
+   ],
+   "horizon": "#dac8ab"
+  },
+  {
+   "id": "highway",
+   "prompt": "long highway through the countryside at dusk",
+   "words": [
+    "highway",
+    "freeway",
+    "motorway",
+    "interstate"
+   ],
+   "horizon": "#a3968d"
+  },
+  {
+   "id": "playground",
+   "prompt": "colorful playground with swings and a slide",
+   "words": [
+    "playground",
+    "swing",
+    "sandbox",
+    "seesaw"
+   ],
+   "horizon": "#c1d9d7"
+  },
+  {
+   "id": "bathroom",
+   "prompt": "clean bathroom with a bathtub and white tiles",
+   "words": [
+    "bathroom",
+    "bathtub",
+    "bath",
+    "shower",
+    "toilet"
+   ],
+   "horizon": "#ced4d8"
+  },
+  {
+   "id": "bakery",
+   "prompt": "warm bakery with bread and pastries on shelves",
+   "words": [
+    "bakery",
+    "bread",
+    "pastry",
+    "pastries",
+    "bakeshop"
+   ],
+   "horizon": "#7d5f50"
+  },
+  {
+   "id": "construction",
+   "prompt": "construction site with cranes and scaffolding",
+   "words": [
+    "construction",
+    "crane",
+    "scaffolding",
+    "building site"
+   ],
+   "horizon": "#c2d1db"
+  },
+  {
+   "id": "lighthouse",
+   "prompt": "lighthouse on a rocky coast at dusk",
+   "words": [
+    "lighthouse"
+   ],
+   "horizon": "#a4a0ad"
+  },
+  {
+   "id": "autumn",
+   "prompt": "autumn forest with orange and red falling leaves",
+   "words": [
+    "autumn",
+    "fall foliage",
+    "leaves",
+    "maple",
+    "orchard"
+   ],
+   "horizon": "#ae7c72"
+  },
+  {
+   "id": "black-hole",
+   "prompt": "swirling black hole in deep space",
+   "words": [
+    "black hole",
+    "wormhole",
+    "event horizon",
+    "nebula",
+    "void"
+   ],
+   "horizon": "#6e808d"
+  },
+  {
+   "id": "casino",
+   "prompt": "glittering casino with slot machines and card tables",
+   "words": [
+    "casino",
+    "slot machine",
+    "poker",
+    "vegas"
+   ],
+   "horizon": "#ab9b9e"
+  },
+  {
+   "id": "theater",
+   "prompt": "grand theater stage with red curtains",
+   "words": [
+    "theater",
+    "theatre",
+    "stage",
+    "cinema",
+    "opera",
+    "curtain"
+   ],
+   "horizon": "#614249"
+  },
+  {
+   "id": "concert",
+   "prompt": "rock concert stage with lights and a cheering crowd",
+   "words": [
+    "concert",
+    "festival",
+    "rock show",
+    "gig"
+   ],
+   "horizon": "#9ea7b5"
+  },
+  {
+   "id": "gym",
+   "prompt": "gym with weights and treadmills",
+   "words": [
+    "gym",
+    "fitness",
+    "workout",
+    "weights",
+    "treadmill"
+   ],
+   "horizon": "#d9e2e5"
+  },
+  {
+   "id": "dentist",
+   "prompt": "bright dentist office with a dental chair",
+   "words": [
+    "dentist",
+    "dental",
+    "orthodontist"
+   ],
+   "horizon": "#e1e5e5"
+  },
+  {
+   "id": "breakfast-table",
+   "prompt": "a breakfast table",
+   "words": [
+    "breakfast",
+    "dining table",
+    "table",
+    "cereal",
+    "pancake"
+   ],
+   "horizon": "#dde7e3"
+  },
+  {
+   "id": "spinning-log",
+   "prompt": "spinning log",
+   "words": [
+    "log",
+    "lumberjack",
+    "logging",
+    "sawmill"
+   ],
+   "horizon": "#d2e1e3"
+  },
+  {
+   "id": "cardboard-lawn",
+   "prompt": "sunny lawn with stacks of cardboard boxes",
+   "words": [
+    "cardboard",
+    "box",
+    "lawn",
+    "moving day"
+   ],
+   "horizon": "#c5c9be"
+  }
+ ]
+}

@@ -42,7 +42,8 @@ describe('authoredBy', () => {
 
   // Revize P29B na hranici fáze: klíč cache patří primáru – hra od zálohy by ho navždy zastoupila.
   it('does not cache a game the local fallback wrote, in the answer or in a repair round', async () => {
-    const local = (body: unknown) => ({ ...answered(body), provenance: { branch: 'fake', model: 'gpt-oss-20b', source: 'llamacpp-http' } });
+    // Roli zálohy dává šev režiséra (`_director.ts`); transport o ní od P30A nerozhoduje.
+    const local = (body: unknown) => ({ ...answered(body), provenance: { branch: 'fake', model: 'gpt-oss-20b', source: 'hosted-http', fallback: true } });
     const cache = directorCache(memoryAnswerStore());
     expect(await direct(SENTENCE, { branch: fakeBranch([local(answerFixture('good-collect_exit'))]), cache, now })).toMatchObject({ source: 'authored', authoredBy: 'gpt-oss-20b' });
     expect((await direct(SENTENCE, { branch: fakeBranch([]), cache, now })).source).not.toBe('cached');

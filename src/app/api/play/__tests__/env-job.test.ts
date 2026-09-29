@@ -63,10 +63,12 @@ async function publish(setting: string): Promise<string> {
       body: JSON.stringify({ spec: { ...runner, theme: { ...runner.theme, setting } } }),
     }),
   );
-  expect(response.status, await response.clone().text()).toBeLessThan(300);
+  // Tělo jen jednou: `clone()` + druhé čtení občas padalo na „Body has already been read“.
+  const text = await response.text();
+  expect(response.status, text).toBeLessThan(300);
   // Úloha jde po odpovědi (`after()` v testu nejde, práce doběhne sama) – nech ji doběhnout.
   await new Promise((resolve) => setTimeout(resolve, 30));
-  return ((await response.json()) as { versionId: string }).versionId;
+  return (JSON.parse(text) as { versionId: string }).versionId;
 }
 
 async function env(id: string, query = ''): Promise<Response> {
@@ -174,6 +176,15 @@ describe('GET /api/play/games/:id/env', () => {
     expect((await env(id, '?file=full')).status).toBe(404);
     delete process.env.PLAY_ENV_ENDPOINT;
     expect(await (await env(id)).json()).toEqual({ status: 'unavailable' });
+  });
+
+  it('falls back to the nearest pre-baked panorama at its static address when the service fails or is gone', async () => {
+    const id = await publish('a breakfast table');
+    const baked = { status: 'ready', id: 'baked-breakfast-table', url: '/play/env/breakfast-table.webp', low: '/play/env/breakfast-table-low.webp' };
+    stub.status = 'failed';
+    expect(await (await env(id)).json()).toMatchObject(baked);
+    delete process.env.PLAY_ENV_ENDPOINT;
+    expect(await (await env(id)).json()).toMatchObject(baked);
   });
 
   it('refuses a finished job whose file name is not a plain panorama name', async () => {
