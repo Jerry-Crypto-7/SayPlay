@@ -269,6 +269,8 @@ export interface WorldProps {
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly scene: Look;
   readonly enabled: boolean;
+  /** Podklad místo výchozího (`Backdrop`): údolí běžce kreslí `RunnerWorld` (P32A T3). */
+  readonly backdrop?: React.ReactNode;
 }
 
 const PICKUP_MS = 200;
@@ -285,7 +287,7 @@ function applyPose(group: Group, pose: Pose): void {
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
-export function World({ session, control, cast, surface, scene, enabled }: WorldProps) {
+export function World({ session, control, cast, surface, scene, enabled, backdrop }: WorldProps) {
   // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -401,11 +403,12 @@ export function World({ session, control, cast, surface, scene, enabled }: World
 
   return (
     <>
-      {control === 'steer' ? (
-        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
-      ) : (
-        <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
-      )}
+      {backdrop ??
+        (control === 'steer' ? (
+          <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
+        ) : (
+          <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
+        ))}
       {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} />}
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} />}
       {views.map((view) =>
