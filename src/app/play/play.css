@@ -22,13 +22,26 @@
 }
 
 /* P33 */
+/* Písmo nadpisů: Luckiest Guy (Astigmatic, Apache-2.0 – RULES.md §4 povoleno;
+ * Inter a Manrope mají OFL-1.1, kterou §4 nepovoluje). Latinská podmnožina
+ * z Fontsource, licence vedle souboru, záznam v disclosure.json. Má jen jednu
+ * řeznou tloušťku, proto nadpisy drží `font-weight: 400` – jinak prohlížeč
+ * dopočítá falešné tučné. */
+@font-face {
+  font-family: 'Luckiest Guy';
+  src: url('/fonts/luckiest-guy/LuckiestGuy-latin.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Tokeny rozhraní (P33 T2): mezery po 4 px, tři poloměry, pět velikostí
  * písma, tři průhledné plochy a dva stíny. Pravidla PLAY sahají jen na ně –
- * `p33-tokens.test.ts` hlídá velikosti písma a ruční průhlednosti. Písmo je
- * systémové: Inter i Manrope mají licenci OFL-1.1, kterou RULES.md §4
- * nepovoluje (výběr písma čeká na vlastníka, viz plán P33). */
+ * `p33-tokens.test.ts` hlídá velikosti písma a ruční průhlednosti. Běžný text
+ * je v systémovém písmu zařízení, nadpisy v `--p-font-display`. */
 .play-root {
   --p-font: system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --p-font-display: 'Luckiest Guy', 'Arial Black', 'Segoe UI Black', Impact, sans-serif;
 
   --p-space-1: 4px;
   --p-space-2: 8px;
@@ -72,6 +85,21 @@
   --p-tap: 44px;
 
   -webkit-font-smoothing: antialiased;
+}
+
+/* Nadpisy, které mají křičet: úvod, výzva na startu, výsledek hry, titulek
+ * listu. Dvě třídy, ať je nepřebije `font-weight` ze starších pravidel níž.
+ * Luckiest Guy má malá písmena jako nepravidelné kapitálky („IMAGINe“), proto
+ * verzálky – text v DOM zůstává, jak je (e2e čtou „You lost“, ne „YOU LOST“). */
+.play-root .play-hero,
+.play-root .play-hero-top,
+.play-root .play-first-prompt,
+.play-root .play-outcome-title,
+.play-root .play-sheet-title {
+  font-family: var(--p-font-display);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 /* Sdílené prvky (P33 T3, `src/components/play/ui/`). Stojí před starými
