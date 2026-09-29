@@ -74,6 +74,179 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* Sdílené prvky (P33 T3, `src/components/play/ui/`). Stojí před starými
+ * pravidly, proto varianty nesou dvě třídy – jinak by je `.play-button`
+ * níž přebil. */
+.play-button.play-button-accent {
+  background: var(--play-accent);
+  color: var(--play-bg);
+}
+
+.play-button.play-button-accent:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.play-button.play-button-quiet {
+  background: transparent;
+  color: var(--play-text);
+  border: 1px solid var(--play-line);
+}
+
+.play-button.play-button-quiet:hover:not(:disabled) {
+  background: var(--p-fill-soft);
+}
+
+.play-button.play-button-l {
+  min-height: calc(var(--p-tap) + var(--p-space-2));
+  padding: var(--p-space-3) var(--p-space-8);
+  font-size: var(--p-text-m);
+}
+
+.play-icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.play-icon-button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--p-space-1);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--play-text);
+  font: inherit;
+  font-size: var(--p-text-xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.play-icon-button-disc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--p-tap);
+  height: var(--p-tap);
+  border-radius: 50%;
+  background: var(--p-surface-2);
+  border: 1px solid var(--play-line);
+  box-shadow: var(--p-shadow-1);
+}
+
+.play-icon-button:hover:not(:disabled) .play-icon-button-disc {
+  border-color: var(--play-action);
+}
+
+.play-icon-button:focus-visible {
+  outline: none;
+}
+
+.play-icon-button:focus-visible .play-icon-button-disc {
+  outline: 2px solid var(--play-accent);
+  outline-offset: 2px;
+}
+
+.play-icon-button-caption {
+  text-shadow: var(--p-shadow-text);
+}
+
+/* List: na telefonu zespodu přes celou šířku, na desktopu karta vpravo nahoře. */
+.play-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--p-surface-1);
+}
+
+.play-sheet {
+  width: 100%;
+  max-height: 85dvh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: var(--p-space-2) var(--p-space-5) calc(var(--p-space-6) + env(safe-area-inset-bottom));
+  border-radius: var(--p-radius-l) var(--p-radius-l) 0 0;
+  background: var(--play-panel);
+  border: 1px solid var(--play-line);
+  box-shadow: var(--p-shadow-2);
+  animation: play-sheet-up 180ms ease-out;
+}
+
+.play-sheet:focus {
+  outline: none;
+}
+
+.play-sheet-head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--p-space-1) var(--p-space-3);
+  padding-bottom: var(--p-space-3);
+  touch-action: none;
+}
+
+.play-sheet-handle {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--p-radius-pill);
+  background: var(--play-line);
+}
+
+.play-sheet-title {
+  margin: 0;
+  font-size: var(--p-text-m);
+  font-weight: 700;
+}
+
+.play-sheet-close .play-icon-button-disc {
+  box-shadow: none;
+}
+
+.play-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-4);
+}
+
+@keyframes play-sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+}
+
+@media (min-width: 700px) {
+  .play-sheet-backdrop {
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding: var(--p-space-4);
+    background: transparent;
+  }
+
+  .play-sheet {
+    width: 400px;
+    max-height: calc(100dvh - var(--p-space-8));
+    padding-bottom: var(--p-space-5);
+    border-radius: var(--p-radius-l);
+  }
+
+  .play-sheet-handle {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-sheet {
+    animation: none;
+  }
+}
+
 .play-create {
   max-width: 760px;
   margin: 0 auto;
