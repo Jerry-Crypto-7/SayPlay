@@ -193,7 +193,8 @@ describe('draft control choice', () => {
     }
     expect(legacyDraft('drift around a mountain road at night').controlParams).toMatchObject({ drift: true });
     expect(legacyDraft('a hard arena full of monsters, eat smaller ones and grow').controlParams).toMatchObject({ density: 'dense' });
-    expect(legacyDraft('car racing game').roles.find((r) => r.kind === 'player')?.label).toBe('race car');
+    // Závodní auto šablony se nedědí (P32B T3): řízení bez plavidla ve větě jede na výchozím autě.
+    expect(legacyDraft('car racing game').roles.find((r) => r.kind === 'player')?.label).toBe('car');
   });
 
   it('reads the obstacle density from quantifiers', () => {
