@@ -15,7 +15,7 @@ import type { GameSpecV1 } from '@/play/spec';
 import { arcadeWorldOf, compileArcade, preloadPhysics, specNeedsPhysics } from '../compile';
 import { BODY, FLAG, HEADER_SIZE, BODY_STRIDE } from '../contract';
 import { worldHasPhysics } from '../kernel';
-import { rapierIfLoaded } from '../physics/world';
+import { loadRapier, rapierIfLoaded } from '../physics/world';
 
 const fixture = (name: string): GameSpecV1 => JSON.parse(readFileSync(new URL(`../__fixtures__/rules/${name}.json`, import.meta.url), 'utf8')) as GameSpecV1;
 
@@ -25,7 +25,7 @@ const physical: GameSpecV1 = { ...plain, things: [{ role: 'rock', physics: true 
 describe('Rapier loads only for games with physics', () => {
   it('a game without physics compiles and never loads Rapier', async () => {
     expect(specNeedsPhysics(plain)).toBe(false);
-    await preloadPhysics(plain);
+    await preloadPhysics(plain, loadRapier);
     const compiled = compileArcade(plain, 1);
     expect(compiled.ok).toBe(true);
     expect(rapierIfLoaded()).toBeNull();
@@ -47,7 +47,7 @@ describe('Rapier loads only for games with physics', () => {
     const early = compileArcade(physical, 1);
     expect(early.ok).toBe(false);
     expect(!early.ok && early.issues.join()).toMatch(/physics engine is not loaded/);
-    await preloadPhysics(physical);
+    await preloadPhysics(physical, loadRapier);
     expect(rapierIfLoaded()).not.toBeNull();
     const compiled = compileArcade(physical, 1);
     expect(compiled.ok ? 'ok' : `${compiled.reason}: ${compiled.issues.join('; ')}`).toBe('ok');

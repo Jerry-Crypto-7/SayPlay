@@ -4,14 +4,18 @@
  */
 
 import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
-import type { BotPiece, ControlPiece } from './contract';
+import type { BotPiece, ControlPiece, ModeGeneratorPiece } from './contract';
 import type { ArcadeLibrary } from './kernel';
-import { arenaEat, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
+import { arenaCollect, arenaEat, arenaEscape, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
 import { arenaBot } from './pieces/arena-bot';
+import { FIGHT_RULES, fightArena, fightControl } from './pieces/fight';
+import { fightBot } from './pieces/fight-bot';
 import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
 import { platformControl, platformLevel } from './pieces/platform';
 import { platformBot } from './pieces/platform-bot';
+import { questSpatial, questStation } from './pieces/quest';
+import { questBot } from './pieces/quest-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
 import { runnerBot } from './pieces/runner-bot';
@@ -22,7 +26,7 @@ import { rhythmBot } from './pieces/rhythm-bot';
 import { gun, shooterControl, shooterRange } from './pieces/shooter';
 import { shooterBot } from './pieces/shooter-bot';
 import { SHOT_RULES } from './pieces/shots';
-import { rivalFinish, steerControl, steerTrack } from './pieces/steer';
+import { rivalFinish, steerControl, steerTrack, voyageLand, voyageRace } from './pieces/steer';
 import { steerBot } from './pieces/steer-bot';
 import { launch, throwControl, throwField } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
@@ -41,7 +45,23 @@ const BASE_BOTS = {
   timing_bot: timingBot,
   rhythm_bot: rhythmBot,
   duel_bot: duelBot,
+  fight_bot: fightBot,
+  quest_bot: questBot,
 } as const;
+
+/**
+ * Generátory režimů žánrů (P32-0 T4): vybírá je `controlParams.generator`
+ * (`arcade/compile.ts`). Stopy P32E–G plní jen jejich těla, registrace je tady.
+ */
+export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
+  arena_escape: arenaEscape,
+  arena_collect: arenaCollect,
+  fight: fightArena,
+  voyage_race: voyageRace,
+  voyage_land: voyageLand,
+  quest_spatial: questSpatial,
+  quest_station: questStation,
+};
 
 const BASE_CONTROLS = {
   runner: runnerControl,
@@ -57,8 +77,8 @@ const BASE_CONTROLS = {
 } as const;
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece },
-  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule, ...SPEC_RULES },
+  controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
+  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
@@ -70,6 +90,7 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     timing_level: timingLevel,
     rhythm_level: rhythmLevel,
     duel_arena: duelArena,
+    ...MODE_GENERATORS,
   },
   bots: { ...BASE_BOTS, addon_bot: makeAddonBot(BASE_BOTS) as BotPiece },
 };

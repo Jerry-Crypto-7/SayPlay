@@ -369,22 +369,47 @@ export const CONTROL_PARAMS = {
   duel: duelParamsSchema,
 } as const;
 
+/**
+ * Delegovaný výběr generátoru (P32-0 T4): překlad žánru smí k parametrům
+ * ovládání přidat `generator` (id z `MODE_GENERATORS`) a `tuning` (parametry
+ * režimu). `tuning` validuje zod schéma toho generátoru v `arcade/compile.ts`,
+ * ne tady. Bez výchozích hodnot: spec bez nich má stejný hash jako dřív.
+ * Režisér je nepíše – `CONTROL_PARAMS` (jeho zadání) je nemá.
+ */
+const DELEGATION = {
+  generator: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/, 'generator: a registered generator id').optional(),
+  tuning: z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9]{0,31}$/), z.union([z.number(), z.boolean(), z.string().max(40)])).optional(),
+};
+const delegated = <S extends z.ZodObject>(schema: S) => schema.extend(DELEGATION);
+const SPEC_CONTROL_PARAMS = {
+  runner: delegated(runnerParamsSchema),
+  platform: delegated(platformParamsSchema),
+  flap: delegated(flapParamsSchema),
+  steer: delegated(steerParamsSchema),
+  move_free: delegated(arenaParamsSchema),
+  shooter: delegated(shooterParamsSchema),
+  throw: delegated(throwParamsSchema),
+  timing: delegated(timingParamsSchema),
+  rhythm: delegated(rhythmParamsSchema),
+  duel: delegated(duelParamsSchema),
+} as const;
+
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
     control: z.enum(CONTROLS).optional(),
     controlParams: z
       .union([
-        runnerParamsSchema,
-        platformParamsSchema,
-        flapParamsSchema,
-        steerParamsSchema,
-        arenaParamsSchema,
-        shooterParamsSchema,
-        throwParamsSchema,
-        timingParamsSchema,
-        rhythmParamsSchema,
-        duelParamsSchema,
+        SPEC_CONTROL_PARAMS.runner,
+        SPEC_CONTROL_PARAMS.platform,
+        SPEC_CONTROL_PARAMS.flap,
+        SPEC_CONTROL_PARAMS.steer,
+        SPEC_CONTROL_PARAMS.move_free,
+        SPEC_CONTROL_PARAMS.shooter,
+        SPEC_CONTROL_PARAMS.throw,
+        SPEC_CONTROL_PARAMS.timing,
+        SPEC_CONTROL_PARAMS.rhythm,
+        SPEC_CONTROL_PARAMS.duel,
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),
@@ -502,7 +527,7 @@ export function readGameSpec(input: unknown): GameSpecResult {
       };
     }
     // Sjednocení ve schématu pustí parametry kteréhokoli ovládání; tady musí sedět na to zvolené.
-    const own = CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);
+    const own = SPEC_CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);
     if (!own.success) {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: own.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (${spec.control})`) };
     }

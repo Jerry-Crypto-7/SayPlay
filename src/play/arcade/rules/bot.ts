@@ -308,7 +308,8 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
   const when = rule.when;
   if ('press' in when) return { kind: 'press', buttons: when.press };
   if ('every' in when) return WAIT;
-  if ('hit' in when) return null;
+  // Pravidlo `interact` hraje robot úkolu (P32G), plánovač pravidel ho neumí.
+  if ('hit' in when || 'interact' in when) return null;
   if ('counter' in when) {
     if (counterValue(state, when.counter.name) >= when.counter.atLeast) return WAIT;
     for (const next of counterRulesFor(view, when.counter.name)) {

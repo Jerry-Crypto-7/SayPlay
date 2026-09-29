@@ -45,6 +45,7 @@ import {
   rampMarks,
   rampedSpeed,
 } from '../contract';
+import { modeStub } from './mode-stub';
 
 export const STEER_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type SteerDifficulty = (typeof STEER_DIFFICULTIES)[number];
@@ -455,3 +456,7 @@ export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.top
   if (level.bodies.length > ARCADE_LIMITS.maxBodies) issues.push(`${level.bodies.length} bodies exceed the ${ARCADE_LIMITS.maxBodies} body limit`);
   return issues;
 }
+
+/** Režimy `voyage.race` a `voyage.land` (pahýly P32-0 T4, naplní P32F T1). */
+export const voyageRace = modeStub('voyage_race');
+export const voyageLand = modeStub('voyage_land');

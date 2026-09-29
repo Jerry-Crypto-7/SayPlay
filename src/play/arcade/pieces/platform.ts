@@ -159,6 +159,8 @@ const generatorParams = z
     doubleJump: z.boolean().default(false),
     /** Přesný počet mincí z počtu rolí (P26D T9); bez hodnoty co místo dá. */
     coinCount: z.int().min(1).max(PLATFORM_LEVEL.maxCoins).optional(),
+    /** Nový pocit skoku (P32-0 T4 šev, naplní P32F T2); přijde z `controlParams.tuning`. Bez něj úroveň beze změny. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type PlatformLevelParams = z.infer<typeof generatorParams>;

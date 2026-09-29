@@ -14,10 +14,10 @@ import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts'
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
-import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, COUNTED_ROLES, type PieceRef, rampMarks } from './contract';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, COUNTED_ROLES, type ModeGeneratorPiece, type PieceRef, rampMarks } from './contract';
 import { buildWorld, replay, worldHasPhysics } from './kernel';
-import { ARCADE_LIBRARY } from './library';
-import { loadRapier, rapierIfLoaded } from './physics/world';
+import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
+import { rapierIfLoaded } from './physics/world';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
 import { platformLevel, platformRules } from './pieces/platform';
@@ -110,14 +110,58 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   return { control: { id: 'runner', params: { speed: params.speed, ramp: rampMarks(level.length) } }, bot: { id: 'runner_bot', params: {} }, level, rules };
 }
 
+/** Generátor, který ovládání staví bez `controlParams.generator`. */
+const CONTROL_GENERATORS: Readonly<Record<string, string>> = {
+  runner: 'runner_track',
+  platform: 'platform_level',
+  flap: 'flap_track',
+  steer: 'steer_track',
+  move_free: 'arena',
+  shooter: 'shooter_range',
+  throw: 'throw_field',
+  timing: 'timing_level',
+  rhythm: 'rhythm_level',
+  duel: 'duel_arena',
+};
+
+/** Generátor, který svět postaví: `controlParams.generator` (P32-0 T4), jinak ten, který ovládání bere dnes. */
+export function generatorOf(spec: GameSpecV1): string {
+  const chosen = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
+  if (chosen !== undefined) return chosen;
+  // Neznámé ovládání staví běžce – poslední větev `partsOf`.
+  return rulesOwnGoal(spec) ? 'yard' : (CONTROL_GENERATORS[spec.control ?? ''] ?? 'runner_track');
+}
+
+/**
+ * Parametry ovládání bez polí delegace: `tuning` se rozbalí mezi ostatní, takže
+ * ho validuje schéma vybraného generátoru, a `generator` zmizí.
+ */
+function ownParams(spec: GameSpecV1): Record<string, unknown> | undefined {
+  if (spec.controlParams === undefined) return undefined;
+  const { generator: _generator, tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly generator?: string; readonly tuning?: Record<string, unknown> };
+  return { ...own, ...tuning };
+}
+
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. */
 export function arcadeWorldOf(spec: GameSpecV1, seed: number): ArcadeWorldResult {
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
+  const generator = generatorOf(spec);
+  const mode: ModeGeneratorPiece | undefined = MODE_GENERATORS[generator];
+  const delegation = (spec.controlParams ?? {}) as { readonly generator?: string; readonly tuning?: unknown };
+  if (delegation.generator !== undefined && mode === undefined && generator !== CONTROL_GENERATORS[spec.control ?? '']) {
+    return { ok: false, issues: [`/controlParams/generator: no generator ${generator} for the ${spec.control} control`] };
+  }
+  // `tuning` validuje schéma vybraného generátoru, ne `spec.ts` – tady, ať neplatná hodnota nespadne až v `parse` generátoru.
+  const params = mode !== undefined || delegation.tuning !== undefined ? (mode ?? ARCADE_LIBRARY.generators[generator])?.params.safeParse(ownParams(spec) ?? {}) : undefined;
+  if (params !== undefined && !params.success) {
+    return { ok: false, issues: params.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (generator ${generator})`) };
+  }
   // Doplňky (P26D) dostanou hotové části základního ovládání.
-  const base = { ...spec, controlParams: addonControlParams(spec) } as GameSpecV1;
+  const plain = { ...spec, controlParams: ownParams(spec) } as GameSpecV1;
+  const base = { ...plain, controlParams: addonControlParams(plain) } as GameSpecV1;
   // Pravidla, která sama vyhrávají, hrají na dvorku místo arény (P29A, `rules/compile.ts`).
-  const own = rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
+  const own = mode !== undefined ? mode.parts(seed, params?.data, health) : rulesOwnGoal(spec) ? yardParts(health) : partsOf(base, seed, health);
   const lives = 'health' in own ? own.health : health;
   const { control, bot, level: baseLevel, rules, issues } = applyAddons(own, { spec, seed, health: lives });
   if (issues !== undefined && issues.length > 0) return { ok: false, issues };
@@ -148,7 +192,8 @@ export const specNeedsPhysics = (spec: GameSpecV1): boolean => (spec.things ?? [
 /** Přechodná chyba serveru, ne vada specu: režisér ji v opravném kole nedostane (`playabilityIssues`). */
 export const PHYSICS_NOT_LOADED = 'physics: the physics engine is not loaded yet (preloadPhysics)';
 
-export async function preloadPhysics(spec: GameSpecV1): Promise<void> {
+export async function preloadPhysics(spec: GameSpecV1, loadRapier: () => Promise<unknown>): Promise<void> {
+  // Zavaděč se předává (P32-0 T4): jak se Rapier načítá, mění jen `physics/world.ts` a volající.
   if (specNeedsPhysics(spec)) await loadRapier();
 }
 

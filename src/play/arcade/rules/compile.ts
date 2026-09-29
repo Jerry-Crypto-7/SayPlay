@@ -44,6 +44,7 @@ import {
   bodyBase,
 } from '../contract';
 import { ARENA } from '../pieces/arena';
+import { compiledInteractWhen, interactFire } from './interact';
 import { RULE_COUNTERS, type Rule, type RuleDo, type RuleIf } from './schema';
 
 /** První kód role věci pravidel; pod ním jsou role jádra (`ROLE`), jejichž čísla jsou v hashi. */
@@ -66,6 +67,7 @@ const compiledWhen = z.union([
   z.object({ every: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict(),
   z.object({ counter: z.object({ name: counterName, atLeast: z.int() }).strict() }).strict(),
   z.object({ hit: code }).strict(),
+  compiledInteractWhen,
 ]);
 
 const compiledIf = z.union([
@@ -273,6 +275,8 @@ export const SPEC_RULES = {
     'counter' in rule.when && counterValue(ctx.state, rule.when.counter.name) >= rule.when.counter.atLeast ? evaluate(ctx, rule, -1, -1) : [],
   ),
   rule_hit: makePiece('rule_hit', 'hit', (ctx, rule) => ('hit' in rule.when && ctx.other >= 0 && roleAt(ctx.state, ctx.other) === rule.when.hit ? evaluate(ctx, rule, ctx.source, ctx.other) : [])),
+  // Tělo pravidla je v `interact.ts` (P32G); `do` se vyhodnotí pro cíl, který došel do konečného stavu.
+  interact: makePiece('interact', 'press', (ctx, rule) => ('interact' in rule.when ? interactFire(ctx, rule.when.interact, (body) => evaluate(ctx, rule, ctx.player, body)) : [])),
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -315,6 +319,7 @@ function referencedRoles(spec: GameSpecV1): string[] {
   for (const rule of spec.rules ?? []) {
     if ('contact' in rule.when) rule.when.contact.forEach((role) => names.add(role));
     if ('hit' in rule.when) names.add(rule.when.hit);
+    if ('interact' in rule.when) names.add(rule.when.interact.role);
     for (const cond of rule.if ?? []) {
       if ('holding' in cond) names.add(cond.holding);
       if ('near' in cond) names.add(cond.near.role);
@@ -433,6 +438,10 @@ function compileRule(rule: Rule, codes: ReadonlyMap<string, number>, templates: 
   } else if ('counter' in rule.when) {
     when = { counter: rule.when.counter };
     id = 'rule_counter';
+  } else if ('interact' in rule.when) {
+    const { role, radius, ...rest } = rule.when.interact;
+    when = { interact: { role: c(role), radius: radius * UNIT, ...rest } };
+    id = 'interact';
   } else {
     when = { hit: c(rule.when.hit) };
     id = 'rule_hit';

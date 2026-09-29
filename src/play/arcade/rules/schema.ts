@@ -16,6 +16,7 @@
 import { z } from 'zod';
 
 import { ARCADE_LIMITS } from '../contract';
+import { interactWhen } from './interact';
 
 /** Nejvýš tolik pravidel ve specu – tentýž strop jako instance pravidel v jádře. */
 export const RULES_MAX = ARCADE_LIMITS.maxRules;
@@ -36,7 +37,7 @@ export const verbSchema = z.string().regex(/^[a-z][a-z-]{1,23}$/, 'verb: one low
  * Spouštěč. `contact` = dvě role se dotknou (jedna smí být `player`), `press` =
  * hráč stiskne akci (`action` = ťuk / mezerník, `alt` = druhé tlačítko), `every`
  * = každých n tiků (60 Hz), `counter` = čítač dosáhl hodnoty, `hit` = projektil
- * zasáhl roli.
+ * zasáhl roli, `interact` = hráč u cíle drží „Use“ (P32, `interact.ts`).
  */
 export const ruleWhenSchema = z.union([
   z.object({ contact: z.tuple([roleRef, roleRef]) }).strict(),
@@ -44,6 +45,7 @@ export const ruleWhenSchema = z.union([
   z.object({ every: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict(),
   z.object({ counter: z.object({ name: z.enum(RULE_COUNTERS), atLeast: z.int().min(0).max(1000) }).strict() }).strict(),
   z.object({ hit: roleRef }).strict(),
+  interactWhen(roleRef),
 ]);
 export type RuleWhen = z.infer<typeof ruleWhenSchema>;
 
@@ -120,6 +122,7 @@ function roleRefsOf(rule: Rule): [string, string][] {
   const refs: [string, string][] = [];
   if ('contact' in rule.when) rule.when.contact.forEach((role, i) => refs.push([`when/contact/${i}`, role]));
   if ('hit' in rule.when) refs.push(['when/hit', rule.when.hit]);
+  if ('interact' in rule.when) refs.push(['when/interact/role', rule.when.interact.role]);
   (rule.if ?? []).forEach((cond, i) => {
     if ('holding' in cond) refs.push([`if/${i}/holding`, cond.holding]);
     if ('near' in cond) refs.push([`if/${i}/near/role`, cond.near.role]);
@@ -152,7 +155,8 @@ export function ruleIssues(rules: readonly Rule[], things: readonly Thing[], rol
       }
     });
     const contact = 'contact' in rule.when ? rule.when.contact : null;
-    const hasOther = contact !== null || 'hit' in rule.when || (rule.if ?? []).some((cond) => 'near' in cond);
+    if ('interact' in rule.when && rule.when.interact.role === 'player') issues.push(`${at}/when/interact/role: the player interacts with a role, not with itself`);
+    const hasOther = contact !== null || 'hit' in rule.when || 'interact' in rule.when || (rule.if ?? []).some((cond) => 'near' in cond);
     rule.do.forEach((effect, i) => {
       const target = 'despawn' in effect ? effect.despawn : 'checkpoint' in effect ? effect.checkpoint : 'grab' in effect ? effect.grab : 'push' in effect ? effect.push : null;
       if (target === 'other' && !hasOther) issues.push(`${at}/do/${i}: "other" needs a contact, a hit or a near condition`);

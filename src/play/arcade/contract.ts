@@ -148,6 +148,42 @@ export const RESTITUTION_SHIFT = 12;
 export const RESTITUTION_MASK = 0x3ff;
 
 /**
+ * Stav cíle (P32-0 T4, úkol P32G): 0..`TARGET_STATE_MAX` ve dvou volných
+ * bitech `flags`. Nový slot těla by posunul stav a pohnul hashi všech dnešních
+ * her; v nich je tu všude 0 = výchozí stav.
+ */
+export const TARGET_STATE_SHIFT = 10;
+export const TARGET_STATE_MASK = 0x3;
+export const TARGET_STATE_MAX = 2;
+
+/**
+ * HP těla (P32-0 T4, souboj P32E) v bitech `flags` nad odrazem (9 bitů,
+ * 0..`HP_MAX`); 0 = tělo HP nemá nebo je na nule. Bit 31 zůstává volný, `flags`
+ * se nikdy nestane záporným.
+ */
+export const HP_SHIFT = 22;
+export const HP_MASK = 0x1ff;
+export const HP_MAX = HP_MASK;
+
+const flagsAt = (body: number): number => HEADER_SIZE + body * BODY_STRIDE + BODY.flags;
+
+export const bodyHp = (state: Int32Array, body: number): number => ((state[flagsAt(body)] as number) >> HP_SHIFT) & HP_MASK;
+
+export function setBodyHp(state: Int32Array, body: number, hp: number): void {
+  const at = flagsAt(body);
+  const clamped = Math.max(0, Math.min(HP_MAX, hp));
+  state[at] = ((state[at] as number) & ~(HP_MASK << HP_SHIFT)) | (clamped << HP_SHIFT);
+}
+
+export const targetStateOf = (state: Int32Array, body: number): number => ((state[flagsAt(body)] as number) >> TARGET_STATE_SHIFT) & TARGET_STATE_MASK;
+
+export function setTargetState(state: Int32Array, body: number, value: number): void {
+  const at = flagsAt(body);
+  const clamped = Math.max(0, Math.min(TARGET_STATE_MAX, value));
+  state[at] = ((state[at] as number) & ~(TARGET_STATE_MASK << TARGET_STATE_SHIFT)) | (clamped << TARGET_STATE_SHIFT);
+}
+
+/**
  * Podkroky Rapieru za tik (`numSolverIterations`). Gravitace se v nich
  * přičítá po částech, takže poloha za tik klesne o `g·(k+1)/(2k)`, ne o celé
  * `g` jako v jádře – s tím počítá předpověď hodu (`throwFlight`).
@@ -262,6 +298,10 @@ export const BUTTON = {
   HOLD: 1 << 5,
   /** Střela doplňku `+shoot` (P26D) – základní ovládání ho nečtou, takže se nesrazí se skokem ani skluzem. */
   FIRE: 1 << 6,
+  /** Úder (P32-0 T4, souboj P32E): klávesa J, na telefonu tlačítko „Attack“. */
+  ATTACK: 1 << 7,
+  /** Použít (P32-0 T4, úkol P32G): klávesa K, na telefonu „Use“; drží se jako `HOLD`. */
+  INTERACT: 1 << 8,
 } as const;
 
 export const AXIS_MIN = -1000;
@@ -347,7 +387,11 @@ export type ArcadeEffect =
   /** Impuls tělu `body` po převažující ose od hráče; třením dojede. */
   | { readonly kind: 'push'; readonly body: number }
   /** Každé ještě nepřepnuté tělo role `role` se jednou přepne: živé zmizí, skryté se objeví. */
-  | { readonly kind: 'toggle'; readonly role: number };
+  | { readonly kind: 'toggle'; readonly role: number }
+  /** Zásah (P32-0 T4): tělu `body` ubere `amount` HP (nejníž 0); `by` = kdo udeřil. */
+  | { readonly kind: 'hit'; readonly body: number; readonly by: number; readonly amount: number }
+  /** Stav cíle `body` na `state` (0..`TARGET_STATE_MAX`). */
+  | { readonly kind: 'stateChange'; readonly body: number; readonly state: number };
 
 /**
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),
@@ -414,6 +458,8 @@ export interface BodyInit {
   readonly ball?: boolean;
   /** Jen s `physics`: odraz v promile 0–1000 (výchozí 0). */
   readonly restitution?: number;
+  /** Počáteční HP 1..`HP_MAX` (P32-0 T4); bez něj 0 = tělo HP nemá. */
+  readonly hp?: number;
 }
 
 export interface ArcadeLevel {
@@ -430,6 +476,28 @@ export interface ArcadeLevel {
 /** Stavba úrovně: seed + parametry → těla. Hratelnost z konstrukce je jeho povinnost. */
 export interface GeneratorPiece<P = unknown> extends PieceBase<P> {
   generate(seed: number, params: P): ArcadeLevel;
+}
+
+/** Co generátor režimu vydá: ovládání, robot, úroveň a pravidla patří k sobě. */
+export interface ModeParts {
+  readonly control: PieceRef;
+  readonly bot: PieceRef;
+  readonly level: ArcadeLevel;
+  readonly rules: PieceRef[];
+  /** Režim úroveň nepostaví – svět se nestaví (pahýl, nebo hratelnost z konstrukce neprošla). */
+  readonly issues?: readonly string[];
+  /** Životy, které režim sám určí. */
+  readonly health?: number;
+}
+
+/**
+ * Generátor režimu žánru (P32-0 T4). Vybírá ho `controlParams.generator`,
+ * `params` validuje parametry ovládání spolu s `controlParams.tuning`, takže
+ * nový parametr režimu nemusí do `spec.ts`. Ovládání, robota a pravidla vydá
+ * sám (`parts`), `arcade/compile.ts` je jen předá jádru.
+ */
+export interface ModeGeneratorPiece<P = unknown> extends GeneratorPiece<P> {
+  parts(seed: number, params: P, health: number | undefined): ModeParts;
 }
 
 /** Co robot vidí: stav z doby před `reactionTicks` (věrohodný hráč nereaguje hned). */
