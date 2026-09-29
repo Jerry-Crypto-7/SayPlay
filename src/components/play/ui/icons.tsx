@@ -31,6 +31,7 @@ const PATHS = {
     </>
   ),
   warn: <path d="M12 4l9 16H3zM12 10v4M12 17v.5" />,
+  play: <path d="M8 5v14l11-7z" />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof PATHS;

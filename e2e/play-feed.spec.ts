@@ -47,10 +47,18 @@ async function serveFeed(page: Page, rows: readonly Row[]): Promise<void> {
   await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ games: rows, next: null }) }));
 }
 
-/** Viditelná hra: `?g=`, slide feedu a titul v HUD musí mluvit o téže verzi. */
+/**
+ * Viditelná hra: `?g=`, slide feedu a titul v HUD musí mluvit o téže verzi.
+ * Od P33 T8 stojí místo hry plakát a hra se bez klepnutí nepřipojí.
+ */
 async function expectShowing(page: Page, row: Row): Promise<void> {
   await expect(page).toHaveURL(new RegExp(`[?&]g=${row.versionId}(&|$)`));
   await expect(page.getByTestId('feed-current')).toHaveAttribute('data-version-id', row.versionId);
+  const poster = page.getByTestId('feed-poster');
+  await expect(poster).toContainText(row.title, { timeout: 30_000 });
+  await expect(poster).toContainText('Tap to play');
+  await expect(page.getByTestId('feed-current').locator('canvas')).toHaveCount(0);
+  await poster.click();
   await expect(page.locator('.play-hud-title')).toHaveText(row.title, { timeout: 30_000 });
   await expect(page.getByTestId('arcade-stage').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
   await expect(page.locator('canvas')).toHaveCount(1);
@@ -88,6 +96,7 @@ test.describe('/play – vertical feed', () => {
     // Široká obrazovka: seznam dalších vpravo, klepnutí přepne hru.
     await expect(page.getByTestId('play-feed-card')).toHaveCount(rows.length);
     await expect(page.getByTestId('play-feed-card').nth(1)).toContainText('1 remix');
+    await expect(page.getByTestId('play-feed-card').first()).not.toContainText('remixes');
 
     const moves = [1, 1, 1, -1, -1, -1, 1, 1, -1, -1];
     let at = 0;

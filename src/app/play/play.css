@@ -1235,6 +1235,77 @@ a.play-button {
   background: var(--play-panel);
 }
 
+/* Tón nálady scény (P33 T8): plakát hry ve feedu a pruh karty. */
+[data-tone='calm'] {
+  --p-tone: var(--play-action);
+}
+
+[data-tone='warm'] {
+  --p-tone: var(--play-accent);
+}
+
+[data-tone='dark'] {
+  --p-tone: var(--play-line);
+}
+
+[data-tone='danger'] {
+  --p-tone: var(--play-danger);
+}
+
+/* Plakát místo rozběhnuté hry: celé klepnutelné pole, titul, cíl a „Tap to play“. */
+.play-poster {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--p-space-3);
+  padding: var(--p-space-8) var(--p-space-6);
+  border: 0;
+  background: radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--p-tone) 55%, var(--play-bg)), var(--play-bg) 75%);
+  color: var(--play-text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.play-poster-title {
+  font-size: var(--p-text-xl);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.play-poster-goal {
+  max-width: 32ch;
+  color: var(--play-muted);
+  font-size: var(--p-text-m);
+}
+
+.play-poster-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--p-space-2);
+  margin-top: var(--p-space-4);
+  min-height: calc(var(--p-tap) + var(--p-space-2));
+  padding: 0 var(--p-space-8);
+  border-radius: var(--p-radius-m);
+  background: var(--play-accent);
+  color: var(--play-bg);
+  font-size: var(--p-text-l);
+  font-weight: 700;
+  box-shadow: var(--p-shadow-2);
+}
+
+.play-poster:hover .play-poster-cta,
+.play-poster:focus-visible .play-poster-cta {
+  background: #d97706;
+}
+
+.play-feed-card[data-tone] {
+  border-left: 4px solid var(--p-tone);
+}
+
 .play-pager-slide > .play-shell {
   height: 100%;
 }
