@@ -4,18 +4,22 @@
  * Svět běžce (P32-0 T5, vlastní P32A). Obal nad sdíleným `World` s pevným
  * ovládáním `runner`: kamera za hráčem a těla jsou společná, podklad je vlastní –
  * údolí s ledovou (písečnou, silniční…) dráhou a kulisy na jeho svazích (T3).
+ * Hrdina se navíc hýbe jako postava – náklon do úhybu, odraz, póza jízdy – a stojí
+ * na kontaktním stínu (T5, `heroMotion.ts`).
  */
 
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
-import { Box3, type Mesh, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
+import { Box3, DataTexture, type Group, LinearFilter, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
 
 import { UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 
 import { buildValley, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { Scenery } from '../look/Scenery';
+import type { ArcadeSession } from '../session';
 import { World, type WorldProps } from '../World';
+import { type Ride, blinksOnHit, createHeroMotion, rideOf } from './heroMotion';
 
 /** Údolí začíná za kamerou úvodního záběru a končí za koncem mlhy po cíli. */
 const BEHIND_M = 40;
@@ -106,6 +110,133 @@ function GroundProbe({ terrain }: { readonly terrain: RefObject<Mesh | null> }) 
   return null;
 }
 
+/** Póza hrdiny, jak ji scéna opravdu kreslí (T5): e2e z ní čte náklon do úhybu. */
+export interface HeroReport {
+  /** Náklon do úhybu (°): + = na obrazovce doprava. */
+  readonly roll: number;
+  /** Předklon obalu hrdiny (°) – póza jízdy; předklon běhu z `poseOf` je na vnitřní skupině. */
+  readonly pitch: number;
+  readonly ride: Ride;
+  /** Krytí kontaktního stínu (0 = žádný). */
+  readonly shadow: number;
+}
+
+declare global {
+  interface Window {
+    __playHero?: () => HeroReport | null;
+  }
+}
+
+const DEG = 180 / Math.PI;
+
+/** Kontaktní stín: krytí na zemi, jak rychle slábne s výškou skoku (1/m), a nejširší kotouč (m). */
+const SHADOW_OPACITY = 0.5;
+const SHADOW_FADE = 1.2;
+const SHADOW_MAX_M = 1.4;
+/** Nad dráhou (výška 0, `playableGround`), ať se stín s terénem nepere o hloubku. */
+const SHADOW_Y = 0.02;
+
+/** Měkký kotouč stínu: bílá textura s průhledností od středu k okraji, barvu dá materiál. */
+function blobTexture(): DataTexture {
+  const size = 64;
+  const data = new Uint8Array(size * size * 4).fill(255);
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const r = Math.hypot(x + 0.5 - size / 2, y + 0.5 - size / 2) / (size / 2);
+      data[(y * size + x) * 4 + 3] = Math.round(255 * Math.max(0, 1 - r * r) ** 1.5);
+    }
+  }
+  const texture = new DataTexture(data, size, size);
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearFilter;
+  texture.needsUpdate = true;
+  return texture;
+}
+
+function heroIn(scene: Object3D): Object3D | null {
+  let hero: Object3D | null = null;
+  scene.traverse((node) => {
+    if (node.userData.frame === 'hero') hero = node;
+  });
+  return hero;
+}
+
+/**
+ * Pohyb hrdiny nad `World` (T5). Jeho snímek běží po snímku `World` (stejná priorita,
+ * přihlášený později – `World` je dřív mezi sourozenci), takže poloha, přikrčení skluzu
+ * a viditelnost, které `World` každý snímek zapíše znovu, tu už jsou; pohyb je jen
+ * doplní. Relaci jen čte (`createHeroMotion`).
+ */
+function HeroPose({ session, hero }: { readonly session: ArcadeSession; readonly hero: string }) {
+  const scene = useThree((three) => three.scene);
+  const ride = useMemo(() => rideOf(hero), [hero]);
+  const blinks = useMemo(() => blinksOnHit(hero), [hero]);
+  const motion = useMemo(() => createHeroMotion(session, ride), [session, ride]);
+  const found = useRef<Object3D | null>(null);
+  const shadow = useRef<Mesh>(null);
+  const box = useMemo(() => new Box3(), []);
+  const material = useMemo(() => new MeshBasicMaterial({ color: '#0f172a', map: blobTexture(), transparent: true, depthWrite: false, opacity: 0 }), []);
+  useEffect(
+    () => () => {
+      material.map?.dispose();
+      material.dispose();
+    },
+    [material],
+  );
+
+  useFrame(() => {
+    if (found.current === null || found.current.parent === null) found.current = heroIn(scene);
+    const group = found.current;
+    const blob = shadow.current;
+    if (group === null || blob === null) return;
+    const pose = motion.sample();
+    blob.visible = group.visible;
+    // Úhyb kolem směru běhu (osa z), až po předklonu jízdy: pořadí ZYX.
+    group.rotation.set(pose.pitch, 0, pose.roll, 'ZYX');
+    const wide = 1 + pose.squash / 2;
+    group.scale.set(wide, group.scale.y * (1 - pose.squash), wide);
+    if (blinks && pose.flash > 0 && Math.floor(pose.flash * 6) % 2 === 1) group.visible = false;
+    // Jízda neběží: poskok kroků, který `World` (`applyPose`) píše vnitřní skupině statického modelu, pryč.
+    // Riggovaná postava má vnitřní skupinou scénu GLB na nule, primitiv rovnou sítě.
+    const inner = group.children[0] as Group | undefined;
+    if (ride !== null && inner?.isGroup === true) inner.position.y = 0;
+
+    // Náklon a předklon otáčí tělo kolem paty: nejnižší roh by se zabořil. Tělo se
+    // zvedne o tolik, aby stálo na hraně, na kterou se naklání.
+    const feet = group.position.y;
+    group.updateMatrixWorld(true);
+    box.setFromObject(group);
+    const dip = feet - box.min.y;
+    if (dip > 0) group.position.y += dip;
+
+    // Stín zůstává na dráze pod půdorysem těla; se skokem se zmenší a vybledne.
+    const fade = 1 / (1 + Math.max(0, feet) * SHADOW_FADE);
+    const spread = 0.6 + 0.4 * fade;
+    blob.position.set((box.min.x + box.max.x) / 2, SHADOW_Y, (box.min.z + box.max.z) / 2);
+    blob.scale.set(Math.min(box.max.x - box.min.x, SHADOW_MAX_M) * spread, Math.min(box.max.z - box.min.z, SHADOW_MAX_M) * spread, 1);
+    material.opacity = SHADOW_OPACITY * fade;
+  });
+
+  useEffect(() => {
+    const probe = (): HeroReport | null => {
+      const group = found.current;
+      if (group === null) return null;
+      return { roll: group.rotation.z * DEG, pitch: group.rotation.x * DEG, ride, shadow: shadow.current?.visible === true ? material.opacity : 0 };
+    };
+    window.__playHero = probe;
+    return () => {
+      if (window.__playHero === probe) delete window.__playHero;
+    };
+  }, [ride, material]);
+
+  return (
+    // Stín si stín nevrhá ani nepřijímá (`ShadowFlags` rigu ho přeskočí).
+    <mesh ref={shadow} rotation-x={-Math.PI / 2} material={material} userData={{ rigShadow: 'none' }}>
+      <planeGeometry args={[1, 1]} />
+    </mesh>
+  );
+}
+
 export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
   const terrain = useRef<Mesh>(null);
   const length = props.session.world.length / UNIT;
@@ -113,6 +244,8 @@ export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
     <>
       <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} terrain={terrain} />} />
       <GroundProbe terrain={terrain} />
+      {/* Až po `World`: jeho snímek musí běžet dřív (viz `HeroPose`). */}
+      <HeroPose session={props.session} hero={props.cast.player} />
     </>
   );
 }

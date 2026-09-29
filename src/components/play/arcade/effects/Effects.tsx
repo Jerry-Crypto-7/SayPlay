@@ -41,8 +41,15 @@ import type { Look } from '@/play/arcade/look';
 
 import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
 import type { ArcadeSession } from '../session';
-import { type EffectsBus, createEffectsBus } from './bus';
+import { type EffectsBus, type VisualEventKind, createEffectsBus } from './bus';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
+
+declare global {
+  interface Window {
+    /** Kolik vizuálních událostí sběrnice vydala od připojení plátna, po druzích (T5: e2e čeká na `land`). */
+    __playFx?: () => Partial<Record<VisualEventKind, number>>;
+  }
+}
 
 /** Největší posun kamery při otřesu (m). */
 const SHAKE_M = 0.14;
@@ -155,7 +162,11 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
       const tier = surface.current?.dataset.quality;
       return (QUALITY_TIERS as readonly string[]).includes(tier ?? '') ? (tier as QualityTier) : 'high';
     };
+    const heard: Partial<Record<VisualEventKind, number>> = {};
+    const probe = (): Partial<Record<VisualEventKind, number>> => ({ ...heard });
+    window.__playFx = probe;
     const offBursts = created.subscribe((events) => {
+      for (const event of events) heard[event.kind] = (heard[event.kind] ?? 0) + 1;
       const now = performance.now() / 1000;
       director.update(now);
       // Barva sběratelné věci ze scény, dokud nějaká stojí; pak poslední známá.
@@ -171,6 +182,7 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     });
     const tick = window.setInterval(() => director.update(performance.now() / 1000), 500);
     return () => {
+      if (window.__playFx === probe) delete window.__playFx;
       window.clearInterval(tick);
       offRestart();
       offBursts();
