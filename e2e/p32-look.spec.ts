@@ -137,6 +137,32 @@ test.describe('desktop 1280×800', () => {
     const nearHorizon = await blueness(shot, 0.3, 0.34);
     expect(top - nearHorizon, `obloha nahoře (${top.toFixed(0)}) modřejší než u obzoru (${nearHorizon.toFixed(0)})`).toBeGreaterThan(20);
   });
+
+  /**
+   * Údolí běžce (T3): terén posunutý o 20 cm vypadá dobře, ale hráč pluje nebo se
+   * boří. Sonda `__playGround` promítne patu těla i terén pod ní kamerou scény.
+   * Hrdina skáče, proto platí nejmenší mezera za běh robota; překážky stojí.
+   */
+  test('runner: hero and obstacles stand on the valley', async ({ page, request }) => {
+    test.setTimeout(120_000);
+    await page.goto(await publish(request, 'runner'));
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playGround !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
+    await page.evaluate(() => document.querySelector<HTMLButtonElement>('[data-testid="play-demo-start"]')?.click());
+
+    const hero: number[] = [];
+    const grounded: number[] = [];
+    for (let sample = 0; sample < 40; sample += 1) {
+      const report = await page.evaluate(() => window.__playGround!());
+      if (report.hero !== null) hero.push(report.hero.gap);
+      // Laťka skluzu visí 1 m nad dráhou schválně; stojící překážka má patu na zemi.
+      for (const obstacle of report.obstacles) if (obstacle.lift < 0.5) grounded.push(obstacle.gap);
+      await page.waitForTimeout(100);
+    }
+    expect(hero.length, 'hrdina v záběru').toBeGreaterThan(20);
+    expect(Math.min(...hero.map(Math.abs)), `nejmenší mezera hrdiny (px): ${hero.map((gap) => gap.toFixed(1)).join(' ')}`).toBeLessThanOrEqual(5);
+    expect(grounded.length, 'stojící překážky v záběru').toBeGreaterThan(0);
+    for (const gap of grounded) expect(Math.abs(gap), 'mezera překážky (px)').toBeLessThanOrEqual(5);
+  });
 });
 
 /** Snímků za sekundu po celých sekundách (rAF), `seconds` dlouho. */

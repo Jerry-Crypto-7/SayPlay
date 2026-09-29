@@ -34,11 +34,17 @@ function RunnerValley({ look, length, terrain }: { readonly look: Look; readonly
   );
 }
 
+export interface GroundGap {
+  /** Svislá mezera (px) mezi spodní hranou těla a terénem pod ní: + visí, − boří se. */
+  readonly gap: number;
+  /** Tatáž mezera v metrech světa – laťka skluzu visí nad dráhou schválně (1 m). */
+  readonly lift: number;
+}
+
 export interface GroundReport {
-  /** Svislá mezera (px) mezi spodní hranou hrdiny a terénem pod ní: + visí, − boří se. */
-  readonly hero: number | null;
-  /** Totéž pro každou viditelnou překážku v záběru. */
-  readonly obstacles: readonly number[];
+  readonly hero: GroundGap | null;
+  /** Každá viditelná překážka v záběru. */
+  readonly obstacles: readonly GroundGap[];
 }
 
 declare global {
@@ -68,7 +74,7 @@ function GroundProbe({ terrain }: { readonly terrain: RefObject<Mesh | null> }) 
       scene.updateMatrixWorld();
       camera.updateMatrixWorld();
       const ground = terrain.current;
-      const gapOf = (node: Object3D): number | null => {
+      const gapOf = (node: Object3D): GroundGap | null => {
         if (ground === null || !shown(node)) return null;
         box.setFromObject(node);
         if (box.isEmpty()) return null;
@@ -79,10 +85,10 @@ function GroundProbe({ terrain }: { readonly terrain: RefObject<Mesh | null> }) 
         ray.set(new Vector3(foot.x, foot.y + 100, foot.z), down);
         const hit = ray.intersectObject(ground, false)[0];
         if (hit === undefined) return null;
-        return ((onScreen.y - hit.point.clone().project(camera).y) / 2) * size.height;
+        return { gap: ((onScreen.y - hit.point.clone().project(camera).y) / 2) * size.height, lift: foot.y - hit.point.y };
       };
-      let hero: number | null = null;
-      const obstacles: number[] = [];
+      let hero: GroundGap | null = null;
+      const obstacles: GroundGap[] = [];
       scene.traverse((node) => {
         if (node.userData.frame === 'hero') hero = gapOf(node);
         else if (node.userData.item === 'obstacle') {
