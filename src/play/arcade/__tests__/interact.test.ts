@@ -26,7 +26,7 @@ function world(targets: readonly BodyInit[], when: Partial<CompiledInteract> = {
     ...rule,
   };
   const level: ArcadeLevel = { bodies: [PLAYER, ...targets], length: 0 };
-  const built = buildWorld({ seed: 1, control: { id: 'move_free', params: {} }, rules: [{ id: 'interact', params }], bot: { id: 'quest_bot', params: {} }, level }, ARCADE_LIBRARY);
+  const built = buildWorld({ seed: 1, control: { id: 'move_free', params: {} }, rules: [{ id: 'interact', params }], bot: { id: 'arena_bot', params: {} }, level }, ARCADE_LIBRARY);
   if (!built.ok) throw new Error(built.issues.join('; '));
   return built.world;
 }

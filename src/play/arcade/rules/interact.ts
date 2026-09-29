@@ -12,6 +12,11 @@
  * - Puštění, odchod z dosahu nebo jiný cíl rozdělanou práci zahodí.
  * - `order`: posunout jde jen první cíl role (podle indexu těla), který ještě
  *   není v konečném stavu.
+ * - `ready` (jen po překladu, staví ho generátor stanoviště): cíl, který se
+ *   právě posunul, se dál posune jen v okně připravenosti – `after` tiků se peče,
+ *   pak je `window` tiků zlatý, a když okno minul, peče se znovu (`readyPhase`).
+ *   Obrácení mimo okno stav neposune; držení nachystané předem obrátí, jakmile
+ *   se okno otevře.
  *
  * **Paměť držení:** pravidlo stav měnit nesmí, jen vydává efekty, a jádro nemá
  * slot pro rozdělanou práci. Drží ji proto čítač `trigger` (efekt `count`):
@@ -39,29 +44,61 @@ export const interactWhen = (role: z.ZodString) =>
     })
     .strict();
 
+/** Okno připravenosti v ticích: `after` od posunu zavřené, pak `window` otevřené, dokola. */
+const ready = z.object({ after: z.int().min(1).max(10 * ARCADE_HZ), window: z.int().min(1).max(10 * ARCADE_HZ) }).strict();
+
 /** Po překladu: `role` = kód jádra, `radius` v jednotkách. */
 export const compiledInteractWhen = z
   .object({
-    interact: z.object({ role: z.int().min(0).max(255), radius: z.int().min(0), hold: z.int().min(0), states, order: z.boolean().optional() }).strict(),
+    interact: z
+      .object({ role: z.int().min(0).max(255), radius: z.int().min(0), hold: z.int().min(0).max(5 * ARCADE_HZ), states, order: z.boolean().optional(), ready: ready.optional() })
+      .strict(),
   })
   .strict();
 export type CompiledInteract = z.infer<typeof compiledInteractWhen>['interact'];
 
 // ---------------------------------------------------------------------------
-// Rozdělaná práce v čítači `trigger`: (cíl + 1) | (tiky držení << BODY_BITS), 0 = nic
+// Rozdělaná práce v čítači `trigger`, 0 = nic:
+// (cíl + 1) | tiky držení << 9 | (tik posunu mod ENTRY_SPAN + 1) << 18 (jen s `ready`)
 
 const RECORD = HEADER.counters + COUNTER.trigger;
 const BODY_BITS = 9;
 const BODY_MASK = (1 << BODY_BITS) - 1;
+const ENTRY_SHIFT = 2 * BODY_BITS;
+/** Tik posunu se drží modulo tohle (13 bitů, 136 s) – okno se počítá z rozdílu, ne z absolutního tiku. */
+const ENTRY_SPAN = (1 << 13) - 1;
 /** Tiky držení po posunu: týž cíl se znovu posune až po puštění. Nad `hold` (nejvýš 5 s). */
 const LOCKED = BODY_MASK;
 
-export const interactRecord = (state: Int32Array): { readonly body: number; readonly held: number } => {
+export interface InteractRecord {
+  /** Cíl rozdělané práce, −1 = žádný. */
+  readonly body: number;
+  /** Tiky držení v řadě; `LOCKED` = krok hotový, čeká se na puštění. */
+  readonly held: number;
+  /** Tik posledního posunu `body` (mod `ENTRY_SPAN`) + 1; 0 = neznámý. */
+  readonly entry: number;
+}
+
+export const interactRecord = (state: Int32Array): InteractRecord => {
   const value = state[RECORD] as number;
-  return { body: (value & BODY_MASK) - 1, held: value >> BODY_BITS };
+  return { body: (value & BODY_MASK) - 1, held: (value >> BODY_BITS) & BODY_MASK, entry: value >>> ENTRY_SHIFT };
 };
 
-const pack = (body: number, held: number): number => (body + 1) | (held << BODY_BITS);
+export const isLocked = (record: InteractRecord): boolean => record.held === LOCKED;
+
+const pack = (body: number, held: number, entry = 0): number => (body + 1) | (held << BODY_BITS) | (entry << ENTRY_SHIFT);
+
+/**
+ * Kolik tiků zbývá do otevření okna (0 = otevřené), když `record` patří cíli
+ * a zná tik posunu. Bez `ready` nebo bez tiku posunu je okno otevřené – cíl se
+ * nesmí zaseknout.
+ */
+export function readyWait(interact: CompiledInteract, record: InteractRecord, body: number, tick: number): number {
+  if (interact.ready === undefined || record.body !== body || record.entry === 0) return 0;
+  const cycle = interact.ready.after + interact.ready.window;
+  const phase = (((tick - (record.entry - 1)) % ENTRY_SPAN) + ENTRY_SPAN) % ENTRY_SPAN % cycle;
+  return phase >= interact.ready.after ? 0 : interact.ready.after - phase;
+}
 
 /** Efekt, který čítač nastaví na `next` (jádro umí jen přičíst). */
 function remember(state: Int32Array, next: number): ArcadeEffect[] {
@@ -117,16 +154,22 @@ function allDone(state: Int32Array, body: number, interact: CompiledInteract): b
  */
 export function interactFire(ctx: RuleContext, interact: CompiledInteract, reached: (body: number) => readonly ArcadeEffect[]): readonly ArcadeEffect[] {
   const { state, player } = ctx;
-  const target = (ctx.input.buttons & BUTTON.INTERACT) === 0 ? -1 : interactTarget(state, player, interact);
-  if (target < 0) return remember(state, 0);
   const record = interactRecord(state);
+  const target = (ctx.input.buttons & BUTTON.INTERACT) === 0 ? -1 : interactTarget(state, player, interact);
+  // Puštění nebo odchod: držení se zahodí, tik posunu zůstane – okno připravenosti běží dál.
+  if (target < 0) return remember(state, record.entry === 0 ? 0 : pack(record.body, 0, record.entry));
   if (record.body === target && record.held === LOCKED) return [];
-  const held = record.body === target ? record.held + 1 : 1;
-  if (held < interact.hold) return remember(state, pack(target, held));
+  const mine = record.body === target;
+  // Držení se zastaví na `hold`: nachystané předem čeká na okno.
+  const held = Math.min(interact.hold, mine ? record.held + 1 : 1);
+  const tick = state[HEADER.tick] as number;
+  if (held < interact.hold || readyWait(interact, record, target, tick) > 0) return remember(state, pack(target, held, mine ? record.entry : 0));
 
   const next = targetStateOf(state, target) + 1;
-  const effects: ArcadeEffect[] = [...remember(state, pack(target, LOCKED)), { kind: 'stateChange', body: target, state: next }];
-  if (next < interact.states - 1) return effects;
+  const final = next >= interact.states - 1;
+  const entry = interact.ready === undefined || final ? 0 : (tick % ENTRY_SPAN) + 1;
+  const effects: ArcadeEffect[] = [...remember(state, pack(target, LOCKED, entry)), { kind: 'stateChange', body: target, state: next }];
+  if (!final) return effects;
   effects.push(...reached(target));
   if (allDone(state, target, interact)) effects.push({ kind: 'win' });
   return effects;
