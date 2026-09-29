@@ -9,16 +9,20 @@
  * kreslenou oblohu s přechodem obzor → zenit a sluncem, mlhu v barvě obzoru,
  * polokulové světlo a slunce se stínem 2048 v těsném výřezu, který jede
  * s hrdinou, ACES s expozicí z palety. Hodnoty nese paleta sady
- * (`@/play/arcade/look`), rig je jen čte.
+ * (`@/play/arcade/look`), rig je jen čte. AO, bloom a SMAA podle úrovně
+ * kvality přidává `Post.tsx` (T2).
  *
  * Mimo hash: světlo, obloha ani stín jádro nečtou.
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef } from 'react';
+import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mesh, type Object3D, type PerspectiveCamera, ShaderMaterial, SphereGeometry, Vector3 } from 'three';
 
 import type { Look } from '@/play/arcade/look';
+
+import { Post, useQualityTier } from './Post';
+import { TIER_SETTINGS } from './quality';
 
 /**
  * Kamera končí tam, kde mlha (P28E-R1). Za koncem mlhy má každý pixel barvu oblohy,
@@ -118,8 +122,7 @@ function Sky({ look, control }: { readonly look: Look; readonly control: string 
   return <mesh geometry={geometry} material={material} renderOrder={SKY_ORDER} frustumCulled={false} userData={{ rigShadow: 'none' }} />;
 }
 
-/** Polovina hrany výřezu stínu (m) a jak daleko před hrdinou je jeho střed – kamera se dívá dopředu. */
-const SHADOW_HALF = 18;
+/** Jak daleko před hrdinou je střed výřezu stínu (m) – kamera se dívá dopředu. Polovina hrany je z úrovně kvality. */
 const SHADOW_LEAD = 6;
 const SUN_DISTANCE = 40;
 
@@ -136,11 +139,11 @@ const heroOf = (scene: Object3D): Object3D | null => {
  * značka jako sonda záběru), dokud ho scéna nemá, s kamerou. Hrdina je ze snímku
  * předtím – posun výřezu o jeden snímek stín nepohne, ten závisí jen na tělech.
  */
-function Sun({ look, control }: { readonly look: Look; readonly control: string }) {
+function Sun({ look, control, mapSize, half }: { readonly look: Look; readonly control: string; readonly mapSize: number; readonly half: number }) {
   const light = useRef<DirectionalLight>(null);
   const scene = useThree((three) => three.scene);
   const toSun = useMemo(() => viewToWorld(look.sunDir, control).multiplyScalar(SUN_DISTANCE), [look, control]);
-  const ahead = useMemo(() => viewToWorld([0, 0, 1], control).multiplyScalar(SHADOW_LEAD), [control]);
+  const ahead = useMemo(() => viewToWorld([0, 0, 1], control).multiplyScalar(Math.min(SHADOW_LEAD, half / 2)), [control, half]);
   const hero = useRef<Object3D | null>(null);
   const frames = useRef(0);
   const at = useMemo(() => new Vector3(), []);
@@ -148,9 +151,17 @@ function Sun({ look, control }: { readonly look: Look; readonly control: string 
   useEffect(() => {
     const sun = light.current;
     if (sun === null) return;
-    Object.assign(sun.shadow.camera, { left: -SHADOW_HALF, right: SHADOW_HALF, top: SHADOW_HALF, bottom: -SHADOW_HALF, near: 1, far: SUN_DISTANCE * 2 });
+    Object.assign(sun.shadow.camera, { left: -half, right: half, top: half, bottom: -half, near: 1, far: SUN_DISTANCE * 2 });
     sun.shadow.camera.updateProjectionMatrix();
-  }, []);
+  }, [half]);
+
+  // Nová velikost (úroveň kvality) se projeví až s novou mapou; renderer ji vytvoří sám.
+  useEffect(() => {
+    const sun = light.current;
+    if (sun === null || sun.shadow.map === null) return;
+    sun.shadow.map.dispose();
+    sun.shadow.map = null;
+  }, [mapSize]);
 
   useFrame(({ camera }) => {
     const sun = light.current;
@@ -165,7 +176,7 @@ function Sun({ look, control }: { readonly look: Look; readonly control: string 
     sun.position.copy(at).add(toSun);
   });
 
-  return <directionalLight ref={light} color={look.sunColor} intensity={look.sun} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={4} />;
+  return <directionalLight ref={light} color={look.sunColor} intensity={look.sun} castShadow shadow-mapSize={[mapSize, mapSize]} shadow-bias={-0.0005} shadow-normalBias={0.02} shadow-radius={4} />;
 }
 
 /**
@@ -191,6 +202,39 @@ function ShadowFlags() {
   return null;
 }
 
+/** Rezerva za koncem mlhy na velikost kulisy (počítá se od její paty, vršek může sahat blíž). */
+const SCENERY_MARGIN_M = 12;
+const propAt = new Vector3();
+
+/**
+ * Kulisa za koncem mlhy (`FarAtFog`) by se stejně nenakreslila, ale scéna by ji
+ * každý snímek procházela: přepočet matic a ořez kamerou i stínem. Běžec jich má
+ * podél celé trati stovky (Pixel 7 se 4× CPU ~20 FPS). Jako těla ve `World` (P28E-R1):
+ * mimo dosah neviditelné a bez přepočtu. Řady kulis značí `userData.scenery` (`Scenery.tsx`).
+ */
+function SceneryWindow() {
+  const scene = useThree((three) => three.scene);
+  const rows = useRef<Object3D[]>([]);
+  const frames = useRef(0);
+  useFrame(({ camera }) => {
+    if (frames.current++ % 30 === 0) {
+      rows.current = [];
+      scene.traverse((node) => {
+        if (node.userData.scenery === true) rows.current.push(node);
+      });
+    }
+    const reach = (camera as PerspectiveCamera).far + SCENERY_MARGIN_M;
+    for (const row of rows.current) {
+      for (const prop of row.children) {
+        const near = propAt.setFromMatrixPosition(prop.matrixWorld).distanceTo(camera.position) <= reach;
+        prop.visible = near;
+        prop.matrixWorldAutoUpdate = near;
+      }
+    }
+  });
+  return null;
+}
+
 /** ACES s expozicí sady; po odchodu scény plátno vrátí, co mělo. */
 function Exposure({ exposure }: { readonly exposure: number }) {
   const gl = useThree((three) => three.gl);
@@ -206,7 +250,8 @@ function Exposure({ exposure }: { readonly exposure: number }) {
   return null;
 }
 
-export function StyleRig({ look, control }: { readonly look: Look; readonly control: string }) {
+export function StyleRig({ look, control, surface }: { readonly look: Look; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
+  const tier = useQualityTier(surface);
   return (
     <>
       <color attach="background" args={[look.horizon]} />
@@ -215,8 +260,10 @@ export function StyleRig({ look, control }: { readonly look: Look; readonly cont
       <Exposure exposure={look.exposure} />
       <Sky look={look} control={control} />
       <hemisphereLight args={[...look.light]} />
-      <Sun look={look} control={control} />
+      <Sun look={look} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       <ShadowFlags />
+      <SceneryWindow />
+      <Post look={look} tier={tier} />
     </>
   );
 }

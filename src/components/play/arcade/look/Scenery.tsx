@@ -8,8 +8,8 @@
  * trať a jádro o nich neví.
  */
 
-import { lazy, Suspense, useContext, useEffect, useMemo, useState } from 'react';
-import { Box3, type Object3D, Vector3 } from 'three';
+import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Box3, type Group, type Object3D, Vector3 } from 'three';
 
 import { isSceneryModel, type Look, type PropKind, SCENERY_MODELS, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
 
@@ -195,6 +195,7 @@ function SceneryModelProp({ id }: { readonly id: SceneryModel }) {
     copy.scale.setScalar(scale);
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+    freeze(copy);
     return copy;
   }, [model, id]);
   return fitted === null ? null : <primitive object={fitted} />;
@@ -236,10 +237,30 @@ export function GridScenery({ look, width, height }: { readonly look: Look; read
   );
 }
 
+/** Kulisy stojí: matice se spočítá jednou, ne každý snímek. */
+function freeze(root: Object3D): void {
+  root.traverse((node) => {
+    node.updateMatrix();
+    node.matrixAutoUpdate = false;
+  });
+}
+
+/**
+ * Řada kulis. Matice se spočítají hned, takže rig (`SceneryWindow` v `StyleRig`)
+ * podle `userData.scenery` smí kulisy za koncem mlhy vypnout – bez R3F tady,
+ * stránka mřížky tenhle soubor importuje staticky (viz `Panorama` výš).
+ */
 export function Scenery({ look, layout, inner, from, to, y = 0, size = 1 }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number }) {
+  const places = useMemo(() => sceneryPlaces(look.props, layout, inner, from, to), [look.props, layout, inner, from, to]);
+  const root = useRef<Group>(null);
+  useLayoutEffect(() => {
+    if (root.current === null) return;
+    freeze(root.current);
+    root.current.updateWorldMatrix(true, true);
+  }, [places, size, y]);
   return (
-    <group>
-      {sceneryPlaces(look.props, layout, inner, from, to).map((place, index) => (
+    <group ref={root} userData={{ scenery: true }}>
+      {places.map((place, index) => (
         <group key={index} position={[place.x, y, place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
           {isSceneryModel(place.kind) ? <SceneryModelProp id={place.kind} /> : <Prop kind={place.kind} tint={look.tint} />}
         </group>

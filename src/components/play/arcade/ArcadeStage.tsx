@@ -91,6 +91,8 @@ export interface RenderReport {
   readonly shadows: boolean;
   readonly toneMapping: number;
   readonly exposure: number;
+  /** Efekty postprocessingu v pořadí (P32A T2, `look/rig/Post.tsx`); se skládačem tónuje `aces` a `toneMapping` je 0. */
+  readonly post: readonly string[];
 }
 
 declare global {
@@ -111,6 +113,7 @@ function RenderProbe() {
       shadows: gl.shadowMap.enabled,
       toneMapping: gl.toneMapping,
       exposure: gl.toneMappingExposure,
+      post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
     });
     window.__playRender = probe;
     return () => {
@@ -542,7 +545,7 @@ export default function ArcadeStage({
           <DuelScene session={session} look={look} rivalModel={rivalModel} />
         ) : (
           <>
-            <StyleRig look={look} control={control} />
+            <StyleRig look={look} control={control} surface={surface} />
             {control === 'move_free' ? (
               <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
             ) : control === 'runner' ? (

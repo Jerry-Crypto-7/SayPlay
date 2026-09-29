@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { devices, expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import sharp from 'sharp';
 
 /**
@@ -13,8 +13,8 @@ import sharp from 'sharp';
  * prvního bodu, skrytá záložka hru pozastaví, na snímku je jen plátno.
  */
 
-/** `THREE.ACESFilmicToneMapping`. */
-const ACES = 4;
+/** `THREE.NoToneMapping`: pod skládačem tónuje jeho efekt ACES (P32A T2). */
+const NO_TONE_MAPPING = 0;
 
 /** Nad plátnem nic: HUD, „+1“ a počasí se mění jinak než scéna. */
 const ONLY_CANVAS = 'body * { visibility: hidden !important; } [data-testid="arcade-stage"] canvas { visibility: visible !important; }';
@@ -114,7 +114,10 @@ test.describe('desktop 1280×800', () => {
 
     const render = await page.evaluate(() => window.__playRender!());
     expect(render.shadows, 'renderer.shadowMap.enabled').toBe(true);
-    expect(render.toneMapping, 'renderer.toneMapping').toBe(ACES);
+    // Desktop drží high: AO, SMAA, bloom a ACES kreslí skládač (T2), renderer sám netónuje.
+    await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-quality', 'high');
+    expect(render.post, 'efekty postprocessingu').toEqual(['ao', 'smaa', 'bloom', 'aces']);
+    expect(render.toneMapping, 'renderer.toneMapping pod skládačem').toBe(NO_TONE_MAPPING);
 
     const first = await freezeAtFirstScore(page);
     expect(first.score).toBeGreaterThan(0);
@@ -133,5 +136,72 @@ test.describe('desktop 1280×800', () => {
     const top = await blueness(shot, 0, 0.04);
     const nearHorizon = await blueness(shot, 0.3, 0.34);
     expect(top - nearHorizon, `obloha nahoře (${top.toFixed(0)}) modřejší než u obzoru (${nearHorizon.toFixed(0)})`).toBeGreaterThan(20);
+  });
+});
+
+/** Snímků za sekundu po celých sekundách (rAF), `seconds` dlouho. */
+function sampleFps(page: Page, seconds: number): Promise<number[]> {
+  return page.evaluate(
+    (span) =>
+      new Promise<number[]>((resolve) => {
+        const samples: number[] = [];
+        let frames = 0;
+        let from = performance.now();
+        const end = from + span * 1000;
+        const frame = (now: number): void => {
+          frames += 1;
+          if (now - from >= 1000) {
+            samples.push((frames * 1000) / (now - from));
+            frames = 0;
+            from = now;
+          }
+          if (now < end) requestAnimationFrame(frame);
+          else resolve(samples);
+        };
+        requestAnimationFrame(frame);
+      }),
+    seconds,
+  );
+}
+
+const median = (values: readonly number[]): number => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!;
+
+// Bez `defaultBrowserType`: ten ve skupině testů Playwright nepovolí (vynutil by nový worker).
+const { defaultBrowserType: _browser, ...PIXEL_7 } = devices['Pixel 7'];
+
+test.describe('Pixel 7, CPU 4× slower', () => {
+  test.use(PIXEL_7);
+
+  /**
+   * Postprocessing a úrovně kvality (T2): běžec drží medián 30 FPS po 20 s
+   * hry robota a úroveň hlásí sonda. Po konci běhu kreslí plátno jen na
+   * požádání – robot proto hraje pořád znovu (postup `scripts/p32/shots.mjs`).
+   */
+  test('runner holds 30 FPS with post-processing and reports its quality tier', async ({ page, request, context }) => {
+    test.setTimeout(180_000);
+    const url = await publish(request, 'runner');
+    await (await context.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    await page.goto(url);
+    const stage = page.getByTestId('arcade-stage');
+    await expect(stage).toHaveAttribute('data-quality', /^(high|medium|low)$/, { timeout: 60_000 });
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playRender !== undefined, undefined, { timeout: 60_000 });
+
+    const press = (id: string): Promise<boolean> =>
+      page.evaluate((testId) => {
+        const button = document.querySelector<HTMLButtonElement>(`[data-testid="${testId}"]`);
+        button?.click();
+        return button !== null;
+      }, id);
+    const sampling = sampleFps(page, 20);
+    const end = Date.now() + 20_000;
+    while (Date.now() < end) {
+      if (!(await press('play-demo-start'))) if (!(await press('play-demo-yours'))) await press('play-again');
+      await page.waitForTimeout(500);
+    }
+    const samples = await sampling;
+    const tier = await stage.getAttribute('data-quality');
+    test.info().annotations.push({ type: 'fps', description: `median ${median(samples).toFixed(1)}, tier ${String(tier)}, samples ${samples.map((fps) => fps.toFixed(0)).join(' ')}` });
+    expect(samples.length).toBeGreaterThanOrEqual(15);
+    expect(median(samples), `medián FPS (úroveň ${String(tier)})`).toBeGreaterThanOrEqual(30);
   });
 });
