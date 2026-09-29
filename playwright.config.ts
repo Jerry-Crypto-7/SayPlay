@@ -51,6 +51,8 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: [['list']],
+  // Referenční snímky `toHaveScreenshot` (P32-0 T5) pod `e2e/__screenshots__/<cesta ze jména>`.
+  expect: { toHaveScreenshot: { pathTemplate: '{testDir}/__screenshots__/{arg}{ext}' } },
   use: {
     baseURL: target ?? LOCAL_URL,
     trace: 'off',

@@ -18,14 +18,14 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { type Group, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { arenaAxis } from '@/play/arcade/pieces/arena';
 
-import { bodiesOf, bodiesStale } from '../bodies';
+import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
 import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
@@ -68,7 +68,20 @@ const SCENERY_MARGIN = 1.5;
 /** Sklon kamery nad vodorovnou (rad): 48° – hrdina pořád zřetelně shora, horní třetina obrazu už za hranou arény (58° ukázalo kulisy jen v rozích). */
 const PITCH = (48 * Math.PI) / 180;
 
-export function ArenaWorld({ session, half, surface, look: scene }: { readonly session: ArcadeSession; readonly half: number; readonly surface: React.RefObject<HTMLDivElement | null>; readonly look: Look }) {
+export function ArenaWorld({
+  session,
+  half,
+  surface,
+  look: scene,
+  targets,
+}: {
+  readonly session: ArcadeSession;
+  readonly half: number;
+  readonly surface: React.RefObject<HTMLDivElement | null>;
+  readonly look: Look;
+  /** Vrstva cílů (P32-0 T5, naplní P32G): dostane těla, jak je aréna kreslí, a kreslí se nad ně. */
+  readonly targets?: (bodies: readonly BodyView[]) => ReactNode;
+}) {
   // Střely doplňku `+shoot` přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [discs, setDiscs] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -199,6 +212,7 @@ export function ArenaWorld({ session, half, surface, look: scene }: { readonly s
           </group>
         );
       })}
+      {targets?.(discs)}
     </>
   );
 }
