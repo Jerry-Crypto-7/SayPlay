@@ -17,18 +17,20 @@
 
 „Ovladatelná“ = první vstup hráče, který hra zpracovala (sonda `arcade-stage` u arkádových her, záznam vstupů mřížky `grid-input-log` u ostatních). „První snímek“ = první vykreslení WebGL na plátně nové hry. Telefon měří jen studené otevření odkazu, první snímek.
 
-| věta | sonda | kliknutí → ovladatelná | kliknutí → první snímek | studené otevření: ovladatelná / první snímek | telefon: první snímek | FPS telefon | zátěž 6×: kliknutí → ovladatelná | zátěž 6×: první snímek | zátěž 6×: studené otevření |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| penguin | grid-input-log | 767 | 951 | 870 / 1112 | 4318 | 58 | 11571 | 9122 | 7292 / 7481 |
-| firefighter | grid-input-log | 880 | 1034 | 579 / 802 | 4656 | 52 | 12121 | 9098 | 4968 / 6753 |
-| wizard | grid-input-log | 787 | 725 | 689 / 943 | 4780 | 59 | 12730 | 9976 | 10996 / 7885 |
-| pirate | grid-input-log | 994 | 937 | 519 / 746 | 5499 | 57.1 | 12429 | 9579 | 11775 / 8212 |
-| cat | grid-input-log | 667 | 816 | 556 / 742 | 4535 | 47.2 | 13078 | 9343 | 10437 / 6752 |
-| chef | grid-input-log | 488 | 687 | 473 / 677 | 3613 | 60 | 11822 | 9428 | 4875 / 6676 |
-| dog | arcade-stage | 353 | 329 | 522 / 503 | 1773 | 60 | 6930 | 6611 | 4164 / 3788 |
-| knights | arcade-stage | 581 | 258 | 479 / 441 | 2224 | 58 | 6663 | 6223 | 4185 / 3981 |
-| rocket | arcade-stage | 299 | 282 | 482 / 439 | 1821 | 59 | 6586 | 6377 | 3978 / 3639 |
-| **medián** | | 667 | 725 | 522 / 742 | 4318 | 58 | 11822 | 9122 | 4968 / 6752 |
+| věta | sonda | kliknutí → ovladatelná | po D | rozdíl | kliknutí → první snímek | studené otevření: ovladatelná / první snímek | telefon: první snímek | FPS telefon | zátěž 6×: kliknutí → ovladatelná | zátěž 6×: první snímek | zátěž 6×: studené otevření |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| penguin | grid-input-log | 767 | 1058 | +291 | 951 | 870 / 1112 | 4318 | 58 | 11571 | 9122 | 7292 / 7481 |
+| firefighter | grid-input-log | 880 | 941 | +61 | 1034 | 579 / 802 | 4656 | 52 | 12121 | 9098 | 4968 / 6753 |
+| wizard | grid-input-log | 787 | 564 | −223 | 725 | 689 / 943 | 4780 | 59 | 12730 | 9976 | 10996 / 7885 |
+| pirate | grid-input-log | 994 | 570 | −424 | 937 | 519 / 746 | 5499 | 57.1 | 12429 | 9579 | 11775 / 8212 |
+| cat | grid-input-log | 667 | 588 | −79 | 816 | 556 / 742 | 4535 | 47.2 | 13078 | 9343 | 10437 / 6752 |
+| chef | grid-input-log | 488 | 569 | +81 | 687 | 473 / 677 | 3613 | 60 | 11822 | 9428 | 4875 / 6676 |
+| dog | arcade-stage | 353 | 320 | −33 | 329 | 522 / 503 | 1773 | 60 | 6930 | 6611 | 4164 / 3788 |
+| knights | arcade-stage | 581 | 430 | −151 | 258 | 479 / 441 | 2224 | 58 | 6663 | 6223 | 4185 / 3981 |
+| rocket | arcade-stage | 299 | 212 | −87 | 282 | 482 / 439 | 1821 | 59 | 6586 | 6377 | 3978 / 3639 |
+| **medián** | | 667 | 570 | −79 | 725 | 522 / 742 | 4318 | 58 | 11822 | 9122 | 4968 / 6752 |
+
+**Po D** (`runs/after-d/`, kód `603b8f37` = `p32-base` + fáze 2 D, čistý Chromium, 29. 9. 2026): všech 9 vět ovladatelných do 1,06 s od kliknutí, brána ≤ 3000 ms drží `scripts/__tests__/p32-timing-gate.test.ts`. Rozdíl nejde jen na D – mezi baseline a „po D“ je celé sloučení `p32-base`. Po D dál: telefon první snímek 1816–3671 ms (tučňák 10 528 ms byl souběh zátěže stroje, opakovaný běh 3930 ms), FPS telefon 49,2–60 (bránu má O10). Jeden běh na větu, rozptyl mezi běhy stovky ms (tučňák 1058 ms, v opakování 614 ms).
 
 Snímky rychlé verze: `runs/baseline/<věta>-draft-desktop.png` a `<věta>-draft-phone.png`. Scéna je na všech vidět, žádný není černý. Barvu úplně prvního snímku baseline neměří, to přidá T6.
 
