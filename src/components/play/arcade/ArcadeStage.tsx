@@ -89,6 +89,10 @@ export interface RenderReport {
   readonly triangles: number;
   readonly geometries: number;
   readonly textures: number;
+  /** Rig vzhledu (P32A T1): stíny zapnuté, tónování (`THREE.ACESFilmicToneMapping` = 4) a expozice. */
+  readonly shadows: boolean;
+  readonly toneMapping: number;
+  readonly exposure: number;
 }
 
 declare global {
@@ -101,7 +105,15 @@ declare global {
 function RenderProbe() {
   const gl = useThree((three) => three.gl);
   useEffect(() => {
-    const probe = (): RenderReport => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures });
+    const probe = (): RenderReport => ({
+      calls: gl.info.render.calls,
+      triangles: gl.info.render.triangles,
+      geometries: gl.info.memory.geometries,
+      textures: gl.info.memory.textures,
+      shadows: gl.shadowMap.enabled,
+      toneMapping: gl.toneMapping,
+      exposure: gl.toneMappingExposure,
+    });
     window.__playRender = probe;
     return () => {
       if (window.__playRender === probe) delete window.__playRender;
@@ -518,7 +530,8 @@ export default function ArcadeStage({
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'}>
+      {/* Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá. */}
+      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'} shadows="percentage">
         <RedrawOnChange session={session} />
         <FrameProbe control={control} />
         <RenderProbe />

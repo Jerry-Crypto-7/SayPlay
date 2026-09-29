@@ -18,6 +18,10 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
  *
  * Referenční snímky leží v `e2e/__screenshots__/p32-split/` a nahrály se
  * z HEAD před rozdělením (`--update-snapshots`).
+ *
+ * Vypnuto od P32A T1: rig vzhledu (obloha, stíny, expozice) mění obraz záměrně,
+ * takže „vypadá stejně“ už neplatí. Snímky zůstávají jako obraz před rigem –
+ * `p32-look.spec.ts` z nich měří, že rig opravdu kreslí.
  */
 
 const FIXTURES = ['runner', 'platform'] as const;
@@ -62,7 +66,7 @@ for (const viewport of VIEWPORTS) {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
     for (const fixture of FIXTURES) {
-      test(`${fixture}: the split stage draws the same frame`, async ({ page, request }) => {
+      test.skip(`${fixture}: the split stage draws the same frame`, async ({ page, request }) => {
         test.setTimeout(120_000);
         const url = await publish(request, fixture);
         await page.goto(url);
