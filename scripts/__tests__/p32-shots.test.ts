@@ -85,11 +85,19 @@ if (at) stage(at[1]);
 </script></body></html>`;
 }
 
+/** Těla požadavků na `/api/…`, jak je dvojník dostal. */
+const posted: string[] = [];
+
 function double(mode: 'arcade' | 'noprobe' | 'grid'): Promise<{ server: Server; base: string }> {
   const server = createServer((request, response) => {
     if (request.url?.startsWith('/api/')) {
-      response.writeHead(201, { 'content-type': 'application/json' });
-      response.end('{"url":"/play/abc123"}');
+      let body = '';
+      request.on('data', (chunk: Buffer) => (body += chunk.toString()));
+      request.on('end', () => {
+        posted.push(body);
+        response.writeHead(201, { 'content-type': 'application/json' });
+        response.end('{"url":"/play/abc123"}');
+      });
       return;
     }
     response.writeHead(200, { 'content-type': 'text/html' });
@@ -167,7 +175,7 @@ describe('shoot', () => {
     expect(result).toMatchObject({ schema: 'p32-shots/1', live: true });
     expect(result.sentences).toHaveLength(1);
     const [one] = result.sentences;
-    expect(one).toMatchObject({ id: 'penguin', text: 'A penguin slides down an icy mountain', error: null, gamePath: '/play/abc123', probe: 'arcade-stage' });
+    expect(one).toMatchObject({ id: 'penguin', text: 'A penguin slides down an icy mountain', source: 'sentence', error: null, gamePath: '/play/abc123', probe: 'arcade-stage' });
     // Vstup jde až ACCEPT_MS po plátně: čas k prvnímu snímku by vyšel o ACCEPT_MS kratší.
     expect(one.timeToFirstFrameMs).toBeGreaterThanOrEqual(NAVIGATE_MS);
     expect(one.timeToPlayableMs).toBeGreaterThanOrEqual(NAVIGATE_MS + ACCEPT_MS);
@@ -198,6 +206,25 @@ describe('shoot', () => {
       expect(one.ai).toBeNull();
       expect(isPng(join(out, one.shots.draftDesktop as string))).toBe(true);
     }
+  }, 90_000);
+
+  it('publishes a spec entry through the door and times only the cold open and the phone', async () => {
+    const specSet = join(dir, 'spec-set.json');
+    const spec = { schema: 'gamespec.v1', things: [{ role: 'rock', physics: true }] };
+    writeFileSync(specSet, JSON.stringify({ sentences: [{ id: 'rock', spec }] }));
+    const out = join(dir, 'spec');
+    posted.length = 0;
+    const result = await shoot({ base: withProbe.base, set: specSet, out, live: false, limit: null, fpsSeconds: 1, playableTimeoutMs: 15_000 }, { log: () => {} });
+    const [one] = result.sentences;
+    expect(posted.map((body) => JSON.parse(body) as unknown)).toEqual([{ spec }]);
+    expect(one).toMatchObject({ id: 'rock', text: null, source: 'spec', error: null, gamePath: '/play/abc123' });
+    // Bez kliknutí nejsou časy od kliknutí ani desktopový snímek – žádná náhrada.
+    expect(one.timeToPlayableMs).toBeNull();
+    expect(one.timeToFirstFrameMs).toBeNull();
+    expect(one.shots.draftDesktop).toBeNull();
+    expect(one.open.timeToPlayableMs).toBeGreaterThanOrEqual(ACCEPT_MS);
+    expect(one.open.network.some((entry) => entry.category === 'html' && entry.startMs >= 0)).toBe(true);
+    expect(isPng(join(out, one.shots.draftPhone as string))).toBe(true);
   }, 90_000);
 
   it('times a grid game from the click to the first input its runtime logged', async () => {

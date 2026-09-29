@@ -25,8 +25,12 @@
  *    („Show me how“): po konci běhu kreslí plátno jen na požádání a prázdná
  *    smyčka by ukázala 60.
  *
- * Síťový log z desktopu (od kliknutí) nese kategorii načítání: html, js, api,
- * glb, panorama, rapier, audio, other – z něj baseline skládá fáze.
+ * Položka sady se `spec` místo věty (P32D T4 – hra s fyzikálními tělesy) se
+ * publikuje přímo `POST /api/play/games {spec}` a měří se jen body 2 a 3.
+ *
+ * Síťový log z desktopu (od kliknutí) a ze studeného otevření (`open.network`,
+ * od navigace) nese kategorii načítání: html, js, api, glb, panorama, rapier,
+ * audio, other – z něj baseline skládá fáze.
  *
  * Výstup: `<out>/result.json` a PNG. Exit 1, když některá věta skončila chybou.
  */
@@ -68,7 +72,10 @@ export function parseArgs(argv) {
   return options;
 }
 
-/** Věty sady: `{ sentences: [text | { id, text }] }` (tvar P32-0 T7) nebo holé pole. */
+/**
+ * Věty sady: `{ sentences: [text | { id, text } | { id, spec }] }` (tvar P32-0 T7) nebo holé pole.
+ * Položka se `spec` (P32D T4) je hotový GameSpec – offline věta hru s fyzikálními tělesy nedá.
+ */
 export function loadSentences(file) {
   const raw = JSON.parse(readFileSync(file, 'utf8'));
   const list = Array.isArray(raw) ? raw : raw.sentences;
@@ -76,9 +83,11 @@ export function loadSentences(file) {
   return list.map((entry, index) => {
     const id = `s${String(index + 1)}`;
     if (typeof entry === 'string') return { id, text: entry };
+    const named = typeof entry.id === 'string' ? entry.id : id;
+    if (entry.spec !== undefined && entry.spec !== null && typeof entry.spec === 'object') return { id: named, text: null, spec: entry.spec };
     const text = entry.text ?? entry.sentence;
     if (typeof text !== 'string') throw new Error(`${file}: sentence ${id} has no text`);
-    return { id: typeof entry.id === 'string' ? entry.id : id, text };
+    return { id: named, text };
   });
 }
 
@@ -290,10 +299,37 @@ async function entryOf(request, failed) {
   return { url: request.url(), resourceType: request.resourceType(), startTime: timing.startTime, durationMs: timing.responseEnd >= 0 ? timing.responseEnd : null, bytes, failed };
 }
 
+/** Síťový log od chvíle `since` (klik nebo začátek navigace), seřazený, v ms od ní. */
+async function networkSince(pending, since) {
+  const settled = await Promise.all(pending);
+  return settled
+    .filter((request) => request.startTime >= since - 1)
+    .sort((a, b) => a.startTime - b.startTime)
+    .map((request) => ({
+      path: new URL(request.url).pathname + new URL(request.url).search,
+      category: categoryOf(request.url, request.resourceType),
+      resourceType: request.resourceType,
+      startMs: Math.round(request.startTime - since),
+      endMs: request.durationMs === null ? null : Math.round(request.startTime + request.durationMs - since),
+      bytes: request.bytes,
+      failed: request.failed,
+    }));
+}
+
+/** Hra ze specu jde rovnou dveřmi `POST /api/play/games`; `/play` nemá pole na spec. */
+async function publishSpec(base, spec) {
+  const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ spec }) });
+  const body = await response.json().catch(() => null);
+  if (!response.ok || typeof body?.url !== 'string') throw new Error(`POST /api/play/games {spec} → ${String(response.status)} ${JSON.stringify(body)}`);
+  return new URL(body.url, base).pathname;
+}
+
 async function shootSentence(browser, options, sentence, log) {
   const entry = {
     id: sentence.id,
     text: sentence.text,
+    /** `sentence` = klik na „Play it“ na `/play`; `spec` = hra publikovaná ze specu, jen studené otevření a telefon. */
+    source: sentence.spec === undefined ? 'sentence' : 'spec',
     gamePath: null,
     timeToPlayableMs: null,
     timeToFirstFrameMs: null,
@@ -301,7 +337,7 @@ async function shootSentence(browser, options, sentence, log) {
     /** Která sonda čas dala: `arcade-stage` (arkáda) nebo `grid-input-log` (mřížka). */
     probe: null,
     /** Studené otevření odkazu `/play/<id>` v čistém kontextu, od začátku navigace. */
-    open: { timeToPlayableMs: null, timeToFirstFrameMs: null, phoneFirstFrameMs: null },
+    open: { timeToPlayableMs: null, timeToFirstFrameMs: null, phoneFirstFrameMs: null, network: [] },
     fpsMedian: null,
     fpsSamples: [],
     shots: { draftDesktop: null, draftPhone: null, aiDesktop: null, aiPhone: null },
@@ -315,86 +351,25 @@ async function shootSentence(browser, options, sentence, log) {
     return { file, path: join(options.out, file) };
   };
 
-  // 1. Desktop: klik → vstup, klik → první snímek, snímek rychlé verze, případně AI verze.
-  const desktop = await browser.newContext({ viewport: { width: 1280, height: 720 } });
-  await desktop.addInitScript(instrument);
-  const requests = [];
-  try {
-    const page = await desktop.newPage();
-    // Zpomalené CPU na desktopu napodobí přetížený prohlížeč (baseline T3); výchozí 1 = bez zátěže.
-    if (options.desktopCpuThrottle > 1) await (await desktop.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: options.desktopCpuThrottle });
-    page.on('requestfinished', (request) => requests.push(entryOf(request, false)));
-    page.on('requestfailed', (request) => requests.push(entryOf(request, true)));
-    await page.goto(`${options.base}/play`, { waitUntil: 'load' });
-    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
-    await page.getByTestId('play-sentence').fill(sentence.text);
-    await page.getByTestId('play-create').click();
-    const clickAt = await stored(page, 'p32-click-at');
-    if (clickAt === null) throw new Error('the click on play-create was not recorded');
-    const deadline = clickAt + options.playableTimeoutMs;
-    await page.waitForURL((url) => GAME_PATH.test(url.pathname), { timeout: options.playableTimeoutMs });
-    entry.gamePath = new URL(page.url()).pathname;
-    await page.evaluate(() => (document.activeElement instanceof HTMLElement ? document.activeElement.blur() : undefined)).catch(() => {});
-
-    const probe = await inputUntilProbe(page, clickAt, deadline);
-    if (probe === null) errors.push(`input probe (data-input-tick on arcade-stage, or the grid input log) never fired within ${String(options.playableTimeoutMs)} ms of the click`);
-    else {
-      entry.timeToPlayableMs = probe.at - clickAt;
-      entry.inputTick = probe.tick;
-      entry.probe = probe.probe;
+  if (sentence.spec !== undefined) {
+    try {
+      entry.gamePath = await publishSpec(options.base, sentence.spec);
+    } catch (error) {
+      errors.push(`publish: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
     }
-    const drawAt = await firstDrawAt(page, Math.max(deadline, Date.now() + 2000));
-    if (drawAt === null) errors.push('no WebGL draw call on the new game stage canvas');
-    else entry.timeToFirstFrameMs = drawAt - clickAt;
-
-    await page.waitForTimeout(500);
-    const draft = shotPath('draft-desktop');
-    await page.screenshot({ path: draft.path });
-    entry.shots.draftDesktop = draft.file;
-
-    const settled = await Promise.all(requests.splice(0));
-    entry.network = settled
-      .filter((request) => request.startTime >= clickAt - 1)
-      .sort((a, b) => a.startTime - b.startTime)
-      .map((request) => ({
-        path: new URL(request.url).pathname + new URL(request.url).search,
-        category: categoryOf(request.url, request.resourceType),
-        resourceType: request.resourceType,
-        startMs: Math.round(request.startTime - clickAt),
-        endMs: request.durationMs === null ? null : Math.round(request.startTime + request.durationMs - clickAt),
-        bytes: request.bytes,
-        failed: request.failed,
-      }));
-
-    if (options.live) {
-      const status = await waitForAi(page);
-      entry.ai = { status, gamePath: null };
-      if (status === 'ready') {
-        await page.getByTestId('upgrade-action').click();
-        await page.waitForURL((url) => GAME_PATH.test(url.pathname) && url.pathname !== entry.gamePath, { timeout: options.playableTimeoutMs });
-        entry.ai.gamePath = new URL(page.url()).pathname;
-        await firstDrawAt(page, Date.now() + options.playableTimeoutMs);
-        await page.waitForTimeout(SETTLE_MS);
-        const ai = shotPath('ai-desktop');
-        await page.screenshot({ path: ai.path });
-        entry.shots.aiDesktop = ai.file;
-      }
-    }
-  } catch (error) {
-    errors.push(`desktop: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
-  } finally {
-    await Promise.allSettled(requests);
-    await desktop.close();
-  }
+  } else await shootDesktop(browser, options, sentence, entry, errors, shotPath);
 
   // 2. Studené otevření odkazu hry: nic z `/play` v cache, čas od začátku navigace
   //    (`performance.timeOrigin`). Tak přijde hráč ze sdíleného odkazu.
   if (entry.gamePath !== null) {
     const cold = await browser.newContext({ viewport: { width: 1280, height: 720 } });
     await cold.addInitScript(instrument);
+    const requests = [];
     try {
       const page = await cold.newPage();
       if (options.desktopCpuThrottle > 1) await (await cold.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: options.desktopCpuThrottle });
+      page.on('requestfinished', (request) => requests.push(entryOf(request, false)));
+      page.on('requestfailed', (request) => requests.push(entryOf(request, true)));
       await page.goto(`${options.base}${entry.gamePath}`, { waitUntil: 'domcontentloaded' });
       const origin = await page.evaluate(() => performance.timeOrigin);
       const deadline = origin + options.playableTimeoutMs;
@@ -403,9 +378,11 @@ async function shootSentence(browser, options, sentence, log) {
       else entry.open.timeToPlayableMs = Math.round(probe.at - origin);
       const drawAt = await firstDrawAt(page, Math.max(deadline, Date.now() + 2000));
       if (drawAt !== null) entry.open.timeToFirstFrameMs = Math.round(drawAt - origin);
+      entry.open.network = await networkSince(requests.splice(0), origin);
     } catch (error) {
       errors.push(`open: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
     } finally {
+      await Promise.allSettled(requests);
       await cold.close();
     }
   }
@@ -448,6 +425,68 @@ async function shootSentence(browser, options, sentence, log) {
     `[p32-shots] ${sentence.id}: playable ${String(entry.timeToPlayableMs ?? '–')} ms, first frame ${String(entry.timeToFirstFrameMs ?? '–')} ms, cold open ${String(entry.open.timeToPlayableMs ?? '–')}/${String(entry.open.timeToFirstFrameMs ?? '–')} ms, phone first frame ${String(entry.open.phoneFirstFrameMs ?? '–')} ms, fps ${String(entry.fpsMedian ?? '–')}${entry.ai ? `, ai ${entry.ai.status}` : ''}${entry.error ? ` – ERROR ${entry.error}` : ''}`,
   );
   return entry;
+}
+
+/** 1. Desktop: klik → vstup, klik → první snímek, snímek rychlé verze, případně AI verze. */
+async function shootDesktop(browser, options, sentence, entry, errors, shotPath) {
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  await desktop.addInitScript(instrument);
+  const requests = [];
+  try {
+    const page = await desktop.newPage();
+    // Zpomalené CPU na desktopu napodobí přetížený prohlížeč (baseline T3); výchozí 1 = bez zátěže.
+    if (options.desktopCpuThrottle > 1) await (await desktop.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: options.desktopCpuThrottle });
+    page.on('requestfinished', (request) => requests.push(entryOf(request, false)));
+    page.on('requestfailed', (request) => requests.push(entryOf(request, true)));
+    await page.goto(`${options.base}/play`, { waitUntil: 'load' });
+    await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
+    await page.getByTestId('play-sentence').fill(sentence.text);
+    await page.getByTestId('play-create').click();
+    const clickAt = await stored(page, 'p32-click-at');
+    if (clickAt === null) throw new Error('the click on play-create was not recorded');
+    const deadline = clickAt + options.playableTimeoutMs;
+    await page.waitForURL((url) => GAME_PATH.test(url.pathname), { timeout: options.playableTimeoutMs });
+    entry.gamePath = new URL(page.url()).pathname;
+    await page.evaluate(() => (document.activeElement instanceof HTMLElement ? document.activeElement.blur() : undefined)).catch(() => {});
+
+    const probe = await inputUntilProbe(page, clickAt, deadline);
+    if (probe === null) errors.push(`input probe (data-input-tick on arcade-stage, or the grid input log) never fired within ${String(options.playableTimeoutMs)} ms of the click`);
+    else {
+      entry.timeToPlayableMs = probe.at - clickAt;
+      entry.inputTick = probe.tick;
+      entry.probe = probe.probe;
+    }
+    const drawAt = await firstDrawAt(page, Math.max(deadline, Date.now() + 2000));
+    if (drawAt === null) errors.push('no WebGL draw call on the new game stage canvas');
+    else entry.timeToFirstFrameMs = drawAt - clickAt;
+
+    await page.waitForTimeout(500);
+    const draft = shotPath('draft-desktop');
+    await page.screenshot({ path: draft.path });
+    entry.shots.draftDesktop = draft.file;
+
+    entry.network = await networkSince(requests.splice(0), clickAt);
+
+    if (options.live) {
+      const status = await waitForAi(page);
+      entry.ai = { status, gamePath: null };
+      if (status === 'ready') {
+        await page.getByTestId('upgrade-action').click();
+        await page.waitForURL((url) => GAME_PATH.test(url.pathname) && url.pathname !== entry.gamePath, { timeout: options.playableTimeoutMs });
+        entry.ai.gamePath = new URL(page.url()).pathname;
+        await firstDrawAt(page, Date.now() + options.playableTimeoutMs);
+        await page.waitForTimeout(SETTLE_MS);
+        const ai = shotPath('ai-desktop');
+        await page.screenshot({ path: ai.path });
+        entry.shots.aiDesktop = ai.file;
+      }
+    }
+  } catch (error) {
+    errors.push(`desktop: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
+  } finally {
+    await Promise.allSettled(requests);
+    await desktop.close();
+  }
 }
 
 /**
