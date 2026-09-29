@@ -137,13 +137,17 @@ function ControlsLine({ session, spec, paused, demo }: { readonly session: Arcad
   );
 }
 
-/** Tenký pruh nahoře (P33 T12): název a cíl vlevo, postup vpravo. Akce jsou v bočním sloupci. */
-function ArcadeHud({ spec, world, snapshot }: { readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot }) {
+/**
+ * Tenký pruh nahoře (P33 T12): název a cíl vlevo, postup vpravo. Akce jsou v bočním sloupci.
+ * Na `/play` (feed, ukázka) má stránka svou h1 nad polem, název hry je tam h2 (T13).
+ */
+function ArcadeHud({ spec, world, snapshot, heading }: { readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly heading: 'h1' | 'h2' }) {
   const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
+  const Title = heading;
   return (
     <header className="play-hud" aria-label="Game status">
-      <h1 className="play-hud-title">{spec.title}</h1>
+      <Title className="play-hud-title">{spec.title}</Title>
       <p className="play-hud-goal" data-testid="play-goal">{spec.tutorial.goalLine}</p>
       <p className="play-hud-progress">
         <span data-testid="play-progress" data-progress={snapshot.progress}>
@@ -551,7 +555,7 @@ function ArcadePlayGame({
     // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
     <main ref={shell} className="play-shell" style={{ background: scene.sky }}>
       <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} look={scene} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
-      <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} />
+      <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} heading={inFeed || offline ? 'h2' : 'h1'} />
       {/* Sloupec akcí vpravo (P33 T12): nic z něj neleží přes střed hry a ťuk mezi koly jde na scénu. */}
       <nav className="play-rail" aria-label="Game actions">
         {canChange && <IconButton icon="edit" caption="Change" aria-label="Change the game" data-testid="live-open" aria-expanded={liveOpen} onClick={() => setLiveOpen(true)} />}

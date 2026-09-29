@@ -89,11 +89,19 @@ test.describe('/play – create', () => {
     await expect(page.getByText('500 / 500')).toBeVisible();
   });
 
-  // P33 T9: telefon má hru první a k poli vede plovoucí `+ New game`; na desktopu je pole nad feedem.
-  test('phone: + New game brings the sentence field into view', async ({ page }) => {
+  // P33 T13: `/play` otevře na jediné h1 a poli (i telefon), feed je pod nimi; z feedu vede
+  // k poli plovoucí `+ New game`. Favicon je SVG v barvách produktu (audit: dřív 404).
+  test('phone: opens on the sentence field, + New game brings it back from the feed', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/play');
     const sentence = page.getByTestId('play-sentence');
+    await expect(sentence).toBeInViewport();
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.getByTestId('play-new-game')).toBeHidden();
+    const icon = await page.locator('link[rel="icon"]').first().getAttribute('href');
+    expect((await page.request.get(icon ?? '/missing-icon')).status()).toBe(200);
+
+    await page.locator('.play-pager').scrollIntoViewIfNeeded();
     await expect(sentence).not.toBeInViewport();
     await page.getByTestId('play-new-game').click();
     await expect(sentence).toBeInViewport();
@@ -106,6 +114,7 @@ test.describe('/play – create', () => {
     await page.goto('/play');
     await expect(page.getByTestId('play-sentence')).toBeInViewport();
     await expect(page.getByTestId('play-new-game')).toBeHidden();
+    await expect(page.locator('h1')).toHaveCount(1);
     const form = await page.getByTestId('play-sentence').boundingBox();
     const feed = await page.locator('.play-pager').boundingBox();
     expect(form!.y).toBeLessThan(feed!.y);

@@ -92,7 +92,6 @@
  * Luckiest Guy má malá písmena jako nepravidelné kapitálky („IMAGINe“), proto
  * verzálky – text v DOM zůstává, jak je (e2e čtou „You lost“, ne „YOU LOST“). */
 .play-root .play-hero,
-.play-root .play-hero-top,
 .play-root .play-first-prompt-start,
 .play-root .play-outcome-title,
 .play-root .play-sheet-title {
@@ -607,34 +606,6 @@
 
   .play-button.play-new-game[data-hidden='true'] {
     display: none;
-  }
-}
-
-/* Desktop: titul, pole a vzory v jednom sloupci nad feedem (P33 T9), bez
- * zásahu do `page.tsx`; na telefonu zůstává hra první. */
-@media (min-width: 701px) {
-  .play-root:has(> .play-create) {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .play-root > .play-hero-top,
-  .play-root > .play-create,
-  .play-root > .play-pager {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  .play-root > .play-hero-top {
-    order: -2;
-    max-width: 760px;
-    padding-top: var(--p-space-8);
-  }
-
-  .play-root > .play-create {
-    order: -1;
-    padding-top: 0;
-    padding-bottom: var(--p-space-8);
   }
 }
 
@@ -1563,15 +1534,6 @@ a.play-button {
 /* Svislý feed na `/play` (T4): na úzkém displeji jedna hra přes obrazovku,
  * na širokém hra vlevo a seznam dalších vpravo. Listovací okraj leží vpravo
  * přes plátno, a proto tlačítko Fire ve feedu uhne doleva. */
-/* P28D T7: nad feedem jen titul; hra je první, co porotce vidí, formulář až pod ní. */
-.play-hero-top {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--p-space-5) var(--p-space-5) var(--p-space-3);
-  box-sizing: border-box;
-  font-size: clamp(var(--p-text-l), 4vw, var(--p-text-xl));
-}
-
 .play-pager {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
@@ -1658,8 +1620,10 @@ a.play-button {
   background: #d97706;
 }
 
+/* Karta je náhled plakátu (P33 T13): tón nálady scény jako pozadí, titul a cíl hry. */
 .play-feed-card[data-tone] {
   border-left: 4px solid var(--p-tone);
+  background: radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--p-tone) 30%, var(--play-panel)), var(--play-panel) 70%);
 }
 
 .play-pager-slide > .play-shell {

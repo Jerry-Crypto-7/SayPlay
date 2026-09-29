@@ -90,8 +90,7 @@ function DemoGame({ children }: { readonly children: ReactNode }) {
   );
 }
 
-/** `pitches` od P33 T8 feed nečte (karty ukazují cíl hry); `page.tsx` je posílá dál, dokud je T13 neodebere. */
-export function FeedPager(_: { readonly pitches: Readonly<Record<string, string>> }) {
+export function FeedPager() {
   const wanted = useSearchParams().get('g');
   const [feed, setFeed] = useState<FeedState>({ kind: 'loading' });
   const [details, setDetails] = useState<ReadonlyMap<string, GameDetail | 'error'>>(new Map());
@@ -223,7 +222,7 @@ export function FeedPager(_: { readonly pitches: Readonly<Record<string, string>
     return (
       <DemoGame>
         <p className="play-feed-empty" data-testid="feed-error" role="status">
-          The feed is not available right now. You can still make a game below.
+          The feed is not available right now. You can still make a game above.
         </p>
       </DemoGame>
     );

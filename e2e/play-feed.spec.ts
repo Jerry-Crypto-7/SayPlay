@@ -189,13 +189,14 @@ test.describe('/play – vertical feed', () => {
   test('a feed outage says so, plays the demo and the form still works', async ({ page }) => {
     await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }));
     await page.goto('/play');
-    await expect(page.getByTestId('feed-error')).toHaveText('The feed is not available right now. You can still make a game below.');
+    await expect(page.getByTestId('feed-error')).toHaveText('The feed is not available right now. You can still make a game above.');
     await expect(page.getByTestId('feed-demo').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
     await expect(page.locator('.play-sentence')).toBeVisible();
   });
 
   // AC P28D T7: do 3 s po načtení hraje plátno a hra bere vstup bez klepnutí na „Play“.
-  // Od P33 T9 stojí na desktopu pole pro větu nad feedem (jádro produktu); telefon má hru první – `play-create`.
+  // Od P33 T13 stojí pole pro větu nad feedem (jádro produktu) na telefonu i desktopu – `play-create`;
+  // hláška výpadku feedu proto posílá k formuláři „above“, ne „below“.
   test('the landing page plays a game within 3 s', async ({ page }) => {
     await serveFeed(page, []);
     await page.goto('/play');
@@ -203,6 +204,9 @@ test.describe('/play – vertical feed', () => {
     const game = await page.locator('canvas').boundingBox();
     const form = await page.locator('.play-sentence').boundingBox();
     expect(form!.y).toBeLessThan(game!.y);
+    // Jedna h1 na stránce (P33 T13): titul nad polem; název hry v HUD je h2.
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.locator('h2.play-hud-title')).toHaveCount(1);
     // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže „You lost“ (runner prohraje do 3 s).
     await expect(page.getByTestId('play-demo')).toBeVisible();
     for (let second = 0; second < 8; second += 1) {
