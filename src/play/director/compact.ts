@@ -18,7 +18,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { LOOK_IDS, type LookId } from '../arcade/look';
-import { THINGS_MAX, rulesSchema, thingsSchema } from '../arcade/rules/schema';
+import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { CAPABILITIES } from '../capabilities';
 import { draftForControl } from '../draft';
 import { ADDONS, CONTROLS, ROLE_KINDS, readGameSpec, type ControlId, type GameRole, type GameSpecV1 } from '../spec';
@@ -61,7 +61,7 @@ export const COMPACT_ANSWER_SCHEMA: Record<string, unknown> = {
     goal: { type: 'string' },
     ruleRoles: { type: 'array', maxItems: THINGS_MAX, items: RULE_ROLE_SCHEMA },
     things: strictOf(thingsSchema),
-    rules: strictOf(rulesSchema),
+    rules: strictOf(modelRulesSchema),
   },
 };
 

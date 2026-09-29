@@ -39,14 +39,14 @@ export const verbSchema = z.string().regex(/^[a-z][a-z-]{1,23}$/, 'verb: one low
  * = každých n tiků (60 Hz), `counter` = čítač dosáhl hodnoty, `hit` = projektil
  * zasáhl roli, `interact` = hráč u cíle drží „Use“ (P32, `interact.ts`).
  */
-export const ruleWhenSchema = z.union([
+const liveWhens = [
   z.object({ contact: z.tuple([roleRef, roleRef]) }).strict(),
   z.object({ press: z.enum(['action', 'alt']) }).strict(),
   z.object({ every: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict(),
   z.object({ counter: z.object({ name: z.enum(RULE_COUNTERS), atLeast: z.int().min(0).max(1000) }).strict() }).strict(),
   z.object({ hit: roleRef }).strict(),
-  interactWhen(roleRef),
-]);
+] as const;
+export const ruleWhenSchema = z.union([...liveWhens, interactWhen(roleRef)]);
 export type RuleWhen = z.infer<typeof ruleWhenSchema>;
 
 /**
@@ -106,6 +106,13 @@ export const ruleSchema = z
 export type Rule = z.infer<typeof ruleSchema>;
 
 export const rulesSchema = z.array(ruleSchema).max(RULES_MAX);
+
+/**
+ * Pravidla, jak je smí psát model (`director/compact.ts`, `answer-schema.ts`):
+ * bez `interact`, který je do P32G T1 pahýl bez účinku – hra s ním by byla
+ * mrtvá a opravné kolo by ji nespravilo. P32G T1 ho sem vrátí, až ho postaví.
+ */
+export const modelRulesSchema = z.array(ruleSchema.extend({ when: z.union(liveWhens) })).max(RULES_MAX);
 
 /**
  * Doplněk role pro pravidla: `start: 'hidden'` = tělo ve hře je, ale ukáže se

@@ -14,6 +14,7 @@ import giveFlower from '../arcade/__fixtures__/rules/give-flower.json';
 import leverBridge from '../arcade/__fixtures__/rules/lever-bridge.json';
 import pushCrate from '../arcade/__fixtures__/rules/push-crate.json';
 import throwRock from '../arcade/__fixtures__/rules/throw-rock.json';
+import { DIRECTOR_ANSWER_SCHEMA } from '../director/answer-schema';
 import { COMPACT_ANSWER_SCHEMA, compactSystemPrompt, composeCompact } from '../director/compact';
 import carryKeyAnswer from '../director/__fixtures__/rules-answers/carry-key.json';
 import collectGateAnswer from '../director/__fixtures__/rules-answers/collect-gate.json';
@@ -55,6 +56,15 @@ describe('the director writes rules', () => {
       expect(COMPACT_ANSWER_SCHEMA.required).toContain(key);
     }
     expect(looseNodes(COMPACT_ANSWER_SCHEMA)).toEqual([]);
+  });
+
+  it('neither model schema offers the interact trigger while it is a stub, but both keep the live ones', () => {
+    // `when.interact` do P32G T1 nic nedělá: hra s ním je mrtvá a opravné kolo ji nespraví (revize P32-0 T4).
+    for (const [name, schema] of [['compact', COMPACT_ANSWER_SCHEMA], ['director', DIRECTOR_ANSWER_SCHEMA]] as const) {
+      const text = JSON.stringify(schema);
+      expect(text, name).not.toContain('"interact"');
+      for (const trigger of ['contact', 'press', 'every', 'counter', 'hit']) expect(text, `${name} ${trigger}`).toContain(`"${trigger}"`);
+    }
   });
 
   it('the prompt carries the rules grammar, three examples and the only-for-missing-verbs instruction', () => {

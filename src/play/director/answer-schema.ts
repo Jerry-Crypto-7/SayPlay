@@ -16,6 +16,7 @@
 
 import { z } from 'zod';
 
+import { modelRulesSchema } from '../arcade/rules/schema';
 import { CAPABILITIES } from '../capabilities';
 import { MECHANICS, MECHANIC_IDS, type MechanicEntry, type MechanicId } from '../registry';
 import { CONTROLS, CONTROL_PARAMS, gameSpecSchema, themeSchema, type ControlId } from '../spec';
@@ -73,11 +74,14 @@ function mechanicsOf(control: ControlId): z.ZodType {
   return z.array(entries.length === 1 ? entries[0] : z.union(entries as unknown as [z.ZodType, z.ZodType, ...z.ZodType[]])).max(5);
 }
 
+/** Spec, jak ho píše model: pravidla bez pahýlu `interact` (`modelRulesSchema`). */
+const modelSpecSchema = gameSpecSchema.extend({ rules: modelRulesSchema.optional() });
+
 function variant(control: ControlId): z.ZodType {
   // `theme` bez počasí sdílené verze (P29D T10) – to model nepíše.
   // `genre` (P32) zapisuje překlad žánru, ne model – dokud režisér píše GameSpec, v odpovědi není.
-  if (control === 'tap_go') return gameSpecSchema.omit({ controlParams: true, genre: true }).extend({ control: z.literal('tap_go'), theme: themeSchema, mechanics: mechanicsOf(control) });
-  return gameSpecSchema.omit({ verification: true, genre: true }).extend({
+  if (control === 'tap_go') return modelSpecSchema.omit({ controlParams: true, genre: true }).extend({ control: z.literal('tap_go'), theme: themeSchema, mechanics: mechanicsOf(control) });
+  return modelSpecSchema.omit({ verification: true, genre: true }).extend({
     control: z.literal(control),
     theme: themeSchema,
     controlParams: CONTROL_PARAMS[control] as z.ZodType,
