@@ -46,7 +46,7 @@ import type { ProjectTarget } from './TapTargets';
 import { TargetCards } from './TargetCards';
 import { secondsOf } from './timer';
 import { UpgradeBanner } from './UpgradeBanner';
-import { idleProps, keyAction, playerActor, tapAction, type TargetCard, targetCards } from './targets';
+import { avoidCards, idleProps, keyAction, playerActor, roleKinds, tapAction, type TargetCard, targetCards } from './targets';
 
 // `ssr: false` je povinné – WebGL2 kontext na serveru není a `<Canvas>` by
 // při prerenderu spadl na `document`.
@@ -110,9 +110,12 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
   const [fault, setFault] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
+  const kinds = useMemo(() => roleKinds(spec, blueprint.world.sim), [spec, blueprint]);
+  const avoid = useMemo(() => avoidCards(kinds, blueprint.objects), [kinds, blueprint]);
+  // Nepřítel (P33 T6) kartu nedostane – ani číslo klávesy, ani klepnutí na plátně.
   const cards = useMemo(
-    () => targetCards(controller.actions, blueprint.objects, idleProps(spec, blueprint.world.sim)),
-    [controller, blueprint, spec],
+    () => targetCards(controller.actions, blueprint.objects, new Set([...idleProps(spec, blueprint.world.sim), ...avoid.map((enemy) => enemy.id)])),
+    [controller, blueprint, spec, avoid],
   );
   const running = snapshot.runState === 'running';
   const remix = useRemixJob(versionId, !running);
@@ -388,7 +391,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
       {fault !== null && (
         <p className="play-alert" role="alert">This game could not be built: {fault}</p>
       )}
-      <TargetCards cards={cards} selected={selected} disabled={!snapshot.canInput || !built} onTap={(card) => {
+      <TargetCards cards={cards} avoid={avoid} kinds={kinds} selected={selected} disabled={!snapshot.canInput || !built} onTap={(card) => {
         const hit = tapAction(card, selected);
         send(hit.action, hit.selected);
       }} />

@@ -21,6 +21,16 @@ const PATHS = {
   mic: <path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3zM6 11a6 6 0 0 0 12 0M12 17v3" />,
   replay: <path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4" />,
   edit: <path d="M4 20h4L19 9l-4-4L4 16zM13 7l4 4" />,
+  // Druhy cílů na liště (T6): věc k sebrání, místo k dosažení, obecný cíl, nepřítel.
+  collect: <path d="M12 3l7 9-7 9-7-9z" />,
+  flag: <path d="M6 21V4M6 4h11l-2.5 4 2.5 4H6" />,
+  pin: (
+    <>
+      <path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z" />
+      <circle cx="12" cy="10" r="2" />
+    </>
+  ),
+  warn: <path d="M12 4l9 16H3zM12 10v4M12 17v.5" />,
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof PATHS;

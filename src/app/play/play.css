@@ -759,7 +759,12 @@
   margin-top: auto;
   padding: var(--p-space-3) var(--p-space-4) calc(var(--p-space-3) + env(safe-area-inset-bottom));
   display: flex;
-  flex-wrap: wrap;
+  /* Jeden řádek s vlastním posunem (P33 T6): lišta se posouvá, stránka ne. */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--p-space-4);
+  scrollbar-width: none;
   gap: var(--p-space-2);
   background: linear-gradient(to top, var(--p-surface-3), transparent);
   /* Mezery mezi kartami pouští klepnutí na plátno pod nimi (P28C T4); kartu chytá karta. */
@@ -768,6 +773,18 @@
 
 .play-targets .play-target {
   pointer-events: auto;
+}
+
+/* Nepřítel (P33 T6) není cíl: červený okraj, „avoid“, na nic se neklepe. */
+.play-targets .play-target.play-target-avoid {
+  pointer-events: none;
+  cursor: default;
+  border-color: var(--play-danger);
+}
+
+.play-target.play-target-avoid .play-icon,
+.play-target.play-target-avoid .play-target-next {
+  color: #fca5a5;
 }
 
 .play-targets-empty {
@@ -790,7 +807,9 @@
   color: var(--play-text);
   font: inherit;
   cursor: pointer;
-  max-width: 100%;
+  flex: 0 0 auto;
+  max-width: 80%;
+  scroll-snap-align: start;
 }
 
 .play-target:hover:not(:disabled) {
@@ -807,8 +826,18 @@
   cursor: default;
 }
 
+/* Číslo klávesy jen tam, kde je klávesnice a myš (P33 T6); na telefonu je to šum. */
 .play-target-key {
-  display: inline-flex;
+  display: none;
+}
+
+@media (hover: hover) {
+  .play-target-key {
+    display: inline-flex;
+  }
+}
+
+.play-target-key {
   align-items: center;
   justify-content: center;
   min-width: 22px;
@@ -828,8 +857,7 @@
 .play-target-next {
   color: var(--play-accent);
   font-size: var(--p-text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-weight: 600;
 }
 
 .play-target[aria-pressed='true'] .play-target-next {
@@ -945,15 +973,9 @@
   }
 
   .play-targets {
-    flex-wrap: nowrap;
-    overflow-x: auto;
     padding: var(--p-space-3) var(--p-space-3) calc(var(--p-space-3) + env(safe-area-inset-bottom));
     /* Pás se tu posouvá prstem do strany – musí tah chytat i v mezerách. */
     pointer-events: auto;
-  }
-
-  .play-target {
-    flex: 0 0 auto;
   }
 
   /* Telefon: karta je spodní list do 45 % výšky, hra nad ní zůstane vidět. */
@@ -1633,13 +1655,7 @@ button.play-feed-card {
   }
 
   .play-targets {
-    flex-wrap: nowrap;
-    overflow-x: auto;
     padding: var(--p-space-2) var(--p-space-3) calc(var(--p-space-2) + env(safe-area-inset-bottom));
-  }
-
-  .play-target {
-    flex: 0 0 auto;
   }
 }
 
