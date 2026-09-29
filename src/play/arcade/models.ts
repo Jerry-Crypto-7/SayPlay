@@ -322,16 +322,20 @@ function rideOf(label: string, fits: (kind: ModelClass) => boolean): AssetEntry 
 /**
  * Model z popisku v pořadí věrnosti: přesná identita z manifestu nebo věc
  * z katalogu, blízká identita (`WORD_MODEL`), v závodě jízda z přívlastku,
- * zástupce třídy a nakonec výchozí model role.
+ * zástupce třídy a nakonec výchozí model role. Jízdu v závodě vybírá tag
+ * katalogu před manifestem jako před P32C: „race car“ je vůz `gen3d-race-car`,
+ * ne nižší tělo jádra `race-car`, které na telefonu nedá 4 % výšky obrazu (`play-frame`).
  */
 function choose(label: string, bounds: Bounds, options: { readonly withClass: boolean; readonly ride?: boolean; readonly fallback?: string }): ModelChoice | undefined {
   const pick = (model: string | undefined, level: ChoiceLevel, fits: (kind: ModelClass) => boolean): ModelChoice | undefined =>
     model !== undefined && fits(classOfModel(model)) ? { model, level, entry: ENTRY_OF_MODEL.get(model) } : undefined;
   const named = identityEntry(label, bounds.identity);
+  const tagged = pick(tagModel(label, false), 'identity', bounds.identity);
   const ride = options.ride === true ? rideOf(label, bounds.rest) : undefined;
   return (
+    (options.ride === true && tagged !== undefined && rides(classOfModel(tagged.model)) ? tagged : undefined) ??
     (named === undefined ? undefined : { model: sceneId(named), level: 'identity', entry: named }) ??
-    pick(tagModel(label, false), 'identity', bounds.identity) ??
+    tagged ??
     pick(nearModel(label), 'near', bounds.rest) ??
     (ride === undefined ? undefined : { model: sceneId(ride), level: 'near', entry: ride }) ??
     (options.withClass ? pick(categoryModel(label), 'class', bounds.rest) : undefined) ??

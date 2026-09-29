@@ -102,6 +102,8 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     // Závod bez žánru bere jen vozidlo, loď nebo letadlo – i z manifestu, nejen dřívější seznam aut.
     expect(heroChoice('sailboat', undefined, 'steer')).toMatchObject({ model: 'gen3d-sailboat', level: 'identity' });
     expect(heroChoice('dog', undefined, 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
+    // V závodě tag katalogu před manifestem: tělo jádra `race-car` je na telefonu pod 4 % výšky.
+    expect(heroChoice('race car', undefined, 'steer')).toMatchObject({ model: 'gen3d-race-car', level: 'identity' });
   });
 
   it('a rigged pick carries the manifest clips', () => {
