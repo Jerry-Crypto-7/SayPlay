@@ -26,6 +26,8 @@ scripts/cleanroom-forbidden.txt
 !DISCLOSURE.md
 plans/
 .claude/
+# Specy z rozhovorů (/sharpen --interview) nesou interní strategii a rozpočty.
+docs/specs/
 
 # Syrové odpovědi poskytovatele z živého běhu (T18). Nejsou artefakt k
 # commitnutí – jsou to naměřená data jednoho běhu, nesou plné znění promptů

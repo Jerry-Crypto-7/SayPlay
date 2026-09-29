@@ -1,5 +1,7 @@
 # Adversariální prompt suite
 
+> **Současná měření produktu PLAY jsou v `evals/play/`** (věrnost `fidelity/`, poznatelnost `p30b/`, srovnání režisérů a zapečetěná sada 200 vět `p30/`). Tahle suite patří ke staršímu WORLDSTREAM.
+
 **116 promptů. Napsané z pozice judge, ne autora.**
 
 Pravidlo, které dává suite hodnotu: **autor ji nesmí ladit podle toho, co systém umí.** Když prompt neprojde, opravuje se produkt, ne prompt. Suite se smí rozšiřovat, nikdy zužovat.

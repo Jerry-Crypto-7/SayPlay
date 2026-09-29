@@ -2,7 +2,7 @@
 
 Write one sentence and get a short 3D game you can play in the browser within about two seconds. An AI-directed version of the same idea follows in the background. Games have their own links, appear in a vertical feed, and can be remixed with a sentence of your own – no account, no install.
 
-**Status on 25 September 2026:** working prototype, not yet submitted. The known gaps are listed under [Known issues](#known-issues); nothing below claims more than was measured.
+**Status on 29 September 2026:** working prototype, not yet submitted. The measurements below date from 24–25 September and will be replaced by one run after the AI director moves to hosted infrastructure. The known gaps are listed under [Known issues](#known-issues); nothing below claims more than was measured.
 
 ## What you can do
 
@@ -24,9 +24,10 @@ sentence ─► word draft ─► GameSpec ─► compiler ─► world ─► r
 
 - **The model writes only a GameSpec** – choices from a closed registry of controls, add-ons, looks and roles, plus a title and a goal line. It never writes code, rules or geometry.
 - **Nothing unwinnable is published.** The compiler tries up to four seeds; the robot must win each game and replay it to an equal state hash, and a game that does nothing when left alone is refused.
+- **Sound.** Every game plays generated music and sound effects chosen by its look; an optional voice reads the objective.
 - **Deterministic runtime.** Arcade games step at a fixed 60 Hz with `pure-rand` streams; the grid runtime steps at 20 Hz. Real time, particles, camera and sound stay outside the hashed state.
 - **Versions never change.** The id is a hash of spec, world, seed and component versions; a remix is a new version. Stored in Upstash Redis for 180 days (`PLAY_VERSION_TTL_SECONDS`); without Upstash the server keeps games in memory and says so (`x-play-store: memory`).
-- **Assets.** 449 models: 363 CC0 models (Kenney, Quaternius, KayKit), 56 built by code in Blender, 30 built by code in three.js, plus 16 rigged CC0 characters. No generated 3D model is used at runtime. Provenance: `public/assets/worldstream/PROVENANCE.md`, licences: [DISCLOSURE.md](DISCLOSURE.md).
+- **Assets.** 783 catalogue models: 363 CC0 models (Kenney, Quaternius, KayKit), 56 built by code in Blender, 32 built by code in three.js and 332 generated offline by `ops/gen3d` (FLUX.2-klein-4B image → TRELLIS.2-4B mesh → Blender finishing; each model's pipeline is recorded in its catalogue entry), plus 15 rigged CC0 characters. Generated models are used at runtime like any other catalogue model. Provenance: `public/assets/worldstream/PROVENANCE.md` and one `PROVENANCE.md` per model set beside it, licences: [DISCLOSURE.md](DISCLOSURE.md).
 
 More detail: [docs/play/director.md](docs/play/director.md), [docs/play/ARCADE.md](docs/play/ARCADE.md), [docs/play/feed.md](docs/play/feed.md), [docs/play/CONTRACT.md](docs/play/CONTRACT.md).
 
@@ -47,7 +48,7 @@ More detail: [docs/play/director.md](docs/play/director.md), [docs/play/ARCADE.m
 - **The live model is not yet permanently hosted.** The hosted demo reaches the model through a temporary connection; when it is down every game stays the instant draft.
 - **Drafts ignore unknown verbs.** Without the AI version, sentences whose verb the draft does not know become a collect game with default items.
 - **The setting is rarely visible** in the first frame (see the vision judge row above).
-- **Sound exists only in rhythm games;** hits, pickups and endings have little feedback. Spawned projectiles are not drawn (found in code review).
+- **Spawned projectiles are not drawn** (found in code review).
 - **Game keys listen on the whole window,** so typing a remix sentence on a shared link can lose letters.
 - **No human playtest yet;** all results above are automated.
 
