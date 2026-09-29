@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Sdílený odkaz (P23-C T7): cizí prohlížeč bez cookies a bez úložiště jde
  * rovnou do hry, odkaz nese náhled (`og:title`, `og:image` jako PNG) a
@@ -60,6 +62,7 @@ test.describe('/play/[id] – share landing', () => {
     });
     const page = await first.newPage();
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 20, undefined, { timeout: 60_000 });
     const inputs = await page.evaluate(() => window.__playShell!.inputs().length);
     await page.getByTestId('play-share').click();

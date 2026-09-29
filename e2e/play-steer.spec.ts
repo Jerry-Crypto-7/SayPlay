@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Závod a aréna na `/play/[id]` (P25F T6): věta projde skutečnými dveřmi
  * (dvojník režiséra = návrh ze slov → `steer` / `move_free`), hra se načte
@@ -34,6 +36,7 @@ for (const game of GAMES) {
       await expect(stage).toHaveAttribute('data-control', game.control);
       await expect(page.getByTestId('play-goal')).not.toHaveText('');
       await expect(stage).toHaveAttribute('data-player-x', /.+/, { timeout: 60_000 });
+      await startGame(page);
       await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
 
       const start = await page.evaluate(() => window.__playShell!.inputs().length);
@@ -49,6 +52,7 @@ for (const game of GAMES) {
       await page.goto(url);
       const stage = page.getByTestId('arcade-stage');
       await expect(stage).toHaveAttribute('data-player-x', /.+/, { timeout: 60_000 });
+      await startGame(page);
       await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
       const box = (await stage.boundingBox())!;
       const hud = (await page.locator('.play-hud').boundingBox())!;

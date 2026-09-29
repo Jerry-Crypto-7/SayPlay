@@ -41,6 +41,7 @@ import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
+import { holdUntilTouch, wakesGame } from './ready-gate';
 import { Weather } from './Weather';
 import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
 
@@ -151,7 +152,6 @@ function ArcadeHud({
       <p className="play-hud-goal" data-testid="play-goal">{spec.tutorial.goalLine}</p>
       <p className="play-hud-hint">
         {paused && snapshot.runState === 'running' ? <span data-testid="play-paused">Paused. Tap or press a key to resume. </span> : null}
-        {snapshot.tick === 0 && spec.control !== undefined && TAP_TO_START.has(spec.control) ? 'Tap to start. ' : ''}
         {spec.tutorial.controlsHint}
       </p>
       <p className="play-hud-progress">
@@ -298,12 +298,13 @@ function ArcadePlayGame({
   offline = false,
   physicsReady,
 }: ArcadePlayProps & { readonly physicsReady: boolean }) {
-  // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
-  // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
-  // u načasování by to byl rovnou minutý pokus (u poletování je to první mávnutí).
+  // Každá hra čeká na první dotek (P33 T11, `ready-gate.ts`): runner by jinak prohrál
+  // dřív, než hráč pochopí ovládání. Poletování, střelnice a hry na čas navíc čekají
+  // v relaci na první stisk a `swallowFirst` ten spouštěcí ťuk nezapíše – u načasování
+  // by to byl rovnou minutý pokus (u poletování je to první mávnutí).
   const [session] = useState(() => {
     const control = baseControlOf(arcade.control).id;
-    const created = createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' });
+    const created = holdUntilTouch(createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' }));
     return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
@@ -392,9 +393,11 @@ function ArcadePlayGame({
         }, 1000);
       }
     });
+    // Restart hodiny znovu zastaví; tenhle dotek je první vstup hráče, proto je hned pustí.
     const take = () => {
       setAttract(false);
       session.restart();
+      session.begin();
     };
     const onPointer = (event: PointerEvent) => {
       if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) take();
@@ -411,6 +414,24 @@ function ArcadePlayGame({
       window.removeEventListener('keydown', onKey, true);
     };
   }, [attract, active, physicsReady, session]);
+
+  // První dotek (P33 T11): ťuk na scénu nebo klávesa pustí hodiny v zachytávací fázi,
+  // takže tentýž stisk padne do tiku 0. Tlačítka mimo scénu (zvuk, info, Play again) ne.
+  useEffect(() => {
+    if (!active) return;
+    const onPointer = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) session.begin();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (wakesGame(event)) session.begin();
+    };
+    window.addEventListener('pointerdown', onPointer, true);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('pointerdown', onPointer, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [active, session]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
   useEffect(() => {
@@ -491,6 +512,8 @@ function ArcadePlayGame({
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
       bodies: (role: ArcadeRole) => aliveOf(session.state(), role),
       patches: () => session.patches().length,
+      /** Dotek bez vstupu (P33 T11): e2e, které čekají na běžící hodiny, hru pustí jako ťuk na prázdnou scénu. */
+      start: () => session.begin(),
       playWitness: () => {
         const end = session.playInputs(session.botInputs(), ARCADE_LIMITS.maxTicks);
         return { runState: end.runState, tick: end.tick };
@@ -535,7 +558,8 @@ function ArcadePlayGame({
       <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} live={live}>
         {running && physicsReady && <DemoControl session={session} demo={demo} />}
       </ArcadeHud>
-      {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
+      {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. */}
+      {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nehraje (střelba, úder, ťuk). */}
       {running && active && demo === null && physicsReady && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />

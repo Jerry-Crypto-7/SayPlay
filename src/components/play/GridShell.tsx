@@ -29,6 +29,7 @@ import { installSoundControls, playMusic, playSfx, setSoundLook } from '@/play/a
 import { musicFor } from '@/play/audio/library';
 
 import { isTyping } from './arcade/input';
+import { wakesGame } from './arcade/ready-gate';
 import { GridScenery } from './arcade/look/Scenery';
 import { HowItWorks } from './HowItWorks';
 import { FirstPrompt } from './FirstPrompt';
@@ -79,6 +80,8 @@ interface PlayProbe {
    * sahá svědek světa, zbytek za nimi.
    */
   targets(): readonly { readonly id: string; readonly x: number; readonly y: number }[];
+  /** Pustí hodiny jako ťuk na prázdnou scénu (P33 T11) – e2e, které čekají na běžící hru. */
+  start(): void;
 }
 
 declare global {
@@ -140,14 +143,33 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     };
   }, [blueprint]);
 
-  // Hodiny hry: běží, dokud hra běží, svět stojí a záložka je vidět.
+  // Hodiny hry: běží, dokud hra běží, svět stojí, záložka je vidět a hráč se už dotkl
+  // (P33 T11) – liška by jinak prohrála dřív, než hráč najde první vejce. Replay po hře
+  // přehrává hráčův vlastní záznam a klik na něj je vstup hráče, proto hodiny pouští sám.
+  const [waiting, setWaiting] = useState(true);
   useEffect(() => {
-    if (!running || !built) return;
+    if (!running || !built || waiting) return;
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') controller.advanceTicks(1);
     }, TICK_MS);
     return () => window.clearInterval(timer);
-  }, [controller, running, built]);
+  }, [controller, running, built, waiting]);
+  // První dotek: ťuk na scénu nebo kartu cíle, nebo klávesa – v zachytávací fázi, před akcí karty.
+  useEffect(() => {
+    if (!waiting) return;
+    const onPointer = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('[data-testid="play-grid-stage"], .play-targets') !== null) setWaiting(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (wakesGame(event)) setWaiting(false);
+    };
+    window.addEventListener('pointerdown', onPointer, true);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('pointerdown', onPointer, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [waiting]);
 
   const send = useCallback((action: RuntimeAction | null, nextSelected: string) => {
     setSelected(nextSelected);
@@ -296,6 +318,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     const probe: PlayProbe = {
       inputs: () => controller.getInputLog(),
       tick: () => controller.getSnapshot().tick,
+      start: () => setWaiting(false),
       playWitness: (count = Infinity) => {
         witnessed.current = true;
         // Kroky svědka se posouvají o tik prvního volání: hra už mohla chvíli
@@ -379,7 +402,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
         ))}
       </div>
       <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
-      {running && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
+      {running && waiting && <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read.sentence} />
       {running && <RemixReadyChip job={remix} />}
@@ -407,6 +430,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
             onReplay={() => {
               if (!witnessed.current) loopEvent('restart', versionId);
               witnessed.current = false;
+              setWaiting(false);
               controller.observeAt(0);
             }}
           />

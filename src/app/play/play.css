@@ -93,7 +93,7 @@
  * verzálky – text v DOM zůstává, jak je (e2e čtou „You lost“, ne „YOU LOST“). */
 .play-root .play-hero,
 .play-root .play-hero-top,
-.play-root .play-first-prompt,
+.play-root .play-first-prompt-start,
 .play-root .play-outcome-title,
 .play-root .play-sheet-title {
   font-family: var(--p-font-display);
@@ -732,35 +732,68 @@
   height: 100%;
 }
 
-/* Výzva prvních sekund (P28C T5): jeden povel uprostřed, klepnutí jde skrz na plátno. */
+/* Výzva na startu (P28C T5, P33 T11): dokud hra čeká na první dotek, uprostřed
+ * „Tap to start“, jeden povel a na desktopu klávesa. Tmavá plocha pod textem, ať
+ * se čte na světlé obloze i na sněhu; klepnutí jde skrz na plátno a hru pustí. */
 .play-first-prompt {
   position: absolute;
   top: 44%;
   left: 50%;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--p-space-2);
+  width: max-content;
   max-width: calc(100% - var(--p-space-8));
-  margin: 0;
+  padding: var(--p-space-5) var(--p-space-6);
+  border-radius: var(--p-radius-l);
+  background: var(--p-surface-1);
   transform: translate(-50%, -50%);
-  font-size: clamp(var(--p-text-l), 6vw, var(--p-text-xl));
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  line-height: 1.1;
   text-align: center;
-  text-transform: uppercase;
   color: #fff;
   text-shadow: var(--p-shadow-text);
   pointer-events: none;
+}
+
+.play-first-prompt p {
+  margin: 0;
+}
+
+.play-first-prompt-start {
+  font-size: clamp(var(--p-text-l), 8vw, var(--p-text-xl));
+  line-height: 1.1;
+  color: var(--play-accent);
   animation: play-first-prompt 1.2s ease-in-out infinite alternate;
+}
+
+.play-first-prompt-action {
+  font-size: var(--p-text-l);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Klávesa jen tam, kde je klávesnice a myš; na telefonu je to šum (jako čísla karet, P33 T6). */
+.play-first-prompt-keys {
+  display: none;
+  font-size: var(--p-text-m);
+  color: var(--play-muted);
+}
+
+@media (hover: hover) {
+  .play-first-prompt-keys {
+    display: block;
+  }
 }
 
 @keyframes play-first-prompt {
   to {
-    transform: translate(-50%, -50%) scale(1.06);
+    transform: scale(1.06);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .play-first-prompt {
+  .play-first-prompt-start {
     animation: none;
   }
 }

@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { expect, test, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Události smyčky (P27D T4, B4): jedna relace s hrou, kterou hráč rozehraje a
  * sdílí, a odkaz otevřený v jiném kontextu dají právě tu posloupnost, kterou
@@ -36,6 +38,7 @@ test('a played and shared game, then its link opened elsewhere, log each step on
   });
   const page = await context.newPage();
   await page.goto(url);
+  await startGame(page);
   await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 10, undefined, { timeout: 60_000 });
   await page.keyboard.press('Space');
   await page.keyboard.press('Space');

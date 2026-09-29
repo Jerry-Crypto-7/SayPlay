@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * `/play/[id]` (P23-C T5): hra se načte bez technického panelu, tik roste,
  * klepnutí na kartu cíle zapíše vstup do runtime, mobil nescrolluje do
@@ -28,6 +30,7 @@ test.describe('/play/[id] – play shell', () => {
     await page.goto(url);
     await expect(page.getByTestId('play-goal')).toBeVisible();
     await expect(page.getByTestId('play-goal')).not.toHaveText('');
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const first = Number(await page.getByTestId('play-tick').getAttribute('data-tick'));
     await page.waitForTimeout(500);
@@ -41,6 +44,7 @@ test.describe('/play/[id] – play shell', () => {
 
   test('tapping the first target card records an input in the runtime', async ({ page }) => {
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const card = page.locator('[data-testid^="play-target-"]').first();
     await expect(card).toBeVisible();
@@ -80,13 +84,18 @@ test.describe('/play/[id] – play shell', () => {
     expect(inputs.some((input) => input.actionId !== 'moveTo')).toBe(true);
   });
 
-  test('a one-command prompt says what to tap and goes away on the first tap (P28C T5)', async ({ page }) => {
+  // P33 T11: mřížka stojí na tiku 0 pod „Tap to start“, dokud se hráč nedotkne.
+  test('the grid waits on tick 0 under "Tap to start" and the first tap starts it (P28C T5, P33 T11)', async ({ page }) => {
     await page.goto(url);
     const prompt = page.getByTestId('play-first-prompt');
     await expect(prompt).toBeVisible({ timeout: 60_000 });
-    await expect(prompt).toHaveText(/^Tap (a|an|the) /);
+    await expect(prompt).toContainText('Tap to start');
+    await expect(page.getByTestId('play-first-prompt-action')).toHaveText(/^Tap (a|an|the) /);
+    await page.waitForTimeout(1_500);
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
     await page.getByTestId('play-grid-stage').click({ position: { x: 5, y: 5 } });
     await expect(prompt).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(0);
   });
 
   test('a phone viewport has no horizontal scroll', async ({ page }) => {

@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Plošinovka a poletování na `/play/[id]` (P25C T6): věta projde skutečnými
  * dveřmi (dvojník režiséra = návrh ze slov → `platform` / `flap`), hra se
@@ -46,6 +48,7 @@ for (const game of GAMES) {
         await expect(page.getByTestId('play-outcome')).toContainText('You lost', { timeout: 15_000 });
         return;
       }
+      await startGame(page);
       await page.waitForFunction(() => window.__playShell!.tick() > 30, undefined, { timeout: 60_000 });
       const first = Number(await page.getByTestId('play-tick').getAttribute('data-tick'));
       await page.waitForTimeout(500);

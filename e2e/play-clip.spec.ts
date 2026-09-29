@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Klip běhu (P29D T1): po konci arkádové hry nabídne PostRun „Save clip“ a
  * klip je opravdové video – nenulová velikost, typ videa, délka do 16 s
@@ -18,6 +20,7 @@ async function publish(request: APIRequestContext): Promise<string> {
 }
 
 async function playToEnd(page: Page): Promise<void> {
+  await startGame(page);
   await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 20, undefined, { timeout: 60_000 });
   // Plátno nahrává od startu běhu; chvíli ho nechat běžet, ať klip má co ukázat.
   await page.waitForTimeout(1_500);

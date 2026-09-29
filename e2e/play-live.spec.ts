@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * P29D T9: věta uprostřed běžící hry. „more enemies“ přidá hrozby do běžícího
  * světa bez nové adresy, „make it rain“ rozprší plátno, „add a dragon“ živě
@@ -40,7 +42,8 @@ function tick(page: Page): Promise<number> {
 async function open(page: Page, url: string): Promise<void> {
   await page.goto(url);
   await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'runner');
-  await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+  // Živá změna padne do příštího tiku – hra musí běžet (od P33 T11 čeká na první dotek).
+  await startGame(page);
   await expect(page.getByTestId('live-open')).toBeVisible({ timeout: 30_000 });
 }
 

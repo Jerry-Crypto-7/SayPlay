@@ -59,6 +59,7 @@ for (const size of SIZES) {
       await shot(page, size.name, 'home-0s');
       await page.waitForTimeout(5_000);
       await shot(page, size.name, 'home-5s');
+      await expect(page.getByText('You lost')).toHaveCount(0);
     });
 
     test('the fox game at 0 s and 5 s, its targets, result and remix box', async ({ page, request }) => {
@@ -75,14 +76,14 @@ for (const size of SIZES) {
 
       await page.waitForTimeout(Math.max(0, 5_000 - (Date.now() - shownAt)));
       await shot(page, size.name, 'game-5s');
+      // P33 T11 (audit bod 1): bez vstupu hráče hra stojí na tiku 0 a prohra nepřijde.
+      await expect(page.getByText('You lost')).toHaveCount(0);
+      expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
+      await expect(page.getByTestId('play-first-prompt')).toContainText('Tap to start');
 
-      // Hra, která bez hráče sama skončí, ukáže konec do pár sekund; jinak ji dohraje běh ověřovače.
+      // Konec hry dohraje běh ověřovače – sama hra bez hráče neskončí.
       const outcome = page.getByTestId('play-outcome');
-      const ended = await outcome.waitFor({ timeout: 10_000 }).then(
-        () => true,
-        () => false,
-      );
-      if (!ended) await page.evaluate(() => window.__playShell!.playWitness());
+      await page.evaluate(() => window.__playShell!.playWitness());
       await expect(outcome).toBeVisible({ timeout: 30_000 });
       await page.waitForTimeout(500);
       await shot(page, size.name, 'result');

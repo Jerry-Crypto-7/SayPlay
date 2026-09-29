@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Skákačka na `/play/[id]` (P25A T6): věta „jumping arcade game with a lot of
  * obstacles“ projde skutečnými dveřmi (dvojník režiséra = návrh ze slov →
@@ -27,6 +29,7 @@ test.describe('/play/[id] – arcade runner', () => {
     await page.goto(url);
     await expect(page.getByTestId('arcade-stage')).toBeVisible();
     await expect(page.getByTestId('play-goal')).not.toHaveText('');
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     const first = Number(await page.getByTestId('play-tick').getAttribute('data-tick'));
     await page.waitForTimeout(500);
@@ -40,6 +43,7 @@ test.describe('/play/[id] – arcade runner', () => {
   test('"Show me how" plays the verified run as a labelled demo, then the player plays (P27D T3)', async ({ page }) => {
     test.setTimeout(240_000);
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 10, undefined, { timeout: 60_000 });
     await page.getByTestId('play-demo-start').click();
     await expect(page.getByTestId('play-demo')).toBeVisible();
@@ -61,6 +65,7 @@ test.describe('/play/[id] – arcade runner', () => {
 
   test('a hidden tab pauses the game and the first key resumes it (P27B T3)', async ({ page }) => {
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     await page.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
@@ -87,6 +92,7 @@ test.describe('/play/[id] – arcade runner', () => {
       Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: unknown) => void shared.push(data) });
     });
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     const before = await page.evaluate(() => window.__playShell!.inputs().length);
     await page.getByTestId('play-share').focus();
@@ -116,6 +122,7 @@ test.describe('/play/[id] – arcade runner', () => {
   test('a pickup pops "+1" and the result waits ~600 ms after the end (P28C T3)', async ({ page }) => {
     type Hand = { handPlay: (until: 'score' | 'end') => { runState: string; score: number; at: number } };
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
     const scored = await page.evaluate(() => (window.__playShell as unknown as Hand).handPlay('score'));
     expect(scored.score).toBeGreaterThan(0);
@@ -138,11 +145,18 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(end.delay).toBeLessThanOrEqual(800);
   });
 
-  test('a one-command prompt says what to do and goes away on the first input (P28C T5)', async ({ page }) => {
+  // P33 T11: výzva visí, dokud hra čeká na první dotek – hodiny stojí na tiku 0 a první stisk padne do něj.
+  test('the game waits on tick 0 under "Tap to start" and the first input starts it (P28C T5, P33 T11)', async ({ page }) => {
     await page.goto(url);
-    await expect(page.getByTestId('play-first-prompt')).toHaveText('Tap to jump', { timeout: 60_000 });
+    const prompt = page.getByTestId('play-first-prompt');
+    await expect(prompt).toContainText('Tap to start', { timeout: 60_000 });
+    await expect(page.getByTestId('play-first-prompt-action')).toHaveText('Tap to jump');
+    await page.waitForTimeout(1_500);
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
     await page.keyboard.press('Space');
-    await expect(page.getByTestId('play-first-prompt')).toHaveCount(0);
+    await expect(prompt).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(10);
+    expect(await page.evaluate(() => window.__playShell!.inputs()[0])).toMatchObject({ tick: 0 });
   });
 
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
@@ -165,6 +179,7 @@ test.describe('/play/[id] – arcade runner', () => {
 
   test('after the run the scene draws on demand: the end state and Replay still redraw it (P28E T2)', async ({ page }) => {
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     const stage = page.getByTestId('arcade-stage').locator('canvas');
     const running = await stage.screenshot();
@@ -199,6 +214,7 @@ test.describe('/play/[id] – arcade runner', () => {
       (window as unknown as { __calls: number[] }).__calls = counts;
     });
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     await page.getByTestId('play-demo-start').click();
     await page.waitForTimeout(2_000);

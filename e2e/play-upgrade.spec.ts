@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Progresivní hra (P23-D T2, P27C T2) bez modelu: věta dá návrh hned a nad
  * hrou stojí proužek se stavem AI verze. Server v e2e model nemá, takže sám
@@ -47,6 +49,7 @@ async function fakeUpgrade(page: Page, draft: Created, answer: (asked: number) =
 const pending = { status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() };
 
 async function running(page: Page): Promise<number> {
+  await startGame(page);
   await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
   return page.evaluate(() => window.__playShell?.tick() ?? 0);
 }
