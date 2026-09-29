@@ -34,7 +34,7 @@ import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { type BodyView, bodiesOf, bodiesStale } from './bodies';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadModel } from './look/load';
+import { loadBodyModel } from './look/load';
 import { Scenery } from './look/Scenery';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -96,12 +96,14 @@ function modelIdOf(view: BodyView, cast: Cast): string {
 /**
  * Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose; postava výškou těla (`fitScale`).
  * `fill` kvádr vyplní v každé ose zvlášť – díl věže, kterému jádro mění šířku (P30B T4).
+ * Model je slitý do jedné sítě (`loadBodyModel`) a jeho matice jsou zmrazené: hýbe se
+ * jen skupina těla a póza nad ním, přepočet vnitřku modelu každý snímek by byl zbytečný.
  */
 export function FittedModel({ id, w, h, d, fallback, character = false, fill = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean; readonly fill?: boolean }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
-    void loadModel(id).then((loaded) => {
+    void loadBodyModel(id).then((loaded) => {
       if (live) setModel(loaded);
     });
     return () => {
@@ -119,6 +121,10 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
     copy.scale.copy(scale);
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
+    copy.traverse((node) => {
+      node.updateMatrix();
+      node.matrixAutoUpdate = false;
+    });
     return copy;
   }, [model, w, h, d, character, fill]);
   if (fitted !== null) return <primitive object={fitted} />;

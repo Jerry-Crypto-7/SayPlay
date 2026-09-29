@@ -14,7 +14,7 @@
  */
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
@@ -466,6 +466,75 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
   );
 }
 
+/**
+ * Plátno se scénou za vlastní hranicí `memo` (P32A T2-R1). `ArcadePlay` se překresluje
+ * s každým tikem (HUD čte snímek relace) a nový prvek `overlay` obejde `memo` celé
+ * stage – bez téhle hranice React každý tik prošel celý strom scény (běžec na Pixel 7
+ * se 4× CPU ~20 % času). Scény čtou stav relace ve `useFrame`, props se jim za běhu nemění.
+ */
+const StageCanvas = memo(function StageCanvas({
+  session,
+  cast,
+  look,
+  enabled,
+  live,
+  surface,
+}: {
+  readonly session: ArcadeSession;
+  readonly cast: Cast;
+  readonly look: Look;
+  readonly enabled: boolean;
+  readonly live: boolean;
+  readonly surface: React.RefObject<HTMLDivElement | null>;
+}) {
+  const base = baseControlOf(session.world.control);
+  const control = base.id;
+  // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
+  const rival = cast.props.rival;
+  const character = rival === undefined ? undefined : riggedCharacter(rival);
+  const rivalModel: RivalModel | undefined =
+    rival === undefined
+      ? undefined
+      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
+  // P30B T4: nota rytmu a díl věže z popisku („lily pads“, „pancakes“); díl vyplní kvádr, šířku mu mění jádro.
+  const { note, block } = cast.props;
+  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
+  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
+  const world = { session, cast, surface, scene: look, enabled };
+  return (
+    // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
+    <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'} shadows="percentage">
+      <RedrawOnChange session={session} />
+      <FrameProbe control={control} />
+      <RenderProbe />
+      {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
+      {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
+      {control === 'timing' ? (
+        <TimingScene session={session} look={look} blockModel={blockModel} />
+      ) : control === 'rhythm' ? (
+        <RhythmScene session={session} look={look} noteModel={noteModel} />
+      ) : control === 'duel' ? (
+        <DuelScene session={session} look={look} rivalModel={rivalModel} />
+      ) : (
+        <>
+          <StyleRig look={look} control={control} surface={surface} />
+          {control === 'move_free' ? (
+            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
+          ) : control === 'runner' ? (
+            <RunnerWorld {...world} />
+          ) : control === 'platform' ? (
+            <PlatformWorld {...world} />
+          ) : (
+            <World {...world} control={control} />
+          )}
+        </>
+      )}
+      {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
+      <Effects session={session} />
+    </Canvas>
+  );
+});
+
 export default function ArcadeStage({
   session,
   cast,
@@ -487,24 +556,12 @@ export default function ArcadeStage({
 }) {
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
-  const base = baseControlOf(session.world.control);
-  const control = base.id;
+  const control = baseControlOf(session.world.control).id;
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
   const actions = useMemo(() => actionsOf(session.world), [session]);
   const look = scene ?? LOOKS[lookId];
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
-  // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
-  const rival = cast.props.rival;
-  const character = rival === undefined ? undefined : riggedCharacter(rival);
-  const rivalModel: RivalModel | undefined =
-    rival === undefined
-      ? undefined
-      : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
-  // P30B T4: nota rytmu a díl věže z popisku („lily pads“, „pancakes“); díl vyplní kvádr, šířku mu mění jádro.
-  const { note, block } = cast.props;
-  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
-  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
   useFireInput(session, fires && enabled);
   useActionInput(session, actions, enabled);
   useRunnerInput(session, surface, enabled && control === 'runner');
@@ -526,40 +583,10 @@ export default function ArcadeStage({
     return () => window.clearTimeout(timer);
   }, [ended]);
   const live = ticking || settling;
-  const world = { session, cast, surface, scene: look, enabled };
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      {/* Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá. */}
-      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'} shadows="percentage">
-        <RedrawOnChange session={session} />
-        <FrameProbe control={control} />
-        <RenderProbe />
-        {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
-        {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
-        {control === 'timing' ? (
-          <TimingScene session={session} look={look} blockModel={blockModel} />
-        ) : control === 'rhythm' ? (
-          <RhythmScene session={session} look={look} noteModel={noteModel} />
-        ) : control === 'duel' ? (
-          <DuelScene session={session} look={look} rivalModel={rivalModel} />
-        ) : (
-          <>
-            <StyleRig look={look} control={control} surface={surface} />
-            {control === 'move_free' ? (
-              <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
-            ) : control === 'runner' ? (
-              <RunnerWorld {...world} />
-            ) : control === 'platform' ? (
-              <PlatformWorld {...world} />
-            ) : (
-              <World {...world} control={control} />
-            )}
-          </>
-        )}
-        {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
-        <Effects session={session} />
-      </Canvas>
+      <StageCanvas session={session} cast={cast} look={look} enabled={enabled} live={live} surface={surface} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {fires && enabled && <FireButton session={session} />}
