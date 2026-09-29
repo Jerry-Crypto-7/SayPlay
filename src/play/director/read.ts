@@ -33,31 +33,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** Slovníky ve `verification`, které přísné schéma posílá jako seznam dvojic `{key, value}`. */
-const RECORD_KEYS = new Set(['counters', 'flags', 'entityStates', 'locked', 'placeAt']);
-
-function restore(value: unknown, key = ''): unknown {
-  if (Array.isArray(value)) {
-    if (RECORD_KEYS.has(key)) return Object.fromEntries(value.filter(isRecord).map((pair) => [String(pair.key), restore(pair.value)]));
-    return value.map((item) => restore(item));
-  }
-  if (isRecord(value)) return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== null).map(([name, item]) => [name, restore(item, name)]));
+/** Přísný režim píše chybějící volitelné pole jako `null`; spec ho chce vynechané. */
+function withoutNulls(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(withoutNulls);
+  if (isRecord(value)) return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== null).map(([name, item]) => [name, withoutNulls(item)]));
   return value;
-}
-
-/**
- * Odpověď v přísném schématu (`answer-schema.ts`, P26 T6) → obyčejný spec:
- * bez `plan`, bez polí `null`, slovníky zpátky z dvojic. Arkáda `verification`
- * nepíše – dostane „hra jde vyhrát“, kterou dokazuje robot. Jiné tělo
- * (větev bez schématu) projde beze změny.
- */
-export function unwrapAnswer(body: unknown): unknown {
-  if (!isRecord(body) || typeof body.plan !== 'string' || !isRecord(body.spec)) return body;
-  const spec = restore(body.spec) as Record<string, unknown>;
-  // Mřížka je v návrhu bez `control`; stejný tvar drží porovnání „model vrátil návrh“.
-  if (spec.control === 'tap_go') delete spec.control;
-  if (spec.verification === undefined) spec.verification = [{ id: 'wins', kind: 'reachability', assert: { runState: 'won' } }];
-  return spec;
 }
 
 /** Neznámá `id` v `mechanics`, v pořadí výskytu; prázdné, když je pole nečitelné. */
@@ -93,7 +73,7 @@ export function readGenreAnswer(body: unknown): GenreRead {
   const raw = typeof body.plan === 'string' && isRecord(body.spec) ? body.spec : body;
   const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
-  const genre = readGenreSpec(restore(raw));
+  const genre = readGenreSpec(withoutNulls(raw));
   if (!genre.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: genre.issues.join('; ') };
   const game = readModelSpec(compileGenre(genre.value));
   return game.ok ? { ok: true, spec: game.spec, genre: genre.value } : game;

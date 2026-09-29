@@ -8,7 +8,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { answerFixture } from '@/play/director/__fixtures__';
+import { answerFixture, genreAnswer } from '@/play/director/__fixtures__';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 import { resetProcessSpendCap } from '@/server/spend-cap';
@@ -17,6 +17,14 @@ import { resetConcurrency } from '../../worldstream/sessions/route';
 import { __resetUpgrades } from '../_upgrade';
 import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { POST as createGame } from '../games/route';
+
+// Každý `GenreSpec` složí modul žánru hratelně; nehratelnou hru pro opravné kolo
+// podvrhne až tahle záměna překladu – jako by modul žánru hru rozbil.
+const genre = vi.hoisted(() => ({ unplayable: null as unknown }));
+vi.mock('@/play/genre/index', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/play/genre/index')>();
+  return { ...actual, compileGenre: (spec: Parameters<typeof actual.compileGenre>[0]) => genre.unplayable ?? actual.compileGenre(spec) };
+});
 
 const KEY = 'sk-test-d1-never-leaves-the-server';
 
@@ -45,6 +53,7 @@ beforeEach(() => {
   resetConcurrency();
   for (const [key, value] of Object.entries(API)) vi.stubEnv(key, value);
   resetProcessSpendCap();
+  genre.unplayable = null;
   upstream.script = [];
   upstream.requests = [];
   vi.stubGlobal('fetch', async (url: string, init: RequestInit = {}) => {
@@ -94,19 +103,8 @@ function brokenSwitch(): unknown {
 
 describe('final API profile over a provider double (D1)', () => {
   it('create: one call in the Messages format, the key only in the provider header, the AI child stored', async () => {
-    // Výchozí režie je kompaktní (P27D T2): model vybírá, hru skládá šablona.
-    upstream.script = [
-      {
-        plan: 'a hamster runs from a robot vacuum',
-        control: 'runner',
-        addons: ['chaser'],
-        look: 'supermarket',
-        setting: 'supermarket aisles',
-        title: 'Hamster Escape',
-        labels: [{ role: 'player', label: 'hamster' }],
-        goal: 'Run past the aisles before the Roomba catches you.',
-      },
-    ];
+    // Model vybírá žánr (P32B T4), hru skládá modul žánru.
+    upstream.script = [genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', enemy: 'robot vacuum', setting: 'supermarket aisles', palette: 'supermarket' })];
     const { versionId, outcome, seen } = await create();
     expect(outcome.status).toBe('ready');
     expect(upstream.requests).toHaveLength(1);
@@ -121,9 +119,8 @@ describe('final API profile over a provider double (D1)', () => {
   });
 
   it('repair: an unplayable answer gets one repair round and the repaired game is published', async () => {
-    // Nehratelnou hru dá jen celý GameSpec; kompaktní skládání stojí na hratelných šablonách.
-    vi.stubEnv('PLAY_DIRECTOR_MODE', 'full');
-    upstream.script = [brokenSwitch(), [{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }]];
+    genre.unplayable = brokenSwitch();
+    upstream.script = [genreAnswer(), [{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }]];
     const { outcome } = await create();
     expect(outcome.status).toBe('ready');
     expect(upstream.requests).toHaveLength(2);
@@ -140,7 +137,7 @@ describe('final API profile over a provider double (D1)', () => {
   it('a spend cap of 0 USD sends nothing to the provider', async () => {
     vi.stubEnv('WORLDSMITH_SPEND_CAP_USD', '0');
     resetProcessSpendCap();
-    upstream.script = [answerFixture('good-collect_exit')];
+    upstream.script = [genreAnswer()];
     const { outcome } = await create();
     expect(outcome.status).toBe('draft-final');
     expect(upstream.requests).toHaveLength(0);

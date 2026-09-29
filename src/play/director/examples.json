@@ -2,91 +2,91 @@
   {
     "id": "e01",
     "sentence": "a fox runs through a burning forest jumping over fallen logs and grabbing acorns",
-    "answer": { "plan": "Endless run through the forest; the logs are obstacles, acorns the coins.", "control": "runner", "addons": ["collect"], "look": "forest", "setting": "burning forest", "title": "Fox on Fire", "labels": [{ "role": "player", "label": "fox" }, { "role": "obstacle", "label": "fallen log" }, { "role": "coin", "label": "acorn" }], "goal": "Run through the forest, jump the logs and grab acorns.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Run forward through the forest; the logs are in the way, acorns to grab.", "spec": { "genre": "runner", "mode": "default", "hero": "fox", "enemy": "fallen log", "collectible": "acorn", "setting": "burning forest", "palette": "forest" } }
   },
   {
     "id": "e02",
     "sentence": "a mouse runs from a cat through the kitchen dodging pots",
-    "answer": { "plan": "Runner with a chaser behind; pots are the obstacles.", "control": "runner", "addons": ["chaser"], "look": "living_room", "setting": "busy kitchen", "title": "Kitchen Getaway", "labels": [{ "role": "player", "label": "mouse" }, { "role": "obstacle", "label": "pot" }], "goal": "Dodge the pots and outrun the cat.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Running from a cat is escaping it; the cat hunts the mouse.", "spec": { "genre": "arena", "mode": "escape", "hero": "mouse", "enemy": "cat", "setting": "busy kitchen", "palette": "living_room" } }
   },
   {
     "id": "e03",
     "sentence": "a robot jumps across factory platforms and shoots rust bugs",
-    "answer": { "plan": "Platformer; shooting is the second verb, so the shoot addon.", "control": "platform", "addons": ["shoot"], "look": "factory", "setting": "old factory", "title": "Rust Buster", "labels": [{ "role": "player", "label": "robot" }], "goal": "Jump across the platforms and shoot the rust bugs.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Jumping across platforms is the main verb; rust bugs stand in the way.", "spec": { "genre": "platformer", "mode": "default", "hero": "robot", "enemy": "rust bug", "setting": "old factory", "palette": "factory" } }
   },
   {
     "id": "e04",
     "sentence": "an astronaut hops between moon craters collecting crystals",
-    "answer": { "plan": "Platformer on the moon; crystals are the coins.", "control": "platform", "addons": ["collect"], "look": "space", "setting": "moon craters", "title": "Crater Hopper", "labels": [{ "role": "player", "label": "astronaut" }, { "role": "coin", "label": "crystal" }], "goal": "Hop between the craters and collect the crystals.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Hopping between craters, crystals to collect on the way.", "spec": { "genre": "platformer", "mode": "default", "hero": "astronaut", "collectible": "crystal", "setting": "moon craters", "palette": "space" } }
   },
   {
     "id": "e05",
     "sentence": "a paper plane flutters between skyscrapers collecting stars",
-    "answer": { "plan": "Flap through gaps; skyscrapers are the pipes.", "control": "flap", "addons": ["collect"], "look": "city", "setting": "city skyline", "title": "Paper Plane", "labels": [{ "role": "player", "label": "paper plane" }, { "role": "pipe", "label": "skyscraper" }, { "role": "coin", "label": "star" }], "goal": "Flutter between the skyscrapers and collect stars.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "A plane flies, so a voyage; the skyscrapers are in the way, stars to collect.", "spec": { "genre": "voyage", "mode": "race", "hero": "paper plane", "enemy": "skyscraper", "collectible": "star", "setting": "city skyline", "palette": "city" } }
   },
   {
     "id": "e06",
     "sentence": "race a snowmobile down a glacier past other riders and grab speed boosts",
-    "answer": { "plan": "Racing: rivals are the other riders, turbo the speed boosts.", "control": "steer", "addons": [], "look": "snow", "setting": "glacier slope", "title": "Glacier Dash", "labels": [{ "role": "player", "label": "snowmobile" }, { "role": "rival", "label": "rider" }, { "role": "turbo", "label": "speed boost" }], "goal": "Race down the glacier past the other riders.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "A race on a snowmobile; riders are the rivals, speed boosts to grab.", "spec": { "genre": "voyage", "mode": "race", "hero": "snowmobile", "enemy": "rider", "collectible": "speed boost", "setting": "glacier slope", "palette": "snow" } }
   },
   {
     "id": "e07",
     "sentence": "fly a biplane through the canyon and dodge the rocks",
-    "answer": { "plan": "Steer the plane; rocks are the barriers.", "control": "steer", "addons": [], "look": "desert", "setting": "desert canyon", "title": "Canyon Flight", "labels": [{ "role": "player", "label": "biplane" }, { "role": "barrier", "label": "rock" }], "goal": "Fly through the canyon without hitting the rocks.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Flying through a canyon; the rocks are in the way.", "spec": { "genre": "voyage", "mode": "race", "hero": "biplane", "enemy": "rock", "setting": "desert canyon", "palette": "desert" } }
   },
   {
     "id": "e08",
     "sentence": "a tiny jellyfish eats plankton and grows while sharks hunt it",
-    "answer": { "plan": "Eat and grow; sharks are the hunters, plankton the food.", "control": "move_free", "addons": [], "look": "underwater", "setting": "deep sea", "title": "Jelly Grow", "labels": [{ "role": "player", "label": "jellyfish" }, { "role": "hunter", "label": "shark" }, { "role": "coin", "label": "plankton" }], "goal": "Eat plankton and grow before the sharks catch you.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Eat to grow is collecting; the sharks hunt the jellyfish.", "spec": { "genre": "arena", "mode": "collect", "hero": "jellyfish", "enemy": "shark", "collectible": "plankton", "setting": "deep sea", "palette": "underwater" } }
   },
   {
     "id": "e09",
     "sentence": "defend the space station by shooting down asteroids",
-    "answer": { "plan": "Tap to shoot; asteroids are the enemies.", "control": "shooter", "addons": [], "look": "space", "setting": "orbit around a space station", "title": "Station Defense", "labels": [{ "role": "player", "label": "space station" }, { "role": "enemy", "label": "asteroid" }], "goal": "Shoot down the asteroids before they hit the station.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Shooting down is a fight; the asteroids are the enemy.", "spec": { "genre": "arena", "mode": "fight", "hero": "space station", "enemy": "asteroid", "setting": "orbit around a space station", "palette": "space" } }
   },
   {
     "id": "e10",
     "sentence": "a pirate ship fires cannonballs at sea monsters and has three lives",
-    "answer": { "plan": "Shooter at sea; three lives is the lives addon.", "control": "shooter", "addons": ["lives"], "look": "ocean", "setting": "stormy sea", "title": "Monster Sea", "labels": [{ "role": "player", "label": "pirate ship" }, { "role": "enemy", "label": "sea monster" }], "goal": "Sink the sea monsters before you lose three lives.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "A ship can only sail, so a voyage; the sea monsters are in the way.", "spec": { "genre": "voyage", "mode": "race", "hero": "pirate ship", "enemy": "sea monster", "setting": "stormy sea", "palette": "ocean" } }
   },
   {
     "id": "e11",
     "sentence": "throw snowballs at a snowman in the park",
-    "answer": { "plan": "Hold and release to throw; the snowman is the target.", "control": "throw", "addons": [], "look": "snow", "setting": "snowy park", "title": "Snowball Toss", "labels": [{ "role": "target", "label": "snowman" }], "goal": "Throw snowballs and hit the snowman.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Hitting the snowman is the task; no hero named, keep the starting point's.", "spec": { "genre": "quest", "mode": "spatial", "hero": "penguin", "target": { "label": "snowman", "verb": "hit", "states": 2 }, "setting": "snowy park", "palette": "snow" } }
   },
   {
     "id": "e12",
     "sentence": "stack pancakes as high as you can in a diner",
-    "answer": { "plan": "Stop the bar to stack; pancakes are the blocks.", "control": "timing", "addons": [], "look": null, "setting": "diner kitchen", "title": "Pancake Tower", "labels": [{ "role": "block", "label": "pancake" }], "goal": "Stack the pancakes as high as you can.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Making a stack of pancakes at one station.", "spec": { "genre": "quest", "mode": "station", "hero": "fox", "target": { "label": "pancake", "verb": "make", "states": 3 }, "setting": "diner kitchen" } }
   },
   {
     "id": "e13",
     "sentence": "tap to the beat of the drums at a beach party",
-    "answer": { "plan": "Rhythm: each drum beat is a note.", "control": "rhythm", "addons": [], "look": "beach", "setting": "beach party at sunset", "title": "Drum Beach", "labels": [{ "role": "note", "label": "drum beat" }], "goal": "Tap on every drum beat.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Playing the drums is the task at the party.", "spec": { "genre": "quest", "mode": "spatial", "hero": "turtle", "target": { "label": "drum", "verb": "use", "states": 2 }, "setting": "beach party at sunset", "palette": "beach" } }
   },
   {
     "id": "e14",
     "sentence": "a samurai duels a ninja on a temple roof",
-    "answer": { "plan": "One-on-one fight: the ninja is the rival.", "control": "duel", "addons": [], "look": "castle", "setting": "temple roof at night", "title": "Roof Duel", "labels": [{ "role": "player", "label": "samurai" }, { "role": "rival", "label": "ninja" }], "goal": "Defeat the ninja on the temple roof.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "A duel is a fight; the ninja is the rival.", "spec": { "genre": "arena", "mode": "fight", "hero": "samurai", "enemy": "ninja", "setting": "temple roof at night", "palette": "castle" } }
   },
   {
     "id": "e15",
     "sentence": "a squirrel collects five nuts in the garden and hides in its tree",
-    "answer": { "plan": "Walk and pick up on the grid; the tree is the exit, no guards in the sentence.", "control": "tap_go", "addons": [], "look": "meadow", "setting": "back garden", "title": "Nut Season", "labels": [{ "role": "player", "label": "squirrel" }, { "role": "mushroom", "label": "nut" }, { "role": "portal", "label": "tree" }], "goal": "Collect five nuts and hide in your tree.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Collecting nuts in the garden, nobody hunts the squirrel.", "spec": { "genre": "arena", "mode": "collect", "hero": "squirrel", "collectible": "nut", "setting": "back garden", "palette": "meadow" } }
   },
   {
     "id": "e16",
     "sentence": "sneak past the guard dogs to reach the treasure room",
-    "answer": { "plan": "Grid walk past patrols; the treasure room is the exit.", "control": "tap_go", "addons": [], "look": "castle", "setting": "castle vault", "title": "Treasure Heist", "labels": [{ "role": "enemy", "label": "guard dog" }, { "role": "portal", "label": "treasure room" }], "goal": "Sneak past the guard dogs to the treasure room.", "ruleRoles": [], "things": [], "rules": [] }
+    "answer": { "plan": "Sneaking past guards is escaping them; no hero named, the castle gives a knight.", "spec": { "genre": "arena", "mode": "escape", "hero": "knight", "enemy": "guard dog", "setting": "castle vault", "palette": "castle" } }
   },
   {
     "id": "e17",
     "sentence": "carry the lost puppy back to its kennel in the park",
-    "answer": { "plan": "Walk the park; carrying is a verb move_free cannot play, so rules add it.", "control": "move_free", "addons": [], "look": "meadow", "setting": "city park", "title": "Lost Puppy", "labels": [], "goal": "Carry the puppy back to its kennel.", "ruleRoles": [{ "id": "puppy", "kind": "item", "label": "lost puppy", "count": null }, { "id": "kennel", "kind": "destination", "label": "kennel", "count": null }], "things": [], "rules": [{ "id": "pick_puppy", "verb": "carry", "when": { "contact": ["player", "puppy"] }, "if": [{ "notHolding": true }], "do": [{ "grab": "other" }] }, { "id": "bring_home", "verb": "carry", "when": { "contact": ["player", "kennel"] }, "if": [{ "holding": "puppy" }], "do": [{ "win": true }] }] }
+    "answer": { "plan": "Delivering the puppy home is the task.", "spec": { "genre": "quest", "mode": "spatial", "hero": "fox", "target": { "label": "lost puppy", "verb": "deliver", "states": 2 }, "setting": "city park", "palette": "meadow" } }
   },
   {
     "id": "e18",
     "sentence": "take the silver key and open the treasure chest on a pirate island",
-    "answer": { "plan": "Walk the island; taking and opening are verbs move_free cannot play, so rules add them.", "control": "move_free", "addons": [], "look": "beach", "setting": "pirate island", "title": "Silver Key", "labels": [], "goal": "Take the silver key and open the treasure chest.", "ruleRoles": [{ "id": "key", "kind": "key", "label": "silver key", "count": null }, { "id": "chest", "kind": "target", "label": "treasure chest", "count": null }], "things": [], "rules": [{ "id": "take_key", "verb": "take", "when": { "contact": ["player", "key"] }, "if": [{ "notHolding": true }], "do": [{ "grab": "other" }] }, { "id": "open_chest", "verb": "open", "when": { "contact": ["player", "chest"] }, "if": [{ "holding": "key" }], "do": [{ "despawn": "held" }, { "win": true }] }] }
+    "answer": { "plan": "Opening the chest is the task; the key opens it.", "spec": { "genre": "quest", "mode": "spatial", "hero": "turtle", "target": { "label": "treasure chest", "verb": "open", "states": 2 }, "setting": "pirate island", "palette": "beach" } }
   }
 ]

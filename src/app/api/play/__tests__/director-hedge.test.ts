@@ -8,6 +8,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { genreAnswer } from '@/play/director/__fixtures__';
 import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import type { GenerationOutcome } from '@/server/pipeline';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -29,16 +30,7 @@ const LIVE = {
   PLAY_DIRECTOR_HEDGE_MS: '30000',
 };
 
-const COMPACT = {
-  plan: 'platformer on ice',
-  control: 'platform',
-  addons: [],
-  look: 'snow',
-  setting: 'frozen iceberg field',
-  title: 'Penguin Iceberg Jump',
-  labels: [{ role: 'player', label: 'penguin' }],
-  goal: 'Hop the icebergs to the igloo.',
-};
+const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', enemy: undefined, collectible: undefined, setting: 'frozen iceberg field', palette: 'snow' });
 
 const ok = (model: string): GenerationOutcome => ({ ok: true, body: { model }, usage: null, provenance: { model } });
 const down: GenerationOutcome = { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: 'down', usage: null };

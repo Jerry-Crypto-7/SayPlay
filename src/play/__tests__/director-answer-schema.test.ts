@@ -1,32 +1,26 @@
 /**
- * Schéma odpovědi režiséra (P26 T6).
+ * Schéma odpovědi režiséra (P26 T6; `GenreSpec` od P32B T4).
  *
  * Tři vlastnosti: (1) je přísné v každém uzlu, jinak ho API odmítne celé
  * (naměřeno 23. 9.: chybějící klíč v `required` = `invalid_json_schema`);
- * (2) přijme každou šablonu hry – schéma, které platnou hru nepustí, by model
- * donutilo psát jinou; (3) nepustí, co tabulka schopností zakazuje. Validátor
- * je malý a pokrývá jen podmnožinu, kterou `strictSchema` vyrábí.
+ * (2) přijme každý `GenreSpec`, který píše draft – schéma, které platnou hru
+ * nepustí, by model donutilo psát jinou; (3) nepustí režim, který nehraje,
+ * ani parametr mimo meze modulu. Validátor je malý a pokrývá jen podmnožinu,
+ * kterou `strictSchema` vyrábí.
  */
 
 import { describe, expect, it } from 'vitest';
 
-import chaseEscape from '../__fixtures__/chase_escape.json';
-import collectExit from '../__fixtures__/collect_exit.json';
-import combatLite from '../__fixtures__/combat_lite.json';
-import switchPuzzle from '../__fixtures__/switch_puzzle.json';
-import arena from '../arcade/__fixtures__/arena.json';
-import duel from '../arcade/__fixtures__/duel.json';
-import runner from '../arcade/__fixtures__/runner.json';
-import shooter from '../arcade/__fixtures__/shooter.json';
+import { z } from 'zod';
+
 import steer from '../arcade/__fixtures__/steer.json';
-import throwGame from '../arcade/__fixtures__/throw.json';
+import { modelRulesSchema } from '../arcade/rules/schema';
 import { goldenPrompts } from '../../../evals/play/golden';
-import { DIRECTOR_ANSWER_SCHEMA, GENRE_ANSWER_SCHEMA } from '../director/answer-schema';
-import { readGenreAnswer, unwrapAnswer } from '../director/read';
+import { GENRE_ANSWER_SCHEMA, strictSchema } from '../director/answer-schema';
+import { readGenreAnswer } from '../director/read';
 import { draftGameSpecWithMeta } from '../draft';
 import { GENRE_MODULES } from '../genre/index';
 import { heroClass } from '../genre/roles';
-import { readGameSpec } from '../spec';
 import { codexArgs } from '@/server/upstream';
 
 type Json = Record<string, unknown>;
@@ -97,16 +91,12 @@ function walk(node: unknown, visit: (node: Json, path: string) => void, path = '
   }
 }
 
-const SPEC = (DIRECTOR_ANSWER_SCHEMA.properties as Record<string, Json>).spec;
 const GENRE_SPEC = (GENRE_ANSWER_SCHEMA.properties as Record<string, Json>).spec;
 
-describe.each([
-  ['GameSpec', DIRECTOR_ANSWER_SCHEMA],
-  ['GenreSpec', GENRE_ANSWER_SCHEMA],
-])('director answer schema for a %s (strict mode)', (_name, schema) => {
+describe('director answer schema (strict mode)', () => {
   it('is strict in every node: all keys required, no extras, a type or anyOf, no const/default/$ref', () => {
     const problems: string[] = [];
-    walk(schema, (node, path) => {
+    walk(GENRE_ANSWER_SCHEMA, (node, path) => {
       // Uzel schématu, ne mapa `properties` – ta nese jména polí.
       if (path.endsWith('/properties')) return;
       if (node.type === undefined && node.anyOf === undefined) problems.push(`${path}: no type`);
@@ -119,12 +109,10 @@ describe.each([
     });
     expect(problems).toEqual([]);
   });
-});
 
-describe('director answer schema (strict mode)', () => {
   it('turns the contact pair of a rule into an array of exactly two roles (strict mode has no tuples)', () => {
     const contacts: Json[] = [];
-    walk(DIRECTOR_ANSWER_SCHEMA, (node, path) => {
+    walk(strictSchema(z.toJSONSchema(modelRulesSchema, { io: 'input', unrepresentable: 'any' }) as Json), (node, path) => {
       if (path.endsWith('/properties/contact')) contacts.push(node);
     });
     expect(contacts.length).toBeGreaterThan(0);
@@ -136,44 +124,6 @@ describe('director answer schema (strict mode)', () => {
       expect(validate(pair, ['player'])).not.toEqual([]);
       expect(validate(pair, ['player', 'coin', 'door'])).not.toEqual([]);
     }
-  });
-
-  it.each([
-    ['collect_exit', collectExit],
-    ['chase_escape', chaseEscape],
-    ['switch_puzzle', switchPuzzle],
-    ['combat_lite', combatLite],
-    ['runner', runner],
-    ['steer', steer],
-    ['arena', arena],
-    ['shooter', shooter],
-    ['throw', throwGame],
-    ['duel', duel],
-  ])('accepts the %s template and unwraps it back to the same spec', (_name, fixture) => {
-    const read = readGameSpec(fixture);
-    if (!read.ok) throw new Error(read.issues.join('; '));
-    const spec = read.value;
-    const arcade = spec.control !== undefined && spec.control !== 'tap_go';
-    // Arkáda `verification` nepíše, dostane ji zpátky z `unwrapAnswer`.
-    const { verification, ...rest } = spec;
-    const answer = { plan: 'keep the template', spec: encode(SPEC, arcade ? rest : { ...spec, control: 'tap_go' }) };
-    expect(validate(DIRECTOR_ANSWER_SCHEMA, answer)).toEqual([]);
-    const back = readGameSpec(unwrapAnswer(answer));
-    if (!back.ok) throw new Error(back.issues.join('; '));
-    expect(back.value).toEqual(arcade ? { ...spec, verification: [{ id: 'wins', kind: 'reachability', assert: { runState: 'won' } }] } : spec);
-    if (arcade) expect(verification).toHaveLength(1);
-  });
-
-  it('rejects what the capability table forbids', () => {
-    const read = readGameSpec(runner);
-    if (!read.ok) throw new Error('fixture');
-    const { verification: _v, ...rest } = read.value;
-    const ok = encode(SPEC, rest) as Json;
-    expect(validate(SPEC, ok)).toEqual([]);
-    // Běžec nehraje hazard_zone, mřížka nezná `controlParams`, arkáda nepíše `verification`.
-    expect(validate(SPEC, { ...ok, mechanics: [{ id: 'hazard_zone', params: { role: 'obstacle', effect: 'lose', pulse: null } }] })).not.toEqual([]);
-    expect(validate(SPEC, { ...ok, controlParams: { speed: 'warp' } })).not.toEqual([]);
-    expect(validate(SPEC, { ...ok, verification: [] })).not.toEqual([]);
   });
 
   it('codex gets the schema file only when the request carries one', () => {

@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
-import { answerFixture, runnerAnswer } from '@/play/director/__fixtures__';
+import { answerFixture, genreAnswer } from '@/play/director/__fixtures__';
 import type { DirectorDeps } from '@/play/director';
 import { answered, failed, fakeBranch, type FakeBranch, type ScriptedOutcome } from '@/play/director/__fixtures__/branch';
 import { draftGameSpec } from '@/play/draft';
@@ -45,6 +45,14 @@ vi.mock('../_director', async (importOriginal) => {
       return { ...(await direct(sentence, { branch: director.branch, now: Date.now, check })), callerLimited: false };
     },
   };
+});
+
+// Každý `GenreSpec` složí modul žánru hratelně; nehratelnou hru pro opravné kolo
+// podvrhne až tahle záměna překladu – jako by modul žánru hru rozbil.
+const genre = vi.hoisted(() => ({ unplayable: null as unknown }));
+vi.mock('@/play/genre/index', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/play/genre/index')>();
+  return { ...actual, compileGenre: (spec: Parameters<typeof actual.compileGenre>[0]) => genre.unplayable ?? actual.compileGenre(spec) };
 });
 
 const { POST: createGame } = await import('../games/route');
@@ -95,8 +103,9 @@ beforeEach(() => {
   resetRateWindows();
   director.calls = 0;
   director.callerLimited = false;
-  director.script = [answered(answerFixture('good-collect_exit'))];
+  director.script = [answered(genreAnswer())];
   director.gate = Promise.resolve();
+  genre.unplayable = null;
 });
 
 afterEach(() => {
@@ -150,7 +159,8 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     const child = await game(ready.versionId);
     expect(child.relation).toBe('upgrade');
     expect(child.version.parentId).toBe(draftId);
-    expect(child.spec.archetype).toBe('collect_exit');
+    // Modul žánru složil hru z odpovědi (liška), ne z věty (křeček).
+    expect(child.spec.title).toBe('Fox Escape');
     expect(child.origin).toBeUndefined();
     expect(child.timings.source).toBe('authored');
     for (const field of ['ackMs', 'draftReadyMs', 'directorMs', 'compileMs', 'verifyMs']) expect(child.timings[field]).toBeTypeOf('number');
@@ -190,7 +200,7 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
     const record = JSON.parse(readFileSync(join(dir, `${created.body.versionId}.json`), 'utf8'));
     expect(record).toMatchObject({ outcome: 'MALFORMED', stage: 'model', reason: 'MALFORMED_RESPONSE', detail: 'the codex answer is not JSON: Unexpected token', raw: 'Here is your game: {', sentence: SENTENCE });
-    // Odpověď, která je JSON, ale ne GameSpec: důvod čtení a celé tělo.
+    // Odpověď, která je JSON, ale ne GenreSpec: důvod čtení a celé tělo.
     director.script = [answered({ entities: [], rules: [] })];
     const second = await publish({ sentence: 'a robot collects batteries on Mars' });
     expect(await settled(second.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
@@ -211,7 +221,8 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     const toggle = broken.mechanics.find((mechanic) => mechanic.id === 'switch');
     if (toggle === undefined) throw new Error('fixture');
     toggle.params.required = ['red', 'blue', 'green'];
-    director.script = [answered(broken)];
+    genre.unplayable = broken;
+    director.script = [answered(genreAnswer())];
     const created = await publish({ sentence: SENTENCE });
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
@@ -225,7 +236,8 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   }
 
   it('neprošlý keypoint dostane opravné kolo a opravená hra se publikuje', async () => {
-    director.script = [answered(brokenSwitch()), answered([{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }])];
+    genre.unplayable = brokenSwitch();
+    director.script = [answered(genreAnswer()), answered([{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }])];
     const created = await publish({ sentence: SENTENCE });
     expect((await settled(created.body.versionId)).status).toBe('ready');
     const repair = director.branch?.calls[1]?.request.user ?? '';
@@ -234,7 +246,8 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   });
 
   it('neopravený keypoint zůstane NOT_PLAYABLE i po opravných kolech', async () => {
-    director.script = [answered(brokenSwitch()), answered([]), answered([])];
+    genre.unplayable = brokenSwitch();
+    director.script = [answered(genreAnswer()), answered([]), answered([])];
     const created = await publish({ sentence: SENTENCE });
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
     expect(director.branch?.calls).toHaveLength(3);
@@ -244,7 +257,7 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // P26 T4: AI smí opravit žánr, který návrh ze slov odhadl špatně – ověřuje robot, ne shoda s návrhem.
   // P32B T2: návrh nové hry je žánr – „zombie shooter in a mall“ z něj vyjde jako úkol (`move_free`), ne střelnice.
   it('vylepšení z úkolu na plošinovku se přijme, když je vyhratelné', async () => {
-    director.script = [answered({ ...(runnerAnswer() as object), control: 'platform', controlParams: { difficulty: 'easy' } })];
+    director.script = [answered(genreAnswer({ genre: 'platformer', mode: 'default', hero: 'zombie hunter', enemy: 'zombie', setting: 'mall', palette: 'mall' }))];
     const created = await publish({ sentence: 'zombie shooter in a mall' });
     expect((await game(created.body.versionId)).spec.genre.id).toBe('quest');
     expect((await game(created.body.versionId)).spec.control).toBe('move_free');
@@ -253,17 +266,16 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect((await game(childId as string)).spec.control).toBe('platform');
   });
 
-  // P32B T2: skákací věta je od žánrů plošinovka, ne běžec.
-  it('mřížková odpověď na plošinovku se přijme a dítě je mřížka', async () => {
+  // P32B T4: model píše jen žánr – celý GameSpec (tady mřížka) se nepřečte a hra zůstane návrhem.
+  it('odpověď celým GameSpec místo žánru skončí návrhem MALFORMED bez dítěte', async () => {
+    director.script = [answered(answerFixture('good-collect_exit'))];
     const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
-    expect((await game(created.body.versionId)).spec.control).toBe('platform');
-    expect((await settled(created.body.versionId)).status).toBe('ready');
-    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
-    expect((await game(childId as string)).spec.control).toBeUndefined();
+    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
+    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
 
   it('běžec vylepšený běžcem je ready a dítě zůstane běžcem', async () => {
-    director.script = [answered(runnerAnswer())];
+    director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'cyber cat', enemy: 'drone', setting: 'neon rooftops', palette: 'city' }))];
     const created = await publish({ sentence: 'endless runner in a neon city' });
     expect((await game(created.body.versionId)).spec.control).toBe('runner');
     expect((await settled(created.body.versionId)).status).toBe('ready');
@@ -271,12 +283,12 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(children).toHaveLength(1);
     const child = await game(children[0] as string);
     expect(child.spec.control).toBe('runner');
-    expect(child.spec.title).toBe('Neon Rooftop Sprint');
+    expect(child.spec.title).toBe('Cyber Cat Run');
   });
 
   // P32B T2: mřížkový návrh nová věta už nedostane; křeček je útěk v aréně.
   it('arénový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
-    director.script = [answered(runnerAnswer())];
+    director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', enemy: 'giant roomba', setting: 'supermarket aisles', palette: 'supermarket' }))];
     const created = await publish({ sentence: SENTENCE });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
     expect((await game(created.body.versionId)).spec.control).toBe('move_free');
@@ -312,7 +324,7 @@ describe('GET …/upgrade', () => {
     const created = await publish({ sentence: SENTENCE });
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
     __resetUpgrades();
-    director.script = [answered(answerFixture('good-collect_exit'))];
+    director.script = [answered(genreAnswer())];
     expect(await upgrade(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MALFORMED' });
     expect(director.calls).toBe(1);
   });
@@ -323,7 +335,7 @@ describe('GET …/upgrade', () => {
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
     await versionStoreFromEnv(process.env).rememberUpgradeVerdict(created.body.versionId, 'MODEL_UNAVAILABLE', 3600);
     __resetUpgrades();
-    director.script = [answered(answerFixture('good-collect_exit'))];
+    director.script = [answered(genreAnswer())];
     expect((await settled(created.body.versionId)).status).toBe('ready');
   });
 
@@ -331,7 +343,7 @@ describe('GET …/upgrade', () => {
     director.script = [failed('UPSTREAM_UNAVAILABLE')];
     const created = await publish({ sentence: SENTENCE });
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
-    director.script = [answered(answerFixture('good-collect_exit'))];
+    director.script = [answered(genreAnswer())];
     const outcome = await settled(created.body.versionId);
     expect(outcome.status).toBe('ready');
   });
@@ -345,7 +357,7 @@ describe('GET …/upgrade', () => {
       const created = await publish({ sentence: SENTENCE });
       const id = created.body.versionId as string;
       expect((await settled(id)).reason).toBe('MODEL_UNAVAILABLE');
-      director.script = [answered(answerFixture('good-collect_exit'))];
+      director.script = [answered(genreAnswer())];
       expect((await settled(id)).status).toBe('ready');
       const ended = `[play] upgrade of ${id} ended MODEL_UNAVAILABLE at model: UPSTREAM_REJECTED – no free play slot`;
       const kinds = warn.mock.calls
@@ -375,7 +387,7 @@ describe('GET …/upgrade', () => {
     await settled(created.body.versionId);
     director.callerLimited = false;
     __resetUpgrades();
-    director.script = [answered(answerFixture('good-collect_exit'))];
+    director.script = [answered(genreAnswer())];
     director.calls = 0;
     const [a, b] = await Promise.all([upgrade(created.body.versionId), upgrade(created.body.versionId)]);
     expect(a).toEqual(b);
@@ -391,7 +403,7 @@ describe('GET …/upgrade', () => {
     expect(outcomes).toContainEqual({ status: 'draft-final', reason: 'MODEL_UNAVAILABLE' });
     expect(outcomes).toContainEqual(PENDING);
     director.callerLimited = false;
-    director.script = [answered(answerFixture('good-collect_exit'))];
+    director.script = [answered(genreAnswer())];
     expect((await settled(created.body.versionId)).status).toBe('ready');
   });
 

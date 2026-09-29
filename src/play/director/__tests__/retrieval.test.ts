@@ -13,13 +13,17 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { derivedSeeds, playabilityIssues, seedFrom } from '@/app/api/play/_publish';
 import { loadRapier } from '@/play/arcade/physics/world';
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpecWithMeta } from '@/play/draft';
+import type { GenreModule } from '@/play/genre/contract';
+import { GENRE_MODULES } from '@/play/genre/index';
 import type { GenerationBranch } from '@/server/pipeline';
 
 import { direct } from '..';
-import { buildCompactRequest, composeCompact } from '../compact';
+import { readyModes } from '../answer-schema';
+import { buildCompactRequest } from '../compact';
 import { blockingIssues, critique } from '../critic';
-import { DIRECTOR_EXAMPLES, EXAMPLES_MAX, EXAMPLES_MAX_CHARS, EXAMPLES_MIN, examplesBlock, nearestExamples } from '../retrieval';
+import { readGenreAnswer } from '../read';
+import { DIRECTOR_EXAMPLES, EXAMPLES_MAX, EXAMPLES_MAX_CHARS, EXAMPLES_MIN, exampleSpec, examplesBlock, nearestExamples } from '../retrieval';
 
 const setOf = (file: string): { id: string; text: string }[] => JSON.parse(readFileSync(join(process.cwd(), 'evals', 'play', 'p30', file), 'utf8')).sentences;
 const normalize = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim();
@@ -31,15 +35,14 @@ beforeAll(async () => {
 });
 
 describe('the example pool', () => {
+  // P32B T4: odpověď je `GenreSpec`, hru z něj skládá modul žánru – stejná cesta jako odpověď modelu.
   it('holds only games the robot plays to a win', () => {
     for (const example of DIRECTOR_EXAMPLES) {
-      const read = composeCompact(example.sentence, example.answer);
+      const read = readGenreAnswer(example.answer);
       expect(read, example.id).toMatchObject({ ok: true });
       if (!read.ok) continue;
       expect(blockingIssues(critique(read.spec)), example.id).toEqual([]);
       expect(playabilityIssues(read.spec, derivedSeeds(seedFrom(example.sentence.trim()))), example.id).toEqual([]);
-      // Pravidla promítnutá do hry, ne jen napsaná v příkladu.
-      expect(read.spec.rules?.length ?? 0, example.id).toBe((example.answer.rules as unknown[]).length);
     }
   });
 
@@ -56,13 +59,24 @@ describe('nearestExamples', () => {
     const picked = nearestExamples('a fox runs through the snowy forest jumping logs', 'runner');
     expect(picked[0]!.id).toBe('e01');
     expect(nearestExamples('a fox runs through the snowy forest jumping logs', 'runner').map((example) => example.id)).toEqual(picked.map((example) => example.id));
-    expect(nearestExamples('fire the cannon at the monsters from a pirate ship', 'shooter')[0]!.id).toBe('e10');
-    expect(nearestExamples('carry the kitten back to its basket', 'move_free')[0]!.id).toBe('e17');
+    expect(nearestExamples('fire the cannon at the monsters from a pirate ship', 'voyage')[0]!.id).toBe('e10');
+    expect(nearestExamples('sneak past the guard dogs in the museum', 'arena')[0]!.id).toBe('e16');
+  });
+
+  it('offers only examples in a mode that plays today', () => {
+    const ready = (id: string) => {
+      const spec = exampleSpec(DIRECTOR_EXAMPLES.find((example) => example.id === id)!);
+      return readyModes(GENRE_MODULES[spec.genre] as GenreModule).includes(spec.mode);
+    };
+    const offered = DIRECTOR_EXAMPLES.flatMap((example) => nearestExamples(example.sentence, exampleSpec(example).genre)).map((example) => example.id);
+    expect(offered.filter((id) => !ready(id))).toEqual([]);
+    const carry = nearestExamples('carry the kitten back to its basket', 'quest').map((example) => example.id);
+    expect(carry.includes('e17')).toBe(ready('e17'));
   });
 
   it('gives 3–5 examples within the character budget for every measured sentence', () => {
     for (const sentence of [...DEV, ...TEST]) {
-      const picked = nearestExamples(sentence.text, draftGameSpec(sentence.text).control ?? 'tap_go');
+      const picked = nearestExamples(sentence.text, draftGameSpecWithMeta(sentence.text).genre?.genre ?? null);
       expect(picked.length, sentence.id).toBeGreaterThanOrEqual(EXAMPLES_MIN);
       expect(picked.length, sentence.id).toBeLessThanOrEqual(EXAMPLES_MAX);
       expect(examplesBlock(picked).length, sentence.id).toBeLessThanOrEqual(EXAMPLES_MAX_CHARS);
@@ -77,7 +91,7 @@ describe('nearestExamples', () => {
 
 describe('the director prompt', () => {
   const sentence = 'a hedgehog rolls down a hill collecting apples';
-  const draft = draftGameSpec(sentence);
+  const draft = draftGameSpecWithMeta(sentence).genre;
 
   /** Větev, která si zapamatuje požadavek a odpoví, že model není. */
   const recording = () => {
@@ -97,15 +111,8 @@ describe('the director prompt', () => {
   it('is byte-for-byte the old prompt without the examples switch', async () => {
     const plain = recording();
     await direct(sentence, { branch: plain.branch, now: Date.now, compact: true });
-    expect(plain.seen).toEqual([`${sentence}\n\nStarting point (keep or improve): ${JSON.stringify({
-      control: draft.control ?? 'tap_go',
-      addons: draft.addons ?? [],
-      look: draft.theme.look ?? null,
-      setting: draft.theme.setting,
-      title: draft.title,
-      labels: draft.roles.map((role) => ({ role: role.id, label: role.label })),
-      goal: draft.tutorial.goalLine,
-    })}`]);
+    expect(draft).not.toBeNull();
+    expect(plain.seen).toEqual([`${sentence}\n\nStarting point (keep or improve): ${JSON.stringify(draft)}`]);
     expect(buildCompactRequest(sentence, draft)).toEqual(buildCompactRequest(sentence, draft, false));
   });
 
