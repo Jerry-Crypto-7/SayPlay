@@ -2,7 +2,8 @@
  * Snímky a časy sady vět P32 (P32D T2).
  *
  *   node scripts/p32/shots.mjs --base http://127.0.0.1:3354 --set evals/play/p32/sentences.json \
- *     --out evals/play/p32/runs/<label> [--live] [--limit N] [--fps-seconds 20] [--playable-timeout-ms 60000]
+ *     --out evals/play/p32/runs/<label> [--live] [--limit N] [--fps-seconds 20] [--playable-timeout-ms 60000] \
+ *     [--desktop-cpu-throttle 1]
  *
  * Pro každou větu v čistém kontextu Chromia (vlastní cache):
  * 1. Desktop 1280×720: `/play`, věta, klik na „Play it“. Harness pak opakovaně
@@ -33,7 +34,7 @@ import { pathToFileURL } from 'node:url';
 import { chromium, devices } from '@playwright/test';
 
 export const USAGE =
-  'usage: node scripts/p32/shots.mjs --base <url> --set <sentences.json> --out <dir> [--live] [--limit N] [--fps-seconds 20] [--playable-timeout-ms 60000]';
+  'usage: node scripts/p32/shots.mjs --base <url> --set <sentences.json> --out <dir> [--live] [--limit N] [--fps-seconds 20] [--playable-timeout-ms 60000] [--desktop-cpu-throttle 1]';
 
 const AI_WAIT_MS = 120_000;
 const SETTLE_MS = 1500;
@@ -41,10 +42,10 @@ const CPU_THROTTLING = 4;
 const GAME_PATH = /^\/play\/[0-9a-f]+$/;
 
 const TEXT_FLAGS = { '--base': 'base', '--set': 'set', '--out': 'out' };
-const NUMBER_FLAGS = { '--limit': 'limit', '--fps-seconds': 'fpsSeconds', '--playable-timeout-ms': 'playableTimeoutMs' };
+const NUMBER_FLAGS = { '--limit': 'limit', '--fps-seconds': 'fpsSeconds', '--playable-timeout-ms': 'playableTimeoutMs', '--desktop-cpu-throttle': 'desktopCpuThrottle' };
 
 export function parseArgs(argv) {
-  const options = { base: null, set: null, out: null, live: false, limit: null, fpsSeconds: 20, playableTimeoutMs: 60_000 };
+  const options = { base: null, set: null, out: null, live: false, limit: null, fpsSeconds: 20, playableTimeoutMs: 60_000, desktopCpuThrottle: 1 };
   for (let i = 0; i < argv.length; i += 1) {
     const flag = argv[i];
     if (flag === '--live') options.live = true;
@@ -310,6 +311,8 @@ async function shootSentence(browser, options, sentence, log) {
   const requests = [];
   try {
     const page = await desktop.newPage();
+    // Zpomalené CPU na desktopu napodobí přetížený prohlížeč (baseline T3); výchozí 1 = bez zátěže.
+    if (options.desktopCpuThrottle > 1) await (await desktop.newCDPSession(page)).send('Emulation.setCPUThrottlingRate', { rate: options.desktopCpuThrottle });
     page.on('requestfinished', (request) => requests.push(entryOf(request, false)));
     page.on('requestfailed', (request) => requests.push(entryOf(request, true)));
     await page.goto(`${options.base}/play`, { waitUntil: 'load' });
@@ -439,7 +442,14 @@ export async function shoot(options, { log = (line) => process.stderr.write(`${l
     live: options.live,
     startedAt,
     finishedAt: new Date().toISOString(),
-    settings: { desktop: '1280x720', phone: 'Pixel 7', cpuThrottling: CPU_THROTTLING, fpsSeconds: options.fpsSeconds, renderer: renderer.mode },
+    settings: {
+      desktop: '1280x720',
+      desktopCpuThrottling: options.desktopCpuThrottle,
+      phone: 'Pixel 7',
+      cpuThrottling: CPU_THROTTLING,
+      fpsSeconds: options.fpsSeconds,
+      renderer: renderer.mode,
+    },
     sentences: results,
   };
   writeFileSync(join(options.out, 'result.json'), `${JSON.stringify(result, null, 2)}\n`);

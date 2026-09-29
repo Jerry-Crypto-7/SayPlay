@@ -8,6 +8,8 @@ export interface ShotsOptions {
   limit: number | null;
   fpsSeconds: number;
   playableTimeoutMs: number;
+  /** CDP zpomalení CPU desktopové fáze; 1 = bez zátěže. */
+  desktopCpuThrottle: number;
 }
 
 export type LoadCategory = 'html' | 'js' | 'api' | 'glb' | 'panorama' | 'rapier' | 'audio' | 'other';
@@ -48,7 +50,7 @@ export interface ShotsResult {
   live: boolean;
   startedAt: string;
   finishedAt: string;
-  settings: { desktop: string; phone: string; cpuThrottling: number; fpsSeconds: number; renderer: string };
+  settings: { desktop: string; desktopCpuThrottling: number; phone: string; cpuThrottling: number; fpsSeconds: number; renderer: string };
   sentences: SentenceResult[];
 }
 

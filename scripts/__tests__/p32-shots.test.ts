@@ -128,12 +128,16 @@ describe('parseArgs', () => {
       limit: null,
       fpsSeconds: 20,
       playableTimeoutMs: 60_000,
+      desktopCpuThrottle: 1,
     });
-    expect(parseArgs(['--base', 'http://h', '--set', 's', '--out', 'o', '--live', '--limit', '1', '--fps-seconds', '3', '--playable-timeout-ms', '900'])).toMatchObject({
+    expect(
+      parseArgs(['--base', 'http://h', '--set', 's', '--out', 'o', '--live', '--limit', '1', '--fps-seconds', '3', '--playable-timeout-ms', '900', '--desktop-cpu-throttle', '6']),
+    ).toMatchObject({
       live: true,
       limit: 1,
       fpsSeconds: 3,
       playableTimeoutMs: 900,
+      desktopCpuThrottle: 6,
     });
   });
 
