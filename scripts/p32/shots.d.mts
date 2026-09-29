@@ -18,7 +18,7 @@ export interface NetworkEntry {
   path: string;
   category: LoadCategory;
   resourceType: string;
-  /** Od kliknutí na „Play it“. */
+  /** Od kliknutí na „Play it“; v `open.network` od začátku navigace. */
   startMs: number;
   endMs: number | null;
   bytes: number | null;
@@ -27,7 +27,10 @@ export interface NetworkEntry {
 
 export interface SentenceResult {
   id: string;
-  text: string;
+  /** `null` u položky se specem. */
+  text: string | null;
+  /** `spec`: hra publikovaná ze specu – bez kliknutí, jen studené otevření a telefon. */
+  source: 'sentence' | 'spec';
   gamePath: string | null;
   timeToPlayableMs: number | null;
   timeToFirstFrameMs: number | null;
@@ -35,7 +38,7 @@ export interface SentenceResult {
   /** Která sonda dala `timeToPlayableMs`. */
   probe: 'arcade-stage' | 'grid-input-log' | null;
   /** Studené otevření odkazu hry, od začátku navigace; telefon jen první snímek. */
-  open: { timeToPlayableMs: number | null; timeToFirstFrameMs: number | null; phoneFirstFrameMs: number | null };
+  open: { timeToPlayableMs: number | null; timeToFirstFrameMs: number | null; phoneFirstFrameMs: number | null; network: NetworkEntry[]; phoneNetwork: NetworkEntry[] };
   fpsMedian: number | null;
   fpsSamples: number[];
   shots: { draftDesktop: string | null; draftPhone: string | null; aiDesktop: string | null; aiPhone: string | null };
@@ -58,6 +61,6 @@ export interface ShotsResult {
 
 export declare const USAGE: string;
 export declare function parseArgs(argv: readonly string[]): ShotsOptions;
-export declare function loadSentences(file: string): { id: string; text: string }[];
+export declare function loadSentences(file: string): ({ id: string; text: string } | { id: string; text: null; spec: object })[];
 export declare function categoryOf(url: string, resourceType: string): LoadCategory;
 export declare function shoot(options: ShotsOptions, io?: { log?: (line: string) => void }): Promise<ShotsResult>;
