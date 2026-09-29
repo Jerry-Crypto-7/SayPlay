@@ -103,10 +103,12 @@ describe('P32-0 T4 kernel seams', () => {
 
   // Revize T4 kolo 2: `chaser` četl `level.bodies[0]` z prázdné úrovně pahýlu → TypeError → 500.
   // Základ z `escape`: jeho ovládání `chaser` bere, takže doplněk projde čtením a dojde až ke kompilaci.
+  // Postavený režim, jehož ovládání pronásledovatele nebere (souboj, P32E T3), doplněk odmítne hláškou.
   it.each(MODES)('%s: a mode with the chaser addon builds or refuses cleanly (generator %s)', (_sample, id) => {
     const spec = read(delegate({ ...compileGenre(SAMPLE.escape as GenreSpec), addons: ['chaser'] } as never, { generator: id }));
     const made = arcadeWorldOf(spec, 1);
-    expect(reachedMode(made, id), made.ok ? 'ok' : made.issues.join('; ')).toBe(true);
+    const noChaser = !made.ok && made.issues.length === 1 && made.issues[0] === 'chaser: the level has no place for a chaser';
+    expect(reachedMode(made, id) || noChaser, made.ok ? 'ok' : made.issues.join('; ')).toBe(true);
   });
 
   it('the platformer takes feel: 2 through tuning, validated by the platform generator, not by spec.ts', () => {
