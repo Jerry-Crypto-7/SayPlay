@@ -50,7 +50,6 @@ import {
   UNIT,
   bodyBase,
 } from '../contract';
-import { modeStub } from './mode-stub';
 
 export const ARENA_DENSITIES = ['sparse', 'normal', 'dense'] as const;
 export type ArenaDensity = (typeof ARENA_DENSITIES)[number];
@@ -95,8 +94,13 @@ export const ESCAPE = {
   idleContactTicks: 5 * ARCADE_HZ,
   /** Pronásledovatel startuje aspoň tolik procent poloviny strany arény od hráče. */
   minDistancePct: 40,
-  /** Náhodný přídavek ke startovní vzdálenosti pronásledovatele. */
+  /** Pevný a náhodný přídavek ke startovní vzdálenosti pronásledovatele nad férovou mez. */
+  distanceMargin: 300,
   distanceJitter: UNIT,
+  playerSize: ARENA.startSize,
+  chasers: { min: 1, max: 4, default: 2 },
+  /** Kolik věcí sebrat; 0 = útěk se vyhrává přežitím. */
+  items: { max: 30, collectDefault: 10 },
   /** Výseč za zády: ± tolik směrů po 11,25° od přímého −z (směr 16); sousední pronásledovatelé aspoň `chaserSpacing` směrů od sebe. */
   backArc: 5,
   chaserSpacing: 2,
@@ -114,7 +118,7 @@ export const ESCAPE = {
  * patří střelbě doplňku `+shoot`, `items` pravidlům specu. Ovládání ho odpočítává,
  * `arena_eat` v něm chycení nepočítá a chycení se životem navíc ho znovu nabije.
  */
-export const GRACE_COUNTER: ArcadeCounter = 'reserve';
+export const GRACE_COUNTER = 'reserve' satisfies ArcadeCounter;
 
 /** Zbývající tiky ochrany. */
 export const graceLeft = (state: Int32Array): number => state[HEADER.counters + COUNTER[GRACE_COUNTER]] as number;
@@ -174,7 +178,7 @@ const toward = (value: number, target: number, step: number): number => (value <
 // ---------------------------------------------------------------------------
 // Ovládání
 
-const chaseParams = z.object({ speed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max) }).strict();
+export const chaseParams = z.object({ speed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max) }).strict();
 export type ChaseParams = z.infer<typeof chaseParams>;
 
 const controlParams = z
@@ -295,21 +299,52 @@ export const moveFreeControl: ControlPiece<ArenaControlParams> = {
 // ---------------------------------------------------------------------------
 // Pravidla
 
-const eatParams = z.object({ effect: z.enum(['lose', 'damage']) }).strict();
+const eatParams = z
+  .object({
+    effect: z.enum(['lose', 'damage']),
+    /** Útěk: dotek pronásledovatele mimo ochranu je chycení; se životy ho ochrana těchto tiků následuje. */
+    grace: z.int().min(1).max(10 * ARCADE_HZ).optional(),
+  })
+  .strict();
+
+const touches = (state: Int32Array, a: number, b: number): boolean =>
+  Math.abs((state[a + BODY.x] as number) - (state[b + BODY.x] as number)) * 2 < (state[a + BODY.w] as number) + (state[b + BODY.w] as number) &&
+  Math.abs((state[a + BODY.z] as number) - (state[b + BODY.z] as number)) * 2 < (state[a + BODY.d] as number) + (state[b + BODY.d] as number);
+
+/**
+ * Chycení v útěku: v ochraně nic, jinak prohra, se životy život a nová ochrana.
+ * Dva pronásledovatelé v témže tiku berou jeden život – chytá ten s nejnižším indexem.
+ */
+function caught(state: Int32Array, player: number, chaser: number, effect: 'lose' | 'damage', grace: number): readonly ArcadeEffect[] {
+  if (graceLeft(state) > 0) return [];
+  const p = bodyBase(player);
+  for (let i = 0; i < chaser; i += 1) {
+    const base = bodyBase(i);
+    if (state[base + BODY.role] === ROLE.chaser && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && touches(state, p, base)) return [];
+  }
+  return effect === 'lose'
+    ? [{ kind: 'lose' }]
+    : [
+        { kind: 'damage', amount: 1 },
+        { kind: 'count', counter: GRACE_COUNTER, amount: grace },
+      ];
+}
 
 /**
  * Dotek potravy nebo buňky: menší sníst (body podle druhu, zmizí), větší buňka
  * hráče sní (prohra, se životy ztráta života a návrat na start). Stejně velké
- * se minou.
+ * se minou. S `grace` (útěk) chytá i pronásledovatel; bez něj ho pravidlo míjí
+ * jako dřív (doplněk `+chaser` má svoje `hit`).
  */
 export const arenaEat: RulePiece<z.infer<typeof eatParams>> = {
   id: 'arena_eat',
   params: eatParams,
-  roles: ['player', 'enemy', 'collectible'],
+  roles: ['player', 'enemy', 'collectible', 'chaser'],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player, other }, params): readonly ArcadeEffect[] => {
     const role = state[bodyBase(other) + BODY.role];
+    if (role === ROLE.chaser && params.grace !== undefined) return caught(state, player, other, params.effect, params.grace);
     if (role !== ROLE.enemy && role !== ROLE.collectible) return [];
     const mine = state[bodyBase(player) + BODY.w] as number;
     const theirs = state[bodyBase(other) + BODY.w] as number;
@@ -325,28 +360,54 @@ export const arenaEat: RulePiece<z.infer<typeof eatParams>> = {
   },
 };
 
-const growToParams = z.object({ points: z.int().min(1).max(100) }).strict();
+/**
+ * Probuzení (P32E T1): když ochrana doběhne, každý spící pronásledovatel úrovně
+ * zmizí a na jeho místě stojí kopie od `spawnBase`, která honí. Sběrnice efektů
+ * tak vydá `spawn` a scéna ukáže zřetelné probuzení. Kopie už pod `spawnBase`
+ * nejsou, takže se probouzí jednou.
+ */
+function wakeChasers(state: Int32Array): ArcadeEffect[] {
+  if (graceLeft(state) !== 0) return [];
+  const effects: ArcadeEffect[] = [];
+  for (let i = 0; i < (state[HEADER.spawnBase] as number); i += 1) {
+    const base = bodyBase(i);
+    if (state[base + BODY.role] !== ROLE.chaser || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const x = state[base + BODY.x] as number;
+    const y = state[base + BODY.y] as number;
+    const zz = state[base + BODY.z] as number;
+    effects.push({ kind: 'despawn', body: i }, { kind: 'spawn', template: i, x, y, z: zz, vx: 0, vy: 0, vz: 0 });
+  }
+  return effects;
+}
 
-/** Skóre (= velikost) dosáhlo cíle → výhra. */
+const growToParams = z.object({ points: z.int().min(1).max(100), wake: z.literal(true).optional() }).strict();
+
+/** Skóre (= velikost, v útěku sebrané věci) dosáhlo cíle → výhra. S `wake` probouzí pronásledovatele. */
 export const growTo: RulePiece<z.infer<typeof growToParams>> = {
   id: 'grow_to',
   params: growToParams,
   roles: ['player'],
   trigger: 'counter',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state }, params) => ((state[HEADER.counters + COUNTER.score] as number) >= params.points ? [{ kind: 'win' }] : []),
+  fire: ({ state }, params) => {
+    const woken = params.wake === true ? wakeChasers(state) : [];
+    return (state[HEADER.counters + COUNTER.score] as number) >= params.points ? [...woken, { kind: 'win' }] : woken;
+  },
 };
 
-const surviveParams = z.object({ seconds: z.int().min(10).max(90) }).strict();
+const surviveParams = z.object({ seconds: z.int().min(10).max(90), wake: z.literal(true).optional() }).strict();
 
-/** Přežil do limitu → výhra (opak `time_limit`). */
+/** Přežil do limitu → výhra (opak `time_limit`). S `wake` probouzí pronásledovatele. */
 export const surviveTime: RulePiece<z.infer<typeof surviveParams>> = {
   id: 'survive_time',
   params: surviveParams,
   roles: ['player'],
   trigger: 'tick',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state }, params) => ((state[HEADER.tick] as number) + 1 >= params.seconds * ARCADE_HZ ? [{ kind: 'win' }] : []),
+  fire: ({ state }, params) => {
+    const woken = params.wake === true ? wakeChasers(state) : [];
+    return (state[HEADER.tick] as number) + 1 >= params.seconds * ARCADE_HZ ? [...woken, { kind: 'win' }] : woken;
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -541,6 +602,138 @@ export function checkArenaLevel(level: ArcadeLevel, half: number = ARENA.half): 
   return issues;
 }
 
-/** Režimy `arena.escape` a `arena.collect` (pahýly P32-0 T4, naplní P32E T1). */
-export const arenaEscape = modeStub('arena_escape');
-export const arenaCollect = modeStub('arena_collect');
+// ---------------------------------------------------------------------------
+// Útěk a sběr (P32E T1)
+
+/**
+ * Nejbližší start pronásledovatele, ze kterého nečinného hráče nedostihne dřív
+ * než za `idleContactTicks`: celou ochranu stojí, pak ujede nejvýš `speed` za
+ * tik a dotyk AABB nastane nejdál na úhlopříčce součtu polovin.
+ */
+export const fairReach = (speed: number, player: Pick<BodyInit, 'w' | 'd'>, chaser: Pick<BodyInit, 'w' | 'd'>): number =>
+  (ESCAPE.idleContactTicks - ESCAPE.graceTicks) * speed + Math.ceil(Math.hypot((player.w + chaser.w) / 2, (player.d + chaser.d) / 2));
+
+/** Věcí na zemi: cíl + rezerva, ať poslední nemusí hráč lovit v rohu u pronásledovatele. */
+const itemCount = (items: number): number => (items === 0 ? 0 : items + 2 + Math.floor(items / 4));
+
+/**
+ * Otevřená aréna: hráč uprostřed, pronásledovatelé za jeho zády (směry 16 ±
+ * `backArc`, −z) na férové vzdálenosti, věci rozeseté s odstupem od startu,
+ * od pronásledovatelů, od sebe a od stěny. Vzdálenosti celočíselně na druhou.
+ */
+function openArena(seed: number, chasers: number, speed: number, items: number): ArcadeLevel {
+  const rng = createCompileRng(seed);
+  const player: BodyInit = { role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: ESCAPE.playerSize, h: ARENA.height, d: ESCAPE.playerSize, solid: false };
+  const bodies: BodyInit[] = [player];
+  const directions: number[] = [];
+  while (directions.length < chasers) {
+    const k = 16 + rng.int(-ESCAPE.backArc, ESCAPE.backArc);
+    if (directions.every((taken) => Math.abs(taken - k) >= ESCAPE.chaserSpacing)) directions.push(k);
+  }
+  const size = { w: ESCAPE.chaserSize, d: ESCAPE.chaserSize };
+  for (const k of directions) {
+    const reach = fairReach(speed, player, size) + ESCAPE.distanceMargin + rng.int(0, ESCAPE.distanceJitter);
+    const dir = DIRECTIONS[k]!;
+    bodies.push({ role: 'chaser', kind: 'chaser', x: Math.trunc((dir.dx * reach) / 1000), y: 0, z: Math.trunc((dir.dz * reach) / 1000), ...size, h: ESCAPE.chaserHeight, solid: false, kinematic: true });
+  }
+  const starts = bodies.slice(1);
+  const edge = ARENA.half - ESCAPE.itemSize / 2 - ESCAPE.itemClearance.wall;
+  const far = (x: number, zz: number, from: { readonly x: number; readonly z: number }, gap: number): boolean => (x - from.x) ** 2 + (zz - from.z) ** 2 >= gap * gap;
+  const placed: BodyInit[] = [];
+  for (let k = 0; k < itemCount(items); k += 1) {
+    // Místa je dost (39 věcí po 2 m v aréně 38 × 38 m); strop pokusů jen pojistka, chybějící věc nahlásí kontrola.
+    for (let attempt = 0; attempt < 200; attempt += 1) {
+      const x = rng.int(-edge, edge);
+      const zz = rng.int(-edge, edge);
+      if (!far(x, zz, player, ESCAPE.itemClearance.start) || !starts.every((c) => far(x, zz, c, ESCAPE.itemClearance.chaser)) || !placed.every((i) => far(x, zz, i, ESCAPE.itemClearance.item))) continue;
+      placed.push({ role: 'collectible', kind: 'item', x, y: 0, z: zz, w: ESCAPE.itemSize, h: 200, d: ESCAPE.itemSize, solid: false });
+      break;
+    }
+  }
+  bodies.push(...placed);
+  return chasers === 0 ? { bodies, length: 0 } : { bodies, length: 0, spawnSlots: chasers, counters: { [GRACE_COUNTER]: ESCAPE.graceTicks } };
+}
+
+/** Tvrzení „férové a hratelné z konstrukce“ nad útěkem nebo sběrem; prázdné pole = hratelná. */
+export function checkEscapeLevel(level: ArcadeLevel, params: { readonly items: number; readonly chaserSpeed: number }): string[] {
+  const issues: string[] = [];
+  const m = (units: number): string => `${(units / UNIT).toFixed(1)} m`;
+  const player = level.bodies[0];
+  if (player === undefined || player.role !== 'player') return ['no player'];
+  for (const body of level.bodies) {
+    if (Math.abs(body.x) + body.w / 2 > ARENA.half || Math.abs(body.z) + body.d / 2 > ARENA.half) issues.push(`a ${body.kind} at ${m(body.x)}, ${m(body.z)} sits outside the arena`);
+  }
+  const least = (ARENA.half * ESCAPE.minDistancePct) / 100;
+  for (const chaser of level.bodies.filter((body) => body.role === 'chaser')) {
+    const gap = distance(chaser, player);
+    if (chaser.z >= player.z) issues.push(`a chaser at ${m(chaser.x)}, ${m(chaser.z)} starts in front of the player, not behind`);
+    const fair = Math.max(least, fairReach(params.chaserSpeed, player, chaser));
+    if (gap < fair) issues.push(`a chaser starts ${m(gap)} from the player but needs ${m(fair)} to give an idle player 5 s`);
+  }
+  const items = level.bodies.filter((body) => body.role === 'collectible');
+  if (items.length < params.items) issues.push(`only ${items.length} items for a target of ${params.items}`);
+  for (const item of items) if (distance(item, player) < ESCAPE.itemClearance.start) issues.push(`an item starts ${m(distance(item, player))} from the player`);
+  if (level.bodies.length + (level.spawnSlots ?? 0) > ARCADE_LIMITS.maxBodies) issues.push(`${level.bodies.length} bodies exceed the ${ARCADE_LIMITS.maxBodies} body limit`);
+  return issues;
+}
+
+const escapeParams = z
+  .object({
+    chasers: z.int().min(ESCAPE.chasers.min).max(ESCAPE.chasers.max).default(ESCAPE.chasers.default),
+    chaserSpeed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max).default(ESCAPE.chaserSpeed.default),
+    items: z.int().min(0).max(ESCAPE.items.max).default(0),
+    seconds: z.int().min(20).max(80).default(40),
+  })
+  .strict();
+export type EscapeParams = z.infer<typeof escapeParams>;
+
+/** Režim `arena.escape`: sbírej N věcí (nebo přežij N s), než tě pronásledovatelé chytí. */
+export const arenaEscape: ModeGeneratorPiece<EscapeParams> = {
+  id: 'arena_escape',
+  params: escapeParams,
+  roles: ['player', 'chaser', 'collectible'],
+  cost: (params) => ({ bodies: 1 + 2 * params.chasers + itemCount(params.items), rules: 3 }),
+  generate: (seed, params) => openArena(seed, params.chasers, params.chaserSpeed, params.items),
+  parts: (seed, params, health) => {
+    const level = arenaEscape.generate(seed, params);
+    const chase = { speed: params.chaserSpeed };
+    const rules: PieceRef[] = [
+      { id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage', grace: ESCAPE.graceTicks } },
+      params.items > 0 ? { id: 'grow_to', params: { points: params.items, wake: true } } : { id: 'survive_time', params: { seconds: params.seconds, wake: true } },
+    ];
+    if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
+    return {
+      control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize, chase } },
+      bot: { id: 'arena_bot', params: { half: ARENA.half, chase } },
+      level,
+      rules,
+      issues: checkEscapeLevel(level, params),
+    };
+  },
+};
+
+const collectParams = z.object({ items: z.int().min(1).max(ESCAPE.items.max).default(ESCAPE.items.collectDefault) }).strict();
+export type CollectParams = z.infer<typeof collectParams>;
+
+/** Režim `arena.collect`: sbírej N věcí, nikdo tě nehoní (a životy nejsou potřeba). */
+export const arenaCollect: ModeGeneratorPiece<CollectParams> = {
+  id: 'arena_collect',
+  params: collectParams,
+  roles: ['player', 'collectible'],
+  cost: (params) => ({ bodies: 1 + itemCount(params.items), rules: 2 }),
+  generate: (seed, params) => openArena(seed, 0, 0, params.items),
+  parts: (seed, params) => {
+    const level = arenaCollect.generate(seed, params);
+    return {
+      control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize } },
+      bot: { id: 'arena_bot', params: { half: ARENA.half } },
+      level,
+      rules: [
+        { id: 'arena_eat', params: { effect: 'lose' } },
+        { id: 'grow_to', params: { points: params.items } },
+      ],
+      issues: checkEscapeLevel(level, { items: params.items, chaserSpeed: 0 }),
+      health: undefined,
+    };
+  },
+};

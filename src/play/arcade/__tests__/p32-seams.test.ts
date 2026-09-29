@@ -86,20 +86,27 @@ describe('P32-0 T4 kernel seams', () => {
     expect(ARCADE_LIBRARY.rules.interact?.trigger).toBe('press');
   });
 
-  it.each(MODES)('%s: GenreSpec → readGameSpec with generator %s → that generator, which refuses while it is a stub', (sample, id) => {
+  /**
+   * Postavený režim (P32E–G) svět postaví, nebo ho odmítne jeho vlastní schéma
+   * (`(generator <id>)` – klíč starého specu, který nový režim nezná); pahýl
+   * odmítne `modeNotBuilt`. Všechno tři dokazují, že delegace došla k tomu generátoru.
+   */
+  const reachedMode = (made: ReturnType<typeof arcadeWorldOf>, id: string): boolean =>
+    made.ok || (made.issues.length === 1 && made.issues[0] === modeNotBuilt(id)) || made.issues.every((issue) => issue.endsWith(`(generator ${id})`));
+
+  it.each(MODES)('%s: GenreSpec → readGameSpec with generator %s → that generator, built or refusing as a stub', (sample, id) => {
     const spec = read(delegate(compileGenre(SAMPLE[sample] as GenreSpec), { generator: id }));
     expect(generatorOf(spec)).toBe(id);
     const made = arcadeWorldOf(spec, 1);
-    expect(made.ok).toBe(false);
-    expect(!made.ok && made.issues).toEqual([modeNotBuilt(id)]);
+    expect(reachedMode(made, id), made.ok ? 'ok' : made.issues.join('; ')).toBe(true);
   });
 
   // Revize T4 kolo 2: `chaser` četl `level.bodies[0]` z prázdné úrovně pahýlu → TypeError → 500.
   // Základ z `escape`: jeho ovládání `chaser` bere, takže doplněk projde čtením a dojde až ke kompilaci.
-  it.each(MODES)('%s: a stub with the chaser addon still refuses cleanly (generator %s)', (_sample, id) => {
+  it.each(MODES)('%s: a mode with the chaser addon builds or refuses cleanly (generator %s)', (_sample, id) => {
     const spec = read(delegate({ ...compileGenre(SAMPLE.escape as GenreSpec), addons: ['chaser'] } as never, { generator: id }));
     const made = arcadeWorldOf(spec, 1);
-    expect(!made.ok && made.issues).toEqual([modeNotBuilt(id)]);
+    expect(reachedMode(made, id), made.ok ? 'ok' : made.issues.join('; ')).toBe(true);
   });
 
   it('the platformer takes feel: 2 through tuning, validated by the platform generator, not by spec.ts', () => {
