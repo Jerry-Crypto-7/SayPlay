@@ -224,6 +224,7 @@ describe('shoot', () => {
     expect(one.shots.draftDesktop).toBeNull();
     expect(one.open.timeToPlayableMs).toBeGreaterThanOrEqual(ACCEPT_MS);
     expect(one.open.network.some((entry) => entry.category === 'html' && entry.startMs >= 0)).toBe(true);
+    expect(one.open.phoneNetwork.some((entry) => entry.category === 'html' && entry.startMs >= 0)).toBe(true);
     expect(isPng(join(out, one.shots.draftPhone as string))).toBe(true);
   }, 90_000);
 

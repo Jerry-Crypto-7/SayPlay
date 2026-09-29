@@ -28,9 +28,9 @@
  * Položka sady se `spec` místo věty (P32D T4 – hra s fyzikálními tělesy) se
  * publikuje přímo `POST /api/play/games {spec}` a měří se jen body 2 a 3.
  *
- * Síťový log z desktopu (od kliknutí) a ze studeného otevření (`open.network`,
- * od navigace) nese kategorii načítání: html, js, api, glb, panorama, rapier,
- * audio, other – z něj baseline skládá fáze.
+ * Síťový log z desktopu (od kliknutí), ze studeného otevření (`open.network`)
+ * a z telefonu (`open.phoneNetwork`, oba od navigace) nese kategorii načítání:
+ * html, js, api, glb, panorama, rapier, audio, other – z něj baseline skládá fáze.
  *
  * Výstup: `<out>/result.json` a PNG. Exit 1, když některá věta skončila chybou.
  */
@@ -337,7 +337,7 @@ async function shootSentence(browser, options, sentence, log) {
     /** Která sonda čas dala: `arcade-stage` (arkáda) nebo `grid-input-log` (mřížka). */
     probe: null,
     /** Studené otevření odkazu `/play/<id>` v čistém kontextu, od začátku navigace. */
-    open: { timeToPlayableMs: null, timeToFirstFrameMs: null, phoneFirstFrameMs: null, network: [] },
+    open: { timeToPlayableMs: null, timeToFirstFrameMs: null, phoneFirstFrameMs: null, network: [], phoneNetwork: [] },
     fpsMedian: null,
     fpsSamples: [],
     shots: { draftDesktop: null, draftPhone: null, aiDesktop: null, aiPhone: null },
@@ -391,13 +391,18 @@ async function shootSentence(browser, options, sentence, log) {
   if (entry.gamePath !== null) {
     const phone = await browser.newContext({ ...devices['Pixel 7'] });
     await phone.addInitScript(instrument);
+    const requests = [];
     try {
       const page = await phone.newPage();
       const cdp = await phone.newCDPSession(page);
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: CPU_THROTTLING });
+      page.on('requestfinished', (request) => requests.push(entryOf(request, false)));
+      page.on('requestfailed', (request) => requests.push(entryOf(request, true)));
       await page.goto(`${options.base}${entry.gamePath}`, { waitUntil: 'load' });
       const phoneDraw = await firstDrawAt(page, Date.now() + options.playableTimeoutMs);
-      if (phoneDraw !== null) entry.open.phoneFirstFrameMs = Math.round(phoneDraw - (await page.evaluate(() => performance.timeOrigin)));
+      const origin = await page.evaluate(() => performance.timeOrigin);
+      if (phoneDraw !== null) entry.open.phoneFirstFrameMs = Math.round(phoneDraw - origin);
+      entry.open.phoneNetwork = await networkSince(requests.splice(0), origin);
       await page.waitForTimeout(SETTLE_MS);
       const draft = shotPath('draft-phone');
       await page.screenshot({ path: draft.path });
@@ -416,6 +421,7 @@ async function shootSentence(browser, options, sentence, log) {
     } catch (error) {
       errors.push(`phone: ${error instanceof Error ? error.message.split('\n')[0] : String(error)}`);
     } finally {
+      await Promise.allSettled(requests);
       await phone.close();
     }
   }

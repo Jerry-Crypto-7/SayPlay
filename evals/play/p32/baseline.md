@@ -74,6 +74,19 @@ Offline věta tělesa nedá, proto dvě hotové hry ze specu (`baseline-physics.
 
 Běhy: `runs/t4-before/` (kód `5b23a253`) a `runs/t4/`.
 
+## Telefon: kam jde čas do prvního snímku (rozhodnutí o T5 a T6)
+
+Běh `runs/t5-phone/` (kód po T4 `3c7371a1`, 9 vět offline, Pixel 7 se 4× CPU): síťový log studeného otevření odkazu od navigace do prvního snímku.
+
+| hry | první snímek | JS do prvního snímku | API do prvního snímku | GLB do prvního snímku |
+|---|---:|---|---|---|
+| mřížkové (6) | 3112–4167 ms | 37 žádostí, 837 kB, poslední končí v 2896–3898 ms | jen `/api/play/events` (hra na něj nečeká) | 0 |
+| arkádové (3) | 1840–2312 ms | 18 žádostí, 523 kB, poslední končí v 790–912 ms | jen `/api/play/events` | 0 |
+
+- **Fakt:** studené otevření nemá druhý požadavek na data hry – HTML ze serveru nese celou hru. Žádný GLB nezačne dřív než první snímek.
+- **Fakt:** u mřížek padá první snímek 0,2–0,3 s po posledním chunku kódu mřížky, u arkád je JS hotový do 0,9 s a zbytek do 1,8–2,3 s je práce procesoru.
+- **Rozhodnutí podle řídicí session (21:10):** T5 (jeden požadavek) a přednačtení kitu z T6 se nedělají – telefonní čas nejde na druhý požadavek API ani na GLB. Zbývá černá obrazovka (T6).
+
 ## Jak zopakovat
 
 ```
