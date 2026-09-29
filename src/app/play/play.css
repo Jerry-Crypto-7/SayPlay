@@ -247,6 +247,95 @@
   }
 }
 
+/* Text jen pro čtečku a hledání podle textu (ikona bez popisku). */
+.play-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Pole s mikrofonem uvnitř (P33 T4): ikona sedí v pravém okraji pole. */
+.play-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--p-space-1);
+}
+
+.play-field input {
+  width: 100%;
+  padding-right: calc(var(--p-tap) + var(--p-space-2));
+}
+
+.play-field .play-button.play-mic {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--p-tap);
+  padding: 0;
+  border: 0;
+  color: var(--play-muted);
+}
+
+.play-field .play-button.play-mic:hover:not(:disabled) {
+  background: transparent;
+  color: var(--play-text);
+}
+
+.play-button.play-mic[data-listening='true'] {
+  color: var(--play-accent);
+}
+
+/* Karta po hře (P33 T4): jedna hlavní akce, pod ní dvě vedlejší cesty. */
+.play-postrun-main {
+  width: 100%;
+}
+
+.play-postrun-more {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--p-space-2) var(--p-space-3);
+  width: 100%;
+}
+
+.play-postrun-more .play-button {
+  flex: 1 1 auto;
+  padding-inline: var(--p-space-4);
+}
+
+.play-postrun-more .play-status,
+.play-postrun-more .play-share-url {
+  flex-basis: 100%;
+  text-align: center;
+}
+
+/* Prázdná oblast `aria-live` musí v DOM zůstat, jen nesmí přidat řádek. */
+.play-postrun-more .play-status:empty {
+  position: absolute;
+}
+
+.play-remix .play-chips {
+  justify-content: flex-start;
+}
+
+.play-postrun-clip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--p-tap);
+  color: var(--play-muted);
+  font-size: var(--p-text-s);
+}
+
+.play-postrun-clip:hover {
+  color: var(--play-text);
+}
+
 .play-create {
   max-width: 760px;
   margin: 0 auto;
@@ -319,6 +408,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--p-space-2);
   border: 0;
   border-radius: var(--p-radius-m);
   padding: var(--p-space-3) var(--p-space-6);
@@ -746,16 +836,24 @@
   color: #fff;
 }
 
+/* Karta výsledku (P33 T4): na desktopu 420 px uprostřed dole nad lištou cílů
+ * (68 px), hra nad ní zůstane vidět a HUD vlevo nahoře karta nepřekryje.
+ * Plocha je plná – průsvitnou prosvítala scéna i lišta. */
 .play-outcome {
   position: absolute;
   z-index: 2;
   left: 50%;
-  top: 40%;
-  transform: translate(-50%, -50%);
-  padding: var(--p-space-6) var(--p-space-8);
+  bottom: calc(var(--p-tap) + var(--p-space-6) + var(--p-space-4));
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: 420px;
+  max-width: calc(100% - var(--p-space-8));
+  max-height: calc(100% - var(--p-space-8));
+  overflow-y: auto;
+  padding: var(--p-space-6);
   border-radius: var(--p-radius-l);
-  background: var(--p-surface-3);
-  border: 1px solid var(--play-accent);
+  background: var(--play-bg);
+  border: 1px solid var(--play-line);
   box-shadow: var(--p-shadow-2);
   text-align: center;
 }
@@ -858,13 +956,25 @@
     flex: 0 0 auto;
   }
 
+  /* Telefon: karta je spodní list do 45 % výšky, hra nad ní zůstane vidět. */
   .play-outcome {
-    width: calc(100% - var(--p-space-8));
-    padding: var(--p-space-5);
+    left: 0;
+    bottom: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    max-height: 45dvh;
+    padding: var(--p-space-4) var(--p-space-5) calc(var(--p-space-4) + env(safe-area-inset-bottom));
+    border-width: 1px 0 0;
+    border-radius: var(--p-radius-l) var(--p-radius-l) 0 0;
+  }
+
+  .play-outcome-title {
+    font-size: var(--p-text-l);
   }
 }
 
-/* Po dohrání (T6): Replay, CHANGE ONE THING, CHALLENGE A FRIEND, rodokmen. */
+/* Po dohrání (T6, karta P33 T4 v bloku P33 nahoře): rodokmen a čipy. */
 .play-lineage {
   position: relative;
   z-index: 1;
@@ -889,14 +999,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--p-space-3);
-}
-
-.play-postrun-title {
-  margin: var(--p-space-2) 0 0;
-  font-size: var(--p-text-xs);
-  letter-spacing: 0.08em;
-  color: var(--play-muted);
+  gap: var(--p-space-2);
 }
 
 .play-chips {
@@ -928,15 +1031,6 @@
   cursor: default;
 }
 
-.play-share {
-  background: var(--play-accent);
-  color: var(--play-bg);
-}
-
-.play-button.play-share:hover:not(:disabled) {
-  background: #d97706;
-}
-
 .play-share-url {
   width: 100%;
   box-sizing: border-box;
@@ -947,14 +1041,6 @@
   color: var(--play-text);
   font: inherit;
   font-size: var(--p-text-xs);
-}
-
-@media (max-width: 480px) {
-  .play-outcome {
-    top: 45%;
-    max-height: 80dvh;
-    overflow-y: auto;
-  }
 }
 
 a.play-button {
@@ -1284,10 +1370,9 @@ button.play-feed-card {
 
 /* „Change it“ pod čipy (T5): vlastní změna větou, stav práce pod polem. */
 .play-remix {
-  width: min(92vw, 480px);
   display: flex;
   flex-direction: column;
-  gap: var(--p-space-2);
+  gap: var(--p-space-3);
 }
 
 .play-remix-row {

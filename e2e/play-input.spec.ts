@@ -26,6 +26,8 @@ test.describe('/play/[id] – game input', () => {
     await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'runner');
     await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     await page.evaluate(() => window.__playShell!.playWitness());
+    // Od P33 T4 je pole remixu v listu za „Change it“.
+    await page.getByRole('button', { name: 'Change it' }).click();
     const input = page.getByTestId('remix-input');
     await expect(input).toBeVisible();
     await input.click();

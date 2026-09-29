@@ -25,6 +25,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { loopEvent, SHARE_MARK } from './loop-client';
+import { Icon } from './ui';
 
 type Share = 'idle' | 'copied' | 'saved' | 'manual';
 
@@ -60,6 +61,7 @@ export function ShareButton({
   versionId: playing,
   title,
   label = 'Share',
+  variant = 'accent',
   className = '',
   clip = null,
   live,
@@ -67,6 +69,8 @@ export function ShareButton({
   readonly versionId: string;
   readonly title?: string;
   readonly label?: string;
+  /** Váha tlačítka (P33 T4): v kartě po hře je sdílení vedlejší cesta. */
+  readonly variant?: 'accent' | 'quiet';
   readonly className?: string;
   readonly clip?: Blob | null;
   /** Verze s živými změnami běhu (P29D T10), `undefined` = běh žádné nemá. */
@@ -139,7 +143,17 @@ export function ShareButton({
 
   return (
     <>
-      <button ref={button} type="button" className={`play-button play-share ${className}`.trim()} data-testid="play-share" disabled={live?.state === 'pending'} aria-busy={live?.state === 'pending'} onClick={() => void run()}>
+      <button
+        ref={button}
+        type="button"
+        className={`play-button play-button-${variant} play-share ${className}`.trim()}
+        data-testid="play-share"
+        data-variant={variant}
+        disabled={live?.state === 'pending'}
+        aria-busy={live?.state === 'pending'}
+        onClick={() => void run()}
+      >
+        <Icon name="share" />
         {label}
       </button>
       {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}

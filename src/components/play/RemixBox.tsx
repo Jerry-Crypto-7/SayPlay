@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * „Change it“ pod čipy (P27C T5): hráč napíše vlastní změnu a dostane novou
+ * „Change it“ (P27C T5, od P33 T4 v listu karty po hře, čipy pod polem): hráč napíše vlastní změnu a dostane novou
  * verzi s vlastním odkazem; rodič se nemění. Věta, kterou server pozná jako
  * čip, vrátí hned odkaz (201). Ostatní je práce na pozadí (202 `job`) – box
  * se ptá `GET …/remix?job=` do lhůty serveru a mluví stejně jako proužek AI
@@ -10,7 +10,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 
 import type { RemixFinalReason } from '@/app/api/play/_remix-jobs';
 
@@ -148,7 +148,8 @@ export function RemixReadyChip({ job }: { readonly job: RemixJob }) {
   );
 }
 
-export function RemixBox({ job }: { readonly job: RemixJob }) {
+/** `suggestions` = čipy karty po hře (P33 T4), mezi polem a stavem – hláška „Try one of the changes above“ na ně ukazuje. */
+export function RemixBox({ job, suggestions }: { readonly job: RemixJob; readonly suggestions?: ReactNode }) {
   const { view, sent, submit } = job;
   const [text, setText] = useState('');
   const [now, setNow] = useState(() => Date.now());
@@ -172,17 +173,19 @@ export function RemixBox({ job }: { readonly job: RemixJob }) {
       }}
     >
       <div className="play-remix-row">
-        <input
-          className="play-remix-input"
-          data-testid="remix-input"
-          value={text}
-          maxLength={MAX_CHARS}
-          placeholder="Change it: add snow, make enemies faster…"
-          aria-label="Change it in your own words"
-          disabled={working}
-          onChange={(event) => setText(event.target.value)}
-        />
-        <MicButton testId="remix-mic" disabled={working} onText={(spoken) => setText((previous) => appendSpoken(previous, spoken).slice(0, MAX_CHARS))} />
+        <div className="play-field">
+          <input
+            className="play-remix-input"
+            data-testid="remix-input"
+            value={text}
+            maxLength={MAX_CHARS}
+            placeholder="Add snow, make enemies faster…"
+            aria-label="Change it in your own words"
+            disabled={working}
+            onChange={(event) => setText(event.target.value)}
+          />
+          <MicButton testId="remix-mic" disabled={working} onText={(spoken) => setText((previous) => appendSpoken(previous, spoken).slice(0, MAX_CHARS))} />
+        </div>
         <button type="submit" className="play-button" data-testid="remix-submit" disabled={working || sentence.length === 0}>
           Make it
         </button>
@@ -190,6 +193,7 @@ export function RemixBox({ job }: { readonly job: RemixJob }) {
       <span className="play-remix-count" data-testid="remix-count">
         {text.length}/{MAX_CHARS}
       </span>
+      {suggestions}
 
       {view.kind !== 'idle' && (
         <div className="play-remix-state" data-testid="remix-state" data-kind={view.kind} role="status">

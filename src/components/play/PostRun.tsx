@@ -1,9 +1,11 @@
 'use client';
 
 /**
- * Po dohrání (P23-C T6): Replay, CHANGE ONE THING a CHALLENGE A FRIEND.
+ * Po dohrání (P23-C T6, přestavba P33 T4): jedna hlavní akce `Play again`
+ * a pod ní dvě vedlejší cesty – `Change it` (list s polem a čipy jako
+ * návrhy) a `Challenge a friend`.
  *
- * Replay přetočí běh na tik 0 a nechá ho znovu doběhnout hodinami shellu –
+ * Play again přetočí běh na tik 0 a nechá ho znovu doběhnout hodinami shellu –
  * vstupy hráče v runtime zůstávají, takže se přehraje týž běh do téhož konce
  * a nic nového se nezapíše. Čip pošle `POST …/remix` a přejde na odkaz dítěte;
  * rodič se nemění. Sdílení je `ShareButton` (P27B T5), týž jako v HUD.
@@ -15,8 +17,12 @@ import { useEffect, useRef, useState } from 'react';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type LivePublish, ShareButton } from './ShareButton';
 import { CHALLENGE_A_FRIEND, CHANGE_ONE_THING, POST_RUN_CHIPS } from './starters';
+import { Button, Chip, Icon, Sheet } from './ui';
 
-/** Klip běhu ke stažení (P29D T1); prohlížeč bez nahrávání plátna klip nemá a tlačítko nevidí. */
+/** Texty v `starters.ts` (stopa B) jsou verzálkami; karta mluví větou. */
+const sentence = (text: string): string => text.charAt(0) + text.slice(1).toLowerCase();
+
+/** Klip běhu ke stažení (P29D T1); prohlížeč bez nahrávání plátna klip nemá a odkaz nevidí. */
 function SaveClip({ clip }: { readonly clip: Blob }) {
   const [href, setHref] = useState<string | null>(null);
   useEffect(() => {
@@ -27,7 +33,7 @@ function SaveClip({ clip }: { readonly clip: Blob }) {
   if (href === null) return null;
   const extension = clip.type.includes('mp4') ? 'mp4' : 'webm';
   return (
-    <a className="play-button" data-testid="play-save-clip" href={href} download={`worldstream-clip.${extension}`}>
+    <a className="play-postrun-clip" data-testid="play-save-clip" href={href} download={`worldstream-clip.${extension}`}>
       Save clip
     </a>
   );
@@ -48,6 +54,7 @@ export function PostRun({
   readonly onReplay: () => void;
 }) {
   const router = useRouter();
+  const [changing, setChanging] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   // Replay obrazovku odpojí: rozběhnutý čip pak hráče uprostřed hry nepřesměruje (P28B T7).
@@ -84,33 +91,40 @@ export function PostRun({
     }
   }
 
-  return (
-    <section className="play-postrun" data-testid="play-postrun" aria-label="After the run">
-      <button type="button" className="play-button" data-testid="play-replay" onClick={onReplay}>
-        Replay
-      </button>
-
-      <h3 className="play-postrun-title">{CHANGE_ONE_THING}</h3>
-      <div className="play-chips">
+  const suggestions = (
+    <>
+      <div className="play-chips" role="group" aria-label="Suggestions">
         {POST_RUN_CHIPS.map((entry) => (
-          <button
-            key={entry.chip}
-            type="button"
-            className="play-chip"
-            data-testid={`play-chip-${entry.chip}`}
-            disabled={busy !== null}
-            aria-busy={busy === entry.chip}
-            onClick={() => void remix(entry.chip)}
-          >
+          <Chip key={entry.chip} data-testid={`play-chip-${entry.chip}`} disabled={busy !== null} aria-busy={busy === entry.chip} onClick={() => void remix(entry.chip)}>
             {entry.label}
-          </button>
+          </Chip>
         ))}
       </div>
-      {failure !== null && <p className="play-alert" role="alert">{failure}</p>}
-      <RemixBox job={job} />
+      {failure !== null && (
+        <p className="play-alert" role="alert">
+          {failure}
+        </p>
+      )}
+    </>
+  );
 
+  return (
+    <section className="play-postrun" data-testid="play-postrun" aria-label="After the run">
+      <Button size="l" className="play-postrun-main" data-testid="play-replay" onClick={onReplay}>
+        Play again
+      </Button>
+      <div className="play-postrun-more">
+        <Button variant="quiet" aria-haspopup="dialog" onClick={() => setChanging(true)}>
+          <Icon name="edit" />
+          Change it
+        </Button>
+        <ShareButton versionId={versionId} variant="quiet" label={sentence(CHALLENGE_A_FRIEND)} clip={clip} live={live} />
+      </div>
       {clip !== null && <SaveClip clip={clip} />}
-      <ShareButton versionId={versionId} label={CHALLENGE_A_FRIEND} clip={clip} live={live} />
+
+      <Sheet open={changing} title={sentence(CHANGE_ONE_THING)} onClose={() => setChanging(false)}>
+        <RemixBox job={job} suggestions={suggestions} />
+      </Sheet>
     </section>
   );
 }

@@ -57,6 +57,8 @@ test('a sentence of your own opens a new version and leaves the original alone',
 
   await page.goto(url);
   await win(page);
+  // Od P33 T4 je pole v listu za „Change it“.
+  await page.getByRole('button', { name: 'Change it' }).click();
   const box = page.getByTestId('remix-box');
   await expect(box).toBeVisible();
   await box.getByTestId('remix-input').fill('add snow');
@@ -96,11 +98,16 @@ test('a remix sent before Replay comes back as a chip, not a jump (P28B T7)', as
 
   await page.goto(url);
   await win(page);
+  // Od P33 T4 je pole v listu za „Change it“.
+  await page.getByRole('button', { name: 'Change it' }).click();
   const box = page.getByTestId('remix-box');
   await box.getByTestId('remix-input').fill('make enemies faster');
   await box.getByTestId('remix-submit').click();
   await expect(box.getByTestId('remix-state')).toHaveAttribute('data-kind', 'working');
 
+  // Otevřený list kryje kartu (klepnutí mimo ho jen zavře); hráč ho zavře a pak hraje znovu.
+  await page.keyboard.press('Escape');
+  await expect(box).toHaveCount(0);
   await page.getByTestId('play-replay').click();
   await expect(page.getByTestId('play-postrun')).toHaveCount(0);
   done = true;
@@ -124,6 +131,8 @@ test('a refused change says why and points back to the chips', async ({ page, re
 
   await page.goto(url);
   await win(page);
+  // Od P33 T4 je pole v listu za „Change it“.
+  await page.getByRole('button', { name: 'Change it' }).click();
   const box = page.getByTestId('remix-box');
   await box.getByTestId('remix-input').fill('make the hero a dragon');
   await box.getByTestId('remix-submit').click();

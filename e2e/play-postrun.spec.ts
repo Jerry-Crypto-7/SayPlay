@@ -3,7 +3,8 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 /**
  * Po dohrání (P23-C T6): Replay přehraje týž běh do téhož konce, čip
  * „Make it harder“ vede na **jinou** hru s vlastním odkazem a rodokmen to
- * ukáže na obou stranách; CHALLENGE A FRIEND zkopíruje odkaz.
+ * ukáže na obou stranách; „Challenge a friend“ zkopíruje odkaz. Od P33 T4
+ * jsou čipy v listu za tlačítkem „Change it“.
  *
  * Čip, který by vedl na tutéž hru, vypadá jako remix – test proto drží jiné
  * id a odkaz dítěte zpět na rodiče.
@@ -47,7 +48,8 @@ test.describe('/play/[id] – after the run', () => {
     await page.goto(url);
     await expect(page.getByTestId('play-lineage')).toContainText('Original');
     await win(page);
-    await expect(page.getByText('CHANGE ONE THING')).toBeVisible();
+    await page.getByRole('button', { name: 'Change it' }).click();
+    await expect(page.getByRole('dialog', { name: 'Change one thing' })).toBeVisible();
 
     const parentId = url.split('/').at(-1)!;
     await page.getByTestId('play-chip-harder').click();
@@ -62,7 +64,7 @@ test.describe('/play/[id] – after the run', () => {
     await expect(page.getByTestId('play-lineage')).toContainText('1 remix');
   });
 
-  test('CHALLENGE A FRIEND copies the link', async ({ page, context }) => {
+  test('Challenge a friend copies the link', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto(url);
     await win(page);
