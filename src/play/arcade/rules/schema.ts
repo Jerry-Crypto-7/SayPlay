@@ -112,7 +112,8 @@ export const rulesSchema = z.array(ruleSchema).max(RULES_MAX);
  * bez `interact`, který je do P32G T1 pahýl bez účinku – hra s ním by byla
  * mrtvá a opravné kolo by ji nespravilo. P32G T1 ho sem vrátí, až ho postaví.
  */
-export const modelRulesSchema = z.array(ruleSchema.extend({ when: z.union(liveWhens) })).max(RULES_MAX);
+export const modelWhenSchema = z.union(liveWhens);
+export const modelRulesSchema = z.array(ruleSchema.extend({ when: modelWhenSchema })).max(RULES_MAX);
 
 /**
  * Doplněk role pro pravidla: `start: 'hidden'` = tělo ve hře je, ale ukáže se

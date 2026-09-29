@@ -21,11 +21,11 @@ import { LOOK_IDS, type LookId } from '../arcade/look';
 import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { CAPABILITIES } from '../capabilities';
 import { draftForControl } from '../draft';
-import { ADDONS, CONTROLS, ROLE_KINDS, readGameSpec, type ControlId, type GameRole, type GameSpecV1 } from '../spec';
+import { ADDONS, CONTROLS, ROLE_KINDS, type ControlId, type GameRole, type GameSpecV1 } from '../spec';
 
 import { strictSchema } from './answer-schema';
 import { rulesPromptLines } from './prompt';
-import type { DirectorRead } from './read';
+import { type DirectorRead, readModelSpec } from './read';
 import { examplesBlock, nearestExamples } from './retrieval';
 
 const strictOf = (schema: z.ZodType): Record<string, unknown> => strictSchema(z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }) as Record<string, unknown>);
@@ -184,7 +184,5 @@ export function composeCompact(sentence: string, body: unknown, seed = 1): Direc
   if (rules.length > 0) spec.rules = withoutNulls(rules) as GameSpecV1['rules'];
   if (things.length > 0) spec.things = withoutNulls(things) as GameSpecV1['things'];
 
-  const result = readGameSpec(spec);
-  if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };
-  return { ok: true, spec: result.value };
+  return readModelSpec(spec);
 }

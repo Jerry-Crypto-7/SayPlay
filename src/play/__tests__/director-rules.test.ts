@@ -16,6 +16,7 @@ import pushCrate from '../arcade/__fixtures__/rules/push-crate.json';
 import throwRock from '../arcade/__fixtures__/rules/throw-rock.json';
 import { DIRECTOR_ANSWER_SCHEMA } from '../director/answer-schema';
 import { COMPACT_ANSWER_SCHEMA, compactSystemPrompt, composeCompact } from '../director/compact';
+import { readDirectorAnswer } from '../director/read';
 import carryKeyAnswer from '../director/__fixtures__/rules-answers/carry-key.json';
 import collectGateAnswer from '../director/__fixtures__/rules-answers/collect-gate.json';
 import giveFlowerAnswer from '../director/__fixtures__/rules-answers/give-flower.json';
@@ -65,6 +66,19 @@ describe('the director writes rules', () => {
       expect(text, name).not.toContain('"interact"');
       for (const trigger of ['contact', 'press', 'every', 'counter', 'hit']) expect(text, `${name} ${trigger}`).toContain(`"${trigger}"`);
     }
+  });
+
+  it('an answer with the stub interact trigger is refused on the read path too, where no transport enforces the schema', () => {
+    // Přenos Messages schéma odpovědi neposílá (revize hranice fáze P32-0): odmítnout musí i čtení.
+    const interact = { interact: { role: 'key', radius: 2, hold: 30, states: 2 } };
+    const answer = carryKeyAnswer.answer;
+    const composed = composeCompact(carryKeyAnswer.sentence, { ...answer, rules: answer.rules.map((rule, i) => (i === 0 ? { ...rule, when: interact } : rule)) });
+    expect(!composed.ok && composed.detail).toContain('/rules/0/when: interact does nothing yet');
+    const full = readDirectorAnswer({ ...carryKey, rules: carryKey.rules.map((rule, i) => (i === 0 ? { ...rule, when: interact } : rule)) });
+    expect(!full.ok && full.detail).toContain('/rules/0/when: interact does nothing yet');
+    // Bez `interact` čtení projde: odmítá se spouštěč, ne pravidla.
+    expect(composeCompact(carryKeyAnswer.sentence, answer).ok).toBe(true);
+    expect(readDirectorAnswer(carryKey).ok).toBe(true);
   });
 
   it('the prompt carries the rules grammar, three examples and the only-for-missing-verbs instruction', () => {

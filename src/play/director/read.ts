@@ -15,6 +15,7 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
+import { modelWhenSchema } from '../arcade/rules/schema';
 import { MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1 } from '../spec';
 
@@ -74,7 +75,20 @@ export function readDirectorAnswer(body: unknown): DirectorRead {
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
   const unknown = unknownMechanicIds(body);
   if (unknown.length > 0) return { ok: false, reason: 'MECHANIC_REJECTED', detail: `unknown mechanic: ${unknown.join(', ')}` };
-  const result = readGameSpec(body);
+  return readModelSpec(body);
+}
+
+/**
+ * `readGameSpec` pro spec od modelu: navíc odmítne spouštěč, který schéma
+ * odpovědi nenabízí (pahýl `interact`, `modelWhenSchema`). Schéma to vynutí jen
+ * přenos, který ho posílá – přenos Messages ne (revize P32-0 T4-R2).
+ */
+export function readModelSpec(input: unknown): DirectorRead {
+  const result = readGameSpec(input);
   if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };
+  const stubs = (result.value.rules ?? []).flatMap((rule, index) =>
+    modelWhenSchema.safeParse(rule.when).success ? [] : [`/rules/${index}/when: ${Object.keys(rule.when).join()} does nothing yet – use a trigger from the rules grammar`],
+  );
+  if (stubs.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', detail: stubs.join('; ') };
   return { ok: true, spec: result.value };
 }
