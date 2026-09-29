@@ -45,8 +45,9 @@ const MAX_FEED = 48;
 
 /**
  * `GET /api/play/games?recent=N[&cursor=C]` – feed (P23-D T4, stránky P27B T2):
- * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes }],
- * next }` od nejnovější, v každé osmici nejvýš tři hry téhož archetypu
+ * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes, goal,
+ * mood }], next }` od nejnovější (`goal`/`mood` z řádku seznamu, starší řádky
+ * `null`), v každé osmici nejvýš tři hry téhož archetypu
  * (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do feedu smí,
  * říká `feedEligible` – kontrakt v `docs/play/feed.md`. Stojí dva příkazy
  * úložiště (seznam a počty dětí), vlastní páku `feed` a strop jako každé čtení;
@@ -83,6 +84,8 @@ export async function GET(request: Request): Promise<Response> {
           createdAt: row.createdAt,
           parentId: row.parentId,
           remixes: remixes[index] ?? 0,
+          goal: row.goal ?? null,
+          mood: row.mood ?? null,
         })),
         next: page.next,
       },

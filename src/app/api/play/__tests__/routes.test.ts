@@ -441,6 +441,10 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);
     expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([b, a]);
+    // Cíl a nálada jdou z řádku seznamu (D-R1): karta je ukáže bez stažení detailu.
+    const firstSpec = (await versionStoreFromEnv(process.env).get(first.body.versionId))?.spec;
+    if (firstSpec === undefined) throw new Error('draft missing');
+    expect(firstSpec.tutorial.goalLine).not.toBe('');
     expect(body.games[1]).toEqual({
       versionId: a,
       title: first.body.title,
@@ -448,6 +452,8 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
       createdAt: new Date(1_700_000_001_000).toISOString(),
       parentId: first.body.versionId,
       remixes: 1,
+      goal: firstSpec.tutorial.goalLine,
+      mood: firstSpec.theme.mood,
     });
     expect(body.games[0].remixes).toBe(0);
     expect((await feed('?recent=1')).body.games).toHaveLength(1);
