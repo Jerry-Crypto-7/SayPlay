@@ -242,18 +242,21 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   });
 
   // P26 T4: AI smí opravit žánr, který návrh ze slov odhadl špatně – ověřuje robot, ne shoda s návrhem.
-  it('vylepšení ze střelnice na plošinovku se přijme, když je vyhratelné', async () => {
+  // P32B T2: návrh nové hry je žánr – „zombie shooter in a mall“ z něj vyjde jako úkol (`move_free`), ne střelnice.
+  it('vylepšení z úkolu na plošinovku se přijme, když je vyhratelné', async () => {
     director.script = [answered({ ...(runnerAnswer() as object), control: 'platform', controlParams: { difficulty: 'easy' } })];
     const created = await publish({ sentence: 'zombie shooter in a mall' });
-    expect((await game(created.body.versionId)).spec.control).toBe('shooter');
+    expect((await game(created.body.versionId)).spec.genre.id).toBe('quest');
+    expect((await game(created.body.versionId)).spec.control).toBe('move_free');
     expect((await settled(created.body.versionId)).status).toBe('ready');
     const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
     expect((await game(childId as string)).spec.control).toBe('platform');
   });
 
-  it('mřížková odpověď na běžce se přijme a dítě je mřížka', async () => {
+  // P32B T2: skákací věta je od žánrů plošinovka, ne běžec.
+  it('mřížková odpověď na plošinovku se přijme a dítě je mřížka', async () => {
     const created = await publish({ sentence: 'jumping arcade game with a lot of obstacles' });
-    expect((await game(created.body.versionId)).spec.control).toBe('runner');
+    expect((await game(created.body.versionId)).spec.control).toBe('platform');
     expect((await settled(created.body.versionId)).status).toBe('ready');
     const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
     expect((await game(childId as string)).spec.control).toBeUndefined();
@@ -271,10 +274,12 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(child.spec.title).toBe('Neon Rooftop Sprint');
   });
 
-  it('mřížkový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
+  // P32B T2: mřížkový návrh nová věta už nedostane; křeček je útěk v aréně.
+  it('arénový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
     director.script = [answered(runnerAnswer())];
     const created = await publish({ sentence: SENTENCE });
-    expect((await game(created.body.versionId)).spec.control).toBeUndefined();
+    expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
+    expect((await game(created.body.versionId)).spec.control).toBe('move_free');
     expect((await settled(created.body.versionId)).status).toBe('ready');
     const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
     expect((await game(childId as string)).spec.control).toBe('runner');
