@@ -69,8 +69,8 @@ export function ShareButton({
   readonly versionId: string;
   readonly title?: string;
   readonly label?: string;
-  /** Váha tlačítka (P33 T4): v kartě po hře je sdílení vedlejší cesta. */
-  readonly variant?: 'accent' | 'quiet';
+  /** Váha tlačítka (P33 T4): v kartě po hře je sdílení vedlejší cesta; `rail` = kolo v bočním sloupci hry (T12). */
+  readonly variant?: 'accent' | 'quiet' | 'rail';
   readonly className?: string;
   readonly clip?: Blob | null;
   /** Verze s živými změnami běhu (P29D T10), `undefined` = běh žádné nemá. */
@@ -146,15 +146,26 @@ export function ShareButton({
       <button
         ref={button}
         type="button"
-        className={`play-button play-button-${variant} play-share ${className}`.trim()}
+        className={`${variant === 'rail' ? 'play-icon-button' : `play-button play-button-${variant}`} play-share ${className}`.trim()}
         data-testid="play-share"
         data-variant={variant}
         disabled={live?.state === 'pending'}
         aria-busy={live?.state === 'pending'}
         onClick={() => void run()}
       >
-        <Icon name="share" />
-        {label}
+        {variant === 'rail' ? (
+          <>
+            <span className="play-icon-button-disc">
+              <Icon name="share" />
+            </span>
+            <span className="play-icon-button-caption">{label}</span>
+          </>
+        ) : (
+          <>
+            <Icon name="share" />
+            {label}
+          </>
+        )}
       </button>
       {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}
       <span className="play-status" aria-live="polite">

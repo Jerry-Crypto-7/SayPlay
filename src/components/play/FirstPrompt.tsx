@@ -28,6 +28,11 @@ export function callToAction(controlsHint: string): string {
   return clause;
 }
 
+/** Nápověda pro dotyk (P33 T12): celá, jen bez kláves („Tap or Space to jump“ → „Tap to jump“). */
+export function touchHint(controlsHint: string): string {
+  return controlsHint.replace(new RegExp(`\\s+or\\s+(?:${KEY_WORD})\\b`, 'gi'), '');
+}
+
 /** Klávesa prvního povelu pro desktop („Tap or Space to jump“ → „or press Space“); `null`, když ji nápověda nemá. */
 export function desktopKeys(controlsHint: string): string | null {
   const key = new RegExp(`\\sor\\s+(${KEY_WORD})\\b`, 'i').exec(firstClause(controlsHint))?.[1];

@@ -98,6 +98,24 @@ test.describe('/play/[id] – play shell', () => {
     await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(0);
   });
 
+  // P33 T12: na desktopu tenký pruh 64 px nad scénou, scéna zbytek výšky a nejvýš 16:9; akce ve sloupci vpravo.
+  test('desktop 1440×900: the scene fills the window below a 64 px bar, at most 16:9', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(url);
+    await expect(page.getByTestId('play-goal')).toBeVisible();
+    const stage = (await page.getByTestId('play-grid-stage').boundingBox())!;
+    expect(stage.y).toBe(64);
+    expect(stage.height).toBe(900 - 64);
+    expect(stage.width).toBeLessThanOrEqual(Math.ceil((stage.height * 16) / 9));
+    const hud = (await page.locator('.play-hud').boundingBox())!;
+    expect(hud.height).toBe(64);
+    const rail = (await page.locator('.play-rail').boundingBox())!;
+    expect(rail.x + rail.width).toBeGreaterThan(1440 - 32);
+    await expect(page.getByTestId('play-mute')).toBeVisible();
+    await expect(page.getByTestId('play-info')).toBeVisible();
+    await expect(page.getByTestId('play-more')).toHaveAttribute('href', '/play');
+  });
+
   test('a phone viewport has no horizontal scroll', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(url);

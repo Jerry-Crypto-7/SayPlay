@@ -33,6 +33,9 @@ import { wakesGame } from './arcade/ready-gate';
 import { GridScenery } from './arcade/look/Scenery';
 import { HowItWorks } from './HowItWorks';
 import { FirstPrompt } from './FirstPrompt';
+import { MoreGames } from './MoreGames';
+import { MuteButton } from './MuteButton';
+import { ShareButton } from './ShareButton';
 import { Hud, TICKS_PER_SECOND, objectiveCounter } from './Hud';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
@@ -401,12 +404,18 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
           </span>
         ))}
       </div>
-      <Hud spec={spec} snapshot={snapshot} versionId={versionId} />
+      <Hud spec={spec} snapshot={snapshot} />
+      {/* Sloupec akcí vpravo (P33 T12), stejný jako u arkády; sdílení po dohrání nese `PostRun`. */}
+      <nav className="play-rail" aria-label="Game actions">
+        {running && <ShareButton versionId={versionId} title={spec.title} variant="rail" className="play-hud-share" />}
+        <SentenceRead read={read} />
+        <MuteButton />
+        <MoreGames />
+      </nav>
       {running && waiting && <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       <UpgradeBanner request={upgrade} sentence={read.sentence} />
       {running && <RemixReadyChip job={remix} />}
-      <SentenceRead read={read} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
         <p className="play-building" data-testid="play-building" aria-live="polite">Building the world…</p>

@@ -269,6 +269,7 @@ export function FeedPager(_: { readonly pitches: Readonly<Record<string, string>
                 aiVersion={detail.relation === 'upgrade'}
                 upgrade={null}
                 active={onScreen}
+                inFeed
               />
             </WithPlayEnv>
           </TapToPlay>

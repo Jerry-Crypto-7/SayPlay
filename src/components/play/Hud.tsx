@@ -16,8 +16,6 @@ import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-contro
 import { TICKS_PER_SECOND } from '@/play/compile/adapters/timer';
 import type { GameSpecV1 } from '@/play/spec';
 
-import { MuteButton } from './MuteButton';
-import { ShareButton } from './ShareButton';
 import { timerLeft } from './timer';
 
 export { TICKS_PER_SECOND };
@@ -70,14 +68,16 @@ export function phaseLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'val
   return readVariable(snapshot as RuntimeSnapshot, `${timer.params.id}_red`) === 1 ? 'RED – freeze' : 'GREEN – go';
 }
 
-/** Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`, ať nejsou na stránce dvě. */
-export function Hud({ spec, snapshot, versionId }: { readonly spec: GameSpecV1; readonly snapshot: RuntimeSnapshot; readonly versionId: string }) {
+/**
+ * Tenký pruh nahoře (P33 T12): název, cíl, postup. Zvuk a sdílení jsou
+ * v bočním sloupci shellu, ovládání říkají karty cílů a výzva na startu.
+ */
+export function Hud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: RuntimeSnapshot }) {
   const phase = phaseLine(spec, snapshot);
   return (
     <header className="play-hud" aria-label="Game status">
       <h1 className="play-hud-title">{spec.title}</h1>
       <p className="play-hud-goal" data-testid="play-goal">{spec.tutorial.goalLine}</p>
-      <p className="play-hud-hint">{spec.tutorial.controlsHint}</p>
       {phase === null ? null : (
         <p className={phase.startsWith('RED') ? 'play-hud-phase play-hud-phase-red' : 'play-hud-phase play-hud-phase-green'} data-testid="play-phase">
           {phase}
@@ -87,10 +87,7 @@ export function Hud({ spec, snapshot, versionId }: { readonly spec: GameSpecV1; 
         <span data-testid="play-progress">{progressLine(spec, snapshot)}</span>
         {/* Tik hráč nevidí (P28B F-15); čas nese `progressLine`, atribut čtou e2e. */}
         <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick} hidden />
-
       </p>
-      <MuteButton />
-      {snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" />}
     </header>
   );
 }

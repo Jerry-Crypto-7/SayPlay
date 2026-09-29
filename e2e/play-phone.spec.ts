@@ -4,9 +4,10 @@ import { join } from 'node:path';
 import { expect, type Page, test } from '@playwright/test';
 
 /**
- * Hra na telefonu dostane obrazovku (P28D T8, F-26): na 390×844 zabírají
- * překryvy (HUD, banner AI, rodokmen, karty cílů) nejvýš 30 % výšky a žádné
- * dva se nepřekrývají. Měří se z `getBoundingClientRect`, ne od oka; snímky
+ * Hra na telefonu dostane obrazovku (P28D T8, F-26, P33 T12): na 390×844
+ * zabírají pruhy přes šířku (pruh nahoře, řádka ovládání, karty cílů) nejvýš
+ * 15 % výšky, úzké věci u okraje (sloupec akcí, štítek AI) nejvýš 20 % plochy
+ * a žádné dva překryvy se nepřekrývají. Měří se z `getBoundingClientRect`, ne od oka; snímky
  * pro oko jdou do `P28_PHONE_DIR`, když je nastavený.
  */
 
@@ -26,12 +27,17 @@ interface Box {
   readonly right: number;
 }
 
+/*
+ * P33 T12 – hra na celou plochu. Pruhy přes víc než polovinu šířky (pruh nahoře, řádka ovládání, lišta
+ * cílů) smějí vzít nejvýš 15 % výšky; dřív 70 %, kdy HUD byl panel s tlačítky a nad hrou ležely další
+ * dva proužky (516 z 844). Úzké věci u okraje – sloupec akcí vpravo, štítek AI vlevo – berou šířku,
+ * ne výšku: každá smí mít nejvýš polovinu šířky, dohromady nejvýš 20 % plochy a nic nepřekrýt.
+ */
+const BAND_SHARE = 0.85;
+const SIDE_AREA = 0.2;
+
 for (const game of GAMES) {
-  test(`phone 390×844: the ${game.kind} game keeps ≥ 70 % of the screen and no overlay overlaps`, async ({ page, request }) => {
-    // P33 T10: u runneru a areny bere horní čtvrtinu HUD arkády (8–211 px, `ArcadePlay.tsx` – soubor D do
-    // předání) a pod ním řádek About this game; zbývá 516 z 844. Opravuje P33 T12 – tam test zezelená,
-    // `test.fail` ho tím shodí a musí pryč.
-    test.fail(game.kind !== 'grid', 'the arcade HUD takes the top quarter until P33 T12');
+  test(`phone 390×844: the ${game.kind} game keeps ≥ 85 % of the height and no overlay overlaps`, async ({ page, request }) => {
     const response = await request.post('/api/play/games', { data: { sentence: game.sentence } });
     expect(response.status(), await response.text()).toBeLessThan(300);
     const { url } = (await response.json()) as { url: string };
@@ -45,7 +51,7 @@ for (const game of GAMES) {
       await page.screenshot({ path: join(DIR, `${game.kind}.png`) });
     }
 
-    const { boxes, height } = await page.evaluate(() => {
+    const { boxes, height, width } = await page.evaluate(() => {
       const found: Box[] = [];
       // Výzva prvních sekund (P28C T5) leží schválně uprostřed a do 4 s zmizí – není to panel, který ubírá plochu.
       for (const el of document.querySelectorAll<HTMLElement>('.play-shell > :not(.play-stage):not(.play-first-prompt), .play-honest')) {
@@ -54,13 +60,19 @@ for (const game of GAMES) {
         if (style.display === 'none' || style.visibility === 'hidden' || r.width === 0 || r.height === 0) continue;
         found.push({ name: el.className, top: r.top, bottom: r.bottom, left: r.left, right: r.right });
       }
-      return { boxes: found, height: window.innerHeight };
+      return { boxes: found, height: window.innerHeight, width: window.innerWidth };
     });
 
-    const top = Math.max(0, ...boxes.filter((b) => b.top + b.bottom < height).map((b) => b.bottom));
-    const bottom = Math.min(height, ...boxes.filter((b) => b.top + b.bottom >= height).map((b) => b.top));
-    const shown = boxes.map((b) => `${b.name} ${Math.round(b.top)}–${Math.round(b.bottom)}`).join(', ');
-    expect(bottom - top, `play area ${Math.round(bottom - top)} of ${height}: ${shown}`).toBeGreaterThanOrEqual(0.7 * height);
+    const bands = boxes.filter((b) => b.right - b.left > width / 2);
+    const sides = boxes.filter((b) => b.right - b.left <= width / 2);
+    const top = Math.max(0, ...bands.filter((b) => b.top + b.bottom < height).map((b) => b.bottom));
+    const bottom = Math.min(height, ...bands.filter((b) => b.top + b.bottom >= height).map((b) => b.top));
+    const shown = boxes.map((b) => `${b.name} ${Math.round(b.left)}–${Math.round(b.right)} × ${Math.round(b.top)}–${Math.round(b.bottom)}`).join(', ');
+    expect(bottom - top, `play height ${Math.round(bottom - top)} of ${height}: ${shown}`).toBeGreaterThanOrEqual(BAND_SHARE * height);
+    // Sloupec akcí je vidět a leží u pravého okraje.
+    expect(sides.some((b) => b.name.includes('play-rail') && b.right >= width - 16), shown).toBe(true);
+    const sideArea = sides.reduce((sum, b) => sum + (b.right - b.left) * (b.bottom - b.top), 0);
+    expect(sideArea, `side overlays cover ${Math.round((100 * sideArea) / (width * height))} % of the screen: ${shown}`).toBeLessThanOrEqual(SIDE_AREA * width * height);
 
     for (const [i, a] of boxes.entries()) {
       for (const b of boxes.slice(i + 1)) {

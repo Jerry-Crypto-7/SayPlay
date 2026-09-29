@@ -11,7 +11,7 @@
 import { useState } from 'react';
 
 import type { Authorship, ReadFacts } from './lab';
-import { Icon, Sheet } from './ui';
+import { IconButton, Sheet } from './ui';
 import { useInfoParts } from './ui/InfoContext';
 
 const BY: Readonly<Record<Authorship, string>> = {
@@ -61,10 +61,8 @@ export function SentenceRead({ read }: { readonly read: ReadFacts }) {
   const parts = useInfoParts();
   return (
     <>
-      <button type="button" className="play-lab play-info" data-testid="play-info" aria-haspopup="dialog" onClick={() => setOpen(true)}>
-        <Icon name="info" />
-        About this game
-      </button>
+      {/* Kolo v bočním sloupci hry (P33 T12), dřív řádek nad hrou. */}
+      <IconButton icon="info" caption="About" aria-label="About this game" className="play-info" data-testid="play-info" aria-haspopup="dialog" onClick={() => setOpen(true)} />
       <Sheet open={open} title="About this game" onClose={() => setOpen(false)} className="play-info-sheet">
         <ReadSection read={read} />
         {parts.how !== undefined && (
