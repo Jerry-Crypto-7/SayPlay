@@ -15,7 +15,7 @@
 
 import { controlOf, unreadItems } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
-import { NUMBER_WORDS, toolOf } from '../draft/lexicon';
+import { NUMBER_WORDS, toolsOf } from '../draft/lexicon';
 import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import type { GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
@@ -412,10 +412,10 @@ export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOp
     issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `"${genre.enemy}" is neither in the sentence nor the default of the setting (${settingEnemies.join(', ')})` });
   }
   // T7: co hráč stříká nebo hází, ho nehoní („sprays water“ → „before the water catch you“).
-  // Hráčem je hrdina odpovědi: co hází obr, vesničana honit smí (B-R12).
-  const tool = toolOf(sentence, genre.hero);
-  if (tool !== null && genre.enemy !== undefined && sameRole(genre.enemy, tool)) {
-    issues.push({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: `the player uses the "${tool}" in the sentence, so it cannot be the enemy` });
+  // B-R12: kdo věc vrhá, se nesoudí – kámen, který hází obr, taky nikoho nehoní (honit smí obr).
+  const tool = genre.enemy === undefined ? undefined : toolsOf(sentence).find((phrase) => sameRole(genre.enemy!, phrase));
+  if (tool !== undefined) {
+    issues.push({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: `the sentence throws or uses the "${tool}", so it cannot be the enemy` });
   }
 
   if (!verbFits(genre, ranking, modules)) {

@@ -18,7 +18,7 @@ import { direct } from '../director/index';
 import { buildDirectorRequest } from '../director/prompt';
 import { readGenreAnswer } from '../director/read';
 import { draftGameSpecWithMeta } from '../draft';
-import { singular, toolOf } from '../draft/lexicon';
+import { readRoles, singular, toolsOf } from '../draft/lexicon';
 import type { GenreSpec } from '../genre/contract';
 
 const sentence = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
@@ -98,37 +98,46 @@ describe('the thing the player uses is never a role', () => {
     params: { chasers: 2 },
   };
 
-  it('reads the tool out of the sentence', () => {
-    const heroes: [string, string | null][] = [[FIRE, 'firefighter robot'], ['A kid throws water balloons at bullies', 'kid'], ['An elf shoots arrows at goblins', 'elf'], ['Shoot the zombies in a mall', null], ['A cat swings from vines', 'cat']];
-    expect(heroes.map(([text, hero]) => toolOf(text, hero))).toEqual(['water', 'water balloon', 'arrow', null, null]);
+  it('reads the tools out of the sentence', () => {
+    const texts = [FIRE, 'A kid throws water balloons at bullies', 'An elf shoots arrows at goblins', 'Shoot the zombies in a mall', 'A cat swings from vines'];
+    expect(texts.map(toolsOf)).toEqual([['water'], ['water balloon'], ['arrow'], [], []]);
+    expect(toolsOf('A bully throws rocks while a kid throws snowballs')).toEqual(['rock', 'snowball']);
   });
 
-  // B-R12: nástroj je jen to, co dělá hrdina – co hází obr nebo drak, hráčovo není.
-  it('takes the tool only from a verb the hero does', () => {
-    const GIANT = 'An angry giant throws rocks at the village';
-    expect(toolOf(GIANT, 'angry giant')).toBe('rock');
-    expect(toolOf(GIANT, 'villager')).toBeNull();
-    expect(toolOf('A villager hides while an angry giant throws rocks at the village', 'villager')).toBeNull();
-    expect(toolOf('A knight fights a dragon that throws fireballs', 'knight')).toBeNull();
-    expect(toolOf('Play as a kid who throws snowballs at bullies', 'kid')).toBe('snowball');
-    expect(toolOf('A kid runs and throws snowballs at bullies', 'kid')).toBe('snowball');
-    expect(toolOf('An angry giant roars and throws rocks at the village', 'villager')).toBeNull();
-    expect(toolOf('defend a castle and throw snowballs at dragons', null)).toBe('snowball');
-    expect(toolOf('A bully throws rocks while a kid throws snowballs', 'kid')).toBe('snowball');
-    expect(toolOf('Throw snowballs at snowmen in a park', null)).toBe('snowball');
-    expect(toolOf('defend a castle from dragons by throwing snowballs', null)).toBe('snowball');
-    expect(toolOf('fps where u shoot paint at robots', null)).toBe('paint');
-    // Revize B-R12: zájmeno a „the player“ jsou hrdina – jinak by se voda hasiče zas stala nepřítelem.
-    const SHE = 'A firefighter robot runs into the forest and she sprays water at burning trees';
-    expect(toolOf(SHE, 'firefighter robot')).toBe('water');
-    expect(toolOf('The player sprays water at burning trees in a forest', null)).toBe('water');
-    expect(draftOf(SHE).genre.enemy).not.toBe('water');
-    expect(fidelity({ ...draftOf(SHE).genre, enemy: 'water' }, SHE)).toContainEqual(expect.objectContaining({ code: 'ENEMY_IS_TOOL' }));
-    // Kritik soudí hrdinu odpovědi: vesničana kámen honit smí, obra ne.
-    const giant = draftOf(GIANT).genre;
+  // B-R12, třetí přístup: dvě opravy čtení podmětu padly („She's spraying“, „Firefighters spray“ bez hrdiny).
+  // Pravidlo teď podmět nečte vůbec – předmět slovesa nástroje nikdy nehoní, ať ho vrhá kdokoli.
+  it('never lets the object of a tool verb chase, whoever does the verb', () => {
     const toolIssue = expect.objectContaining({ code: 'ENEMY_IS_TOOL' });
-    expect(fidelity({ ...giant, hero: 'villager', enemy: 'rock' }, GIANT)).not.toContainEqual(toolIssue);
-    expect(fidelity({ ...giant, hero: 'giant', enemy: 'rock' }, GIANT)).toContainEqual(toolIssue);
+    const WATER = [
+      'A firefighter robot runs into the forest and she sprays water at burning trees',
+      'The player sprays water at burning trees in a forest',
+      "She's spraying water at burning trees in a forest",
+      "I'm spraying water at burning trees in a forest",
+      "We're firefighters spraying water at burning trees",
+      "You're spraying water at burning fires in a city",
+      'Anna sprays water at burning trees in a forest',
+      'Firefighters spray water at burning trees in a forest',
+    ];
+    for (const text of WATER) {
+      expect(toolsOf(text), text).toEqual(['water']);
+      expect(draftOf(text).genre.enemy, text).not.toBe('water');
+      expect(readRoles(text).hazard, text).not.toBe('water');
+      expect(fidelity({ ...draftOf(text).genre, enemy: 'water' }, text), text).toContainEqual(toolIssue);
+    }
+    expect(readRoles('A firefighter runs inside and she sprays water at the fire').hazard).toBe('fire');
+    // Obr kámen hází, kámen proto nikoho nehoní – obr sám honit smí (revize T7, nález 6).
+    for (const giantText of ['An angry giant throws rocks at the village', 'An angry giant who hates the hero throws rocks at the village', 'An angry giant roars and throws rocks at the village']) {
+      const giant = draftOf(giantText).genre;
+      expect(giant.enemy, giantText).not.toBe('rock');
+      expect(fidelity({ ...giant, hero: 'villager', enemy: 'rock' }, giantText), giantText).toContainEqual(toolIssue);
+      expect(fidelity({ ...giant, hero: 'villager', enemy: 'angry giant' }, giantText), giantText).not.toContainEqual(toolIssue);
+    }
+    expect(toolsOf('Goblins that chase the player throw spears in a cave')).toEqual(['spear']);
+    expect(toolsOf('A knight fights a dragon that throws fireballs')).toEqual(['fireball']);
+    for (const text of ['defend a castle and throw snowballs at dragons', 'Throw snowballs at snowmen in a park', 'defend a castle from dragons by throwing snowballs', 'Play as a kid who throws snowballs at bullies']) {
+      expect(toolsOf(text), text).toEqual(['snowball']);
+    }
+    expect(toolsOf('fps where u shoot paint at robots')).toEqual(['paint']);
   });
 
   it('rejects an answer whose chaser is the water the firefighter sprays, with the reason', () => {
