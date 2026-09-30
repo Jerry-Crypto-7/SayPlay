@@ -14,7 +14,9 @@ import { direct } from '../director/index';
 import { DIRECTOR_PROMPT_VERSION, genrePromptLines } from '../director/prompt';
 import { draftGameSpecWithMeta } from '../draft';
 
-const SENTENCE = 'a penguin jumps over icebergs and shoots snowballs';
+// Bez „shoots“ (T5b): u skutečných modulů je úkol `ready` a střelba ho vybere – věta
+// s hlavním slovesem skoku hraje plošinovku, o kterou tu jde.
+const SENTENCE = 'a penguin jumps over icebergs and grabs fish';
 
 const answer = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
   plan: 'platformer on ice',

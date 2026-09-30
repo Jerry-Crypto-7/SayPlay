@@ -16,8 +16,10 @@
 
 import { z } from 'zod';
 
-import { type GenreModule, genreSpecSchema } from '../genre/contract';
+import { THINGS_MAX } from '../arcade/rules/schema';
+import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
+import { ROLE_KINDS } from '../spec';
 
 type Json = Record<string, unknown>;
 
@@ -70,7 +72,8 @@ export const readyModes = (module: GenreModule): string[] => module.modes.filter
 
 /**
  * Varianta `GenreSpec` pro režiséra (P32B T4): jen režimy `ready` a parametry
- * s mezemi modulu jako pojmenovaná pole, ne volný slovník. Žánr bez hrajícího
+ * s mezemi modulu jako pojmenovaná pole, ne volný slovník. Od T5b i počty rolí
+ * (B-R4) a pravidla P29A se svými rolemi (B-R5). Žánr bez hrajícího
  * režimu v odpovědi není; `null` = nic nenabízí.
  */
 function genreVariant(module: GenreModule): Json | null {
@@ -79,8 +82,31 @@ function genreVariant(module: GenreModule): Json | null {
   const base = genreSpecSchema.options.find((option) => option.shape.genre.value === module.id)!;
   const bounds = Object.entries(module.paramBounds);
   const params = z.object(Object.fromEntries(bounds.map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
-  const variant = bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() });
-  return strictSchema(toJson(variant.extend({ mode: z.enum(modes as [string, ...string[]]) })));
+  const counts = countsOf(module, modes);
+  const variant = (bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() })).extend({ ruleRoles: z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX).optional() });
+  const counted = counts === null ? variant.omit({ counts: true }) : variant.extend({ counts: counts.optional() });
+  return strictSchema(toJson(counted.extend({ mode: z.enum(modes as [string, ...string[]]) })));
+}
+
+/** Druhy rolí, které smí nést jen pravidla – hráče staví modul. */
+const RULE_ROLE_KINDS = ROLE_KINDS.filter((kind) => kind !== 'player') as [string, ...string[]];
+
+/**
+ * Počty rolí, které žánr čte (B-R4): jen role, které některý režim `ready`
+ * převádí na parametr (`COUNT_PARAMS`), s mezemi toho parametru – u dvou
+ * režimů jejich sjednocením. Přesnou mez režimu hlídá `readGenreSpec`. `null` = žánr počty nečte.
+ */
+function countsOf(module: GenreModule, modes: readonly string[]): z.ZodObject | null {
+  const table = COUNT_PARAMS[module.id] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>;
+  const fields = COUNT_ROLES.flatMap((role) => {
+    const ranges = modes.flatMap((mode) => {
+      const key = table[mode]?.[role];
+      return key === undefined ? [] : [module.paramBounds[key]!];
+    });
+    if (ranges.length === 0) return [];
+    return [[role, z.int().min(Math.min(...ranges.map((range) => range.min))).max(Math.max(...ranges.map((range) => range.max))).optional()] as const];
+  });
+  return fields.length === 0 ? null : z.object(Object.fromEntries(fields)).strict();
 }
 
 /** Odpověď režiséra na novou hru: `{plan, spec}` se `GenreSpec`; hru z něj složí modul žánru (`readGenreAnswer`). */

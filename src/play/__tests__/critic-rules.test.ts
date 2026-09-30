@@ -5,14 +5,10 @@
  * a hra se hraje bez něj – nikdy se nerozbije a nikdy netvrdí sloveso, které
  * se nestalo.
  *
- * Od P32B T4 píše první odpověď `GenreSpec` bez pravidel; do hry je dopíše
- * až opravné kolo. Scénář proto posílá hru ze žánru do opravy neprošlým
- * keypointem a pravidla hodu kamenem přinese záplata RFC 6902. Vadné pravidlo
- * v záplatě se nepřijme vůbec (`applyRepairAnswer`), takže `RULE_INVALID` dnes
- * vzniká jen v kritikovi nad hláškou čtení, ne v režisérovi.
+ * P32B T4 vzal pravidla z první odpovědi, T5b je vrací (B-R5): `GenreSpec`
+ * nese pravidla hodu kamenem a modul žánru je přeloží spolu se svými rolemi.
+ * Scénář proto jako v P29A posílá pravidla v první odpovědi, jen žánrové.
  */
-
-import { isDeepStrictEqual } from 'node:util';
 
 import { describe, expect, it } from 'vitest';
 
@@ -20,10 +16,10 @@ import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
 import { direct } from '../director';
 import { genreAnswer } from '../director/__fixtures__';
-import { answered, failed, fakeBranch, type ScriptedOutcome } from '../director/__fixtures__/branch';
+import { answered, failed, fakeBranch } from '../director/__fixtures__/branch';
 import throwRock from '../director/__fixtures__/rules-answers/throw-rock.json';
 import { ruleInvalidIssues, verbIssues } from '../director/critic';
-import { readGenreAnswer, readModelSpec } from '../director/read';
+import { readModelSpec } from '../director/read';
 import type { RepairIssue } from '../director/repair';
 import { draftForControl } from '../draft';
 import type { GameSpecV1 } from '../spec';
@@ -50,44 +46,33 @@ function robot(spec: GameSpecV1): RepairIssue[] {
 }
 
 /**
- * První odpověď věrná větě (P32B T5): hlavní sloveso „throw“ hraje jen náhradu
- * (quest.spatial), věrný `ready` režim je sběr v Aréně z „pick up“. Nevěrnou
- * odpověď by kontrola věrnosti přepnula a robot by nad hrou ze žánru nikdy nevystřelil.
+ * První odpověď věrná větě: „throw … at the bell“ je zásah, takže hlavní sloveso
+ * hraje úkol (`quest.spatial`, se skutečnými moduly `ready`). Pravidla, jejich
+ * role a `if: null` jsou, jak je model píše v přísném schématu.
  */
-const ANSWER = genreAnswer({ mode: 'collect' });
-
-/** Hra, kterou modul žánru složí z první odpovědi – bez pravidel. */
-const FIRST = (() => {
-  const read = readGenreAnswer(ANSWER);
-  if (!read.ok) throw new Error(read.detail);
-  return read.spec;
-})();
-
-const MISSING: RepairIssue = { code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint failed: the sentence verbs pick, throw, ring never happen', repairHint: 'add rules for them' };
-
-/** Robot `inner`, který navíc neprojde hru ze žánru: pravidla, která věta chce, jí dopíše až opravné kolo. */
-const asking =
-  (inner: (spec: GameSpecV1) => RepairIssue[]) =>
-  (spec: GameSpecV1): RepairIssue[] =>
-    isDeepStrictEqual(spec, FIRST) ? [MISSING] : inner(spec);
-
-/** Záplata, která hře ze žánru přidá role a pravidla hodu kamenem a za ně `extra`. */
-const addRules = (extra: readonly object[] = [], rules: readonly object[] = RULES) => [
-  ...RULE_ROLES.map((value) => ({ op: 'add', path: '/roles/-', value })),
-  { op: 'add', path: '/rules', value: [...rules, ...extra] },
-];
-
-const NOOP = [{ op: 'replace', path: '/title', value: 'Bell Ringer' }];
+const answer = (rules: readonly unknown[] = throwRock.answer.rules) => ({
+  plan: throwRock.answer.plan,
+  spec: {
+    ...genreAnswer({ genre: 'quest', mode: 'spatial', hero: 'shepherd', enemy: undefined, collectible: undefined, setting: throwRock.answer.setting, palette: undefined }).spec,
+    ruleRoles: throwRock.answer.ruleRoles,
+    things: null,
+    rules,
+  },
+});
 
 /** Pravidlo, které robot před výhrou nikdy nevystřelí: jednou za 90 s. */
-const DANCE = { id: 'dance', verb: 'dance', when: { every: 5400 }, do: [{ score: 1 }] };
+const DANCE = { id: 'dance', verb: 'dance', when: { every: 5400 }, if: null, do: [{ score: 1 }] };
 /** Pravidlo, které vystřelí při každém stisku a nic nezmění: skóre +0. */
-const WAVE = { id: 'wave', verb: 'wave', when: { press: 'action' }, do: [{ score: 0 }] };
+const WAVE = { id: 'wave', verb: 'wave', when: { press: 'action' }, if: null, do: [{ score: 0 }] };
 
-async function run(repairs: readonly ScriptedOutcome[], check = asking(robot), cache?: Parameters<typeof direct>[1]['cache']) {
+const NOOP = [{ op: 'replace', path: '/title', value: 'Bell Ringer' }];
+/** Pravidlo zvonu míří na roli, která není: `RULE_INVALID`. */
+const BUCKET = [{ ...throwRock.answer.rules[0]!, when: { contact: ['player', 'bucket'] } }];
+
+async function run(first: object, repairs: readonly unknown[], check = robot, cache?: Parameters<typeof direct>[1]['cache']) {
   let tick = 0;
-  const branch = fakeBranch([answered(ANSWER), ...repairs]);
-  const game = await direct(SENTENCE, { branch, now: () => (tick += 100), check, maxRepairRounds: 2, ...(cache === undefined ? {} : { cache }) });
+  const branch = fakeBranch([answered(first), ...repairs.map((body) => answered(body))]);
+  const game = await direct(SENTENCE, { branch, now: () => (tick += 100), compact: true, check, maxRepairRounds: 2, ...(cache === undefined ? {} : { cache }) });
   return { game, branch };
 }
 
@@ -130,16 +115,15 @@ describe('the critic names rule problems', () => {
 
 describe('the director repairs a verb that changes nothing', () => {
   it('the no-effect verb goes to the model by name and a repair that removes it is accepted', async () => {
-    const { game, branch } = await run([answered(addRules([WAVE])), answered([{ op: 'remove', path: '/rules/3' }])]);
-    const sent = branch.calls[2]?.request.user ?? '';
+    const { game, branch } = await run(answer([...throwRock.answer.rules, WAVE]), [[{ op: 'remove', path: '/rules/3' }]]);
+    const sent = branch.calls[1]?.request.user ?? '';
     expect(sent).toContain('VERB_NO_EFFECT');
     expect(sent).toContain('wave');
-    expect(game).toMatchObject({ source: 'authored', repairRounds: 2 });
     expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
   });
 
   it('when repair does not help, the no-effect rule is dropped and the game plays without it', async () => {
-    const { game } = await run([answered(addRules([WAVE])), answered(NOOP)]);
+    const { game } = await run(answer([...throwRock.answer.rules, WAVE]), [NOOP, NOOP]);
     expect(game.fallbackReason).toBe('VERB_UNPROVED');
     expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
     expect(robot(game.spec)).toEqual([]);
@@ -147,42 +131,59 @@ describe('the director repairs a verb that changes nothing', () => {
 });
 
 describe('the director repairs rules before publishing', () => {
-  it('rules a repair round writes into the genre game are accepted when they all fire', async () => {
-    const { game, branch } = await run([answered(addRules())]);
-    expect(branch.calls).toHaveLength(2);
-    expect(branch.calls[1]?.request.user).toContain('KEYPOINT_FAILED');
+  it('rules of the first answer reach the GameSpec of the genre and go through untouched when they all fire', async () => {
+    const { game, branch } = await run(answer(), []);
+    expect(branch.calls).toHaveLength(1);
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 0, spec: { genre: { id: 'quest', mode: 'spatial' } } });
+    expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
+    expect(game.spec.roles.map((role) => role.id)).toEqual(expect.arrayContaining(['player', 'rock', 'bell']));
+    expect(robot(game.spec)).toEqual([]);
+  });
+
+  it('an invalid rule goes to the model with its reason and the repaired rules are accepted', async () => {
+    const broken = throwRock.answer.rules.map((rule) => (rule.id === 'ring' ? { ...rule, when: { contact: ['rock', 'bucket'] } } : rule));
+    const { game, branch } = await run(answer(broken), [[{ op: 'add', path: '/rules', value: RULES }]]);
+    const sent = branch.calls[1]?.request.user ?? '';
+    expect(sent).toContain('RULE_INVALID');
+    expect(sent).toContain('bucket');
     expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 1 });
     expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
-    expect(game.spec.roles.map((role) => role.id)).toEqual([...FIRST.roles.map((role) => role.id), 'rock', 'bell']);
   });
 
   it('a patch with an invalid rule is refused whole: the game keeps its issue and the next round gets it again', async () => {
-    const broken = RULES.map((rule) => (rule.id === 'ring' ? { ...rule, when: { contact: ['rock', 'bucket'] } } : rule));
-    const { game, branch } = await run([answered(addRules([], broken)), answered(addRules())]);
+    const { game, branch } = await run(answer([...throwRock.answer.rules, DANCE]), [[{ op: 'add', path: '/rules/-', value: { ...DANCE, when: { contact: ['player', 'bucket'] } } }], [{ op: 'remove', path: '/rules/3' }]]);
     const second = branch.calls[2]?.request.user ?? '';
-    expect(second).toContain('KEYPOINT_FAILED');
-    // Odmítnutá záplata na spec nesáhla: druhé kolo opravuje hru ze žánru, ne vadná pravidla.
+    // Odmítnutá záplata na spec nesáhla: druhé kolo dostane zase neprokázané „dance“, ne vadnou roli.
+    expect(second).toContain('VERB_UNPROVED');
     expect(second).not.toContain('bucket');
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 2 });
+    expect(game).toMatchObject({ source: 'authored', repairRounds: 2 });
     expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
   });
 
   it('an unproved verb goes to the model by name and a repair that removes it is accepted', async () => {
-    const { game, branch } = await run([answered(addRules([DANCE])), answered([{ op: 'remove', path: '/rules/3' }])]);
-    const sent = branch.calls[2]?.request.user ?? '';
+    const { game, branch } = await run(answer([...throwRock.answer.rules, DANCE]), [[{ op: 'remove', path: '/rules/3' }]]);
+    const sent = branch.calls[1]?.request.user ?? '';
     expect(sent).toContain('VERB_UNPROVED');
     expect(sent).toContain('dance');
-    // Sloveso přidala a zase smazala oprava; první odpověď ho slíbit nemohla (P32B T4), hra je autorská celá.
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    // Oprava sloveso smazala: hra jde dál, ale nesmí se tvářit jako plně autorská (revize fáze 2 P29A).
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
     expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
   });
 
   it('when repair does not help, the unproved rule is dropped and the game plays without it', async () => {
-    const { game } = await run([answered(addRules([DANCE])), answered(NOOP)]);
+    const { game } = await run(answer([...throwRock.answer.rules, DANCE]), [NOOP, NOOP]);
     expect(game.fallbackReason).toBe('VERB_UNPROVED');
     expect(game.source).toBe('authored');
     expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
     expect(robot(game.spec)).toEqual([]);
+  });
+
+  it('when a rule stays invalid, the genre plays without rules', async () => {
+    const bad = [{ op: 'add', path: '/rules', value: BUCKET.map(({ if: cond, ...rule }) => (cond === null ? rule : { ...rule, if: cond })) }];
+    const { game } = await run(answer(BUCKET), [bad, bad]);
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', spec: { genre: { id: 'quest', mode: 'spatial' } } });
+    expect(game.spec.rules).toBeUndefined();
+    expect(game.failure?.detail).toContain('bucket');
   });
 
   it('a game that still fails without the unproved rule drops all rules, re-checked by the robot', async () => {
@@ -193,23 +194,35 @@ describe('the director repairs rules before publishing', () => {
         : (spec.rules ?? []).length > 0
           ? [{ code: 'UNWINNABLE', path: '/verification', evidence: 'the robot player never won the game', repairHint: '' }]
           : [];
-    const { game } = await run([answered(addRules([DANCE])), answered(NOOP)], asking(strict));
+    const { game } = await run(answer([...throwRock.answer.rules, DANCE]), [NOOP, NOOP], strict);
     expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
     expect(game.spec.rules).toBeUndefined();
   });
 
-  it('a game played without its unproved rule is not cached as a fully authored game', async () => {
-    const writes: GameSpecV1[] = [];
-    const cache = { id: 'test', read: async () => null, write: async (_: string, spec: GameSpecV1) => void writes.push(spec) };
-    const { game } = await run([answered(addRules([DANCE])), answered(NOOP)], asking(robot), cache);
-    expect(game.fallbackReason).toBe('VERB_UNPROVED');
-    expect(writes).toEqual([]);
+  it('a game played without its unproved rule, or with an empty repair over invalid rules, is not cached as a fully authored game', async () => {
+    for (const [first, repair] of [
+      [answer([...throwRock.answer.rules, DANCE]), NOOP],
+      [answer(BUCKET), []],
+    ] as const) {
+      const writes: GameSpecV1[] = [];
+      const cache = { id: 'test', read: async () => null, write: async (_: string, spec: GameSpecV1) => void writes.push(spec) };
+      const { game } = await run(first, [repair, repair], robot, cache);
+      expect(game.fallbackReason).toBe('VERB_UNPROVED');
+      expect(writes).toEqual([]);
+    }
   });
 
-  it('a repair outage over an unproved verb still plays the game without it', async () => {
-    const { game, branch } = await run([answered(addRules([DANCE])), failed('UPSTREAM_UNAVAILABLE')]);
-    expect(branch.calls).toHaveLength(3);
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
-    expect(verbsOf(game.spec)).toEqual(['pick', 'throw', 'ring']);
+  it('a repair outage over an unproved verb or invalid rules still plays the game without them', async () => {
+    for (const [first, verbs] of [
+      [answer([...throwRock.answer.rules, DANCE]), ['pick', 'throw', 'ring']],
+      [answer(BUCKET), undefined],
+    ] as const) {
+      let tick = 0;
+      const branch = fakeBranch([answered(first), failed('UPSTREAM_UNAVAILABLE')]);
+      const game = await direct(SENTENCE, { branch, now: () => (tick += 100), compact: true, check: robot, maxRepairRounds: 2 });
+      expect(branch.calls).toHaveLength(2);
+      expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
+      expect(verbsOf(game.spec)).toEqual(verbs);
+    }
   });
 });

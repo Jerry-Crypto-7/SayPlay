@@ -16,9 +16,10 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { LOOK_IDS } from '../arcade/look';
-import type { GenreModule, GenreSpec } from '../genre/contract';
+import { COUNT_PARAMS, COUNT_ROLES, type GenreModule, type GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
+import { ROLE_KINDS } from '../spec';
 
 import { GENRE_ANSWER_SCHEMA, readyModes } from './answer-schema';
 
@@ -27,7 +28,7 @@ export const GENRE_RULES =
   'Return ONLY a GenreSpec: pick the genre and mode the sentence plays and name its roles with the sentence\'s nouns; the game is built from it. Never output code. Answer {plan, spec}: plan = one short line of reasoning.';
 
 export const GENRE_SHAPE_LINE =
-  'spec: {genre, mode, hero: string<=60, enemy?: string<=60, collectible?: string<=60, target?: {label: string<=60, verb: string<=24, states: 2|3}, setting: string<=80, palette?, params?}; a missing optional field is null.';
+  'spec: {genre, mode, hero: string<=60, enemy?: string<=60, collectible?: string<=60, target?: {label: string<=60, verb: string<=24, states: 2|3}, setting: string<=80, palette?, params?, counts?: {enemy?, collectible?, target?: int}, ruleRoles?, things?, rules?}; a missing optional field is null.';
 
 const ID_PATTERN_SOURCE = '^[A-Za-z][A-Za-z0-9_.]{0,63}$';
 
@@ -105,7 +106,10 @@ export function genrePromptLines(): string {
     const modes = readyModes(module);
     if (modes.length === 0) return [];
     const params = Object.entries(module.paramBounds).map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)}`);
-    return [`- ${module.id} (${module.cues.join(', ')}): modes ${modes.join('|')}; hero ${module.heroClasses.join('/')}${params.length === 0 ? '' : `; params ${params.join(', ')}`}`];
+    const counted = COUNT_ROLES.filter((role) => modes.some((mode) => (COUNT_PARAMS[module.id] as Readonly<Record<string, Partial<Record<string, string>> | undefined>>)[mode]?.[role] !== undefined));
+    return [
+      `- ${module.id} (${module.cues.join(', ')}): modes ${modes.join('|')}; hero ${module.heroClasses.join('/')}${params.length === 0 ? '' : `; params ${params.join(', ')}`}${counted.length === 0 ? '' : `; counts ${counted.join('/')}`}`,
+    ];
   });
   return [
     'GENRES (cues; modes; what the hero can be; params):',
@@ -114,13 +118,28 @@ export function genrePromptLines(): string {
     'hero: the 1–3 word English noun the player is ("pirate ship", "wizard"). It must be a kind the genre lists (a ship sails, a car drives); if it cannot be, pick the genre it can play.',
     'enemy: the chaser, threat or rival the sentence names. collectible: what the player gathers. target {label, verb, states}: what the main verb acts on ("light" a "candle"). Null when the sentence names none – the game then picks one from the setting.',
     `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}. params: only for a number the sentence says, else null.`,
+    'counts: how many enemies, collectibles or targets the sentence says ("grab 5 coins" = collectible 5), only for roles the genre counts, else null.',
     "Keep the user's nouns, numbers and names. Improve the starting point, do not copy it blindly.",
+  ].join('\n');
+}
+
+/**
+ * Pravidla P29A v první odpovědi (B-R5): sloveso, které žánr nehraje, dopíše
+ * model pravidlem. Gramatika je `modelRulesSchema`; jeden příklad stačí, zbytek
+ * nese schéma odpovědi. Role pravidel jsou „player“ a vlastní `ruleRoles`.
+ */
+export function rulesPromptLines(): string {
+  return [
+    'rules: only for a verb of the sentence the genre cannot play (carry, push, open, pull, give…); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins, or the game is refused.',
+    `when: {"contact":[role,role]} | {"press":"action"|"alt"} | {"every":ticks60Hz} | {"counter":{"name":"score"|"items"|"health","atLeast":n}} | {"hit":role}. if (all hold, or null): {"holding":role} | {"notHolding":true} | {"counter":{"name","atLeast"|"below"}} | {"near":{"role","within":m}}. do: {"score":n} {"damage":n} {"win":true} {"lose":true} {"despawn":"other"|"self"|"held"} {"spawn":{"role","at":"player"|"other"}} {"count":{"counter","amount"}} {"respawn":true} {"checkpoint":"other"|"self"} {"grab":"other"|"self"} {"release":true} {"throwHeld":true} {"push":"other"|"self"} {"toggle":role} (bodies of that role switch once).`,
+    `A role is "player" or an id from ruleRoles [{id, kind, label, count}] (kind: ${ROLE_KINDS.filter((kind) => kind !== 'player').join('|')}). things [{role, start:"hidden"}] = starts invisible until toggled. In arena or quest a rule that wins plays in a walled yard: carried things in front, the goal behind the gate.`,
+    'RULE EXAMPLE: {"ruleRoles":[{"id":"key","kind":"key","label":"golden key","count":null},{"id":"door","kind":"door","label":"castle door","count":null},{"id":"stairs","kind":"exit","label":"tower stairs","count":null}],"things":null,"rules":[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]}',
   ].join('\n');
 }
 
 /** Systémový prompt bez věty. Stavěný při každém volání, aby změna modulu prošla ven. */
 export function directorSystemPrompt(): string {
-  return [GENRE_RULES, GENRE_SHAPE_LINE, genrePromptLines()].join('\n\n');
+  return [GENRE_RULES, GENRE_SHAPE_LINE, genrePromptLines(), rulesPromptLines()].join('\n\n');
 }
 
 /** Hash systémového textu – klíč cache a otisk verze promptu. */

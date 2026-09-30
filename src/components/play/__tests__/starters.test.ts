@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SENTENCE_CHARS } from '@/app/api/play/_publish';
 import { ARCHETYPES } from '@/play/registry';
 import { REMIX_CHIP_LABELS as CHIP_LABELS, REMIX_CHIPS as CHIPS } from '@/play/director/remix';
-import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
 
 import {
   BUILD_FAILED,

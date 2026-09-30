@@ -72,13 +72,35 @@ export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly
  */
 export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MODULES): GenreRead {
   if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
-  const raw = typeof body.plan === 'string' && isRecord(body.spec) ? body.spec : body;
+  const raw = answerSpec(body);
   const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
   const genre = readGenreSpec(withoutNulls(raw));
   if (!genre.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: genre.issues.join('; ') };
   const game = compileGenreSpec(genre.value, modules);
   return game.ok ? { ok: true, spec: game.spec, genre: genre.value } : game;
+}
+
+/** Spec žánrové odpovědi: `{plan, spec}`, nebo holý spec z větve bez schématu. */
+function answerSpec(body: Record<string, unknown>): Record<string, unknown> {
+  return typeof body.plan === 'string' && isRecord(body.spec) ? body.spec : body;
+}
+
+/** Pravidla, jak je žánrová odpověď napsala (B-R5); `null` = žádná. */
+export function answerRules(body: unknown): readonly unknown[] | null {
+  const rules = isRecord(body) ? answerSpec(body).rules : undefined;
+  return Array.isArray(rules) && rules.length > 0 ? rules : null;
+}
+
+/**
+ * Žánrová odpověď bez pravidel a doplňků – hra žánru, když se pravidla nedají
+ * složit. Role pravidel zůstanou, aby je opravné kolo mohlo pravidly znovu
+ * oslovit (jako P29A T8); vadné role pravidel odpověď neprojdou ani tak.
+ */
+export function withoutAnswerRules(body: unknown): unknown {
+  if (!isRecord(body)) return body;
+  const { rules: _rules, things: _things, ...rest } = answerSpec(body);
+  return answerSpec(body) === body ? rest : { ...body, spec: rest };
 }
 
 /** `GenreSpec` → hra modulem jeho žánru, přečtená jako spec od modelu; počty rolí jdou do parametrů modulu (B-R4). */

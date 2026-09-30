@@ -152,7 +152,21 @@ describe('director answer schema for a GenreSpec', () => {
   it('reads a voyage answer with a pirate ship all the way to a GameSpec whose hero is a boat', () => {
     const answer = {
       plan: 'a ship race',
-      spec: { genre: 'voyage', mode: 'race', hero: 'pirate ship', enemy: 'reef', collectible: null, target: null, setting: 'stormy sea', palette: 'ocean', params: { lengthM: null } },
+      // Přísný režim chce každý klíč: parametry skutečné plavby (T5b) a pravidla (B-R5) jako null; počty plavba nečte, v její variantě nejsou.
+      spec: {
+        genre: 'voyage',
+        mode: 'race',
+        hero: 'pirate ship',
+        enemy: 'reef',
+        collectible: null,
+        target: null,
+        setting: 'stormy sea',
+        palette: 'ocean',
+        params: { lengthM: null, topSpeed: null, gravity: null },
+        ruleRoles: null,
+        things: null,
+        rules: null,
+      },
     };
     expect(validate(GENRE_ANSWER_SCHEMA, answer)).toEqual([]);
     const read = readGenreAnswer(answer);
@@ -180,8 +194,13 @@ describe('director answer schema for a GenreSpec', () => {
   });
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
-    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', collectible: null, target: null, setting: 'forest', palette: null, params: { seconds: 30 } };
+    const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null };
+    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
     expect(validate(GENRE_SPEC, ok)).toEqual([]);
+    // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
+    expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null } })).toEqual([]);
+    expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null, target: 2 } })).not.toEqual([]);
+    expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 99, collectible: null } })).not.toEqual([]);
     expect(validate(GENRE_SPEC, { ...ok, mode: 'race' })).not.toEqual([]);
     expect(validate(GENRE_SPEC, { ...ok, params: { seconds: 200 } })).not.toEqual([]);
     const out = readGenreAnswer({ plan: 'x', spec: { ...ok, params: { seconds: 200 } } });

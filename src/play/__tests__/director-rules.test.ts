@@ -1,10 +1,9 @@
 /**
- * Pravidla v první odpovědi režiséra (P29A T7) skončila s P32B T4: odpověď je
- * `GenreSpec`, přísný a bez `rules`, `ruleRoles` a `things`, a hru z něj skládá
- * modul žánru. Do hry se pravidla dostanou jen opravným kolem
- * (`critic-rules.test.ts`). Tady se hlídá, že je model v první odpovědi nemá
- * kde napsat ani jak propašovat, a že čtení odmítne, co by schéma odmítlo i tam,
- * kde ho žádný přenos nevynutí: stub spouštěč `interact` a pravidla na mřížce.
+ * Pravidla v první odpovědi režiséra (P29A T7). P32B T4 je z první odpovědi
+ * vzal, T5b je vrací (B-R5): `GenreSpec` nese `rules`, `ruleRoles` a `things`
+ * a modul žánru je přeloží spolu se svými rolemi. Tady se hlídá, že je model
+ * má kde napsat, že dojdou do hry, a že čtení odmítne, co by schéma odmítlo i
+ * tam, kde ho žádný přenos nevynutí: stub spouštěč `interact` a pravidla na mřížce.
  */
 
 import { describe, expect, it } from 'vitest';
@@ -22,25 +21,47 @@ import { draftForControl, draftGameSpecWithMeta } from '../draft';
 
 const SENTENCE = 'carry the key to the old door and open it';
 
-describe('the first answer carries no rules', () => {
-  it('neither the answer schema nor the prompts offer rules, rule roles or things', () => {
+/** Role jen pro pravidla nosiče klíče, jak je model píše do `ruleRoles`. */
+const RULE_ROLES = carryKey.roles.filter((role) => role.kind !== 'player');
+
+/** Úkol (sloveso „carry“ hraje `quest.spatial`) s pravidly klíče a dveří, jak by ho napsal model (B-R5). */
+const withRules = (rules: readonly unknown[] = carryKey.rules) => ({
+  plan: 'carry the key',
+  spec: { ...genreAnswer({ genre: 'quest', mode: 'spatial', hero: 'knight', enemy: undefined, collectible: undefined, setting: 'castle courtyard at dusk' }).spec, ruleRoles: RULE_ROLES, rules },
+});
+
+// T5b (rozhodnutí B-R5): první odpověď zas nese pravidla – sloveso mimo žánr se neztratí jen proto, že věta dostala žánr.
+describe('the first answer carries rules', () => {
+  it('the answer schema and both prompts offer rules, rule roles and things, never the stub interact', () => {
     const schema = JSON.stringify(GENRE_ANSWER_SCHEMA);
-    for (const key of ['"rules"', '"ruleRoles"', '"things"', '"interact"']) expect(schema, key).not.toContain(key);
+    for (const key of ['"rules"', '"ruleRoles"', '"things"']) expect(schema, key).toContain(key);
+    expect(schema).not.toContain('"interact"');
     const genre = draftGameSpecWithMeta(SENTENCE).genre;
     const full = buildDirectorRequest(SENTENCE, genre);
     const compact = buildCompactRequest(SENTENCE, genre, true);
-    for (const [name, text] of [['director', full.system + full.user], ['compact', compact.system + compact.user]] as const) {
-      for (const grammar of ['throwHeld', 'ruleRoles', '"rules"']) expect(text, `${name} ${grammar}`).not.toContain(grammar);
+    for (const [name, text] of [['director', full.system], ['compact', compact.system]] as const) {
+      for (const grammar of ['throwHeld', 'ruleRoles', '"rules"']) expect(text, `${name} ${grammar}`).toContain(grammar);
     }
   });
 
-  it('a GenreSpec answer that carries rules is refused – draft + MALFORMED, in either prompt', async () => {
-    const body = { plan: 'carry the key', spec: { ...genreAnswer().spec, rules: carryKey.rules, ruleRoles: [], things: [] } };
+  it('rules of a GenreSpec answer reach the GameSpec with their roles, in either prompt', async () => {
     for (const compact of [false, true]) {
-      const game = await direct(SENTENCE, { branch: fakeBranch([answered(body)]), now: () => 0, compact });
-      expect(game, `compact ${String(compact)}`).toMatchObject({ source: 'draft', fallbackReason: 'MALFORMED', calls: 1, failure: { stage: 'read', reason: 'MALFORMED_SPEC' } });
-      expect(game.failure?.detail).toContain('rules');
+      const game = await direct(SENTENCE, { branch: fakeBranch([answered(withRules())]), now: () => 0, compact });
+      expect(game, `compact ${String(compact)}`).toMatchObject({ source: 'authored', fallbackReason: null, calls: 1, spec: { genre: { id: 'quest', mode: 'spatial' } } });
+      expect(game.spec.rules?.map((rule) => rule.verb)).toEqual(['carry', 'open', 'climb']);
+      expect(game.spec.roles.map((role) => role.id)).toEqual(expect.arrayContaining(['player', 'key', 'door', 'stairs']));
     }
+  });
+
+  it('a rule that does not compile: the genre plays without rules, the repair round gets RULE_INVALID and the lost verbs mark the game', async () => {
+    const broken = carryKey.rules.map((rule) => (rule.id === 'climb' ? { ...rule, when: { contact: ['player', 'tower'] } } : rule));
+    const branch = fakeBranch([answered(withRules(broken)), answered([{ op: 'replace', path: '/title', value: 'The Locked Tower' }])]);
+    const game = await direct(SENTENCE, { branch, now: () => 0 });
+    expect(branch.calls[1]?.request.user).toContain('RULE_INVALID');
+    expect(branch.calls[1]?.request.user).toContain('tower');
+    // Oprava pravidla nedopsala: hra žánru se hraje bez nich a slíbená slovesa ji označí, do cache nejde.
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', failure: { detail: 'rule verbs dropped: carry, open, climb' } });
+    expect(game.spec.rules).toBeUndefined();
   });
 });
 

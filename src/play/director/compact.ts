@@ -16,12 +16,12 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 import type { GenreSpec } from '../genre/contract';
 
 import { GENRE_ANSWER_SCHEMA } from './answer-schema';
-import { genrePromptLines, startingPoint } from './prompt';
+import { genrePromptLines, rulesPromptLines, startingPoint } from './prompt';
 import { examplesBlock, nearestExamples } from './retrieval';
 
 /** Systémový text bez věty; stavěný při volání, aby změna modulu žánru prošla ven. */
 export function compactSystemPrompt(): string {
-  return ["Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, spec}: plan = one short line, spec = the GenreSpec.", genrePromptLines()].join('\n');
+  return ["Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, spec}: plan = one short line, spec = the GenreSpec.", genrePromptLines(), rulesPromptLines()].join('\n');
 }
 
 export const COMPACT_PROMPT_VERSION = canonicalHash(compactSystemPrompt());

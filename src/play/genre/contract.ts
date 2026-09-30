@@ -211,28 +211,42 @@ export function legacySpec(spec: GenreSpec, game: LegacyGame): GameSpecV1 {
   const extra = (spec.ruleRoles ?? []).filter((role) => !own.some((taken) => taken.id === role.id)).map((role) => ({ count: 1, ...role }) as GameRole);
   const roles = [...own, ...extra];
   const rules = spec.rules ?? [];
-  // Vyhrává-li pravidlo na volném pohybu, hraje se na dvorku (`rulesOwnGoal`): generátor režimu by
-  // sloveso přehlušil a robot by ho nevystřelil. Cíl pak říká pravidlo, ne režim.
-  const goal = game.control === 'move_free' ? ruleGoal(rules, roles) : null;
-  const { generator: _generator, tuning: _tuning, ...plain } = (game.controlParams ?? {}) as Record<string, unknown>;
-  const controlParams = goal === null ? game.controlParams : Object.keys(plain).length > 0 ? (plain as GameSpecV1['controlParams']) : undefined;
-  return {
+  return rulesYard({
     schema: 'gamespec.v1',
     control: game.control,
-    ...(controlParams === undefined ? {} : { controlParams }),
+    ...(game.controlParams === undefined ? {} : { controlParams: game.controlParams }),
     genre: { id: spec.genre, mode: spec.mode, compilerVersion: GENRE_COMPILER_VERSION },
     title: game.title,
     archetype: game.archetype,
     targetDurationSec: game.targetDurationSec ?? 60,
     theme: { setting: spec.setting, mood: game.mood, ...(spec.palette === undefined ? {} : { look: spec.palette }) },
-    objective: goal === null ? game.objective : { ...game.objective, description: goal },
+    objective: game.objective,
     mechanics: [...(game.mechanics ?? [])],
     roles,
     ...(rules.length === 0 ? {} : { rules }),
     ...(spec.things === undefined || spec.things.length === 0 ? {} : { things: spec.things }),
-    tutorial: goal === null ? game.tutorial : { ...game.tutorial, goalLine: goal },
+    tutorial: game.tutorial,
     verification: [{ id: 'winnable', kind: 'reachability', assert: { runState: 'won' } }],
     budgets: { maxEntities: 40, maxRules: 120, maxTriangles: 200000 },
+  });
+}
+
+/**
+ * Vyhrává-li pravidlo na volném pohybu, hraje se na dvorku (`rulesOwnGoal`):
+ * generátor režimu by sloveso přehlušil a robot by ho nevystřelil. Cíl pak
+ * říká pravidlo, ne režim. Platí pro překlad `GenreSpec` i pro záplatu
+ * opravného kola, která pravidla hře žánru dopíše (`applyRepairAnswer`).
+ */
+export function rulesYard(spec: GameSpecV1): GameSpecV1 {
+  const goal = spec.control === 'move_free' ? ruleGoal(spec.rules ?? [], spec.roles) : null;
+  if (goal === null) return spec;
+  const { controlParams, ...rest } = spec;
+  const { generator: _generator, tuning: _tuning, ...plain } = (controlParams ?? {}) as Record<string, unknown>;
+  return {
+    ...rest,
+    ...(Object.keys(plain).length > 0 ? { controlParams: plain as GameSpecV1['controlParams'] } : {}),
+    objective: { ...spec.objective, description: goal },
+    tutorial: { ...spec.tutorial, goalLine: goal },
   };
 }
 

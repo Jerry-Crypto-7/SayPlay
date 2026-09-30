@@ -29,9 +29,9 @@ import type { GameSpecV1 } from '../spec';
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
 import { COMPACT_PROMPT_VERSION, buildCompactRequest } from './compact';
-import { type CriticIssue, blockingIssues, critique, fidelity, unprovedVerbs, verbIssues } from './critic';
+import { type CriticIssue, blockingIssues, critique, fidelity, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
-import { readGenreAnswer } from './read';
+import { answerRules, readGenreAnswer, withoutAnswerRules } from './read';
 import { EXAMPLES_VERSION } from './retrieval';
 import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically, switchGenre } from './repair';
 
@@ -151,9 +151,19 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
   // Hru skládá modul žánru – co se nepřečte nebo nepřeloží, oprava tabulkou nespraví.
-  const read = readGenreAnswer(outcome.body, deps.modules);
+  // Pravidla, která se nedala složit (P29A T8, v první odpovědi znovu od T5b): hra se složí bez nich a opravné kolo dostane důvod.
+  const written = answerRules(outcome.body);
+  let ruleBlocks: CriticIssue[] = [];
+  let read = readGenreAnswer(outcome.body, deps.modules);
+  if (!read.ok && written !== null) {
+    const plain = readGenreAnswer(withoutAnswerRules(outcome.body), deps.modules);
+    if (plain.ok) ruleBlocks = ruleInvalidIssues(read.detail, written);
+    if (plain.ok) read = plain;
+  }
   if (!read.ok) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
   let spec: GameSpecV1 = read.spec;
+  // Slovesa, která první odpověď slíbila pravidly (i nesloženými).
+  const promised = [...new Set((written ?? []).map((rule) => (typeof rule === 'object' && rule !== null ? (rule as { verb?: unknown }).verb : undefined)).filter((verb): verb is string => typeof verb === 'string'))];
 
   /**
    * Poslední záloha opravy žánrové odpovědi (T5): žánr draftu. Hláška „could
@@ -190,6 +200,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
       blocks = blockingIssues(critique(spec));
     }
   }
+  blocks = [...blocks, ...ruleBlocks];
 
   // Ověření robotem (P26 T10a) jen nad specem, který kritik pustil; neprokázané sloveso jmenuje kritik (T8).
   const checkOf = (candidate: GameSpecV1): readonly RepairIssue[] => (deps.check === undefined ? [] : verbIssues(deps.check(candidate), candidate));
@@ -202,8 +213,8 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     const answer = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(spec, blocks.length > 0 ? blocks : checked) });
     if (!answer.ok) {
       // Spec, který kritik pustil, jde dál a odmítne ho až publikace (NOT_PLAYABLE) –
-      // výpadek opravného kola o větě nic neříká.
-      if (blocks.length === 0) break;
+      // výpadek opravného kola o větě nic neříká. Totéž hra, které chybí jen nesložená pravidla (T8).
+      if (blocks.every((issue) => issue.code === 'RULE_INVALID')) break;
       return fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: answer.reason, detail: `repair round ${repairRounds}: ${answer.detail}`, raw: answer.raw ?? null });
     }
     const applied = applyRepairAnswer(spec, answer.body);
@@ -218,9 +229,9 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   // Oprava pravidlům nepomohla (T8): pravidlo ze hry vypadne a hraje se bez něj –
   // nejdřív jen neprokázaná slovesa, pak všechna pravidla, nakonec návrh ze slov.
   // Neprokázané sloveso se nikdy nepublikuje a hra se kvůli pravidlu nerozbije.
-  // Pravidla nese od P32B T4 jen záplata opravného kola; `checked` je neprázdné jen nad specem, který kritik pustil.
-  if (spec.rules !== undefined && checked.length > 0) {
-    const ruleFailure = checked.filter((issue) => issue.code === 'VERB_UNPROVED');
+  const ruleFailure = [...blocks, ...checked].filter((issue) => issue.code === 'RULE_INVALID' || issue.code === 'VERB_UNPROVED');
+  const ruleFailed = blocks.every((issue) => issue.code === 'RULE_INVALID') && (ruleBlocks.length > 0 || (spec.rules !== undefined && checked.length > 0));
+  if (ruleFailed && (blocks.length > 0 || checked.length > 0)) {
     const failure: DirectorFailure = { stage: 'critic', reason: 'VERB_UNPROVED', detail: ruleFailure.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; ') || checked.map((issue) => issue.code).join('; '), raw: spec };
     const unproved = new Set(unprovedVerbs(checked));
     const candidates = [withoutRules(spec, (rule) => unproved.has(rule.verb)), withoutRules(spec, () => true)];
@@ -232,6 +243,13 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   }
   if (blocks.length > 0) return draftGenre({ stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec }, repairRounds);
 
+  // Sloveso, které první odpověď slíbila pravidlem a hotová hra ho nenese (oprava ho
+  // smazala nebo pravidla vůbec nedoplnila), se nesmí tvářit jako plně autorská hra ani jít do cache.
+  const lost = promised.filter((verb) => !(spec.rules ?? []).some((rule) => rule.verb === verb));
+  if (lost.length > 0) {
+    const failure: DirectorFailure = { stage: 'critic', reason: 'VERB_UNPROVED', detail: `rule verbs dropped: ${lost.join(', ')}`, raw: spec };
+    return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: 'VERB_UNPROVED', failure, warnings: warningsOf(spec), ms: deps.now() - started, calls };
+  }
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
   const authoredBy = authors.length === 0 ? null : authors.join(' + ');
   if (checked.length === 0 && !byFallback) await deps.cache?.write(key, spec, authoredBy);

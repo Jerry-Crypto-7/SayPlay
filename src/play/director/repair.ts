@@ -28,7 +28,7 @@ import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 import { CAPABILITIES, controlOf, readsMechanic } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
 import { classifyGenre } from '../genre/classify';
-import type { GenreSpec } from '../genre/contract';
+import { type GenreSpec, rulesYard } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
 import { readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
@@ -490,8 +490,10 @@ export function applyRepairAnswer(spec: GameSpecV1, body: unknown): { ok: true; 
   const errors = applyPatch(work, body as Operation[]);
   const failed = errors.findIndex((error) => error !== null);
   if (failed >= 0) return { ok: false, reason: 'PATCH_FAILED', detail: `operation ${String(failed)}: ${errors[failed]?.message ?? 'failed'}` };
-  // Záplata je jediná cesta pravidel do nové hry (P32B T4): čte se jako první odpověď, bez pahýlu `interact` (B-R6).
-  return readModelSpec(work);
+  // Záplata se čte jako první odpověď, bez pahýlu `interact` (B-R6). Pravidla, která dopsala
+  // hře žánru na volném pohybu, hrají na dvorku jako pravidla první odpovědi (`rulesYard`, T5b).
+  const read = readModelSpec(work);
+  return read.ok && read.spec.genre !== undefined ? { ok: true, spec: rulesYard(read.spec) } : read;
 }
 
 // ---------------------------------------------------------------------------
