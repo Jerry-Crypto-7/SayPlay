@@ -2,6 +2,8 @@ import { expect, test, type Browser, type BrowserContextOptions, type Page } fro
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { startGame } from './play-start';
+
 /**
  * Sonda výkonu hry (P28E T1, audit §7). Tag `@measure` ji drží mimo běžné
  * `npm run test:e2e`; pouští se ručně:
@@ -180,6 +182,8 @@ async function measureOnce(browser: Browser, url: string, game: (typeof GAMES)[n
   try {
     step(`${game.id}/${profile.id}: goto`);
     await page.goto(url);
+    // Od P33 T11 hra čeká na první dotek: „první tik“ je teď tik po nejrychlejším možném ťuku.
+    await startGame(page);
     step('loaded, waiting for first frame and tick');
     await page.waitForFunction(() => window.__perf?.firstTickMs !== null && window.__perf?.firstDrawMs !== null, undefined, { timeout: 120_000 });
 

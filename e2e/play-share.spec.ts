@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Sdílený odkaz (P23-C T7): cizí prohlížeč bez cookies a bez úložiště jde
  * rovnou do hry, odkaz nese náhled (`og:title`, `og:image` jako PNG) a
@@ -34,8 +36,8 @@ test.describe('/play/[id] – share landing', () => {
     // Titulek píše návrh ze slov, ne opis věty – náhled nese ten, který dveře vrátily.
     expect(gameTitle).not.toBe('');
     expect(title).toContain(gameTitle);
-    expect(title).toContain('WORLDSTREAM PLAY');
-    await expect(page).toHaveTitle(/WORLDSTREAM PLAY/);
+    expect(title).toContain('sayplay');
+    await expect(page).toHaveTitle(/sayplay/);
     const image = await page.locator('meta[property="og:image"]').getAttribute('content');
     expect(image).toMatch(new RegExp(`/api/play/games/${id}/og$`));
 
@@ -60,9 +62,12 @@ test.describe('/play/[id] – share landing', () => {
     });
     const page = await first.newPage();
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 20, undefined, { timeout: 60_000 });
     const inputs = await page.evaluate(() => window.__playShell!.inputs().length);
+    // Od P34 T7 otevře kolo sdílení v HUD list kitu; odkaz pošle jeho „Dare a friend“.
     await page.getByTestId('play-share').click();
+    await page.getByTestId('play-share-dare').click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length)).toBe(1);
     const data = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0]);
     expect(data.url).toMatch(new RegExp(`/play/${id}\\?via=share$`));
@@ -105,8 +110,13 @@ test.describe('/play/[id] – share landing', () => {
     });
     const page = await context.newPage();
     await page.goto(url);
+    // Od P34 T7 otevře kolo v HUD list sdílení: Dare a friend bez nabídky prohlížeče odkaz zkopíruje a list zavře.
     await page.getByTestId('play-share').click();
-    await expect(page.getByText('Link copied')).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'Share this game' })).toBeVisible();
+    await page.getByTestId('play-share-dare').click();
+    await expect(page.getByRole('dialog', { name: 'Share this game' })).toHaveCount(0);
+    // P34 T6: toast mluví kitem („Link copied. Go dare someone.“ místo „Link copied“).
+    await expect(page.getByText('Link copied. Go dare someone.')).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(new RegExp(`^https?://[^/]+/play/${id}\\?via=share$`));
     // E2e server nemá sdílené úložiště (P27D T5): odkaz nesmí vypadat trvale.
     await expect(page.getByText('the link stops working when it restarts')).toBeVisible();

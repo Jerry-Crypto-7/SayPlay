@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
 import { HUD_COUNTER_LABELS } from './hud-labels';
+import { startGame } from './play-start';
 
 /**
  * Doplňky arkády na `/play/[id]` (P26D T7): hra s doplňkem musí doplněk i
@@ -72,6 +73,7 @@ for (const game of GAMES) {
       test('the Fire button and the F key record the fire bit', async ({ page }) => {
         await page.goto(url);
         await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+        await startGame(page);
         await page.waitForFunction(() => window.__playShell!.tick() > 10, undefined, { timeout: 60_000 });
         // `BUTTON.FIRE` = 64; počítají se záznamy s nastaveným bitem, ať klávesa nestojí na kliknutí.
         const fired = () => page.evaluate(() => (window.__playShell!.inputs() as unknown as { buttons: number }[]).filter((input) => (input.buttons & 64) !== 0).length);
@@ -90,7 +92,8 @@ for (const game of GAMES) {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const outcome = await page.evaluate(() => window.__playShell!.playWitness());
       expect(outcome.runState).toBe('won');
-      await expect(page.getByTestId('play-outcome')).toContainText('You won');
+      // P34 T6: nadpis výsledku mluví slovníkem kitu – „You did it!“ místo „You won“.
+      await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     });
   });
 }

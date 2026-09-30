@@ -14,7 +14,7 @@
 
 import { intentFromKey } from '@/game/flow';
 import { MECHANICS, type MechanicEntry } from '@/play/registry';
-import type { GameSpecV1 } from '@/play/spec';
+import type { GameSpecV1, RoleKind } from '@/play/spec';
 import type { RuntimeAction } from '@/worldstream/runtime-input';
 
 export interface TargetCard {
@@ -42,8 +42,7 @@ export function playerActor(actions: readonly RuntimeAction[]): string | null {
  * countdown“ dostala kartu, ke které se dá dojít a nic se nestane.
  */
 export function idleProps(spec: GameSpecV1, sim: unknown): ReadonlySet<string> {
-  // `blueprint.world.sim` je v typu `unknown`; entity mřížky nese `sim.ts` jako `{role, socket, state}`.
-  const entities = ((sim as { entities?: Record<string, { role?: string }> } | null)?.entities ?? {}) as Readonly<Record<string, { readonly role?: string }>>;
+  const entities = entitiesOf(sim);
   const used = new Set<string>(spec.objective.role === undefined ? [] : [spec.objective.role]);
   for (const mechanic of spec.mechanics) {
     const entry = MECHANICS[mechanic.id] as MechanicEntry<unknown>;
@@ -51,6 +50,38 @@ export function idleProps(spec: GameSpecV1, sim: unknown): ReadonlySet<string> {
   }
   const idle = new Set(spec.roles.filter((role) => role.kind === 'prop' && !used.has(role.id)).map((role) => role.id));
   return new Set(Object.entries(entities).filter(([, entity]) => entity.role !== undefined && idle.has(entity.role)).map(([id]) => id));
+}
+
+function entitiesOf(sim: unknown): Readonly<Record<string, { readonly role?: string }>> {
+  // `blueprint.world.sim` je v typu `unknown`; entity mřížky nese `sim.ts` jako `{role, socket, state}`.
+  return ((sim as { entities?: Record<string, { role?: string }> } | null)?.entities ?? {}) as Readonly<Record<string, { readonly role?: string }>>;
+}
+
+/** Druh role každé entity mřížky (P33 T6) – lišta podle něj kreslí ikonu a pozná nepřítele. */
+export function roleKinds(spec: GameSpecV1, sim: unknown): ReadonlyMap<string, RoleKind> {
+  const kindOf = new Map(spec.roles.map((role) => [role.id, role.kind]));
+  const kinds = new Map<string, RoleKind>();
+  for (const [id, entity] of Object.entries(entitiesOf(sim))) {
+    const kind = entity.role === undefined ? undefined : kindOf.get(entity.role);
+    if (kind !== undefined) kinds.set(id, kind);
+  }
+  return kinds;
+}
+
+export const ENEMY_KINDS: ReadonlySet<RoleKind> = new Set(['hazard', 'chaser', 'patrol']);
+
+export interface AvoidCard {
+  readonly id: string;
+  readonly label: string;
+}
+
+/**
+ * Nepřátelé (P33 T6): k hazardu, pronásledovateli ani hlídce se nechodí. Runtime
+ * i k nim nabízí `moveTo`, takže dřív dostali kartu „Go“ a klepnutí poslalo
+ * hráče do prohry. Lišta je ukáže jen jako „avoid“; kartu cíle nedostanou.
+ */
+export function avoidCards(kinds: ReadonlyMap<string, RoleKind>, objects: readonly LabelledObject[]): readonly AvoidCard[] {
+  return [...kinds].filter(([, kind]) => ENEMY_KINDS.has(kind)).map(([id]) => ({ id, label: labelOf(id, objects) }));
 }
 
 export function targetCards(actions: readonly RuntimeAction[], objects: readonly LabelledObject[], hidden: ReadonlySet<string> = new Set()): readonly TargetCard[] {

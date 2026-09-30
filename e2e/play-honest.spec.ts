@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Poctivá hláška (P25E T2): věta, kterou knihovna ovládání neumí, dostane nad
  * hrou proužek s důvodem – a hra pod ním pořád běží. Věta, kterou umíme,
@@ -21,6 +23,7 @@ test.describe('/play/[id] – honesty strip', () => {
     await expect(strip).toBeVisible();
     await expect(strip).toContainText("This one isn't playable yet – here's the closest game we can build");
     await expect(page.getByTestId('play-honest-reason')).toContainText('an endless runner');
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
 
     await strip.getByRole('button', { name: 'Got it' }).click();
@@ -33,6 +36,7 @@ test.describe('/play/[id] – honesty strip', () => {
     await page.goto(game.url);
     await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’');
     await expect(page.getByRole('heading', { name: 'Explain Quantum Physics Grandma' })).toBeVisible();
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());
     expect(outcome.runState).toBe('won');

@@ -86,6 +86,9 @@ export interface VersionStore {
 export interface RecentGame extends GameVersion {
   readonly archetype: string;
   readonly relation: 'upgrade';
+  /** `spec.tutorial.goalLine` a `spec.theme.mood` pro kartu; řádky zapsané před D-R1 je nemají. */
+  readonly goal?: string;
+  readonly mood?: string;
 }
 
 /** Kolik publikací si feed pamatuje. */
@@ -218,7 +221,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
       // placené volání pod stropy a titul jí napsal model.
       if (feedEligible({ versionId: game.version.versionId, relation: game.relation, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
-        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, relation: 'upgrade' };
+        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, relation: 'upgrade', goal: game.spec.tutorial.goalLine, mood: game.spec.theme.mood };
         try {
           await raw.pushCapped(recentKey, JSON.stringify(row), RECENT_CAP, limits.ttlSeconds);
         } catch {

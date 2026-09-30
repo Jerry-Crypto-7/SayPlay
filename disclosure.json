@@ -44308,6 +44308,411 @@
       "scope": "prod"
     },
     {
+      "name": "public/brand/app-icon/android-adaptive-background.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/android-adaptive-background.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/android-adaptive-foreground-432.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/android-adaptive-foreground-432.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/android-adaptive-foreground.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/android-adaptive-foreground.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-1024.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-1024.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-120.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-120.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-152.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-152.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-16.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-16.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-167.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-167.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-180.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-180.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-192.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-192.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-32.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-32.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-48.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-48.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-512.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-512.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-rounded.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-rounded.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/app-icon-square.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/app-icon-square.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/favicon.ico",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/favicon.ico (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/favicon.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/favicon.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/app-icon/pwa-maskable-512.png",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.",
+      "source": "docs/brand/app-icon/pwa-maskable-512.png (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/icons/sprite.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; UI icon sprite copied unchanged from docs/brand/icons/.",
+      "source": "docs/brand/icons/sprite.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/logo-lockup-mono-ink.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/logo-lockup-mono-ink.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/logo-lockup-mono-white.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/logo-lockup-mono-white.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/logo-lockup-on-dark.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/logo-lockup-on-dark.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/logo-lockup.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/logo-lockup.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/mark-mono-ink.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/mark-mono-ink.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/mark-mono-white.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/mark-mono-white.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/mark-on-dark.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/mark-on-dark.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/mark.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/mark.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/wordmark-cream.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/wordmark-cream.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/wordmark-white.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/wordmark-white.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/brand/logo/wordmark.svg",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.",
+      "source": "docs/brand/logo/wordmark.svg (Sayplay Brand & UI kit v1.0)",
+      "authorOrProvider": "Sayplay kit v1.0, client (project owner), 2026-09-30",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/LICENSE.txt",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Apache License 2.0 text shipped next to the Roboto font files, as the licence requires.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, LICENSE)",
+      "authorOrProvider": "Apache Software Foundation (licence text)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Apache License, Version 2.0, for Roboto v2.138 by Christian Robertson, Google.",
+      "reviewNote": "Licence text itself; kept verbatim from the release zip.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/Roboto-Black.ttf",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 900 for the game title, the time and the question on the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Black.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Black.woff2 before WOFF2 conversion.",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/Roboto-Black.woff2",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 900, the Sayplay headline cut (replaces the kit's OFL Bricolage Grotesque, docs/brand/REPO-NOTES.md); self-hosted, loaded by @font-face in src/app/play/play.css.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Black.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT).",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/Roboto-Bold.ttf",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 700 for the word on the time badge of the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Bold.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Bold.woff2 before WOFF2 conversion.",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/Roboto-Bold.woff2",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 700 for labels, captions and M buttons (replaces the kit's OFL Figtree 700/800); self-hosted, loaded by @font-face in src/app/play/play.css.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Bold.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT).",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/Roboto-Medium.woff2",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 500 for body text (replaces the kit's OFL Figtree 500/600); self-hosted, loaded by @font-face in src/app/play/play.css.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Medium.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT).",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/Roboto-Regular.woff2",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 400, the fallback cut for text without an explicit weight; self-hosted, loaded by @font-face in src/app/play/play.css.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Regular.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT).",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/manifest.webmanifest",
+      "kind": "asset",
+      "firstParty": true,
+      "reason": "Web app manifest for sayplay written in this repo (P34 T1); points at the Sayplay kit app icons in public/brand/app-icon/.",
+      "source": "written in this repo",
+      "authorOrProvider": "Worldsmith project",
+      "scope": "prod"
+    },
+    {
       "name": "public/play/env/airport-low.webp",
       "kind": "asset",
       "firstParty": true,

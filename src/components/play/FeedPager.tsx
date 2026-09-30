@@ -30,8 +30,9 @@ import { ArcadePlay } from './arcade/ArcadePlay';
 import { WithPlayEnv } from './arcade/look/play-env';
 import { isTyping as typing } from './arcade/input';
 import demo from './demo-game.json';
-import { Feed, type FeedGame } from './Feed';
+import { Feed, type FeedGame, type KnownGame, moodTone } from './Feed';
 import { loopEvent } from './loop-client';
+import { Icon } from './ui';
 
 const PAGE = 12;
 /** Tah kratší než tohle je ťuk, ne listování. */
@@ -55,6 +56,92 @@ async function feedPage(cursor: string | null): Promise<{ games: FeedGame[]; nex
   return { games: body.games, next: typeof body.next === 'string' ? body.next : null };
 }
 
+/**
+ * Plakát hry ve feedu (P33 T8): hra se připojí až po klepnutí. Rozběhnutá
+ * sama od sebe prohrála dřív, než hráč pochopil ovládání, a první, co na
+ * `/play` viděl, bylo „You lost“. `key` podle verze vrátí plakát u každé hry.
+ */
+export function TapToPlay({ title, goal, mood, children }: { readonly title: string; readonly goal: string; readonly mood: string; readonly children: ReactNode }) {
+  const [started, setStarted] = useState(false);
+  if (started) return children;
+  return (
+    <button type="button" className="play-poster" data-testid="feed-poster" data-tone={moodTone(mood)} onClick={() => setStarted(true)}>
+      <span className="play-poster-title">{title}</span>
+      <span className="play-poster-goal">{goal}</span>
+      <span className="play-poster-cta">
+        <Icon name="play" />
+        Tap to play
+      </span>
+    </button>
+  );
+}
+
+/** Od této šířky stojí doporučená hra vedle pole (kit 05-layout, `lg`). */
+const FEATURED_FROM = '(min-width: 1024px)';
+
+/**
+ * Doporučená hra vpravo od pole na desktopu (P34 T3, kit 05-layout „Home“):
+ * plakát 16:9 nejnovější hry feedu s titulem a cílem v tónu nálady scény;
+ * klepnutí ji otevře. Bez her ve feedu je doporučená ukázka, která pod polem
+ * hraje – klepnutí k ní sjede. Plakát, ne plátno: feed drží jediný WebGL
+ * kontext a druhý by mu ho bral. Na užší obrazovce se nic nestahuje ani nekreslí.
+ */
+export function FeaturedGame() {
+  const [game, setGame] = useState<{ readonly versionId: string | null; readonly title: string; readonly goal: string; readonly mood: string } | null>(null);
+  useEffect(() => {
+    if (!window.matchMedia(FEATURED_FROM).matches) return;
+    let live = true;
+    const spec = demo.spec as unknown as GameSpecV1;
+    const fallback = { versionId: null, title: spec.title, goal: spec.tutorial.goalLine, mood: spec.theme.mood };
+    void (async () => {
+      try {
+        const first = (await feedPage(null)).games[0];
+        if (first === undefined) {
+          if (live) setGame(fallback);
+          return;
+        }
+        const response = await fetch(`/api/play/games/${first.versionId}`);
+        const detail = response.ok ? ((await response.json()) as GameDetail).spec : null;
+        if (live) setGame({ versionId: first.versionId, title: first.title, goal: detail?.tutorial.goalLine ?? '', mood: detail?.theme.mood ?? '' });
+      } catch {
+        if (live) setGame(fallback);
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, []);
+  if (game === null) return null;
+  const face = (
+    <>
+      <span className="play-poster-title">{game.title}</span>
+      {game.goal !== '' && <span className="play-poster-goal">{game.goal}</span>}
+      <span className="play-poster-cta">
+        <Icon name="play" />
+        Play it
+      </span>
+    </>
+  );
+  if (game.versionId === null) {
+    return (
+      <button
+        type="button"
+        className="play-poster play-featured"
+        data-testid="play-featured"
+        data-tone={moodTone(game.mood)}
+        onClick={() => document.querySelector('.play-pager')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+      >
+        {face}
+      </button>
+    );
+  }
+  return (
+    <Link href={`/play/${game.versionId}`} className="play-poster play-featured" data-testid="play-featured" data-tone={moodTone(game.mood)}>
+      {face}
+    </Link>
+  );
+}
+
 /** Ukázková hra z `demo-game.json` – návrh z pevné věty, commitnutý (`__tests__/demo-game.test.ts`). */
 function DemoGame({ children }: { readonly children: ReactNode }) {
   return (
@@ -69,7 +156,7 @@ function DemoGame({ children }: { readonly children: ReactNode }) {
   );
 }
 
-export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<string, string>> }) {
+export function FeedPager() {
   const wanted = useSearchParams().get('g');
   const [feed, setFeed] = useState<FeedState>({ kind: 'loading' });
   const [details, setDetails] = useState<ReadonlyMap<string, GameDetail | 'error'>>(new Map());
@@ -201,7 +288,7 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
     return (
       <DemoGame>
         <p className="play-feed-empty" data-testid="feed-error" role="status">
-          The feed is not available right now. You can still make a game below.
+          The feed is not available right now. You can still make a game above.
         </p>
       </DemoGame>
     );
@@ -210,13 +297,15 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
     return (
       <DemoGame>
         <p className="play-feed-empty" data-testid="play-feed-empty">
-          No games yet – write the first sentence.
+          No games yet. Make the first one.
         </p>
       </DemoGame>
     );
   }
 
   const detail = details.get(current.versionId);
+  const known = new Map<string, KnownGame>();
+  for (const [versionId, entry] of details) if (entry !== 'error') known.set(versionId, { goal: entry.spec.tutorial.goalLine, mood: entry.spec.theme.mood });
   return (
     <section ref={root} className="play-pager" aria-label="Game feed" data-testid="feed-pager">
       <div className="play-pager-slide" data-testid="feed-current" data-version-id={current.versionId}>
@@ -234,18 +323,21 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
             {detail.spec.title} plays on its own page. <Link href={`/play/${current.versionId}`}>Open the game</Link>
           </p>
         ) : (
-          <WithPlayEnv key={current.versionId} theme={detail.spec.theme} versionId={current.versionId}>
-            <ArcadePlay
-              versionId={current.versionId}
-              spec={detail.spec}
-              arcade={detail.arcade}
-              lineage={detail.lineage}
-              remixes={detail.children.length}
-              aiVersion={detail.relation === 'upgrade'}
-              upgrade={null}
-              active={onScreen}
-            />
-          </WithPlayEnv>
+          <TapToPlay key={current.versionId} title={detail.spec.title} goal={detail.spec.tutorial.goalLine} mood={detail.spec.theme.mood}>
+            <WithPlayEnv theme={detail.spec.theme} versionId={current.versionId}>
+              <ArcadePlay
+                versionId={current.versionId}
+                spec={detail.spec}
+                arcade={detail.arcade}
+                lineage={detail.lineage}
+                remixes={detail.children.length}
+                aiVersion={detail.relation === 'upgrade'}
+                upgrade={null}
+                active={onScreen}
+                inFeed
+              />
+            </WithPlayEnv>
+          </TapToPlay>
         )}
         <div className="play-pager-rail" data-testid="feed-rail" onPointerDown={onRailDown} onPointerUp={onRailUp} onPointerCancel={() => (swipeFrom.current = null)}>
           <button type="button" className="play-pager-step" data-testid="feed-prev" onClick={() => go(index - 1)} disabled={index === 0} aria-label="Previous game">
@@ -259,7 +351,7 @@ export function FeedPager({ pitches }: { readonly pitches: Readonly<Record<strin
           </button>
         </div>
       </div>
-      <Feed games={games} current={current.versionId} pitches={pitches} onPick={pick} />
+      <Feed games={games} current={current.versionId} known={known} onPick={pick} />
     </section>
   );
 }

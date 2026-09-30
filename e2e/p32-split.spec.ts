@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Připíchnutý obraz rozdělení plátna (P32-0 T5). `ArcadeStage.tsx` se dělí na
  * shell, `StyleRig` (světlo, obloha, mlha) a světy běžce a plošinovky – vypadat
@@ -73,6 +75,7 @@ for (const viewport of VIEWPORTS) {
         await expect(page.getByTestId('arcade-stage')).toBeVisible();
         const canvas = page.locator('[data-testid="arcade-stage"] canvas').first();
         await canvas.waitFor();
+        await startGame(page);
         await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
 
         const first = await freezeAtFirstScore(page);

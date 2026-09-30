@@ -1,20 +1,26 @@
 'use client';
 
 /**
- * „Change it“ pod čipy (P27C T5): hráč napíše vlastní změnu a dostane novou
- * verzi s vlastním odkazem; rodič se nemění. Věta, kterou server pozná jako
- * čip, vrátí hned odkaz (201). Ostatní je práce na pozadí (202 `job`) – box
- * se ptá `GET …/remix?job=` do lhůty serveru a mluví stejně jako proužek AI
- * verze (uběhlé sekundy, žádná procenta). Nová verze se otevře jen tlačítkem.
+ * Obsah listu „Change one thing“ (P27C T5; od P33 T4 v listu po hře, od P34 T7
+ * podle vzoru `.sp-sheet` kitu): bublina `.sp-prompt` s popiskem „What should
+ * change?“, počítadlem a mikrofonem, pod ní čipy návrhů `.sp-chip` a rajčatové
+ * „Remix it“. Hráč napíše vlastní změnu a dostane novou verzi s vlastním
+ * odkazem; rodič se nemění. Věta, kterou server pozná jako čip, vrátí hned
+ * odkaz (201). Ostatní je práce na pozadí (202 `job`) – box se ptá
+ * `GET …/remix?job=` do lhůty serveru a mluví stejně jako proužek AI verze
+ * (uběhlé sekundy, žádná procenta). Nová verze se otevře jen tlačítkem.
+ * Enter odešle, Shift+Enter zalomí řádek (kit `05-layout.md`).
  */
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import type { RemixFinalReason } from '@/app/api/play/_remix-jobs';
 
 import { appendSpoken, MicButton } from './MicButton';
+import { COUNTER_WARN, REMIX_IT, REMIX_LABEL, REMIX_PLACEHOLDER } from './starters';
+import { Button } from './ui';
 import { POLL_MS } from './UpgradeBanner';
 
 /** Týž strop jako `MAX_REMIX_SENTENCE_CHARS` na serveru. */
@@ -29,14 +35,14 @@ type RemixView =
   | { readonly kind: 'lost' };
 
 const FINAL_TEXT: Readonly<Record<RemixFinalReason, string>> = {
-  MODEL_UNAVAILABLE: 'The AI is busy right now.',
-  MALFORMED: 'The AI sent back an answer we could not read.',
-  UNREPAIRED: 'The AI made a mistake it could not fix.',
-  UNCHANGED: 'The AI found nothing to change for that sentence.',
-  NOT_PLAYABLE: "The changed game didn't pass our playability check.",
-  STORE_UNAVAILABLE: 'We could not save the new version right now.',
-  UNASKED_CHANGE: 'The AI changed more than you asked for, so your game stays as it is.',
-  FAILED: 'Something went wrong while making the change.',
+  MODEL_UNAVAILABLE: "Couldn't remix it right now. Try again in a minute.",
+  MALFORMED: "Couldn't read that remix back. Try again.",
+  UNREPAIRED: "Couldn't build that change. Try a simpler one.",
+  UNCHANGED: 'Nothing to change for that idea. Try saying it another way.',
+  NOT_PLAYABLE: 'That change made the game unplayable. Try a different one.',
+  STORE_UNAVAILABLE: "Couldn't save the remix right now. Try again.",
+  UNASKED_CHANGE: 'That remix changed more than you asked, so your game stays as it is.',
+  FAILED: "Couldn't make that change. Try again.",
 };
 
 /** Výpadky, po kterých má nové odeslání smysl; ostatní jsou verdikt o větě (`TRANSIENT` v `_remix-jobs.ts`). */
@@ -148,8 +154,11 @@ export function RemixReadyChip({ job }: { readonly job: RemixJob }) {
   );
 }
 
-export function RemixBox({ job }: { readonly job: RemixJob }) {
+/** `suggestions` = čipy karty po hře (P33 T4), mezi polem a stavem – hláška „Try one of the changes above“ na ně ukazuje. */
+export function RemixBox({ job, suggestions }: { readonly job: RemixJob; readonly suggestions?: ReactNode }) {
   const { view, sent, submit } = job;
+  const form = useRef<HTMLFormElement | null>(null);
+  const fieldId = useId();
   const [text, setText] = useState('');
   const [now, setNow] = useState(() => Date.now());
 
@@ -164,6 +173,7 @@ export function RemixBox({ job }: { readonly job: RemixJob }) {
   const sentence = text.trim();
   return (
     <form
+      ref={form}
       className="play-remix"
       data-testid="remix-box"
       onSubmit={(event) => {
@@ -171,25 +181,42 @@ export function RemixBox({ job }: { readonly job: RemixJob }) {
         if (sentence.length > 0 && !working) void submit(sentence);
       }}
     >
-      <div className="play-remix-row">
-        <input
-          className="play-remix-input"
+      <div className="sp-prompt play-remix-prompt">
+        <label className="sp-prompt__label" htmlFor={fieldId}>
+          {REMIX_LABEL}
+        </label>
+        <textarea
+          id={fieldId}
+          className="sp-prompt__field play-remix-input"
           data-testid="remix-input"
+          rows={2}
           value={text}
           maxLength={MAX_CHARS}
-          placeholder="Change it: add snow, make enemies faster…"
-          aria-label="Change it in your own words"
+          placeholder={REMIX_PLACEHOLDER}
           disabled={working}
           onChange={(event) => setText(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
+            event.preventDefault();
+            form.current?.requestSubmit();
+          }}
         />
-        <MicButton testId="remix-mic" disabled={working} onText={(spoken) => setText((previous) => appendSpoken(previous, spoken).slice(0, MAX_CHARS))} />
-        <button type="submit" className="play-button" data-testid="remix-submit" disabled={working || sentence.length === 0}>
-          Make it
-        </button>
+        <div className="sp-prompt__actions">
+          <span className="sp-prompt__count" data-testid="remix-count" data-warn={text.length >= COUNTER_WARN ? 'true' : 'false'} aria-live="polite">
+            {text.length}/{MAX_CHARS}
+          </span>
+          <MicButton
+            testId="remix-mic"
+            className="sp-btn sp-btn--icon sp-btn--sun play-mic"
+            disabled={working}
+            onText={(spoken) => setText((previous) => appendSpoken(previous, spoken).slice(0, MAX_CHARS))}
+          />
+        </div>
       </div>
-      <span className="play-remix-count" data-testid="remix-count">
-        {text.length}/{MAX_CHARS}
-      </span>
+      {suggestions}
+      <Button size="l" type="submit" className="sp-btn--block" data-testid="remix-submit" disabled={working || sentence.length === 0}>
+        {REMIX_IT}
+      </Button>
 
       {view.kind !== 'idle' && (
         <div className="play-remix-state" data-testid="remix-state" data-kind={view.kind} role="status">
@@ -222,7 +249,7 @@ export function RemixBox({ job }: { readonly job: RemixJob }) {
           {view.kind === 'refused' && <p role="alert">{view.message}</p>}
           {view.kind === 'lost' && (
             <>
-              <p>We lost track of the AI – check again.</p>
+              <p>We lost track of your remix. Check again.</p>
               <button type="button" className="play-button" data-testid="remix-retry" onClick={() => void submit(sent)}>
                 Check again
               </button>

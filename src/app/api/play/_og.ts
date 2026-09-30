@@ -9,7 +9,8 @@
  * drží v paměti a veřejný požadavek zaplatí 25 ms nejvýš jednou na paletu.
  *
  * Od P27B T6 je to jen **záloha**: odkaz nese náhled z obsahu hry
- * (`gamePreviewPng` níže) a paletový obrázek přijde, když ten render selže.
+ * (`gamePreviewPng` níže, od P34 T7 karta výzvy kitu Sayplay) a paletový
+ * obrázek přijde, když ten render selže.
  *
  * Žádná fialová: `__tests__/og.test.ts` měří odstín každé barvy v paletách.
  */
@@ -21,9 +22,12 @@ import { ImageResponse } from 'next/og';
 import { createElement as h } from 'react';
 
 import catalog from '@/assets/catalog.json';
+import { color } from '@/brand/tokens';
+import { CAN_YOU_BEAT_IT, DARE_BADGE } from '@/components/play/starters';
 import { canonicalHash } from '@/ir/worlddoc';
+import { sceneLook } from '@/play/arcade/look';
 import { heroModel } from '@/play/arcade/models';
-import type { GameSpecV1 } from '@/play/spec';
+import { arenaWinOf, type GameSpecV1 } from '@/play/spec';
 
 import { encodePng, hexToRgb } from '../og/png';
 
@@ -66,11 +70,11 @@ function render(palette: OgPalette): Uint8Array {
       // Kruh v pravé třetině – „cíl“; jediné, co obrázek odlišuje od vlajky.
       const dx = x - OG_WIDTH * 0.7;
       const dy = y - OG_HEIGHT * 0.45;
-      const color = dx * dx + dy * dy < 90 * 90 ? accent : band;
+      const pixel = dx * dx + dy * dy < 90 * 90 ? accent : band;
       const at = (y * OG_WIDTH + x) * 3;
-      rgb[at] = color[0];
-      rgb[at + 1] = color[1];
-      rgb[at + 2] = color[2];
+      rgb[at] = pixel[0];
+      rgb[at + 1] = pixel[1];
+      rgb[at + 2] = pixel[2];
     }
   }
   return rgb;
@@ -79,42 +83,111 @@ function render(palette: OgPalette): Uint8Array {
 const RENDERED = new Map<string, Uint8Array<ArrayBuffer>>();
 
 // ---------------------------------------------------------------------------
-// Náhled z obsahu hry (P27B T6): titul, hrdina, prostředí a jedna řádka
-// ovládání, kreslené přes `next/og` (satori + resvg ve WASM). Není to snímek
-// scény – na serveru GPU není – a nikde se tak nejmenuje. Paletový PNG výše
-// zůstává jako záloha, když render selže.
+// Karta výzvy (P34 T7, kit `docs/brand/docs/13-assets.md`, Dare card; dřív
+// titulní obrázek P27B T6), kreslená přes `next/og` (satori + resvg ve WASM):
+// krémová plocha, vlevo barva scény (obloha a zem sady prostředí arkády) s
+// hrdinou v rámu s inkoustovým obrysem, vpravo název hry, slunečný odznak
+// s časem, „Can you beat it?“ a logo vpravo dole. Snímek scény to není – na
+// serveru GPU není. Písmo je Roboto v2.138 z `public/fonts/roboto` (TTF,
+// satori WOFF2 nečte). Rozměry kitu jsou pro telefon 390 px; karta 1200 px je
+// kreslí dvojnásobně (obrys 6, poloměr xl 48, tvrdé stíny 10 a 14).
 // ---------------------------------------------------------------------------
 
-/** Barvy písma a panelu náhledu; `og.test.ts` je měří na fialovou spolu s paletami. */
-export const OG_INK: readonly [string, string, string, string] = ['#f8fafc', '#cbd5e1', '#0f172a', '#1e293b'];
+/** Barvy karty: jen tokeny kitu (`src/brand/tokens.ts`); `og.test.ts` je měří na fialovou spolu s paletami. */
+export const OG_INK: readonly [string, string, string, string] = [color.cream, color.ink, color.sun, color.paper];
 
-/** Jedna řádka ovládání podle arkádového ovládání; mřížková hra vezme první větu nápovědy. */
-const CONTROL_LINE: Readonly<Record<string, string>> = {
-  runner: 'Tap to jump, swipe to switch lanes',
-  platform: 'Tap to jump, hold to run',
-  flap: 'Tap to flap',
-  steer: 'Swipe to steer',
-  move_free: 'Drag to move',
-  shooter: 'Tap to shoot',
-  throw: 'Hold, aim and release to throw',
-  timing: 'Tap at the right moment',
-  rhythm: 'Tap to the beat',
-  duel: 'Tap to strike',
-};
+/** Poměr stran loga `public/brand/logo/logo-lockup.svg` (viewBox 4773 × 1340). */
+const LOGO_RATIO = 4773 / 1340;
 
-export function controlLineOf(spec: GameSpecV1): string {
-  const line = spec.control === undefined ? undefined : CONTROL_LINE[spec.control];
-  if (line !== undefined) return line;
-  const first = spec.tutorial.controlsHint.split(/(?<=[.!?])\s/)[0] ?? '';
-  return first.length > 60 ? `${first.slice(0, 57)}…` : first;
+/** Řezy Roboto, které karta kreslí: název a čas Black 900, slovo odznaku Bold 700. */
+const FONT_FILES = [
+  { weight: 900, file: 'Roboto-Black.ttf' },
+  { weight: 700, file: 'Roboto-Bold.ttf' },
+] as const;
+
+/** Odznak karty: čas, který hra opravdu měří, a jedno slovo; `time: null` = hra čas neměří. */
+export interface DareBadge {
+  readonly time: string | null;
+  readonly word: string;
 }
 
-/** Nálada rozhoduje, bez shody klíčové slovo prostředí, jinak hash nálady jako dosud. */
-export function paletteForTheme(theme: { readonly mood: string; readonly setting: string }): OgPalette {
-  const words = `${theme.mood} ${theme.setting}`.toLowerCase();
-  const byMood = OG_PALETTES.find((palette) => palette.keywords.some((keyword) => theme.mood.toLowerCase().includes(keyword)));
-  const bySetting = OG_PALETTES.find((palette) => palette.keywords.some((keyword) => words.includes(keyword)));
-  return byMood ?? bySetting ?? paletteForMood(theme.mood);
+/**
+ * Čas na slunečném odznaku. Nejlepší čas hráče se nikde neukládá (nález
+ * P34 T6), proto karta ukáže jen limit, který hra sama měří: přežití
+ * (`survive` s `seconds`, aréna na přežití, časovač končící výhrou) je
+ * „Survive!“, časovač končící prohrou je závod s časem „Hurry!“. Hra bez
+ * měřeného času dostane jen slovo – vymyšlené číslo by lhalo.
+ */
+export function dareBadge(spec: GameSpecV1): DareBadge {
+  const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds?: unknown; readonly onEnd?: unknown } | undefined;
+  const timerSeconds = typeof timer?.seconds === 'number' ? timer.seconds : undefined;
+  const arena = spec.control === 'move_free' ? arenaWinOf(spec) : null;
+  const survive =
+    spec.objective.kind === 'survive' && spec.objective.seconds !== undefined
+      ? spec.objective.seconds
+      : arena !== null && 'goal' in arena && arena.goal === 'survive' && arena.seconds !== undefined
+        ? arena.seconds
+        : timer?.onEnd === 'win'
+          ? timerSeconds
+          : undefined;
+  if (survive !== undefined) return { time: `${survive}s`, word: DARE_BADGE.survive };
+  if (timerSeconds !== undefined) return { time: `${timerSeconds}s`, word: DARE_BADGE.hurry };
+  return { time: null, word: DARE_BADGE.none };
+}
+
+/**
+ * Soubor z `public/` (náhled modelu, písmo, logo). Nejdřív z disku, kde ho má
+ * lokální server i test; kde funkce soubory `public/` nenese (Vercel je
+ * servíruje z CDN), přes HTTP z důvěryhodného původu. **Nikdy z hlaviček
+ * požadavku** – viz `assetOriginFrom`. `valid` odmítne cizí odpověď (chybovou
+ * stránku za CDN). Nic z toho → `null`.
+ */
+async function publicFile(path: string, origin: string | null, valid: (bytes: Uint8Array, type: string | null) => boolean): Promise<Uint8Array | null> {
+  try {
+    return new Uint8Array(await readFile(join(process.cwd(), 'public', path)));
+  } catch {
+    // Soubor u funkce není – zkusí se HTTP.
+  }
+  if (origin === null) return null;
+  try {
+    const response = await fetch(new URL(path, origin), { signal: AbortSignal.timeout(2000) });
+    if (!response.ok) return null;
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    return valid(bytes, response.headers.get('content-type')) ? bytes : null;
+  } catch {
+    // Síť nejde.
+    return null;
+  }
+}
+
+/** TrueType začíná verzí 1.0 (`00 01 00 00`); HTML chybové stránky ne. */
+const isTrueType = (bytes: Uint8Array): boolean => bytes.length > 4 && bytes[0] === 0 && bytes[1] === 1 && bytes[2] === 0 && bytes[3] === 0;
+
+type OgFont = { readonly name: string; readonly data: ArrayBuffer; readonly weight: 700 | 900; readonly style: 'normal' };
+
+/** Načtené řezy a logo se nemění – drží se na proces; selhání se nezapamatuje. */
+let FONTS: readonly OgFont[] | null = null;
+let LOGO: string | null = null;
+
+async function dareFonts(origin: string | null): Promise<readonly OgFont[] | null> {
+  if (FONTS !== null) return FONTS;
+  const loaded = await Promise.all(
+    FONT_FILES.map(async ({ weight, file }): Promise<OgFont | null> => {
+      const bytes = await publicFile(`/fonts/roboto/${file}`, origin, isTrueType);
+      return bytes === null ? null : { name: 'Roboto', data: bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer, weight, style: 'normal' };
+    }),
+  );
+  if (loaded.some((font) => font === null)) return null;
+  FONTS = loaded as OgFont[];
+  return FONTS;
+}
+
+async function logoLockup(origin: string | null): Promise<string | null> {
+  if (LOGO !== null) return LOGO;
+  const bytes = await publicFile('/brand/logo/logo-lockup.svg', origin, (_, type) => type?.startsWith('image/svg+xml') === true);
+  if (bytes === null) return null;
+  LOGO = `data:image/svg+xml;base64,${Buffer.from(bytes).toString('base64')}`;
+  return LOGO;
 }
 
 const THUMBNAILS: ReadonlyMap<string, string> = new Map(catalog.assets.map((asset) => [asset.assetId, asset.thumbnail]));
@@ -132,87 +205,113 @@ export function assetOriginFrom(env: Record<string, string | undefined>): string
   return null;
 }
 
-/**
- * PNG náhled modelu hrdiny z katalogu jako data URL. Nejdřív ze souboru v
- * `public/`, kde ho má lokální server i test; kde funkce soubory `public/`
- * nenese (Vercel je servíruje z CDN), přes HTTP z důvěryhodného původu. Nic
- * z toho → `null` a náhled nakreslí ikonu ovládání.
- */
+/** PNG náhled modelu hrdiny z katalogu jako data URL; bez něj (`null`) nakreslí karta terč. */
 async function heroImage(modelId: string, origin: string | null): Promise<string | null> {
   const thumbnail = THUMBNAILS.get(modelId);
   if (thumbnail === undefined) return null;
-  const encode = (bytes: Uint8Array): string => `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
-  try {
-    return encode(await readFile(join(process.cwd(), 'public', thumbnail)));
-  } catch {
-    // Soubor u funkce není – zkusí se HTTP.
-  }
-  if (origin === null) return null;
-  try {
-    const response = await fetch(new URL(thumbnail, origin), { signal: AbortSignal.timeout(2000) });
-    if (response.ok && response.headers.get('content-type') === 'image/png') return encode(new Uint8Array(await response.arrayBuffer()));
-  } catch {
-    // Síť nejde – ikona ovládání.
-  }
-  return null;
+  const bytes = await publicFile(thumbnail, origin, (_, type) => type === 'image/png');
+  return bytes === null ? null : `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`;
 }
 
 type Node = ReturnType<typeof h>;
 
-function controlIcon(accent: string): Node {
-  // Terč ze tří kruhů: ovládání bez modelu hrdiny, bez písma, které by v Geist chybělo.
-  return h(
-    'div',
-    { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 300, height: 300, borderRadius: 150, background: accent } },
-    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 200, height: 200, borderRadius: 100, background: OG_INK[2] } }, h('div', { style: { width: 90, height: 90, borderRadius: 45, background: accent } })),
-  );
+/** Terč ze tří kruhů místo hrdiny, který katalog nemá: bez písma, jen barvy kitu. */
+function target(): Node {
+  const ring = (size: number, fill: string, child?: Node): Node =>
+    h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: size, height: size, borderRadius: size / 2, background: fill, border: `6px solid ${color.ink}` } }, child);
+  return ring(260, color.sun, ring(170, color.paper, ring(80, color.tomato)));
 }
 
-function previewElement(spec: GameSpecV1, hero: string | null): Node {
-  const palette = paletteForTheme(spec.theme);
-  const [sky, high, low, ground] = palette.bands;
+/** Slunečný odznak výhry (kit `.sp-badge`: kruh, obrys, stín, náklon −6°) s časem a slovem. */
+function badge({ time, word }: DareBadge): Node {
   return h(
     'div',
     {
       style: {
         display: 'flex',
-        width: '100%',
-        height: '100%',
+        flexDirection: 'column',
         alignItems: 'center',
-        padding: 56,
-        gap: 48,
-        background: `linear-gradient(180deg, ${sky} 0%, ${high} 38%, ${low} 72%, ${ground} 100%)`,
-        fontFamily: 'Geist',
+        justifyContent: 'center',
+        flexShrink: 0,
+        width: 196,
+        height: 196,
+        borderRadius: 98,
+        background: color.sun,
+        border: `6px solid ${color.ink}`,
+        boxShadow: `10px 10px 0 0 ${color.ink}`,
+        transform: 'rotate(-6deg)',
       },
     },
+    time === null ? null : h('div', { style: { fontSize: 60, fontWeight: 900, lineHeight: 1, letterSpacing: -1.8 } }, time),
+    h('div', { style: { marginTop: time === null ? 0 : 6, fontSize: time === null ? 34 : 24, fontWeight: time === null ? 900 : 700, lineHeight: 1.1, textAlign: 'center' } }, word),
+  );
+}
+
+function dareCard(spec: GameSpecV1, hero: string | null, logo: string | null): Node {
+  const look = sceneLook(spec.theme);
+  const long = spec.title.length > 24;
+  return h(
+    'div',
+    { style: { display: 'flex', width: '100%', height: '100%', padding: 56, gap: 56, background: color.cream, color: color.ink, fontFamily: 'Roboto' } },
+    // Vlevo „zamrzlá scéna“: obloha a zem sady prostředí, hrdina na horizontu, rám kitu.
     h(
       'div',
-      { style: { display: 'flex', flexDirection: 'column', flex: 1, gap: 20, padding: 44, borderRadius: 32, background: 'rgba(15, 23, 42, 0.82)', color: OG_INK[0] } },
-      h('div', { style: { fontSize: 26, color: palette.accent, letterSpacing: 3 } }, 'WORLDSTREAM PLAY'),
-      h('div', { style: { fontSize: spec.title.length > 28 ? 56 : 72, lineHeight: 1.05 } }, spec.title),
-      h('div', { style: { fontSize: 28, color: OG_INK[1] } }, spec.theme.setting),
-      h('div', { style: { display: 'flex', alignSelf: 'flex-start', marginTop: 12, padding: '12px 24px', borderRadius: 999, background: palette.accent, color: OG_INK[2], fontSize: 30 } }, controlLineOf(spec)),
+      {
+        style: {
+          display: 'flex',
+          position: 'relative',
+          flexShrink: 0,
+          width: 500,
+          height: 504,
+          borderRadius: 48,
+          border: `6px solid ${color.ink}`,
+          boxShadow: `14px 14px 0 0 ${color.ink}`,
+          background: look.sky,
+          overflow: 'hidden',
+        },
+      },
+      h('div', { style: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 170, background: look.ground } }),
+      h(
+        'div',
+        { style: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+        // Náhled modelu má vlastní šedé pozadí: na scéně stojí jako karta hrdiny s rámem a stínem kitu.
+        hero === null
+          ? target()
+          : h(
+              'div',
+              { style: { display: 'flex', width: 330, height: 330, borderRadius: 32, border: `6px solid ${color.ink}`, boxShadow: `10px 10px 0 0 ${color.ink}`, overflow: 'hidden' } },
+              h('img', { src: hero, width: 318, height: 318, style: { objectFit: 'cover' } }),
+            ),
+      ),
     ),
+    // Vpravo název (display-m), odznak s „Can you beat it?“ a logo vpravo dole.
     h(
       'div',
-      { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: 420, height: 420, borderRadius: 32, background: OG_INK[3] } },
-      hero === null ? controlIcon(palette.accent) : h('img', { src: hero, width: 380, height: 380, style: { objectFit: 'contain' } }),
+      { style: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0, paddingTop: 8 } },
+      h('div', { style: { fontSize: long ? 56 : 72, fontWeight: 900, lineHeight: 1.05, letterSpacing: long ? -1.7 : -2.2 } }, spec.title),
+      h(
+        'div',
+        { style: { display: 'flex', alignItems: 'center', gap: 36 } },
+        badge(dareBadge(spec)),
+        // Šířka láme otázku na „Can you / beat it?“, ne „Can you beat / it?“.
+        h('div', { style: { width: 240, fontSize: 54, fontWeight: 900, lineHeight: 1.02, letterSpacing: -1.6 } }, CAN_YOU_BEAT_IT),
+      ),
+      h('div', { style: { display: 'flex', justifyContent: 'flex-end' } }, logo === null ? null : h('img', { src: logo, width: Math.round(60 * LOGO_RATIO), height: 60 })),
     ),
   );
 }
 
 /**
- * Znaky, které nakreslí Geist – jediné písmo, které `next/og` nese. Pro jiné
- * znaky si satori písmo stahuje z Google Fonts a když to nevyjde, **nehodí**:
- * nakreslí prázdná místa a render „projde“ (nález revize T6-1). Rozsah je
- * latinka s diakritikou a běžná interpunkce **zúžená na cmap písma** – Geist
- * nemá třeba U+2011 ani U+00AD (revize T6-2); `og.test.ts` to měří na souboru písma.
+ * Znaky, které nakreslí Roboto z `public/fonts/roboto` (podmnožina latinky
+ * z P34 T1, oba řezy karty mají tutéž). Pro jiné znaky si satori písmo
+ * stahuje z Google Fonts a když to nevyjde, **nehodí**: nakreslí prázdná
+ * místa a render „projde“ (nález revize T6-1). `og.test.ts` rozsah měří na
+ * souborech písma.
  */
-const GEIST_TEXT =
-  /^[ -~ -¬®-ēĖ-īĮ-ķĹ-ľŁ-ňŊ-ōŐ-ž–—‘-‚“-„†-•…‰′″‹›€]*$/u;
+const ROBOTO_TEXT = /^[ -~ -ÿıŒœʻʼˆ˚˜ -‧ - ⁴€™↑↓−]*$/u;
 
 export function fontCovers(text: string): boolean {
-  return GEIST_TEXT.test(text);
+  return ROBOTO_TEXT.test(text);
 }
 
 /** Kolik náhledů her se drží v paměti; nejstarší vypadne první. */
@@ -222,9 +321,9 @@ const PREVIEWS = new Map<string, Uint8Array<ArrayBuffer>>();
 export interface GamePreview {
   readonly png: Uint8Array<ArrayBuffer>;
   /**
-   * `false`: obrázek hrdiny se nepodařilo získat, ač ho katalog má, nebo text
-   * potřebuje stažené písmo. Takový náhled se neukládá a nesmí být `immutable`
-   * – přechodná chyba by se jinak stala trvalým obrázkem verze.
+   * `false`: obrázek hrdiny (ač ho katalog má), písmo nebo logo se nepodařilo
+   * získat, nebo název potřebuje stažené písmo. Takový náhled se neukládá a
+   * nesmí být `immutable` – přechodná chyba by se jinak stala trvalým obrázkem verze.
    */
   readonly complete: boolean;
 }
@@ -239,9 +338,10 @@ export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin
   if (ready !== undefined) return { png: ready, complete: true };
   try {
     const model = heroModel(spec);
-    const hero = await heroImage(model, origin);
-    const complete = (hero !== null || !THUMBNAILS.has(model)) && [spec.title, spec.theme.setting, controlLineOf(spec)].every(fontCovers);
-    const response = new ImageResponse(previewElement(spec, hero), { width: OG_WIDTH, height: OG_HEIGHT });
+    const [hero, fonts, logo] = await Promise.all([heroImage(model, origin), dareFonts(origin), logoLockup(origin)]);
+    const complete = (hero !== null || !THUMBNAILS.has(model)) && fonts !== null && logo !== null && fontCovers(spec.title);
+    // Bez Roboto kreslí `next/og` svým výchozím písmem – náhled je pak jen dočasný (`complete: false`).
+    const response = new ImageResponse(dareCard(spec, hero, logo), { width: OG_WIDTH, height: OG_HEIGHT, ...(fonts === null ? {} : { fonts: [...fonts] }) });
     const png = new Uint8Array(await response.arrayBuffer());
     if (complete) {
       if (PREVIEWS.size >= PREVIEW_CAP) PREVIEWS.delete(PREVIEWS.keys().next().value as string);

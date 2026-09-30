@@ -6,7 +6,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { callToAction } from '../FirstPrompt';
+import { callToAction, touchHint } from '../FirstPrompt';
 
 describe('callToAction', () => {
   it.each([
@@ -37,5 +37,17 @@ describe('callToAction', () => {
   it('an empty hint gives no prompt', () => {
     expect(callToAction('')).toBe('');
     expect(callToAction('   ')).toBe('');
+  });
+});
+
+// Řádka ovládání na dotyku (P33 T12): celá nápověda, jen bez kláves; dotykové alternativy zůstávají.
+describe('touchHint', () => {
+  it.each([
+    ['Tap or Space to jump, swipe or arrows to change lane.', 'Tap to jump, swipe to change lane.'],
+    ['Drag or use A/D to steer. Tap or Enter to boost.', 'Drag or use A/D to steer. Tap to boost.'],
+    ['Space or tap to flap.', 'Space or tap to flap.'],
+    ['Tap a mushroom to walk to it.', 'Tap a mushroom to walk to it.'],
+  ])('%s → %s', (hint, touch) => {
+    expect(touchHint(hint)).toBe(touch);
   });
 });

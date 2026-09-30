@@ -43,6 +43,31 @@ export function loadRapier(): Promise<Rapier> {
 /** Rapier, pokud už je načtený; jinak `null` (jádro je synchronní, načíst se musí předem). */
 export const rapierIfLoaded = (): Rapier | null => loaded;
 
+/**
+ * Začne stahovat Rapier, jakmile stránka ví, že ho hra potřebuje (P32D T4) –
+ * souběžně se scénou, ne až po ní. Hra bez fyziky nestáhne nic. Chyba se tu
+ * jen spolkne: nezapamatuje se a `loadRapier` ji při dalším volání zkusí znovu.
+ */
+export function prefetchRapier(needed: boolean): void {
+  if (needed) loadRapier().catch(() => undefined);
+}
+
+/**
+ * Hodiny hry s fyzikou, které do načtení Rapieru stojí (P32D T4): scéna kreslí
+ * tik 0 hned a první tik padne až s Rapierem. Čekání se do hodin nepřičte,
+ * takže po načtení hra nedožene uběhlý čas najednou; stisky z čekání padnou
+ * do tiku 0.
+ */
+export function holdUntilRapier<T extends { advance(ms: number): number; stepOnce(): void }>(clock: T): T {
+  return {
+    ...clock,
+    advance: (ms: number) => (loaded === null ? 0 : clock.advance(ms)),
+    stepOnce: () => {
+      if (loaded !== null) clock.stepOnce();
+    },
+  };
+}
+
 export { QUAT };
 /** Celých čísel na jedno těleso v kvantovaném výstupu: x y z vx vy vz qx qy qz qw. */
 export const PHYSICS_STRIDE = 10;
