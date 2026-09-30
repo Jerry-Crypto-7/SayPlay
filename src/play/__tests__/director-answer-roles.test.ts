@@ -81,7 +81,30 @@ describe('the thing the player uses is never a role', () => {
   };
 
   it('reads the tool out of the sentence', () => {
-    expect([FIRE, 'A kid throws water balloons at bullies', 'An elf shoots arrows at goblins', 'Shoot the zombies in a mall', 'A cat swings from vines'].map(toolOf)).toEqual(['water', 'water balloon', 'arrow', null, null]);
+    const heroes: [string, string | null][] = [[FIRE, 'firefighter robot'], ['A kid throws water balloons at bullies', 'kid'], ['An elf shoots arrows at goblins', 'elf'], ['Shoot the zombies in a mall', null], ['A cat swings from vines', 'cat']];
+    expect(heroes.map(([text, hero]) => toolOf(text, hero))).toEqual(['water', 'water balloon', 'arrow', null, null]);
+  });
+
+  // B-R12: nástroj je jen to, co dělá hrdina – co hází obr nebo drak, hráčovo není.
+  it('takes the tool only from a verb the hero does', () => {
+    const GIANT = 'An angry giant throws rocks at the village';
+    expect(toolOf(GIANT, 'angry giant')).toBe('rock');
+    expect(toolOf(GIANT, 'villager')).toBeNull();
+    expect(toolOf('A villager hides while an angry giant throws rocks at the village', 'villager')).toBeNull();
+    expect(toolOf('A knight fights a dragon that throws fireballs', 'knight')).toBeNull();
+    expect(toolOf('Play as a kid who throws snowballs at bullies', 'kid')).toBe('snowball');
+    expect(toolOf('A kid runs and throws snowballs at bullies', 'kid')).toBe('snowball');
+    expect(toolOf('An angry giant roars and throws rocks at the village', 'villager')).toBeNull();
+    expect(toolOf('defend a castle and throw snowballs at dragons', null)).toBe('snowball');
+    expect(toolOf('A bully throws rocks while a kid throws snowballs', 'kid')).toBe('snowball');
+    expect(toolOf('Throw snowballs at snowmen in a park', null)).toBe('snowball');
+    expect(toolOf('defend a castle from dragons by throwing snowballs', null)).toBe('snowball');
+    expect(toolOf('fps where u shoot paint at robots', null)).toBe('paint');
+    // Kritik soudí hrdinu odpovědi: vesničana kámen honit smí, obra ne.
+    const giant = draftOf(GIANT).genre;
+    const toolIssue = expect.objectContaining({ code: 'ENEMY_IS_TOOL' });
+    expect(fidelity({ ...giant, hero: 'villager', enemy: 'rock' }, GIANT)).not.toContainEqual(toolIssue);
+    expect(fidelity({ ...giant, hero: 'giant', enemy: 'rock' }, GIANT)).toContainEqual(toolIssue);
   });
 
   it('rejects an answer whose chaser is the water the firefighter sprays, with the reason', () => {

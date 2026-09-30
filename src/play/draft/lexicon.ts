@@ -299,14 +299,62 @@ const TOOL_USE = /\b(?:spray|squirt|pour|splash|sprinkle|throw|toss|fling|hurl|l
 /** „shoots arrows at goblins“: předmět střelby je nástroj jen s cílem za ním, jinak je terčem („shoot the zombies“). */
 const TOOL_AIMED = /\b(?:shoot|fire|launch)(?:s|es|ed|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*?) (?:at|on|into|toward|towards)\b/;
 
+/** Kde začíná věta s vlastním podmětem; „and“, „or“ a „then“ ho můžou i sdílet. */
+const CLAUSE_START = /^(?:[,;:.!?]|but|while|when|whenever|as|because|until|so|if|where|by)$/;
+const CLAUSE_BREAK = /^(?:and|or|then)$/;
+
+/**
+ * Podmět slovesa, před kterým věta končí `text` (B-R12): až tři slova za hranicí věty.
+ * Rozkaz („throw snowballs“) má podmět prázdný, „runs and throws“ pokračuje podmětem
+ * začátku věty; „a dragon that throws“ má draka v okně i s „that“.
+ */
+function subjectBefore(text: string): readonly string[] {
+  const tokens = text.match(/[a-z'’-]+|[,;:.!?]/g) ?? [];
+  const last = tokens.at(-1);
+  if (last === undefined) return [];
+  if (CLAUSE_BREAK.test(last)) {
+    let start = tokens.length - 1;
+    while (start > 0 && !CLAUSE_START.test(tokens[start - 1])) start -= 1;
+    // Věta bez členu na začátku je rozkaz („defend a castle and throw…“), podmět nemá.
+    if (/^(?:a|an|the|my|one|two|three)$/.test(tokens[start])) return tokens.slice(start + 1, start + 3);
+    return tokens.slice(start, start + 1).filter((word) => /^(?:you|u|i|we)$/.test(word));
+  }
+  const window = tokens.slice(-3);
+  let from = window.length;
+  while (from > 0 && !CLAUSE_START.test(window[from - 1]) && !CLAUSE_BREAK.test(window[from - 1])) from -= 1;
+  return window.slice(from);
+}
+
+/** Dělá sloveso hrdina? Rozkaz a „you“/„u“/„I“ ano; jinak se podmět a hrdina musí potkat hlavou. */
+function heroDoes(subject: readonly string[], hero: string | null): boolean {
+  if (subject.length === 0 || subject.some((word) => /^(?:you|u|i|we)$/.test(word))) return true;
+  if (hero === null) return false;
+  const heroWords = hero.toLowerCase().split(' ').map(singular);
+  const words = subject.map(singular);
+  return heroWords.includes(words.at(-1)!) || words.includes(heroWords.at(-1)!);
+}
+
+/** Každý výskyt vzoru, i ten uvnitř předchozího („a bully throws rocks while a kid throws snowballs“). */
+function everyMatch(pattern: RegExp, text: string): RegExpExecArray[] {
+  const global = new RegExp(pattern.source, 'g');
+  const found: RegExpExecArray[] = [];
+  for (let match = global.exec(text); match !== null; match = global.exec(text)) {
+    found.push(match);
+    global.lastIndex = match.index + 1;
+  }
+  return found;
+}
+
 /**
  * Věc, kterou hráč ve větě používá (P32B T7): předmět slovesa nástroje, jednotné
  * číslo. Nepřítel, pronásledovatel ani nástraha to nikdy není – hasič, který
- * „sprays water“, před vodou neutíká. `null` = věta žádný nástroj neříká.
+ * „sprays water“, před vodou neutíká. Počítá se jen sloveso, které dělá `hero`
+ * (B-R12): „a giant throws rocks“ nástroj vesničana není. `null` = věta hrdinovi
+ * žádný nástroj nedává.
  */
-export function toolOf(sentence: string): string | null {
+export function toolOf(sentence: string, hero: string | null): string | null {
   const text = withoutPossessor(sentence.toLowerCase().replace(/\s+/g, ' ').trim());
-  const said = TOOL_USE.exec(text)?.[1] ?? TOOL_AIMED.exec(text)?.[1];
+  const said = [...everyMatch(TOOL_USE, text), ...everyMatch(TOOL_AIMED, text)].find((match) => heroDoes(subjectBefore(text.slice(0, match.index)), hero))?.[1];
   const phrase = said === undefined ? null : nounPhrase(said, 2);
   return phrase === null ? null : singular(phrase);
 }
@@ -439,7 +487,7 @@ export function readRoles(sentence: string): SentenceRoles {
   ], 2);
   const checkpointMatch = /(?:[a-z]+ )?((?:[a-z]+ )?(?:gates?|hoops?|rings?|checkpoints?|flags?|arches?|posts?))\b/.exec(text);
   // Co hráč stříká nebo hází, není nástraha („sprays water“, „throws water balloons“).
-  const tool = toolOf(text)?.split(' ') ?? [];
+  const tool = toolOf(text, player)?.split(' ') ?? [];
   const hazardMatch = [...text.matchAll(new RegExp(HAZARD_WORDS.source, 'g'))].find((match) => !tool.includes(singular(match[1]))) ?? null;
   const colours = COLOURS.filter((colour) => new RegExp(`\\b${colour}\\b`).test(text));
   let switches: SentenceRoles['switches'] = null;

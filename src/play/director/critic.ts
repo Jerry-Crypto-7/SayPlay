@@ -412,7 +412,8 @@ export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOp
     issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `"${genre.enemy}" is neither in the sentence nor the default of the setting (${settingEnemies.join(', ')})` });
   }
   // T7: co hráč stříká nebo hází, ho nehoní („sprays water“ → „before the water catch you“).
-  const tool = toolOf(sentence);
+  // Hráčem je hrdina odpovědi: co hází obr, vesničana honit smí (B-R12).
+  const tool = toolOf(sentence, genre.hero);
   if (tool !== null && genre.enemy !== undefined && sameRole(genre.enemy, tool)) {
     issues.push({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: `the player uses the "${tool}" in the sentence, so it cannot be the enemy` });
   }

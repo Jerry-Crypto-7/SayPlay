@@ -1102,7 +1102,7 @@ function draftGenre(
       // „races through traffic“: předložková fráze, která jmenuje tvora nebo nástrahu, ne místo.
       (roles.setting !== null && NOT_A_PLACE.test(roles.setting.split(' ').at(-1)!) ? roles.setting : null));
   // „zombie shooter“: co se střílí, je terč úkolu, ne ještě jednou nepřítel; co hráč hází, taky ne (T7). Popisek role je jeden kus („cones“ → „cone“).
-  const enemy = foe === null || singular(foe) === target || singular(foe) === toolOf(sentence) ? null : singular(foe);
+  const enemy = foe === null || singular(foe) === target || singular(foe) === toolOf(sentence, heroSaid) ? null : singular(foe);
   const found = thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
   const collectible = found === null ? null : singular(found);
   // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.
