@@ -34,7 +34,7 @@ export function TargetCards({ cards, avoid, kinds, selected, disabled, onTap }: 
   readonly onTap: (card: TargetCard) => void;
 }) {
   if (cards.length === 0) {
-    return <p className="play-targets-empty">This world offers nothing to walk to.</p>;
+    return <p className="play-targets-empty">This game has nothing to walk to.</p>;
   }
   return (
     <nav className="play-targets" aria-label="Targets">

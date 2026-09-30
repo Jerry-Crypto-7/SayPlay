@@ -125,7 +125,7 @@ test.describe('/play/[id] – clip of the run', () => {
     await expect(page.getByTestId('play-save-clip')).toBeVisible({ timeout: 10_000 });
     const download = page.waitForEvent('download');
     await page.getByTestId('play-share').click();
-    expect((await download).suggestedFilename()).toMatch(/^worldstream-clip\.(mp4|webm)$/);
+    expect((await download).suggestedFilename()).toMatch(/^sayplay-clip\.(mp4|webm)$/);
     await expect(page.getByText('Video saved. Link copied. Go dare someone.')).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(url);
     expect(await shareEvents(page)).toEqual([{ name: 'share', withClip: true }]);

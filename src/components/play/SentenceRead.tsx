@@ -13,8 +13,8 @@ import { Button, Icon, Sheet } from './ui';
 import { useInfoParts } from './ui/InfoContext';
 
 const BY: Readonly<Record<Authorship, string>> = {
-  ai: 'AI version of your sentence',
-  draft: 'Quick version from your sentence',
+  ai: 'Full-detail version of your idea',
+  draft: 'Quick version from your idea',
   remix: 'Remixed with one change',
 };
 
@@ -26,7 +26,7 @@ export function ReadSection({ read }: { readonly read: ReadFacts }) {
   const by = read.authorship === 'draft' && read.readBy === 'model' ? READ_BY_MODEL : BY[read.authorship];
   const rows: readonly (readonly [string, string])[] = [
     ['Game', read.game],
-    ['World', read.world],
+    ['Setting', read.world],
     ...(read.you === null ? [] : [['You are', read.you] as const]),
     ...(read.against.length === 0 ? [] : [['Against', read.against.join(', ')] as const]),
     ['Goal', read.goal],
@@ -34,7 +34,7 @@ export function ReadSection({ read }: { readonly read: ReadFacts }) {
   ];
   return (
     <section className="play-info-part play-read" data-testid="play-read" data-authorship={read.authorship} data-read-by={read.readBy}>
-      <h3 className="play-info-heading">Your sentence</h3>
+      <h3 className="play-info-heading">Your idea</h3>
       <p className="play-read-by" data-testid="play-read-by">
         <span className={`play-read-by-${read.authorship}`}>{by}</span>
         {read.sentence !== null && <span className="play-read-sentence"> “{read.sentence}”</span>}

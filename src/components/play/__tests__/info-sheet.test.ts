@@ -65,10 +65,10 @@ describe('the about-this-game sheet', () => {
   it('says who made the game without jargon', () => {
     // Řádek autorství, ne celý oddíl – poznámka pod ním smí říct, že AI návrh přepíše.
     const say = (read: ReadFacts) => /data-testid="play-read-by">(.*?)<\/p>/.exec(renderToStaticMarkup(createElement(ReadSection, { read })))?.[1] ?? '';
-    expect(say(READ)).toContain('Quick version from your sentence');
+    expect(say(READ)).toContain('Quick version from your idea');
     expect(say(READ)).not.toMatch(/keywords|Instant draft|AI/);
     expect(say({ ...READ, readBy: 'model' })).toContain('Quick version read by a local AI model');
-    expect(say({ ...READ, authorship: 'ai' })).toContain('AI version of your sentence');
+    expect(say({ ...READ, authorship: 'ai' })).toContain('Full-detail version of your idea');
     expect(say({ ...READ, authorship: 'ai' })).not.toContain('Designed by AI');
   });
 });

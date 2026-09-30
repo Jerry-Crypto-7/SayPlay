@@ -35,14 +35,14 @@ type RemixView =
   | { readonly kind: 'lost' };
 
 const FINAL_TEXT: Readonly<Record<RemixFinalReason, string>> = {
-  MODEL_UNAVAILABLE: 'The AI is busy right now.',
-  MALFORMED: 'The AI sent back an answer we could not read.',
-  UNREPAIRED: 'The AI made a mistake it could not fix.',
-  UNCHANGED: 'The AI found nothing to change for that sentence.',
-  NOT_PLAYABLE: "The changed game didn't pass our playability check.",
-  STORE_UNAVAILABLE: 'We could not save the new version right now.',
-  UNASKED_CHANGE: 'The AI changed more than you asked for, so your game stays as it is.',
-  FAILED: 'Something went wrong while making the change.',
+  MODEL_UNAVAILABLE: "Couldn't remix it right now. Try again in a minute.",
+  MALFORMED: "Couldn't read that remix back. Try again.",
+  UNREPAIRED: "Couldn't build that change. Try a simpler one.",
+  UNCHANGED: 'Nothing to change for that idea. Try saying it another way.',
+  NOT_PLAYABLE: 'That change made the game unplayable. Try a different one.',
+  STORE_UNAVAILABLE: "Couldn't save the remix right now. Try again.",
+  UNASKED_CHANGE: 'That remix changed more than you asked, so your game stays as it is.',
+  FAILED: "Couldn't make that change. Try again.",
 };
 
 /** Výpadky, po kterých má nové odeslání smysl; ostatní jsou verdikt o větě (`TRANSIENT` v `_remix-jobs.ts`). */
@@ -249,7 +249,7 @@ export function RemixBox({ job, suggestions }: { readonly job: RemixJob; readonl
           {view.kind === 'refused' && <p role="alert">{view.message}</p>}
           {view.kind === 'lost' && (
             <>
-              <p>We lost track of the AI – check again.</p>
+              <p>We lost track of your remix. Check again.</p>
               <button type="button" className="play-button" data-testid="remix-retry" onClick={() => void submit(sent)}>
                 Check again
               </button>

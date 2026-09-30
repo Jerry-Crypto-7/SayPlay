@@ -27,7 +27,7 @@ export function Lineage({ lineage, remixes, aiVersion = false }: { readonly line
           <span>Original</span>
         ) : (
           <span>
-            {aiVersion ? 'AI version of' : 'Remixed from'} <Link href={`/play/${parent.versionId}`}>{parent.title}</Link>
+            {aiVersion ? 'Full-detail version of' : 'Remixed from'} <Link href={`/play/${parent.versionId}`}>{parent.title}</Link>
           </span>
         )}
         {remixes > 0 && <span className="play-lineage-count">{remixes === 1 ? '1 remix' : `${remixes} remixes`}</span>}

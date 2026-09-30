@@ -141,7 +141,7 @@ test('a refused change says why and points back to the chips', async ({ page, re
   await box.getByTestId('remix-input').fill('make the hero a dragon');
   await box.getByTestId('remix-submit').click();
   await expect(box.getByTestId('remix-state')).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
-  await expect(box.getByTestId('remix-state')).toContainText('changed more than you asked for');
+  await expect(box.getByTestId('remix-state')).toContainText('changed more than you asked');
   await expect(box.getByTestId('remix-state')).toContainText('Try one of the changes above');
   await expect(box.getByTestId('remix-retry')).toHaveCount(0);
   await expect(page.getByTestId('play-chip-harder')).toBeEnabled();

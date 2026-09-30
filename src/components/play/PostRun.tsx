@@ -99,7 +99,7 @@ function SaveVideo({ clip }: { readonly clip: Blob }) {
   if (href === null) return null;
   const extension = clip.type.includes('mp4') ? 'mp4' : 'webm';
   return (
-    <a className="sp-btn sp-btn--link sp-btn--s" data-testid="play-save-clip" data-variant="link" href={href} download={`worldstream-clip.${extension}`}>
+    <a className="sp-btn sp-btn--link sp-btn--s" data-testid="play-save-clip" data-variant="link" href={href} download={`sayplay-clip.${extension}`}>
       {SAVE_VIDEO}
     </a>
   );

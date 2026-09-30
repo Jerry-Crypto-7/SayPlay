@@ -179,7 +179,7 @@ export function ShareButton({
     setHref(url);
     void checkLasting(versionId);
     // Klip běhu (P29D T2) jde s odkazem, kde nabídka sdílení soubory bere; jinak se stáhne a odkaz zkopíruje.
-    const file = onlyCopy || clip === null ? null : new File([clip], `worldstream-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
+    const file = onlyCopy || clip === null ? null : new File([clip], `sayplay-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
     const withFile = file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
     if (!onlyCopy && typeof navigator.share === 'function' && (file === null || withFile)) {
       try {

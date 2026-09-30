@@ -36,8 +36,8 @@ test.describe('/play/[id] – share landing', () => {
     // Titulek píše návrh ze slov, ne opis věty – náhled nese ten, který dveře vrátily.
     expect(gameTitle).not.toBe('');
     expect(title).toContain(gameTitle);
-    expect(title).toContain('WORLDSTREAM PLAY');
-    await expect(page).toHaveTitle(/WORLDSTREAM PLAY/);
+    expect(title).toContain('sayplay');
+    await expect(page).toHaveTitle(/sayplay/);
     const image = await page.locator('meta[property="og:image"]').getAttribute('content');
     expect(image).toMatch(new RegExp(`/api/play/games/${id}/og$`));
 

@@ -57,12 +57,12 @@ const load = cache(async (id: string): Promise<Loaded> => {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const loaded = await load(id);
-  if (loaded.kind !== 'game') return { title: 'WORLDSTREAM PLAY' };
+  if (loaded.kind !== 'game') return { title: 'sayplay' };
   const { game } = loaded;
   const incoming = await headers();
   const host = incoming.get('x-forwarded-host') ?? incoming.get('host') ?? 'localhost';
   const proto = incoming.get('x-forwarded-proto') ?? (host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https');
-  const title = `${game.spec.title} – WORLDSTREAM PLAY`;
+  const title = `${game.spec.title} – sayplay`;
   const description = game.spec.tutorial.goalLine;
   const image = `${proto}://${host}/api/play/games/${id}/og`;
   return {

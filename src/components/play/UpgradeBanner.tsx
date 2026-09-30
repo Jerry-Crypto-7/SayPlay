@@ -142,15 +142,15 @@ export function useUpgrade(url: string | null): { readonly view: UpgradeView; re
  * obviňování (P33 T5): hráč slyší, co zůstává, ne čí je to chyba.
  */
 export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
-  MODEL_UNAVAILABLE: 'The AI is busy right now – you are playing the quick version.',
-  MALFORMED: "The quick version stays – the AI's answer didn't come through cleanly.",
-  UNREPAIRED: "The quick version stays – the AI one didn't pass our checks.",
-  VERB_UNPROVED: "The quick version stays – the AI's new action never showed up in a test run.",
-  UNCHANGED: 'The AI had nothing to add – the quick version is already its take.',
-  NOT_PLAYABLE: "The quick version stays – the AI one wasn't playable in our test run.",
-  STORE_UNAVAILABLE: "The quick version stays – we couldn't save the AI one right now.",
-  NOT_FROM_SENTENCE: 'This game was not made from a sentence, so there is no AI version.',
-  FAILED: 'The quick version stays – something went wrong on our side.',
+  MODEL_UNAVAILABLE: "Couldn't make the full-detail version right now. Keep playing the quick one.",
+  MALFORMED: 'The full-detail version came back garbled. The quick one stays.',
+  UNREPAIRED: "The full-detail version didn't pass our checks. The quick one stays.",
+  VERB_UNPROVED: "The full-detail version's new move never worked in a test run. The quick one stays.",
+  UNCHANGED: 'Nothing to add. The quick version already has it all.',
+  NOT_PLAYABLE: "The full-detail version wasn't playable in a test run. The quick one stays.",
+  STORE_UNAVAILABLE: "Couldn't save the full-detail version. The quick one stays.",
+  NOT_FROM_SENTENCE: "This game wasn't made from an idea, so there's no full-detail version.",
+  FAILED: "Couldn't finish the full-detail version. The quick one stays.",
 };
 
 /**
@@ -181,7 +181,7 @@ export function noticeOf(view: UpgradeView, title: string | null = null): Upgrad
       return { text: FINAL_REASON_TEXT[view.reason], action: RETRYABLE.has(view.reason) ? { kind: 'retry', label: 'Try again' } : null };
     case 'offline':
     case 'lost':
-      return { text: 'We lost track of the AI version.', action: { kind: 'retry', label: 'Check again' } };
+      return { text: 'We lost track of the full-detail version.', action: { kind: 'retry', label: 'Check again' } };
   }
 }
 

@@ -34,8 +34,8 @@ describe('noticeOf', () => {
   it('všech 9 důvodů má vlastní větu', () => {
     expect(REASONS).toHaveLength(9);
     expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(9);
-    expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain('The AI is busy right now');
-    expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The quick version stays – the AI one wasn't playable in our test run.");
+    expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain("Couldn't make the full-detail version right now");
+    expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The full-detail version wasn't playable in a test run. The quick one stays.");
   });
 
   it('neúspěch nikoho neobviňuje (P33 T5)', () => {
@@ -49,7 +49,7 @@ describe('noticeOf', () => {
 
   it('offline i lost nabídnou Check again', () => {
     for (const kind of ['offline', 'lost'] as const) {
-      expect(noticeOf({ kind })).toEqual({ text: 'We lost track of the AI version.', action: { kind: 'retry', label: 'Check again' } });
+      expect(noticeOf({ kind })).toEqual({ text: 'We lost track of the full-detail version.', action: { kind: 'retry', label: 'Check again' } });
     }
   });
 });
