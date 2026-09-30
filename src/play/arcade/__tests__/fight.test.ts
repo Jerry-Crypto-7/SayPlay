@@ -158,6 +158,33 @@ describe('fight – a dodge inside the telegraph window always averts the strike
       expect(dodgeRun(seed, reaction, 'stand').hitsTaken, `seed ${seed} stand`).toBe(1);
     }
   });
+
+  /**
+   * Úhyb výše vždy opustí i dosah, takže by prošel i úder mířený znovu na hráče.
+   * Tady hráč zůstane v dosahu, jen mimo zamčený oblouk: úder jde tam, kam
+   * ukázal telegraf, a mine ho. Ve zamčeném směru na stejné vzdálenosti dopadne.
+   */
+  it.each([
+    ['90° to the left, inside reach', 8, false],
+    ['90° to the right, inside reach', -8, false],
+    ['straight along the locked direction', 0, true],
+  ] as const)('the strike goes where the telegraph pointed: a player moved %s (turn %i) is hit – %s', (_name, turn, lands) => {
+    for (const seed of SEEDS.slice(0, 50)) {
+      const g = run(worldOf(seed));
+      while (phaseOf(g.state, 1) !== FIGHT_PHASE.telegraph) g.tick();
+      const e = bodyBase(1);
+      const p = bodyBase(g.player);
+      const dir = DIRECTIONS[(((strikeDirectionOf(g.state, 1) + turn) % 32) + 32) % 32]!;
+      g.state[p + BODY.x] = (g.state[e + BODY.x] as number) + Math.trunc((dir.dx * 1500) / 1000);
+      g.state[p + BODY.z] = (g.state[e + BODY.z] as number) + Math.trunc((dir.dz * 1500) / 1000);
+      g.state[p + BODY.vx] = 0;
+      g.state[p + BODY.vz] = 0;
+      const hp = bodyHp(g.state, g.player);
+      while (phaseOf(g.state, 1) === FIGHT_PHASE.telegraph) g.tick();
+      expect(phaseOf(g.state, 1), `seed ${seed}`).toBe(FIGHT_PHASE.strike);
+      expect(bodyHp(g.state, g.player), `seed ${seed}`).toBe(lands ? hp - FIGHT.damage : hp);
+    }
+  });
 });
 
 describe('fight – the bot wins, the idle player loses, replays are stable', () => {
@@ -169,6 +196,26 @@ describe('fight – the bot wins, the idle player loses, replays are stable', ()
       expect(replay(world, [], ARCADE_LIBRARY).outcome, `idle seed ${seed}`).toBe('lost');
     }
     expect(wins).toBeGreaterThanOrEqual(180);
+  });
+
+  it('with three enemies the fight is won only once the last one is down, never while one still stands', () => {
+    // `every` → `some` by vyhrálo po prvním KO – robot by pořád „vyhrával“ a výhra by přišla dřív.
+    let partial = 0;
+    for (const seed of SEEDS.slice(0, 30)) {
+      const world = worldOf(seed, { enemies: 3 });
+      const bot = runBot(world);
+      const g = run(world);
+      let next = 0;
+      for (let tick = 0; g.state[HEADER.runState] === 0; tick += 1) {
+        while (next < bot.inputs.length && bot.inputs[next]!.tick < tick) next += 1;
+        const event = bot.inputs[next];
+        g.tick(event !== undefined && event.tick === tick ? event : NO_INPUT);
+        const standing = [1, 2, 3].filter((i) => bodyHp(g.state, i) > 0).length;
+        if (standing > 0 && standing < 3) partial += 1;
+        expect(g.state[HEADER.runState] === 1, `seed ${seed} tick ${tick}: ${standing} enemies standing`).toBe(standing === 0 && bodyHp(g.state, g.player) > 0);
+      }
+    }
+    expect(partial).toBeGreaterThan(0);
   });
 
   it('verifyArcade passes and two replays of the bot record end in the same state', () => {

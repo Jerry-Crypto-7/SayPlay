@@ -14,7 +14,7 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   test: {
-    include: ['src/**/*.test.ts', 'evals/**/*.test.ts', 'scripts/**/*.test.ts', 'ops/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'evals/**/*.test.ts', 'scripts/**/*.test.ts', 'ops/**/*.test.ts'],
     exclude: ['node_modules/**', 'e2e/**', '.next/**'],
     // Výchozích 5 s vitestu nestačí testům, které protáhnou celý zmrazený korpus
     // jedním `it` (25 editačních promptů endpointem) nebo spustí podproces.
