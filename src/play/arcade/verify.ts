@@ -168,6 +168,8 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   const bot = planner ?? { reactionTicks: piece.reactionTicks, decide: (observation: ArcadeObservation) => piece.decide(observation, params) };
   // Slovesa pravidel: stav na začátku tiku, ať jde změnu po efektu změřit (P30B T2).
   const verbOf = world.rules.map((ref) => (typeof ref.params.verb === 'string' ? ref.params.verb : null));
+  // `interact` si rozdělanou práci píše do čítače každý tik držení: sloveso úkolu dokáže jen posun stavu cíle (P32G T3).
+  const stateOnly = world.rules.map((ref) => ref.id === 'interact');
   const measuring = verbOf.some((verb) => verb !== null);
   const program = loadProgram(world, library);
   const state = instantiate(world);
@@ -191,6 +193,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
       endings.push([verb, effect.kind === 'win' ? 'won' : 'lost']);
       return;
     }
+    if (stateOnly[rule] === true && effect.kind !== 'stateChange') return;
     const change = changeOf(effect, state, now);
     if (change !== null) changes.set(verb, change);
     const motion = change === null ? motionOf(verb, effect, before, now) : null;
