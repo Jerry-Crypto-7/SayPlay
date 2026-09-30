@@ -1120,7 +1120,8 @@ function draftGenre(
   const itemLabel = collectible ?? (escape ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
   const seconds = reading?.numbers.seconds ?? readNumbers(sentence).seconds;
   const params = paramsOf(module, fill.params, seconds);
-  const counts = countsOf(sentence, reading, { enemy: foeLabel, collectible: itemLabel, target });
+  // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
+  const counts = countsOf(sentence, reading, { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
   const candidate = {
     genre: choice.genre,
     mode: choice.mode,

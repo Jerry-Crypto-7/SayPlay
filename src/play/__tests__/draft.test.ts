@@ -44,6 +44,16 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
     expect(draftGameSpecWithMeta('Two knights duel in a castle', 1, { modules: genreDoubles() }).genre).toMatchObject({ hero: 'knight', enemy: 'knight' });
   });
 
+  // Revize fáze 3, nález 2: „two knights“ je hrdina a jeden soupeř, ne rytíř proti dvěma.
+  it('two knights duel one against one: the counted subject is not a count of rivals', () => {
+    const duel = draftGameSpecWithMeta('Two knights duel in a castle', 1);
+    expect(duel.genre).toMatchObject({ genre: 'arena', mode: 'fight', hero: 'knight', enemy: 'knight' });
+    expect(duel.genre?.counts?.enemy).toBeUndefined();
+    expect(duel.spec.roles.filter((role) => role.label === 'knight').map((role) => role.count ?? 1)).toEqual([1, 1]);
+    // Číslovka před soupeřem, který není podmět, dál platí.
+    expect(draftGameSpecWithMeta('A knight fights three wolves in a castle', 1).genre?.counts?.enemy).toBe(3);
+  });
+
   it('drafts every corpus sentence through a genre module, never onto a legacy control', () => {
     for (const sentence of [...corpus.map((entry) => entry.prompt), ...demand.map((entry) => entry.text)]) {
       const meta = draftGameSpecWithMeta(sentence, 1);
