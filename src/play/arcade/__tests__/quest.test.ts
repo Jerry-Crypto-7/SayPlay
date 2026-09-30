@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { type ArcadeEffect, type ArcadeWorld, BUTTON, NO_INPUT, UNIT, targetStateOf } from '../contract';
+import { type ArcadeEffect, type ArcadeWorld, BODY, BUTTON, HEADER, NO_INPUT, ROLE, UNIT, bodyBase, targetStateOf } from '../contract';
 import { buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { QUEST, type QuestSpatialParams, type QuestStationParams, checkQuestLevel, questSpatial, questStation } from '../pieces/quest';
@@ -110,6 +110,30 @@ describe('quest – spatial levels are fair', () => {
     }
     // Pronásledovatel, který nehoní, by splnil „nejdřív za 4 s“ zadarmo.
     expect(caught).toBeGreaterThanOrEqual(WIN_SHARE);
+  });
+});
+
+describe('quest – chasers slow down while the player holds Use (G-R1)', () => {
+  it('a spatial quest halves its chasers while Use is held, and not otherwise', () => {
+    const topSpeed = (seed: number, buttons: number): number => {
+      const world = spatialWorld(seed, { chasers: 2 });
+      const program = loadProgram(world, ARCADE_LIBRARY);
+      const state = instantiate(world);
+      let top = 0;
+      for (let t = 0; t < 4 * 60 && state[HEADER.runState] === 0; t += 1) {
+        step(state, { buttons, axis: 0 }, program);
+        if (t < 150) continue;
+        for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+          if (state[bodyBase(i) + BODY.role] === ROLE.chaser) top = Math.max(top, Math.hypot(state[bodyBase(i) + BODY.vx] as number, state[bodyBase(i) + BODY.vz] as number));
+        }
+      }
+      return top;
+    };
+    const half = Math.trunc(QUEST.chaserSpeed / 2);
+    for (const seed of SEEDS.slice(0, 10)) {
+      expect(topSpeed(seed, BUTTON.INTERACT), `seed ${seed}: holding Use`).toBeLessThanOrEqual(half);
+      expect(topSpeed(seed, 0), `seed ${seed}: not holding Use`).toBeGreaterThan(half);
+    }
   });
 });
 
