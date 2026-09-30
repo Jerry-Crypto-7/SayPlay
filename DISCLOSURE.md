@@ -411,7 +411,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - use-sync-external-store@1.6.0
 - vite › fsevents@2.3.3
 
-## Assety (1155)
+## Assety (1162)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -1570,6 +1570,13 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 | public/assets/worldstream/rigged/skeleton-minion.glb | KayKit Character Pack: Skeletons 1.0 – https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Minion.glb | Kay Lousberg | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Skeleton Minion from KayKit Character Pack: Skeletons 1.0 by Kay Lousberg (CC0-1.0), https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0 |
 | public/assets/worldstream/rigged/skeleton-rogue.glb | KayKit Character Pack: Skeletons 1.0 – https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Rogue.glb | Kay Lousberg | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Skeleton Rogue from KayKit Character Pack: Skeletons 1.0 by Kay Lousberg (CC0-1.0), https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0 |
 | public/assets/worldstream/rigged/skeleton-warrior.glb | KayKit Character Pack: Skeletons 1.0 – https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0/main/addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Warrior.glb | Kay Lousberg | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Skeleton Warrior from KayKit Character Pack: Skeletons 1.0 by Kay Lousberg (CC0-1.0), https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Skeletons-1.0 |
+| public/fonts/roboto/LICENSE.txt | https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, LICENSE) | Apache Software Foundation (licence text) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Apache License, Version 2.0, for Roboto v2.138 by Christian Robertson, Google. |
+| public/fonts/roboto/Roboto-Black.ttf | https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Black.ttf) | Christian Robertson, Google (googlefonts/roboto) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Black.woff2 before WOFF2 conversion. |
+| public/fonts/roboto/Roboto-Black.woff2 | https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Black.ttf) | Christian Robertson, Google (googlefonts/roboto) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT). |
+| public/fonts/roboto/Roboto-Bold.ttf | https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Bold.ttf) | Christian Robertson, Google (googlefonts/roboto) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Bold.woff2 before WOFF2 conversion. |
+| public/fonts/roboto/Roboto-Bold.woff2 | https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Bold.ttf) | Christian Robertson, Google (googlefonts/roboto) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT). |
+| public/fonts/roboto/Roboto-Medium.woff2 | https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Medium.ttf) | Christian Robertson, Google (googlefonts/roboto) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT). |
+| public/fonts/roboto/Roboto-Regular.woff2 | https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Regular.ttf) | Christian Robertson, Google (googlefonts/roboto) | Apache-2.0 | copyright notice; plné znění licence; soubor NOTICE, pokud balíček nějaký nese; označení změn | Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT). |
 
 ### Assety — licence posouzené jednotlivě
 
@@ -2728,6 +2735,13 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **public/assets/worldstream/rigged/skeleton-minion.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/skeleton-rogue.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/skeleton-warrior.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
+- **public/fonts/roboto/LICENSE.txt** (Apache-2.0): Licence text itself; kept verbatim from the release zip.
+- **public/fonts/roboto/Roboto-Black.ttf** (Apache-2.0): Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.
+- **public/fonts/roboto/Roboto-Black.woff2** (Apache-2.0): Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.
+- **public/fonts/roboto/Roboto-Bold.ttf** (Apache-2.0): Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.
+- **public/fonts/roboto/Roboto-Bold.woff2** (Apache-2.0): Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.
+- **public/fonts/roboto/Roboto-Medium.woff2** (Apache-2.0): Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.
+- **public/fonts/roboto/Roboto-Regular.woff2** (Apache-2.0): Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.
 
 ## Modely (22)
 
@@ -2817,7 +2831,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (1638)
+## Vlastní, ne třetí strana (1669)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -4403,6 +4417,37 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/workbench-lod0.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/workbench-lod1.glb** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
 - **public/assets/worldstream/workbench.png** (asset): Original Worldsmith model, generated preview or provenance document; authored locally from scripts/assets/originals.mjs without third-party geometry or textures.
+- **public/brand/app-icon/android-adaptive-background.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/android-adaptive-foreground-432.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/android-adaptive-foreground.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-1024.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-120.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-152.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-16.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-167.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-180.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-192.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-32.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-48.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-512.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-rounded.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/app-icon-square.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/favicon.ico** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/favicon.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/app-icon/pwa-maskable-512.png** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/app-icon/.
+- **public/brand/icons/sprite.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; UI icon sprite copied unchanged from docs/brand/icons/.
+- **public/brand/logo/logo-lockup-mono-ink.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/logo-lockup-mono-white.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/logo-lockup-on-dark.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/logo-lockup.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/mark-mono-ink.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/mark-mono-white.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/mark-on-dark.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/mark.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/wordmark-cream.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/wordmark-white.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/brand/logo/wordmark.svg** (asset): Sayplay brand kit v1.0 by the client (project owner), delivered 2026-09-30; copied unchanged from docs/brand/logo/.
+- **public/manifest.webmanifest** (asset): Web app manifest for sayplay written in this repo (P34 T1); points at the Sayplay kit app icons in public/brand/app-icon/.
 - **public/play/env/airport-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/play/env/airport.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.
 - **public/play/env/arctic-low.webp** (asset): Panorama sky/backdrop generated locally by ops/env/batch.py (FLUX.2 klein 4B, Apache-2.0) from a setting prompt; seam blended and encoded by ops/env/panorama.py.

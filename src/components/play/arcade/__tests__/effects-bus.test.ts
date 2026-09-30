@@ -61,6 +61,7 @@ function frozenView(session: ArcadeSession): EffectsSource {
     subscribe: session.subscribe,
     state: () => freeze(session.state()),
     prev: () => freeze(session.prev()),
+    humanRun: session.humanRun,
   };
 }
 
@@ -120,6 +121,7 @@ describe('effects bus (P32-0 T5)', () => {
       subscribe: () => () => undefined,
       state: () => state,
       prev: () => state,
+      humanRun: () => true,
     };
     const heard = heardFrom(source, () => {
       emit([{ kind: 'hit', body: 1, by: 0, amount: 2 }], 0);

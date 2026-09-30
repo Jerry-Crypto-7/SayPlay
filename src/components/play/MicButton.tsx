@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Diktování věty na `/play` (P29D T6) – tlačítko mikrofonu vedle pole.
+ * Diktování věty na `/play` (P29D T6) – ikona mikrofonu u pole.
  *
  * Logika je `@/input/speech` (P11 T23, vlastní test v Node): rozhraní
  * prohlížeče, anglický přepis, nic se nestahuje a zvuk nikam neposíláme.
@@ -17,10 +17,25 @@ import { useEffect, useRef, useState } from 'react';
 
 import { type DictationSession, startDictation, supportsDictation } from '@/input/speech';
 
+import { Icon } from './ui';
+
 /** Nadiktované k napsanému: mezera mezi, prázdné pole = jen přepis. */
 export const appendSpoken = (previous: string, spoken: string): string => (previous.trim() === '' ? spoken : `${previous.trimEnd()} ${spoken}`);
 
-export function MicButton({ onText, disabled = false, testId = 'play-mic' }: { readonly onText: (spoken: string) => void; readonly disabled?: boolean; readonly testId?: string }) {
+/** Výchozí vzhled je ikona v okraji pole; domov (P34 T3) dává slunečné kolo kitu v řadě akcí bubliny. */
+const IN_FIELD = 'play-button play-button-quiet play-mic';
+
+export function MicButton({
+  onText,
+  disabled = false,
+  testId = 'play-mic',
+  className = IN_FIELD,
+}: {
+  readonly onText: (spoken: string) => void;
+  readonly disabled?: boolean;
+  readonly testId?: string;
+  readonly className?: string;
+}) {
   const button = useRef<HTMLButtonElement | null>(null);
   const session = useRef<DictationSession | null>(null);
   // Dostupnost až po připojení: server tlačítko neposílá, hydratace nic nevrací.
@@ -67,7 +82,7 @@ export function MicButton({ onText, disabled = false, testId = 'play-mic' }: { r
       <button
         ref={button}
         type="button"
-        className="play-button play-mic"
+        className={className}
         data-testid={testId}
         data-listening={listening ? 'true' : 'false'}
         aria-pressed={listening}
@@ -75,7 +90,9 @@ export function MicButton({ onText, disabled = false, testId = 'play-mic' }: { r
         disabled={disabled}
         onClick={toggle}
       >
-        {listening ? 'Listening…' : 'Mic'}
+        <Icon name="mic" />
+        {/* Ikona v poli (P33 T4); text zůstává pro hledání podle textu a pro stav poslechu. */}
+        <span className="play-sr-only">{listening ? 'Listening…' : 'Mic'}</span>
       </button>
       {failure !== null && (
         <span className="play-alert" role="alert">

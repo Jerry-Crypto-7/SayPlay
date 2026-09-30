@@ -10,14 +10,14 @@
  */
 
 import dynamic from 'next/dynamic';
-import { memo, type ReactNode, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
-import { loadRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
+import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
 import { musicFor, narrationUrl } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
@@ -26,13 +26,15 @@ import type { GameSpecV1 } from '@/play/spec';
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
-import { secondsOf, timerLeft } from '../timer';
+import { MoreGames } from '../MoreGames';
+import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, Icon, PauseCard, objectiveShown, useHudKeys } from '../ui';
+import { timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
-import { SentenceRead } from '../SentenceRead';
+import { AboutButton, SentenceRead } from '../SentenceRead';
 import { type LivePublish, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
-import { PostRun } from '../PostRun';
+import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
@@ -41,13 +43,15 @@ import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
+import { holdUntilTouch, wakesGame } from './ready-gate';
 import { Weather } from './Weather';
-import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type DemoState } from './session';
+import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot } from './session';
 
 // WebGL kontext na serveru není – stejně jako mřížkové plátno. `memo`: HUD se překresluje
 // každý tik, plátno ne – scéna čte relaci sama v `useFrame` (P28E-R1: na emulovaném
 // telefonu srovnání stovek těl runneru 20× za sekundu bralo většinu snímku).
-const ArcadeStage = memo(dynamic(() => import('./ArcadeStage'), { ssr: false }));
+// Než kód scény dorazí, stojí nad oblohou sady (P32D T6) kroky stavby na papírové kartě (P34 T4); název nese HUD.
+const ArcadeStage = memo(dynamic(() => import('./ArcadeStage'), { ssr: false, loading: () => <BuildingScreen /> }));
 // Chunky three.js stahovat už při načtení modulu, ne až po hydrataci: `dynamic` začne
 // až při prvním renderu a do té doby síť stojí (P28E T5, mezera ~0,25 s na telefonu).
 if (typeof window !== 'undefined') void import('./ArcadeStage');
@@ -82,95 +86,113 @@ const progressLabel = (spec: GameSpecV1, snapshot: ArcadeSnapshot): string =>
 /** Hodiny stojí do prvního ťuku; u P25H ovládání ten ťuk jen spouští hru. */
 const TAP_TO_START = new Set(['flap', 'shooter', 'timing', 'rhythm', 'duel']);
 
+/** Otřes a rajčatový okraj pilulky, když hráče chytí (kit: ≤ 6 px na 200 ms). */
+const CAUGHT_MS = 200;
+
+/** Sekundy časového limitu (`time_limit`) nebo přežití (`survive_time`) světa; `null` = hra čas neměří. */
+function limitOf(world: ArcadeWorld): number | null {
+  const seconds = world.rules.find((rule) => rule.id === 'time_limit' || rule.id === 'survive_time')?.params.seconds;
+  return typeof seconds === 'number' ? seconds : null;
+}
+
+/** Kolik předmětů doplňku `+collect` hra chce (`finish_collected`); `null` = cíl bez sbírání. */
+function collectNeed(world: ArcadeWorld): number | null {
+  const need = Number(world.rules.find((rule) => rule.id === 'finish_collected')?.params.need);
+  return Number.isFinite(need) && need > 0 ? need : null;
+}
+
+const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true;
+
 /**
- * Počítadla doplňků (P26D): sebrané mince proti potřebě a náboje. Popisek jde
- * do `data-testid` (`hud-counter-…`) a musí být v uzavřeném anglickém seznamu
- * `e2e/hud-labels.ts`.
+ * Fakta skončeného běhu pro výsledek (P34 T6) – jen čísla, která relace
+ * arkády opravdu počítá: sebrané předměty, životy, body jednotkou hry
+ * a uběhlá část trati (aréna, střelba a hod trať nemají).
  */
-function AddonCounters({ world, snapshot }: { readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot }) {
-  const need = world.rules.find((rule) => rule.id === 'finish_collected')?.params.need;
-  const fires = world.rules.some((rule) => rule.id === 'blaster');
-  if (need === undefined && !fires) return null;
-  return (
-    <p className="play-hud-progress">
-      {need !== undefined && (
-        <span data-testid="hud-counter-collected" data-count={snapshot.items}>
-          {snapshot.items}/{String(need)} collected
-        </span>
-      )}
-      {fires && (
-        <span data-testid="hud-counter-ammo" data-count={snapshot.shots}>
-          {snapshot.shots} ammo
-        </span>
-      )}
-    </p>
-  );
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot): RunFacts {
+  const need = collectNeed(world);
+  const extra: ResultStat[] = [];
+  if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
+  extra.push({ value: String(snapshot.score), label: scoreUnit(spec) });
+  if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
+  return {
+    won: snapshot.runState === 'won',
+    tick: snapshot.tick,
+    hz: ARCADE_HZ,
+    survive: world.rules.some((rule) => rule.id === 'survive_time'),
+    goal: need === null ? null : { count: snapshot.items, need, label: 'collected' },
+    extra,
+  };
 }
 
 /**
- * „Show me how“ (P27D T3): přehraje záznam robota, kterým verze prošla
- * publikací. Během ukázky je to napsané v HUD a jde ji zastavit.
+ * HUD arkády podle kitu (P34 T5, dřív tenký pruh P33 T12). Pilulka postupu
+ * jen se skutečnými čísly: sebrané předměty doplňku `+collect` proti potřebě
+ * jako vejce, zbývající rány, náboje a životy – hra bez nich ukáže jen
+ * časovač. Časovač odpočítává, má-li svět limit (i prodloužený živou změnou,
+ * `bonus`). Celý text postupu, který dřív nesl pruh, dostane čtečka; popisky
+ * počítadel jdou do `data-testid` (`hud-counter-…`, seznam `e2e/hud-labels.ts`).
  */
-function DemoControl({ session, demo }: { readonly session: ArcadeSession; readonly demo: DemoState | null }) {
-  if (demo === null) {
-    return (
-      <button type="button" className="play-button play-hud-demo" data-testid="play-demo-start" onClick={() => session.startDemo()}>
-        Show me how
-      </button>
-    );
-  }
-  if (demo.ended) return null;
-  return (
-    <p className="play-hud-progress" data-testid="play-demo">
-      <span>Demo: the verified run of this version. Your score is not counted.</span>{' '}
-      <button type="button" className="play-button play-hud-demo" data-testid="play-demo-stop" onClick={() => session.restart()}>
-        Stop and play
-      </button>
-    </p>
-  );
-}
-
 function ArcadeHud({
-  versionId,
   spec,
   world,
   snapshot,
+  heading,
+  bonus,
   paused,
-  shareable,
-  live,
+  caught,
+  onPause,
+  bottom,
   children,
 }: {
-  readonly versionId: string;
-  readonly shareable: boolean;
-  readonly live: LivePublish | undefined; readonly spec: GameSpecV1; readonly world: ArcadeWorld; readonly snapshot: ArcadeSnapshot; readonly paused: boolean; readonly children?: ReactNode }) {
-  const lives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true ? ` · ${snapshot.health} lives` : '';
+  readonly spec: GameSpecV1;
+  readonly world: ArcadeWorld;
+  readonly snapshot: ArcadeSnapshot;
+  readonly heading: 'h1' | 'h2';
+  readonly bonus: number;
+  readonly paused: boolean;
+  readonly caught: boolean;
+  readonly onPause?: () => void;
+  readonly bottom?: ReactNode;
+  readonly children?: ReactNode;
+}) {
+  const lives = hasLives(spec) ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
+  const need = collectNeed(world);
+  const counters: HudCounter[] = [];
+  if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
+  if (world.rules.some((rule) => rule.id === 'blaster')) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
+  if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
+  const limit = limitOf(world);
+  const elapsed = snapshot.tick / ARCADE_HZ;
   return (
-    <header className="play-hud" aria-label="Game status">
-      <h1 className="play-hud-title">{spec.title}</h1>
-      <p className="play-hud-goal" data-testid="play-goal">{spec.tutorial.goalLine}</p>
-      <p className="play-hud-hint">
-        {paused && snapshot.runState === 'running' ? <span data-testid="play-paused">Paused. Tap or press a key to resume. </span> : null}
-        {snapshot.tick === 0 && spec.control !== undefined && TAP_TO_START.has(spec.control) ? 'Tap to start. ' : ''}
-        {spec.tutorial.controlsHint}
-      </p>
-      <p className="play-hud-progress">
-        <span data-testid="play-progress" data-progress={snapshot.progress}>
-          {/* Aréna nemá trať, procento by stálo na nule. */}
-          {spec.control === 'move_free' ? '' : `${snapshot.progress}% · `}
-          {snapshot.score} {scoreUnit(spec)}{lives}
-          {clock === null ? '' : ` · ${clock}`}
-        </span>
-        <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
-          {progressLabel(spec, snapshot)}
-        </span>
-      </p>
-      <AddonCounters world={world} snapshot={snapshot} />
+    <GameHud
+      title={spec.title}
+      heading={heading}
+      goalLine={spec.tutorial.goalLine}
+      goal={need === null ? null : { label: 'collected', count: snapshot.items, need }}
+      counters={counters}
+      clock={limit === null ? { seconds: elapsed, countdown: false } : { seconds: limit + bonus - elapsed, countdown: true }}
+      objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, ARCADE_HZ, paused)}
+      caught={caught}
+      onPause={onPause}
+      status={
+        <p className="play-sr-only">
+          <span data-testid="play-progress" data-progress={snapshot.progress}>
+            {/* Aréna nemá trať, procento by stálo na nule. */}
+            {spec.control === 'move_free' ? '' : `${snapshot.progress}% · `}
+            {snapshot.score} {scoreUnit(spec)}
+            {lives}
+            {clock === null ? '' : ` · ${clock}`}
+          </span>{' '}
+          <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick}>
+            {progressLabel(spec, snapshot)}
+          </span>
+        </p>
+      }
+      bottom={bottom}
+    >
       {children}
-      <MuteButton />
-      {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
-      {shareable && snapshot.runState === 'running' && <ShareButton versionId={versionId} title={spec.title} className="play-hud-share" live={live} />}
-    </header>
+    </GameHud>
   );
 }
 
@@ -189,34 +211,54 @@ export interface ArcadePlayProps {
   readonly active?: boolean;
   /** Ukázková hra vstupní stránky (P28D T7) není v úložišti: bez sdílení, remixu a událostí smyčky. */
   readonly offline?: boolean;
+  /** Hra ve feedu (P33 T12): další hru nabízí listování feedu, sloupec akcí nemá „More“. */
+  readonly inFeed?: boolean;
 }
 
 const END_PAUSE_MS = 600;
 
 /**
- * Hra s fyzikálními tělesy (P29A T13) čeká, než se stáhne Rapier – jádro je
- * synchronní a bez něj by první tik spadl. Hra bez fyziky je připravená hned
- * a modul vůbec nestáhne.
+ * Je Rapier pro tenhle svět načtený (P29A T13)? Jádro je synchronní a bez něj
+ * by první tik hry s fyzikálními tělesy spadl. Hra bez fyziky je připravená
+ * hned a modul vůbec nestáhne. Server i hydratace hlásí „nenačtený“ – server
+ * má Rapier načtený vlastní a jinak by se dva první rendery rozešly.
  */
 export function usePhysicsReady(world: ArcadeWorld): boolean {
   const needs = useMemo(() => worldHasPhysics(world), [world]);
-  const [ready, setReady] = useState(() => !needs || rapierIfLoaded() !== null);
-  useEffect(() => {
-    if (ready) return;
-    let live = true;
-    void loadRapier().then(() => {
-      if (live) setReady(true);
-    });
-    return () => {
-      live = false;
-    };
-  }, [ready]);
-  return ready;
+  const subscribe = useCallback(
+    (changed: () => void) => {
+      if (!needs) return () => {};
+      let live = true;
+      loadRapier().then(
+        () => live && changed(),
+        () => undefined,
+      );
+      return () => {
+        live = false;
+      };
+    },
+    [needs],
+  );
+  return useSyncExternalStore(subscribe, () => !needs || rapierIfLoaded() !== null, () => !needs);
 }
 
+/**
+ * Stránka hry ví o fyzice ze světa dřív, než se vykreslí hra (P32D T4):
+ * stahování Rapieru začne už v renderu stránky, souběžně se scénou.
+ */
+export function PrefetchPhysics({ needed }: { readonly needed: boolean }): null {
+  if (typeof window !== 'undefined') prefetchRapier(needed);
+  return null;
+}
+
+/**
+ * Plátno a HUD hned, i když Rapier ještě dotéká (P32D T4): hodiny relace do
+ * jeho načtení stojí na tiku 0 (`holdUntilRapier`) a ukázka robota i živá
+ * změna, které jádrem krokují samy, se nabídnou až s ním.
+ */
 export function ArcadePlay(props: ArcadePlayProps) {
-  const ready = usePhysicsReady(props.arcade);
-  return ready ? <ArcadePlayReady {...props} /> : <div data-testid="arcade-physics-loading" aria-busy="true" style={{ position: 'fixed', inset: 0 }} />;
+  const physicsReady = usePhysicsReady(props.arcade);
+  return <ArcadePlayGame {...props} physicsReady={physicsReady} />;
 }
 
 /** Živá těla role ve stavu – sonda e2e (T9). */
@@ -266,13 +308,30 @@ function useLivePublish(versionId: string, spec: GameSpecV1, world: ArcadeWorld,
   return done?.count === count ? done.live : { state: 'pending' };
 }
 
-function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion = false, lab, read, upgrade, active = true, offline = false }: ArcadePlayProps) {
-  // Poletování, střelnice a hry na čas čekají na první stisk: ptáček by spadl a vlna
-  // došla dřív, než hráč hru uvidí. `swallowFirst` navíc ten spouštěcí ťuk nezapíše –
-  // u načasování by to byl rovnou minutý pokus (u poletování je to první mávnutí).
+function ArcadePlayGame({
+  versionId,
+  spec,
+  arcade,
+  lineage,
+  remixes,
+  aiVersion = false,
+  lab,
+  read,
+  upgrade,
+  active = true,
+  offline = false,
+  inFeed = false,
+  physicsReady,
+}: ArcadePlayProps & { readonly physicsReady: boolean }) {
+  const [liveOpen, setLiveOpen] = useState(false);
+  // Každá hra čeká na první dotek (P33 T11, `ready-gate.ts`): runner by jinak prohrál
+  // dřív, než hráč pochopí ovládání. Poletování, střelnice a hry na čas navíc čekají
+  // v relaci na první stisk a `swallowFirst` ten spouštěcí ťuk nezapíše – u načasování
+  // by to byl rovnou minutý pokus (u poletování je to první mávnutí).
   const [session] = useState(() => {
     const control = baseControlOf(arcade.control).id;
-    return createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' });
+    const created = holdUntilTouch(createArcadeSession(arcade, { waitForInput: TAP_TO_START.has(control), swallowFirst: control !== 'flap' }));
+    return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
   const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
@@ -281,6 +340,11 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
   const demo = useSyncExternalStore(session.subscribe, session.demo, session.demo);
   const remix = useRemixJob(versionId, !running && demo === null);
   const live = useLivePublish(versionId, spec, arcade, session, !offline);
+  // Živá změna (P29D T9) jen v běžící hře hráče; s koncem běhu se pole zavře, ať se v další nevynoří samo.
+  const canChange = running && active && demo === null && physicsReady;
+  useEffect(() => {
+    if (!canChange) setLiveOpen(false);
+  }, [canChange]);
   // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
   const [settled, setSettled] = useState(false);
   useEffect(() => {
@@ -296,6 +360,8 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
   // Ukázka robota klip nemá; plátno se načítá dynamicky, proto se hledá při každém tiku, než je.
   const shell = useRef<HTMLElement | null>(null);
   const [clip, setClip] = useState<Blob | null>(null);
+  // Běh se právě nahrává: list sdílení v HUD (P34 T7) ukáže Save video zašedlé s větou, že video přijde po konci.
+  const [filming, setFilming] = useState(false);
   useEffect(() => {
     if (offline || !active) return;
     let recording: Clip | null = null;
@@ -309,17 +375,20 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
         recording = null;
         tried = false;
         setClip(null);
+        setFilming(false);
       }
       if (nowRunning && !tried) {
         const canvas = shell.current?.querySelector<HTMLCanvasElement>('[data-testid="arcade-stage"] canvas');
         if (canvas) {
           tried = true;
           recording = startClip(canvas);
+          setFilming(recording !== null);
         }
       }
       if (!nowRunning && wasRunning && recording !== null) {
         const ended = recording;
         recording = null;
+        setFilming(false);
         if (session.demo() !== null) ended.cancel();
         else void ended.finish().then((blob) => !gone && setClip(blob));
       }
@@ -334,6 +403,28 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
     };
   }, [active, offline, session]);
 
+  // Pauza podle kitu (P34 T5): kartu pauzy ukáže pauza hráče (tlačítko, Space, Esc) a pauza
+  // rozehrané hry, když hráč odešel (záložka, okno, feed). Hra, která ještě čeká na první
+  // dotek, kartu po odchodu nedostane – výzvu „Tap to start“ pustí ťuk jako dřív. Dokud karta
+  // (nebo list „About“ nad ní) visí, hru pustí jen karta: Resume, Space, Esc, klepnutí mimo;
+  // jinak by ji pustil každý stisk (`focus.ts`), i Tab, kterým hráč po kartě chodí.
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [asked, setAsked] = useState(false);
+  useEffect(() => {
+    if (!paused) setAsked(false);
+  }, [paused]);
+  const pauseGame = useCallback(() => {
+    setAsked(true);
+    session.pause();
+  }, [session]);
+  const menu = running && active && demo === null;
+  const holdsPause = menu && paused && (asked || snapshot.tick > 0);
+  const cardShown = holdsPause && !aboutOpen;
+  const holding = useRef(false);
+  useEffect(() => {
+    holding.current = holdsPause;
+  });
+
   // Pauza mimo obrazovku feedu, při skryté záložce a oknu bez fokusu (`focus.ts`).
   // Rytmus nepípá, když tiky stojí.
   useEffect(() => {
@@ -341,15 +432,25 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
       session.pause();
       return;
     }
-    return pauseWhenAway(session, window, document);
+    return pauseWhenAway(
+      {
+        pause: session.pause,
+        paused: session.paused,
+        resume: () => {
+          if (!holding.current) session.resume();
+        },
+      },
+      window,
+      document,
+    );
   }, [active, session]);
 
   // Výloha vstupní stránky (P28D T7): dokud se hráč nedotkne, hraje dokola robot ověřovače –
-  // bez něj runner do tří sekund prohraje a první obrazovka ukáže „You lost“. První stisk
+  // bez něj runner do tří sekund prohraje a první obrazovka ukáže „So close.“. První stisk
   // nebo ťuk na scénu výlohu ukončí v zachytávací fázi, takže ten stisk už padne do hry hráče.
   const [attract, setAttract] = useState(offline);
   useEffect(() => {
-    if (!attract || !active) return;
+    if (!attract || !active || !physicsReady) return;
     let again: ReturnType<typeof setTimeout> | undefined;
     if (session.demo() === null) session.startDemo();
     const unsubscribe = session.subscribe(() => {
@@ -360,9 +461,11 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
         }, 1000);
       }
     });
+    // Restart hodiny znovu zastaví; tenhle dotek je první vstup hráče, proto je hned pustí.
     const take = () => {
       setAttract(false);
       session.restart();
+      session.begin();
     };
     const onPointer = (event: PointerEvent) => {
       if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) take();
@@ -378,7 +481,25 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
       window.removeEventListener('pointerdown', onPointer, true);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [attract, active, session]);
+  }, [attract, active, physicsReady, session]);
+
+  // První dotek (P33 T11): ťuk na scénu nebo klávesa pustí hodiny v zachytávací fázi,
+  // takže tentýž stisk padne do tiku 0. Tlačítka mimo scénu (zvuk, info, Play again) ne.
+  useEffect(() => {
+    if (!active) return;
+    const onPointer = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) session.begin();
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (wakesGame(event)) session.begin();
+    };
+    window.addEventListener('pointerdown', onPointer, true);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      window.removeEventListener('pointerdown', onPointer, true);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [active, session]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
   useEffect(() => {
@@ -452,6 +573,49 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
     };
   }, [session]);
 
+  // Chycení hráče (kit `08-game-hud.md`): zásah nebo prohra v běhu hráče otřese obrazovkou
+  // (≤ 6 px, 200 ms, CSS `.play-caught`, s omezeným pohybem bez otřesu) a okraj pilulky
+  // postupu na tu chvíli zrajčatí. Jádro neříká, co prohru způsobilo – bere se každá.
+  const [caught, setCaught] = useState(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const off = session.onEvents((events) => {
+      if (!session.humanRun() || !events.some((event) => event.kind === 'damage' || event.kind === 'lose')) return;
+      const element = shell.current;
+      if (element !== null) {
+        // Znovu spustit animaci i při zásahu v jejím průběhu: bez přepočtu stylu by třída jen zůstala.
+        element.classList.remove('play-caught');
+        void element.offsetWidth;
+        element.classList.add('play-caught');
+      }
+      setCaught(true);
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        shell.current?.classList.remove('play-caught');
+        setCaught(false);
+      }, CAUGHT_MS);
+    });
+    return () => {
+      off();
+      clearTimeout(timer);
+    };
+  }, [session]);
+
+  // Restart z HUD a z karty pauzy (P34 T5): nový běh od tiku 0, hra zase čeká na první dotek.
+  const restart = useCallback(() => {
+    if (session.humanRun()) loopEvent('restart', versionId);
+    setLiveOpen(false);
+    session.restart();
+    session.resume();
+  }, [session, versionId]);
+  useHudKeys(menu && !aboutOpen, session.paused, (action) => {
+    if (action === 'restart') restart();
+    else if (action === 'pause') pauseGame();
+    else session.resume();
+  });
+  // Prodloužení času živou změnou („more time“) posune i odpočet časovače.
+  const bonus = session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === 'time' ? entry.patch.amount : 0), 0);
+
   useEffect(() => {
     const probe = {
       inputs: () => session.inputs(),
@@ -459,6 +623,8 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
       bodies: (role: ArcadeRole) => aliveOf(session.state(), role),
       patches: () => session.patches().length,
+      /** Dotek bez vstupu (P33 T11): e2e, které čekají na běžící hodiny, hru pustí jako ťuk na prázdnou scénu. */
+      start: () => session.begin(),
       playWitness: () => {
         const end = session.playInputs(session.botInputs(), ARCADE_LIMITS.maxTicks);
         return { runState: end.runState, tick: end.tick };
@@ -497,20 +663,84 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
   }, [session]);
 
   return (
-    <main ref={shell} className="play-shell">
+    // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
+    // `data-playing`: hráč už hraje (první tah proběhl, ne přehrávaná ukázka) – lišta domova (P34 T3) mu ustoupí.
+    // Obloha jde do proměnné `--_sky`: na desktopu jí je jen scéna 16:9, okolí je krémové (kit `05-layout.md`).
+    <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.sky } as CSSProperties}>
       <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} look={scene} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
-      <ArcadeHud versionId={versionId} spec={spec} world={arcade} snapshot={snapshot} paused={paused} shareable={!offline} live={live}>
-        {running && <DemoControl session={session} demo={demo} />}
+      {/* HUD kitu (P34 T5): dole restart, „Change one thing“ (živá změna, P29D T9) a sdílení (P27B T5); po dohrání je nese `PostRun`. */}
+      <ArcadeHud
+        spec={spec}
+        world={arcade}
+        snapshot={snapshot}
+        heading={inFeed || offline ? 'h2' : 'h1'}
+        bonus={bonus}
+        paused={paused}
+        caught={caught}
+        onPause={menu ? pauseGame : undefined}
+        bottom={
+          menu && (
+            <>
+              <button type="button" className="sp-hud-btn play-hud-round" data-testid="play-hud-restart" aria-label="Restart" title="Restart (R)" onClick={restart}>
+                <Icon name="restart" />
+              </button>
+              {canChange && (
+                <Button variant="secondary" className="play-hud-change" data-testid="live-open" aria-expanded={liveOpen} onClick={() => setLiveOpen(true)}>
+                  <Icon name="wand" />
+                  {CHANGE_LABEL}
+                </Button>
+              )}
+              {!offline && <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" live={live} recording={filming} />}
+            </>
+          )
+        }
+      >
+        {/* Ukázka robota (P27D T3) řekne, že neběží hra hráče, a vrátí ho do ní. */}
+        {running && demo !== null && !demo.ended && (
+          <aside className="sp-toast play-demo-note" role="status">
+            <span data-testid="play-demo">Demo: the verified run of this version. Your score is not counted.</span>
+            <Button variant="secondary" size="s" data-testid="play-demo-stop" onClick={() => session.restart()}>
+              Stop and play
+            </Button>
+          </aside>
+        )}
+        {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nehraje (střelba, úder, ťuk). */}
+        {canChange && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} open={liveOpen} setOpen={setLiveOpen} />}
+        <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
+        {running && <RemixReadyChip job={remix} />}
       </ArcadeHud>
-      {running && active && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
-      {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nehraje (střelba, úder, ťuk). */}
-      {running && active && demo === null && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} />}
+      {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. */}
+      {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
-      <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
-      {running && <RemixReadyChip job={remix} />}
-      {read !== undefined && <SentenceRead read={read} />}
+      {read !== undefined && <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
-      {/* Konec ukázky není výhra hráče: bez „You won“, bez sdílení výsledku. */}
+      {cardShown && (
+        <PauseCard
+          onResume={session.resume}
+          onRestart={restart}
+          onChange={
+            canChange
+              ? () => {
+                  session.resume();
+                  setLiveOpen(true);
+                }
+              : undefined
+          }
+          controlsHint={spec.tutorial.controlsHint}
+        >
+          <MuteButton />
+          {read !== undefined && <AboutButton onOpen={() => setAboutOpen(true)} />}
+          {/* „Show me how“ (P27D T3): přehraje záznam robota, kterým verze prošla publikací; pauzu zruší sám. */}
+          {physicsReady && (
+            <Button variant="secondary" size="s" data-testid="play-demo-start" onClick={() => session.startDemo()}>
+              <Icon name="play" />
+              Show me how
+            </Button>
+          )}
+          {!offline && !inFeed && <MoreGames />}
+        </PauseCard>
+      )}
+      {/* Konec ukázky není výhra hráče: bez „You did it!“, bez sdílení výsledku. */}
       {!running && demo !== null && !attract && (
         <section className="play-outcome" data-testid="play-demo-outcome" data-verified={String(demo.verified)} role="status">
           <h2 className="play-outcome-title">Demo finished</h2>
@@ -522,31 +752,24 @@ function ArcadePlayReady({ versionId, spec, arcade, lineage, remixes, aiVersion 
           </button>
         </section>
       )}
+      {/* Výsledek kitu (P34 T6): zamrzlá scéna nahoře, list s nadpisem, statistikami a akcemi. */}
       {!running && demo === null && settled && (
-        <section className="play-outcome" data-testid="play-outcome" role="status">
-          <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
-          <p className="play-outcome-detail">
-            {/* Aréna už čas nese v `progressLabel`. */}
-            {spec.control === 'move_free' ? '' : `in ${secondsOf(snapshot.tick, ARCADE_HZ)} · `}
-            {progressLabel(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
-          </p>
-          {offline ? (
-            <button type="button" className="play-button" data-testid="play-again" onClick={() => session.restart()}>
-              Play again
-            </button>
-          ) : (
-            <PostRun
-              versionId={versionId}
-              remix={remix}
-              clip={clip}
-              live={live}
-              onReplay={() => {
-                if (session.humanRun()) loopEvent('restart', versionId);
-                session.restart();
-              }}
-            />
-          )}
-        </section>
+        <PostRun
+          versionId={versionId}
+          remix={remix}
+          facts={arcadeFacts(spec, arcade, snapshot)}
+          clip={clip}
+          live={live}
+          offline={offline}
+          onReplay={
+            offline
+              ? () => session.restart()
+              : () => {
+                  if (session.humanRun()) loopEvent('restart', versionId);
+                  session.restart();
+                }
+          }
+        />
       )}
     </main>
   );

@@ -3,14 +3,26 @@ import type { ReactNode } from 'react';
 
 import './theme.css';
 
+// Ikony a manifest jsou z kitu Sayplay (`public/brand/app-icon/`). Barvu lišty
+// pro `/play` přepisuje `src/app/play/layout.tsx`; tady zůstává tmavá plocha
+// `/studio`.
 export const metadata: Metadata = {
-  title: 'worldsmith',
-  description: 'A sentence in, a playable 3D world out.',
+  title: 'sayplay',
+  description: 'Say it. Play it.',
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/brand/app-icon/favicon.svg', type: 'image/svg+xml' },
+      { url: '/brand/app-icon/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/brand/app-icon/app-icon-180.png',
+  },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  viewportFit: 'cover',
   // Ta samá hodnota, jakou nese `--ws-background` v `theme.css` a `UI_TOKENS`
   // v kitu. Do `<meta>` se CSS proměnná dosadit nedá, tak je tu doslova a hlídá
   // to `src/app/__tests__/theme.test.ts`.
