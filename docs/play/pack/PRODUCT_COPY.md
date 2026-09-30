@@ -1,7 +1,9 @@
 # Product Copy
-Hero: **Imagine a game. Play it.**
-Subhead: Describe anything. WORLDSTREAM turns it into a short playable 3D game — then change the rules with a sentence.
-Placeholder: A hamster escaping a supermarket while a giant Roomba hunts me…
+Hero: **What do you want to play?**
+Subhead: Say one sentence and play it in seconds. Then change one thing.
+Label: Say it in one sentence
+Placeholder: A fox steals eggs while the farmer's dog chases it…
+Ideas: Hamster escapes a supermarket Roomba / Grab five glowing mushrooms / Carry a wobbly cake to the party / The floor is lava, for 60 seconds.
 States: Designing the challenge -> Building a playable version -> Checking the rules -> Adding the look.
 Post-run: CHANGE ONE THING
 Chips: Make it harder / Add a twist / Swap the enemy / Change the world, keep the rules.

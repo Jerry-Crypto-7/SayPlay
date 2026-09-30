@@ -554,7 +554,8 @@ function ArcadePlayGame({
 
   return (
     // Pod plátnem obloha sady (P32D T6): do prvního snímku scény je vidět ona, ne tmavé pozadí stránky.
-    <main ref={shell} className="play-shell" style={{ background: scene.sky }}>
+    // `data-playing`: hráč už hraje (první tah proběhl, ne přehrávaná ukázka) – lišta domova (P34 T3) mu ustoupí.
+    <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ background: scene.sky }}>
       <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} look={scene} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
       <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} heading={inFeed || offline ? 'h2' : 'h1'} />
       {/* Sloupec akcí vpravo (P33 T12): nic z něj neleží přes střed hry a ťuk mezi koly jde na scénu. */}

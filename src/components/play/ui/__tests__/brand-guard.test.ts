@@ -252,9 +252,12 @@ describe('play.css – the kit, class by class', () => {
 
     const rules = [...own.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((m) => ({ selectors: splitTop(m[1].trim()), body: m[2] }));
     const TAP = /min-height:\s*var\(--sp-size-(touch-min|control-[sml])\)/;
-    for (const selector of [':where(.play-button)', '.sp-btn', '.sp-btn--m', '.sp-btn--s', '.sp-btn--icon', '.sp-btn--link', '.sp-chip', '.play-target', '.play-starter', '.play-pager-step']) {
+    for (const selector of [':where(.play-button)', '.sp-btn', '.sp-btn--m', '.sp-btn--s', '.sp-btn--icon', '.sp-btn--link', '.sp-chip', '.play-target', '.play-pager-step']) {
       expect(rules.some((rule) => rule.selectors.includes(selector) && TAP.test(rule.body)), `${selector} has no 44 px min-height`).toBe(true);
     }
+    // Karta nápadu (P34 T3) má výšku z kitu v pixelech, ne z tokenu.
+    const idea = rules.find((rule) => rule.selectors.includes('.sp-idea') && /min-height:/.test(rule.body));
+    expect(Number.parseFloat(/min-height:\s*([\d.]+)px/.exec(idea?.body ?? '')?.[1] ?? 'NaN')).toBeGreaterThanOrEqual(44);
     expect(rules.some((rule) => rule.selectors.includes('.sp-hud-btn') && /height:\s*var\(--sp-size-hud-pill\)/.test(rule.body))).toBe(true);
   });
 });

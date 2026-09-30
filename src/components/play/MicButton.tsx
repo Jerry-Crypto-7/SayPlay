@@ -22,7 +22,20 @@ import { Icon } from './ui';
 /** Nadiktované k napsanému: mezera mezi, prázdné pole = jen přepis. */
 export const appendSpoken = (previous: string, spoken: string): string => (previous.trim() === '' ? spoken : `${previous.trimEnd()} ${spoken}`);
 
-export function MicButton({ onText, disabled = false, testId = 'play-mic' }: { readonly onText: (spoken: string) => void; readonly disabled?: boolean; readonly testId?: string }) {
+/** Výchozí vzhled je ikona v okraji pole; domov (P34 T3) dává slunečné kolo kitu v řadě akcí bubliny. */
+const IN_FIELD = 'play-button play-button-quiet play-mic';
+
+export function MicButton({
+  onText,
+  disabled = false,
+  testId = 'play-mic',
+  className = IN_FIELD,
+}: {
+  readonly onText: (spoken: string) => void;
+  readonly disabled?: boolean;
+  readonly testId?: string;
+  readonly className?: string;
+}) {
   const button = useRef<HTMLButtonElement | null>(null);
   const session = useRef<DictationSession | null>(null);
   // Dostupnost až po připojení: server tlačítko neposílá, hydratace nic nevrací.
@@ -69,7 +82,7 @@ export function MicButton({ onText, disabled = false, testId = 'play-mic' }: { r
       <button
         ref={button}
         type="button"
-        className="play-button play-button-quiet play-mic"
+        className={className}
         data-testid={testId}
         data-listening={listening ? 'true' : 'false'}
         aria-pressed={listening}

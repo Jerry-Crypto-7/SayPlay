@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 import { BuildSteps, CreateGame } from '../CreateGame';
-import { BUILD_STEPS } from '../starters';
+import { BUILD_STEPS, IDEAS } from '../starters';
 
 /**
  * Po odeslání věty (P33 T9) vidí hráč celou cestu – všechny čtyři kroky
@@ -32,15 +32,27 @@ describe('BuildSteps', () => {
 });
 
 describe('CreateGame', () => {
-  it('keeps the counter and the build steps out of the idle form', () => {
-    const markup = renderToStaticMarkup(createElement(CreateGame));
-    expect(markup).not.toContain('play-counter');
+  const markup = renderToStaticMarkup(createElement(CreateGame));
+
+  it('keeps the build steps out of the idle form and shows the counter at 0/140', () => {
     expect(markup).not.toContain('data-testid="play-status"');
+    expect(markup).toMatch(/data-testid="play-counter" data-warn="false"[^>]*>0\/140</);
   });
 
-  it('shows starter cards as an icon and one sentence, with no shouted label', () => {
-    const markup = renderToStaticMarkup(createElement(CreateGame));
-    expect(markup).not.toContain('play-starter-label');
-    expect(markup.match(/class="play-starter"[^>]*>\s*<svg/g)).toHaveLength(8);
+  it('labels the prompt bubble visibly and has exactly one primary action, Make it!', () => {
+    expect(markup).toMatch(/<label class="sp-prompt__label" for="play-sentence">Say it in one sentence<\/label>/);
+    // Aktivní i nad prázdným polem jako v referenci kitu; prázdné odeslání ukáže „Too vague“ (e2e play-create).
+    expect(markup.match(/data-variant="primary"[^>]*>[^<]*</g)).toEqual(['data-variant="primary" data-testid="play-create">Make it!<']);
+    expect(markup).not.toContain('sp-field-error');
+  });
+
+  it('shows four idea cards in kit colour order with alternating tilt and no icon', () => {
+    const cards = [...markup.matchAll(/class="sp-idea ([^"]+)"[^>]*>([^<]*)</g)].map(([, look, text]) => [look, text]);
+    expect(cards.map(([look]) => look)).toEqual(['sp-idea--mint sp-tilt-l', 'sp-idea--sun sp-tilt-r', 'sp-idea--sky sp-tilt-r', 'sp-idea--gum sp-tilt-l']);
+    expect(cards.map(([, text]) => text)).toEqual(IDEAS.map((idea) => idea.sentence));
+  });
+
+  it('offers only Make and Play in the tab bar, Make active on arrival', () => {
+    expect([...markup.matchAll(/class="sp-tabbar__item( is-active)?"[^>]*>.*?<\/svg>(\w+)</g)].map(([, active, label]) => `${label}${active ? '*' : ''}`)).toEqual(['Make*', 'Play']);
   });
 });

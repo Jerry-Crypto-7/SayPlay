@@ -9,30 +9,73 @@ import { expect, test } from '@playwright/test';
  * nikdo nikdy neviděl.
  */
 
+// P34 T3: nadpis a tlačítko mluví kitem Sayplay („What do you want to play?“, „Make it!“).
+const HERO = 'What do you want to play?';
+
 test.describe('/play – create', () => {
   // P25B T7: hlavní adresa vede na hry, stará aplikace je na /studio.
   test('the home address lands on /play', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/play$/);
-    await expect(page.locator('.play-hero')).toHaveText('Imagine a game. Play it.');
+    await expect(page.locator('.play-hero')).toHaveText(HERO);
   });
 
-  test('hero, typed sentence and Play it land on /play/<id>', async ({ page }) => {
+  test('hero, typed sentence and Make it! land on /play/<id>', async ({ page }) => {
     await page.goto('/play');
-    await expect(page.locator('.play-hero')).toHaveText('Imagine a game. Play it.');
+    await expect(page.locator('.play-hero')).toHaveText(HERO);
+    await expect(page.locator('.play-hero .sp-highlight')).toHaveText('play?');
 
-    const sentence = page.getByTestId('play-sentence');
+    const sentence = page.getByLabel('Say it in one sentence');
     await expect(sentence).toHaveValue('');
     await sentence.fill('Collect five glowing mushrooms then open a portal.');
+    await expect(page.getByTestId('play-create')).toHaveText('Make it!');
     await page.getByTestId('play-create').click();
     await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
   });
 
-  // P28D T7: vzor je hra na jedno klepnutí, ne předvyplněné pole.
-  test('a starter card creates its game without a second click', async ({ page }) => {
+  // P34 T3 (kit, Idea card): karta větu jen vloží, hru spustí až odeslání – tady Enter.
+  test('an idea card fills the prompt without starting, Enter sends it', async ({ page }) => {
     await page.goto('/play');
+    let posted = 0;
+    page.on('request', (request) => {
+      if (request.url().endsWith('/api/play/games') && request.method() === 'POST') posted += 1;
+    });
     await page.getByTestId('play-starter-collect_exit').click();
+    const sentence = page.getByTestId('play-sentence');
+    await expect(sentence).toHaveValue('Grab five glowing mushrooms');
+    await expect(sentence).toBeFocused();
+    await page.waitForTimeout(300);
+    expect(posted).toBe(0);
+    await expect(page).toHaveURL(/\/play$/);
+
+    // Shift+Enter je nový řádek, Enter odešle.
+    await sentence.press('Shift+Enter');
+    await expect(sentence).toHaveValue('Grab five glowing mushrooms\n');
+    await sentence.press('Enter');
     await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
+  });
+
+  // P34 T3: „Make it!“ nad prázdným polem nic neposílá a řekne větou kitu, co napsat.
+  test('Make it! on an empty prompt asks for who and what, and sends nothing', async ({ page }) => {
+    await page.goto('/play');
+    let posted = 0;
+    page.on('request', (request) => {
+      if (request.url().endsWith('/api/play/games') && request.method() === 'POST') posted += 1;
+    });
+    await page.getByTestId('play-create').click();
+    await expect(page.getByTestId('play-vague')).toHaveText('Add who you are and what you\'re doing, like "a cat stealing fish".');
+    await expect(page.locator('.sp-prompt')).toHaveClass(/is-error/);
+    await expect(page.getByTestId('play-sentence')).toBeFocused();
+    expect(posted).toBe(0);
+    await page.getByTestId('play-sentence').fill('A cat stealing fish');
+    await expect(page.getByTestId('play-vague')).toHaveCount(0);
+  });
+
+  test('Surprise me fills a sentence and does not start the game', async ({ page }) => {
+    await page.goto('/play');
+    await page.getByTestId('play-surprise').click();
+    await expect(page.getByTestId('play-sentence')).not.toHaveValue('');
+    await expect(page).toHaveURL(/\/play$/);
   });
 
   test('a refused sentence shows the door message and stays on /play', async ({ page }) => {
@@ -79,37 +122,44 @@ test.describe('/play – create', () => {
     await expect(page.locator('p.play-alert')).toContainText('busy');
   });
 
-  test('the sentence counter refuses more than 500 characters', async ({ page }) => {
+  // P34 T3: strop je 140 znaků z kitu (dřív 500), počítadlo je vidět vždy a od 130 je rajčatové.
+  test('the sentence counter shows 0/140, warns from 130 and refuses more than 140', async ({ page }) => {
     await page.goto('/play');
-    // P33 T9: počítadlo se ukáže až od 400 znaků.
-    await page.getByTestId('play-sentence').fill('a'.repeat(399));
-    await expect(page.locator('.play-counter')).toHaveCount(0);
-    await page.getByTestId('play-sentence').fill('a'.repeat(600));
-    await expect(page.getByTestId('play-sentence')).toHaveValue('a'.repeat(500));
-    await expect(page.getByText('500 / 500')).toBeVisible();
+    const counter = page.getByTestId('play-counter');
+    await expect(counter).toHaveText('0/140');
+    await page.getByTestId('play-sentence').fill('a'.repeat(129));
+    await expect(counter).toHaveAttribute('data-warn', 'false');
+    await page.getByTestId('play-sentence').fill('a'.repeat(200));
+    await expect(page.getByTestId('play-sentence')).toHaveValue('a'.repeat(140));
+    await expect(counter).toHaveText('140/140');
+    await expect(counter).toHaveAttribute('data-warn', 'true');
   });
 
-  // P33 T13: `/play` otevře na jediné h1 a poli (i telefon), feed je pod nimi; z feedu vede
-  // k poli plovoucí `+ New game`. Favicon je SVG v barvách produktu (audit: dřív 404).
-  test('phone: opens on the sentence field, + New game brings it back from the feed', async ({ page }) => {
+  // P33 T13: `/play` otevře na jediné h1 a poli (i telefon), feed je pod nimi. P34 T3: plovoucí
+  // `+ New game` nahradila lišta kitu – Make vede k poli, Play k feedu (`play-new-game` nese Make).
+  // Favicon je SVG v barvách produktu (audit: dřív 404).
+  test('phone: opens on the sentence field, the tab bar moves between Make and Play', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/play');
     const sentence = page.getByTestId('play-sentence');
+    const make = page.getByTestId('play-new-game');
     await expect(sentence).toBeInViewport();
     await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.getByTestId('play-new-game')).toBeHidden();
+    await expect(make).toBeVisible();
+    await expect(make).toHaveAttribute('aria-current', 'true');
     const icon = await page.locator('link[rel="icon"]').first().getAttribute('href');
     expect((await page.request.get(icon ?? '/missing-icon')).status()).toBe(200);
 
-    await page.locator('.play-pager').scrollIntoViewIfNeeded();
+    await page.getByTestId('play-tab-play').click();
     await expect(sentence).not.toBeInViewport();
-    await page.getByTestId('play-new-game').click();
+    await expect(page.getByTestId('play-tab-play')).toHaveAttribute('aria-current', 'true');
+    await make.click();
     await expect(sentence).toBeInViewport();
     await expect(sentence).toBeFocused();
-    await expect(page.getByTestId('play-new-game')).toBeHidden();
+    await expect(make).toHaveAttribute('aria-current', 'true');
   });
 
-  test('desktop: the sentence field sits above the feed', async ({ page }) => {
+  test('desktop: the sentence field sits above the feed, no tab bar', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/play');
     await expect(page.getByTestId('play-sentence')).toBeInViewport();

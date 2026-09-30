@@ -8,7 +8,7 @@ import { ARCHETYPES } from '@/play/registry';
 import { REMIX_CHIP_LABELS as CHIP_LABELS, REMIX_CHIPS as CHIPS } from '@/play/director/remix';
 import { draftGameSpec } from '@/play/draft';
 
-import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, PLACEHOLDER, POST_RUN_CHIPS, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
+import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, IDEA_LIMIT, IDEAS, PLACEHOLDER, POST_RUN_CHIPS, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
 
 /**
  * Stránka `/play` vypadá hotově i s kartou, která pošle větu na cizí archetyp,
@@ -44,16 +44,33 @@ describe('startovní karty', () => {
     }
   });
 
-  it('žádná věta nepřesáhne strop dveří a strop je týž jako na serveru', () => {
-    expect(SENTENCE_LIMIT).toBe(MAX_SENTENCE_CHARS);
+  // P34: strop pole je 140 z kitu; dveře serveru (veřejné API mimo P34) snesou víc, nikdy míň.
+  it('žádná věta nepřesáhne strop pole 140 znaků a dveře serveru snesou celé pole', () => {
+    expect(SENTENCE_LIMIT).toBe(140);
+    expect(SENTENCE_LIMIT).toBeLessThanOrEqual(MAX_SENTENCE_CHARS);
     for (const starter of STARTERS) expect(starter.sentence.length).toBeLessThanOrEqual(SENTENCE_LIMIT);
   });
 });
 
+describe('karty nápadů (P34 T3)', () => {
+  it('jsou čtyři, každá nejvýš 45 znaků a doslova z balíčku', () => {
+    expect(IDEAS).toHaveLength(4);
+    for (const idea of IDEAS) expect(idea.sentence.length, idea.sentence).toBeLessThanOrEqual(IDEA_LIMIT);
+    expect(IDEA_LIMIT).toBe(45);
+    expect(IDEAS.map((idea) => idea.sentence)).toEqual(copyLine('Ideas').replace(/\.$/, '').split(' / '));
+  });
+
+  it('věta karty přistane v návrhu ze slov na archetypu, který karta slibuje', () => {
+    expect(new Set(IDEAS.map((idea) => idea.archetype)).size).toBe(IDEAS.length);
+    for (const idea of IDEAS) expect(draftGameSpec(idea.sentence).archetype, idea.sentence).toBe(idea.archetype);
+  });
+});
+
 describe('měď z PRODUCT_COPY.md', () => {
-  it('hero, subhead a placeholder jsou doslova z balíčku', () => {
+  it('hero, subhead, popisek a placeholder jsou doslova z balíčku', () => {
     expect(HERO).toBe(copyLine('Hero'));
     expect(SUBHEAD).toBe(copyLine('Subhead'));
+    expect(PROMPT_LABEL).toBe(copyLine('Label'));
     expect(PLACEHOLDER).toBe(copyLine('Placeholder'));
   });
 

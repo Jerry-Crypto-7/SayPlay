@@ -349,10 +349,9 @@
   .sp-root *, .sp-root *::before, .sp-root *::after { animation-duration: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0ms !important; }
 }
 
-/* Nadpisy, které mají křičet: úvod, výzva na startu, výsledek hry, titulek
- * listu – Roboto Black s těsným prokladem, ve větném tvaru. Dvě třídy, ať je
- * nepřebije `font-weight` ze starších pravidel níž. */
-.play-root .play-hero,
+/* Nadpisy, které mají křičet: výzva na startu, výsledek hry, titulek listu –
+ * Roboto Black s těsným prokladem, ve větném tvaru (nadpis domova nese
+ * `.sp-display-l`). Dvě třídy, ať je nepřebije `font-weight` ze starších pravidel níž. */
 .play-root .play-first-prompt-start,
 .play-root .play-outcome-title,
 .play-root .play-sheet-title {
@@ -876,45 +875,40 @@
   gap: var(--sp-space-3);
 }
 
-/* Telefon: pole leží pod feedem, `+ New game` k němu posune, dokud není vidět. */
-.play-button.play-new-game {
-  display: none;
+/* Domov podle kitu (P34 T3, `05-layout.md` „Mobile home“): app bar 62, pod ním
+ * nadpis (26), bublina (24), „Make it!“ (18), nápady 2×2 (26, mezera 12).
+ * Okraj 20 px na telefonu, 32 na tabletu, 48 na desktopu. */
+.play-appbar {
+  padding: var(--sp-space-2) var(--_side) 0;
 }
 
-@media (max-width: 700px) {
-  .play-button.play-new-game {
-    position: fixed;
-    right: var(--sp-space-2);
-    bottom: calc(96px + env(safe-area-inset-bottom));
-    z-index: 5;
-    display: inline-flex;
-    padding-inline: var(--sp-space-4);
-    box-shadow: var(--sp-shadow-md);
-  }
+.play-root {
+  --_side: var(--sp-space-5);
+}
 
-  .play-button.play-new-game[data-hidden='true'] {
-    display: none;
-  }
+.play-home {
+  padding: 26px var(--_side) var(--sp-space-8);
 }
 
 .play-create {
-  max-width: 760px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 48px var(--sp-space-5) 64px;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-space-5);
 }
 
 .play-hero {
-  font-size: clamp(var(--sp-text-title-m-size), 6vw, var(--sp-text-display-m-size));
-  line-height: 1.1;
   margin: 0;
-  letter-spacing: -0.02em;
 }
 
+.play-hero .sp-highlight {
+  margin-left: 2px;
+}
+
+/* Telefon podle reference nadpis nepodepisuje; pod ním rovnou bublina. */
 .play-subhead {
-  margin: 0;
+  display: none;
+  margin: var(--sp-space-3) 0 0;
   color: var(--sp-text-secondary);
   font-size: var(--sp-text-body-l-size);
   line-height: 1.5;
@@ -923,50 +917,128 @@
 .play-form {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-space-3);
+  gap: 18px;
+  margin-top: var(--sp-space-6);
 }
 
-/* Pole je první, co oko najde (P33 T9): velké písmo, silnější okraj. */
-.play-sentence {
-  width: 100%;
-  min-height: 112px;
-  resize: vertical;
-  box-sizing: border-box;
-  padding: var(--sp-space-4) var(--sp-space-4);
-  border-radius: var(--sp-radius-md);
-  border: var(--sp-border-base) solid var(--sp-outline);
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  font: inherit;
-  font-size: var(--sp-text-title-m-size);
-  line-height: 1.35;
+.play-prompt .sp-prompt__field {
+  max-height: 160px;
 }
 
-.play-sentence::placeholder {
-  color: var(--sp-text-secondary);
-}
-
-.play-sentence:focus {
-  outline: 2px solid var(--sp-primary);
-  outline-offset: 1px;
-}
-
-.play-form-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--sp-space-3);
-}
-
-.play-counter {
-  margin-right: auto;
-  color: var(--sp-text-secondary);
-  font-size: var(--sp-text-body-s-size);
+/* Počítadlo je vidět vždy; od 130 znaků rajčatové (kit, Prompt). */
+.sp-prompt__count {
+  margin-left: auto;
   font-variant-numeric: tabular-nums;
 }
 
-.play-counter[data-over='true'] {
+.sp-prompt__count[data-warn='true'] {
   color: var(--sp-danger);
+}
+
+.play-ideas {
+  margin-top: 26px;
+}
+
+.play-idea-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-space-3);
+  margin: var(--sp-space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sp-idea {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sp-idea:disabled {
+  cursor: default;
+}
+
+/* Lišta je jen na telefonu a tabletu; během hry ve feedu (`data-playing`, první
+ * tah proběhl) ustoupí HUD. Obsah pod ní má rezervu výšky lišty. */
+.play-tabbar .sp-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.play-tabbar .sp-tabbar__item {
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.play-tabbar .sp-tabbar__item.is-active {
+  background: var(--sp-color-ink);
+}
+
+.play-root:has(.play-pager .play-shell[data-playing='true']) .play-tabbar[data-on='play'] {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .play-root:has(.play-tabbar) {
+    padding-bottom: calc(var(--sp-size-tabbar) + var(--sp-space-8) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+@media (min-width: 600px) {
+  .play-root {
+    --_side: var(--sp-space-8);
+  }
+}
+
+/* Desktop: vlevo nadpis a pole (nejvýš 640), vpravo doporučená hra 16:9, feed pod tím. */
+@media (min-width: 1024px) {
+  .play-root {
+    --_side: var(--sp-space-12);
+  }
+
+  .play-tabbar {
+    display: none;
+  }
+
+  .play-home {
+    display: grid;
+    grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+    gap: var(--sp-space-12);
+    align-items: start;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  .play-create {
+    margin: 0;
+  }
+
+  .play-subhead {
+    display: block;
+  }
+
+  .play-idea-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.play-poster.play-featured {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  margin-top: var(--sp-space-2);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-xl);
+  box-shadow: var(--sp-shadow-md);
+  text-decoration: none;
+}
+
+/* Rajčatová akce je na obrazovce jedna („Make it!“); plakát vedle zve papírovým tlačítkem. */
+.play-featured .play-poster-cta {
+  background: var(--sp-surface);
+  color: var(--sp-text);
 }
 
 .play-status {
@@ -989,51 +1061,6 @@
   color: var(--sp-text-secondary);
   font-size: var(--sp-text-body-s-size);
   font-weight: 600;
-}
-
-.play-starters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: var(--sp-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.play-starter {
-  width: 100%;
-  min-height: var(--sp-size-touch-min);
-  text-align: left;
-  border: var(--sp-border-base) solid var(--sp-outline);
-  border-radius: var(--sp-radius-sm);
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  padding: var(--sp-space-3) var(--sp-space-4);
-  font: inherit;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-space-2);
-}
-
-.play-starter:hover:not(:disabled) {
-  border-color: var(--sp-primary);
-}
-
-.play-starter:disabled {
-  opacity: 0.6;
-  cursor: default;
-}
-
-/* Karta vzoru (P33 T9): ikona druhu hry a jedna věta, žádný štítek verzálkami. */
-.play-starter .play-icon {
-  color: var(--sp-text);
-}
-
-.play-starter-sentence {
-  color: var(--sp-text);
-  font-size: var(--sp-text-body-s-size);
-  line-height: 1.35;
 }
 
 .play-feed-grid {
@@ -1086,15 +1113,6 @@
   color: var(--sp-text-secondary);
 }
 
-@media (max-width: 480px) {
-  .play-create {
-    padding: calc(var(--sp-space-6) + var(--sp-space-1)) var(--sp-space-4) 40px;
-  }
-
-  .play-starters {
-    grid-template-columns: 1fr 1fr;
-  }
-}
 
 /* ---------------------------------------------------------------- *
  * PLAY shell (`/play/[id]`): plátno přes celou výšku, HUD nahoře,

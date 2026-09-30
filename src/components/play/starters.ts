@@ -10,14 +10,33 @@
 
 import type { ArchetypeId } from '@/play/registry';
 
-export const HERO = 'Imagine a game. Play it.';
-export const SUBHEAD = 'Describe anything. WORLDSTREAM turns it into a short playable 3D game — then change the rules with a sentence.';
-export const PLACEHOLDER = 'A hamster escaping a supermarket while a giant Roomba hunts me…';
+/** Nadpis domova; poslední slovo nese zvýraznění kitu (`.sp-highlight`). */
+export const HERO = 'What do you want to play?';
+export const SUBHEAD = 'Say one sentence and play it in seconds. Then change one thing.';
+export const PROMPT_LABEL = 'Say it in one sentence';
+export const PLACEHOLDER = "A fox steals eggs while the farmer's dog chases it…";
 
 /** Stavový řádek při stavbě; první dva patří `/play`, druhé dva `/play/[id]`. */
 export const BUILD_STEPS = ['Designing the challenge', 'Building a playable version', 'Checking the rules', 'Adding the look'] as const;
 
-export const SENTENCE_LIMIT = 500;
+/** Strop věty z kitu (`07-components.md`, Prompt); dveře serveru snesou víc. */
+export const SENTENCE_LIMIT = 140;
+/** Od kolika znaků je počítadlo rajčatové. */
+export const COUNTER_WARN = 130;
+/** „Make it!“ s prázdným polem (kit `11-voice-copy.md`, Errors: Too vague). */
+export const TOO_VAGUE = 'Add who you are and what you\'re doing, like "a cat stealing fish".';
+
+/**
+ * Karty nápadů na domově (kit `.sp-idea`): krátká věta, klepnutí ji vloží do
+ * pole. Archetyp je ten, na který věta přistane v návrhu ze slov – slib karty.
+ */
+export const IDEA_LIMIT = 45;
+export const IDEAS: readonly { readonly archetype: ArchetypeId; readonly sentence: string }[] = [
+  { archetype: 'chase_escape', sentence: 'Hamster escapes a supermarket Roomba' },
+  { archetype: 'collect_exit', sentence: 'Grab five glowing mushrooms' },
+  { archetype: 'delivery', sentence: 'Carry a wobbly cake to the party' },
+  { archetype: 'survival_timer', sentence: 'The floor is lava, for 60 seconds' },
+];
 
 export interface Starter {
   readonly archetype: ArchetypeId;
