@@ -19,8 +19,8 @@ import type { ArcadeSession } from '../session';
 /**
  * `pickup` = sebraná věc zmizela, `death` = jiné tělo zmizelo, `hit` = zásah těla
  * (u hráče i ubraný život), `stateChange` = cíl přešel do jiného stavu, `spawn` =
- * nové tělo z efektu `spawn`, `win` / `lose` = konec běhu. `land` (dopad) jádro
- * jako efekt nehlásí – sběrnice ho zatím nevydá.
+ * nové tělo z efektu `spawn`, `win` / `lose` = konec běhu. `land` (dopad hráče)
+ * jádro jako efekt nehlásí – sběrnice ho pozná ze stavu (P32A T4).
  */
 export type VisualEventKind = 'pickup' | 'hit' | 'death' | 'win' | 'lose' | 'stateChange' | 'land' | 'spawn';
 
@@ -45,11 +45,11 @@ export const visualKey = (event: Pick<VisualEvent, 'tick' | 'body' | 'kind'>): s
 
 /** Jak dlouho žije částice události: 30 tiků = 0,5 s. */
 export const LIVE_TICKS = 30;
-/** Jak dlouho doznívá otřes po zásahu hráče: 9 tiků = 150 ms, jako třída `play-stage-shake`. */
+/** Jak dlouho doznívá otřes kamery po zásahu hráče: 9 tiků = 150 ms. */
 export const SHAKE_TICKS = 9;
 
 /** Co sběrnice z relace smí: číst stav a poslouchat. Stisknout, pozastavit ani restartovat nemůže. */
-export type EffectsSource = Pick<ArcadeSession, 'onEvents' | 'subscribe' | 'state' | 'prev'>;
+export type EffectsSource = Pick<ArcadeSession, 'onEvents' | 'subscribe' | 'state' | 'prev' | 'humanRun'>;
 
 export interface EffectsBus {
   /** Nové události jednoho tiku, v pořadí efektů. */
@@ -65,6 +65,13 @@ export interface EffectsBus {
 }
 
 const aliveIn = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) !== 0;
+const groundedIn = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.grounded) !== 0;
+
+/** Událost těla `body` ze stavu po tiku `tick`. */
+function eventAt(kind: VisualEventKind, body: number, tick: number, state: Int32Array): VisualEvent {
+  const base = bodyBase(body);
+  return { kind, body, role: state[base + BODY.role] as number, x: (state[base + BODY.x] as number) / UNIT, y: (state[base + BODY.y] as number) / UNIT, z: (state[base + BODY.z] as number) / UNIT, tick };
+}
 
 /** Efekty jednoho tiku → vizuální události; `state` = stav po tiku, `prev` = před ním. */
 function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: Int32Array, prev: Int32Array): VisualEvent[] {
@@ -75,8 +82,7 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
     const key = visualKey({ tick, body, kind });
     if (seen.has(key)) return;
     seen.add(key);
-    const base = bodyBase(body);
-    const at = { kind, body, role: state[base + BODY.role] as number, x: (state[base + BODY.x] as number) / UNIT, y: (state[base + BODY.y] as number) / UNIT, z: (state[base + BODY.z] as number) / UNIT, tick };
+    const at = eventAt(kind, body, tick, state);
     events.push(targetState === undefined ? at : { ...at, state: targetState });
   };
   // Tělo mimo svět jádro zahodí (`apply` v `kernel.ts`), sběrnice taky.
@@ -113,11 +119,21 @@ export function createEffectsBus(session: EffectsSource): EffectsBus {
   let shakeFrom = -1;
   /** Tik, na kterém relace naposled stála – když ho restart vrátí zpět, patří všechno starému běhu. */
   let seenTick = session.state()[HEADER.tick] as number;
+  /**
+   * Hráč byl při posledním oznámení relace ve vzduchu. Dopad se pozná z příznaku
+   * `grounded` mezi oznámeními, ne mezi dvěma tiky: telefon za snímek odtiká i dva.
+   */
+  let airborne = false;
   const listeners = new Set<(events: readonly VisualEvent[]) => void>();
   const now = (): number => session.state()[HEADER.tick] as number;
   const reset = (): void => {
     live = [];
     shakeFrom = -1;
+    airborne = false;
+  };
+  const publish = (events: readonly VisualEvent[], tick: number): void => {
+    live = live.filter((event) => tick - event.tick < LIVE_TICKS).concat(events);
+    for (const listener of listeners) listener(events);
   };
 
   const offEvents = session.onEvents((effects, tick) => {
@@ -125,15 +141,20 @@ export function createEffectsBus(session: EffectsSource): EffectsBus {
     seenTick = tick + 1;
     const events = visualEventsOf(effects, tick, state, session.prev());
     if (events.length === 0) return;
-    live = live.filter((event) => tick - event.tick < LIVE_TICKS).concat(events);
     // Stav už je po tiku zásahu (`tick + 1`): odtud otřes doznívá.
     if (events.some((event) => event.kind === 'hit' && event.body === state[HEADER.player])) shakeFrom = tick + 1;
-    for (const listener of listeners) listener(events);
+    publish(events, tick);
   });
   const offState = session.subscribe(() => {
     const tick = now();
     if (tick < seenTick) reset();
     seenTick = tick;
+    const state = session.state();
+    const player = state[HEADER.player] as number;
+    const grounded = groundedIn(state, player);
+    // Jako ostatní události jen za člověka: ukázka ani přehrání záznamu nic nevydají.
+    if (airborne && grounded && session.humanRun()) publish([eventAt('land', player, tick - 1, state)], tick - 1);
+    airborne = !grounded && aliveIn(state, player);
   });
 
   return {

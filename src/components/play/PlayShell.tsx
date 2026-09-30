@@ -24,6 +24,7 @@ import { ArcadePlay } from './arcade/ArcadePlay';
 import { WithPlayEnv } from './arcade/look/play-env';
 import { HonestyStrip } from './HonestyStrip';
 import type { LabFacts, ReadFacts } from './lab';
+import { InfoSheetProvider } from './ui/InfoContext';
 
 const GridShell = dynamic(() => import('./GridShell'));
 
@@ -54,9 +55,10 @@ export function PlayShell({
 }: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly honesty?: Honesty | null }) {
   if (blueprint === null && arcade === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
   const game = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+  // Info o hře je jeden list (P33 T7): shell dá sourozencům `SentenceRead`, `HowItWorks` a `Lineage` společný kontext.
   const shell = (
     <WithPlayEnv theme={rest.spec.theme} versionId={rest.versionId}>
-      {game}
+      <InfoSheetProvider>{game}</InfoSheetProvider>
     </WithPlayEnv>
   );
   if (honesty === null) return shell;

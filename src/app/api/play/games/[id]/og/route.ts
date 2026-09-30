@@ -2,12 +2,13 @@
  * `GET /api/play/games/:id/og` – náhled hry pro sdílený odkaz (PNG 1200×630).
  *
  * Tytéž brány jako čtení hry (páka `snapshots`, strop frekvence na dveřích
- * `play`) a tatáž 404 pro neznámé i tvarově špatné id. Obraz kreslí titul,
- * hrdinu, prostředí a ovládání neměnné verze (P27B T6), proto smí být
- * `immutable`. Když render selže, přijde paletový PNG podle nálady s
- * `x-og-fallback: 1` a jen hodinovou cache – ať se opravený render dostane ven.
- * Náhled bez obrázku hrdiny (ač ho katalog má) nebo s textem mimo písmo Geist
- * má tutéž hodinovou cache a `x-og-partial: 1`.
+ * `play`) a tatáž 404 pro neznámé i tvarově špatné id. Obraz je karta výzvy
+ * kitu Sayplay (P34 T7, dřív titulní obrázek P27B T6) z neměnné verze: název,
+ * hrdina na barvě scény, odznak s časem a logo – proto smí být `immutable`.
+ * Když render selže, přijde paletový PNG podle nálady s `x-og-fallback: 1`
+ * a jen hodinovou cache – ať se opravený render dostane ven. Náhled bez
+ * obrázku hrdiny (ač ho katalog má), bez písma Roboto nebo loga, nebo
+ * s názvem mimo písmo má tutéž hodinovou cache a `x-og-partial: 1`.
  */
 
 import { notFound, VERSION_ID_PATTERN } from '../../../_errors';

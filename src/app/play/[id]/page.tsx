@@ -5,8 +5,10 @@ import { cache } from 'react';
 
 import { VERSION_ID_PATTERN } from '@/app/api/play/_errors';
 import { admit } from '@/app/api/play/_publish';
+import { PrefetchPhysics } from '@/components/play/arcade/ArcadePlay';
 import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
+import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
 import { type Honesty, sentenceOf, unsupportedGame } from '@/play/draft/unsupported';
 import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
@@ -55,12 +57,12 @@ const load = cache(async (id: string): Promise<Loaded> => {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const loaded = await load(id);
-  if (loaded.kind !== 'game') return { title: 'WORLDSTREAM PLAY' };
+  if (loaded.kind !== 'game') return { title: 'sayplay' };
   const { game } = loaded;
   const incoming = await headers();
   const host = incoming.get('x-forwarded-host') ?? incoming.get('host') ?? 'localhost';
   const proto = incoming.get('x-forwarded-proto') ?? (host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https');
-  const title = `${game.spec.title} – WORLDSTREAM PLAY`;
+  const title = `${game.spec.title} – sayplay`;
   const description = game.spec.tutorial.goalLine;
   const image = `${proto}://${host}/api/play/games/${id}/og`;
   return {
@@ -87,20 +89,24 @@ export default async function PlayGamePage({ params }: Params) {
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
+  // Rapier (P32D T4) se začne stahovat v renderu stránky, souběžně se scénou – hra bez těles ho nestáhne.
   return (
-    <PlayShell
-      key={game.version.versionId}
-      versionId={game.version.versionId}
-      spec={game.spec}
-      blueprint={game.blueprint}
-      {...(game.arcade === undefined ? {} : { arcade: game.arcade })}
-      lineage={lineage.length > 0 ? lineage : [game.version]}
-      remixes={children.length}
-      aiVersion={game.relation === 'upgrade'}
-      lab={labFacts(game.spec, game.report)}
-      read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
-      honesty={honesty}
-      upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
-    />
+    <>
+      <PrefetchPhysics needed={game.arcade !== undefined && worldHasPhysics(game.arcade)} />
+      <PlayShell
+        key={game.version.versionId}
+        versionId={game.version.versionId}
+        spec={game.spec}
+        blueprint={game.blueprint}
+        {...(game.arcade === undefined ? {} : { arcade: game.arcade })}
+        lineage={lineage.length > 0 ? lineage : [game.version]}
+        remixes={children.length}
+        aiVersion={game.relation === 'upgrade'}
+        lab={labFacts(game.spec, game.report)}
+        read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
+        honesty={honesty}
+        upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
+      />
+    </>
   );
 }

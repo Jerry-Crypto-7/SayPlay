@@ -22,8 +22,11 @@ GET /api/play/games?recent=N[&cursor=C]
 ## Response
 
 ```json
-{ "games": [{ "versionId", "title", "archetype", "createdAt", "parentId", "remixes" }], "next": "…" | null }
+{ "games": [{ "versionId", "title", "archetype", "createdAt", "parentId", "remixes", "goal", "mood" }], "next": "…" | null }
 ```
+
+- `goal` is the spec's `tutorial.goalLine` and `mood` its `theme.mood`, written into the list row
+  at publish so a card shows them without fetching the game. Rows written before that carry `null`.
 
 - Newest first; in every block of eight at most three games of one archetype (`diversify`). Once no
   other archetype is left to mix in, the remaining games follow newest first without that rule –

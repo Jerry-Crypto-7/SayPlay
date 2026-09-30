@@ -34,8 +34,25 @@ export function enterOpensLiveBox(world: ArcadeWorld): boolean {
 
 type Status = { readonly kind: 'live' | 'remix' | 'refused' | 'unknown'; readonly message: string };
 
-export function LiveBox({ session, spec, remix, enterOpens }: { readonly session: ArcadeSession; readonly spec: GameSpecV1; readonly remix: RemixJob; readonly enterOpens: boolean }) {
-  const [open, setOpen] = useState(false);
+/**
+ * Tlačítko „Change“ je od P33 T12 kolo v bočním sloupci hry (`ArcadePlay`),
+ * proto je otevření řízené zvenku; tady zůstává pole a stav poslední změny.
+ */
+export function LiveBox({
+  session,
+  spec,
+  remix,
+  enterOpens,
+  open,
+  setOpen,
+}: {
+  readonly session: ArcadeSession;
+  readonly spec: GameSpecV1;
+  readonly remix: RemixJob;
+  readonly enterOpens: boolean;
+  readonly open: boolean;
+  readonly setOpen: (open: boolean) => void;
+}) {
   const [text, setText] = useState('');
   const [status, setStatus] = useState<Status | null>(null);
   const input = useRef<HTMLInputElement | null>(null);
@@ -49,7 +66,7 @@ export function LiveBox({ session, spec, remix, enterOpens }: { readonly session
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [enterOpens, open]);
+  }, [enterOpens, open, setOpen]);
 
   useEffect(() => {
     if (open) input.current?.focus();
@@ -76,16 +93,12 @@ export function LiveBox({ session, spec, remix, enterOpens }: { readonly session
   }
 
   if (!open) {
+    if (status === null) return null;
     return (
       <div className="play-live">
-        <button type="button" className="play-button play-live-open" data-testid="live-open" onClick={() => setOpen(true)}>
-          Change
-        </button>
-        {status !== null && (
-          <p className="play-live-status" data-testid="live-status" data-kind={status.kind} role="status">
-            {status.message}
-          </p>
-        )}
+        <p className="play-live-status" data-testid="live-status" data-kind={status.kind} role="status">
+          {status.message}
+        </p>
       </div>
     );
   }

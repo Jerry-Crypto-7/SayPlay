@@ -34,7 +34,7 @@ import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 import { type BodyView, bodiesOf, bodiesStale } from './bodies';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadModel } from './look/load';
+import { loadBodyModel } from './look/load';
 import { Scenery } from './look/Scenery';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -96,12 +96,14 @@ function modelIdOf(view: BodyView, cast: Cast): string {
 /**
  * Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose; postava výškou těla (`fitScale`).
  * `fill` kvádr vyplní v každé ose zvlášť – díl věže, kterému jádro mění šířku (P30B T4).
+ * Model je slitý do jedné sítě (`loadBodyModel`) a jeho matice jsou zmrazené: hýbe se
+ * jen skupina těla a póza nad ním, přepočet vnitřku modelu každý snímek by byl zbytečný.
  */
 export function FittedModel({ id, w, h, d, fallback, character = false, fill = false }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string; readonly character?: boolean; readonly fill?: boolean }) {
   const [model, setModel] = useState<Object3D | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
-    void loadModel(id).then((loaded) => {
+    void loadBodyModel(id).then((loaded) => {
       if (live) setModel(loaded);
     });
     return () => {
@@ -119,6 +121,10 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
     copy.scale.copy(scale);
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale.x, -box.min.y * scale.y, -center.z * scale.z);
+    copy.traverse((node) => {
+      node.updateMatrix();
+      node.matrixAutoUpdate = false;
+    });
     return copy;
   }, [model, w, h, d, character, fill]);
   if (fitted !== null) return <primitive object={fitted} />;
@@ -263,6 +269,8 @@ export interface WorldProps {
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly scene: Look;
   readonly enabled: boolean;
+  /** Podklad místo výchozího (`Backdrop`): údolí běžce kreslí `RunnerWorld` (P32A T3). */
+  readonly backdrop?: React.ReactNode;
 }
 
 const PICKUP_MS = 200;
@@ -279,7 +287,7 @@ function applyPose(group: Group, pose: Pose): void {
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
-export function World({ session, control, cast, surface, scene, enabled }: WorldProps) {
+export function World({ session, control, cast, surface, scene, enabled, backdrop }: WorldProps) {
   // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -330,7 +338,8 @@ export function World({ session, control, cast, surface, scene, enabled }: World
       const z = lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT;
       // Tělo za koncem mlhy (`FarAtFog`) by kamera stejně ořízla; skryté vypadne i z přepočtu
       // matic, který jinak prochází celou trať každý snímek (P28E-R1). Kamera je ze snímku předtím.
-      const inRange = Math.abs(z - camera.position.z) <= camera.far + FAR_MARGIN_M;
+      // Hráč nikdy: po restartu stojí kamera ještě u cíle, a skrytý hrdina by se už nepohnul (P32A T8-R1).
+      const inRange = view.role === ROLE.player || Math.abs(z - camera.position.z) <= camera.far + FAR_MARGIN_M;
       group.visible = inRange && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
       group.matrixWorldAutoUpdate = inRange;
       if (!inRange) continue;
@@ -395,11 +404,12 @@ export function World({ session, control, cast, surface, scene, enabled }: World
 
   return (
     <>
-      {control === 'steer' ? (
-        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
-      ) : (
-        <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
-      )}
+      {backdrop ??
+        (control === 'steer' ? (
+          <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
+        ) : (
+          <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
+        ))}
       {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} />}
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} />}
       {views.map((view) =>
