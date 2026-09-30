@@ -81,6 +81,11 @@ describe('classifyGenre', () => {
     expect(top('Two knights duel in a castle').why).toMatch(/duel/);
   });
 
+  // P32B T5b: karta nápadu „The floor is lava“ je hra na přežití, ne běžec přes lávu (narážka `lava`).
+  it('reads "the floor is lava" as a survival escape', () => {
+    expect(top('The floor is lava, for 60 seconds', GENRE_MODULES)).toMatchObject({ genre: 'arena', mode: 'escape' });
+  });
+
   it('never throws on the draft corpora and never lands a new game on a legacy control', () => {
     const sentences = [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text), '', '   '];
     for (const sentence of sentences) {

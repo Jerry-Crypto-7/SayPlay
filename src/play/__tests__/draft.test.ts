@@ -193,6 +193,7 @@ describe('lexicon', () => {
     ['a runner game', null],
     ['A gold mine where I hire dwarves', null],
     ['tap to grow a garden that makes money while im away', null],
+    ['The floor is lava, for 60 seconds', null],
   ])('reads the player of %j as %j', (sentence, player) => {
     expect(readRoles(sentence).player).toBe(player);
   });

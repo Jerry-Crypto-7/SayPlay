@@ -125,7 +125,7 @@ const NAMES: readonly (readonly [Pair, RegExp])[] = [
   [RACE, /\bkarts?\b|\bdrift(?:s|ing)?\b|\bmotorbikes?\b|\bbikes?\b|\bcars?\b|\bboats?\b|\bplanes?\b|\bspaceships?\b|\bsubmarines?\b|\btractors?\b|\bflapp?y\b|\bstunts?\b|\bramps?\b/],
   [FIGHT, /\bswords?\b|\bninjas?\b|\bgladiators?\b|\bsamurai\b|\btower defen[cs]e\b/],
   [COLLECT, /\bsnake game\b|\bslither\b|\b[a-z]+[ .]io\b|\bagar\b|\bpac-?man\b/],
-  [ESCAPE, /\bhorror\b|\bscary\b|\bcreepy\b|\bfive nights\b|\bfreddy'?s?\b|\bhide and seek\b|\bstealth\b|\bsneak(?:s|ing|y)?\b/],
+  [ESCAPE, /\bhorror\b|\bscary\b|\bcreepy\b|\bfive nights\b|\bfreddy'?s?\b|\bhide and seek\b|\bstealth\b|\bsneak(?:s|ing|y)?\b|\bfloor is lava\b/],
   [SPATIAL, /\bshooter\b|\bgolf\b|\bbowling\b|\bbilliards\b|\barchery\b|\bbasketball\b|\bsoccer\b|\bfootball\b|\btennis\b|\bslingshot\b|\bangry birds\b|\bcannon\b|\bguns?\b|\bkrunker\b|\bbeat saber\b|\bpiano tiles\b|\bthe beat\b/],
   [STATION, /\bmatch[ -]?3\b|\bcandy crush\b|\btetris\b|\bmahjong\b|\bjenga\b|\bsuika\b|\bpuzzle\b|\bidle\b|\bclicker\b|\btycoon\b|\bovercooked\b|\bfarm game\b|\bsalon\b|\bmakeover\b|\bfashion\b|\bclinic\b|\bmatching game\b|\bword game\b|\bfishing\b|\bfactory\b|\bempire\b/],
 ];

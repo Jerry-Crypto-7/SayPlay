@@ -322,6 +322,8 @@ const NOT_A_CHARACTER = new Set([
   'battle', 'fight', 'duel', 'race', 'course', 'parkour', 'lot', 'bit', 'kind', 'sort', 'type', 'endless', 'infinite', 'hard', 'easy',
   'simple', 'fun', 'cool', 'new', 'little', 'big', 'long', 'short', 'first', 'second', 'third', 'person', 'player',
   'away', 'here', 'there', 'not', 'so', 'very', 'bored', 'gonna', 'going',
+  // „The floor is lava“ – povrch, po kterém se hraje, ne hrdina.
+  'floor', 'ground',
 ]);
 
 /** Slova žánru, u kterých podmět končí. */
