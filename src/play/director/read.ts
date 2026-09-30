@@ -19,6 +19,7 @@ import { singular } from '../draft/lexicon';
 import type { GenreModules } from '../genre/classify';
 import { type GenreModule, type GenreSpec, withCounts } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
+import { RIDE_WORDS } from '../genre/runner';
 import { MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1 } from '../spec';
 
@@ -69,15 +70,16 @@ export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly
  * polí `null` → `readGenreSpec` (tvar a meze parametrů) → popisky rolí v jednotném čísle → modul žánru
  * (`compileGenreSpec`) → `readModelSpec`. Hru tak vždy skládá modul žánru, model píše jen výběr.
  * `modules` jsou pro testy (dvojníci); meze parametrů drží vždy skutečné moduly.
+ * `sentence` = věta hráče: u běžce z ní jde jízda (`ride`) stejně jako v rychlé verzi.
  */
-export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MODULES): GenreRead {
+export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MODULES, sentence?: string): GenreRead {
   if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
   const raw = answerSpec(body);
   const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
   const read = readGenreSpec(withoutNulls(raw));
   if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
-  const genre = singularRoles(read.value);
+  const genre = sentence === undefined ? singularRoles(read.value) : rideOfSentence(singularRoles(read.value), sentence);
   const game = compileGenreSpec(genre, modules);
   return game.ok ? { ok: true, spec: game.spec, genre } : game;
 }
@@ -94,6 +96,20 @@ function singularRoles(genre: GenreSpec): GenreSpec {
     ...(genre.collectible === undefined ? {} : { collectible: singular(genre.collectible) }),
     ...(genre.target === undefined ? {} : { target: { ...genre.target, label: singular(genre.target.label) } }),
   };
+}
+
+/**
+ * Jízda běžce podle věty, ne podle modelu: rychlá verze ji čte z věty
+ * (`RIDE_WORDS` v `runnerGenre.draftFill`), a AI verze téže věty tak nesmí
+ * lyžaře postavit na nohy ani běžce posadit na prkno. Věta vyhrává oběma směry.
+ */
+function rideOfSentence(genre: GenreSpec, sentence: string): GenreSpec {
+  if (genre.genre !== 'runner') return genre;
+  const { ride: _written, ...params } = genre.params ?? {};
+  const rides = RIDE_WORDS.test(sentence.toLowerCase());
+  const next = rides ? { ...params, ride: 1 } : params;
+  const { params: _params, ...rest } = genre;
+  return Object.keys(next).length === 0 ? rest : { ...rest, params: next };
 }
 
 /** Spec žánrové odpovědi: `{plan, spec}`, nebo holý spec z větve bez schématu. */

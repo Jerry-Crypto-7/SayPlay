@@ -17,7 +17,7 @@ import { fidelity } from '../director/critic';
 import { direct } from '../director/index';
 import { buildDirectorRequest } from '../director/prompt';
 import { readGenreAnswer } from '../director/read';
-import { draftGameSpecWithMeta } from '../draft';
+import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import { readRoles, singular, toolsOf } from '../draft/lexicon';
 import type { GenreSpec } from '../genre/contract';
 
@@ -181,5 +181,41 @@ describe('the AI version adds what the sentence says and the quick version misse
     expect(game.fallbackReason).toBeNull();
     expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog' }));
     expect(game.spec.objective.description).not.toBe(quick.spec.objective.description);
+  });
+});
+
+// Revize P32 (stopa A): AI verze lyžařky jela, jen když model sám napsal `ride: 1`.
+describe('the runner rides by the sentence, not by the model', () => {
+  const SKIS = 'A girl skis down the slope';
+  const RUNS = 'A boy runs through the city and avoids cars';
+
+  it('rides in the quick version of a riding sentence', () => {
+    expect(draftGameSpec(SKIS).theme.motion).toBe('ride');
+  });
+
+  it('rides in the AI version of a riding sentence the model wrote without ride', () => {
+    const quick = draftOf(SKIS).genre;
+    expect(quick.genre).toBe('runner');
+    const { params: _params, ...written } = quick;
+    const read = readGenreAnswer(answer(written as GenreSpec), undefined, SKIS);
+    if (!read.ok) throw new Error(read.detail);
+    expect(read.spec.theme.motion).toBe('ride');
+  });
+
+  it('hands the sentence to the read, so the directed game rides too', async () => {
+    const { params: _params, ...written } = draftOf(SKIS).genre;
+    const game = await directed(SKIS, written as GenreSpec);
+    expect(game.source).toBe('authored');
+    expect(game.spec.theme.motion).toBe('ride');
+  });
+
+  it('keeps a running sentence on foot even when the model wrote ride: 1', () => {
+    const quick = draftOf(RUNS).genre;
+    expect(quick.genre).toBe('runner');
+    expect(draftGameSpec(RUNS).theme).not.toHaveProperty('motion');
+    const read = readGenreAnswer(answer({ ...quick, params: { ...quick.params, ride: 1 } } as GenreSpec), undefined, RUNS);
+    if (!read.ok) throw new Error(read.detail);
+    expect(read.spec.theme).not.toHaveProperty('motion');
+    expect(read.genre.params ?? {}).not.toHaveProperty('ride');
   });
 });

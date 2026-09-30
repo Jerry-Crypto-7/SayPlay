@@ -24,8 +24,8 @@ import { POST as createGame } from '../games/route';
 const genre = vi.hoisted(() => ({ unplayable: null as unknown }));
 vi.mock('@/play/director/read', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/play/director/read')>();
-  const readGenreAnswer: typeof actual.readGenreAnswer = (body, modules) => {
-    const read = actual.readGenreAnswer(body, modules);
+  const readGenreAnswer: typeof actual.readGenreAnswer = (body, modules, sentence) => {
+    const read = actual.readGenreAnswer(body, modules, sentence);
     if (genre.unplayable === null || !read.ok) return read;
     const game = actual.readModelSpec(genre.unplayable);
     return game.ok ? { ...read, spec: game.spec } : game;
