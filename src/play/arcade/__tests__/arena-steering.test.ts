@@ -146,3 +146,69 @@ describe('chaser steering – walls and each other', () => {
     }
   });
 });
+
+describe('chaser steering – bounded acceleration and pursuit lead', () => {
+  it('a chaser changes speed by at most chaserAccel per tick and axis, so a turn takes time (bar a wall stopping one axis)', () => {
+    const speed = ESCAPE.chaserSpeed.max;
+    let steered = 0;
+    for (const seed of SEEDS.slice(0, 20)) {
+      const world = escapeWorld(seed, { chasers: 4, chaserSpeed: speed });
+      const program = loadProgram(world, ARCADE_LIBRARY);
+      const state = instantiate(world);
+      const previous = new Map<number, readonly [number, number]>();
+      for (let t = 0; t < 20 * ARCADE_HZ && state[HEADER.runState] === 0; t += 1) {
+        // Hráč mění směr každou čtvrtsekundu naopak – pronásledovatel musí otáčet.
+        const k = (Math.floor(t / 15) * 13) % 32;
+        step(state, { buttons: 0, axis: arenaAxis(DIRECTIONS[k]!.dx, DIRECTIONS[k]!.dz) }, program);
+        for (const i of chasersOf(state)) {
+          const v = [state[bodyBase(i) + BODY.vx] as number, state[bodyBase(i) + BODY.vz] as number] as const;
+          const was = previous.get(i);
+          previous.set(i, v);
+          if (was === undefined) continue;
+          // Strop rychlosti složku po zrychlení ještě zkrátí k nule – víc než o `chaserAccel` jen tak, na stropu.
+          const atCap = Math.hypot(v[0], v[1]) >= speed - 2;
+          for (const axis of [0, 1]) {
+            if (v[axis] === 0) continue;
+            const bounded = Math.abs(v[axis]! - was[axis]!) <= ESCAPE.chaserAccel || (atCap && Math.sign(v[axis]!) === Math.sign(was[axis]!) && Math.abs(v[axis]!) < Math.abs(was[axis]!));
+            expect(bounded, `seed ${seed} tick ${t} chaser ${i} axis ${axis}: ${was} → ${v}`).toBe(true);
+            if (v[axis] !== was[axis]) steered += 1;
+          }
+        }
+      }
+    }
+    expect(steered).toBeGreaterThan(1000);
+  });
+
+  /** Hráč běží plnou rychlostí po +x, bdělý pronásledovatel stojí 8 m za ním: o kolik směrů míří před hráče. */
+  function leadAfter(lead: number, ticks: number): number {
+    const chase = { speed: ESCAPE.chaserSpeed.default, lead };
+    const level: ArcadeLevel = {
+      bodies: [
+        { role: 'player', kind: 'player', x: -8000, y: 0, z: 0, w: ESCAPE.playerSize, h: ARENA.height, d: ESCAPE.playerSize, solid: false },
+        { role: 'chaser', kind: 'chaser', x: -8000, y: 0, z: -8000, w: ESCAPE.chaserSize, h: ESCAPE.chaserHeight, d: ESCAPE.chaserSize, solid: false, kinematic: true },
+      ],
+      length: 0,
+    };
+    const built = buildWorld(
+      { seed: 1, control: { id: 'move_free', params: { half: ARENA.half, size: ESCAPE.playerSize, chase } }, rules: [{ id: 'arena_eat', params: { effect: 'lose', grace: ESCAPE.graceTicks } }], bot: { id: 'arena_bot', params: { half: ARENA.half, chase } }, level },
+      ARCADE_LIBRARY,
+    );
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    const program = loadProgram(built.world, ARCADE_LIBRARY);
+    const state = instantiate(built.world);
+    const p = bodyBase(state[HEADER.player] as number);
+    state[p + BODY.vx] = ARENA.speed;
+    for (let t = 0; t < ticks; t += 1) step(state, { buttons: 0, axis: arenaAxis(1000, 0) }, program);
+    const c = bodyBase(1);
+    const bearing = Math.atan2((state[p + BODY.x] as number) - (state[c + BODY.x] as number), (state[p + BODY.z] as number) - (state[c + BODY.z] as number));
+    const heading = Math.atan2(state[c + BODY.vx] as number, state[c + BODY.vz] as number);
+    return ((heading - bearing) * 16) / Math.PI;
+  }
+
+  it('a chaser heads for where the running player will be, at least one direction ahead of where it is; without lead it does not', () => {
+    for (const ticks of [15, 30, 45]) {
+      expect(leadAfter(ESCAPE.lead, ticks), `lead after ${ticks} ticks`).toBeGreaterThanOrEqual(1);
+      expect(leadAfter(0, ticks), `no lead after ${ticks} ticks`).toBeLessThan(1);
+    }
+  });
+});
