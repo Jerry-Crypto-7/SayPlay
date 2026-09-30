@@ -267,11 +267,16 @@ const IRREGULAR: Readonly<Record<string, string>> = {
   wolves: 'wolf', elves: 'elf', shelves: 'shelf', calves: 'calf', halves: 'half', knives: 'knife', wives: 'wife', lives: 'life',
   leaves: 'leaf', thieves: 'thief', loaves: 'loaf', scarves: 'scarf', dwarves: 'dwarf', mice: 'mouse', geese: 'goose',
   children: 'child', people: 'person', teeth: 'tooth', feet: 'foot',
+  buses: 'bus', viruses: 'virus', octopuses: 'octopus', cactuses: 'cactus', walruses: 'walrus', circuses: 'circus', gases: 'gas', lenses: 'lens',
 };
 
+/** Jednotná čísla na -s, která ho neztratí: „cyclops“ není množné číslo „cyclop“. */
+const SINGULAR_S = new Set(['cyclops', 'lens', 'gas', 'atlas', 'iris', 'chaos', 'canvas', 'species', 'series', 'tennis', 'news', 'rhinoceros']);
+
 /**
- * Hrubé jednotné číslo pro `label`: `coins → coin`, `dummies → dummy`, `boxes → box`.
- * Slovo na -us („octopus“, „bus“) a vlastní jméno z velkého písmene („Thomas“) zůstanou.
+ * Hrubé jednotné číslo pro `label`: `coins → coin`, `dummies → dummy`, `boxes → box`, `horses → horse`.
+ * Slovo na -us („octopus“, „bus“), jednotné číslo na -s („cyclops“) a vlastní jméno z velkého
+ * písmene („Thomas“) zůstanou. Druhé volání nic nezmění – draft ho na popisek pouští dvakrát.
  */
 export function singular(phrase: string): string {
   const words = phrase.split(' ');
@@ -281,10 +286,11 @@ export function singular(phrase: string): string {
 
 function singularWord(word: string): string {
   if (IRREGULAR[word] !== undefined) return IRREGULAR[word];
-  if (word.endsWith('us') || /^[A-Z]/.test(word)) return word;
+  if (word.endsWith('us') || SINGULAR_S.has(word) || /^[A-Z]/.test(word)) return word;
   if (IE_NOUNS.has(word)) return word.slice(0, -1);
   if (word.endsWith('ies')) return `${word.slice(0, -3)}y`;
-  if (/(?:ses|xes|ches|shes)$/.test(word)) return word.slice(0, -2);
+  // „horses“, „houses“ ztratí jen -s; -es jen po sykavce, kterou -s samo nenese („glasses“, „boxes“, „torches“).
+  if (/(?:sses|xes|ches|shes|zzes)$/.test(word)) return word.slice(0, -2);
   return word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word;
 }
 

@@ -5,8 +5,11 @@
  * opíše rychlou, projde každou kontrolou. Model se nevolá – odpovědi jsou zmrazené.
  */
 
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
+import { goldenPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { answered, fakeBranch } from '../director/__fixtures__/branch';
 import { buildCompactRequest } from '../director/compact';
@@ -46,6 +49,22 @@ describe('the director answer, read like the quick version', () => {
 
   it('keeps -us words, names and irregular plurals whole when it makes a label singular', () => {
     expect(['wolves', 'knives', 'mice', 'octopus', 'bus', 'Thomas', 'glowing fish', 'burning trees'].map(singular)).toEqual(['wolf', 'knife', 'mouse', 'octopus', 'bus', 'Thomas', 'glowing fish', 'burning tree']);
+  });
+
+  // Revize fáze 3, nález 3: „horses“ dávalo „hors“ a „cyclops“ „cyclop“ – teď jím prochází každý popisek režiséra.
+  it('drops only the -s of -se words, keeps -s singulars and changes nothing on a second pass', () => {
+    const words = ['horses', 'wild horses', 'houses', 'burning houses', 'roses', 'glasses', 'boxes', 'torches', 'bushes', 'buses', 'viruses', 'cactuses', 'cyclops', 'lens', 'gas', 'species', 'news'];
+    expect(words.map(singular)).toEqual(['horse', 'wild horse', 'house', 'burning house', 'rose', 'glass', 'box', 'torch', 'bush', 'bus', 'virus', 'cactus', 'cyclops', 'lens', 'gas', 'species', 'news']);
+    for (const word of words) expect(singular(singular(word)), word).toBe(singular(word));
+    expect(draftOf('A farmer escapes from wild horses on a ranch').genre.enemy).toBe('wild horse');
+  });
+
+  it('every role label the draft writes for the golden and demand sentences is already singular', () => {
+    const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
+    for (const text of [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)]) {
+      const genre = draftGameSpecWithMeta(text).genre;
+      for (const label of [genre?.enemy, genre?.collectible, genre?.target?.label]) if (label !== undefined) expect(singular(label), `${text}: ${label}`).toBe(label);
+    }
   });
 });
 
