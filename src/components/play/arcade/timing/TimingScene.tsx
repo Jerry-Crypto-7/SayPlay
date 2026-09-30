@@ -120,9 +120,7 @@ export function TimingScene({ session, look: scene, blockModel }: { readonly ses
   const blockH = TIMING.blockH / UNIT;
   return (
     <>
-      <color attach="background" args={[scene.sky]} />
-      <hemisphereLight args={['#fff7ed', '#78350f', 1]} />
-      <directionalLight position={[3, 12, -8]} intensity={1.4} />
+      {/* Obloha, mlha, světla a stíny jsou rigu (`look/rig/StyleRig.tsx`, P32A T10). */}
       {/* Zem a základna (věž stojí na ní, můstek začíná sloupem, lišta je deska). */}
       <mesh position={[0, -0.05, 0]} renderOrder={UNDER_PANORAMA}>
         <boxGeometry args={[40, 0.1, 12]} />

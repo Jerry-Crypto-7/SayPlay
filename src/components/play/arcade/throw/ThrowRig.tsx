@@ -156,12 +156,13 @@ export function ThrowRig({ session, surface, enabled }: { readonly session: Arca
     };
   }, [session, surface, enabled]);
 
+  // Náznak dráhy je pomůcka: mlha rigu ho nezakryje a stín nevrhá (P32A T10).
   return (
     <>
       {Array.from({ length: DOTS }, (_, i) => (
-        <mesh key={i} ref={(mesh) => { dots.current[i] = mesh; }} visible={false}>
+        <mesh key={i} ref={(mesh) => { dots.current[i] = mesh; }} visible={false} userData={{ rigShadow: 'none' }}>
           <sphereGeometry args={[0.09, 8, 6]} />
-          <meshBasicMaterial color="#f8fafc" transparent opacity={0.9 - i * 0.05} />
+          <meshBasicMaterial color="#f8fafc" transparent opacity={0.9 - i * 0.05} fog={false} />
         </mesh>
       ))}
     </>

@@ -90,10 +90,7 @@ export function RhythmScene({ session, look: scene, noteModel }: { readonly sess
   const laneW = RHYTHM.laneW / UNIT;
   return (
     <>
-      <color attach="background" args={['#0f172a']} />
-      <fog attach="fog" args={['#0f172a', 20, TRACK_M]} />
-      <hemisphereLight args={['#e0f2fe', '#1e293b', 1.1]} />
-      <directionalLight position={[2, 10, -6]} intensity={1.2} />
+      {/* Obloha, mlha, světla a stíny jsou rigu (`look/rig/StyleRig.tsx`, P32A T10); tma zůstává jen pod pruhy. */}
       {/* Prostředí (P27A T4): zem sady kolem pruhů a kulisy po stranách; pod pruhy zůstává tma, ať svítící noty čtou. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, TRACK_M / 2 - 2]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[60, TRACK_M + 10]} />

@@ -175,6 +175,8 @@ export interface Look {
   readonly block?: readonly [side: string, top: string];
   /** Závod jede po hladině, dráha má barvu vody (P30B T6, „jungle river“). Píše jen `sceneLook`. */
   readonly afloat?: boolean;
+  /** Hrdina jede (klouže, lyžuje), neběží – póza jízdy běžce (P32A T5-R1, `theme.motion`). Píše jen `sceneLook`. */
+  readonly ride?: boolean;
   /* P32A – rig (`StyleRig`): kreslená obloha, slunce se stínem, ACES. Sníh má hodnoty z ukázky B. */
   /** Obloha v zenitu. */
   readonly skyTop: string;
@@ -293,11 +295,12 @@ const PLACE_GROUNDS: readonly (readonly [RegExp, string | null])[] = [
 /** Voda pod závodem: loď po řece nejede po asfaltu. */
 const WATERWAY = /\brivers?\b|canal|\blake\b|rapids|\bsea\b|ocean/;
 
-/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem). */
-export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId }): Look {
+/** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem) a jízda hrdiny. */
+export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string }): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
   const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
   const afloat = WATERWAY.test(setting);
-  return ground === look.ground && !afloat ? look : { ...look, ground, afloat };
+  const ride = theme.motion === 'ride';
+  return ground === look.ground && !afloat && !ride ? look : { ...look, ground, afloat, ...(ride ? { ride } : {}) };
 }

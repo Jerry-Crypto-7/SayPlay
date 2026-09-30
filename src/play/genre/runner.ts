@@ -24,6 +24,13 @@ const COURSE_CUE = /\b(?:down|along|across|over) (?:a |an |the )([a-z][a-z -]*)/
 /** Překážka nad hlavou se podbíhá – jen ta smí dostat laťku skluzu; kámen se přeskočí nebo oběhne. */
 const OVERHEAD = /\b(?:low|overhead|hanging)\b|\b(?:branch|bar|beam|pipe|sign|banner|rope|wire|cable|arch|icicle)(?:e?s)?\b/;
 
+/**
+ * Slova jízdy: klouže, lyžuje, surfuje, jede na prkně, bruslích nebo saních (tvary jako `cues`).
+ * Čte je i scéna ve jménu modelu hrdiny (`runner/heroMotion.ts`: `cc0-sled`).
+ */
+export const RIDE_WORDS =
+  /\b(?:slid(?:e|es|ing)|ski(?:s|ed|ing|er|ers)?|surf(?:s|ed|ing|er|ers|board|boards)?|snowboard(?:s|ed|ing|er|ers)?|skat(?:e|es|ed|ing|er|ers)|skateboard(?:s|ing|er|ers)?|sled(?:s|ge|ges|ding)?|toboggan(?:s|ed|ing)?)\b/;
+
 /** Druhy role nepřítele ve čtení modelem – tytéž, které čte `draftRoles`. */
 const ENEMY_KINDS = ['chaser', 'threat', 'hazard', 'obstacle'];
 
@@ -43,13 +50,15 @@ export const runnerGenre: GenreModule<'runner'> = {
     speed: { min: 0, max: RUNNER_SPEEDS.length - 1 },
     /** Index do `RUNNER_DENSITIES` (řídce, normálně, hustě). */
     density: { min: 0, max: RUNNER_DENSITIES.length - 1 },
+    /** 1 = hrdina jede (klouže, lyžuje, surfuje), ne běží – jen póza ve scéně (`theme.motion`, T5-R1). */
+    ride: { min: 0, max: 1 },
   },
   availability: () => 'ready',
   compile: (spec) => {
     const obstacle = spec.enemy ?? 'rock';
     const palette = spec.palette ?? lookFor(spec.setting) ?? undefined;
-    const { lengthM, speed, density } = spec.params ?? {};
-    return legacySpec(palette === undefined ? spec : { ...spec, palette }, {
+    const { lengthM, speed, density, ride } = spec.params ?? {};
+    const game = legacySpec(palette === undefined ? spec : { ...spec, palette }, {
       control: 'runner',
       controlParams: {
         ...(lengthM === undefined ? {} : { lengthM }),
@@ -68,6 +77,8 @@ export const runnerGenre: GenreModule<'runner'> = {
       tutorial: { goalLine: 'Reach the finish line. Jump, slide and switch lanes.', controlsHint: 'Tap or Space to jump, swipe or arrows to change lane.' },
       mood: 'energetic',
     });
+    // Bez jízdy `theme` bez pole – tvar hry je stejný jako před T5-R1.
+    return ride === 1 ? { ...game, theme: { ...game.theme, motion: 'ride' } } : game;
   },
   draftFill: (sentence, reading) => {
     const roles = draftRoles(sentence, reading);
@@ -84,6 +95,7 @@ export const runnerGenre: GenreModule<'runner'> = {
       ...(enemy === undefined ? {} : { enemy }),
       ...(setting === undefined ? {} : { setting }),
       ...(palette === null ? {} : { palette }),
+      ...(RIDE_WORDS.test(sentence.toLowerCase()) ? { params: { ride: 1 } } : {}),
     };
   },
 };

@@ -10,6 +10,8 @@ import { compileGenre, readGenreSpec } from '../src/play/genre/index';
 import { runnerGenre } from '../src/play/genre/runner';
 import type { GameSpecV1 } from '../src/play/spec';
 
+import { startGame } from './play-start';
+
 /**
  * Tučňák běžce (P32A). T5: hrdina se hýbe jako postava – po stisku úhybu se
  * do 150 ms nakloní (sonda pózy `__playHero`), jede v póze jízdy a po skoku
@@ -44,6 +46,7 @@ async function publishPenguin(request: APIRequestContext): Promise<string> {
 test('penguin: leans into a dodge within 150 ms, rides tilted forward and lands with a land event', async ({ page, request }) => {
   test.setTimeout(120_000);
   await page.goto(await publishPenguin(request));
+  await startGame(page);
   await page.waitForFunction(
     () => window.__playShell !== undefined && window.__playHero?.() != null && window.__playFx !== undefined && window.__playShell.tick() > 5,
     undefined,
@@ -86,7 +89,8 @@ test('penguin: leans into a dodge within 150 ms, rides tilted forward and lands 
   expect(lean.ms, `náklon ${lean.roll.toFixed(1)}° po ${lean.ms.toFixed(0)} ms`).toBeLessThanOrEqual(150);
 
   expect((await page.evaluate(() => window.__playFx!())).land ?? 0, 'před skokem žádný dopad').toBe(0);
-  await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ' })));
+  // `cancelable` jako skutečná klávesa: mezerník, který hra nezruší, je od P34 pauza (`useHudKeys`).
+  await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', cancelable: true })));
   await page.waitForFunction(() => (window.__playFx!().land ?? 0) > 0, undefined, { timeout: 5_000 });
 });
 
@@ -114,6 +118,21 @@ function gameSpecOf(genre: unknown): GameSpecV1 {
   if (!read.ok) throw new Error(read.issues.join('; '));
   return compileGenre(read.value);
 }
+
+/** T5-R1: sloveso jízdy z věty dojde přes `theme.motion` až do pózy hrdiny, který není pták. */
+test('a sentence that skis puts a non-bird hero in the riding pose', async ({ page, request }) => {
+  test.setTimeout(120_000);
+  const spec = gameSpecOf(runnerGenre.draftFill('A girl skis down a snowy mountain and avoids trees', null));
+  expect(spec.theme.motion).toBe('ride');
+  await page.goto(await publishSpec(request, spec));
+  await page.waitForFunction(() => window.__playHero?.() != null, undefined, { timeout: 60_000 });
+  const pose = await page.waitForFunction(() => {
+    const hero = window.__playHero!()!;
+    return hero.ride === 'board' && hero.pitch > 20 ? hero : null;
+  }, undefined, { timeout: 10_000 }).then((handle) => handle.jsonValue());
+  expect(pose?.ride, 'předklon jízdy, ne běh').toBe('board');
+  await page.getByTestId('arcade-stage').screenshot({ path: test.info().outputPath('skier-ride.png') });
+});
 
 const SHOTS = join(process.cwd(), 'evals/play/p32/penguin');
 
@@ -155,9 +174,12 @@ async function startDemo(page: Page): Promise<void> {
   const deadline = Date.now() + 15_000;
   while (!(await press(page, 'play-demo-start'))) {
     expect(Date.now(), 'tlačítko „Show me how“').toBeLessThan(deadline);
-    if (!(await press(page, 'play-demo-yours'))) await press(page, 'play-replay');
+    // „Show me how“ je od P34 na kartě pauzy (postup `p32-arena`).
+    if (!(await press(page, 'play-demo-yours')) && !(await press(page, 'play-replay'))) await press(page, 'play-pause');
     await page.waitForTimeout(200);
   }
+  // `attached`: nad plátnem je všechno skryté (`ONLY_CANVAS`).
+  await page.locator('[data-testid="play-demo"]').waitFor({ state: 'attached' });
 }
 
 /**
@@ -362,11 +384,8 @@ async function shootSlice(page: Page, prefix: string, warmUpMs = 0): Promise<rea
 /** Hra načtená, modely stažené (bez nich by snímek ukázal náhradní tvary). */
 async function openGame(page: Page, url: string): Promise<void> {
   await page.goto(url);
-  await page.waitForFunction(
-    () => window.__playShell !== undefined && window.__playFrame !== undefined && window.__playFx !== undefined && window.__playShell.tick() > 5,
-    undefined,
-    { timeout: 60_000 },
-  );
+  // Hra stojí na tiku 0 pod „Tap to start“ (P33 T11); snímky i měření FPS pouští ukázka.
+  await page.waitForFunction(() => window.__playShell !== undefined && window.__playFrame !== undefined && window.__playFx !== undefined, undefined, { timeout: 60_000 });
   await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-look', 'snow');
   await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => undefined);
 }
@@ -448,7 +467,7 @@ test.describe('penguin slice, Pixel 7 with CPU 4× slower', () => {
       const sampling = sampleFps(page, 20);
       const end = Date.now() + 20_000;
       while (Date.now() < end) {
-        if (!(await press(page, 'play-demo-start'))) if (!(await press(page, 'play-demo-yours'))) await press(page, 'play-again');
+        if (!(await press(page, 'play-demo-start'))) if (!(await press(page, 'play-demo-yours'))) if (!(await press(page, 'play-again'))) await press(page, 'play-pause');
         await page.waitForTimeout(500);
       }
       const samples = await sampling;

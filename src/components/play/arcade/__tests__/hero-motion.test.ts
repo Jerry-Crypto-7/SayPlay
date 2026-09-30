@@ -127,17 +127,15 @@ describe('runner hero motion (P32A T5)', () => {
     expect(curve.filter((sample) => sample.grounded).every((sample) => sample.scale <= 1)).toBe(true);
   });
 
-  it('picks the ride pose for a bird hero or a sentence that slides, skis or surfs', () => {
+  it('picks the ride pose for a bird hero, a riding sentence (theme.motion) or a riding model', () => {
     // Tučňák z věty P32 (`genre/runner.ts` → hrdina `penguin`) a ptáci katalogu jedou na břiše – i když věta klouže.
     for (const hero of ['penguin', 'bird', 'gen3d-bald-eagle', 'cc0-chicken']) expect(rideOf(hero), hero).toBe('lie');
-    expect(rideOf('penguin', 'A penguin slides down an icy mountain, collects snowflakes and avoids rocks')).toBe('lie');
-    for (const sentence of ['A girl skis down the slope', 'A surfer rides the waves', 'A kid sleds down the hill', 'A boy skateboards through the city', 'A fox toboggans home']) {
-      expect(rideOf('rigged:girl-a', sentence), sentence).toBe('board');
-    }
+    expect(rideOf('penguin', true)).toBe('lie');
+    // Věta, která klouže nebo lyžuje (`genre/runner.ts` → `theme.motion: 'ride'` → `sceneLook`), dá předklon každému hrdinovi.
+    for (const hero of ['rigged:girl-a', 'explorer', 'fox']) expect(rideOf(hero, true), hero).toBe('board');
     for (const hero of ['cc0-sled', 'gen3d-skateboard']) expect(rideOf(hero), hero).toBe('board');
-    // Běžec, dítě a zvíře běží; „skips“ ani „skin“ jízda nejsou.
+    // Běžec, dítě a zvíře bez jízdy ve větě běží.
     for (const hero of ['explorer', 'rigged:boy-a', 'rigged:knight', 'fox', 'robot']) expect(rideOf(hero), hero).toBeNull();
-    for (const sentence of ['A boy skips over puddles', 'A cat with shiny skin runs', 'A knight runs through the castle']) expect(rideOf('explorer', sentence), sentence).toBeNull();
 
     // Vleže musí být předklon i s během přes 60° – kolem 45° z kamery běžce vypadá jako stání.
     const lie = running(5, 'lie').motion.sample();

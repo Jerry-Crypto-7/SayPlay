@@ -205,6 +205,10 @@ export const budgetsSchema = z
   .strict();
 export type GameBudgets = z.infer<typeof budgetsSchema>;
 
+/** Jak se hrdina hýbe, když to není během (`theme.motion`): `ride` = jízda v předklonu. */
+export const THEME_MOTIONS = ['ride'] as const;
+export type ThemeMotion = (typeof THEME_MOTIONS)[number];
+
 export const themeSchema = z
   .object({
     /** Kde se to děje – vstup pro výběr assetů a palety (`"supermarket at night"`). */
@@ -224,6 +228,12 @@ export const storedThemeSchema = themeSchema
   .extend({
     weather: z.enum(WEATHERS).optional(),
     timeOfDay: z.enum(TIMES_OF_DAY).optional(),
+    /**
+     * P32A T5-R1: hrdina věty nejede během, ale jízdou (klouže, lyžuje, surfuje) – scéna
+     * ho kreslí v předklonu. Píše modul žánru běžce (`genre/runner.ts`), model ne; stará hra
+     * pole nemá a běží jako dřív. Jen vzhled, jádro ho nečte.
+     */
+    motion: z.enum(THEME_MOTIONS).optional(),
   })
   .strict();
 

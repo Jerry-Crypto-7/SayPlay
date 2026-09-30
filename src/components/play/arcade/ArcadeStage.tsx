@@ -6,8 +6,8 @@
  * kreslí jinde:
  * - běžec `runner/RunnerWorld.tsx`, plošinovka `platform/PlatformWorld.tsx`;
  * - poletování, závod, střelnice a hod sdílený `World.tsx`;
- * - aréna `arena/`, načasování, rytmus a souboj vlastní scénu se světly;
- * - světlo, oblohu a mlhu ostatních `look/rig/StyleRig.tsx`;
+ * - aréna `arena/`, načasování `timing/` a rytmus `rhythm/`, souboj vlastní scénu se světly;
+ * - světlo, oblohu a mlhu všech kromě souboje `look/rig/StyleRig.tsx`;
  * - efekty z událostí jádra `effects/Effects.tsx` (sběrnice `effects/bus.ts`).
  *
  * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
@@ -500,18 +500,18 @@ const StageCanvas = memo(function StageCanvas({
       <FrameProbe control={control} />
       <RenderProbe />
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
-      {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
-      {control === 'timing' ? (
-        <TimingScene session={session} look={look} blockModel={blockModel} />
-      ) : control === 'rhythm' ? (
-        <RhythmScene session={session} look={look} noteModel={noteModel} />
-      ) : control === 'duel' ? (
+      {/* Souboj (P25H) má vlastní scénu se světly i pozadím; načasování a rytmus svítí rigem (P32A T10). */}
+      {control === 'duel' ? (
         <DuelScene session={session} look={look} rivalModel={rivalModel} />
       ) : (
         <>
           <StyleRig look={look} control={control} surface={surface} />
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
-          {control === 'move_free' || control === 'fight' ? (
+          {control === 'timing' ? (
+            <TimingScene session={session} look={look} blockModel={blockModel} />
+          ) : control === 'rhythm' ? (
+            <RhythmScene session={session} look={look} noteModel={noteModel} />
+          ) : control === 'move_free' || control === 'fight' ? (
             <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} />
           ) : control === 'runner' ? (
             <RunnerWorld {...world} />
