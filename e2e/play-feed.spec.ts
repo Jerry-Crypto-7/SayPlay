@@ -47,10 +47,18 @@ async function serveFeed(page: Page, rows: readonly Row[]): Promise<void> {
   await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ games: rows, next: null }) }));
 }
 
-/** Viditelná hra: `?g=`, slide feedu a titul v HUD musí mluvit o téže verzi. */
+/**
+ * Viditelná hra: `?g=`, slide feedu a titul v HUD musí mluvit o téže verzi.
+ * Od P33 T8 stojí místo hry plakát a hra se bez klepnutí nepřipojí.
+ */
 async function expectShowing(page: Page, row: Row): Promise<void> {
   await expect(page).toHaveURL(new RegExp(`[?&]g=${row.versionId}(&|$)`));
   await expect(page.getByTestId('feed-current')).toHaveAttribute('data-version-id', row.versionId);
+  const poster = page.getByTestId('feed-poster');
+  await expect(poster).toContainText(row.title, { timeout: 30_000 });
+  await expect(poster).toContainText('Tap to play');
+  await expect(page.getByTestId('feed-current').locator('canvas')).toHaveCount(0);
+  await poster.click();
   await expect(page.locator('.play-hud-title')).toHaveText(row.title, { timeout: 30_000 });
   await expect(page.getByTestId('arcade-stage').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
   await expect(page.locator('canvas')).toHaveCount(1);
@@ -88,6 +96,7 @@ test.describe('/play – vertical feed', () => {
     // Široká obrazovka: seznam dalších vpravo, klepnutí přepne hru.
     await expect(page.getByTestId('play-feed-card')).toHaveCount(rows.length);
     await expect(page.getByTestId('play-feed-card').nth(1)).toContainText('1 remix');
+    await expect(page.getByTestId('play-feed-card').first()).not.toContainText('remixes');
 
     const moves = [1, 1, 1, -1, -1, -1, 1, 1, -1, -1];
     let at = 0;
@@ -171,7 +180,7 @@ test.describe('/play – vertical feed', () => {
   test('an empty feed says so honestly and plays the demo game', async ({ page }) => {
     await serveFeed(page, []);
     await page.goto('/play');
-    await expect(page.getByTestId('play-feed-empty')).toHaveText('No games yet – write the first sentence.');
+    await expect(page.getByTestId('play-feed-empty')).toHaveText('No games yet. Make the first one.');
     await expect(page.getByTestId('feed-demo').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
     await expect(page.locator('.play-hud-title')).toHaveText('Fox Runs City Dodging');
     await expect(page.locator('.play-hud-share')).toHaveCount(0);
@@ -180,20 +189,25 @@ test.describe('/play – vertical feed', () => {
   test('a feed outage says so, plays the demo and the form still works', async ({ page }) => {
     await page.route('**/api/play/games?recent=*', (route) => route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }));
     await page.goto('/play');
-    await expect(page.getByTestId('feed-error')).toHaveText('The feed is not available right now. You can still make a game below.');
+    await expect(page.getByTestId('feed-error')).toHaveText('The feed is not available right now. You can still make a game above.');
     await expect(page.getByTestId('feed-demo').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
     await expect(page.locator('.play-sentence')).toBeVisible();
   });
 
-  // AC P28D T7: do 3 s po načtení je plátno nahoře a hra bere vstup bez klepnutí na „Play“.
+  // AC P28D T7: do 3 s po načtení hraje plátno a hra bere vstup bez klepnutí na „Play“.
+  // Od P33 T13 stojí pole pro větu nad feedem (jádro produktu) na telefonu i desktopu – `play-create`;
+  // hláška výpadku feedu proto posílá k formuláři „above“, ne „below“.
   test('the landing page plays a game within 3 s', async ({ page }) => {
     await serveFeed(page, []);
     await page.goto('/play');
     await expect(page.locator('canvas')).toHaveCount(1, { timeout: 3_000 });
-    const top = await page.locator('canvas').boundingBox();
+    const game = await page.locator('canvas').boundingBox();
     const form = await page.locator('.play-sentence').boundingBox();
-    expect(top!.y).toBeLessThan(form!.y);
-    // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže „You lost“ (runner prohraje do 3 s).
+    expect(form!.y).toBeLessThan(game!.y);
+    // Jedna h1 na stránce (P33 T13): titul nad polem; název hry v HUD je h2.
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.locator('h2.play-hud-title')).toHaveCount(1);
+    // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže prohru „So close.“ (runner prohraje do 3 s).
     await expect(page.getByTestId('play-demo')).toBeVisible();
     for (let second = 0; second < 8; second += 1) {
       await page.waitForTimeout(1000);

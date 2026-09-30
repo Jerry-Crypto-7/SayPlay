@@ -1,10 +1,13 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Plošinovka a poletování na `/play/[id]` (P25C T6): věta projde skutečnými
  * dveřmi (dvojník režiséra = návrh ze slov → `platform` / `flap`), hra se
  * načte v arkádovém plátně s boční kamerou, HUD běží, vstup se zapíše,
- * záznam robota přehraný sondou skončí na „You won“ a mobil nescrolluje do
+ * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
+ * kitu, dřív „You won“, prohra „So close.“ místo „You lost“) a mobil nescrolluje do
  * strany.
  */
 
@@ -43,9 +46,10 @@ for (const game of GAMES) {
         await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(10);
         expect(await page.evaluate(() => window.__playShell!.inputs()[0])).toMatchObject({ tick: 0 });
         // Bez dalšího mávání spadne na zem: hra opravdu běží a končí.
-        await expect(page.getByTestId('play-outcome')).toContainText('You lost', { timeout: 15_000 });
+        await expect(page.getByTestId('play-outcome')).toContainText('So close.', { timeout: 15_000 });
         return;
       }
+      await startGame(page);
       await page.waitForFunction(() => window.__playShell!.tick() > 30, undefined, { timeout: 60_000 });
       const first = Number(await page.getByTestId('play-tick').getAttribute('data-tick'));
       await page.waitForTimeout(500);
@@ -77,7 +81,7 @@ for (const game of GAMES) {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const outcome = await page.evaluate(() => window.__playShell!.playWitness());
       expect(outcome.runState).toBe('won');
-      await expect(page.getByTestId('play-outcome')).toContainText('You won');
+      await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
       await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
     });
 

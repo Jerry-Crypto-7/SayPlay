@@ -24,7 +24,7 @@ import type { GameCompiler } from '@/play/contracts';
 import { STARTERS } from '@/components/play/starters';
 import { draftGameSpec } from '@/play/draft';
 import { legacyDraft } from '@/play/__tests__/legacy-draft';
-import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { __resetProcessVersionStore, RECENT_CAP, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -459,6 +459,10 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);
     expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([b, a]);
+    // Cíl a nálada jdou z řádku seznamu (D-R1): karta je ukáže bez stažení detailu.
+    const firstSpec = (await versionStoreFromEnv(process.env).get(first.body.versionId))?.spec;
+    if (firstSpec === undefined) throw new Error('draft missing');
+    expect(firstSpec.tutorial.goalLine).not.toBe('');
     expect(body.games[1]).toEqual({
       versionId: a,
       title: first.body.title,
@@ -466,7 +470,14 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
       createdAt: new Date(1_700_000_001_000).toISOString(),
       parentId: first.body.versionId,
       remixes: 1,
+      goal: firstSpec.tutorial.goalLine,
+      mood: firstSpec.theme.mood,
     });
+    // Řádek zapsaný před D-R1 cíl ani náladu nemá: přijde `null`, ne chybějící klíč.
+    const versions = versionStoreFromEnv(process.env);
+    const legacy = (await versions.recent(RECENT_CAP)).map((row) => ({ ...row, goal: undefined, mood: undefined }));
+    vi.spyOn(versions, 'recent').mockResolvedValueOnce(legacy);
+    expect((await feed('?recent=24')).body.games[1]).toMatchObject({ versionId: a, goal: null, mood: null });
     expect(body.games[0].remixes).toBe(0);
     expect((await feed('?recent=1')).body.games).toHaveLength(1);
   });

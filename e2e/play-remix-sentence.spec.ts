@@ -1,7 +1,9 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { openAbout } from './play-start';
+
 /**
- * P27C T5: „Change it“ pod hrou. Hráč dohraje, napíše „add snow“ a otevře
+ * P27C T5: „Remix it“ pod hrou (do P34 T6 „Change it“). Hráč dohraje, napíše „add snow“ a otevře
  * novou verzi s vlastním odkazem; rodič zůstane s původním specem.
  *
  * Server v e2e model nemá, proto se `POST/GET …/remix` s větou podvrhne přes
@@ -57,6 +59,8 @@ test('a sentence of your own opens a new version and leaves the original alone',
 
   await page.goto(url);
   await win(page);
+  // Od P33 T4 je pole v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
+  await page.getByRole('button', { name: 'Remix it' }).click();
   const box = page.getByTestId('remix-box');
   await expect(box).toBeVisible();
   await box.getByTestId('remix-input').fill('add snow');
@@ -72,6 +76,8 @@ test('a sentence of your own opens a new version and leaves the original alone',
 
   await box.getByTestId('remix-open').click();
   await expect(page).toHaveURL(new RegExp(`/play/${childId}$`), { timeout: 30_000 });
+  // Od P34 T5 se list „About this game“ otevírá z karty pauzy (HUD kitu).
+  await openAbout(page);
   const lineage = page.getByTestId('play-lineage');
   await expect(lineage).toContainText('Remixed from');
   await expect(lineage.locator(`a[href="/play/${parentId}"]`)).toBeVisible();
@@ -96,11 +102,16 @@ test('a remix sent before Replay comes back as a chip, not a jump (P28B T7)', as
 
   await page.goto(url);
   await win(page);
+  // Od P33 T4 je pole v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
+  await page.getByRole('button', { name: 'Remix it' }).click();
   const box = page.getByTestId('remix-box');
   await box.getByTestId('remix-input').fill('make enemies faster');
   await box.getByTestId('remix-submit').click();
   await expect(box.getByTestId('remix-state')).toHaveAttribute('data-kind', 'working');
 
+  // Otevřený list kryje kartu (klepnutí mimo ho jen zavře); hráč ho zavře a pak hraje znovu.
+  await page.keyboard.press('Escape');
+  await expect(box).toHaveCount(0);
   await page.getByTestId('play-replay').click();
   await expect(page.getByTestId('play-postrun')).toHaveCount(0);
   done = true;
@@ -124,11 +135,13 @@ test('a refused change says why and points back to the chips', async ({ page, re
 
   await page.goto(url);
   await win(page);
+  // Od P33 T4 je pole v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
+  await page.getByRole('button', { name: 'Remix it' }).click();
   const box = page.getByTestId('remix-box');
   await box.getByTestId('remix-input').fill('make the hero a dragon');
   await box.getByTestId('remix-submit').click();
   await expect(box.getByTestId('remix-state')).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
-  await expect(box.getByTestId('remix-state')).toContainText('changed more than you asked for');
+  await expect(box.getByTestId('remix-state')).toContainText('changed more than you asked');
   await expect(box.getByTestId('remix-state')).toContainText('Try one of the changes above');
   await expect(box.getByTestId('remix-retry')).toHaveCount(0);
   await expect(page.getByTestId('play-chip-harder')).toBeEnabled();

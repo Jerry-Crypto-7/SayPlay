@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Progresivní hra (P23-D T2, P27C T2) bez modelu: věta dá návrh hned a nad
  * hrou stojí proužek se stavem AI verze. Server v e2e model nemá, takže sám
@@ -47,6 +49,7 @@ async function fakeUpgrade(page: Page, draft: Created, answer: (asked: number) =
 const pending = { status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() };
 
 async function running(page: Page): Promise<number> {
+  await startGame(page);
   await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
   return page.evaluate(() => window.__playShell?.tick() ?? 0);
 }
@@ -66,7 +69,7 @@ test('without a model the draft stays final, the banner says the AI is busy, the
   const first = await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
-  await expect(banner).toContainText('The AI is busy right now');
+  await expect(banner).toContainText("Couldn't make the full-detail version right now");
   await expect(page.getByTestId('upgrade-action')).toHaveText('Try again');
   expect(await page.evaluate(() => window.__playShell?.tick() ?? 0)).toBeGreaterThan(first);
   expect(new URL(page.url()).pathname).toBe(body.url);
@@ -81,12 +84,17 @@ test('working → ready: the banner counts seconds, then offers the AI version w
   await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'working');
-  await expect(banner).toContainText('Your AI version is being built – keep playing, nothing will change until you choose.');
-  await expect(banner).toContainText(/\d+ s$/);
+  // Texty od P34 T4 (kit `11-voice-copy.md`): běh je pilulka `.sp-status` s větou kitu – bez
+  // počítadla sekund, protože kromě pulzující tečky se nic nehýbe samo – a hotová verze toast
+  // `.sp-toast` s tlačítkem `Play it`.
+  await expect(banner).toContainText('Quick version · the full-detail one is on its way');
+  await expect(banner).toHaveClass(/sp-status/);
   await expect(banner).not.toContainText('%');
 
   await expect(banner).toHaveAttribute('data-kind', 'ready', { timeout: 15_000 });
-  await expect(banner).toContainText('The AI version is ready – play it');
+  await expect(banner).toContainText('Full-detail version ready');
+  await expect(banner).toHaveClass(/sp-toast/);
+  await expect(page.getByTestId('upgrade-action')).toHaveText('Play it');
   // Hotová verze hru sama nevymění – hráč pořád hraje návrh.
   await page.waitForTimeout(2_500);
   expect(new URL(page.url()).pathname).toBe(draft.url);
@@ -103,7 +111,8 @@ test('working → final: the banner says why, and one double-clicked retry asks 
   await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'final', { timeout: 15_000 });
-  await expect(banner).toContainText("The AI's version didn't pass our playability check.");
+  // Text od P33 T5 (od P34 T8 slovníkem kitu): co se stalo a co zůstává, bez obviňování.
+  await expect(banner).toContainText("The full-detail version wasn't playable in a test run. The quick one stays.");
   // Verdikt o větě: nový pokus by dopadl stejně, tlačítko nic neslibuje.
   await expect(page.getByTestId('upgrade-action')).toHaveCount(0);
 
@@ -111,7 +120,7 @@ test('working → final: the banner says why, and one double-clicked retry asks 
   const retried = await fakeUpgrade(page, draft, (count) => (count === 1 ? { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' } : pending));
   await page.reload();
   await running(page);
-  await expect(banner).toContainText('The AI is busy right now', { timeout: 15_000 });
+  await expect(banner).toContainText("Couldn't make the full-detail version right now", { timeout: 15_000 });
   expect(retried()).toBe(1);
   await page.getByTestId('upgrade-action').dblclick();
   await expect(banner).toHaveAttribute('data-kind', 'working');

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
+import { closeAbout, openAbout } from './play-start';
+
 /**
  * Anglická měď PLAY (P23-C T8): `/play`, hra, obrazovka po dohrání
  * i otevřený panel „How this game works“ projdou týmž lexikálním filtrem
@@ -42,10 +44,12 @@ test('every PLAY screen speaks English: create, game, after the run, lab', async
   await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
   await expectEnglish(page, 'hra');
 
-  await page.getByTestId('play-lab-toggle').click();
-  await expect(page.getByTestId('play-lab')).toHaveAttribute('open', '');
+  // Od P33 T7 je „How to play“ oddíl listu „About this game“; list se před dohráním zavře.
+  // Od P34 T5 se list otevírá z karty pauzy – zavřít list i kartu, ať hra zase běží.
+  await openAbout(page);
   await expect(page.getByTestId('play-lab')).toContainText('Rules checked');
   await expectEnglish(page, 'Lab');
+  await closeAbout(page);
 
   const outcome = await page.evaluate(() => window.__playShell!.playWitness());
   expect(outcome.runState).toBe('won');
