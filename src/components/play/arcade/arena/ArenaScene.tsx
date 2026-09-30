@@ -30,7 +30,7 @@
 
 import { Billboard } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Color, type Group, type Material, type Mesh, MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
@@ -52,6 +52,7 @@ import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { type Cast, FittedModel } from '../World';
 import { ArenaFloor } from './ArenaFloor';
+import { type TargetLayer, TargetsMount } from './TargetsMount';
 import { ALERT_ABOVE_BAR_M, type Fighter, HealthBar, type HealthBarHandle, type MeterFighter, SwingArc, adoptSkin, advanceFrame, createFightWatch, drawFighter, drawSwing, fightClipOf, fighterName, shakeCamera, useHealthMeters } from './FightFx';
 
 const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15', shot: '#f8fafc' } as const;
@@ -97,8 +98,8 @@ interface ArenaWorldProps {
   readonly look: Look;
   /** Modely z popisků rolí; agar je nekreslí. */
   readonly cast: Cast;
-  /** Vrstva cílů (P32-0 T5, naplní P32G): dostane těla, jak je aréna kreslí, a kreslí se nad ně. */
-  readonly targets?: (bodies: readonly BodyView[]) => ReactNode;
+  /** Vrstva cílů (P32-0 T5, naplní P32G): živé cíle v metrech scény se stavem (`TargetsMount`); bez ní ve stylu B obrysy, agar jen přidá. */
+  readonly targets?: TargetLayer;
 }
 
 /**
@@ -241,7 +242,7 @@ function AgarWorld({ session, half, surface, look: scene, targets }: ArenaWorldP
           </group>
         );
       })}
-      {targets?.(discs)}
+      {targets !== undefined && <TargetsMount session={session} views={discs} layer={targets} />}
     </>
   );
 }
@@ -640,6 +641,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
     <>
       <ArenaFloor look={scene} half={half / UNIT} />
       {views.map((view) => {
+        if (view.role === ROLE.target) return null; // Cíl úkolu kreslí vrstva cílů (`TargetsMount`), ne kvádr.
         const part = parts[view.index]!;
         const size = drawn[view.index]!;
         const register = (group: Group | null): void => {
@@ -705,7 +707,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
           </group>
         );
       })}
-      {targets?.(views)}
+      <TargetsMount session={session} views={views} layer={targets} />
     </>
   );
 }
