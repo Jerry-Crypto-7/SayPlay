@@ -2,8 +2,8 @@
 
 /**
  * Rig vzhledu (P32A T1) scén, které si světla nestaví samy: běžec, plošinovka,
- * poletování, závod, střelnice, hod a aréna. Načasování, rytmus a souboj mají
- * světla ve vlastní scéně.
+ * poletování, závod, střelnice, hod, aréna a od T10 načasování a rytmus. Souboj
+ * má světla ve vlastní scéně.
  *
  * Kreslí to, co ukázka B (`D:/caches/p32-style/page.html`, `renderVariant('B')`):
  * kreslenou oblohu s přechodem obzor → zenit a sluncem, mlhu v barvě obzoru,

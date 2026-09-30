@@ -23,6 +23,8 @@ import type { ArcadeSession } from '../session';
 const MUZZLE_Y = SHOOTER.muzzleY / UNIT;
 const RETICLE_M = 20;
 const FIRE_KEYS = new Set([' ', 'arrowup', 'w']);
+/** Značka pro `ShadowFlags` rigu: síť stín nevrhá ani nepřijímá. */
+const AID = { rigShadow: 'none' } as const;
 
 export function ShooterRig({ session, surface, enabled }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly enabled: boolean }) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
@@ -137,25 +139,26 @@ export function ShooterRig({ session, surface, enabled }: { readonly session: Ar
     };
   }, [session, surface, camera, enabled]);
 
-  // Zaměřovač: průsvitný paprsek z hlavně a kříž s kroužkem ve 20 m.
+  // Zaměřovač: průsvitný paprsek z hlavně a kříž s kroužkem ve 20 m. Je to pomůcka, ne věc
+  // ve scéně: mlha rigu ho nezakryje a stín nevrhá – kroužek na zemi by vypadal jako terč (P32A T10).
   return (
     <group ref={reticle}>
-      <mesh position={[0, 0, RETICLE_M / 2]}>
+      <mesh position={[0, 0, RETICLE_M / 2]} userData={AID}>
         <boxGeometry args={[0.03, 0.03, RETICLE_M]} />
-        <meshBasicMaterial color="#ef4444" transparent opacity={0.45} />
+        <meshBasicMaterial color="#ef4444" transparent opacity={0.45} fog={false} />
       </mesh>
       <group position={[0, 0, RETICLE_M]}>
-        <mesh>
+        <mesh userData={AID}>
           <torusGeometry args={[0.6, 0.06, 8, 24]} />
-          <meshBasicMaterial color="#ef4444" />
+          <meshBasicMaterial color="#ef4444" fog={false} />
         </mesh>
-        <mesh>
+        <mesh userData={AID}>
           <boxGeometry args={[1.6, 0.06, 0.06]} />
-          <meshBasicMaterial color="#ef4444" />
+          <meshBasicMaterial color="#ef4444" fog={false} />
         </mesh>
-        <mesh>
+        <mesh userData={AID}>
           <boxGeometry args={[0.06, 1.6, 0.06]} />
-          <meshBasicMaterial color="#ef4444" />
+          <meshBasicMaterial color="#ef4444" fog={false} />
         </mesh>
       </group>
     </group>
