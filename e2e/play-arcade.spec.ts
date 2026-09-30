@@ -6,7 +6,8 @@ import { openPause, startGame } from './play-start';
  * Skákačka na `/play/[id]` (P25A T6): věta „jumping arcade game with a lot of
  * obstacles“ projde skutečnými dveřmi (dvojník režiséra = návrh ze slov →
  * běžec), hra se načte v arkádovém plátně, HUD běží, mezerník zapíše skok,
- * záznam robota přehraný sondou skončí na „You won“ a mobil nescrolluje do
+ * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
+ * kitu, dřív „You won“) a mobil nescrolluje do
  * strany.
  */
 
@@ -183,7 +184,7 @@ test.describe('/play/[id] – arcade runner', () => {
     await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());
     expect(outcome.runState).toBe('won');
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
   });
 
@@ -194,7 +195,7 @@ test.describe('/play/[id] – arcade runner', () => {
     const stage = page.getByTestId('arcade-stage').locator('canvas');
     const running = await stage.screenshot();
     await page.evaluate(() => window.__playShell!.playWitness());
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     // Konec běhu přepne plátno na kreslení na požádání; poslední stav se přesto nakreslí.
     await expect.poll(async () => (await stage.screenshot()).equals(running)).toBe(false);
     const ended = await stage.screenshot();

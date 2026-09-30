@@ -20,8 +20,8 @@ import { Button } from './Button';
 import { Icon } from './icons';
 import { holdSheet } from './Sheet';
 
-/** Texty v `starters.ts` jsou verzálkami; tlačítko mluví větou. */
-export const CHANGE_LABEL = CHANGE_ONE_THING.charAt(0) + CHANGE_ONE_THING.slice(1).toLowerCase();
+/** Popisek „Change one thing“ – od P34 T6 je konstanta v `starters.ts` rovnou ve větném tvaru. */
+export const CHANGE_LABEL = CHANGE_ONE_THING;
 
 export type HudKeyAction = 'pause' | 'resume' | 'restart' | 'mute';
 

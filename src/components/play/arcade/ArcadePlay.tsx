@@ -28,13 +28,13 @@ import { loopEvent, loopImpression } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
 import { MoreGames } from '../MoreGames';
 import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, Icon, PauseCard, objectiveShown, useHudKeys } from '../ui';
-import { secondsOf, timerLeft } from '../timer';
+import { timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { AboutButton, SentenceRead } from '../SentenceRead';
 import { type LivePublish, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
-import { PostRun } from '../PostRun';
+import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
@@ -95,6 +95,35 @@ function limitOf(world: ArcadeWorld): number | null {
   return typeof seconds === 'number' ? seconds : null;
 }
 
+/** Kolik předmětů doplňku `+collect` hra chce (`finish_collected`); `null` = cíl bez sbírání. */
+function collectNeed(world: ArcadeWorld): number | null {
+  const need = Number(world.rules.find((rule) => rule.id === 'finish_collected')?.params.need);
+  return Number.isFinite(need) && need > 0 ? need : null;
+}
+
+const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true;
+
+/**
+ * Fakta skončeného běhu pro výsledek (P34 T6) – jen čísla, která relace
+ * arkády opravdu počítá: sebrané předměty, životy, body jednotkou hry
+ * a uběhlá část trati (aréna, střelba a hod trať nemají).
+ */
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot): RunFacts {
+  const need = collectNeed(world);
+  const extra: ResultStat[] = [];
+  if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
+  extra.push({ value: String(snapshot.score), label: scoreUnit(spec) });
+  if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
+  return {
+    won: snapshot.runState === 'won',
+    tick: snapshot.tick,
+    hz: ARCADE_HZ,
+    survive: world.rules.some((rule) => rule.id === 'survive_time'),
+    goal: need === null ? null : { count: snapshot.items, need, label: 'collected' },
+    extra,
+  };
+}
+
 /**
  * HUD arkády podle kitu (P34 T5, dřív tenký pruh P33 T12). Pilulka postupu
  * jen se skutečnými čísly: sebrané předměty doplňku `+collect` proti potřebě
@@ -126,14 +155,13 @@ function ArcadeHud({
   readonly bottom?: ReactNode;
   readonly children?: ReactNode;
 }) {
-  const hasLives = spec.mechanics.some((m) => m.id === 'health') || spec.addons?.includes('lives') === true;
-  const lives = hasLives ? ` · ${snapshot.health} lives` : '';
+  const lives = hasLives(spec) ? ` · ${snapshot.health} lives` : '';
   const clock = timerLeft(spec, Math.floor(snapshot.tick / ARCADE_HZ));
-  const need = Number(world.rules.find((rule) => rule.id === 'finish_collected')?.params.need);
+  const need = collectNeed(world);
   const counters: HudCounter[] = [];
   if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
   if (world.rules.some((rule) => rule.id === 'blaster')) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
-  if (hasLives) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
+  if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
   const limit = limitOf(world);
   const elapsed = snapshot.tick / ARCADE_HZ;
   return (
@@ -141,7 +169,7 @@ function ArcadeHud({
       title={spec.title}
       heading={heading}
       goalLine={spec.tutorial.goalLine}
-      goal={Number.isFinite(need) && need > 0 ? { label: 'collected', count: snapshot.items, need } : null}
+      goal={need === null ? null : { label: 'collected', count: snapshot.items, need }}
       counters={counters}
       clock={limit === null ? { seconds: elapsed, countdown: false } : { seconds: limit + bonus - elapsed, countdown: true }}
       objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, ARCADE_HZ, paused)}
@@ -413,7 +441,7 @@ function ArcadePlayGame({
   }, [active, session]);
 
   // Výloha vstupní stránky (P28D T7): dokud se hráč nedotkne, hraje dokola robot ověřovače –
-  // bez něj runner do tří sekund prohraje a první obrazovka ukáže „You lost“. První stisk
+  // bez něj runner do tří sekund prohraje a první obrazovka ukáže „So close.“. První stisk
   // nebo ťuk na scénu výlohu ukončí v zachytávací fázi, takže ten stisk už padne do hry hráče.
   const [attract, setAttract] = useState(offline);
   useEffect(() => {
@@ -707,7 +735,7 @@ function ArcadePlayGame({
           {!offline && !inFeed && <MoreGames />}
         </PauseCard>
       )}
-      {/* Konec ukázky není výhra hráče: bez „You won“, bez sdílení výsledku. */}
+      {/* Konec ukázky není výhra hráče: bez „You did it!“, bez sdílení výsledku. */}
       {!running && demo !== null && !attract && (
         <section className="play-outcome" data-testid="play-demo-outcome" data-verified={String(demo.verified)} role="status">
           <h2 className="play-outcome-title">Demo finished</h2>
@@ -719,31 +747,24 @@ function ArcadePlayGame({
           </button>
         </section>
       )}
+      {/* Výsledek kitu (P34 T6): zamrzlá scéna nahoře, list s nadpisem, statistikami a akcemi. */}
       {!running && demo === null && settled && (
-        <section className="play-outcome" data-testid="play-outcome" role="status">
-          <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
-          <p className="play-outcome-detail">
-            {/* Aréna už čas nese v `progressLabel`. */}
-            {spec.control === 'move_free' ? '' : `in ${secondsOf(snapshot.tick, ARCADE_HZ)} · `}
-            {progressLabel(spec, snapshot)} · {snapshot.score} {scoreUnit(spec)}
-          </p>
-          {offline ? (
-            <button type="button" className="play-button" data-testid="play-again" onClick={() => session.restart()}>
-              Play again
-            </button>
-          ) : (
-            <PostRun
-              versionId={versionId}
-              remix={remix}
-              clip={clip}
-              live={live}
-              onReplay={() => {
-                if (session.humanRun()) loopEvent('restart', versionId);
-                session.restart();
-              }}
-            />
-          )}
-        </section>
+        <PostRun
+          versionId={versionId}
+          remix={remix}
+          facts={arcadeFacts(spec, arcade, snapshot)}
+          clip={clip}
+          live={live}
+          offline={offline}
+          onReplay={
+            offline
+              ? () => session.restart()
+              : () => {
+                  if (session.humanRun()) loopEvent('restart', versionId);
+                  session.restart();
+                }
+          }
+        />
       )}
     </main>
   );

@@ -36,7 +36,7 @@ import { FirstPrompt } from './FirstPrompt';
 import { MoreGames } from './MoreGames';
 import { MuteButton } from './MuteButton';
 import { ShareButton } from './ShareButton';
-import { Hud, TICKS_PER_SECOND, objectiveCounter } from './Hud';
+import { Hud, TICKS_PER_SECOND, gridFacts, objectiveCounter } from './Hud';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
 import { AboutButton, SentenceRead } from './SentenceRead';
@@ -48,7 +48,6 @@ import { RemixBox, RemixReadyChip, useRemixJob } from './RemixBox';
 import { gridOf } from './sight';
 import type { ProjectTarget } from './TapTargets';
 import { TargetCards } from './TargetCards';
-import { secondsOf } from './timer';
 import { BuildingScreen, Button, CHANGE_LABEL, Icon, PauseCard, Sheet, useHudKeys } from './ui';
 import { UpgradeBanner } from './UpgradeBanner';
 import { avoidCards, idleProps, keyAction, playerActor, roleKinds, tapAction, type TargetCard, targetCards } from './targets';
@@ -515,23 +514,19 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
       <Sheet open={changing !== null} title={CHANGE_LABEL} onClose={() => setChanging(null)}>
         <RemixBox job={remix} />
       </Sheet>
+      {/* Výsledek kitu (P34 T6): zamrzlá scéna nahoře, list s nadpisem, statistikami a akcemi. */}
       {!running && (
-        <section className="play-outcome" data-testid="play-outcome" role="status">
-          <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>
-          <p className="play-outcome-detail" data-tick={snapshot.tick}>
-            {snapshot.runState === 'won' ? 'in' : 'after'} {secondsOf(snapshot.tick, TICKS_PER_SECOND)}
-          </p>
-          <PostRun
-            versionId={versionId}
-            remix={remix}
-            onReplay={() => {
-              if (!witnessed.current) loopEvent('restart', versionId);
-              witnessed.current = false;
-              setWaiting(false);
-              controller.observeAt(0);
-            }}
-          />
-        </section>
+        <PostRun
+          versionId={versionId}
+          remix={remix}
+          facts={gridFacts(spec, snapshot)}
+          onReplay={() => {
+            if (!witnessed.current) loopEvent('restart', versionId);
+            witnessed.current = false;
+            setWaiting(false);
+            controller.observeAt(0);
+          }}
+        />
       )}
     </main>
   );

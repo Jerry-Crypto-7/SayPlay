@@ -20,14 +20,23 @@
  *
  * Stisk nesmí do hry: plocha scény i klávesy hry poslouchají nativně, takže
  * ťuk i klávesu musí zastavit nativní posluchač (stejně jako tlačítko Fire).
+ *
+ * Vzhled (P34 T6): mimo HUD je to `Button` kitu – na výsledku „Dare a friend
+ * to beat it“ (po výhře rajčatové, po prohře papírové) a odkaz „Copy link“
+ * (`copy`: jen schránka, bez nabídky a klipu). Výsledek stisku řekne toast
+ * kitu „Link copied. Go dare someone.“, který po 3 s zmizí.
  */
 
 import { useEffect, useRef, useState } from 'react';
 
 import { loopEvent, SHARE_MARK } from './loop-client';
-import { Icon } from './ui';
+import { LINK_COPIED } from './starters';
+import { Button, type ButtonVariant, Icon } from './ui';
 
 type Share = 'idle' | 'copied' | 'saved' | 'manual';
+
+/** Toast kitu (`07-components.md`, Toast) visí 3 s. */
+const TOAST_MS = 3_000;
 
 /** Stažení souboru přes dočasný odkaz – prohlížeč bez sdílení souborů si klip uloží. */
 function download(file: File): void {
@@ -61,7 +70,9 @@ export function ShareButton({
   versionId: playing,
   title,
   label = 'Share',
-  variant = 'accent',
+  variant = 'secondary',
+  size = 'm',
+  copy = false,
   className = '',
   clip = null,
   live,
@@ -69,8 +80,11 @@ export function ShareButton({
   readonly versionId: string;
   readonly title?: string;
   readonly label?: string;
-  /** Váha tlačítka (P33 T4): v kartě po hře je sdílení vedlejší cesta; `hud` = kolo v dolní řadě HUD (P34 T5). */
-  readonly variant?: 'accent' | 'quiet' | 'hud';
+  /** Varianta `Button` kitu (P34 T6); `hud` = kolo v dolní řadě HUD (P34 T5). */
+  readonly variant?: ButtonVariant | 'hud';
+  readonly size?: 'l' | 'm' | 's';
+  /** „Copy link“: odkaz jen do schránky – bez nabídky sdílení a bez klipu. */
+  readonly copy?: boolean;
   readonly className?: string;
   readonly clip?: Blob | null;
   /** Verze s živými změnami běhu (P29D T10), `undefined` = běh žádné nemá. */
@@ -81,6 +95,24 @@ export function ShareButton({
   const [href, setHref] = useState('');
   const [volatile, setVolatile] = useState(false);
   const [lostLive, setLostLive] = useState<'none' | 'some' | 'all'>('none');
+
+  const toast = [
+    share === 'copied' ? LINK_COPIED : share === 'saved' ? `Video saved. ${LINK_COPIED}` : '',
+    volatile ? 'This server keeps games in memory only: the link stops working when it restarts.' : '',
+    lostLive === 'all' ? 'Your live changes could not be saved, so the link opens the game without them.' : '',
+    lostLive === 'some' ? 'Some live changes (lives, time, or what this game cannot start with) stay in your run only.' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  useEffect(() => {
+    if (toast === '') return;
+    const timer = window.setTimeout(() => {
+      setShare((now) => (now === 'manual' ? now : 'idle'));
+      setVolatile(false);
+      setLostLive('none');
+    }, TOAST_MS);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     const element = button.current;
@@ -117,9 +149,10 @@ export function ShareButton({
     setHref(url);
     void checkLasting(versionId);
     // Klip běhu (P29D T2) jde s odkazem, kde nabídka sdílení soubory bere; jinak se stáhne a odkaz zkopíruje.
-    const file = clip === null ? null : new File([clip], `worldstream-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
+    // „Copy link“ (`copy`) nabídku ani klip nebere – jen odkaz do schránky.
+    const file = copy || clip === null ? null : new File([clip], `worldstream-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
     const withFile = file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
-    if (typeof navigator.share === 'function' && (file === null || withFile)) {
+    if (!copy && typeof navigator.share === 'function' && (file === null || withFile)) {
       try {
         await navigator.share(withFile ? { title: title ?? document.title, url, files: [file] } : { title: title ?? document.title, url });
         // Sdílení patří hrané verzi – tam leží i zobrazení a výhra běhu (revize fáze 2 P29D).
@@ -141,34 +174,40 @@ export function ShareButton({
     }
   }
 
+  const pending = live?.state === 'pending';
   return (
     <>
-      <button
-        ref={button}
-        type="button"
-        className={`${variant === 'hud' ? 'sp-hud-btn play-hud-round' : `play-button play-button-${variant}`} play-share ${className}`.trim()}
-        data-testid="play-share"
-        data-variant={variant}
-        aria-label={variant === 'hud' ? label : undefined}
-        disabled={live?.state === 'pending'}
-        aria-busy={live?.state === 'pending'}
-        onClick={() => void run()}
-      >
-        {variant === 'hud' ? (
+      {variant === 'hud' ? (
+        <button
+          ref={button}
+          type="button"
+          className={`sp-hud-btn play-hud-round play-share ${className}`.trim()}
+          data-testid="play-share"
+          data-variant="hud"
+          aria-label={label}
+          disabled={pending}
+          aria-busy={pending}
+          onClick={() => void run()}
+        >
           <Icon name="share" />
-        ) : (
-          <>
-            <Icon name="share" />
-            {label}
-          </>
-        )}
-      </button>
-      {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}
-      <span className="play-status" aria-live="polite">
-        {share === 'copied' ? 'Link copied' : share === 'saved' ? 'Clip saved, link copied' : ''}
-        {volatile ? `${share === 'copied' || share === 'saved' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
-        {lostLive === 'all' ? ' Your live changes could not be saved, so the link opens the game without them.' : ''}
-        {lostLive === 'some' ? ' Some live changes (lives, time, or what this game cannot start with) stay in your run only.' : ''}
+        </button>
+      ) : (
+        <Button
+          ref={button}
+          variant={variant}
+          size={size}
+          className={`play-share ${className}`.trim()}
+          data-testid={copy ? 'play-copy-link' : 'play-share'}
+          disabled={pending}
+          aria-busy={pending}
+          onClick={() => void run()}
+        >
+          {label}
+        </Button>
+      )}
+      {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. V HUD sedí bublina nad dolní řadou, jinde toast kitu. */}
+      <span className={toast === '' || variant === 'hud' ? 'play-status' : 'play-status sp-toast'} aria-live="polite">
+        {toast}
       </span>
       {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
     </>

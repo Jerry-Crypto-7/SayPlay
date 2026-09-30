@@ -109,7 +109,8 @@ test.describe('/play/[id] – share landing', () => {
     const page = await context.newPage();
     await page.goto(url);
     await page.getByTestId('play-share').click();
-    await expect(page.getByText('Link copied')).toBeVisible();
+    // P34 T6: toast mluví kitem („Link copied. Go dare someone.“ místo „Link copied“).
+    await expect(page.getByText('Link copied. Go dare someone.')).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(new RegExp(`^https?://[^/]+/play/${id}\\?via=share$`));
     // E2e server nemá sdílené úložiště (P27D T5): odkaz nesmí vypadat trvale.
     await expect(page.getByText('the link stops working when it restarts')).toBeVisible();

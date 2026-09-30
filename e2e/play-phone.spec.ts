@@ -92,7 +92,8 @@ async function underNotice(page: Page): Promise<string[]> {
     const notice = document.querySelector('[data-testid="upgrade-state"]')!.getBoundingClientRect();
     const hits: string[] = [];
     // Od P34 T5 je štítek sám kusem vrstvy HUD kitu; ta je přes celou scénu, takže se měří její kusy.
-    for (const el of document.querySelectorAll<HTMLElement>('.play-hud > :not([data-testid="upgrade-state"]):not(.play-sr-only), .play-targets, .play-outcome')) {
+    // Výsledek (P34 T6) leží přes celou scénu taky – měří se jeho list a odznak, ne celá vrstva.
+    for (const el of document.querySelectorAll<HTMLElement>('.play-hud > :not([data-testid="upgrade-state"]):not(.play-sr-only), .play-targets, .play-outcome, .play-result-sheet, .play-result-badge')) {
       const r = el.getBoundingClientRect();
       // Skrytý kus (řádek cíle po konci běhu) štítek nezakryje – jako u měření pruhů výš.
       if (r.width === 0 || r.height === 0 || getComputedStyle(el).visibility === 'hidden') continue;

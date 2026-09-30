@@ -5,7 +5,8 @@ import { openPause, startGame } from './play-start';
 /**
  * `/play/[id]` (P23-C T5): hra se načte bez technického panelu, tik roste,
  * klepnutí na kartu cíle zapíše vstup do runtime, mobil nescrolluje do
- * strany, a svědek světa přehraný sondou skončí na „You won“.
+ * strany, a svědek světa přehraný sondou skončí na „You did it!“ (P34 T6:
+ * slovník kitu, dřív „You won“).
  *
  * Hra vzniká skutečnými dveřmi `POST /api/play/games` (dvojník režiséra,
  * žádný model). Sonda `window.__playShell` je stejný vzor jako
@@ -78,7 +79,7 @@ test.describe('/play/[id] – play shell', () => {
         { timeout: 30_000 },
       );
     }
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     expect(taps).toBeLessThanOrEqual(targets + 1);
     const inputs = await page.evaluate(() => window.__playShell!.inputs());
     expect(inputs.some((input) => input.actionId !== 'moveTo')).toBe(true);
@@ -133,9 +134,9 @@ test.describe('/play/[id] – play shell', () => {
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());
     expect(outcome.runState).toBe('won');
     await expect(page.getByTestId('play-outcome')).toBeVisible();
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
-    // Sekundy, ne tiky (P28B F-15): grid tiká 20× za sekundu.
-    await expect(page.getByTestId('play-outcome')).toContainText(`in ${(outcome.tick / 20).toFixed(1)} s`);
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
+    // Sekundy, ne tiky (P28B F-15): grid tiká 20× za sekundu. Od P34 T6 čas psaný jako časovač kitu („12.3s“, bez mezery).
+    await expect(page.getByTestId('play-outcome')).toContainText(`in ${(outcome.tick / 20).toFixed(1)}s`);
     await expect(page.getByTestId('play-outcome')).not.toContainText('tick');
     await expect(page.getByTestId('play-tick')).toHaveText('');
   });
@@ -157,7 +158,7 @@ test.describe('/play/[id] – play shell', () => {
       if (step.left === 0) break;
     }
     expect(pickups).toBeGreaterThanOrEqual(5);
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     await expect.poll(shown).toBe(before);
     // Snímek pro lidské oko; WebGL pixely se mezi stroji liší, takže se nesrovnává.
     await test.info().attach('won-without-mushrooms', { body: await page.locator('canvas').first().screenshot(), contentType: 'image/png' });

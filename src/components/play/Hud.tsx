@@ -18,8 +18,9 @@ import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-contro
 import { TICKS_PER_SECOND } from '@/play/compile/adapters/timer';
 import type { GameSpecV1 } from '@/play/spec';
 
+import type { RunFacts } from './PostRun';
 import { timerLeft } from './timer';
-import { GameHud, type HudClock, objectiveShown } from './ui';
+import { GameHud, type HudClock, type HudGoal, objectiveShown } from './ui';
 
 export { TICKS_PER_SECOND };
 
@@ -78,6 +79,40 @@ const GOAL_LABEL: Readonly<Partial<Record<GameSpecV1['objective']['kind'], strin
   defeat_targets: 'defeated',
 };
 
+/** Cílové předměty mřížky (`3/5`) pro pilulku postupu i výsledek; `null`, když cíl žádný čítač nemá. */
+export function gridGoal(spec: GameSpecV1, snapshot: RuntimeSnapshot): HudGoal | null {
+  const counter = objectiveCounter(spec);
+  const label = GOAL_LABEL[spec.objective.kind];
+  return counter === null || label === undefined ? null : { label, count: readVariable(snapshot, counter) ?? 0, need: spec.objective.count ?? 1 };
+}
+
+/** Čítač zásahů mechaniky `health` (`DAMAGE_COUNTER` v `adapters/health.ts`), opsaný jako jména výš. */
+const DAMAGE = 'damage';
+/** Co hráče chytí nebo zraní; bez `health` je každý zásah rovnou prohra. */
+const CATCHERS: ReadonlySet<string> = new Set(['chaser', 'patrol']);
+const THREATS: ReadonlySet<string> = new Set([...CATCHERS, 'hazard_zone']);
+
+/**
+ * Fakta skončeného běhu mřížky pro výsledek (P34 T6): cíl, zásahy a čas.
+ * Zásahy počítá čítač `health`; hra bez něj končí prohrou při prvním
+ * chycení, takže výhra v ní je skutečná nula – prohra bez něj číslo nemá.
+ */
+export function gridFacts(spec: GameSpecV1, snapshot: RuntimeSnapshot): RunFacts {
+  const won = snapshot.runState === 'won';
+  const goal = gridGoal(spec, snapshot);
+  const health = spec.mechanics.some((entry) => entry.id === 'health');
+  const threat = spec.mechanics.some((entry) => THREATS.has(entry.id));
+  const hits = health ? (readVariable(snapshot, DAMAGE) ?? 0) : threat && won ? 0 : null;
+  return {
+    won,
+    tick: snapshot.tick,
+    hz: TICKS_PER_SECOND,
+    survive: spec.objective.kind === 'survive',
+    goal: goal === null ? null : { ...goal, label: goal.label === 'gate' ? 'gates' : goal.label },
+    extra: hits === null ? [] : [{ value: String(hits), label: spec.mechanics.some((entry) => CATCHERS.has(entry.id)) ? 'times caught' : 'times hit' }],
+  };
+}
+
 /** Čas mřížky: odpočet hry na přežití nebo mechaniky `timer`, jinak uběhlý čas. */
 export function gridClock(spec: GameSpecV1, tick: number): HudClock {
   const elapsed = tick / TICKS_PER_SECOND;
@@ -107,14 +142,11 @@ export function Hud({
   readonly children?: ReactNode;
 }) {
   const phase = phaseLine(spec, snapshot);
-  const counter = objectiveCounter(spec);
-  const label = GOAL_LABEL[spec.objective.kind];
-  const goal = counter === null || label === undefined ? null : { label, count: readVariable(snapshot, counter) ?? 0, need: spec.objective.count ?? 1 };
   return (
     <GameHud
       title={spec.title}
       goalLine={spec.tutorial.goalLine}
-      goal={goal}
+      goal={gridGoal(spec, snapshot)}
       clock={gridClock(spec, snapshot.tick)}
       objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, TICKS_PER_SECOND, paused)}
       onPause={onPause}

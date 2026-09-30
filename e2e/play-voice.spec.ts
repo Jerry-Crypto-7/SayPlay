@@ -66,8 +66,8 @@ test.describe('/play – dictate the sentence', () => {
     await page.goto(((await response.json()) as { url: string }).url);
     await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     expect((await page.evaluate(() => window.__playShell!.playWitness())).runState).toBe('won');
-    // Od P33 T4 je pole remixu v listu za „Change it“.
-    await page.getByRole('button', { name: 'Change it' }).click();
+    // Od P33 T4 je pole remixu v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
+    await page.getByRole('button', { name: 'Remix it' }).click();
     await page.getByTestId('remix-mic').click();
     await expect(page.getByTestId('remix-input')).toHaveValue(SPOKEN);
   });

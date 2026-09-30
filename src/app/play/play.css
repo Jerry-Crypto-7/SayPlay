@@ -764,6 +764,17 @@
   bottom: auto;
 }
 
+/* Výsledek (P34 T6): čas a postup nese odznak a statistiky, horní řádek HUD zmizí; stav AI verze
+ * vyjede na jeho místo nahoru, nad zamrzlou scénu (odznak mu nechá místo, `.play-result-top`). */
+.play-shell:has(> .play-result) .play-hud :is(.play-hud-progress, .play-hud-corner, .play-hud-phase) {
+  visibility: hidden;
+}
+
+.play-shell:has(> .play-result) .play-hud > :is(.play-upgrade-status, .play-upgrade-toast) {
+  top: var(--_top);
+  bottom: auto;
+}
+
 /* Otevřené pole změny sedí nad dolní řadou vlevo – pilulka stavu mu uhne výš. */
 .play-hud:has(> .play-live) > .play-upgrade-status {
   bottom: calc(var(--_stack) + var(--sp-size-touch-min) + var(--sp-space-8));
@@ -853,7 +864,7 @@
     background: var(--sp-bg);
   }
 
-  .play-shell:not(.play-pager-slide > .play-shell) > :is(.play-stage, .play-hud) {
+  .play-shell:not(.play-pager-slide > .play-shell) > :is(.play-stage, .play-hud, .play-result) {
     inset: 0;
     margin: auto;
     width: min(100cqw, 1280px, 100cqh * 16 / 9);
@@ -923,49 +934,202 @@
   color: var(--sp-text);
 }
 
-/* Karta po hře (P33 T4): jedna hlavní akce, pod ní dvě vedlejší cesty. */
-.play-postrun-main {
-  width: 100%;
+/* Výsledek (P34 T6, kit `08-game-hud.md` Result screen, reference `03-win@2x.png`).
+ * Horních 30 % je zamrzlá scéna (plátno po konci běhu stojí) s odznakem výhry,
+ * pod ní krémový list: nadpis, věta, statistiky a akce přitlačené dolů. Vrstva
+ * leží nad HUD; ťuky v horní části pouští skrz (stav AI verze pod ní zůstane
+ * klikací). Na desktopu leží na scéně 16:9 a list je karta 520 px
+ * (kit `05-layout.md`: sheets become centred dialogs). */
+.play-result {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--sp-z-hud) + 1);
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+  --_after: var(--sp-duration-base);
 }
 
-.play-postrun-more {
+.play-result[data-outcome='won'] {
+  --_after: var(--sp-duration-celebrate);
+}
+
+/* Odznak stojí pod místem horního řádku HUD – tam je s výsledkem štítek AI verze. */
+.play-result-top {
+  flex: 0 0 30%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: calc(var(--_top, 0px) + var(--sp-size-hud-pill) + var(--sp-space-3));
+}
+
+/* Odznak oslavy: slunce, silný obrys, tvrdý stín, −6°; naskočí s přestřelem (kit ease-pop).
+ * Náklon nese vlastnost `rotate`, ať ho `transform` animace naskočení nepřepíše. */
+.sp-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--sp-secondary);
+  color: var(--sp-on-secondary);
+  border: var(--sp-border-thick) solid var(--sp-outline);
+  box-shadow: var(--sp-shadow-md);
+  rotate: -6deg;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
+.play-badge-time {
+  font-family: var(--sp-font-display);
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: var(--sp-text-display-m-tracking);
+  font-variant-numeric: tabular-nums;
+}
+
+.play-badge-word {
+  margin-top: var(--sp-space-1);
+  font-size: var(--sp-text-caption-size);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.play-result-sheet {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-space-8) max(var(--sp-space-5), calc((100% - 560px) / 2)) calc(var(--sp-space-6) + env(safe-area-inset-bottom, 0px));
+  background: var(--sp-bg);
+  border-top: var(--sp-border-thick) solid var(--sp-outline);
+  border-radius: var(--sp-radius-2xl) var(--sp-radius-2xl) 0 0;
+  text-align: center;
+  pointer-events: auto;
+  animation: sp-sheet-in var(--sp-duration-base) var(--sp-ease-standard);
+}
+
+.play-result-summary {
+  margin: var(--sp-space-3) 0 0;
+  color: var(--sp-text-secondary);
+  font-size: var(--sp-text-body-l-size);
+  font-weight: var(--sp-text-body-l-weight);
+  line-height: var(--sp-text-body-l-leading);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Statistiky v řadě po třech (kit Card & stat); vyjedou po listu, po výhře po odznaku, 60 ms po sobě. */
+.play-result-stats {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--sp-space-3);
+  margin: var(--sp-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.play-result-stats > .sp-stat {
+  --_i: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-space-1);
+  font-variant-numeric: tabular-nums;
+  animation: play-stat-in var(--sp-duration-base) var(--sp-ease-standard) both;
+  animation-delay: calc(var(--_after) + 60ms * var(--_i));
+}
+
+.play-result-stats > .sp-stat:nth-child(2) {
+  --_i: 1;
+}
+
+.play-result-stats > .sp-stat:nth-child(3) {
+  --_i: 2;
+}
+
+@keyframes play-stat-in {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* Akce dole: L hlavní přes celou šířku, dvě M vedle sebe, odkazy pod nimi. */
+.play-result-actions {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: var(--sp-space-6);
+}
+
+.play-result-more {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-space-3);
+  margin-top: var(--sp-space-4);
+}
+
+.play-result-more > .sp-btn {
+  padding-inline: var(--sp-space-3);
+}
+
+.play-result-links {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--sp-space-2) var(--sp-space-3);
-  width: 100%;
+  gap: 0 var(--sp-space-5);
+  margin-top: var(--sp-space-3);
 }
 
-.play-postrun-more .play-button {
-  flex: 1 1 auto;
-  padding-inline: var(--sp-space-4);
-}
-
-.play-postrun-more .play-status,
-.play-postrun-more .play-share-url {
-  flex-basis: 100%;
-  text-align: center;
-}
-
-/* Prázdná oblast `aria-live` musí v DOM zůstat, jen nesmí přidat řádek. */
-.play-postrun-more .play-status:empty {
+/* Prázdná oblast `aria-live` sdílení musí v DOM zůstat, jen nesmí zabrat buňku ani řádek;
+ * plná je toast kitu (`.sp-toast`, pevně dole uprostřed). Ruční pole odkazu jde přes celou šířku. */
+.play-result .play-status:empty {
   position: absolute;
+}
+
+.play-result-more > .play-share-url {
+  grid-column: 1 / -1;
+}
+
+.play-result-links > .play-share-url {
+  flex-basis: 100%;
 }
 
 .play-remix .play-chips {
   justify-content: flex-start;
 }
 
-.play-postrun-clip {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--sp-size-touch-min);
-  color: var(--sp-text-secondary);
-  font-size: var(--sp-text-body-s-size);
+@media (min-width: 1024px) {
+  .play-result {
+    justify-content: flex-end;
+    align-items: center;
+    padding: var(--sp-space-6);
+  }
+
+  .play-result-top {
+    flex: 1 1 auto;
+  }
+
+  .play-result-sheet {
+    flex: 0 1 auto;
+    width: min(520px, 100%);
+    padding: var(--sp-space-8) var(--sp-space-6) var(--sp-space-6);
+    border: var(--sp-border-base) solid var(--sp-outline);
+    border-radius: var(--sp-radius-2xl);
+    box-shadow: var(--sp-shadow-lg);
+  }
 }
 
-.play-postrun-clip:hover {
-  color: var(--sp-text);
+@media (prefers-reduced-motion: reduce) {
+  .sp-badge,
+  .play-result-sheet,
+  .play-result-stats > .sp-stat {
+    animation: none;
+  }
 }
 
 /* Chyba stavby (P34 T4): chybový toast kitu dole uprostřed nad lištou domova,
@@ -1678,14 +1842,6 @@
 
 .play-lineage-count {
   font-variant-numeric: tabular-nums;
-}
-
-.play-postrun {
-  margin-top: var(--sp-space-4);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-space-2);
 }
 
 .play-chips {

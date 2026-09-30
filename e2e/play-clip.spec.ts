@@ -3,9 +3,11 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import { startGame } from './play-start';
 
 /**
- * Klip běhu (P29D T1): po konci arkádové hry nabídne PostRun „Save clip“ a
- * klip je opravdové video – nenulová velikost, typ videa, délka do 16 s
- * včetně konce hry. Prohlížeč bez `captureStream` tlačítko nevidí.
+ * Klip běhu (P29D T1): po konci arkádové hry nabídne výsledek „Save video“
+ * (do P34 T6 „Save clip“, kit říká video) a klip je opravdové video –
+ * nenulová velikost, typ videa, délka do 16 s včetně konce hry. Prohlížeč
+ * bez `captureStream` tlačítko nevidí. Toasty sdílení mluví od P34 T6 kitem
+ * („Link copied. Go dare someone.“).
  *
  * Prázdný klip vypadá jako klip, proto se video načte do `<video>` a čte se
  * z jeho metadat, ne z existence tlačítka.
@@ -36,7 +38,7 @@ test.describe('/play/[id] – clip of the run', () => {
     url = await publish(request);
   });
 
-  test('after the run, Save clip holds a real video of at most 16 s', async ({ page }) => {
+  test('after the run, Save video holds a real video of at most 16 s', async ({ page }) => {
     await page.goto(url);
     await playToEnd(page);
     const save = page.getByTestId('play-save-clip');
@@ -71,7 +73,7 @@ test.describe('/play/[id] – clip of the run', () => {
     expect(video.duration).toBeLessThanOrEqual(16);
   });
 
-  test('a browser without canvas capture shows no Save clip and shares the link alone', async ({ page, context }) => {
+  test('a browser without canvas capture shows no Save video and shares the link alone', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.addInitScript(() => {
       // @ts-expect-error – prohlížeč bez nahrávání plátna
@@ -83,7 +85,7 @@ test.describe('/play/[id] – clip of the run', () => {
     await page.waitForTimeout(2_500);
     await expect(page.getByTestId('play-save-clip')).toHaveCount(0);
     await page.getByTestId('play-share').click();
-    await expect(page.getByText('Link copied')).toBeVisible();
+    await expect(page.getByText('Link copied. Go dare someone.')).toBeVisible();
     expect(await shareEvents(page)).toEqual([{ name: 'share', withClip: false }]);
   });
 
@@ -124,7 +126,7 @@ test.describe('/play/[id] – clip of the run', () => {
     const download = page.waitForEvent('download');
     await page.getByTestId('play-share').click();
     expect((await download).suggestedFilename()).toMatch(/^worldstream-clip\.(mp4|webm)$/);
-    await expect(page.getByText('Clip saved, link copied')).toBeVisible();
+    await expect(page.getByText('Video saved. Link copied. Go dare someone.')).toBeVisible();
     expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(url);
     expect(await shareEvents(page)).toEqual([{ name: 'share', withClip: true }]);
   });

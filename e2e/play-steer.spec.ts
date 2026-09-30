@@ -6,7 +6,8 @@ import { startGame } from './play-start';
  * Závod a aréna na `/play/[id]` (P25F T6): věta projde skutečnými dveřmi
  * (dvojník režiséra = návrh ze slov → `steer` / `move_free`), hra se načte
  * v arkádovém plátně, hodiny běží, držená šipka se zapíše do každého tiku,
- * záznam robota přehraný sondou skončí na „You won“ a mobil nescrolluje do
+ * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
+ * kitu, dřív „You won“) a mobil nescrolluje do
  * strany.
  */
 
@@ -78,7 +79,7 @@ for (const game of GAMES) {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const outcome = await page.evaluate(() => window.__playShell!.playWitness());
       expect(outcome.runState).toBe('won');
-      await expect(page.getByTestId('play-outcome')).toContainText('You won');
+      await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
       await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
     });
 

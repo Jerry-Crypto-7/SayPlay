@@ -11,12 +11,14 @@ import { draftGameSpec } from '@/play/draft';
 import {
   BUILD_FAILED,
   BUILD_STEPS,
-  CHALLENGE_A_FRIEND,
   CHANGE_ONE_THING,
+  DARE_A_FRIEND,
+  DARE_SHORT,
   FULL_READY,
   HERO,
   IDEA_LIMIT,
   IDEAS,
+  LINK_COPIED,
   NOT_SENT,
   OFFLINE,
   PLACEHOLDER,
@@ -26,8 +28,10 @@ import {
   QUICK_VERSION,
   QUICK_VERSION_REST,
   SENTENCE_LIMIT,
+  SO_CLOSE,
   STARTERS,
   SUBHEAD,
+  YOU_DID_IT,
 } from '../starters';
 
 /**
@@ -94,9 +98,11 @@ describe('měď z PRODUCT_COPY.md', () => {
     expect(PLACEHOLDER).toBe(copyLine('Placeholder'));
   });
 
-  it('po dohrání: nadpis, sdílení a čipy doslova z balíčku, čipy v pořadí a se jmény z remixu', () => {
+  // P34 T6: věty výsledku a sdílení mluví kitem ve větném tvaru – karta je už nepřepisuje.
+  it('po dohrání: nadpisy, list, sdílení a čipy doslova z balíčku, čipy v pořadí a se jmény z remixu', () => {
+    expect([YOU_DID_IT, SO_CLOSE]).toEqual(copyLine('Result').split(' / '));
     expect(CHANGE_ONE_THING).toBe(copyLine('Post-run'));
-    expect(CHALLENGE_A_FRIEND).toBe(copyLine('Share'));
+    expect([DARE_A_FRIEND, DARE_SHORT, LINK_COPIED]).toEqual(copyLine('Share').split(' / '));
     expect(POST_RUN_CHIPS.map((entry) => entry.label)).toEqual(copyLine('Chips').replace(/.$/, '').split(' / '));
     expect(POST_RUN_CHIPS.map((entry) => entry.chip)).toEqual([...CHIPS]);
     for (const entry of POST_RUN_CHIPS) expect(entry.label).toBe(CHIP_LABELS[entry.chip]);

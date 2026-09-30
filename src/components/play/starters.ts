@@ -77,13 +77,20 @@ export const STARTERS: readonly Starter[] = [
 ];
 
 /**
- * Měď po dohrání (T6), doslova z `PRODUCT_COPY.md`. Čipy jsou opis
+ * Měď po dohrání (P34 T6, kit `11-voice-copy.md` a Result screen v
+ * `08-game-hud.md`), doslova z `PRODUCT_COPY.md` a ve větném tvaru – karta
+ * je bere, jak jsou. „Dare a friend“ je krátký popisek téhož sdílení pro
+ * vedlejší M tlačítko po prohře, kam se celá věta nevejde. Čipy jsou opis
  * `REMIX_CHIP_LABELS` ze `src/play/director/remix.ts` – ten modul táhne registr a zod,
  * a do klientského bundlu nepatří; `__tests__/starters.test.ts` drží obě
  * kopie u sebe.
  */
-export const CHANGE_ONE_THING = 'CHANGE ONE THING';
-export const CHALLENGE_A_FRIEND = 'CHALLENGE A FRIEND';
+export const CHANGE_ONE_THING = 'Change one thing';
+export const YOU_DID_IT = 'You did it!';
+export const SO_CLOSE = 'So close.';
+export const DARE_A_FRIEND = 'Dare a friend to beat it';
+export const DARE_SHORT = 'Dare a friend';
+export const LINK_COPIED = 'Link copied. Go dare someone.';
 
 export const POST_RUN_CHIPS = [
   { chip: 'harder', label: 'Make it harder' },

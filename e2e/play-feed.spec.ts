@@ -207,7 +207,7 @@ test.describe('/play – vertical feed', () => {
     // Jedna h1 na stránce (P33 T13): titul nad polem; název hry v HUD je h2.
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('h2.play-hud-title')).toHaveCount(1);
-    // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže „You lost“ (runner prohraje do 3 s).
+    // Bez dotyku hraje robot dokola: první obrazovka nikdy neukáže prohru „So close.“ (runner prohraje do 3 s).
     await expect(page.getByTestId('play-demo')).toBeVisible();
     for (let second = 0; second < 8; second += 1) {
       await page.waitForTimeout(1000);

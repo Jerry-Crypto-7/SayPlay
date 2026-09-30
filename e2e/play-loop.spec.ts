@@ -49,7 +49,8 @@ test('a played and shared game, then its link opened elsewhere, log each step on
   await expect(page.getByTestId('play-outcome')).toBeVisible();
   await page.getByTestId('play-replay').click();
   await page.getByTestId('play-share').click();
-  await expect(page.getByText('Link copied')).toBeVisible();
+  // P34 T6: toast mluví kitem („Link copied. Go dare someone.“ místo „Link copied“).
+  await expect(page.getByText('Link copied. Go dare someone.')).toBeVisible();
   const link = await page.evaluate(() => navigator.clipboard.readText());
   const player = await sessionOf(page);
   expect(player).toMatch(/^[a-z0-9]{12,32}$/);

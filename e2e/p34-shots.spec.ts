@@ -60,6 +60,8 @@ const EGGS = "A fox steals eggs from a farm while the farmer's dog chases it";
 const MUSHROOMS = 'Collect five glowing mushrooms then open a portal.';
 /** Arkáda s časovým limitem (T5): aréna, časovač odpočítává. */
 const ARENA = 'Survive in an arena full of slimes.';
+/** Poletování (T6, jako `e2e/play-platform.spec.ts`): bez mávání pták spadne – skutečná prohra za pár sekund. */
+const FLAP = 'like flappy bird but underwater';
 
 /** Hra z věty bez podvrženého stavu AI verze; čeká, až plátno stojí. */
 async function publishAndOpen(page: Page, sentence: string): Promise<void> {
@@ -152,6 +154,23 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
     await tapStage(page);
     await page.waitForTimeout(1_500);
     await expect(page.getByTestId('play-timer')).toHaveAttribute('data-countdown', 'true');
+  },
+  // T6: výhra na scéně reference (`03-win@2x.png`) – běh svědka dohraje vejce; odznak, nadpis, statistiky, Dare.
+  'result-win': async (page) => {
+    await game(page, PENDING(), 'working', EGGS);
+    await page.evaluate(() => window.__playShell!.playWitness());
+    await expect(page.getByTestId('play-outcome')).toHaveAttribute('data-outcome', 'won', { timeout: 30_000 });
+    await page.waitForTimeout(1_200);
+  },
+  // T6: prohra – pták bez mávání spadne; „So close.“, hlavní je Try again, Dare mezi papírovými.
+  'result-lose': async (page) => {
+    test.setTimeout(120_000);
+    await game(page, PENDING(), 'working', FLAP);
+    // Jako `e2e/play-platform.spec.ts`: pták čeká na první ťuk; jedno mávnutí a bez dalšího spadne.
+    await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-player-x', /.+/, { timeout: 60_000 });
+    await page.keyboard.press('Space');
+    await expect(page.getByTestId('play-outcome')).toHaveAttribute('data-outcome', 'lost', { timeout: 30_000 });
+    await page.waitForTimeout(1_200);
   },
 };
 

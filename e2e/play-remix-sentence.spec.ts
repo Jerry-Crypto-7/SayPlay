@@ -3,7 +3,7 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 import { openAbout } from './play-start';
 
 /**
- * P27C T5: „Change it“ pod hrou. Hráč dohraje, napíše „add snow“ a otevře
+ * P27C T5: „Remix it“ pod hrou (do P34 T6 „Change it“). Hráč dohraje, napíše „add snow“ a otevře
  * novou verzi s vlastním odkazem; rodič zůstane s původním specem.
  *
  * Server v e2e model nemá, proto se `POST/GET …/remix` s větou podvrhne přes
@@ -59,8 +59,8 @@ test('a sentence of your own opens a new version and leaves the original alone',
 
   await page.goto(url);
   await win(page);
-  // Od P33 T4 je pole v listu za „Change it“.
-  await page.getByRole('button', { name: 'Change it' }).click();
+  // Od P33 T4 je pole v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
+  await page.getByRole('button', { name: 'Remix it' }).click();
   const box = page.getByTestId('remix-box');
   await expect(box).toBeVisible();
   await box.getByTestId('remix-input').fill('add snow');
@@ -102,8 +102,8 @@ test('a remix sent before Replay comes back as a chip, not a jump (P28B T7)', as
 
   await page.goto(url);
   await win(page);
-  // Od P33 T4 je pole v listu za „Change it“.
-  await page.getByRole('button', { name: 'Change it' }).click();
+  // Od P33 T4 je pole v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
+  await page.getByRole('button', { name: 'Remix it' }).click();
   const box = page.getByTestId('remix-box');
   await box.getByTestId('remix-input').fill('make enemies faster');
   await box.getByTestId('remix-submit').click();
@@ -135,8 +135,8 @@ test('a refused change says why and points back to the chips', async ({ page, re
 
   await page.goto(url);
   await win(page);
-  // Od P33 T4 je pole v listu za „Change it“.
-  await page.getByRole('button', { name: 'Change it' }).click();
+  // Od P33 T4 je pole v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
+  await page.getByRole('button', { name: 'Remix it' }).click();
   const box = page.getByTestId('remix-box');
   await box.getByTestId('remix-input').fill('make the hero a dragon');
   await box.getByTestId('remix-submit').click();
