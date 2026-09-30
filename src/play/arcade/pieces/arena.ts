@@ -37,6 +37,7 @@ import {
   type ArcadeLevel,
   AXIS_MAX,
   BODY,
+  BUTTON,
   type BodyInit,
   COUNTER,
   type ControlPiece,
@@ -195,6 +196,8 @@ export const chaseParams = z
     speed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max),
     /** Horizont předvídání v ticích: míří tam, kde hráč bude, nejvýš tak daleko dopředu. */
     lead: z.int().min(0).max(2 * ARCADE_HZ),
+    /** Úkol (P32G G-R1): dokud hráč drží „Use“ (`BUTTON.INTERACT`), běží pronásledovatelé poloviční rychlostí. */
+    slowWhileUse: z.boolean().optional(),
   })
   .strict();
 export type ChaseParams = z.infer<typeof chaseParams>;
@@ -307,7 +310,8 @@ function probeDirection(direction: number, x: number, zz: number, w: number, d: 
  * rychlost těla – nic mimo snímek. Do stěny ani do tělesa nevjedou nikdy: složka
  * rychlosti, která by je tam zanesla, se vynuluje (klouzání podél).
  */
-function steerChasers(state: Int32Array, player: number, half: number, chase: ChaseParams): void {
+function steerChasers(state: Int32Array, player: number, half: number, chase: ChaseParams, buttons: number): void {
+  const speed = chase.slowWhileUse === true && (buttons & BUTTON.INTERACT) !== 0 ? Math.trunc(chase.speed / 2) : chase.speed;
   const at = HEADER.counters + COUNTER[GRACE_COUNTER];
   const grace = state[at] as number;
   if (grace > 0) state[at] = grace - 1;
@@ -360,13 +364,14 @@ function steerChasers(state: Int32Array, player: number, half: number, chase: Ch
     const want = directionToward(sx, sz);
     const direction = want < 0 ? -1 : probeDirection(want, x, zz, w, d, vx, vz, half, solids);
     const dir = direction < 0 ? { dx: 0, dz: 0 } : DIRECTIONS[direction]!;
-    let nvx = toward(vx, Math.trunc((dir.dx * chase.speed) / 1000), ESCAPE.chaserAccel);
-    let nvz = toward(vz, Math.trunc((dir.dz * chase.speed) / 1000), ESCAPE.chaserAccel);
+    let nvx = toward(vx, Math.trunc((dir.dx * speed) / 1000), ESCAPE.chaserAccel);
+    let nvz = toward(vz, Math.trunc((dir.dz * speed) / 1000), ESCAPE.chaserAccel);
     // Zrychlení po osách by v zatáčce přetáhlo rychlost přes strop – zkrátit na `speed` (délka zaokrouhlená nahoru).
+    // Zpomalení při „Use“ platí hned: strop stáhne i rozjetého pronásledovatele.
     const over = Math.ceil(Math.sqrt(nvx * nvx + nvz * nvz));
-    if (over > chase.speed) {
-      nvx = Math.trunc((nvx * chase.speed) / over);
-      nvz = Math.trunc((nvz * chase.speed) / over);
+    if (over > speed) {
+      nvx = Math.trunc((nvx * speed) / over);
+      nvz = Math.trunc((nvz * speed) / over);
     }
     if (blocked(x + nvx, zz + nvz, w, d, half, solids)) {
       if (!blocked(x + nvx, zz, w, d, half, solids)) nvz = 0;
@@ -408,7 +413,7 @@ export const moveFreeControl: ControlPiece<ArenaControlParams> = {
     state[base + BODY.vz] = Math.max(-limit - zz, Math.min(limit - zz, vz));
 
     moveCells(state, player, params.half);
-    if (params.chase !== undefined) steerChasers(state, player, params.half, params.chase);
+    if (params.chase !== undefined) steerChasers(state, player, params.half, params.chase, input.buttons);
   },
 };
 

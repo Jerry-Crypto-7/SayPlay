@@ -225,7 +225,8 @@ export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
   parts: (seed, params, health) => {
     const { level, issues } = spatialLevel(seed, params);
     const interact: CompiledInteract = { role: ROLE.target, radius: QUEST.radius, hold: params.hold, states: params.states };
-    const chase: ChaseParams | undefined = params.chasers === 0 ? undefined : { speed: params.chaserSpeed, lead: ESCAPE.lead };
+    // Kdo drží „Use“, stojí u cíle: pronásledovatelé zatím běží poloviční rychlostí (G-R1).
+    const chase: ChaseParams | undefined = params.chasers === 0 ? undefined : { speed: params.chaserSpeed, lead: ESCAPE.lead, slowWhileUse: true };
     // Chycení jako v útěku: mimo ochranu prohra, se životy ztráta života a nová ochrana.
     const catches: PieceRef[] =
       chase === undefined

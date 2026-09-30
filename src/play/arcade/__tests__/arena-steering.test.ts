@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, type ArcadeInput, type ArcadeLevel, type ArcadeWorld, BODY, type BodyInit, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
+import { ARCADE_HZ, type ArcadeInput, type ArcadeLevel, type ArcadeWorld, BODY, BUTTON, type BodyInit, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
 import { buildWorld, hashArcade, instantiate, loadProgram, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { ARENA, DIRECTIONS, ESCAPE, arenaAxis, arenaEscape } from '../pieces/arena';
@@ -144,6 +144,56 @@ describe('chaser steering – walls and each other', () => {
       }
       expect(longest, `seed ${seed}`).toBeLessThanOrEqual(ARCADE_HZ / 2);
     }
+  });
+});
+
+describe('chaser steering – slow while the player holds Use (P32G G-R1)', () => {
+  /** Nejvyšší rychlost pronásledovatele (jednotky za tik) mezi 2,5 a 4 s, kdy hráč stojí a drží `buttons`. */
+  function topSpeed(seed: number, slowWhileUse: boolean, buttons: number): number {
+    const parts = arenaEscape.parts(seed, arenaEscape.params.parse({ chasers: 2 }), 3);
+    const params = parts.control.params as { readonly chase: Record<string, unknown> };
+    const control = { ...parts.control, params: { ...params, chase: { ...params.chase, slowWhileUse } } };
+    const built = buildWorld({ seed, control, rules: parts.rules, bot: parts.bot, level: parts.level, health: 3 }, ARCADE_LIBRARY);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    const program = loadProgram(built.world, ARCADE_LIBRARY);
+    const state = instantiate(built.world);
+    let top = 0;
+    for (let t = 0; t < 4 * ARCADE_HZ && state[HEADER.runState] === 0; t += 1) {
+      step(state, { buttons, axis: 0 }, program);
+      if (t < 2.5 * ARCADE_HZ) continue;
+      for (const i of chasersOf(state)) top = Math.max(top, Math.hypot(state[bodyBase(i) + BODY.vx] as number, state[bodyBase(i) + BODY.vz] as number));
+    }
+    return top;
+  }
+
+  it('with slowWhileUse a held Use halves the chaser speed; without the flag or the button it runs full speed', () => {
+    const half = Math.trunc(ESCAPE.chaserSpeed.default / 2);
+    for (const seed of SEEDS.slice(0, 10)) {
+      expect(topSpeed(seed, true, BUTTON.INTERACT), `seed ${seed}: slowed`).toBeLessThanOrEqual(half);
+      expect(topSpeed(seed, true, 0), `seed ${seed}: Use released`).toBeGreaterThan(half);
+      expect(topSpeed(seed, false, BUTTON.INTERACT), `seed ${seed}: no flag`).toBeGreaterThan(half);
+    }
+  });
+
+  it('pressing Use caps a chaser already at full speed to half on the very next tick', () => {
+    const half = Math.trunc(ESCAPE.chaserSpeed.default / 2);
+    let pressed = 0;
+    for (const seed of SEEDS.slice(0, 10)) {
+      const parts = arenaEscape.parts(seed, arenaEscape.params.parse({ chasers: 2 }), 3);
+      const params = parts.control.params as { readonly chase: Record<string, unknown> };
+      const control = { ...parts.control, params: { ...params, chase: { ...params.chase, slowWhileUse: true } } };
+      const built = buildWorld({ seed, control, rules: parts.rules, bot: parts.bot, level: parts.level, health: 3 }, ARCADE_LIBRARY);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      const program = loadProgram(built.world, ARCADE_LIBRARY);
+      const state = instantiate(built.world);
+      const speedOf = (i: number): number => Math.hypot(state[bodyBase(i) + BODY.vx] as number, state[bodyBase(i) + BODY.vz] as number);
+      for (let t = 0; t < 3 * ARCADE_HZ && state[HEADER.runState] === 0; t += 1) step(state, { buttons: 0, axis: 0 }, program);
+      if (state[HEADER.runState] !== 0 || !chasersOf(state).some((i) => speedOf(i) > half)) continue;
+      step(state, { buttons: BUTTON.INTERACT, axis: 0 }, program);
+      for (const i of chasersOf(state)) expect(speedOf(i), `seed ${seed}: chaser ${i} one tick after Use`).toBeLessThanOrEqual(half);
+      pressed += 1;
+    }
+    expect(pressed, 'seeds where a chaser was above half speed when Use went down').toBeGreaterThanOrEqual(5);
   });
 });
 

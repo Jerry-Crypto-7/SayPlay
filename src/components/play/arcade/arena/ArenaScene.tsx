@@ -48,6 +48,7 @@ import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Scenery } from '../look/Scenery';
+import { questTargets } from '../quest/TargetStates';
 import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { type Cast, FittedModel } from '../World';
@@ -707,7 +708,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
           </group>
         );
       })}
-      <TargetsMount session={session} views={views} layer={targets} />
+      <TargetsMount session={session} views={views} layer={targets ?? questTargets(session.world, { session, look: scene })} />
     </>
   );
 }
