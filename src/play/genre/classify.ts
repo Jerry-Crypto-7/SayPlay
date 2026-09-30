@@ -158,6 +158,9 @@ function cuePattern(cue: string): RegExp {
 const PAIRS: readonly Pair[] = GENRES.flatMap((genre) => GENRE_MODES[genre].map((mode) => pair(genre, mode)));
 const key = (p: Pair): string => `${p.genre}.${p.mode}`;
 
+/** „dodging the fishmonger“, „avoid the guards“: sběr s někým, komu se hráč vyhýbá. */
+const AVOID = /\bdodg(?:e|es|ing)\b|\bavoid(?:s|ing)?\b/;
+
 /** Věta (a čtení modelem, když je) → všech devět režimů seřazených od nejlepšího. */
 export function classifyGenre(sentence: string, reading: Reading | null, modules: GenreModules = GENRE_MODULES): GenreRanking {
   const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -175,7 +178,8 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
   });
   const main = [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
   const firstMove = heard.filter((entry) => entry.kind === 'move').sort((a, b) => a.at - b.at)[0];
-  const chaser = heard.some((entry) => entry.kind === 'chase') || reading?.roles.some((role) => role.kind === 'chaser') === true;
+  // T5b: i to, čemu se hráč vyhýbá („while dodging ghosts“, hrozba ze čtení) – skutečný sběr v Aréně nepřítele nemá, útěk ano.
+  const chaser = heard.some((entry) => entry.kind === 'chase') || reading?.roles.some((role) => role.kind === 'chaser' || role.kind === 'threat') === true || AVOID.test(text);
   // Sběr s pohybem vpřed patří pohybu, s pronásledovatelem útěku, jinak sběru v Aréně.
   const pickup = (): Pair => firstMove?.pick ?? (chaser ? ESCAPE : COLLECT);
 

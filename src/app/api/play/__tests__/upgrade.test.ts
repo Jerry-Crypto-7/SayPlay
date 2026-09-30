@@ -308,10 +308,11 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
 
   // P32B T2: mřížkový návrh nová věta už nedostane; křeček je útěk v aréně.
   // P32B T5: běžce věrnost pustí, jen když ho hraje hlavní sloveso („runs“); návrh zůstane útěkem,
-  // protože útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „hunts“).
+  // protože útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „chases“).
+  // T5b: skutečný běžec má narážku „escape“, s „hunts“ by byla remíza a návrh by byl už běžec – „chases“ je i narážka Arény.
   it('arénový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
     director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', enemy: 'giant roomba', setting: 'supermarket aisles', palette: 'supermarket' }))];
-    const created = await publish({ sentence: 'A hamster runs through a scary supermarket, escapes and survives while a giant Roomba hunts it.' });
+    const created = await publish({ sentence: 'A hamster runs through a scary supermarket, escapes and survives while a giant Roomba chases it.' });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
     expect((await game(created.body.versionId)).spec.control).toBe('move_free');
     expect((await settled(created.body.versionId)).status).toBe('ready');
