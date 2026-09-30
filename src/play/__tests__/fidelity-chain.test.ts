@@ -65,14 +65,14 @@ describe('fidelityChain', () => {
       ['cat', true, true, true, 'ok'],
       ['dog', true, true, true, 'ok'],
     ]);
-    // Soupeř souboje a věc sběru mají tělo, scéna jim ale dává model rolí `enemy` a `coin` (B-R9): klokan je robot, sýr drahokam.
+    // B-R9: soupeř souboje (`rival`) a věc sběru (`item`) berou model z vlastního popisku – klokan je klokan, sýr sýr.
     const fight = draftGameSpec('boxing a kangaroo in the australian outback');
     expect(fight.controlParams).toMatchObject({ generator: 'fight' });
-    expect(stages(fidelityChain(fight, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'] }]))).toEqual([['kangaroo', true, true, false, 'no-model']]);
+    expect(stages(fidelityChain(fight, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'] }]))).toEqual([['kangaroo', true, true, true, 'ok']]);
     const robot: GameSpecV1 = { ...fight, roles: fight.roles.map((role) => (role.id === 'rival' ? { ...role, label: 'robot' } : role)) };
     expect(stages(fidelityChain(robot, [{ item: 'robot', slot: 'role', match: ['robot'] }]))).toEqual([['robot', true, true, true, 'ok']]);
     const collect = draftGameSpec('a mouse collects cheese in a kitchen');
-    expect(stages(fidelityChain(collect, [{ item: 'cheese', slot: 'role', match: ['cheese'] }]))).toEqual([['cheese', true, true, false, 'no-model']]);
+    expect(stages(fidelityChain(collect, [{ item: 'cheese', slot: 'role', match: ['cheese'] }]))).toEqual([['cheese', true, true, true, 'ok']]);
     // Agar (`move_free` bez generátoru) kreslí kotouče – popisky dál nečte.
     const agar = arenaFixture as GameSpecV1;
     expect(fidelityChain(agar, [{ item: 'big fish', slot: 'role', match: ['big fish'] }])[0]).toMatchObject({ inSpec: true, read: false, why: 'not-read-by-control' });

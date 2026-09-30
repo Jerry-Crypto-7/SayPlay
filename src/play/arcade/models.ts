@@ -176,7 +176,10 @@ export function heroModel(spec: GameSpecV1): string {
 
 /** Nepřátelé střelnice: model z popisku role `enemy` (`heroChoice`), jinak robot. */
 export function enemyModel(spec: GameSpecV1): string {
-  return heroChoice(spec.roles.find((role) => role.id === 'enemy')?.label ?? '', undefined, spec.control, 'enemy').model;
+  // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
+  const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
+  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? rival?.label ?? '';
+  return heroChoice(label, undefined, spec.control, 'enemy').model;
 }
 
 /** Pronásledovatel doplňku `+chaser` (P26D): model z popisku role druhu `chaser` („bear“), jinak jako nepřítel. */
@@ -223,6 +226,10 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
     const found = id === 'rival' ? rivalModel(role.label, control) : modelOf(role.label, false);
     if (found !== undefined && found !== 'bird') out[id] = found;
   }
+  // B-R9: žánr arény (spec s generátorem) sbírá roli druhu `collectible` (`item`) – scéna ji kreslí jako `coin`.
+  const item = typeof spec.controlParams?.generator === 'string' && out.coin === undefined ? spec.roles.find((role) => role.kind === 'collectible') : undefined;
+  const itemModel = item === undefined ? undefined : modelOf(item.label, false);
+  if (itemModel !== undefined && itemModel !== 'bird') out.coin = itemModel;
   return out;
 }
 
