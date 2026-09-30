@@ -1,8 +1,8 @@
 /**
  * Smlouva rolí (P32B T3). Vzorový popisek („giant Roomba“, „race car“, hrdina
  * losovaný ze seznamu) vypadá na snímku jako legitimní role – proto pin: role
- * nové hry jsou jen slova věty nebo výchozí z prostředí. Běží proti dvojníkům
- * modulů (`./doubles`); se skutečnými moduly až P32B T6.
+ * nové hry jsou jen slova věty nebo výchozí z prostředí. Od P32B T6 běží proti
+ * skutečným modulům (`GENRE_MODULES`), ne proti dvojníkům.
  */
 
 import { readFileSync } from 'node:fs';
@@ -15,12 +15,10 @@ import { draftForControl, draftGameSpecWithMeta } from '../../draft/draft';
 import type { GameSpecV1 } from '../../spec';
 import { DEFAULT_LABELS, craftOf, defaultCollectible, defaultEnemy, defaultHero, heroClass, heroFits } from '../roles';
 
-import { genreDoubles } from './doubles';
-
 const demand = JSON.parse(readFileSync(new URL('../../../../evals/play/demand/corpus.json', import.meta.url), 'utf8')) as { readonly text: string }[];
 const corpus = [...sentenceSet.sentences.map((entry) => entry.text), ...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)];
 
-const draft = (sentence: string) => draftGameSpecWithMeta(sentence, 1, { modules: genreDoubles() });
+const draft = (sentence: string) => draftGameSpecWithMeta(sentence, 1);
 /** Co hráč vidí: titulek, popisky rolí, cíl a nápověda. Id rolí drží fixtury kvůli hashům („roomba“), ta hráč nevidí. */
 const shown = (spec: GameSpecV1): string => JSON.stringify([spec.title, spec.roles.map((role) => role.label), spec.objective.description, spec.tutorial]);
 const sentence = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
@@ -49,6 +47,15 @@ describe('roles of a new game', () => {
   it('never carry the Roomba of the chase fixture unless the sentence names it', () => {
     const leaks = corpus.filter((text) => !/roomba/i.test(text) && /roomba/i.test(shown(draft(text).spec)));
     expect(leaks).toEqual([]);
+  });
+
+  it.each(sentenceSet.sentences)('give $id the genre, mode and hero the set expects', (entry) => {
+    const genre = draft(entry.text).genre!;
+    const [id, mode] = entry.genre.split('.');
+    expect(genre.genre).toBe(id);
+    if (mode !== undefined) expect(genre.mode).toBe(mode);
+    expect(genre.hero).toContain(entry.hero.split(' ').at(-1));
+    expect(heroFits(genre.genre, genre.hero)).toBe(true);
   });
 
   it('give the pirate a boat and the wizard ghosts', () => {

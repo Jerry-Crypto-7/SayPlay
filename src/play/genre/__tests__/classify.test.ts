@@ -2,7 +2,8 @@
  * Klasifikátor žánru (P32B T1): věta → žánr a režim. Špatně zařazená věta dá
  * funkční, jen nesprávnou hru, a to by na snímku nikdo nepoznal – proto pin nad
  * pevnou sadou P32 (`evals/play/p32/sentences.json`) a nad draftovým korpusem.
- * Běží proti dvojníkům modulů (`./doubles`); se skutečnými moduly až P32B T6.
+ * Sada 9 vět běží od P32B T6 proti skutečným modulům; dvojníci (`./doubles`)
+ * zůstali tam, kde test potřebuje režim `fallback`.
  */
 
 import { readFileSync } from 'node:fs';
@@ -28,7 +29,7 @@ const top = (sentence: string, modules = genreDoubles()) => classifyGenre(senten
 describe('classifyGenre', () => {
   it.each(sentenceSet.sentences)('puts the expected genre and mode first for $id', (entry) => {
     const [genre, mode] = entry.genre.split('.');
-    const result = classifyGenre(entry.text, null, genreDoubles());
+    const result = classifyGenre(entry.text, null, GENRE_MODULES);
     expect(result.ranked[0].genre).toBe(genre);
     if (mode !== undefined) expect(result.ranked[0].mode).toBe(mode);
     expect(result.ranked[0].score).toBeGreaterThan(0);
