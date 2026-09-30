@@ -110,8 +110,29 @@ const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
   duel: 'a duel',
 };
 
+/** Hra žánru (P32B T2) se jmenuje podle žánru a režimu – ovládání pahýlu je jen dnešní náhrada. */
+const GENRE_CLOSEST: Readonly<Record<string, string>> = {
+  'runner.default': 'an endless runner',
+  'platformer.default': 'a platformer',
+  'arena.escape': 'a chase game',
+  'arena.collect': 'a collecting game',
+  'arena.fight': 'a duel',
+  'voyage.race': 'a race',
+  'voyage.land': 'a landing game',
+  'quest.spatial': 'a quest',
+  'quest.station': 'a quest',
+};
+
+function closestOf(draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): string {
+  const genre = draft.genre === undefined ? undefined : GENRE_CLOSEST[`${draft.genre.id}.${draft.genre.mode}`];
+  if (genre !== undefined) return genre;
+  // Arkádová hra si nese jméno podle ovládání – archetyp šablony je u všech
+  // `hazard_crossing`, takže by hláška u plošinovky slibovala přecházení.
+  return draft.control === undefined || draft.control === 'tap_go' ? CLOSEST[draft.archetype] : ARCADE_CLOSEST[draft.control];
+}
+
 /** Věta a hotový návrh → hláška, nebo `null`, když hra splní, co věta chtěla. */
-export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'archetype' | 'control'>): Honesty | null {
+export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'archetype' | 'control' | 'genre'>): Honesty | null {
   const text = sentence.toLowerCase();
   const match = CLASSES.find((entry) => entry.cues.some((cue) => cue.test(text)));
   if (match === undefined) {
@@ -120,13 +141,7 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
     if (topic === null) return null;
     return { kind: 'no_verb', reason: `No game verb found – here is a runner about ${topic}. Try: ‘Dodge …’, ‘Collect …’`, closest: ARCADE_CLOSEST.runner };
   }
-  return {
-    kind: match.kind,
-    reason: match.reason,
-    // Arkádová hra si nese jméno podle ovládání – archetyp šablony je u všech
-    // `hazard_crossing`, takže by hláška u plošinovky slibovala přecházení.
-    closest: draft.control === undefined || draft.control === 'tap_go' ? CLOSEST[draft.archetype] : ARCADE_CLOSEST[draft.control],
-  };
+  return { kind: match.kind, reason: match.reason, closest: closestOf(draft) };
 }
 
 /**

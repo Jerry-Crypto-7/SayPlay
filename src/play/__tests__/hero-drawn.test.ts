@@ -3,9 +3,14 @@
  *
  * Mapa ztrát T1 (`evals/play/p30b/losses.json`) je baseline: slovní draft i
  * zmrazené AI specy (`live.json`) přes řetěz věrnosti na HEAD. Hrdina, kterého
- * baseline kreslil, kreslený zůstává, a kreslených hrdinů (draft + ai dohromady)
- * je aspoň o čtyři víc. Postava se do těla vepíše výškou, ne nejužší osou –
- * široký slon jinak stojí v třetinové výšce a na snímku není poznat.
+ * baseline kreslil, kreslený zůstává, a kreslených hrdinů je víc. Postava se do
+ * těla vepíše výškou, ne nejužší osou – široký slon jinak stojí v třetinové
+ * výšce a na snímku není poznat.
+ *
+ * Od P32B T2 hlídá úbytek a zisk jen zdroj AI: slovní draft nové hry je žánr
+ * a co z něj scéna nakreslí, rozhoduje modul žánru. Jeho kreslení pinuje P32B
+ * T6 nad skutečnými moduly (součet ≥ `p30b/after.json`); že draft hrdinu z věty
+ * do specu zapíše, hlídá `draft.test.ts`.
  */
 
 import { readFileSync } from 'node:fs';
@@ -38,7 +43,7 @@ const sentences = [
   ...read<{ sentences: Sentence[] }>('evals', 'play', 'fidelity', 'judge-10.json').sentences,
 ];
 const live = new Map(read<{ sentences: { id: string; spec: GameSpecV1 }[] }>('evals', 'play', 'p30b', 'live.json').sentences.map((entry) => [entry.id, entry.spec]));
-const baseline = read<{ rows: Row[] }>('evals', 'play', 'p30b', 'losses.json').rows.filter((row) => row.role === 'hero');
+const baseline = read<{ rows: Row[] }>('evals', 'play', 'p30b', 'losses.json').rows.filter((row) => row.role === 'hero' && row.source === 'ai');
 
 const key = (row: Pick<Row, 'source' | 'id' | 'item'>): string => `${row.source}|${row.id}|${row.item}`;
 
@@ -74,10 +79,11 @@ describe('the hero from the sentence is drawn on the first frame', () => {
     }
   });
 
-  it('draws at least four more heroes than the baseline, draft and ai together', () => {
+  // Podíl AI na zisku P30B (17 → 20); draft měl zbytek do +4.
+  it('draws at least three more ai heroes than the baseline', () => {
     const before = baseline.filter((row) => row.drawn).length;
     const after = baseline.filter((row) => now.get(key(row)) === true).length;
-    expect(after).toBeGreaterThanOrEqual(before + 4);
+    expect(after).toBeGreaterThanOrEqual(before + 3);
   });
 });
 

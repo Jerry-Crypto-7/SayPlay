@@ -3,35 +3,37 @@
  *
  * Pořadí je smysl celé vrstvy: **návrh ze slov jde ven synchronně** přes
  * `onDraft` ještě před prvním `await`, teprve pak cache, model, kritik a
- * opravy. Model píše jen GameSpec, odpověď čte `readDirectorAnswer`, blokující
+ * opravy. Model píše jen `GenreSpec` (P32B T4), odpověď čte `readGenreAnswer`
+ * a hru z ní složí modul žánru; blokující
  * nálezy kritika se nejdřív opravují z tabulky (`repairDeterministically`),
  * teprve pak nejvýš `maxRepairRounds` modelových kol RFC 6902. Přijatý spec se
  * uloží do cache; **cokoli jiného skončí návrhem** s `fallbackReason`, nikdy
  * výjimkou – návrh existuje vždy, takže větev `ok:false` kontraktu tady nemá
  * kdy nastat (zapsáno v `docs/play/CONTRACT-CHANGES.md`).
  *
- * `MALFORMED` = odpověď se nedala přečíst ani deterministicky opravit (model
- * odpověděl něčím jiným než GameSpec); modelová kola nad ní nemají z čeho
- * záplatovat. `UNREPAIRED` = spec se přečetl, ale blokující nálezy přežily i
- * poslední kolo. `MODEL_UNAVAILABLE` = větev nevrátila odpověď, v prvním
- * volání nebo v opravném kole.
+ * `MALFORMED` = odpověď se nedala přečíst (model odpověděl něčím jiným než
+ * `GenreSpec`, nebo ho modul nepřeložil); modelová kola nad ní nemají z čeho
+ * záplatovat. `MODEL_UNAVAILABLE` = větev nevrátila odpověď, v prvním volání
+ * nebo v opravném kole. `UNREPAIRED` režisér od P32B T5 nevrací: odpověď mimo
+ * větu přepne žánr (`switchGenre`) a co neprojde ničím, dohraje žánr draftu.
  */
 
 import type { GenerationBranch } from '@/server/pipeline';
 
 import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpecWithMeta } from '../draft';
+import type { GenreModules } from '../genre/classify';
 import { readBeforeDraft, readerEnabled } from '../read/client';
 import type { GameSpecV1 } from '../spec';
 
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
-import { COMPACT_PROMPT_VERSION, buildCompactRequest, composeCompact } from './compact';
-import { type CriticIssue, blockingIssues, critique, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
+import { COMPACT_PROMPT_VERSION, buildCompactRequest } from './compact';
+import { type CriticIssue, blockingIssues, critique, fidelity, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
-import { readDirectorAnswer, unwrapAnswer } from './read';
+import { answerRules, readGenreAnswer, withoutAnswerRules } from './read';
 import { EXAMPLES_VERSION } from './retrieval';
-import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
+import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically, switchGenre } from './repair';
 
 export type { FallbackReason } from '../contracts';
 
@@ -76,8 +78,10 @@ export interface DirectorDeps {
   readonly check?: (spec: GameSpecV1) => readonly RepairIssue[];
   /** Kompaktní první odpověď (P27D T2, `compact.ts`); opravná kola zůstávají stejná. */
   readonly compact?: boolean;
-  /** Ověřené příklady v kompaktní první odpovědi (P30A T8, `retrieval.ts`); celý GameSpec je nebere. */
+  /** Ověřené příklady v kompaktní první odpovědi (P30A T8, `retrieval.ts`); plný prompt je nebere. */
   readonly examples?: boolean;
+  /** Moduly žánrů pro draft, čtení odpovědi a kontrolu věrnosti; testy sem dávají dvojníky (`genre/__tests__/doubles.ts`). */
+  readonly modules?: GenreModules;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -88,7 +92,9 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   const started = deps.now();
   // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
   const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
-  const draft = draftGameSpecWithMeta(sentence, deps.seed, { reading }).spec;
+  const genreOptions = { reading, ...(deps.modules === undefined ? {} : { modules: deps.modules }) };
+  const drafted = draftGameSpecWithMeta(sentence, deps.seed, genreOptions);
+  const draft = drafted.spec;
   deps.onDraft?.(draft);
   let calls = 0;
 
@@ -106,7 +112,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
 
   const compact = deps.compact === true;
   const examples = compact && deps.examples === true;
-  const request = compact ? buildCompactRequest(sentence, draft, examples) : buildDirectorRequest(sentence, draft);
+  const request = compact ? buildCompactRequest(sentence, drafted.genre, examples) : buildDirectorRequest(sentence, drafted.genre);
   // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí.
   const promptVersion = compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION;
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
@@ -144,28 +150,48 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   if (!outcome.ok)
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
-  let spec: GameSpecV1;
-  // Pravidla, která se nedala složit (P29A T8): hra se složí bez nich a opravné kolo dostane důvod.
+  // Hru skládá modul žánru – co se nepřečte nebo nepřeloží, oprava tabulkou nespraví.
+  // Pravidla, která se nedala složit (P29A T8, v první odpovědi znovu od T5b): hra se složí bez nich a opravné kolo dostane důvod.
+  const written = answerRules(outcome.body);
   let ruleBlocks: CriticIssue[] = [];
-  const body = compact ? outcome.body : unwrapAnswer(outcome.body);
-  const read = compact ? composeCompact(sentence, body, deps.seed) : readDirectorAnswer(body);
-  const plain = !read.ok && compact && hasRules(body) ? composeCompact(sentence, { ...body, rules: [], things: [] }, deps.seed) : null;
-  if (read.ok) {
-    spec = read.spec;
-  } else if (plain?.ok === true) {
-    spec = plain.spec;
-    ruleBlocks = ruleInvalidIssues(read.detail, (body as { rules: unknown }).rules);
-  } else if (compact) {
-    // Složený spec vzniká ze šablony – co neprojde, oprava tabulkou nespraví.
-    return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
-  } else {
-    const repaired = repairDeterministically(body, read.reason);
-    if (repaired === null) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
-    spec = repaired.spec;
+  let read = readGenreAnswer(outcome.body, deps.modules);
+  if (!read.ok && written !== null) {
+    const plain = readGenreAnswer(withoutAnswerRules(outcome.body), deps.modules);
+    if (plain.ok) ruleBlocks = ruleInvalidIssues(read.detail, written);
+    if (plain.ok) read = plain;
+  }
+  if (!read.ok) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
+  let spec: GameSpecV1 = read.spec;
+  // Slovesa, která první odpověď slíbila pravidly (i nesloženými).
+  const promised = [...new Set((written ?? []).map((rule) => (typeof rule === 'object' && rule !== null ? (rule as { verb?: unknown }).verb : undefined)).filter((verb): verb is string => typeof verb === 'string'))];
+
+  /**
+   * Poslední záloha opravy žánrové odpovědi (T5): žánr draftu. Hláška „could
+   * not fix“ (`UNREPAIRED`) pro žánrový spec neexistuje – hra je rychlá verze a
+   * obálka ji ohlásí jako „the quick version is already its take“ (UNCHANGED).
+   * Do cache nejde: příští pokus dostane novou šanci.
+   */
+  const draftGenre = (failure: DirectorFailure, repairRounds: number): DirectedGame => ({
+    ok: true,
+    spec: draft,
+    source: 'authored',
+    repairRounds,
+    fallbackReason: null,
+    failure,
+    warnings: warningsOf(draft),
+    ms: deps.now() - started,
+    calls,
+  });
+
+  // Kontrola věrnosti (T5): hrdina, nepřítel a sloveso věty, režim `ready`; neprošlá odpověď přepne žánr podle klasifikátoru.
+  const unfaithful = fidelity(read.genre, sentence, genreOptions);
+  if (unfaithful.length > 0) {
+    const switched = switchGenre(read.genre, sentence, genreOptions);
+    const detail = unfaithful.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; ');
+    if (switched === null) return draftGenre({ stage: 'critic', reason: 'UNFAITHFUL', detail, raw: read.genre }, 0);
+    spec = switched.spec;
   }
 
-  // Slovesa, která první odpověď slíbila pravidly (i nesloženými).
-  const promised = hasRules(body) ? [...new Set(body.rules.map((rule) => (typeof rule === 'object' && rule !== null ? (rule as { verb?: unknown }).verb : undefined)).filter((verb): verb is string => typeof verb === 'string'))] : [];
   let blocks = blockingIssues(critique(spec));
   if (blocks.length > 0) {
     const repaired = repairDeterministically(spec, blocks);
@@ -215,7 +241,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     }
     return fallback('VERB_UNPROVED', failure);
   }
-  if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
+  if (blocks.length > 0) return draftGenre({ stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec }, repairRounds);
 
   // Sloveso, které první odpověď slíbila pravidlem a hotová hra ho nenese (oprava ho
   // smazala nebo pravidla vůbec nedoplnila), se nesmí tvářit jako plně autorská hra ani jít do cache.
@@ -239,8 +265,6 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     ...(authoredBy === null ? {} : { authoredBy }),
   };
 }
-
-const hasRules = (body: unknown): body is { rules: unknown[] } => typeof body === 'object' && body !== null && Array.isArray((body as { rules?: unknown }).rules) && (body as { rules: unknown[] }).rules.length > 0;
 
 /** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
 function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {

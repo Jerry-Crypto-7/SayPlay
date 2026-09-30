@@ -20,7 +20,7 @@ const READING: Reading = {
   control: 'shooter',
   verbs: [{ word: 'collect', class: 'aim_shoot' }],
   hero: 'knight',
-  roles: [{ noun: 'ghosts', kind: 'threat', count: 6 }],
+  roles: [{ noun: 'dragons', kind: 'threat', count: 6 }],
   setting: 'a castle',
   mood: null,
   numbers: { seconds: null, counts: [] },
@@ -85,7 +85,10 @@ describe('create route reads the sentence before drafting', () => {
     expect(answering).toHaveBeenCalledOnce();
     expect(String(answering.mock.calls[0]?.[0])).toBe('http://reader.test/v1/chat/completions');
     expect(spec).toEqual(draftGameSpecWithMeta(SENTENCE, 1, { reading: READING }).spec);
-    expect((spec as { control?: string }).control).toBe('shooter');
+    // Od P32B T2 čtení nevybírá ovládání, ale jeho role jdou do žánru: draka klíčová slova neznají
+    // (bez čtení dá hrad ducha jako výchozího nepřítele, P32B T3).
+    expect(spec).not.toEqual(draftGameSpec(SENTENCE));
+    expect((spec as { roles: { label: string }[] }).roles.map((role) => role.label)).toContain('dragon');
   });
 
   it('a silent reader delays the game by the budget at most, then the keywords draft it', async () => {

@@ -18,6 +18,8 @@ import { lookOf } from '../arcade/look';
 import { draftGameSpec } from '../draft';
 import type { GameSpecV1 } from '../spec';
 
+import { legacyDraft } from './legacy-draft';
+
 const withLabel = (fixture: unknown, id: string, label: string): GameSpecV1 => {
   const spec = structuredClone(fixture) as GameSpecV1;
   spec.roles = spec.roles.map((role) => (role.id === id ? { ...role, label } : role));
@@ -81,11 +83,17 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(steer, 'rival', 'rival car'))).toEqual({});
   });
 
-  // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.
+  // Šablona střelnice a hodu (remix uložené hry, P32B T2) zapíše jméno z věty do role, kterou scéna kreslí.
   it.each([
     ['shoot the zombies in the mall', (spec: GameSpecV1) => enemyModel(spec), 'cc0-zombie'],
     ['space shooter against asteroids', (spec: GameSpecV1) => spec.roles.find((role) => role.id === 'enemy')?.label, 'asteroid'],
     ['throw balls at rubber ducks', (spec: GameSpecV1) => propModels(spec).target, 'rubber-duck'],
+  ])('template sentence %s reaches the scene', (sentence, read, expected) => {
+    expect(read(legacyDraft(sentence))).toBe(expected);
+  });
+
+  // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.
+  it.each([
     ['a runner dodging traffic cones and collecting gems', (spec: GameSpecV1) => propModels(spec).coin, 'crystal'],
     ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'rigged:pet-cat|dog'],
   ])('sentence %s reaches the scene', (sentence, read, expected) => {

@@ -1,17 +1,13 @@
 /**
- * Prompt režiséra (P23-B T3): model dostane pravidla balíčku, registr
- * mechanik a archetypů **vyrenderovaný ze zdroje** (`MECHANICS`, `ARCHETYPES`
- * – žádný ručně opsaný seznam, který by zestárl), dva kompaktní příklady a
- * tvar `verification`; v `user` větu a návrh ze slov jako výchozí bod.
+ * Prompt režiséra (P23-B T3, na žánrech od P32B T4): model píše `GenreSpec` –
+ * žánr, režim, role a prostředí – a hru z něj složí modul žánru. Nabídka
+ * žánrů je **vyrenderovaná ze zdroje** (`GENRE_MODULES`): jen režimy `ready`,
+ * narážky, třídy hrdinů a meze parametrů, takže režim, který modul dokončí,
+ * projde do promptu sám a nedokončený v něm není. `DIRECTOR_PROMPT_VERSION`
+ * je hash celého systémového textu: změna modulu zneplatní cache.
  *
- * Schémata se nerendrují jako plné JSON Schema – to má 4,7 kB jen pro
- * parametry mechanik – ale zhuštěným zápisem `{role: roleId, speed:
- * slow|normal|fast}`, odvozeným z `z.toJSONSchema`, aby cokoli, co se v
- * registru změní, prošlo do promptu samo. `DIRECTOR_PROMPT_VERSION` je hash
- * celého systémového textu: změna registru nebo pravidel zneplatní cache.
- *
- * Volání je prostý text (`UpstreamRequest`), žádný structured output –
- * odpověď čte `readDirectorAnswer`.
+ * `renderRegistry` (registr mechanik a archetypů) zůstává pro remix a opravná
+ * kola, která dál pracují nad `GameSpecV1`.
  */
 
 import { z } from 'zod';
@@ -19,48 +15,20 @@ import { z } from 'zod';
 import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
-import chaseEscape from '../__fixtures__/chase_escape.json';
-import collectExit from '../__fixtures__/collect_exit.json';
-import { CAPABILITIES } from '../capabilities';
-
-import { DIRECTOR_ANSWER_SCHEMA } from './answer-schema';
+import { LOOK_IDS } from '../arcade/look';
+import { COUNT_PARAMS, COUNT_ROLES, type GenreModule, type GenreSpec } from '../genre/contract';
+import { GENRE_MODULES } from '../genre/index';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
-import { CONTROL_PARAMS, GAME_SPEC_SCHEMA, ROLE_KINDS, gameSpecSchema, themeSchema, verificationSchema, type GameSpecV1 } from '../spec';
+import { ROLE_KINDS } from '../spec';
 
-/** Doslova `docs/play/pack/director.md`; test drží shodu se souborem. */
-export const DIRECTOR_RULES =
-  'Return ONLY GameSpecV1. Use only supplied registry IDs. Never output code. Preserve explicit constraints. For vague prompts invent a coherent 45–180 second loop. One machine-checkable objective; <=2 losses; 2–4 core mechanics plus <=1 escalation. First meaningful action <=5s by design. Every requested mechanic gets a verification assertion. Infeasible requests preserve fantasy but substitute closest feasible registered mechanic.';
+import { GENRE_ANSWER_SCHEMA, readyModes } from './answer-schema';
 
-export const ANSWER_SHAPE_LINE = `Answer with a single JSON object matching ${GAME_SPEC_SCHEMA} and nothing else.`;
+/** Úvod plného promptu; kompaktní má vlastní kratší. */
+export const GENRE_RULES =
+  'Return ONLY a GenreSpec: pick the genre and mode the sentence plays and name its roles with the sentence\'s nouns; the game is built from it. Never output code. Answer {plan, spec}: plan = one short line of reasoning.';
 
-/**
- * Gramatika pravidel pro režiséra (P29A T7, jazyk `arcade/rules/schema.ts`):
- * pravidlo jen pro sloveso, které zvolené ovládání neumí, tři příklady podle
- * ručních her robota (`arcade/__fixtures__/rules`). Stojí v kompaktním promptu,
- * který je živá cesta; plný prompt drží svůj rozpočet bajtů.
- */
-export function rulesPromptLines(): string {
-  const example = (roles: string, rules: string, things = '[]'): string => `{"ruleRoles":${roles},"things":${things},"rules":${rules}}`;
-  return [
-    'rules: only for a verb of the sentence the chosen control cannot play (carry, throw, push, open, pull, give…); else []. Never on "tap_go". Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins, or the game is refused.',
-    `when: {"contact":[role,role]} | {"press":"action"|"alt"} | {"every":ticks60Hz} | {"counter":{"name":"score"|"items"|"health","atLeast":n}} | {"hit":role}. if (all hold, or null): {"holding":role} | {"notHolding":true} | {"counter":{"name","atLeast"|"below"}} | {"near":{"role","within":m}}. do: {"score":n} {"damage":n} {"win":true} {"lose":true} {"despawn":"other"|"self"|"held"} {"spawn":{"role","at":"player"|"other"}} {"count":{"counter","amount"}} {"respawn":true} {"checkpoint":"other"|"self"} {"grab":"other"|"self"} {"release":true} {"throwHeld":true} {"push":"other"|"self"} {"toggle":role} (bodies of that role switch once: a door vanishes, a hidden one appears).`,
-    `A role is "player" or a role id; a role only the rules use goes in ruleRoles [{id, kind, label, count}] (kind: ${ROLE_KINDS.filter((kind) => kind !== 'player').join('|')}). things [{role, start:"hidden"}] = starts invisible until toggled; physics:true = it falls, slides, topples and flies when pushed or thrown. On "move_free" a rule that wins plays in a walled yard: carried things in front, the goal behind the gate.`,
-    'RULE EXAMPLES:',
-    example(
-      '[{"id":"key","kind":"key","label":"golden key","count":null},{"id":"door","kind":"door","label":"castle door","count":null},{"id":"stairs","kind":"exit","label":"tower stairs","count":null}]',
-      '[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]',
-    ),
-    example(
-      '[{"id":"rock","kind":"item","label":"round rock","count":null},{"id":"bell","kind":"target","label":"bronze bell","count":null}]',
-      '[{"id":"pick_rock","verb":"pick","when":{"contact":["player","rock"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"throw_rock","verb":"throw","when":{"press":"action"},"if":[{"holding":"rock"}],"do":[{"throwHeld":true}]},{"id":"ring","verb":"ring","when":{"contact":["rock","bell"]},"if":null,"do":[{"win":true}]}]',
-    ),
-    example(
-      '[{"id":"lever","kind":"switch","label":"rusty lever","count":null},{"id":"bridge","kind":"zone","label":"rope bridge","count":null}]',
-      '[{"id":"pull_lever","verb":"pull","when":{"contact":["player","lever"]},"if":null,"do":[{"toggle":"bridge"}]},{"id":"cross_bridge","verb":"cross","when":{"contact":["player","bridge"]},"if":null,"do":[{"win":true}]}]',
-      '[{"role":"bridge","start":"hidden"}]',
-    ),
-  ].join('\n');
-}
+export const GENRE_SHAPE_LINE =
+  'spec: {genre, mode, hero: string<=60, enemy?: string<=60, collectible?: string<=60, target?: {label: string<=60, verb: string<=24, states: 2|3}, setting: string<=80, palette?, params?, counts?: {enemy?, collectible?, target?: int}, ruleRoles?, things?, rules?}; a missing optional field is null.';
 
 const ID_PATTERN_SOURCE = '^[A-Za-z][A-Za-z0-9_.]{0,63}$';
 
@@ -129,82 +97,65 @@ export function renderRegistry(): string {
   ].join('\n');
 }
 
-function compactExample(fixture: unknown): string {
-  const { verification: _verification, ...rest } = fixture as GameSpecV1;
-  return JSON.stringify(rest);
-}
-
-function renderShape(): string {
-  // Počasí sdílené verze (P29D T10) model nepíše – tvar dostane `theme` bez něj.
-  const top = z.toJSONSchema(gameSpecSchema.extend({ theme: themeSchema })) as JsonSchema;
-  const properties = top.properties as Record<string, JsonSchema>;
-  const outline = Object.entries(properties)
-    // Doplňky (P26D) řekne řádek ovládání u každého ovládání zvlášť.
-    // Pravidla (P29A) popisuje vlastní gramatika s příklady, ne výpis schématu.
-    // `genre` (P32) zapisuje překlad žánru, ne model.
-    .filter(([key]) => key !== 'verification' && key !== 'addons' && key !== 'rules' && key !== 'things' && key !== 'genre')
-    .map(([key, value]) => `${key}: ${compactSchema(value)}`)
-    .join('\n');
+/**
+ * Nabídka žánrů a smlouva rolí (`genre/roles.ts`) pro oba prompty: jeden řádek
+ * na žánr s aspoň jedním režimem `ready`, pak co která role znamená.
+ */
+export function genrePromptLines(): string {
+  const genres = (Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => {
+    const modes = readyModes(module);
+    if (modes.length === 0) return [];
+    const params = Object.entries(module.paramBounds).map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)}`);
+    const counted = COUNT_ROLES.filter((role) => modes.some((mode) => (COUNT_PARAMS[module.id] as Readonly<Record<string, Partial<Record<string, string>> | undefined>>)[mode]?.[role] !== undefined));
+    return [
+      `- ${module.id} (${module.cues.join(', ')}): modes ${modes.join('|')}; hero ${module.heroClasses.join('/')}${params.length === 0 ? '' : `; params ${params.join(', ')}`}${counted.length === 0 ? '' : `; counts ${counted.join('/')}`}`,
+    ];
+  });
   return [
-    'GAMESPEC SHAPE:',
-    outline,
-    'verification: list (1..20) of assertions, at least one keypoint per mechanic you use plus one reachability {runState: won}:',
-    schemaOf(verificationSchema),
-    // P26D T10: věta o slovesech akcí opakovala výčet `actionId` ze schématu výš – místo pro doplňky.
-    'Keys in setup/assert maps are role ids or counter names from this spec.',
+    'GENRES (cues; modes; what the hero can be; params):',
+    ...genres,
+    'genre and mode: the ones whose cues fit the main verb – the verb that carries the goal or the win. A task (light, fight, land) beats moving (run, sail, jump), moving beats collecting, collecting beats escaping.',
+    'hero: the 1–3 word English noun the player is ("pirate ship", "wizard"). It must be a kind the genre lists (a ship sails, a car drives); if it cannot be, pick the genre it can play.',
+    'enemy: the chaser, threat or rival the sentence names. collectible: what the player gathers. target {label, verb, states}: what the main verb acts on ("light" a "candle"). Null when the sentence names none – the game then picks one from the setting.',
+    `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}. params: only for a number the sentence says, else null.`,
+    'counts: how many enemies, collectibles or targets the sentence says ("grab 5 coins" = collectible 5), only for roles the genre counts, else null.',
+    "Keep the user's nouns, numbers and names. Role labels are singular (\"rock\", not \"rocks\"). The enemy is never what the player holds, sprays or throws.",
+    'The starting point is the quick version the player already has. Keep what it got right and add one thing the sentence says and it misses: the chaser it names (params/counts), a count it says, the enemy or place it names. Never return it unchanged.',
   ].join('\n');
 }
 
 /**
- * Řádek ovládání z tabulky schopností (P26 T5): u každého ovládání narážky,
- * role, mechaniky, které hra hraje, popisky, které ukáže, a klíče `controlParams`.
- * Co tu není, kritik ze specu vyjme – model to proto nemá psát.
+ * Pravidla P29A v první odpovědi (B-R5): sloveso, které žánr nehraje, dopíše
+ * model pravidlem. Gramatika je `modelRulesSchema`; jeden příklad stačí, zbytek
+ * nese schéma odpovědi. Role pravidel jsou „player“ a vlastní `ruleRoles`.
  */
-export function controlPromptLine(): string {
-  // Strop promptu je 12 000 B: výchozí hodnoty legenda řekne jednou, u ovládání stojí jen odchylky.
-  const entries = (Object.keys(CONTROL_PARAMS) as (keyof typeof CONTROL_PARAMS)[]).map((id) => {
-    const c = CAPABILITIES[id];
-    const mechanics = c.mechanics === 'all' || c.mechanics.join() === 'health,timer' ? '' : `only ${c.mechanics.join('/')}; `;
-    // P27A T4: hráčův popisek říká legenda jednou; „shows“ nese jen popisky navíc, „only“ tam, kde hráčův chybí.
-    const extra = c.labels === 'all' ? [] : c.labels.filter((label) => label !== 'player');
-    const shows = c.labels === 'all' || (extra.length === 0 && c.labels.length > 0) ? '' : c.labels.length === 0 ? 'shows no; ' : `shows ${c.labels.includes('player') ? '' : 'only '}${extra.join('+')}; `;
-    const note = c.note === undefined ? '' : `${c.note}; `;
-    // P26D T10: „lives“ řekne legenda jednou (bere ho každé ovládání s health), u ovládání stojí ostatní doplňky.
-    const extras = c.addons.filter((addon) => addon !== 'lives');
-    const addons = extras.length === 0 ? '' : `+${extras.join('/')}; `;
-    return `"${id}" (${c.cues}): ${note}${mechanics}${shows}${addons}${[...(c.finish ? ['finish'] : []), ...c.roles].join(', ')}; {${Object.keys(CONTROL_PARAMS[id].shape).join(', ')}}.`;
-  });
+export function rulesPromptLines(): string {
   return [
-    "control: omit for the grid above; change the starting point's if another fits the verb better.",
-    'Arcade: archetype hazard_crossing, mechanics only health/timer, screen shows only the player label unless "shows" lists more – put the nouns there; verification [{id: wins, kind: reachability, assert: {runState: won}}]. addons: 2nd verb from "+" ("jump and shoot" = platform ["shoot"]); lives wherever health is. Per control (cues): exceptions; roles besides player; controlParams.',
-    ...entries,
-  ].join(' ');
+    'rules: only for a verb of the sentence the genre cannot play (carry, push, open, pull, give…); else null. Each rule {id, verb, when, if, do}; verb = that sentence verb, one lowercase English word – the robot must see every rule fire while it wins, or the game is refused.',
+    `when: {"contact":[role,role]} | {"press":"action"|"alt"} | {"every":ticks60Hz} | {"counter":{"name":"score"|"items"|"health","atLeast":n}} | {"hit":role} | {"interact":{"role","radius":m,"hold":ticks,"states":2|3}} (hold Use at it; only as the winning rule, do {"win":true}, won when all targets are done; one per game, not with +shoot/+chaser). if (all hold, or null): {"holding":role} | {"notHolding":true} | {"counter":{"name","atLeast"|"below"}} | {"near":{"role","within":m}}. do: {"score":n} {"damage":n} {"win":true} {"lose":true} {"despawn":"other"|"self"|"held"} {"spawn":{"role","at":"player"|"other"}} {"count":{"counter","amount"}} {"respawn":true} {"checkpoint":"other"|"self"} {"grab":"other"|"self"} {"release":true} {"throwHeld":true} {"push":"other"|"self"} {"toggle":role} (bodies of that role switch once).`,
+    `A role is "player" or an id from ruleRoles [{id, kind, label, count}] (kind: ${ROLE_KINDS.filter((kind) => kind !== 'player').join('|')}). things [{role, start:"hidden"}] = starts invisible until toggled. In arena or quest a rule that wins plays in a walled yard: carried things in front, the goal behind the gate.`,
+    'RULE EXAMPLE: {"ruleRoles":[{"id":"key","kind":"key","label":"golden key","count":null},{"id":"door","kind":"door","label":"castle door","count":null},{"id":"stairs","kind":"exit","label":"tower stairs","count":null}],"things":null,"rules":[{"id":"take_key","verb":"carry","when":{"contact":["player","key"]},"if":[{"notHolding":true}],"do":[{"grab":"other"}]},{"id":"open_door","verb":"open","when":{"contact":["player","door"]},"if":[{"holding":"key"}],"do":[{"toggle":"door"},{"despawn":"held"}]},{"id":"climb","verb":"climb","when":{"contact":["player","stairs"]},"if":null,"do":[{"win":true}]}]}',
+  ].join('\n');
 }
 
-/** Systémový prompt bez věty. Stavěný při každém volání, aby změna registru prošla ven. */
+/** Systémový prompt bez věty. Stavěný při každém volání, aby změna modulu prošla ven. */
 export function directorSystemPrompt(): string {
-  return [
-    DIRECTOR_RULES,
-    ANSWER_SHAPE_LINE,
-    'Default runtime: tap-to-move grid (tap to walk, pick up, use what is next to you); other fantasies go through registered mechanics.',
-    controlPromptLine(),
-    renderRegistry(),
-    renderShape(),
-    'EXAMPLES (verification omitted for length; write it in full in your answer):',
-    compactExample(collectExit),
-    compactExample(chaseEscape),
-    'Role ids and mechanic ids are lowercase words with underscores. Labels, title, descriptions and the tutorial are English and short; a role label is a 1–3 word noun, never an instruction. Keep the user\'s explicit numbers, names and constraints.',
-  ].join('\n\n');
+  return [GENRE_RULES, GENRE_SHAPE_LINE, genrePromptLines(), rulesPromptLines()].join('\n\n');
 }
 
 /** Hash systémového textu – klíč cache a otisk verze promptu. */
 export const DIRECTOR_PROMPT_VERSION = canonicalHash(directorSystemPrompt());
 
-export function buildDirectorRequest(sentence: string, draft: GameSpecV1): UpstreamRequest {
+/** Návrh ze slov jako výchozí bod; hra bez žánru (mřížka archetypu) žádný nedá. */
+export function startingPoint(draft: GenreSpec | null): string {
+  return draft === null ? 'Starting point: none – choose from the sentence.' : `Starting point (keep or improve): ${JSON.stringify(draft)}`;
+}
+
+export function buildDirectorRequest(sentence: string, draft: GenreSpec | null): UpstreamRequest {
   return {
     model: EMISSION_MODEL,
     system: directorSystemPrompt(),
-    user: `${sentence.trim()}\n\nStarting point (keep or improve): ${JSON.stringify(draft)}`,
-    outputSchema: DIRECTOR_ANSWER_SCHEMA,
+    user: `${sentence.trim()}\n\n${startingPoint(draft)}`,
+    outputSchema: GENRE_ANSWER_SCHEMA,
   };
 }

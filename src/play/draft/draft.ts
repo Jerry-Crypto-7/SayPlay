@@ -41,6 +41,10 @@ import steerTemplate from '../arcade/__fixtures__/steer.json';
 import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
 import type { Reading } from '../read/schema';
+import { type GenreChoice, type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
+import { COUNT_PARAMS, COUNT_ROLES as GENRE_COUNT_ROLES, type CountRole, type GenreId, type GenreModule, type GenreSpec, withCounts } from '../genre/contract';
+import { GENRE_MODULES, readGenreSpec } from '../genre/index';
+import { defaultCollectible, defaultEnemy, defaultHero, defaultTarget, heroFits } from '../genre/roles';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -71,6 +75,8 @@ import {
   scoreArchetypes,
   singular,
   type SentenceRoles,
+  toolsOf,
+  withoutPossessor,
 } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
@@ -94,11 +100,17 @@ export interface DraftMeta {
   readonly fellBack: boolean;
   /** Kdo větu přečetl: lokální model (`src/play/read`), nebo klíčová slova lexikonu. */
   readonly readBy: 'model' | 'keywords';
+  /** `GenreSpec`, ze kterého hra vznikla (P32B T2); `null` na staré cestě mřížky. Oprava režiséra ho bere jako poslední zálohu. */
+  readonly genre: GenreSpec | null;
+  /** Proč klasifikátor vybral žánr („main verb "light", cue "light"“) – pro panel čtení. */
+  readonly genreWhy: string | null;
 }
 
 export interface DraftOptions {
   /** Čtení věty lokálním modelem (P29B T4); `null` nebo chybí = jen klíčová slova. */
   readonly reading?: Reading | null;
+  /** Moduly žánrů; testy sem dávají dvojníky (`genre/__tests__/doubles.ts`). */
+  readonly modules?: GenreModules;
 }
 
 /** Slovo čtení bez členu: „a haunted castle“ → „haunted castle“; prázdné → `null`. */
@@ -529,8 +541,10 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     else if (read.roles.threat !== null) addThreat(spec, read.roles.threat, read.text);
   },
   chase_escape(spec, read) {
+    // Id `roomba` drží fixtura (hashe); popisek „giant Roomba“ nová hra nedědí – bez pronásledovatele ve větě ho dá místo (P32B T3).
+    // „escapes a haunted castle“: místo, odkud se utíká, pronásledovatel není.
     const chaser = role(spec, 'roomba');
-    chaser.label = label(read.roles.chaser, chaser.label);
+    chaser.label = label(foeIn(read.roles.chaser), defaultEnemy(spec.theme.setting, 'arena'));
     const speed = /\b(fast|quick|speedy|twice as fast)\b/.test(read.text) ? 'fast' : /\b(slow|sluggish)\b/.test(read.text) ? 'slow' : 'normal';
     mechanic(spec, 'chaser').speed = speed;
     spec.objective.description = cap(`Reach the exit before the ${chaser.label} catches you.`, 120);
@@ -779,7 +793,7 @@ const FOE_STOP = /^(?:in|on|at|with|while|and|to|for|from|by|near|inside|under|u
  * pigeons“ → „pigeons“. Nejvýš tři slova před předložkou nebo spojkou.
  */
 function duelFoe(sentence: string): string | null {
-  const rest = DUEL_VERB.exec(sentence.toLowerCase())?.[1];
+  const rest = DUEL_VERB.exec(withoutPossessor(sentence.toLowerCase()))?.[1];
   if (rest === undefined) return null;
   const words = rest.replace(/^(?:a|an|the|my|your|some)\s+/, '').replace(/^(?:gang|group|horde|pack|bunch|team|army|swarm|flock) of\s+/, '').split(/[^a-z-]+/);
   const foe: string[] = [];
@@ -811,7 +825,7 @@ const SHOOTER_STYLE = /^(?:top-down|twin-stick|side-scrolling|arcade|retro|pixel
 
 /** Nepřítel, kterého věta jmenuje bez slovesa útoku (P27A T5); `readRoles` ho nenajde. */
 function namedFoe(sentence: string): string | null {
-  const text = sentence.toLowerCase();
+  const text = withoutPossessor(sentence.toLowerCase());
   const defended = DEFEND_FROM.exec(text)?.[1];
   const foe = defended === undefined ? null : leadWords(defended);
   if (foe !== null) return singular(foe);
@@ -876,8 +890,8 @@ const gridCue = (text: string): boolean => GENTLE.test(text) || KID_FRIENDLY.tes
 const PICKUP = /\b(?:grab(?:s|bing)?|collect(?:s|ing)?|gather(?:s|ing)?|catch(?:es|ing)?|eat(?:s|ing)?|pick(?:s|ing)? up)\s+(.+)/;
 const AVOID = /\b(?:(?:jump|hop)(?:s|ing)? over|dodg(?:e|es|ing)|avoid(?:s|ing)?|(?:runs?|running)(?: away)? from|chased by)\s+(.+)/;
 const RESKIN = /\bbut with\s+(.+)/;
-// „purple elephants doing taxes“, „a squirrel hoarding nuts“: podmět bez slovesa, které `readRoles` zná.
-const SUBJECT = /^(?:(?:a|an|the) ([a-z]+(?: [a-z]+)?)|([a-z]+ [a-z]+s|[a-z]+s)) [a-z]+ing\b/;
+// „purple elephants doing taxes“, „a squirrel hoarding nuts“: podmět bez slovesa, které `readRoles` zná. „Cross floating islands“ – „-ss“ množné číslo není.
+const SUBJECT = /^(?:(?:a|an|the) ([a-z]+(?: [a-z]+)?)|([a-z]+ [a-z]*[a-rt-z]s|[a-z]*[a-rt-z]s)) [a-z]+ing\b/;
 
 /**
  * Podstatná jména věty pro role arkády (P28D T2), když je `readRoles` nenašel:
@@ -921,8 +935,14 @@ function draftArcade(sentence: string, seed: number, choice: ControlPick, topic:
   spec.title = titleFrom(sentence, spec.title);
   // Postava šablony (ptáček, závodní auto, rybka, jeřáb, bubeník, bojovník) zůstane,
   // když věta hráče nejmenuje; běžec, plošinovka, střelnice a hod losují.
+  // Řízení závodní auto šablony nedědí (P32B T3): pojede na plavidle z věty, jinak na tom, co patří k místu.
   const keepsHero = choice.control !== 'runner' && choice.control !== 'platform' && choice.control !== 'shooter' && choice.control !== 'throw';
-  const fallback = keepsHero ? role(spec, 'player').label : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
+  const fallback =
+    choice.control === 'steer'
+      ? defaultHero(roles.setting ?? spec.theme.setting, 'voyage', sentence)
+      : keepsHero
+        ? role(spec, 'player').label
+        : PLAYER_LABELS[uniformInt(rng, 0, PLAYER_LABELS.length - 1)];
   const nouns = sentenceNouns(sentence);
   const second = SECOND_ROLE[choice.control] === undefined ? null : nouns.second;
   // P28D T4: běžec bez herního slovesa je o tématu věty – hrdinou je, když ho scéna umí nakreslit („grandma“).
@@ -1011,27 +1031,180 @@ export function noVerbTopic(sentence: string): string | null {
   return topicNoun(text) ?? 'your idea';
 }
 
+/** Prostředí, když ho věta neříká; kuchař vaří v kuchyni, ne na vesnici. */
+const GENRE_SETTING: Readonly<Record<GenreId, string>> = { runner: 'forest trail', platformer: 'floating islands', arena: 'meadow', voyage: 'open country', quest: 'village' };
+const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
+
+/** „before the ghosts catch him“: kdo hráče chytá, i když `readRoles` pronásledovatele nenašel. */
+const CATCH_BEFORE = /\bbefore (?:the |a |an )?([a-z]+(?: [a-z]+)?) (?:catch|catches|get|gets|reach|reaches|grab|grabs) (?:him|her|you|me|them|us|it|the player)\b/;
+/** „Two knights duel“: počítaný podmět je hrdina i soupeř. */
+const COUNTED_SUBJECT = /^(?:two|three|four|five|\d+) ((?:[a-z]+ )?[a-z]+s)\b/;
+/** „like flappy bird“: jméno hry jmenuje hrdinu, když ho věta jinak nemá. */
+const FLAPPY = /\bflapp?y ([a-z]+)\b/;
+/** „catch him“, „destroy everything“: zájmeno není věc, kterou by scéna nakreslila. */
+const NOT_A_THING = /^(?:any|every|some|no)(?:thing|one|body)$|^(?:stuff|things?|all|it|them|him|her|us|me|you)$/;
+
+/** Popisek čtení bez členu a bez obecného „player“; prázdné → `null`. */
+function cleanLabel(phrase: string | null | undefined): string | null {
+  const text = bare(phrase ?? null);
+  return text === null || GENERIC_HERO.test(text) ? null : cap(text, 60);
+}
+
+const thing = (label: string | null | undefined): string | null => (label === null || label === undefined || NOT_A_THING.test(label) ? null : label);
+/** „escape from a haunted hospital“: místo, odkud se utíká, není pronásledovatel; „a goblin castle“ ale jmenuje goblina. */
+const foeIn = (label: string | null | undefined): string | null => (label === null || label === undefined ? null : isPlace(label) ? otherCreature(label, '') : label);
+
+/**
+ * Věta → `GenreSpec` žánru a režimu `choice` (P32B T2): role dá `draftFill`
+ * modulu, mezery doplní čtečky věty z tohohle souboru, co chybí úplně, dá
+ * prostředí (`genre/roles`). `heroSaid` = hrdinu řekla věta, ne prostředí.
+ * `null`, když výsledek neprojde mezemi modulu nebo `readGameSpec`.
+ */
+function draftGenre(
+  sentence: string,
+  reading: Reading | null,
+  choice: GenreChoice,
+  ranking: GenreRanking,
+  modules: GenreModules,
+): { readonly genre: GenreSpec; readonly spec: GameSpecV1; readonly heroSaid: boolean } | null {
+  const module = modules[choice.genre] as GenreModule;
+  const fill = module.draftFill(sentence, reading) as Partial<GenreSpec>;
+  const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
+  const roles = withPlace(rolesFrom(sentence, reading), sentence);
+  const nouns = sentenceNouns(sentence);
+  const counted = COUNTED_SUBJECT.exec(text)?.[1];
+  const pair = counted === undefined ? null : singular(counted);
+  const topic = choice.score === 0 ? noVerbTopic(sentence) : null;
+  const topicHero = topic !== null && modelOf(topic, true) !== undefined ? topic : null;
+  const heroSaid =
+    cleanLabel(fill.hero) ??
+    pair ??
+    cleanLabel(roles.player) ??
+    (choice.genre === 'voyage' ? raceHero(sentence) : null) ??
+    nouns.hero ??
+    FLAPPY.exec(text)?.[1] ??
+    topicHero;
+  const catcher = CATCH_BEFORE.exec(text)?.[1];
+  const fight = choice.genre === 'arena' && choice.mode === 'fight';
+  const verb = ranking.verb ?? 'use';
+  const said = ranking.after === null ? null : nounPhrase(ranking.after.replace(/^(?:on|at|up|down|out|to|into)\s+/, ''), 2);
+  const object = thing(said);
+  // Úkol: u hodu a střelby je předmětem terč („throw balls at rubber ducks“, „shooter against asteroids“), jinak předmět slovesa.
+  const aimed = verb === 'hit' || ranking.verb === null ? thing(roles.target) : null;
+  const target = choice.genre === 'quest' ? singular(aimed ?? object ?? namedFoe(sentence) ?? nouns.second ?? defaultTarget(verb)) : null;
+  const foe = fight
+    ? (roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
+    : (foeIn(cleanLabel(fill.enemy)) ??
+      foeIn(roles.threat?.label) ??
+      (catcher === undefined ? null : singular(catcher)) ??
+      nouns.avoid ??
+      namedFoe(sentence) ??
+      // „races through traffic“: předložková fráze, která jmenuje tvora nebo nástrahu, ne místo.
+      (roles.setting !== null && NOT_A_PLACE.test(roles.setting.split(' ').at(-1)!) ? roles.setting : null));
+  // „zombie shooter“: co se střílí, je terč úkolu, ne ještě jednou nepřítel; co hráč hází, taky ne (T7). Popisek role je jeden kus („cones“ → „cone“).
+  const enemy = foe === null || singular(foe) === target || toolsOf(sentence).includes(singular(foe)) ? null : singular(foe);
+  const found = thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
+  const collectible = found === null ? null : singular(found);
+  // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.
+  const named = new Set([target, enemy, collectible].flatMap((label) => (label === null ? [] : [singular(label)])));
+  const placeOf = (phrase: string | null, known: boolean): string | null => (phrase === null || named.has(singular(phrase)) || (known && lookFor(phrase) === null) ? null : phrase);
+  const filled = cleanLabel(fill.setting);
+  const setting = placeOf(filled, true) ?? placeOf(roles.setting, true) ?? placeOf(filled, false) ?? placeOf(roles.setting, false) ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
+  const place = lookFor(setting) === null ? lookFor(text) : null;
+  const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence);
+  // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
+  const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
+  const foeLabel = enemy ?? spare(defaultEnemy(setting, choice.genre), [singular(hero)]);
+  // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
+  const escape = choice.genre === 'arena' && choice.mode === 'escape';
+  const itemLabel = collectible ?? (escape ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
+  const seconds = reading?.numbers.seconds ?? readNumbers(sentence).seconds;
+  const params = paramsOf(module, fill.params, seconds);
+  // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
+  const counts = countsOf(sentence, reading, { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
+  const candidate = {
+    genre: choice.genre,
+    mode: choice.mode,
+    hero: cap(hero, 60),
+    ...(foeLabel === null ? {} : { enemy: cap(foeLabel, 60) }),
+    ...(itemLabel === null ? {} : { collectible: cap(itemLabel, 60) }),
+    ...(target === null ? {} : { target: { label: cap(target, 60), verb: verb.slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }),
+    setting: cap(setting, 80),
+    ...(place === null ? {} : { palette: place }),
+    ...(params === null ? {} : { params }),
+  };
+  const bounded = boundedCounts(candidate as GenreSpec, counts, module);
+  const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });
+  if (!read.ok) return null;
+  const game = readGameSpec(module.compile(withCounts(read.value) as never));
+  return game.ok ? { genre: read.value, spec: game.value, heroSaid: heroSaid !== null } : null;
+}
+
+/**
+ * Parametry návrhu: co spočítal `draftFill` modulu (počet cílů, pronásledovatelé
+ * Úkolu – bez nich honí výchozí nepřítel z prostředí), a délka kola z věty. Meze drží modul; parametr, který
+ * modul nezná, se zahodí. `null` = žádný.
+ */
+function paramsOf(module: GenreModule, filled: Readonly<Record<string, number>> | undefined, seconds: number | null): Record<string, number> | null {
+  const said = { ...filled, ...(seconds === null ? {} : { seconds }) };
+  const kept = Object.entries(said).flatMap(([key, value]) => {
+    const range = module.paramBounds[key];
+    return range === undefined ? [] : [[key, clamp(value, range.min, range.max)] as const];
+  });
+  return kept.length === 0 ? null : Object.fromEntries(kept);
+}
+
+/** Druhy rolí čtení modelem, které nesou počet role `GenreSpec`. */
+const COUNT_KINDS: Readonly<Record<CountRole, readonly string[]>> = { enemy: ['chaser', 'threat'], collectible: ['collectible', 'item'], target: ['target'] };
+
+/**
+ * Počty rolí, které věta říká (B-R4): čtení modelem („keys“, 3), jinak číslovka
+ * před jménem role („five glowing mushrooms“). Jen role, kterou návrh má.
+ */
+function countsOf(sentence: string, reading: Reading | null, labels: Readonly<Record<CountRole, string | null>>): Partial<Record<CountRole, number>> {
+  const said = readCountedNouns(sentence);
+  return Object.fromEntries(
+    GENRE_COUNT_ROLES.flatMap((role) => {
+      const label = labels[role];
+      if (label === null) return [];
+      const noun = singular(label.split(' ').at(-1)!);
+      const read = reading?.roles.find((entry) => COUNT_KINDS[role].includes(entry.kind) && entry.count !== null && singular(entry.noun.split(' ').at(-1)!) === noun)?.count;
+      const count = read ?? said.find((entry) => singular(entry.noun) === noun)?.count;
+      return count === undefined ? [] : [[role, count] as const];
+    }),
+  );
+}
+
+/** Počty v mezích parametru, do kterého je režim převede (`COUNT_PARAMS`); ostatní se zahodí. `null` = žádný. */
+function boundedCounts(spec: GenreSpec, counts: Partial<Record<CountRole, number>>, module: GenreModule): Partial<Record<CountRole, number>> | null {
+  const table = (COUNT_PARAMS[spec.genre] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>)[spec.mode] ?? {};
+  const kept = Object.entries(counts).flatMap(([role, value]) => {
+    const key = table[role as CountRole];
+    const range = key === undefined ? undefined : module.paramBounds[key];
+    return range === undefined || value === undefined ? [] : [[role, clamp(value, range.min, range.max)] as const];
+  });
+  return kept.length === 0 ? null : Object.fromEntries(kept);
+}
+
 export function draftGameSpecWithMeta(sentence: string, seed = 1, options: DraftOptions = {}): DraftMeta {
   const reading = options.reading ?? null;
+  const modules = options.modules ?? GENRE_MODULES;
   const scores = scoreArchetypes(sentence);
-  const text = sentence.toLowerCase();
-  // P29B T4: ovládání čtení přebije klíčová slova; jejich parametry zůstanou, když ukazují na totéž ovládání.
-  if (reading !== null) {
-    if (reading.control !== 'tap_go') {
-      const pick = pickControl(text);
-      const arcade = draftArcade(sentence, seed, pick?.control === reading.control ? pick : DEFAULT_CHOICE[reading.control], noVerbTopic(sentence), reading);
-      if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false, readBy: 'model' };
-    }
-    return draftGrid(sentence, seed, scores, reading);
+  const readBy = reading === null ? 'keywords' : 'model';
+  // P32B T2: nová hra jde přes žánr – první režim z pořadí klasifikátoru, který se přeloží.
+  // T5b: hrdina, kterého věta říká a žánr neumí (koloběžka v Úkolu), žánr přeskočí; neumí-li ho žádný, platí první.
+  const ranking = classifyGenre(sentence, reading, modules);
+  let first: { readonly drafted: NonNullable<ReturnType<typeof draftGenre>>; readonly why: string } | null = null;
+  for (const choice of ranking.ranked) {
+    const drafted = draftGenre(sentence, reading, choice, ranking, modules);
+    if (drafted === null) continue;
+    first ??= { drafted, why: choice.why };
+    if (drafted.heroSaid && !heroFits(drafted.genre.genre, drafted.genre.hero, modules)) continue;
+    return { spec: drafted.spec, archetype: drafted.spec.archetype, scores, fellBack: false, readBy, genre: drafted.genre, genreWhy: choice.why };
   }
-  // P28D T2: mřížka jen když její archetyp něco uslyšel; věta bez narážky dostane nejbližší arkádu, ne houby.
-  const heard = Object.values(scores).some((score) => score > 0) || gridCue(text);
-  const control = pickControl(text) ?? (heard ? null : nearestControl(text).choice);
-  if (control !== null) {
-    const arcade = draftArcade(sentence, seed, control, noVerbTopic(sentence));
-    if (arcade !== null) return { spec: arcade, archetype: arcade.archetype, scores, fellBack: false, readBy: 'keywords' };
-  }
-  return draftGrid(sentence, seed, scores);
+  if (first !== null) return { spec: first.drafted.spec, archetype: first.drafted.spec.archetype, scores, fellBack: false, readBy, genre: first.drafted.genre, genreWhy: first.why };
+  // Žádný režim se nepřeložil – mřížka archetypu jako před P32; korpus drží nulu.
+  return { ...draftGrid(sentence, seed, scores, reading), fellBack: true };
 }
 
 function draftGrid(sentence: string, seed: number, scores: Readonly<Record<ArchetypeId, number>>, reading: Reading | null = null): DraftMeta {
@@ -1053,12 +1226,12 @@ function draftGrid(sentence: string, seed: number, scores: Readonly<Record<Arche
   FILLERS[archetype](spec, { roles, seconds: numbers.seconds, counts: numbers.counts, playerLabel, text: sentence.toLowerCase() });
 
   const result = readGameSpec(spec);
-  if (result.ok) return { spec: result.value, archetype, scores, fellBack: false, readBy };
+  if (result.ok) return { spec: result.value, archetype, scores, fellBack: false, readBy, genre: null, genreWhy: null };
   const fallback = template(archetype);
   fallback.title = titleFrom(sentence, fallback.title);
   const normalized = readGameSpec(fallback);
   // Fixtura archetypu ze čtení nic nevzala – štítek „read by a local AI model“ by lhal.
-  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true, readBy: 'keywords' };
+  return { spec: normalized.ok ? normalized.value : fallback, archetype, scores, fellBack: true, readBy: 'keywords', genre: null, genreWhy: null };
 }
 
 /** Výchozí volba ovládání, když ho vybral model a slova věty ukazují jinam. */
@@ -1074,6 +1247,20 @@ const DEFAULT_CHOICE: Readonly<Record<ControlChoice['control'], ControlChoice>> 
   rhythm: { control: 'rhythm', density: null },
   duel: { control: 'duel', difficulty: null },
 };
+
+/**
+ * `GenreSpec`, který věta dá v zadaném režimu (P32B T5): role ze slov, jinak
+ * výchozí z prostředí. Kontrola věrnosti z něj čte hrdinu a nepřítele věty,
+ * oprava režiséra jím nahradí role, které odpověď napsala mimo větu. `null` =
+ * režim se nepřeloží.
+ */
+export function draftGenreFor(sentence: string, genre: GenreId, mode: string, options: DraftOptions = {}): GenreSpec | null {
+  const reading = options.reading ?? null;
+  const modules = options.modules ?? GENRE_MODULES;
+  const ranking = classifyGenre(sentence, reading, modules);
+  const choice = ranking.ranked.find((entry) => entry.genre === genre && entry.mode === mode);
+  return choice === undefined ? null : (draftGenre(sentence, reading, choice, ranking, modules)?.genre ?? null);
+}
 
 /**
  * Návrh ze slov pro ovládání, které vybral někdo jiný (P27D T2, kompaktní

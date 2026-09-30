@@ -10,7 +10,8 @@
  *
  * Umí slovesa jádra: dojít k věci (kontakt), nést (`grab`), hodit
  * (`throwHeld`), položit (`release`), strčit (`push`), stisknout (`press`),
- * nasbírat na čítač (`count`) a projít branou, kterou otevře `toggle`.
+ * nasbírat na čítač (`count`), držet Use u cíle (`interact`) a projít branou,
+ * kterou otevře `toggle`.
  * Vidí jako robot arény svět o `reactionTicks` starší a svou polohu dopočítá.
  */
 
@@ -28,10 +29,12 @@ import {
   NO_INPUT,
   ROLE,
   bodyBase,
+  targetStateOf,
 } from '../contract';
 import { ARENA, arenaAxis } from '../pieces/arena';
 import { predict } from '../pieces/arena-bot';
 import { type CompiledRule, SPEC_RULES, YARD, compiledRuleSchema, heldOf } from './compile';
+import { type CompiledInteract, interactRecord, interactTarget, isLocked } from './interact';
 
 /** Stejná reakce jako robot arény: věrohodný hráč nereaguje hned. */
 const REACTION = 8;
@@ -105,6 +108,20 @@ function nearestOf(view: View, role: number, from: { readonly x: number; readonl
       best = body;
       bestDistance = distance;
     }
+  }
+  return best;
+}
+
+/** Cíl pravidla `interact`, ke kterému jít: s `order` první nehotový, jinak nejbližší nehotový. */
+function interactGoal(view: View, interact: CompiledInteract): Body | null {
+  const { state } = view;
+  const count = state[HEADER.bodyCount] as number;
+  let best: Body | null = null;
+  for (let i = 0; i < count; i += 1) {
+    if (i === view.player || roleOf(state, i) !== interact.role || !aliveAt(state, i) || targetStateOf(state, i) >= interact.states - 1) continue;
+    const body = bodyAt(state, i);
+    if (interact.order === true) return body;
+    if (best === null || Math.abs(body.x - view.me.x) + Math.abs(body.z - view.me.z) < Math.abs(best.x - view.me.x) + Math.abs(best.z - view.me.z)) best = body;
   }
   return best;
 }
@@ -308,8 +325,14 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
   const when = rule.when;
   if ('press' in when) return { kind: 'press', buttons: when.press };
   if ('every' in when) return WAIT;
-  // Pravidlo `interact` hraje robot úkolu (P32G), plánovač pravidel ho neumí.
-  if ('hit' in when || 'interact' in when) return null;
+  if ('interact' in when) {
+    // Krok hotový: pustit Use, jinak se týž cíl dál neposune.
+    if (isLocked(interactRecord(state))) return WAIT;
+    if (interactTarget(state, view.player, when.interact) >= 0) return { kind: 'press', buttons: BUTTON.INTERACT };
+    const goal = interactGoal(view, when.interact);
+    return goal === null ? reveal(view, when.interact.role, depth, path) : navigate(view, goal, true, depth, path);
+  }
+  if ('hit' in when) return null;
   if ('counter' in when) {
     if (counterValue(state, when.counter.name) >= when.counter.atLeast) return WAIT;
     for (const next of counterRulesFor(view, when.counter.name)) {
@@ -326,7 +349,11 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
 /** Dojít k tělu role; skryté tělo napřed odhalí pravidlo, které ho přepne. */
 function reach(view: View, role: number, depth: number, seen: ReadonlySet<CompiledRule>): Action | null {
   const body = nearestOf(view, role);
-  if (body !== null) return navigate(view, body, false, depth, seen);
+  return body !== null ? navigate(view, body, false, depth, seen) : reveal(view, role, depth, seen);
+}
+
+/** Skryté tělo role napřed odhalí pravidlo, které ho přepne; nic skrytého = null. */
+function reveal(view: View, role: number, depth: number, seen: ReadonlySet<CompiledRule>): Action | null {
   if (!hiddenOf(view.state, role)) return null;
   for (const rule of toggleRulesFor(view, role)) {
     const action = achieve(view, rule, depth + 1, seen);

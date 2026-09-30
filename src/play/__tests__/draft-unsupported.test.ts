@@ -58,7 +58,8 @@ describe('a sentence without a game verb', () => {
     const spec = draftGameSpec(sentence);
     expect(spec.control).toBe('runner');
     expect(spec.roles.find((role) => role.kind === 'player')?.label).toBe('grandma');
-    expect(spec.title).toBe('Explain Quantum Physics Grandma');
+    // P32B T2: titul dává modul žánru z hrdiny, ne slova věty.
+    expect(spec.title).toBe('Grandma Run');
     expect(unsupportedGame(sentence, spec)).toEqual({
       kind: 'no_verb',
       reason: 'No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’',
@@ -78,10 +79,11 @@ describe('a sentence without a game verb', () => {
 describe('unsupportedGame', () => {
   it('names the game the draft built instead', () => {
     const sentence = 'a match 3 game with fruits';
+    // P32B T2: „match 3“ jde do Úkolu na místě, ne do běžce bez narážky.
     expect(unsupportedGame(sentence, draftGameSpec(sentence))).toEqual({
       kind: 'manipulate',
       reason: 'Swapping, sorting and sliding pieces around is not something we can build yet.',
-      closest: 'an endless runner',
+      closest: 'a quest',
     });
   });
 
@@ -90,11 +92,11 @@ describe('unsupportedGame', () => {
   });
 
   // Všechny arkádové šablony mají archetyp `hazard_crossing`, takže podle něj
-  // by hláška plošinovce i poletování slibovala přecházení silnice.
-  it('names the arcade game the player actually got, not the template archetype', () => {
+  // by hláška plošinovce i letu slibovala přecházení silnice. P32B T2: jméno dává žánr.
+  it('names the game the player actually got, not the template archetype', () => {
     for (const [sentence, closest] of [
       ['a tower defense platformer where you jump between ledges', 'a platformer'],
-      ['an idle clicker where a bird flaps through pipes', 'a flappy game'],
+      ['an idle clicker where a bird flaps through pipes', 'a race'],
     ] as const) {
       const draft = draftGameSpec(sentence);
       expect(draft.archetype, sentence).toBe('hazard_crossing');

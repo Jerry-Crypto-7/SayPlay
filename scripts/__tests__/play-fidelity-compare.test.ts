@@ -251,7 +251,8 @@ describe('the cause of a sentence without an AI version', () => {
     const summary = compareSummary({ oss20b: { buildId: 'b1', concurrency: 2, results, billed: billedFromLog(BILLED_LOG.oss20b) } }, 'b1');
     expect(summary.oss20b).toMatchObject({ n: 3, refused: { door: 1, cap: 0 }, published: { ok: 1, of: 2, share: 0.5, failures: { NOT_PLAYABLE: 1 } } });
     const scored = [aiSpec(SENTENCES[0]!.text), draftGameSpec(SENTENCES[1]!.text)].map((spec, at) => specFidelity(spec, SENTENCES[at]!.checklist).score);
-    expect(summary.oss20b!.fidelity.read).toBeCloseTo((scored[0]! + scored[1]!) / 2, 3);
+    // Souhrn průměr zaokrouhlí na tisíciny (`mean`); průměr na hraně pětitisícin by `toBeCloseTo` minul o epsilon.
+    expect(summary.oss20b!.fidelity.read).toBe(Math.round(((scored[0]! + scored[1]!) / 2) * 1000) / 1000);
     const verdict = compareVerdict(summary);
     expect(verdict).toMatchObject({ valid: false, exitCode: 1 });
     expect(verdict.reason).toMatch(/oss20b: 1 sentences refused by the play door, 0 by the spend or call cap/);

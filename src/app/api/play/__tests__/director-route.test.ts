@@ -15,6 +15,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { genreAnswer } from '@/play/director/__fixtures__';
 import { __resetProcessVersionStore } from '@/play/version';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -51,16 +52,7 @@ const ASTRA_BACKUP = {
   WORLDSMITH_FALLBACK_SPEND_CAP_USD: '5',
 } as const;
 
-const COMPACT = {
-  plan: 'platformer on ice',
-  control: 'platform',
-  addons: [],
-  look: 'snow',
-  setting: 'frozen iceberg field',
-  title: 'Penguin Iceberg Jump',
-  labels: [{ role: 'player', label: 'penguin' }],
-  goal: 'Hop the icebergs to the igloo.',
-};
+const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', enemy: undefined, collectible: undefined, setting: 'frozen iceberg field', palette: 'snow' });
 const SENTENCE = 'a penguin jumps over icebergs';
 const USAGE = { inputTokens: 2000, outputTokens: 900 };
 const ASTRA_PRICE = { usdPerMTokIn: 1.25, usdPerMTokOut: 10 };

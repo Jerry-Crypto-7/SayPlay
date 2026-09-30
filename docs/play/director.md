@@ -19,6 +19,12 @@ WorldDoc; kompilaci do světa dělá P23-A, obálku a remix UI P23-C.
 6. Přijatý spec → cache → `authored`. Cokoli jiného → `draft` s `fallbackReason`
    (`MODEL_UNAVAILABLE` | `MALFORMED` | `UNREPAIRED`). Nikdy výjimka.
 
+**Od P32B (T4, T5)** model píše `GenreSpec` (`readGenreAnswer`) a hru skládá modul žánru. Mezi
+krok 3 a 4 přibyla kontrola věrnosti (`fidelity`: hrdina a nepřítel z věty, hlavní sloveso hraje
+žánr a režim, režim `ready`); neprošlá odpověď přepne žánr po pořadí klasifikátoru
+(`switchGenre`) s rolemi z odpovědi. Co neprojde ničím, ani opravnými koly, dohraje žánr draftu
+jako `authored` bez `fallbackReason` (obálka: `UNCHANGED`) – `UNREPAIRED` režisér nevrací.
+
 Remix: čtyři čipy (`Make it harder`, `Add a twist`, `Swap the enemy`, `Change the world, keep the
 rules`) jsou RFC 6902 záplaty bez modelu (`remixPatch`); volná věta se zařadí (`classifyRemix`) a
 jde přes model (`buildRemixRequest`).

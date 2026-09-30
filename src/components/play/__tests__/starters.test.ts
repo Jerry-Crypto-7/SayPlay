@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SENTENCE_CHARS } from '@/app/api/play/_publish';
 import { ARCHETYPES } from '@/play/registry';
 import { REMIX_CHIP_LABELS as CHIP_LABELS, REMIX_CHIPS as CHIPS } from '@/play/director/remix';
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
 
 import {
   BUILD_FAILED,
@@ -65,8 +65,25 @@ describe('startovní karty', () => {
     expect(STARTERS.map((starter) => starter.archetype).sort()).toEqual(Object.keys(ARCHETYPES).sort());
   });
 
-  it('věta karty přistane v návrhu ze slov na svém archetypu', () => {
-    for (const starter of STARTERS) expect(draftGameSpec(starter.sentence).archetype, starter.archetype).toBe(starter.archetype);
+  // P32B T2: návrh nové hry vybírá žánr, archetyp mřížky už ne – karta musí přistát v žánru, který slibuje její štítek.
+  it('věta karty přistane v návrhu ze slov v žánru svého štítku', () => {
+    const promised: Readonly<Record<string, string>> = {
+      Chase: 'arena.escape',
+      Collect: 'arena.collect',
+      Survive: 'arena.escape',
+      Race: 'voyage.race',
+      Deliver: 'quest.spatial',
+      Puzzle: 'quest.spatial',
+      Cross: 'platformer.default',
+      Fight: 'arena.fight',
+    };
+    for (const starter of STARTERS) {
+      const meta = draftGameSpecWithMeta(starter.sentence);
+      expect(meta.fellBack, starter.label).toBe(false);
+      expect(`${meta.genre?.genre}.${meta.genre?.mode}`, starter.label).toBe(promised[starter.label]);
+      // „Cross floating islands“: sloveso karty není hrdina.
+      expect(meta.genre?.hero, starter.label).not.toBe(starter.label.toLowerCase());
+    }
   });
 
   it('věty jsou zlaté prompty z balíčku (hazard_platforming → hazard_crossing)', () => {
@@ -95,7 +112,15 @@ describe('karty nápadů (P34 T3)', () => {
 
   it('věta karty přistane v návrhu ze slov na archetypu, který karta slibuje', () => {
     expect(new Set(IDEAS.map((idea) => idea.archetype)).size).toBe(IDEAS.length);
-    for (const idea of IDEAS) expect(draftGameSpec(idea.sentence).archetype, idea.sentence).toBe(idea.archetype);
+    for (const idea of IDEAS) {
+      const meta = draftGameSpecWithMeta(idea.sentence);
+      // P32B T5b: věta hraje žánr. Skutečná Aréna nemá cíl „dojdi“ (`chase_escape`): honička je útěk
+      // Arény – přežít, nebo sbírat s pronásledovatelem. Donáška („carry … to“) je Úkol se slovesem
+      // „deliver“ (`switch_puzzle`). Archetyp karty je tu jen klíč a testid.
+      if (idea.archetype === 'chase_escape') expect(meta.genre, idea.sentence).toMatchObject({ genre: 'arena', mode: 'escape' });
+      else if (idea.archetype === 'delivery') expect(meta.genre, idea.sentence).toMatchObject({ genre: 'quest', target: { verb: 'deliver' } });
+      else expect(draftGameSpec(idea.sentence).archetype, idea.sentence).toBe(idea.archetype);
+    }
   });
 });
 

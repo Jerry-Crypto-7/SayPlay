@@ -13,6 +13,7 @@ import type { AddressInfo } from 'node:net';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { genreAnswer } from '@/play/director/__fixtures__';
 import { __resetProcessVersionStore } from '@/play/version';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
 
@@ -259,17 +260,8 @@ describe('openai: generate', () => {
   });
 });
 
-/** Kompaktní odpověď režiséra, která složí hratelnou hru. */
-const COMPACT = {
-  plan: 'platformer on ice',
-  control: 'platform',
-  addons: [],
-  look: 'snow',
-  setting: 'frozen iceberg field',
-  title: 'Penguin Iceberg Jump',
-  labels: [{ role: 'player', label: 'penguin' }],
-  goal: 'Hop the icebergs to the igloo.',
-};
+/** Odpověď režiséra `{plan, spec}` se žánrem, ze které modul složí hratelnou hru. */
+const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', enemy: undefined, collectible: undefined, setting: 'frozen iceberg field', palette: 'snow' });
 const SENTENCE = 'a penguin jumps over icebergs';
 const USAGE = { inputTokens: 2000, outputTokens: 900 };
 

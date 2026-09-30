@@ -26,12 +26,16 @@ import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 import { CAPABILITIES, controlOf, readsMechanic } from '../capabilities';
+import { draftGenreFor } from '../draft/draft';
+import { classifyGenre } from '../genre/classify';
+import { COUNT_PARAMS, type CountRole, type GenreSpec, rulesYard } from '../genre/contract';
+import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
-import { readGameSpec, type ControlId, type GameSpecReason, type GameSpecV1, type VerificationAssertion } from '../spec';
+import { gameSpecSchema, readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
 
-import type { CriticIssue } from './critic';
+import { type CriticIssue, type FidelityOptions, blockingIssues, critique, fidelity } from './critic';
 import { renderRegistry } from './prompt';
-import type { DirectorReadReason } from './read';
+import { type DirectorReadReason, compileGenreSpec, readModelSpec } from './read';
 
 export const MAX_REPAIR_ROUNDS = 2;
 
@@ -468,7 +472,7 @@ export function buildRepairRequest(spec: GameSpecV1, issues: readonly RepairIssu
   };
 }
 
-export type RepairAnswerReason = 'NOT_AN_ARRAY' | 'BAD_OPERATION' | 'SCHEMA_TOUCHED' | 'PATCH_FAILED' | GameSpecReason;
+export type RepairAnswerReason = 'NOT_AN_ARRAY' | 'BAD_OPERATION' | 'SCHEMA_TOUCHED' | 'PATCH_FAILED' | DirectorReadReason;
 
 const OPERATIONS = new Set(['add', 'remove', 'replace', 'move', 'copy', 'test']);
 
@@ -486,7 +490,70 @@ export function applyRepairAnswer(spec: GameSpecV1, body: unknown): { ok: true; 
   const errors = applyPatch(work, body as Operation[]);
   const failed = errors.findIndex((error) => error !== null);
   if (failed >= 0) return { ok: false, reason: 'PATCH_FAILED', detail: `operation ${String(failed)}: ${errors[failed]?.message ?? 'failed'}` };
-  const result = readGameSpec(work);
-  if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };
-  return { ok: true, spec: result.value };
+  // Záplata se čte jako první odpověď, bez pahýlu `interact` (B-R6). Pravidla, která dopsala
+  // hře žánru na volném pohybu, hrají na dvorku jako pravidla první odpovědi (`rulesYard`, T5b) –
+  // čtení tak soudí svět bez generátoru, který dvorek zahodí (B-R10). Po čtení znovu kvůli popiskům.
+  const shaped = gameSpecSchema.safeParse(work);
+  const read = readModelSpec(shaped.success && shaped.data.genre !== undefined ? rulesYard(shaped.data) : work);
+  return read.ok && read.spec.genre !== undefined ? { ok: true, spec: rulesYard(read.spec) } : read;
+}
+
+// ---------------------------------------------------------------------------
+// Přepnutí žánru (P32B T5)
+
+/**
+ * Kandidát s rolí z draftu téhož režimu místo té, kterou kontrola věrnosti jmenuje.
+ * Vyměněný nepřítel bere z draftu i svůj počet (T7): „water“ se dvěma
+ * pronásledovateli by jinak předal oba „fallen log“, který ve větě nehoní.
+ */
+function withSentenceRoles(candidate: GenreSpec, words: GenreSpec, wrong: ReadonlySet<string>): GenreSpec {
+  const hero = wrong.has('/hero') ? words.hero : candidate.hero;
+  if (!wrong.has('/enemy')) return { ...candidate, hero };
+  const { enemy: _enemy, params, counts, ...rest } = candidate;
+  const key = (COUNT_PARAMS[candidate.genre] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>)[candidate.mode]?.enemy;
+  const said = key === undefined ? undefined : words.params?.[key];
+  const kept = { ...Object.fromEntries(Object.entries(params ?? {}).filter(([name]) => name !== key)), ...(said === undefined ? {} : { [key!]: said }) };
+  const { enemy: _count, ...otherCounts } = counts ?? {};
+  const keptCounts = { ...otherCounts, ...(words.counts?.enemy === undefined ? {} : { enemy: words.counts.enemy }) };
+  return {
+    ...rest,
+    hero,
+    ...(words.enemy === undefined ? {} : { enemy: words.enemy }),
+    ...(Object.keys(kept).length === 0 ? {} : { params: kept }),
+    ...(Object.keys(keptCounts).length === 0 ? {} : { counts: keptCounts }),
+  } as GenreSpec;
+}
+
+/**
+ * Oprava žánrové odpovědi, která neprošla kontrolou věrnosti: režimy v pořadí
+ * klasifikátoru (`classifyGenre().ranked`) s rolemi z odpovědi. Hrdinu nebo
+ * nepřítele, které kontrola jmenuje, vezme z draftu téhož režimu, úkol bez
+ * předmětu dostane předmět z věty; parametry jdou dál jen v žánru odpovědi,
+ * meze má každý žánr svoje. Vrací první režim, který projde věrností, modulem
+ * i kritikem; `null` = neprošel žádný a režisér vezme žánr draftu.
+ */
+export function switchGenre(answer: GenreSpec, sentence: string, options: FidelityOptions = {}): { readonly genre: GenreSpec; readonly spec: GameSpecV1 } | null {
+  const reading = options.reading ?? null;
+  const modules = options.modules ?? GENRE_MODULES;
+  const { params, target, ...roles } = answer;
+  for (const choice of classifyGenre(sentence, reading, modules).ranked) {
+    const words = draftGenreFor(sentence, choice.genre, choice.mode, { reading, modules });
+    if (words === null) continue;
+    const task = target ?? words.target;
+    const moved = {
+      ...roles,
+      genre: choice.genre,
+      mode: choice.mode,
+      ...(task === undefined ? {} : { target: task }),
+      ...(params === undefined || choice.genre !== answer.genre ? {} : { params }),
+    } as GenreSpec;
+    const wrong = new Set(fidelity(moved, sentence, { reading, modules }).map((issue) => issue.path));
+    const candidate = withSentenceRoles(moved, words, wrong);
+    if (fidelity(candidate, sentence, { reading, modules }).length > 0) continue;
+    const read = readGenreSpec(candidate);
+    if (!read.ok) continue;
+    const game = compileGenreSpec(read.value, modules);
+    if (game.ok && blockingIssues(critique(game.spec)).length === 0) return { genre: read.value, spec: game.spec };
+  }
+  return null;
 }

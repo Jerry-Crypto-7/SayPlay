@@ -9,14 +9,18 @@ import { draftGameSpec } from '@/play/draft';
 import { type ChecklistEntry, fidelityChain } from '@/play/fidelity/chain';
 import type { GameSpecV1 } from '@/play/spec';
 
+import arenaFixture from '../arcade/__fixtures__/arena.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
+
+import { legacyDraft } from './legacy-draft';
 
 const stages = (items: ReturnType<typeof fidelityChain>) => items.map((item) => [item.item, item.inSpec, item.read, item.drawn, item.why]);
 
 describe('fidelityChain', () => {
   it('counts a verb fulfilled by an addon as read', () => {
     const shoot: ChecklistEntry = { item: 'shoot', slot: 'verb', controls: ['shooter'] };
-    const spec = draftGameSpec('jump and shoot the zombies');
+    // Doplňky („+shoot“) přidává jen šablona remixu (P32B T2); žánr dvě slovesa nesčítá.
+    const spec = legacyDraft('jump and shoot the zombies');
     expect(spec.control).toBe('platform');
     expect(spec.addons).toEqual(['shoot']);
     expect(stages(fidelityChain(spec, [shoot]))).toEqual([['shoot', true, true, true, 'ok']]);
@@ -39,8 +43,9 @@ describe('fidelityChain', () => {
   });
 
   // P27A T4: soupeř souboje z věty; model jen ten, který popisek jmenuje.
+  // Ovládání `duel` staví od P32B T2 šablona remixu; nová hra je souboj arény (test níž).
   it('names the duel rival from the sentence and draws it only with its own model', () => {
-    const kangaroo = draftGameSpec('boxing a kangaroo in the australian outback');
+    const kangaroo = legacyDraft('boxing a kangaroo in the australian outback');
     expect(kangaroo.control).toBe('duel');
     // Klokan má od P30B T4 vlastní model; vombat žádný – liška za něj se jako nakreslený nepočítá.
     expect(fidelityChain(kangaroo, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'] }, { item: 'outback', slot: 'setting', match: ['outback'] }])).toMatchObject([
@@ -49,8 +54,46 @@ describe('fidelityChain', () => {
     ]);
     const wombat: GameSpecV1 = { ...kangaroo, roles: kangaroo.roles.map((role) => (role.id === 'rival' ? { ...role, label: 'wombat' } : role)) };
     expect(fidelityChain(wombat, [{ item: 'wombat', slot: 'role', match: ['wombat'] }])[0]).toMatchObject({ inSpec: true, read: true, drawn: false, why: 'no-model' });
-    const pigeons = draftGameSpec('A grandma karate fights a gang of pigeons in the park');
+    const pigeons = legacyDraft('A grandma karate fights a gang of pigeons in the park');
     expect(fidelityChain(pigeons, [{ item: 'pigeon', slot: 'role', match: ['pigeon'] }])[0]).toMatchObject({ drawn: true, why: 'ok' });
+  });
+
+  // P32B T5b: žánr arény je `move_free` s generátorem – popisky čte generátor, když z role postavil tělo (`StyledWorld`, P32E T5).
+  it('reads the roles a genre arena builds bodies for and draws them only with the model the scene gives them', () => {
+    const escape = draftGameSpec('a cat runs from dogs in a park');
+    expect(stages(fidelityChain(escape, [{ item: 'cat', slot: 'hero', match: ['cat'] }, { item: 'dog', slot: 'role', match: ['dog'] }]))).toEqual([
+      ['cat', true, true, true, 'ok'],
+      ['dog', true, true, true, 'ok'],
+    ]);
+    // Soupeř souboje a věc sběru mají tělo, scéna jim ale dává model rolí `enemy` a `coin` (B-R9): klokan je robot, sýr drahokam.
+    const fight = draftGameSpec('boxing a kangaroo in the australian outback');
+    expect(fight.controlParams).toMatchObject({ generator: 'fight' });
+    expect(stages(fidelityChain(fight, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'] }]))).toEqual([['kangaroo', true, true, false, 'no-model']]);
+    const robot: GameSpecV1 = { ...fight, roles: fight.roles.map((role) => (role.id === 'rival' ? { ...role, label: 'robot' } : role)) };
+    expect(stages(fidelityChain(robot, [{ item: 'robot', slot: 'role', match: ['robot'] }]))).toEqual([['robot', true, true, true, 'ok']]);
+    const collect = draftGameSpec('a mouse collects cheese in a kitchen');
+    expect(stages(fidelityChain(collect, [{ item: 'cheese', slot: 'role', match: ['cheese'] }]))).toEqual([['cheese', true, true, false, 'no-model']]);
+    // Agar (`move_free` bez generátoru) kreslí kotouče – popisky dál nečte.
+    const agar = arenaFixture as GameSpecV1;
+    expect(fidelityChain(agar, [{ item: 'big fish', slot: 'role', match: ['big fish'] }])[0]).toMatchObject({ inSpec: true, read: false, why: 'not-read-by-control' });
+  });
+
+  // P32B T6: hra žánru nese sloveso režimem generátoru, ne ovládáním ze seznamu (`duel`, `throw`).
+  it('counts a verb of a genre game when its mode is the one the verb plays', () => {
+    const verb = (spec: GameSpecV1, item: string, controls: string[]) => fidelityChain(spec, [{ item, slot: 'verb', controls }])[0].why;
+    const fight = draftGameSpec('boxing a kangaroo in the australian outback');
+    expect(verb(fight, 'box', ['duel'])).toBe('ok');
+    expect(verb(fight, 'throw', ['throw'])).toBe('not-in-spec');
+    const quest = draftGameSpec('pop ten balloons at a birthday party');
+    expect(quest.controlParams).toMatchObject({ generator: 'quest_spatial' });
+    expect(verb(quest, 'pop', ['shooter'])).toBe('ok');
+    expect(verb(quest, 'duel', ['duel'])).toBe('not-in-spec');
+    // Sběr hraje každý režim, který má co sbírat – útěk s klíči ano, souboj bez věci ne.
+    const escape = draftGameSpec('A knight must collect three keys in a haunted castle while dodging ghosts.');
+    expect(verb(escape, 'collect', [])).toBe('ok');
+    expect(verb(fight, 'collect', [])).toBe('not-in-spec');
+    // Sloveso mimo tabulku klasifikátoru žádný režim nehraje.
+    expect(verb(quest, 'launch', ['throw'])).toBe('not-in-spec');
   });
 
   it('names the first stage where an item is lost', () => {

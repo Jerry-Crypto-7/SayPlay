@@ -14,7 +14,13 @@
  */
 
 import { controlOf, unreadItems } from '../capabilities';
-import { NUMBER_WORDS } from '../draft/lexicon';
+import { draftGenreFor } from '../draft/draft';
+import { NUMBER_WORDS, toolsOf } from '../draft/lexicon';
+import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
+import type { GenreModule, GenreSpec } from '../genre/contract';
+import { GENRE_MODULES } from '../genre/index';
+import { defaultEnemy, heroFits } from '../genre/roles';
+import type { Reading } from '../read/schema';
 import { ARCHETYPES, type MechanicId, estimateCost } from '../registry';
 import type { GameSpecV1 } from '../spec';
 
@@ -320,6 +326,110 @@ export function verbIssues<T extends Pick<CriticIssue, 'path' | 'evidence' | 're
 /** Slovesa z nálezů `VERB_UNPROVED`. */
 export function unprovedVerbs(issues: readonly { readonly code: string; readonly evidence: string }[]): string[] {
   return issues.filter((issue) => issue.code === 'VERB_UNPROVED').map((issue) => /"([a-z-]+)"/.exec(issue.evidence)?.[1] ?? '').filter((verb) => verb !== '');
+}
+
+// ---------------------------------------------------------------------------
+// Kontrola věrnosti žánrové odpovědi (P32B T5)
+
+/**
+ * Odpověď na novou hru je `GenreSpec` a kombinaci ovládání × mechanika za ni
+ * volí modul žánru – co může být špatně, je výběr: jiný hrdina, než věta říká,
+ * hrdina, kterého žánr neumí, nepřítel mimo větu i prostředí nebo nepřítel, kterého
+ * hráč ve větě drží (T7), žánr, který hlavní
+ * sloveso nehraje, režim, který hraje jen náhradu. Kódy nejsou kódy balíčku
+ * (`CRITIC_CODES`): nález nejde modelu, řeší ho přepnutí žánru (`switchGenre`).
+ */
+export const FIDELITY_CODES = ['HERO_NOT_SAID', 'HERO_UNFIT', 'ENEMY_NOT_SAID', 'ENEMY_IS_TOOL', 'VERB_OUTSIDE_MODE', 'MODE_NOT_READY'] as const;
+export type FidelityCode = (typeof FIDELITY_CODES)[number];
+
+export interface FidelityIssue {
+  readonly code: FidelityCode;
+  /** Pole `GenreSpec`, které nesedí (`/hero`, `/enemy`, `/mode`). */
+  readonly path: string;
+  readonly evidence: string;
+}
+
+export interface FidelityOptions {
+  readonly reading?: Reading | null;
+  /** Moduly žánrů; testy sem dávají dvojníky (`genre/__tests__/doubles.ts`). */
+  readonly modules?: GenreModules;
+}
+
+/** Slova popisku malými písmeny a v jednotném čísle („ghosts“ → „ghost“, „puppies“ → „puppy“). */
+const wordsOf = (text: string): string[] => (text.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).map((word) => word.replace(/ies$/, 'y').replace(/(?<!s)s$/, ''));
+
+/** Stejná role, když se shoduje poslední slovo: „pirate ship“ = „ship“, „race car“ ≠ „pirate ship“. */
+export function sameRole(a: string, b: string): boolean {
+  const head = wordsOf(a).at(-1);
+  return head !== undefined && head === wordsOf(b).at(-1);
+}
+
+/** Popisek je z věty, když v ní je každé jeho slovo – jinak ho dala výchozí role prostředí. */
+function saidIn(label: string, sentence: string): boolean {
+  const said = new Set(wordsOf(sentence));
+  const words = wordsOf(label);
+  return words.length > 0 && words.every((word) => said.has(word));
+}
+
+/**
+ * Hraje žánr a režim hlavní sloveso věty? Režim slovesa dává tabulka sloves
+ * klasifikátoru (`ranking.pick`). Hraje-li ten režim jen náhradu, věrný je
+ * nejlepší `ready` režim, který klasifikátor dá místo něj; věta bez slovesa
+ * z tabulky nedokazuje nic jiného než první režim pořadí – žánr draftu.
+ */
+function verbFits(genre: GenreSpec, ranking: GenreRanking, modules: GenreModules): boolean {
+  const is = (pair: { readonly genre: string; readonly mode: string } | undefined): boolean => pair !== undefined && pair.genre === genre.genre && pair.mode === genre.mode;
+  const { pick } = ranking;
+  if (pick === null) return is(ranking.ranked[0]);
+  return is(pick) || ((modules[pick.genre] as GenreModule).availability(pick.mode as never) === 'fallback' && is(ranking.ranked[0]));
+}
+
+/**
+ * Kontrola věrnosti `GenreSpec` odpovědi proti větě. Hrdinu a nepřítele věty
+ * čte draft téhož režimu (`draftGenreFor`): popisek, který v něm je a zazní ve
+ * větě, je role věty; jinak je nepřítel výchozí z prostředí odpovědi nebo draftu.
+ */
+export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOptions = {}): FidelityIssue[] {
+  const reading = options.reading ?? null;
+  const modules = options.modules ?? GENRE_MODULES;
+  const ranking = classifyGenre(sentence, reading, modules);
+  const words = draftGenreFor(sentence, genre.genre, genre.mode, { reading, modules });
+  const issues: FidelityIssue[] = [];
+
+  if (words !== null && saidIn(words.hero, sentence) && !sameRole(genre.hero, words.hero)) {
+    issues.push({ code: 'HERO_NOT_SAID', path: '/hero', evidence: `the sentence's hero is "${words.hero}", the answer plays "${genre.hero}"` });
+  }
+  if (!heroFits(genre.genre, genre.hero, modules)) {
+    issues.push({ code: 'HERO_UNFIT', path: '/hero', evidence: `"${genre.hero}" cannot play the hero of ${genre.genre}` });
+  }
+
+  const saidEnemy = words?.enemy !== undefined && saidIn(words.enemy, sentence) ? words.enemy : null;
+  if (saidEnemy !== null && (genre.enemy === undefined || !sameRole(genre.enemy, saidEnemy))) {
+    issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `the sentence's enemy is "${saidEnemy}", the answer has ${genre.enemy === undefined ? 'none' : `"${genre.enemy}"`}` });
+  }
+  const settingEnemies = [defaultEnemy(genre.setting, genre.genre), ...(words?.enemy === undefined ? [] : [words.enemy])];
+  if (saidEnemy === null && genre.enemy !== undefined && !settingEnemies.some((label) => sameRole(genre.enemy!, label))) {
+    issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `"${genre.enemy}" is neither in the sentence nor the default of the setting (${settingEnemies.join(', ')})` });
+  }
+  // T7: co hráč stříká nebo hází, ho nehoní („sprays water“ → „before the water catch you“).
+  // B-R12: kdo věc vrhá, se nesoudí – kámen, který hází obr, taky nikoho nehoní (honit smí obr).
+  const tool = genre.enemy === undefined ? undefined : toolsOf(sentence).find((phrase) => sameRole(genre.enemy!, phrase));
+  if (tool !== undefined) {
+    issues.push({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: `the sentence throws or uses the "${tool}", so it cannot be the enemy` });
+  }
+
+  if (!verbFits(genre, ranking, modules)) {
+    const first = ranking.ranked[0];
+    const evidence =
+      ranking.pick === null
+        ? `the sentence names no verb the genres know, so only its first genre ${first?.genre}.${first?.mode} is proved`
+        : `main verb "${ranking.verb}" plays ${ranking.pick.genre}.${ranking.pick.mode}, not ${genre.genre}.${genre.mode}`;
+    issues.push({ code: 'VERB_OUTSIDE_MODE', path: '/mode', evidence });
+  }
+  if ((modules[genre.genre] as GenreModule).availability(genre.mode as never) !== 'ready') {
+    issues.push({ code: 'MODE_NOT_READY', path: '/mode', evidence: `${genre.genre}.${genre.mode} only plays a stand-in` });
+  }
+  return issues;
 }
 
 /** Jen blokující nálezy – to, co opravné kolo musí odstranit. */

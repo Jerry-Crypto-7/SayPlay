@@ -13,7 +13,6 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { draftGameSpec } from '@/play/draft';
 import { fidelityChain, type ChecklistEntry } from '@/play/fidelity/chain';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -69,7 +68,9 @@ describe('P30B offline fidelity gain over the T1 baseline', () => {
     expect(sum('item', 'after')).toBeGreaterThanOrEqual(sum('item', 'before') + 10);
   });
 
-  it('HEAD still draws every item after.json records as drawn', () => {
+  // Od P32B T2 jen zdroj AI: slovní draft nové hry je žánr a co z něj scéna nakreslí, rozhoduje
+  // modul žánru – to pinuje P32B T6 nad skutečnými moduly; že draft položku do specu zapíše, hlídá `draft.test.ts`.
+  it('HEAD still draws every AI item after.json records as drawn', () => {
     const sentences = [
       ...read<{ sentences: Sentence[] }>('evals', 'play', 'fidelity', 'corpus.json').sentences,
       ...read<{ sentences: Sentence[] }>('evals', 'play', 'fidelity', 'judge-10.json').sentences,
@@ -77,15 +78,12 @@ describe('P30B offline fidelity gain over the T1 baseline', () => {
     const live = new Map(read<{ sentences: { id: string; spec: GameSpecV1 }[] }>('evals', 'play', 'p30b', 'live.json').sentences.map((entry) => [entry.id, entry.spec]));
     const now = new Map<string, boolean>();
     for (const sentence of sentences) {
-      const sources: [Source, GameSpecV1 | undefined][] = [
-        ['draft', draftGameSpec(sentence.text)],
-        ['ai', live.get(sentence.id)],
-      ];
-      for (const [source, spec] of sources) {
-        if (spec === undefined) continue;
-        for (const item of fidelityChain(spec, sentence.checklist)) now.set(`${source}|${sentence.id}|${item.item}`, item.drawn);
-      }
+      const spec = live.get(sentence.id);
+      if (spec === undefined) continue;
+      for (const item of fidelityChain(spec, sentence.checklist)) now.set(`ai|${sentence.id}|${item.item}`, item.drawn);
     }
-    expect(items.filter((item) => item.after && now.get(item.key) !== true).map((item) => item.key)).toEqual([]);
+    const ai = items.filter((item) => item.key.startsWith('ai|'));
+    expect(ai.filter((item) => item.after).length).toBeGreaterThan(0);
+    expect(ai.filter((item) => item.after && now.get(item.key) !== true).map((item) => item.key)).toEqual([]);
   }, 60_000);
 });

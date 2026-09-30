@@ -63,7 +63,8 @@ describe('getDirector bez modelu', () => {
     delete process.env.WORLDSMITH_BRANCH;
     const game = await getDirector(Date.now(), 'test-caller')('A hamster escapes a supermarket while a giant Roomba hunts it.');
     expect(game.source).toBe('draft');
-    expect(game.spec.archetype).toBe('chase_escape');
+    // Návrh nové hry je od P32B T2 žánr: útěk v Aréně, archetyp mu dává modul.
+    expect(game.spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
     expect(game.fallbackReason).toBe('MODEL_UNAVAILABLE');
   });
 });

@@ -1,9 +1,11 @@
 /**
  * Ověřené příklady do promptu režiséra (P30A T8): k větě 3–5 nejbližších her
  * z `examples.json`, deterministicky podle slov věty. Každý příklad je věta
- * a kompaktní odpověď, kterou robot dohrál k výhře (hlídá
- * `__tests__/retrieval.test.ts`), a žádná věta nepatří do vývojové ani
- * zapečetěné testovací sady P30 – jinak by měření na nich četlo vlastní odpověď.
+ * a odpověď `{plan, spec}` se `GenreSpec` (P32B T4), kterou robot dohrál
+ * k výhře (hlídá `__tests__/retrieval.test.ts`), a žádná věta nepatří do
+ * vývojové ani zapečetěné testovací sady P30 – jinak by měření na nich četlo
+ * vlastní odpověď. Do promptu jdou jen příklady v režimu `ready`: režim, který
+ * schéma odpovědi nenabízí, by model učil odpověď, kterou napsat nesmí.
  *
  * Zapíná `PLAY_DIRECTOR_EXAMPLES=on` (`src/app/api/play/_director.ts`); bez ní
  * je prompt bajtově stejný jako předtím.
@@ -11,6 +13,10 @@
 
 import { canonicalHash } from '@/ir/worlddoc';
 
+import type { GenreModule, GenreSpec } from '../genre/contract';
+import { GENRE_MODULES } from '../genre/index';
+
+import { readyModes } from './answer-schema';
 import EXAMPLES from './examples.json';
 
 export interface DirectorExample {
@@ -20,6 +26,15 @@ export interface DirectorExample {
 }
 
 export const DIRECTOR_EXAMPLES: readonly DirectorExample[] = EXAMPLES;
+
+/** `GenreSpec` z odpovědi příkladu. */
+export const exampleSpec = (example: DirectorExample): GenreSpec => example.answer.spec as GenreSpec;
+
+/** Příklady, jejichž režim dnes hraje; jen z nich se vybírá. */
+const READY_EXAMPLES = DIRECTOR_EXAMPLES.filter((example) => {
+  const spec = exampleSpec(example);
+  return readyModes(GENRE_MODULES[spec.genre] as GenreModule).includes(spec.mode);
+});
 
 /** Verze sady příkladů do klíče cache: jiné příklady = jiný prompt. */
 export const EXAMPLES_VERSION = canonicalHash(DIRECTOR_EXAMPLES);
@@ -57,16 +72,16 @@ export function examplesBlock(examples: readonly DirectorExample[]): string {
 
 /**
  * Nejbližší příklady: sdílená slova vážená vzácností v sadě (vzácné slovo
- * řekne víc než „game“), plus malý bonus za ovládání, které má výchozí bod.
+ * řekne víc než „game“), plus malý bonus za žánr, který má výchozí bod.
  * Shoda se řadí podle id, takže tatáž věta dá vždy tytéž příklady.
  */
-export function nearestExamples(sentence: string, control: string | null, pool: readonly DirectorExample[] = DIRECTOR_EXAMPLES): readonly DirectorExample[] {
+export function nearestExamples(sentence: string, genre: string | null, pool: readonly DirectorExample[] = READY_EXAMPLES): readonly DirectorExample[] {
   const words = pool.map((example) => new Set(sentenceWords(example.sentence)));
   const frequency = new Map<string, number>();
   for (const set of words) for (const word of set) frequency.set(word, (frequency.get(word) ?? 0) + 1);
   const query = new Set(sentenceWords(sentence));
   const scored = pool.map((example, at) => {
-    let score = example.answer.control === control ? 0.5 : 0;
+    let score = exampleSpec(example).genre === genre ? 0.5 : 0;
     for (const word of words[at]!) if (query.has(word)) score += Math.log(1 + pool.length / frequency.get(word)!);
     return { example, score };
   });

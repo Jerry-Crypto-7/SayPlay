@@ -16,7 +16,8 @@ import { readSlot } from '@/sim/state';
 import { verifyWitness } from '@/verify/witness';
 
 import { compileGame, compileSim, type SimCompilation, type SurfaceSim } from '../compile';
-import { draftGameSpec } from '../draft';
+// P32B T2: mřížka archetypů staví jen remix uložených legacy her – mechaniky se zkouší přes ni.
+import { legacyDraft } from './legacy-draft';
 import { ADAPTERS } from '../compile/adapters';
 import { TICKS_PER_SECOND } from '../compile/adapters/timer';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
@@ -146,7 +147,7 @@ describe('compileSim – delivery (carry)', () => {
 
 describe('compileGame – waiting witness (R6)', () => {
   it('the fragile cake that lost to the waiter at tick 6 on seed 1964188670 now wins by waiting', () => {
-    const result = compileGame(draftGameSpec('Carry a fragile cake across a kitchen to a party table.'), 1964188670);
+    const result = compileGame(legacyDraft('Carry a fragile cake across a kitchen to a party table.'), 1964188670);
     expect(result.ok).toBe(true);
   });
 });
@@ -155,7 +156,7 @@ describe('draft – enemies in collect_exit (P25B T2)', () => {
   const ghosts = 'A knight must collect three keys in a haunted castle while dodging ghosts.';
 
   it('keeps the dodged ghosts as a patrol whose touch loses, and the game still verifies', () => {
-    const gameSpec = draftGameSpec(ghosts);
+    const gameSpec = legacyDraft(ghosts);
     expect(gameSpec.archetype).toBe('collect_exit');
     expect(gameSpec.roles.find((role) => role.id === 'enemy')).toMatchObject({ kind: 'patrol', label: 'ghost', count: 2 });
     expect(gameSpec.tutorial.goalLine).toMatch(/Avoid the ghosts\.$/);
@@ -169,11 +170,11 @@ describe('draft – enemies in collect_exit (P25B T2)', () => {
   });
 
   it('turns a hunting enemy into a chaser, and a dodged hazard stays out of the roles', () => {
-    const hunted = draftGameSpec('Collect five coins while a goblin hunts you.');
+    const hunted = legacyDraft('Collect five coins while a goblin hunts you.');
     expect(hunted.roles.find((role) => role.id === 'enemy')).toMatchObject({ kind: 'chaser', label: 'goblin', count: 1 });
     expect(hunted.mechanics.map((mechanic) => mechanic.id)).toContain('chaser');
     expect(readGameSpec(hunted).ok).toBe(true);
-    expect(draftGameSpec('Collect five coins and avoid the lava.').roles.some((role) => role.id === 'enemy')).toBe(false);
+    expect(legacyDraft('Collect five coins and avoid the lava.').roles.some((role) => role.id === 'enemy')).toBe(false);
   });
 });
 
@@ -221,14 +222,14 @@ describe('patrol sight – stealth (P25B T3)', () => {
       'prison escape, avoid the flashlights',
       'sneak into the teachers room to change my grades lol',
     ]) {
-      const drafted = draftGameSpec(sentence);
+      const drafted = legacyDraft(sentence);
       expect(drafted.archetype, sentence).toBe('collect_exit');
       expect(drafted.mechanics.find((mechanic) => mechanic.id === 'patrol')?.params.sight, sentence).toBe(true);
     }
-    const heist = draftGameSpec('sneak past guards in a museum and steal a diamond');
+    const heist = legacyDraft('sneak past guards in a museum and steal a diamond');
     expect(heist.roles.find((role) => role.id === 'enemy')).toMatchObject({ label: 'guard', count: 2 });
     expect(heist.objective.count).toBe(1);
-    expect(draftGameSpec('A kid sneaks down at night to steal cookies without waking mom').roles.find((role) => role.id === 'enemy')?.label).toBe('mom');
+    expect(legacyDraft('A kid sneaks down at night to steal cookies without waking mom').roles.find((role) => role.id === 'enemy')?.label).toBe('mom');
     const result = compileGame(heist, 1);
     if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
     expect(verifyGame(result.value).publishEligible).toBe(true);
@@ -363,7 +364,7 @@ describe('switch.ordered – order puzzle (P25B T4)', () => {
   });
 
   it('drafts "in the right order" as an ordered switch puzzle, not a race (s080)', () => {
-    const drafted = draftGameSpec('a cat must knock things off shelves in the right order to reach the fish');
+    const drafted = legacyDraft('a cat must knock things off shelves in the right order to reach the fish');
     expect(drafted.archetype).toBe('switch_puzzle');
     expect(drafted.mechanics.find((mechanic) => mechanic.id === 'switch')?.params.ordered).toBe(true);
     expect(drafted.verification.map((assertion) => assertion.id)).toContain('wrong_order_resets');
@@ -371,7 +372,7 @@ describe('switch.ordered – order puzzle (P25B T4)', () => {
     const result = compileGame(drafted, 1);
     if (!result.ok) throw new Error(`${result.reason} ${result.issues.join('; ')}`);
     expect(verifyGame(result.value).publishEligible).toBe(true);
-    expect(draftGameSpec('race through the gates in the right order').archetype).toBe('checkpoint_race');
+    expect(legacyDraft('race through the gates in the right order').archetype).toBe('checkpoint_race');
   });
 });
 
@@ -401,7 +402,7 @@ describe('switch.crateRole – pushed crates press the plates (P25B T4)', () => 
   });
 
   it('drafts "push boxes onto switches" as crates on plates (s072)', () => {
-    const drafted = draftGameSpec('A lost robot must push boxes onto switches to open the door');
+    const drafted = legacyDraft('A lost robot must push boxes onto switches to open the door');
     expect(drafted.archetype).toBe('switch_puzzle');
     const params = drafted.mechanics.find((mechanic) => mechanic.id === 'switch')?.params;
     expect(params?.crateRole).toBe('box');
@@ -460,7 +461,7 @@ describe('carry.menu – customer orders (P25B T5)', () => {
       'run a supermarket, stock shelves and scan items at the checkout',
       'farm game plant carrots harvest sell',
     ]) {
-      const drafted = draftGameSpec(sentence);
+      const drafted = legacyDraft(sentence);
       expect(drafted.archetype, sentence).toBe('delivery');
       expect(drafted.mechanics.find((mechanic) => mechanic.id === 'carry')?.params.menu, sentence).toHaveLength(2);
       expect(readGameSpec(drafted).ok, sentence).toBe(true);

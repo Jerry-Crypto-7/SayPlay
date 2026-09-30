@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
 import { openPause, startGame } from './play-start';
@@ -13,8 +16,8 @@ import { openPause, startGame } from './play-start';
  * `__worldstreamStage` – ptá se na to, co se z obrázku plátna přečíst nedá.
  */
 
-async function publish(request: APIRequestContext, sentence: string): Promise<string> {
-  const response = await request.post('/api/play/games', { data: { sentence } });
+async function publish(request: APIRequestContext, spec: unknown): Promise<string> {
+  const response = await request.post('/api/play/games', { data: { spec } });
   expect(response.status(), await response.text()).toBeLessThan(300);
   const body = (await response.json()) as { url: string };
   return body.url;
@@ -23,8 +26,9 @@ async function publish(request: APIRequestContext, sentence: string): Promise<st
 test.describe('/play/[id] – play shell', () => {
   let url = '';
 
+  // Mřížková sběrací hra: od P32B T2 z věty vzniká žánr, mřížku mají uložené hry a remixy – publikuje se proto fixtura.
   test.beforeAll(async ({ request }) => {
-    url = await publish(request, 'Collect five glowing mushrooms then open a portal.');
+    url = await publish(request, JSON.parse(readFileSync(join(process.cwd(), 'src/play/__fixtures__/collect_exit.json'), 'utf8')) as unknown);
   });
 
   test('HUD shows the goal, the tick advances, no technical panel is rendered', async ({ page }) => {

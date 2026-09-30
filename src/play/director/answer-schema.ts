@@ -1,25 +1,25 @@
 /**
- * Schéma odpovědi režiséra pro `codex exec --output-schema` (P26 T6).
+ * Schéma odpovědi režiséra pro `codex exec --output-schema` (P26 T6, na
+ * žánrech od P32B T4).
  *
  * Odpověď je `{plan, spec}`: volné pole `plan` pro úvahu stojí před specem,
  * protože přísné schéma bez místa na úvahu zhoršuje přemýšlení („Let Me Speak
- * Freely“). `spec` je unie – jedna varianta na ovládání a v ní jen to, co
- * tabulka schopností (`capabilities.ts`) dovolí: arkáda jen mechaniky, které
- * hraje, svoje `controlParams` a žádné `verification` (ověřuje robot).
+ * Freely“). `spec` je `GenreSpec` – unie, jedna varianta na žánr a v ní jen
+ * režimy `ready` a parametry s mezemi modulu. Hru z něj složí modul žánru
+ * (`readGenreAnswer` v `read.ts`).
  *
  * Přísný režim OpenAI chce u každého objektu všechna pole v `required`,
  * `additionalProperties: false`, u každého uzlu `type` a nezná volné slovníky.
  * `strictSchema` proto: volitelné pole → „nebo null“, konstantu → výčet,
- * slovník → seznam dvojic `{key, value}`. `unwrapAnswer` v `read.ts` to vrací
- * zpátky, takže `readGameSpec` vidí obyčejný spec.
+ * slovník → seznam dvojic `{key, value}`. `readGenreAnswer` pole `null` zahodí.
  */
 
 import { z } from 'zod';
 
-import { modelRulesSchema } from '../arcade/rules/schema';
-import { CAPABILITIES } from '../capabilities';
-import { MECHANICS, MECHANIC_IDS, type MechanicEntry, type MechanicId } from '../registry';
-import { CONTROLS, CONTROL_PARAMS, gameSpecSchema, themeSchema, type ControlId } from '../spec';
+import { THINGS_MAX } from '../arcade/rules/schema';
+import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
+import { GENRE_MODULES } from '../genre/index';
+import { ROLE_KINDS } from '../spec';
 
 type Json = Record<string, unknown>;
 
@@ -48,7 +48,7 @@ export function strictSchema(node: Json): Json {
   if (out.type === 'object') {
     const properties = out.properties as Record<string, Json> | undefined;
     if (properties === undefined) {
-      // Slovník: seznam dvojic, `unwrapAnswer` z něj udělá zpátky objekt.
+      // Slovník: seznam dvojic.
       const value = isObject(out.additionalProperties) ? strictSchema(out.additionalProperties) : { type: 'string' };
       return { type: 'array', items: { type: 'object', additionalProperties: false, required: ['key', 'value'], properties: { key: { type: 'string' }, value } } };
     }
@@ -67,35 +67,55 @@ export function strictSchema(node: Json): Json {
 
 const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }) as Json;
 
-function mechanicsOf(control: ControlId): z.ZodType {
-  const plays = CAPABILITIES[control].mechanics;
-  const ids = plays === 'all' ? MECHANIC_IDS : MECHANIC_IDS.filter((id) => plays.includes(id));
-  const entries = ids.map((id: MechanicId) => z.object({ id: z.literal(id), params: (MECHANICS[id] as MechanicEntry<unknown>).params as z.ZodType }).strict());
-  return z.array(entries.length === 1 ? entries[0] : z.union(entries as unknown as [z.ZodType, z.ZodType, ...z.ZodType[]])).max(5);
+/** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4). */
+export const readyModes = (module: GenreModule): string[] => module.modes.filter((mode) => module.availability(mode) === 'ready');
+
+/**
+ * Varianta `GenreSpec` pro režiséra (P32B T4): jen režimy `ready` a parametry
+ * s mezemi modulu jako pojmenovaná pole, ne volný slovník. Od T5b i počty rolí
+ * (B-R4) a pravidla P29A se svými rolemi (B-R5). Žánr bez hrajícího
+ * režimu v odpovědi není; `null` = nic nenabízí.
+ */
+function genreVariant(module: GenreModule): Json | null {
+  const modes = readyModes(module);
+  if (modes.length === 0) return null;
+  const base = genreSpecSchema.options.find((option) => option.shape.genre.value === module.id)!;
+  const bounds = Object.entries(module.paramBounds);
+  const params = z.object(Object.fromEntries(bounds.map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
+  const counts = countsOf(module, modes);
+  const variant = (bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() })).extend({ ruleRoles: z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX).optional() });
+  const counted = counts === null ? variant.omit({ counts: true }) : variant.extend({ counts: counts.optional() });
+  return strictSchema(toJson(counted.extend({ mode: z.enum(modes as [string, ...string[]]) })));
 }
 
-/** Spec, jak ho píše model: pravidla bez pahýlu `interact` (`modelRulesSchema`). */
-const modelSpecSchema = gameSpecSchema.extend({ rules: modelRulesSchema.optional() });
+/** Druhy rolí, které smí nést jen pravidla – hráče staví modul. */
+const RULE_ROLE_KINDS = ROLE_KINDS.filter((kind) => kind !== 'player') as [string, ...string[]];
 
-function variant(control: ControlId): z.ZodType {
-  // `theme` bez počasí sdílené verze (P29D T10) – to model nepíše.
-  // `genre` (P32) zapisuje překlad žánru, ne model – dokud režisér píše GameSpec, v odpovědi není.
-  if (control === 'tap_go') return modelSpecSchema.omit({ controlParams: true, genre: true }).extend({ control: z.literal('tap_go'), theme: themeSchema, mechanics: mechanicsOf(control) });
-  return modelSpecSchema.omit({ verification: true, genre: true }).extend({
-    control: z.literal(control),
-    theme: themeSchema,
-    controlParams: CONTROL_PARAMS[control] as z.ZodType,
-    mechanics: mechanicsOf(control),
+/**
+ * Počty rolí, které žánr čte (B-R4): jen role, které některý režim `ready`
+ * převádí na parametr (`COUNT_PARAMS`), s mezemi toho parametru – u dvou
+ * režimů jejich sjednocením. Přesnou mez režimu hlídá `readGenreSpec`. `null` = žánr počty nečte.
+ */
+function countsOf(module: GenreModule, modes: readonly string[]): z.ZodObject | null {
+  const table = COUNT_PARAMS[module.id] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>;
+  const fields = COUNT_ROLES.flatMap((role) => {
+    const ranges = modes.flatMap((mode) => {
+      const key = table[mode]?.[role];
+      return key === undefined ? [] : [module.paramBounds[key]!];
+    });
+    if (ranges.length === 0) return [];
+    return [[role, z.int().min(Math.min(...ranges.map((range) => range.min))).max(Math.max(...ranges.map((range) => range.max))).optional()] as const];
   });
+  return fields.length === 0 ? null : z.object(Object.fromEntries(fields)).strict();
 }
 
-/** Celé schéma odpovědi; staví se jednou, registr se za běhu nemění. */
-export const DIRECTOR_ANSWER_SCHEMA: Json = {
+/** Odpověď režiséra na novou hru: `{plan, spec}` se `GenreSpec`; hru z něj složí modul žánru (`readGenreAnswer`). */
+export const GENRE_ANSWER_SCHEMA: Json = {
   type: 'object',
   additionalProperties: false,
   required: ['plan', 'spec'],
   properties: {
     plan: { type: 'string' },
-    spec: { anyOf: CONTROLS.map((control) => strictSchema(toJson(variant(control)))) },
+    spec: { anyOf: (Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? []) },
   },
 };

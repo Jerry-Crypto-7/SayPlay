@@ -4,9 +4,11 @@
  * nebo hrát, jinak to napsat nesmí.
  *
  * Z tabulky se vyrábí:
- * 1. řádek ovládání v zadání modelu (`controlPromptLine` v `director/prompt.ts`);
- * 2. kontrola kritika – položka, kterou ovládání nečte, je nález, ne tiché zahození;
- * 3. věrnost ve specifikaci v sadě `evals/play/fidelity` (`scripts/play-fidelity.mjs`).
+ * 1. kontrola kritika – položka, kterou ovládání nečte, je nález, ne tiché zahození;
+ * 2. věrnost ve specifikaci v sadě `evals/play/fidelity` (`scripts/play-fidelity.mjs`).
+ *
+ * Zadání modelu ovládání od P32B T4 nevyjmenovává: režisér vybírá žánr
+ * (`director/prompt.ts`) a ovládání určí modul žánru.
  *
  * Každou buňku „čte“ drží test `__tests__/capabilities.test.ts`: změna položky
  * změní svět (hash) nebo model, který vykreslení zvolí; buňka „nečte“ naopak nic.

@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import { buildDirectorRequest, DIRECTOR_PROMPT_VERSION, directorCache, directorKey } from '@/play/director';
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import type { GameSpecV1 } from '@/play/spec';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
 import { type AnswerStore, memoryAnswerStore } from '@/server/answer-cache';
@@ -184,7 +184,7 @@ describe('getDirector – kvóty a cache (R8)', () => {
 
   it('bez volného slotu se cache čte pod klíčem živé větve – táž věta, táž hra', async () => {
     stubEnv(LIVE);
-    const request = buildDirectorRequest(SENTENCE, draftGameSpec(SENTENCE));
+    const request = buildDirectorRequest(SENTENCE, draftGameSpecWithMeta(SENTENCE).genre);
     const branchId = upstreamBranch(upstreamConfigFromEnv(process.env)).id;
     const key = directorKey({ sentence: SENTENCE, promptVersion: DIRECTOR_PROMPT_VERSION, model: request.model, endpoint: branchId });
     await directorCache(answers.store ?? memoryAnswerStore()).write(key, collectExit as GameSpecV1);
