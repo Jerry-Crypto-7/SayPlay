@@ -174,6 +174,27 @@ describe('chaser steering – slow while the player holds Use (P32G G-R1)', () =
       expect(topSpeed(seed, false, BUTTON.INTERACT), `seed ${seed}: no flag`).toBeGreaterThan(half);
     }
   });
+
+  it('pressing Use caps a chaser already at full speed to half on the very next tick', () => {
+    const half = Math.trunc(ESCAPE.chaserSpeed.default / 2);
+    let pressed = 0;
+    for (const seed of SEEDS.slice(0, 10)) {
+      const parts = arenaEscape.parts(seed, arenaEscape.params.parse({ chasers: 2 }), 3);
+      const params = parts.control.params as { readonly chase: Record<string, unknown> };
+      const control = { ...parts.control, params: { ...params, chase: { ...params.chase, slowWhileUse: true } } };
+      const built = buildWorld({ seed, control, rules: parts.rules, bot: parts.bot, level: parts.level, health: 3 }, ARCADE_LIBRARY);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      const program = loadProgram(built.world, ARCADE_LIBRARY);
+      const state = instantiate(built.world);
+      const speedOf = (i: number): number => Math.hypot(state[bodyBase(i) + BODY.vx] as number, state[bodyBase(i) + BODY.vz] as number);
+      for (let t = 0; t < 3 * ARCADE_HZ && state[HEADER.runState] === 0; t += 1) step(state, { buttons: 0, axis: 0 }, program);
+      if (state[HEADER.runState] !== 0 || !chasersOf(state).some((i) => speedOf(i) > half)) continue;
+      step(state, { buttons: BUTTON.INTERACT, axis: 0 }, program);
+      for (const i of chasersOf(state)) expect(speedOf(i), `seed ${seed}: chaser ${i} one tick after Use`).toBeLessThanOrEqual(half);
+      pressed += 1;
+    }
+    expect(pressed, 'seeds where a chaser was above half speed when Use went down').toBeGreaterThanOrEqual(5);
+  });
 });
 
 describe('chaser steering – bounded acceleration and pursuit lead', () => {

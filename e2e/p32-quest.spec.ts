@@ -250,7 +250,8 @@ async function shootQuest(page: Page, id: QuestId, prefix: string, warmUpMs = 0)
   for (const shot of [beforeShot, afterShot]) {
     expect(shot.purple, `${shot.name}: podíl fialových pixelů`).toBeLessThan(0.001);
     expect(shot.heroShare, `${shot.name}: hrdina v záběru`).not.toBeNull();
-    expect(shot.heroShare!, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(0.04);
+    // Kuchař stojí u stanoviště v blízkém záběru (`StationCamera`): 17,5–26,9 %, bez něj 8,9 %.
+    expect(shot.heroShare!, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(id === 'chef' ? 0.14 : 0.04);
     expect(shot.targetInView, `${shot.name}: cíl v záběru`).toBe(true);
   }
   expect(beforeShot.states[moved], `${beforeShot.name}: cíl ještě ve stavu 0`).toBe(0);
