@@ -302,6 +302,8 @@ const TOOL_AIMED = /\b(?:shoot|fire|launch)(?:s|es|ed|ing)? (?:the |a |an |some 
 /** Kde začíná věta s vlastním podmětem; „and“, „or“ a „then“ ho můžou i sdílet. */
 const CLAUSE_START = /^(?:[,;:.!?]|but|while|when|whenever|as|because|until|so|if|where|by)$/;
 const CLAUSE_BREAK = /^(?:and|or|then)$/;
+/** Podmět, který jmenuje hráče nebo na něj ukazuje: „you“, „she sprays“, „the player throws“. */
+const HERO_WORD = /^(?:you|u|i|we|he|she|they|it|player|hero)$/;
 
 /**
  * Podmět slovesa, před kterým věta končí `text` (B-R12): až tři slova za hranicí věty.
@@ -317,7 +319,7 @@ function subjectBefore(text: string): readonly string[] {
     while (start > 0 && !CLAUSE_START.test(tokens[start - 1])) start -= 1;
     // Věta bez členu na začátku je rozkaz („defend a castle and throw…“), podmět nemá.
     if (/^(?:a|an|the|my|one|two|three)$/.test(tokens[start])) return tokens.slice(start + 1, start + 3);
-    return tokens.slice(start, start + 1).filter((word) => /^(?:you|u|i|we)$/.test(word));
+    return tokens.slice(start, start + 1).filter((word) => HERO_WORD.test(word));
   }
   const window = tokens.slice(-3);
   let from = window.length;
@@ -325,9 +327,12 @@ function subjectBefore(text: string): readonly string[] {
   return window.slice(from);
 }
 
-/** Dělá sloveso hrdina? Rozkaz a „you“/„u“/„I“ ano; jinak se podmět a hrdina musí potkat hlavou. */
+/**
+ * Dělá sloveso hrdina? Rozkaz, zájmeno a „the player“ ano (zájmeno čtení k nikomu
+ * nepřiřadí, tak platí jako dřív); jinak se podmět a hrdina musí potkat hlavou.
+ */
 function heroDoes(subject: readonly string[], hero: string | null): boolean {
-  if (subject.length === 0 || subject.some((word) => /^(?:you|u|i|we)$/.test(word))) return true;
+  if (subject.length === 0 || subject.some((word) => HERO_WORD.test(word))) return true;
   if (hero === null) return false;
   const heroWords = hero.toLowerCase().split(' ').map(singular);
   const words = subject.map(singular);

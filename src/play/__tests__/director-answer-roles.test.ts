@@ -100,6 +100,12 @@ describe('the thing the player uses is never a role', () => {
     expect(toolOf('Throw snowballs at snowmen in a park', null)).toBe('snowball');
     expect(toolOf('defend a castle from dragons by throwing snowballs', null)).toBe('snowball');
     expect(toolOf('fps where u shoot paint at robots', null)).toBe('paint');
+    // Revize B-R12: zájmeno a „the player“ jsou hrdina – jinak by se voda hasiče zas stala nepřítelem.
+    const SHE = 'A firefighter robot runs into the forest and she sprays water at burning trees';
+    expect(toolOf(SHE, 'firefighter robot')).toBe('water');
+    expect(toolOf('The player sprays water at burning trees in a forest', null)).toBe('water');
+    expect(draftOf(SHE).genre.enemy).not.toBe('water');
+    expect(fidelity({ ...draftOf(SHE).genre, enemy: 'water' }, SHE)).toContainEqual(expect.objectContaining({ code: 'ENEMY_IS_TOOL' }));
     // Kritik soudí hrdinu odpovědi: vesničana kámen honit smí, obra ne.
     const giant = draftOf(GIANT).genre;
     const toolIssue = expect.objectContaining({ code: 'ENEMY_IS_TOOL' });
