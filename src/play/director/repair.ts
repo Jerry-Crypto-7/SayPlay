@@ -31,7 +31,7 @@ import { classifyGenre } from '../genre/classify';
 import { COUNT_PARAMS, type CountRole, type GenreSpec, rulesYard } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
-import { readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
+import { gameSpecSchema, readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
 
 import { type CriticIssue, type FidelityOptions, blockingIssues, critique, fidelity } from './critic';
 import { renderRegistry } from './prompt';
@@ -491,8 +491,10 @@ export function applyRepairAnswer(spec: GameSpecV1, body: unknown): { ok: true; 
   const failed = errors.findIndex((error) => error !== null);
   if (failed >= 0) return { ok: false, reason: 'PATCH_FAILED', detail: `operation ${String(failed)}: ${errors[failed]?.message ?? 'failed'}` };
   // Záplata se čte jako první odpověď, bez pahýlu `interact` (B-R6). Pravidla, která dopsala
-  // hře žánru na volném pohybu, hrají na dvorku jako pravidla první odpovědi (`rulesYard`, T5b).
-  const read = readModelSpec(work);
+  // hře žánru na volném pohybu, hrají na dvorku jako pravidla první odpovědi (`rulesYard`, T5b) –
+  // čtení tak soudí svět bez generátoru, který dvorek zahodí (B-R10). Po čtení znovu kvůli popiskům.
+  const shaped = gameSpecSchema.safeParse(work);
+  const read = readModelSpec(shaped.success && shaped.data.genre !== undefined ? rulesYard(shaped.data) : work);
   return read.ok && read.spec.genre !== undefined ? { ok: true, spec: rulesYard(read.spec) } : read;
 }
 

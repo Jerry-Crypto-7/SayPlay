@@ -21,6 +21,7 @@ import { buildDirectorRequest } from '../director/prompt';
 import { readDirectorAnswer, readGenreAnswer } from '../director/read';
 import { applyRepairAnswer } from '../director/repair';
 import { draftForControl, draftGameSpecWithMeta } from '../draft';
+import { readGameSpec } from '../spec';
 
 const SENTENCE = 'carry the key to the old door and open it';
 
@@ -142,6 +143,17 @@ describe('reading refuses what no transport enforces', () => {
     expect(patched).toMatchObject({ ok: true });
     expect(patched.ok && patched.spec.controlParams).not.toMatchObject({ generator: expect.anything() });
     expect(readGenreAnswer(withRules([ring])).ok).toBe(true);
+  });
+
+  // B-R10 (revize T7, nález 5): uložená hra z `POST {spec}` dvorkem neprojde – svět generátor úkolu
+  // postaví a jeho vlastní `interact` sdílí jediný čítač rozdělané práce s pravidlem.
+  it('a stored quest spec that still carries its generator is refused a winning interact at read', () => {
+    const quest = readGenreAnswer(withRules([]));
+    if (!quest.ok) throw new Error(quest.detail);
+    const ring = { id: 'ring', verb: 'ring', when: { interact: { role: 'door', radius: 2, hold: 30, states: 2 } }, do: [{ win: true }] };
+    const posted = readGameSpec({ ...quest.spec, rules: [ring] });
+    expect(posted).toMatchObject({ ok: false, reason: 'DANGLING_REFERENCE' });
+    expect(!posted.ok && posted.issues).toEqual([expect.stringContaining('the quest already has its own')]);
   });
 
   it('rules a repair round puts on the tap-to-move grid are refused, not dropped', () => {
