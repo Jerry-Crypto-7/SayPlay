@@ -364,7 +364,7 @@ exports[`quest target states (P32G T5) > draws every verb kind in every state as
           "children": [],
           "props": {
             "kind": "flames",
-            "y": 1.55,
+            "y": 2.35,
           },
           "type": "TargetEmitter",
         },
@@ -372,7 +372,7 @@ exports[`quest target states (P32G T5) > draws every verb kind in every state as
           "children": [],
           "props": {
             "kind": "embers",
-            "y": 2,
+            "y": 2.7,
           },
           "type": "TargetEmitter",
         },
@@ -485,7 +485,7 @@ exports[`quest target states (P32G T5) > draws every verb kind in every state as
           "children": [],
           "props": {
             "kind": "smoke",
-            "y": 1.9,
+            "y": 2.45,
           },
           "type": "TargetEmitter",
         },

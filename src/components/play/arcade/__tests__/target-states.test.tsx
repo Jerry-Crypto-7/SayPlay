@@ -60,19 +60,21 @@ describe('quest target states (P32G T5)', () => {
 
   it('a quest world draws its targets by the verb of its interact rule; other worlds keep the outline stub', () => {
     const firefighter = spatialWorld('put-out', 3);
-    expect(questVerbOf(firefighter)).toEqual({ kind: 'fire', states: 3 });
+    expect(questVerbOf(firefighter)).toMatchObject({ kind: 'fire', states: 3 });
+    expect(questVerbOf(firefighter)?.interact.order).toBeUndefined();
     const layer = questTargets(firefighter);
     expect(layer).toBeDefined();
     const drawn = layer!([target(1, 0)]) as ReactElement<{ readonly kind: VerbKind; readonly states: number }>;
     expect(drawn.props).toMatchObject({ kind: 'fire', states: 3 });
 
     const painter = spatialWorld('paint', 2);
-    expect(questVerbOf(painter)).toEqual({ kind: null, states: 2 });
+    expect(questVerbOf(painter)).toMatchObject({ kind: null, states: 2 });
 
     const station = questStation.parts(1, questStation.params.parse({ verb: 'flip', states: 3 }), undefined);
     const cook = buildWorld({ seed: 1, control: station.control, rules: station.rules, bot: station.bot, level: station.level }, ARCADE_LIBRARY);
     if (!cook.ok) throw new Error(cook.issues.join('; '));
-    expect(questVerbOf(cook.world)).toEqual({ kind: 'cook', states: 3 });
+    // Stanoviště: cíle po řadě a okno připravenosti – podle toho scéna přidá pult a blízkou kameru.
+    expect(questVerbOf(cook.world)).toMatchObject({ kind: 'cook', states: 3, interact: { order: true, ready: { after: 90, window: 60 } } });
 
     expect(questTargets({ ...firefighter, rules: [] })).toBeUndefined();
   });

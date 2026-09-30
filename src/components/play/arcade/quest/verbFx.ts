@@ -9,6 +9,7 @@
 
 import { color as brand } from '@/brand/tokens';
 import type { ArcadeWorld } from '@/play/arcade/contract';
+import type { CompiledInteract } from '@/play/arcade/rules/interact';
 import { type VerbKind, verbKindOf } from '@/play/genre/quest';
 
 import type { TargetBody } from '../arena/TargetsMount';
@@ -86,7 +87,8 @@ const NONE: StateFx = { emitters: [] };
 
 /** Stavy po řadě: hoří → kouří → uhašeno, knot → plamínek, syrová → peče se → zlatá… */
 export const VERB_FX: Readonly<Record<VerbKind, readonly StateFx[]>> = {
-  fire: [{ emitters: [{ kind: 'flames', y: 1.55 }, { kind: 'embers', y: 2 }], light: { color: brand.tomato, intensity: 40, distance: 9, y: 1.8 } }, { emitters: [{ kind: 'smoke', y: 1.9 }] }, NONE],
+  // Plameny a kouř nad korunou (vršek 2,6 m): uvnitř ji jen obarvily a strom vypadal jako podzimní.
+  fire: [{ emitters: [{ kind: 'flames', y: 2.35 }, { kind: 'embers', y: 2.7 }], light: { color: brand.tomato, intensity: 40, distance: 9, y: 1.8 } }, { emitters: [{ kind: 'smoke', y: 2.45 }] }, NONE],
   flame: [NONE, { emitters: [{ kind: 'flicker', y: 1.42 }], light: { color: brand['sun-soft'], intensity: 12, distance: 5, y: 1.6 } }],
   cook: [NONE, { emitters: [{ kind: 'bubbles', y: 0.07 }, { kind: 'steam', y: 0.12 }] }, { emitters: [{ kind: 'glint', y: 0.12 }] }],
   repair: [{ emitters: [{ kind: 'sparks', y: 1.05 }, { kind: 'smoke', y: 1.5 }] }, { emitters: [], light: { color: brand.mint, intensity: 15, distance: 6, y: 1.65 } }],
@@ -155,12 +157,14 @@ export interface QuestVerb {
   /** `null` = sloveso bez druhu („paint“): tvar v paletě. */
   readonly kind: VerbKind | null;
   readonly states: number;
+  /** Spouštěč pravidla; `order` = stanoviště (cíle po řadě, okno připravenosti). */
+  readonly interact: CompiledInteract;
 }
 
 /** Sloveso a počet stavů z pravidla `interact` světa; svět bez něj úkol není. */
 export function questVerbOf(world: Pick<ArcadeWorld, 'rules'>): QuestVerb | null {
   const rule = world.rules.find((one) => one.id === 'interact');
   if (rule === undefined) return null;
-  const { verb, when } = rule.params as { readonly verb: string; readonly when: { readonly interact: { readonly states: number } } };
-  return { kind: verbKindOf(verb), states: when.interact.states };
+  const { verb, when } = rule.params as { readonly verb: string; readonly when: { readonly interact: CompiledInteract } };
+  return { kind: verbKindOf(verb), states: when.interact.states, interact: when.interact };
 }

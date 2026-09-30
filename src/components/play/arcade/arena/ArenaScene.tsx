@@ -708,7 +708,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
           </group>
         );
       })}
-      <TargetsMount session={session} views={views} layer={targets ?? questTargets(session.world)} />
+      <TargetsMount session={session} views={views} layer={targets ?? questTargets(session.world, { session, look: scene })} />
     </>
   );
 }

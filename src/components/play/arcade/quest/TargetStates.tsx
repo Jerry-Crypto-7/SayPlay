@@ -23,7 +23,7 @@
  */
 
 import { useFrame, useThree } from '@react-three/fiber';
-import { type ReactElement, type ReactNode, createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import { type ReactElement, type ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { AdditiveBlending, Color, DataTexture, type Group, LinearFilter, MeshBasicMaterial, NormalBlending, type PointLight, RGBAFormat } from 'three';
 import {
   ApplyForce,
@@ -50,14 +50,20 @@ import type { VerbKind } from '@/play/genre/quest';
 import type { TargetBody, TargetLayer } from '../arena/TargetsMount';
 import { type Burst, createParticleDirector } from '../effects/particles';
 import { FittedModel } from '../World';
+import { type Stage, StationScene, type StationSetup } from './StationScene';
 import { EMITTERS, type EmitterKind, type EmitterPreset, KIND_BODY, MAX_LIGHTS, fxOf, lightsOf, questVerbOf, risenBursts } from './verbFx';
 
-/** Vrstva cílů pro svět s pravidlem `interact`; jiný svět nechá obrysy místa pro vrstvu. */
-export function questTargets(world: Pick<ArcadeWorld, 'rules'>): TargetLayer | undefined {
+/**
+ * Vrstva cílů pro svět s pravidlem `interact`; jiný svět nechá obrysy místa pro
+ * vrstvu. Stanoviště (`order`) s relací a sadou (`stage`) dostane i pult,
+ * okno připravenosti a blízkou kameru (`StationScene`).
+ */
+export function questTargets(world: Pick<ArcadeWorld, 'rules'>, stage?: Stage): TargetLayer | undefined {
   const verb = questVerbOf(world);
   if (verb === null) return undefined;
-  const { kind, states } = verb;
-  return (targets) => <TargetStates targets={targets} kind={kind} states={states} />;
+  const { kind, states, interact } = verb;
+  const station = interact.order === true && stage !== undefined ? { ...stage, interact } : undefined;
+  return (targets) => <TargetStates targets={targets} kind={kind} states={states} station={station} />;
 }
 
 // ---------------------------------------------------------------------------
@@ -253,8 +259,8 @@ function reachOf(kind: VerbKind | null, target: TargetBody): number {
   return Math.max(KIND_BODY[kind].w, KIND_BODY[kind].d) / 2;
 }
 
-/** Jeden cíl ve svém stavu: tvar, zdroje částic a kroužek, dokud není hotový. */
-export function targetParts(target: TargetBody, kind: VerbKind | null, states: number): ReactElement {
+/** Jeden cíl ve svém stavu: tvar, zdroje částic a kroužek, dokud není hotový (`ring`; stanoviště kreslí vlastní na desce). */
+export function targetParts(target: TargetBody, kind: VerbKind | null, states: number, ring = true): ReactElement {
   const state = Math.min(target.state, states - 1);
   const done = state === states - 1;
   const r = reachOf(kind, target) + 0.15;
@@ -264,7 +270,7 @@ export function targetParts(target: TargetBody, kind: VerbKind | null, states: n
       {fxOf(kind, state).emitters.map((emitter) => (
         <TargetEmitter key={`${emitter.kind}@${String(emitter.y)}`} kind={emitter.kind} y={emitter.y} />
       ))}
-      {!done && (
+      {ring && !done && (
         <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} userData={{ rigShadow: 'receive' }}>
           <ringGeometry args={[r, r + 0.1, 32]} />
           <meshBasicMaterial color={brand.sun} />
@@ -362,9 +368,20 @@ function TargetEmitter({ kind, y }: { readonly kind: EmitterKind; readonly y: nu
   return system === null ? null : <primitive object={system.emitter} position={[0, y, 0]} />;
 }
 
-export function TargetStates({ targets, kind, states }: { readonly targets: readonly TargetBody[]; readonly kind: VerbKind | null; readonly states: number }) {
+export function TargetStates({
+  targets,
+  kind,
+  states,
+  station,
+}: {
+  readonly targets: readonly TargetBody[];
+  readonly kind: VerbKind | null;
+  readonly states: number;
+  readonly station?: StationSetup | undefined;
+}) {
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
+  const canvas = useThree((three) => three.gl.domElement);
   const fx = useMemo((): Fx => {
     const map = dotTexture();
     return {
@@ -398,11 +415,13 @@ export function TargetStates({ targets, kind, states }: { readonly targets: read
     [fx, director],
   );
 
-  // Vrstva se překreslí jen se změnou cíle: tady se pozná posun stavu.
+  // Vrstva se překreslí jen se změnou cíle: tady se pozná posun stavu. Sonda pro e2e: stavy cílů po řadě.
   useEffect(() => {
     const bursts = risenBursts(seen, targets, kind);
     if (bursts.length > 0) director.emit(bursts, performance.now() / 1000, BURST_CAP);
-  }, [targets, kind, seen, director]);
+    canvas.dataset.quest = targets.map((target) => target.state).join(' ');
+  }, [targets, kind, seen, director, canvas]);
+  const burst = useCallback((bursts: readonly Burst[]) => director.emit(bursts, performance.now() / 1000, BURST_CAP), [director]);
 
   useFrame((_, delta) => {
     const now = performance.now() / 1000;
@@ -437,7 +456,8 @@ export function TargetStates({ targets, kind, states }: { readonly targets: read
           decay={2}
         />
       ))}
-      {targets.map((target) => targetParts(target, kind, states))}
+      {targets.map((target) => targetParts(target, kind, states, station === undefined))}
+      {station !== undefined && <StationScene {...station} targets={targets} kind={kind} states={states} burst={burst} />}
     </FxContext.Provider>
   );
 }
