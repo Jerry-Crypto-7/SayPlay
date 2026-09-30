@@ -32,6 +32,40 @@ FPS Pixel 7 se 4× CPU: medián 41 (úroveň `low`). Fialová na žádném sním
 takže věci jsou zářící skleněné kvádry, ne ryby. Výběr modelu je ve sdíleném
 `models.ts` – požadavek je v plánu P32E pod „Findings routed by the run“.
 
+## Souboj rytířů (P32E T6)
+
+Věta „Two knights duel in a castle“ (rychlá verze; hrdinu, kterého slovník věty
+nenajde, doplní přijímací sada), stejná zařízení. Na každém snímku jsou lišty HP
+(soupeř nad hlavou, hrdina u nohou na straně kamery) a kamera souboje je strmější
+(60° místo 50°), ať soupeř za hrdinou nezmizí.
+
+- `telegraph` – hráč stojí, soupeř 18 tiků z 30 chystá úder: záklon, vzepětí, červeň a vykřičník.
+- `hit` – hra člověka klávesnicí, první zásah: žlutý srpek švihu, bílý záblesk zasaženého, částice sběrnice, hit-stop 60 ms jen v kresbě.
+- `lose` – hráč dojde k soupeři a stojí; riggovaný rytíř padne klipem `die`.
+- `ko` – robot „rukou“ dohraje k výhře, soupeř leží na boku (procedurální pád, klip `die` nemá).
+
+Čtečka dostane HP jako `role="meter"`: „Knight health 5 of 5“, „Rival robot health 0 of 3“.
+
+| Snímek | Hrdina (výška obrazu) | Soupeř (střed, NDC) | Sonda scény |
+|---|---|---|---|
+| desktop telegraph | 12,9 % | ano (0,01; 0,24) | vykřičník 1, rudne 1 |
+| desktop hit | 18,5 % | ano (0,01; 0,02) | bliká 1, švih 1, klip hrdiny `shoot` |
+| desktop lose | 16,1 % | ano (0,00; 0,38) | leží 1, klip hrdiny `die` |
+| desktop ko | 13,7 % | ano (−0,05; −0,03) | leží 1 |
+| Pixel 7 telegraph | 11,6 % | ano (0,02; 0,21) | vykřičník 1, rudne 1 |
+| Pixel 7 hit | 15,7 % | ano (−0,01; 0,13) | bliká 1, švih 1, klip hrdiny `shoot` |
+| Pixel 7 lose | 14,6 % | ano (−0,01; 0,35) | leží 1, klip hrdiny `die` |
+| Pixel 7 ko | 12,3 % | ano (−0,15; −0,02) | leží 1 |
+
+FPS Pixel 7 se 4× CPU pod ukázkou rytířů: medián 32,5 (úroveň `low`), kočka ve
+stejném běhu 51. Stroj vytěžovala jiná sezení a medián skákal mezi běhy: build
+před T6 32,5 a 51, build s T6 42 a 15 – rozdíl dělá zátěž, ne efekty souboje.
+Fialová na žádném snímku.
+
+**Známá vada mimo arénu:** soupeř je robot, ne rytíř. `enemyModel` ve sdíleném
+`models.ts` čte roli `enemy`, souboj ale jmenuje soupeře rolí `rival` a `move_free`
+popisky rolí nečte, takže scéna dostane náhradní `robot`.
+
 ## Desktop 1280×720
 
 ![start](cat-desktop-start.png)
@@ -45,3 +79,17 @@ takže věci jsou zářící skleněné kvádry, ne ryby. Výběr modelu je ve s
 ![wake](cat-pixel7-wake.png)
 ![chase](cat-pixel7-chase.png)
 ![win](cat-pixel7-win.png)
+
+## Rytíři, desktop 1280×720
+
+![telegraph](knights-desktop-telegraph.png)
+![hit](knights-desktop-hit.png)
+![lose](knights-desktop-lose.png)
+![ko](knights-desktop-ko.png)
+
+## Rytíři, Pixel 7
+
+![telegraph](knights-pixel7-telegraph.png)
+![hit](knights-pixel7-hit.png)
+![lose](knights-pixel7-lose.png)
+![ko](knights-pixel7-ko.png)

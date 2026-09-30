@@ -22,6 +22,10 @@
  * a kamera 3/4 shora s předstihem, která ukáže hráče i nejbližší hrozbu. Světla
  * a obloha jsou rigu (`StyleRig` v `ArcadeStage`), částice a otřes sběrnice
  * efektů (`Effects`). Agar zůstává kotouči, jak ho znají uložené hry.
+ *
+ * Souboj (P32E T6) čte zásahy ze stavu (`FightFx`): srpek švihu, záblesk,
+ * hit-stop jen v kresbě, otřes, lišty HP nad hlavami i pro čtečku, nápřah
+ * soupeře zákonem a červení, KO klipem `die` nebo pádem.
  */
 
 import { Billboard } from '@react-three/drei';
@@ -31,7 +35,8 @@ import { Color, type Group, type Material, type Mesh, MeshStandardMaterial, type
 
 import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
+import { instantiate } from '@/play/arcade/kernel';
 import type { Look } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
@@ -47,6 +52,7 @@ import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
 import { type Cast, FittedModel } from '../World';
 import { ArenaFloor } from './ArenaFloor';
+import { ALERT_ABOVE_BAR_M, type Fighter, HealthBar, type HealthBarHandle, type MeterFighter, SwingArc, adoptSkin, advanceFrame, createFightWatch, drawFighter, drawSwing, fightClipOf, fighterName, shakeCamera, useHealthMeters } from './FightFx';
 
 const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15', shot: '#f8fafc' } as const;
 
@@ -258,10 +264,19 @@ const ITEM_GLOW = 2.4;
 const RING_GLOW = new Color(brand.sun).multiplyScalar(2.5);
 const ALERT_GLOW = new Color(brand.tomato).multiplyScalar(1.6);
 
+/** Sklon kamery nad vodorovnou (sin, cos). */
+interface Tilt {
+  readonly sin: number;
+  readonly cos: number;
+}
+const tiltOf = (degrees: number): Tilt => ({ sin: Math.sin((degrees * Math.PI) / 180), cos: Math.cos((degrees * Math.PI) / 180) });
 /** Kamera 3/4 shora; předstih = kam hráč dojede za tolik sekund. */
-const STYLED_PITCH = (50 * Math.PI) / 180;
-const SIN_P = Math.sin(STYLED_PITCH);
-const COS_P = Math.cos(STYLED_PITCH);
+const STYLED_TILT = tiltOf(50);
+/**
+ * Souboj strměji (P32E T6): soupeř jde na hrdinu podél osy kamery a při 50°
+ * ho hrdina i jeho lišta HP zakryly, zásah i pád se ztratily za zády.
+ */
+const FIGHT_TILT = tiltOf(60);
 const LEAD_S = 0.35;
 /** Hrozba blíž než tolik metrů táhne záběr k sobě, ať je vidět hráč i ona. */
 const THREAT_M = 22;
@@ -276,8 +291,10 @@ const FOLLOW = 5;
 const TURN_MIN = 8;
 /** Vykřičník svítí posledních tolik tiků ochrany a tolik tiků po probuzení. */
 const ALERT_TICKS = 45;
-/** Jak často (snímky) se modely věcí, které se mezitím načetly, rozzáří. */
+/** Jak často (snímky) se modely věcí, které se mezitím načetly, rozzáří (a bojovníci převezmou materiály). */
 const GLOW_EVERY = 20;
+/** Nejdelší krok hodin kresby souboje (s): snímek po pauze nepřeskočí záblesk ani pád. */
+const MAX_FX_STEP_S = 0.1;
 
 type Part = 'hero' | 'chaser' | 'enemy' | 'item' | 'block';
 
@@ -312,9 +329,9 @@ function drawnOf(view: BodyView, part: Part): Size {
 const yawOf = (dx: number, dz: number): number => Math.atan2(-dx, dz);
 
 /** Nejmenší vzdálenost kamery od cíle pohledu, aby bod (m vůči cíli, poloměr `r`) promítl do ±`edge` NDC. */
-function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, aspect: number, edge: number): number {
-  const along = qz * COS_P - qy * SIN_P;
-  const up = qy * COS_P + qz * SIN_P;
+function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, aspect: number, edge: number, tilt: Tilt): number {
+  const along = qz * tilt.cos - qy * tilt.sin;
+  const up = qy * tilt.cos + qz * tilt.sin;
   return Math.max((Math.abs(qx) + r) / (edge * tan * aspect), (Math.abs(up) + r) / (edge * tan)) - along;
 }
 
@@ -397,11 +414,45 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
   const frames = useRef(0);
   const introClock = useIntroClock();
 
+  // Souboj (P32E T6): hlídka zásahů, hodiny kresby a to, co kreslí z nich.
+  const watch = useMemo(() => (fight ? createFightWatch() : null), [fight]);
+  const initial = useMemo(() => instantiate(session.world), [session]);
+  /** HP na startu (tělo z živé změny: v chvíli, kdy přibylo); 0 = tělo nebojuje. */
+  const startHp = useMemo(
+    () => views.map((view) => (!fight || (parts[view.index] !== 'hero' && parts[view.index] !== 'enemy') ? 0 : bodyHp(view.index < (initial[HEADER.bodyCount] as number) ? initial : session.state(), view.index))),
+    [views, parts, fight, initial, session],
+  );
+  const fxClock = useRef(0);
+  const leans = useRef<(Group | null)[]>([]);
+  const fighters = useRef<(Fighter | undefined)[]>([]);
+  const owned = useMemo((): Material[] => [], []);
+  const bars = useRef<(HealthBarHandle | null)[]>([]);
+  const arc = useRef<Mesh | null>(null);
+  const frozen = useRef<Vector3[]>([]);
+  const heldFor = useRef(-Infinity);
+  const meterFighters = useMemo((): MeterFighter[] => {
+    const rivals = views.filter((view) => parts[view.index] === 'enemy' && startHp[view.index]! > 0);
+    const hero = fighterName(cast.player, 'hero');
+    const rival = fighterName(cast.enemy, 'fighter');
+    return views.flatMap((view) => {
+      if (startHp[view.index] === 0) return [];
+      if (parts[view.index] === 'hero') return [{ index: view.index, label: `${hero.charAt(0).toUpperCase()}${hero.slice(1)}` }];
+      return [{ index: view.index, label: `Rival ${rival}${rivals.length > 1 ? ` ${rivals.indexOf(view) + 1}` : ''}` }];
+    });
+  }, [views, parts, startHp, cast]);
+  const meters = useHealthMeters(surface, meterFighters);
+
   useEffect(
     () => () => {
       for (const glow of glows.values()) glow.dispose();
     },
     [glows],
+  );
+  useEffect(
+    () => () => {
+      for (const material of owned) material.dispose();
+    },
+    [owned],
   );
 
   useEffect(() => {
@@ -409,7 +460,9 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
   }, [views, surface]);
 
   useFrame((_, delta) => {
-    const alpha = session.advance(delta * 1000);
+    // Hodiny kresby souboje: stojí s pauzou (zastavený snímek drží záblesk i švih); jádro tiká celý čas snímku vždy, hit-stop jen čte stav po tiku.
+    const now = session.paused() ? fxClock.current : (fxClock.current += Math.min(delta, MAX_FX_STEP_S) * 1000);
+    const alpha = advanceFrame(session, watch, delta * 1000, now);
     if (bodiesStale(views, session)) setViews(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
@@ -423,7 +476,14 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
     const spawnBase = state[HEADER.spawnBase] as number;
     const turn = Math.min(1, delta * 12);
     const glowNow = frames.current++ % GLOW_EVERY === 0;
+    // Hit-stop: bojovníci stojí v poloze z chvíle zásahu (zachycené prvním snímkem po něm), pak se k živé dotáhnou.
+    const hold = watch?.hold(now) ?? 0;
+    const capture = watch !== null && hold > 0 && watch.lastHit() !== heldFor.current;
+    if (capture) heldFor.current = watch.lastHit();
     let alertsShown = 0;
+    let tinted = 0;
+    let flashing = 0;
+    let down = 0;
     for (const view of views) {
       const group = groups.current[view.index];
       if (group === null || group === undefined) continue;
@@ -435,6 +495,15 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
       const py = prev[base + BODY.y] as number;
       group.position.set(-(px + ((state[base + BODY.x] as number) - px) * alpha) / UNIT, (py + ((state[base + BODY.y] as number) - py) * alpha) / UNIT, (pz + ((state[base + BODY.z] as number) - pz) * alpha) / UNIT);
       const part = parts[view.index];
+      const fighter = watch !== null && startHp[view.index]! > 0;
+      if (fighter && hold > 0) {
+        const at = frozen.current[view.index];
+        if (at === undefined) frozen.current[view.index] = group.position.clone();
+        else {
+          if (capture) at.copy(group.position);
+          group.position.lerp(at, hold);
+        }
+      }
       const facing = turned.current[view.index];
       if (part === 'item') {
         group.position.y += ITEM_HOVER_M + 0.08 * Math.sin((tick + alpha) / 20 + view.index);
@@ -453,16 +522,22 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
       const pose = poses.current[view.index];
       const inner = posed.current[view.index];
       if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
-      if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) clips.current[view.index] = clipOf(viewOf(state, prev, view.index), pose, tick + alpha);
-      if (facing !== null && facing !== undefined && part !== 'block') {
+      if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) {
+        const moving = clipOf(viewOf(state, prev, view.index), pose, tick + alpha);
+        clips.current[view.index] = fighter ? fightClipOf(state, view.index, part === 'hero', watch, now, moving) : moving;
+      }
+      // Během hit-stopu stojí i otočení bojovníka.
+      if (facing !== null && facing !== undefined && part !== 'block' && !(fighter && hold === 1)) {
         // Kam tělo míří (osy jádra): hrdina souboje pohledem, soupeř v telegrafu a výpadu zamčeným směrem, jinak pohybem; stojící hrozba hledí na hráče.
         const vx = state[base + BODY.vx] as number;
         const vz = state[base + BODY.vz] as number;
         const phase = part === 'enemy' && fight ? phaseOf(state, view.index) : null;
         const locked = phase === FIGHT_PHASE.telegraph || phase === FIGHT_PHASE.strike ? DIRECTIONS[strikeDirectionOf(state, view.index)] : undefined;
         const aimed = part === 'hero' && fight ? DIRECTIONS[facingOf(state, player)] : undefined;
+        // Odhozený a poražený soupeř hledí na hrdinu: letí a padá na záda, ne k němu.
+        const reeling = phase === FIGHT_PHASE.stagger || (fighter && bodyHp(state, view.index) === 0);
         const heading =
-          locked ?? aimed ?? (Math.hypot(vx, vz) > TURN_MIN ? { dx: vx, dz: vz } : part === 'hero' ? undefined : { dx: (state[pb + BODY.x] as number) - (state[base + BODY.x] as number), dz: (state[pb + BODY.z] as number) - (state[base + BODY.z] as number) });
+          locked ?? aimed ?? (Math.hypot(vx, vz) > TURN_MIN && !reeling ? { dx: vx, dz: vz } : part === 'hero' ? undefined : { dx: (state[pb + BODY.x] as number) - (state[base + BODY.x] as number), dz: (state[pb + BODY.z] as number) - (state[base + BODY.z] as number) });
         const was = yaws.current[view.index];
         if (heading !== undefined && (heading.dx !== 0 || heading.dz !== 0)) {
           const want = yawOf(heading.dx, heading.dz);
@@ -486,8 +561,33 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
           alert.scale.setScalar(1 + 0.15 * Math.sin((tick + alpha) / 3));
         }
       }
+      if (fighter) {
+        // Materiály se převezmou, až se model načte; do té doby kreslí náhradní kvádr, i ten bliká.
+        const lean = leans.current[view.index];
+        if (lean !== null && lean !== undefined) {
+          let drawnFighter = fighters.current[view.index];
+          if (drawnFighter?.lean !== lean) {
+            const character = rigged[view.index];
+            drawnFighter = { lean, skin: [], hero: part === 'hero', rigged: character !== undefined, falls: character?.clips.die === undefined };
+            fighters.current[view.index] = drawnFighter;
+          }
+          if (glowNow || drawnFighter.skin.length === 0) adoptSkin(drawnFighter, owned);
+          const look = drawFighter(drawnFighter, state, view.index, alpha, watch, now);
+          if (look.tinted) tinted += 1;
+          if (look.flashing) flashing += 1;
+          if (look.down) down += 1;
+        }
+        bars.current[view.index]?.set(watch.hp(view.index));
+      }
     }
     if (surface.current !== null && surface.current.dataset.alerts !== String(alertsShown)) surface.current.dataset.alerts = String(alertsShown);
+    if (watch !== null) {
+      const swinging = arc.current !== null && drawSwing(arc.current, watch.swing(now));
+      meters.current?.(watch);
+      // Sonda pro e2e: kolik soupeřů rudne nápřahem, kolik těl bliká, kolik jich leží, zásahy od restartu a švih.
+      const probe = `tinted:${tinted} flashing:${flashing} down:${down} hits:${watch.hits()} swing:${swinging ? 1 : 0}`;
+      if (surface.current !== null && surface.current.dataset.fight !== probe) surface.current.dataset.fight = probe;
+    }
 
     const me = groups.current[player];
     if (me === null || me === undefined) return;
@@ -516,19 +616,22 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
     // Vzdálenost: aspoň `SEE_M` do strany, dál, dokud se hrdina a hrozba nevejdou, nejvýš tak, ať hrdina drží `HERO_MIN_SHARE` výšky.
     const hero = drawn[player]!;
     const heroR = Math.max(hero.w, hero.d) / 2;
-    let need = reachOf(me.position.x - aim.x, hero.h / 2, me.position.z - aim.z, heroR, tan, aspect, HERO_EDGE);
+    const tilt = fight ? FIGHT_TILT : STYLED_TILT;
+    let need = reachOf(me.position.x - aim.x, hero.h / 2, me.position.z - aim.z, heroR, tan, aspect, HERO_EDGE, tilt);
     if (threatAt !== null) {
       const size = drawn[threat]!;
-      need = Math.max(need, reachOf(threatAt.x - aim.x, size.h / 2, threatAt.z - aim.z, Math.max(size.w, size.d) / 2, tan, aspect, THREAT_EDGE));
+      need = Math.max(need, reachOf(threatAt.x - aim.x, size.h / 2, threatAt.z - aim.z, Math.max(size.w, size.d) / 2, tan, aspect, THREAT_EDGE, tilt));
     }
     const least = Math.max(16, (aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, aspect)));
-    const most = (hero.h * COS_P + 2 * heroR * SIN_P) / (2 * tan * HERO_MIN_SHARE);
+    const most = (hero.h * tilt.cos + 2 * heroR * tilt.sin) / (2 * tan * HERO_MIN_SHARE);
     const wanted = Math.min(most, Math.max(least, need));
     const distance = snap ? wanted : follow.current!.distance + (wanted - follow.current!.distance) * k;
     follow.current = { tick, distance };
-    camera.position.set(aim.x, distance * SIN_P, aim.z - distance * COS_P);
+    camera.position.set(aim.x, distance * tilt.sin, aim.z - distance * tilt.cos);
     camera.lookAt(aim);
     applyIntro(camera, aim, introLeft(introClock()));
+    // Otřes po zásahu souboje; zásah hráče ve hře člověka třese sběrnice efektů sama.
+    if (watch !== null) shakeCamera(camera.position, watch.shake(now, session.humanRun()), now);
     camera.updateMatrixWorld();
     if (surface.current !== null) surface.current.dataset.playerX = projected.copy(me.position).project(camera).x.toFixed(3);
   });
@@ -556,25 +659,33 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
         }
         const model = modelOf(part, cast);
         const character = rigged[view.index];
+        const fighter = startHp[view.index]! > 0;
+        // Klip, který postava opravdu hraje: hrdina pro sondu `data-anim-clip`, soupeř souboje pro `data-rival-clip`.
+        const onClip =
+          part === 'hero'
+            ? (clip: string) => { if (surface.current !== null) surface.current.dataset.animClip = clip; }
+            : fighter
+              ? (clip: string) => { if (surface.current !== null) surface.current.dataset.rivalClip = clip; }
+              : undefined;
         return (
           // `frame` a `item` čte sonda záběru (`__playFrame`): hrdina, cíle a hrozby, pronásledovatel pod vlastním jménem.
           <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' ? undefined : part === 'item' ? 'coin' : part }}>
             <group ref={(group) => { turned.current[view.index] = group; }}>
               {part === 'item' ? (
                 model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
-              ) : character !== undefined ? (
-                <RiggedModel
-                  character={character}
-                  h={size.h}
-                  clip={() => clips.current[view.index] ?? 'idle'}
-                  fallback={FALLBACK[part]}
-                  onClip={part === 'hero' ? (clip) => { if (surface.current !== null) surface.current.dataset.animClip = clip; } : undefined}
-                />
               ) : (
-                <group ref={(group) => { posed.current[view.index] = group; }}>
-                  <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} />
+                // Náklon nápřahu, výpad a pád bojovníka (`drawFighter`); mimo souboj stojí rovně.
+                <group ref={(group) => { leans.current[view.index] = group; }}>
+                  {character !== undefined ? (
+                    <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
+                  ) : (
+                    <group ref={(group) => { posed.current[view.index] = group; }}>
+                      <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} />
+                    </group>
+                  )}
                 </group>
               )}
+              {fighter && part === 'hero' && <SwingArc register={(mesh) => { arc.current = mesh; }} />}
             </group>
             {part === 'item' && (
               // Zářící kruh na zemi pod věcí: svítí nad prahem bloomu, ať je věc vidět i z dálky.
@@ -589,7 +700,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
                 <meshBasicMaterial color={brand.paper} />
               </mesh>
             )}
-            {(part === 'chaser' || part === 'enemy') && <Alert at={size.h + 0.35} register={(group) => { alerts.current[view.index] = group; }} />}
+            {fighter && <HealthBar max={startHp[view.index]!} hero={part === 'hero'} h={size.h} register={(bar) => { bars.current[view.index] = bar; }} />}
+            {(part === 'chaser' || part === 'enemy') && <Alert at={size.h + (fighter ? ALERT_ABOVE_BAR_M : 0.35)} register={(group) => { alerts.current[view.index] = group; }} />}
           </group>
         );
       })}
