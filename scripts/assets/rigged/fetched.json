@@ -1,5 +1,5 @@
 {
-  "cacheDir": "D:/claude/_cc0-cache/rigged",
+  "cacheDir": "D:/caches/p32-kits",
   "sources": [
     {
       "id": "kaykit-adventurers",
@@ -751,6 +751,770 @@
       "license": "CC0-1.0",
       "status": "skipped",
       "reason": "no glTF models inside https://kenney.nl/media/pages/assets/animated-characters-survivors/27b16052a7-1774772958/kenney_animated-characters-survivors.zip"
+    },
+    {
+      "id": "kenney-cube-pets",
+      "name": "Kenney Cube Pets",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "license": "CC0-1.0",
+      "licenseFile": "kenney-cube-pets/LICENSE.txt",
+      "status": "fetched",
+      "files": [
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/FBX format/Textures/colormap.png",
+          "path": "kenney-cube-pets/Models/FBX format/Textures/colormap.png",
+          "sha256": "2f6d0032e51c2d49b13b8e689d59eb39aa3ee6c32f2a1851213e11fc7593177d",
+          "bytes": 10915
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/Textures/colormap.png",
+          "path": "kenney-cube-pets/Models/GLB format/Textures/colormap.png",
+          "sha256": "2f6d0032e51c2d49b13b8e689d59eb39aa3ee6c32f2a1851213e11fc7593177d",
+          "bytes": 10915
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-beaver.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-beaver.glb",
+          "sha256": "20f91809e69c66625190eb02aebef9ab543f5cf5cb17b8211b1002330584bfac",
+          "bytes": 149728
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-bee.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-bee.glb",
+          "sha256": "9d3116da6c22eabf0b46efeeec7fceae8fbd01e101fddd4e6746379ff851e192",
+          "bytes": 164356
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-bunny.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-bunny.glb",
+          "sha256": "94b654915d9de70071bcf0bfa13de379a3ba4fdfeb231f0fec49335232cbc821",
+          "bytes": 131568
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-cat.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-cat.glb",
+          "sha256": "1e73aaf7d497dd7d2946badf92d189d2333f163e66dced91feb446bc9bdee850",
+          "bytes": 165164
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-caterpillar.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-caterpillar.glb",
+          "sha256": "470d2481ba246ff957da0164707326e805c54dde553468a104e83ad9c7281723",
+          "bytes": 130968
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-chick.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-chick.glb",
+          "sha256": "86dd5f030c9341486313b35b9e827500c430274a83b5d683cab5b1f55bc1024d",
+          "bytes": 125424
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-cow.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-cow.glb",
+          "sha256": "57213ad1b06c1b6959c334215b4473039a7cd47c8500b65977df923e2e3e7929",
+          "bytes": 128084
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-crab.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-crab.glb",
+          "sha256": "80fa5fd7c3652938d9e3c3024bb97dc9391a0e174fcc8b9459b63c613ed050f6",
+          "bytes": 150768
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-deer.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-deer.glb",
+          "sha256": "b37162d91001eefda02bd111c8e836a0c4d805ab0191887459ded0d020624ec2",
+          "bytes": 150400
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-dog.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-dog.glb",
+          "sha256": "c127d71ac8794f9710313bbb44800ae33a79f1182cf5c523c4233cc10a93851f",
+          "bytes": 119544
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-elephant.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-elephant.glb",
+          "sha256": "0831346fb8ddb8e99e42e3f92fb48858551049dc7ea49e641d90fdfc65e057be",
+          "bytes": 148892
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-fish.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-fish.glb",
+          "sha256": "b8432e91000ee6ad3f9223198709329ce46a5886c954ad851d11ae215b1fbbb2",
+          "bytes": 91584
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-fox.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-fox.glb",
+          "sha256": "ac1ae804da301371509cff84206e3c6b78ff9c7d02411ef0cd004731090d6b82",
+          "bytes": 141880
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-giraffe.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-giraffe.glb",
+          "sha256": "ab3562e1edb4dc6b14d5c7c9083ba3052a44ca0ccdcac2c15461d84397dc2f31",
+          "bytes": 132676
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-hog.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-hog.glb",
+          "sha256": "978b137c139f65c5659632bd9c12a521fbd44b5756168653157b069db8f2faf9",
+          "bytes": 141596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-koala.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-koala.glb",
+          "sha256": "ba13a1975bd746c59e2dce8309736c26597c8a9839602f736e4ec8570ba84fa0",
+          "bytes": 131008
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-lion.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-lion.glb",
+          "sha256": "64697c4a76357fe8d9688fe077a5e74e527a6602574fd0941895be84b5883703",
+          "bytes": 172936
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-monkey.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-monkey.glb",
+          "sha256": "4f1ba41bd6380f0daa6205442f8fb797c167d7abceaaa58943eae0e6fc9044a6",
+          "bytes": 174944
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-panda.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-panda.glb",
+          "sha256": "e001aea4fcd1c2dcb384774019f84183e6d0b638ebd986da65fee32bd93d1359",
+          "bytes": 133624
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-parrot.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-parrot.glb",
+          "sha256": "a028fcccd8559652ea100fabaceb82ef53633e3474025eca593a753b008f52ab",
+          "bytes": 154124
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-penguin.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-penguin.glb",
+          "sha256": "ff3d7ccae941ab06773a348b03446f97650043594ab1121a26514c3e2ea6cb29",
+          "bytes": 130396
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-pig.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-pig.glb",
+          "sha256": "0e09d3c745a7daa1f53ecd320739b94d57a6ea1dfc498da01dd468f3f4c866a1",
+          "bytes": 127032
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-polar.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-polar.glb",
+          "sha256": "8e94b6a8f44b38198f698f2262c3ed7aed34bd1cb3a016f7613fb5eea0897564",
+          "bytes": 98964
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-tiger.glb",
+          "path": "kenney-cube-pets/Models/GLB format/animal-tiger.glb",
+          "sha256": "cc70cdfd27ec6550b7a4524a3cc75fd594f94d384cac2bb68504b60d379f47d4",
+          "bytes": 172348
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/OBJ format/Textures/colormap.png",
+          "path": "kenney-cube-pets/Models/OBJ format/Textures/colormap.png",
+          "sha256": "2f6d0032e51c2d49b13b8e689d59eb39aa3ee6c32f2a1851213e11fc7593177d",
+          "bytes": 10915
+        }
+      ]
+    },
+    {
+      "id": "kenney-graveyard-kit",
+      "name": "Kenney Graveyard Kit",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/graveyard-kit",
+      "license": "CC0-1.0",
+      "licenseFile": "kenney-graveyard-kit/LICENSE.txt",
+      "status": "fetched",
+      "files": [
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/FBX format/Textures/colormap.png",
+          "path": "kenney-graveyard-kit/Models/FBX format/Textures/colormap.png",
+          "sha256": "a94b4dc4f77a4b8aec96bde94f63912a1ce12aa98eec2c1e9a37c89e20a5f091",
+          "bytes": 10965
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/Textures/colormap.png",
+          "path": "kenney-graveyard-kit/Models/GLB format/Textures/colormap.png",
+          "sha256": "a94b4dc4f77a4b8aec96bde94f63912a1ce12aa98eec2c1e9a37c89e20a5f091",
+          "bytes": 10965
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/altar-stone.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/altar-stone.glb",
+          "sha256": "6cdcdc19c2d979fc0fafa073bc31db9a45ddc76390bfef366f23e92768d7dde9",
+          "bytes": 17164
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/altar-wood.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/altar-wood.glb",
+          "sha256": "f1702fc2cbbbb417670ef96bd543209ac5764afdb4e43dbdf267328b62f75968",
+          "bytes": 28368
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/bench-damaged.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/bench-damaged.glb",
+          "sha256": "48007ab37acaf512dc131f57984424d1897fe2f94446c096e9f3574e06c5b8af",
+          "bytes": 23548
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/bench.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/bench.glb",
+          "sha256": "2fd1ed7a06e8b2a9a6e81896eb96f08103ba6d9d705f6643504ea82d8280d213",
+          "bytes": 15952
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/border-pillar.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/border-pillar.glb",
+          "sha256": "93bc8c320a07b47fe2ce83840d470aa9360c5cca7e435c9b0d45931da8341cb7",
+          "bytes": 11292
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/brick-wall-curve-small.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/brick-wall-curve-small.glb",
+          "sha256": "854cca79e8eb5e20fe7b34624d3a389dadd1d0cbcd0f309388f7a77e3df8ec55",
+          "bytes": 50812
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/brick-wall-curve.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/brick-wall-curve.glb",
+          "sha256": "1d0791d07193ae1f5f85b4ed3a8591936fc29ce40b9bfe5b8df843956c436ad1",
+          "bytes": 34684
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/brick-wall-end.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/brick-wall-end.glb",
+          "sha256": "c91d8ca548811d9ed1a8d4f68bd0da3c9717a1a0b614f780ae1022fe81ec8f60",
+          "bytes": 31056
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/brick-wall.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/brick-wall.glb",
+          "sha256": "ad3da37d118a1d245b90faf67c449e4da3711eb53d6aefc7b45686166694e605",
+          "bytes": 19440
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/candle-multiple.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/candle-multiple.glb",
+          "sha256": "e747e04390e8f431e0d80b17696ef01cfa935dd8efff44f7008de6408236b547",
+          "bytes": 17304
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/candle.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/candle.glb",
+          "sha256": "4eea8c08c86daebbdddc454e89e3f75bb486ee7f82822bb1edb418db6d539f91",
+          "bytes": 6800
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-ghost.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/character-ghost.glb",
+          "sha256": "d4334bc0c7c0ca27924e238b47fe5b0984f4f6bbaeaa55f7e75d0287e8935895",
+          "bytes": 114016
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-keeper.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/character-keeper.glb",
+          "sha256": "d11d277c7e78002393a5534370638c4100a325f20a5daa96b61928a1a0f1856b",
+          "bytes": 250200
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-skeleton.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/character-skeleton.glb",
+          "sha256": "72f20c53c63114888d91fdd8a01c4165a116d416dcee8fab03ef9b2450eac68b",
+          "bytes": 202796
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-vampire.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/character-vampire.glb",
+          "sha256": "89e646e46d9a067009a548d9b120ec358fbe9fa3b0d671136b8bf930be2f2cd4",
+          "bytes": 248132
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-zombie.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/character-zombie.glb",
+          "sha256": "1a49bedce8647de542bfaaa796a3b533ab2a0d2567122bd08b16b2741fa62693",
+          "bytes": 245500
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/coffin-old.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/coffin-old.glb",
+          "sha256": "46974a0a6bc94e1e8873c6629b17733746d0643764ae0d849cac9ed1daaae796",
+          "bytes": 19952
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/coffin.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/coffin.glb",
+          "sha256": "e372964ef6d9d623f6ea5dacd9b4d68eda417706b4246a9b62a38106adf2defd",
+          "bytes": 24696
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/column-large.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/column-large.glb",
+          "sha256": "1665820bc039aced692d15cb763dc73ca6c67515044b9d2106134e2951a33fd2",
+          "bytes": 37540
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/cross-column.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/cross-column.glb",
+          "sha256": "6c3467a3562e29d24a4f2dc8ab73725cbff3ec37064439ba6d158383a3f5b1c5",
+          "bytes": 20820
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/cross-wood.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/cross-wood.glb",
+          "sha256": "8c84436cf5d058276e5b83af9638220c94d265f1f042a6f021307303e1b929a0",
+          "bytes": 13080
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/cross.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/cross.glb",
+          "sha256": "9ef9a14c461b1892f2a0a288de909b71c8f6ca44f446cfa77248103b61142123",
+          "bytes": 15556
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-a.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-a.glb",
+          "sha256": "185bf7cfdf3c314c8416b9767629827d3e5809df8a5b2e27315520397bd3cf04",
+          "bytes": 10904
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-b.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-b.glb",
+          "sha256": "2aa022f33487ce14a6fd0dba7e651c8f21ea66016e5a6b425c28376c1750a0d1",
+          "bytes": 12088
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-door.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-door.glb",
+          "sha256": "41a62fcf6fdf3e1b45ffb03df6bfe6613ca9299c29295c6fdde907e9394c23bf",
+          "bytes": 16168
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-large-door.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-large-door.glb",
+          "sha256": "04ccdafcca9207f6dc1b1897f96066286f7336ca81fdef55eedf5fd998bd0f1c",
+          "bytes": 21712
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-large-roof.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-large-roof.glb",
+          "sha256": "46c4e80205bd74b2d1162cf261ad46bd8846c63e106f56e44869bf9184670d7e",
+          "bytes": 35600
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-large.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-large.glb",
+          "sha256": "2995f0d1356d9b92344c607ecc9ff727347dd7347527edfe1cf20ad582aef199",
+          "bytes": 54852
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-small-roof.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-small-roof.glb",
+          "sha256": "d2b3fed2db2656823d5d8f963341bd55f58f18e6916c0808262b26c76c9ebc93",
+          "bytes": 27284
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt-small.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt-small.glb",
+          "sha256": "b3393b6cf9e2bd6f6ff2a11797684634c50f6d0902d154dcb77cc807d9047a65",
+          "bytes": 36872
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/crypt.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/crypt.glb",
+          "sha256": "61ff55e95648a28872cedba61c9c48fac723852adad49a3a2d92e26e0c0d2909",
+          "bytes": 25048
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/debris-wood.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/debris-wood.glb",
+          "sha256": "f0cf5285322f7d75125487f1574a61cca2fd96edb0e702a2773ae5cbb0244133",
+          "bytes": 10820
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/debris.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/debris.glb",
+          "sha256": "bf584bb5a4c1a7d4b7aed9ced00473a8678e9d402db1cfafc17e84e46aa2d42a",
+          "bytes": 25132
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/detail-bowl.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/detail-bowl.glb",
+          "sha256": "84ef12ff1eac613fd96fb0be19f905caa66f019a642fa527b92429f0459fc710",
+          "bytes": 17472
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/detail-chalice.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/detail-chalice.glb",
+          "sha256": "e7eeba55e5f1881095a3da159fc0a275ea4b59cc1cdce574d54662160ccdcc41",
+          "bytes": 13816
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/detail-plate.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/detail-plate.glb",
+          "sha256": "466938a567c52a237386b4586a15da479c869fff28c2e39669b327f5a9fccf8a",
+          "bytes": 11424
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/fence-damaged.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/fence-damaged.glb",
+          "sha256": "29d600de13fd132a615b7f0f6342d4a974610303ca12595049e5b43a0d2ad8b5",
+          "bytes": 30152
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/fence-gate.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/fence-gate.glb",
+          "sha256": "40b7e62b67578169681f40222b27f09ccc48b5b7afa602ab57b2c4b116695be5",
+          "bytes": 28848
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/fence.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/fence.glb",
+          "sha256": "f822b39a56f1a4b55957845976b1803230fca0df1c99fa41b3986fdc8c9a8332",
+          "bytes": 40020
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/fire-basket.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/fire-basket.glb",
+          "sha256": "f72e5a3f69711b30055219961d16824fe6d1ac5a8240d456d7f1a1a2cb7d5433",
+          "bytes": 18740
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/grave-border.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/grave-border.glb",
+          "sha256": "ab330ef153b3616967346cc4db3df942bd54661e538dcb938fb0e80b3077250a",
+          "bytes": 57352
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/grave.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/grave.glb",
+          "sha256": "72218a70525389bb6dcb3b46e097a8637bde2a233b776344988aab6bb99a0e97",
+          "bytes": 25080
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-bevel.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-bevel.glb",
+          "sha256": "83c78e259fe18fd9d93548ee4a28b327f368cc06a711f15839ed1ceb09032ff0",
+          "bytes": 15852
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-broken.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-broken.glb",
+          "sha256": "67693974f6b30d49da8c56a436b78de4f49007be68d985bfb42d433119cc527a",
+          "bytes": 12920
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-cross-large.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-cross-large.glb",
+          "sha256": "40aeef854bff86847cd320dc344724517d4e2a66898d5208668f6da92d1f540c",
+          "bytes": 18212
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-cross.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-cross.glb",
+          "sha256": "ef49164a4ca545cb2bb491f592d63b1611f6f8f640db77db62f9651ec33fb849",
+          "bytes": 20584
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-debris.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-debris.glb",
+          "sha256": "b1ec5203d1372801ff0cc2b85c37f1c38a29b17b9c14360d66ee7a4febbbdd4f",
+          "bytes": 11908
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-decorative.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-decorative.glb",
+          "sha256": "3011f6c20c7a3a26b2a9968ceabdede5a36374683817c84dff4ec334b4fe9708",
+          "bytes": 10004
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-roof.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-roof.glb",
+          "sha256": "991feaac46ce1f72cb455c540d034d75a8683fc6bf110fdf3a985506d8174d24",
+          "bytes": 16316
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-round.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-round.glb",
+          "sha256": "20574c84e41990d7143cdb1201d8318e875a326fe605512a7c82bac3086c8db0",
+          "bytes": 16832
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/gravestone-wide.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/gravestone-wide.glb",
+          "sha256": "ddbdd815905b3365a991b9b264997c81f2d38235e11ab88a0b594700c34455c3",
+          "bytes": 23020
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/hay-bale-bundled.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/hay-bale-bundled.glb",
+          "sha256": "94e00bc82083ebd34580a686ad2b10920a53d9c54edb5fed61e4837e987739ee",
+          "bytes": 35088
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/hay-bale.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/hay-bale.glb",
+          "sha256": "675d70aab70a1ad6792d347183cdf0cf1de5c342863c0e03128cd31ed2a5963a",
+          "bytes": 17828
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence-bar.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence-bar.glb",
+          "sha256": "a2a89817ab92288281eb2b16f00a4d12b3d9d8ee6cce9df7b134a0321b477daf",
+          "bytes": 10128
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence-border-column.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence-border-column.glb",
+          "sha256": "0216ee96788a593317e233b5fdca3386d5153943c46088e0c712d6cb09907b1d",
+          "bytes": 40752
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence-border-curve.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence-border-curve.glb",
+          "sha256": "6cf47dfd47da92bd4a0eb08ab4ac3f077145bc6eb7b0a5e44600d55070add24e",
+          "bytes": 55232
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence-border-gate.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence-border-gate.glb",
+          "sha256": "efc72718ec621098884d1f7580e63b06e297ad71c4f7a1a07fcdc9a8b3612724",
+          "bytes": 26340
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence-border.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence-border.glb",
+          "sha256": "22a09aff8abfcf295d99e9f480fed6b012ac4d9e58cd4e28b1e3d410e40e4bf4",
+          "bytes": 39188
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence-curve.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence-curve.glb",
+          "sha256": "fc6281a993e1b5c773d4ebf4373d2af1e7aaf571a695275355a57d0c7164aac6",
+          "bytes": 46152
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence-damaged.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence-damaged.glb",
+          "sha256": "7229744e6c557fdc4afe3dc6459b24a04b79056b7951b02e0afcd24608a55ac2",
+          "bytes": 34956
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/iron-fence.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/iron-fence.glb",
+          "sha256": "6ea3e334d97348d8ad9de5a8c77cdd07fb798a23f56971186c8f9edb85689cd9",
+          "bytes": 38576
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/lantern-candle.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/lantern-candle.glb",
+          "sha256": "c78da0717e38ea019617a39a2ad263c54ecc3b0efbdcd3da124db6550657e90e",
+          "bytes": 22124
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/lantern-glass.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/lantern-glass.glb",
+          "sha256": "7abd3637f191da06255cc9215c7801e7f4a4ed7a88dcce0f63dbc2bff1e6f5e5",
+          "bytes": 18596
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/lightpost-all.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/lightpost-all.glb",
+          "sha256": "4f717cdd4c64d807b8b133cf23a1e6d225b9f20400fefae5b85d4ce7774f45e5",
+          "bytes": 93724
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/lightpost-double.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/lightpost-double.glb",
+          "sha256": "54288335ecba277a05df2e62526574cdfe5e3cd5d8f19065142e2d669b5ede0b",
+          "bytes": 54228
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/lightpost-single.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/lightpost-single.glb",
+          "sha256": "76a179f45f24e7cd044c2e1f3bfaf3297d10feb044613d14a03691a62c1f55fe",
+          "bytes": 34440
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pillar-large.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pillar-large.glb",
+          "sha256": "971b13ead8b9c45b3ee4e664ae0fbca3e78a95bdbd373596a13b8a9970de36a4",
+          "bytes": 17076
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pillar-obelisk.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pillar-obelisk.glb",
+          "sha256": "f7a9d985522d8bb1eef765ce2b841588b43c8607b32c87056945696a172b3bf1",
+          "bytes": 8552
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pillar-small.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pillar-small.glb",
+          "sha256": "f662421741bf09c8fc41b46f9146901208f28280cc83bc6c0e7563e774cad841",
+          "bytes": 10748
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pillar-square.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pillar-square.glb",
+          "sha256": "130befbc898123302bf3b114f60629d3f950bcfab9759b484bdd49541b8c2846",
+          "bytes": 18352
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pine-crooked.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pine-crooked.glb",
+          "sha256": "3080ca745df311d59cbe445a31da6cadfd7aa5f14e4846015f310746a6c23fe1",
+          "bytes": 35944
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pine-fall-crooked.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pine-fall-crooked.glb",
+          "sha256": "299d2ceb57f8ca20048b955e4e2aa509ea16b1403dd2f178db9396dec5221760",
+          "bytes": 35960
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pine-fall.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pine-fall.glb",
+          "sha256": "1370654dc1da3615f51e31880e71d78990d5dbe7a4a0480abdbfc840fb89a6ad",
+          "bytes": 35936
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pine.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pine.glb",
+          "sha256": "0bd5e72e2aa430e74625b3a11bd809c669c7cc58a300b028ff06814d45c2d213",
+          "bytes": 35920
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pumpkin-carved.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pumpkin-carved.glb",
+          "sha256": "391f55e283d8b1e8e02425a865238c285636909ef6e8bb32794136d13f881e18",
+          "bytes": 46164
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pumpkin-tall-carved.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pumpkin-tall-carved.glb",
+          "sha256": "f27964c3989388d70ec252dae3de958f34831290e26a2ab1476824f66b218372",
+          "bytes": 44248
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pumpkin-tall.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pumpkin-tall.glb",
+          "sha256": "2a4fa002453d7ea458ea1509879c0b006b70317060d40e520d132b16ca4eed0e",
+          "bytes": 35456
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/pumpkin.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/pumpkin.glb",
+          "sha256": "547006d57b262c30dd471cf70a813965a48c12959b38fe75a9914dbd07124fd6",
+          "bytes": 35344
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/road.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/road.glb",
+          "sha256": "2c090747a40ff5fb70d61d04ae546b30329589609dd410509895713228f41984",
+          "bytes": 29048
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/rocks-tall.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/rocks-tall.glb",
+          "sha256": "c6769af9562a9f47d8ae96cad506e4ff900c66299f5ec4494903a40642c12a6d",
+          "bytes": 36924
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/rocks.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/rocks.glb",
+          "sha256": "e574e8dd7e71a8673765b4385c1fbef3af05940bdf6b6df7690225509a6d394b",
+          "bytes": 36844
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/shovel-dirt.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/shovel-dirt.glb",
+          "sha256": "860958adac031d959a3d42a451b915cf01e91efd63abf3df62640c64bb083b9f",
+          "bytes": 26068
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/shovel.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/shovel.glb",
+          "sha256": "7462ad2ff92494abd2115ac5af295110687244fd7a34b265538510496495965a",
+          "bytes": 13812
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/stone-wall-column.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/stone-wall-column.glb",
+          "sha256": "7c979fd9868e28c0d762d11a8deccc33075afe8a47cbf5adf833396383172a5b",
+          "bytes": 13744
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/stone-wall-curve.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/stone-wall-curve.glb",
+          "sha256": "372966e9a18f37bd4cef6428a6f2ce92d5e4d49aaacbc3747c4b629dde216324",
+          "bytes": 27584
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/stone-wall-damaged.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/stone-wall-damaged.glb",
+          "sha256": "2e0357e73f5fc0bc95f12469474c39191c93a67d586b5d3ad749edf2ec021c88",
+          "bytes": 14168
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/stone-wall.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/stone-wall.glb",
+          "sha256": "f6276d585e0ae3603d005e5a80d8d2ac6af3da5f357df520d21de0df62837f59",
+          "bytes": 6944
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/trunk-long.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/trunk-long.glb",
+          "sha256": "d5d3547b19650a07cad0eb6d597c5cc233675159dd2594a84a19199109f9dc27",
+          "bytes": 30832
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/trunk.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/trunk.glb",
+          "sha256": "e8f241c336d6693ccee658bc9830a461f0d18d5b90aba9a52e6276e89e4f8171",
+          "bytes": 27100
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/urn-round.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/urn-round.glb",
+          "sha256": "9a80d295c1c2124435eea72166fc16d7a4fe54e538950aa320dfb63a704b5e37",
+          "bytes": 23712
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/urn-square.glb",
+          "path": "kenney-graveyard-kit/Models/GLB format/urn-square.glb",
+          "sha256": "1cebfae88912999cd1c23d18a6c3567be1bcc95ebd6f28636569491dd42d1a15",
+          "bytes": 22460
+        },
+        {
+          "url": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/OBJ format/Textures/colormap.png",
+          "path": "kenney-graveyard-kit/Models/OBJ format/Textures/colormap.png",
+          "sha256": "a94b4dc4f77a4b8aec96bde94f63912a1ce12aa98eec2c1e9a37c89e20a5f091",
+          "bytes": 10965
+        }
+      ]
+    },
+    {
+      "id": "quaternius-uacp",
+      "name": "Quaternius Ultimate Animated Character Pack",
+      "page": "https://quaternius.com/packs/ultimatedanimatedcharacter.html",
+      "license": "CC0-1.0",
+      "status": "skipped",
+      "reason": "P32C T3 chef: files only on Google Drive (https://drive.google.com/drive/folders/1sNi1AfenfPRrvRt5yfaj5QMMd6KKcUJ5), downloads hit the Drive quota page; see evals/play/p32/kits-missing.md"
+    },
+    {
+      "id": "quaternius-fish",
+      "name": "Quaternius Animated Fish Pack",
+      "page": "https://quaternius.itch.io/lowpoly-animated-fish",
+      "license": "CC0-1.0",
+      "status": "skipped",
+      "reason": "P32C T3 shark: itch.io click-through download, FBX only (Shark.fbx, one clip Armature|Swim) and the pipeline reads glTF; see evals/play/p32/kits-missing.md"
     }
   ]
 }

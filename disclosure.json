@@ -43588,6 +43588,21 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/rigged/blocky-robot.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Blocky Robot\" for arcade roles (P32C); clips reduced to the game states, textures embedded, re-rooted on its base.",
+      "source": "Kenney Blocky Characters – https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-g.glb",
+      "authorOrProvider": "Kenney",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Blocky Robot from Kenney Blocky Characters by Kenney (CC0-1.0), https://kenney.nl/assets/blocky-characters",
+      "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/rigged/boy-a.glb",
       "kind": "asset",
       "firstParty": false,
@@ -43678,6 +43693,21 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/rigged/graveyard-ghost.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Graveyard Ghost\" for arcade roles (P32C); clips reduced to the game states, textures embedded, re-rooted on its base.",
+      "source": "Kenney Graveyard Kit – https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-ghost.glb",
+      "authorOrProvider": "Kenney",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Graveyard Ghost from Kenney Graveyard Kit by Kenney (CC0-1.0), https://kenney.nl/assets/graveyard-kit",
+      "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/rigged/knight.glb",
       "kind": "asset",
       "firstParty": false,
@@ -43704,6 +43734,66 @@
         "žádné — CC0 se vzdává i práva na atribuci"
       ],
       "attribution": "Mage from KayKit Character Pack: Adventurers 1.0 by Kay Lousberg (CC0-1.0), https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0",
+      "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/pet-cat.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cube Cat\" for arcade roles (P32C); clips reduced to the game states, textures embedded, re-rooted on its base.",
+      "source": "Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-cat.glb",
+      "authorOrProvider": "Kenney",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cube Cat from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets",
+      "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/pet-dog.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cube Dog\" for arcade roles (P32C); clips reduced to the game states, textures embedded, re-rooted on its base.",
+      "source": "Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-dog.glb",
+      "authorOrProvider": "Kenney",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cube Dog from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets",
+      "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/pet-penguin.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cube Penguin\" for arcade roles (P32C); clips reduced to the game states, textures embedded, re-rooted on its base.",
+      "source": "Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-penguin.glb",
+      "authorOrProvider": "Kenney",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cube Penguin from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets",
+      "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/assets/worldstream/rigged/pet-polar-bear.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cube Polar Bear\" for arcade roles (P32C); clips reduced to the game states, textures embedded, re-rooted on its base.",
+      "source": "Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-polar.glb",
+      "authorOrProvider": "Kenney",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cube Polar Bear from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets",
       "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
       "scope": "prod"
     },

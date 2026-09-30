@@ -87,7 +87,7 @@ describe('arcade model choice from role labels', () => {
     ['space shooter against asteroids', (spec: GameSpecV1) => spec.roles.find((role) => role.id === 'enemy')?.label, 'asteroid'],
     ['throw balls at rubber ducks', (spec: GameSpecV1) => propModels(spec).target, 'rubber-duck'],
     ['a runner dodging traffic cones and collecting gems', (spec: GameSpecV1) => propModels(spec).coin, 'crystal'],
-    ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'cat|dog'],
+    ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'rigged:pet-cat|dog'],
   ])('sentence %s reaches the scene', (sentence, read, expected) => {
     expect(read(draftGameSpec(sentence))).toBe(expected);
   });
@@ -101,20 +101,21 @@ describe('arcade model choice from role labels', () => {
   });
 
   // P26B T6: lidská role s tagem riggované postavy dostane postavu s klipy, jinak se nic nemění.
+  // P32C T4: kočka a tučňák mají animovanou postavu z Kenney Cube Pets; corgi zůstává model katalogu.
   it.each([
     ['a knight running and jumping over hurdles', 'rigged:knight'],
     ['a wizard running through the forest', 'rigged:mage'],
-    ['a cat running and dodging dogs', 'cat'],
+    ['a cat running and dodging dogs', 'rigged:pet-cat'],
     // P26D T1: slovo žánru za postavou postavu nesmaže.
     ['A corgi runner collecting bones', 'cc0-corgi'],
-    ['a penguin runner', 'penguin'],
+    ['a penguin runner', 'rigged:pet-penguin'],
   ])('sentence %s casts %s as the hero', (sentence, model) => {
     expect(heroModel(draftGameSpec(sentence))).toBe(model);
   });
 
   // Návrh ze slov „a cat runner“ kočku do popisku nezapíše (dá výchozího rytíře), takže pravidlo hlavy fráze se měří na popisku.
   it.each([
-    ['cat runner', 'cat'],
+    ['cat runner', 'rigged:pet-cat'],
     ['knight', 'rigged:knight'],
     ['brave little girl', 'rigged:girl-a'],
     ['sock', 'cc0-sock'],

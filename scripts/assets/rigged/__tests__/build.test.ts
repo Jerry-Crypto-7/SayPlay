@@ -1,11 +1,13 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
+import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 
 import disclosure from '../../../../disclosure.json';
 import rigged from '../../../../src/assets/rigged.json';
-import { MAX_BYTES, MAX_TRIANGLES, readGlb } from '../build.mjs';
+import riggedP32 from '../../../../src/assets/rigged-p32.json';
+import { HERO_MAX_BYTES, MAX_BYTES, MAX_TEXTURE, MAX_TRIANGLES, readGlb } from '../build.mjs';
 
 const ROOT = join(__dirname, '..', '..', '..', '..');
 const STATES = ['idle', 'run', 'jump', 'shoot', 'hit', 'die'];
@@ -35,7 +37,7 @@ describe('riggované postavy (P26B T4)', () => {
     for (const character of characters) expect(character.tags.length, character.id).toBeGreaterThan(0);
   });
 
-  it.each(rigged.characters.map((c) => [c.id, c] as const))('%s: každý klip z mapy v GLB existuje a má délku > 0', (_, character) => {
+  it.each([...rigged.characters, ...riggedP32.characters].map((c) => [c.id, c] as const))('%s: každý klip z mapy v GLB existuje a má délku > 0', (_, character) => {
     const file = join(ROOT, 'public', character.path);
     expect(existsSync(file), file).toBe(true);
     const { doc, bin } = readGlb(readFileSync(file));
@@ -64,11 +66,39 @@ describe('riggované postavy (P26B T4)', () => {
 
   it('každý soubor v public/…/rigged má v disclosure položku s licencí z whitelistu', () => {
     const entries = new Map(disclosure.entries.map((entry) => [entry.name, entry]));
-    for (const character of characters) {
+    for (const character of [...characters, ...riggedP32.characters]) {
       const entry = entries.get(`public${character.path}`);
       expect(entry, character.id).toBeDefined();
       expect(['CC0-1.0', 'CC-BY-4.0']).toContain(entry!.license);
     }
     expect(entries.has('public/assets/worldstream/rigged/PROVENANCE.md')).toBe(true);
+  });
+});
+
+describe('animovaní hrdinové vět P32 (P32C T3)', () => {
+  /** Hrdinové a nepřátelé vět, pro které T2 našel jen statický model – a sady CC0 je mají. */
+  const WANTED = ['penguin', 'cat', 'dog', 'polar-bear', 'ghost', 'robot'];
+
+  it('každý hledaný hrdina má postavu s klipy idle a run', () => {
+    for (const tag of WANTED) {
+      const character = riggedP32.characters.find((c) => c.tags.includes(tag));
+      expect(character, tag).toBeDefined();
+      expect(Object.keys(character!.clips), tag).toEqual(expect.arrayContaining(['idle', 'run']));
+    }
+  });
+
+  it('hrdina drží rozpočet 400 KB a textury nejvýš 512 px uvnitř GLB', async () => {
+    for (const character of riggedP32.characters) {
+      const bytes = readFileSync(join(ROOT, 'public', character.path));
+      expect(bytes.length, character.id).toBeLessThanOrEqual(HERO_MAX_BYTES);
+      const { doc, bin } = readGlb(bytes);
+      for (const image of doc.images ?? []) {
+        expect(image.uri, character.id).toBeUndefined();
+        const view = doc.bufferViews[image.bufferView];
+        const start = view.byteOffset ?? 0;
+        const { width, height } = await sharp(bin.subarray(start, start + view.byteLength)).metadata();
+        expect(Math.max(width!, height!), character.id).toBeLessThanOrEqual(MAX_TEXTURE);
+      }
+    }
   });
 });

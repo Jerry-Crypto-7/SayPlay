@@ -19,7 +19,8 @@ import { fileURLToPath } from 'node:url';
 import { unzipSync } from 'three/examples/jsm/libs/fflate.module.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_CACHE = 'D:/claude/_cc0-cache/rigged';
+/** Cache sad P32C (plán P32C, T3); ručně stažené sady z `evals/play/p32/kits-missing.md` patří sem taky. */
+const DEFAULT_CACHE = 'D:/caches/p32-kits';
 export const ALLOWED_LICENSES = ['CC0-1.0', 'CC-BY-4.0'];
 
 const RESTRICTED = /NonCommercial|NoDerivatives|NoDerivs|ShareAlike|All rights reserved/i;
