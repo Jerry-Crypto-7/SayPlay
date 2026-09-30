@@ -4,6 +4,7 @@
  * `stateChange`, stav 0..2 v `flags` těla). Ve specu je to spouštěč
  * `when: {interact: …}`, `do` platí pro cíl, který právě došel do konečného
  * stavu, a když jsou v konečném stavu všechny cíle role, pravidlo vyhraje.
+ * `win` v `do` se u jednoho cíle zahodí – vyhrává se jen se všemi cíli.
  * Prohru (čas, chycení) skládají jiná pravidla.
  *
  * - Jedno držení = jeden krok: po posunu se týž cíl posune znovu až po puštění,
@@ -170,7 +171,9 @@ export function interactFire(ctx: RuleContext, interact: CompiledInteract, reach
   const entry = interact.ready === undefined || final ? 0 : (tick % ENTRY_SPAN) + 1;
   const effects: ArcadeEffect[] = [...remember(state, pack(target, LOCKED, entry)), { kind: 'stateChange', body: target, state: next }];
   if (!final) return effects;
-  effects.push(...reached(target));
-  if (allDone(state, target, interact)) effects.push({ kind: 'win' });
+  // `win` v `do` znamená „tohle je vítězné pravidlo“ – vyhrává se až se všemi cíli role, ne s prvním.
+  const done = allDone(state, target, interact);
+  effects.push(...reached(target).filter((effect) => effect.kind !== 'win'));
+  if (done) effects.push({ kind: 'win' });
   return effects;
 }
