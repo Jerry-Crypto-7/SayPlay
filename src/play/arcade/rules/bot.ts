@@ -330,7 +330,7 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
     if (isLocked(interactRecord(state))) return WAIT;
     if (interactTarget(state, view.player, when.interact) >= 0) return { kind: 'press', buttons: BUTTON.INTERACT };
     const goal = interactGoal(view, when.interact);
-    return goal === null ? null : navigate(view, goal, true, depth, path);
+    return goal === null ? reveal(view, when.interact.role, depth, path) : navigate(view, goal, true, depth, path);
   }
   if ('hit' in when) return null;
   if ('counter' in when) {
@@ -349,7 +349,11 @@ function achieve(view: View, rule: CompiledRule, depth: number, seen: ReadonlySe
 /** Dojít k tělu role; skryté tělo napřed odhalí pravidlo, které ho přepne. */
 function reach(view: View, role: number, depth: number, seen: ReadonlySet<CompiledRule>): Action | null {
   const body = nearestOf(view, role);
-  if (body !== null) return navigate(view, body, false, depth, seen);
+  return body !== null ? navigate(view, body, false, depth, seen) : reveal(view, role, depth, seen);
+}
+
+/** Skryté tělo role napřed odhalí pravidlo, které ho přepne; nic skrytého = null. */
+function reveal(view: View, role: number, depth: number, seen: ReadonlySet<CompiledRule>): Action | null {
   if (!hiddenOf(view.state, role)) return null;
   for (const rule of toggleRulesFor(view, role)) {
     const action = achieve(view, rule, depth + 1, seen);

@@ -164,6 +164,27 @@ describe('the robot plays rule games', () => {
     }
   });
 
+  // Revize fáze 3 P32B, kolo 2, nález 2: skrytý cíl `interact` robot nenašel a hru prohrál.
+  it('interact: the robot pulls the lever to reveal a hidden candle, then lights it', () => {
+    const spec = {
+      ...leverBridge,
+      roles: [leverBridge.roles[0], leverBridge.roles[1], { id: 'candle', kind: 'switch', label: 'wax candle' }],
+      things: [{ role: 'candle', start: 'hidden' }],
+      rules: [
+        { id: 'pull', verb: 'pull', when: { contact: ['player', 'lever'] }, do: [{ toggle: 'candle' }] },
+        { id: 'light', verb: 'light', when: { interact: { role: 'candle', radius: 2, hold: 20, states: 2 } }, do: [{ win: true }] },
+      ],
+    };
+    for (const seed of [1, 2]) {
+      const verdict = verifyArcade(world(spec, seed));
+      expect({ seed, outcome: verdict.bot.outcome, failures: verdict.failures }).toEqual({ seed, outcome: 'won', failures: [] });
+      expect(verdict.verbs.map((proof) => [proof.verb, proof.fired])).toEqual([
+        ['pull', true],
+        ['light', true],
+      ]);
+    }
+  });
+
   it('the arena robot alone fails at least 4 of the 6 games (the fixtures measure the planner)', () => {
     const failed = Object.values(FIXTURES).filter((fixture) => {
       const w = world(fixture, 1);
