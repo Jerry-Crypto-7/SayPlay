@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { goldenPrompts, packBucketPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { draftForControl, draftGameSpec, draftGameSpecWithMeta, readNumbers, readRoles } from '../draft';
+import { withoutPossessor } from '../draft/lexicon';
 import { type ChecklistEntry, fidelityChain } from '../fidelity/chain';
 import { genreDoubles } from '../genre/__tests__/doubles';
 import { type GameSpecV1, readGameSpec } from '../spec';
@@ -94,6 +95,15 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       const log = genre('knife throwing at a spinning log');
       expect(log.target?.label).toBe('spinning log');
       expect(log.setting).not.toBe('spinning log');
+    });
+
+    // B-R1: „farmer's dog“ se dělením slov rozlomil na roli „s dog“ – v cíli i na liště cílů.
+    it('keeps a possessive whole instead of making "s dog" a role', () => {
+      const fox = draftGameSpecWithMeta("A fox steals eggs from a farm while the farmer's dog chases it", 1);
+      expect(["farmer's dog", 'dog']).toContain(fox.genre!.enemy);
+      expect(JSON.stringify(fox.spec)).not.toMatch(/\bs dog\b/);
+      expect(genre("Two knights duel the king's guard in a castle").enemy).toBe('guard');
+      expect(withoutPossessor("it's a race where the king's horse runs")).toBe("it's a race where the horse runs");
     });
 
     it('prefers the place the look set knows', () => {

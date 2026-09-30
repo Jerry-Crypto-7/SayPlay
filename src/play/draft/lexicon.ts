@@ -362,8 +362,15 @@ function subjectOf(text: string): string | null {
   return aCharacter(words.slice(-2).join(' '));
 }
 
+/**
+ * „the farmer's dog“ → „the dog“ (B-R1): dělení na slova by přivlastňovací „'s“
+ * rozlomilo a role by byla „s dog“. Stažené tvary („it's“, „there's“) zůstanou.
+ */
+export const withoutPossessor = (text: string): string =>
+  text.replace(/\b(?!(?:it|that|there|here|what|who|he|she|let|where|how)['’]s\b)[a-z]+['’]s\s+/g, '');
+
 export function readRoles(sentence: string): SentenceRoles {
-  const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
+  const text = withoutPossessor(sentence.toLowerCase().replace(/\s+/g, ' ').trim());
   const player =
     aCharacter(first(text, [
       /\b(?:i'?m|i am|you are|you're|youre|ur|play as|playing as|as|you play|you control|control|be|become) (?:a |an |the )([a-z][a-z -]*)/,

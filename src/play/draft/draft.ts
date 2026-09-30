@@ -75,6 +75,7 @@ import {
   scoreArchetypes,
   singular,
   type SentenceRoles,
+  withoutPossessor,
 } from './lexicon';
 
 const TEMPLATES: Readonly<Record<ArchetypeId, unknown>> = {
@@ -791,7 +792,7 @@ const FOE_STOP = /^(?:in|on|at|with|while|and|to|for|from|by|near|inside|under|u
  * pigeons“ → „pigeons“. Nejvýš tři slova před předložkou nebo spojkou.
  */
 function duelFoe(sentence: string): string | null {
-  const rest = DUEL_VERB.exec(sentence.toLowerCase())?.[1];
+  const rest = DUEL_VERB.exec(withoutPossessor(sentence.toLowerCase()))?.[1];
   if (rest === undefined) return null;
   const words = rest.replace(/^(?:a|an|the|my|your|some)\s+/, '').replace(/^(?:gang|group|horde|pack|bunch|team|army|swarm|flock) of\s+/, '').split(/[^a-z-]+/);
   const foe: string[] = [];
@@ -823,7 +824,7 @@ const SHOOTER_STYLE = /^(?:top-down|twin-stick|side-scrolling|arcade|retro|pixel
 
 /** Nepřítel, kterého věta jmenuje bez slovesa útoku (P27A T5); `readRoles` ho nenajde. */
 function namedFoe(sentence: string): string | null {
-  const text = sentence.toLowerCase();
+  const text = withoutPossessor(sentence.toLowerCase());
   const defended = DEFEND_FROM.exec(text)?.[1];
   const foe = defended === undefined ? null : leadWords(defended);
   if (foe !== null) return singular(foe);
