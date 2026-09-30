@@ -83,6 +83,22 @@ describe('voyage and platformer genre modules (P32F T3)', () => {
     expect(kinds).not.toContain('island');
   });
 
+  it('a race through a look with neither sea nor streets weaves between rocks and dodges boulders', () => {
+    const spec = draft('voyage', 'A car drives through the desert');
+    expect(spec).toMatchObject({ genre: 'voyage', mode: 'race', palette: 'desert' });
+    const { game, kinds } = play(spec);
+    expect(game.controlParams).toMatchObject({ tuning: { terrain: 'rocks' } });
+    expect(roleOf(game, 'hazard')?.label).toBe('boulder');
+    expect(kinds).toContain('rock');
+    expect(kinds).not.toContain('island');
+    expect(kinds).not.toContain('building');
+  });
+
+  it('cues cover the ways a sentence says "travel across" and "jump up"', () => {
+    expect(GENRE_MODULES.voyage.cues).toEqual(expect.arrayContaining(['sail', 'fly', 'ride', 'drive', 'pilot', 'walk through', 'cruise', 'land']));
+    expect(GENRE_MODULES.platformer.cues).toEqual(expect.arrayContaining(['jump', 'climb', 'hop', 'leap', 'platform']));
+  });
+
   it('a ship is always a boat, never a vehicle', () => {
     for (const hero of ['ship', 'pirate ship', 'big red ships', 'sailboat', 'submarine']) expect(voyageHeroClass(hero), hero).toBe('boat');
     for (const [hero, kind] of [['witch on a broomstick', 'humanoid'], ['plane', 'aircraft'], ['race car', 'vehicle']] as const) expect(voyageHeroClass(hero), hero).toBe(kind);
