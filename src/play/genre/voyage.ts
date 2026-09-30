@@ -1,35 +1,128 @@
 /**
- * Žánr Plavba/Let (P32): volné řízení s plynem – loď, koště, letadlo, raketa,
- * pes ve městě. Pahýl P32-0 překládá oba režimy na dnešní závod `steer`;
- * přistání zatím nehraje, proto `fallback`. Obsah modulu doplní stopa F.
+ * Žánr Plavba/Let (P32F T3): volné řízení – loď, koště, letadlo, raketa, pes
+ * ve městě. Režimy jdou na generátory T1 přes `controlParams.generator`:
+ * `race` na `voyage_race` (brány, střely a stojící překážky mezi břehy, cíl na
+ * konci), `land` na `voyage_land` (tah a náklon, měkký dotyk na ploše).
+ * Ovládání ve specu je `steer`, takže obtížnost a délku soudí `readGameSpec`
+ * jako dřív; vlastní klíče režimu (`terrain`, `topSpeed`, `gravity`) nese
+ * `tuning` a validuje je schéma generátoru.
+ *
+ * Referenční věty: „A pirate ship dodges cannonballs while sailing between
+ * islands to find buried treasure“, „A rocket lands on Mars“, „A dog walks
+ * through a city“ (`evals/play/p32/sentences.json`).
  */
 
-import { STEER_TRACK } from '../arcade/pieces/steer';
+import { type LookId, lookFor } from '../arcade/look';
+import { LAND, VOYAGE, VOYAGE_TERRAINS } from '../arcade/pieces/steer';
+import { nounPhrase } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, type ModelClass, draftRoles, legacySpec, titleCase } from './contract';
+
+type Terrain = (typeof VOYAGE_TERRAINS)[number];
+
+/** Sady vzhledu, kde se jede po vodě mezi ostrovy, a kde ulicemi mezi domy; ostatní mají skály. */
+const WATER: readonly LookId[] = ['ocean', 'beach', 'underwater'];
+const STREETS: readonly LookId[] = ['city', 'mall', 'supermarket', 'factory', 'living_room'];
+
+const terrainOf = (look: LookId | undefined): Terrain => (look === undefined || WATER.includes(look) ? 'islands' : STREETS.includes(look) ? 'buildings' : 'rocks');
+
+/** Co letí přes trať, když věta nejmenuje nepřítele: koule mezi ostrovy, balvan mezi skálami, auto přes ulici. */
+const CROSSING: Readonly<Record<Terrain, string>> = { islands: 'cannonball', rocks: 'boulder', buildings: 'car' };
+
+/**
+ * Třída hrdiny podle slov popisku, čtených od konce jako v `heroFor`
+ * (`assets/manifest.ts`): „pirate ship“ je loď, ne pirát. Pro scénu, když
+ * manifest pro hrdinu model nemá; loď je vždy `boat`, nikdy `vehicle`.
+ */
+const CLASS_WORDS: readonly (readonly [ModelClass, RegExp])[] = [
+  ['boat', /^(?:boat|ship|sailboat|sailship|yacht|submarine|canoe|kayak|raft|ferry|galleon|gondola|steamboat)s?$/],
+  ['aircraft', /^(?:plane|airplane|aeroplane|jet|helicopter|rocket|spaceship|spacecraft|shuttle|lander|ufo|drone|balloon|glider|airship)s?$/],
+  ['humanoid', /^(?:broom|broomstick|witch|wizard|pilot|astronaut|pirate|knight|man|woman|boy|girl|kid)s?$/],
+  ['vehicle', /^(?:car|truck|bus|bike|bicycle|motorcycle|motorbike|kart|tank|train|tractor|taxi|van|scooter|skateboard)s?$/],
+  ['animal', /^(?:dog|puppy|puppies|cat|kitten|horse|pony|ponies|fox|wolf|wolves|bear|rabbit|bunny|bunnies|frog|turtle|duck|fish|dolphin|whale|shark|penguin|pig|cow|mouse|mice|lion|tiger|deer|unicorn)s?$/],
+];
+
+export function voyageHeroClass(hero: string): ModelClass {
+  const words = hero.toLowerCase().match(/[a-z]+/g) ?? [];
+  for (const word of words.reverse()) {
+    const hit = CLASS_WORDS.find(([, pattern]) => pattern.test(word));
+    if (hit !== undefined) return hit[0];
+  }
+  return 'vehicle';
+}
+
+/** „lands“, „landing“, „touches down“ – přistání; „island“ ne. */
+const LAND_CUE = /\b(?:land(?:s|ed|ing)?|touch(?:es|ed|ing)? down)\b/i;
+
+/** Kudy se jede, když věta místo neuvede předložkou „in/on/at“: „sailing between islands“. */
+const COURSE_CUE = /\b(?:between|through|across|over|along|around|past) (?:the |a |an )?([a-z][a-z -]*)/;
+
+function compileVoyage(spec: GenreSpecOf<'voyage'>) {
+  const palette = spec.palette ?? lookFor(spec.setting) ?? undefined;
+  const looked = palette === undefined ? spec : { ...spec, palette };
+  const title = titleCase(spec.hero);
+  const params = spec.params ?? {};
+  if (spec.mode === 'land') {
+    return legacySpec(looked, {
+      control: 'steer',
+      controlParams: { generator: 'voyage_land', difficulty: 'normal', tuning: { gravity: params.gravity ?? LAND.gravity.default } },
+      archetype: 'hazard_crossing',
+      title: `${title} Landing`,
+      objective: { kind: 'reach', description: 'Touch down slowly and level on the landing pad.', role: 'pad' },
+      roles: [{ id: 'pad', kind: 'exit', label: 'landing pad' }],
+      tutorial: { goalLine: 'Land softly and level on the pad.', controlsHint: 'Arrows or drag to tilt. Up, Space or a second finger fires the engine.' },
+      mood: 'tense',
+      targetDurationSec: 45,
+    });
+  }
+  const terrain = terrainOf(palette);
+  const hazard = spec.enemy ?? CROSSING[terrain];
+  const goal = spec.collectible ?? 'finish line';
+  return legacySpec(looked, {
+    control: 'steer',
+    controlParams: {
+      generator: 'voyage_race',
+      difficulty: 'normal',
+      ...(params.lengthM === undefined ? {} : { lengthM: params.lengthM }),
+      tuning: { terrain, ...(params.topSpeed === undefined ? {} : { topSpeed: params.topSpeed }) },
+    },
+    archetype: 'hazard_crossing',
+    title: `${title} Voyage`,
+    objective: { kind: 'reach', description: `Pass every gate, dodge the ${hazard} and reach the ${goal}.`, role: 'finish' },
+    roles: [
+      { id: 'gate', kind: 'checkpoint', label: 'gate' },
+      { id: 'hazard', kind: 'hazard', label: hazard },
+      { id: 'finish', kind: 'exit', label: goal },
+    ],
+    tutorial: { goalLine: `Pass every gate and reach the ${goal}.`, controlsHint: 'Drag or arrows to steer. Down or a second finger brakes.' },
+    mood: 'adventurous',
+  });
+}
 
 export const voyageGenre: GenreModule<'voyage'> = {
   id: 'voyage',
   modes: ['race', 'land'],
-  cues: ['sail', 'fly', 'ride', 'drive', 'pilot', 'land'],
+  cues: ['sail', 'fly', 'ride', 'drive', 'pilot', 'walk through', 'cruise', 'land'],
   heroClasses: ['boat', 'aircraft', 'vehicle', 'animal', 'humanoid'],
-  paramBounds: { lengthM: { min: STEER_TRACK.minLengthM, max: STEER_TRACK.maxLengthM } },
-  availability: (mode) => (mode === 'race' ? 'ready' : 'fallback'),
-  compile: (spec) =>
-    legacySpec(spec, {
-      control: 'steer',
-      controlParams: { difficulty: 'normal', ...(spec.params?.lengthM === undefined ? {} : { lengthM: spec.params.lengthM }) },
-      archetype: 'hazard_crossing',
-      title: `${titleCase(spec.hero)} Voyage`,
-      objective: { kind: 'reach', description: `Steer past every ${spec.enemy ?? 'barrier'} and reach the finish first.`, role: 'finish' },
-      roles: [
-        { id: 'barrier', kind: 'hazard', label: spec.enemy ?? 'barrier', count: 5 },
-        { id: 'rival', kind: 'patrol', label: `rival ${spec.hero}`, count: 3 },
-        { id: 'turbo', kind: 'collectible', label: spec.collectible ?? 'turbo', count: 3 },
-        { id: 'finish', kind: 'exit', label: 'finish line' },
-      ],
-      tutorial: { goalLine: 'Beat the rivals to the finish line.', controlsHint: 'Drag or arrows to steer. Down or a second finger brakes.' },
-      mood: 'fast',
-    }),
-  draftFill: (sentence, reading) => ({ genre: 'voyage', ...draftRoles(sentence, reading) }),
+  paramBounds: {
+    lengthM: { min: VOYAGE.lengthM.min, max: VOYAGE.lengthM.max },
+    topSpeed: { min: VOYAGE.topSpeed.min, max: VOYAGE.topSpeed.max },
+    /** Gravitace přistání v tisícinách jednotky za tik² (1000 ≈ Mars). */
+    gravity: { min: LAND.gravity.min, max: LAND.gravity.max },
+  },
+  availability: () => 'ready',
+  compile: compileVoyage,
+  draftFill: (sentence, reading) => {
+    const roles = draftRoles(sentence, reading);
+    const course = COURSE_CUE.exec(sentence.toLowerCase());
+    const setting = roles.setting ?? (course === null ? null : nounPhrase(course[1]!, 2)) ?? undefined;
+    const palette = setting === undefined ? null : lookFor(setting);
+    return {
+      genre: 'voyage',
+      mode: LAND_CUE.test(sentence) ? 'land' : 'race',
+      ...roles,
+      ...(setting === undefined ? {} : { setting }),
+      ...(palette === null ? {} : { palette }),
+    };
+  },
 };
