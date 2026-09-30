@@ -8,12 +8,13 @@
  * `arcade/compile.ts`) a v prostoru chycení pronásledovatelem (`arena_eat`).
  *
  * - **V prostoru:** 1–8 cílů po aréně 40 × 40 m, pevné kameny mezi nimi a
- *   volitelní pronásledovatelé. Pronásledovatel je buňka arény větší než hráč –
- *   `move_free` ho vede na hráče rychlostí `ARENA.hunterSpeed` (40 % hráčovy)
- *   a `arena_eat` dotek počítá jako chycení. **Férový start:** stojí tak daleko,
- *   že nečinného hráče nedostihne dřív než za `QUEST.idleContactTicks` (4 s,
- *   tedy i celé 2 s ochrany na startu). Zpomalení, dokud hráč drží „Use“,
- *   `move_free` neumí – požadavek v plánu P32G.
+ *   volitelní pronásledovatelé útěku P32E (role `chaser`, scéna je kreslí
+ *   modelem pronásledovatele – duchy čaroděje): `move_free` s `chase` je vede
+ *   rychlostí `chaserSpeed` (40 % hráčovy) a `arena_eat` s `grace` dotek počítá
+ *   jako chycení. **Férový start** jako v útěku: za zády hráče, aspoň 40 %
+ *   poloviny strany daleko, celé 2 s ochrany stojí, nečinného hráče nedostihnou
+ *   dřív než za 5 s. Zpomalení, dokud hráč drží „Use“, `move_free` neumí –
+ *   požadavek v plánu P32G.
  * - **Na místě:** 1–3 stanoviště v řadě na pultu před hrdinou (palačinky na
  *   sporáku, díly na stole), v pořadí zleva. Krok ze stavu 1 dál jde jen v okně
  *   připravenosti (`ready`): nalít (držet), počkat, obrátit, až je zlatá.
@@ -28,7 +29,7 @@ import { ARCADE_HZ, type ArcadeLevel, type BodyInit, type ModeGeneratorPiece, ty
 import type { CompiledRule } from '../rules/compile';
 import type { CompiledInteract } from '../rules/interact';
 import { verbSchema } from '../rules/schema';
-import { ARENA } from './arena';
+import { ARENA, type ChaseParams, DIRECTIONS, ESCAPE, GRACE_COUNTER, checkEscapeLevel, fairReach } from './arena';
 
 export const QUEST = {
   /** Dosah „Use“: mezera mezi obrysy hráče a cíle. */
@@ -45,12 +46,14 @@ export const QUEST = {
   rock: { w: 1600, h: 1200, d: 1600 },
   /** Kámen stojí aspoň tak daleko od startu, od cíle (místo, odkud se „Use“ dosáhne, zůstane volné) a od jiného kamene. */
   rockClearance: { start: 3 * UNIT, target: 3500, rock: 3 * UNIT },
-  chaser: { w: 1400, h: 1600 },
-  /** Nečinného hráče první pronásledovatel nedostihne dřív (test T2). */
+  /** 40 % hráčovy rychlosti, jako lovec arény; útěk P32E má výchozích 70. */
+  chaserSpeed: 60,
+  /** Nečinného hráče první pronásledovatel nedostihne dřív (AC T2; útěk sám drží 5 s). */
   idleContactTicks: 4 * ARCADE_HZ,
-  /** Pronásledovatelé od sebe a od cíle. */
-  chaserSpacing: 6 * UNIT,
+  /** Pronásledovatel od jiného (útěk: dva směry po 11,25° na férové vzdálenosti, ~5 m), od cíle a od kamene. */
+  chaserSpacing: 4 * UNIT,
   chaserTargetClearance: 3 * UNIT,
+  chaserRockClearance: 3 * UNIT,
   // Na místě
   stationHalf: 5 * UNIT,
   stationSpacing: 2 * UNIT,
@@ -71,7 +74,8 @@ const spatialParams = z
     count: z.int().min(1).max(8).default(5),
     states: states.default(2),
     hold: hold.default(QUEST.hold),
-    chasers: z.int().min(0).max(4).default(0),
+    chasers: z.int().min(0).max(ESCAPE.chasers.max).default(0),
+    chaserSpeed: z.int().min(ESCAPE.chaserSpeed.min).max(ESCAPE.chaserSpeed.max).default(QUEST.chaserSpeed),
     rocks: z.int().min(0).max(6).default(3),
     verb: verbSchema.default('use'),
     /** Délku kola nese časovač specu; generátor ji jen přijme z `controlParams` arény. */
@@ -95,15 +99,10 @@ export type QuestStationParams = z.infer<typeof stationParams>;
 
 const PLAYER = (x: number, zz: number): BodyInit => ({ role: 'player', kind: 'player', x, y: 0, z: zz, w: ARENA.startSize, h: ARENA.height, d: ARENA.startSize, solid: false });
 
-/** Chebyševova vzdálenost středů – obrysy se překryjí, až klesne pod součet polovin. */
-const cheb = (a: { readonly x: number; readonly z: number }, b: { readonly x: number; readonly z: number }): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.z - b.z));
+const CHASER = { w: ESCAPE.chaserSize, d: ESCAPE.chaserSize } as const;
 
-/**
- * Jak daleko (Chebyševovsky) musí pronásledovatel startovat, aby nečinného
- * hráče nedostihl dřív než za `idleContactTicks`: za tik se v každé ose přiblíží
- * nejvýš o `hunterSpeed`.
- */
-export const chaserStartDistance = (): number => QUEST.idleContactTicks * ARENA.hunterSpeed + Math.ceil((QUEST.chaser.w + ARENA.startSize) / 2) + UNIT / 2;
+/** Nejbližší férový start pronásledovatele útěku: 40 % poloviny strany, nebo 5 s pro nečinného hráče – co je dál. */
+export const chaserStartDistance = (speed: number): number => Math.max((QUEST.half * ESCAPE.minDistancePct) / 100, fairReach(speed, PLAYER(0, 0), CHASER)) + ESCAPE.distanceMargin;
 
 // ---------------------------------------------------------------------------
 // V prostoru
@@ -123,6 +122,23 @@ function spatialLevel(seed: number, params: QuestSpatialParams): { level: Arcade
     return null;
   };
   const pickIn = (limit: number) => () => ({ x: rng.int(-limit, limit), z: rng.int(-limit, limit) });
+  const clear = (p: { x: number; z: number }, others: readonly { x: number; z: number }[], gap: number): boolean => others.every((o) => Math.hypot(o.x - p.x, o.z - p.z) >= gap);
+
+  // Pronásledovatelé první – za zády hráče (směry 16 ± `backArc`, −z) je místa málo; cíle a kameny se jim vyhnou.
+  const far = chaserStartDistance(params.chaserSpeed);
+  const chasers: { x: number; z: number }[] = [];
+  for (let k = 0; k < params.chasers; k += 1) {
+    const at = place(
+      `chaser ${k + 1}`,
+      (p) => clear(p, chasers, QUEST.chaserSpacing),
+      () => {
+        const dir = DIRECTIONS[16 + rng.int(-ESCAPE.backArc, ESCAPE.backArc)]!;
+        const reach = far + rng.int(0, ESCAPE.distanceJitter);
+        return { x: Math.trunc((dir.dx * reach) / 1000), z: Math.trunc((dir.dz * reach) / 1000) };
+      },
+    );
+    if (at !== null) chasers.push(at);
+  }
 
   const targets: { x: number; z: number }[] = [];
   for (let k = 0; k < params.count; k += 1) {
@@ -130,7 +146,7 @@ function spatialLevel(seed: number, params: QuestSpatialParams): { level: Arcade
       `target ${k + 1}`,
       (p) => {
         const r = Math.hypot(p.x, p.z);
-        return r >= QUEST.targetRing[0] && r <= QUEST.targetRing[1] && targets.every((t) => Math.hypot(t.x - p.x, t.z - p.z) >= QUEST.targetSpacing);
+        return r >= QUEST.targetRing[0] && r <= QUEST.targetRing[1] && clear(p, targets, QUEST.targetSpacing) && clear(p, chasers, QUEST.chaserTargetClearance);
       },
       pickIn(edge),
     );
@@ -143,47 +159,25 @@ function spatialLevel(seed: number, params: QuestSpatialParams): { level: Arcade
     const at = place(
       `rock ${k + 1}`,
       (p) =>
-        Math.hypot(p.x - start.x, p.z - start.z) >= QUEST.rockClearance.start &&
-        targets.every((t) => Math.hypot(t.x - p.x, t.z - p.z) >= QUEST.rockClearance.target) &&
-        rocks.every((r) => Math.hypot(r.x - p.x, r.z - p.z) >= QUEST.rockClearance.rock),
+        clear(p, [start], QUEST.rockClearance.start) &&
+        clear(p, targets, QUEST.rockClearance.target) &&
+        clear(p, rocks, QUEST.rockClearance.rock) &&
+        clear(p, chasers, QUEST.chaserRockClearance),
       pickIn(edge),
     );
     if (at !== null) rocks.push(at);
   }
   for (const r of rocks) bodies.push({ role: 'obstacle', kind: 'rock', x: r.x, y: 0, z: r.z, ...QUEST.rock, solid: true });
-
-  const far = chaserStartDistance();
-  const chasers: { x: number; z: number }[] = [];
-  for (let k = 0; k < params.chasers; k += 1) {
-    const at = place(
-      `chaser ${k + 1}`,
-      (p) =>
-        cheb(p, start) >= far &&
-        chasers.every((c) => Math.hypot(c.x - p.x, c.z - p.z) >= QUEST.chaserSpacing) &&
-        targets.every((t) => Math.hypot(t.x - p.x, t.z - p.z) >= QUEST.chaserTargetClearance),
-      pickIn(QUEST.half - QUEST.chaser.w / 2),
-    );
-    if (at !== null) chasers.push(at);
-  }
-  for (const c of chasers) bodies.push({ role: 'enemy', kind: 'chaser', x: c.x, y: 0, z: c.z, w: QUEST.chaser.w, h: QUEST.chaser.h, d: QUEST.chaser.w, solid: false, kinematic: true });
-  return { level: { bodies, length: 0 }, issues: [...issues, ...checkQuestLevel({ bodies, length: 0 }, QUEST.half)] };
+  for (const c of chasers) bodies.push({ role: 'chaser', kind: 'chaser', x: c.x, y: 0, z: c.z, ...CHASER, h: ESCAPE.chaserHeight, solid: false, kinematic: true });
+  const level: ArcadeLevel = chasers.length === 0 ? { bodies, length: 0 } : { bodies, length: 0, counters: { [GRACE_COUNTER]: ESCAPE.graceTicks } };
+  return { level, issues: [...issues, ...checkQuestLevel(level, params.chaserSpeed)] };
 }
 
-/** Tvrzení „hratelné z konstrukce“ nad hotovou úrovní; prázdné pole = hratelná. */
-export function checkQuestLevel(level: ArcadeLevel, half: number): string[] {
-  const issues: string[] = [];
-  const player = level.bodies[0];
-  if (player === undefined || player.role !== 'player') return ['no player'];
+/** Tvrzení „hratelné z konstrukce“ nad hotovou úrovní; prázdné pole = hratelná. Pronásledovatele soudí jako útěk. */
+export function checkQuestLevel(level: ArcadeLevel, chaserSpeed: number): string[] {
+  const issues = checkEscapeLevel(level, { items: 0, chaserSpeed });
   if (!level.bodies.some((body) => body.role === 'target')) issues.push('no target to work on');
-  for (const body of level.bodies) {
-    if (Math.abs(body.x) + body.w / 2 > half || Math.abs(body.z) + body.d / 2 > half) issues.push(`a ${body.kind} at ${body.x}, ${body.z} sits outside the arena`);
-  }
-  const contact = Math.ceil((QUEST.chaser.w + player.w) / 2);
-  for (const chaser of level.bodies.filter((body) => body.role === 'enemy')) {
-    const ticks = Math.floor((cheb(chaser, player) - contact) / ARENA.hunterSpeed);
-    if (ticks < QUEST.idleContactTicks) issues.push(`a chaser reaches the idle player in ${ticks} ticks, before ${QUEST.idleContactTicks}`);
-    if (chaser.w <= player.w) issues.push('a chaser no bigger than the player would not chase');
-  }
+  if (level.bodies.some((body) => body.role === 'chaser') && level.counters?.[GRACE_COUNTER] !== ESCAPE.graceTicks) issues.push('chasers without the 2 s start grace');
   return issues;
 }
 
@@ -210,10 +204,12 @@ const interactRule = (verb: string, interact: CompiledInteract): PieceRef => {
   return { id: 'interact', params };
 };
 
-function questParts(level: ArcadeLevel, half: number, verb: string, interact: CompiledInteract, catchRules: PieceRef[], issues: readonly string[]): ModeParts {
+/** Hráč má pevnou velikost jako v útěku: skóre z `do` pravidla ho nezvětší. */
+function questParts(level: ArcadeLevel, half: number, verb: string, interact: CompiledInteract, chase: ChaseParams | undefined, catchRules: PieceRef[], issues: readonly string[]): ModeParts {
+  const moving = { half, size: ESCAPE.playerSize, ...(chase === undefined ? {} : { chase }) };
   return {
-    control: { id: 'move_free', params: { half } },
-    bot: { id: 'quest_bot', params: { half, interact } },
+    control: { id: 'move_free', params: moving },
+    bot: { id: 'quest_bot', params: { half, interact, ...(chase === undefined ? {} : { chase }) } },
     level,
     rules: [interactRule(verb, interact), ...catchRules],
     ...(issues.length > 0 ? { issues } : {}),
@@ -223,16 +219,19 @@ function questParts(level: ArcadeLevel, half: number, verb: string, interact: Co
 export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
   id: 'quest_spatial',
   params: spatialParams,
-  roles: ['player', 'target', 'obstacle', 'enemy'],
+  roles: ['player', 'target', 'obstacle', 'chaser'],
   cost: (params) => ({ bodies: 1 + params.count + params.rocks + params.chasers, rules: 1 + (params.chasers > 0 ? 1 : 0) }),
   generate: (seed, params) => spatialLevel(seed, params).level,
   parts: (seed, params, health) => {
     const { level, issues } = spatialLevel(seed, params);
     const interact: CompiledInteract = { role: ROLE.target, radius: QUEST.radius, hold: params.hold, states: params.states };
-    // Chycení: dotek větší buňky arény – prohra, se životy ztráta života a návrat na start.
+    const chase: ChaseParams | undefined = params.chasers === 0 ? undefined : { speed: params.chaserSpeed, lead: ESCAPE.lead };
+    // Chycení jako v útěku: mimo ochranu prohra, se životy ztráta života a nová ochrana.
     const catches: PieceRef[] =
-      params.chasers === 0 ? [] : [{ id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage' } }, ...(health === undefined ? [] : [{ id: 'out_of_health', params: {} }])];
-    return questParts(level, QUEST.half, params.verb, interact, catches, issues);
+      chase === undefined
+        ? []
+        : [{ id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage', grace: ESCAPE.graceTicks } }, ...(health === undefined ? [] : [{ id: 'out_of_health', params: {} }])];
+    return questParts(level, QUEST.half, params.verb, interact, chase, catches, issues);
   },
 };
 
@@ -251,6 +250,6 @@ export const questStation: ModeGeneratorPiece<QuestStationParams> = {
       order: true,
       ready: { after: params.after, window: params.window },
     };
-    return questParts(stationLevel(params), QUEST.stationHalf, params.verb, interact, [], []);
+    return questParts(stationLevel(params), QUEST.stationHalf, params.verb, interact, undefined, [], []);
   },
 };
