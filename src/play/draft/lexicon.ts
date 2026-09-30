@@ -266,12 +266,13 @@ const IE_NOUNS = new Set(['zombies', 'cookies', 'movies', 'pies', 'ties', 'brown
 const IRREGULAR: Readonly<Record<string, string>> = {
   wolves: 'wolf', elves: 'elf', shelves: 'shelf', calves: 'calf', halves: 'half', knives: 'knife', wives: 'wife', lives: 'life',
   leaves: 'leaf', thieves: 'thief', loaves: 'loaf', scarves: 'scarf', dwarves: 'dwarf', mice: 'mouse', geese: 'goose',
-  children: 'child', people: 'person', teeth: 'tooth', feet: 'foot',
-  buses: 'bus', viruses: 'virus', octopuses: 'octopus', cactuses: 'cactus', walruses: 'walrus', circuses: 'circus', gases: 'gas', lenses: 'lens',
+  children: 'child', people: 'person', teeth: 'tooth', feet: 'foot', quizzes: 'quiz',
+  // -use po souhlásce, které pravidlo -uses → -us níž zkazí.
+  uses: 'use', fuses: 'fuse', muses: 'muse', ruses: 'ruse', abuses: 'abuse', excuses: 'excuse', recluses: 'recluse',
 };
 
-/** Jednotná čísla na -s, která ho neztratí: „cyclops“ není množné číslo „cyclop“. */
-const SINGULAR_S = new Set(['cyclops', 'lens', 'gas', 'atlas', 'iris', 'chaos', 'canvas', 'species', 'series', 'tennis', 'news', 'rhinoceros']);
+/** Jednotná čísla na -s, která ho neztratí: „cyclops“ není množné číslo „cyclop“; jejich množné číslo je na -es. */
+const SINGULAR_S = new Set(['cyclops', 'lens', 'gas', 'atlas', 'iris', 'chaos', 'canvas', 'bias', 'alias', 'species', 'series', 'tennis', 'news', 'rhinoceros']);
 
 /**
  * Hrubé jednotné číslo pro `label`: `coins → coin`, `dummies → dummy`, `boxes → box`, `horses → horse`.
@@ -289,8 +290,10 @@ function singularWord(word: string): string {
   if (word.endsWith('us') || SINGULAR_S.has(word) || /^[A-Z]/.test(word)) return word;
   if (IE_NOUNS.has(word)) return word.slice(0, -1);
   if (word.endsWith('ies')) return `${word.slice(0, -3)}y`;
-  // „horses“, „houses“ ztratí jen -s; -es jen po sykavce, kterou -s samo nenese („glasses“, „boxes“, „torches“).
-  if (/(?:sses|xes|ches|shes|zzes)$/.test(word)) return word.slice(0, -2);
+  // -es ztratí: jednotné číslo na -s („atlases“, „irises“), -us po čemkoli než o/a („bonuses“, „geniuses“;
+  // „houses“, „causes“ ne) a sykavka, kterou -s samo nenese („glasses“, „boxes“, „torches“, „buzzes“).
+  if ((word.endsWith('es') && SINGULAR_S.has(word.slice(0, -2))) || /(?:[^ao]uses|sses|xes|ches|shes|zzes)$/.test(word)) return word.slice(0, -2);
+  // „horses“, „houses“, „roses“ ztratí jen -s.
   return word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word;
 }
 

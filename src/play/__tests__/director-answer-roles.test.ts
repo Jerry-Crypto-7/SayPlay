@@ -59,6 +59,24 @@ describe('the director answer, read like the quick version', () => {
     expect(draftOf('A farmer escapes from wild horses on a ranch').genre.enemy).toBe('wild horse');
   });
 
+  // Revize fáze 3, kolo 2, nález 3: zúžené pravidlo -se zkazilo -us a -s slova („bonuses“ → „bonuse“).
+  it('makes -us, -as, -is and -se plurals singular alike, and a second pass changes nothing', () => {
+    const table: [string, string][] = [
+      ['bonuses', 'bonus'], ['hippopotamuses', 'hippopotamus'], ['angry hippopotamuses', 'angry hippopotamus'], ['campuses', 'campus'],
+      ['platypuses', 'platypus'], ['crocuses', 'crocus'], ['geniuses', 'genius'], ['atlases', 'atlas'], ['canvases', 'canvas'],
+      ['irises', 'iris'], ['biases', 'bias'], ['quizzes', 'quiz'], ['buses', 'bus'], ['viruses', 'virus'], ['octopuses', 'octopus'],
+      ['cactuses', 'cactus'], ['walruses', 'walrus'], ['circuses', 'circus'], ['gases', 'gas'], ['lenses', 'lens'],
+      ['horses', 'horse'], ['wild horses', 'wild horse'], ['houses', 'house'], ['burning houses', 'burning house'], ['blouses', 'blouse'],
+      ['causes', 'cause'], ['fuses', 'fuse'], ['roses', 'rose'], ['cases', 'case'], ['vases', 'vase'], ['noses', 'nose'],
+      ['glasses', 'glass'], ['boxes', 'box'], ['torches', 'torch'], ['bushes', 'bush'], ['buzzes', 'buzz'],
+      ['cyclops', 'cyclops'], ['lens', 'lens'], ['gas', 'gas'], ['bias', 'bias'], ['iris', 'iris'], ['bonus', 'bonus'],
+      ['species', 'species'], ['news', 'news'], ['candles', 'candle'], ['wolves', 'wolf'], ['zombies', 'zombie'], ['dummies', 'dummy'],
+    ];
+    expect(table.map(([word]) => [word, singular(word)])).toEqual(table);
+    for (const [word, one] of table) expect(singular(one), word).toBe(one);
+    expect(draftOf('A robot collects bonuses in a factory').spec.objective.description).not.toMatch(/bonuse\b/);
+  });
+
   it('every role label the draft writes for the golden and demand sentences is already singular', () => {
     const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
     for (const text of [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)]) {
