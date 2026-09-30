@@ -149,16 +149,23 @@ function roleRefsOf(rule: Rule): [string, string][] {
  *
  * `interact` (B-R8): jádro drží jen jednu rozdělanou práci, takže smí být
  * jedno na hru – generátor úkolu (`game.generator` `quest_*`) si svoje staví
- * sám – a ne spolu s `+shoot`/`+chaser`.
+ * sám – a ne spolu s `+shoot`/`+chaser`. Pravidlo vyhraje, jakmile jsou hotové
+ * všechny jeho cíle, a Use drží jen robot pravidel dvorku (`game.yard`: volný
+ * pohyb a pravidlo, které vyhrává) – `interact` proto musí být to vítězné.
  */
 export function ruleIssues(
   rules: readonly Rule[],
   things: readonly Thing[],
   roleIds: ReadonlySet<string>,
-  game: { readonly addons?: readonly string[]; readonly generator?: unknown } = {},
+  game: { readonly addons?: readonly string[]; readonly generator?: unknown; readonly yard?: boolean } = {},
 ): string[] {
   const issues: string[] = [];
   const interacts = rules.flatMap((rule, index) => ('interact' in rule.when ? [`/rules/${index}/when/interact`] : []));
+  rules.forEach((rule, index) => {
+    if ('interact' in rule.when && (game.yard !== true || !rule.do.some((effect) => 'win' in effect))) {
+      issues.push(`/rules/${index}/when/interact: interact wins once its targets are done – make it the winning rule (do {"win":true}), on free movement only`);
+    }
+  });
   const own = typeof game.generator === 'string' && game.generator.startsWith('quest_') ? 1 : 0;
   for (const at of interacts.slice(own === 0 ? 1 : 0)) issues.push(`${at}: one interact per game – the core keeps no slot for a second job in progress${own === 1 ? ', and the quest already has its own' : ''}`);
   const clash = (game.addons ?? []).filter((addon) => addon === 'shoot' || addon === 'chaser');

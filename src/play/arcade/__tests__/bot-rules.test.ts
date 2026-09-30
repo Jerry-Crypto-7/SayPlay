@@ -89,6 +89,24 @@ describe('the robot plays rule games', () => {
     }
   });
 
+  // Revize fáze 3 P32B, nález 1: model smí `interact` (B-R8), robot pravidel ale Use nedržel,
+  // takže žádná taková hra neprošla ověřením.
+  it('interact: the robot walks to the bell, holds Use and lets go between its two steps', () => {
+    const { things: _things, ...plain } = leverBridge;
+    const ringBell = (order: boolean) => ({
+      ...plain,
+      roles: [leverBridge.roles[0], { id: 'bell', kind: 'switch', label: 'bronze bell', count: 2 }],
+      rules: [{ id: 'ring', verb: 'ring', when: { interact: { role: 'bell', radius: 2, hold: 20, states: 3, order } }, do: [{ win: true }] }],
+    });
+    for (const order of [false, true]) {
+      for (const seed of SEEDS) {
+        const verdict = verifyArcade(world(ringBell(order), seed));
+        expect({ order, seed, outcome: verdict.bot.outcome, failures: verdict.failures }).toEqual({ order, seed, outcome: 'won', failures: [] });
+        expect(verdict.verbs).toEqual([expect.objectContaining({ verb: 'ring', fired: true })]);
+      }
+    }
+  });
+
   it('the arena robot alone fails at least 4 of the 6 games (the fixtures measure the planner)', () => {
     const failed = Object.values(FIXTURES).filter((fixture) => {
       const w = world(fixture, 1);

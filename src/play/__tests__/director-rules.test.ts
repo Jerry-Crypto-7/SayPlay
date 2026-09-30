@@ -9,14 +9,16 @@
 import { describe, expect, it } from 'vitest';
 
 import carryKey from '../arcade/__fixtures__/rules/carry-key.json';
+import { arcadeWorldOf } from '../arcade/compile';
 import { type Rule, ruleIssues } from '../arcade/rules/schema';
+import { verifyArcade } from '../arcade/verify';
 import { genreAnswer } from '../director/__fixtures__';
 import { answered, fakeBranch } from '../director/__fixtures__/branch';
 import { GENRE_ANSWER_SCHEMA } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
 import { direct } from '../director/index';
 import { buildDirectorRequest } from '../director/prompt';
-import { readDirectorAnswer } from '../director/read';
+import { readDirectorAnswer, readGenreAnswer } from '../director/read';
 import { applyRepairAnswer } from '../director/repair';
 import { draftForControl, draftGameSpecWithMeta } from '../draft';
 
@@ -68,42 +70,78 @@ describe('the first answer carries rules', () => {
 
 describe('reading refuses what no transport enforces', () => {
   // B-R8: `interact` je zpět; jádro drží jednu rozdělanou práci. Přenos Messages schéma odpovědi neposílá, meze proto soudí čtení.
-  const interact = { interact: { role: 'key', radius: 2, hold: 30, states: 2 } };
-  const withInteract = (count: number) => ({ ...carryKey, rules: carryKey.rules.map((rule, i) => (i < count ? { ...rule, when: interact } : rule)) });
+  const interact = { interact: { role: 'stairs', radius: 2, hold: 30, states: 2 } };
+  const climb = carryKey.rules[2] as Rule;
+  /** Nosič klíče, kde se na schody vystoupá držením Use; `twice` = druhé takové pravidlo. */
+  const withInteract = (twice = false) => ({
+    ...carryKey,
+    rules: [...carryKey.rules.slice(0, 2), { ...climb, when: interact }, ...(twice ? [{ ...climb, id: 'climb_again', when: interact }] : [])],
+  });
 
   it('an answer with one interact rule reads, two are refused', () => {
-    expect(readDirectorAnswer(withInteract(1)).ok).toBe(true);
-    const two = readDirectorAnswer(withInteract(2));
+    expect(readDirectorAnswer(withInteract()).ok).toBe(true);
+    const two = readDirectorAnswer(withInteract(true));
     expect(two).toMatchObject({ ok: false });
-    expect(!two.ok && two.detail).toContain('/rules/1/when/interact: one interact per game');
+    expect(!two.ok && two.detail).toContain('/rules/3/when/interact: one interact per game');
   });
 
   it('refuses interact together with +chaser or +shoot', () => {
-    const chased = readDirectorAnswer({ ...withInteract(1), addons: ['chaser'] });
-    expect(!chased.ok && chased.detail).toContain('/rules/0/when/interact: interact does not combine with +chaser');
-    const shot = readDirectorAnswer({ ...withInteract(1), addons: ['shoot'] });
-    expect(!shot.ok && shot.detail).toContain('/rules/0/when/interact: interact does not combine with +shoot');
+    const chased = readDirectorAnswer({ ...withInteract(), addons: ['chaser'] });
+    expect(!chased.ok && chased.detail).toContain('/rules/2/when/interact: interact does not combine with +chaser');
+    const shot = readDirectorAnswer({ ...withInteract(), addons: ['shoot'] });
+    expect(!shot.ok && shot.detail).toContain('/rules/2/when/interact: interact does not combine with +shoot');
     // Bez `interact` doplněk projde: odmítá se kombinace, ne doplněk.
     expect(readDirectorAnswer({ ...carryKey, addons: ['chaser'] }).ok).toBe(readDirectorAnswer(carryKey).ok);
   });
 
-  it('counts the interact a quest generator builds for itself', () => {
-    const rule = { ...carryKey.rules[0], when: interact } as Rule;
-    expect(ruleIssues([rule], [], new Set(['key']))).toEqual([]);
-    expect(ruleIssues([rule], [], new Set(['key']), { generator: 'quest_spatial' })).toEqual([expect.stringContaining('the quest already has its own')]);
-    expect(ruleIssues([rule], [], new Set(['key']), { generator: 'arena_escape' })).toEqual([]);
+  // Revize fáze 3, nález 1: `interact` vyhraje, až jsou hotové jeho cíle, a Use drží jen robot pravidel dvorku.
+  it('interact must be the winning rule of a yard – elsewhere no robot holds Use', () => {
+    const rule = { ...climb, when: interact } as Rule;
+    const side = { ...rule, do: [{ score: 1 }] } as Rule;
+    const roles = new Set(['stairs']);
+    expect(ruleIssues([rule], [], roles, { yard: true })).toEqual([]);
+    expect(ruleIssues([rule], [], roles)).toEqual([expect.stringContaining('/rules/0/when/interact: interact wins once its targets are done')]);
+    expect(ruleIssues([side], [], roles, { yard: true })).toEqual([expect.stringContaining('make it the winning rule')]);
+    expect(ruleIssues([rule], [], roles, { yard: true, generator: 'quest_spatial' })).toEqual([expect.stringContaining('the quest already has its own')]);
+    expect(ruleIssues([rule], [], roles, { yard: true, generator: 'arena_escape' })).toEqual([]);
+  });
+
+  it('a genre answer with a side interact is refused, a winning one reads, plays and wins', () => {
+    const ring = { id: 'ring', verb: 'ring', when: { interact: { role: 'door', radius: 2, hold: 30, states: 2 } }, do: [{ win: true }] };
+    const arena = withRules([{ ...ring, do: [{ score: 1 }] }]);
+    const side = readGenreAnswer({ ...arena, spec: { ...arena.spec, genre: 'arena', mode: 'collect' } });
+    expect(!side.ok && side.detail).toContain('make it the winning rule');
+    const game = readGenreAnswer(withRules([ring]));
+    if (!game.ok) throw new Error(game.detail);
+    for (const seed of [1, 2, 3]) {
+      const made = arcadeWorldOf(game.spec, seed);
+      if (!made.ok) throw new Error(made.issues.join('; '));
+      expect({ seed, ...verifyArcade(made.world) }).toMatchObject({ seed, bot: { outcome: 'won' }, failures: [] });
+    }
   });
 
   it('a repair patch reads interact like a first answer (B-R6)', () => {
     const game = readDirectorAnswer(carryKey);
     if (!game.ok) throw new Error(game.detail);
-    expect(applyRepairAnswer(game.spec, [{ op: 'replace', path: '/rules/0/when', value: interact }]).ok).toBe(true);
+    expect(applyRepairAnswer(game.spec, [{ op: 'replace', path: '/rules/2/when', value: interact }]).ok).toBe(true);
     const twice = applyRepairAnswer(game.spec, [
-      { op: 'replace', path: '/rules/0/when', value: interact },
-      { op: 'replace', path: '/rules/1/when', value: interact },
+      { op: 'replace', path: '/rules/2/when', value: interact },
+      { op: 'add', path: '/rules/-', value: { ...climb, id: 'climb_again', when: interact } },
     ]);
     expect(twice).toMatchObject({ ok: false });
     expect(!twice.ok && twice.detail).toContain('one interact per game');
+  });
+
+  it('a patch adding a winning interact to a quest reads like the same rule in a first answer', () => {
+    const quest = readGenreAnswer(withRules([]));
+    if (!quest.ok) throw new Error(quest.detail);
+    expect(quest.spec.controlParams).toMatchObject({ generator: expect.stringMatching(/^quest_/) });
+    const ring = { id: 'ring', verb: 'ring', when: { interact: { role: 'door', radius: 2, hold: 30, states: 2 } }, do: [{ win: true }] };
+    // Role pravidel (dveře) přeložená odpověď už nese; záplata dopíše jen pravidlo.
+    const patched = applyRepairAnswer(quest.spec, [{ op: 'add', path: '/rules', value: [ring] }]);
+    expect(patched).toMatchObject({ ok: true });
+    expect(patched.ok && patched.spec.controlParams).not.toMatchObject({ generator: expect.anything() });
+    expect(readGenreAnswer(withRules([ring])).ok).toBe(true);
   });
 
   it('rules a repair round puts on the tap-to-move grid are refused, not dropped', () => {

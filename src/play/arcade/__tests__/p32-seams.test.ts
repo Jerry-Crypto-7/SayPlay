@@ -253,7 +253,8 @@ describe('P32-0 T4 kernel seams', () => {
     const spec = read({
       ...base,
       roles: [...base.roles, { id: 'candle', kind: 'target', label: 'candle' }],
-      rules: [{ id: 'light', verb: 'light', when, do: [{ score: 1 }] }],
+      // `interact` čtení pustí jen jako vítězné pravidlo dvorku (P32B, revize fáze 3).
+      rules: [{ id: 'light', verb: 'light', when, do: [{ win: true }] }],
     });
     const player = { role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: 1000, h: 1000, d: 1000, solid: false } as const;
     const compiled = compileRules(spec, { bodies: [player], length: 0 }, 1);

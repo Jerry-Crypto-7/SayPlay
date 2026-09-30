@@ -577,7 +577,11 @@ export function readGameSpec(input: unknown): GameSpecResult {
     if (spec.control === undefined || spec.control === 'tap_go') {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/rules: only an arcade game (any control but tap_go) takes rules'] };
     }
-    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator: spec.controlParams?.generator });
+    // Vyhrává-li pravidlo na volném pohybu, hraje robot pravidel na dvorku a hra žánru generátor
+    // ztratí (`rulesYard`) – záplata, čtená před ním, tak soudí totéž co první odpověď po něm.
+    const yard = spec.control === 'move_free' && (spec.rules ?? []).some((rule) => rule.do.some((effect) => 'win' in effect));
+    const generator = yard && spec.genre !== undefined ? undefined : spec.controlParams?.generator;
+    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator, yard });
     if (ruleProblems.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues: ruleProblems };
   }
 
