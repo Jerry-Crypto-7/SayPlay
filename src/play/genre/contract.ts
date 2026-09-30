@@ -14,6 +14,7 @@
 import { z } from 'zod';
 
 import { LOOK_IDS } from '../arcade/look';
+import { THINGS_MAX, type Rule, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { readRoles } from '../draft/lexicon';
 import type { Reading } from '../read/schema';
 import type { ControlId, GameRole, GameSpecV1 } from '../spec';
@@ -54,6 +55,27 @@ export const genreTargetSchema = z
   })
   .strict();
 
+/** Role, jejichž počet věta říká („grab 5 coins“, „two ghosts“). */
+export const COUNT_ROLES = ['enemy', 'collectible', 'target'] as const;
+export type CountRole = (typeof COUNT_ROLES)[number];
+
+/** Počty rolí (B-R4); meze drží parametr modulu, do kterého počet jde (`COUNT_PARAMS`). */
+export const genreCountsSchema = z.object({ enemy: z.int().optional(), collectible: z.int().optional(), target: z.int().optional() }).strict();
+
+/**
+ * Role, kterou potřebují jen pravidla (klíč, dveře, zvon) – modul žánru ji
+ * nestaví. Druh soudí `readGameSpec` až na přeloženém specu: `spec.ts` tenhle
+ * soubor importuje, jeho výčet druhů tady být nemůže.
+ */
+export const ruleRoleSchema = z
+  .object({
+    id: z.string().regex(/^[A-Za-z][A-Za-z0-9_.]{0,63}$/),
+    kind: z.string().min(1).max(24),
+    label,
+    count: z.int().min(1).max(50).optional(),
+  })
+  .strict();
+
 const variant = <G extends GenreId>(genre: G) =>
   z
     .object({
@@ -68,6 +90,16 @@ const variant = <G extends GenreId>(genre: G) =>
       palette: z.enum(LOOK_IDS).optional(),
       /** Číselné parametry žánru; meze drží `paramBounds` modulu (`readGenreSpec`). */
       params: z.record(z.string(), z.int()).optional(),
+      /** Kolik nepřátel, věcí a předmětů úkolu věta chce; překlad je propíše do parametrů modulu (`withCounts`). */
+      counts: genreCountsSchema.optional(),
+      /**
+       * Sloveso mimo žánr (B-R5): pravidla P29A, jejich role a doplňky. Modul je
+       * přeloží spolu se svými rolemi (`legacySpec`); vyhrává-li pravidlo na
+       * volném pohybu, hraje se na dvorku pravidel místo generátoru režimu.
+       */
+      ruleRoles: z.array(ruleRoleSchema).max(THINGS_MAX).optional(),
+      things: thingsSchema.optional(),
+      rules: modelRulesSchema.optional(),
     })
     .strict();
 
@@ -99,6 +131,52 @@ export interface GenreModule<G extends GenreId = GenreId> {
 }
 
 // ---------------------------------------------------------------------------
+// Počty rolí (B-R4): parametr modulu, který počet nese
+
+/**
+ * Režim → role → parametr modulu, ze kterého modul staví generátor, cíl i
+ * `count` role. Žánr bez řádku počty nečte (běžec, plošinovka a plavba staví
+ * trať podle délky, ne podle počtu). Hlídá test, že každý parametr má modul v `paramBounds`.
+ */
+export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode<G>]?: Readonly<Partial<Record<CountRole, string>>> } } = {
+  runner: {},
+  platformer: {},
+  arena: { escape: { enemy: 'chasers', collectible: 'items' }, collect: { collectible: 'items' }, fight: { enemy: 'enemies' } },
+  voyage: {},
+  quest: { spatial: { target: 'count', enemy: 'chasers' }, station: { target: 'count' } },
+};
+
+const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>
+  (COUNT_PARAMS[spec.genre] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>)[spec.mode] ?? {};
+
+/**
+ * Počty → parametry modulu, jak je modul čte. Parametr, který spec nese sám,
+ * má přednost; počet role, kterou režim nepočítá, se zahodí (přepnutý žánr ho nemusí znát).
+ */
+export function withCounts(spec: GenreSpec): GenreSpec {
+  if (spec.counts === undefined) return spec;
+  const table = countParamsOf(spec);
+  const { counts, ...rest } = spec;
+  const from = Object.entries(counts).flatMap(([role, value]) => {
+    const key = table[role as CountRole];
+    return key === undefined || value === undefined ? [] : [[key, value] as const];
+  });
+  const params = { ...Object.fromEntries(from), ...spec.params };
+  return (Object.keys(params).length === 0 ? rest : { ...rest, params }) as GenreSpec;
+}
+
+/** Počty mimo meze parametru, do kterého jdou – `readGenreSpec` je hlásí jako parametry. */
+export function countIssues(spec: GenreSpec, bounds: ParamBounds): string[] {
+  const table = countParamsOf(spec);
+  return Object.entries(spec.counts ?? {}).flatMap(([role, value]) => {
+    const key = table[role as CountRole];
+    const range = key === undefined ? undefined : bounds[key];
+    if (range === undefined || value === undefined) return [];
+    return value < range.min || value > range.max ? [`/counts/${role}: ${String(value)} is outside ${String(range.min)}–${String(range.max)}`] : [];
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Společné kusy pahýlů: překlad na dnešní ovládání a čtení rolí z věty
 
 /** Co pahýl žánru říká o hře; zbytek `GameSpecV1` doplní `legacySpec`. */
@@ -116,21 +194,43 @@ export interface LegacyGame {
   readonly targetDurationSec?: number;
 }
 
+/** Pravidlo, které vyhrává, a čí popisek jmenuje: „Ring the bronze bell.“ */
+function ruleGoal(rules: readonly Rule[], roles: readonly Pick<GameRole, 'id' | 'label'>[]): string | null {
+  const winning = rules.find((rule) => rule.do.some((effect) => 'win' in effect));
+  if (winning === undefined) return null;
+  const refs = 'contact' in winning.when ? winning.when.contact : 'hit' in winning.when ? [winning.when.hit] : [];
+  const object = roles.find((role) => role.id === [...refs].reverse().find((id) => id !== 'player'))?.label;
+  const verb = winning.verb.charAt(0).toUpperCase() + winning.verb.slice(1);
+  return object === undefined ? `${verb} to win.` : `${verb} the ${object}.`;
+}
+
 /** `GenreSpec` + dnešní ovládání → `GameSpecV1`, který nese, z jakého žánru vznikl. */
 export function legacySpec(spec: GenreSpec, game: LegacyGame): GameSpecV1 {
+  const own = [{ id: 'player', kind: 'player' as const, label: spec.hero, count: 1 }, ...game.roles.map((role) => ({ count: 1, ...role }))];
+  // Role pravidel s id, které modul už staví, míří na tělesa modulu – druhá role téhož id by spec rozbila.
+  const extra = (spec.ruleRoles ?? []).filter((role) => !own.some((taken) => taken.id === role.id)).map((role) => ({ count: 1, ...role }) as GameRole);
+  const roles = [...own, ...extra];
+  const rules = spec.rules ?? [];
+  // Vyhrává-li pravidlo na volném pohybu, hraje se na dvorku (`rulesOwnGoal`): generátor režimu by
+  // sloveso přehlušil a robot by ho nevystřelil. Cíl pak říká pravidlo, ne režim.
+  const goal = game.control === 'move_free' ? ruleGoal(rules, roles) : null;
+  const { generator: _generator, tuning: _tuning, ...plain } = (game.controlParams ?? {}) as Record<string, unknown>;
+  const controlParams = goal === null ? game.controlParams : Object.keys(plain).length > 0 ? (plain as GameSpecV1['controlParams']) : undefined;
   return {
     schema: 'gamespec.v1',
     control: game.control,
-    ...(game.controlParams === undefined ? {} : { controlParams: game.controlParams }),
+    ...(controlParams === undefined ? {} : { controlParams }),
     genre: { id: spec.genre, mode: spec.mode, compilerVersion: GENRE_COMPILER_VERSION },
     title: game.title,
     archetype: game.archetype,
     targetDurationSec: game.targetDurationSec ?? 60,
     theme: { setting: spec.setting, mood: game.mood, ...(spec.palette === undefined ? {} : { look: spec.palette }) },
-    objective: game.objective,
+    objective: goal === null ? game.objective : { ...game.objective, description: goal },
     mechanics: [...(game.mechanics ?? [])],
-    roles: [{ id: 'player', kind: 'player', label: spec.hero, count: 1 }, ...game.roles.map((role) => ({ count: 1, ...role }))],
-    tutorial: game.tutorial,
+    roles,
+    ...(rules.length === 0 ? {} : { rules }),
+    ...(spec.things === undefined || spec.things.length === 0 ? {} : { things: spec.things }),
+    tutorial: goal === null ? game.tutorial : { ...game.tutorial, goalLine: goal },
     verification: [{ id: 'winnable', kind: 'reachability', assert: { runState: 'won' } }],
     budgets: { maxEntities: 40, maxRules: 120, maxTriangles: 200000 },
   };

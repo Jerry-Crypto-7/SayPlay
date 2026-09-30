@@ -6,7 +6,7 @@
 import type { GameSpecV1 } from '../spec';
 
 import { arenaGenre } from './arena';
-import { type GenreId, type GenreModule, type GenreSpec, genreSpecSchema } from './contract';
+import { type GenreId, type GenreModule, type GenreSpec, countIssues, genreSpecSchema, withCounts } from './contract';
 import { platformerGenre } from './platformer';
 import { questGenre } from './quest';
 import { runnerGenre } from './runner';
@@ -32,11 +32,12 @@ export function readGenreSpec(input: unknown): GenreSpecResult {
     if (range === undefined) return [`/params/${key}: ${parsed.data.genre} has no such parameter (known: ${Object.keys(bounds).join(', ') || 'none'})`];
     return value < range.min || value > range.max ? [`/params/${key}: ${String(value)} is outside ${String(range.min)}–${String(range.max)}`] : [];
   });
+  issues.push(...countIssues(parsed.data, bounds));
   return issues.length > 0 ? { ok: false, issues } : { ok: true, value: parsed.data };
 }
 
-/** `GenreSpec` → `GameSpecV1` modulem jeho žánru. */
+/** `GenreSpec` → `GameSpecV1` modulem jeho žánru; počty rolí jdou do parametrů, které modul čte (B-R4). */
 export function compileGenre(spec: GenreSpec): GameSpecV1 {
   // Sjednocení `spec` se na modul jeho žánru nezúží samo – `genre` je obojímu společný klíč.
-  return (GENRE_MODULES[spec.genre] as GenreModule).compile(spec as never);
+  return (GENRE_MODULES[spec.genre] as GenreModule).compile(withCounts(spec) as never);
 }

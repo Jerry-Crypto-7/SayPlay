@@ -17,7 +17,7 @@
 
 import { modelWhenSchema } from '../arcade/rules/schema';
 import type { GenreModules } from '../genre/classify';
-import type { GenreModule, GenreSpec } from '../genre/contract';
+import { type GenreModule, type GenreSpec, withCounts } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1 } from '../spec';
@@ -81,9 +81,9 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   return game.ok ? { ok: true, spec: game.spec, genre: genre.value } : game;
 }
 
-/** `GenreSpec` → hra modulem jeho žánru, přečtená jako spec od modelu. */
+/** `GenreSpec` → hra modulem jeho žánru, přečtená jako spec od modelu; počty rolí jdou do parametrů modulu (B-R4). */
 export function compileGenreSpec(genre: GenreSpec, modules: GenreModules = GENRE_MODULES): DirectorRead {
-  return readModelSpec((modules[genre.genre] as GenreModule).compile(genre as never));
+  return readModelSpec((modules[genre.genre] as GenreModule).compile(withCounts(genre) as never));
 }
 
 /**
