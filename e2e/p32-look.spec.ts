@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { devices, expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import sharp from 'sharp';
 
+import { openPause, startGame } from './play-start';
+
 /**
  * Rig vzhledu (P32A). Scéna běžce se kreslí se stíny slunce a pod ACES
  * (sonda `__playRender`), a obraz se od snímku před rigem (`p32-split`,
@@ -35,6 +37,8 @@ function freezeAtFirstScore(page: Page): Promise<{ readonly score: number; reado
       document.dispatchEvent(new Event('visibilitychange'));
     };
     showTab('visible');
+    // Skrytá rozehraná hra má od P34 kartu pauzy a tu pustí jen karta – jinak stisky robota propadnou.
+    document.querySelector<HTMLButtonElement>('[data-testid="play-resume"]')?.click();
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Shift' }));
     const run = (window.__playShell as unknown as Hand).handPlay('score');
     showTab('hidden');
@@ -44,9 +48,9 @@ function freezeAtFirstScore(page: Page): Promise<{ readonly score: number; reado
 
 /** Podíl pixelů, které se liší o víc než šum komprese a vyhlazení (součet kanálů > 48). */
 async function changedShare(a: Buffer, b: Buffer): Promise<number> {
-  const [left, right] = await Promise.all([a, b].map((png) => sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true })));
-  expect(left!.info.width).toBe(right!.info.width);
-  expect(left!.info.height).toBe(right!.info.height);
+  const right = await sharp(b).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  // Plátno má od P34 rámeček (1276 místo 1280 px): snímek se srovná na rozměr toho před rigem.
+  const left = await sharp(a).resize(right.info.width, right.info.height, { fit: 'fill' }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   let changed = 0;
   for (let i = 0; i < left!.data.length; i += 3) {
     const diff = Math.abs(left!.data[i]! - right!.data[i]!) + Math.abs(left!.data[i + 1]! - right!.data[i + 1]!) + Math.abs(left!.data[i + 2]! - right!.data[i + 2]!);
@@ -59,12 +63,12 @@ async function changedShare(a: Buffer, b: Buffer): Promise<number> {
  * Jak moc je pás řádků obrazu (podíl výšky od–do) modrý: průměr B − R. Kreslená
  * obloha má nahoře zenit sady, u obzoru světlý obzor; plochá barva pozadí má obojí stejné.
  */
-async function blueness(png: Buffer, from: number, to: number): Promise<number> {
+async function blueness(png: Buffer, from: number, to: number, left = 0, right = 1): Promise<number> {
   const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
   let sum = 0;
   let count = 0;
   for (let y = Math.floor(info.height * from); y < Math.floor(info.height * to); y += 1) {
-    for (let x = 0; x < info.width; x += 1) {
+    for (let x = Math.floor(info.width * left); x < Math.floor(info.width * right); x += 1) {
       const at = (y * info.width + x) * 3;
       sum += data[at + 2]! - data[at]!;
       count += 1;
@@ -110,6 +114,7 @@ test.describe('desktop 1280×800', () => {
     await expect(page.getByTestId('arcade-stage')).toBeVisible();
     const canvas = page.locator('[data-testid="arcade-stage"] canvas').first();
     await canvas.waitFor();
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5 && window.__playRender !== undefined, undefined, { timeout: 60_000 });
 
     const render = await page.evaluate(() => window.__playRender!());
@@ -133,8 +138,9 @@ test.describe('desktop 1280×800', () => {
     expect(share, 'podíl pixelů, které rig změnil proti snímku před ním').toBeGreaterThan(0.05);
     // Louka: zenit #3a86d8 nahoře, obzor #d7ecf8 těsně nad zemí (obzor je v ~40 % výšky).
     // Naměřeno 29. 9.: kreslená obloha 37 (záře slunce horní pás zesvětlí), plochá barva pozadí 7.
-    const top = await blueness(shot, 0, 0.04);
-    const nearHorizon = await blueness(shot, 0.3, 0.34);
+    // Jen prostřední třetina: od P34 je plátno 16:9 a do stran pásů sahají svahy údolí (T3).
+    const top = await blueness(shot, 0, 0.04, 0.35, 0.65);
+    const nearHorizon = await blueness(shot, 0.3, 0.34, 0.35, 0.65);
     expect(top - nearHorizon, `obloha nahoře (${top.toFixed(0)}) modřejší než u obzoru (${nearHorizon.toFixed(0)})`).toBeGreaterThan(20);
   });
 
@@ -146,8 +152,10 @@ test.describe('desktop 1280×800', () => {
   test('runner: hero and obstacles stand on the valley', async ({ page, request }) => {
     test.setTimeout(120_000);
     await page.goto(await publish(request, 'runner'));
-    await page.waitForFunction(() => window.__playShell !== undefined && window.__playGround !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
-    await page.evaluate(() => document.querySelector<HTMLButtonElement>('[data-testid="play-demo-start"]')?.click());
+    // Hra stojí na tiku 0 pod „Tap to start“ (P33); ukázku pouští karta pauzy (P34).
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playGround !== undefined, undefined, { timeout: 60_000 });
+    await openPause(page);
+    await page.getByTestId('play-demo-start').click();
 
     const hero: number[] = [];
     const grounded: number[] = [];
@@ -171,8 +179,9 @@ test.describe('desktop 1280×800', () => {
   test('runner: the hero is on screen right after a finished run restarts', async ({ page, request }) => {
     test.setTimeout(150_000);
     await page.goto(await publish(request, 'runner'));
-    await page.waitForFunction(() => window.__playShell !== undefined && window.__playFrame !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playFrame !== undefined, undefined, { timeout: 60_000 });
     // Ukázka doběhne v reálném čase až do cíle (~25 s) a kamera s ní.
+    await openPause(page);
     await page.getByTestId('play-demo-start').click();
     const yours = page.getByTestId('play-demo-yours');
     await expect(yours).toBeVisible({ timeout: 90_000 });
@@ -240,7 +249,8 @@ test.describe('Pixel 7, CPU 4× slower', () => {
     const sampling = sampleFps(page, 20);
     const end = Date.now() + 20_000;
     while (Date.now() < end) {
-      if (!(await press('play-demo-start'))) if (!(await press('play-demo-yours'))) await press('play-again');
+      // „Show me how“ je od P34 na kartě pauzy; bez ukázky hra stojí na tiku 0 a FPS by měřily prázdné rAF.
+      if (!(await press('play-demo-start'))) if (!(await press('play-demo-yours'))) if (!(await press('play-again'))) await press('play-pause');
       await page.waitForTimeout(500);
     }
     const samples = await sampling;
