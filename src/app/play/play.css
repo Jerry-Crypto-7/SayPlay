@@ -1542,6 +1542,8 @@
     animation: none;
   }
 }
+/* P32A: otřes po zásahu dělá kamera scény (`effects/Effects.tsx`); otřes celé obrazovky
+ * výš patří jen chycení (kit), ne každému zásahu. */
 
 /* Střelba doplňku +shoot: palec vpravo nad dolní řadou HUD, mimo obrazovku po hře. */
 .play-fire {

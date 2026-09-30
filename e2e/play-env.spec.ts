@@ -9,22 +9,22 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
  * panoramatu na obrazovce); pás oblohy nahoře nesmí být jedna plochá barva,
  * kterou hra kreslila dřív.
  * Panorama se stahuje až po prvním snímku, takže první obraz nečeká na obrázek.
+ *
+ * Jen mřížka (P32A T6): arkádové hry fotopanorama nekreslí – obloha je rigu
+ * vzhledu a prostředí z věty vybírá paletu a kulisy (bez sítě to hlídá
+ * `p32-look.spec.ts`). `/studio` má panoramata svého světa mimo tenhle soubor.
  */
 
-const FIXTURES = join(process.cwd(), 'src/play/arcade/__fixtures__');
+const GRID_FIXTURE = join(process.cwd(), 'src/play/__fixtures__/collect_exit.json');
 
 const GAMES: readonly { name: string; fixture?: string; sentence?: string; setting?: string; testId: string }[] = [
-  { name: 'arcade runner', fixture: 'runner.json', setting: 'a snowy forest', testId: 'arcade-stage' },
   { name: 'grid', sentence: 'Collect five glowing mushrooms then open a portal.', testId: 'play-grid-stage' },
-  { name: 'timing', fixture: 'timing.json', setting: 'a glacier', testId: 'arcade-stage' },
-  { name: 'rhythm', fixture: 'rhythm.json', setting: 'a jungle clearing', testId: 'arcade-stage' },
-  { name: 'duel', fixture: 'duel.json', setting: 'australian outback', testId: 'arcade-stage' },
 ];
 
 async function publish(request: APIRequestContext, game: (typeof GAMES)[number]): Promise<string> {
   let data: unknown;
   if (game.fixture !== undefined) {
-    const base = JSON.parse(readFileSync(join(FIXTURES, game.fixture), 'utf8')) as { theme: Record<string, unknown> } & Record<string, unknown>;
+    const base = JSON.parse(readFileSync(game.fixture, 'utf8')) as { theme: Record<string, unknown> } & Record<string, unknown>;
     data = { spec: { ...base, theme: { ...base.theme, setting: game.setting } } };
   } else {
     data = { sentence: game.sentence };
@@ -107,7 +107,7 @@ test('the panorama is fetched only after the first frame', async ({ page, reques
     }
   });
   await page.goto(url);
-  const canvas = page.getByTestId('arcade-stage').locator('canvas').first();
+  const canvas = page.getByTestId(GAMES[0].testId).locator('canvas').first();
   await expect(canvas).toHaveAttribute('data-env', /.+/, { timeout: 60_000 });
   const { frameAt, envStarts } = await page.evaluate(() => {
     return {
@@ -173,9 +173,9 @@ test.describe('custom panorama', () => {
 
   test('an unseen setting swaps in its own panorama without reloading, and the run stays the same', async ({ page, request }) => {
     test.setTimeout(120_000);
-    const url = await publish(request, { name: 'custom', fixture: 'runner.json', setting: CUSTOM_SETTING, testId: 'arcade-stage' });
+    const url = await publish(request, { name: 'custom', fixture: GRID_FIXTURE, setting: CUSTOM_SETTING, testId: 'play-grid-stage' });
     await page.goto(url);
-    const canvas = page.getByTestId('arcade-stage').locator('canvas').first();
+    const canvas = page.getByTestId('play-grid-stage').locator('canvas').first();
     await expect(canvas).toHaveAttribute('data-env', /.+/, { timeout: 60_000 });
     const library = await canvas.getAttribute('data-env');
     expect(library).not.toMatch(/^custom-/);
@@ -187,10 +187,11 @@ test.describe('custom panorama', () => {
     await page.waitForFunction(() => performance.getEntriesByType('resource').some((r) => r.name.includes('/env?file=full')), undefined, { timeout: 30_000 });
     expect(await page.evaluate(() => (window as unknown as { __sameDocument?: boolean }).__sameDocument)).toBe(true);
     const after = await page.evaluate(() => window.__playShell!.playWitness());
-    expect(after).toEqual(before);
+    // Svědek mřížky je stavový: podruhé nemá co přehrát (`last` je null), vrátí jen konec téhož běhu.
+    expect({ runState: after.runState, tick: after.tick }).toEqual({ runState: before.runState, tick: before.tick });
     expect(wrongKey).toBe(0);
     await page.waitForTimeout(500);
-    await page.getByTestId('arcade-stage').screenshot({ path: test.info().outputPath('custom-cuckoo-clock.png') });
-    expect(await skyDominantShare(page, 'arcade-stage')).toBeLessThan(SKY_DOMINANT_MAX);
+    await page.getByTestId('play-grid-stage').screenshot({ path: test.info().outputPath('custom-cuckoo-clock.png') });
+    expect(await skyDominantShare(page, 'play-grid-stage')).toBeLessThan(SKY_DOMINANT_MAX);
   });
 });
