@@ -15,6 +15,7 @@ import { type GenreSpec } from '@/play/genre/contract';
 import { compileGenre } from '@/play/genre/index';
 import { CONTROL_PARAMS, type GameSpecV1, readGameSpec } from '@/play/spec';
 
+import duelFixture from '../__fixtures__/duel.json';
 import { arcadeWorldOf, compileArcade, generatorOf } from '../compile';
 import { type ArcadeLevel, BODY, BUTTON, FLAG, HEADER, HP_MAX, NO_INPUT, type RulePiece, TARGET_STATE_MAX, bodyBase, bodyHp, targetStateOf } from '../contract';
 import { type ArcadeLibrary, buildWorld, instantiate, loadProgram, step } from '../kernel';
@@ -86,20 +87,29 @@ describe('P32-0 T4 kernel seams', () => {
     expect(ARCADE_LIBRARY.rules.interact?.trigger).toBe('press');
   });
 
-  it.each(MODES)('%s: GenreSpec → readGameSpec with generator %s → that generator, which refuses while it is a stub', (sample, id) => {
+  /**
+   * Postavený režim (P32E–G) svět postaví, nebo ho odmítne jeho vlastní schéma
+   * (`(generator <id>)` – klíč starého specu, který nový režim nezná); pahýl
+   * odmítne `modeNotBuilt`. Všechno tři dokazují, že delegace došla k tomu generátoru.
+   */
+  const reachedMode = (made: ReturnType<typeof arcadeWorldOf>, id: string): boolean =>
+    made.ok || (made.issues.length === 1 && made.issues[0] === modeNotBuilt(id)) || made.issues.every((issue) => issue.endsWith(`(generator ${id})`));
+
+  it.each(MODES)('%s: GenreSpec → readGameSpec with generator %s → that generator, built or refusing as a stub', (sample, id) => {
     const spec = read(delegate(compileGenre(SAMPLE[sample] as GenreSpec), { generator: id }));
     expect(generatorOf(spec)).toBe(id);
     const made = arcadeWorldOf(spec, 1);
-    expect(made.ok).toBe(false);
-    expect(!made.ok && made.issues).toEqual([modeNotBuilt(id)]);
+    expect(reachedMode(made, id), made.ok ? 'ok' : made.issues.join('; ')).toBe(true);
   });
 
   // Revize T4 kolo 2: `chaser` četl `level.bodies[0]` z prázdné úrovně pahýlu → TypeError → 500.
   // Základ z `escape`: jeho ovládání `chaser` bere, takže doplněk projde čtením a dojde až ke kompilaci.
-  it.each(MODES)('%s: a stub with the chaser addon still refuses cleanly (generator %s)', (_sample, id) => {
+  // Postavený režim, jehož ovládání pronásledovatele nebere (souboj, P32E T3), doplněk odmítne hláškou.
+  it.each(MODES)('%s: a mode with the chaser addon builds or refuses cleanly (generator %s)', (_sample, id) => {
     const spec = read(delegate({ ...compileGenre(SAMPLE.escape as GenreSpec), addons: ['chaser'] } as never, { generator: id }));
     const made = arcadeWorldOf(spec, 1);
-    expect(!made.ok && made.issues).toEqual([modeNotBuilt(id)]);
+    const noChaser = !made.ok && made.issues.length === 1 && made.issues[0] === 'chaser: the level has no place for a chaser';
+    expect(reachedMode(made, id) || noChaser, made.ok ? 'ok' : made.issues.join('; ')).toBe(true);
   });
 
   it('the platformer takes feel: 2 through tuning, validated by the platform generator, not by spec.ts', () => {
@@ -118,7 +128,8 @@ describe('P32-0 T4 kernel seams', () => {
   it('tuning may not carry a key the control already validates in spec.ts, so it cannot slip past its bounds', () => {
     // 30 s výherní časovač + `tuning: {seconds: 60}` hrál na růst; timing `tuning: {tolerance: 50}` obešel mez 100 (revize T4).
     const runner = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope' });
-    const plains = [runner, ...Object.values(SAMPLE).map((sample) => compileGenre(sample))];
+    // Souboj už jde přes `move_free` (P32E T4); `duel` pokrývá uložený duel.
+    const plains = [runner, read(duelFixture), ...Object.values(SAMPLE).map((sample) => compileGenre(sample))];
     const controls = new Set(plains.map((plain) => plain.control));
     expect([...controls].sort()).toEqual(['duel', 'move_free', 'platform', 'runner', 'steer']);
     for (const plain of plains) {
@@ -153,17 +164,22 @@ describe('P32-0 T4 kernel seams', () => {
   });
 
   it('a spec without the new fields reads back unchanged, so its hash does not move', () => {
+    // Postavené režimy (aréna, P32E T4) nová pole nesou; ostatní ještě ne a ty tady musí zůstat.
+    const plain = (spec: GameSpecV1): boolean => spec.controlParams === undefined || !('generator' in spec.controlParams || 'tuning' in spec.controlParams);
+    const without = Object.values(SAMPLE).filter((sample) => plain(compileGenre(sample)));
+    expect(without.length).toBeGreaterThan(0);
     for (const sample of Object.values(SAMPLE)) {
       const spec = compileGenre(sample);
       const back = read(spec);
-      expect(back.controlParams === undefined || !('generator' in back.controlParams || 'tuning' in back.controlParams)).toBe(true);
+      expect(plain(back)).toBe(plain(spec));
       expect(canonicalHash(back)).toBe(canonicalHash(read(JSON.parse(JSON.stringify(spec)))));
     }
   });
 
   it('an old world keeps HP and target state at 0 in every body', () => {
-    for (const sample of [SAMPLE.escape, SAMPLE.fight, SAMPLE.platformer] as GenreSpec[]) {
-      const compiled = compileArcade(read(compileGenre(sample)), 1);
+    // Souboj z žánru HP nese (P32E); starý svět souboje je uložený duel.
+    for (const spec of [compileGenre(SAMPLE.escape as GenreSpec), read(duelFixture), compileGenre(SAMPLE.platformer as GenreSpec)]) {
+      const compiled = compileArcade(read(spec), 1);
       if (!compiled.ok || compiled.value.arcade === undefined) throw new Error('fixture did not compile');
       const state = instantiate(compiled.value.arcade);
       const count = state[HEADER.bodyCount] as number;
