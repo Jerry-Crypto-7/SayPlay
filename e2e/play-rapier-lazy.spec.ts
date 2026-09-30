@@ -10,6 +10,8 @@
 
 import { expect, test, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 const RAPIER_MARKER = 'rawintegrationparameters_new';
 
 /** Po načtení stránky: kolik stažených skriptů nese Rapier a kolik `.wasm`. */
@@ -30,6 +32,7 @@ test('an arcade game without physics never fetches Rapier', async ({ page, reque
   const { url } = (await published.json()) as { url: string };
   const seen = watchRapier(page);
   await page.goto(url);
+  await startGame(page);
   await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
   await page.waitForTimeout(1_000);
   expect(await seen()).toEqual({ scripts: 0, wasm: 0 });

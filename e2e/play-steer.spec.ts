@@ -1,10 +1,13 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Závod a aréna na `/play/[id]` (P25F T6): věta projde skutečnými dveřmi
  * (dvojník režiséra = návrh ze slov → `steer` / `move_free`), hra se načte
  * v arkádovém plátně, hodiny běží, držená šipka se zapíše do každého tiku,
- * záznam robota přehraný sondou skončí na „You won“ a mobil nescrolluje do
+ * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
+ * kitu, dřív „You won“) a mobil nescrolluje do
  * strany.
  */
 
@@ -34,6 +37,7 @@ for (const game of GAMES) {
       await expect(stage).toHaveAttribute('data-control', game.control);
       await expect(page.getByTestId('play-goal')).not.toHaveText('');
       await expect(stage).toHaveAttribute('data-player-x', /.+/, { timeout: 60_000 });
+      await startGame(page);
       await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
 
       const start = await page.evaluate(() => window.__playShell!.inputs().length);
@@ -49,9 +53,11 @@ for (const game of GAMES) {
       await page.goto(url);
       const stage = page.getByTestId('arcade-stage');
       await expect(stage).toHaveAttribute('data-player-x', /.+/, { timeout: 60_000 });
+      await startGame(page);
       await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
       const box = (await stage.boundingBox())!;
-      const hud = (await page.locator('.play-hud').boundingBox())!;
+      // Kus HUD nad plátnem: od P34 T5 je `.play-hud` vrstva přes celou scénu, tak se pouští nad časovačem.
+      const hud = (await page.getByTestId('play-timer').boundingBox())!;
       const count = (): Promise<number> => page.evaluate(() => window.__playShell!.inputs().length);
       await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.75);
       await page.mouse.down();
@@ -73,7 +79,7 @@ for (const game of GAMES) {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const outcome = await page.evaluate(() => window.__playShell!.playWitness());
       expect(outcome.runState).toBe('won');
-      await expect(page.getByTestId('play-outcome')).toContainText('You won');
+      await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
       await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
     });
 

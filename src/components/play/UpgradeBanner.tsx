@@ -17,6 +17,8 @@ import { useEffect, useState } from 'react';
 import type { DraftFinalReason } from '@/app/api/play/_upgrade';
 
 import { forgetPending, type PendingUpgrade, pendingUpgrades, rememberPending } from './pending-upgrades';
+import { FULL_READY, PLAY_FULL, QUICK_VERSION, QUICK_VERSION_REST } from './starters';
+import { Button, Icon } from './ui';
 
 export type UpgradeView =
   | { readonly kind: 'idle' }
@@ -135,17 +137,20 @@ export function useUpgrade(url: string | null): { readonly view: UpgradeView; re
   return { view: url !== null && state.url === url ? state.view : IDLE, retry: () => setAttempt((count) => count + 1) };
 }
 
-/** Proč AI verze nevyšla – jedna věta pro hráče na každý důvod serveru. */
+/**
+ * Proč AI verze nevyšla – jedna věta pro hráče na každý důvod serveru. Bez
+ * obviňování (P33 T5): hráč slyší, co zůstává, ne čí je to chyba.
+ */
 export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
-  MODEL_UNAVAILABLE: 'The AI is busy right now – you are playing the quick version.',
-  MALFORMED: 'The AI sent back an answer we could not read, so the quick version stays.',
-  UNREPAIRED: 'The AI made a mistake it could not fix, so the quick version stays.',
-  VERB_UNPROVED: "The AI's new action never happened in a test run, so the quick version stays.",
-  UNCHANGED: 'The AI had nothing to add – the quick version is already its take.',
-  NOT_PLAYABLE: "The AI's version didn't pass our playability check.",
-  STORE_UNAVAILABLE: 'We could not save the AI version right now.',
-  NOT_FROM_SENTENCE: 'This game was not made from a sentence, so there is no AI version.',
-  FAILED: 'Something went wrong while building the AI version.',
+  MODEL_UNAVAILABLE: "Couldn't make the full-detail version right now. Keep playing the quick one.",
+  MALFORMED: 'The full-detail version came back garbled. The quick one stays.',
+  UNREPAIRED: "The full-detail version didn't pass our checks. The quick one stays.",
+  VERB_UNPROVED: "The full-detail version's new move never worked in a test run. The quick one stays.",
+  UNCHANGED: 'Nothing to add. The quick version already has it all.',
+  NOT_PLAYABLE: "The full-detail version wasn't playable in a test run. The quick one stays.",
+  STORE_UNAVAILABLE: "Couldn't save the full-detail version. The quick one stays.",
+  NOT_FROM_SENTENCE: "This game wasn't made from an idea, so there's no full-detail version.",
+  FAILED: "Couldn't finish the full-detail version. The quick one stays.",
 };
 
 /**
@@ -159,20 +164,24 @@ export interface UpgradeNotice {
   readonly action: { readonly kind: 'open' | 'retry'; readonly label: string } | null;
 }
 
-/** Co proužek řekne a nabídne; `null` = nic. Nejvýš jedna akce, žádná procenta. */
-export function noticeOf(view: UpgradeView, now: number, title: string | null = null): UpgradeNotice | null {
+/**
+ * Co štítek řekne a nabídne; `null` = nic. Nejvýš jedna akce, žádná procenta
+ * ani ubíhající sekundy – běh ukazuje pulzující tečka pilulky (kit: kromě ní
+ * se nic nehýbe samo).
+ */
+export function noticeOf(view: UpgradeView, title: string | null = null): UpgradeNotice | null {
   switch (view.kind) {
     case 'idle':
       return null;
     case 'working':
-      return { text: `Your AI version is being built – keep playing, nothing will change until you choose. ${Math.max(0, Math.floor((now - view.since) / 1000))} s`, action: null };
+      return { text: QUICK_VERSION + QUICK_VERSION_REST, action: null };
     case 'ready':
-      return { text: `The AI version is ready – play it${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: 'Play it' } };
+      return { text: `${FULL_READY}${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: PLAY_FULL } };
     case 'final':
       return { text: FINAL_REASON_TEXT[view.reason], action: RETRYABLE.has(view.reason) ? { kind: 'retry', label: 'Try again' } : null };
     case 'offline':
     case 'lost':
-      return { text: 'We lost track of the AI – check again', action: { kind: 'retry', label: 'Check again' } };
+      return { text: 'We lost track of the full-detail version.', action: { kind: 'retry', label: 'Check again' } };
   }
 }
 
@@ -181,14 +190,18 @@ function draftIdOf(request: string): string | null {
 }
 
 /**
- * Proužek nad hrou pro každý stav AI verze. Rozehraná hra se nevymění – nová
- * se otevře jen tlačítkem. Rozběhnutou práci si prohlížeč zapamatuje (T3),
- * `final` jen jednou ukáže a zapomene.
+ * Stav AI verze nad hrou podle kitu (P34 T4). Běží-li práce, je to `.sp-status`
+ * – inkoustová pilulka s pulzující slunečnou tečkou vlevo pod pruhem, mimo
+ * sloupec akcí vpravo a řádku ovládání dole; na telefonu jen „Quick version“
+ * (jako v HUD kitu), zbytek věty dostane čtečka. Hotová verze je `.sp-toast`
+ * s tlačítkem dole uprostřed, konec bez AI verze malá poznámka na místě
+ * pilulky. Rozehraná hra se nevymění – nová se otevře jen tlačítkem.
+ * Rozběhnutou práci si prohlížeč zapamatuje (T3), `final` jen jednou ukáže
+ * a zapomene.
  */
 export function UpgradeBanner({ request, sentence }: { readonly request: string | null; readonly sentence: string | null }) {
   const router = useRouter();
   const { view, retry } = useUpgrade(request);
-  const [now, setNow] = useState(() => Date.now());
   const draftId = request === null ? null : draftIdOf(request);
   const since = view.kind === 'working' ? view.since : null;
 
@@ -197,12 +210,6 @@ export function UpgradeBanner({ request, sentence }: { readonly request: string 
     if (since !== null && sentence !== null) rememberPending({ draftId, sentence, startedAt: since });
     if (view.kind === 'final') forgetPending(draftId);
   }, [draftId, sentence, since, view.kind]);
-
-  useEffect(() => {
-    if (view.kind !== 'working') return;
-    const ticker = setInterval(() => setNow(Date.now()), 1_000);
-    return () => clearInterval(ticker);
-  }, [view.kind]);
 
   // Název AI verze (P28D T7): porotce má vědět, co se otevře; bez něj proužek nečeká.
   const readyId = view.kind === 'ready' ? view.versionId : null;
@@ -221,20 +228,32 @@ export function UpgradeBanner({ request, sentence }: { readonly request: string 
     };
   }, [readyId]);
 
-  const notice = noticeOf(view, Math.max(now, view.kind === 'working' ? view.since : now), title !== null && title.id === readyId ? title.title : null);
+  const notice = noticeOf(view, title !== null && title.id === readyId ? title.title : null);
   if (notice === null) return null;
+  if (view.kind === 'working') {
+    return (
+      <aside className="sp-status play-upgrade-status" data-testid="upgrade-state" data-kind="working" role="status">
+        <span className="sp-status__dot" aria-hidden="true" />
+        <span>
+          {QUICK_VERSION}
+          <span className="play-upgrade-rest">{QUICK_VERSION_REST}</span>
+        </span>
+      </aside>
+    );
+  }
   const act = (): void => {
     if (view.kind !== 'ready') return retry();
     if (draftId !== null) forgetPending(draftId);
     router.push(`/play/${view.versionId}`);
   };
   return (
-    <aside className="play-upgrade" data-testid="upgrade-state" data-kind={view.kind} role="status">
+    <aside className={view.kind === 'ready' ? 'sp-toast play-upgrade-toast' : 'sp-toast play-upgrade-toast play-upgrade-note'} data-testid="upgrade-state" data-kind={view.kind} role="status">
+      {view.kind === 'ready' && <Icon name="check" />}
       <span>{notice.text}</span>
       {notice.action !== null && (
-        <button className="play-button" type="button" data-testid="upgrade-action" onClick={act}>
+        <Button variant="secondary" size="s" data-testid="upgrade-action" onClick={act}>
           {notice.action.label}
-        </button>
+        </Button>
       )}
     </aside>
   );

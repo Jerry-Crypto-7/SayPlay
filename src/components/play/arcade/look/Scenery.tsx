@@ -8,14 +8,15 @@
  * trať a jádro o nich neví.
  */
 
-import { lazy, Suspense, useContext, useEffect, useMemo, useState } from 'react';
-import { Box3, type Object3D, Vector3 } from 'three';
+import { lazy, Suspense, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Box3, type Group, type Object3D, Vector3 } from 'three';
 
 import { isSceneryModel, type Look, type PropKind, SCENERY_MODELS, type SceneryKind, type SceneryModel } from '@/play/arcade/look';
 
 import { UNDER_PANORAMA } from './under-panorama';
 import { loadFlatModel } from './load';
 import { PlayEnv } from './play-env';
+import { capSnow } from './rig/snowcap';
 
 // Líně: stránka gridu importuje tenhle soubor staticky a Panorama táhne @react-three/fiber
 // do úvodního balíku – první snímek gridu byl o ~220 ms později (P29C T5).
@@ -174,8 +175,8 @@ function Prop({ kind, tint: [main, accent] }: { readonly kind: PropKind; readonl
   }
 }
 
-/** Model katalogu postavený na zem ve výšce ze `SCENERY_MODELS`; dokud se nenačte, nic. */
-function SceneryModelProp({ id }: { readonly id: SceneryModel }) {
+/** Model katalogu postavený na zem ve výšce ze `SCENERY_MODELS`; dokud se nenačte, nic. `cap` = sněhová čepička. */
+function SceneryModelProp({ id, cap }: { readonly id: SceneryModel; readonly cap?: string }) {
   const [model, setModel] = useState<Object3D | null>(null);
   useEffect(() => {
     let live = true;
@@ -195,8 +196,10 @@ function SceneryModelProp({ id }: { readonly id: SceneryModel }) {
     copy.scale.setScalar(scale);
     const center = box.getCenter(new Vector3());
     copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+    if (cap !== undefined) capSnow(copy, cap);
+    freeze(copy);
     return copy;
-  }, [model, id]);
+  }, [model, id, cap]);
   return fitted === null ? null : <primitive object={fitted} />;
 }
 
@@ -236,12 +239,46 @@ export function GridScenery({ look, width, height }: { readonly look: Look; read
   );
 }
 
-export function Scenery({ look, layout, inner, from, to, y = 0, size = 1 }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number }) {
+/** Kulisy stojí: matice se spočítá jednou, ne každý snímek. */
+function freeze(root: Object3D): void {
+  root.traverse((node) => {
+    node.updateMatrix();
+    node.matrixAutoUpdate = false;
+  });
+}
+
+/** Poloměr paty kulisy (m při měřítku 1): kulisa na svahu stojí na nejnižším bodě paty, ať nevisí. */
+const FOOT = 0.7;
+
+/**
+ * Řada kulis. Matice se spočítají hned, takže rig (`SceneryWindow` v `StyleRig`)
+ * podle `userData.scenery` smí kulisy za koncem mlhy vypnout – bez R3F tady,
+ * stránka mřížky tenhle soubor importuje staticky (viz `Panorama` výš).
+ * `ground` = výška terénu pod kulisou (údolí běžce, P32A T3), `cap` = barva sněhové čepičky.
+ */
+export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string }) {
+  const places = useMemo(() => sceneryPlaces(look.props, layout, inner, from, to), [look.props, layout, inner, from, to]);
+  const heights = useMemo(
+    () =>
+      places.map((place) => {
+        if (ground === undefined) return y;
+        const r = FOOT * place.scale * size;
+        return y + Math.min(ground(place.x, place.z), ground(place.x - r, place.z), ground(place.x + r, place.z), ground(place.x, place.z - r), ground(place.x, place.z + r));
+      }),
+    [places, ground, y, size],
+  );
+  const root = useRef<Group>(null);
+  useLayoutEffect(() => {
+    if (root.current === null) return;
+    if (cap !== undefined) capSnow(root.current, cap);
+    freeze(root.current);
+    root.current.updateWorldMatrix(true, true);
+  }, [places, size, heights, cap]);
   return (
-    <group>
-      {sceneryPlaces(look.props, layout, inner, from, to).map((place, index) => (
-        <group key={index} position={[place.x, y, place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
-          {isSceneryModel(place.kind) ? <SceneryModelProp id={place.kind} /> : <Prop kind={place.kind} tint={look.tint} />}
+    <group ref={root} userData={{ scenery: true }}>
+      {places.map((place, index) => (
+        <group key={index} position={[place.x, heights[index]!, place.z]} rotation={[0, place.turn, 0]} scale={place.scale * size}>
+          {isSceneryModel(place.kind) ? <SceneryModelProp id={place.kind} cap={cap} /> : <Prop kind={place.kind} tint={look.tint} />}
         </group>
       ))}
     </group>

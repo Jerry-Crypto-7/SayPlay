@@ -3,6 +3,8 @@ import path from 'node:path';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { openPause, startGame } from './play-start';
+
 /**
  * Vlastní hudba a zvuky hry (P29D T5): před prvním gestem hráče se nestáhne
  * jediný zvukový soubor (první snímek nečeká na zvuk), po klepnutí hraje
@@ -39,6 +41,7 @@ test.describe('/play/[id] – the game’s own music and sounds', () => {
         if (request.url().includes('/assets/worldstream/audio/')) audio.push(new URL(request.url()).pathname);
       });
       await page.goto(urls[game.id]!);
+      await startGame(page);
       await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
       await page.waitForTimeout(1000);
       expect(audio).toEqual([]);
@@ -61,6 +64,8 @@ test.describe('/play/[id] – the game’s own music and sounds', () => {
     await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined, undefined, { timeout: 60_000 });
     await gesture(page);
     await expect.poll(() => page.evaluate(() => window.__playAudio!.music()), { timeout: 20_000 }).not.toBeNull();
+    // Od P34 T5 je Sound na kartě pauzy (HUD kitu); M platí i s otevřenou kartou.
+    await openPause(page);
     await page.keyboard.press('m');
     await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
     expect(await page.evaluate(() => window.__playAudio!.musicGain())).toBe(0);
@@ -84,6 +89,7 @@ test.describe('/play/[id] – the game’s own music and sounds', () => {
       if (response.url().endsWith('/voice')) asked.push(response.status());
     });
     await page.goto(urls.arcade!);
+    await startGame(page);
     await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     expect(asked).toEqual([]);
     await gesture(page);

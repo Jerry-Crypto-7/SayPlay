@@ -3,6 +3,8 @@ import { join } from 'node:path';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Připíchnutý obraz rozdělení plátna (P32-0 T5). `ArcadeStage.tsx` se dělí na
  * shell, `StyleRig` (světlo, obloha, mlha) a světy běžce a plošinovky – vypadat
@@ -18,6 +20,10 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
  *
  * Referenční snímky leží v `e2e/__screenshots__/p32-split/` a nahrály se
  * z HEAD před rozdělením (`--update-snapshots`).
+ *
+ * Vypnuto od P32A T1: rig vzhledu (obloha, stíny, expozice) mění obraz záměrně,
+ * takže „vypadá stejně“ už neplatí. Snímky zůstávají jako obraz před rigem –
+ * `p32-look.spec.ts` z nich měří, že rig opravdu kreslí.
  */
 
 const FIXTURES = ['runner', 'platform'] as const;
@@ -62,13 +68,14 @@ for (const viewport of VIEWPORTS) {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
     for (const fixture of FIXTURES) {
-      test(`${fixture}: the split stage draws the same frame`, async ({ page, request }) => {
+      test.skip(`${fixture}: the split stage draws the same frame`, async ({ page, request }) => {
         test.setTimeout(120_000);
         const url = await publish(request, fixture);
         await page.goto(url);
         await expect(page.getByTestId('arcade-stage')).toBeVisible();
         const canvas = page.locator('[data-testid="arcade-stage"] canvas').first();
         await canvas.waitFor();
+        await startGame(page);
         await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
 
         const first = await freezeAtFirstScore(page);

@@ -10,7 +10,7 @@
 import { z } from 'zod';
 
 import { type ArcadeInput, BODY, type BotPiece, FLAG, HEADER, ROLE, UNIT, bodyBase } from '../contract';
-import { ARENA, DIRECTIONS, arenaAxis, directionOfAxis } from './arena';
+import { ARENA, DIRECTIONS, arenaAxis, axisOfDirection, chaseParams, directionOfAxis, directionToward, graceLeft } from './arena';
 
 const REACTION = 8;
 /** Větší buňka blíž (okraj k okraji) než tohle = utíkat. */
@@ -41,7 +41,107 @@ export function predict(state: Int32Array, player: number, recent: readonly Arca
   return { x, z, vx, vz };
 }
 
-const botParams = z.object({ half: z.int().min(5 * UNIT).max(40 * UNIT).default(ARENA.half) }).strict();
+const botParams = z
+  .object({
+    half: z.int().min(5 * UNIT).max(40 * UNIT).default(ARENA.half),
+    /** Útěk (P32E T1): pronásledovatelé téhle rychlosti – robot plánuje únik místo agaru. */
+    chase: chaseParams.optional(),
+  })
+  .strict();
+
+/** Plánovač útěku: tolik tiků dopředu po krocích `sample`; bezpečný tah drží aspoň `safe` mezeru, nad `cap` je mezera jedno. */
+const PLAN = { horizon: 90, sample: 5, safe: 2500, cap: 8 * UNIT } as const;
+
+/**
+ * Útěk: 32 směrů a stání, každý tah přehraný `horizon` tiků proti
+ * pronásledovatelům, kteří jdou rovnou na hráče (po ochraně, kterou ještě
+ * prospí). Nejbližší věc, ke které vede bezpečný tah; jinak tah s největší
+ * mezerou, a když je všude dost místa, ten, který končí blíž středu.
+ *
+ * Robot plánuje každý tik, takže přehrávka končí, jakmile tah nemůže vyhrát
+ * (mezera pod laťkou) – volba je až na remízy stejná jako při plném přehrání všech 33 tahů.
+ */
+function escapeDecide(state: Int32Array, player: number, recent: readonly ArcadeInput[], half: number, speed: number): ArcadeInput {
+  const me = predict(state, player, recent);
+  const size = state[bodyBase(player) + BODY.w] as number;
+  const lag = recent.length;
+  const asleep = Math.max(0, graceLeft(state) - lag);
+  const chasers: { x: number; z: number; reach: number }[] = [];
+  const items: { x: number; z: number }[] = [];
+  for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+    const base = bodyBase(i);
+    if (i === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    const role = state[base + BODY.role];
+    if (role === ROLE.chaser) chasers.push({ x: (state[base + BODY.x] as number) + (state[base + BODY.vx] as number) * lag, z: (state[base + BODY.z] as number) + (state[base + BODY.vz] as number) * lag, reach: ((state[base + BODY.w] as number) + size) / 2 });
+    else if (role === ROLE.collectible) items.push({ x: state[base + BODY.x] as number, z: state[base + BODY.z] as number });
+  }
+  const limit = half - Math.ceil(size / 2);
+  const clamp = (value: number): number => Math.max(-limit, Math.min(limit, value));
+
+  const steps = PLAN.horizon / PLAN.sample;
+  const stride = (direction: number): { readonly x: number; readonly z: number } => {
+    const dir = direction < 0 ? { dx: 0, dz: 0 } : DIRECTIONS[direction]!;
+    return { x: Math.trunc((dir.dx * ARENA.speed * PLAN.sample) / 1000), z: Math.trunc((dir.dz * ARENA.speed * PLAN.sample) / 1000) };
+  };
+
+  /** Nejmenší mezera (okraj k okraji, po osách jako AABB jádra) k pronásledovateli v horizontu; přehrávka končí, jakmile klesne na `floor`. */
+  const clearance = (direction: number, floor: number): number => {
+    const step = stride(direction);
+    const at = chasers.map((c) => ({ x: c.x, z: c.z }));
+    let px = me.x;
+    let pz = me.z;
+    let clear = Number.POSITIVE_INFINITY;
+    for (let t = PLAN.sample; t <= PLAN.horizon; t += PLAN.sample) {
+      px = clamp(px + step.x);
+      pz = clamp(pz + step.z);
+      const moving = Math.max(0, Math.min(PLAN.sample, t - asleep));
+      for (let j = 0; j < at.length; j += 1) {
+        const c = at[j]!;
+        const dx = px - c.x;
+        const dz = pz - c.z;
+        // `Math.sqrt`, ne `Math.hypot`: robot plánuje každý tik a hypot je ve V8 řádově pomalejší.
+        const gap = Math.sqrt(dx * dx + dz * dz);
+        const run = Math.min(gap, moving * speed);
+        if (gap > 0) {
+          c.x += (dx * run) / gap;
+          c.z += (dz * run) / gap;
+        }
+        clear = Math.min(clear, Math.max(Math.abs(px - c.x), Math.abs(pz - c.z)) - chasers[j]!.reach);
+      }
+      if (clear <= floor) return clear;
+    }
+    return clear;
+  };
+
+  const byDistance = [...items].sort((a, b) => (a.x - me.x) ** 2 + (a.z - me.z) ** 2 - ((b.x - me.x) ** 2 + (b.z - me.z) ** 2));
+  const tried = new Set<number>();
+  for (const item of byDistance) {
+    const direction = directionToward(item.x - me.x, item.z - me.z);
+    if (direction < 0 || tried.has(direction)) continue;
+    tried.add(direction);
+    if (clearance(direction, PLAN.safe - 1) >= PLAN.safe) return { buttons: 0, axis: axisOfDirection(direction) };
+  }
+
+  // Tahy od konce nejblíž středu: první, který drží `cap`, vyhrál; jinak největší mezera.
+  // Laťku napřed nastaví útěk přímo od nejbližšího pronásledovatele, ať se slabé tahy utnou brzy.
+  const center = (direction: number): number => {
+    const step = stride(direction);
+    return Math.hypot(clamp(me.x + step.x * steps), clamp(me.z + step.z * steps));
+  };
+  const order = Array.from({ length: 33 }, (_, k) => ({ direction: k - 1, center: center(k - 1) })).sort((a, b) => a.center - b.center);
+  const nearest = chasers.reduce<(typeof chasers)[number] | null>((found, c) => (found === null || (c.x - me.x) ** 2 + (c.z - me.z) ** 2 < (found.x - me.x) ** 2 + (found.z - me.z) ** 2 ? c : found), null);
+  let best = nearest === null ? order[0]!.direction : directionToward(me.x - nearest.x, me.z - nearest.z);
+  let bestClear = nearest === null ? Number.NEGATIVE_INFINITY : Math.min(clearance(best, Number.NEGATIVE_INFINITY), PLAN.cap - 1);
+  for (const { direction } of order) {
+    const clear = clearance(direction, bestClear);
+    if (clear >= PLAN.cap) return { buttons: 0, axis: axisOfDirection(direction) };
+    if (clear > bestClear) {
+      best = direction;
+      bestClear = clear;
+    }
+  }
+  return { buttons: 0, axis: axisOfDirection(best) };
+}
 
 export const arenaBot: BotPiece<z.infer<typeof botParams>> = {
   id: 'arena_bot',
@@ -50,6 +150,7 @@ export const arenaBot: BotPiece<z.infer<typeof botParams>> = {
   reactionTicks: REACTION,
   cost: () => ({ bodies: 0, rules: 0 }),
   decide: ({ state, player, recent }, params): ArcadeInput => {
+    if (params.chase !== undefined) return escapeDecide(state, player, recent, params.half, params.chase.speed);
     const me = predict(state, player, recent);
     const size = state[bodyBase(player) + BODY.w] as number;
     const count = state[HEADER.bodyCount] as number;
