@@ -100,6 +100,32 @@ function freezeAt(page: Page, at: number): Promise<number> {
   );
 }
 
+/** Hra běží, dokud scéna nehlásí blízkou kouli v záběru, a v tom samém snímku ji zastaví skrytá záložka. */
+function freezeOnShot(page: Page, timeout: number): Promise<boolean> {
+  return page.evaluate(
+    (limit) =>
+      new Promise<boolean>((resolve) => {
+        const showTab = (state: 'visible' | 'hidden'): void => {
+          Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state });
+          document.dispatchEvent(new Event('visibilitychange'));
+        };
+        const stage = document.querySelector<HTMLElement>('[data-testid="arcade-stage"]');
+        const until = performance.now() + limit;
+        const wait = (): void => {
+          const seen = Number(stage?.dataset.shotsInView ?? 0) > 0;
+          if (!seen && performance.now() < until) {
+            requestAnimationFrame(wait);
+            return;
+          }
+          showTab('hidden');
+          resolve(seen);
+        };
+        requestAnimationFrame(wait);
+      }),
+    timeout,
+  );
+}
+
 /** Robot dohraje „rukou“ – lidský běh, sběrnice efektů vydá i výhru. */
 function playToEnd(page: Page): Promise<{ readonly runState: string; readonly tick: number }> {
   return page.evaluate(() => {
@@ -170,10 +196,9 @@ async function checkGame(page: Page, id: string, prefix: string): Promise<void> 
   if (id === 'pirate') {
     const stage = page.getByTestId('arcade-stage');
     await expect(stage, 'voda v záběru pod hrdinou').toHaveAttribute('data-water-in-view', /^[1-3]$/, { timeout: 10_000 });
-    // Dělová koule se stopou: ukázka robota, dokud nějaká nevletí do záběru, pak snímek.
+    // Dělová koule se stopou: ukázka robota, dokud nějaká blízká nevletí do záběru, pak hned stop a snímek.
     await startDemo(page);
-    await expect(stage, 'dělová koule v záběru').toHaveAttribute('data-shots-in-view', /^[1-9]/, { timeout: 30_000 });
-    await freezeAt(page, 0);
+    expect(await freezeOnShot(page, 30_000), 'dělová koule blízko v záběru').toBe(true);
     await page.waitForTimeout(500);
     mkdirSync(SHOTS, { recursive: true });
     await page.addStyleTag({ content: ONLY_CANVAS });

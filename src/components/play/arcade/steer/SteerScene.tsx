@@ -188,6 +188,8 @@ const SUNK = -8;
 const GLOW = 3;
 /** Stopa dělové koule: kolik posledních poloh. */
 const TRAIL = 8;
+/** Dělová koule (1 m) je na snímku zřetelná jen do téhle vzdálenosti od kamery (m). */
+const SHOT_VIEW_M = 35;
 /** Lišta brány visí pod kamerou (4,2 m), ať nepřekryje hrdinu. */
 const GATE_BAR = 3.2;
 
@@ -407,10 +409,11 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
       }
       stage.dataset.waterInView = String(hits);
     }
-    // Dělové koule v záběru – e2e na ně počká a vyfotí je.
-    if (stage !== null && shots.length > 0 && scratch.frame % 60 === 1) {
+    // Dělové koule v záběru a blízko (dál je v mlze skoro nevidět) – e2e na ně počká a vyfotí je.
+    if (stage !== null && shots.length > 0 && scratch.frame % 10 === 1) {
       scratch.frustum.setFromProjectionMatrix(scratch.matrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
-      stage.dataset.shotsInView = String(shotAt.filter((shot) => shot.alive && scratch.frustum.containsPoint(shot.at)).length);
+      const near = shotAt.filter((shot) => shot.alive && shot.at.distanceTo(camera.position) < SHOT_VIEW_M && scratch.frustum.containsPoint(shot.at));
+      stage.dataset.shotsInView = String(near.length);
     }
   });
 
