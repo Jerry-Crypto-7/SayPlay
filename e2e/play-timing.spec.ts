@@ -5,7 +5,8 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
  * skutečnými dveřmi (dvojník režiséra = návrh ze slov → `timing` / `rhythm`
  * / `duel`), hra se načte ve vlastní scéně a čeká na první ťuk, který ji
  * jen spustí (do záznamu nejde), záznam robota přehraný sondou skončí na
- * „You won“ a mobil nescrolluje do strany.
+ * „You did it!“ (P34 T6: slovník kitu, dřív „You won“) a mobil nescrolluje
+ * do strany.
  */
 
 const GAMES = [
@@ -51,7 +52,7 @@ for (const game of GAMES) {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const outcome = await page.evaluate(() => window.__playShell!.playWitness());
       expect(outcome.runState).toBe('won');
-      await expect(page.getByTestId('play-outcome')).toContainText('You won');
+      await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
       await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
     });
 

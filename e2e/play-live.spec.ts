@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { openAbout, startGame } from './play-start';
+
 /**
  * P29D T9: věta uprostřed běžící hry. „more enemies“ přidá hrozby do běžícího
  * světa bez nové adresy, „make it rain“ rozprší plátno, „add a dragon“ živě
@@ -40,7 +42,8 @@ function tick(page: Page): Promise<number> {
 async function open(page: Page, url: string): Promise<void> {
   await page.goto(url);
   await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-control', 'runner');
-  await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+  // Živá změna padne do příštího tiku – hra musí běžet (od P33 T11 čeká na první dotek).
+  await startGame(page);
   await expect(page.getByTestId('live-open')).toBeVisible({ timeout: 30_000 });
 }
 
@@ -139,7 +142,9 @@ test.describe('/play/[id] – live change', () => {
     const share = page.getByTestId('play-share').first();
     await expect(share).toBeDisabled();
     await expect(share).toBeEnabled({ timeout: 15_000 });
+    // Od P34 T7 otevře kolo list sdílení; nabídku prohlížeče volá jeho „Dare a friend“ – čerstvé gesto je ten druhý ťuk.
     await share.click();
+    await page.getByTestId('play-share-dare').click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length), { timeout: 15_000 }).toBe(1);
     const link = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0].url!);
     const parentId = url.split('/').at(-1)!;
@@ -151,6 +156,8 @@ test.describe('/play/[id] – live change', () => {
     await friend.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     await expect(friend.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
     expect(await hostiles(friend)).toBeGreaterThan(startHostiles);
+    // Od P34 T5 se list „About this game“ otevírá z karty pauzy (HUD kitu).
+    await openAbout(friend);
     await expect(friend.getByTestId('play-lineage').locator(`a[href="/play/${parentId}"]`)).toBeVisible();
     await friend.close();
     await context.close();
@@ -180,9 +187,13 @@ test.describe('/play/[id] – live change', () => {
     expect(await patches(page)).toBe(0);
     // Běžec bez vstupu může prohrát dřív, než práce doběhne: hotovou verzi pak
     // ukáže box po hře místo čipu (P28B T7). Obojí je táž práce z `useRemixJob`.
+    // Od P33 T4 leží box po hře v listu za tlačítkem výsledku; od P34 T6 se jmenuje „Remix it“ (slovník kitu).
     const chip = page.getByTestId('remix-ready-open');
-    await expect(chip.or(page.getByTestId('remix-changed'))).toBeVisible({ timeout: 15_000 });
+    await expect(chip.or(page.getByTestId('play-outcome'))).toBeVisible({ timeout: 15_000 });
     if (await chip.isVisible()) await expect(chip).toHaveAttribute('href', `/play/${childId}`);
-    else await expect(page.getByTestId('remix-changed')).toContainText('A dragon joins');
+    else {
+      await page.getByRole('button', { name: 'Remix it' }).click();
+      await expect(page.getByTestId('remix-changed')).toContainText('A dragon joins', { timeout: 15_000 });
+    }
   });
 });

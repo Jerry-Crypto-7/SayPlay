@@ -1,0 +1,135 @@
+/* Sayplay design tokens v1.0, generated from docs/brand/tokens/tokens.json by scripts/brand/tokens.mjs. Do not edit by hand. */
+:root {
+  /* Color */
+  --sp-color-ink: #1F1A17; /* Primary text, all outlines, hard shadows, icons */
+  --sp-color-ink-soft: #5A524B; /* Secondary text, helper text */
+  --sp-color-ink-faint: #6E655D; /* Placeholder text, disabled labels */
+  --sp-color-cream: #FFF3DF; /* App background (canvas) */
+  --sp-color-cream-deep: #FFE7C2; /* Pressed/hover fill on cream, secondary chips */
+  --sp-color-paper: #FFFFFF; /* Surfaces: inputs, cards, sheets, HUD pills */
+  --sp-color-tomato: #FF5A36; /* Primary action, brand accent, danger-in-game */
+  --sp-color-tomato-deep: #E8421F; /* Illustration shading only. Never a text background */
+  --sp-color-sun: #FFC530; /* Secondary accent: mic, timer, rewards, highlights */
+  --sp-color-sun-deep: #E9A800; /* Illustration shading only. Never a text background */
+  --sp-color-sun-soft: #FFD66B; /* Idea card (sun variant) */
+  --sp-color-mint: #9BE3B0; /* Idea card, success surface */
+  --sp-color-mint-deep: #5CC486; /* Illustration shading only. Never a text background */
+  --sp-color-sky: #8FD3FF; /* Idea card, info surface, default game sky */
+  --sp-color-sky-deep: #4FB3F0; /* Illustration shading only. Never a text background */
+  --sp-color-bubblegum: #FFB8C8; /* Idea card only */
+  --sp-color-alarm: #C8231B; /* Error text and icons (form errors, failed generation) */
+  --sp-color-grass: #1E7A43; /* Success text and icons */
+
+  /* Semantic aliases, use these in components */
+  --sp-bg: var(--sp-color-cream);
+  --sp-surface: var(--sp-color-paper);
+  --sp-surface-pressed: var(--sp-color-cream-deep);
+  --sp-text: var(--sp-color-ink);
+  --sp-text-secondary: var(--sp-color-ink-soft);
+  --sp-text-placeholder: var(--sp-color-ink-faint);
+  --sp-outline: var(--sp-color-ink);
+  --sp-primary: var(--sp-color-tomato);
+  --sp-on-primary: var(--sp-color-ink);
+  --sp-secondary: var(--sp-color-sun);
+  --sp-on-secondary: var(--sp-color-ink);
+  --sp-danger: var(--sp-color-alarm);
+  --sp-success: var(--sp-color-grass);
+  --sp-focus: var(--sp-color-ink);
+
+  /* Space (4px base) */
+  --sp-space-0: 0px;
+  --sp-space-1: 4px;
+  --sp-space-2: 8px;
+  --sp-space-3: 12px;
+  --sp-space-4: 16px;
+  --sp-space-5: 20px;
+  --sp-space-6: 24px;
+  --sp-space-8: 32px;
+  --sp-space-10: 40px;
+  --sp-space-12: 48px;
+  --sp-space-16: 64px;
+  --sp-space-20: 80px;
+  --sp-space-0_5: 2px;
+
+  /* Radius */
+  --sp-radius-xs: 8px;
+  --sp-radius-sm: 12px;
+  --sp-radius-md: 16px;
+  --sp-radius-lg: 20px;
+  --sp-radius-xl: 24px;
+  --sp-radius-2xl: 32px;
+  --sp-radius-pill: 999px;
+
+  /* Border */
+  --sp-border-thin: 2px;
+  --sp-border-base: 2.5px;
+  --sp-border-thick: 3px;
+
+  /* Hard shadow (never blurred) */
+  --sp-shadow-none: none;
+  --sp-shadow-sm: 3px 3px 0 0 var(--sp-color-ink);
+  --sp-shadow-md: 5px 5px 0 0 var(--sp-color-ink);
+  --sp-shadow-lg: 7px 7px 0 0 var(--sp-color-ink);
+
+  /* Type: Roboto v2.138 for both kit families (docs/brand/REPO-NOTES.md) */
+  --sp-font-display: 'Roboto', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --sp-font-body: 'Roboto', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --sp-text-display-xl-size: 48px; --sp-text-display-xl-weight: 900; --sp-text-display-xl-leading: 1; --sp-text-display-xl-tracking: -0.04em;
+  --sp-text-display-l-size: 40px; --sp-text-display-l-weight: 900; --sp-text-display-l-leading: 1; --sp-text-display-l-tracking: -0.035em;
+  --sp-text-display-m-size: 32px; --sp-text-display-m-weight: 900; --sp-text-display-m-leading: 1.05; --sp-text-display-m-tracking: -0.03em;
+  --sp-text-title-l-size: 24px; --sp-text-title-l-weight: 900; --sp-text-title-l-leading: 1.15; --sp-text-title-l-tracking: -0.02em;
+  --sp-text-title-m-size: 19px; --sp-text-title-m-weight: 900; --sp-text-title-m-leading: 1.2; --sp-text-title-m-tracking: -0.01em;
+  --sp-text-button-l-size: 22px; --sp-text-button-l-weight: 900; --sp-text-button-l-leading: 1; --sp-text-button-l-tracking: -0.02em;
+  --sp-text-button-m-size: 16px; --sp-text-button-m-weight: 700; --sp-text-button-m-leading: 1; --sp-text-button-m-tracking: 0em;
+  --sp-text-body-l-size: 18px; --sp-text-body-l-weight: 500; --sp-text-body-l-leading: 1.35; --sp-text-body-l-tracking: 0em;
+  --sp-text-body-size: 16px; --sp-text-body-weight: 500; --sp-text-body-leading: 1.45; --sp-text-body-tracking: 0em;
+  --sp-text-body-s-size: 14px; --sp-text-body-s-weight: 500; --sp-text-body-s-leading: 1.4; --sp-text-body-s-tracking: 0em;
+  --sp-text-label-size: 13px; --sp-text-label-weight: 700; --sp-text-label-leading: 1.25; --sp-text-label-tracking: 0em;
+  --sp-text-caption-size: 12px; --sp-text-caption-weight: 700; --sp-text-caption-leading: 1.3; --sp-text-caption-tracking: 0.01em;
+  --sp-text-hud-num-size: 18px; --sp-text-hud-num-weight: 900; --sp-text-hud-num-leading: 1; --sp-text-hud-num-tracking: -0.01em;
+
+  /* Motion */
+  --sp-duration-press: 90ms;
+  --sp-duration-quick: 160ms;
+  --sp-duration-base: 240ms;
+  --sp-duration-celebrate: 420ms;
+  --sp-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sp-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --sp-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Layering */
+  --sp-z-base: 0;
+  --sp-z-hud: 10;
+  --sp-z-sticky: 20;
+  --sp-z-nav: 30;
+  --sp-z-sheet: 40;
+  --sp-z-toast: 50;
+  --sp-z-modal: 60;
+
+  /* Sizes */
+  --sp-size-touch-min: 44px;
+  --sp-size-control-s: 44px;
+  --sp-size-control-m: 52px;
+  --sp-size-control-l: 62px;
+  --sp-size-tabbar: 66px;
+  --sp-size-hud-pill: 50px;
+  --sp-size-icon: 24px;
+  --sp-size-icon-s: 18px;
+}
+
+/* Desktop type scale (>= 1024px) */
+@media (min-width: 1024px) {
+  :root {
+    --sp-text-display-xl-size: 72px;
+    --sp-text-display-l-size: 56px;
+    --sp-text-display-m-size: 40px;
+    --sp-text-title-l-size: 28px;
+    --sp-text-title-m-size: 20px;
+    --sp-text-body-l-size: 19px;
+    --sp-text-hud-num-size: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --sp-duration-press: 0ms; --sp-duration-quick: 0ms; --sp-duration-base: 0ms; --sp-duration-celebrate: 0ms; }
+}
