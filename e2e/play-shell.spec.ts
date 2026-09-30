@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
-import { startGame } from './play-start';
+import { openPause, startGame } from './play-start';
 
 /**
  * `/play/[id]` (P23-C T5): hra se načte bez technického panelu, tik roste,
@@ -98,19 +98,21 @@ test.describe('/play/[id] – play shell', () => {
     await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(0);
   });
 
-  // P33 T12: na desktopu tenký pruh 64 px nad scénou, scéna zbytek výšky a nejvýš 16:9; akce ve sloupci vpravo.
-  test('desktop 1440×900: the scene fills the window below a 64 px bar, at most 16:9', async ({ page }) => {
+  // P34 T5 (kit `05-layout.md`, dřív pruh 64 px a sloupec akcí P33 T12): na desktopu scéna 16:9 nejvýš
+  // 1280×720 uprostřed a HUD sedí na ní, ne na okně; zvuk, „About“ a Quit jsou na kartě pauzy.
+  test('desktop 1440×900: a 1280×720 stage in the middle, the HUD on the stage, actions on the pause card', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(url);
     await expect(page.getByTestId('play-goal')).toBeVisible();
     const stage = (await page.getByTestId('play-grid-stage').boundingBox())!;
-    expect(stage.y).toBe(64);
-    expect(stage.height).toBe(900 - 64);
-    expect(stage.width).toBeLessThanOrEqual(Math.ceil((stage.height * 16) / 9));
+    expect(stage).toEqual({ x: 80, y: 90, width: 1280, height: 720 });
     const hud = (await page.locator('.play-hud').boundingBox())!;
-    expect(hud.height).toBe(64);
-    const rail = (await page.locator('.play-rail').boundingBox())!;
-    expect(rail.x + rail.width).toBeGreaterThan(1440 - 32);
+    expect(hud).toEqual(stage);
+    const pause = (await page.getByTestId('play-pause').boundingBox())!;
+    expect(pause.x + pause.width).toBeLessThanOrEqual(stage.x + stage.width);
+    expect(pause.y).toBeGreaterThanOrEqual(stage.y);
+    expect(pause.height).toBeGreaterThanOrEqual(50);
+    await openPause(page);
     await expect(page.getByTestId('play-mute')).toBeVisible();
     await expect(page.getByTestId('play-info')).toBeVisible();
     await expect(page.getByTestId('play-more')).toHaveAttribute('href', '/play');

@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
+import { openAbout } from './play-start';
+
 /**
  * P27C T5: „Change it“ pod hrou. Hráč dohraje, napíše „add snow“ a otevře
  * novou verzi s vlastním odkazem; rodič zůstane s původním specem.
@@ -74,7 +76,8 @@ test('a sentence of your own opens a new version and leaves the original alone',
 
   await box.getByTestId('remix-open').click();
   await expect(page).toHaveURL(new RegExp(`/play/${childId}$`), { timeout: 30_000 });
-  await page.getByTestId('play-info').click();
+  // Od P34 T5 se list „About this game“ otevírá z karty pauzy (HUD kitu).
+  await openAbout(page);
   const lineage = page.getByTestId('play-lineage');
   await expect(lineage).toContainText('Remixed from');
   await expect(lineage.locator(`a[href="/play/${parentId}"]`)).toBeVisible();

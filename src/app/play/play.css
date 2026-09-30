@@ -528,50 +528,201 @@
   gap: var(--sp-space-4);
 }
 
-/* Hra na celou plochu (P33 T12): tenký pruh nahoře (`.play-hud`, výška
- * `--_bar`), sloupec akcí vpravo pod ním a jedna řádka ovládání dole.
- * Telefon a feed: pruh leží přes scénu. Desktop na vlastní stránce: pruh
- * 64 px nad scénou, scéna zbytek výšky a nejvýš 16:9, na střed. */
+/* HUD hry podle kitu (P34 T5, `08-game-hud.md`, dřív pruh a sloupec P33 T12).
+ * Vrstva `.play-hud` (kit `.sp-hud`) leží přes scénu a ťuky pouští skrz;
+ * kusy stojí v rozích a prostřední třetina zůstává volná. Nahoře mřížka:
+ * postup vlevo, časovač s pauzou vpravo, pod nimi řádek cíle. Dole restart,
+ * „Change one thing“ a sdílení (kola 58 px, kit 58–60), nad nimi lišta cílů
+ * mřížky a nad ní stav AI verze (`--_stack`). Odsazení o safe area; dole
+ * 16 px místo 24 z kitu, aby lišta cílů s dolní řadou vzala na telefonu
+ * nejvýš 15 % výšky (`e2e/play-phone.spec.ts`). Obloha sady je `--_sky`. */
 .play-shell {
-  --_bar: 48px;
+  --_side-l: calc(var(--sp-space-3) + env(safe-area-inset-left, 0px));
+  --_side-r: calc(var(--sp-space-3) + env(safe-area-inset-right, 0px));
+  --_top: calc(var(--sp-space-4) + env(safe-area-inset-top, 0px));
+  --_bottom: calc(var(--sp-space-4) + env(safe-area-inset-bottom, 0px));
+  --_row: 58px;
+  --_chips: 0px;
+  --_stack: calc(var(--_bottom) + var(--_row) + var(--_chips) + var(--sp-space-3));
+  background: var(--_sky, var(--sp-bg));
 }
 
-.play-rail {
-  position: absolute;
-  z-index: 2;
-  top: calc(var(--_bar) + var(--sp-space-3));
-  right: var(--sp-space-2);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-space-2);
-  /* Ťuk mezi koly patří scéně. */
+.play-shell-grid {
+  --_chips: calc(var(--sp-size-touch-min) + 6px);
+}
+
+.play-hud {
+  display: grid;
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr) max-content;
+  align-content: start;
+  align-items: start;
+  gap: var(--sp-space-4) var(--sp-space-2);
+  padding: var(--_top) var(--_side-r) 0 var(--_side-l);
+}
+
+/* Popisky nic nedělají – ťuk na ně patří scéně. */
+.play-hud > .play-hud-progress,
+.play-hud > .play-hud-goal,
+.play-hud > .play-hud-phase {
   pointer-events: none;
 }
 
-.play-rail > * {
-  pointer-events: auto;
-}
-
-/* Popisek na podložce: bílý text se stínem na světlém nebi scény nejde přečíst. */
-.play-rail .play-icon-button-caption {
-  padding: 0 var(--sp-space-1);
-  border-radius: var(--sp-radius-xs);
-  background: var(--sp-surface);
+.play-hud .sp-hud-pill {
+  margin: 0;
+  line-height: 1;
+  letter-spacing: var(--sp-text-hud-num-tracking);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-/* Hláška sdílení (Link copied, paměťový server) a ruční pole odkazu vedle sloupce. */
-.play-rail .play-status:not(:empty),
-.play-rail .play-share-url {
+.play-hud-progress {
+  grid-column: 1;
+  grid-row: 1;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.play-hud-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.play-hud-count + .play-hud-count {
+  margin-left: var(--sp-space-2);
+}
+
+.play-hud-count > .play-hud-num {
+  margin-left: var(--sp-space-1);
+}
+
+.play-hud-count > .sp-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Vejce kitu: zbývající čárkované, sebrané slunečné (barva není jediný signál). */
+.sp-egg ellipse {
+  fill: none;
+  stroke: var(--sp-outline);
+  stroke-width: 2;
+  stroke-dasharray: 3 2;
+}
+
+.sp-egg.is-collected ellipse {
+  fill: var(--sp-secondary);
+  stroke-dasharray: none;
+}
+
+.play-hud-corner {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-space-2);
+}
+
+/* Odpočet pod 5 s: rajčatová plocha, inkoustový text (5,6 : 1). */
+.play-hud-timer[data-low='true'] {
+  background: var(--sp-primary);
+}
+
+/* Chycení: okraj pilulky na 200 ms rajčatový – bez pohybu, takže i s omezeným pohybem. */
+.play-hud .is-caught {
+  border-color: var(--sp-primary);
+}
+
+.play-hud .sp-hud-btn {
+  color: var(--sp-text);
+  cursor: pointer;
+}
+
+/* Řádek cíle: jeden řádek přes šířku (kit ≤ 50 znaků, delší dostane výpustku), zmizí po 4 s hry.
+ * Vpravo pod časovačem mu místo vezme jen fáze světla mřížky. */
+.play-hud-goal {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: start;
+  max-width: 100%;
+  margin: 0;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity var(--sp-duration-base) var(--sp-ease-standard), visibility 0s;
+}
+
+.play-hud:has(> .play-hud-phase) > .play-hud-goal {
+  grid-column: 1 / 3;
+}
+
+.play-hud-goal[data-shown='false'] {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--sp-duration-base) var(--sp-ease-exit), visibility 0s linear var(--sp-duration-base);
+}
+
+/* Dolní řada: kola po stranách, „Change one thing“ mezi nimi; mezery patří scéně. */
+.play-hud-bottom {
   position: absolute;
-  top: 0;
-  right: calc(100% + var(--sp-space-2));
-  box-sizing: border-box;
+  left: var(--_side-l);
+  right: var(--_side-r);
+  bottom: var(--_bottom);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.play-hud-bottom > * {
+  pointer-events: auto;
+}
+
+.play-hud-round {
+  flex: none;
+  width: var(--_row);
+  height: var(--_row);
+}
+
+.play-hud-round:disabled {
+  border-color: var(--sp-text-placeholder);
+  color: var(--sp-text-placeholder);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.play-hud-bottom > .play-share {
+  margin-left: auto;
+}
+
+/* „Change one thing“: M tlačítko kitu jako pilulka na výšku kol, hůlka rajčatová. */
+.play-hud-change {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--_row);
+  border-radius: var(--sp-radius-pill);
+  font-family: var(--sp-font-display);
+  font-weight: var(--sp-text-hud-num-weight);
+  font-size: var(--sp-text-hud-num-size);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.play-hud-change .sp-icon,
+.play-change .sp-icon {
+  color: var(--sp-primary);
+}
+
+/* Hláška sdílení (Link copied, paměťový server) a ruční pole odkazu nad dolní řadou. */
+.play-hud-bottom .play-status:not(:empty),
+.play-hud-bottom .play-share-url {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--sp-space-3));
   width: max-content;
-  max-width: min(260px, 60vw);
+  max-width: min(320px, 100%);
   padding: var(--sp-space-2) var(--sp-space-3);
-  border-radius: var(--sp-radius-sm);
+  border-radius: var(--sp-radius-md);
   border: var(--sp-border-base) solid var(--sp-outline);
   background: var(--sp-surface);
   color: var(--sp-text);
@@ -579,55 +730,108 @@
   box-shadow: var(--sp-shadow-sm);
 }
 
-.play-rail .play-share-url {
-  top: calc(var(--sp-size-touch-min) + var(--sp-space-4));
-  width: min(260px, 60vw);
+.play-hud-bottom .play-share-url {
+  width: min(320px, 100%);
 }
 
-/* Nízký telefon: popisky kol jen pro čtečku, ať sloupec nedosáhne na Fire. */
-@media (max-height: 700px) {
-  .play-rail .play-icon-button-caption {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
+.play-hud-bottom .play-status:empty {
+  position: absolute;
+}
+
+/* Nad dolní řadou uprostřed: stav AI verze, hotová verze, ukázka robota. */
+.play-hud > .play-upgrade-status,
+.play-hud > .play-upgrade-toast,
+.play-hud > .play-demo-note {
+  position: absolute;
+  z-index: 1;
+  left: 50%;
+  top: auto;
+  bottom: var(--_stack);
+  transform: translateX(-50%);
+}
+
+.play-hud > .play-demo-note {
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Pod horním řádkem uprostřed: hotový remix a s kartou výsledku (ta leží dole) i stav AI verze. */
+.play-hud > .play-upgrade,
+.play-shell:has(> .play-outcome) .play-hud > .play-upgrade-status,
+.play-shell:has(> .play-outcome) .play-hud > .play-upgrade-toast {
+  top: calc(var(--_top) + var(--sp-size-hud-pill) + var(--sp-space-3));
+  bottom: auto;
+}
+
+/* Otevřené pole změny sedí nad dolní řadou vlevo – pilulka stavu mu uhne výš. */
+.play-hud:has(> .play-live) > .play-upgrade-status {
+  bottom: calc(var(--_stack) + var(--sp-size-touch-min) + var(--sp-space-8));
+}
+
+/* Feed: vpravo listuje pager (56 px) – vrstva HUD i scrim pauzy mu uhnou, listovat jde i v pauze. */
+.play-pager-slide > .play-shell > :is(.play-hud, .play-pause) {
+  right: 56px;
+}
+
+/* Feed na telefonu: dokud se hráč nedotkne, leží dole lišta domova – dolní řada pod ní nebude. */
+@media (max-width: 1023px) {
+  .play-root:has(.play-tabbar) .play-pager-slide > .play-shell[data-playing='false'] .play-hud-bottom {
+    visibility: hidden;
   }
 }
 
-/* Řádka ovládání: vlevo dole, vpravo nechává místo pro Fire (72 px + okraj). */
-.play-controls {
+/* Karta pauzy (`ui/PauseCard`): scrim kitu jen přes hru (ve feedu přes slide), karta uprostřed. */
+.play-pause.sp-scrim {
   position: absolute;
-  z-index: 1;
-  left: var(--sp-space-2);
-  bottom: calc(var(--sp-space-2) + env(safe-area-inset-bottom));
-  box-sizing: border-box;
-  max-width: calc(100% - var(--sp-space-2) - 96px);
+  z-index: var(--sp-z-sheet);
   display: flex;
   align-items: center;
+  justify-content: center;
+  padding: var(--sp-space-4);
+}
+
+.play-pause-card {
+  box-sizing: border-box;
+  width: min(400px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   gap: var(--sp-space-3);
-  padding: var(--sp-space-2) var(--sp-space-3);
-  border-radius: var(--sp-radius-sm);
-  background: var(--sp-surface);
-  font-size: var(--sp-text-label-size);
-  line-height: 1.35;
-  pointer-events: none;
+  padding: var(--sp-space-6);
+  box-shadow: var(--sp-shadow-lg);
+  animation: sp-sheet-in var(--sp-duration-base) var(--sp-ease-standard);
 }
 
-.play-controls p {
-  min-width: 0;
+.play-pause-card:focus {
+  outline: none;
+}
+
+.play-pause-title {
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.play-controls .play-button {
-  flex: none;
-  pointer-events: auto;
+.play-pause-hint {
+  margin: 0 0 var(--sp-space-1);
+  color: var(--sp-text-secondary);
+  font-size: var(--sp-text-body-s-size);
+  line-height: 1.4;
 }
 
-/* Na dotyku bez kláves, s myší celá nápověda (jako výzva na startu, T11). */
+.play-pause-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-space-2);
+  margin-top: var(--sp-space-1);
+}
+
+.play-pause-more .sp-icon {
+  width: var(--sp-size-icon-s);
+  height: var(--sp-size-icon-s);
+}
+
+/* Nápověda ovládání: na dotyku bez kláves, s myší celá (jako výzva na startu, T11). */
 .play-controls-keys {
   display: none;
 }
@@ -642,43 +846,33 @@
   }
 }
 
-/* Feed: vpravo listuje pager (56 px) – pruh i sloupec mu uhnou. */
-.play-pager-slide > .play-shell > .play-hud {
-  padding-right: 64px;
-}
-
-.play-pager-slide > .play-shell > .play-rail {
-  right: 64px;
-}
-
-@media (min-width: 700px) {
+/* Desktop (kit `05-layout.md`): scéna 16:9 nejvýš 1280×720 uprostřed, okolí krémové, HUD sedí na scéně. */
+@media (min-width: 1024px) {
   .play-shell:not(.play-pager-slide > .play-shell) {
-    --_bar: 64px;
     container-type: size;
+    background: var(--sp-bg);
+  }
+
+  .play-shell:not(.play-pager-slide > .play-shell) > :is(.play-stage, .play-hud) {
+    inset: 0;
+    margin: auto;
+    width: min(100cqw, 1280px, 100cqh * 16 / 9);
+    height: min(100cqh, 720px, 100cqw * 9 / 16);
   }
 
   .play-shell:not(.play-pager-slide > .play-shell) > .play-stage {
-    top: var(--_bar);
-    max-width: calc((100cqh - var(--_bar)) * 16 / 9);
-    margin-inline: auto;
+    overflow: hidden;
+    border: var(--sp-border-base) solid var(--sp-outline);
+    border-radius: var(--sp-radius-xl);
+    background: var(--_sky);
   }
 
-  .play-shell:not(.play-pager-slide > .play-shell) > .play-hud {
-    height: var(--_bar);
-    padding-inline: var(--sp-space-6);
-    background: var(--sp-surface);
-  }
-
-  .play-shell:not(.play-pager-slide > .play-shell) > .play-rail {
-    right: var(--sp-space-4);
-  }
-
-  .play-shell:not(.play-pager-slide > .play-shell) > .play-controls {
+  /* Dolní řada na šířce kitu: uprostřed, nejvýš 520 px. */
+  .play-hud-bottom {
     left: 50%;
-    bottom: var(--sp-space-4);
-    max-width: min(720px, calc(100% - 240px));
+    right: auto;
+    width: min(520px, 100% - var(--_side-l) - var(--_side-r));
     transform: translateX(-50%);
-    font-size: var(--sp-text-body-s-size);
   }
 }
 
@@ -1101,11 +1295,10 @@
   }
 }
 
-/* Telefon: výzva zůstane mezi okrajem a sloupcem akcí (P33 T12). */
+/* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. */
 @media (max-width: 480px) {
   .play-first-prompt {
-    max-width: calc(100% - 160px);
-    padding-inline: var(--sp-space-3);
+    padding-inline: var(--sp-space-4);
   }
 }
 
@@ -1121,7 +1314,7 @@
   }
 }
 
-/* Odezva (P28C T3): „+N“ vyletí nad hráčem a zhasne za 500 ms, zásah otřese obrazem 150 ms. */
+/* Odezva (P28C T3): „+N“ vyletí nad hráčem a zhasne za 500 ms. */
 .play-score-pop {
   position: absolute;
   top: 34%;
@@ -1147,33 +1340,36 @@
   }
 }
 
-.play-stage-shake {
-  animation: play-stage-shake 150ms linear;
+/* Chycení hráče (P34 T5, kit `08-game-hud.md`): celá obrazovka se otřese nejvýš o 6 px
+ * na 200 ms (`ArcadePlay`). Třídu `.play-stage-shake`, kterou scéna dává po zásahu jen
+ * plátnu (7 px, 150 ms), tenhle otřes nahrazuje – proto už nemá pravidlo. */
+.play-shell.play-caught {
+  animation: play-caught 200ms linear;
 }
 
-@keyframes play-stage-shake {
+@keyframes play-caught {
   25% {
-    transform: translate(-7px, 3px);
+    transform: translate(-6px, 2px);
   }
   50% {
-    transform: translate(6px, -4px);
+    transform: translate(5px, -3px);
   }
   75% {
-    transform: translate(-4px, 2px);
+    transform: translate(-3px, 2px);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .play-stage-shake {
+  .play-shell.play-caught {
     animation: none;
   }
 }
 
-/* Střelba doplňku +shoot: palec vpravo dole, mimo HUD a obrazovku po hře. */
+/* Střelba doplňku +shoot: palec vpravo nad dolní řadou HUD, mimo obrazovku po hře. */
 .play-fire {
   position: absolute;
   right: var(--sp-space-5);
-  bottom: var(--sp-space-6);
+  bottom: var(--_stack);
   z-index: 1;
   width: 72px;
   height: 72px;
@@ -1188,105 +1384,35 @@
 
 /* Úder a použití (P32-0 T5, `ActionButton.tsx`): stejné kolo jako střelba, nad ní. */
 .play-action {
-  bottom: 108px;
+  bottom: calc(var(--_stack) + 84px);
   background: var(--sp-secondary);
 }
 
 .play-action + .play-action {
-  bottom: 192px;
+  bottom: calc(var(--_stack) + 168px);
 }
 
-/* Tenký pruh nahoře (P33 T12): název a cíl vlevo, postup a počítadla
- * vpravo, dva řádky; přes celou šířku, ťuky jdou skrz na scénu. */
-.play-hud {
-  position: relative;
-  z-index: 1;
-  flex: none;
-  box-sizing: border-box;
-  min-height: var(--_bar);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-content: center;
-  align-items: baseline;
-  column-gap: var(--sp-space-3);
-  padding: 6px var(--sp-space-3);
-  background: var(--sp-surface);
-  border-bottom: var(--sp-border-base) solid var(--sp-outline);
-  line-height: 1.25;
-  pointer-events: none;
-}
-
-.play-hud-title,
-.play-hud-goal {
-  grid-column: 1;
-  min-width: 0;
+/* Fáze světla mřížky (P25D T1) pod časovačem: rajčatová stůj, mátová jdi – text to říká i bez barvy. */
+.play-hud-phase {
+  grid-column: 3;
+  grid-row: 2;
+  justify-self: end;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.play-hud-title {
+  padding: var(--sp-space-2) var(--sp-space-3);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-md);
   font-size: var(--sp-text-body-s-size);
   font-weight: 700;
-}
-
-.play-hud-goal {
-  font-size: var(--sp-text-label-size);
-  color: var(--sp-text-secondary);
-}
-
-@media (min-width: 700px) {
-  .play-hud-title {
-    font-size: var(--sp-text-body-l-size);
-  }
-
-  .play-hud-goal {
-    font-size: var(--sp-text-body-s-size);
-  }
-}
-
-.play-hud-phase {
-  grid-column: 2;
-  grid-row: 2;
-  margin: 0;
-  font-size: var(--sp-text-label-size);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-align: right;
+  line-height: 1.3;
+  white-space: nowrap;
 }
 
 .play-hud-phase-green {
-  color: var(--sp-success);
+  background: var(--sp-color-mint);
 }
 
 .play-hud-phase-red {
-  color: var(--sp-danger);
-}
-
-.play-hud-progress {
-  grid-column: 2;
-  grid-row: 1;
-  margin: 0;
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--sp-space-3);
-  font-size: var(--sp-text-body-s-size);
-  font-variant-numeric: tabular-nums;
-  color: var(--sp-text);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.play-hud-progress.play-hud-counters {
-  grid-row: 2;
-  font-size: var(--sp-text-label-size);
-}
-
-.play-hud-tick {
-  color: var(--sp-text-secondary);
-  font-weight: 400;
-  font-size: var(--sp-text-label-size);
+  background: var(--sp-primary);
 }
 
 /* Obal společné stavby mřížky (T14, P34 T4): kroky na kartě leží přes celou scénu. */
@@ -1295,26 +1421,29 @@
 }
 
 .play-shell .play-alert {
-  position: relative;
+  position: absolute;
   z-index: 1;
-  margin: 0 var(--sp-space-4);
+  top: 50%;
+  left: var(--sp-space-4);
+  right: var(--sp-space-4);
+  transform: translateY(-50%);
 }
 
-.play-targets {
-  position: relative;
-  z-index: 1;
-  margin-top: auto;
-  padding: var(--sp-space-3) var(--sp-space-4) calc(var(--sp-space-3) + env(safe-area-inset-bottom));
+/* Lišta cílů mřížky (P34 T5, kit `.sp-chip`): jeden řádek s vlastním posunem těsně nad dolní řadou HUD. */
+.play-hud > .play-targets {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--_bottom) + var(--_row) + 6px);
   display: flex;
-  /* Jeden řádek s vlastním posunem (P33 T6): lišta se posouvá, stránka ne. */
   flex-wrap: nowrap;
   overflow-x: auto;
   scroll-snap-type: x proximity;
-  scroll-padding-inline: var(--sp-space-4);
+  scroll-padding-inline: var(--_side-l);
   scrollbar-width: none;
   gap: var(--sp-space-2);
-  background: none;
-  /* Mezery mezi kartami pouští klepnutí na plátno pod nimi (P28C T4); kartu chytá karta. */
+  padding: 0 var(--_side-r) 0 var(--_side-l);
+  /* Mezery mezi čipy pouští klepnutí na plátno pod nimi (P28C T4); čip chytá čip. */
   pointer-events: none;
 }
 
@@ -1322,55 +1451,39 @@
   pointer-events: auto;
 }
 
-/* Nepřítel (P33 T6) není cíl: červený okraj, „avoid“, na nic se neklepe. */
-.play-targets .play-target.play-target-avoid {
-  pointer-events: none;
-  cursor: default;
-  border-color: var(--sp-danger);
-}
-
-.play-target.play-target-avoid .play-icon,
-.play-target.play-target-avoid .play-target-next {
-  color: var(--sp-danger);
-}
-
-.play-targets-empty {
-  position: relative;
-  z-index: 1;
-  margin: auto var(--sp-space-4) var(--sp-space-4);
-  color: var(--sp-text-secondary);
-}
-
-.play-target {
-  min-height: var(--sp-size-touch-min);
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-space-2);
-  padding: var(--sp-space-2) var(--sp-space-4);
-  border-radius: var(--sp-radius-pill);
+.play-hud > .play-targets-empty {
+  position: absolute;
+  left: var(--_side-l);
+  bottom: calc(var(--_bottom) + var(--_row) + 6px);
+  margin: 0;
+  padding: var(--sp-space-2) var(--sp-space-3);
   border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-md);
   background: var(--sp-surface);
-  color: var(--sp-text);
-  font: inherit;
-  cursor: pointer;
+  font-size: var(--sp-text-body-s-size);
+}
+
+/* Čip cíle: vzhled nese `.sp-chip`, vybraný je inkoustový (`.is-selected`). */
+.play-target {
   flex: 0 0 auto;
   max-width: 80%;
+  min-height: var(--sp-size-touch-min);
+  font-family: inherit;
+  cursor: pointer;
   scroll-snap-align: start;
 }
 
-.play-target:hover:not(:disabled) {
-  border-color: var(--sp-primary);
+.play-target .sp-icon {
+  width: var(--sp-size-icon-s);
+  height: var(--sp-size-icon-s);
 }
 
-.play-target[aria-pressed='true'] {
-  background: var(--sp-primary);
-  border-color: var(--sp-primary);
-}
-
-.play-target:disabled {
-  opacity: 0.5;
+/* Nepřítel (P33 T6) není cíl: rajčatový čip „avoid“ s inkoustovým textem, na nic se neklepe. */
+.play-targets .play-target.play-target-avoid {
+  pointer-events: none;
   cursor: default;
+  background: var(--sp-primary);
+  color: var(--sp-on-primary);
 }
 
 /* Číslo klávesy jen tam, kde je klávesnice a myš (P33 T6); na telefonu je to šum. */
@@ -1391,6 +1504,7 @@
   height: 22px;
   border-radius: var(--sp-radius-pill);
   background: var(--sp-surface-pressed);
+  color: var(--sp-text);
   font-size: var(--sp-text-label-size);
   font-variant-numeric: tabular-nums;
 }
@@ -1402,18 +1516,27 @@
 }
 
 .play-target-next {
-  color: var(--sp-text);
   font-size: var(--sp-text-label-size);
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.play-target[aria-pressed='true'] .play-target-next {
-  color: var(--sp-on-primary);
+/* Štítky ve světě (kit `.sp-world-tag`) mřížky: `TapTargets` je posadí nad objekt, nad HUD nevylezou. */
+.play-world-tags {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
-/* Karta výsledku (P33 T4): na desktopu 420 px uprostřed dole nad lištou cílů
- * (68 px), hra nad ní zůstane vidět a HUD vlevo nahoře karta nepřekryje.
- * Plocha je plná – průsvitnou prosvítala scéna i lišta. */
+.play-world-tags > .sp-world-tag {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Karta výsledku (P33 T4): na desktopu 420 px uprostřed dole, hra nad ní
+ * zůstane vidět a HUD nahoře karta nepřekryje (lišta cílů a dolní řada HUD
+ * po konci běhu zmizí). Plocha je plná – průsvitnou prosvítala scéna. */
 .play-outcome {
   position: absolute;
   z-index: 2;
@@ -1433,11 +1556,11 @@
   text-align: center;
 }
 
+/* Hotový remix během hry (`RemixReadyChip`): pod horním řádkem HUD (pravidlo `.play-hud > .play-upgrade`). */
 .play-upgrade {
   position: absolute;
   z-index: 3;
   left: 50%;
-  top: calc(var(--_bar) + var(--sp-space-3));
   transform: translateX(-50%);
   display: flex;
   align-items: center;
@@ -1509,9 +1632,8 @@
 }
 
 @media (max-width: 480px) {
-  .play-targets {
-    padding: var(--sp-space-3) var(--sp-space-3) calc(var(--sp-space-3) + env(safe-area-inset-bottom));
-    /* Pás se tu posouvá prstem do strany – musí tah chytat i v mezerách. */
+  /* Pás se tu posouvá prstem do strany – musí tah chytat i v mezerách. */
+  .play-hud > .play-targets {
     pointer-events: auto;
   }
 
@@ -1547,6 +1669,11 @@
 
 .play-lineage a {
   color: var(--sp-text);
+}
+
+/* Ve feedu (bez listu „About this game“) by proužek rodokmenu ležel přes HUD kitu – hra ho nekreslí (P34 T5). */
+.play-shell > .play-lineage {
+  display: none;
 }
 
 .play-lineage-count {
@@ -1905,19 +2032,11 @@ button.play-feed-card {
 }
 
 /* P27C */
-/* Stav AI verze nad hrou (P34 T4, kit `.sp-status` a `.sp-toast`). Pilulka
- * běžící práce a poznámka o konci bez AI verze leží vlevo pod pruhem – mimo
- * sloupec akcí vpravo, řádku ovládání dole i střed hry. Hotová verze je toast
- * kitu dole uprostřed; s kartou výsledku (ta leží dole) jde pod pruh a zúží
- * se, aby nedosáhla na sloupec akcí. */
-.play-upgrade-status,
-.play-upgrade-note {
-  position: absolute;
-  z-index: 3;
-  left: var(--sp-space-4);
-  top: calc(var(--_bar) + var(--sp-space-3));
-}
-
+/* Stav AI verze nad hrou (P34 T4, kit `.sp-status` a `.sp-toast`). Od P34 T5
+ * leží pilulka běžící práce, hotová verze i poznámka o konci bez AI verze
+ * uprostřed nad dolní řadou HUD, jako v referenci kitu – mimo ovládání HUD
+ * i prostřední třetinu (pravidla `.play-hud > .play-upgrade-…` výš). S kartou
+ * výsledku (ta leží dole) jdou pod horní řádek HUD. */
 .play-upgrade-toast {
   flex-wrap: wrap;
 }
@@ -1936,20 +2055,6 @@ button.play-feed-card {
   color: var(--sp-success);
 }
 
-.play-upgrade-note {
-  bottom: auto;
-  transform: none;
-  box-sizing: border-box;
-  width: max-content;
-  max-width: min(36vw, 360px);
-  animation-name: sp-pop-in;
-}
-
-.play-shell:has(> .play-outcome) > .play-upgrade-toast[data-kind='ready'] {
-  top: calc(var(--_bar) + var(--sp-space-3));
-  bottom: auto;
-  max-width: min(420px, calc(100% - 160px));
-}
 
 /* Karty pozdě hotových AI verzí na /play (T3), nad feedem. */
 .play-pending {
@@ -2057,19 +2162,9 @@ button.play-feed-card {
   padding-left: var(--sp-space-5);
 }
 
-/* P28D T8: na telefonu patří obrazovka hře. Pruh nahoře je od P33 T12
- * společný (bez metrů), rodokmen až po dohrání, rozbalovací řádky úzké,
- * štítek AI vlevo pod pruhem vedle sloupce akcí a karty cílů v jednom
- * posuvném řádku. */
+/* P28D T8: na telefonu patří obrazovka hře – rozbalovací řádky úzké, pilulka
+ * AI verze jen „Quick version“ (HUD kitu, P34 T5). */
 @media (max-width: 599px) {
-  .play-hud-tick {
-    display: none;
-  }
-
-  .play-shell > .play-lineage {
-    display: none;
-  }
-
   .play-lab {
     margin: var(--sp-space-1) var(--sp-space-2) 0;
     padding: var(--sp-space-1) var(--sp-space-3);
@@ -2082,22 +2177,16 @@ button.play-feed-card {
     text-overflow: ellipsis;
   }
 
-  /* Úzký štítek u levého okraje: bere šířku, ne výšku, a vpravo nechá místo sloupci akcí. */
-  .play-upgrade,
-  .play-upgrade-status,
-  .play-upgrade-note {
-    left: var(--sp-space-2);
-    right: auto;
+  /* Poznámka o konci bez AI verze je delší věta: úzká u levého okraje nad dolní řadou,
+   * ať nebere pruh přes šířku (P28D T8, jako v P34 T4). */
+  .play-hud > .play-upgrade-note {
+    left: var(--_side-l);
     transform: none;
-    box-sizing: border-box;
-    max-width: calc(50% - var(--sp-space-2));
-    font-size: var(--sp-text-label-size);
-    white-space: normal;
-  }
-
-  .play-upgrade-note {
-    gap: var(--sp-space-2);
+    max-width: calc(50% - var(--_side-l));
     padding: var(--sp-space-2) var(--sp-space-3);
+    gap: var(--sp-space-2);
+    font-size: var(--sp-text-label-size);
+    animation-name: sp-pop-in;
   }
 
   /* Pilulka na telefonu jako v HUD kitu jen „Quick version“; zbytek věty dostane čtečka. */
@@ -2109,20 +2198,16 @@ button.play-feed-card {
     clip-path: inset(50%);
     white-space: nowrap;
   }
-
-  .play-targets {
-    padding: var(--sp-space-2) var(--sp-space-3) calc(var(--sp-space-2) + env(safe-area-inset-bottom));
-  }
 }
 
 /* P29D – živá změna běžící hry (LiveBox) a počasí nad plátnem (Weather). */
-/* Nad řádkou ovládání (P33 T12); otevírá ho kolo „Change“ v bočním sloupci. */
-.play-live {
+/* Nad dolní řadou HUD vlevo (P34 T5); otevírá ho „Change one thing“. */
+.play-hud > .play-live {
   position: absolute;
-  z-index: 3;
-  left: var(--sp-space-2);
-  bottom: calc(var(--sp-size-touch-min) + var(--sp-space-4) + env(safe-area-inset-bottom));
-  width: min(calc(100vw - 132px), 440px);
+  z-index: 1;
+  left: var(--_side-l);
+  bottom: var(--_stack);
+  width: min(100% - var(--_side-l) - var(--_side-r), 440px);
   display: flex;
   flex-direction: column;
   align-items: flex-start;

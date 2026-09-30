@@ -16,7 +16,7 @@
  */
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { createMeshClient } from '@/shape/mesh-client';
@@ -39,17 +39,17 @@ import { ShareButton } from './ShareButton';
 import { Hud, TICKS_PER_SECOND, objectiveCounter } from './Hud';
 import { Lineage } from './Lineage';
 import { loopEvent, loopImpression } from './loop-client';
-import { SentenceRead } from './SentenceRead';
+import { AboutButton, SentenceRead } from './SentenceRead';
 import { OrderBubbles } from './OrderBubbles';
 import { PatrolSight } from './PatrolSight';
 import type { PlayShellProps } from './PlayShell';
 import { PostRun } from './PostRun';
-import { RemixReadyChip, useRemixJob } from './RemixBox';
+import { RemixBox, RemixReadyChip, useRemixJob } from './RemixBox';
 import { gridOf } from './sight';
 import type { ProjectTarget } from './TapTargets';
 import { TargetCards } from './TargetCards';
 import { secondsOf } from './timer';
-import { BuildingScreen } from './ui';
+import { BuildingScreen, Button, CHANGE_LABEL, Icon, PauseCard, Sheet, useHudKeys } from './ui';
 import { UpgradeBanner } from './UpgradeBanner';
 import { avoidCards, idleProps, keyAction, playerActor, roleKinds, tapAction, type TargetCard, targetCards } from './targets';
 
@@ -69,6 +69,12 @@ const STALL_TICKS = 3;
 const SCORE_POP_MS = 500;
 /** Nejdelší hra podle schématu je 180 s; svědek nesmí točit déle. */
 const WITNESS_TICK_CAP = 180 * TICKS_PER_SECOND;
+/** Štítků ve světě nejvýš tolik naráz (kit `08-game-hud.md`). */
+const MAX_TAGS = 3;
+/** Cíle, které dostanou slunečný štítek: kam hra vede, ne každý sbíraný kus (ty počítá pilulka postupu). */
+const GOAL_TAG_KINDS: ReadonlySet<string> = new Set(['exit', 'door', 'destination']);
+
+const capital = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
 
 interface PlayProbe {
   inputs(): ReturnType<RuntimeController['getInputLog']>;
@@ -111,8 +117,17 @@ function witnessOps(witness: unknown): readonly { readonly tick: number; readonl
 }
 
 export default function GridShell({ versionId, spec, blueprint, lineage, remixes, aiVersion = false, lab, read, upgrade }: PlayShellProps) {
-  const [controller] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
+  // Restart z HUD (P34 T5) je nová relace runtime: `observeAt(0)` by přehrál hráčův záznam, ne začal znovu.
+  const [controller, setController] = useState(() => bindRuntime(null, versionId, blueprint.world).controller);
   const snapshot = useSyncExternalStore(controller.subscribe, controller.getSnapshot, controller.getSnapshot);
+  // Pauza (P34 T5): karta pauzy, list „About“ nad ní, nebo list „Change one thing“ – hodiny i vstupy stojí.
+  const [paused, setPaused] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [changing, setChanging] = useState<'play' | 'pause' | null>(null);
+  const frozen = paused || changing !== null;
+  useEffect(() => {
+    controller.setPaused(frozen);
+  }, [controller, frozen]);
   const [world, setWorld] = useState<ProxyWorld | null>(null);
   const [fault, setFault] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
@@ -152,12 +167,12 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
   // přehrává hráčův vlastní záznam a klik na něj je vstup hráče, proto hodiny pouští sám.
   const [waiting, setWaiting] = useState(true);
   useEffect(() => {
-    if (!running || !built || waiting) return;
+    if (!running || !built || waiting || frozen) return;
     const timer = window.setInterval(() => {
       if (document.visibilityState === 'visible') controller.advanceTicks(1);
     }, TICK_MS);
     return () => window.clearInterval(timer);
-  }, [controller, running, built, waiting]);
+  }, [controller, running, built, waiting, frozen]);
   // První dotek: ťuk na scénu nebo kartu cíle, nebo klávesa – v zachytávací fázi, před akcí karty.
   useEffect(() => {
     if (!waiting) return;
@@ -284,6 +299,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
   }, [controller, spec]);
 
   // Klávesy 1–9 / mezerník / E jako záloha za karty – jen dokud hra běží (P28B T3).
+  // Použitou klávesu hra zabere (`preventDefault`), takže mezerník sebrání pauzu nezapne.
   useEffect(() => {
     if (!running) return;
     const onKey = (event: KeyboardEvent) => {
@@ -366,9 +382,37 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     };
   }, [controller, blueprint, cards]);
 
+  // Restart z HUD a z karty pauzy (P34 T5): nová relace od tiku 0, hra zase čeká na první dotek.
+  const restart = useCallback(() => {
+    if (!witnessed.current) loopEvent('restart', versionId);
+    witnessed.current = false;
+    pending.current = null;
+    setSelected(null);
+    setPops([]);
+    setPaused(false);
+    setWaiting(true);
+    setController(bindRuntime(null, versionId, blueprint.world).controller);
+  }, [versionId, blueprint]);
+  useHudKeys(running && built && changing === null && !aboutOpen, () => paused, (action) => {
+    if (action === 'restart') restart();
+    else setPaused(action === 'pause');
+  });
+
+  // Štítky ve světě (kit `.sp-world-tag`): nepřítel rajčatově, kam hra vede slunečně – jména z blueprintu, nic vymyšleného.
+  const tagLayer = useRef<HTMLDivElement>(null);
+  const worldTags = useMemo(
+    () =>
+      [
+        ...avoid.map((enemy) => ({ id: enemy.id, text: capital(enemy.label), goal: false })),
+        ...cards.filter((card) => GOAL_TAG_KINDS.has(kinds.get(card.id) ?? '')).map((card) => ({ id: card.id, text: capital(card.label), goal: true })),
+      ].slice(0, MAX_TAGS),
+    [avoid, cards, kinds],
+  );
+  const cardShown = paused && running && changing === null && !aboutOpen;
+
   return (
     // Pod plátnem obloha sady jako u arkády (P32D T6, P33 T14): do prvního snímku ne tmavá plocha.
-    <main className="play-shell" style={{ background: scene.sky }}>
+    <main className="play-shell play-shell-grid" style={{ '--_sky': scene.sky } as CSSProperties}>
       <div
         className="play-stage"
         aria-hidden="true"
@@ -386,7 +430,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
         }}
       >
         <WorldstreamCanvas world={world} controller={controller} sceneId={versionId} framing="scene" guide={false} ground={scene.ground}>
-          <TapTargets slots={slots} project={project} />
+          <TapTargets slots={slots} project={project} tags={tagLayer} />
           {built && blueprint.world.sim !== null && (
             <>
               <GridScenery look={scene} {...gridOf(blueprint.world.sim)} />
@@ -395,6 +439,16 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
             </>
           )}
         </WorldstreamCanvas>
+        {built && running && worldTags.length > 0 && (
+          <div ref={tagLayer} className="play-world-tags" data-testid="play-world-tags">
+            {/* Skryté, dokud je `TapTargets` neposadí nad objekt. */}
+            {worldTags.map((tag) => (
+              <span key={tag.id} className={tag.goal ? 'sp-world-tag sp-world-tag--goal' : 'sp-world-tag'} data-tag-for={tag.id} style={{ visibility: 'hidden' }}>
+                {tag.text}
+              </span>
+            ))}
+          </div>
+        )}
         {pops.map((pop) => (
           <span
             key={pop.id}
@@ -406,18 +460,41 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
           </span>
         ))}
       </div>
-      <Hud spec={spec} snapshot={snapshot} />
-      {/* Sloupec akcí vpravo (P33 T12), stejný jako u arkády; sdílení po dohrání nese `PostRun`. */}
-      <nav className="play-rail" aria-label="Game actions">
-        {running && <ShareButton versionId={versionId} title={spec.title} variant="rail" className="play-hud-share" />}
-        <SentenceRead read={read} />
-        <MuteButton />
-        <MoreGames />
-      </nav>
+      {/* HUD kitu (P34 T5): lišta cílů a stav AI verze jsou kusy jeho vrstvy, ať na desktopu sedí na scéně 16:9. */}
+      <Hud
+        spec={spec}
+        snapshot={snapshot}
+        paused={paused}
+        onPause={running && built ? () => setPaused(true) : undefined}
+        bottom={
+          running &&
+          built && (
+            <>
+              <button type="button" className="sp-hud-btn play-hud-round" data-testid="play-hud-restart" aria-label="Restart" title="Restart (R)" onClick={restart}>
+                <Icon name="restart" />
+              </button>
+              <Button variant="secondary" className="play-hud-change" data-testid="play-change" aria-haspopup="dialog" onClick={() => setChanging('play')}>
+                <Icon name="wand" />
+                {CHANGE_LABEL}
+              </Button>
+              {/* Sdílení po dohrání nese `PostRun`. */}
+              <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" />
+            </>
+          )
+        }
+      >
+        {running && (
+          <TargetCards cards={cards} avoid={avoid} kinds={kinds} selected={selected} disabled={!snapshot.canInput || !built} onTap={(card) => {
+            const hit = tapAction(card, selected);
+            send(hit.action, hit.selected);
+          }} />
+        )}
+        <UpgradeBanner request={upgrade} sentence={read.sentence} />
+        {running && <RemixReadyChip job={remix} />}
+      </Hud>
       {running && waiting && <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
-      <UpgradeBanner request={upgrade} sentence={read.sentence} />
-      {running && <RemixReadyChip job={remix} />}
+      <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />
       {!built && fault === null && (
         <div className="play-building" data-testid="play-building">
@@ -427,10 +504,17 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
       {fault !== null && (
         <p className="play-alert" role="alert">This game could not be built: {fault}</p>
       )}
-      <TargetCards cards={cards} avoid={avoid} kinds={kinds} selected={selected} disabled={!snapshot.canInput || !built} onTap={(card) => {
-        const hit = tapAction(card, selected);
-        send(hit.action, hit.selected);
-      }} />
+      {cardShown && (
+        <PauseCard onResume={() => setPaused(false)} onRestart={restart} onChange={() => setChanging('pause')} controlsHint={spec.tutorial.controlsHint}>
+          <MuteButton />
+          <AboutButton onOpen={() => setAboutOpen(true)} />
+          <MoreGames />
+        </PauseCard>
+      )}
+      {/* „Change one thing“ během hry (P34 T5): remix na novou verzi, hra zatím stojí. Z karty pauzy se na ni vrací. */}
+      <Sheet open={changing !== null} title={CHANGE_LABEL} onClose={() => setChanging(null)}>
+        <RemixBox job={remix} />
+      </Sheet>
       {!running && (
         <section className="play-outcome" data-testid="play-outcome" role="status">
           <h2 className="play-outcome-title">{snapshot.runState === 'won' ? 'You won' : 'You lost'}</h2>

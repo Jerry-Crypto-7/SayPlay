@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
-import { startGame } from './play-start';
+import { openAbout, startGame } from './play-start';
 
 /**
  * P29D T9: věta uprostřed běžící hry. „more enemies“ přidá hrozby do běžícího
@@ -154,7 +154,8 @@ test.describe('/play/[id] – live change', () => {
     await friend.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     await expect(friend.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
     expect(await hostiles(friend)).toBeGreaterThan(startHostiles);
-    await friend.getByTestId('play-info').click();
+    // Od P34 T5 se list „About this game“ otevírá z karty pauzy (HUD kitu).
+    await openAbout(friend);
     await expect(friend.getByTestId('play-lineage').locator(`a[href="/play/${parentId}"]`)).toBeVisible();
     await friend.close();
     await context.close();

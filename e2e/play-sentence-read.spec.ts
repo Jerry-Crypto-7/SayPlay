@@ -2,6 +2,8 @@ import { createServer, type Server } from 'node:http';
 
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { openAbout } from './play-start';
+
 /**
  * P29B T6: panel „From your sentence“ říká pravdu o tom, kdo větu přečetl.
  * Návrh ze čtení lokálním modelem píše „read by a local AI model“, návrh ze
@@ -50,7 +52,8 @@ async function publish(request: APIRequestContext, sentence: string): Promise<st
 // „Instant draft from the keywords in…“ je „Quick version from your sentence“.
 test('a draft read by the local model says so', async ({ page, request }) => {
   await page.goto(await publish(request, 'A penguin slides across the ice grabbing fish'));
-  await page.getByTestId('play-info').click();
+  // Od P34 T5 se list „About this game“ otevírá z karty pauzy (HUD kitu).
+  await openAbout(page);
   const read = page.getByTestId('play-read');
   await expect(read).toHaveAttribute('data-read-by', 'model');
   await expect(read).toHaveAttribute('data-authorship', 'draft');
@@ -60,7 +63,7 @@ test('a draft read by the local model says so', async ({ page, request }) => {
 
 test('a draft from the keywords never claims an AI read it', async ({ page, request }) => {
   await page.goto(await publish(request, 'A corgi runs through a park grabbing sausages'));
-  await page.getByTestId('play-info').click();
+  await openAbout(page);
   const read = page.getByTestId('play-read');
   await expect(read).toHaveAttribute('data-read-by', 'keywords');
   await expect(page.getByTestId('play-read-by')).toContainText('Quick version from your sentence');

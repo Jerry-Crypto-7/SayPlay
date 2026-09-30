@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { expect, type Page, test } from '@playwright/test';
 
 /**
- * Hra na telefonu dostane obrazovku (P28D T8, F-26, P33 T12): na 390×844
- * zabírají pruhy přes šířku (pruh nahoře, řádka ovládání, karty cílů) nejvýš
- * 15 % výšky, úzké věci u okraje (sloupec akcí, štítek AI) nejvýš 20 % plochy
+ * Hra na telefonu dostane obrazovku (P28D T8, F-26, P33 T12, P34 T5): na 390×844
+ * zabírají pruhy HUD přes šířku (dolní řada, lišta cílů) nejvýš 15 % výšky,
+ * úzké věci u okraje (pilulky HUD v rozích, štítek AI) nejvýš 20 % plochy
  * a žádné dva překryvy se nepřekrývají. Měří se z `getBoundingClientRect`, ne od oka; snímky
  * pro oko jdou do `P28_PHONE_DIR`, když je nastavený.
  */
@@ -54,7 +54,10 @@ for (const game of GAMES) {
     const { boxes, height, width } = await page.evaluate(() => {
       const found: Box[] = [];
       // Výzva prvních sekund (P28C T5) leží schválně uprostřed a do 4 s zmizí – není to panel, který ubírá plochu.
-      for (const el of document.querySelectorAll<HTMLElement>('.play-shell > :not(.play-stage):not(.play-first-prompt), .play-honest')) {
+      // Od P34 T5 je HUD vrstva kitu přes celou scénu, která ťuky pouští skrz: plochu berou její kusy, ne vrstva.
+      // Řádek cíle je jako výzva jen na začátek (kit: první 4 s hry, znovu při pauze), text pro čtečku nemá plochu.
+      const pieces = '.play-shell > :not(.play-stage):not(.play-first-prompt):not(.play-hud), .play-hud > :not(.play-hud-goal):not(.play-sr-only), .play-honest';
+      for (const el of document.querySelectorAll<HTMLElement>(pieces)) {
         const style = getComputedStyle(el);
         const r = el.getBoundingClientRect();
         if (style.display === 'none' || style.visibility === 'hidden' || r.width === 0 || r.height === 0) continue;
@@ -69,8 +72,8 @@ for (const game of GAMES) {
     const bottom = Math.min(height, ...bands.filter((b) => b.top + b.bottom >= height).map((b) => b.top));
     const shown = boxes.map((b) => `${b.name} ${Math.round(b.left)}–${Math.round(b.right)} × ${Math.round(b.top)}–${Math.round(b.bottom)}`).join(', ');
     expect(bottom - top, `play height ${Math.round(bottom - top)} of ${height}: ${shown}`).toBeGreaterThanOrEqual(BAND_SHARE * height);
-    // Sloupec akcí je vidět a leží u pravého okraje.
-    expect(sides.some((b) => b.name.includes('play-rail') && b.right >= width - 16), shown).toBe(true);
+    // Časovač s pauzou (P34 T5, dřív sloupec akcí) je vidět v pravém horním rohu.
+    expect(sides.some((b) => b.name.includes('play-hud-corner') && b.right >= width - 16 && b.top <= 24), shown).toBe(true);
     const sideArea = sides.reduce((sum, b) => sum + (b.right - b.left) * (b.bottom - b.top), 0);
     expect(sideArea, `side overlays cover ${Math.round((100 * sideArea) / (width * height))} % of the screen: ${shown}`).toBeLessThanOrEqual(SIDE_AREA * width * height);
 
@@ -88,9 +91,11 @@ async function underNotice(page: Page): Promise<string[]> {
   return page.evaluate(() => {
     const notice = document.querySelector('[data-testid="upgrade-state"]')!.getBoundingClientRect();
     const hits: string[] = [];
-    for (const el of document.querySelectorAll<HTMLElement>('.play-hud, .play-targets, .play-outcome')) {
+    // Od P34 T5 je štítek sám kusem vrstvy HUD kitu; ta je přes celou scénu, takže se měří její kusy.
+    for (const el of document.querySelectorAll<HTMLElement>('.play-hud > :not([data-testid="upgrade-state"]):not(.play-sr-only), .play-targets, .play-outcome')) {
       const r = el.getBoundingClientRect();
-      if (r.width === 0 || r.height === 0) continue;
+      // Skrytý kus (řádek cíle po konci běhu) štítek nezakryje – jako u měření pruhů výš.
+      if (r.width === 0 || r.height === 0 || getComputedStyle(el).visibility === 'hidden') continue;
       if (Math.min(notice.right, r.right) > Math.max(notice.left, r.left) && Math.min(notice.bottom, r.bottom) > Math.max(notice.top, r.top)) hits.push(el.className);
     }
     return hits;

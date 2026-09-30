@@ -1,17 +1,15 @@
 'use client';
 
 /**
- * „About this game“ (P33 T7): jediný info prvek nad hrou. Řádek-tlačítko
- * otevře list se třemi oddíly – co z věty vzniklo a kdo to navrhl, jak se
- * hraje (`HowItWorks`) a odkud hra pochází (`Lineage`); ty dva zapíšou svůj
- * obsah přes `InfoContext`. Návrh ze slov se hlásí jako rychlá verze, nikdy
- * jako AI (`authorshipOf`). Fakta skládá server (`lab.ts`).
+ * „About this game“ (P33 T7): jediný info prvek hry, od P34 T5 tlačítko na
+ * kartě pauzy. Otevře list se třemi oddíly – co z věty vzniklo a kdo to
+ * navrhl, jak se hraje (`HowItWorks`) a odkud hra pochází (`Lineage`); ty dva
+ * zapíšou svůj obsah přes `InfoContext`. Návrh ze slov se hlásí jako rychlá
+ * verze, nikdy jako AI (`authorshipOf`). Fakta skládá server (`lab.ts`).
  */
 
-import { useState } from 'react';
-
 import type { Authorship, ReadFacts } from './lab';
-import { IconButton, Sheet } from './ui';
+import { Button, Icon, Sheet } from './ui';
 import { useInfoParts } from './ui/InfoContext';
 
 const BY: Readonly<Record<Authorship, string>> = {
@@ -56,23 +54,29 @@ export function ReadSection({ read }: { readonly read: ReadFacts }) {
   );
 }
 
-export function SentenceRead({ read }: { readonly read: ReadFacts }) {
-  const [open, setOpen] = useState(false);
+/** Tlačítko listu na kartě pauzy (P34 T5; dřív kolo v bočním sloupci P33 T12). */
+export function AboutButton({ onOpen }: { readonly onOpen: () => void }) {
+  return (
+    <Button variant="secondary" size="s" className="play-info" data-testid="play-info" aria-haspopup="dialog" onClick={onOpen}>
+      <Icon name="info" />
+      About this game
+    </Button>
+  );
+}
+
+/** List „About this game“; otevírá ho `AboutButton` na kartě pauzy, takže stav drží shell. */
+export function SentenceRead({ read, open, onClose }: { readonly read: ReadFacts; readonly open: boolean; readonly onClose: () => void }) {
   const parts = useInfoParts();
   return (
-    <>
-      {/* Kolo v bočním sloupci hry (P33 T12), dřív řádek nad hrou. */}
-      <IconButton icon="info" caption="About" aria-label="About this game" className="play-info" data-testid="play-info" aria-haspopup="dialog" onClick={() => setOpen(true)} />
-      <Sheet open={open} title="About this game" onClose={() => setOpen(false)} className="play-info-sheet">
-        <ReadSection read={read} />
-        {parts.how !== undefined && (
-          <section className="play-info-part" data-testid="play-lab">
-            <h3 className="play-info-heading">How to play</h3>
-            {parts.how}
-          </section>
-        )}
-        {parts.lineage}
-      </Sheet>
-    </>
+    <Sheet open={open} title="About this game" onClose={onClose} className="play-info-sheet">
+      <ReadSection read={read} />
+      {parts.how !== undefined && (
+        <section className="play-info-part" data-testid="play-lab">
+          <h3 className="play-info-heading">How to play</h3>
+          {parts.how}
+        </section>
+      )}
+      {parts.lineage}
+    </Sheet>
   );
 }

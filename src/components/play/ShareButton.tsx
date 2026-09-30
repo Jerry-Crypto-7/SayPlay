@@ -69,8 +69,8 @@ export function ShareButton({
   readonly versionId: string;
   readonly title?: string;
   readonly label?: string;
-  /** Váha tlačítka (P33 T4): v kartě po hře je sdílení vedlejší cesta; `rail` = kolo v bočním sloupci hry (T12). */
-  readonly variant?: 'accent' | 'quiet' | 'rail';
+  /** Váha tlačítka (P33 T4): v kartě po hře je sdílení vedlejší cesta; `hud` = kolo v dolní řadě HUD (P34 T5). */
+  readonly variant?: 'accent' | 'quiet' | 'hud';
   readonly className?: string;
   readonly clip?: Blob | null;
   /** Verze s živými změnami běhu (P29D T10), `undefined` = běh žádné nemá. */
@@ -146,20 +146,16 @@ export function ShareButton({
       <button
         ref={button}
         type="button"
-        className={`${variant === 'rail' ? 'play-icon-button' : `play-button play-button-${variant}`} play-share ${className}`.trim()}
+        className={`${variant === 'hud' ? 'sp-hud-btn play-hud-round' : `play-button play-button-${variant}`} play-share ${className}`.trim()}
         data-testid="play-share"
         data-variant={variant}
+        aria-label={variant === 'hud' ? label : undefined}
         disabled={live?.state === 'pending'}
         aria-busy={live?.state === 'pending'}
         onClick={() => void run()}
       >
-        {variant === 'rail' ? (
-          <>
-            <span className="sp-btn sp-btn--icon play-icon-button-disc">
-              <Icon name="share" />
-            </span>
-            <span className="play-icon-button-caption">{label}</span>
-          </>
+        {variant === 'hud' ? (
+          <Icon name="share" />
         ) : (
           <>
             <Icon name="share" />

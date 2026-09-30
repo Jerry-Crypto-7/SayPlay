@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
-import { startGame } from './play-start';
+import { openPause, startGame } from './play-start';
 
 /**
  * Vlastní hudba a zvuky hry (P29D T5): před prvním gestem hráče se nestáhne
@@ -64,6 +64,8 @@ test.describe('/play/[id] – the game’s own music and sounds', () => {
     await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined, undefined, { timeout: 60_000 });
     await gesture(page);
     await expect.poll(() => page.evaluate(() => window.__playAudio!.music()), { timeout: 20_000 }).not.toBeNull();
+    // Od P34 T5 je Sound na kartě pauzy (HUD kitu); M platí i s otevřenou kartou.
+    await openPause(page);
     await page.keyboard.press('m');
     await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
     expect(await page.evaluate(() => window.__playAudio!.musicGain())).toBe(0);

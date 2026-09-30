@@ -1,5 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { closeAbout, openAbout } from './play-start';
+
 /**
  * Po dohrání (P23-C T6): Replay přehraje týž běh do téhož konce, čip
  * „Make it harder“ vede na **jinou** hru s vlastním odkazem a rodokmen to
@@ -45,11 +47,11 @@ test.describe('/play/[id] – after the run', () => {
   });
 
   test('Make it harder lands on a different game whose lineage points back', async ({ page }) => {
-    // Rodokmen je od P33 T7 poslední řádek listu „About this game“.
+    // Rodokmen je od P33 T7 poslední řádek listu „About this game“; ten se od P34 T5 otevírá z karty pauzy.
     await page.goto(url);
-    await page.getByTestId('play-info').click();
+    await openAbout(page);
     await expect(page.getByTestId('play-lineage')).toContainText('Original');
-    await page.keyboard.press('Escape');
+    await closeAbout(page);
     await win(page);
     await page.getByRole('button', { name: 'Change it' }).click();
     await expect(page.getByRole('dialog', { name: 'Change one thing' })).toBeVisible();
@@ -59,13 +61,13 @@ test.describe('/play/[id] – after the run', () => {
     await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/, { timeout: 30_000 });
     await expect(page).not.toHaveURL(new RegExp(`/play/${parentId}$`));
 
-    await page.getByTestId('play-info').click();
+    await openAbout(page);
     const lineage = page.getByTestId('play-lineage');
     await expect(lineage).toContainText('Remixed from');
     await expect(lineage.locator(`a[href="/play/${parentId}"]`)).toBeVisible();
 
     await page.goto(url);
-    await page.getByTestId('play-info').click();
+    await openAbout(page);
     await expect(page.getByTestId('play-lineage')).toContainText('1 remix');
   });
 

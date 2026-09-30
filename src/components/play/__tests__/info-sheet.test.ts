@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { HowItWorks } from '../HowItWorks';
 import type { LabFacts, ReadFacts } from '../lab';
 import { Lineage } from '../Lineage';
-import { ReadSection, SentenceRead } from '../SentenceRead';
+import { AboutButton, ReadSection, SentenceRead } from '../SentenceRead';
 import { InfoSheetProvider } from '../ui/InfoContext';
 
 const READ: ReadFacts = {
@@ -36,18 +36,25 @@ function shell(read: ReadFacts = READ): string {
       InfoSheetProvider,
       null,
       createElement(Lineage, { lineage: [], remixes: 2 }),
-      createElement(SentenceRead, { read }),
+      createElement(SentenceRead, { read, open: false, onClose: () => {} }),
       createElement(HowItWorks, { facts: LAB, versionId: 'abc', lineage: [] }),
     ),
   );
 }
 
 describe('the about-this-game sheet', () => {
-  it('shows exactly one info element over the game', () => {
+  // Od P34 T5 je tlačítko listu na kartě pauzy (`AboutButton`), ne nad hrou: zavřený list nad hrou nekreslí nic.
+  it('draws nothing over the game until the pause card opens it', () => {
     const html = shell();
+    expect(html).not.toContain('data-testid="play-info"');
+    for (const strip of ['play-lab-toggle', 'play-lineage', 'play-read-toggle', '<details']) expect(html).not.toContain(strip);
+  });
+
+  it('the pause card has exactly one way into it', () => {
+    const html = renderToStaticMarkup(createElement(AboutButton, { onOpen: () => {} }));
     expect(html.match(/data-testid="play-info"/g)).toHaveLength(1);
     expect(html).toContain('About this game');
-    for (const strip of ['play-lab-toggle', 'play-lineage', 'play-read-toggle', '<details']) expect(html).not.toContain(strip);
+    expect(html).toContain('aria-haspopup="dialog"');
   });
 
   it('outside a shell (the feed) the lineage still draws itself', () => {

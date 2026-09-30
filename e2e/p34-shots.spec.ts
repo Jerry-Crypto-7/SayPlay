@@ -39,8 +39,8 @@ async function send(page: Page): Promise<void> {
 }
 
 /** Hra z věty se stavem AI verze, který řekne podvržený `GET …/upgrade` (T4). */
-async function game(page: Page, answer: Record<string, unknown>, kind: string): Promise<void> {
-  const created = await page.request.post('/api/play/games', { data: { sentence: SENTENCE } });
+async function game(page: Page, answer: Record<string, unknown>, kind: string, sentence = SENTENCE): Promise<void> {
+  const created = await page.request.post('/api/play/games', { data: { sentence } });
   expect(created.status(), await created.text()).toBeLessThan(300);
   const draft = (await created.json()) as { url: string; upgrade: string };
   await page.route(`**${draft.upgrade}`, (route) => route.fulfill({ json: answer, headers: { 'cache-control': 'no-store' } }));
@@ -50,6 +50,31 @@ async function game(page: Page, answer: Record<string, unknown>, kind: string): 
   await expect(page.getByTestId('upgrade-state')).toHaveAttribute('data-kind', kind, { timeout: 15_000 });
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(600);
+}
+
+/** Odpověď `GET …/upgrade`: AI verze se ještě dopočítává. */
+const PENDING = (): Record<string, unknown> => ({ status: 'pending', deadlineAt: new Date(Date.now() + 285_000).toISOString() });
+/** Scéna reference `02-in-game@2x.png` (T5): vejce, pes, brána – mřížková hra. */
+const EGGS = "A fox steals eggs from a farm while the farmer's dog chases it";
+/** Mřížková hra bez nepřítele (T5, jako `e2e/play-shell.spec.ts`): 5 s bez vstupu ji neukončí. */
+const MUSHROOMS = 'Collect five glowing mushrooms then open a portal.';
+/** Arkáda s časovým limitem (T5): aréna, časovač odpočítává. */
+const ARENA = 'Survive in an arena full of slimes.';
+
+/** Hra z věty bez podvrženého stavu AI verze; čeká, až plátno stojí. */
+async function publishAndOpen(page: Page, sentence: string): Promise<void> {
+  const created = await page.request.post('/api/play/games', { data: { sentence } });
+  expect(created.status(), await created.text()).toBeLessThan(300);
+  await page.goto(((await created.json()) as { url: string }).url);
+  await page.locator('canvas').first().waitFor({ timeout: 60_000 });
+  await expect(page.getByTestId('play-loading')).toHaveCount(0, { timeout: 60_000 });
+  await page.evaluate(() => document.fonts.ready);
+}
+
+/** První dotek (P33 T11): ťuk na prázdné místo scény vlevo nad dolní řadou pustí hodiny. */
+async function tapStage(page: Page): Promise<void> {
+  const viewport = page.viewportSize()!;
+  await page.mouse.click(viewport.width * 0.3, viewport.height * 0.6);
 }
 
 const STATES: Record<string, (page: Page) => Promise<void>> = {
@@ -99,6 +124,35 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
   },
   // T4: AI verze nepřijde (bez modelu) – poznámka na místě pilulky s `Try again`.
   'game-final': (page) => game(page, { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }, 'final'),
+  // T5: HUD kitu na scéně reference (mřížka), hra čeká na první dotek – vejce 0/5, časovač, pauza,
+  // řádek cíle, štítky psa a brány, čipy cílů, dolní řada a „Quick version“.
+  'game-0s': async (page) => {
+    await game(page, PENDING(), 'working', EGGS);
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'true');
+  },
+  // T5: první ťuk, dva sebrané předměty (kroky svědka ze sondy) a ~5 s hry – řádek cíle zmizel, časovač běží.
+  'game-5s': async (page) => {
+    await publishAndOpen(page, MUSHROOMS);
+    await tapStage(page);
+    await page.evaluate(() => window.__playShell!.playWitness(4));
+    await page.waitForTimeout(5_000);
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'false');
+    await expect(page.getByTestId('play-outcome')).toHaveCount(0);
+  },
+  // T5: karta pauzy – scrim 45 %, Resume, Restart, Change one thing a řádek Sound · About · Quit.
+  pause: async (page) => {
+    await game(page, PENDING(), 'working', EGGS);
+    await page.getByTestId('play-pause').click();
+    await expect(page.getByTestId('play-paused')).toBeVisible();
+    await page.waitForTimeout(400);
+  },
+  // T5: arkáda – časovač odpočítává limit hry, „Change one thing“ je živá změna.
+  'game-arcade': async (page) => {
+    await publishAndOpen(page, ARENA);
+    await tapStage(page);
+    await page.waitForTimeout(1_500);
+    await expect(page.getByTestId('play-timer')).toHaveAttribute('data-countdown', 'true');
+  },
 };
 
 test.describe.configure({ mode: 'serial' });

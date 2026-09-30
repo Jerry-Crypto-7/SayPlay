@@ -1,6 +1,6 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
-import { startGame } from './play-start';
+import { openPause, startGame } from './play-start';
 
 /**
  * Skákačka na `/play/[id]` (P25A T6): věta „jumping arcade game with a lot of
@@ -45,6 +45,8 @@ test.describe('/play/[id] – arcade runner', () => {
     await page.goto(url);
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 10, undefined, { timeout: 60_000 });
+    // Od P34 T5 je „Show me how“ na kartě pauzy (HUD kitu); ukázka pauzu sama zruší.
+    await openPause(page);
     await page.getByTestId('play-demo-start').click();
     await expect(page.getByTestId('play-demo')).toBeVisible();
     // Ukázka běží v čase před očima, ne naráz.
@@ -58,7 +60,11 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect(page.getByTestId('play-outcome')).toHaveCount(0);
     await page.getByTestId('play-demo-yours').click();
     await expect(page.getByTestId('play-demo-outcome')).toHaveCount(0);
+    await openPause(page);
     await expect(page.getByTestId('play-demo-start')).toBeVisible();
+    // Esc kartu zavře a hra běží dál; mezerník pak skáče.
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('play-paused')).toHaveCount(0);
     await page.keyboard.press('Space');
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBeGreaterThan(0);
   });
@@ -71,6 +77,7 @@ test.describe('/play/[id] – arcade runner', () => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
       document.dispatchEvent(new Event('visibilitychange'));
     });
+    // `play-paused` je od P34 T5 karta pauzy kitu; první klávesa ji zavře a hru pustí.
     await expect(page.getByTestId('play-paused')).toBeVisible();
     const frozen = await page.evaluate(() => window.__playShell!.tick());
     await page.evaluate(() => {
@@ -108,11 +115,14 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(await page.evaluate(() => window.__playAudio!.state())).toBe('none');
     await page.getByTestId('arcade-stage').click();
     await expect.poll(() => page.evaluate(() => window.__playAudio!.state())).toBe('running');
+    // Od P34 T5 je Sound na kartě pauzy (HUD kitu); M platí i s otevřenou kartou.
+    await openPause(page);
     await expect(page.getByTestId('play-mute')).toHaveText('Sound on');
     await page.keyboard.press('m');
     await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
     expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('muted');
     await page.reload();
+    await openPause(page);
     await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
     await page.getByTestId('play-mute').click();
     await expect(page.getByTestId('play-mute')).toHaveAttribute('aria-pressed', 'false');
@@ -216,6 +226,8 @@ test.describe('/play/[id] – arcade runner', () => {
     await page.goto(url);
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    // „Show me how“ je od P34 T5 na kartě pauzy (HUD kitu).
+    await openPause(page);
     await page.getByTestId('play-demo-start').click();
     await page.waitForTimeout(2_000);
     const counts = await page.evaluate(() => [...(window as unknown as { __calls: number[] }).__calls].slice(-60).sort((a, b) => a - b));

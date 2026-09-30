@@ -11,12 +11,15 @@
  * importovaná, aby klientský bundl netáhl registr mechanik a zod.
  */
 
+import type { ReactNode } from 'react';
+
 import { readVariable, type RuntimeSnapshot } from '@/worldstream/runtime-controller';
 // `timer.ts` importuje jen typy, takže konstanta runtime bundl nezatíží.
 import { TICKS_PER_SECOND } from '@/play/compile/adapters/timer';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { timerLeft } from './timer';
+import { GameHud, type HudClock, objectiveShown } from './ui';
 
 export { TICKS_PER_SECOND };
 
@@ -68,26 +71,70 @@ export function phaseLine(spec: GameSpecV1, snapshot: Pick<RuntimeSnapshot, 'val
   return readVariable(snapshot as RuntimeSnapshot, `${timer.params.id}_red`) === 1 ? 'RED – freeze' : 'GREEN – go';
 }
 
+/** Popisek počítadla cíle pro `data-testid="hud-counter-…"` (seznam `e2e/hud-labels.ts`). */
+const GOAL_LABEL: Readonly<Partial<Record<GameSpecV1['objective']['kind'], string>>> = {
+  collect: 'collected',
+  checkpoints: 'gate',
+  defeat_targets: 'defeated',
+};
+
+/** Čas mřížky: odpočet hry na přežití nebo mechaniky `timer`, jinak uběhlý čas. */
+export function gridClock(spec: GameSpecV1, tick: number): HudClock {
+  const elapsed = tick / TICKS_PER_SECOND;
+  const timer = spec.mechanics.find((entry) => entry.id === 'timer')?.params.seconds;
+  const limit = spec.objective.kind === 'survive' ? spec.objective.seconds : typeof timer === 'number' ? timer : undefined;
+  return limit === undefined ? { seconds: elapsed, countdown: false } : { seconds: limit - elapsed, countdown: true };
+}
+
 /**
- * Tenký pruh nahoře (P33 T12): název, cíl, postup. Zvuk a sdílení jsou
- * v bočním sloupci shellu, ovládání říkají karty cílů a výzva na startu.
+ * HUD mřížky podle kitu (P34 T5, dřív tenký pruh P33 T12): postup cíle
+ * s ikonami, časovač, pauza a řádek cíle; dolní řadu a lištu cílů posílá
+ * `GridShell`. Text postupu (`progressLine`) dostane čtečka.
  */
-export function Hud({ spec, snapshot }: { readonly spec: GameSpecV1; readonly snapshot: RuntimeSnapshot }) {
+export function Hud({
+  spec,
+  snapshot,
+  paused,
+  onPause,
+  bottom,
+  children,
+}: {
+  readonly spec: GameSpecV1;
+  readonly snapshot: RuntimeSnapshot;
+  readonly paused: boolean;
+  readonly onPause?: () => void;
+  readonly bottom?: ReactNode;
+  readonly children?: ReactNode;
+}) {
   const phase = phaseLine(spec, snapshot);
+  const counter = objectiveCounter(spec);
+  const label = GOAL_LABEL[spec.objective.kind];
+  const goal = counter === null || label === undefined ? null : { label, count: readVariable(snapshot, counter) ?? 0, need: spec.objective.count ?? 1 };
   return (
-    <header className="play-hud" aria-label="Game status">
-      <h1 className="play-hud-title">{spec.title}</h1>
-      <p className="play-hud-goal" data-testid="play-goal">{spec.tutorial.goalLine}</p>
-      {phase === null ? null : (
-        <p className={phase.startsWith('RED') ? 'play-hud-phase play-hud-phase-red' : 'play-hud-phase play-hud-phase-green'} data-testid="play-phase">
-          {phase}
+    <GameHud
+      title={spec.title}
+      goalLine={spec.tutorial.goalLine}
+      goal={goal}
+      clock={gridClock(spec, snapshot.tick)}
+      objective={snapshot.runState === 'running' && objectiveShown(snapshot.tick, TICKS_PER_SECOND, paused)}
+      onPause={onPause}
+      status={
+        <p className="play-sr-only">
+          <span data-testid="play-progress">{progressLine(spec, snapshot)}</span>
+          {/* Tik hráč nevidí (P28B F-15); čas nese časovač, atribut čtou e2e. */}
+          <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick} hidden />
         </p>
-      )}
-      <p className="play-hud-progress">
-        <span data-testid="play-progress">{progressLine(spec, snapshot)}</span>
-        {/* Tik hráč nevidí (P28B F-15); čas nese `progressLine`, atribut čtou e2e. */}
-        <span className="play-hud-tick" data-testid="play-tick" data-tick={snapshot.tick} hidden />
-      </p>
-    </header>
+      }
+      phase={
+        phase === null ? null : (
+          <p className={phase.startsWith('RED') ? 'play-hud-phase play-hud-phase-red' : 'play-hud-phase play-hud-phase-green'} data-testid="play-phase">
+            {phase}
+          </p>
+        )
+      }
+      bottom={bottom}
+    >
+      {children}
+    </GameHud>
   );
 }

@@ -55,7 +55,8 @@ for (const game of GAMES) {
       await startGame(page);
       await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
       const box = (await stage.boundingBox())!;
-      const hud = (await page.locator('.play-hud').boundingBox())!;
+      // Kus HUD nad plátnem: od P34 T5 je `.play-hud` vrstva přes celou scénu, tak se pouští nad časovačem.
+      const hud = (await page.getByTestId('play-timer').boundingBox())!;
       const count = (): Promise<number> => page.evaluate(() => window.__playShell!.inputs().length);
       await page.mouse.move(box.x + box.width / 2, box.y + box.height * 0.75);
       await page.mouse.down();

@@ -1,11 +1,12 @@
 'use client';
 
 /**
- * Karty cílů (P23-C T5, vzhled P33 T6). Vykreslení nad `targets.ts`: jedna
- * karta na cíl – ikona typu a jméno, číslo klávesy jen tam, kde je klávesnice
- * (CSS `hover: hover`), a vybraná karta řekne, co udělá další klepnutí.
- * Nepřítel není karta: stojí na liště bez tlačítka jako „avoid“. Lišta je
- * jeden řádek s vlastním posunem. Dispatch dělá rodič – tady se jen klepe.
+ * Lišta cílů (P23-C T5, P33 T6, od P34 T5 čipy kitu `.sp-chip`). Vykreslení
+ * nad `targets.ts`: jeden čip na cíl – ikona typu a jméno, číslo klávesy jen
+ * tam, kde je klávesnice (CSS `hover: hover`), a vybraný čip (inkoustový,
+ * `.is-selected`) řekne, co udělá další klepnutí. Nepřítel není tlačítko:
+ * rajčatový čip „avoid“. Lišta je jeden řádek s vlastním posunem nad dolní
+ * řadou HUD. Dispatch dělá rodič – tady se jen klepe.
  */
 
 import type { RoleKind } from '@/play/spec';
@@ -38,7 +39,7 @@ export function TargetCards({ cards, avoid, kinds, selected, disabled, onTap }: 
   return (
     <nav className="play-targets" aria-label="Targets">
       {avoid.map((enemy) => (
-        <span key={enemy.id} className="play-target play-target-avoid" data-testid={`play-avoid-${enemy.id}`}>
+        <span key={enemy.id} className="sp-chip play-target play-target-avoid" data-testid={`play-avoid-${enemy.id}`}>
           <Icon name="alert" />
           <span className="play-target-label">{enemy.label}</span>
           <span className="play-target-next">avoid</span>
@@ -51,7 +52,7 @@ export function TargetCards({ cards, avoid, kinds, selected, disabled, onTap }: 
           <button
             key={card.id}
             type="button"
-            className="play-target"
+            className={pressed ? 'sp-chip play-target is-selected' : 'sp-chip play-target'}
             data-testid={`play-target-${card.id}`}
             aria-pressed={pressed}
             disabled={disabled}
