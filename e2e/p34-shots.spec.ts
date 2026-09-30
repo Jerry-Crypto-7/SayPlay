@@ -148,6 +148,18 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
     await expect(page.getByTestId('play-paused')).toBeVisible();
     await page.waitForTimeout(400);
   },
+  // T9 (nález revize T5): řádek cíle po 5 s zmizí a pauza ho vrátí – helper `objectiveShown` sám nestačí,
+  // Hud i ArcadePlay mu musí předat skutečné `paused`.
+  'pause-goal': async (page) => {
+    await publishAndOpen(page, MUSHROOMS);
+    await tapStage(page);
+    await page.evaluate(() => window.__playShell!.playWitness(4));
+    await page.waitForTimeout(5_000);
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'false');
+    await page.getByTestId('play-pause').click();
+    await expect(page.getByTestId('play-paused')).toBeVisible();
+    await expect(page.getByTestId('play-goal')).toHaveAttribute('data-shown', 'true');
+  },
   // T5: arkáda – časovač odpočítává limit hry, „Change one thing“ je živá změna.
   'game-arcade': async (page) => {
     await publishAndOpen(page, ARENA);
