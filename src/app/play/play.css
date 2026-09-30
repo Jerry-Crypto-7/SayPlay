@@ -52,7 +52,9 @@
  * `docs/brand/components/sayplay.css`. Kit počítá s Bricolage 800 a Figtree;
  * Roboto má řezy 400/500/700/900, proto nadpisy a L tlačítka 900, text 500
  * a popisky 700 (`REPO-NOTES.md`). Dolní lišta má tolik sloupců, kolik
- * položek produkt umí (kit kreslí čtyři). Scrim je `color-mix` nad inkoustem. */
+ * položek produkt umí (kit kreslí čtyři). Scrim je `color-mix` nad inkoustem.
+ * Toast má navíc `width: max-content` – s `left: 50%` by se jinak na telefonu
+ * srazil na polovinu šířky (P34 T4). */
 
 /* ---------- Base ---------- */
 .sp-root {
@@ -296,7 +298,7 @@
   position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom, 0px)); z-index: var(--sp-z-toast);
   transform: translateX(-50%);
   display: flex; align-items: center; gap: var(--sp-space-3);
-  max-width: min(92vw, 420px); padding: var(--sp-space-3) var(--sp-space-4);
+  width: max-content; max-width: min(92vw, 420px); padding: var(--sp-space-3) var(--sp-space-4);
   background: var(--sp-surface); border: var(--sp-border-base) solid var(--sp-outline); border-radius: var(--sp-radius-lg); box-shadow: var(--sp-shadow-sm);
   font-size: var(--sp-text-body-s-size); font-weight: 700;
   animation: sp-toast-in var(--sp-duration-base) var(--sp-ease-pop);
@@ -445,23 +447,38 @@
   box-shadow: 0 0 0 7px var(--sp-color-sun);
 }
 
-/* Načítací obrazovka (T14): od odeslání věty do první scény přes celou plochu,
- * pozadí v tónu nálady (tón `calm`, když věta žádnou nemá). Ve scéně jen pruh
- * a text nad oblohou sady – bez vlastního pozadí. */
+/* Stavba hry (P34 T4, kit Generation progress): od odeslání věty do první
+ * scény přes celou plochu i nad lištou domova, pozadí v tónu nálady (`calm`,
+ * když věta žádnou nemá). Věta v `display-m` a kroky v jednom sloupci zarovnané
+ * vlevo. Ve scéně (`-stage`) jen kroky na papírové kartě nad oblohou sady. */
 .play-loading {
   --_tone: var(--sp-color-sky);
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: var(--sp-z-sheet);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--sp-space-4);
-  padding: var(--sp-space-6);
+  gap: var(--sp-space-8);
+  padding: var(--sp-space-6) var(--sp-space-5);
   background: color-mix(in srgb, var(--_tone) 45%, var(--sp-bg));
   color: var(--sp-text);
-  text-align: center;
+}
+
+.play-loading-title,
+.play-loading > .sp-steps {
+  width: min(100%, 440px);
+}
+
+.play-loading-title {
+  overflow-wrap: anywhere;
+}
+
+/* Fajfka kitu v kolečku 28 px je malá ikona (v kitu 16 px). */
+.sp-steps__mark > .sp-icon {
+  width: var(--sp-size-icon-s);
+  height: var(--sp-size-icon-s);
 }
 
 .play-loading.play-loading-stage {
@@ -471,61 +488,12 @@
   pointer-events: none;
 }
 
-.play-loading-title {
-  display: -webkit-box;
-  max-width: 24ch;
-  margin: 0;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  font-size: var(--sp-text-display-m-size);
-  font-weight: 700;
-  line-height: 1.15;
-}
-
-.play-loading-bar {
-  width: min(280px, 70vw);
-  height: 6px;
-  border-radius: 3px;
+.play-loading-stage > .sp-steps {
+  width: auto;
+  padding: var(--sp-space-5) var(--sp-space-6);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-lg);
   background: var(--sp-surface);
-  overflow: hidden;
-}
-
-.play-loading-bar > span {
-  display: block;
-  width: 40%;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--sp-secondary);
-  animation: play-loading-slide 1.1s ease-in-out infinite;
-}
-
-@keyframes play-loading-slide {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(250%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .play-loading-bar > span {
-    width: 100%;
-    animation: none;
-  }
-}
-
-.play-loading-text {
-  margin: 0;
-  font-size: var(--sp-text-body-l-size);
-  font-weight: 600;
-}
-
-.play-loading .play-steps {
-  margin: 0;
-  text-align: left;
 }
 
 /* List (`ui/Sheet`): vzhled a pohyb nese `.sp-sheet` a `.sp-scrim` z kitu,
@@ -806,73 +774,14 @@
   color: var(--sp-text);
 }
 
-/* Průběh stavby hry (P33 T9): čtyři kroky pod sebou, hotové teal,
- * aktivní jantarový a pulzuje, čekající šedé. */
-.play-steps {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: var(--sp-text-body-s-size);
+/* Chyba stavby (P34 T4): chybový toast kitu dole uprostřed nad lištou domova,
+ * vlastní `Try again` vpravo; dlouhá věta serveru se zalomí, tlačítko ne. */
+.play-create-error > span {
+  flex: 1 1 auto;
 }
 
-.play-steps li {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-space-3);
-  color: var(--sp-text-secondary);
-}
-
-.play-steps li::before {
-  content: '';
+.play-create-error > .sp-btn {
   flex: none;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: var(--sp-border-base) solid var(--sp-outline);
-}
-
-.play-steps li[data-state='done'] {
-  color: var(--sp-text);
-}
-
-.play-steps li[data-state='done']::before {
-  border-color: var(--sp-primary);
-  background: var(--sp-primary);
-}
-
-.play-steps li[data-state='active'] {
-  color: var(--sp-text);
-  font-weight: 600;
-}
-
-.play-steps li[data-state='active']::before {
-  border-color: var(--sp-secondary);
-  animation: play-step-pulse 0.8s ease-in-out infinite alternate;
-}
-
-@keyframes play-step-pulse {
-  to {
-    background: var(--sp-secondary);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .play-steps li[data-state='active']::before {
-    animation: none;
-    background: var(--sp-secondary);
-  }
-}
-
-/* Chyba stavby nese vlastní `Try again` vedle věty dveří. */
-.play-form .play-alert {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-space-3);
 }
 
 /* Domov podle kitu (P34 T3, `05-layout.md` „Mobile home“): app bar 62, pod ním
@@ -1380,7 +1289,7 @@
   font-size: var(--sp-text-label-size);
 }
 
-/* Obal společné načítací obrazovky mřížky (T14): pruh a text leží přes celou scénu. */
+/* Obal společné stavby mřížky (T14, P34 T4): kroky na kartě leží přes celou scénu. */
 .play-building {
   display: contents;
 }
@@ -1996,96 +1905,50 @@ button.play-feed-card {
 }
 
 /* P27C */
-/* Stav AI verze (P33 T5, T12): malý štítek vlevo pod pruhem, mimo střed hry,
- * sloupec akcí vpravo a řádku ovládání dole; hotová verze s akcentem. */
-.play-upgrade[data-kind] {
+/* Stav AI verze nad hrou (P34 T4, kit `.sp-status` a `.sp-toast`). Pilulka
+ * běžící práce a poznámka o konci bez AI verze leží vlevo pod pruhem – mimo
+ * sloupec akcí vpravo, řádku ovládání dole i střed hry. Hotová verze je toast
+ * kitu dole uprostřed; s kartou výsledku (ta leží dole) jde pod pruh a zúží
+ * se, aby nedosáhla na sloupec akcí. */
+.play-upgrade-status,
+.play-upgrade-note {
+  position: absolute;
+  z-index: 3;
   left: var(--sp-space-4);
-  right: auto;
   top: calc(var(--_bar) + var(--sp-space-3));
+}
+
+.play-upgrade-toast {
+  flex-wrap: wrap;
+}
+
+/* Text bere řádek, tlačítko se radši zalomí pod něj, než aby text stlačilo do sloupce. */
+.play-upgrade-toast > span {
+  flex: 1 1 10em;
+}
+
+.play-upgrade-toast > .sp-btn {
+  flex: none;
+}
+
+/* Fajfka hotové verze v barvě úspěchu jako v ukázce toastu kitu. */
+.play-upgrade-toast > .sp-icon {
+  color: var(--sp-success);
+}
+
+.play-upgrade-note {
+  bottom: auto;
   transform: none;
   box-sizing: border-box;
   width: max-content;
   max-width: min(36vw, 360px);
-  padding: var(--sp-space-1) var(--sp-space-1) var(--sp-space-1) var(--sp-space-3);
-  flex-wrap: wrap;
-  gap: var(--sp-space-2);
-  white-space: normal;
-  border-radius: var(--sp-radius-sm);
-  border-color: var(--sp-outline);
-  color: var(--sp-text-secondary);
-  font-size: var(--sp-text-label-size);
-  line-height: 1.35;
+  animation-name: sp-pop-in;
 }
 
-/* Úzký štítek dá tlačítko pod větu, místo aby větu stlačil do sloupce. */
-.play-upgrade[data-kind] > span:first-child {
-  flex: 1 1 12em;
-}
-
-.play-upgrade[data-kind='working'] {
-  flex-direction: column;
-  align-items: stretch;
-  gap: var(--sp-space-1);
-  padding: var(--sp-space-2) var(--sp-space-3);
-  font-variant-numeric: tabular-nums;
-}
-
-.play-upgrade[data-kind='working'] > span:first-child {
-  flex: none;
-}
-
-.play-upgrade-bar {
-  position: relative;
-  height: 3px;
-  overflow: hidden;
-  border-radius: var(--sp-radius-pill);
-  background: var(--sp-surface-pressed);
-}
-
-.play-upgrade-bar::after {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 40%;
-  border-radius: inherit;
-  background: var(--sp-secondary);
-  animation: play-upgrade-slide 1.4s ease-in-out infinite;
-}
-
-@keyframes play-upgrade-slide {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(250%);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .play-upgrade-bar::after {
-    width: 100%;
-    animation: none;
-  }
-}
-
-.play-upgrade[data-kind='ready'] {
-  padding: var(--sp-space-2) var(--sp-space-2) var(--sp-space-2) var(--sp-space-4);
-  gap: var(--sp-space-3);
-  border-color: var(--sp-secondary);
-  color: var(--sp-text);
-  font-size: var(--sp-text-body-s-size);
-}
-
-.play-upgrade[data-kind] .play-button {
-  flex: none;
-  padding: var(--sp-space-2) var(--sp-space-3);
-  font-size: var(--sp-text-label-size);
-}
-
-.play-upgrade[data-kind='ready'] .play-button {
-  min-height: var(--sp-size-touch-min);
-  padding-inline: var(--sp-space-4);
-  font-size: var(--sp-text-body-s-size);
+.play-shell:has(> .play-outcome) > .play-upgrade-toast[data-kind='ready'] {
+  top: calc(var(--_bar) + var(--sp-space-3));
+  bottom: auto;
+  max-width: min(420px, calc(100% - 160px));
 }
 
 /* Karty pozdě hotových AI verzí na /play (T3), nad feedem. */
@@ -2221,7 +2084,8 @@ button.play-feed-card {
 
   /* Úzký štítek u levého okraje: bere šířku, ne výšku, a vpravo nechá místo sloupci akcí. */
   .play-upgrade,
-  .play-upgrade[data-kind] {
+  .play-upgrade-status,
+  .play-upgrade-note {
     left: var(--sp-space-2);
     right: auto;
     transform: none;
@@ -2229,6 +2093,21 @@ button.play-feed-card {
     max-width: calc(50% - var(--sp-space-2));
     font-size: var(--sp-text-label-size);
     white-space: normal;
+  }
+
+  .play-upgrade-note {
+    gap: var(--sp-space-2);
+    padding: var(--sp-space-2) var(--sp-space-3);
+  }
+
+  /* Pilulka na telefonu jako v HUD kitu jen „Quick version“; zbytek věty dostane čtečka. */
+  .play-upgrade-rest {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   .play-targets {

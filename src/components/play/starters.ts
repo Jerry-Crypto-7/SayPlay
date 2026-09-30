@@ -16,8 +16,29 @@ export const SUBHEAD = 'Say one sentence and play it in seconds. Then change one
 export const PROMPT_LABEL = 'Say it in one sentence';
 export const PLACEHOLDER = "A fox steals eggs while the farmer's dog chases it…";
 
-/** Stavový řádek při stavbě; první dva patří `/play`, druhé dva `/play/[id]`. */
-export const BUILD_STEPS = ['Designing the challenge', 'Building a playable version', 'Checking the rules', 'Adding the look'] as const;
+/**
+ * Kroky stavby v pořadí a znění kitu (`07-components.md`, Generation progress);
+ * první dva patří `/play`, druhé dva `/play/[id]`.
+ */
+export const BUILD_STEPS = ['Reading your idea', 'Building the world', 'Setting the rules', 'Painting it in'] as const;
+
+/**
+ * Chyby dveří (kit `11-voice-copy.md`, Errors): co se stalo a co dělat.
+ * Kit píše u offline dlouhou pomlčku, repo ji zakazuje – tady krátká.
+ */
+export const BUILD_FAILED = "Couldn't build that. Try fewer rules.";
+export const OFFLINE = "You're offline. Your idea is saved – we'll build it when you're back.";
+/** Síť hlásí spojení, ale dveře neodpověděly (kit tenhle případ nemá). */
+export const NOT_SENT = "Couldn't send your idea. Try again.";
+
+/**
+ * AI verze nad hrou (kit `.sp-status` a `.sp-toast`): pilulka, dokud se
+ * dopočítává, toast s tlačítkem, když je hotová.
+ */
+export const QUICK_VERSION = 'Quick version';
+export const QUICK_VERSION_REST = ' · the full-detail one is on its way';
+export const FULL_READY = 'Full-detail version ready';
+export const PLAY_FULL = 'Play it';
 
 /** Strop věty z kitu (`07-components.md`, Prompt); dveře serveru snesou víc. */
 export const SENTENCE_LIMIT = 140;

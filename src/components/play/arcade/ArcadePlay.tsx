@@ -50,7 +50,7 @@ import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot, type Demo
 // WebGL kontext na serveru není – stejně jako mřížkové plátno. `memo`: HUD se překresluje
 // každý tik, plátno ne – scéna čte relaci sama v `useFrame` (P28E-R1: na emulovaném
 // telefonu srovnání stovek těl runneru 20× za sekundu bralo většinu snímku).
-// Než kód scény dorazí, stojí nad oblohou sady (P32D T6) pruh a `Building your game…` (P33 T14); název nese HUD.
+// Než kód scény dorazí, stojí nad oblohou sady (P32D T6) kroky stavby na papírové kartě (P34 T4); název nese HUD.
 const ArcadeStage = memo(dynamic(() => import('./ArcadeStage'), { ssr: false, loading: () => <BuildingScreen /> }));
 // Chunky three.js stahovat už při načtení modulu, ne až po hydrataci: `dynamic` začne
 // až při prvním renderu a do té doby síť stojí (P28E T5, mezera ~0,25 s na telefonu).

@@ -90,10 +90,13 @@ test.describe('/play – create', () => {
     await page.getByTestId('play-sentence').fill('A sentence the director refuses.');
     await page.getByTestId('play-create').click();
 
-    // Route announcer Next.js nese taky `role="alert"` – hlášku dveří drží `.play-alert`.
-    const alert = page.locator('p.play-alert');
+    // Route announcer Next.js nese taky `role="alert"` – hlášku dveří drží `play-create-error`.
+    // P34 T4: chybový toast kitu mluví větou „Build failed“ z `11-voice-copy.md`; technický
+    // důvod serveru (`no_loop`) hráči nic neřekne, proto se už neukazuje.
+    const alert = page.getByTestId('play-create-error');
     await expect(alert).toBeVisible();
-    await expect(alert).toContainText('no_loop');
+    await expect(alert).toContainText("Couldn't build that. Try fewer rules.");
+    await expect(alert).toHaveClass(/sp-toast--error/);
     await expect(page).toHaveURL(/\/play$/);
     await expect(page.getByTestId('play-sentence')).toHaveValue('A sentence the director refuses.');
 
@@ -103,7 +106,9 @@ test.describe('/play – create', () => {
     expect((await sent).postDataJSON()).toEqual({ sentence: 'A sentence the director refuses.' });
   });
 
-  // P33 T9: po odeslání stojí pod polem všechny čtyři kroky stavby, první aktivní.
+  // P33 T9: po odeslání stojí všechny čtyři kroky stavby, první aktivní. P34 T4: znění kroků
+  // je doslova z kitu (`07-components.md`), věta hráče stojí nad nimi a chyba je toast s větou
+  // serveru s velkým písmenem na začátku (kit píše větným tvarem).
   test('sending shows all four build steps with the first one active', async ({ page }) => {
     let release: () => void = () => undefined;
     const held = new Promise<void>((resolve) => (release = resolve));
@@ -116,10 +121,26 @@ test.describe('/play – create', () => {
     await page.getByTestId('play-create').click();
 
     const steps = page.getByTestId('play-status').locator('li');
-    await expect(steps).toHaveText(['Designing the challenge', 'Building a playable version', 'Checking the rules', 'Adding the look']);
+    await expect(steps).toHaveText(['Reading your idea', 'Building the world', 'Setting the rules', 'Painting it in']);
     await expect(steps.first()).toHaveAttribute('data-state', 'active');
+    await expect(page.locator('.play-loading-title')).toHaveText('Collect five glowing mushrooms then open a portal.');
     release();
-    await expect(page.locator('p.play-alert')).toContainText('busy');
+    await expect(page.getByTestId('play-create-error')).toContainText('Busy');
+  });
+
+  // P34 T4 (kit, Offline): bez sítě věta zůstane v poli a odejde sama, jakmile se síť vrátí.
+  test('offline: the idea stays and is sent by itself once the network is back', async ({ page, context }) => {
+    await page.goto('/play');
+    await page.getByTestId('play-sentence').fill('Collect five glowing mushrooms then open a portal.');
+    await context.setOffline(true);
+    await page.getByTestId('play-create').click();
+    await expect(page.getByTestId('play-create-error')).toHaveText("You're offline. Your idea is saved – we'll build it when you're back.");
+    await expect(page.getByTestId('play-sentence')).toHaveValue('Collect five glowing mushrooms then open a portal.');
+
+    const sent = page.waitForRequest((request) => request.url().endsWith('/api/play/games') && request.method() === 'POST');
+    await context.setOffline(false);
+    expect((await sent).postDataJSON()).toEqual({ sentence: 'Collect five glowing mushrooms then open a portal.' });
+    await expect(page).toHaveURL(/\/play\/[a-f0-9]+$/);
   });
 
   // P34 T3: strop je 140 znaků z kitu (dřív 500), počítadlo je vidět vždy a od 130 je rajčatové.

@@ -2,8 +2,9 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { BuildSteps, CreateGame } from '../CreateGame';
+import { CreateGame } from '../CreateGame';
 import { BUILD_STEPS, IDEAS } from '../starters';
+import { BuildSteps } from '../ui';
 
 /**
  * Po odeslání věty (P33 T9) vidí hráč celou cestu – všechny čtyři kroky
@@ -13,7 +14,9 @@ import { BUILD_STEPS, IDEAS } from '../starters';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: () => undefined }) }));
 
-const states = (active: number) => [...renderToStaticMarkup(createElement(BuildSteps, { active })).matchAll(/<li[^>]*data-state="(\w+)"[^>]*>([^<]*)</g)].map(([, state, text]) => [text, state]);
+// P34 T4: před textem kroku stojí kolečko kitu (`.sp-steps__mark`, u hotového s fajfkou).
+const states = (active: number) =>
+  [...renderToStaticMarkup(createElement(BuildSteps, { active })).matchAll(/<li[^>]*data-state="(\w+)"[^>]*><span class="sp-steps__mark">.*?<\/span>([^<]*)</g)].map(([, state, text]) => [text, state]);
 
 describe('BuildSteps', () => {
   it('renders all four steps with only the first active right after sending', () => {
@@ -27,7 +30,7 @@ describe('BuildSteps', () => {
 
   it('ticks off the first step once the game exists', () => {
     expect(states(1).map(([, state]) => state)).toEqual(['done', 'active', 'todo', 'todo']);
-    expect(renderToStaticMarkup(createElement(BuildSteps, { active: 1 }))).toMatch(/aria-current="step"[^>]*>Building a playable version</);
+    expect(renderToStaticMarkup(createElement(BuildSteps, { active: 1 }))).toMatch(/aria-current="step"><span class="sp-steps__mark"><\/span>Building the world</);
   });
 });
 

@@ -134,7 +134,8 @@ for (const size of SIZES) {
       const sentence = page.getByTestId('play-sentence');
       await sentence.fill(SENTENCE);
       await page.getByTestId('play-create').click();
-      const alert = page.locator('p.play-alert');
+      // P34 T4: chyba dveří je toast kitu s vlastním testid (dřív `p.play-alert`).
+      const alert = page.getByTestId('play-create-error');
       await expect(alert).toBeVisible();
       await alert.scrollIntoViewIfNeeded();
       await shot(page, size.name, 'create-error');

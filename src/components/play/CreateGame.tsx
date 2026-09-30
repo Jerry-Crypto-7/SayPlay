@@ -8,9 +8,10 @@
  *
  * Karta nápadu i `Surprise me` větu jen vloží do pole – hru spustí až „Make
  * it!“ (kit: klepnutí nespouští stavbu). Po odeslání překryje stránku
- * `BuildingScreen` se čtyřmi kroky `BUILD_STEPS`: první dva patří `/play`,
- * zbylé dva `/play/[id]`. Chyba dveří se ukáže větou z `error.message`
- * s `Try again` a věta v poli zůstane. Na telefonu pod tím plave `TabBar`:
+ * `BuildingScreen` s větou a čtyřmi kroky `BUILD_STEPS`: první dva patří
+ * `/play`, zbylé dva `/play/[id]`. Chyba dveří je chybový toast kitu
+ * (`.sp-toast--error`, P34 T4) s `Try again` a věta v poli zůstane; bez sítě
+ * odejde věta sama, jakmile se síť vrátí. Na telefonu pod tím plave `TabBar`:
  * Make k poli, Play k feedu.
  */
 
@@ -19,25 +20,22 @@ import { useEffect, useRef, useState, type FormEvent } from 'react';
 
 import { moodTone } from './Feed';
 import { appendSpoken, MicButton } from './MicButton';
-import { BUILD_STEPS, COUNTER_WARN, IDEAS, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from './starters';
+import { BUILD_FAILED, COUNTER_WARN, IDEAS, NOT_SENT, OFFLINE, PLACEHOLDER, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, TOO_VAGUE } from './starters';
 import { BuildingScreen, Button, Icon, TabBar } from './ui';
 
-type Phase = { readonly kind: 'idle' } | { readonly kind: 'busy'; readonly step: 0 | 1 } | { readonly kind: 'failed'; readonly message: string };
+type Phase = { readonly kind: 'idle' } | { readonly kind: 'busy'; readonly step: 0 | 1 } | { readonly kind: 'failed'; readonly message: string } | { readonly kind: 'offline' };
 
 /** Barvy karet nápadů v pořadí kitu a střídavý náklon (šachovnice 2×2 jako v referenci). */
 const IDEA_LOOKS = ['sp-idea--mint sp-tilt-l', 'sp-idea--sun sp-tilt-r', 'sp-idea--sky sp-tilt-r', 'sp-idea--gum sp-tilt-l'] as const;
 
-/** Průběh stavby: všechny čtyři kroky, hotové odškrtnuté, aktivní zvýrazněný. */
-export function BuildSteps({ active }: { readonly active: number }) {
-  return (
-    <ol className="play-steps" data-testid="play-status" aria-live="polite">
-      {BUILD_STEPS.map((step, index) => (
-        <li key={step} data-state={index < active ? 'done' : index === active ? 'active' : 'todo'} aria-current={index === active ? 'step' : undefined}>
-          {step}
-        </li>
-      ))}
-    </ol>
-  );
+/**
+ * Co hráč uslyší, když dveře hru nepostaví. 422 (věta nešla na hratelnou hru)
+ * je „Build failed“ z kitu – technický důvod serveru hráči nic neřekne; ostatní
+ * (kvóta, vypnutí, úložiště) nesou vlastní větu, jen s velkým písmenem na začátku.
+ */
+function doorMessage(status: number, message: unknown): string {
+  if (status === 422 || typeof message !== 'string' || message === '') return BUILD_FAILED;
+  return message[0]!.toUpperCase() + message.slice(1);
 }
 
 export function CreateGame() {
@@ -66,23 +64,36 @@ export function CreateGame() {
   async function create(text: string): Promise<void> {
     if (text.length === 0 || text.length > SENTENCE_LIMIT || busy) return;
     setPhase({ kind: 'busy', step: 0 });
+    let response: Response;
     try {
-      const response = await fetch('/api/play/games', {
+      response = await fetch('/api/play/games', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ sentence: text }),
       });
-      const body = (await response.json()) as { url?: string; error?: { message?: string } };
-      if (!response.ok || typeof body.url !== 'string') {
-        setPhase({ kind: 'failed', message: body.error?.message ?? 'This sentence could not become a game.' });
-        return;
-      }
-      setPhase({ kind: 'busy', step: 1 });
-      router.push(body.url);
     } catch {
-      setPhase({ kind: 'failed', message: 'The game could not be created. Check your connection and try again.' });
+      setPhase(navigator.onLine ? { kind: 'failed', message: NOT_SENT } : { kind: 'offline' });
+      return;
     }
+    // Tělo, které není JSON (výpadek za proxy), je selhání stavby jako každé jiné.
+    const body = (await response.json().catch(() => ({}))) as { url?: unknown; error?: { message?: unknown } };
+    if (!response.ok || typeof body.url !== 'string') {
+      setPhase({ kind: 'failed', message: doorMessage(response.status, body.error?.message) });
+      return;
+    }
+    setPhase({ kind: 'busy', step: 1 });
+    router.push(body.url);
   }
+
+  // Bez sítě (kit, Offline): věta zůstane v poli a odejde sama, jakmile se síť vrátí.
+  const offline = phase.kind === 'offline';
+  useEffect(() => {
+    if (!offline) return;
+    const back = (): void => void create(trimmed);
+    window.addEventListener('online', back);
+    return () => window.removeEventListener('online', back);
+    // `create` je nová každým renderem; znovu se přihlásit stačí při změně věty.
+  }, [offline, trimmed]);
 
   /** Věta do pole bez startu (karta nápadu, `Surprise me`); pole se ukáže a dostane kurzor. */
   function fill(text: string): void {
@@ -159,19 +170,19 @@ export function CreateGame() {
         <Button size="l" type="submit" className="sp-btn--block" data-testid="play-create" disabled={busy || over}>
           Make it!
         </Button>
-        {/* Od odeslání do první scény celá obrazovka (T14): název z věty, tón nálady, kroky stavby. */}
-        {phase.kind === 'busy' && (
-          <BuildingScreen title={trimmed} tone={moodTone(trimmed)}>
-            <BuildSteps active={phase.step} />
-          </BuildingScreen>
-        )}
-        {phase.kind === 'failed' && (
-          <p className="play-alert" role="alert">
-            <span>{phase.message}</span>
-            <Button variant="secondary" disabled={trimmed.length === 0 || over} onClick={() => void create(trimmed)}>
-              Try again
-            </Button>
-          </p>
+        {/* Od odeslání do první scény celá obrazovka (T14): věta v tónu nálady a kroky stavby. */}
+        {phase.kind === 'busy' && <BuildingScreen title={trimmed} tone={moodTone(trimmed)} step={phase.step} />}
+        {/* Chybový toast kitu zůstane, dokud hráč znovu neodešle (kit: chyby nemizí samy). */}
+        {(phase.kind === 'failed' || phase.kind === 'offline') && (
+          <div className="sp-toast sp-toast--error play-create-error" data-testid="play-create-error" role="alert">
+            <Icon name="alert" />
+            <span>{phase.kind === 'offline' ? OFFLINE : phase.message}</span>
+            {phase.kind === 'failed' && (
+              <Button variant="secondary" size="s" disabled={trimmed.length === 0 || over} onClick={() => void create(trimmed)}>
+                Try again
+              </Button>
+            )}
+          </div>
         )}
       </form>
 

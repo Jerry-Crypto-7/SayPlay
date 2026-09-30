@@ -8,7 +8,27 @@ import { ARCHETYPES } from '@/play/registry';
 import { REMIX_CHIP_LABELS as CHIP_LABELS, REMIX_CHIPS as CHIPS } from '@/play/director/remix';
 import { draftGameSpec } from '@/play/draft';
 
-import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, IDEA_LIMIT, IDEAS, PLACEHOLDER, POST_RUN_CHIPS, PROMPT_LABEL, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
+import {
+  BUILD_FAILED,
+  BUILD_STEPS,
+  CHALLENGE_A_FRIEND,
+  CHANGE_ONE_THING,
+  FULL_READY,
+  HERO,
+  IDEA_LIMIT,
+  IDEAS,
+  NOT_SENT,
+  OFFLINE,
+  PLACEHOLDER,
+  PLAY_FULL,
+  POST_RUN_CHIPS,
+  PROMPT_LABEL,
+  QUICK_VERSION,
+  QUICK_VERSION_REST,
+  SENTENCE_LIMIT,
+  STARTERS,
+  SUBHEAD,
+} from '../starters';
 
 /**
  * Stránka `/play` vypadá hotově i s kartou, která pošle větu na cizí archetyp,
@@ -84,6 +104,12 @@ describe('měď z PRODUCT_COPY.md', () => {
 
   it('stavový řádek jde přes čtyři stavy v pořadí balíčku', () => {
     expect(BUILD_STEPS).toEqual(copyLine('States').split('->').map((step) => step.trim().replace(/\.$/, '')));
+  });
+
+  // P34 T4: pilulka, toast AI verze a chyby dveří mluví kitem (`11-voice-copy.md`).
+  it('pilulka a toast AI verze a chyby dveří jsou doslova z balíčku', () => {
+    expect([QUICK_VERSION + QUICK_VERSION_REST, FULL_READY, PLAY_FULL]).toEqual(copyLine('AI version').split(' / ').slice(0, 3));
+    expect([BUILD_FAILED, OFFLINE, NOT_SENT]).toEqual(copyLine('Errors').split(' / '));
   });
 });
 

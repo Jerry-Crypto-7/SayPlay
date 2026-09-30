@@ -17,6 +17,8 @@ import { useEffect, useState } from 'react';
 import type { DraftFinalReason } from '@/app/api/play/_upgrade';
 
 import { forgetPending, type PendingUpgrade, pendingUpgrades, rememberPending } from './pending-upgrades';
+import { FULL_READY, PLAY_FULL, QUICK_VERSION, QUICK_VERSION_REST } from './starters';
+import { Button, Icon } from './ui';
 
 export type UpgradeView =
   | { readonly kind: 'idle' }
@@ -162,15 +164,19 @@ export interface UpgradeNotice {
   readonly action: { readonly kind: 'open' | 'retry'; readonly label: string } | null;
 }
 
-/** Co proužek řekne a nabídne; `null` = nic. Nejvýš jedna akce, žádná procenta. */
-export function noticeOf(view: UpgradeView, now: number, title: string | null = null): UpgradeNotice | null {
+/**
+ * Co štítek řekne a nabídne; `null` = nic. Nejvýš jedna akce, žádná procenta
+ * ani ubíhající sekundy – běh ukazuje pulzující tečka pilulky (kit: kromě ní
+ * se nic nehýbe samo).
+ */
+export function noticeOf(view: UpgradeView, title: string | null = null): UpgradeNotice | null {
   switch (view.kind) {
     case 'idle':
       return null;
     case 'working':
-      return { text: `AI version in progress · ${Math.max(0, Math.floor((now - view.since) / 1000))} s`, action: null };
+      return { text: QUICK_VERSION + QUICK_VERSION_REST, action: null };
     case 'ready':
-      return { text: `AI version ready${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: 'Play AI version' } };
+      return { text: `${FULL_READY}${title === null ? '' : `: “${title}”`}`, action: { kind: 'open', label: PLAY_FULL } };
     case 'final':
       return { text: FINAL_REASON_TEXT[view.reason], action: RETRYABLE.has(view.reason) ? { kind: 'retry', label: 'Try again' } : null };
     case 'offline':
@@ -184,15 +190,18 @@ function draftIdOf(request: string): string | null {
 }
 
 /**
- * Stav AI verze nad hrou (P33 T5): malý štítek vpravo nahoře, hotová verze
- * toast dole nad lištou cílů. Rozehraná hra se nevymění – nová
- * se otevře jen tlačítkem. Rozběhnutou práci si prohlížeč zapamatuje (T3),
- * `final` jen jednou ukáže a zapomene.
+ * Stav AI verze nad hrou podle kitu (P34 T4). Běží-li práce, je to `.sp-status`
+ * – inkoustová pilulka s pulzující slunečnou tečkou vlevo pod pruhem, mimo
+ * sloupec akcí vpravo a řádku ovládání dole; na telefonu jen „Quick version“
+ * (jako v HUD kitu), zbytek věty dostane čtečka. Hotová verze je `.sp-toast`
+ * s tlačítkem dole uprostřed, konec bez AI verze malá poznámka na místě
+ * pilulky. Rozehraná hra se nevymění – nová se otevře jen tlačítkem.
+ * Rozběhnutou práci si prohlížeč zapamatuje (T3), `final` jen jednou ukáže
+ * a zapomene.
  */
 export function UpgradeBanner({ request, sentence }: { readonly request: string | null; readonly sentence: string | null }) {
   const router = useRouter();
   const { view, retry } = useUpgrade(request);
-  const [now, setNow] = useState(() => Date.now());
   const draftId = request === null ? null : draftIdOf(request);
   const since = view.kind === 'working' ? view.since : null;
 
@@ -201,12 +210,6 @@ export function UpgradeBanner({ request, sentence }: { readonly request: string 
     if (since !== null && sentence !== null) rememberPending({ draftId, sentence, startedAt: since });
     if (view.kind === 'final') forgetPending(draftId);
   }, [draftId, sentence, since, view.kind]);
-
-  useEffect(() => {
-    if (view.kind !== 'working') return;
-    const ticker = setInterval(() => setNow(Date.now()), 1_000);
-    return () => clearInterval(ticker);
-  }, [view.kind]);
 
   // Název AI verze (P28D T7): porotce má vědět, co se otevře; bez něj proužek nečeká.
   const readyId = view.kind === 'ready' ? view.versionId : null;
@@ -225,22 +228,32 @@ export function UpgradeBanner({ request, sentence }: { readonly request: string 
     };
   }, [readyId]);
 
-  const notice = noticeOf(view, Math.max(now, view.kind === 'working' ? view.since : now), title !== null && title.id === readyId ? title.title : null);
+  const notice = noticeOf(view, title !== null && title.id === readyId ? title.title : null);
   if (notice === null) return null;
+  if (view.kind === 'working') {
+    return (
+      <aside className="sp-status play-upgrade-status" data-testid="upgrade-state" data-kind="working" role="status">
+        <span className="sp-status__dot" aria-hidden="true" />
+        <span>
+          {QUICK_VERSION}
+          <span className="play-upgrade-rest">{QUICK_VERSION_REST}</span>
+        </span>
+      </aside>
+    );
+  }
   const act = (): void => {
     if (view.kind !== 'ready') return retry();
     if (draftId !== null) forgetPending(draftId);
     router.push(`/play/${view.versionId}`);
   };
   return (
-    <aside className="play-upgrade" data-testid="upgrade-state" data-kind={view.kind} role="status">
+    <aside className={view.kind === 'ready' ? 'sp-toast play-upgrade-toast' : 'sp-toast play-upgrade-toast play-upgrade-note'} data-testid="upgrade-state" data-kind={view.kind} role="status">
+      {view.kind === 'ready' && <Icon name="check" />}
       <span>{notice.text}</span>
-      {/* Průběh bez procent: lhůta serveru je strop, ne odhad. */}
-      {view.kind === 'working' && <span className="play-upgrade-bar" aria-hidden="true" />}
       {notice.action !== null && (
-        <button className="play-button" type="button" data-testid="upgrade-action" onClick={act}>
+        <Button variant="secondary" size="s" data-testid="upgrade-action" onClick={act}>
           {notice.action.label}
-        </button>
+        </Button>
       )}
     </aside>
   );
