@@ -512,7 +512,7 @@ const StageCanvas = memo(function StageCanvas({
           <StyleRig look={look} control={control} surface={surface} />
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
           {control === 'move_free' || control === 'fight' ? (
-            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
+            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} />
           ) : control === 'runner' ? (
             <RunnerWorld {...world} />
           ) : control === 'platform' ? (
