@@ -9,13 +9,19 @@
  * reakce, výškový rozdíl jde vyskočit a hrot má před sebou i za sebou místo
  * na rozběh a dopad. `checkPlatformLevel` to samé tvrzení přepočítá nad
  * hotovou úrovní – test i ověření ho čtou.
+ *
+ * Pocit skoku `feel: 2` (P32F T2) odpouští: skok ještě 100 ms po sběhnutí
+ * z hrany (coyote time), stisk až 120 ms před dopadem skočí při dopadu
+ * (buffer) a držení po odrazu skok prodlouží. Ťuk skočí přesně jako dřív,
+ * takže dosah, ze kterého generátor počítá mezery, platí dál – i pro vstup,
+ * který držení neposílá.
  */
 
 import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, type PieceRef, UNIT, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, type PieceRef, UNIT, bodyBase } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const PLATFORM_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -83,9 +89,61 @@ export function maxGap(dh: number): number {
   return Math.floor(PLATFORM.jumpSafety * PLATFORM.maxRun * airTicks(dh)) + PLATFORM.playerD / 2;
 }
 
+/**
+ * Dosah ťuku plnou rychlostí hrana–hrana při výškovém rozdílu `dh`: střed
+ * hráče letí `airTicks` tiků a na obou hranách smí přečnívat o půl hráče.
+ * `maxGap` z něj bere nejvýš dvě třetiny, rezerva je tedy víc než 20 %.
+ */
+export const jumpReach = (dh: number): number => PLATFORM.maxRun * airTicks(dh) + PLATFORM.playerD;
+
+/** Pocit skoku `feel: 2` v ticích (60 Hz): coyote 100 ms, buffer 120 ms, prodloužení skoku držením. */
+export const PLATFORM_FEEL = {
+  coyoteTicks: 6,
+  bufferTicks: 7,
+  /** Tolik tiků po odrazu držení ubírá gravitaci o `lift` za tik. */
+  liftTicks: 12,
+  lift: 4,
+} as const;
+
 const toward = (value: number, target: number, step: number): number => (value < target ? Math.min(target, value + step) : Math.max(target, value - step));
 
-const controlParams = z.object({ doubleJump: z.boolean().default(false) }).strict();
+const controlParams = z.object({ doubleJump: z.boolean().default(false), feel: z.literal(2).optional() }).strict();
+
+const JUMP = BUTTON.TAP | BUTTON.UP;
+
+/**
+ * Skok s pocitem `feel: 2`. V `aux1` hráče (jinak ho plošinovka nepoužívá)
+ * tři čítače: bity 0–2 zbývající coyote tiky, 3–6 zbývající tiky bufferu
+ * (stisk platí v tiku stisku a dalších `bufferTicks`), 7–10 zbývající tiky
+ * prodloužení. `aux0` je dál příznak spotřebovaného dvojskoku.
+ */
+function feelJump(state: Int32Array, base: number, grounded: boolean, input: ArcadeInput, doubleJump: boolean): void {
+  const packed = state[base + BODY.aux1] as number;
+  let coyote = grounded ? PLATFORM_FEEL.coyoteTicks : packed & 0x7;
+  let buffer = (packed >> 3) & 0xf;
+  let lift = (packed >> 7) & 0xf;
+  const pressed = (input.buttons & JUMP) !== 0;
+  if (pressed) buffer = PLATFORM_FEEL.bufferTicks + 1;
+
+  if (buffer > 0 && (grounded || coyote > 0)) {
+    state[base + BODY.vy] = PLATFORM.jumpVy;
+    coyote = 0;
+    buffer = 0;
+    lift = PLATFORM_FEEL.liftTicks;
+  } else if (pressed && !grounded && doubleJump && state[base + BODY.aux0] === 0) {
+    state[base + BODY.vy] = PLATFORM.doubleJumpVy;
+    state[base + BODY.aux0] = 1;
+    buffer = 0;
+    lift = PLATFORM_FEEL.liftTicks;
+  } else if (lift > 0 && (input.buttons & BUTTON.HOLD) !== 0 && (state[base + BODY.vy] as number) > 0) {
+    state[base + BODY.vy] = (state[base + BODY.vy] as number) + PLATFORM_FEEL.lift;
+    lift -= 1;
+  } else lift = 0;
+
+  if (buffer > 0) buffer -= 1;
+  if (!grounded && coyote > 0) coyote -= 1;
+  state[base + BODY.aux1] = coyote | (buffer << 3) | (lift << 7);
+}
 
 /** Ovládání plošinovky. `aux0` = 1, když je dvojskok v tomhle letu spotřebovaný. */
 export const platformControl: ControlPiece<z.infer<typeof controlParams>> = {
@@ -105,7 +163,11 @@ export const platformControl: ControlPiece<z.infer<typeof controlParams>> = {
     state[base + BODY.vx] = 0;
 
     if (grounded) state[base + BODY.aux0] = 0;
-    if ((input.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0) {
+    if (params.feel === 2) {
+      feelJump(state, base, grounded, input, params.doubleJump);
+      return;
+    }
+    if ((input.buttons & JUMP) !== 0) {
       if (grounded) state[base + BODY.vy] = PLATFORM.jumpVy;
       else if (params.doubleJump && state[base + BODY.aux0] === 0) {
         state[base + BODY.vy] = PLATFORM.doubleJumpVy;
@@ -251,6 +313,11 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
     return { bodies, length: goalZ };
   },
 };
+
+/** Ovládání plošinovky z parametrů úrovně; `feel` jen, když ho úroveň nese – svět bez něj je dnešní. */
+export function platformControlRef(params: Pick<PlatformLevelParams, 'doubleJump' | 'feel'>): PieceRef {
+  return { id: 'platform', params: params.feel === undefined ? { doubleJump: params.doubleJump } : { doubleJump: params.doubleJump, feel: params.feel } };
+}
 
 /** Pravidla plošinovky: hrot, mince, cíl, pád; s checkpointy pád vrací místo prohry. */
 export function platformRules(params: Pick<PlatformLevelParams, 'checkpoints'>, health?: number): PieceRef[] {
