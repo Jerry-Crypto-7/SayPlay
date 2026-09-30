@@ -338,7 +338,8 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       const z = lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT;
       // Tělo za koncem mlhy (`FarAtFog`) by kamera stejně ořízla; skryté vypadne i z přepočtu
       // matic, který jinak prochází celou trať každý snímek (P28E-R1). Kamera je ze snímku předtím.
-      const inRange = Math.abs(z - camera.position.z) <= camera.far + FAR_MARGIN_M;
+      // Hráč nikdy: po restartu stojí kamera ještě u cíle, a skrytý hrdina by se už nepohnul (P32A T8-R1).
+      const inRange = view.role === ROLE.player || Math.abs(z - camera.position.z) <= camera.far + FAR_MARGIN_M;
       group.visible = inRange && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
       group.matrixWorldAutoUpdate = inRange;
       if (!inRange) continue;

@@ -163,6 +163,25 @@ test.describe('desktop 1280×800', () => {
     expect(grounded.length, 'stojící překážky v záběru').toBeGreaterThan(0);
     for (const gap of grounded) expect(Math.abs(gap), 'mezera překážky (px)').toBeLessThanOrEqual(5);
   });
+
+  /**
+   * T8-R1: po dohraném běhu stojí kamera u cíle. Hrdina na startu byl „za mlhou“,
+   * skryl se a přestal se posouvat, takže ho kamera po restartu už nenašla.
+   */
+  test('runner: the hero is on screen right after a finished run restarts', async ({ page, request }) => {
+    test.setTimeout(150_000);
+    await page.goto(await publish(request, 'runner'));
+    await page.waitForFunction(() => window.__playShell !== undefined && window.__playFrame !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
+    // Ukázka doběhne v reálném čase až do cíle (~25 s) a kamera s ní.
+    await page.getByTestId('play-demo-start').click();
+    const yours = page.getByTestId('play-demo-yours');
+    await expect(yours).toBeVisible({ timeout: 90_000 });
+    await page.waitForTimeout(2_000);
+    await yours.click();
+    await page.waitForTimeout(1_000);
+    const frame = await page.evaluate(() => window.__playFrame!());
+    expect(frame.hero, 'hrdina v záběru po restartu').not.toBeNull();
+  });
 });
 
 /** Snímků za sekundu po celých sekundách (rAF), `seconds` dlouho. */
