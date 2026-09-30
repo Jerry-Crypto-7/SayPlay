@@ -18,7 +18,7 @@ import { type ArcadeWorld, UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 
-import { buildIslands, platformIslands } from '../look/rig/terrain/islands';
+import { buildIslands, platformIslands, platformSlabKeys, spotKey } from '../look/rig/terrain/islands';
 import { buildWater } from '../look/rig/terrain/water';
 import { Scenery } from '../look/Scenery';
 import { createHeroMotion } from '../runner/heroMotion';
@@ -35,9 +35,6 @@ declare global {
     __playPlatform?: () => GroundGap | null;
   }
 }
-
-/** Klíč polohy těla v jednotkách jádra – tak, jak ji `World` zapíše skupině (x zrcadlené). */
-const spotKey = (x: number, y: number, z: number): string => `${Math.round(x * UNIT)},${Math.round(y * UNIT)},${Math.round(z * UNIT)}`;
 
 function PlatformSea({ world, look, terrain }: { readonly world: ArcadeWorld; readonly look: Look; readonly terrain: RefObject<Mesh | null> }) {
   const length = world.length / UNIT;
@@ -72,7 +69,7 @@ function PlatformPose({ session, terrain }: { readonly session: ArcadeSession; r
   const scene = useThree((three) => three.scene);
   const get = useThree((three) => three.get);
   const motion = useMemo(() => createHeroMotion(session, null), [session]);
-  const slabs = useMemo(() => new Set(platformIslands(session.world).map((spot) => spotKey(spot.x, spot.top - PLATFORM.slabH / UNIT, spot.z))), [session]);
+  const slabs = useMemo(() => platformSlabKeys(session.world), [session]);
   const found = useRef<{ boxes: Object3D[]; hero: Object3D | null; frame: number }>({ boxes: [], hero: null, frame: 0 });
 
   useFrame(() => {

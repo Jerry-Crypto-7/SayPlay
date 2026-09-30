@@ -20,6 +20,7 @@ import { BufferGeometry, Color, Float32BufferAttribute } from 'three';
 
 import { type ArcadeWorld, BODY, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
+import { PLATFORM } from '@/play/arcade/pieces/platform';
 
 import { hash, mix } from './valley';
 
@@ -100,6 +101,17 @@ export interface IslandSpot {
   readonly top: number;
   /** Kulatý ostrov v moři. Bez toho deska: horní plocha kryje obdélník `w × d` a podél z končí přesně na jeho hraně. */
   readonly round?: boolean;
+}
+
+/** Klíč polohy těla v jednotkách jádra – tak, jak ji `World` zapíše skupině (scéna, x zrcadlené). */
+export const spotKey = (x: number, y: number, z: number): string => `${Math.round(x * UNIT)},${Math.round(y * UNIT)},${Math.round(z * UNIT)}`;
+
+/**
+ * Klíče poloh pevných desek plošinovky (`spotKey`, spodní stěna desky): jejich kvádry
+ * `World` kreslí a `PlatformWorld` je schová pod ostrůvky. Pohyblivá plošina mezi nimi není.
+ */
+export function platformSlabKeys(world: ArcadeWorld): Set<string> {
+  return new Set(platformIslands(world).map((spot) => spotKey(spot.x, spot.top - PLATFORM.slabH / UNIT, spot.z)));
 }
 
 /** Ostrůvky pod pevnými deskami úrovně (tělo `platform`). Pohyblivá plošina si vzhled nechává – hráč z něj čte pohyb. */

@@ -19,7 +19,7 @@ import { readGameSpec } from '@/play/spec';
 
 import { playableGround } from '../look/rig/terrain';
 import { arenaPalette, buildArenaFloor } from '../look/rig/terrain/arenaFloor';
-import { buildIslands, islandPalette, platformIslands } from '../look/rig/terrain/islands';
+import { buildIslands, islandPalette, platformIslands, platformSlabKeys } from '../look/rig/terrain/islands';
 import { WAVE_HEIGHT, buildWater, waterPalette } from '../look/rig/terrain/water';
 
 const rng = xoroshiro128plus(3209);
@@ -114,6 +114,27 @@ describe.each(LEVELS)('islands on platform level seed $seed ($params.difficulty)
     expect(slabs.length).toBeGreaterThan(4);
     expect(spots).toHaveLength(slabs.length);
     if (params.difficulty === 'normal') expect(moving).toBeGreaterThan(0);
+  });
+
+  // Revize P32 (stopa F): kvádry pevných desek se schovají podle klíče polohy, jakou jim zapíše `World`.
+  it('keys every fixed slab where World places its box, and never the moving platform', () => {
+    const keys = platformSlabKeys(world);
+    const state = world.initial;
+    const key = (index: number): string => {
+      const base = bodyBase(index);
+      return `${-(state[base + BODY.x] as number) + 0},${state[base + BODY.y] as number},${state[base + BODY.z] as number}`;
+    };
+    let fixed = 0;
+    for (let index = 0; index < (state[HEADER.bodyCount] as number); index += 1) {
+      const base = bodyBase(index);
+      if (state[base + BODY.role] !== ROLE.platform) continue;
+      if (world.kinds[state[base + BODY.kind] as number] === 'platform') {
+        fixed += 1;
+        expect(keys.has(key(index)), key(index)).toBe(true);
+      } else expect(keys.has(key(index)), key(index)).toBe(false);
+    }
+    expect(keys.size).toBe(fixed);
+    expect(fixed).toBe(slabs.length);
   });
 
   it('draws every islet top at the kernel platform height within 1 cm, over the whole slab', () => {
