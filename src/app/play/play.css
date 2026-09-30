@@ -897,41 +897,13 @@
   white-space: nowrap;
 }
 
-/* Pole s mikrofonem uvnitř (P33 T4): ikona sedí v pravém okraji pole. */
-.play-field {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-space-1);
-}
-
-.play-field input,
-.play-field textarea {
-  width: 100%;
-  padding-right: calc(var(--sp-size-touch-min) + var(--sp-space-2));
-}
-
-.play-field .play-button.play-mic {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: var(--sp-size-touch-min);
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  color: var(--sp-text-secondary);
-}
-
-.play-field .play-button.play-mic:hover:not(:disabled) {
-  background: transparent;
-  color: var(--sp-text);
-}
-
 .play-button.play-mic[data-listening='true'] {
   color: var(--sp-text);
+}
+
+/* Slunečný mikrofon bubliny (domov, „Change one thing“) při poslechu zrajčatoví (kit, Prompt: Mic). */
+.sp-btn--sun.play-mic[data-listening='true'] {
+  --_bg: var(--sp-primary);
 }
 
 /* Výsledek (P34 T6, kit `08-game-hud.md` Result screen, reference `03-win@2x.png`).
@@ -1099,8 +1071,50 @@
   flex-basis: 100%;
 }
 
+/* Čipy návrhů v listu (kit, Chip): na telefonu jedna řada s vlastním posunem až k okrajům listu, od 600 px se zalomí. */
 .play-remix .play-chips {
   justify-content: flex-start;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  margin-inline: calc(-1 * var(--sp-space-5));
+  padding-inline: var(--sp-space-5);
+  scrollbar-width: none;
+}
+
+.play-remix .play-chip {
+  flex: none;
+  white-space: nowrap;
+}
+
+@media (min-width: 600px) {
+  .play-remix .play-chips {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+}
+
+/* List sdílení v HUD (P34 T7): rajčatové Dare a friend, pod ním odkazy Copy link a Save video. */
+.play-share-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-space-3);
+}
+
+.play-share-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 var(--sp-space-5);
+}
+
+.play-share-note {
+  margin: 0;
+  text-align: center;
+  color: var(--sp-text-secondary);
+  font-size: var(--sp-text-caption-size);
+  font-weight: 700;
 }
 
 @media (min-width: 1024px) {
@@ -1831,8 +1845,12 @@
   font-size: var(--sp-text-label-size);
 }
 
+/* Rodič je odkaz kitu (`.sp-btn--link`): inkoust, tučně, podtržení 2 px. */
 .play-lineage a {
   color: var(--sp-text);
+  font-weight: 700;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 /* Ve feedu (bez listu „About this game“) by proužek rodokmenu ležel přes HUD kitu – hra ho nekreslí (P34 T5). */
@@ -2241,41 +2259,18 @@ button.play-feed-card {
   flex: none;
 }
 
-/* „Change it“ pod čipy (T5): vlastní změna větou, stav práce pod polem. */
+/* „Change one thing“ (P34 T7, vzor `.sp-sheet` v `guidelines.html`): bublina `.sp-prompt`,
+ * čipy návrhů, rajčatové „Remix it“ přes celou šířku a pod ním stav práce. Pole je
+ * v listu nižší než na domově (vzor kitu 44 px) a roste do 160 px. */
 .play-remix {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-space-3);
+  gap: var(--sp-space-4);
 }
 
-.play-remix-row {
-  display: flex;
-  gap: var(--sp-space-2);
-}
-
-.play-remix-input {
-  flex: 1;
-  min-width: 0;
-  min-height: var(--sp-size-touch-min);
-  box-sizing: border-box;
-  padding: var(--sp-space-2) var(--sp-space-3);
-  border-radius: var(--sp-radius-sm);
-  border: var(--sp-border-base) solid var(--sp-outline);
-  background: var(--sp-surface);
-  color: var(--sp-text);
-  font: inherit;
-  font-size: var(--sp-text-body-s-size);
-}
-
-.play-remix-row .play-button {
-  flex: none;
-}
-
-.play-remix-count {
-  align-self: flex-end;
-  font-size: var(--sp-text-label-size);
-  color: var(--sp-text-secondary);
-  font-variant-numeric: tabular-nums;
+.play-remix-prompt .sp-prompt__field {
+  min-height: 44px;
+  max-height: 160px;
 }
 
 .play-remix-state {

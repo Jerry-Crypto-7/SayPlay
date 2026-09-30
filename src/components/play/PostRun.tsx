@@ -29,7 +29,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type LivePublish, ShareButton } from './ShareButton';
-import { CHANGE_ONE_THING, DARE_A_FRIEND, DARE_SHORT, POST_RUN_CHIPS, SO_CLOSE, YOU_DID_IT } from './starters';
+import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_SHORT, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_DID_IT } from './starters';
 import { Button, Chip, Sheet } from './ui';
 import { clockText } from './ui/GameHud';
 
@@ -100,7 +100,7 @@ function SaveVideo({ clip }: { readonly clip: Blob }) {
   const extension = clip.type.includes('mp4') ? 'mp4' : 'webm';
   return (
     <a className="sp-btn sp-btn--link sp-btn--s" data-testid="play-save-clip" data-variant="link" href={href} download={`worldstream-clip.${extension}`}>
-      Save video
+      {SAVE_VIDEO}
     </a>
   );
 }
@@ -233,11 +233,11 @@ export function PostRun({
               <div className="play-result-more">
                 {won ? replay : dare}
                 <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
-                  Remix it
+                  {REMIX_IT}
                 </Button>
               </div>
               <div className="play-result-links">
-                <ShareButton versionId={versionId} variant="link" size="s" copy label="Copy link" live={live} />
+                <ShareButton versionId={versionId} variant="link" size="s" copy label={COPY_LINK} live={live} />
                 {clip !== null && <SaveVideo clip={clip} />}
               </div>
             </>

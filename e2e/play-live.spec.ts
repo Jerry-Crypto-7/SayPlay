@@ -142,7 +142,9 @@ test.describe('/play/[id] – live change', () => {
     const share = page.getByTestId('play-share').first();
     await expect(share).toBeDisabled();
     await expect(share).toBeEnabled({ timeout: 15_000 });
+    // Od P34 T7 otevře kolo list sdílení; nabídku prohlížeče volá jeho „Dare a friend“ – čerstvé gesto je ten druhý ťuk.
     await share.click();
+    await page.getByTestId('play-share-dare').click();
     await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared.length), { timeout: 15_000 }).toBe(1);
     const link = await page.evaluate(() => (window as unknown as { __shared: ShareData[] }).__shared[0].url!);
     const parentId = url.split('/').at(-1)!;

@@ -172,6 +172,24 @@ const STATES: Record<string, (page: Page) => Promise<void>> = {
     await expect(page.getByTestId('play-outcome')).toHaveAttribute('data-outcome', 'lost', { timeout: 30_000 });
     await page.waitForTimeout(1_200);
   },
+  // T7: výhra a „Remix it“ – list „Change one thing“: bublina s popiskem, čipy návrhů, rajčatové Remix it.
+  'remix-open': async (page) => {
+    await game(page, PENDING(), 'working', EGGS);
+    await page.evaluate(() => window.__playShell!.playWitness());
+    await expect(page.getByTestId('play-outcome')).toHaveAttribute('data-outcome', 'won', { timeout: 30_000 });
+    await page.getByRole('button', { name: 'Remix it' }).click();
+    await expect(page.getByRole('dialog', { name: 'Change one thing' })).toBeVisible();
+    await page.waitForTimeout(600);
+  },
+  // T7: arkáda se nahrává, kolo sdílení v HUD otevře list – Dare a friend, Copy link a zašedlé Save video.
+  'share-open': async (page) => {
+    await publishAndOpen(page, ARENA);
+    await tapStage(page);
+    await page.waitForTimeout(1_000);
+    await page.getByTestId('play-share').click();
+    await expect(page.getByRole('dialog', { name: 'Share this game' })).toBeVisible();
+    await page.waitForTimeout(600);
+  },
 };
 
 test.describe.configure({ mode: 'serial' });

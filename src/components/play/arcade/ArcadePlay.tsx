@@ -360,6 +360,8 @@ function ArcadePlayGame({
   // Ukázka robota klip nemá; plátno se načítá dynamicky, proto se hledá při každém tiku, než je.
   const shell = useRef<HTMLElement | null>(null);
   const [clip, setClip] = useState<Blob | null>(null);
+  // Běh se právě nahrává: list sdílení v HUD (P34 T7) ukáže Save video zašedlé s větou, že video přijde po konci.
+  const [filming, setFilming] = useState(false);
   useEffect(() => {
     if (offline || !active) return;
     let recording: Clip | null = null;
@@ -373,17 +375,20 @@ function ArcadePlayGame({
         recording = null;
         tried = false;
         setClip(null);
+        setFilming(false);
       }
       if (nowRunning && !tried) {
         const canvas = shell.current?.querySelector<HTMLCanvasElement>('[data-testid="arcade-stage"] canvas');
         if (canvas) {
           tried = true;
           recording = startClip(canvas);
+          setFilming(recording !== null);
         }
       }
       if (!nowRunning && wasRunning && recording !== null) {
         const ended = recording;
         recording = null;
+        setFilming(false);
         if (session.demo() !== null) ended.cancel();
         else void ended.finish().then((blob) => !gone && setClip(blob));
       }
@@ -685,7 +690,7 @@ function ArcadePlayGame({
                   {CHANGE_LABEL}
                 </Button>
               )}
-              {!offline && <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" live={live} />}
+              {!offline && <ShareButton versionId={versionId} title={spec.title} variant="hud" className="play-hud-share" live={live} recording={filming} />}
             </>
           )
         }

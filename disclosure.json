@@ -44596,6 +44596,24 @@
       "scope": "prod"
     },
     {
+      "name": "public/fonts/roboto/Roboto-Black.ttf",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 900 for the game title, the time and the question on the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Black.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Black.woff2 before WOFF2 conversion.",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
       "name": "public/fonts/roboto/Roboto-Black.woff2",
       "kind": "asset",
       "firstParty": false,
@@ -44610,6 +44628,24 @@
         "označení změn"
       ],
       "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT) and converted to WOFF2 with ttf2woff2 (MIT).",
+      "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
+      "scope": "prod"
+    },
+    {
+      "name": "public/fonts/roboto/Roboto-Bold.ttf",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Roboto 700 for the word on the time badge of the dare card, the link preview drawn by GET /api/play/games/:id/og (P34 T7); TrueType because the image renderer (next/og, satori) cannot read WOFF2.",
+      "source": "https://github.com/googlefonts/roboto/releases/tag/v2.138 (roboto-unhinted.zip, Roboto-Bold.ttf)",
+      "authorOrProvider": "Christian Robertson, Google (googlefonts/roboto)",
+      "license": "Apache-2.0",
+      "requiredNotices": [
+        "copyright notice",
+        "plné znění licence",
+        "soubor NOTICE, pokud balíček nějaký nese",
+        "označení změn"
+      ],
+      "attribution": "Roboto v2.138, Copyright 2011 Google Inc., Apache License 2.0; full text in public/fonts/roboto/LICENSE.txt. Modified: subset to Latin with hb-subset (harfbuzzjs, MIT); the same cut as Roboto-Bold.woff2 before WOFF2 conversion.",
       "reviewNote": "Apache-2.0 is on the RULES.md §4 allow-list; v2.138 is the last Roboto release under Apache-2.0 (later releases are OFL-1.1). The release ships no NOTICE file.",
       "scope": "prod"
     },

@@ -105,6 +105,9 @@ test.describe('/play/[id] – arcade runner', () => {
     const before = await page.evaluate(() => window.__playShell!.inputs().length);
     await page.getByTestId('play-share').focus();
     await page.keyboard.press('Space');
+    // Od P34 T7 otevře kolo list sdílení; mezerník na jeho „Dare a friend“ sdílí a do hry taky nepropadne.
+    await page.getByTestId('play-share-dare').focus();
+    await page.keyboard.press('Space');
     await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: unknown[] }).__shared.length)).toBe(1);
     expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(before);
   });

@@ -98,3 +98,30 @@ export const POST_RUN_CHIPS = [
   { chip: 'swap_enemy', label: 'Swap the enemy' },
   { chip: 'reskin', label: 'Change the world, keep the rules' },
 ] as const;
+
+/**
+ * List „Change one thing“ (P34 T7, vzor `.sp-sheet` v `guidelines.html`):
+ * viditelný popisek pole, příklad v poli a tlačítko odeslání. Příklad kitu
+ * „Make the dog slower“ patří jeho ukázkové hře se psem; tady obecný.
+ */
+export const REMIX_LABEL = 'What should change?';
+export const REMIX_PLACEHOLDER = 'Make the enemies slower';
+export const REMIX_IT = 'Remix it';
+
+/**
+ * List sdílení v HUD (P34 T7, kit `07-components.md` Screens map): Dare
+ * a friend, Copy link a Save video. Video vzniká z běhu, takže během hry je
+ * Save video zašedlé s větou, kdy bude.
+ */
+export const SHARE_TITLE = 'Share this game';
+export const COPY_LINK = 'Copy link';
+export const SAVE_VIDEO = 'Save video';
+export const VIDEO_AFTER_RUN = 'Your video is ready when the run ends.';
+
+/**
+ * Karta výzvy – náhled odkazu (P34 T7, kit `13-assets.md` Dare card). Slovo
+ * pod časem na slunečném odznaku: přežití, závod s časovačem, nebo hra bez
+ * měřeného času (pak jen slovo).
+ */
+export const CAN_YOU_BEAT_IT = 'Can you beat it?';
+export const DARE_BADGE = { survive: 'Survive!', hurry: 'Hurry!', none: 'Your turn!' } as const;

@@ -11,8 +11,11 @@ import { draftGameSpec } from '@/play/draft';
 import {
   BUILD_FAILED,
   BUILD_STEPS,
+  CAN_YOU_BEAT_IT,
   CHANGE_ONE_THING,
+  COPY_LINK,
   DARE_A_FRIEND,
+  DARE_BADGE,
   DARE_SHORT,
   FULL_READY,
   HERO,
@@ -27,10 +30,16 @@ import {
   PROMPT_LABEL,
   QUICK_VERSION,
   QUICK_VERSION_REST,
+  REMIX_IT,
+  REMIX_LABEL,
+  REMIX_PLACEHOLDER,
+  SAVE_VIDEO,
   SENTENCE_LIMIT,
+  SHARE_TITLE,
   SO_CLOSE,
   STARTERS,
   SUBHEAD,
+  VIDEO_AFTER_RUN,
   YOU_DID_IT,
 } from '../starters';
 
@@ -106,6 +115,13 @@ describe('měď z PRODUCT_COPY.md', () => {
     expect(POST_RUN_CHIPS.map((entry) => entry.label)).toEqual(copyLine('Chips').replace(/.$/, '').split(' / '));
     expect(POST_RUN_CHIPS.map((entry) => entry.chip)).toEqual([...CHIPS]);
     for (const entry of POST_RUN_CHIPS) expect(entry.label).toBe(CHIP_LABELS[entry.chip]);
+  });
+
+  // P34 T7: list „Change one thing“, list sdílení v HUD a karta výzvy (náhled odkazu).
+  it('remix, list sdílení a karta výzvy jsou doslova z balíčku', () => {
+    expect([REMIX_LABEL, REMIX_PLACEHOLDER, REMIX_IT]).toEqual(copyLine('Remix').split(' / '));
+    expect([SHARE_TITLE, COPY_LINK, SAVE_VIDEO, VIDEO_AFTER_RUN]).toEqual(copyLine('Share sheet').split(' / '));
+    expect([CAN_YOU_BEAT_IT, DARE_BADGE.survive, DARE_BADGE.hurry, DARE_BADGE.none]).toEqual(copyLine('Dare card').split(' / '));
   });
 
   it('stavový řádek jde přes čtyři stavy v pořadí balíčku', () => {
