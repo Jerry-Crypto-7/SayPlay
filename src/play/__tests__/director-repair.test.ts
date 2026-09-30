@@ -19,7 +19,7 @@ import { answered, fakeBranch } from '../director/__fixtures__/branch';
 import { blockingIssues, critique } from '../director/critic';
 import { direct } from '../director/index';
 import { readDirectorAnswer } from '../director/read';
-import { MAX_REPAIR_ROUNDS, REPAIR_RULES, applyRepairAnswer, buildRepairRequest, repairDeterministically } from '../director/repair';
+import { MAX_REPAIR_ROUNDS, REPAIR_RULES, applyRepairAnswer, buildRepairRequest, repairDeterministically, switchGenre } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
 import { genreDoubles } from '../genre/__tests__/doubles';
 import { heroClass } from '../genre/roles';
@@ -266,5 +266,24 @@ describe('genre-switching repair of the director', () => {
     const game = await run(text('wizard'), wizardOnVoyage, modules);
     expect(game.spec).toEqual(draftGameSpecWithMeta(text('wizard'), 1, { modules }).spec);
     expect(game).toMatchObject({ source: 'authored', fallbackReason: null, failure: { stage: 'critic', reason: 'UNFAITHFUL' } });
+  });
+});
+
+/**
+ * Totéž nad skutečnými moduly (B-R7). Dvojníci nemají větu, kde hlavní sloveso
+ * hraje jiný režim než první v pořadí, a úkol byl pahýl – procházka pořadím
+ * a větný předmět úkolu tam nešly vidět.
+ */
+describe('switchGenre over the real genre modules', () => {
+  it('walks past the first mode of the ranking to the one the main verb plays', () => {
+    // „swords“ dá souboji první místo, „make“ hraje stanice úkolu.
+    const switched = switchGenre({ genre: 'arena', mode: 'fight', hero: 'fox', setting: 'meadow' }, 'merge swords to make stronger swords and fight monsters');
+    expect(switched?.genre).toMatchObject({ genre: 'quest', mode: 'station', target: { label: 'sword', verb: 'make' } });
+  });
+
+  it('gives the quest the object of the sentence when the answer names none', () => {
+    const wizard = sentenceSet.sentences.find((entry) => entry.id === 'wizard')!.text;
+    const switched = switchGenre({ genre: 'voyage', mode: 'race', hero: 'wizard', setting: 'haunted castle' }, wizard);
+    expect(switched?.genre).toMatchObject({ genre: 'quest', mode: 'spatial', target: { label: 'candle', verb: 'light' } });
   });
 });

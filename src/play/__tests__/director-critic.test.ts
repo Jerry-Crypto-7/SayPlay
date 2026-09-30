@@ -170,6 +170,14 @@ describe('fidelity of a GenreSpec answer', () => {
     expect(codes({ ...dog, enemy: 'giant Roomba' }, 'dog')).toEqual(['ENEMY_NOT_SAID']);
   });
 
+  // Nad skutečnými moduly (B-R7): 2 z 249 vět, kde hlavní sloveso hraje jiný režim než první v pořadí.
+  it('proves the mode the main verb plays, not the first mode of the ranking', () => {
+    const swords = 'merge swords to make stronger swords and fight monsters';
+    const verbCodes = (genre: GenreSpec) => fidelity(genre, swords).filter((issue) => issue.code === 'VERB_OUTSIDE_MODE');
+    expect(verbCodes({ genre: 'quest', mode: 'station', hero: 'fox', target: { label: 'sword', verb: 'make', states: 3 }, setting: 'meadow' })).toEqual([]);
+    expect(verbCodes({ genre: 'arena', mode: 'fight', hero: 'fox', enemy: 'monster', setting: 'meadow' })).toHaveLength(1);
+  });
+
   it('refuses a mode that only plays a stand-in, and then proves the best ready mode', () => {
     const stand = { modules: genreDoubles(['quest.spatial', 'quest.station']) };
     const chef = { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'cook', states: 3 }, setting: 'kitchen' } as const;
