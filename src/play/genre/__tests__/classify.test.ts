@@ -55,6 +55,26 @@ describe('classifyGenre', () => {
     expect(rocket.fallback).toBe(false);
   });
 
+  // B-R3: sada 9 vět necvičí každý řádek tabulky sloves – bez těchhle vět šlo řádek odebrat a nic nezčervenalo.
+  it.each([
+    ['A frog jumps over logs', 'platformer.default', 'jump'],
+    ['A goat climbs a mountain', 'platformer.default', 'climb'],
+    ['Two robots fight in an arena', 'arena.fight', 'fight'],
+    ['boxing a kangaroo in the australian outback', 'arena.fight', 'box'],
+    ['A mouse collects cheese in a kitchen', 'arena.collect', 'collect'],
+    ['A bird flies over the city', 'voyage.race', 'fly'],
+    ['A girl drives a car through the desert', 'voyage.race', 'drive'],
+    ['A boy rides a bike to school', 'voyage.race', 'ride'],
+    ['A bear skis down a mountain', 'runner.default', 'ski'],
+    ['A robot repairs a broken engine', 'quest.station', 'repair'],
+    ['A knight frees the prisoners in a tower', 'quest.spatial', 'free'],
+    ['A chef flips burgers', 'quest.station', 'cook'],
+  ])('plays "%s" as %s with the verb %s', (sentence, mode, verb) => {
+    const result = classifyGenre(sentence, null, GENRE_MODULES);
+    expect(`${result.ranked[0].genre}.${result.ranked[0].mode}`).toBe(mode);
+    expect(result.verb).toBe(verb);
+  });
+
   it('ranks every mode of every genre once and gives a sentence with no cue the runner', () => {
     const result = classifyGenre('A key inside a glass box on a pedestal behind a locked gate.', null, genreDoubles());
     expect(result.ranked).toHaveLength(9);
