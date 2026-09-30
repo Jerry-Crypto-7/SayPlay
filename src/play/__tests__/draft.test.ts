@@ -74,6 +74,32 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
     expect(draftForControl('zombie shooter in a mall', 'shooter')?.control).toBe('shooter');
     expect(draftForControl('zombie shooter in a mall', 'shooter')?.genre).toBeUndefined();
   });
+
+  // B-R4: čtyři pravidla role a místa, bez kterých draft dál vypadá rozumně – po jedné větě, kde pravidlo mění výstup.
+  describe('keeps roles and place apart', () => {
+    const genre = (sentence: string) => draftGameSpecWithMeta(sentence, 1).genre!;
+
+    it('never collects a pronoun', () => {
+      expect(genre(sentenceSet.sentences.find((entry) => entry.id === 'wizard')!.text).collectible).not.toBe('him');
+      expect(genre('Escape the flooded subway before the security drone catches you.').collectible).not.toBe('you');
+    });
+
+    it('does not make the target of a shooter its enemy too', () => {
+      const zombie = genre('zombie shooter in a mall');
+      expect(zombie.target?.label).toBe('zombie');
+      expect(zombie.enemy).not.toBe('zombie');
+    });
+
+    it('does not set the game in a phrase that names one of its roles', () => {
+      const log = genre('knife throwing at a spinning log');
+      expect(log.target?.label).toBe('spinning log');
+      expect(log.setting).not.toBe('spinning log');
+    });
+
+    it('prefers the place the look set knows', () => {
+      expect(genre('Fly a paper plane through four hoops in the right order across a classroom.').setting).toBe('classroom');
+    });
+  });
 });
 
 /**
