@@ -3,6 +3,9 @@
  * Teal jako akce, amber jako zvýraznění, slate jako pozadí. Fialová nikde:
  * `starters.test.ts` měří odstín každého hexu v tomhle souboru.
  */
+/* Tokeny kitu Sayplay (P34), vygenerované z `docs/brand/tokens/tokens.json`. */
+@import '../../brand/tokens.css';
+
 .play-root {
   --play-bg: #0f172a;
   --play-panel: #1e293b;
@@ -22,15 +25,37 @@
 }
 
 /* P33 */
-/* Písmo nadpisů: Luckiest Guy (Astigmatic, Apache-2.0 – RULES.md §4 povoleno;
- * Inter a Manrope mají OFL-1.1, kterou §4 nepovoluje). Latinská podmnožina
- * z Fontsource, licence vedle souboru, záznam v disclosure.json. Má jen jednu
- * řeznou tloušťku, proto nadpisy drží `font-weight: 400` – jinak prohlížeč
- * dopočítá falešné tučné. */
+/* Písmo: Roboto v2.138 (Apache-2.0, poslední verze před přechodem na OFL) místo
+ * písem kitu pod OFL, `docs/brand/REPO-NOTES.md`. Latinská podmnožina s
+ * kerningem, licence vedle souborů, záznamy v disclosure.json. */
 @font-face {
-  font-family: 'Luckiest Guy';
-  src: url('/fonts/luckiest-guy/LuckiestGuy-latin.woff2') format('woff2');
+  font-family: 'Roboto';
+  src: url('/fonts/roboto/Roboto-Regular.woff2') format('woff2');
   font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto/Roboto-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto/Roboto-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/roboto/Roboto-Black.woff2') format('woff2');
+  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
@@ -40,8 +65,8 @@
  * `p33-tokens.test.ts` hlídá velikosti písma a ruční průhlednosti. Běžný text
  * je v systémovém písmu zařízení, nadpisy v `--p-font-display`. */
 .play-root {
-  --p-font: system-ui, -apple-system, 'Segoe UI Variable Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --p-font-display: 'Luckiest Guy', 'Arial Black', 'Segoe UI Black', Impact, sans-serif;
+  --p-font: var(--sp-font-body);
+  --p-font-display: var(--sp-font-display);
 
   --p-space-1: 4px;
   --p-space-2: 8px;
