@@ -28,7 +28,7 @@ import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 import { CAPABILITIES, controlOf, readsMechanic } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
 import { classifyGenre } from '../genre/classify';
-import { type GenreSpec, rulesYard } from '../genre/contract';
+import { COUNT_PARAMS, type CountRole, type GenreSpec, rulesYard } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
 import { readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
@@ -499,11 +499,27 @@ export function applyRepairAnswer(spec: GameSpecV1, body: unknown): { ok: true; 
 // ---------------------------------------------------------------------------
 // Přepnutí žánru (P32B T5)
 
-/** Kandidát s rolí z draftu téhož režimu místo té, kterou kontrola věrnosti jmenuje. */
+/**
+ * Kandidát s rolí z draftu téhož režimu místo té, kterou kontrola věrnosti jmenuje.
+ * Vyměněný nepřítel bere z draftu i svůj počet (T7): „water“ se dvěma
+ * pronásledovateli by jinak předal oba „fallen log“, který ve větě nehoní.
+ */
 function withSentenceRoles(candidate: GenreSpec, words: GenreSpec, wrong: ReadonlySet<string>): GenreSpec {
-  const { enemy: _enemy, ...rest } = candidate;
-  const enemy = wrong.has('/enemy') ? words.enemy : candidate.enemy;
-  return { ...rest, hero: wrong.has('/hero') ? words.hero : candidate.hero, ...(enemy === undefined ? {} : { enemy }) } as GenreSpec;
+  const hero = wrong.has('/hero') ? words.hero : candidate.hero;
+  if (!wrong.has('/enemy')) return { ...candidate, hero };
+  const { enemy: _enemy, params, counts, ...rest } = candidate;
+  const key = (COUNT_PARAMS[candidate.genre] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>)[candidate.mode]?.enemy;
+  const said = key === undefined ? undefined : words.params?.[key];
+  const kept = { ...Object.fromEntries(Object.entries(params ?? {}).filter(([name]) => name !== key)), ...(said === undefined ? {} : { [key!]: said }) };
+  const { enemy: _count, ...otherCounts } = counts ?? {};
+  const keptCounts = { ...otherCounts, ...(words.counts?.enemy === undefined ? {} : { enemy: words.counts.enemy }) };
+  return {
+    ...rest,
+    hero,
+    ...(words.enemy === undefined ? {} : { enemy: words.enemy }),
+    ...(Object.keys(kept).length === 0 ? {} : { params: kept }),
+    ...(Object.keys(keptCounts).length === 0 ? {} : { counts: keptCounts }),
+  } as GenreSpec;
 }
 
 /**

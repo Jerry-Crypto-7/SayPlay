@@ -79,7 +79,8 @@ describe('director prompt', () => {
   // P32B T4: nejdelší je kompaktní s příklady, 3 633 B (do T4 plný prompt 12 691 B).
   // T5b: 6 282 B – první odpověď zas nese pravidla P29A (B-R5: gramatika a jeden příklad) a počty rolí (B-R4),
   // výchozí bod draftu k tomu parametry modulu a počty z věty. B-R8: 6 414 B – spouštěč `interact` a jeho meze v gramatice pravidel.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 6 414 B)', () => {
+  // T7: 6 718 B – co má AI verze proti výchozímu bodu přidat, popisky v jednotném čísle, nepřítel není nástroj hráče.
+  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 6 718 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -88,7 +89,7 @@ describe('director prompt', () => {
       }
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(6_414);
+    expect(max).toBeLessThanOrEqual(6_718);
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

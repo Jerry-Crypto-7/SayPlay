@@ -119,7 +119,8 @@ export function genrePromptLines(): string {
     'enemy: the chaser, threat or rival the sentence names. collectible: what the player gathers. target {label, verb, states}: what the main verb acts on ("light" a "candle"). Null when the sentence names none – the game then picks one from the setting.',
     `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}. params: only for a number the sentence says, else null.`,
     'counts: how many enemies, collectibles or targets the sentence says ("grab 5 coins" = collectible 5), only for roles the genre counts, else null.',
-    "Keep the user's nouns, numbers and names. Improve the starting point, do not copy it blindly.",
+    "Keep the user's nouns, numbers and names. Role labels are singular (\"rock\", not \"rocks\"). The enemy is never what the player holds, sprays or throws.",
+    'The starting point is the quick version the player already has. Keep what it got right and add one thing the sentence says and it misses: the chaser it names (params/counts), a count it says, the enemy or place it names. Never return it unchanged.',
   ].join('\n');
 }
 

@@ -15,6 +15,7 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
+import { singular } from '../draft/lexicon';
 import type { GenreModules } from '../genre/classify';
 import { type GenreModule, type GenreSpec, withCounts } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
@@ -65,7 +66,7 @@ export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly
 /**
  * Odpověď režiséra na novou hru (P32B T4): `{plan, spec}` se `GenreSpec`
  * (`GENRE_ANSWER_SCHEMA`) nebo holý `GenreSpec` z větve bez schématu → bez
- * polí `null` → `readGenreSpec` (tvar a meze parametrů) → modul žánru
+ * polí `null` → `readGenreSpec` (tvar a meze parametrů) → popisky rolí v jednotném čísle → modul žánru
  * (`compileGenreSpec`) → `readModelSpec`. Hru tak vždy skládá modul žánru, model píše jen výběr.
  * `modules` jsou pro testy (dvojníci); meze parametrů drží vždy skutečné moduly.
  */
@@ -74,10 +75,25 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   const raw = answerSpec(body);
   const foreign = WORLD_DOC_KEYS.filter((key) => key in raw);
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
-  const genre = readGenreSpec(withoutNulls(raw));
-  if (!genre.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: genre.issues.join('; ') };
-  const game = compileGenreSpec(genre.value, modules);
-  return game.ok ? { ok: true, spec: game.spec, genre: genre.value } : game;
+  const read = readGenreSpec(withoutNulls(raw));
+  if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
+  const genre = singularRoles(read.value);
+  const game = compileGenreSpec(genre, modules);
+  return game.ok ? { ok: true, spec: game.spec, genre } : game;
+}
+
+/**
+ * Popisky rolí v jednotném čísle, stejnou funkcí jako rychlá verze (P32B T7):
+ * šablony modulů mluví o jednom kusu, takže „rocks“ by dalo „without hitting a rocks“.
+ * Hrdina zůstane – do šablon počtů nejde a nese titulek hry („Dinosaurs Run“).
+ */
+function singularRoles(genre: GenreSpec): GenreSpec {
+  return {
+    ...genre,
+    ...(genre.enemy === undefined ? {} : { enemy: singular(genre.enemy) }),
+    ...(genre.collectible === undefined ? {} : { collectible: singular(genre.collectible) }),
+    ...(genre.target === undefined ? {} : { target: { ...genre.target, label: singular(genre.target.label) } }),
+  };
 }
 
 /** Spec žánrové odpovědi: `{plan, spec}`, nebo holý spec z větve bez schématu. */

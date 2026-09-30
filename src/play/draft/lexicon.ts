@@ -262,20 +262,47 @@ export function nounPhrase(text: string, max = 3): string | null {
 /** Jednotné číslo na -ie, ne -y: `zombies → zombie`, ne `zomby`. */
 const IE_NOUNS = new Set(['zombies', 'cookies', 'movies', 'pies', 'ties', 'brownies', 'hippies', 'rookies', 'goalies', 'genies', 'pixies', 'hoodies', 'birdies', 'smoothies', 'veggies', 'doggies', 'selfies', 'magpies']);
 
-/** Hrubé jednotné číslo pro `label`: `coins → coin`, `dummies → dummy`, `boxes → box`. */
+/** Množná čísla, která pravidla níž zkazí („wolves“ → „wolve“, „mice“ zůstane). */
+const IRREGULAR: Readonly<Record<string, string>> = {
+  wolves: 'wolf', elves: 'elf', shelves: 'shelf', calves: 'calf', halves: 'half', knives: 'knife', wives: 'wife', lives: 'life',
+  leaves: 'leaf', thieves: 'thief', loaves: 'loaf', scarves: 'scarf', dwarves: 'dwarf', mice: 'mouse', geese: 'goose',
+  children: 'child', people: 'person', teeth: 'tooth', feet: 'foot',
+};
+
+/**
+ * Hrubé jednotné číslo pro `label`: `coins → coin`, `dummies → dummy`, `boxes → box`.
+ * Slovo na -us („octopus“, „bus“) a vlastní jméno z velkého písmene („Thomas“) zůstanou.
+ */
 export function singular(phrase: string): string {
   const words = phrase.split(' ');
   const last = words[words.length - 1];
-  const single = IE_NOUNS.has(last)
-    ? last.slice(0, -1)
-    : last.endsWith('ies')
-      ? `${last.slice(0, -3)}y`
-      : /(?:ses|xes|ches|shes)$/.test(last)
-        ? last.slice(0, -2)
-        : last.endsWith('s') && !last.endsWith('ss')
-          ? last.slice(0, -1)
-          : last;
-  return [...words.slice(0, -1), single].join(' ');
+  return [...words.slice(0, -1), singularWord(last)].join(' ');
+}
+
+function singularWord(word: string): string {
+  if (IRREGULAR[word] !== undefined) return IRREGULAR[word];
+  if (word.endsWith('us') || /^[A-Z]/.test(word)) return word;
+  if (IE_NOUNS.has(word)) return word.slice(0, -1);
+  if (word.endsWith('ies')) return `${word.slice(0, -3)}y`;
+  if (/(?:ses|xes|ches|shes)$/.test(word)) return word.slice(0, -2);
+  return word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word;
+}
+
+/** Slovesa, jejichž předmět hráč drží nebo vrhá („sprays water“, „throws snowballs“); tvar -ing i minulý. */
+const TOOL_USE = /\b(?:spray|squirt|pour|splash|sprinkle|throw|toss|fling|hurl|lob|swing|wield|cast|us(?=e|ing))(?:s|es|e|ed|d|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*)/;
+/** „shoots arrows at goblins“: předmět střelby je nástroj jen s cílem za ním, jinak je terčem („shoot the zombies“). */
+const TOOL_AIMED = /\b(?:shoot|fire|launch)(?:s|es|ed|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*?) (?:at|on|into|toward|towards)\b/;
+
+/**
+ * Věc, kterou hráč ve větě používá (P32B T7): předmět slovesa nástroje, jednotné
+ * číslo. Nepřítel, pronásledovatel ani nástraha to nikdy není – hasič, který
+ * „sprays water“, před vodou neutíká. `null` = věta žádný nástroj neříká.
+ */
+export function toolOf(sentence: string): string | null {
+  const text = withoutPossessor(sentence.toLowerCase().replace(/\s+/g, ' ').trim());
+  const said = TOOL_USE.exec(text)?.[1] ?? TOOL_AIMED.exec(text)?.[1];
+  const phrase = said === undefined ? null : nounPhrase(said, 2);
+  return phrase === null ? null : singular(phrase);
 }
 
 export interface SentenceRoles {
@@ -388,12 +415,15 @@ export function readRoles(sentence: string): SentenceRoles {
   const target = first(text, [
     /\b(?:defeat|destroy|knock out|knock down|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/,
     // P26 T12: co se střílí a na co se hází, jmenuje terč a nepřítele arkády („shoot the zombies“, „throw balls at ducks“).
+    // T7: s „at“ je terčem to za ním, předmět je nástroj („shoots arrows at goblins“).
+    /\b(?:throw|toss|aim|fire|shoot|blast|launch)(?:s|es|ing)? (?:[a-z]+ ){0,2}?at (?!(?:night|dawn|dusk|noon|midnight|sunset|sunrise|home|school|sea|once)\b)(?:the |a |an )?([a-z][a-z -]*)/,
     /\b(?:shoot|blast|zap)(?:s|ing)? (?:down )?(?:all |every |the )?([a-z][a-z -]*)/,
-    /\b(?:throw|toss|aim|fire)(?:s|ing)? (?:[a-z]+ ){0,2}?at (?:the |a |an )?([a-z][a-z -]*)/,
     /\bagainst (?:the |a |an )?([a-z][a-z -]*)/,
   ], 2);
   const checkpointMatch = /(?:[a-z]+ )?((?:[a-z]+ )?(?:gates?|hoops?|rings?|checkpoints?|flags?|arches?|posts?))\b/.exec(text);
-  const hazardMatch = HAZARD_WORDS.exec(text);
+  // Co hráč stříká nebo hází, není nástraha („sprays water“, „throws water balloons“).
+  const tool = toolOf(text)?.split(' ') ?? [];
+  const hazardMatch = [...text.matchAll(new RegExp(HAZARD_WORDS.source, 'g'))].find((match) => !tool.includes(singular(match[1]))) ?? null;
   const colours = COLOURS.filter((colour) => new RegExp(`\\b${colour}\\b`).test(text));
   let switches: SentenceRoles['switches'] = null;
   if (colours.length >= 2) {

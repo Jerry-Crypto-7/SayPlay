@@ -15,7 +15,7 @@
 
 import { controlOf, unreadItems } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
-import { NUMBER_WORDS } from '../draft/lexicon';
+import { NUMBER_WORDS, toolOf } from '../draft/lexicon';
 import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import type { GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
@@ -334,11 +334,12 @@ export function unprovedVerbs(issues: readonly { readonly code: string; readonly
 /**
  * Odpověď na novou hru je `GenreSpec` a kombinaci ovládání × mechanika za ni
  * volí modul žánru – co může být špatně, je výběr: jiný hrdina, než věta říká,
- * hrdina, kterého žánr neumí, nepřítel mimo větu i prostředí, žánr, který hlavní
+ * hrdina, kterého žánr neumí, nepřítel mimo větu i prostředí nebo nepřítel, kterého
+ * hráč ve větě drží (T7), žánr, který hlavní
  * sloveso nehraje, režim, který hraje jen náhradu. Kódy nejsou kódy balíčku
  * (`CRITIC_CODES`): nález nejde modelu, řeší ho přepnutí žánru (`switchGenre`).
  */
-export const FIDELITY_CODES = ['HERO_NOT_SAID', 'HERO_UNFIT', 'ENEMY_NOT_SAID', 'VERB_OUTSIDE_MODE', 'MODE_NOT_READY'] as const;
+export const FIDELITY_CODES = ['HERO_NOT_SAID', 'HERO_UNFIT', 'ENEMY_NOT_SAID', 'ENEMY_IS_TOOL', 'VERB_OUTSIDE_MODE', 'MODE_NOT_READY'] as const;
 export type FidelityCode = (typeof FIDELITY_CODES)[number];
 
 export interface FidelityIssue {
@@ -409,6 +410,11 @@ export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOp
   const settingEnemies = [defaultEnemy(genre.setting, genre.genre), ...(words?.enemy === undefined ? [] : [words.enemy])];
   if (saidEnemy === null && genre.enemy !== undefined && !settingEnemies.some((label) => sameRole(genre.enemy!, label))) {
     issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `"${genre.enemy}" is neither in the sentence nor the default of the setting (${settingEnemies.join(', ')})` });
+  }
+  // T7: co hráč stříká nebo hází, ho nehoní („sprays water“ → „before the water catch you“).
+  const tool = toolOf(sentence);
+  if (tool !== null && genre.enemy !== undefined && sameRole(genre.enemy, tool)) {
+    issues.push({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: `the player uses the "${tool}" in the sentence, so it cannot be the enemy` });
   }
 
   if (!verbFits(genre, ranking, modules)) {

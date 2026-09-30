@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { goldenPrompts } from '../../../../evals/play/golden';
 import sentenceSet from '../../../../evals/play/p32/sentences.json';
 import { draftForControl, draftGameSpecWithMeta } from '../../draft/draft';
+import { singular } from '../../draft/lexicon';
 import type { GameSpecV1 } from '../../spec';
 import { DEFAULT_LABELS, craftOf, defaultCollectible, defaultEnemy, defaultHero, heroClass, heroFits } from '../roles';
 
@@ -23,10 +24,10 @@ const draft = (sentence: string) => draftGameSpecWithMeta(sentence, 1);
 const shown = (spec: GameSpecV1): string => JSON.stringify([spec.title, spec.roles.map((role) => role.label), spec.objective.description, spec.tutorial]);
 const sentence = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
 
-/** Slovo popisku ve větě i v jiném čísle („ghost“ ve „ghosts“, „puppy“ v „puppies“). */
+/** Slovo popisku ve větě i v jiném čísle („ghost“ ve „ghosts“, „puppy“ v „puppies“, „knife“ v „knives“). */
 function said(word: string, text: string): boolean {
   const stem = word.replace(/(?:ies|es|s|y)$/, '');
-  return new RegExp(`\\b(?:${word}|${stem}(?:s|es|ies|y|ys)?)\\b`).test(text);
+  return new RegExp(`\\b(?:${word}|${stem}(?:s|es|ies|y|ys)?)\\b`).test(text) || text.split(/[^a-z']+/).some((spoken) => singular(spoken) === word);
 }
 
 /** Popisek je z věty, když tam je každé jeho slovo, jinak musí být výchozí ze smlouvy rolí. */
