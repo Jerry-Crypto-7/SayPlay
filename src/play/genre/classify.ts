@@ -161,6 +161,19 @@ const key = (p: Pair): string => `${p.genre}.${p.mode}`;
 /** „dodging the fishmonger“, „avoid the guards“: sběr s někým, komu se hráč vyhýbá. */
 const AVOID = /\bdodg(?:e|es|ing)\b|\bavoid(?:s|ing)?\b/;
 
+/**
+ * Hraje režim sloveso? Režim slovesa dává tabulka `VERBS` jako `pick` věty;
+ * sběr (`pickup`) žánr nemá, hraje ho každý režim, který má co sbírat. Čte to
+ * řetěz věrnosti (P32B T6) u hry žánru, kde sloveso nenese ovládání.
+ */
+export function verbPlayedBy(forms: readonly string[], genre: string, mode: string, collects: boolean): boolean {
+  const words = forms.map((form) => form.toLowerCase());
+  // Základní tvar napřed: vzor „box“ chce „boxing“ nebo „box against“, samotné slovo seznamu by minul.
+  const entry = VERBS.find((candidate) => words.includes(candidate.verb)) ?? VERBS.find((candidate) => words.some((word) => candidate.pattern.test(word)));
+  if (entry === undefined) return false;
+  return entry.pick === null ? collects : entry.pick.genre === genre && entry.pick.mode === mode;
+}
+
 /** Věta (a čtení modelem, když je) → všech devět režimů seřazených od nejlepšího. */
 export function classifyGenre(sentence: string, reading: Reading | null, modules: GenreModules = GENRE_MODULES): GenreRanking {
   const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();

@@ -78,6 +78,24 @@ describe('fidelityChain', () => {
     expect(fidelityChain(agar, [{ item: 'big fish', slot: 'role', match: ['big fish'] }])[0]).toMatchObject({ inSpec: true, read: false, why: 'not-read-by-control' });
   });
 
+  // P32B T6: hra žánru nese sloveso režimem generátoru, ne ovládáním ze seznamu (`duel`, `throw`).
+  it('counts a verb of a genre game when its mode is the one the verb plays', () => {
+    const verb = (spec: GameSpecV1, item: string, controls: string[]) => fidelityChain(spec, [{ item, slot: 'verb', controls }])[0].why;
+    const fight = draftGameSpec('boxing a kangaroo in the australian outback');
+    expect(verb(fight, 'box', ['duel'])).toBe('ok');
+    expect(verb(fight, 'throw', ['throw'])).toBe('not-in-spec');
+    const quest = draftGameSpec('pop ten balloons at a birthday party');
+    expect(quest.controlParams).toMatchObject({ generator: 'quest_spatial' });
+    expect(verb(quest, 'pop', ['shooter'])).toBe('ok');
+    expect(verb(quest, 'duel', ['duel'])).toBe('not-in-spec');
+    // Sběr hraje každý režim, který má co sbírat – útěk s klíči ano, souboj bez věci ne.
+    const escape = draftGameSpec('A knight must collect three keys in a haunted castle while dodging ghosts.');
+    expect(verb(escape, 'collect', [])).toBe('ok');
+    expect(verb(fight, 'collect', [])).toBe('not-in-spec');
+    // Sloveso mimo tabulku klasifikátoru žádný režim nehraje.
+    expect(verb(quest, 'launch', ['throw'])).toBe('not-in-spec');
+  });
+
   it('names the first stage where an item is lost', () => {
     const spec = shooterFixture as GameSpecV1;
     const items = fidelityChain(spec, [

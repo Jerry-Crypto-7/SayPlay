@@ -2,7 +2,8 @@
  * Řetěz věrnosti (P27A T1): položka kontrolního seznamu věty → čtyři stupně
  * `asked → inSpec → read → drawn`.
  *
- * - `inSpec` – spec ji nese (popisek role, `theme.setting`, ovládání nebo mechanika);
+ * - `inSpec` – spec ji nese (popisek role, `theme.setting`, ovládání nebo mechanika,
+ *   u hry žánru režim, který sloveso podle tabulky klasifikátoru hraje – P32B T6);
  * - `read` – nese ji místem, které ovládání čte (`src/play/capabilities.ts`),
  *   nebo ji splní doplněk (`spec.addons`, P26D): „jump and shoot“ je plošinovka
  *   s `+shoot`, ne ztracené sloveso; u žánrů arény (souboj, útěk, sběr, úkol –
@@ -30,6 +31,7 @@ import { PROP_ROLES, chaserModel, enemyModel, heroModel, modelOf, namedProps, pr
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
 import type { VerbProof } from '../contracts';
+import { verbPlayedBy } from '../genre/classify';
 import type { AddonId, ControlId, GameRole, GameSpecV1 } from '../spec';
 
 export type FidelitySlot = 'hero' | 'role' | 'any' | 'setting' | 'verb';
@@ -63,6 +65,17 @@ const ADDON_VERB: Readonly<Record<AddonId, { readonly control?: ControlId; reado
   collect: { mechanic: 'collectible' },
   chaser: { mechanic: 'chaser' },
   lives: { mechanic: 'health' },
+};
+
+/** Režim hry žánru podle generátoru, který zapsal překlad modulu (P32B T6); běžec a plošinovka hrají svým ovládáním. */
+const GENERATOR_MODE: Readonly<Record<string, readonly [genre: string, mode: string]>> = {
+  arena_escape: ['arena', 'escape'],
+  arena_collect: ['arena', 'collect'],
+  fight: ['arena', 'fight'],
+  voyage_race: ['voyage', 'race'],
+  voyage_land: ['voyage', 'land'],
+  quest_spatial: ['quest', 'spatial'],
+  quest_station: ['quest', 'station'],
 };
 
 /** Role, kterou doplněk přidá do hry a scéna ji kreslí podle popisku (nepřítel `+shoot`, pronásledovatel `+chaser`). */
@@ -206,9 +219,13 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
         return (verb.control !== undefined && controls.includes(verb.control)) || (verb.mechanic !== undefined && mechanics.includes(verb.mechanic));
       });
       const byRule = (spec.rules ?? []).filter((rule) => mentions(rule.verb, [entry.item, ...(entry.match ?? [])])).map((rule) => rule.verb);
-      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(proved);
-      // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika nebo vystřelené pravidlo je vidět hraním.
-      return stage(entry, byControl || byAddon || byMechanic.length > 0 || byRule.length > 0, read, read);
+      // Hra žánru nese sloveso režimem: generátor souboje hraje „fight“, ne ovládání `duel` ze seznamu.
+      const generator = spec.controlParams?.generator;
+      const mode = typeof generator === 'string' ? GENERATOR_MODE[generator] : undefined;
+      const byGenre = mode !== undefined && verbPlayedBy([entry.item, ...(entry.match ?? [])], mode[0], mode[1], roles.some((role) => role.kind === 'collectible' && readsRole(role)));
+      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(proved) || byGenre;
+      // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika, vystřelené pravidlo nebo režim žánru je vidět hraním.
+      return stage(entry, byControl || byAddon || byMechanic.length > 0 || byRule.length > 0 || byGenre, read, read);
     }
     const match = entry.match ?? [];
     if (entry.slot === 'setting') {
