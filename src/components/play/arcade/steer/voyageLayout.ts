@@ -4,6 +4,8 @@
  * v `World.tsx`). Jen obraz: jádro ani hash o ničem z toho neví.
  */
 
+import type { Frustum, Vector3 } from 'three';
+
 import { baseControlOf } from '@/play/arcade/addons';
 import { BODY, HEADER, type ArcadeWorld, UNIT, bodyBase } from '@/play/arcade/contract';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
@@ -80,6 +82,14 @@ export function voyageLayoutOf(world: ArcadeWorld): VoyageLayout | null {
     hero,
     reach,
   };
+}
+
+/** Jak daleko od kamery (m) se dělová koule počítá jako v záběru – dál je v mlze skoro nevidět. */
+export const SHOT_VIEW_M = 35;
+
+/** Kolik živých dělových koulí je v záběru a blízko kamery (`data-shots-in-view`, e2e na ně čeká). */
+export function nearShotsInView(shots: readonly { readonly at: Vector3; readonly alive: boolean }[], eye: Vector3, frustum: Frustum): number {
+  return shots.filter((shot) => shot.alive && shot.at.distanceTo(eye) < SHOT_VIEW_M && frustum.containsPoint(shot.at)).length;
 }
 
 /** Střed trati ve scéně (m) v místě `z` (m). */
