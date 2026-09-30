@@ -122,10 +122,11 @@ describe('publikace → čtení → remix → rodokmen', () => {
       created.body.versionId,
       child.versionId,
     ]);
-    // Houby sbírá aréna (P32B T2): těžší = hustší lovci; spec dítěte je vlastní, ne rodičův.
+    // Houby sbírá sběr arény (P32B T5b, dřív agar s hustotou): těžší = o dvě houby víc a cíl to říká; spec dítěte je vlastní, ne rodičův.
     expect(parent.body.spec.control).toBe('move_free');
-    expect(parent.body.spec.controlParams.density).toBeUndefined();
-    expect(childRead.body.spec.controlParams.density).toBe('dense');
+    expect(parent.body.spec.controlParams).toMatchObject({ generator: 'arena_collect', tuning: { items: 5 } });
+    expect(childRead.body.spec.controlParams).toMatchObject({ generator: 'arena_collect', tuning: { items: 7 } });
+    expect(childRead.body.spec.objective).toMatchObject({ count: 7, description: expect.stringMatching(/^Collect 7 /) });
   });
 
   it('táž věta podruhé je 200 exists s týmž versionId', async () => {
