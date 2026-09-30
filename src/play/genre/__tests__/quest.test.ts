@@ -172,4 +172,10 @@ describe('quest genre – module shape', () => {
     expect(spec.mode).toBe('station');
     expect(spec.params?.count).toBe(3);
   });
+
+  it('draftFill caps the chasers a sentence names at three instead of refusing the quest', () => {
+    const spec = draft('A tiny wizard lights five candles before six ghosts catch him');
+    expect(spec.enemy).toBe('ghosts');
+    expect(spec.params?.chasers).toBe(3);
+  });
 });
