@@ -108,11 +108,11 @@ export type Rule = z.infer<typeof ruleSchema>;
 export const rulesSchema = z.array(ruleSchema).max(RULES_MAX);
 
 /**
- * Pravidla, jak je smí psát model (`director/compact.ts`, `answer-schema.ts`):
- * bez `interact`, který je do P32G T1 pahýl bez účinku – hra s ním by byla
- * mrtvá a opravné kolo by ji nespravilo. P32G T1 ho sem vrátí, až ho postaví.
+ * Pravidla, jak je smí psát model (`director/compact.ts`, `answer-schema.ts`).
+ * `interact` je zpět od `p32-modules` (B-R8, pravidlo P32G T1 hraje); jeho meze
+ * – jedno na hru, ne s `+shoot`/`+chaser` – hlídá `ruleIssues`.
  */
-export const modelWhenSchema = z.union(liveWhens);
+export const modelWhenSchema = ruleWhenSchema;
 export const modelRulesSchema = z.array(ruleSchema.extend({ when: modelWhenSchema })).max(RULES_MAX);
 
 /**
@@ -146,9 +146,23 @@ function roleRefsOf(rule: Rule): [string, string][] {
  * Soudí pravidla proti rolím specu – co schéma jednoho pole neunese: odkazy na
  * role, jednoznačnost id, čítač s právě jednou mezí a efekty mířící na tělo,
  * které spouštěč opravdu má. Prázdné pole = v pořádku.
+ *
+ * `interact` (B-R8): jádro drží jen jednu rozdělanou práci, takže smí být
+ * jedno na hru – generátor úkolu (`game.generator` `quest_*`) si svoje staví
+ * sám – a ne spolu s `+shoot`/`+chaser`.
  */
-export function ruleIssues(rules: readonly Rule[], things: readonly Thing[], roleIds: ReadonlySet<string>): string[] {
+export function ruleIssues(
+  rules: readonly Rule[],
+  things: readonly Thing[],
+  roleIds: ReadonlySet<string>,
+  game: { readonly addons?: readonly string[]; readonly generator?: unknown } = {},
+): string[] {
   const issues: string[] = [];
+  const interacts = rules.flatMap((rule, index) => ('interact' in rule.when ? [`/rules/${index}/when/interact`] : []));
+  const own = typeof game.generator === 'string' && game.generator.startsWith('quest_') ? 1 : 0;
+  for (const at of interacts.slice(own === 0 ? 1 : 0)) issues.push(`${at}: one interact per game – the core keeps no slot for a second job in progress${own === 1 ? ', and the quest already has its own' : ''}`);
+  const clash = (game.addons ?? []).filter((addon) => addon === 'shoot' || addon === 'chaser');
+  if (interacts.length > 0 && clash.length > 0) issues.push(`${interacts[0]}: interact does not combine with +${clash.join(' or +')}`);
   const known = (role: string): boolean => role === 'player' || roleIds.has(role);
   const ids = new Set<string>();
   rules.forEach((rule, index) => {

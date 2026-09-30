@@ -577,7 +577,7 @@ export function readGameSpec(input: unknown): GameSpecResult {
     if (spec.control === undefined || spec.control === 'tap_go') {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/rules: only an arcade game (any control but tap_go) takes rules'] };
     }
-    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds);
+    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator: spec.controlParams?.generator });
     if (ruleProblems.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues: ruleProblems };
   }
 

@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest';
 
 import carryKey from '../arcade/__fixtures__/rules/carry-key.json';
+import { type Rule, ruleIssues } from '../arcade/rules/schema';
 import { genreAnswer } from '../director/__fixtures__';
 import { answered, fakeBranch } from '../director/__fixtures__/branch';
 import { GENRE_ANSWER_SCHEMA } from '../director/answer-schema';
@@ -32,15 +33,15 @@ const withRules = (rules: readonly unknown[] = carryKey.rules) => ({
 
 // T5b (rozhodnutí B-R5): první odpověď zas nese pravidla – sloveso mimo žánr se neztratí jen proto, že věta dostala žánr.
 describe('the first answer carries rules', () => {
-  it('the answer schema and both prompts offer rules, rule roles and things, never the stub interact', () => {
+  it('the answer schema and both prompts offer rules, rule roles, things and interact', () => {
     const schema = JSON.stringify(GENRE_ANSWER_SCHEMA);
-    for (const key of ['"rules"', '"ruleRoles"', '"things"']) expect(schema, key).toContain(key);
-    expect(schema).not.toContain('"interact"');
+    // B-R8: `interact` model zase smí (pravidlo P32G T1 hraje).
+    for (const key of ['"rules"', '"ruleRoles"', '"things"', '"interact"']) expect(schema, key).toContain(key);
     const genre = draftGameSpecWithMeta(SENTENCE).genre;
     const full = buildDirectorRequest(SENTENCE, genre);
     const compact = buildCompactRequest(SENTENCE, genre, true);
     for (const [name, text] of [['director', full.system], ['compact', compact.system]] as const) {
-      for (const grammar of ['throwHeld', 'ruleRoles', '"rules"']) expect(text, `${name} ${grammar}`).toContain(grammar);
+      for (const grammar of ['throwHeld', 'ruleRoles', '"rules"', '"interact"']) expect(text, `${name} ${grammar}`).toContain(grammar);
     }
   });
 
@@ -66,21 +67,41 @@ describe('the first answer carries rules', () => {
 });
 
 describe('reading refuses what no transport enforces', () => {
-  it('an answer with the stub interact trigger is refused on the read path', () => {
-    // Přenos Messages schéma odpovědi neposílá (revize hranice fáze P32-0): odmítnout musí i čtení.
-    const interact = { interact: { role: 'key', radius: 2, hold: 30, states: 2 } };
-    const full = readDirectorAnswer({ ...carryKey, rules: carryKey.rules.map((rule, i) => (i === 0 ? { ...rule, when: interact } : rule)) });
-    expect(!full.ok && full.detail).toContain('/rules/0/when: interact does nothing yet');
-    // Bez `interact` čtení projde: odmítá se spouštěč, ne pravidla.
-    expect(readDirectorAnswer(carryKey).ok).toBe(true);
+  // B-R8: `interact` je zpět; jádro drží jednu rozdělanou práci. Přenos Messages schéma odpovědi neposílá, meze proto soudí čtení.
+  const interact = { interact: { role: 'key', radius: 2, hold: 30, states: 2 } };
+  const withInteract = (count: number) => ({ ...carryKey, rules: carryKey.rules.map((rule, i) => (i < count ? { ...rule, when: interact } : rule)) });
+
+  it('an answer with one interact rule reads, two are refused', () => {
+    expect(readDirectorAnswer(withInteract(1)).ok).toBe(true);
+    const two = readDirectorAnswer(withInteract(2));
+    expect(two).toMatchObject({ ok: false });
+    expect(!two.ok && two.detail).toContain('/rules/1/when/interact: one interact per game');
   });
 
-  it('a repair patch with the stub interact trigger is refused whole, like a first answer (B-R6)', () => {
+  it('refuses interact together with +chaser or +shoot', () => {
+    const chased = readDirectorAnswer({ ...withInteract(1), addons: ['chaser'] });
+    expect(!chased.ok && chased.detail).toContain('/rules/0/when/interact: interact does not combine with +chaser');
+    // Bez `interact` doplněk projde: odmítá se kombinace, ne doplněk.
+    expect(readDirectorAnswer({ ...carryKey, addons: ['chaser'] }).ok).toBe(readDirectorAnswer(carryKey).ok);
+  });
+
+  it('counts the interact a quest generator builds for itself', () => {
+    const rule = { ...carryKey.rules[0], when: interact } as Rule;
+    expect(ruleIssues([rule], [], new Set(['key']))).toEqual([]);
+    expect(ruleIssues([rule], [], new Set(['key']), { generator: 'quest_spatial' })).toEqual([expect.stringContaining('the quest already has its own')]);
+    expect(ruleIssues([rule], [], new Set(['key']), { generator: 'arena_escape' })).toEqual([]);
+  });
+
+  it('a repair patch reads interact like a first answer (B-R6)', () => {
     const game = readDirectorAnswer(carryKey);
     if (!game.ok) throw new Error(game.detail);
-    const patched = applyRepairAnswer(game.spec, [{ op: 'replace', path: '/rules/0/when', value: { interact: { role: 'key', radius: 2, hold: 30, states: 2 } } }]);
-    expect(patched).toMatchObject({ ok: false, reason: 'MALFORMED_SPEC' });
-    expect(!patched.ok && patched.detail).toContain('/rules/0/when: interact does nothing yet');
+    expect(applyRepairAnswer(game.spec, [{ op: 'replace', path: '/rules/0/when', value: interact }]).ok).toBe(true);
+    const twice = applyRepairAnswer(game.spec, [
+      { op: 'replace', path: '/rules/0/when', value: interact },
+      { op: 'replace', path: '/rules/1/when', value: interact },
+    ]);
+    expect(twice).toMatchObject({ ok: false });
+    expect(!twice.ok && twice.detail).toContain('one interact per game');
   });
 
   it('rules a repair round puts on the tap-to-move grid are refused, not dropped', () => {

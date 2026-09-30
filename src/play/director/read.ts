@@ -15,7 +15,6 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
-import { modelWhenSchema } from '../arcade/rules/schema';
 import type { GenreModules } from '../genre/classify';
 import { type GenreModule, type GenreSpec, withCounts } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
@@ -109,16 +108,12 @@ export function compileGenreSpec(genre: GenreSpec, modules: GenreModules = GENRE
 }
 
 /**
- * `readGameSpec` pro spec od modelu: navíc odmítne spouštěč, který schéma
- * odpovědi nenabízí (pahýl `interact`, `modelWhenSchema`). Schéma to vynutí jen
- * přenos, který ho posílá – přenos Messages ne (revize P32-0 T4-R2).
+ * `readGameSpec` pro spec od modelu – první odpověď i záplata opravy čtou
+ * totéž (B-R6). Od B-R8 model smí všechny spouštěče; meze `interact` soudí
+ * `ruleIssues` v `readGameSpec`, takže platí i pro přenos, který schéma
+ * odpovědi neposílá (Messages).
  */
 export function readModelSpec(input: unknown): DirectorRead {
   const result = readGameSpec(input);
-  if (!result.ok) return { ok: false, reason: result.reason, detail: result.issues.join('; ') };
-  const stubs = (result.value.rules ?? []).flatMap((rule, index) =>
-    modelWhenSchema.safeParse(rule.when).success ? [] : [`/rules/${index}/when: ${Object.keys(rule.when).join()} does nothing yet – use a trigger from the rules grammar`],
-  );
-  if (stubs.length > 0) return { ok: false, reason: 'MALFORMED_SPEC', detail: stubs.join('; ') };
-  return { ok: true, spec: result.value };
+  return result.ok ? { ok: true, spec: result.value } : { ok: false, reason: result.reason, detail: result.issues.join('; ') };
 }
