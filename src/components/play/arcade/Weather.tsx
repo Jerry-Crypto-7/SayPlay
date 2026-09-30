@@ -13,6 +13,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import { BufferGeometry, Float32BufferAttribute, type Points, PointsMaterial } from 'three';
 
+import { color } from '@/brand/tokens';
 import { HEADER } from '@/play/arcade/contract';
 import { visualAt } from '@/play/arcade/live';
 import type { GameSpecV1 } from '@/play/spec';
@@ -48,7 +49,7 @@ export function Snowfall() {
     }
     const built = new BufferGeometry();
     built.setAttribute('position', new Float32BufferAttribute(positions, 3));
-    return [built, new PointsMaterial({ color: '#ffffff', size: 0.07, transparent: true, opacity: 0.9, depthWrite: false })] as const;
+    return [built, new PointsMaterial({ color: color.paper, size: 0.07, transparent: true, opacity: 0.9, depthWrite: false })] as const;
   }, []);
   useEffect(
     () => () => {

@@ -12,6 +12,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { Box3, DataTexture, type Group, LinearFilter, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, Raycaster, Vector3 } from 'three';
 
+import { color } from '@/brand/tokens';
 import { UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 
@@ -175,7 +176,7 @@ function HeroPose({ session, hero }: { readonly session: ArcadeSession; readonly
   const found = useRef<Object3D | null>(null);
   const shadow = useRef<Mesh>(null);
   const box = useMemo(() => new Box3(), []);
-  const material = useMemo(() => new MeshBasicMaterial({ color: '#0f172a', map: blobTexture(), transparent: true, depthWrite: false, opacity: 0 }), []);
+  const material = useMemo(() => new MeshBasicMaterial({ color: color.ink, map: blobTexture(), transparent: true, depthWrite: false, opacity: 0 }), []);
   useEffect(
     () => () => {
       material.map?.dispose();

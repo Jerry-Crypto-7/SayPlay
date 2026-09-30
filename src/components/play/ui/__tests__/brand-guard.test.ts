@@ -29,6 +29,8 @@ const SCENE_FILES = new Set([
   'OrderBubbles.tsx',
   'PatrolSight.tsx',
   'arcade/ArcadeStage.tsx',
+  // Maska částic na plátně potřebuje bílou s průhledností (rgba), token nese jen barvu.
+  'arcade/effects/Effects.tsx',
   'arcade/World.tsx',
   'arcade/arena/ArenaScene.tsx',
   'arcade/duel/DuelScene.tsx',
