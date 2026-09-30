@@ -81,6 +81,8 @@ describe('reading refuses what no transport enforces', () => {
   it('refuses interact together with +chaser or +shoot', () => {
     const chased = readDirectorAnswer({ ...withInteract(1), addons: ['chaser'] });
     expect(!chased.ok && chased.detail).toContain('/rules/0/when/interact: interact does not combine with +chaser');
+    const shot = readDirectorAnswer({ ...withInteract(1), addons: ['shoot'] });
+    expect(!shot.ok && shot.detail).toContain('/rules/0/when/interact: interact does not combine with +shoot');
     // Bez `interact` doplněk projde: odmítá se kombinace, ne doplněk.
     expect(readDirectorAnswer({ ...carryKey, addons: ['chaser'] }).ok).toBe(readDirectorAnswer(carryKey).ok);
   });

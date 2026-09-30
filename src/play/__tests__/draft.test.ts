@@ -103,6 +103,8 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       expect(["farmer's dog", 'dog']).toContain(fox.genre!.enemy);
       expect(JSON.stringify(fox.spec)).not.toMatch(/\bs dog\b/);
       expect(genre("Two knights duel the king's guard in a castle").enemy).toBe('guard');
+      // Obrana („defends … from“) jde přes `namedFoe` – i ta musí vlastníka odtrhnout.
+      expect(genre("A knight defends the castle from the king's guards").enemy).toBe('guard');
       expect(withoutPossessor("it's a race where the king's horse runs")).toBe("it's a race where the horse runs");
     });
 

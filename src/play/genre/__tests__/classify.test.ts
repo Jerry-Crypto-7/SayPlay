@@ -14,7 +14,7 @@ import { goldenPrompts } from '../../../../evals/play/golden';
 import sentenceSet from '../../../../evals/play/p32/sentences.json';
 import type { Reading } from '../../read/schema';
 import { readGameSpec } from '../../spec';
-import { classifyGenre } from '../classify';
+import { classifyGenre, verbPlayedBy } from '../classify';
 import type { GenreModule, GenreSpec } from '../contract';
 import { GENRE_MODULES } from '../index';
 
@@ -25,6 +25,14 @@ const demand = JSON.parse(readFileSync(new URL('../../../../evals/play/demand/co
 const LEGACY_CONTROLS = ['tap_go', 'flap', 'shooter', 'throw', 'timing', 'rhythm'];
 
 const top = (sentence: string, modules = genreDoubles()) => classifyGenre(sentence, null, modules).ranked[0];
+
+describe('verbPlayedBy', () => {
+  it('reads the mode, not only the genre: a fight is played by arena.fight, not arena.escape', () => {
+    expect(verbPlayedBy(['fight'], 'arena', 'fight', false)).toBe(true);
+    expect(verbPlayedBy(['fight'], 'arena', 'escape', false)).toBe(false);
+    expect(verbPlayedBy(['escape'], 'arena', 'escape', false)).toBe(true);
+  });
+});
 
 describe('classifyGenre', () => {
   it.each(sentenceSet.sentences)('puts the expected genre and mode first for $id', (entry) => {
