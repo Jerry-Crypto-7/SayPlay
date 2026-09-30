@@ -80,11 +80,20 @@ describe('draft from the local reading', () => {
     expect(label(spec, 'player')).toBe('corgi');
   });
 
-  // `GenreSpec` počty nenese (kontrakt P32-0); počty z věty čte jen šablona remixu – požadavek na kontrakt je v plánu P32B.
   it('the remix template takes counts from the sentence; the genre draft takes the obstacle the reading names', () => {
     expect(count(legacyDraft('run through a city and grab 5 coins'), 'coin')).toBe(5);
     const threats = draftGameSpecWithMeta('run through a city', 1, { reading: reading({ roles: [{ noun: 'cones', kind: 'obstacle', count: 7 }] }) }).spec;
     expect(label(threats, 'obstacle')).toBe('cone');
+  });
+
+  // B-R4 (T5b): `GenreSpec.counts` nese počty čtení i do nové hry – generátor, role i cíl; běžec počty nečte (`COUNT_PARAMS`).
+  it('the counts of the reading land in a new genre game', () => {
+    const meta = draftGameSpecWithMeta('a cat collects fish in a kitchen', 1, {
+      reading: reading({ control: 'move_free', hero: 'cat', roles: [{ noun: 'fish', kind: 'collectible', count: 12 }, { noun: 'dogs', kind: 'chaser', count: 3 }] }),
+    });
+    expect(meta.genre).toMatchObject({ genre: 'arena', mode: 'escape', counts: { enemy: 3, collectible: 12 } });
+    expect(meta.spec.controlParams).toMatchObject({ generator: 'arena_escape', tuning: { chasers: 3, items: 12 } });
+    expect([count(meta.spec, 'hunter'), count(meta.spec, 'item'), meta.spec.objective.count]).toEqual([3, 12, 12]);
   });
 
   it('seconds of the reading set the round length', () => {
