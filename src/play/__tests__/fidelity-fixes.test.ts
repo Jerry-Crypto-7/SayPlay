@@ -48,7 +48,9 @@ describe('foe named without a verb', () => {
     // Střelnice je od P32B T2 šablona remixu; nová hra dá zombíky do terče Úkolu, kreslí ho modul žánru (P32B T6).
     expect(itemOf('s039', 'zombie', legacyDraft)).toEqual(['zombie', true, 'ok']);
     expect(draftGameSpecWithMeta('zombie shooter in a mall').genre?.target?.label).toBe('zombie');
-    expect(itemOf('h03', 'dragon')).toEqual(['dragon', true, 'ok']);
+    // Hod je taky šablona remixu; nová hra dá draky do soupeře souboje arény – nakreslí ho, až scéna bude číst `rival` (B-R9).
+    expect(itemOf('h03', 'dragon', legacyDraft)).toEqual(['dragon', true, 'ok']);
+    expect(draftGameSpecWithMeta('defend a castle from dragons by throwing snowballs').genre?.enemy).toBe('dragon');
   });
 
   it('never takes a place or a style before "shooter" for the foe', () => {

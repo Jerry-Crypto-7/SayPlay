@@ -24,6 +24,8 @@ import { draftGameSpec } from '../draft';
 import { fidelityChain, type ChecklistEntry } from '../fidelity/chain';
 import type { GameSpecV1 } from '../spec';
 
+import { legacyDraft } from './legacy-draft';
+
 interface Sentence {
   readonly id: string;
   readonly text: string;
@@ -46,14 +48,15 @@ const sentences = [
 const live = new Map(read<{ sentences: { id: string; spec: GameSpecV1 }[] }>('evals', 'play', 'p30b', 'live.json').sentences.map((entry) => [entry.id, entry.spec]));
 const baseline = read<{ rows: Row[] }>('evals', 'play', 'p30b', 'losses.json').rows.filter((row) => row.role === 'item' && row.source === 'ai');
 
-const key = (row: Pick<Row, 'source' | 'id' | 'item'>): string => `${row.source}|${row.id}|${row.item}`;
+const key = (row: { readonly source: string; readonly id: string; readonly item: string }): string => `${row.source}|${row.id}|${row.item}`;
 
-/** Položky (vedlejší role a cokoli z věty) obou zdrojů na HEAD, klíčované jako řádky baseline. */
+/** Položky (vedlejší role a cokoli z věty) obou zdrojů na HEAD, klíčované jako řádky baseline; `legacy` = šablona remixu. */
 function itemsNow(): Map<string, boolean> {
   const out = new Map<string, boolean>();
   for (const sentence of sentences) {
-    const sources: [Row['source'], GameSpecV1 | undefined][] = [
+    const sources: [Row['source'] | 'legacy', GameSpecV1 | undefined][] = [
       ['draft', draftGameSpec(sentence.text)],
+      ['legacy', legacyDraft(sentence.text)],
       ['ai', live.get(sentence.id)],
     ];
     for (const [source, spec] of sources) {
@@ -78,9 +81,11 @@ describe('the items from the sentence are drawn with their own model', () => {
     const found = [
       'draft|s006|sprinkler',
       'ai|s006|sprinkler',
-      'draft|s056|traffic',
+      // Závod a souboj P30B jsou od P32B T2 šablona remixu. Nová hra je úkol (provoz ve větě nemá, P32B T6)
+      // a souboj arény, jehož soupeře scéna zatím kreslí modelem role `enemy` (B-R9).
+      'legacy|s056|traffic',
       'ai|s056|traffic',
-      'draft|h05|kangaroo',
+      'legacy|h05|kangaroo',
       'ai|h05|kangaroo',
       'ai|s058|crocodile',
       'ai|s144|lily pad',
