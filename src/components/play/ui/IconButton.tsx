@@ -1,5 +1,6 @@
 /**
- * Kulaté tlačítko s ikonou (P33 T3): kruh 44 px, pod ním volitelný popisek.
+ * Kulaté tlačítko s ikonou podle kitu: kolo `.sp-btn--icon` 52 px, pod ním
+ * volitelný popisek. Stisk celého tlačítka kolo zamáčkne (`play.css`).
  * `aria-label` je povinný v typu – ikona bez jména je tlačítko, které čtečka
  * neumí přečíst a hráč nepozná.
  */
@@ -21,7 +22,7 @@ export function IconButton({
 }) {
   return (
     <button type={type} className={className === undefined ? 'play-icon-button' : `play-icon-button ${className}`} {...rest}>
-      <span className="play-icon-button-disc">
+      <span className="sp-btn sp-btn--icon play-icon-button-disc">
         <Icon name={icon} />
       </span>
       {caption !== undefined && <span className="play-icon-button-caption">{caption}</span>}

@@ -10,8 +10,8 @@ import { Icon } from './ui';
 export function MoreGames() {
   return (
     <Link href="/play" className="play-icon-button" data-testid="play-more" aria-label="More games">
-      <span className="play-icon-button-disc">
-        <Icon name="next" />
+      <span className="sp-btn sp-btn--icon play-icon-button-disc">
+        <Icon name="arrow-right" />
       </span>
       <span className="play-icon-button-caption">More</span>
     </Link>

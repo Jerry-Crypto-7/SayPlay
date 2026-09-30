@@ -24,5 +24,5 @@ export default function PlayLayout({ children }: { children: ReactNode }) {
   for (const cut of ['Black', 'Medium']) {
     preload(`/fonts/roboto/Roboto-${cut}.woff2`, { as: 'font', type: 'font/woff2', crossOrigin: 'anonymous' });
   }
-  return <div className="play-root">{children}</div>;
+  return <div className="play-root sp-root">{children}</div>;
 }

@@ -1,12 +1,14 @@
 /**
- * Tlačítko PLAY (P33 T3). `primary` je teal akce, `accent` jantarové
- * zvýraznění, `quiet` obrys pro vedlejší cestu. `data-variant` nese variantu
- * do DOM, aby test karty spočítal hlavní akce (má být právě jedna).
+ * Tlačítko PLAY podle kitu Sayplay (`.sp-btn`): `primary` je rajčatová
+ * akce (jedna na obrazovku), `secondary` papír, `sun` slunečná podpora,
+ * `link` podtržený text. Velikost L 62 px, M 52 px, S 44 px. `data-variant`
+ * nese variantu do DOM, aby test karty spočítal hlavní akce (má být právě
+ * jedna); `.play-button` zůstává kvůli e2e.
  */
 
 import type { ButtonHTMLAttributes } from 'react';
 
-export type ButtonVariant = 'primary' | 'accent' | 'quiet';
+export type ButtonVariant = 'primary' | 'secondary' | 'sun' | 'link';
 
 export function Button({
   variant = 'primary',
@@ -14,7 +16,15 @@ export function Button({
   className,
   type = 'button',
   ...rest
-}: ButtonHTMLAttributes<HTMLButtonElement> & { readonly variant?: ButtonVariant; readonly size?: 'm' | 'l' }) {
-  const classes = ['play-button', `play-button-${variant}`, size === 'l' ? 'play-button-l' : null, className].filter(Boolean).join(' ');
+}: ButtonHTMLAttributes<HTMLButtonElement> & { readonly variant?: ButtonVariant; readonly size?: 'l' | 'm' | 's' }) {
+  const classes = [
+    'sp-btn',
+    `sp-btn--${variant}`,
+    size === 'l' ? null : `sp-btn--${size}`,
+    'play-button',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
   return <button type={type} className={classes} data-variant={variant} {...rest} />;
 }

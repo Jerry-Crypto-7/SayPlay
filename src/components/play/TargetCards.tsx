@@ -14,9 +14,9 @@ import { type AvoidCard, secondTapLabel, type TargetCard } from './targets';
 import { Icon, type IconName } from './ui';
 
 const ICONS: Partial<Record<RoleKind, IconName>> = {
-  collectible: 'collect',
-  item: 'collect',
-  key: 'collect',
+  collectible: 'egg',
+  item: 'egg',
+  key: 'egg',
   exit: 'flag',
   door: 'flag',
   destination: 'flag',
@@ -39,7 +39,7 @@ export function TargetCards({ cards, avoid, kinds, selected, disabled, onTap }: 
     <nav className="play-targets" aria-label="Targets">
       {avoid.map((enemy) => (
         <span key={enemy.id} className="play-target play-target-avoid" data-testid={`play-avoid-${enemy.id}`}>
-          <Icon name="warn" />
+          <Icon name="alert" />
           <span className="play-target-label">{enemy.label}</span>
           <span className="play-target-next">avoid</span>
         </span>
@@ -58,7 +58,7 @@ export function TargetCards({ cards, avoid, kinds, selected, disabled, onTap }: 
             onClick={() => onTap(card)}
           >
             {index < 9 && <span className="play-target-key">{index + 1}</span>}
-            <Icon name={(kind === undefined ? undefined : ICONS[kind]) ?? 'pin'} />
+            <Icon name={(kind === undefined ? undefined : ICONS[kind]) ?? 'trophy'} />
             <span className="play-target-label">{card.label}</span>
             {pressed && <span className="play-target-next">{secondTapLabel(card)}</span>}
           </button>

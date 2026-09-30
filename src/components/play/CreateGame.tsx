@@ -29,14 +29,14 @@ const COUNTER_FROM = 400;
 
 /** Ikona druhu hry na kartě vzoru. */
 const STARTER_ICONS: Partial<Record<ArchetypeId, IconName>> = {
-  chase_escape: 'run',
-  collect_exit: 'collect',
-  survival_timer: 'timer',
+  chase_escape: 'arrow-right',
+  collect_exit: 'egg',
+  survival_timer: 'clock',
   checkpoint_race: 'flag',
-  delivery: 'box',
-  switch_puzzle: 'toggle',
-  hazard_crossing: 'jump',
-  combat_lite: 'target',
+  delivery: 'download',
+  switch_puzzle: 'settings',
+  hazard_crossing: 'alert',
+  combat_lite: 'trophy',
 };
 
 /** Průběh stavby: všechny čtyři kroky, hotové odškrtnuté, aktivní zvýrazněný. */
@@ -124,7 +124,7 @@ export function CreateGame() {
               {sentence.length} / {SENTENCE_LIMIT}
             </span>
           )}
-          <Button variant="accent" size="l" type="submit" data-testid="play-create" disabled={busy || trimmed.length === 0 || over}>
+          <Button size="l" type="submit" data-testid="play-create" disabled={busy || trimmed.length === 0 || over}>
             Play it
           </Button>
         </div>
@@ -137,7 +137,7 @@ export function CreateGame() {
         {phase.kind === 'failed' && (
           <p className="play-alert" role="alert">
             <span>{phase.message}</span>
-            <Button variant="quiet" disabled={trimmed.length === 0 || over} onClick={() => void create(trimmed)}>
+            <Button variant="secondary" disabled={trimmed.length === 0 || over} onClick={() => void create(trimmed)}>
               Try again
             </Button>
           </p>

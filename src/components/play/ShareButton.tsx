@@ -155,7 +155,7 @@ export function ShareButton({
       >
         {variant === 'rail' ? (
           <>
-            <span className="play-icon-button-disc">
+            <span className="sp-btn sp-btn--icon play-icon-button-disc">
               <Icon name="share" />
             </span>
             <span className="play-icon-button-caption">{label}</span>

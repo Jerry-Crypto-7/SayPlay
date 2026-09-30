@@ -60,7 +60,7 @@ describe('enemies on the target bar', () => {
     const cards = targetCards(ACTIONS, OBJECTS, new Set(['hound']));
     const html = renderToStaticMarkup(createElement(TargetCards, { cards, avoid: [], kinds, selected: null, disabled: false, onTap: () => {} }));
     expect(html).not.toMatch(/>Go</i);
-    expect(html.match(/<svg class="play-icon"/g)).toHaveLength(2);
+    expect(html.match(/<svg class="sp-icon play-icon"/g)).toHaveLength(2);
     // Vybraná karta dál říká, co udělá druhé klepnutí.
     const picked = renderToStaticMarkup(createElement(TargetCards, { cards, avoid: [], kinds, selected: 'gem', disabled: false, onTap: () => {} }));
     expect(picked).toContain('Pick up');

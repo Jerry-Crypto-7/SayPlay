@@ -559,7 +559,7 @@ function ArcadePlayGame({
       <ArcadeHud spec={spec} world={arcade} snapshot={snapshot} heading={inFeed || offline ? 'h2' : 'h1'} />
       {/* Sloupec akcí vpravo (P33 T12): nic z něj neleží přes střed hry a ťuk mezi koly jde na scénu. */}
       <nav className="play-rail" aria-label="Game actions">
-        {canChange && <IconButton icon="edit" caption="Change" aria-label="Change the game" data-testid="live-open" aria-expanded={liveOpen} onClick={() => setLiveOpen(true)} />}
+        {canChange && <IconButton icon="wand" caption="Change" aria-label="Change the game" data-testid="live-open" aria-expanded={liveOpen} onClick={() => setLiveOpen(true)} />}
         {/* Sdílení během hry (P27B T5); po dohrání ho nese `PostRun`. */}
         {!offline && running && <ShareButton versionId={versionId} title={spec.title} variant="rail" className="play-hud-share" live={live} />}
         {/* „Show me how“ (P27D T3): přehraje záznam robota, kterým verze prošla publikací. */}

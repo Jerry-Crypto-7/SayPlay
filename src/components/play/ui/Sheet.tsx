@@ -1,8 +1,8 @@
 'use client';
 
 /**
- * List PLAY (P33 T3): na telefonu spodní list, na desktopu plovoucí karta
- * vpravo (rozvržení je v `play.css`). Zavře se Esc, klepnutím mimo a tahem
+ * List PLAY podle kitu (`.sp-sheet` nad `.sp-scrim`): na telefonu spodní list,
+ * od šířky 1024 px vycentrovaný dialog nejvýš 520 px. Zavře se Esc, klepnutím mimo a tahem
  * za hlavičku dolů; dokud je otevřený, drží fokus a po zavření ho vrátí
  * prvku, ze kterého se otevřel.
  *
@@ -97,16 +97,17 @@ export function Sheet({
 
   if (!open) return null;
   const sheet = (
-    <div className="play-sheet-backdrop">
-      <div ref={panel} className={className === undefined ? 'play-sheet' : `play-sheet ${className}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
+    <>
+      <div className="sp-scrim play-sheet-backdrop" aria-hidden="true" />
+      <div ref={panel} className={className === undefined ? 'sp-sheet play-sheet' : `sp-sheet play-sheet ${className}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1}>
         <div className="play-sheet-head" data-sheet-drag="">
-          <span className="play-sheet-handle" aria-hidden="true" />
+          <span className="sp-sheet__handle" aria-hidden="true" />
           <h2 className="play-sheet-title">{title}</h2>
           <IconButton aria-label="Close" icon="close" className="play-sheet-close" onClick={onClose} />
         </div>
         <div className="play-sheet-body">{children}</div>
       </div>
-    </div>
+    </>
   );
   const host = typeof document === 'undefined' ? null : document.querySelector('.play-root');
   return host === null ? sheet : createPortal(sheet, host);

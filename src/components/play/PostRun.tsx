@@ -114,8 +114,8 @@ export function PostRun({
         Play again
       </Button>
       <div className="play-postrun-more">
-        <Button variant="quiet" aria-haspopup="dialog" onClick={() => setChanging(true)}>
-          <Icon name="edit" />
+        <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
+          <Icon name="wand" />
           Change it
         </Button>
         <ShareButton versionId={versionId} variant="quiet" label={sentence(CHALLENGE_A_FRIEND)} clip={clip} live={live} />

@@ -18,7 +18,8 @@ import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, PLACEHOLDER, P
 const ROOT = process.cwd();
 const COPY = readFileSync(join(ROOT, 'docs/play/pack/PRODUCT_COPY.md'), 'utf-8');
 const GOLDEN = readFileSync(join(ROOT, 'docs/play/pack/golden_prompts.csv'), 'utf-8');
-const CSS = readFileSync(join(ROOT, 'src/app/play/play.css'), 'utf-8');
+// Od P34 nese `play.css` jen `var(--sp-…)` (hex zakazuje `brand-guard.test.ts`); hexy palety jsou v tokenech kitu.
+const CSS = ['src/app/play/play.css', 'src/brand/tokens.css'].map((file) => readFileSync(join(ROOT, file), 'utf-8')).join('\n');
 
 function copyLine(label: string): string {
   const line = COPY.split('\n').find((row) => row.startsWith(`${label}:`));

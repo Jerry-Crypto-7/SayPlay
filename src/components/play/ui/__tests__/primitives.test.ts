@@ -1,8 +1,12 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
 import { Button, Chip, holdSheet, IconButton, Sheet } from '..';
+import { ICON_NAMES } from '../icons';
 
 /**
  * Sdílené prvky P33 (T3). List, který nevrátí fokus nebo nejde zavřít
@@ -125,30 +129,43 @@ describe('holdSheet', () => {
 });
 
 describe('primitives', () => {
-  it('marks the button variant so a card can count its primary actions', () => {
-    const html = renderToStaticMarkup(createElement(Button, { variant: 'accent', size: 'l' }, 'Play it'));
-    expect(html).toContain('data-variant="accent"');
-    expect(html).toContain('play-button-l');
-    expect(html).toContain('type="button"');
-    expect(renderToStaticMarkup(createElement(Button, null, 'Go'))).toContain('data-variant="primary"');
+  it('draws the button with the kit classes and marks the variant so a card can count its primary actions', () => {
+    const large = renderToStaticMarkup(createElement(Button, { variant: 'sun', size: 'l' }, 'Play it'));
+    expect(large).toContain('class="sp-btn sp-btn--sun play-button"');
+    expect(large).toContain('data-variant="sun"');
+    expect(large).toContain('type="button"');
+    const plain = renderToStaticMarkup(createElement(Button, null, 'Go'));
+    expect(plain).toContain('class="sp-btn sp-btn--primary sp-btn--m play-button"');
+    expect(plain).toContain('data-variant="primary"');
+    expect(renderToStaticMarkup(createElement(Button, { variant: 'link', size: 's', className: 'x' }, 'Copy link'))).toContain('class="sp-btn sp-btn--link sp-btn--s play-button x"');
   });
 
-  it('draws the icon button as a labelled 44 px disc with an optional caption', () => {
+  it('draws the icon button as a labelled kit disc with a sprite icon and an optional caption', () => {
     const html = renderToStaticMarkup(createElement(IconButton, { 'aria-label': 'Sound off', icon: 'sound-on', caption: 'Sound' }));
     expect(html).toContain('aria-label="Sound off"');
-    expect(html).toContain('<svg');
+    expect(html).toContain('<span class="sp-btn sp-btn--icon play-icon-button-disc">');
+    expect(html).toContain('<use href="/brand/icons/sprite.svg#sp-sound-on">');
     expect(html).toContain('>Sound</span>');
     // @ts-expect-error – an icon button without a label is a button nobody can name.
     expect(renderToStaticMarkup(createElement(IconButton, { icon: 'close' }))).toContain('<button');
   });
 
-  it('renders a chip as a button', () => {
-    expect(renderToStaticMarkup(createElement(Chip, null, 'Make it harder'))).toMatch(/^<button type="button" class="play-chip"/);
+  it('names only icons the kit sprite has', () => {
+    const sprite = readFileSync(join(process.cwd(), 'public/brand/icons/sprite.svg'), 'utf-8');
+    const symbols = [...sprite.matchAll(/<symbol id="sp-([a-z0-9-]+)"/g)].map((m) => m[1]).sort();
+    expect([...ICON_NAMES].sort()).toEqual(symbols);
   });
 
-  it('renders the sheet only while open, as a labelled modal dialog', () => {
+  it('renders a chip as a kit chip button', () => {
+    expect(renderToStaticMarkup(createElement(Chip, null, 'Make it harder'))).toMatch(/^<button type="button" class="sp-chip play-chip"/);
+  });
+
+  it('renders the sheet only while open, as a labelled kit sheet over a scrim', () => {
     expect(renderToStaticMarkup(createElement(Sheet, { open: false, title: 'Change it', onClose: () => undefined, children: 'body' }))).toBe('');
     const html = renderToStaticMarkup(createElement(Sheet, { open: true, title: 'Change it', onClose: () => undefined, children: 'body' }));
+    expect(html).toContain('class="sp-scrim');
+    expect(html).toContain('class="sp-sheet play-sheet"');
+    expect(html).toContain('class="sp-sheet__handle"');
     expect(html).toContain('role="dialog"');
     expect(html).toContain('aria-modal="true"');
     expect(html).toContain('aria-label="Change it"');
