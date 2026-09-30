@@ -177,6 +177,29 @@ describe('arena escape and collect – the bot wins', () => {
     expect(won, lost.slice(0, 10).join('; ')).toBeGreaterThanOrEqual(190);
   });
 
+  it('escape with items is won by the item that reaches the target, long before the survival clock', () => {
+    // Útěk s věcmi by vyhrál i přežitím – robot přežije 40 s taky. Výhra tedy musí padnout přesně na tiku N-té věci.
+    for (const seed of SEEDS.slice(0, 20)) {
+      const world = worldOf(arenaEscape, seed, { items: 8 });
+      const bot = runBot(world);
+      expect(bot.outcome, `seed ${seed}`).toBe('won');
+      const program = loadProgram(world, ARCADE_LIBRARY);
+      const state = instantiate(world);
+      const score = (): number => state[HEADER.counters + COUNTER.score] as number;
+      let next = 0;
+      let before = 0;
+      for (let tick = 0; state[HEADER.runState] === 0; tick += 1) {
+        while (next < bot.inputs.length && bot.inputs[next]!.tick < tick) next += 1;
+        const event = bot.inputs[next];
+        before = score();
+        step(state, event !== undefined && event.tick === tick ? event : NO_INPUT, program);
+      }
+      expect(state[HEADER.runState], `seed ${seed}`).toBe(1);
+      expect([before, score()], `seed ${seed}: score before and after the winning tick`).toEqual([7, 8]);
+      expect(state[HEADER.tick] as number, `seed ${seed}`).toBeLessThan(arenaEscape.params.parse({}).seconds * ARCADE_HZ);
+    }
+  });
+
   it('escape by surviving 40 s: the bot wins at least 95 % of 200 seeds', { timeout: BOT_RUNS_MS }, () => {
     const { won, lost } = wins(arenaEscape, { seconds: 40 });
     expect(won, lost.slice(0, 10).join('; ')).toBeGreaterThanOrEqual(190);

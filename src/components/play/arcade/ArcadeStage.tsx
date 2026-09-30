@@ -510,8 +510,9 @@ const StageCanvas = memo(function StageCanvas({
       ) : (
         <>
           <StyleRig look={look} control={control} surface={surface} />
-          {control === 'move_free' ? (
-            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
+          {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
+          {control === 'move_free' || control === 'fight' ? (
+            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} />
           ) : control === 'runner' ? (
             <RunnerWorld {...world} />
           ) : control === 'platform' ? (
@@ -562,7 +563,7 @@ export default function ArcadeStage({
   usePlatformInput(session, surface, enabled && control === 'platform');
   useFlapInput(session, surface, enabled && control === 'flap');
   useSteerInput(session, surface, enabled && control === 'steer');
-  useArenaInput(session, surface, enabled && control === 'move_free');
+  useArenaInput(session, surface, enabled && (control === 'move_free' || control === 'fight'));
   useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'));
   useDuelInput(session, surface, enabled && control === 'duel');
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.

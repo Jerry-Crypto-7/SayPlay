@@ -15,22 +15,45 @@
  * kvádry w×h×d, výška se čte ze stavu – nesená věc jede hráči na hlavě,
  * hozená letí nad zemí, přepnuté dveře zmizí. Mezerník / ťuk = akce,
  * `e` = druhá akce.
+ *
+ * Útěk, sběr a souboj (P32E T5) mají scénu ve stylu B (`StyledWorld`): podlaha
+ * a stěny podle sady (`ArenaFloor`), modely z popisků rolí, zářící sběratelné
+ * věci, vykřičník nad pronásledovatelem při probuzení a nad soupeřem v telegrafu
+ * a kamera 3/4 shora s předstihem, která ukáže hráče i nejbližší hrozbu. Světla
+ * a obloha jsou rigu (`StyleRig` v `ArcadeStage`), částice a otřes sběrnice
+ * efektů (`Effects`). Agar zůstává kotouči, jak ho znají uložené hry.
+ *
+ * Souboj (P32E T6) čte zásahy ze stavu (`FightFx`): srpek švihu, záblesk,
+ * hit-stop jen v kresbě, otřes, lišty HP nad hlavami i pro čtečku, nápřah
+ * soupeře zákonem a červení, KO klipem `die` nebo pádem.
  */
 
+import { Billboard } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
-import { type Group, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Color, type Group, type Material, type Mesh, MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
-import { BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { color as brand } from '@/brand/tokens';
+import { baseControlOf } from '@/play/arcade/addons';
+import { ARCADE_HZ, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase, bodyHp } from '@/play/arcade/contract';
+import { instantiate } from '@/play/arcade/kernel';
 import type { Look } from '@/play/arcade/look';
-import { arenaAxis } from '@/play/arcade/pieces/arena';
+import { riggedCharacter } from '@/play/arcade/models';
+import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
+import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
+import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade/pieces/fight';
 
 import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
 import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Scenery } from '../look/Scenery';
+import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
+import { type Cast, FittedModel } from '../World';
+import { ArenaFloor } from './ArenaFloor';
+import { type TargetLayer, TargetsMount } from './TargetsMount';
+import { ALERT_ABOVE_BAR_M, type Fighter, HealthBar, type HealthBarHandle, type MeterFighter, SwingArc, adoptSkin, advanceFrame, createFightWatch, drawFighter, drawSwing, fightClipOf, fighterName, shakeCamera, useHealthMeters } from './FightFx';
 
 const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15', shot: '#f8fafc' } as const;
 
@@ -68,20 +91,27 @@ const SCENERY_MARGIN = 1.5;
 /** Sklon kamery nad vodorovnou (rad): 48° – hrdina pořád zřetelně shora, horní třetina obrazu už za hranou arény (58° ukázalo kulisy jen v rozích). */
 const PITCH = (48 * Math.PI) / 180;
 
-export function ArenaWorld({
-  session,
-  half,
-  surface,
-  look: scene,
-  targets,
-}: {
+interface ArenaWorldProps {
   readonly session: ArcadeSession;
   readonly half: number;
   readonly surface: React.RefObject<HTMLDivElement | null>;
   readonly look: Look;
-  /** Vrstva cílů (P32-0 T5, naplní P32G): dostane těla, jak je aréna kreslí, a kreslí se nad ně. */
-  readonly targets?: (bodies: readonly BodyView[]) => ReactNode;
-}) {
+  /** Modely z popisků rolí; agar je nekreslí. */
+  readonly cast: Cast;
+  /** Vrstva cílů (P32-0 T5, naplní P32G): živé cíle v metrech scény se stavem (`TargetsMount`); bez ní ve stylu B obrysy, agar jen přidá. */
+  readonly targets?: TargetLayer;
+}
+
+/**
+ * Útěk a sběr nesou pevnou velikost hráče (`size`), souboj vlastní ovládání;
+ * agar `size` nikdy nemá, takže uložené hry kreslí dál kotouči.
+ */
+export function ArenaWorld(props: ArenaWorldProps) {
+  const control = baseControlOf(props.session.world.control);
+  return control.id === 'fight' || control.params.size !== undefined ? <StyledWorld {...props} /> : <AgarWorld {...props} />;
+}
+
+function AgarWorld({ session, half, surface, look: scene, targets }: ArenaWorldProps) {
   // Střely doplňku `+shoot` přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [discs, setDiscs] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -212,7 +242,472 @@ export function ArenaWorld({
           </group>
         );
       })}
-      {targets?.(discs)}
+      {targets !== undefined && <TargetsMount session={session} views={discs} layer={targets} />}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Útěk, sběr a souboj ve stylu B (P32E T5)
+
+/**
+ * Hrdina útěku a sběru má tělo 1 × 0,6 m. Kreslí se větší: kamera, která ukáže
+ * i pronásledovatele za zády, by ho jinak zmenšila pod 4 % výšky obrazu.
+ * Jádro počítá srážky jen v x/z, výška kresby na ně nemá vliv.
+ */
+const HERO_DRAWN_M = 1.3;
+/** Sběratelná věc: velikost kresby, výška vznášení, otáčky (rad/s). */
+const ITEM_DRAWN_M = 0.7;
+const ITEM_HOVER_M = 0.35;
+const ITEM_SPIN = 2;
+/** Záře věci nad prahem bloomu rigu (`bloomThreshold` ≈ 1,1). */
+const ITEM_GLOW = 2.4;
+const RING_GLOW = new Color(brand.sun).multiplyScalar(2.5);
+const ALERT_GLOW = new Color(brand.tomato).multiplyScalar(1.6);
+
+/** Sklon kamery nad vodorovnou (sin, cos). */
+interface Tilt {
+  readonly sin: number;
+  readonly cos: number;
+}
+const tiltOf = (degrees: number): Tilt => ({ sin: Math.sin((degrees * Math.PI) / 180), cos: Math.cos((degrees * Math.PI) / 180) });
+/** Kamera 3/4 shora; předstih = kam hráč dojede za tolik sekund. */
+const STYLED_TILT = tiltOf(50);
+/**
+ * Souboj strměji (P32E T6): soupeř jde na hrdinu podél osy kamery a při 50°
+ * ho hrdina i jeho lišta HP zakryly, zásah i pád se ztratily za zády.
+ */
+const FIGHT_TILT = tiltOf(60);
+const LEAD_S = 0.35;
+/** Hrozba blíž než tolik metrů táhne záběr k sobě, ať je vidět hráč i ona. */
+const THREAT_M = 22;
+/** Kam do obrazu (NDC) se musí vejít hrdina a nejbližší hrozba. */
+const HERO_EDGE = 0.8;
+const THREAT_EDGE = 0.9;
+/** Hrdina drží aspoň tenhle podíl výšky obrazu – strop vzdálenosti kamery. */
+const HERO_MIN_SHARE = 0.05;
+/** Jak rychle kamera dojíždí za cílem (1/s). */
+const FOLLOW = 5;
+/** Pod touhle rychlostí (jednotek za tik, ~0,5 m/s) tělo stojí a otáčí se k hráči, nebo drží směr. */
+const TURN_MIN = 8;
+/** Vykřičník svítí posledních tolik tiků ochrany a tolik tiků po probuzení. */
+const ALERT_TICKS = 45;
+/** Jak často (snímky) se modely věcí, které se mezitím načetly, rozzáří (a bojovníci převezmou materiály). */
+const GLOW_EVERY = 20;
+/** Nejdelší krok hodin kresby souboje (s): snímek po pauze nepřeskočí záblesk ani pád. */
+const MAX_FX_STEP_S = 0.1;
+
+type Part = 'hero' | 'chaser' | 'enemy' | 'item' | 'block';
+
+function partOf(view: BodyView): Part {
+  if (view.role === ROLE.player) return 'hero';
+  if (view.role === ROLE.chaser) return 'chaser';
+  if (view.kind === 'enemy') return 'enemy';
+  if (view.role === ROLE.collectible) return 'item';
+  return 'block';
+}
+
+/** Model z popisku role; věc bez modelu (`undefined`) je zářící drahokam. */
+function modelOf(part: Part, cast: Cast): string | undefined {
+  return part === 'hero' ? cast.player : part === 'chaser' ? cast.chaser : part === 'enemy' ? cast.enemy : part === 'item' ? cast.props.coin : undefined;
+}
+
+const FALLBACK: Readonly<Record<Part, string>> = { hero: brand['sky-deep'], chaser: brand.alarm, enemy: brand['tomato-deep'], item: brand.sun, block: FENCE_COLOR };
+
+interface Size {
+  readonly w: number;
+  readonly h: number;
+  readonly d: number;
+}
+
+function drawnOf(view: BodyView, part: Part): Size {
+  if (part === 'item') return { w: ITEM_DRAWN_M, h: ITEM_DRAWN_M, d: ITEM_DRAWN_M };
+  if (part === 'hero' && view.h < HERO_DRAWN_M) return { w: Math.max(view.w, HERO_DRAWN_M), h: HERO_DRAWN_M, d: Math.max(view.d, HERO_DRAWN_M) };
+  return { w: view.w, h: view.h, d: view.d };
+}
+
+/** Otočení skupiny (rad kolem y), aby lokální +z mířilo směrem jádra (dx, dz); scéna zrcadlí x. */
+const yawOf = (dx: number, dz: number): number => Math.atan2(-dx, dz);
+
+/** Nejmenší vzdálenost kamery od cíle pohledu, aby bod (m vůči cíli, poloměr `r`) promítl do ±`edge` NDC. */
+function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, aspect: number, edge: number, tilt: Tilt): number {
+  const along = qz * tilt.cos - qy * tilt.sin;
+  const up = qy * tilt.cos + qz * tilt.sin;
+  return Math.max((Math.abs(qx) + r) / (edge * tan * aspect), (Math.abs(up) + r) / (edge * tan)) - along;
+}
+
+/** Póza statického modelu: poskok, zmáčknutí, bliknutí po zásahu. Předklon ne – směr drží otočení skupiny. */
+function applyPose(group: Group, pose: Pose): void {
+  group.position.y = pose.bob;
+  const wide = 1 + pose.squash / 2;
+  group.scale.set(wide, 1 - pose.squash, wide);
+  group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
+}
+
+/** Zářící kopie materiálu modelu věci – jedna na zdrojový materiál, sdílená všemi věcmi. */
+function glowOf(cache: Map<Material, Material>, source: Material): Material {
+  let glow = cache.get(source);
+  if (glow === undefined) {
+    glow = source.clone();
+    if (glow instanceof MeshStandardMaterial) {
+      glow.emissive.copy(glow.color);
+      glow.emissiveMap = glow.map;
+      glow.emissiveIntensity = ITEM_GLOW;
+    }
+    cache.set(source, glow);
+  }
+  return glow;
+}
+
+function Gem({ size }: { readonly size: number }) {
+  return (
+    <mesh position={[0, size / 2, 0]} userData={{ glow: true }}>
+      <octahedronGeometry args={[size / 2, 0]} />
+      <meshStandardMaterial color={brand.sun} emissive={brand.sun} emissiveIntensity={ITEM_GLOW} roughness={0.3} flatShading />
+    </mesh>
+  );
+}
+
+/** Vykřičník nad hlavou: sloupek a tečka čelem ke kameře – svislý kvádr by z 3/4 shora splynul v šikmou čárku. Stín nevrhá. */
+function Alert({ at, register }: { readonly at: number; readonly register: (group: Group | null) => void }) {
+  return (
+    <Billboard ref={register} position={[0, at, 0]} visible={false}>
+      <mesh position={[0, 0.62, 0]} userData={{ rigShadow: 'off' }}>
+        <planeGeometry args={[0.3, 0.8]} />
+        <meshBasicMaterial color={ALERT_GLOW} toneMapped={false} />
+      </mesh>
+      <mesh position={[0, 0.02, 0]} userData={{ rigShadow: 'off' }}>
+        <circleGeometry args={[0.18, 20]} />
+        <meshBasicMaterial color={ALERT_GLOW} toneMapped={false} />
+      </mesh>
+    </Billboard>
+  );
+}
+
+function StyledWorld({ session, half, surface, look: scene, cast, targets }: ArenaWorldProps) {
+  const [views, setViews] = useState(() => bodiesOf(session));
+  const fight = useMemo(() => baseControlOf(session.world.control).id === 'fight', [session]);
+  const parts = useMemo(() => views.map(partOf), [views]);
+  const drawn = useMemo(() => views.map((view, i) => drawnOf(view, parts[i]!)), [views, parts]);
+  const rigged = useMemo(
+    () =>
+      parts.map((part) => {
+        const id = part === 'item' ? undefined : modelOf(part, cast);
+        return id === undefined ? undefined : riggedCharacter(id);
+      }),
+    [parts, cast],
+  );
+  const groups = useRef<(Group | null)[]>([]);
+  const turned = useRef<(Group | null)[]>([]);
+  const posed = useRef<(Group | null)[]>([]);
+  const alerts = useRef<(Group | null)[]>([]);
+  const poses = useRef<(Pose | null)[]>([]);
+  const clips = useRef<ClipState[]>([]);
+  const yaws = useRef<(number | undefined)[]>([]);
+  /** Tik, kdy se probuzený pronásledovatel (kopie od `spawnBase`) poprvé ukázal. */
+  const woke = useRef(new Map<number, number>());
+  const glows = useMemo(() => new Map<Material, Material>(), []);
+  const camera = useThree((three) => three.camera) as PerspectiveCamera;
+  const aim = useMemo(() => new Vector3(), []);
+  const goal = useMemo(() => new Vector3(), []);
+  const projected = useMemo(() => new Vector3(), []);
+  const follow = useRef<{ tick: number; distance: number } | null>(null);
+  const frames = useRef(0);
+  const introClock = useIntroClock();
+
+  // Souboj (P32E T6): hlídka zásahů, hodiny kresby a to, co kreslí z nich.
+  const watch = useMemo(() => (fight ? createFightWatch() : null), [fight]);
+  const initial = useMemo(() => instantiate(session.world), [session]);
+  /** HP na startu (tělo z živé změny: v chvíli, kdy přibylo); 0 = tělo nebojuje. */
+  const startHp = useMemo(
+    () => views.map((view) => (!fight || (parts[view.index] !== 'hero' && parts[view.index] !== 'enemy') ? 0 : bodyHp(view.index < (initial[HEADER.bodyCount] as number) ? initial : session.state(), view.index))),
+    [views, parts, fight, initial, session],
+  );
+  const fxClock = useRef(0);
+  const leans = useRef<(Group | null)[]>([]);
+  const fighters = useRef<(Fighter | undefined)[]>([]);
+  const owned = useMemo((): Material[] => [], []);
+  const bars = useRef<(HealthBarHandle | null)[]>([]);
+  const arc = useRef<Mesh | null>(null);
+  const frozen = useRef<Vector3[]>([]);
+  const heldFor = useRef(-Infinity);
+  const meterFighters = useMemo((): MeterFighter[] => {
+    const rivals = views.filter((view) => parts[view.index] === 'enemy' && startHp[view.index]! > 0);
+    const hero = fighterName(cast.player, 'hero');
+    const rival = fighterName(cast.enemy, 'fighter');
+    return views.flatMap((view) => {
+      if (startHp[view.index] === 0) return [];
+      if (parts[view.index] === 'hero') return [{ index: view.index, label: `${hero.charAt(0).toUpperCase()}${hero.slice(1)}` }];
+      return [{ index: view.index, label: `Rival ${rival}${rivals.length > 1 ? ` ${rivals.indexOf(view) + 1}` : ''}` }];
+    });
+  }, [views, parts, startHp, cast]);
+  const meters = useHealthMeters(surface, meterFighters);
+
+  useEffect(
+    () => () => {
+      for (const glow of glows.values()) glow.dispose();
+    },
+    [glows],
+  );
+  useEffect(
+    () => () => {
+      for (const material of owned) material.dispose();
+    },
+    [owned],
+  );
+
+  useEffect(() => {
+    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.map((view) => ROLE_NAMES[view.role]))].join(' ');
+  }, [views, surface]);
+
+  useFrame((_, delta) => {
+    // Hodiny kresby souboje: stojí s pauzou (zastavený snímek drží záblesk i švih); jádro tiká celý čas snímku vždy, hit-stop jen čte stav po tiku.
+    const now = session.paused() ? fxClock.current : (fxClock.current += Math.min(delta, MAX_FX_STEP_S) * 1000);
+    const alpha = advanceFrame(session, watch, delta * 1000, now);
+    if (bodiesStale(views, session)) setViews(bodiesOf(session));
+    const state = session.state();
+    const prev = session.prev();
+    const tick = state[HEADER.tick] as number;
+    const restarted = follow.current !== null && tick < follow.current.tick;
+    if (restarted) woke.current.clear();
+    posesOf(state, prev, poses.current, tick + alpha);
+    const player = state[HEADER.player] as number;
+    const pb = bodyBase(player);
+    const grace = graceLeft(state);
+    const spawnBase = state[HEADER.spawnBase] as number;
+    const turn = Math.min(1, delta * 12);
+    const glowNow = frames.current++ % GLOW_EVERY === 0;
+    // Hit-stop: bojovníci stojí v poloze z chvíle zásahu (zachycené prvním snímkem po něm), pak se k živé dotáhnou.
+    const hold = watch?.hold(now) ?? 0;
+    const capture = watch !== null && hold > 0 && watch.lastHit() !== heldFor.current;
+    if (capture) heldFor.current = watch.lastHit();
+    let alertsShown = 0;
+    let tinted = 0;
+    let flashing = 0;
+    let down = 0;
+    for (const view of views) {
+      const group = groups.current[view.index];
+      if (group === null || group === undefined) continue;
+      const base = bodyBase(view.index);
+      group.visible = ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
+      if (!group.visible) continue;
+      const px = prev[base + BODY.x] as number;
+      const pz = prev[base + BODY.z] as number;
+      const py = prev[base + BODY.y] as number;
+      group.position.set(-(px + ((state[base + BODY.x] as number) - px) * alpha) / UNIT, (py + ((state[base + BODY.y] as number) - py) * alpha) / UNIT, (pz + ((state[base + BODY.z] as number) - pz) * alpha) / UNIT);
+      const part = parts[view.index];
+      const fighter = watch !== null && startHp[view.index]! > 0;
+      if (fighter && hold > 0) {
+        const at = frozen.current[view.index];
+        if (at === undefined) frozen.current[view.index] = group.position.clone();
+        else {
+          if (capture) at.copy(group.position);
+          group.position.lerp(at, hold);
+        }
+      }
+      const facing = turned.current[view.index];
+      if (part === 'item') {
+        group.position.y += ITEM_HOVER_M + 0.08 * Math.sin((tick + alpha) / 20 + view.index);
+        if (facing !== null && facing !== undefined) facing.rotation.y += delta * ITEM_SPIN;
+        // Model věci se načte později než scéna: jeho materiály rozzáří až tahle kontrola.
+        if (glowNow) {
+          group.traverse((node) => {
+            const mesh = node as Mesh;
+            if (mesh.isMesh !== true || mesh.userData.glow === true) return;
+            mesh.material = Array.isArray(mesh.material) ? mesh.material.map((material) => glowOf(glows, material)) : glowOf(glows, mesh.material);
+            mesh.userData.glow = true;
+          });
+        }
+        continue;
+      }
+      const pose = poses.current[view.index];
+      const inner = posed.current[view.index];
+      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
+      if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) {
+        const moving = clipOf(viewOf(state, prev, view.index), pose, tick + alpha);
+        clips.current[view.index] = fighter ? fightClipOf(state, view.index, part === 'hero', watch, now, moving) : moving;
+      }
+      // Během hit-stopu stojí i otočení bojovníka.
+      if (facing !== null && facing !== undefined && part !== 'block' && !(fighter && hold === 1)) {
+        // Kam tělo míří (osy jádra): hrdina souboje pohledem, soupeř v telegrafu a výpadu zamčeným směrem, jinak pohybem; stojící hrozba hledí na hráče.
+        const vx = state[base + BODY.vx] as number;
+        const vz = state[base + BODY.vz] as number;
+        const phase = part === 'enemy' && fight ? phaseOf(state, view.index) : null;
+        const locked = phase === FIGHT_PHASE.telegraph || phase === FIGHT_PHASE.strike ? DIRECTIONS[strikeDirectionOf(state, view.index)] : undefined;
+        const aimed = part === 'hero' && fight ? DIRECTIONS[facingOf(state, player)] : undefined;
+        // Odhozený a poražený soupeř hledí na hrdinu: letí a padá na záda, ne k němu.
+        const reeling = phase === FIGHT_PHASE.stagger || (fighter && bodyHp(state, view.index) === 0);
+        const heading =
+          locked ?? aimed ?? (Math.hypot(vx, vz) > TURN_MIN && !reeling ? { dx: vx, dz: vz } : part === 'hero' ? undefined : { dx: (state[pb + BODY.x] as number) - (state[base + BODY.x] as number), dz: (state[pb + BODY.z] as number) - (state[base + BODY.z] as number) });
+        const was = yaws.current[view.index];
+        if (heading !== undefined && (heading.dx !== 0 || heading.dz !== 0)) {
+          const want = yawOf(heading.dx, heading.dz);
+          yaws.current[view.index] = was === undefined || restarted ? want : was + Math.atan2(Math.sin(want - was), Math.cos(want - was)) * turn;
+        }
+        facing.rotation.y = yaws.current[view.index] ?? 0;
+      }
+      const alert = alerts.current[view.index];
+      if (alert !== null && alert !== undefined) {
+        // Spící pronásledovatel (šablona pod `spawnBase`) se chystá, probuzená kopie právě vyrazila; soupeř souboje chystá úder.
+        if (part === 'chaser' && view.index >= spawnBase && !woke.current.has(view.index)) woke.current.set(view.index, tick);
+        const on =
+          part === 'chaser'
+            ? view.index < spawnBase
+              ? grace > 0 && grace <= ALERT_TICKS
+              : tick - (woke.current.get(view.index) ?? tick) < ALERT_TICKS
+            : fight && phaseOf(state, view.index) === FIGHT_PHASE.telegraph;
+        alert.visible = on;
+        if (on) {
+          alertsShown += 1;
+          alert.scale.setScalar(1 + 0.15 * Math.sin((tick + alpha) / 3));
+        }
+      }
+      if (fighter) {
+        // Materiály se převezmou, až se model načte; do té doby kreslí náhradní kvádr, i ten bliká.
+        const lean = leans.current[view.index];
+        if (lean !== null && lean !== undefined) {
+          let drawnFighter = fighters.current[view.index];
+          if (drawnFighter?.lean !== lean) {
+            const character = rigged[view.index];
+            drawnFighter = { lean, skin: [], hero: part === 'hero', rigged: character !== undefined, falls: character?.clips.die === undefined };
+            fighters.current[view.index] = drawnFighter;
+          }
+          if (glowNow || drawnFighter.skin.length === 0) adoptSkin(drawnFighter, owned);
+          const look = drawFighter(drawnFighter, state, view.index, alpha, watch, now);
+          if (look.tinted) tinted += 1;
+          if (look.flashing) flashing += 1;
+          if (look.down) down += 1;
+        }
+        bars.current[view.index]?.set(watch.hp(view.index));
+      }
+    }
+    if (surface.current !== null && surface.current.dataset.alerts !== String(alertsShown)) surface.current.dataset.alerts = String(alertsShown);
+    if (watch !== null) {
+      const swinging = arc.current !== null && drawSwing(arc.current, watch.swing(now));
+      meters.current?.(watch);
+      // Sonda pro e2e: kolik soupeřů rudne nápřahem, kolik těl bliká, kolik jich leží, zásahy od restartu a švih.
+      const probe = `tinted:${tinted} flashing:${flashing} down:${down} hits:${watch.hits()} swing:${swinging ? 1 : 0}`;
+      if (surface.current !== null && surface.current.dataset.fight !== probe) surface.current.dataset.fight = probe;
+    }
+
+    const me = groups.current[player];
+    if (me === null || me === undefined) return;
+    const tan = Math.tan((camera.fov * Math.PI) / 360);
+    const aspect = camera.aspect;
+    // Cíl pohledu: kam hráč dojede za `LEAD_S`, a když je hrozba blízko, půl cesty k ní.
+    const speed = ARCADE_HZ / UNIT;
+    goal.set(me.position.x - (state[pb + BODY.vx] as number) * speed * LEAD_S, 0, me.position.z + (state[pb + BODY.vz] as number) * speed * LEAD_S);
+    let threat = -1;
+    let nearest = THREAT_M;
+    for (const view of views) {
+      if (parts[view.index] !== 'chaser' && parts[view.index] !== 'enemy') continue;
+      const other = groups.current[view.index];
+      if (other === null || other === undefined || !other.visible) continue;
+      const gap = Math.hypot(other.position.x - me.position.x, other.position.z - me.position.z);
+      if (gap < nearest) {
+        nearest = gap;
+        threat = view.index;
+      }
+    }
+    const threatAt = threat < 0 ? null : groups.current[threat]!.position;
+    if (threatAt !== null) goal.set((goal.x + threatAt.x) / 2, 0, (goal.z + threatAt.z) / 2);
+    const snap = follow.current === null || restarted;
+    const k = snap ? 1 : 1 - Math.exp(-delta * FOLLOW);
+    aim.lerp(goal, k);
+    // Vzdálenost: aspoň `SEE_M` do strany, dál, dokud se hrdina a hrozba nevejdou, nejvýš tak, ať hrdina drží `HERO_MIN_SHARE` výšky.
+    const hero = drawn[player]!;
+    const heroR = Math.max(hero.w, hero.d) / 2;
+    const tilt = fight ? FIGHT_TILT : STYLED_TILT;
+    let need = reachOf(me.position.x - aim.x, hero.h / 2, me.position.z - aim.z, heroR, tan, aspect, HERO_EDGE, tilt);
+    if (threatAt !== null) {
+      const size = drawn[threat]!;
+      need = Math.max(need, reachOf(threatAt.x - aim.x, size.h / 2, threatAt.z - aim.z, Math.max(size.w, size.d) / 2, tan, aspect, THREAT_EDGE, tilt));
+    }
+    const least = Math.max(16, (aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, aspect)));
+    const most = (hero.h * tilt.cos + 2 * heroR * tilt.sin) / (2 * tan * HERO_MIN_SHARE);
+    const wanted = Math.min(most, Math.max(least, need));
+    const distance = snap ? wanted : follow.current!.distance + (wanted - follow.current!.distance) * k;
+    follow.current = { tick, distance };
+    camera.position.set(aim.x, distance * tilt.sin, aim.z - distance * tilt.cos);
+    camera.lookAt(aim);
+    applyIntro(camera, aim, introLeft(introClock()));
+    // Otřes po zásahu souboje; zásah hráče ve hře člověka třese sběrnice efektů sama.
+    if (watch !== null) shakeCamera(camera.position, watch.shake(now, session.humanRun()), now);
+    camera.updateMatrixWorld();
+    if (surface.current !== null) surface.current.dataset.playerX = projected.copy(me.position).project(camera).x.toFixed(3);
+  });
+
+  return (
+    <>
+      <ArenaFloor look={scene} half={half / UNIT} />
+      {views.map((view) => {
+        if (view.role === ROLE.target) return null; // Cíl úkolu kreslí vrstva cílů (`TargetsMount`), ne kvádr.
+        const part = parts[view.index]!;
+        const size = drawn[view.index]!;
+        const register = (group: Group | null): void => {
+          groups.current[view.index] = group;
+        };
+        if (part === 'block') {
+          // Věc pravidel nebo plot: kvádr jako v agaru.
+          const thing = thingOf(view.kind);
+          return (
+            <group key={view.index} ref={register} userData={{ frame: thing === null ? undefined : 'target' }}>
+              <mesh position={[0, view.h / 2, 0]}>
+                <boxGeometry args={[view.w, view.h, view.d]} />
+                <meshStandardMaterial color={thing === null ? FENCE_COLOR : thingColor(thing)} roughness={0.6} />
+              </mesh>
+            </group>
+          );
+        }
+        const model = modelOf(part, cast);
+        const character = rigged[view.index];
+        const fighter = startHp[view.index]! > 0;
+        // Klip, který postava opravdu hraje: hrdina pro sondu `data-anim-clip`, soupeř souboje pro `data-rival-clip`.
+        const onClip =
+          part === 'hero'
+            ? (clip: string) => { if (surface.current !== null) surface.current.dataset.animClip = clip; }
+            : fighter
+              ? (clip: string) => { if (surface.current !== null) surface.current.dataset.rivalClip = clip; }
+              : undefined;
+        return (
+          // `frame` a `item` čte sonda záběru (`__playFrame`): hrdina, cíle a hrozby, pronásledovatel pod vlastním jménem.
+          <group key={view.index} ref={register} userData={{ frame: part === 'hero' ? 'hero' : 'target', item: part === 'hero' ? undefined : part === 'item' ? 'coin' : part }}>
+            <group ref={(group) => { turned.current[view.index] = group; }}>
+              {part === 'item' ? (
+                model === undefined ? <Gem size={size.h} /> : <FittedModel id={model} w={size.w} h={size.h} d={size.d} fallback={FALLBACK.item} />
+              ) : (
+                // Náklon nápřahu, výpad a pád bojovníka (`drawFighter`); mimo souboj stojí rovně.
+                <group ref={(group) => { leans.current[view.index] = group; }}>
+                  {character !== undefined ? (
+                    <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
+                  ) : (
+                    <group ref={(group) => { posed.current[view.index] = group; }}>
+                      <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} />
+                    </group>
+                  )}
+                </group>
+              )}
+              {fighter && part === 'hero' && <SwingArc register={(mesh) => { arc.current = mesh; }} />}
+            </group>
+            {part === 'item' && (
+              // Zářící kruh na zemi pod věcí: svítí nad prahem bloomu, ať je věc vidět i z dálky.
+              <mesh position={[0, 0.02 - ITEM_HOVER_M, 0]} rotation={[-Math.PI / 2, 0, 0]} userData={{ glow: true, rigShadow: 'receive' }}>
+                <ringGeometry args={[size.w * 0.45, size.w * 0.6, 24]} />
+                <meshBasicMaterial color={RING_GLOW} toneMapped={false} />
+              </mesh>
+            )}
+            {part === 'hero' && (
+              <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} userData={{ rigShadow: 'receive' }}>
+                <ringGeometry args={[size.w / 2, size.w / 2 + 0.1, 32]} />
+                <meshBasicMaterial color={brand.paper} />
+              </mesh>
+            )}
+            {fighter && <HealthBar max={startHp[view.index]!} hero={part === 'hero'} h={size.h} register={(bar) => { bars.current[view.index] = bar; }} />}
+            {(part === 'chaser' || part === 'enemy') && <Alert at={size.h + (fighter ? ALERT_ABOVE_BAR_M : 0.35)} register={(group) => { alerts.current[view.index] = group; }} />}
+          </group>
+        );
+      })}
+      <TargetsMount session={session} views={views} layer={targets} />
     </>
   );
 }

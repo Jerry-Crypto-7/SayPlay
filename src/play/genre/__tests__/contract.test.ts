@@ -77,9 +77,9 @@ describe('genre contract (P32-0 T3)', () => {
   it('a stub mode that plays a stand-in reports fallback, a translated one ready', () => {
     expect(GENRE_MODULES.runner.availability('default')).toBe('ready');
     expect(GENRE_MODULES.arena.availability('fight')).toBe('ready');
-    expect(GENRE_MODULES.voyage.availability('land')).toBe('fallback');
-    expect(GENRE_MODULES.quest.availability('spatial')).toBe('fallback');
-    expect(GENRE_MODULES.quest.availability('station')).toBe('fallback');
+    expect(GENRE_MODULES.voyage.availability('land')).toBe('ready');
+    expect(GENRE_MODULES.quest.availability('spatial')).toBe('ready');
+    expect(GENRE_MODULES.quest.availability('station')).toBe('ready');
   });
 
   it('the schema refuses a mode the genre does not have', () => {

@@ -164,12 +164,11 @@ describe('P32-0 T4 kernel seams', () => {
   });
 
   it('a spec without the new fields reads back unchanged, so its hash does not move', () => {
-    // Postavené režimy (aréna, P32E T4) nová pole nesou; ostatní ještě ne a ty tady musí zůstat.
+    // Od fáze 1 A, E, F a G nesou nová pole všechny žánry; bez nich zůstává uložený starý svět (duel).
     const plain = (spec: GameSpecV1): boolean => spec.controlParams === undefined || !('generator' in spec.controlParams || 'tuning' in spec.controlParams);
-    const without = Object.values(SAMPLE).filter((sample) => plain(compileGenre(sample)));
-    expect(without.length).toBeGreaterThan(0);
-    for (const sample of Object.values(SAMPLE)) {
-      const spec = compileGenre(sample);
+    const duel = read(duelFixture);
+    expect(plain(duel)).toBe(true);
+    for (const spec of [duel, ...Object.values(SAMPLE).map((sample) => compileGenre(sample))]) {
       const back = read(spec);
       expect(plain(back)).toBe(plain(spec));
       expect(canonicalHash(back)).toBe(canonicalHash(read(JSON.parse(JSON.stringify(spec)))));
