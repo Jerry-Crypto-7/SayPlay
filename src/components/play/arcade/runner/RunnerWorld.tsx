@@ -168,9 +168,9 @@ function heroIn(scene: Object3D): Object3D | null {
  * a viditelnost, které `World` každý snímek zapíše znovu, tu už jsou; pohyb je jen
  * doplní. Relaci jen čte (`createHeroMotion`).
  */
-function HeroPose({ session, hero }: { readonly session: ArcadeSession; readonly hero: string }) {
+function HeroPose({ session, hero, rides }: { readonly session: ArcadeSession; readonly hero: string; readonly rides: boolean }) {
   const scene = useThree((three) => three.scene);
-  const ride = useMemo(() => rideOf(hero), [hero]);
+  const ride = useMemo(() => rideOf(hero, rides), [hero, rides]);
   const blinks = useMemo(() => blinksOnHit(hero), [hero]);
   const motion = useMemo(() => createHeroMotion(session, ride), [session, ride]);
   const found = useRef<Object3D | null>(null);
@@ -246,7 +246,7 @@ export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
       <World {...props} control="runner" backdrop={<RunnerValley look={props.scene} length={length} terrain={terrain} />} />
       <GroundProbe terrain={terrain} />
       {/* Až po `World`: jeho snímek musí běžet dřív (viz `HeroPose`). */}
-      <HeroPose session={props.session} hero={props.cast.player} />
+      <HeroPose session={props.session} hero={props.cast.player} rides={props.scene.ride === true} />
     </>
   );
 }

@@ -15,6 +15,7 @@ import { type MotionView, viewOf } from '@/play/arcade/motion';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 import { BASE_ENTRIES } from '@/play/assets/entries/base';
 import { type AssetEntry, heroFor } from '@/play/assets/manifest';
+import { RIDE_WORDS } from '@/play/genre/runner';
 
 import type { ArcadeSession } from '../session';
 
@@ -124,10 +125,6 @@ export function createHeroMotion(source: HeroMotionSource, ride: Ride): HeroMoti
   };
 }
 
-/** Slova jízdy: klouže, lyžuje, surfuje, jede na prkně, bruslích nebo saních (tvary jako `cues` žánru běžce). */
-const RIDE_WORDS =
-  /\b(?:slid(?:e|es|ing)|ski(?:s|ed|ing|er|ers)?|surf(?:s|ed|ing|er|ers|board|boards)?|snowboard(?:s|ed|ing|er|ers)?|skat(?:e|es|ed|ing|er|ers)|skateboard(?:s|ing|er|ers)?|sled(?:s|ge|ges|ding)?|toboggan(?:s|ed|ing)?)\b/;
-
 /** Položka manifestu hrdiny: podle id modelu (tučňák, riggovaná postava), jinak podle jeho slov („gen3d-bald-eagle“ → pták). */
 function entryOf(hero: string): AssetEntry | null {
   const id = hero.startsWith(RIGGED_PREFIX) ? hero.slice(RIGGED_PREFIX.length) : hero;
@@ -140,12 +137,12 @@ export type Ride = 'lie' | 'board' | null;
 
 /**
  * Póza jízdy – tělo skloněné dopředu, bez poskoku kroků. Pták jede na břiše
- * (tučňák klouže), hrdina či věta, která klouže, lyžuje nebo surfuje, v předklonu.
- * `hero` = id modelu z `Cast`; věta na plátno nedojde (spec ji nenese), proto je nepovinná.
+ * (tučňák klouže), hrdina, který jede (`rides` = `theme.motion` z věty přes `sceneLook`,
+ * T5-R1), nebo model jízdy (`cc0-sled`) v předklonu. `hero` = id modelu z `Cast`.
  */
-export function rideOf(hero: string, sentence = ''): Ride {
+export function rideOf(hero: string, rides = false): Ride {
   if (entryOf(hero)?.class === 'bird') return 'lie';
-  return RIDE_WORDS.test(`${hero} ${sentence}`.toLowerCase()) ? 'board' : null;
+  return rides || RIDE_WORDS.test(hero.toLowerCase()) ? 'board' : null;
 }
 
 /**

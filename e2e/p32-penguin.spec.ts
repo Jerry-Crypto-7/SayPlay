@@ -115,6 +115,21 @@ function gameSpecOf(genre: unknown): GameSpecV1 {
   return compileGenre(read.value);
 }
 
+/** T5-R1: sloveso jízdy z věty dojde přes `theme.motion` až do pózy hrdiny, který není pták. */
+test('a sentence that skis puts a non-bird hero in the riding pose', async ({ page, request }) => {
+  test.setTimeout(120_000);
+  const spec = gameSpecOf(runnerGenre.draftFill('A girl skis down a snowy mountain and avoids trees', null));
+  expect(spec.theme.motion).toBe('ride');
+  await page.goto(await publishSpec(request, spec));
+  await page.waitForFunction(() => window.__playHero?.() != null, undefined, { timeout: 60_000 });
+  const pose = await page.waitForFunction(() => {
+    const hero = window.__playHero!()!;
+    return hero.ride === 'board' && hero.pitch > 20 ? hero : null;
+  }, undefined, { timeout: 10_000 }).then((handle) => handle.jsonValue());
+  expect(pose?.ride, 'předklon jízdy, ne běh').toBe('board');
+  await page.getByTestId('arcade-stage').screenshot({ path: test.info().outputPath('skier-ride.png') });
+});
+
 const SHOTS = join(process.cwd(), 'evals/play/p32/penguin');
 
 /** Nad plátnem nic: HUD, „+1“ a CSS počasí se mění jinak než scéna (jako `p32-look`). */
