@@ -297,7 +297,7 @@ export function FeedPager() {
     return (
       <DemoGame>
         <p className="play-feed-empty" data-testid="play-feed-empty">
-          No games yet – write the first sentence.
+          No games yet. Make the first one.
         </p>
       </DemoGame>
     );

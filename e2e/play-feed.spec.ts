@@ -180,7 +180,7 @@ test.describe('/play – vertical feed', () => {
   test('an empty feed says so honestly and plays the demo game', async ({ page }) => {
     await serveFeed(page, []);
     await page.goto('/play');
-    await expect(page.getByTestId('play-feed-empty')).toHaveText('No games yet – write the first sentence.');
+    await expect(page.getByTestId('play-feed-empty')).toHaveText('No games yet. Make the first one.');
     await expect(page.getByTestId('feed-demo').locator('canvas')).toHaveCount(1, { timeout: 30_000 });
     await expect(page.locator('.play-hud-title')).toHaveText('Fox Runs City Dodging');
     await expect(page.locator('.play-hud-share')).toHaveCount(0);
