@@ -118,6 +118,14 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       expect(withoutPossessor("it's a race where the king's horse runs")).toBe("it's a race where the horse runs");
     });
 
+    // B-R11: stažené „is“ po podstatném jménu není vlastník – „the game's over“ nesmí být „the over“.
+    it('reads a contracted "is" after a noun instead of dropping the noun', () => {
+      expect(withoutPossessor("the game's over when the dog's not looking")).toBe('the game is over when the dog is not looking');
+      expect(withoutPossessor("the floor's lava and the farmer's dog chases you")).toBe('the floor is lava and the dog chases you');
+      // Vlastník před věcí, která je náhodou nebezpečná plocha, se dál odtrhne.
+      expect(withoutPossessor("the dragon's fire burns the knight")).toBe('the fire burns the knight');
+    });
+
     it('prefers the place the look set knows', () => {
       expect(genre('Fly a paper plane through four hoops in the right order across a classroom.').setting).toBe('classroom');
     });

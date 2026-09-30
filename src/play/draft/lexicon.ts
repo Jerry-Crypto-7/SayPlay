@@ -395,12 +395,23 @@ function subjectOf(text: string): string | null {
   return aCharacter(words.slice(-2).join(' '));
 }
 
+/** Slovo po „'s“, před kterým jde o stažené „is“, ne o vlastníka: „the game's over“, „the dog's not“. */
+const IS_NEXT = /^(?:a|an|the|my|your|his|her|our|their|this|that|not|no|so|very|too|all|just|still|now|really|always|never|about|over|on|off|out|up|down|back|gone|done|here|there|coming|going|getting)$/;
+
 /**
  * „the farmer's dog“ → „the dog“ (B-R1): dělení na slova by přivlastňovací „'s“
- * rozlomilo a role by byla „s dog“. Stažené tvary („it's“, „there's“) zůstanou.
+ * rozlomilo a role by byla „s dog“. Stažené tvary zájmen („it's“, „there's“) zůstanou;
+ * stažené „is“ po podstatném jménu se rozvine (B-R11): „the game's over“ → „the game is over“,
+ * „the floor's lava“ → „the floor is lava“.
  */
 export const withoutPossessor = (text: string): string =>
-  text.replace(/\b(?!(?:it|that|there|here|what|who|he|she|let|where|how)['’]s\b)[a-z]+['’]s\s+/g, '');
+  text.replace(/\b([a-z]+)['’]s\s+(?=([a-z]+))/g, (match, owner: string, next: string) =>
+    /^(?:it|that|there|here|what|who|he|she|let|where|how)$/.test(owner)
+      ? match
+      : IS_NEXT.test(next) || (/^(?:floor|ground)$/.test(owner) && HAZARD_WORDS.test(next))
+        ? `${owner} is `
+        : '',
+  );
 
 export function readRoles(sentence: string): SentenceRoles {
   const text = withoutPossessor(sentence.toLowerCase().replace(/\s+/g, ' ').trim());
