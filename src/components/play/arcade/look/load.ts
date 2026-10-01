@@ -113,6 +113,30 @@ function bodyMaterial(side: Side): MeshStandardMaterial {
   return material;
 }
 
+/**
+ * Zářící kopie materiálu modelu (věci arény svítí). `clone()` úpravu shaderu
+ * slitého těla nepřenese: kopie kreslila bílou barvu materiálu místo barev
+ * z vrcholů, s kovem 1 skoro černou, a zářila bíle – zlaté rybky kočky byly
+ * bílé fleky (P35 T8). Slité tělo proto září barvou svých vrcholů.
+ */
+export function glowingCopy(source: Material, intensity: number): Material {
+  const glow = source.clone();
+  if (!(glow instanceof MeshStandardMaterial)) return glow;
+  glow.emissiveIntensity = intensity;
+  if (![...bodyMaterials.values()].includes(source as MeshStandardMaterial)) {
+    glow.emissive.copy(glow.color);
+    glow.emissiveMap = glow.map;
+    return glow;
+  }
+  glow.emissive.setRGB(1, 1, 1);
+  glow.onBeforeCompile = (shader, renderer) => {
+    source.onBeforeCompile(shader, renderer);
+    shader.fragmentShader = shader.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;');
+  };
+  glow.customProgramCacheKey = () => 'arcade-body-glow';
+  return glow;
+}
+
 const constant = (count: number, values: readonly number[]): Float32BufferAttribute =>
   new Float32BufferAttribute(Float32Array.from({ length: count * values.length }, (_, i) => values[i % values.length]!), values.length);
 

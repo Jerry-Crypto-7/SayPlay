@@ -31,7 +31,7 @@
 import { Billboard } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Color, type Group, type Material, type Mesh, MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
+import { Color, type Group, type Material, type Mesh, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
 
 import { color as brand } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
@@ -45,6 +45,7 @@ import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade
 
 import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
 import { isTyping } from '../input';
+import { glowingCopy } from '../look/load';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import { Scenery } from '../look/Scenery';
@@ -360,12 +361,7 @@ function applyPose(group: Group, pose: Pose): void {
 function glowOf(cache: Map<Material, Material>, source: Material): Material {
   let glow = cache.get(source);
   if (glow === undefined) {
-    glow = source.clone();
-    if (glow instanceof MeshStandardMaterial) {
-      glow.emissive.copy(glow.color);
-      glow.emissiveMap = glow.map;
-      glow.emissiveIntensity = ITEM_GLOW;
-    }
+    glow = glowingCopy(source, ITEM_GLOW);
     cache.set(source, glow);
   }
   return glow;

@@ -30,6 +30,34 @@ const terrainOf = (look: LookId | undefined): Terrain => (look === undefined || 
 const CROSSING: Readonly<Record<Terrain, string>> = { islands: 'cannonball', rocks: 'boulder', buildings: 'car' };
 
 /**
+ * Kam se jede, když věta cíl neříká (P35 T8): místo, které k prostředí patří
+ * a katalog pro ně má model. Procházka psa městem končila u mince, kterou věta
+ * nezmínila, a AI verze u „finish line“; bez sady vzhledu se pluje k majáku.
+ */
+const DESTINATION: Readonly<Record<LookId, string>> = {
+  meadow: 'windmill',
+  city: 'fountain',
+  mall: 'shop',
+  supermarket: 'checkout',
+  living_room: 'sofa',
+  factory: 'exit',
+  forest: 'cabin',
+  jungle: 'temple',
+  desert: 'well',
+  beach: 'lighthouse',
+  ocean: 'lighthouse',
+  underwater: 'ruins',
+  snow: 'igloo',
+  volcano: 'volcano',
+  cave: 'exit',
+  space: 'planet',
+  castle: 'tower',
+  graveyard: 'tower',
+};
+
+export const destinationOf = (look: LookId | undefined): string => (look === undefined ? 'lighthouse' : DESTINATION[look]);
+
+/**
  * Třída hrdiny podle slov popisku, čtených od konce jako v `heroFor`
  * (`assets/manifest.ts`): „pirate ship“ je loď, ne pirát. Pro scénu, když
  * manifest pro hrdinu model nemá; loď je vždy `boat`, nikdy `vehicle`.
@@ -77,7 +105,7 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
   }
   const terrain = terrainOf(palette);
   const hazard = spec.enemy ?? CROSSING[terrain];
-  const goal = spec.collectible ?? 'finish line';
+  const goal = spec.collectible ?? spec.target?.label ?? destinationOf(palette);
   return legacySpec(looked, {
     control: 'steer',
     controlParams: {

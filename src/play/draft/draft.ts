@@ -1119,7 +1119,8 @@ function draftGenre(
   const foeLabel = enemy ?? spare(defaultEnemy(setting, choice.genre), [singular(hero)]);
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   const escape = choice.genre === 'arena' && choice.mode === 'escape';
-  const itemLabel = collectible ?? (escape ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
+  // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
+  const itemLabel = collectible ?? (escape || choice.genre === 'voyage' ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
   const seconds = reading?.numbers.seconds ?? readNumbers(sentence).seconds;
   const params = paramsOf(module, fill.params, seconds);
   // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.

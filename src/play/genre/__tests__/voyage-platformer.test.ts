@@ -7,11 +7,14 @@
 import { describe, expect, it } from 'vitest';
 
 import { compileArcade } from '@/play/arcade/compile';
+import { LOOK_IDS } from '@/play/arcade/look';
+import { modelOf } from '@/play/arcade/models';
+import { draftGameSpec } from '@/play/draft/draft';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import { type GenreId, type GenreSpec, GENRES } from '../contract';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
-import { voyageHeroClass } from '../voyage';
+import { destinationOf, voyageHeroClass } from '../voyage';
 
 const PIRATE = 'A pirate ship dodges cannonballs while sailing between islands to find buried treasure';
 const ROCKET = 'A rocket lands on Mars';
@@ -81,6 +84,28 @@ describe('voyage and platformer genre modules (P32F T3)', () => {
     expect(generatorOf(game)).toBe('voyage_race');
     expect(kinds).toEqual(expect.arrayContaining(['building', 'gate']));
     expect(kinds).not.toContain('island');
+  });
+
+  it('a walk with no goal in the sentence heads for a place of the setting, not a coin (P35 T8)', () => {
+    const game = draftGameSpec(DOG);
+    expect(game.tutorial.goalLine).toBe('Pass every gate and reach the fountain.');
+    expect(roleOf(game, 'exit')?.label).toBe('fountain');
+    expect(game.roles.map((role) => role.label)).not.toContain('coin');
+    // AI verze bez věci a cíle jede tamtéž, ne k „finish line“.
+    const ai = compileGenre({ genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city' });
+    expect(ai.tutorial.goalLine).toBe('Pass every gate and reach the fountain.');
+  });
+
+  it('a goal the sentence names stays the goal (P35 T8)', () => {
+    const game = draftGameSpec(PIRATE);
+    expect(roleOf(game, 'exit')?.label).toMatch(/\btreasure$/);
+    expect(game.tutorial.goalLine).toMatch(/reach the (?:buried )?treasure\.$/);
+    const ai = compileGenre({ genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city', target: { label: 'dog park', verb: 'reach', states: 2 } });
+    expect(roleOf(ai, 'exit')?.label).toBe('dog park');
+  });
+
+  it('every place a voyage heads for by default has a model in the catalog (P35 T8)', () => {
+    for (const look of [undefined, ...LOOK_IDS]) expect(modelOf(destinationOf(look), false), String(look)).toBeDefined();
   });
 
   it('a race through a look with neither sea nor streets weaves between rocks and dodges boulders', () => {

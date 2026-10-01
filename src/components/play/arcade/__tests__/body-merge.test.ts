@@ -9,7 +9,7 @@ import { BoxGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMa
 import { Box3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { mergeBody, singlePass } from '../look/load';
+import { glowingCopy, mergeBody, singlePass } from '../look/load';
 
 function coin(): Group {
   const model = new Group();
@@ -128,5 +128,39 @@ describe('mergeBody', () => {
     const merged = mergeBody(model) as Mesh;
     expect((merged.material as MeshStandardMaterial).side).toBe(DoubleSide);
     expect(new Box3().setFromObject(merged).getSize(new Vector3()).y).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * Věc arény září (P35 T8): kopie slitého těla bez úpravy shaderu kreslila bílou
+ * barvu materiálu a zářila bíle – zlaté rybky kočky byly na snímku bílé fleky.
+ */
+describe('glowingCopy', () => {
+  const physical = () => ({ vertexShader: ShaderLib.physical.vertexShader, fragmentShader: ShaderLib.physical.fragmentShader, uniforms: {} });
+
+  it('lets a merged body glow in its own vertex colours, not white', () => {
+    const body = (mergeBody(coin()) as Mesh).material as MeshStandardMaterial;
+    const glow = glowingCopy(body, 2.4) as MeshStandardMaterial;
+    expect(glow.vertexColors).toBe(true);
+    // Záře = bílá × intenzita × barva vrcholu (odstín modelu), k ní vlastní záře částí.
+    expect(glow.emissive.getHex()).toBe(0xffffff);
+    expect(glow.emissiveIntensity).toBe(2.4);
+    const shader = physical();
+    glow.onBeforeCompile(shader as never, undefined as never);
+    expect(shader.fragmentShader).toMatch(/metalnessFactor \*= vPbr\.y;/);
+    expect(shader.fragmentShader).toMatch(/#include <emissivemap_fragment>\s*totalEmissiveRadiance \*= vColor\.rgb;\s*totalEmissiveRadiance \+= vGlow;/);
+    // Jiný program než nezářící tělo – stejný klíč by three vrátil program bez násobení barvou.
+    expect(glow.customProgramCacheKey()).not.toBe(body.customProgramCacheKey());
+    const plain = physical();
+    body.onBeforeCompile(plain as never, undefined as never);
+    expect(plain.fragmentShader).not.toContain('vColor.rgb;');
+  });
+
+  it('lets a model it did not merge glow in its material colour', () => {
+    const material = new MeshStandardMaterial({ color: '#f08a24' });
+    const glow = glowingCopy(material, 2.4) as MeshStandardMaterial;
+    expect(glow.emissive.getHex()).toBe(material.color.getHex());
+    expect(glow.emissiveIntensity).toBe(2.4);
+    expect(material.emissive.getHex()).toBe(0);
   });
 });
