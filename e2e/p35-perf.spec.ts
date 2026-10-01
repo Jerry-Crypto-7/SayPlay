@@ -149,13 +149,13 @@ async function cardAndHero(page: Page): Promise<{ readonly card: Rect; readonly 
   let last = '';
   let since = Date.now();
   const deadline = Date.now() + 30_000;
-  for (;;) {
+  while (Date.now() < deadline) {
     const hero = await page.evaluate(() => window.__playFrame!().hero);
     const key = hero === null ? '' : [hero.minX, hero.maxX, hero.minY, hero.maxY].map((v) => v.toFixed(3)).join(' ');
     if (key !== last) {
       last = key;
       since = Date.now();
-    } else if (Date.now() - since >= 1500 || Date.now() > deadline) break;
+    } else if (Date.now() - since >= 1500) break;
     await page.waitForTimeout(250);
   }
   // Karta se k hrdinovi stěhuje po snímcích; ať je po posledním pohybu kamery na místě.
