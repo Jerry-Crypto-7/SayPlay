@@ -4,7 +4,8 @@
  * Hrdina Plavby (P32F T4) – pohyb podle třídy, jen obraz (hash ani kolize se
  * nehnou): loď se houpe na vlně a naklání do zatáčky, kolem ní pění voda a za
  * zádí zůstává brázda; přistávač klopí podle náklonu z jádra (`aux0`), při tahu
- * mu šlehá plamen, u země víří kouř a v rychlém letu kolem něj letí šmouhy.
+ * mu šlehá plamen, u země víří kouř a v rychlém letu kolem něj letí šmouhy;
+ * hrdina po souši na startu kouká ke kameře a s rozjezdem se otočí po trati.
  *
  * Běží po `World` (připojí se až s rozvržením, o snímky později): World každý
  * snímek píše polohu a výšku těla, tady se k tomu jen přičte houpání a natočení.
@@ -27,6 +28,9 @@ const DEG = Math.PI / 180;
 const TICKS_PER_S = 60;
 /** Pěna leží kousek nad klidnou hladinou (0,3 m, `SteerScene.tsx`) plus vlnou. */
 const FOAM_Y = 0.42;
+/** Hrdina po souši na startu: o kolik je natočený od přímého pohledu do kamery (3/4 profil), a jak rychle se s rozjezdem otočí po trati (1/s). */
+const FACE_TURN = 35 * DEG;
+const TURN_BACK = 8;
 
 /** Jedna částice: poloha, rychlost (m/s), věk a délka života (s), velikost a směr protažení. */
 interface Particle {
@@ -110,6 +114,7 @@ const rand = (spread: number): number => (Math.random() - 0.5) * 2 * spread;
 
 export function VoyageHero({ session, layout, look, waveAt }: { readonly session: ArcadeSession; readonly layout: VoyageLayout; readonly look: Look; readonly waveAt: ((x: number, z: number, seconds: number) => number) | null }) {
   const scene = useThree((three) => three.scene);
+  const camera = useThree((three) => three.camera);
   const hero = useRef<Object3D | null>(null);
   const wake = useRef<InstancedMesh>(null);
   const sparks = useRef<InstancedMesh>(null);
@@ -155,6 +160,17 @@ export function VoyageHero({ session, layout, look, waveAt }: { readonly session
         body.rotation.set(-Math.atan(slope), m.yaw, m.roll + Math.atan(side) * 0.6);
       } else if (layout.motion === 'lander') {
         body.rotation.set(0, 0, (state[base + BODY.aux0] as number) * DEG);
+      } else if (layout.motion === 'vehicle') {
+        if ((state[HEADER.tick] as number) === 0) {
+          // Na startu kouká hrdina ze 3/4 ke kameře (P35 T12): zezadu byl pes „brown animal
+          // with two upright ears“. Kamera z boku nejde – trať by na výšku vyjela z obrazu (T7).
+          const toward = Math.atan2(camera.position.x - x, camera.position.z - z) + FACE_TURN;
+          m.yaw = Math.atan2(Math.sin(toward), Math.cos(toward));
+        } else {
+          // Rozjezd: otočí se po trati.
+          m.yaw -= m.yaw * Math.min(1, dt * TURN_BACK);
+        }
+        body.rotation.y = m.yaw;
       }
       if (foam.current !== null && waveAt !== null) {
         // Nad vlnou pod lodí – rovná hladina by pěnu v údolí vlny překryla.

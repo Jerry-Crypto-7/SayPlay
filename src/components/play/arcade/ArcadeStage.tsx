@@ -15,7 +15,7 @@
 
 import { Canvas, addAfterEffect, useThree } from '@react-three/fiber';
 import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Box3, type Camera, type Mesh, type Object3D, type SkinnedMesh, Vector3 } from 'three';
+import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { AXIS_MAX, BUTTON } from '@/play/arcade/contract';
@@ -67,6 +67,11 @@ export interface FrameReport {
   readonly width: number;
   readonly height: number;
   readonly hero: FrameBox | null;
+  /**
+   * Úhel (°) mezi tím, kam hrdina kouká (jeho +z), a směrem od něj ke kameře, ve vodorovné
+   * rovině: 0 = hledí do kamery, 180 = je k ní zády (P35 T12).
+   */
+  readonly heroFacing: number | null;
   readonly target: FrameBox | null;
   /** Kolik viditelných kandidátů na cíl scéna má. */
   readonly targets: number;
@@ -185,6 +190,13 @@ function frameOf(object: Object3D, camera: Camera, width: number, height: number
   return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, minX, maxX, minY, maxY, widthPx, heightPx, sizePx: Math.max(widthPx, heightPx), behind };
 }
 
+/** `FrameReport.heroFacing`: úhel mezi pohledem hrdiny (+z) a směrem ke kameře ve vodorovné rovině (°). */
+function facingOf(hero: Object3D, at: Vector3, camera: Camera): number {
+  const gaze = new Vector3(0, 0, 1).applyQuaternion(hero.getWorldQuaternion(new Quaternion())).setY(0);
+  const toCamera = camera.getWorldPosition(new Vector3()).sub(at).setY(0);
+  return (gaze.angleTo(toCamera) * 180) / Math.PI;
+}
+
 /** Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza. */
 function RedrawOnChange({ session }: { readonly session: ArcadeSession }) {
   const invalidate = useThree((three) => three.invalidate);
@@ -226,6 +238,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         width: size.width,
         height: size.height,
         hero: hero === null ? null : frameOf(hero, camera, size.width, size.height),
+        heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
