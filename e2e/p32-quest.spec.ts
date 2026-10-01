@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { type APIRequestContext, devices, expect, type Page, test } from '@playwright/test';
 import sharp from 'sharp';
 
-import type { FrameReport } from '../src/components/play/arcade/ArcadeStage';
+import type { FrameBox, FrameReport } from '../src/components/play/arcade/ArcadeStage';
 import { compileGenre, readGenreSpec } from '../src/play/genre/index';
 import { questGenre } from '../src/play/genre/quest';
 import type { GameSpecV1 } from '../src/play/spec';
@@ -56,8 +56,8 @@ async function publishSpec(request: APIRequestContext, spec: unknown): Promise<s
 
 const SHOTS = join(process.cwd(), 'evals/play/p32/quest');
 
-/** Nad plátnem nic: HUD se mění jinak než scéna (jako `p32-arena`). */
-const ONLY_CANVAS = 'body * { visibility: hidden !important; } [data-testid="arcade-stage"] canvas { visibility: visible !important; }';
+/** Nad plátnem nic: HUD se mění jinak než scéna (jako `p32-arena`); šipka k duchovi mimo záběr zůstane. */
+const ONLY_CANVAS = 'body * { visibility: hidden !important; } [data-testid="arcade-stage"] canvas, .play-threat-edge { visibility: visible !important; }';
 
 /** Tvar arkádové sondy `__playShell` (`ArcadePlay.tsx`); globální typ je mřížkový. */
 type ArcadeProbe = {
@@ -152,11 +152,24 @@ async function watchDemo(page: Page, until: number, goal: number): Promise<Watch
   );
 }
 
-/** Podíl fialových pixelů: odstín 250–320°, HSV S ≥ 0,25, V ≥ 0,2 (`rules/design-output.md`). */
-async function purpleShare(png: Buffer): Promise<number> {
+/**
+ * Podíl fialových pixelů: odstín 250–320°, HSV S ≥ 0,25, V ≥ 0,2 (`rules/design-output.md`).
+ * Hrdina se nepočítá: klobouk a plášť čaroděje jsou barva modelu, ne paleta (P35 mimo
+ * rozsah), a blízká kamera P35 T2 je zvětšila nad práh. Krempa přečnívá obdélník těla,
+ * který sonda měří, proto se obdélník rozšíří o půl své velikosti na každou stranu.
+ */
+async function purpleShare(png: Buffer, hero: FrameBox | null): Promise<number> {
   const { data, info } = await sharp(png).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const padX = hero === null ? 0 : (hero.maxX - hero.minX) / 2;
+  const padY = hero === null ? 0 : (hero.maxY - hero.minY) / 2;
+  const skip = hero === null ? null : { x0: ((hero.minX - padX + 1) / 2) * info.width, x1: ((hero.maxX + padX + 1) / 2) * info.width, y0: ((1 - hero.maxY - padY) / 2) * info.height, y1: ((1 - hero.minY + padY) / 2) * info.height };
   let purple = 0;
   for (let at = 0; at < info.width * info.height * 3; at += 3) {
+    if (skip !== null) {
+      const x = (at / 3) % info.width;
+      const y = Math.floor(at / 3 / info.width);
+      if (x >= skip.x0 && x <= skip.x1 && y >= skip.y0 && y <= skip.y1) continue;
+    }
     const r = data[at]! / 255;
     const g = data[at + 1]! / 255;
     const b = data[at + 2]! / 255;
@@ -175,6 +188,8 @@ interface Shot {
   readonly heroShare: number | null;
   readonly targetInView: boolean;
   readonly chaserInView: boolean;
+  /** Strana okraje, kde šipka ukazuje ducha mimo záběr (`data-threat-edge`, P35 T2); prázdná = žádná. */
+  readonly threatEdge: string;
   /** Stavy cílů ze sondy `data-quest` ve chvíli snímku. */
   readonly states: readonly number[];
   readonly purple: number;
@@ -186,7 +201,9 @@ async function shoot(page: Page, name: string, tick: number): Promise<Shot> {
   const frame = await page.evaluate(() => window.__playFrame!());
   const canvas = page.locator('[data-testid="arcade-stage"] canvas').first();
   const states = ((await canvas.getAttribute('data-quest')) ?? '').split(' ').filter(Boolean).map(Number);
-  const tier = await page.getByTestId('arcade-stage').getAttribute('data-quality');
+  const stage = page.getByTestId('arcade-stage');
+  const tier = await stage.getAttribute('data-quality');
+  const threatEdge = (await stage.getAttribute('data-threat-edge')) ?? '';
   const png = await canvas.screenshot({ path: join(SHOTS, `${name}.png`), scale: 'css' });
   const hero = frame.hero !== null && !frame.hero.behind ? frame.hero : null;
   const shot: Shot = {
@@ -195,11 +212,12 @@ async function shoot(page: Page, name: string, tick: number): Promise<Shot> {
     heroShare: hero === null ? null : hero.heightPx / frame.height,
     targetInView: inView(frame.target),
     chaserInView: inView(frame.items.chaser?.box ?? null),
+    threatEdge,
     states,
-    purple: await purpleShare(png),
+    purple: await purpleShare(png, hero),
   };
   const pct = (share: number | null): string => (share === null ? '–' : `${(share * 100).toFixed(1)} %`);
-  const line = `${name} (tik ${tick}, ${frame.width}×${frame.height}, úroveň ${String(tier)}): stavy [${states.join(' ')}], hrdina ${pct(shot.heroShare)} výšky, cíl ${shot.targetInView ? 'v záběru' : 'mimo'}, duch ${shot.chaserInView ? 'v záběru' : 'mimo'}, fialová ${pct(shot.purple)}`;
+  const line = `${name} (tik ${tick}, ${frame.width}×${frame.height}, úroveň ${String(tier)}): stavy [${states.join(' ')}], hrdina ${pct(shot.heroShare)} výšky, cíl ${shot.targetInView ? 'v záběru' : 'mimo'}, duch ${shot.chaserInView ? 'v záběru' : 'mimo'}, šipka ${threatEdge || '–'}, fialová mimo hrdinu ${pct(shot.purple)}`;
   test.info().annotations.push({ type: 'shot', description: line });
   console.log(line);
   return shot;
@@ -257,7 +275,8 @@ async function shootQuest(page: Page, id: QuestId, prefix: string, warmUpMs = 0)
   }
   expect(beforeShot.states[moved], `${beforeShot.name}: cíl ještě ve stavu 0`).toBe(0);
   expect(afterShot.states[moved], `${afterShot.name}: cíl ve stavu ${String(AFTER_STATE[id])}`).toBeGreaterThanOrEqual(AFTER_STATE[id]);
-  if (id === 'wizard') expect(beforeShot.chaserInView || afterShot.chaserInView, 'duch v záběru').toBe(true);
+  // Duch, který se s velkým hrdinou do záběru nevejde, ukazuje šipka na okraji (jako medvěd v `p32-arena`).
+  if (id === 'wizard') for (const shot of [beforeShot, afterShot]) expect(shot.chaserInView || shot.threatEdge !== '', `${shot.name}: duch v záběru, nebo ho ukazuje šipka na okraji`).toBe(true);
 }
 
 const QUESTS: readonly QuestId[] = ['firefighter', 'wizard', 'chef'];
