@@ -1531,16 +1531,19 @@
 
 /* Arkáda (P35 T6): výzva uprostřed zakrývala hrdinu arény a úkolu. Plátno ví, kde
  * hrdina v obraze stojí (`PromptSpot` v `ArcadeStage.tsx`), a výzva sedne nad něj,
- * nebo pod něj – kde je víc místa. Bez hrdiny v záběru zůstává uprostřed. */
+ * nebo pod něj – kde je víc místa. Bez hrdiny v záběru zůstává uprostřed.
+ * Kde se mezi hrdinu a lištu HUD nevejde, zmenší se od hrany u hrdiny (P35 T11). */
 .play-stage[data-prompt-at='above'] .play-first-prompt {
   top: auto;
   bottom: calc(100% - var(--_hero-top) + var(--sp-space-4));
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(var(--_prompt-scale, 1));
+  transform-origin: bottom center;
 }
 
 .play-stage[data-prompt-at='below'] .play-first-prompt {
   top: calc(var(--_hero-bottom) + var(--sp-space-4));
-  transform: translateX(-50%);
+  transform: translateX(-50%) scale(var(--_prompt-scale, 1));
+  transform-origin: top center;
 }
 
 @keyframes play-first-prompt {

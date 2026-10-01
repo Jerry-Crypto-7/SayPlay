@@ -299,8 +299,16 @@ const AHEAD_S = 2;
 
 const T7_SHOTS = join(process.cwd(), 'evals/play/p35/T7');
 
-/** Podíl výšky obrazu, který hrdina zabírá, a sekundy trati v záběru; snímek plátna do `evals/play/p35/T7/`. */
-async function measureFrame(page: Page, name: string): Promise<{ readonly share: number; readonly ahead: number }> {
+/**
+ * Pes zezadu je „brown animal with two upright ears“ (přejímka kola 2, P35 T12): na startu
+ * kouká ke kameře nanejvýš o tolik stupňů od přímého pohledu (3/4 profil, ať je vidět
+ * tvář), za jízdy aspoň o tolik – kouká po trati.
+ */
+const FACE_AT_START_DEG = 60;
+const FACE_ON_RUN_DEG = 120;
+
+/** Podíl výšky obrazu, který hrdina zabírá, sekundy trati v záběru a úhel hrdiny od kamery; snímek plátna do `evals/play/p35/T7/`. */
+async function measureFrame(page: Page, name: string): Promise<{ readonly share: number; readonly ahead: number; readonly facing: number }> {
   const frame = await page.evaluate(() => window.__playFrame!());
   expect(frame.hero, `${name}: hrdina v záběru`).not.toBeNull();
   expect(frame.hero!.behind, `${name}: hrdina před kamerou`).toBe(false);
@@ -308,10 +316,11 @@ async function measureFrame(page: Page, name: string): Promise<{ readonly share:
   mkdirSync(T7_SHOTS, { recursive: true });
   await page.locator('[data-testid="arcade-stage"] canvas').first().screenshot({ path: join(T7_SHOTS, `${name}.png`), scale: 'css' });
   const share = frame.hero!.heightPx / frame.height;
-  const line = `${name}: hrdina ${(share * 100).toFixed(1)} % výšky (${frame.hero!.widthPx.toFixed(0)}×${frame.hero!.heightPx.toFixed(0)} px), trať v záběru ${ahead.toFixed(1)} s plnou rychlostí`;
+  const facing = frame.heroFacing!;
+  const line = `${name}: hrdina ${(share * 100).toFixed(1)} % výšky (${frame.hero!.widthPx.toFixed(0)}×${frame.hero!.heightPx.toFixed(0)} px), trať v záběru ${ahead.toFixed(1)} s plnou rychlostí, od kamery ${facing.toFixed(0)}°`;
   test.info().annotations.push({ type: 'frame', description: line });
   console.log(line);
-  return { share, ahead };
+  return { share, ahead, facing };
 }
 
 /**
@@ -357,6 +366,11 @@ for (const [device, use, minShare] of [
         for (const [moment, frame] of [['start', start], ['run', run]] as const) {
           expect(frame.share, `${moment}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(minShare);
           expect(frame.ahead, `${moment}: sekundy trati před hrdinou v záběru`).toBeGreaterThanOrEqual(AHEAD_S);
+        }
+        // Loď se natáčí jen do zatáčky; tvář má jen pes.
+        if (id === 'dog') {
+          expect(start.facing, 'start: pes kouká ke kameře (°)').toBeLessThanOrEqual(FACE_AT_START_DEG);
+          expect(run.facing, 'jízda: pes kouká po trati (°)').toBeGreaterThanOrEqual(FACE_ON_RUN_DEG);
         }
       });
   });
