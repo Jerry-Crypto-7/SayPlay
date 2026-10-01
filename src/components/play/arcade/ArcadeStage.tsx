@@ -13,7 +13,7 @@
  * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  */
 
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, type SkinnedMesh, Vector3 } from 'three';
 
@@ -238,6 +238,41 @@ function FrameProbe({ control }: { readonly control: string }) {
       if (window.__playFrame === probe) delete window.__playFrame;
     };
   }, [get, control]);
+  return null;
+}
+
+/** Jak často výzva na startu znovu zjistí, kde hrdina stojí (ms): na tiku 0 se mění jen dotažený model a kamera. */
+const PROMPT_EVERY_MS = 250;
+
+/**
+ * Místo výzvy „Tap to start“ (P35 T6): uprostřed obrazu v aréně a úkolu přesně
+ * zakryla hrdinu. Dokud hra stojí na tiku 0, promítne hrdinu kamerou a dá stage,
+ * kde v obraze je (`--_hero-top`, `--_hero-bottom` v % výšky) a na které straně
+ * od něj je víc místa (`data-prompt-at`); CSS výzvu postaví nad, nebo pod něj.
+ * Bez hrdiny v záběru zůstane výzva uprostřed.
+ */
+function PromptSpot({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+  const last = useRef(0);
+  useFrame(({ camera, scene, size }) => {
+    const host = surface.current;
+    const now = performance.now();
+    if (host === null || session.snapshot().tick !== 0 || now - last.current < PROMPT_EVERY_MS) return;
+    last.current = now;
+    let hero: Object3D | null = null;
+    scene.traverseVisible((node) => {
+      if (node.userData.frame === 'hero') hero = node;
+    });
+    const box = hero === null ? null : frameOf(hero, camera, size.width, size.height);
+    if (box === null || box.behind) {
+      delete host.dataset.promptAt;
+      return;
+    }
+    const top = (1 - box.maxY) / 2;
+    const bottom = (1 - box.minY) / 2;
+    host.style.setProperty('--_hero-top', `${(top * 100).toFixed(1)}%`);
+    host.style.setProperty('--_hero-bottom', `${(bottom * 100).toFixed(1)}%`);
+    host.dataset.promptAt = top >= 1 - bottom ? 'above' : 'below';
+  });
   return null;
 }
 
@@ -538,6 +573,8 @@ const StageCanvas = memo(function StageCanvas({
       )}
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
+      {/* Za scénou, která kameru umístila: výzva na startu se měří jejím záběrem. */}
+      <PromptSpot session={session} surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
       <Effects session={session} look={look} surface={surface} />
     </Canvas>

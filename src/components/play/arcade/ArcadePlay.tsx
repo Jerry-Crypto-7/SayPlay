@@ -667,7 +667,20 @@ function ArcadePlayGame({
     // `data-playing`: hráč už hraje (první tah proběhl, ne přehrávaná ukázka) – lišta domova (P34 T3) mu ustoupí.
     // Obloha jde do proměnné `--_sky`: na desktopu jí je jen scéna 16:9, okolí je krémové (kit `05-layout.md`).
     <main ref={shell} className="play-shell" data-playing={active && demo === null && snapshot.tick > 0 ? 'true' : 'false'} style={{ '--_sky': scene.sky } as CSSProperties}>
-      <ArcadeStage session={session} cast={cast} lookId={lookOf(spec.theme)} look={scene} enabled={active && running} overlay={<Weather session={session} theme={spec.theme} />} />
+      <ArcadeStage
+        session={session}
+        cast={cast}
+        lookId={lookOf(spec.theme)}
+        look={scene}
+        enabled={active && running}
+        overlay={
+          <>
+            <Weather session={session} theme={spec.theme} />
+            {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. Na plátně, ať ji stage postaví mimo hrdinu (P35 T6). */}
+            {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
+          </>
+        }
+      />
       {/* HUD kitu (P34 T5): dole restart, „Change one thing“ (živá změna, P29D T9) a sdílení (P27B T5); po dohrání je nese `PostRun`. */}
       <ArcadeHud
         spec={spec}
@@ -709,8 +722,6 @@ function ArcadePlayGame({
         <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
         {running && <RemixReadyChip job={remix} />}
       </ArcadeHud>
-      {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. */}
-      {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
       {read !== undefined && <SentenceRead read={read} open={aboutOpen} onClose={() => setAboutOpen(false)} />}
       {lab !== undefined && <HowItWorks facts={lab} versionId={versionId} lineage={lineage} />}
