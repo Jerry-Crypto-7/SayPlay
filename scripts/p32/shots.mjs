@@ -217,6 +217,11 @@ async function inputUntilProbe(page, clickAt, deadline) {
       }, clickAt)
       .catch(() => null);
     if (probe !== null) return probe;
+    // Karta pauzy (okno bez fokusu, mezerník) drží hru, dokud ji něco nepustí.
+    if (await clickIfVisible(page, 'play-resume')) {
+      await page.waitForTimeout(50);
+      continue;
+    }
     if (await card.isVisible().catch(() => false)) {
       await card.click({ timeout: 1000 }).catch(() => {});
       await page.waitForTimeout(50);
@@ -226,6 +231,8 @@ async function inputUntilProbe(page, clickAt, deadline) {
     await page.waitForTimeout(60);
     await page.keyboard.up('ArrowRight');
     await page.keyboard.press(' ');
+    // Souboj čte útok na J; první stisk jen pustí hru.
+    await page.keyboard.press('j');
     if (round % 4 === 0) {
       const box = await stage.boundingBox().catch(() => null);
       if (box !== null) await page.mouse.click(box.x + box.width / 2, box.y + box.height * 0.6).catch(() => {});
@@ -477,6 +484,8 @@ async function shootDesktop(browser, options, sentence, entry, errors, shotPath)
       const status = await waitForAi(page);
       entry.ai = { status, gamePath: null };
       if (status === 'ready') {
+        // Plavba mezitím mohla spadnout do pauzy (okno bez fokusu) a karta zakrývá tlačítko verze.
+        if (await clickIfVisible(page, 'play-resume')) await page.waitForTimeout(200);
         await page.getByTestId('upgrade-action').click();
         await page.waitForURL((url) => GAME_PATH.test(url.pathname) && url.pathname !== entry.gamePath, { timeout: options.playableTimeoutMs });
         entry.ai.gamePath = new URL(page.url()).pathname;

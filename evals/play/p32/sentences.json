@@ -11,5 +11,9 @@
     { "id": "knights", "text": "Two knights duel in a castle", "genre": "arena.fight", "hero": "knight", "verb": "duel" },
     { "id": "rocket", "text": "A rocket lands on Mars", "genre": "voyage.land", "hero": "rocket", "verb": "land" }
   ],
-  "sealed": []
+  "sealed": [
+    { "id": "rabbit", "text": "A rabbit hops across garden ledges to collect giant carrots.", "genre": "platformer", "hero": "rabbit", "verb": "collect" },
+    { "id": "robot", "text": "A robot leaps between spooky rooftops to find its missing battery.", "genre": "platformer", "hero": "robot", "verb": "find" },
+    { "id": "turtle", "text": "A turtle bounces across sleepy clouds to reach the moon.", "genre": "platformer", "hero": "turtle", "verb": "reach" }
+  ]
 }
