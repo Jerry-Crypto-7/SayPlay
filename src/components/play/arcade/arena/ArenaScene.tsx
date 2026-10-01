@@ -54,6 +54,7 @@ import type { ArcadeSession } from '../session';
 import { type Cast, FittedModel } from '../World';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
+import { useThreatEdge } from './ThreatEdge';
 import { ALERT_ABOVE_BAR_M, type Fighter, HealthBar, type HealthBarHandle, type MeterFighter, SwingArc, adoptSkin, advanceFrame, createFightWatch, drawFighter, drawSwing, fightClipOf, fighterName, shakeCamera, useHealthMeters } from './FightFx';
 
 const COLOR = { player: '#2563eb', prey: '#16a34a', hunter: '#dc2626', food: '#facc15', shot: '#f8fafc' } as const;
@@ -272,8 +273,12 @@ interface Tilt {
   readonly cos: number;
 }
 const tiltOf = (degrees: number): Tilt => ({ sin: Math.sin((degrees * Math.PI) / 180), cos: Math.cos((degrees * Math.PI) / 180) });
-/** Kamera 3/4 shora; předstih = kam hráč dojede za tolik sekund. */
-const STYLED_TILT = tiltOf(50);
+/**
+ * Kamera 3/4 shora; předstih = kam hráč dojede za tolik sekund. P35 T2: 50° → 40°.
+ * Při 50° byla kočka shora zezadu jen hřbet a uši a astra ji naslepo nepoznala (O10);
+ * při 40° je vidět hlava a bok.
+ */
+const STYLED_TILT = tiltOf(40);
 /**
  * Souboj strměji (P32E T6): soupeř jde na hrdinu podél osy kamery a při 50°
  * ho hrdina i jeho lišta HP zakryly, zásah i pád se ztratily za zády.
@@ -285,8 +290,14 @@ const THREAT_M = 22;
 /** Kam do obrazu (NDC) se musí vejít hrdina a nejbližší hrozba. */
 const HERO_EDGE = 0.8;
 const THREAT_EDGE = 0.9;
-/** Hrdina drží aspoň tenhle podíl výšky obrazu – strop vzdálenosti kamery. */
-const HERO_MIN_SHARE = 0.05;
+/**
+ * Hrdina drží aspoň tenhle podíl výšky obrazu – strop vzdálenosti kamery; na výšku (mobil) víc.
+ * P35 T2: dřív 5 % všude a hrozba za zády kameru oddálila až k němu (čaroděj 4,7 %, O10).
+ * Hrozba, která se do toho nevejde, se ukáže šipkou na okraji (`useThreatEdge`), ne oddálením.
+ */
+// Kvádr těla je o ~30 % vyšší než model, který do něj sonda záběru měří: 0,085 dalo kočce 6,5 % (1. 10.).
+const HERO_SHARE = 0.1;
+const HERO_SHARE_TALL = 0.11;
 /** Jak rychle kamera dojíždí za cílem (1/s). */
 const FOLLOW = 5;
 /** Pod touhle rychlostí (jednotek za tik, ~0,5 m/s) tělo stojí a otáčí se k hráči, nebo drží směr. */
@@ -412,6 +423,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
   const aim = useMemo(() => new Vector3(), []);
   const goal = useMemo(() => new Vector3(), []);
   const projected = useMemo(() => new Vector3(), []);
+  const mid = useMemo(() => new Vector3(), []);
+  const pointEdge = useThreatEdge(surface);
   const follow = useRef<{ tick: number; distance: number } | null>(null);
   const frames = useRef(0);
   const introClock = useIntroClock();
@@ -595,11 +608,11 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
     if (me === null || me === undefined) return;
     const tan = Math.tan((camera.fov * Math.PI) / 360);
     const aspect = camera.aspect;
-    // Cíl pohledu: kam hráč dojede za `LEAD_S`, a když je hrozba blízko, půl cesty k ní.
+    // Cíl pohledu: kam hráč dojede za `LEAD_S`, a když je hrozba blízko a vejde se, půl cesty k ní.
     const speed = ARCADE_HZ / UNIT;
     goal.set(me.position.x - (state[pb + BODY.vx] as number) * speed * LEAD_S, 0, me.position.z + (state[pb + BODY.vz] as number) * speed * LEAD_S);
     let threat = -1;
-    let nearest = THREAT_M;
+    let nearest = Infinity;
     for (const view of views) {
       if (parts[view.index] !== 'chaser' && parts[view.index] !== 'enemy') continue;
       const other = groups.current[view.index];
@@ -611,21 +624,26 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
       }
     }
     const threatAt = threat < 0 ? null : groups.current[threat]!.position;
-    if (threatAt !== null) goal.set((goal.x + threatAt.x) / 2, 0, (goal.z + threatAt.z) / 2);
-    const snap = follow.current === null || restarted;
-    const k = snap ? 1 : 1 - Math.exp(-delta * FOLLOW);
-    aim.lerp(goal, k);
-    // Vzdálenost: aspoň `SEE_M` do strany, dál, dokud se hrdina a hrozba nevejdou, nejvýš tak, ať hrdina drží `HERO_MIN_SHARE` výšky.
+    const threatSize = threat < 0 ? null : drawn[threat]!;
+    // Vzdálenost: aspoň `SEE_M` do strany, dál, dokud se hrdina a hrozba nevejdou, nejvýš tak, ať hrdina drží `HERO_SHARE` výšky.
     const hero = drawn[player]!;
     const heroR = Math.max(hero.w, hero.d) / 2;
     const tilt = fight ? FIGHT_TILT : STYLED_TILT;
-    let need = reachOf(me.position.x - aim.x, hero.h / 2, me.position.z - aim.z, heroR, tan, aspect, HERO_EDGE, tilt);
-    if (threatAt !== null) {
-      const size = drawn[threat]!;
-      need = Math.max(need, reachOf(threatAt.x - aim.x, size.h / 2, threatAt.z - aim.z, Math.max(size.w, size.d) / 2, tan, aspect, THREAT_EDGE, tilt));
+    const most = (hero.h * tilt.cos + 2 * heroR * tilt.sin) / (2 * tan * (aspect < 1 ? HERO_SHARE_TALL : HERO_SHARE));
+    const heroReach = (from: Vector3): number => reachOf(me.position.x - from.x, hero.h / 2, me.position.z - from.z, heroR, tan, aspect, HERO_EDGE, tilt);
+    const threatReach = (at: Vector3, size: Size, from: Vector3): number => reachOf(at.x - from.x, size.h / 2, at.z - from.z, Math.max(size.w, size.d) / 2, tan, aspect, THREAT_EDGE, tilt);
+    // Hrozba, která se s hrdinou pod strop `most` nevejde, pohled netáhne – ukáže ji šipka na okraji.
+    let framed = false;
+    if (threatAt !== null && threatSize !== null && nearest < THREAT_M) {
+      mid.set((goal.x + threatAt.x) / 2, 0, (goal.z + threatAt.z) / 2);
+      framed = Math.max(heroReach(mid), threatReach(threatAt, threatSize, mid)) <= most;
+      if (framed) goal.copy(mid);
     }
+    const snap = follow.current === null || restarted;
+    const k = snap ? 1 : 1 - Math.exp(-delta * FOLLOW);
+    aim.lerp(goal, k);
+    const need = Math.max(heroReach(aim), framed ? threatReach(threatAt!, threatSize!, aim) : 0);
     const least = Math.max(16, (aspect < 1 ? SEE_M_TALL : SEE_M) / (tan * Math.min(1, aspect)));
-    const most = (hero.h * tilt.cos + 2 * heroR * tilt.sin) / (2 * tan * HERO_MIN_SHARE);
     const wanted = Math.min(most, Math.max(least, need));
     const distance = snap ? wanted : follow.current!.distance + (wanted - follow.current!.distance) * k;
     follow.current = { tick, distance };
@@ -636,6 +654,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
     if (watch !== null) shakeCamera(camera.position, watch.shake(now, session.humanRun()), now);
     camera.updateMatrixWorld();
     if (surface.current !== null) surface.current.dataset.playerX = projected.copy(me.position).project(camera).x.toFixed(3);
+    pointEdge(threatAt === null ? null : mid.set(threatAt.x, threatAt.y + threatSize!.h / 2, threatAt.z), camera);
   });
 
   return (

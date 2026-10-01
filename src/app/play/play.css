@@ -1418,6 +1418,55 @@
   height: 100%;
 }
 
+/* Hrozba mimo záběr (P35 T2, `ThreatEdge.ts`): kolečko na okraji plátna se šipkou
+ * ke straně, odkud pronásledovatel jde. Kamera drží hrdinu velkého a medvěd za
+ * zády se do obrazu nevejde. */
+.play-threat-edge {
+  position: absolute;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  margin: -17px 0 0 -17px;
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: 50%;
+  background: var(--sp-danger);
+  pointer-events: none;
+}
+
+.play-threat-edge[hidden] {
+  display: none;
+}
+
+.play-threat-edge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 0;
+  height: 0;
+  margin: auto;
+  border: 7px solid transparent;
+}
+
+.play-threat-edge[data-side='bottom']::after {
+  border-top: 9px solid var(--sp-surface);
+  border-bottom-width: 0;
+}
+
+.play-threat-edge[data-side='top']::after {
+  border-bottom: 9px solid var(--sp-surface);
+  border-top-width: 0;
+}
+
+.play-threat-edge[data-side='left']::after {
+  border-right: 9px solid var(--sp-surface);
+  border-left-width: 0;
+}
+
+.play-threat-edge[data-side='right']::after {
+  border-left: 9px solid var(--sp-surface);
+  border-right-width: 0;
+}
+
 /* Výzva na startu (P28C T5, P33 T11): dokud hra čeká na první dotek, uprostřed
  * „Tap to start“, jeden povel a na desktopu klávesa. Tmavá plocha pod textem, ať
  * se čte na světlé obloze i na sněhu; klepnutí jde skrz na plátno a hru pustí. */

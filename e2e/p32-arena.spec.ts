@@ -51,7 +51,7 @@ async function publishSpec(request: APIRequestContext, spec: unknown): Promise<s
 const SHOTS = join(process.cwd(), 'evals/play/p32/arena');
 
 /** Nad plátnem nic: HUD a „+1“ se mění jinak než scéna (jako `p32-penguin`). */
-const ONLY_CANVAS = 'body * { visibility: hidden !important; } [data-testid="arcade-stage"] canvas { visibility: visible !important; }';
+const ONLY_CANVAS = 'body * { visibility: hidden !important; } [data-testid="arcade-stage"] canvas, .play-threat-edge { visibility: visible !important; }';
 
 /** Tvar arkádové sondy `__playShell` (`ArcadePlay.tsx`); globální typ je mřížkový. */
 type ArcadeProbe = {
@@ -150,6 +150,8 @@ interface Shot {
   /** Klip, který riggovaný hrdina a soupeř opravdu hrají (`null` = model bez klipů). */
   readonly heroClip: string | null;
   readonly rivalClip: string | null;
+  /** Strana okraje, kde šipka ukazuje hrozbu mimo záběr (`data-threat-edge`, P35 T2); prázdná = žádná. */
+  readonly threatEdge: string;
 }
 
 async function shoot(page: Page, name: string, tick: number, threat: 'chaser' | 'enemy' = 'chaser'): Promise<Shot> {
@@ -160,6 +162,7 @@ async function shoot(page: Page, name: string, tick: number, threat: 'chaser' | 
   const fight = Object.fromEntries(((await stage.getAttribute('data-fight')) ?? '').split(' ').filter(Boolean).map((pair) => [pair.split(':')[0]!, Number(pair.split(':')[1])]));
   const heroClip = await stage.getAttribute('data-anim-clip');
   const rivalClip = await stage.getAttribute('data-rival-clip');
+  const threatEdge = (await stage.getAttribute('data-threat-edge')) ?? '';
   const png = await page.locator('[data-testid="arcade-stage"] canvas').first().screenshot({ path: join(SHOTS, `${name}.png`), scale: 'css' });
   const hero = frame.hero !== null && !frame.hero.behind ? frame.hero : null;
   const chaser = frame.items[threat]?.box ?? null;
@@ -173,11 +176,12 @@ async function shoot(page: Page, name: string, tick: number, threat: 'chaser' | 
     fight,
     heroClip,
     rivalClip,
+    threatEdge,
   };
   const pct = (share: number | null): string => (share === null ? '–' : `${(share * 100).toFixed(1)} %`);
   const at = chaser === null ? '–' : `(${chaser.x.toFixed(2)}, ${chaser.y.toFixed(2)})`;
   const fought = threat === 'enemy' ? `, souboj ${JSON.stringify(fight)}, klip hrdiny ${String(heroClip)}, soupeře ${String(rivalClip)}` : '';
-  const line = `${name} (tik ${tick}, ${frame.width}×${frame.height}, úroveň ${String(tier)}): hrdina ${pct(shot.heroShare)} výšky, hrozba ${shot.chaserInView ? 'v záběru' : 'mimo'} ${at}, vykřičníky ${alerts}, fialová ${pct(shot.purple)}${fought}`;
+  const line = `${name} (tik ${tick}, ${frame.width}×${frame.height}, úroveň ${String(tier)}): hrdina ${pct(shot.heroShare)} výšky, hrozba ${shot.chaserInView ? 'v záběru' : 'mimo'} ${at}, šipka ${threatEdge || '–'}, vykřičníky ${alerts}, fialová ${pct(shot.purple)}${fought}`;
   test.info().annotations.push({ type: 'shot', description: line });
   console.log(line);
   return shot;
@@ -213,14 +217,24 @@ async function shootChase(page: Page, prefix: string, warmUpMs = 0): Promise<rea
   return shots;
 }
 
-function expectChase(shots: readonly Shot[]): void {
+/**
+ * Kolik výšky obrazu hrdina zabírá aspoň (P35 T2): v O10 měla kočka a čaroděj
+ * kolem 4,7 % a astra je naslepo nepoznala. Telefon víc – obraz je menší.
+ */
+const HERO_SHARE = { desktop: 0.07, phone: 0.09 } as const;
+
+/**
+ * Pronásledovatel, který se s velkým hrdinou do záběru nevejde, ukazuje šipka
+ * na okraji (`data-threat-edge`) – hráč ho vidí dřív, než ho chytí.
+ */
+function expectChase(shots: readonly Shot[], minShare: number): void {
   for (const shot of shots) {
     expect(shot.purple, `${shot.name}: podíl fialových pixelů`).toBeLessThan(0.001);
     if (!shot.name.endsWith('-win')) expect(shot.heroShare, `${shot.name}: hrdina v záběru`).not.toBeNull();
-    if (shot.heroShare !== null) expect(shot.heroShare, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(0.04);
+    if (shot.heroShare !== null) expect(shot.heroShare, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(minShare);
   }
   const [start, wake] = shots;
-  expect(start!.chaserInView, `${start!.name}: pronásledovatel na prvním snímku v záběru`).toBe(true);
+  for (const shot of [start!, wake!]) expect(shot.chaserInView || shot.threatEdge !== '', `${shot.name}: pronásledovatel v záběru, nebo ho ukazuje šipka na okraji`).toBe(true);
   expect(wake!.alerts, `${wake!.name}: vykřičník nad probouzejícím se medvědem`).toBeGreaterThanOrEqual(1);
 }
 
@@ -408,11 +422,11 @@ async function shootFight(page: Page, prefix: string, warmUpMs = 0): Promise<rea
   return shots;
 }
 
-function expectFight(shots: readonly Shot[]): void {
+function expectFight(shots: readonly Shot[], minShare: number): void {
   for (const shot of shots) {
     expect(shot.purple, `${shot.name}: podíl fialových pixelů`).toBeLessThan(0.001);
     expect(shot.heroShare, `${shot.name}: hrdina v záběru`).not.toBeNull();
-    expect(shot.heroShare!, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(0.04);
+    expect(shot.heroShare!, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(minShare);
     expect(shot.chaserInView, `${shot.name}: soupeř v záběru`).toBe(true);
   }
   const [windUp, hit, lose, ko] = shots as [Shot, Shot, Shot, Shot];
@@ -433,13 +447,13 @@ test.describe('arena chase, desktop 1280×720', () => {
   test('cat: start, wake-up, chase and win shots', async ({ page, request }) => {
     test.setTimeout(180_000);
     await openGame(page, await publishSpec(request, arenaSpec('cat')));
-    expectChase(await shootChase(page, 'cat-desktop'));
+    expectChase(await shootChase(page, 'cat-desktop'), HERO_SHARE.desktop);
   });
 
   test('knights: wind-up, hit and KO shots', async ({ page, request }) => {
     test.setTimeout(240_000);
     await openGame(page, await publishSpec(request, arenaSpec('knights')), null);
-    expectFight(await shootFight(page, 'knights-desktop'));
+    expectFight(await shootFight(page, 'knights-desktop'), HERO_SHARE.desktop);
   });
 });
 
@@ -506,7 +520,7 @@ test.describe('arena chase, Pixel 7 with CPU 4× slower', () => {
 
     await openGame(page, url);
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
-    expectChase(await shootChase(page, 'cat-pixel7', 5_000));
+    expectChase(await shootChase(page, 'cat-pixel7', 5_000), HERO_SHARE.phone);
   });
 
   test('knights: holds 30 FPS, then wind-up, hit and KO shots', async ({ page, request, context }) => {
@@ -519,6 +533,6 @@ test.describe('arena chase, Pixel 7 with CPU 4× slower', () => {
 
     await openGame(page, url, null);
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
-    expectFight(await shootFight(page, 'knights-pixel7', 5_000));
+    expectFight(await shootFight(page, 'knights-pixel7', 5_000), HERO_SHARE.phone);
   });
 });

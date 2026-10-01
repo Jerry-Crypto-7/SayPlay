@@ -251,7 +251,8 @@ async function shootQuest(page: Page, id: QuestId, prefix: string, warmUpMs = 0)
     expect(shot.purple, `${shot.name}: podíl fialových pixelů`).toBeLessThan(0.001);
     expect(shot.heroShare, `${shot.name}: hrdina v záběru`).not.toBeNull();
     // Kuchař stojí u stanoviště v blízkém záběru (`StationCamera`): 17,5–26,9 %, bez něj 8,9 %.
-    expect(shot.heroShare!, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(id === 'chef' ? 0.14 : 0.04);
+    // Úkol v prostoru sdílí kameru arény (P35 T2): čaroděj měl v O10 4,7 % a astra ho nepoznala.
+    expect(shot.heroShare!, `${shot.name}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(id === 'chef' ? 0.14 : prefix.endsWith('-pixel7') ? 0.09 : 0.07);
     expect(shot.targetInView, `${shot.name}: cíl v záběru`).toBe(true);
   }
   expect(beforeShot.states[moved], `${beforeShot.name}: cíl ještě ve stavu 0`).toBe(0);
