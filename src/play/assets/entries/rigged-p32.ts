@@ -18,6 +18,8 @@ const EXTRA: Readonly<Record<string, Extra>> = {
   'pet-cat': { class: 'animal', dims: [1.32, 1.8, 1.9], forward: '+z', fallback: '#b45309', preload: ['arena'] },
   'pet-dog': { class: 'animal', dims: [1.43, 1.8, 1.7], forward: '+z', fallback: '#b45309', preload: ['voyage'] },
   'pet-polar-bear': { class: 'animal', dims: [1.5, 1.8, 1.79], forward: '+z', fallback: '#e5e7eb', preload: ['arena'] },
+  // P35 T1, změřeno 1. 10. 2026 stejně.
+  'pet-bunny': { class: 'animal', dims: [1.12, 1.8, 1.19], forward: '+z', fallback: '#d6d3d1', preload: [] },
   'graveyard-ghost': { class: 'monster', dims: [2.14, 1.8, 1.33], forward: '+z', fallback: '#e5e7eb', preload: ['quest'] },
   'blocky-robot': { class: 'robot', dims: [1.07, 1.8, 0.53], forward: '+z', fallback: '#64748b', preload: ['quest'] },
 };

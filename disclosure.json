@@ -43738,6 +43738,21 @@
       "scope": "prod"
     },
     {
+      "name": "public/assets/worldstream/rigged/pet-bunny.glb",
+      "kind": "asset",
+      "firstParty": false,
+      "reason": "Rigged animated character \"Cube Bunny\" for arcade roles (P32C); clips reduced to the game states, textures embedded, re-rooted on its base.",
+      "source": "Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-bunny.glb",
+      "authorOrProvider": "Kenney",
+      "license": "CC0-1.0",
+      "requiredNotices": [
+        "žádné — CC0 se vzdává i práva na atribuci"
+      ],
+      "attribution": "Cube Bunny from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets",
+      "reviewNote": "Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.",
+      "scope": "prod"
+    },
+    {
       "name": "public/assets/worldstream/rigged/pet-cat.glb",
       "kind": "asset",
       "firstParty": false,

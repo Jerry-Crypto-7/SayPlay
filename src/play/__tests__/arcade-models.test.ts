@@ -36,7 +36,7 @@ describe('arcade model choice from role labels', () => {
     ['ogres', 'gen3d-ogre'], // od 28. 9. vlastní model z gen3d
     ['demons', 'goblin'], // bez modelu náhradní příšera
     ['a small bird', 'bird'], // tag `bird` nese hnízdo, věta myslí ptáka
-    ['space bunny', 'hamster'],
+    ['space bunny', 'rigged:pet-bunny'], // od P35 T1 králík z Cube Pets, ne křeček
     ['grizzly bear', 'gen3d-bear'], // od 28. 9. vlastní model z gen3d
     ['wild lizard', 'fox'], // kategorie zvíře
     ['mall security guard', 'gen3d-guard'], // vlastní model z gen3d (e5b840b) přebije kategorii člověk

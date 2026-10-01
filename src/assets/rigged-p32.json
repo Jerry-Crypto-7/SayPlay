@@ -92,6 +92,29 @@
       "sourceSha256": "8e94b6a8f44b38198f698f2262c3ed7aed34bd1cb3a016f7613fb5eea0897564"
     },
     {
+      "id": "pet-bunny",
+      "name": "Cube Bunny",
+      "tags": [
+        "rabbit",
+        "bunny",
+        "hare"
+      ],
+      "path": "/assets/worldstream/rigged/pet-bunny.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "run"
+      },
+      "triangles": 575,
+      "bytes": 90208,
+      "sha256": "7c2c672767da995783135152766c7981e15885c3e1e662a69b96757c0c5098ca",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Cube Pets",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-bunny.glb",
+      "sourceSha256": "94b654915d9de70071bcf0bfa13de379a3ba4fdfeb231f0fec49335232cbc821"
+    },
+    {
       "id": "graveyard-ghost",
       "name": "Graveyard Ghost",
       "tags": [

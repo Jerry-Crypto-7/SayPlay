@@ -411,7 +411,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - use-sync-external-store@1.6.0
 - vite › fsevents@2.3.3
 
-## Assety (1168)
+## Assety (1169)
 
 | Název | Zdroj | Autor / poskytovatel | Licence | Povinné notices | Atribuce |
 |---|---|---|---|---|---|
@@ -1566,6 +1566,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 | public/assets/worldstream/rigged/graveyard-ghost.glb | Kenney Graveyard Kit – https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-ghost.glb | Kenney | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Graveyard Ghost from Kenney Graveyard Kit by Kenney (CC0-1.0), https://kenney.nl/assets/graveyard-kit |
 | public/assets/worldstream/rigged/knight.glb | KayKit Character Pack: Adventurers 1.0 – https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Knight.glb | Kay Lousberg | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Knight from KayKit Character Pack: Adventurers 1.0 by Kay Lousberg (CC0-1.0), https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0 |
 | public/assets/worldstream/rigged/mage.glb | KayKit Character Pack: Adventurers 1.0 – https://raw.githubusercontent.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0/main/addons/kaykit_character_pack_adventures/Characters/gltf/Mage.glb | Kay Lousberg | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Mage from KayKit Character Pack: Adventurers 1.0 by Kay Lousberg (CC0-1.0), https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0 |
+| public/assets/worldstream/rigged/pet-bunny.glb | Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-bunny.glb | Kenney | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Cube Bunny from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets |
 | public/assets/worldstream/rigged/pet-cat.glb | Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-cat.glb | Kenney | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Cube Cat from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets |
 | public/assets/worldstream/rigged/pet-dog.glb | Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-dog.glb | Kenney | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Cube Dog from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets |
 | public/assets/worldstream/rigged/pet-penguin.glb | Kenney Cube Pets – https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-penguin.glb | Kenney | CC0-1.0 | žádné — CC0 se vzdává i práva na atribuci | Cube Penguin from Kenney Cube Pets by Kenney (CC0-1.0), https://kenney.nl/assets/cube-pets |
@@ -2737,6 +2738,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **public/assets/worldstream/rigged/graveyard-ghost.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/knight.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/mage.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
+- **public/assets/worldstream/rigged/pet-bunny.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/pet-cat.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/pet-dog.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.
 - **public/assets/worldstream/rigged/pet-penguin.glb** (CC0-1.0): Licence text downloaded next to the source and checked by scripts/assets/rigged/fetch.mjs; see public/assets/worldstream/rigged/PROVENANCE.md.

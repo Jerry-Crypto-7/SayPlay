@@ -85,6 +85,8 @@ export const P32_CHARACTERS = [
   { id: 'pet-cat', name: 'Cube Cat', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-cat.glb', tags: ['cat', 'kitten', 'kitty'], clips: CUBE_PET },
   { id: 'pet-dog', name: 'Cube Dog', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-dog.glb', tags: ['dog', 'puppy', 'pup', 'hound'], clips: CUBE_PET },
   { id: 'pet-polar-bear', name: 'Cube Polar Bear', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-polar.glb', tags: ['polar-bear'], clips: CUBE_PET },
+  // P35 T1: králík dřív padal na křečka a astra ho naslepo nepoznala (přejímka O10).
+  { id: 'pet-bunny', name: 'Cube Bunny', source: 'kenney-cube-pets', file: 'Models/GLB format/animal-bunny.glb', tags: ['rabbit', 'bunny', 'hare'], clips: CUBE_PET },
   { id: 'graveyard-ghost', name: 'Graveyard Ghost', source: 'kenney-graveyard-kit', file: 'Models/GLB format/character-ghost.glb', tags: ['ghost', 'spirit', 'phantom', 'spook'], clips: KENNEY_CHARACTER },
   { id: 'blocky-robot', name: 'Blocky Robot', source: 'kenney-blocky-characters', file: 'Models/GLB format/character-g.glb', tags: ['robot', 'android', 'droid', 'bot'], clips: KENNEY_CHARACTER },
 ];

@@ -74,8 +74,6 @@ const WORD_MODEL: Readonly<Record<string, string>> = {
   werewolf: 'goblin',
   ogre: 'goblin',
   mouse: 'hamster',
-  rabbit: 'hamster',
-  bunny: 'hamster',
   squirrel: 'hamster',
   puppy: 'dog',
   wolf: 'dog',
@@ -148,9 +146,13 @@ function categoryModel(label: string): string | undefined {
   return undefined;
 }
 
-/** Model katalogu (nebo primitiv `bird`), který popisek jmenuje; kategorie jen u postav. */
+/**
+ * Model katalogu (nebo primitiv `bird`), který popisek jmenuje; kategorie jen u postav.
+ * Postava, kterou katalog nemá, ale manifest ano (králík, P35 T1), dá id scény
+ * riggované postavy – mřížka ho v katalogu nenajde a nakreslí kus, draft ví, že ji scéna umí.
+ */
 export function modelOf(label: string, character: boolean): string | undefined {
-  return tagModel(label, true) ?? (character ? categoryModel(label) : undefined);
+  return tagModel(label, true) ?? (character ? (categoryModel(label) ?? riggedModelOf(label)) : undefined);
 }
 
 /** Kolikrát výšky těla smí postava sahat do šířky nebo hloubky, než se zmenší. */
