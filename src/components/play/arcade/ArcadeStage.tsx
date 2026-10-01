@@ -13,7 +13,7 @@
  * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  */
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, addAfterEffect, useThree } from '@react-three/fiber';
 import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Box3, type Camera, type Mesh, type Object3D, type SkinnedMesh, Vector3 } from 'three';
 
@@ -241,39 +241,73 @@ function FrameProbe({ control }: { readonly control: string }) {
   return null;
 }
 
-/** Jak často výzva na startu znovu zjistí, kde hrdina stojí (ms): na tiku 0 se mění jen dotažený model a kamera. */
-const PROMPT_EVERY_MS = 250;
-
 /**
  * Místo výzvy „Tap to start“ (P35 T6): uprostřed obrazu v aréně a úkolu přesně
  * zakryla hrdinu. Dokud hra stojí na tiku 0, promítne hrdinu kamerou a dá stage,
  * kde v obraze je (`--_hero-top`, `--_hero-bottom` v % výšky) a na které straně
  * od něj je víc místa (`data-prompt-at`); CSS výzvu postaví nad, nebo pod něj.
  * Bez hrdiny v záběru zůstane výzva uprostřed.
+ *
+ * Měří se až nakreslený snímek (`addAfterEffect`), ne ve `useFrame`: kamera
+ * stanoviště úkolu se přihlásí až druhým průchodem (`StationScene.tsx`) a přestaví
+ * kameru po každém dřívějším `useFrame` – u kuchaře (P35 T11) se karta měřila
+ * kamerou arény a na telefonu sedla přesně přes hrdinu. Hra na tiku 0 navíc kreslí
+ * jen na požádání, takže snímek, kdy se dotáhne model, bývá poslední.
+ *
+ * Místo pro kartu je mezi hrdinou a lištami HUD (nahoře hodiny a cíl, dole akce).
+ * Kde se nevejde ani nad, ani pod hrdinu, zmenší se do většího z obou míst
+ * (`--_prompt-scale`) – přes hrdinu nejde nikdy.
  */
 function PromptSpot({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
-  const last = useRef(0);
-  useFrame(({ camera, scene, size }) => {
-    const host = surface.current;
-    const now = performance.now();
-    if (host === null || session.snapshot().tick !== 0 || now - last.current < PROMPT_EVERY_MS) return;
-    last.current = now;
-    let hero: Object3D | null = null;
-    scene.traverseVisible((node) => {
-      if (node.userData.frame === 'hero') hero = node;
-    });
-    const box = hero === null ? null : frameOf(hero, camera, size.width, size.height);
-    if (box === null || box.behind) {
-      delete host.dataset.promptAt;
-      return;
-    }
-    const top = (1 - box.maxY) / 2;
-    const bottom = (1 - box.minY) / 2;
-    host.style.setProperty('--_hero-top', `${(top * 100).toFixed(1)}%`);
-    host.style.setProperty('--_hero-bottom', `${(bottom * 100).toFixed(1)}%`);
-    host.dataset.promptAt = top >= 1 - bottom ? 'above' : 'below';
-  });
+  const get = useThree((three) => three.get);
+  useEffect(
+    () =>
+      addAfterEffect(() => {
+        const host = surface.current;
+        if (host === null || session.snapshot().tick !== 0) return;
+        const { camera, scene, size } = get();
+        let hero: Object3D | null = null;
+        scene.traverseVisible((node) => {
+          if (node.userData.frame === 'hero') hero = node;
+        });
+        const box = hero === null ? null : frameOf(hero, camera, size.width, size.height);
+        if (box === null || box.behind) {
+          delete host.dataset.promptAt;
+          return;
+        }
+        const top = (1 - box.maxY) / 2;
+        const bottom = (1 - box.minY) / 2;
+        const stage = host.getBoundingClientRect();
+        const bars = hudBars(host, stage);
+        const card = host.querySelector<HTMLElement>('.play-first-prompt')?.offsetHeight ?? 0;
+        const above = top * stage.height - bars.top - 2 * PROMPT_GAP_PX;
+        const below = bars.bottom - bottom * stage.height - 2 * PROMPT_GAP_PX;
+        const room = Math.max(above, below, 0);
+        host.style.setProperty('--_hero-top', `${(top * 100).toFixed(1)}%`);
+        host.style.setProperty('--_hero-bottom', `${(bottom * 100).toFixed(1)}%`);
+        host.style.setProperty('--_prompt-scale', card > room ? (room / card).toFixed(3) : '1');
+        host.dataset.promptAt = above >= below ? 'above' : 'below';
+      }),
+    [get, session, surface],
+  );
   return null;
+}
+
+/** Mezera mezi kartou a hrdinou i lištou HUD (`--sp-space-4` v `play.css`). */
+const PROMPT_GAP_PX = 16;
+
+/** Spodní hrana horní lišty HUD a horní hrana dolní, v px od horní hrany stage. */
+function hudBars(host: HTMLElement, stage: DOMRect): { readonly top: number; readonly bottom: number } {
+  const shell = host.parentElement;
+  let top = 0;
+  let bottom = stage.height;
+  for (const bar of shell?.querySelectorAll('.play-hud-progress, .play-hud-corner, .play-hud-goal') ?? []) {
+    const rect = bar.getBoundingClientRect();
+    if (rect.height > 0) top = Math.max(top, rect.bottom - stage.top);
+  }
+  const actions = shell?.querySelector('.play-hud-bottom')?.getBoundingClientRect();
+  if (actions !== undefined && actions.height > 0) bottom = Math.min(bottom, actions.top - stage.top);
+  return { top, bottom };
 }
 
 /** Jak dlouho po konci běhu plátno ještě kreslí naplno: klip pádu či oslavy a pauza výsledku (600 ms). */
@@ -573,7 +607,7 @@ const StageCanvas = memo(function StageCanvas({
       )}
       {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
       {look.terrain?.cap !== undefined && <Snowfall />}
-      {/* Za scénou, která kameru umístila: výzva na startu se měří jejím záběrem. */}
+      {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
       <PromptSpot session={session} surface={surface} />
       {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
       <Effects session={session} look={look} surface={surface} />

@@ -35,11 +35,14 @@ function arenaSpec(id: 'cat' | 'knights'): GameSpecV1 {
   return compileGenre(read.value);
 }
 
-/** Úkol hasiče jako `p32-quest` (prostředí, které rychlá verze ve větě nenajde, doplní les). */
-function questSpec(id: 'firefighter'): GameSpecV1 {
+/** Prostředí úkolu jako `p32-quest`, když ho rychlá verze ve větě nenajde. */
+const QUEST_SETTING = { firefighter: 'forest', chef: 'kitchen' } as const;
+
+/** Úkol jako `p32-quest`. */
+function questSpec(id: keyof typeof QUEST_SETTING): GameSpecV1 {
   const sentence = SENTENCES.find((entry) => entry.id === id)!;
   const fill = questGenre.draftFill(sentence.text, null);
-  const read = readGenreSpec({ hero: sentence.hero, ...fill, setting: fill.setting ?? 'forest' });
+  const read = readGenreSpec({ hero: sentence.hero, ...fill, setting: fill.setting ?? QUEST_SETTING[id] });
   if (!read.ok) throw new Error(read.issues.join('; '));
   return compileGenre(read.value);
 }
@@ -122,10 +125,15 @@ test.describe('phone performance, Pixel 7 with CPU 4× slower', () => {
  * kočičí arény a úkolu hasiče (astra: „hidden behind the start panel“). Hry
  * pokrývají každé místo, kde hrdina na startu stojí: střed (aréna, úkol), dole
  * (souboj, procházka), vlevo (skákačka) a nahoře (raketa).
+ *
+ * Přejímka kola 2 (T11): u kuchaře karta seděla přesně přes hrdinu na telefonu. Hra před
+ * prvním dotekem kreslí jen na požádání a poslední snímek po dotažení modelu se
+ * měřil s maticemi předchozího snímku – karta zůstala u staré polohy hrdiny.
  */
 const START_GAMES = [
   { id: 'cat', spec: () => arenaSpec('cat') },
   { id: 'firefighter', spec: () => questSpec('firefighter') },
+  { id: 'chef', spec: () => questSpec('chef') },
   { id: 'knights', spec: () => arenaSpec('knights') },
   { id: 'dog', spec: () => voyageSpec('dog') },
   { id: 'bunny', spec: () => platformSpec('A bunny hops over hedges to grab apples') },
@@ -143,7 +151,7 @@ interface Rect {
  * Obdélník karty a promítnutý kvádr hrdiny (sonda `__playFrame`) v pixelech stránky,
  * až hrdina 1,5 s stojí – modely dotažené, kamera usazená. Hra čeká na tiku 0.
  */
-async function cardAndHero(page: Page): Promise<{ readonly card: Rect; readonly hero: Rect; readonly stage: Rect }> {
+async function cardAndHero(page: Page): Promise<{ readonly card: Rect; readonly hero: Rect; readonly stage: Rect; readonly bars: readonly Rect[] }> {
   await page.waitForFunction(() => window.__playFrame?.().hero != null, undefined, { timeout: 60_000 });
   await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => undefined);
   let last = '';
@@ -173,25 +181,34 @@ async function cardAndHero(page: Page): Promise<{ readonly card: Rect; readonly 
         bottom: stage.top + ((1 - box.minY) / 2) * stage.height,
       },
       stage: rect(stage),
+      // Lišty HUD: nahoře postup, hodiny s pauzou a cíl, dole akce.
+      bars: [...document.querySelectorAll('.play-hud-progress, .play-hud-corner, .play-hud-goal, .play-hud-bottom')]
+        .map((bar) => bar.getBoundingClientRect())
+        .filter((r) => r.height > 0)
+        .map(rect),
     };
   });
 }
 
 const overlaps = (a: Rect, b: Rect): boolean => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 
-for (const [device, use] of [
-  ['phone', PIXEL_7],
-  ['desktop', DESKTOP],
+const { defaultBrowserType: _landscapeBrowser, ...PIXEL_7_LANDSCAPE } = devices['Pixel 7 landscape'];
+
+for (const [device, use, games] of [
+  ['phone', PIXEL_7, START_GAMES],
+  ['desktop', DESKTOP, START_GAMES],
+  // Naležato se karta mezi kuchaře a lišty HUD nevejde – zmenší se (T11).
+  ['landscape', PIXEL_7_LANDSCAPE, START_GAMES.filter((game) => game.id === 'chef')],
 ] as const) {
   test.describe(`start card off the hero, ${device}`, () => {
     test.use(use);
 
-    for (const game of START_GAMES) {
+    for (const game of games) {
       test(`${game.id}: "Tap to start" does not cover the hero`, async ({ page, request }, info) => {
         test.setTimeout(120_000);
         await page.goto(await publishSpec(request, game.spec()));
         await expect(page.getByTestId('play-first-prompt')).toBeVisible({ timeout: 60_000 });
-        const { card, hero, stage } = await cardAndHero(page);
+        const { card, hero, stage, bars } = await cardAndHero(page);
         await page.screenshot({ path: info.outputPath(`${game.id}-${device}.png`) });
         const px = (r: Rect): string => `${Math.round(r.left)}–${Math.round(r.right)} × ${Math.round(r.top)}–${Math.round(r.bottom)}`;
         const line = `${game.id} ${device}: karta ${px(card)}, hrdina ${px(hero)}, plátno ${px(stage)}`;
@@ -199,6 +216,11 @@ for (const [device, use] of [
         console.log(line);
         expect(overlaps(card, hero), 'karta „Tap to start“ a obdélník hrdiny').toBe(false);
         expect(card.top >= stage.top && card.bottom <= stage.bottom, 'karta celá v obrazu scény').toBe(true);
+        expect(bars.filter((bar) => overlaps(card, bar)).map(px), 'lišty HUD pod kartou').toEqual([]);
+        if (device === 'landscape') {
+          const full = await page.getByTestId('play-first-prompt').evaluate((el) => (el as HTMLElement).offsetHeight);
+          expect(card.bottom - card.top, 'karta zmenšená pod plnou výšku').toBeLessThan(full);
+        }
       });
     }
   });
