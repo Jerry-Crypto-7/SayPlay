@@ -219,3 +219,53 @@ describe('the runner rides by the sentence, not by the model', () => {
     expect(read.genre.params ?? {}).not.toHaveProperty('ride');
   });
 });
+
+// Přejímka O10 kolo 1: AI verze skákačky se sbíráním ukazovala „Reach the flag“ – model nenapsal `target`.
+describe('the platformer keeps the sentence’s item and goal when the model leaves them out (P35 T9)', () => {
+  // Tři, ne pět: pět je výchozí počet a nedokázalo by, že počet přišel z věty.
+  const GRAB = 'A bunny hops over hedges to grab three shiny apples';
+  const REACH = 'A squirrel jumps across rooftops to reach the old lighthouse';
+  const read = (text: string, written: GenreSpec) => {
+    const result = readGenreAnswer(answer(written), undefined, text);
+    if (!result.ok) throw new Error(result.detail);
+    return result;
+  };
+
+  it('reads the item, the goal and the count in the quick version', () => {
+    const quick = draftOf(GRAB);
+    expect(quick.genre).toMatchObject({ genre: 'platformer', collectible: 'shiny apple', target: { label: 'shiny apple', verb: 'grab' } });
+    expect(quick.spec.tutorial.goalLine).toBe('Collect 3 shiny apples and reach the flag.');
+    expect(draftOf(REACH).spec.tutorial.goalLine).toBe('Reach the old lighthouse.');
+  });
+
+  it('plays the quick version’s goal when the model wrote neither item, goal nor count', () => {
+    for (const text of [GRAB, REACH]) {
+      const quick = draftOf(text);
+      const { collectible: _item, target: _goal, counts: _counts, params: _params, ...written } = quick.genre;
+      const { spec } = read(text, written as GenreSpec);
+      expect(spec.tutorial.goalLine, text).toBe(quick.spec.tutorial.goalLine);
+      expect(spec.objective.description, text).toBe(quick.spec.objective.description);
+      expect(spec.roles.find((role) => role.id === 'finish')?.label, text).toBe(quick.spec.roles.find((role) => role.id === 'finish')?.label);
+      expect(spec.roles.find((role) => role.id === 'coin')?.label, text).toBe(quick.spec.roles.find((role) => role.id === 'coin')?.label);
+    }
+  });
+
+  it('collects the model’s own item when only the goal is missing, without making the item the goal', () => {
+    const { target: _goal, ...written } = draftOf(GRAB).genre;
+    const { spec } = read(GRAB, { ...written, collectible: 'apple' } as GenreSpec);
+    expect(spec.tutorial.goalLine).toBe('Collect 3 apples and reach the flag.');
+  });
+
+  it('keeps a goal the model wrote itself', () => {
+    const { spec } = read(REACH, { ...draftOf(REACH).genre, target: { label: 'chimney', verb: 'reach', states: 2 } });
+    expect(spec.tutorial.goalLine).toBe('Reach the chimney.');
+  });
+
+  it('hands the sentence to the read, so the directed game has the goal too', async () => {
+    const quick = draftOf(GRAB);
+    const { target: _goal, ...written } = quick.genre;
+    const game = await directed(GRAB, written as GenreSpec);
+    expect(game.source).toBe('authored');
+    expect(game.spec.tutorial.goalLine).toBe(quick.spec.tutorial.goalLine);
+  });
+});

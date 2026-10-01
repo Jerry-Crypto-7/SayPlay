@@ -154,9 +154,9 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   // Pravidla, která se nedala složit (P29A T8, v první odpovědi znovu od T5b): hra se složí bez nich a opravné kolo dostane důvod.
   const written = answerRules(outcome.body);
   let ruleBlocks: CriticIssue[] = [];
-  let read = readGenreAnswer(outcome.body, deps.modules, sentence);
+  let read = readGenreAnswer(outcome.body, deps.modules, sentence, reading);
   if (!read.ok && written !== null) {
-    const plain = readGenreAnswer(withoutAnswerRules(outcome.body), deps.modules, sentence);
+    const plain = readGenreAnswer(withoutAnswerRules(outcome.body), deps.modules, sentence, reading);
     if (plain.ok) ruleBlocks = ruleInvalidIssues(read.detail, written);
     if (plain.ok) read = plain;
   }
