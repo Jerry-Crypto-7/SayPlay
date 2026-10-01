@@ -256,9 +256,17 @@ describe('the platformer keeps the sentence’s item and goal when the model lea
     expect(spec.tutorial.goalLine).toBe('Collect 3 apples and reach the flag.');
   });
 
+  // Bez věci: s věcí by `goalOfSentence` skončila dřív a test by přepis cíle nechytil.
   it('keeps a goal the model wrote itself', () => {
-    const { spec } = read(REACH, { ...draftOf(REACH).genre, target: { label: 'chimney', verb: 'reach', states: 2 } });
+    const { collectible: _item, ...written } = draftOf(REACH).genre;
+    const { spec } = read(REACH, { ...written, target: { label: 'chimney', verb: 'reach', states: 2 } } as GenreSpec);
     expect(spec.tutorial.goalLine).toBe('Reach the chimney.');
+  });
+
+  it('keeps a count the model wrote itself', () => {
+    const { target: _goal, params: _params, ...written } = draftOf(GRAB).genre;
+    const { spec } = read(GRAB, { ...written, counts: { ...written.counts, collectible: 4 } } as GenreSpec);
+    expect(spec.tutorial.goalLine).toBe('Collect 4 shiny apples and reach the flag.');
   });
 
   it('hands the sentence to the read, so the directed game has the goal too', async () => {
