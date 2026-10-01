@@ -28,10 +28,17 @@ const WAVES = [
 /** Nejvyšší výchylka hladiny (m). */
 export const WAVE_HEIGHT = WAVES.reduce((sum, wave) => sum + wave[3], 0);
 
-/** Krok mřížky (m), pás mělčiny u břehu (m) a „daleko od břehu“ (m, strop atributu). */
+/** Krok mřížky (m) a pás mělčiny u břehu (m). */
 const CELL = 1.6;
 const SHALLOW = 6;
-const OPEN_SEA = 100;
+/**
+ * „Daleko od břehu“ (m, strop atributu `shore`). Dál se obraz nemění: barva končí
+ * v `SHALLOW`, pěna u ~1,5 m a trojúhelník mřížky (úhlopříčka pod 4 m) strop do
+ * pásu, kde něco kreslí, nedotáhne. Strop zároveň šetří výpočet – ostrov dál od
+ * vrcholu se neměří (P35 T4: pirát na Pixel 7 se 4× CPU počítal se stropem 100 m
+ * pobřeží ~8 s a v O10 se nenačetl do 30 s).
+ */
+export const OPEN_SEA = 2 * SHALLOW;
 
 const f = (value: number): string => value.toFixed(5);
 const k = (length: number): number => (2 * Math.PI) / length;
@@ -70,8 +77,8 @@ export interface WaterOptions {
   readonly to: number;
   /** Výška klidné hladiny (m). */
   readonly level: number;
-  /** Vzdálenost ke břehu (m, na souši záporná); bez ní volné moře bez pěny. */
-  readonly shore?: (x: number, z: number) => number;
+  /** Vzdálenost ke břehu (m, na souši záporná), nejvýš `within`; bez ní volné moře bez pěny. */
+  readonly shore?: (x: number, z: number, within: number) => number;
 }
 
 export function buildWater({ look, half, from, to, level, shore }: WaterOptions): Water {
@@ -92,7 +99,7 @@ export function buildWater({ look, half, from, to, level, shore }: WaterOptions)
       const x = -half + column * cx + (inner ? (hash(column, row + 7000) - 0.5) * 0.6 * cx : 0);
       const z = from + row * cz + (inner ? (hash(column + 9000, row) - 0.5) * 0.6 * cz : 0);
       const at = row * (columns + 1) + column;
-      const distance = Math.min(shore?.(x, z) ?? OPEN_SEA, OPEN_SEA);
+      const distance = Math.min(shore?.(x, z, OPEN_SEA) ?? OPEN_SEA, OPEN_SEA);
       positions.set([x, level, z], at * 3);
       distances[at] = distance;
       tint.copy(deep).lerp(shallow, 1 - smooth(distance / SHALLOW)).multiplyScalar(0.96 + 0.08 * hash(column + 300, row + 300));

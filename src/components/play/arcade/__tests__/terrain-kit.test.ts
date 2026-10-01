@@ -8,7 +8,7 @@
 import { uniformFloat64 } from 'pure-rand/distribution/uniformFloat64';
 import { xoroshiro128plus } from 'pure-rand/generator/xoroshiro128plus';
 import { type BufferGeometry, Color, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, ShaderLib, Vector3 } from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import fixture from '@/play/arcade/__fixtures__/platform.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
@@ -20,7 +20,7 @@ import { readGameSpec } from '@/play/spec';
 import { playableGround } from '../look/rig/terrain';
 import { arenaPalette, buildArenaFloor } from '../look/rig/terrain/arenaFloor';
 import { buildIslands, islandPalette, platformIslands, platformSlabKeys } from '../look/rig/terrain/islands';
-import { WAVE_HEIGHT, buildWater, waterPalette } from '../look/rig/terrain/water';
+import { OPEN_SEA, WAVE_HEIGHT, buildWater, waterPalette } from '../look/rig/terrain/water';
 
 const rng = xoroshiro128plus(3209);
 const between = (from: number, to: number): number => from + uniformFloat64(rng) * (to - from);
@@ -281,10 +281,25 @@ describe('water', () => {
     const distance = water.geometry.getAttribute('shore');
     let foamy = 0;
     for (let i = 0; i < position.count; i += 1) {
-      expect(distance.getX(i)).toBeCloseTo(shore(position.getX(i), position.getZ(i)), 3);
+      expect(distance.getX(i)).toBeCloseTo(Math.min(shore(position.getX(i), position.getZ(i)), OPEN_SEA), 3);
       if (distance.getX(i) < 1) foamy += 1;
     }
     expect(foamy).toBeGreaterThan(5);
+  });
+
+  it('measures the outline only of islands near a vertex, not of every island down the course (P35 T4)', () => {
+    const course = buildIslands({ look: LOOKS.ocean, islands: Array.from({ length: 16 }, (_, i) => ({ x: i % 2 === 0 ? -16 : 16, z: 20 + 30 * i, w: 8, d: 7, top: 1.4, round: true })), base: 0 });
+    const hypot = vi.spyOn(Math, 'hypot');
+    const sea = buildWater({ look: LOOKS.ocean, half: 40, from: -20, to: 520, level: 0.25, shore: course.shoreDistance });
+    const perVertex = hypot.mock.calls.length / sea.geometry.getAttribute('position').count;
+    hypot.mockRestore();
+    // Obálka každého ostrova a obrys jen těch do stropu: ~24 výpočtů vzdálenosti na vrchol.
+    // Bez stropu mřížka měřila obrysy od začátku trati až k vrcholu (~196), se stropem 100 m ~85.
+    expect(perVertex).toBeLessThan(40);
+    // Strop nemění, co se kreslí: blíž ke břehu přesná vzdálenost, dál strop.
+    const position = sea.geometry.getAttribute('position');
+    const distance = sea.geometry.getAttribute('shore');
+    for (let i = 0; i < position.count; i += 7) expect(distance.getX(i)).toBeCloseTo(Math.min(course.shoreDistance(position.getX(i), position.getZ(i)), OPEN_SEA), 4);
   });
 
   it('wires the waves into the vertex shader and the foam into the fragment shader', () => {

@@ -250,8 +250,11 @@ export interface Islands {
   readonly geometry: BufferGeometry;
   /** Výška, kterou síť shora kreslí (m); `null` = žádný ostrůvek (voda, mezera mezi deskami). */
   heightAt(x: number, z: number): number | null;
-  /** Vzdálenost od čáry břehu v patě (m), na souši záporná – pěna vody (`water.ts`). */
-  shoreDistance(x: number, z: number): number;
+  /**
+   * Vzdálenost od čáry břehu v patě (m), na souši záporná – pěna vody (`water.ts`).
+   * Nejvýš `within`: ostrov s obálkou dál se nepočítá (P35 T4).
+   */
+  shoreDistance(x: number, z: number, within?: number): number;
 }
 
 export interface IslandsOptions {
@@ -338,8 +341,8 @@ export function buildIslands({ look, islands, base }: IslandsOptions): Islands {
     return best;
   };
 
-  const shoreDistance = (x: number, z: number): number => {
-    let best = Infinity;
+  const shoreDistance = (x: number, z: number, within = Infinity): number => {
+    let best = within;
     for (const { shore, shoreBox: box } of parts) {
       // Obálka dál než dosud nejbližší břeh: ostrov bližší být nemůže (ostrovy se nepřekrývají).
       if (Math.hypot(Math.max(box.minX - x, 0, x - box.maxX), Math.max(box.minZ - z, 0, z - box.maxZ)) >= best) continue;
