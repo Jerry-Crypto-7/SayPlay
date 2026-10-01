@@ -45,7 +45,7 @@ import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
 import { Weather } from './Weather';
-import { createArcadeSession, type ArcadeSession, type ArcadeSnapshot } from './session';
+import { createArcadeSession, loopDemo, type ArcadeSession, type ArcadeSnapshot } from './session';
 
 // WebGL kontext na serveru není – stejně jako mřížkové plátno. `memo`: HUD se překresluje
 // každý tik, plátno ne – scéna čte relaci sama v `useFrame` (P28E-R1: na emulovaném
@@ -451,16 +451,7 @@ function ArcadePlayGame({
   const [attract, setAttract] = useState(offline);
   useEffect(() => {
     if (!attract || !active || !physicsReady) return;
-    let again: ReturnType<typeof setTimeout> | undefined;
-    if (session.demo() === null) session.startDemo();
-    const unsubscribe = session.subscribe(() => {
-      if (session.demo()?.ended === true && again === undefined) {
-        again = setTimeout(() => {
-          again = undefined;
-          session.startDemo();
-        }, 1000);
-      }
-    });
+    const stopLoop = loopDemo(session);
     // Restart hodiny znovu zastaví; tenhle dotek je první vstup hráče, proto je hned pustí.
     const take = () => {
       setAttract(false);
@@ -476,8 +467,7 @@ function ArcadePlayGame({
     window.addEventListener('pointerdown', onPointer, true);
     window.addEventListener('keydown', onKey, true);
     return () => {
-      clearTimeout(again);
-      unsubscribe();
+      stopLoop();
       window.removeEventListener('pointerdown', onPointer, true);
       window.removeEventListener('keydown', onKey, true);
     };

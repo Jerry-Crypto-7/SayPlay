@@ -331,3 +331,21 @@ export function createArcadeSession(
   };
   return session;
 }
+
+/** Výloha vstupní stránky (P28D T7): ukázka robota hraje dokola, `pauseMs` po konci znovu. Vrací úklid. */
+export function loopDemo(session: ArcadeSession, pauseMs = 1000): () => void {
+  let again: ReturnType<typeof setTimeout> | undefined;
+  if (session.demo() === null) session.startDemo();
+  const unsubscribe = session.subscribe(() => {
+    if (session.demo()?.ended === true && again === undefined) {
+      again = setTimeout(() => {
+        again = undefined;
+        session.startDemo();
+      }, pauseMs);
+    }
+  });
+  return () => {
+    clearTimeout(again);
+    unsubscribe();
+  };
+}

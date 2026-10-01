@@ -33,7 +33,8 @@ vi.mock('@/play/director/read', async (importOriginal) => {
   return { ...actual, readGenreAnswer };
 });
 
-const KEY = 'sk-test-d1-never-leaves-the-server';
+// Bez předpony `sk-`: tvar skutečného klíče by zastavil `blind-check` před pushem.
+const KEY = 'test-key-d1-never-leaves-the-server';
 
 const API = {
   WORLDSMITH_BRANCH: 'live',

@@ -14,10 +14,10 @@ import flap from '../__fixtures__/flap.json';
 import runner from '../__fixtures__/runner.json';
 import steer from '../__fixtures__/steer.json';
 import { arcadeWorldOf, compileArcade } from '../compile';
-import { BODY, type ControlPiece, NO_INPUT, bodyBase, rampMarks, rampedSpeed, stateSize } from '../contract';
-import { FLAP, flapControl } from '../pieces/flap';
-import { runnerControl } from '../pieces/runner';
-import { STEER, steerControl } from '../pieces/steer';
+import { BODY, type BodyInit, type ControlPiece, NO_INPUT, UNIT, bodyBase, rampMarks, rampedSpeed, stateSize } from '../contract';
+import { FLAP, checkFlapLevel, flapControl } from '../pieces/flap';
+import { RUNNER_TRACK, SPEED, checkRunnerLevel, runnerControl } from '../pieces/runner';
+import { STEER, STEER_TRACK, checkSteerLevel, lateralReach, steerControl } from '../pieces/steer';
 
 const MARKS: [number, number] = [100_000, 200_000];
 
@@ -85,6 +85,47 @@ describe('speed ramp inside a run (P28C T6)', () => {
     ['flap', flap, ['easy', 'normal', 'hard'].flatMap((difficulty) => [150, 250].map((lengthM) => ({ difficulty, lengthM })))],
     ['steer', steer, ['easy', 'normal', 'hard'].flatMap((difficulty) => [450, 800].map((lengthM) => ({ difficulty, lengthM })))],
   ];
+
+  // Kontrola úrovně je poslední pojistka vyhratelnosti: úsek, který by při stálé
+  // rychlosti prošel akorát, musí za značkou rampy odmítnout. Úroveň je ručně
+  // postavená přesně na hraně; ostatní nálezy (start, cíl) se tu nesoudí. Bez
+  // značek je `[]` – `undefined` by vzal výchozí značky trati.
+  const body = (fields: Partial<BodyInit>): BodyInit => ({ role: 'obstacle', kind: 'box', x: 0, y: 0, z: 0, w: UNIT, h: UNIT, d: UNIT, ...fields }) as BodyInit;
+  const length = 300 * UNIT; // značky na 100 a 200 m
+  const edge = 210 * UNIT; // za druhou značkou: +20 %
+
+  it('the runner check spaces rows for the ramped speed past a mark', () => {
+    const gap = RUNNER_TRACK.minGapTicks * SPEED.normal;
+    const level = { length, bodies: [body({ role: 'player' }), body({ z: edge }), body({ z: edge + gap })] };
+    const tooClose = (ramp?: readonly number[]) => checkRunnerLevel(level, 'normal', ramp).filter((issue) => issue.includes('closer than'));
+    expect(tooClose([])).toEqual([]);
+    expect(tooClose(rampMarks(length))).toHaveLength(1);
+  });
+
+  it('the flap check lets the pipes climb less where the bird flies faster', () => {
+    const span = 5 * UNIT;
+    const climb = Math.floor(FLAP.climbPerUnit * span);
+    const pipes = (z: number, bottom: number) => [body({ z, y: 0, h: bottom }), body({ z, y: FLAP.ceiling, h: UNIT })];
+    const level = { length, bodies: [body({ role: 'player' }), ...pipes(edge, UNIT), ...pipes(edge + span, UNIT + climb)] };
+    const tooFar = (ramp?: readonly number[]) => checkFlapLevel(level, ramp).filter((issue) => issue.includes('too far to follow'));
+    expect(tooFar([])).toEqual([]);
+    expect(tooFar(rampMarks(length))).toHaveLength(1);
+  });
+
+  it('the steer check sizes a bend for the car ramped past a mark', () => {
+    const segment = STEER_TRACK.segment;
+    const walls = (near: number, center: number, width: number) =>
+      [-1, 1].map((side) => body({ kind: 'tire-barrier', z: near + segment / 2, d: segment, w: STEER.wallW, x: center + side * (width / 2 + STEER.wallW / 2) }));
+    const reach = (speed: number) => lateralReach(segment, speed) - STEER.clearance;
+    const base = reach(STEER.topSpeed + STEER.boost);
+    // Předpoklad testu: za značkou je dosah doopravdy menší.
+    expect(reach(rampedSpeed(STEER.topSpeed, edge, rampMarks(length)) + STEER.boost)).toBeLessThan(base);
+    const width = 8 * UNIT;
+    const level = { length, bodies: [body({ role: 'player' }), ...walls(edge, 0, width), ...walls(edge + segment, 0, width), ...walls(edge + 2 * segment, base, width)] };
+    const tooSharp = (ramp?: readonly number[]) => checkSteerLevel(level, STEER.topSpeed, ramp).filter((issue) => issue.includes('can steer only'));
+    expect(tooSharp([])).toEqual([]);
+    expect(tooSharp(rampMarks(length))).toHaveLength(1);
+  });
 
   // Naměřeno při zavedení: 630/630 kompilací (30 semínek × každé nastavení) vyhraných hned na prvním semínku.
   it.each(grid)('%s: the bot wins every setting on its first seed', (_control, fixture, settings) => {

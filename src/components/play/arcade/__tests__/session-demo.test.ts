@@ -4,7 +4,7 @@
  * během ukázky do hry ani do lidského záznamu nejdou; restart ukázku ukončí.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import platformFixture from '@/play/arcade/__fixtures__/platform.json';
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
@@ -16,7 +16,7 @@ import { hashArcade } from '@/play/arcade/kernel';
 import { runBot } from '@/play/arcade/verify';
 import { readGameSpec } from '@/play/spec';
 
-import { TICK_MS, createArcadeSession } from '../session';
+import { type ArcadeSession, TICK_MS, createArcadeSession, loopDemo } from '../session';
 
 const worldOf = (raw: unknown): ArcadeWorld => {
   const spec = readGameSpec(raw);
@@ -96,5 +96,40 @@ describe.each([
     }
     expect(hashArcade(session.state())).toBe(bot.hash);
     expect(session.demo()?.verified).toBe(true);
+  });
+});
+
+// Výloha vstupní stránky (P28D T7): po konci ukázky za pauzu hraje znovu od začátku, úklid smyčku zastaví.
+describe('landing demo loops (P28D T7)', () => {
+  const world = worldOf(runnerFixture);
+
+  const playOut = (session: ArcadeSession) => {
+    let frames = 0;
+    while (session.snapshot().runState === 'running' && frames < 20_000) {
+      session.advance(TICK_MS);
+      frames += 1;
+    }
+  };
+
+  it('starts the demo, replays it a pause after it ends and stops on cleanup', () => {
+    vi.useFakeTimers();
+    try {
+      const session = createArcadeSession(world, { waitForInput: true, swallowFirst: true });
+      const stop = loopDemo(session, 1000);
+      expect(session.demo()).toEqual({ ended: false, verified: null });
+      playOut(session);
+      expect(session.demo()?.ended).toBe(true);
+      vi.advanceTimersByTime(999);
+      expect(session.demo()?.ended).toBe(true);
+      vi.advanceTimersByTime(1);
+      expect(session.demo()).toEqual({ ended: false, verified: null });
+      expect(session.snapshot()).toMatchObject({ runState: 'running', tick: 0 });
+      stop();
+      playOut(session);
+      vi.advanceTimersByTime(5000);
+      expect(session.demo()?.ended).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
