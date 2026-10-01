@@ -58,6 +58,9 @@ const CONFIG_FILE = 'blind-check.config.json';
  * podřetězec, takže `jmenoautora-hra.git` i `jmenoautora@x.io` jsou nález.
  */
 const SUBSTRING_MIN_LEN = 5;
+/** Tvar API klíče pro kontrolu 6; výjimka (`keyExceptions`) musí sama být celý takový klíč. */
+const KEY_PATTERN = 'sk-[A-Za-z0-9_-]{20,}';
+const KEY_SHAPE = new RegExp(`^${KEY_PATTERN}$`);
 
 /**
  * Běží skript jako `pre-push` hook, nebo ho někdo spustil rukou?
@@ -257,6 +260,16 @@ function loadConfig() {
             .filter((entry) => typeof entry.reason === 'string' && entry.reason.trim())
             .map((entry) => entry.literal)
         : [],
+      // Výjimka z kontroly 6: vymyšlený testovací klíč, který už je v historii
+      // (naměřeno 1. 10. 2026: `sk-test-d1-…` v testu P27D, v `main` přejmenovaný
+      // v #19, přepis ~400 commitů nevratný). Literál musí být CELÝ klíč – samotné
+      // `sk-` nebo krátký kus by vypnul kontrolu pro všechno – a nese důvod.
+      keyExceptions: Array.isArray(parsed.keyExceptions)
+        ? parsed.keyExceptions
+            .filter((entry) => entry && typeof entry.literal === 'string' && KEY_SHAPE.test(entry.literal))
+            .filter((entry) => typeof entry.reason === 'string' && entry.reason.trim())
+            .map((entry) => entry.literal)
+        : [],
     };
   } catch (error) {
     return { error: `${CONFIG_FILE} se nedá přečíst: ${error.message}` };
@@ -435,7 +448,7 @@ check(5, 'push target points at the anonymous account', (config) => {
  * `git add -f .env.local`, commit, `git rm`, commit: `HEAD` je čistý, klíč je
  * v rodiči a push ho nahraje. Nad `HEAD` se to nedalo poznat.
  */
-check(6, 'no credentials or raw run artefacts entered history', () => {
+check(6, 'no credentials or raw run artefacts entered history', (config) => {
   // `-z`: bez něj git cesty s ne-ASCII znaky uvozuje (`"evals/live/C\305\276.json"`),
   // a vedoucí uvozovka rozbije obě porovnání níž — soubor s diakritikou by
   // branou prošel.
@@ -470,7 +483,7 @@ check(6, 'no credentials or raw run artefacts entered history', () => {
 
   // Tvar API klíče kdekoli v commitnuté historii. Klíč smazaný v dalším commitu
   // je pořád klíč, který se nahraje.
-  const keys = grepHistory(['sk-[A-Za-z0-9_-]{20,}'], ['.'], { extended: true });
+  const keys = grepHistory([KEY_PATTERN], ['.'], { extended: true, unless: config.keyExceptions ?? [] });
   if (keys) return `commitnutý obsah nese řetězec ve tvaru API klíče: ${keys.split('\n')[0].slice(0, 160)}`;
 
   return null;
