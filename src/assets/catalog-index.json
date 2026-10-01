@@ -15748,6 +15748,28 @@
           0.22335
         ]
       }
+    },
+    {
+      "assetId": "turtle",
+      "tags": [
+        "turtle",
+        "turtles",
+        "tortoise",
+        "tortoises"
+      ],
+      "path": "/assets/worldstream/game/turtle-lod1.glb",
+      "bounds": {
+        "min": [
+          -0.3499999940395355,
+          0,
+          -0.5678892135620117
+        ],
+        "max": [
+          0.3499999940395355,
+          0.5127999782562256,
+          0.5678892135620117
+        ]
+      }
     }
   ]
 }

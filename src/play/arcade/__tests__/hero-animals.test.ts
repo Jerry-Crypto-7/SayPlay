@@ -29,8 +29,8 @@ const ANIMALS: ReadonlyArray<readonly [word: string, model: string, clips: boole
   ['kitten', 'rigged:pet-cat', true],
   ['dog', 'rigged:pet-dog', true],
   ['puppy', 'rigged:pet-dog', true],
-  ['turtle', 'gen3d-tortoise', false],
-  ['tortoise', 'gen3d-tortoise', false],
+  ['turtle', 'turtle', false],
+  ['tortoise', 'turtle', false],
 ];
 
 const GENRES = (Object.keys(GENRE_MODULES) as GenreId[]).filter((genre) => GENRE_MODULES[genre].heroClasses.includes('animal'));
@@ -47,6 +47,10 @@ describe('the animal the sentence names is the hero (P35 T1)', () => {
       expect(heroChoice(word, undefined, 'move_free').model, word).toBe(model);
       expect(modelOf(word, true), word).not.toMatch(/^(hamster|fox)$/);
     }
+  });
+
+  it.each(['fish', 'glowing fish', 'fishes'])('%s is a fish, not the aquarium that also carries the tag', (label) => {
+    expect(modelOf(label, false)).toBe('cc0-goldfish');
   });
 
   it('the bunny runs with its own clips', () => {

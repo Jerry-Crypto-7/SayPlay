@@ -52,7 +52,15 @@ const BY_TAG: ReadonlyMap<string, string> = (() => {
 })();
 
 /** Slova, která tag katalogu nese jinak, než je myslí věta: pták je postava (primitiv `bird`), ne hnízdo. */
-const WORD_SENSE: Readonly<Record<string, string>> = { bird: 'bird', birds: 'bird' };
+const WORD_SENSE: Readonly<Record<string, string>> = {
+  bird: 'bird',
+  birds: 'bird',
+  // P35: tag `fish` nese i akvárium (sklo, voda, písek) – „glowing fish“ v O10 kreslil akvária.
+  fish: 'cc0-goldfish',
+  // P35: `gen3d-tortoise` má hlavu odtrženou od těla; vlastní želva z `game_models.py`.
+  turtle: 'turtle',
+  tortoise: 'turtle',
+};
 
 /** Nejbližší model pro slovo, které katalog jako tag nemá; přesný tag vyhrává (CC0 zombie, drak, včela). */
 const WORD_MODEL: Readonly<Record<string, string>> = {

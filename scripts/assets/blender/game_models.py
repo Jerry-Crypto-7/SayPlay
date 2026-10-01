@@ -653,6 +653,36 @@ def penguin():
         box("orange", (0.1, 0.16, 0.03), (side * 0.09, -0.06, 0.015))
 
 
+# P35: jediná želva katalogu (gen3d) má hlavu odtrženou od těla a astra ji
+# naslepo nepoznala. Kupolový krunýř se šupinami, hlava na krku a čtyři nohy
+# čtou jako želva i z dálky.
+@model("turtle", "Turtle", ["turtle", "turtles", "tortoise", "tortoises"])
+def turtle():
+    ball("slime", 0.09, (0, -0.36, 0.17), scale=(1, 1.6, 0.9))
+    ball("slime", 0.13, (0, -0.5, 0.25), scale=(1, 1.15, 0.95))
+    eyes(0.31, -0.6, 0.06, 0.03)
+    ball("pink", 0.02, (0, -0.63, 0.24))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            ball("slime", 0.085, (sx * 0.25, sy * 0.22, 0.07), scale=(1, 1.2, 0.85))
+    cyl("slime", 0.05, 0.14, (0, 0.42, 0.1), rot=(-70, 0, 0), top=0.0, verts=6)
+    cyl("yellow", 0.35, 0.07, (0, 0, 0.13), verts=SEG)
+    ball("green", 0.33, (0, 0, 0.16), scale=(1, 1.12, 0.72))
+    ball("moss", 0.11, (0, 0, 0.4), scale=(1, 1, 0.32))
+    for sx, sy in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
+        ball(
+            "moss",
+            0.085,
+            (sx * 0.15, sy * 0.15, 0.33),
+            scale=(1, 1, 0.35),
+            rot=(sy * -25, sx * 25, 0),
+        )
+    for sy in (-1, 1):
+        ball(
+            "moss", 0.08, (0, sy * 0.25, 0.3), scale=(1, 1, 0.35), rot=(sy * -35, 0, 0)
+        )
+
+
 # ---- věci na nošení a cíle doručení
 
 

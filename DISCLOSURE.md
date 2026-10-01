@@ -2845,7 +2845,7 @@ o copyright řádek z jejich LICENSE souboru, ne o jméno v metadatech.
 - **npm registry** (npm Open-Source Terms of Use): Zdroj všech položek kind: library. V kódu je jako fallback URL v license-gate.mjs, za běhu produktu se nevolá.
 - **OpenAI Chat Completions API** (komerční podmínky služby (OpenAI Business Terms)): Volá ho výhradně měřicí harness (evals/harness/preflight.ts), ne produkční cesta. Položka je v registru proto, že adresa v kódu je — ne proto, že se za běhu produktu volá.
 
-## Vlastní, ne třetí strana (1669)
+## Vlastní, ne třetí strana (1672)
 
 Tyhle položky jsou v registru kvůli bráně `submission-check` kontrola 6, ne kvůli
 `RULES.md` §2: nic z nich se neredistribuuje a nikdo třetí je nevlastní. Stojí tu,
@@ -3362,6 +3362,9 @@ aby se registrací nedalo nic z výpisu odstranit.
 - **public/assets/worldstream/game/training-dummy-lod0.glb** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
 - **public/assets/worldstream/game/training-dummy-lod1.glb** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
 - **public/assets/worldstream/game/training-dummy.png** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
+- **public/assets/worldstream/game/turtle-lod0.glb** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
+- **public/assets/worldstream/game/turtle-lod1.glb** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
+- **public/assets/worldstream/game/turtle.png** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
 - **public/assets/worldstream/game/waiter-lod0.glb** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
 - **public/assets/worldstream/game/waiter-lod1.glb** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.
 - **public/assets/worldstream/game/waiter.png** (asset): Original Worldsmith game model, Blender preview or provenance document; assembled in Blender from primitive solids by scripts/assets/blender/game_models.py without third-party geometry, textures or generative 3D models.

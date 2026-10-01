@@ -97,6 +97,8 @@ const CLASS_OF_MODEL = {
   'gen3d-party-balloon': null,
   'gen3d-spider-web': null,
   'gen3d-throne': null,
+  // P35: hlava odtržená od těla, astra želvu naslepo nepoznala; hrdinou je `turtle` z `game_models.py`.
+  'gen3d-tortoise': null,
   'gen3d-witch-cauldron': null,
   'gen3d-wizard-hat': null,
 };
