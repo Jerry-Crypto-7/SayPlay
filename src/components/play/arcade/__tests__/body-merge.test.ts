@@ -156,11 +156,24 @@ describe('glowingCopy', () => {
     expect(plain.fragmentShader).not.toContain('vColor.rgb;');
   });
 
+  it('lets a model it did not merge glow in its vertex colours, like the goldfish (COLOR_0 under a white material)', () => {
+    const fish = new MeshStandardMaterial({ vertexColors: true, roughness: 0.85, metalness: 0 });
+    expect(mergeBody(new Group().add(new Mesh(new BoxGeometry(1, 1, 1), fish)))).not.toBeInstanceOf(Mesh);
+    const glow = glowingCopy(fish, 2.4) as MeshStandardMaterial;
+    const shader = physical();
+    glow.onBeforeCompile(shader as never, undefined as never);
+    expect(shader.fragmentShader).toMatch(/#include <emissivemap_fragment>\s*totalEmissiveRadiance \*= vColor\.rgb;/);
+    expect(glow.customProgramCacheKey()).not.toBe(fish.customProgramCacheKey());
+  });
+
   it('lets a model it did not merge glow in its material colour', () => {
     const material = new MeshStandardMaterial({ color: '#f08a24' });
     const glow = glowingCopy(material, 2.4) as MeshStandardMaterial;
     expect(glow.emissive.getHex()).toBe(material.color.getHex());
     expect(glow.emissiveIntensity).toBe(2.4);
     expect(material.emissive.getHex()).toBe(0);
+    const shader = physical();
+    glow.onBeforeCompile(shader as never, undefined as never);
+    expect(shader.fragmentShader).not.toContain('vColor.rgb;');
   });
 });

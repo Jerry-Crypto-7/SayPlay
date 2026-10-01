@@ -114,26 +114,24 @@ function bodyMaterial(side: Side): MeshStandardMaterial {
 }
 
 /**
- * Zářící kopie materiálu modelu (věci arény svítí). `clone()` úpravu shaderu
- * slitého těla nepřenese: kopie kreslila bílou barvu materiálu místo barev
- * z vrcholů, s kovem 1 skoro černou, a zářila bíle – zlaté rybky kočky byly
- * bílé fleky (P35 T8). Slité tělo proto září barvou svých vrcholů.
+ * Zářící kopie materiálu modelu (věci arény svítí): záře má barvu materiálu.
+ * Nese-li barvu vrchol – zlatá rybka (`COLOR_0` pod bílým materiálem) i slité
+ * tělo –, záře se jí násobí; jinak z bílého materiálu zářila bílá a zlaté
+ * rybky kočky byly bílé fleky (P35 T8). `clone()` úpravu shaderu nepřenese,
+ * proto kopie volá tu zdrojovou (slité tělo bez ní kreslilo kov 1, skoro černě).
  */
 export function glowingCopy(source: Material, intensity: number): Material {
   const glow = source.clone();
   if (!(glow instanceof MeshStandardMaterial)) return glow;
+  glow.emissive.copy(glow.color);
+  glow.emissiveMap = glow.map;
   glow.emissiveIntensity = intensity;
-  if (![...bodyMaterials.values()].includes(source as MeshStandardMaterial)) {
-    glow.emissive.copy(glow.color);
-    glow.emissiveMap = glow.map;
-    return glow;
-  }
-  glow.emissive.setRGB(1, 1, 1);
+  if (!glow.vertexColors) return glow;
   glow.onBeforeCompile = (shader, renderer) => {
     source.onBeforeCompile(shader, renderer);
     shader.fragmentShader = shader.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;');
   };
-  glow.customProgramCacheKey = () => 'arcade-body-glow';
+  glow.customProgramCacheKey = () => `${source.customProgramCacheKey()}+glow`;
   return glow;
 }
 
