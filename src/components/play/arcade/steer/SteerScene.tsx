@@ -16,9 +16,9 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 
 import { color } from '@/brand/tokens';
 import { baseControlOf } from '@/play/arcade/addons';
-import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, AXIS_MAX, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase, rampedSpeed } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
-import type { SteerCourse } from '@/play/arcade/pieces/steer';
+import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
 
 import { isTyping } from '../input';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
@@ -45,7 +45,10 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
     placeLander(camera, look, x, voyage.hero?.position.y ?? voyage.layout.hero.y, z, voyage.layout.pad);
     return;
   }
-  if (voyage !== undefined) road = centerOf(voyage.layout.course, z);
+  if (voyage !== undefined) {
+    placeVoyage(camera, look, x, z, centerOf(voyage.layout.course, z), voyage.layout.motion);
+    return;
+  }
   if (camera.aspect < 1) {
     camera.position.set(road + (x - road) * 0.5, 18, z - 18);
     look.set(road + (x - road) * 0.4, 0, z + 8);
@@ -54,6 +57,55 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
     look.set(road + (x - road) * 0.6, 0.8, z + 12);
   }
   camera.lookAt(look);
+}
+
+/**
+ * Záběr závodu plavby (P35 T7). V přejímce byl pes hnědá kostička na silnici
+ * (~4 % výšky obrazu) a loď „tiny dark boat“: kamera závodu na výšku stoupá
+ * 18 m, aby viděla soupeře vedle auta – plavba soupeře nemá. Kamera jde nízko,
+ * blízko a kus do strany, ať je vidět hlava i bok (u lodi stěžeň a plachta);
+ * kouká kousek před hrdinu, ať trať před ním zůstane v obraze (`aheadInView`).
+ * `up`/`back`/`side` = poloha kamery od hrdiny (m), `ahead` = kam kouká před něj.
+ */
+const VOYAGE_CAM = {
+  // Na výšku víc do strany nejde: trať v zatáčce by vyjela z úzkého obrazu (−2,6 m = 1,9 s před psem).
+  phone: { up: 4, back: 7, side: -1.6, ahead: 6 },
+  desktop: { up: 3.6, back: 7.5, side: -3, ahead: 10 },
+} as const;
+
+/**
+ * Loď je v kvádru těla řídká (stěžně, plachty, vesla): kvádr na snímku zabírá
+ * ~10 % výšky, trup a plachty sotva polovinu. Kamera jde k ní blíž, kolize se nemění.
+ */
+const BOAT_NEAR = 0.65;
+
+function placeVoyage(camera: PerspectiveCamera, look: Vector3, x: number, z: number, road: number, motion: VoyageLayout['motion']): void {
+  const cam = camera.aspect < 1 ? VOYAGE_CAM.phone : VOYAGE_CAM.desktop;
+  const near = motion === 'boat' ? BOAT_NEAR : 1;
+  camera.position.set(road + (x - road) * 0.8 + cam.side * near, cam.up * near, z - cam.back * near);
+  look.set(road + (x - road) * 0.6, 0.4, z + cam.ahead);
+  camera.lookAt(look);
+}
+
+/** Horní okraj obrazu, kam hráč ještě vidí (NDC): nad ním leží lišta HUD s časem a cílem (~15 % výšky). */
+const HUD_TOP_NDC = 0.7;
+
+/**
+ * Kolik sekund trati před hrdinou plnou rychlostí `speed` (m/s) je v záběru
+ * (P35 T7): bod na ose trati jde po desetinách sekundy dopředu, dokud se
+ * promítne do obrazu pod lištu HUD a blíž, než mlha všechno schová. Strop 6 s.
+ */
+function aheadInView(camera: Camera, course: SteerCourse | undefined, z: number, y: number, speed: number, fogFar: number, at: Vector3): number {
+  let seen = 0;
+  for (let step = 1; step <= 60; step += 1) {
+    const ahead = z + (speed * step) / 10;
+    at.set(centerOf(course, ahead), y, ahead);
+    if (at.distanceTo(camera.position) > fogFar) break;
+    at.project(camera);
+    if (at.z > 1 || Math.abs(at.x) > 1 || Math.abs(at.y) > 1 || at.y > HUD_TOP_NDC) break;
+    seen = step / 10;
+  }
+  return seen;
 }
 
 /**
@@ -292,6 +344,7 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
       delete stage.dataset.heroClass;
       delete stage.dataset.waterInView;
       delete stage.dataset.shotsInView;
+      delete stage.dataset.aheadS;
     };
   }, [stage, layout]);
 
@@ -321,7 +374,8 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
     if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
     passed.current = [];
   }, [arches]);
-  const scratch = useMemo(() => ({ matrix: new Matrix4(), ray: new Raycaster(), ndc: new Vector2(), frustum: new Frustum(), frame: 0 }), []);
+  const scratch = useMemo(() => ({ matrix: new Matrix4(), ray: new Raycaster(), ndc: new Vector2(), frustum: new Frustum(), point: new Vector3(), frame: 0 }), []);
+  const params = baseControlOf(session.world.control).params as { readonly topSpeed?: number; readonly ramp?: readonly number[] };
   const bodies = useRef<Object3D[]>([]);
   const waterMesh = useRef<Mesh>(null);
   const landMesh = useRef<Mesh>(null);
@@ -411,6 +465,12 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
     if (stage !== null && shots.length > 0 && scratch.frame % 10 === 1) {
       scratch.frustum.setFromProjectionMatrix(scratch.matrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
       stage.dataset.shotsInView = String(nearShotsInView(shotAt, camera.position, scratch.frustum));
+    }
+    // Kolik trati před sebou hráč vidí plnou rychlostí (P35 T7) – e2e hlídá, že blízká kamera nezkrátila výhled.
+    if (stage !== null && layout.mode === 'race' && scratch.frame % 10 === 5) {
+      const zUnits = state[bodyBase(state[HEADER.player] as number) + BODY.z] as number;
+      const speed = (rampedSpeed(params.topSpeed ?? STEER.topSpeed, zUnits, params.ramp) / UNIT) * ARCADE_HZ;
+      stage.dataset.aheadS = aheadInView(camera, layout.course, playerZ, sea ? WATER_LEVEL : 0, speed, look.fog[1], scratch.point).toFixed(1);
     }
   });
 

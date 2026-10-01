@@ -283,3 +283,81 @@ test.describe('voyage, Pixel 7 with CPU 4× slower', () => {
       await checkGame(page, game.id, `${game.id}-pixel7`);
     });
 });
+
+// ---------------------------------------------------------------------------
+// Hrdina plavby dost velký (P35 T7)
+
+/**
+ * V přejímce kola 1 byl pes hnědá kostička na silnici (~4 % výšky obrazu)
+ * a pirátská loď „tiny dark boat“ – astra je naslepo nepoznala. Kolik výšky
+ * obrazu hrdina zabírá aspoň, stejně jako aréna (`p32-arena`, P35 T2).
+ */
+const HERO_SHARE = { desktop: 0.07, phone: 0.09 } as const;
+
+/** Kolik sekund trati před hrdinou při plné rychlosti hráč vidí aspoň (`data-ahead-s`, `SteerScene.tsx`). */
+const AHEAD_S = 2;
+
+const T7_SHOTS = join(process.cwd(), 'evals/play/p35/T7');
+
+/** Podíl výšky obrazu, který hrdina zabírá, a sekundy trati v záběru; snímek plátna do `evals/play/p35/T7/`. */
+async function measureFrame(page: Page, name: string): Promise<{ readonly share: number; readonly ahead: number }> {
+  const frame = await page.evaluate(() => window.__playFrame!());
+  expect(frame.hero, `${name}: hrdina v záběru`).not.toBeNull();
+  expect(frame.hero!.behind, `${name}: hrdina před kamerou`).toBe(false);
+  const ahead = Number((await page.getByTestId('arcade-stage').getAttribute('data-ahead-s')) ?? 'NaN');
+  mkdirSync(T7_SHOTS, { recursive: true });
+  await page.locator('[data-testid="arcade-stage"] canvas').first().screenshot({ path: join(T7_SHOTS, `${name}.png`), scale: 'css' });
+  const share = frame.hero!.heightPx / frame.height;
+  const line = `${name}: hrdina ${(share * 100).toFixed(1)} % výšky (${frame.hero!.widthPx.toFixed(0)}×${frame.hero!.heightPx.toFixed(0)} px), trať v záběru ${ahead.toFixed(1)} s plnou rychlostí`;
+  test.info().annotations.push({ type: 'frame', description: line });
+  console.log(line);
+  return { share, ahead };
+}
+
+/**
+ * Hrdina na tiku 0 stojí 1,5 s na místě (±0,01 NDC – loď se houpe na vlně) – modely
+ * dotažené, úvodní průlet kamery doběhl. Nejdéle 30 s.
+ */
+async function settledStart(page: Page, url: string): Promise<void> {
+  await page.goto(url);
+  await page.waitForFunction(() => window.__playFrame?.().hero != null, undefined, { timeout: 60_000 });
+  await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => undefined);
+  let last = '';
+  let since = Date.now();
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    const hero = await page.evaluate(() => window.__playFrame!().hero);
+    const key = hero === null ? '' : [hero.minX, hero.maxX, hero.minY, hero.maxY].map((v) => v.toFixed(2)).join(' ');
+    if (key !== last) {
+      last = key;
+      since = Date.now();
+    } else if (Date.now() - since >= 1500) return;
+    await page.waitForTimeout(250);
+  }
+}
+
+for (const [device, use, minShare] of [
+  ['phone', PIXEL_7, HERO_SHARE.phone],
+  ['desktop', { viewport: { width: 1280, height: 720 } }, HERO_SHARE.desktop],
+] as const) {
+  test.describe(`voyage hero framing, ${device}`, () => {
+    test.use(use);
+    for (const id of ['dog', 'pirate'] as const)
+      test(`${id}: hero big enough to recognise, 2 s of course in view`, async ({ page, request }) => {
+        test.setTimeout(180_000);
+        await settledStart(page, await publish(request, id));
+        await page.addStyleTag({ content: ONLY_CANVAS });
+        // Start: tak hru fotí přejímka. Jízda: ukázka robota v plné rychlosti, zastavená skrytou záložkou.
+        const start = await measureFrame(page, `${id}-${device}-start`);
+        const bot = await page.evaluate(() => (window.__playShell as unknown as ArcadeProbe).playWitness());
+        await startDemo(page);
+        await freezeAt(page, Math.round(bot.tick / 2));
+        await page.waitForTimeout(800);
+        const run = await measureFrame(page, `${id}-${device}-run`);
+        for (const [moment, frame] of [['start', start], ['run', run]] as const) {
+          expect(frame.share, `${moment}: podíl výšky obrazu, který hrdina zabírá`).toBeGreaterThanOrEqual(minShare);
+          expect(frame.ahead, `${moment}: sekundy trati před hrdinou v záběru`).toBeGreaterThanOrEqual(AHEAD_S);
+        }
+      });
+  });
+}

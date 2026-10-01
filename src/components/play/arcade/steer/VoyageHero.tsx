@@ -220,9 +220,9 @@ export function VoyageHero({ session, layout, look, waveAt }: { readonly session
     <>
       {layout.motion === 'boat' && (
         <>
-          {/* Pěna kolem trupu: kroužek na hladině, dýchá s vlnou. */}
+          {/* Pěna kolem trupu: kroužek na hladině, dýchá s vlnou. Těsně u trupu (P35 T7): z blízké kamery byl širší kruh větší než loď. */}
           <mesh ref={foam} rotation={[-Math.PI / 2, 0, 0]} userData={{ rigShadow: 'none' }}>
-            <ringGeometry args={[0.95, 1.4, 24]} />
+            <ringGeometry args={[0.4, 0.6, 24]} />
             <meshBasicMaterial color={foamColor} transparent opacity={0.35} depthWrite={false} />
           </mesh>
           <instancedMesh ref={wake} args={[undefined, undefined, 28]} frustumCulled={false} userData={{ rigShadow: 'none' }}>
