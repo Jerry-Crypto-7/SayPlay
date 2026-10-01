@@ -118,6 +118,7 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     if (role === ROLE.player) bodies.add('player');
     else if (kind === 'enemy') bodies.add('enemy');
     else if (kind === 'rival-car' || kind === 'foe') bodies.add('rival');
+    else if (kind === 'finish') bodies.add('finish');
     else if (role === ROLE.chaser) bodies.add('chaser');
     else if (styled && role === ROLE.collectible) bodies.add('item');
     else if (role === ROLE.collectible && kind === 'coin') bodies.add('coin');

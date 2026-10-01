@@ -209,6 +209,9 @@ export const PLATFORM_LEVEL = {
   /** Nejmenší mezera mezi pohyblivou plošinou a hranou v krajní poloze. */
   shuttleClear: 250,
   maxCoins: 60,
+  /** Kolik věcí sebrat, když věta počet neřekne (P35 T3), a nejvýš kolik – tolik míst na zemi má i nejkratší úroveň. */
+  collectCount: 5,
+  maxCollect: 8,
 } as const;
 
 const generatorParams = z
@@ -221,6 +224,11 @@ const generatorParams = z
     doubleJump: z.boolean().default(false),
     /** Přesný počet mincí z počtu rolí (P26D T9); bez hodnoty co místo dá. */
     coinCount: z.int().min(1).max(PLATFORM_LEVEL.maxCoins).optional(),
+    /**
+     * Výhra až po sebrání všech věcí (P35 T3, „collect carrots“): `coinCount` věcí
+     * jen tam, kudy se po zemi běží, a cíl bez nich nevyhraje (`finish` s `allItems`).
+     */
+    collectAll: z.boolean().optional(),
     /** Nový pocit skoku (P32-0 T4 šev, naplní P32F T2); přijde z `controlParams.tuning`. Bez něj úroveň beze změny. */
     feel: z.literal(2).optional(),
   })
@@ -259,6 +267,9 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
     const slabs: BodyInit[] = [slab(-2000, startSlab - 2000, PLATFORM.baseTop)];
     const extras: BodyInit[] = [];
     const coinSpots: { readonly z: number; readonly y: number }[] = [];
+    /** Místa na zemi plošin bez hrotu: středy napřed, pak po stranách – sbírání všeho na ně spoléhá. */
+    const runMids: { readonly z: number; readonly y: number }[] = [];
+    const runSides: { readonly z: number; readonly y: number }[] = [];
 
     let far = startSlab - 2000;
     let top: number = PLATFORM.baseTop;
@@ -296,6 +307,8 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
         coinSpots.push({ z: mid, y: top + 1400 });
       } else {
         for (let c = -1; c <= 1; c += 1) coinSpots.push({ z: mid + c * 1000, y: top + 300 });
+        runMids.push({ z: mid, y: top + 300 });
+        runSides.push({ z: mid - 1000, y: top + 300 }, { z: mid + 1000, y: top + 300 });
       }
       if (params.checkpoints && index % 4 === 0) extras.push({ role: 'checkpoint', kind: 'checkpoint', x: 0, y: top, z: near + 800, w: 400, h: 2000, d: 400, solid: false });
     }
@@ -305,7 +318,16 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
     const goal: BodyInit = { role: 'goal', kind: 'finish', x: 0, y: top, z: goalZ, w: PLATFORM.slabW, h: 3 * UNIT, d: 400, solid: false };
 
     const bodies = [player, ...slabs, ...extras];
-    if (params.coins) {
+    if (params.collectAll === true) {
+      // Mince nad hrotem robot mine, když skočí jinde – musí se sebrat všechno, takže jen zem, rozložená po trati.
+      const want = Math.min(params.coinCount ?? PLATFORM_LEVEL.collectCount, ARCADE_LIMITS.maxBodies - bodies.length - 1);
+      const pool = runMids.length >= want ? runMids : [...runMids, ...runSides].sort((a, b) => a.z - b.z);
+      const take = Math.min(want, pool.length);
+      for (let i = 0; i < take; i += 1) {
+        const spot = pool[Math.floor(((i + 0.5) * pool.length) / take)]!;
+        bodies.push(coin(spot.z, spot.y));
+      }
+    } else if (params.coins) {
       const budget = Math.min(params.coinCount ?? PLATFORM_LEVEL.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
       for (const spot of coinSpots.slice(0, Math.max(0, budget))) bodies.push(coin(spot.z, spot.y));
     }
@@ -319,12 +341,12 @@ export function platformControlRef(params: Pick<PlatformLevelParams, 'doubleJump
   return { id: 'platform', params: params.feel === undefined ? { doubleJump: params.doubleJump } : { doubleJump: params.doubleJump, feel: params.feel } };
 }
 
-/** Pravidla plošinovky: hrot, mince, cíl, pád; s checkpointy pád vrací místo prohry. */
-export function platformRules(params: Pick<PlatformLevelParams, 'checkpoints'>, health?: number): PieceRef[] {
+/** Pravidla plošinovky: hrot, mince, cíl, pád; s checkpointy pád vrací místo prohry, se sběrem cíl čeká na všechny věci. */
+export function platformRules(params: Pick<PlatformLevelParams, 'checkpoints' | 'collectAll'>, health?: number): PieceRef[] {
   const rules: PieceRef[] = [
     { id: 'hit', params: { role: 'hazard', effect: health === undefined ? 'lose' : 'damage' } },
     { id: 'pickup', params: {} },
-    { id: 'finish', params: {} },
+    { id: 'finish', params: params.collectAll === true ? { allItems: true } : {} },
     { id: 'fall_out', params: { belowY: PLATFORM.fallBelowY, effect: params.checkpoints ? 'respawn' : 'lose' } },
   ];
   if (params.checkpoints) rules.push({ id: 'checkpoint', params: {} });

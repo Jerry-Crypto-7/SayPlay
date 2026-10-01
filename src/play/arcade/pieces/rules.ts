@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 
-import { ARCADE_HZ, BODY, COUNTER, HEADER, ROLE, type RulePiece, bodyBase } from '../contract';
+import { ARCADE_HZ, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase } from '../contract';
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
 
@@ -49,14 +49,29 @@ export const pickup: RulePiece<z.infer<typeof pickupParams>> = {
 
 const noParams = z.object({}).strict();
 
-/** Dotek cíle (páska na konci trati) → výhra. */
-export const finish: RulePiece<z.infer<typeof noParams>> = {
+/** Leží ještě nějaká sbíraná věc? */
+function itemLeft(state: Int32Array): boolean {
+  const count = state[HEADER.bodyCount] as number;
+  for (let i = 0; i < count; i += 1) {
+    const base = bodyBase(i);
+    if (((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && state[base + BODY.role] === ROLE.collectible) return true;
+  }
+  return false;
+}
+
+const finishParams = z.object({ allItems: z.boolean().optional() }).strict();
+
+/**
+ * Dotek cíle (páska na konci trati) → výhra. S `allItems` (P35 T3, „collect 5
+ * carrots and reach the burrow“) až tehdy, když žádná sbíraná věc nezbyla.
+ */
+export const finish: RulePiece<z.infer<typeof finishParams>> = {
   id: 'finish',
-  params: noParams,
+  params: finishParams,
   roles: ['player', 'goal'],
   trigger: 'contact',
   cost: () => ({ bodies: 1, rules: 1 }),
-  fire: ({ state, other }) => (roleOf(state, other) === ROLE.goal ? [{ kind: 'win' }] : []),
+  fire: ({ state, other }, params) => (roleOf(state, other) === ROLE.goal && (params.allItems !== true || !itemLeft(state)) ? [{ kind: 'win' }] : []),
 };
 
 /** Životy došly → prohra. Patří k `hit` s `effect: 'damage'`. */

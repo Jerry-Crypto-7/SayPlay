@@ -79,7 +79,8 @@ const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'cra
 /** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
 function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.player) return cast.player;
-  if (view.kind === 'finish') return 'finish-flag';
+  // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
+  if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
   if (view.kind === 'enemy') return cast.enemy;
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
@@ -254,6 +255,7 @@ function itemTagOf(view: BodyView): 'enemy' | 'chaser' | PropRole | undefined {
   if (view.role === ROLE.player) return undefined;
   if (view.kind === 'enemy') return 'enemy';
   if (view.kind === 'rival-car') return 'rival';
+  if (view.kind === 'finish') return 'finish';
   if (view.role === ROLE.chaser) return 'chaser';
   if (view.role === ROLE.collectible && view.kind === 'coin') return 'coin';
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return 'obstacle';
@@ -431,12 +433,13 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
             ) : (
               <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
                 {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}
+                {/* Totéž cíl skákačky z věty (P35 T3): páska 0,4 m by měsíc zmenšila na kamínek; vlajka zůstává v pásce. */}
                 {/* Postava stojí ve výšce těla (P30B T3); vozidlo má tělo nízké a dlouhé, to se dál vepisuje celé. */}
                 <FittedModel
                   id={modelIdOf(view, cast)}
                   w={view.w}
                   h={view.h}
-                  d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d}
+                  d={view.kind === 'target' || (view.kind === 'finish' && cast.props.finish !== undefined) ? Math.max(view.d, view.w) : view.d}
                   fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                   character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
                 />

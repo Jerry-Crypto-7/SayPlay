@@ -191,9 +191,9 @@ export function chaserModel(spec: GameSpecV1): string {
 
 /**
  * Role arkády, jejichž těla smí nést model z popisku: sbíraná mince, překážka běžce, terč hodu, soupeř souboje
- * a závodu (P27A T4); od P30B T4 i mantinel závodu, nota rytmu a díl věže načasování.
+ * a závodu (P27A T4); od P30B T4 i mantinel závodu, nota rytmu a díl věže načasování; od P35 T3 cíl skákačky.
  */
-export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'note', 'block'] as const;
+export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'note', 'block', 'finish'] as const;
 export type PropRole = (typeof PROP_ROLES)[number];
 
 /** Co jádro pro roli kreslí samo; popisek, který jmenuje právě tohle („obstacles“), nic nemění. */
@@ -208,6 +208,7 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   // Nota a díl věže jsou v jádře barevné kvádry; „tiles“ a „blocks“ jmenují právě je.
   note: ['hazard-tile'],
   block: ['wood-block'],
+  finish: ['finish-flag'],
 };
 
 /** Model soupeře: přesná nebo blízká identita, žádná třída; v závodě jen vozidlo, loď nebo letadlo. */

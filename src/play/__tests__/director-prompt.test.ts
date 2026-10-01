@@ -82,7 +82,8 @@ describe('director prompt', () => {
   // T7: 6 718 B – co má AI verze proti výchozímu bodu přidat, popisky v jednotném čísle, nepřítel není nástroj hráče.
   // Revize fáze 3: 6 746 B – `interact` jen jako vítězné pravidlo. Kolo 2: 6 777 B – vyhrává se až se všemi cíli.
   // O9: 6 788 B – po sloučení všech stop popisují moduly žánrů E, F a G víc parametrů výchozího bodu.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 6 788 B)', () => {
+  // P35 T3: 6 828 B – skákačka počítá věci ke sběru (`items 1..8`, `counts collectible`) a výchozí bod nese cíl z věty.
+  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 6 828 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -91,7 +92,7 @@ describe('director prompt', () => {
       }
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(6_788);
+    expect(max).toBeLessThanOrEqual(6_828);
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

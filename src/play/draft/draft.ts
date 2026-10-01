@@ -1091,7 +1091,9 @@ function draftGenre(
   const object = thing(said);
   // Úkol: u hodu a střelby je předmětem terč („throw balls at rubber ducks“, „shooter against asteroids“), jinak předmět slovesa.
   const aimed = verb === 'hit' || ranking.verb === null ? thing(roles.target) : null;
-  const target = choice.genre === 'quest' ? singular(aimed ?? object ?? namedFoe(sentence) ?? nouns.second ?? defaultTarget(verb)) : null;
+  // Skákačka: cíl úrovně a jeho sloveso vyčte `draftFill` modulu („to find its battery“, P35 T3).
+  const filledTarget = choice.genre === 'platformer' ? (fill.target ?? null) : null;
+  const target = choice.genre === 'quest' ? singular(aimed ?? object ?? namedFoe(sentence) ?? nouns.second ?? defaultTarget(verb)) : filledTarget === null ? null : singular(filledTarget.label);
   const foe = fight
     ? (roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
     : (foeIn(cleanLabel(fill.enemy)) ??
@@ -1128,7 +1130,7 @@ function draftGenre(
     hero: cap(hero, 60),
     ...(foeLabel === null ? {} : { enemy: cap(foeLabel, 60) }),
     ...(itemLabel === null ? {} : { collectible: cap(itemLabel, 60) }),
-    ...(target === null ? {} : { target: { label: cap(target, 60), verb: verb.slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }),
+    ...(target === null ? {} : { target: { label: cap(target, 60), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }),
     setting: cap(setting, 80),
     ...(place === null ? {} : { palette: place }),
     ...(params === null ? {} : { params }),
