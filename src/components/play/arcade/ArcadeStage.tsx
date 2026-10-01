@@ -94,6 +94,11 @@ export interface RenderReport {
   readonly exposure: number;
   /** Efekty postprocessingu v pořadí (P32A T2, `look/rig/Post.tsx`); se skládačem tónuje `aces` a `toneMapping` je 0. */
   readonly post: readonly string[];
+  /**
+   * Viditelné sítě scény (P35 T4) – co se kreslí, nezávisle na úrovni kvality, která
+   * mění stínový výřez i průchody a s nimi `calls`.
+   */
+  readonly meshes: number;
 }
 
 declare global {
@@ -105,7 +110,15 @@ declare global {
 
 function RenderProbe() {
   const gl = useThree((three) => three.gl);
+  const scene = useThree((three) => three.scene);
   useEffect(() => {
+    const meshes = (): number => {
+      let count = 0;
+      scene.traverseVisible((node) => {
+        if ((node as Mesh).isMesh === true) count += 1;
+      });
+      return count;
+    };
     const probe = (): RenderReport => ({
       calls: gl.info.render.calls,
       triangles: gl.info.render.triangles,
@@ -115,12 +128,13 @@ function RenderProbe() {
       toneMapping: gl.toneMapping,
       exposure: gl.toneMappingExposure,
       post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
+      meshes: meshes(),
     });
     window.__playRender = probe;
     return () => {
       if (window.__playRender === probe) delete window.__playRender;
     };
-  }, [gl]);
+  }, [gl, scene]);
   return null;
 }
 

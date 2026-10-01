@@ -6,7 +6,7 @@
  */
 
 import type { BufferGeometry, Material, Mesh, Object3D, Side } from 'three';
-import { Float32BufferAttribute, Group, Mesh as MeshClass, MeshStandardMaterial } from 'three';
+import { DoubleSide, Float32BufferAttribute, Group, Mesh as MeshClass, MeshStandardMaterial } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -14,12 +14,29 @@ import { modelPath } from '@/play/arcade/models';
 
 const modelCache = new Map<string, Promise<Object3D | null>>();
 
+/**
+ * Průhledný oboustranný materiál kreslí three dvěma průchody (rub, líc) a před každým
+ * mu nastaví `needsUpdate`, takže každé kreslení znovu hodnotí program. Sklo a voda
+ * akvária to dělaly 12× za snímek a stály kočičí arénu na telefonu desetinu snímku
+ * (P35 T4). Jeden průchod stačí: tenké sklo ani hladina se samy nepřekrývají.
+ */
+export function singlePass(model: Object3D): Object3D {
+  model.traverse((node) => {
+    const mesh = node as Mesh;
+    if (!mesh.isMesh) return;
+    for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+      if (material.transparent && material.side === DoubleSide) material.forceSinglePass = true;
+    }
+  });
+  return model;
+}
+
 export function loadModel(id: string): Promise<Object3D | null> {
   let pending = modelCache.get(id);
   if (pending === undefined) {
     pending = new GLTFLoader()
       .loadAsync(modelPath(id))
-      .then((gltf) => gltf.scene as Object3D)
+      .then((gltf) => singlePass(gltf.scene as Object3D))
       .catch(() => null);
     modelCache.set(id, pending);
   }
@@ -104,22 +121,34 @@ const constant = (count: number, values: readonly number[]): Float32BufferAttrib
  * s vlastním materiálem, takže slití po materiálech (`flatten`) by kreslicí volání
  * neušetřilo. Materiál se proto rozepíše do vrcholů a tělo je jedna síť – jedno
  * volání v obraze i ve stínu (běžec na Pixel 7: ~200 volání na snímek, těla ~60 %).
- * Model s texturou, průhledností, kostrou nebo jiným materiálem se nechá, jak je.
+ *
+ * Model s texturou, průhledností nebo jiným materiálem se slije aspoň po materiálech,
+ * když to sítě ušetří (P35 T4): akvárium „glowing fish“ (19 sítí, sklo a voda průhledné)
+ * zůstávalo celé a kočičí aréna se 14 rybami kreslila ~180 volání na snímek – Pixel 7
+ * se 4× CPU 15 FPS (O10). Model s kostrou, instancemi, morfy, body nebo čarami se nechá, jak je.
  */
 export function mergeBody(model: Object3D): Object3D {
   model.updateMatrixWorld(true);
   const parts: BufferGeometry[] = [];
   let side: Side | null = null;
   let plain = true;
+  let rigid = true;
+  let meshes = 0;
   model.traverse((node) => {
-    if (!plain) return;
+    if (!rigid) return;
     const mesh = node as Mesh;
     if (!mesh.isMesh) {
-      plain = !('isPoints' in node || 'isLine' in node || 'isSprite' in node);
+      rigid = !('isPoints' in node || 'isLine' in node || 'isSprite' in node);
       return;
     }
+    meshes += 1;
     const { material, geometry } = mesh;
-    if ('isSkinnedMesh' in mesh || 'isInstancedMesh' in mesh || !plainStandard(material) || (side !== null && material.side !== side) || Object.keys(geometry.morphAttributes).length > 0 || geometry.getAttribute('normal') === undefined) {
+    if ('isSkinnedMesh' in mesh || 'isInstancedMesh' in mesh || Object.keys(geometry.morphAttributes).length > 0) {
+      rigid = false;
+      return;
+    }
+    if (!plain) return;
+    if (!plainStandard(material) || (side !== null && material.side !== side) || geometry.getAttribute('normal') === undefined) {
       plain = false;
       return;
     }
@@ -135,7 +164,11 @@ export function mergeBody(model: Object3D): Object3D {
     part.clearGroups();
     parts.push(part);
   });
-  if (!plain || side === null) return model;
+  if (!rigid) return model;
+  if (!plain || side === null) {
+    const flat = flatten(model);
+    return flat.children.length < meshes ? flat : model;
+  }
   const merged = parts.length > 1 ? mergeGeometries(parts) : parts[0];
   return merged === null || merged === undefined ? model : new MeshClass(merged, bodyMaterial(side));
 }

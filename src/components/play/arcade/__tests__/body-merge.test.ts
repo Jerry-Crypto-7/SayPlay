@@ -9,7 +9,7 @@ import { BoxGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMa
 import { Box3 } from 'three';
 import { describe, expect, it } from 'vitest';
 
-import { mergeBody } from '../look/load';
+import { mergeBody, singlePass } from '../look/load';
 
 function coin(): Group {
   const model = new Group();
@@ -87,6 +87,39 @@ describe('mergeBody', () => {
     const mixedSides = coin();
     ((mixedSides.children[0] as Mesh).material as MeshStandardMaterial).side = DoubleSide;
     expect(mergeBody(mixedSides)).toBe(mixedSides);
+  });
+
+  it('merges a body with glass per material instead of leaving every part apart (P35 T4)', () => {
+    const model = coin();
+    const glass = new MeshStandardMaterial({ color: '#bfe8ff', transparent: true, opacity: 0.3 });
+    for (const x of [-1, 1]) {
+      const pane = new Mesh(new BoxGeometry(0.05, 1, 1), glass);
+      pane.position.set(x, 1, 0);
+      model.add(pane);
+    }
+    const rim = (model.children[0] as Mesh).material;
+    const before = new Box3().setFromObject(model);
+    const merged = mergeBody(model);
+    // Obruba, tvář a jedno sklo za obě tabule – každé se svým materiálem.
+    expect(merged.children).toHaveLength(3);
+    const materials = merged.children.map((child) => (child as Mesh).material);
+    expect(materials).toContain(glass);
+    expect(materials).toContain(rim);
+    const after = new Box3().setFromObject(merged);
+    expect(after.min.distanceTo(before.min)).toBeLessThan(1e-5);
+    expect(after.max.distanceTo(before.max)).toBeLessThan(1e-5);
+  });
+
+  it('draws see-through double-sided parts in one pass, so three does not re-judge their program every draw (P35 T4)', () => {
+    const model = coin();
+    const glass = new MeshStandardMaterial({ transparent: true, opacity: 0.3, side: DoubleSide });
+    const thinGlass = new MeshStandardMaterial({ transparent: true, opacity: 0.3 });
+    const solid = new MeshStandardMaterial({ side: DoubleSide });
+    model.add(new Mesh(new BoxGeometry(1, 1, 1), glass), new Mesh(new BoxGeometry(1, 1, 1), thinGlass), new Mesh(new BoxGeometry(1, 1, 1), solid));
+    singlePass(model);
+    expect(glass.forceSinglePass).toBe(true);
+    expect(thinGlass.forceSinglePass).toBe(false);
+    expect(solid.forceSinglePass).toBe(false);
   });
 
   it('keeps a double-sided body double-sided', () => {
