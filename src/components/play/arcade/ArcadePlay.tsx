@@ -38,6 +38,7 @@ import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
+import { type BotHand, botHand } from './bot-hand';
 import { type Clip, startClip } from './clip';
 import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
@@ -620,7 +621,23 @@ function ArcadePlayGame({
   const bonus = session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === 'time' ? entry.patch.amount : 0), 0);
 
   useEffect(() => {
+    let hand: BotHand | null = null;
     const probe = {
+      /**
+       * Hra gesty (P36C T4, `bot-hand.ts`): `byHand(true)` na tiku 0 zastaví čas snímků,
+       * `botWants()` řekne, co by robot teď stiskl, e2e to zahraje dotykem a `tickByHand()`
+       * odtiká tik s tím, co gesta zapsala.
+       */
+      byHand: (on: boolean) => {
+        session.manualClock(on);
+        hand = on ? botHand(session) : null;
+      },
+      botWants: () => hand?.decide() ?? null,
+      tickByHand: () => {
+        hand?.step();
+        const now = session.snapshot();
+        return { runState: now.runState, tick: now.tick, progress: now.progress, score: now.score, items: now.items };
+      },
       inputs: () => session.inputs(),
       tick: () => session.snapshot().tick,
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */

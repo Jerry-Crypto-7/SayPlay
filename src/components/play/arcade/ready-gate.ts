@@ -14,13 +14,19 @@ export interface ReadyGate {
   /** Pustí hodiny – ťuk na scénu nebo klávesa, i když ovládání z nich nic nezapíše. */
   begin(): void;
   waiting(): boolean;
+  /**
+   * Ruční hodiny pro sondu e2e (P36C T4): snímky čas neposouvají, tiky odtiká
+   * jen `stepOnce` testu. Gesta hraje skutečný dotyk, jen čas je deterministický.
+   */
+  manualClock(on: boolean): void;
 }
 
 export function holdUntilTouch(session: ArcadeSession): ArcadeSession & ReadyGate {
   let waiting = true;
+  let manual = false;
   return {
     ...session,
-    advance: (ms) => (waiting && session.demo() === null ? 0 : session.advance(ms)),
+    advance: (ms) => (manual || (waiting && session.demo() === null) ? 0 : session.advance(ms)),
     restart: () => {
       waiting = true;
       session.restart();
@@ -29,6 +35,9 @@ export function holdUntilTouch(session: ArcadeSession): ArcadeSession & ReadyGat
       waiting = false;
     },
     waiting: () => waiting,
+    manualClock: (on) => {
+      manual = on;
+    },
   };
 }
 
