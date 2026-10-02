@@ -730,6 +730,15 @@ export function takeRateSlot(
   const retryAfterSeconds = Math.ceil((startedAtMs + RATE_WINDOW_MS - nowMs) / 1000);
   const events = door === 'play/events';
   const dare = door === 'play/dare';
+  const key = `${door} ${caller}`;
+  // Výzva soudí volajícího PRVNÍ: odmítnutý volající jinak dál ubírá strop
+  // instance a jedna adresa výzvy zavře všem (nález 3. revize T5). Mapu to
+  // nenafoukne – klíčů výzev je nanejvýš tolik, kolik pustí `admit()` (400).
+  if (dare) {
+    const own = open.perCaller.get(key)?.count ?? 0;
+    const ownLimit = isGroupedCaller(caller) ? MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP : MAX_DARE_REQUESTS_PER_WINDOW;
+    if (own >= ownLimit) return { allowed: false, count: own + 1, limit: ownLimit, scope: 'caller', retryAfterSeconds };
+  }
   const instanceCount = events ? (open.eventsCount += 1) : dare ? (open.dareCount += 1) : (open.instanceCount += 1);
   const instanceLimit = dare ? MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE : MAX_REQUESTS_PER_WINDOW_PER_INSTANCE;
   if (instanceCount > instanceLimit)
@@ -741,7 +750,6 @@ export function takeRateSlot(
       retryAfterSeconds,
     };
 
-  const key = `${door} ${caller}`;
   const window = open.perCaller.get(key) ?? { count: 0 };
   window.count += 1;
   open.perCaller.set(key, window);

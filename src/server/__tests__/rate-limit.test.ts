@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE,
   MAX_REQUESTS_PER_WINDOW,
   MAX_REQUESTS_PER_WINDOW_PER_GROUP,
   MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
@@ -45,6 +46,15 @@ describe('strop na frekvenci veřejných dveří', () => {
       limit: MAX_REQUESTS_PER_WINDOW,
       scope: 'caller',
     });
+  });
+
+  it('výzvy: odmítnutý volající ani skupina neubírá strop instance, další člověk projde', () => {
+    for (const flooder of [ME, ROOM]) {
+      resetRateWindows();
+      for (let i = 0; i < 2 * MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) takeRateSlot('play/dare', flooder, T0);
+      expect(takeRateSlot('play/dare', flooder, T0)).toMatchObject({ allowed: false, scope: 'caller' });
+      expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0)).toMatchObject({ allowed: true });
+    }
   });
 
   it('flooder zavře dveře SOBĚ, ne ostatním', () => {

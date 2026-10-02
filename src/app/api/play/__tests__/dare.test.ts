@@ -16,12 +16,7 @@ import { runBot } from '@/play/arcade/verify';
 import { packInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
-import {
-  MAX_DARE_REQUESTS_PER_WINDOW,
-  MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP,
-  MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE,
-  resetRateWindows,
-} from '@/server/rate-limit';
+import { MAX_DARE_REQUESTS_PER_WINDOW, MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE, resetRateWindows } from '@/server/rate-limit';
 
 import { POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
@@ -232,11 +227,6 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     }
     expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) })).status).toBe(201);
   });
-
-  it('skupina adres zůstane pod stropem instance', () => {
-    expect(MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP).toBeLessThan(MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE);
-  });
-
   it('denní strop výzev → 429 DARE_QUOTA s retry-after; týž běh podruhé strop neubírá', async () => {
     process.env.PLAY_DARE_DAILY_CAP = '1';
     __resetProcessVersionStore();
