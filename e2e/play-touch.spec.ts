@@ -183,6 +183,13 @@ test.describe('touch only', () => {
       const recorded = await page.evaluate(() => (window.__playShell as unknown as HandProbe).inputs().length);
       console.log(`${game.genre}: ${last.runState} at tick ${last.tick}, progress ${last.progress} %, ${recorded} inputs`);
       expect(recorded).toBeGreaterThan(0);
+      if (game.control === 'runner') {
+        // T1: tah do pruhu nebo dolů není skok. Před T1 položení prstu skočilo, takže tah nesl i TAP – robot to
+        // na téhle trati dorovná a vyhraje, proto se to hlídá přímo v záznamu.
+        const swipes = await page.evaluate(() => (window.__playShell as unknown as { inputs(): readonly { tick: number; buttons: number }[] }).inputs());
+        const jumpy = swipes.filter((input) => (input.buttons & (BUTTON.LEFT | BUTTON.RIGHT | BUTTON.DOWN)) !== 0 && (input.buttons & BUTTON.TAP) !== 0);
+        expect(jumpy, `swipes that also jumped: ${JSON.stringify(jumpy)}`).toEqual([]);
+      }
       expect(last.runState === 'won' || last.progress >= 50, `${last.runState} at tick ${last.tick}, ${last.progress} % of the way`).toBe(true);
     });
   }
