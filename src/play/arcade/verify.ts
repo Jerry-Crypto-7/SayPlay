@@ -14,7 +14,7 @@ import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeInput, type ArcadeObservat
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
-import { lossPlanner, losingVerbs, rulesPlanner } from './rules/bot';
+import { avoidingLosses, lossPlanner, losingVerbs, rulesPlanner } from './rules/bot';
 
 export interface BotRun {
   readonly inputs: readonly InputEvent[];
@@ -171,7 +171,8 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   // Hru, kterou vyhrávají pravidla specu, hraje plánovač cílů (P29A); `planner: false` = kontrolní běh robotem světa.
   // `seek` = běh „na prohru“ (P36A T8): plánovač jde do pravidel prohry s těmi slovesy.
   const planner = options.seek !== undefined ? lossPlanner(world, options.seek) : options.planner === false ? null : rulesPlanner(world);
-  const bot = planner ?? { reactionTicks: piece.reactionTicks, decide: (observation: ArcadeObservation) => piece.decide(observation, params) };
+  // Robot světa obchází tělesa pravidel prohry (P36A F2); do nich jde jen běh „na prohru“.
+  const bot = planner ?? { reactionTicks: piece.reactionTicks, decide: avoidingLosses(world, (observation: ArcadeObservation) => piece.decide(observation, params)) };
   // Slovesa pravidel: stav na začátku tiku, ať jde změnu po efektu změřit (P30B T2).
   const verbOf = world.rules.map((ref) => (typeof ref.params.verb === 'string' ? ref.params.verb : null));
   // `interact` si rozdělanou práci píše do čítače každý tik držení: sloveso úkolu dokáže jen posun stavu cíle (P32G T3).

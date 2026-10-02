@@ -17,7 +17,7 @@ import { arcadeWorldOf, compileArcade } from '@/play/arcade/compile';
 import { type ArcadeWorld, BODY, BODY_STRIDE, COUNTER, GRACE_MASK, GRACE_SHIFT, HEADER, HEADER_SIZE, HIT_GRACE, NO_INPUT, bodyBase } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { verifyArcade } from '@/play/arcade/verify';
+import { runBot, verifyArcade } from '@/play/arcade/verify';
 import { applyRemix, remixPatch } from '@/play/director/remix';
 import { type GenreModule, type GenreSpec, withCounts } from '@/play/genre/contract';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '@/play/genre/index';
@@ -154,6 +154,27 @@ describe('a lose rule is proved by a robot that walks into it (P36A T8)', () => 
     const hidden = { ...lava, things: [{ role: 'lava', start: 'hidden' }] };
     const verdict = verifyArcade(world(game(hidden)));
     expect(verdict.failures.some((failure) => failure.includes('VERB_UNPROVED:touch'))).toBe(true);
+  });
+
+  // F2 (z T8): robot arény lávu neznal a vlezl do ní na semínku 1 i 3 – hra s pravidlem prohry prošla jen náhodou.
+  it('the winning robot steps around the lava on seeds 1–3, the losing robot still walks in', () => {
+    const spec = game(lava);
+    for (let seed = 1; seed <= 3; seed += 1) {
+      const built = arcadeWorldOf(spec, seed);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      expect(runBot(built.world).outcome, `seed ${String(seed)}`).toBe('won');
+      expect(runBot(built.world, ARCADE_LIBRARY, { seek: new Set(['touch']) }).outcome, `seed ${String(seed)} seek`).toBe('lost');
+    }
+  });
+
+  // Semínka, kde láva leží v cestě: bez obcházení robot úkolu na nich do lávy vleze (naměřeno 2. 10. 2026).
+  it('a quest robot steps around lava too', () => {
+    const spec = game({ ...guards, ruleRoles: lava.ruleRoles, rules: lava.rules });
+    for (const seed of [6, 8, 10]) {
+      const built = arcadeWorldOf(spec, seed);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      expect(runBot(built.world).outcome, `seed ${String(seed)}`).toBe('won');
+    }
   });
 
   // F1 (z T8): `damage` z pravidla specu dřív bral život každý tik – tři životy padly za tři tiky v lávě.
