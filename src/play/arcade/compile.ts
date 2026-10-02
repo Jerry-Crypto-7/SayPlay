@@ -20,7 +20,7 @@ import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { rapierIfLoaded } from './physics/world';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
-import { platformLevel, platformRules } from './pieces/platform';
+import { platformControlRef, platformLevel, platformRules } from './pieces/platform';
 import { runnerTrack } from './pieces/runner';
 import { duelParts } from './pieces/duel';
 import { rhythmParts } from './pieces/rhythm';
@@ -65,7 +65,8 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   if (spec.control === 'platform') {
     const params = platformLevel.params.parse({ ...spec.controlParams, ...counts });
     return {
-      control: { id: 'platform', params: { doubleJump: params.doubleJump } },
+      // `feel: 2` z `tuning` žánru Skákačka dojde až k ovládání (P36A T6); úroveň bez něj má dál dnešní ovládání.
+      control: platformControlRef(params),
       bot: { id: 'platform_bot', params: {} },
       level: platformLevel.generate(seed, params),
       rules: platformRules(params, health),
@@ -108,7 +109,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   ];
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
   const level = runnerTrack.generate(seed, params);
-  return { control: { id: 'runner', params: { speed: params.speed, ramp: rampMarks(level.length) } }, bot: { id: 'runner_bot', params: {} }, level, rules };
+  // Odpuštění skoku (P36A T6) jen s `feel` ze specu – uložený spec bez něj staví tentýž svět.
+  const control: PieceRef = { id: 'runner', params: { speed: params.speed, ramp: rampMarks(level.length), ...(params.feel === undefined ? {} : { feel: params.feel }) } };
+  return { control, bot: { id: 'runner_bot', params: {} }, level, rules };
 }
 
 /** Generátor, který ovládání staví bez `controlParams.generator`. */

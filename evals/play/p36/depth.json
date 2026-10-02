@@ -1,5 +1,5 @@
 {
- "compilerVersion": "play-compiler-v5/arcade-v2",
+ "compilerVersion": "play-compiler-v6/arcade-v2",
  "bandSeconds": {
   "min": 30,
   "max": 90

@@ -65,6 +65,8 @@ export const runnerGenre: GenreModule<'runner'> = {
         ...(speed === undefined ? {} : { speed: RUNNER_SPEEDS[speed] }),
         ...(density === undefined ? {} : { density: RUNNER_DENSITIES[density] }),
         obstacles: OVERHEAD.test(obstacle) ? [...OBSTACLE_KINDS] : OBSTACLE_KINDS.filter((kind) => kind !== 'slide-bar'),
+        // Skok odpouští jako skákačka: chvilku po hraně i stisk těsně před dopadem (P36A T6).
+        feel: 2,
       },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Run`,

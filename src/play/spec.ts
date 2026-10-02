@@ -268,6 +268,12 @@ export const runnerParamsSchema = z
     density: z.enum(RUNNER_DENSITIES).optional(),
     lengthM: z.int().min(RUNNER_TRACK.minLengthM).max(RUNNER_TRACK.maxLengthM).optional(),
     obstacles: z.array(z.enum(OBSTACLE_KINDS)).min(1).max(OBSTACLE_KINDS.length).optional(),
+    /**
+     * Odpuštění skoku jako skákačka (P36A T6); žánr Běžec ho píše vždy. Bez výchozí
+     * hodnoty: uložený spec bez něj má stejný hash i svět jako dřív. Ne přes `tuning` –
+     * ten hru označí za delegovanou a čipy remixu běžce by ztichly (`director/remix.ts`).
+     */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type RunnerParams = z.infer<typeof runnerParamsSchema>;

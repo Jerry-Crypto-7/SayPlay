@@ -8,6 +8,10 @@
  * všechny tři pruhy zablokované překážkou, kterou nejde přeskočit ani
  * podklouznout. `checkRunnerLevel` to samé tvrzení přepočítá nad hotovou
  * úrovní – test i ověření ho čtou.
+ *
+ * S `feel: 2` (P36A T6, výchozí v žánru Běžec) skok odpouští jako skákačka:
+ * ještě 100 ms po sběhnutí z hrany a stisk až 120 ms před dopadem skočí při
+ * dopadu. Ťuk ze země skočí přesně jako dřív, takže odstupy řad platí dál.
  */
 
 import { z } from 'zod';
@@ -16,6 +20,7 @@ import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
+import { PLATFORM_FEEL } from './platform';
 
 export const RUNNER_SPEEDS = ['slow', 'normal', 'fast'] as const;
 export const RUNNER_DENSITIES = ['low', 'normal', 'high'] as const;
@@ -77,15 +82,28 @@ export const OBSTACLES: Readonly<Record<ObstacleKind, ObstacleShape>> = {
 
 const aux = (state: Int32Array, base: number, slot: 'aux0' | 'aux1'): number => state[base + BODY[slot]] as number;
 
+/**
+ * Odpuštění skoku `feel: 2` (P36A T6) v `aux1` nad tiky skluzu: bity 0–5 skluz
+ * (nejvýš `slideTicks` 40), 6–8 zbývající coyote tiky, 9–12 zbývající tiky bufferu.
+ */
+const SLIDE_MASK = 0x3f;
+const COYOTE_SHIFT = 6;
+const BUFFER_SHIFT = 9;
+
 const controlParams = z
   .object({
     speed: z.enum(RUNNER_SPEEDS).default('normal'),
     /** Značky rampy (`rampMarks`); bez nich stálá rychlost. */
     ramp: z.tuple([z.int(), z.int()]).optional(),
+    /**
+     * Odpuštění skoku jako skákačka (P36A T6): coyote 100 ms, buffer 120 ms
+     * (`PLATFORM_FEEL`). Bez něj skok jen ze země v tiku stisku – uložený svět beze změny.
+     */
+    feel: z.literal(2).optional(),
   })
   .strict();
 
-/** Ovládání běžce. `aux0` = cílový pruh (−1, 0, 1), `aux1` = zbývající tiky skluzu. */
+/** Ovládání běžce. `aux0` = cílový pruh (−1, 0, 1), `aux1` = zbývající tiky skluzu (s `feel: 2` i okna skoku). */
 export const runnerControl: ControlPiece<z.infer<typeof controlParams>> = {
   id: 'runner',
   params: controlParams,
@@ -104,18 +122,29 @@ export const runnerControl: ControlPiece<z.infer<typeof controlParams>> = {
     const dx = lane * RUNNER.laneWidth - (state[base + BODY.x] as number);
     state[base + BODY.vx] = Math.max(-RUNNER.laneSpeed, Math.min(RUNNER.laneSpeed, dx));
 
-    let slide = aux(state, base, 'aux1');
-    if ((input.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0 && grounded) {
+    const feel = params.feel === 2;
+    const packed = aux(state, base, 'aux1');
+    const pressed = (input.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0;
+    let slide = feel ? packed & SLIDE_MASK : packed;
+    // Coyote se na zemi dobije; ve vzduchu dobíhá. Stisk platí v tiku stisku a dalších `bufferTicks`.
+    let coyote = !feel ? 0 : grounded ? PLATFORM_FEEL.coyoteTicks : (packed >> COYOTE_SHIFT) & 0x7;
+    let buffer = !feel ? 0 : pressed ? PLATFORM_FEEL.bufferTicks + 1 : (packed >> BUFFER_SHIFT) & 0xf;
+    if (feel ? buffer > 0 && (grounded || coyote > 0) : pressed && grounded) {
       state[base + BODY.vy] = RUNNER.jumpVy;
       slide = 0;
+      coyote = 0;
+      buffer = 0;
     } else if ((input.buttons & (BUTTON.DOWN | BUTTON.HOLD)) !== 0) {
       slide = RUNNER.slideTicks;
-      // Ve vzduchu dolů = rychlý pád, skluz pokračuje po dopadu.
+      // Ve vzduchu dolů = rychlý pád, skluz pokračuje po dopadu. Skluz přebije skok, který čekal na dopad.
       if (!grounded) state[base + BODY.vy] = Math.min(state[base + BODY.vy] as number, -RUNNER.jumpVy);
+      buffer = 0;
     } else if (slide > 0) {
       slide -= 1;
     }
-    state[base + BODY.aux1] = slide;
+    if (buffer > 0) buffer -= 1;
+    if (!grounded && coyote > 0) coyote -= 1;
+    state[base + BODY.aux1] = feel ? slide | (coyote << COYOTE_SHIFT) | (buffer << BUFFER_SHIFT) : slide;
     state[base + BODY.h] = slide > 0 ? RUNNER.slideH : RUNNER.runH;
     state[base + BODY.flags] = slide > 0 ? (state[base + BODY.flags] as number) | FLAG.sliding : (state[base + BODY.flags] as number) & ~FLAG.sliding;
   },
@@ -151,6 +180,8 @@ const generatorParams = z
     /** Přesný počet mincí a řad překážek z počtu rolí (P26D T9); bez hodnoty podle hustoty. */
     coinCount: z.int().min(1).max(RUNNER_TRACK.maxCoins).optional(),
     rows: z.int().min(1).max(60).optional(),
+    /** Odpuštění skoku pro ovládání (P36A T6); jen se předá ovládání, trať nemění. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type RunnerTrackParams = z.infer<typeof generatorParams>;

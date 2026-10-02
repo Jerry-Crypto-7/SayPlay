@@ -118,9 +118,11 @@ describe('P32-0 T4 kernel seams', () => {
     expect(generatorOf(felt)).toBe('platform_level');
     const made = arcadeWorldOf(felt, 1);
     expect(made.ok ? 'ok' : made.issues.join('; ')).toBe('ok');
-    // Stub bez účinku: stejný svět jako bez `feel`.
-    const before = arcadeWorldOf(plain, 1);
-    expect(made.ok && before.ok && canonicalHash(made.world)).toBe(before.ok && canonicalHash(before.world));
+    // Od P36A T6 pocit dojde až k ovládání (dřív stub bez účinku): bez `tuning` je to jiný svět.
+    const { tuning: _tuning, ...untuned } = plain.controlParams as Record<string, unknown>;
+    const before = arcadeWorldOf(read({ ...plain, controlParams: untuned }), 1);
+    expect(made.ok && made.world.control.params).toMatchObject({ feel: 2 });
+    expect(made.ok && before.ok && canonicalHash(made.world)).not.toBe(before.ok && canonicalHash(before.world));
     const wrong = arcadeWorldOf(read(delegate(plain, { tuning: { feel: 3 } })), 1);
     expect(!wrong.ok && wrong.issues.join(' ')).toMatch(/feel.*platform_level/);
   });
