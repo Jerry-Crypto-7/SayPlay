@@ -13,16 +13,18 @@ import dynamic from 'next/dynamic';
 import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
-import { worldHasPhysics } from '@/play/arcade/kernel';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
 import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
 import { musicFor, narrationUrl } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
+import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 
+import { type BestOutcome, settleBest } from '../best';
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
@@ -106,14 +108,16 @@ const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id 
 /**
  * Fakta skončeného běhu pro výsledek (P34 T6) – jen čísla, která relace
  * arkády opravdu počítá: sebrané předměty, životy, body jednotkou hry
- * a uběhlá část trati (aréna, střelba a hod trať nemají).
+ * a uběhlá část trati (aréna, střelba a hod trať nemají). Body jdou zvlášť
+ * jako velké skóre (P36B T2) – jen u hry, která boduje: něco nabodoval hráč
+ * nebo robot paru. Hvězdy proti paru (`starsFor`); hra bez paru = 1 za výhru.
  */
-function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot): RunFacts {
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, par: Par | null, livesStart: number): RunFacts {
   const need = collectNeed(world);
   const extra: ResultStat[] = [];
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
-  extra.push({ value: String(snapshot.score), label: scoreUnit(spec) });
   if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
+  const scoring = snapshot.score !== 0 || (par !== null && par.score > 0);
   return {
     won: snapshot.runState === 'won',
     tick: snapshot.tick,
@@ -121,8 +125,19 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
     survive: world.rules.some((rule) => rule.id === 'survive_time'),
     goal: need === null ? null : { count: snapshot.items, need, label: 'collected' },
     extra,
+    score: scoring ? { value: snapshot.score, unit: scoreUnit(spec) } : null,
+    stars: starsFor(runOf(snapshot, livesStart), par),
   };
 }
+
+/** Konec běhu pro hvězdy a rekord; `livesStart` = čítač životů světa v tiku 0. */
+const runOf = (snapshot: ArcadeSnapshot, livesStart: number): RunResult => ({
+  won: snapshot.runState === 'won',
+  score: snapshot.score,
+  ticks: snapshot.tick,
+  lives: snapshot.health,
+  livesStart,
+});
 
 /**
  * HUD arkády podle kitu (P34 T5, dřív tenký pruh P33 T12). Pilulka postupu
@@ -213,6 +228,8 @@ export interface ArcadePlayProps {
   readonly offline?: boolean;
   /** Hra ve feedu (P33 T12): další hru nabízí listování feedu, sloupec akcí nemá „More“. */
   readonly inFeed?: boolean;
+  /** Vítězný běh robota z publikace (`report.par`, P36B T1); chybí = hvězdy jen 1 za výhru. */
+  readonly par?: Par | null;
 }
 
 const END_PAUSE_MS = 600;
@@ -321,6 +338,7 @@ function ArcadePlayGame({
   active = true,
   offline = false,
   inFeed = false,
+  par = null,
   physicsReady,
 }: ArcadePlayProps & { readonly physicsReady: boolean }) {
   const [liveOpen, setLiveOpen] = useState(false);
@@ -492,6 +510,9 @@ function ArcadePlayGame({
   }, [active, session]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
+  // Na konci běhu se jednou vyřídí i osobní rekord (P36B T2); výsledek ho jen ukáže.
+  const livesStart = useMemo(() => instantiate(arcade)[HEADER.counters + COUNTER.health] as number, [arcade]);
+  const [record, setRecord] = useState<BestOutcome | null>(null);
   useEffect(() => {
     if (active && !offline) loopImpression(versionId);
   }, [active, offline, versionId]);
@@ -501,14 +522,19 @@ function ArcadePlayGame({
     return session.subscribe(() => {
       if (!session.humanRun()) return;
       const now = session.snapshot();
-      if (now.runState === 'running') reported = false;
+      if (now.runState === 'running') {
+        if (reported) setRecord(null);
+        reported = false;
+      }
       if (session.inputs().length > 0) loopEvent('first_input', versionId);
       if (now.runState !== 'running' && !reported) {
         reported = true;
         loopEvent(now.runState === 'won' ? 'win' : 'lose', versionId);
+        const run = runOf(now, livesStart);
+        setRecord(settleBest(versionId, { won: run.won, score: run.score, ticks: run.ticks, stars: starsFor(run, par) }));
       }
     });
-  }, [offline, session, versionId]);
+  }, [offline, session, versionId, livesStart, par]);
 
   // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
   // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness
@@ -758,10 +784,11 @@ function ArcadePlayGame({
         <PostRun
           versionId={versionId}
           remix={remix}
-          facts={arcadeFacts(spec, arcade, snapshot)}
+          facts={arcadeFacts(spec, arcade, snapshot, par, livesStart)}
           clip={clip}
           live={live}
           offline={offline}
+          record={record}
           onReplay={
             offline
               ? () => session.restart()

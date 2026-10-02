@@ -18,18 +18,27 @@
  * „Copy link“ a „Save video“ (klip běhu P29D T1). „Post to story“ z kitu tu
  * není: produkt ho neumí.
  *
- * Play again / Try again přetočí běh na tik 0 a nechá ho znovu doběhnout
- * hodinami shellu – vstupy hráče v runtime zůstávají, takže se přehraje týž
- * běh do téhož konce a nic nového se nezapíše. Čip pošle `POST …/remix`
+ * Po výhře arkády (P36B T2) list nese i 1–3 hvězdy proti paru, které
+ * naskočí jedna po druhé, velké skóre (jen hra, která boduje) a řádek
+ * rekordu: „New best!“ jen při překonaném rekordu, jinak rekord k překonání,
+ * po prohře hry na přežití „N s off your best“. Odznak Speedy/Steady/Survived
+ * zůstává podle kitu (čas + jedno slovo), hvězdy ho nenahrazují.
+ *
+ * Play again / Try again volá `onReplay`: arkáda začne nový běh od tiku 0
+ * s prázdným záznamem (`session.restart()`); mřížka (`GridShell`) zatím
+ * přetočí na tik 0 týž záznam. Čip pošle `POST …/remix`
  * a přejde na odkaz dítěte; rodič se nemění.
  */
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import type { Stars as StarCount } from '@/play/score/stars';
+
+import type { BestOutcome } from './best';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type LivePublish, ShareButton } from './ShareButton';
-import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_SHORT, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_DID_IT } from './starters';
+import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_DID_IT } from './starters';
 import { Button, Chip, Sheet } from './ui';
 import { clockText } from './ui/GameHud';
 
@@ -49,8 +58,12 @@ export interface RunFacts {
   readonly survive: boolean;
   /** Cílové předměty (`3/5`); `label` je popisek statistiky („collected“, „gates“). */
   readonly goal: { readonly count: number; readonly need: number; readonly label: string } | null;
-  /** Další skutečná čísla v pořadí důležitosti (zásahy, životy, body …). */
+  /** Další skutečná čísla v pořadí důležitosti (zásahy, životy …). */
   readonly extra: readonly ResultStat[];
+  /** Body běhu a jejich jednotka (P36B T2); chybí = hra neboduje. */
+  readonly score?: { readonly value: number; readonly unit: string } | null;
+  /** Hvězdy proti paru (P36B T1); chybí = hra hvězdy nemá (mřížka). */
+  readonly stars?: StarCount | null;
 }
 
 export interface RunResult {
@@ -60,13 +73,39 @@ export interface RunResult {
   readonly badge: string | null;
   readonly summary: string;
   readonly stats: readonly ResultStat[];
+  /** Hvězdy jen po výhře hry, která je má. */
+  readonly stars: StarCount | null;
+  /** Skóre s oddělovačem tisíců („2,450“) a jednotkou; `null` = hra neboduje. */
+  readonly score: { readonly value: string; readonly unit: string } | null;
+  /** Řádek rekordu; `null` = není co říct (žádný rekord, první výhra). */
+  readonly best: { readonly text: string; readonly isNew: boolean } | null;
 }
 
 /** Do kolika sekund je výhra „Speedy!“. */
 const SPEEDY_SECONDS = 20;
 
-/** Výsledek z fakt běhu: nadpis, odznak, věta a nejvýš tři statistiky (poslední je vždy čas). */
-export function runResult(facts: RunFacts): RunResult {
+export const scoreText = (value: number): string => value.toLocaleString('en-US');
+
+/**
+ * Řádek rekordu: překonaný rekord = „New best!“; jinak rekord k překonání
+ * („Your best: 2,450 · 31.0s“); prohra hry na přežití řekne, kolik chybělo.
+ */
+function bestLine(facts: RunFacts, record: BestOutcome | null): RunResult['best'] {
+  if (record === null) return null;
+  if (facts.won && record.isNew) return { text: NEW_BEST, isNew: true };
+  const { previous } = record;
+  if (previous === null) return null;
+  if (!facts.won && facts.survive) {
+    const short = Math.max(1, Math.round((previous.ticks - facts.tick) / facts.hz));
+    return { text: `${short} s off your best`, isNew: false };
+  }
+  const time = clockText(previous.ticks / facts.hz);
+  const scored = facts.score !== undefined && facts.score !== null;
+  return { text: `Your best: ${scored ? `${scoreText(previous.score)} · ${time}` : time}`, isNew: false };
+}
+
+/** Výsledek z fakt běhu: nadpis, odznak, věta, hvězdy, skóre, rekord a nejvýš tři statistiky (poslední je vždy čas). */
+export function runResult(facts: RunFacts, record: BestOutcome | null = null): RunResult {
   const seconds = facts.tick / facts.hz;
   const time = clockText(seconds);
   const { goal } = facts;
@@ -85,7 +124,26 @@ export function runResult(facts: RunFacts): RunResult {
     badge: !facts.won ? null : facts.survive ? 'Survived!' : seconds <= SPEEDY_SECONDS ? 'Speedy!' : 'Steady!',
     summary,
     stats: [...[...lead, ...facts.extra].slice(0, 2), { value: time, label: 'time' }],
+    stars: facts.won ? (facts.stars ?? null) : null,
+    score: facts.score === undefined || facts.score === null ? null : { value: scoreText(facts.score.value), unit: facts.score.unit },
+    best: bestLine(facts, record),
   };
+}
+
+/** Pěticípá hvězda na mřížce 24 × 24 (kit `10-icons.md`); výplň a obrys dává CSS jako vejcím HUD. */
+const STAR_POINTS = '12,2.6 14.8,8.7 21.4,9.4 16.4,13.9 17.8,20.4 12,17.1 6.2,20.4 7.6,13.9 2.6,9.4 9.2,8.7';
+
+/** Tři hvězdy, získané slunečné, ostatní čárkovaný obrys; naskočí jedna po druhé (CSS). */
+function StarRow({ count }: { readonly count: StarCount }) {
+  return (
+    <p className="play-result-stars" data-testid="play-stars" data-stars={count} role="img" aria-label={`${count} of 3 stars`}>
+      {[0, 1, 2].map((index) => (
+        <svg key={index} className={index < count ? 'play-star is-earned' : 'play-star'} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <polygon points={STAR_POINTS} />
+        </svg>
+      ))}
+    </p>
+  );
 }
 
 /** Klip běhu ke stažení (P29D T1); prohlížeč bez nahrávání plátna klip nemá a odkaz nevidí. */
@@ -112,11 +170,14 @@ export function PostRun({
   clip = null,
   live,
   offline = false,
+  record = null,
   onReplay,
 }: {
   readonly versionId: string;
   readonly remix: RemixJob;
   readonly facts: RunFacts;
+  /** Rekord z prohlížeče, vyřízený při konci běhu (`settleBest`); `null` = bez řádku rekordu. */
+  readonly record?: BestOutcome | null;
   readonly clip?: Blob | null;
   /** Verze se živými změnami běhu (P29D T10) – sdílí se místo hrané. */
   readonly live?: LivePublish;
@@ -179,7 +240,7 @@ export function PostRun({
     </>
   );
 
-  const result = runResult(facts);
+  const result = runResult(facts, record);
   const { won } = facts;
   // Hlavní akce: po výhře Dare, po prohře (a v ukázce domova) znovu hrát.
   const replayMain = offline || !won;
@@ -212,10 +273,22 @@ export function PostRun({
       </div>
       <div className="play-result-sheet" data-testid="play-postrun">
         <h2 className="sp-display-m play-result-title">{result.headline}</h2>
+        {result.stars !== null && <StarRow count={result.stars} />}
+        {result.score !== null && (
+          <p className="play-result-score" data-testid="play-score">
+            <span className="sp-display-xl play-result-score-value">{result.score.value}</span>
+            <span className="play-result-score-unit">{result.score.unit}</span>
+          </p>
+        )}
         {/* `data-tick` čte e2e: týž konec po Play again pozná na tiku, ne na zaokrouhlených sekundách. */}
         <p className="play-result-summary play-outcome-detail" data-tick={facts.tick}>
           {result.summary}
         </p>
+        {result.best !== null && (
+          <p className="play-result-best" data-testid="play-best" data-new={String(result.best.isNew)}>
+            {result.best.text}
+          </p>
+        )}
         <ul className="play-result-stats" aria-label="Your run">
           {result.stats.map((stat) => (
             <li key={stat.label} className="sp-stat">

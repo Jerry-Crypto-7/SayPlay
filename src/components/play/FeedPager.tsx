@@ -24,6 +24,7 @@ import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
+import type { Par } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
@@ -44,6 +45,8 @@ interface GameDetail {
   readonly relation?: string;
   readonly children: readonly string[];
   readonly lineage: readonly GameVersion[];
+  /** Hra publikovaná před P36B par nemá. */
+  readonly report?: { readonly par?: Par };
 }
 
 type FeedState = { readonly kind: 'loading' } | { readonly kind: 'error' } | { readonly kind: 'ready'; readonly games: readonly FeedGame[]; readonly next: string | null };
@@ -335,6 +338,7 @@ export function FeedPager() {
                 upgrade={null}
                 active={onScreen}
                 inFeed
+                par={detail.report?.par ?? null}
               />
             </WithPlayEnv>
           </TapToPlay>

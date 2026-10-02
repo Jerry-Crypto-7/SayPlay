@@ -88,6 +88,8 @@ export const STARTERS: readonly Starter[] = [
 export const CHANGE_ONE_THING = 'Change one thing';
 export const YOU_DID_IT = 'You did it!';
 export const SO_CLOSE = 'So close.';
+/** Překonaný osobní rekord (P36B T2) – na výsledku i v HUD. */
+export const NEW_BEST = 'New best!';
 export const DARE_A_FRIEND = 'Dare a friend to beat it';
 export const DARE_SHORT = 'Dare a friend';
 export const LINK_COPIED = 'Link copied. Go dare someone.';
