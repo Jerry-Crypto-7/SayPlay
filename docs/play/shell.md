@@ -65,6 +65,28 @@ z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`.
 `twist` přidá mechaniku s rolí a keypointem, `swap_enemy` jiný nepřítel (bez něj `harder`),
 `reskin` jen `theme`, titul a `label`y.
 
+### `POST /api/play/games/:id/dare` – výzva Dare (P36B T5)
+
+Tělo: `{ inputs: number[], patches?: { tick, patch }[] }`. `inputs` jsou běhy vstupů zhuštěné po čtveřicích
+`[mezera, délka, tlačítka, osa]` (`packInputs` v `src/play/score/dare.ts` – držená osa je jedna čtveřice, nejhlučnější
+běh 90 s se vejde pod 64 kB), `patches` živé změny přijaté za běhu (`LiveEntry`, nejvýš 32). Server běh přehraje na uložené
+arkádové hře (`scoredReplay`, každá změna projde v tiku, kdy padne, `patchProblem`) a uloží `play:dare:<dareId>`
+`{ dareId, versionId, score, ticks, hash, createdAt }` s expirací hry. **Skóre, čas ani hash z těla se nečtou** – pole
+navíc se zahodí, neodmítnou. `dareId` = prvních 32 hex SHA-256 z (hra, vstupy, změny): týž běh podruhé je **200**
+s týmž id, nová výzva **201**; obě `{ dareId, score, ticks }`, `cache-control: no-store`.
+
+| Krok | Kód | Stav |
+|---|---|---|
+| vypínač, identita, strop frekvence (dveře `play`, jako publikace) | `DISABLED` / `OWNER_IDENTITY_*` / `TOO_MANY_REQUESTS` | 503 / 403 / 429 |
+| id bez tvaru nebo neznámá hra | `NOT_FOUND` | 404 |
+| tělo nad 64 kB / pozdě / souběh čtení | `BODY_TOO_LARGE` / `BODY_TIMEOUT` / `TOO_MANY_BODY_READS` | 413 / 408 / 429 |
+| tvar: vstupy nejsou čtveřice celých čísel, cizí tlačítka, osa mimo ±1000, běh delší než 5 400 tiků, změna mimo tvar nebo víc než 32 | `BAD_REQUEST` | 400 |
+| mřížková hra, změna, kterou hra nevezme, běh, který hru nevyhraje (i vstupy jiné hry) | `DARE_REJECTED` | 422 |
+| denní strop výzev napříč volajícími (`PLAY_DARE_DAILY_CAP`, výchozí 2 000) | `DARE_QUOTA` | 429 + `retry-after: 3600` |
+| úložiště neodpovídá | `STORE_UNAVAILABLE` | 503 |
+
+Bez Upstash žije výzva v paměti procesu jako hry (`x-play-store: memory` v produkci). Testy: `src/app/api/play/__tests__/dare.test.ts`.
+
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
 Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |

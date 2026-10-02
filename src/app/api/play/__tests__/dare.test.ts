@@ -1,0 +1,239 @@
+/**
+ * Dveře výzvy Dare (P36B T5): `POST /api/play/games/:id/dare` přehraje vstupy
+ * běhu (i živé změny) na publikované hře a uloží výsledek, který spočítal
+ * server. Skóre ani čas z těla se nečtou; cizí, prohraný, příliš dlouhý nebo
+ * nevalidní záznam se odmítne, strop frekvence i denní strop výzev platí.
+ */
+
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
+import { createArcadeSession } from '@/components/play/arcade/session';
+import { STARTERS } from '@/components/play/starters';
+import { ARCADE_LIMITS, type ArcadeWorld, type InputEvent } from '@/play/arcade/contract';
+import { hashArcade } from '@/play/arcade/kernel';
+import { runBot } from '@/play/arcade/verify';
+import { packInputs } from '@/play/score/dare';
+import { scoredReplay } from '@/play/score/replay';
+import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { resetRateWindows } from '@/server/rate-limit';
+
+import { POST as createGame } from '../games/route';
+import { GET as readGame } from '../games/[id]/route';
+import { POST as dare } from '../games/[id]/dare/route';
+
+const CALLER = { 'x-forwarded-for': '203.0.113.9' };
+
+function post(path: string, body: unknown, headers: Record<string, string> = CALLER): Request {
+  return new Request(`http://play.test${path}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...headers },
+    body: typeof body === 'string' ? body : JSON.stringify(body),
+  });
+}
+
+function params(id: string): { params: Promise<{ id: string }> } {
+  return { params: Promise.resolve({ id }) };
+}
+
+function send(id: string, body: unknown): Promise<Response> {
+  return dare(post(`/api/play/games/${id}/dare`, body), params(id));
+}
+
+interface Game {
+  readonly id: string;
+  readonly world: ArcadeWorld | undefined;
+}
+
+async function publish(sentence: string): Promise<Game> {
+  const created = await createGame(post('/api/play/games', { sentence }));
+  const { versionId } = (await created.json()) as { versionId: string };
+  const read = await readGame(new Request(`http://play.test/api/play/games/${versionId}`, { headers: CALLER }), params(versionId));
+  const body = (await read.json()) as { arcade?: ArcadeWorld };
+  return { id: versionId, world: body.arcade };
+}
+
+/** První startovní hra, jejíž svět splní `wanted` – testy nestojí na tom, která to je. */
+async function arcadeGame(wanted: (world: ArcadeWorld) => boolean = () => true): Promise<{ id: string; world: ArcadeWorld }> {
+  for (const { sentence } of STARTERS) {
+    const game = await publish(sentence);
+    if (game.world !== undefined && wanted(game.world)) return { id: game.id, world: game.world };
+  }
+  throw new Error('no starter game fits the test');
+}
+
+const hasLives = (world: ArcadeWorld): boolean => world.rules.some((rule) => rule.id === 'out_of_health');
+
+const stored = (dareId: string) => versionStoreFromEnv(process.env).getDare(dareId);
+
+beforeEach(() => {
+  __resetProcessVersionStore();
+  resetRateWindows();
+  vi.useFakeTimers({ now: 1_700_000_000_000, toFake: ['Date'] });
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+  delete process.env.PLAY_DARE_DAILY_CAP;
+});
+
+describe('POST /api/play/games/:id/dare (P36B T5)', () => {
+  it('poctivý běh: skóre a čas z přehrání, ne z těla; týž běh podruhé je 200 s týmž dareId', async () => {
+    const game = await arcadeGame();
+    const bot = runBot(game.world).inputs;
+    const expected = scoredReplay(game.world, bot, []);
+    expect(expected.outcome).toBe('won');
+
+    const first = await send(game.id, { inputs: packInputs(bot), score: 999_999, ticks: 1, hash: 'forged' });
+    expect(first.status).toBe(201);
+    expect(first.headers.get('cache-control')).toBe('no-store');
+    const body = (await first.json()) as { dareId: string; score: number; ticks: number };
+    expect(body).toEqual({ dareId: expect.stringMatching(/^[a-f0-9]{32}$/), score: expected.score, ticks: expected.tick });
+    expect(await stored(body.dareId)).toMatchObject({ versionId: game.id, score: expected.score, ticks: expected.tick, hash: expected.hash });
+
+    const again = await send(game.id, { inputs: packInputs(bot) });
+    expect(again.status).toBe(200);
+    expect(((await again.json()) as { dareId: string }).dareId).toBe(body.dareId);
+  });
+
+  it('živá změna běhu se přehraje taky: hash a skóre jako v relaci prohlížeče', async () => {
+    const game = await arcadeGame(hasLives);
+    const session = createArcadeSession(game.world);
+    const bot = new Map(runBot(game.world).inputs.map((event) => [event.tick, event] as const));
+    while (session.snapshot().runState === 'running' && session.snapshot().tick < ARCADE_LIMITS.maxTicks) {
+      const tick = session.snapshot().tick;
+      if (tick === 30) expect(session.live({ kind: 'count', counter: 'health', amount: 2 })).toBeNull();
+      const event = bot.get(tick);
+      if (event !== undefined) session.press(event.buttons, event.axis);
+      session.stepOnce();
+    }
+    expect(session.snapshot().runState).toBe('won');
+    expect(session.patches()).toHaveLength(1);
+
+    const response = await send(game.id, { inputs: packInputs(session.inputs()), patches: session.patches() });
+    expect(response.status).toBe(201);
+    const record = await stored(((await response.json()) as { dareId: string }).dareId);
+    expect(record?.hash).toBe(hashArcade(session.state()));
+    expect(record?.score).toBe(session.snapshot().score);
+    // Bez změny je konec jiný: změna se opravdu přehrála, ne zahodila.
+    expect(scoredReplay(game.world, session.inputs(), []).hash).not.toBe(record?.hash);
+  });
+
+  it('živá změna, kterou hra nevezme (životy hře bez životů) → 422, nic se neuložilo', async () => {
+    const game = await arcadeGame((world) => !hasLives(world));
+    const putDare = vi.spyOn(versionStoreFromEnv(process.env), 'putDare');
+    const response = await send(game.id, {
+      inputs: packInputs(runBot(game.world).inputs),
+      patches: [{ tick: 0, patch: { kind: 'count', counter: 'health', amount: 3 } }],
+    });
+    expect(response.status).toBe(422);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('DARE_REJECTED');
+    expect(putDare).not.toHaveBeenCalled();
+  });
+
+  it('vstupy jiné hry ani nečinný běh tuhle hru nevyhrají → 422 DARE_REJECTED', async () => {
+    const games: { id: string; world: ArcadeWorld }[] = [];
+    for (const { sentence } of STARTERS) {
+      const game = await publish(sentence);
+      if (game.world !== undefined) games.push({ id: game.id, world: game.world });
+    }
+    const target = games[0];
+    const other = games.find((game) => game.id !== target?.id && target !== undefined && scoredReplay(target.world, runBot(game.world).inputs, []).outcome !== 'won');
+    if (target === undefined || other === undefined) throw new Error('need two arcade starters whose bots do not cross-win');
+    const foreign = runBot(other.world).inputs;
+    const putDare = vi.spyOn(versionStoreFromEnv(process.env), 'putDare');
+
+    for (const inputs of [foreign, [] as InputEvent[]]) {
+      const response = await send(target.id, { inputs: packInputs(inputs) });
+      expect(response.status).toBe(422);
+      expect(((await response.json()) as { error: { code: string } }).error.code).toBe('DARE_REJECTED');
+    }
+    expect(putDare).not.toHaveBeenCalled();
+  });
+
+  it('5 401 tiků je 400 dřív, než se cokoli přehraje; 5 400 projde tvarem', async () => {
+    const game = await arcadeGame();
+    const over = await send(game.id, { inputs: [0, ARCADE_LIMITS.maxTicks + 1, 0, 0] });
+    expect(over.status).toBe(400);
+    expect(((await over.json()) as { error: { code: string } }).error.code).toBe('BAD_REQUEST');
+    // Nečinných 5 400 tiků je platný tvar; hru ale nevyhraje.
+    expect((await send(game.id, { inputs: [0, ARCADE_LIMITS.maxTicks, 0, 0] })).status).toBe(422);
+  });
+
+  it('nevalidní tvar → 400: chybějící vstupy, nečísla, cizí počítadlo, příliš mnoho změn', async () => {
+    const game = await arcadeGame();
+    const inputs = packInputs(runBot(game.world).inputs);
+    const visual = { tick: 0, patch: { kind: 'visual', weather: 'rain' } };
+    for (const body of [
+      {},
+      { inputs: 'tap tap' },
+      { inputs: [0, 1, 'a', 0] },
+      { inputs, patches: [{ tick: 0, patch: { kind: 'count', counter: 'gold', amount: 1 } }] },
+      { inputs, patches: [{ tick: -1, patch: { kind: 'visual', weather: 'rain' } }] },
+      { inputs, patches: Array.from({ length: 33 }, () => visual) },
+      'not json',
+    ]) {
+      const response = await send(game.id, body);
+      expect(response.status, JSON.stringify(body)).toBe(400);
+    }
+  });
+
+  it('mřížková hra (bez arkády) výzvu nenese → 422 DARE_REJECTED', async () => {
+    const created = await createGame(post('/api/play/games', { spec: switchPuzzle }));
+    const { versionId } = (await created.json()) as { versionId: string };
+    const read = await readGame(new Request(`http://play.test/api/play/games/${versionId}`, { headers: CALLER }), params(versionId));
+    expect(((await read.json()) as { arcade?: unknown }).arcade).toBeUndefined();
+    const response = await send(versionId, { inputs: [0, 1, 1, 0] });
+    expect(response.status).toBe(422);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('DARE_REJECTED');
+  });
+
+  it('neznámá hra a nemožné id → 404 NOT_FOUND', async () => {
+    expect((await send('0'.repeat(16), { inputs: [] })).status).toBe(404);
+    expect((await send('not-an-id', { inputs: [] })).status).toBe(404);
+  });
+
+  it('51. požadavek v okně → 429 s retry-after', async () => {
+    let last: Response | null = null;
+    for (let i = 0; i < 51; i += 1) last = await send('0'.repeat(16), {});
+    expect(last!.status).toBe(429);
+    expect(last!.headers.get('retry-after')).toMatch(/^\d+$/);
+  });
+
+  it('denní strop výzev → 429 DARE_QUOTA s retry-after', async () => {
+    process.env.PLAY_DARE_DAILY_CAP = '1';
+    __resetProcessVersionStore();
+    const game = await arcadeGame();
+    const bot = runBot(game.world).inputs;
+    expect((await send(game.id, { inputs: packInputs(bot) })).status).toBe(201);
+    // Jiný záznam (vstup po konci běhu) = jiná výzva; strop ji nepustí.
+    const later = [...bot, { tick: ARCADE_LIMITS.maxTicks - 1, buttons: 1, axis: 0 }];
+    const second = await send(game.id, { inputs: packInputs(later) });
+    expect(second.status).toBe(429);
+    expect(second.headers.get('retry-after')).toBe('3600');
+    expect(((await second.json()) as { error: { code: string } }).error.code).toBe('DARE_QUOTA');
+  });
+
+  it('úložiště neodpovídá → 503 STORE_UNAVAILABLE', async () => {
+    const game = await arcadeGame();
+    vi.spyOn(versionStoreFromEnv(process.env), 'putDare').mockRejectedValueOnce(new VersionStoreUnavailable('down'));
+    const response = await send(game.id, { inputs: packInputs(runBot(game.world).inputs) });
+    expect(response.status).toBe(503);
+    expect(((await response.json()) as { error: { code: string } }).error.code).toBe('STORE_UNAVAILABLE');
+  });
+
+  it('produkce bez Upstash: výzva v paměti procesu a hlavička x-play-store: memory', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv('NODE_ENV', 'production');
+    try {
+      const game = await arcadeGame();
+      const response = await send(game.id, { inputs: packInputs(runBot(game.world).inputs) });
+      expect(response.status).toBe(201);
+      expect(response.headers.get('x-play-store')).toBe('memory');
+      expect(await stored(((await response.json()) as { dareId: string }).dareId)).not.toBeNull();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
