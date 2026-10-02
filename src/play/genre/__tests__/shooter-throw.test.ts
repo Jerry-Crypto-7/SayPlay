@@ -116,6 +116,16 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     expect(genre?.target?.label).toBe(target);
     expect(genre?.setting).not.toBe(target);
   });
+
+  // Věta bez věci před „at/into“: předmět za předložkou je terč, ne ještě jednou to, co se hází.
+  it.each([
+    ['throwing at a spinning log', 'spinning log'],
+    ['toss into the bucket', 'bucket'],
+  ])('"%s" does not throw the %s at itself', (sentence, target) => {
+    const genre = draftGameSpecWithMeta(sentence, 1).genre;
+    expect(genre?.target?.label).toBe(target);
+    expect(genre?.collectible).not.toBe(target);
+  });
 });
 
 describe('the shooter genre has depth', () => {
@@ -197,6 +207,20 @@ describe('the throw genre comes in rounds', () => {
     expect(game.world.rules.some((rule) => rule.id === 'throw_rounds')).toBe(true);
     expect(game.winSeconds).toBeLessThanOrEqual(40);
     expect(game.idle.outcome).toBe('lost');
+  });
+
+  // Hodiny 180 s (časovač je dovolí) jádro ořízne na 90 s horizontu: rozpočet 90 kol se plánuje do 90 s, ne do 180 s.
+  // Bez ořezu by 180 s dalo rozpočet 90 a 12 kol, která robot ve hře s hodinami 90 s nestihne s rezervou.
+  it('a clock beyond the verification horizon plans the rounds into the 90 s the kernel keeps', () => {
+    const clocked = (seconds: number) => (spec: GameSpecV1): GameSpecV1 => ({
+      ...spec,
+      controlParams: { ...(spec.controlParams as Record<string, unknown>), budget: 90 },
+      mechanics: spec.mechanics.map((mechanic) => (mechanic.id === 'timer' ? { ...mechanic, params: { ...mechanic.params, seconds } } : mechanic)),
+    });
+    const game = publish('basketball free throws', clocked(180));
+    expect(game.world.rules.some((rule) => rule.id === 'throw_rounds')).toBe(true);
+    expect(game.world).toEqual(publish('basketball free throws', clocked(90)).world);
+    expect(game.winSeconds).toBeLessThanOrEqual(90);
   });
 });
 

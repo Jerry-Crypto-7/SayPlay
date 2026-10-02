@@ -17,7 +17,7 @@ import { compileArcade } from '@/play/arcade/compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { waveOf } from '@/play/arcade/pieces/waves';
+import { WAVE_PLAN, waveOf } from '@/play/arcade/pieces/waves';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { compileGenre } from '@/play/genre/index';
@@ -191,6 +191,13 @@ describe('quest with seconds from the sentence – only as many rounds as fit th
     const genre = draftGameSpecWithMeta(sentence, 1).genre!;
     const { seconds: _seconds, ...params } = genre.params ?? {};
     expectFits(sentence, compileGenre({ ...genre, params: { ...params, timeLimit: 30 } }), 30);
+  });
+
+  // Stanoviště: bez hodin v plánu kol hraje robot 16 kol / 32 s – pod 40 s projde, ale bez rezervy, kterou hodiny dávají hráči.
+  it('station: "in 40 seconds" plans the rounds with the clock reserve, not just under the clock', () => {
+    const game = publish('fix the robots in the factory in 40 seconds');
+    expect(game.mode).toBe('quest.station');
+    expect(game.winSeconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin).toBeLessThanOrEqual(40);
   });
 
   it('a quest without seconds builds the same world as before', () => {

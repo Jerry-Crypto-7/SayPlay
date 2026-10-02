@@ -17,6 +17,7 @@ import { arcadeWorldOf, compileArcade } from '@/play/arcade/compile';
 import { type ArcadeWorld, BODY, BODY_STRIDE, COUNTER, GRACE_MASK, GRACE_SHIFT, HEADER, HEADER_SIZE, HIT_GRACE, NO_INPUT, bodyBase } from '@/play/arcade/contract';
 import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
+import { avoidingLosses } from '@/play/arcade/rules/bot';
 import { runBot, verifyArcade } from '@/play/arcade/verify';
 import { applyRemix, remixPatch } from '@/play/director/remix';
 import { type GenreModule, type GenreSpec, withCounts } from '@/play/genre/contract';
@@ -175,6 +176,29 @@ describe('a lose rule is proved by a robot that walks into it (P36A T8)', () => 
       if (!built.ok) throw new Error(built.issues.join('; '));
       expect(runBot(built.world).outcome, `seed ${String(seed)}`).toBe('won');
     }
+  });
+
+  // Láva, která ubírá život, ale i dává skóre: tu robot potřebuje, takže ji neobchází – obal vrátí robota beze změny.
+  it('a role that a non-losing rule needs is not avoided', () => {
+    const decide = () => NO_INPUT;
+    const both = (rules: unknown[]): ArcadeWorld => {
+      const built = arcadeWorldOf(game({ ...lava, rules }), 1);
+      if (!built.ok) throw new Error(built.issues.join('; '));
+      return built.world;
+    };
+    const burn = { id: 'burn', verb: 'touch', when: { contact: ['player', 'lava'] }, do: [{ damage: 1 }] };
+    const warm = { id: 'warm', verb: 'warm', when: { contact: ['player', 'lava'] }, do: [{ score: 1 }] };
+    expect(avoidingLosses(both([burn]), decide)).not.toBe(decide);
+    expect(avoidingLosses(both([burn, warm]), decide)).toBe(decide);
+  });
+
+  // Obcházení platí jen pro volný pohyb (aréna, úkol); běžec v pruzích dostane robota tak, jak je.
+  it('a world without free movement keeps its bare robot even with a lose rule', () => {
+    const decide = () => NO_INPUT;
+    const built = arcadeWorldOf(game({ ...runner, ruleRoles: lava.ruleRoles, rules: lava.rules }), 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    expect(built.world.control.id).not.toBe('move_free');
+    expect(avoidingLosses(built.world, decide)).toBe(decide);
   });
 
   // F1 (z T8): `damage` z pravidla specu dřív bral život každý tik – tři životy padly za tři tiky v lávě.
