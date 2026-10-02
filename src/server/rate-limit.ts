@@ -253,6 +253,8 @@ interface Windows {
   eventsCount: number;
   /** Výzvy Dare – vlastní strop instance (`MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE`). */
   dareCount: number;
+  /** Začátky posledních `MAX_DARE_REPLAYS_PER_SECOND` přehrání výzev. S oknem se nevyprazdňuje – sekunda klouže přes jeho hranici. */
+  dareStartsMs: number[];
 }
 
 /**
@@ -273,6 +275,22 @@ export const MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE = 10;
 export const MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP = 8;
 
 /**
+ * Přehrání výzev na instanci v jedné **klouzavé** sekundě (P36B T5r2, nález 2. revize T5).
+ *
+ * Pevné okno pustí na hranici dvou oken dvojnásobek stropu instance naráz
+ * (10 v 9,9 s + 10 v 10,1 s), tedy 20 přehrání za sebou. Naměřeno 2. 10. 2026
+ * (Node, pracovní stanice): přehrání světa s fyzikou Rapier na 5 400 tiků stojí
+ * **115–215 ms** (7 pravidlových světů s 1 i 12 tělesy s fyzikou, nečinný běh),
+ * takže 20 za sebou ≈ 4,3 s, kdy instance neobslouží nic jiného. Klouzavá
+ * sekunda drží nejvýš 2 přehrání (≈ 430 ms) v každé sekundě, i přes hranici oken.
+ * Časový rozpočet uvnitř přehrání to není schválně: replay cesta wall-clock
+ * číst nesmí (`CLAUDE.md`, determinismus). Dva výherci v téže sekundě projdou
+ * oba; třetí dostane 429 s `retry-after: 1` a sdílí obyčejný odkaz.
+ */
+export const MAX_DARE_REPLAYS_PER_SECOND = 2;
+const DARE_SPACING_MS = 1000;
+
+/**
  * Okna visí na `globalThis`, ne na modulu — týž naměřený důvod jako u procesové
  * účetní knihy v `src/server/spend-store.ts`: Next umí postavit víc grafů
  * modulů a modulová proměnná by pak počítala jen uvnitř jednoho z nich, tedy
@@ -282,7 +300,7 @@ const WINDOWS_KEY = '__worldsmithRateWindows';
 
 function windows(): Windows {
   const holder = globalThis as Record<string, unknown>;
-  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0, eventsCount: 0, dareCount: 0 };
+  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0, eventsCount: 0, dareCount: 0, dareStartsMs: [] };
   return holder[WINDOWS_KEY] as Windows;
 }
 
@@ -738,6 +756,12 @@ export function takeRateSlot(
     const own = open.perCaller.get(key)?.count ?? 0;
     const ownLimit = isGroupedCaller(caller) ? MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP : MAX_DARE_REQUESTS_PER_WINDOW;
     if (own >= ownLimit) return { allowed: false, count: own + 1, limit: ownLimit, scope: 'caller', retryAfterSeconds };
+    // Klouzavá sekunda instance (T5r2). Odmítnutí tu strop okna neubírá: jinak by jeden
+    // volající za sekundu naplnil `dareCount` odmítnutými a zavřel výzvy všem do konce okna.
+    // Začátek „v budoucnu“ (hodiny couvly) se nepočítá, jinak by výzvy stály, než je doženou.
+    const recent = open.dareStartsMs.filter((at) => at <= nowMs && nowMs - at < DARE_SPACING_MS).length;
+    if (recent >= MAX_DARE_REPLAYS_PER_SECOND)
+      return { allowed: false, count: recent + 1, limit: MAX_DARE_REPLAYS_PER_SECOND, scope: 'instance', retryAfterSeconds: 1 };
   }
   const instanceCount = events ? (open.eventsCount += 1) : dare ? (open.dareCount += 1) : (open.instanceCount += 1);
   const instanceLimit = dare ? MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE : MAX_REQUESTS_PER_WINDOW_PER_INSTANCE;
@@ -749,6 +773,8 @@ export function takeRateSlot(
       scope: 'instance',
       retryAfterSeconds,
     };
+  // Sem výzva dojde jen pod vlastním stropem (soudil se výš), takže je propuštěná.
+  if (dare) open.dareStartsMs = [...open.dareStartsMs, nowMs].slice(-MAX_DARE_REPLAYS_PER_SECOND);
 
   const window = open.perCaller.get(key) ?? { count: 0 };
   window.count += 1;
@@ -802,4 +828,5 @@ export function resetRateWindows(): void {
   open.instanceCount = 0;
   open.eventsCount = 0;
   open.dareCount = 0;
+  open.dareStartsMs = [];
 }

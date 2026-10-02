@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  MAX_DARE_REPLAYS_PER_SECOND,
   MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE,
   MAX_REQUESTS_PER_WINDOW,
   MAX_REQUESTS_PER_WINDOW_PER_GROUP,
@@ -51,10 +52,28 @@ describe('strop na frekvenci veřejných dveří', () => {
   it('výzvy: odmítnutý volající ani skupina neubírá strop instance, další člověk projde', () => {
     for (const flooder of [ME, ROOM]) {
       resetRateWindows();
-      for (let i = 0; i < 2 * MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) takeRateSlot('play/dare', flooder, T0);
-      expect(takeRateSlot('play/dare', flooder, T0)).toMatchObject({ allowed: false, scope: 'caller' });
-      expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0)).toMatchObject({ allowed: true });
+      // Po 500 ms, ať soudí strop volajícího, ne klouzavá sekunda instance.
+      for (let i = 0; i < 2 * MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) takeRateSlot('play/dare', flooder, T0 + i * 500);
+      expect(takeRateSlot('play/dare', flooder, T0 + 9_900)).toMatchObject({ allowed: false, scope: 'caller' });
+      expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 9_900)).toMatchObject({ allowed: true });
     }
+  });
+
+  it('výzvy na hranici okna: v žádné sekundě víc než 2 přehrání, odmítnutí strop okna neubírá (T5r2)', () => {
+    // Nález 2. revize T5: 10 výzev v 9,9 s a 10 v 10,1 s pevné okno pustí všech 20 za sebou.
+    const sent = [
+      ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE }, (_, i) => ({ at: T0 + 9_900, caller: `198.51.100.${String(i)}` })),
+      ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE }, (_, i) => ({ at: T0 + 10_100, caller: `203.0.113.${String(i)}` })),
+    ];
+    const verdicts = sent.map(({ at, caller }) => ({ at, verdict: takeRateSlot('play/dare', caller, at) }));
+    const allowed = verdicts.filter(({ verdict }) => verdict.allowed);
+    expect(allowed).toHaveLength(MAX_DARE_REPLAYS_PER_SECOND);
+    expect(verdicts.find(({ verdict }) => !verdict.allowed)?.verdict).toMatchObject({ scope: 'instance', retryAfterSeconds: 1 });
+
+    // O sekundu později projde další – 18 odmítnutých nezaplnilo strop nového okna.
+    expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 11_100)).toMatchObject({ allowed: true });
+    expect(takeRateSlot('play/dare', ME, T0 + 11_100)).toMatchObject({ allowed: true });
+    expect(takeRateSlot('play/dare', ROOM, T0 + 11_100)).toMatchObject({ allowed: false, scope: 'instance' });
   });
 
   it('flooder zavře dveře SOBĚ, ne ostatním', () => {

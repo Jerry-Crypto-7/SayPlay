@@ -36,7 +36,9 @@ function params(id: string): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id }) };
 }
 
-function send(id: string, body: unknown, headers: Record<string, string> = CALLER): Promise<Response> {
+/** Každá výzva o `stepMs` později – klouzavá sekunda instance (T5r2) pustí 2 za sekundu a testy tu nesoudí ji. */
+function send(id: string, body: unknown, headers: Record<string, string> = CALLER, stepMs = 500): Promise<Response> {
+  vi.setSystemTime(Date.now() + stepMs);
   return dare(post(`/api/play/games/${id}/dare`, body, headers), params(id));
 }
 
@@ -253,9 +255,10 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
   it('vadné požadavky slot výzev neberou: 11× {} od různých volajících výzvy instanci nezavře', async () => {
     const game = await arcadeGame();
     resetRateWindows();
+    // V jednom okamžiku: posun hodin by přes hranici okna strop vynuloval a test by prošel i se slotem.
     for (let i = 0; i <= MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) {
-      expect((await send(game.id, {}, { 'x-forwarded-for': `198.51.100.${String(i)}` })).status).toBe(400);
-      expect((await send('0'.repeat(16), { inputs: [] }, { 'x-forwarded-for': `203.0.113.${String(i)}` })).status).toBe(404);
+      expect((await send(game.id, {}, { 'x-forwarded-for': `198.51.100.${String(i)}` }, 0)).status).toBe(400);
+      expect((await send('0'.repeat(16), { inputs: [] }, { 'x-forwarded-for': `203.0.113.${String(i)}` }, 0)).status).toBe(404);
     }
     expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) })).status).toBe(201);
   });
