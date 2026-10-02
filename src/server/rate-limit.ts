@@ -835,6 +835,19 @@ export function rateLimitedResponse(requestId: string, verdict: RateVerdict): Re
   );
 }
 
+/**
+ * Výzva, jejíž přehrání nevyhrálo, stojí volajícího zbytek okna výzev (P36B T5r3r1, revize T5r3-1).
+ * Klient výzvu posílá jen po výhře (`publishDare`), takže prohraný běh posílá cizí klient – a čtyři
+ * adresy po třech prohraných přehráních by jinak zaplnily strop instance všem; teď na to chce 10 adres.
+ * Klíč volajícího už v okně je (slot vzal před přehráním), takže mapa nenaroste; po otočení okna
+ * klíč zmizel a není co utratit.
+ */
+export function spendDareWindow(caller: string): void {
+  // Týž klíč jako v `takeRateSlot`: dveře a volající oddělené znakem NUL.
+  const window = windows().perCaller.get(`play/dare\u0000${caller}`);
+  if (window !== undefined) window.count = isGroupedCaller(caller) ? MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP : MAX_DARE_REQUESTS_PER_WINDOW;
+}
+
 /** Jen pro testy: okna jsou proces-globální jako čítač souběžných generací. */
 export function resetRateWindows(): void {
   const open = windows();

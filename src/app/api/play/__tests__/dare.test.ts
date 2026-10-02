@@ -182,8 +182,9 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     const foreign = runBot(other.world).inputs;
     const putDare = vi.spyOn(versionStoreFromEnv(process.env), 'putDare');
 
-    for (const inputs of [foreign, [] as InputEvent[]]) {
-      const response = await send(target.id, { inputs: packInputs(inputs) });
+    // Každý z jiné adresy: prohrané přehrání stojí volajícího zbytek okna (T5r3r1).
+    for (const [i, inputs] of [foreign, [] as InputEvent[]].entries()) {
+      const response = await send(target.id, { inputs: packInputs(inputs) }, { 'x-forwarded-for': `198.51.100.${String(20 + i)}` });
       expect(response.status).toBe(422);
       expect(((await response.json()) as { error: { code: string } }).error.code).toBe('DARE_REJECTED');
     }
@@ -252,11 +253,18 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect(((await last!.json()) as { error: { code: string } }).error.code).toBe('SERVER_AT_CAPACITY');
   });
 
-  it('dvě adresy s prohraným během na vlastním stropu výzvy instanci nezavřou: třetí projde (T5r3)', async () => {
+  it('prohraný běh stojí volajícího zbytek okna: čtyři adresy s prohranými během výzvy instanci nezavřou (T5r3, T5r3r1)', async () => {
     const game = await arcadeGame();
     resetRateWindows();
-    for (const address of ['198.51.100.7', '198.51.100.8'])
-      for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW; i += 1) expect((await send(game.id, { inputs: packInputs([]) }, { 'x-forwarded-for': address })).status).toBe(422);
+    // Nález revize T5r3-1: 3+3+3+1 prohraných přehrání zaplnilo strop instance 10.
+    for (const address of ['198.51.100.7', '198.51.100.8', '198.51.100.9', '198.51.100.10']) {
+      const codes: string[] = [];
+      for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW; i += 1) {
+        const response = await send(game.id, { inputs: packInputs([]) }, { 'x-forwarded-for': address });
+        codes.push(response.status === 429 ? ((await response.json()) as { error: { code: string } }).error.code : String(response.status));
+      }
+      expect(codes).toEqual(['422', ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW - 1 }, () => 'TOO_MANY_REQUESTS')]);
+    }
     expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) }, { 'x-forwarded-for': '192.0.2.33' })).status).toBe(201);
   });
 

@@ -16,6 +16,7 @@ import {
   rateLimitCode,
   rateLimitedResponse,
   resetRateWindows,
+  spendDareWindow,
   takeRateSlot,
   trustedCallerKey,
   UNIDENTIFIED_CALLER,
@@ -91,6 +92,16 @@ describe('strop na frekvenci veřejných dveří', () => {
     expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 11_100)).toMatchObject({ allowed: true });
     expect(takeRateSlot('play/dare', ME, T0 + 11_100)).toMatchObject({ allowed: true });
     expect(takeRateSlot('play/dare', ROOM, T0 + 11_100)).toMatchObject({ allowed: false, scope: 'instance' });
+  });
+
+  it('prohrané přehrání utratí okno výzev volajícímu i skupině, cizí okno nezaloží (T5r3r1)', () => {
+    for (const caller of [ME, ROOM]) {
+      expect(takeRateSlot('play/dare', caller, T0).allowed).toBe(true);
+      spendDareWindow(caller);
+      expect(takeRateSlot('play/dare', caller, T0 + 1_000)).toMatchObject({ allowed: false, scope: 'caller' });
+    }
+    spendDareWindow(SOMEONE_ELSE);
+    expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 1_000)).toMatchObject({ allowed: true });
   });
 
   it('klouzavá sekunda: hodiny o sekundu zpět výzvy nezastaví; při plném okně retry-after do jeho konce (revize T5r3-1)', () => {

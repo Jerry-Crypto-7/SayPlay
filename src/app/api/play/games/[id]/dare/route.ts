@@ -23,7 +23,7 @@ import { scoredReplay } from '@/play/score/replay';
 import { type DareRecord, VersionStoreUnavailable } from '@/play/version';
 
 import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
-import { rateLimitCode, takeRateSlot } from '@/server/rate-limit';
+import { rateLimitCode, spendDareWindow, takeRateSlot } from '@/server/rate-limit';
 
 import { admit, callerOf, markVolatileStore, store, voterOf } from '../../../_publish';
 
@@ -67,7 +67,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   // Výzva přehrává celý běh (až ~250 ms CPU), proto má navíc vlastní, přísnější okno.
   // Slot bere až skutečné přehrání: levné vadné požadavky (400/404/422) jinak
   // zaplní strop instance a výzvy zavřou všem (nález 2. revize T5).
-  const slot = takeRateSlot('play/dare', callerOf(request));
+  const caller = callerOf(request);
+  const slot = takeRateSlot('play/dare', caller);
   if (!slot.allowed) {
     const code = rateLimitCode(slot);
     return fail(429, code, code === 'SERVER_AT_CAPACITY' ? 'this instance is at capacity right now' : 'too many requests from this client', { 'retry-after': String(slot.retryAfterSeconds) });
@@ -75,6 +76,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (worldHasPhysics(game.arcade)) await loadRapier();
 
   const run = scoredReplay(game.arcade, inputs, patches);
+  // Prohrané přehrání posílá cizí klient (náš jen po výhře): stojí ho zbytek okna výzev (T5r3r1).
+  if (run.refusedPatch !== null || run.outcome !== 'won') spendDareWindow(caller);
   if (run.refusedPatch !== null) return fail(422, 'DARE_REJECTED', `a live change does not fit this game: ${run.refusedPatch}`);
   if (run.outcome !== 'won') return fail(422, 'DARE_REJECTED', 'this run does not win this game, so it cannot be a dare');
 
