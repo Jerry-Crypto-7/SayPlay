@@ -24,9 +24,11 @@
  * po prohře hry na přežití „N s off your best“. Odznak Speedy/Steady/Survived
  * zůstává podle kitu (čas + jedno slovo), hvězdy ho nenahrazují.
  *
- * Play again / Try again volá `onReplay`: arkáda začne nový běh od tiku 0
- * s prázdným záznamem (`session.restart()`); mřížka (`GridShell`) zatím
- * přetočí na tik 0 týž záznam. Čip pošle `POST …/remix`
+ * Play again / Try again volá `onReplay`: obě hry začnou nový běh od tiku 0
+ * s prázdným záznamem – arkáda `session.restart()`, mřížka (`GridShell`) novou
+ * relací runtime (P36B T3; dřív přetočila na tik 0 týž prohraný záznam).
+ * Klávesy R, mezerník a Enter (`retryKey`) dělají totéž a nový běh rovnou
+ * pustí – ruka už je na klávesách. Čip pošle `POST …/remix`
  * a přejde na odkaz dítěte; rodič se nemění.
  */
 
@@ -35,12 +37,14 @@ import { useEffect, useRef, useState } from 'react';
 
 import type { Stars as StarCount } from '@/play/score/stars';
 
+import { isTyping } from './arcade/input';
 import type { BestOutcome } from './best';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type LivePublish, ShareButton } from './ShareButton';
 import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_DID_IT } from './starters';
 import { Button, Chip, Sheet } from './ui';
 import { clockText } from './ui/GameHud';
+import { onControl } from './ui/PauseCard';
 
 /** Jedna statistika výsledku (kit `.sp-stat`): skutečné číslo běhu a jeho popisek. */
 export interface ResultStat {
@@ -83,6 +87,21 @@ export interface RunResult {
 
 /** Do kolika sekund je výhra „Speedy!“. */
 const SPEEDY_SECONDS = 20;
+
+/** Jak nový pokus přišel: klávesa ho rovnou pustí, klepnutí na tlačítko nechá hru čekat na první dotek. */
+export type ReplayVia = 'key' | 'button';
+
+/**
+ * Klávesa nového pokusu na výsledku (P36B T3): R, mezerník, Enter. Ne při
+ * psaní, se zkratkou prohlížeče ani v otevřeném listu; mezerník a Enter na
+ * tlačítku nebo odkazu mačkají to tlačítko (Dare, Remix it), ne nový pokus.
+ */
+export function retryKey(event: Pick<KeyboardEvent, 'key' | 'repeat' | 'altKey' | 'ctrlKey' | 'metaKey' | 'target'>): boolean {
+  if (event.repeat || event.altKey || event.ctrlKey || event.metaKey || isTyping(event.target)) return false;
+  if (event.target instanceof HTMLElement && event.target.closest('[role="dialog"]') !== null) return false;
+  if (event.key === 'r' || event.key === 'R') return true;
+  return (event.key === ' ' || event.key === 'Enter') && !onControl(event.target);
+}
 
 export const scoreText = (value: number): string => value.toLocaleString('en-US');
 
@@ -183,7 +202,7 @@ export function PostRun({
   readonly live?: LivePublish;
   /** Ukázková hra domova (P28D T7) není v úložišti: jen znovu hrát, bez sdílení a remixu. */
   readonly offline?: boolean;
-  readonly onReplay: () => void;
+  readonly onReplay: (via: ReplayVia) => void;
 }) {
   const router = useRouter();
   const [changing, setChanging] = useState(false);
@@ -196,6 +215,17 @@ export function PostRun({
     leaving.current = control;
     return () => control.abort();
   }, []);
+  // Klávesy nového pokusu (P36B T3); list „Remix it“ je jim zavřený – píše se v něm věta.
+  useEffect(() => {
+    if (changing) return;
+    const onKey = (event: KeyboardEvent): void => {
+      if (!retryKey(event)) return;
+      event.preventDefault();
+      onReplay('key');
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [changing, onReplay]);
 
   async function remix(chip: string): Promise<void> {
     setBusy(chip);
@@ -245,7 +275,7 @@ export function PostRun({
   // Hlavní akce: po výhře Dare, po prohře (a v ukázce domova) znovu hrát.
   const replayMain = offline || !won;
   const replay = (
-    <Button variant={replayMain ? 'primary' : 'secondary'} size={replayMain ? 'l' : 'm'} className={replayMain ? 'sp-btn--block' : undefined} data-testid="play-replay" onClick={onReplay}>
+    <Button variant={replayMain ? 'primary' : 'secondary'} size={replayMain ? 'l' : 'm'} className={replayMain ? 'sp-btn--block' : undefined} data-testid="play-replay" onClick={() => onReplay('button')}>
       {won ? 'Play again' : 'Try again'}
     </Button>
   );

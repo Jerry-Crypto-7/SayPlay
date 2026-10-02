@@ -233,6 +233,8 @@ export interface ArcadePlayProps {
 }
 
 const END_PAUSE_MS = 600;
+/** Po prohře výsledek dřív (P36B T3): oslava tu není a „Try again“ má být po ruce do 300 ms. */
+const LOSS_PAUSE_MS = 300;
 
 /**
  * Je Rapier pro tenhle svět načtený (P29A T13)? Jádro je synchronní a bez něj
@@ -363,16 +365,16 @@ function ArcadePlayGame({
   useEffect(() => {
     if (!canChange) setLiveOpen(false);
   }, [canChange]);
-  // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
+  // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře – mezitím doběhne klip oslavy a zazní zvuk; po prohře jen LOSS_PAUSE_MS.
   const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (running) {
       setSettled(false);
       return;
     }
-    const timer = window.setTimeout(() => setSettled(true), END_PAUSE_MS);
+    const timer = window.setTimeout(() => setSettled(true), session.snapshot().runState === 'won' ? END_PAUSE_MS : LOSS_PAUSE_MS);
     return () => window.clearTimeout(timer);
-  }, [running]);
+  }, [running, session]);
 
   // Klip běhu (P29D T1): nahrává se od startu běhu hráče, po konci ještě dojezd plátna.
   // Ukázka robota klip nemá; plátno se načítá dynamicky, proto se hledá při každém tiku, než je.
@@ -670,8 +672,15 @@ function ArcadePlayGame({
         const end = session.snapshot();
         return { runState: end.runState, tick: end.tick, score: end.score, at: performance.now() };
       },
+      /** Běh hráče bez jediného stisku až do konce (P36B T3): e2e prohraje bez čekání na hodiny. */
+      idleRun: () => {
+        session.restart();
+        while (session.snapshot().runState === 'running' && session.snapshot().tick < ARCADE_LIMITS.maxTicks) session.stepOnce();
+        const end = session.snapshot();
+        return { runState: end.runState, tick: end.tick };
+      },
     };
-    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick`, `playWitness` a `handPlay`.
+    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick`, `playWitness`, `handPlay` a `idleRun`.
     window.__playShell = probe as unknown as Window['__playShell'];
     return () => {
       if (window.__playShell === (probe as unknown)) delete window.__playShell;
@@ -789,14 +798,12 @@ function ArcadePlayGame({
           live={live}
           offline={offline}
           record={record}
-          onReplay={
-            offline
-              ? () => session.restart()
-              : () => {
-                  if (session.humanRun()) loopEvent('restart', versionId);
-                  session.restart();
-                }
-          }
+          onReplay={(via) => {
+            if (!offline && session.humanRun()) loopEvent('restart', versionId);
+            session.restart();
+            // Klávesa nového pokusu (P36B T3) je zároveň první dotek: nový běh jede hned, bez výzvy.
+            if (via === 'key') session.begin();
+          }}
         />
       )}
     </main>
