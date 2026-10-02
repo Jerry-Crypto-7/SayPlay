@@ -18,7 +18,7 @@ import { ARCADE_LIMITS } from '@/play/arcade/contract';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import { type LiveEntry, TIMES_OF_DAY, WEATHERS } from '@/play/arcade/live';
 import { loadRapier } from '@/play/arcade/physics/world';
-import { packInputs, unpackInputs } from '@/play/score/dare';
+import { unpackInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
 import { type DareRecord, VersionStoreUnavailable } from '@/play/version';
 
@@ -78,11 +78,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (run.refusedPatch !== null) return fail(422, 'DARE_REJECTED', `a live change does not fit this game: ${run.refusedPatch}`);
   if (run.outcome !== 'won') return fail(422, 'DARE_REJECTED', 'this run does not win this game, so it cannot be a dare');
 
-  // Id jen z toho, co se opravdu přehrálo (vstupy a změny před koncem, změny podle tiku):
-  // přeházené pořadí nebo vstup po konci jinak dá tentýž běh pod novým id.
-  const played = [...patches].filter((entry) => entry.tick < run.tick).sort((a, b) => a.tick - b.tick);
+  // Id z výsledku přehrání (hash konce, tik, skóre) a ze změn, které opravdu padly, seřazených
+  // i uvnitř tiku – ne z poslaných bajtů: no-op vstup, vstup po konci nebo prohozené změny
+  // v témž tiku by jinak daly tentýž běh pod novým id a každá kopie by ubrala denní strop (T5r1).
+  const played = patches.filter((entry) => entry.tick < run.tick);
+  const changes = played.map((entry) => JSON.stringify(entry)).sort();
   const dareId = createHash('sha256')
-    .update(JSON.stringify({ versionId: id, inputs: packInputs(inputs.filter((event) => event.tick < run.tick)), patches: played }))
+    .update(JSON.stringify({ versionId: id, hash: run.hash, ticks: run.tick, score: run.score, changes }))
     .digest('hex')
     .slice(0, 32);
   const dare: DareRecord = { dareId, versionId: id, score: run.score, ticks: run.tick, hash: run.hash, liveChanges: played.length, createdAt: new Date().toISOString() };

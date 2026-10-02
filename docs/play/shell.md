@@ -73,8 +73,9 @@ běh 90 s se vejde pod 64 kB), `patches` živé změny přijaté za běhu (`Live
 arkádové hře (`scoredReplay`, každá změna projde v tiku, kdy padne, `patchProblem`) a uloží `play:dare:<dareId>`
 `{ dareId, versionId, score, ticks, hash, liveChanges, createdAt }` s expirací hry (`liveChanges` = kolik živých změn běh
 použil; skóre pak patří změněné hře). **Skóre, čas ani hash z těla se nečtou** – pole navíc se zahodí, neodmítnou.
-`dareId` = prvních 32 hex SHA-256 z (hra, vstupy a změny před koncem běhu, změny podle tiku): týž běh podruhé – i se
-vstupem po konci nebo s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
+`dareId` = prvních 32 hex SHA-256 z (hra, výsledek přehrání – hash konce, tik, skóre – a změny před koncem běhu
+seřazené i uvnitř tiku), ne z poslaných vstupů: týž běh podruhé – i s no-op vstupem, se vstupem po konci nebo
+s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
 `{ dareId, score, ticks }`, `cache-control: no-store`.
 
 | Krok | Kód | Stav |

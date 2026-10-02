@@ -100,6 +100,36 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect(((await again.json()) as { dareId: string }).dareId).toBe(body.dareId);
   });
 
+  // T5r1: id z výsledku přehrání, ne z poslaných bajtů – jinak no-op vstup nebo prohozené změny
+  // v témž tiku dají tentýž běh pod novým id a každá kopie ubere denní strop.
+  it('týž vítězný běh s no-op vstupem a s prohozenými změnami v témž tiku je táž výzva a strop neubírá', async () => {
+    process.env.PLAY_DARE_DAILY_CAP = '1';
+    const game = await arcadeGame(hasLives);
+    const bot = runBot(game.world).inputs;
+    const used = new Set(bot.map((event) => event.tick));
+    let idle = 0;
+    while (used.has(idle)) idle += 1;
+    const noop = [...bot, { tick: idle, buttons: 0, axis: 0 }].sort((a, b) => a.tick - b.tick);
+    const both = [
+      { tick: 30, patch: { kind: 'count', counter: 'health', amount: 2 } },
+      { tick: 30, patch: { kind: 'visual', weather: 'rain' } },
+    ] as const;
+    // Předpoklad: obě varianty jsou opravdu týž běh.
+    const run = scoredReplay(game.world, bot, [...both] as never);
+    expect(run.outcome).toBe('won');
+    expect(scoredReplay(game.world, noop, [...both] as never).hash).toBe(run.hash);
+    expect(scoredReplay(game.world, bot, [both[1], both[0]] as never).hash).toBe(run.hash);
+
+    const first = await send(game.id, { inputs: packInputs(bot), patches: both });
+    expect(first.status).toBe(201);
+    const { dareId } = (await first.json()) as { dareId: string };
+    for (const body of [{ inputs: packInputs(noop), patches: both }, { inputs: packInputs(bot), patches: [both[1], both[0]] }]) {
+      const again = await send(game.id, body);
+      expect(again.status).toBe(200);
+      expect(((await again.json()) as { dareId: string }).dareId).toBe(dareId);
+    }
+  });
+
   it('živá změna běhu se přehraje taky: hash a skóre jako v relaci prohlížeče', async () => {
     const game = await arcadeGame(hasLives);
     const session = createArcadeSession(game.world);
