@@ -12,7 +12,7 @@ Chips: Make it harder / Add a twist / Swap the enemy / Change the world, keep th
 Share: Dare a friend to beat it / Dare a friend / Link copied. Go dare someone.
 Remix: What should change? / Make the enemies slower / Remix it
 Share sheet: Share this game / Copy link / Save video / Your video is ready when the run ends.
-Dare card: Can you beat it? / Survive! / Hurry! / Your turn!
+Dare card: Can you beat it? / Survive! / Hurry! / Your turn! / to beat
 Info: About this game / Your idea / How to play.
 Authorship: Full-detail version of your idea / Quick version from your idea / Quick version read by a local AI model / Remixed with one change.
 AI version: Quick version · the full-detail one is on its way / Full-detail version ready / Play it / The full-detail version didn't pass our checks. The quick one stays. / Couldn't make the full-detail version right now. Keep playing the quick one.

@@ -146,7 +146,7 @@ describe('měď z PRODUCT_COPY.md', () => {
   it('remix, list sdílení a karta výzvy jsou doslova z balíčku', () => {
     expect([REMIX_LABEL, REMIX_PLACEHOLDER, REMIX_IT]).toEqual(copyLine('Remix').split(' / '));
     expect([SHARE_TITLE, COPY_LINK, SAVE_VIDEO, VIDEO_AFTER_RUN]).toEqual(copyLine('Share sheet').split(' / '));
-    expect([CAN_YOU_BEAT_IT, DARE_BADGE.survive, DARE_BADGE.hurry, DARE_BADGE.none]).toEqual(copyLine('Dare card').split(' / '));
+    expect([CAN_YOU_BEAT_IT, DARE_BADGE.survive, DARE_BADGE.hurry, DARE_BADGE.none, DARE_BADGE.dare]).toEqual(copyLine('Dare card').split(' / '));
   });
 
   it('stavový řádek jde přes čtyři stavy v pořadí balíčku', () => {

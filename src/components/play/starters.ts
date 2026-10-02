@@ -127,8 +127,8 @@ export const VIDEO_AFTER_RUN = 'Your video is ready when the run ends.';
 
 /**
  * Karta výzvy – náhled odkazu (P34 T7, kit `13-assets.md` Dare card). Slovo
- * pod časem na slunečném odznaku: přežití, závod s časovačem, nebo hra bez
- * měřeného času (pak jen slovo).
+ * pod časem na slunečném odznaku: přežití, závod s časovačem, hra bez
+ * měřeného času (pak jen slovo), nebo výsledek kamaráda z odkazu výzvy (P36B T8).
  */
 export const CAN_YOU_BEAT_IT = 'Can you beat it?';
-export const DARE_BADGE = { survive: 'Survive!', hurry: 'Hurry!', none: 'Your turn!' } as const;
+export const DARE_BADGE = { survive: 'Survive!', hurry: 'Hurry!', none: 'Your turn!', dare: 'to beat' } as const;

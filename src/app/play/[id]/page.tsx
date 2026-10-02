@@ -12,13 +12,10 @@ import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
 import { type Honesty, sentenceOf, unsupportedGame } from '@/play/draft/unsupported';
-import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
+import { DARE_ID_PATTERN, type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
 type PageProps = Params & { searchParams: Promise<{ [key: string]: string | string[] | undefined }> };
-
-/** Id výzvy je hash obsahu zkrácený na 32 hex znaků (`…/dare/route.ts`). */
-const DARE_ID_PATTERN = /^[0-9a-f]{32}$/;
 
 /**
  * Výzva kamaráda z odkazu `?dare=` (P36B T7): výsledek, který server ověřil
@@ -69,10 +66,12 @@ const load = cache(async (id: string): Promise<Loaded> => {
  * Náhled odkazu. `og:image` musí být absolutní adresa a kořenový layout
  * `metadataBase` nemá (a sahat na něj tenhle plán nesmí), proto se základ
  * skládá z hlaviček požadavku – na Vercelu i lokálně je to adresa, na kterou
- * se právě někdo díval.
+ * se právě někdo díval. Odkaz výzvy (`?dare=`) nese výsledek i do náhledu
+ * (P36B T8); jestli výzva platí a patří téhle hře, rozhodne route `og`.
  */
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { id } = await params;
+  const { dare } = await searchParams;
   const loaded = await load(id);
   if (loaded.kind !== 'game') return { title: 'sayplay' };
   const { game } = loaded;
@@ -81,7 +80,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const proto = incoming.get('x-forwarded-proto') ?? (host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https');
   const title = `${game.spec.title} – sayplay`;
   const description = game.spec.tutorial.goalLine;
-  const image = `${proto}://${host}/api/play/games/${id}/og`;
+  const image = `${proto}://${host}/api/play/games/${id}/og${typeof dare === 'string' && DARE_ID_PATTERN.test(dare) ? `?dare=${dare}` : ''}`;
   return {
     title,
     description,
