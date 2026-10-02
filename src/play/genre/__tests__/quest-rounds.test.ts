@@ -20,6 +20,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { waveOf } from '@/play/arcade/pieces/waves';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta } from '@/play/draft';
+import { compileGenre } from '@/play/genre/index';
 import type { GameSpecV1 } from '@/play/spec';
 
 interface Published {
@@ -153,5 +154,49 @@ describe('stored quest games without rounds', () => {
     const compiled = compileArcade(stored, seed);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     expect(compiled.value.winsAtTick).toBe(tick);
+  });
+});
+
+/**
+ * Čas z věty jsou hodiny (P36A F3): kola z T4 se plánovala na 36 s+ bez
+ * ohledu na ně a „pop the balloons … in 30 seconds“ robot prohrál na hodinách
+ * na všech semínkách publikace. Totéž, když čas napíše režisér (`timeLimit`).
+ */
+const TIMED = [
+  ['pop the balloons at the fair in 30 seconds', 30],
+  ['light all the lanterns in the temple within 45 seconds', 45],
+] as const;
+
+/** Na každém semínku publikace robot vyhraje před hodinami, které nesou `seconds`; nečinný hráč prohraje. */
+function expectFits(sentence: string, spec: GameSpecV1, seconds: number): void {
+  expect(spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params).toMatchObject({ seconds, onEnd: 'lose' });
+  for (const seed of derivedSeeds(seedFrom(sentence))) {
+    const compiled = compileArcade(spec, seed);
+    if (!compiled.ok) throw new Error(`${sentence} @${String(seed)}: ${compiled.issues.join('; ')}`);
+    const { arcade: world, winsAtTick } = compiled.value;
+    expect(winsAtTick).not.toBeNull();
+    expect(winsAtTick!).toBeLessThan(seconds * ARCADE_HZ);
+    expect(replay(world!, [], ARCADE_LIBRARY).outcome).toBe('lost');
+  }
+}
+
+describe('quest with seconds from the sentence – only as many rounds as fit the clock', () => {
+  it.each(TIMED)('"%s": the draft keeps the clock of the sentence and the robot beats it on every seed', (sentence, seconds) => {
+    const draft = draftGameSpecWithMeta(sentence, 1);
+    expect(draft.genre?.genre).toBe('quest');
+    expectFits(sentence, draft.spec, seconds);
+  });
+
+  it.each(TIMED)('"%s": the director\'s timeLimit 30 plans the rounds into 30 s, not just the clock', (sentence) => {
+    const genre = draftGameSpecWithMeta(sentence, 1).genre!;
+    const { seconds: _seconds, ...params } = genre.params ?? {};
+    expectFits(sentence, compileGenre({ ...genre, params: { ...params, timeLimit: 30 } }), 30);
+  });
+
+  it('a quest without seconds builds the same world as before', () => {
+    const spec = draftGameSpecWithMeta('light five candles before the ghost catches you', 1).spec;
+    const compiled = compileArcade(spec, 624372740);
+    if (!compiled.ok) throw new Error(compiled.issues.join('; '));
+    expect(compiled.value.worldHash).toBe('8ea05655');
   });
 });

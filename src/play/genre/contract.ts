@@ -164,6 +164,12 @@ export interface GenreModule<G extends GenreId = GenreId> {
   /** Třídy modelů, které smějí hrát hrdinu. */
   readonly heroClasses: readonly ModelClass[];
   readonly paramBounds: ParamBounds;
+  /**
+   * Parametr modulu, který nese hodiny končící prohrou (úkol: `seconds`, P36A F3).
+   * `timeLimit` režiséra do něj jde už před překladem, aby modul naplánoval
+   * délku hry do těch hodin – `withDepth` jinak přepíše jen hotové hodiny.
+   */
+  readonly clockParam?: string;
   availability(mode: GenreMode<G>): ModeAvailability;
   compile(spec: GenreSpecOf<G>): GameSpecV1;
   /** Co jde z věty vyčíst bez AI; `reading` je čtení modelem, když je k dispozici. */

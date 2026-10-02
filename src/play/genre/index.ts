@@ -75,7 +75,8 @@ export function compileGenre(spec: GenreSpec): GameSpecV1 {
 
 /**
  * Překlad modulem `module` a pak hloubka (P36A T8): parametry hloubky modul
- * nevidí, hra je dostane až hotová. Bez nich je výsledek přesně překlad modulu.
+ * nevidí, hra je dostane až hotová – jen časový limit dostane modul s hodinami
+ * (`clockParam`) i předem. Bez nich je výsledek přesně překlad modulu.
  * Jediná cesta pro rychlý návrh, odpověď režiséra i opravné kolo.
  */
 export function compileWith(module: GenreModule, spec: GenreSpec): GameSpecV1 {
@@ -86,6 +87,8 @@ export function compileWith(module: GenreModule, spec: GenreSpec): GameSpecV1 {
     depth[key] = own[key];
     delete own[key];
   }
+  // Limit režiséra jsou hodiny, do kterých modul plánuje délku (úkol svá kola, F3); hodiny pak nastaví `withDepth` stejně.
+  if (module.clockParam !== undefined && depth.timeLimit !== undefined && depth.timeLimit > 0) own[module.clockParam] = depth.timeLimit;
   const { params: _params, ...rest } = spec;
   const plain = (Object.keys(own).length === 0 ? rest : { ...rest, params: own }) as GenreSpec;
   return withEnemyAddon(withDepth(module.compile(withCounts(plain) as never), depth), spec.enemyMoves);

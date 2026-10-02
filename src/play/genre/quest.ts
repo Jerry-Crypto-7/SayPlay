@@ -130,11 +130,13 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   // Kola (P36A T4): po `count` cílech další kolo, výhra až v posledním; kol tolik, aby robot hrál 30–90 s.
   // Oprava na místě drží 1 s – kolo dvou stanovišť by jinak trvalo 1 s.
   const hold = station && states === 2 ? QUEST.rounds.stationHold : undefined;
+  // Čas z věty (nebo `timeLimit` režiséra, `compileWith`) jsou hodiny: kol jen tolik, kolik se do nich vejde (F3).
+  const clock = spec.params?.seconds;
   const plan = station
-    ? questRounds(steps, () => stationRoundSeconds({ count, states, hold: hold ?? STATION.hold, after: STATION.after }))
-    : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)));
+    ? questRounds(steps, () => stationRoundSeconds({ count, states, hold: hold ?? STATION.hold, after: STATION.after }), clock)
+    : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)), clock);
   // Hodiny jako u sběru ve vlnách: robot je stihne s rezervou, pod horizontem ověření.
-  const seconds = spec.params?.seconds ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
+  const seconds = clock ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
   const hunter = spec.enemy ?? 'hunter';
   const verbText = capital(verb);
   const each = plan.rounds > 1 ? ` in each of ${String(plan.rounds)} rounds` : '';
@@ -186,6 +188,7 @@ export const questGenre: GenreModule<'quest'> = {
     count: { min: 1, max: 8 },
     chasers: { min: 0, max: CHASERS_MAX },
   },
+  clockParam: 'seconds',
   availability: () => 'ready',
   compile: compileQuest,
   draftFill: (sentence, reading) => {

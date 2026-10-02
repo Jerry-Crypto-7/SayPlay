@@ -467,12 +467,16 @@ export const stationRoundSeconds = (params: Pick<QuestStationParams, 'count' | '
  * `target + targetPerStep × kroky kola`, a další kolo nesmí přetáhnout `ceiling`.
  * Jedno kolo (žánr pak `rounds` nepíše) zbude jen dlouhé práci: 8 hořících
  * stromů se třemi pronásledovateli trvá samo ~48 s. `round(k)` = odhad kola `k`.
+ * Hodiny z věty nebo od režiséra (`clock`, s; P36A F3): další kolo jen když
+ * odhad × `clockFactor` + `clockMargin` hodiny nepřetáhne – rezerva jako u hodin
+ * sběru, které si úkol bez času spočítá sám. Aspoň jedno kolo vždy.
  */
-export function questRounds(steps: number, round: (k: number) => number): { readonly rounds: number; readonly seconds: number } {
+export function questRounds(steps: number, round: (k: number) => number, clock?: number): { readonly rounds: number; readonly seconds: number } {
   const target = QUEST.rounds.target + QUEST.rounds.targetPerStep * steps;
+  const fits = (seconds: number): boolean => seconds <= QUEST.rounds.ceiling && (clock === undefined || seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin <= clock);
   let rounds = 1;
   let seconds = round(0);
-  while (rounds < WAVE_LIMITS.rounds && seconds < target && seconds + round(rounds) <= QUEST.rounds.ceiling) {
+  while (rounds < WAVE_LIMITS.rounds && seconds < target && fits(seconds + round(rounds))) {
     seconds += round(rounds);
     rounds += 1;
   }
