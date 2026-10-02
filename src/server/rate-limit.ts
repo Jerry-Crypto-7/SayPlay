@@ -219,7 +219,9 @@ export type RateLimitedDoor =
   | 'commit'
   | 'play'
   // Události smyčky PLAY (P27D T4) mají vlastní okno: statistika nesmí ubrat hráči kvótu na tvorbu her.
-  | 'play/events';
+  | 'play/events'
+  // Výzva Dare (P36B T5) navíc ke slotu `play`: jedna stojí řádově víc CPU (`MAX_DARE_REQUESTS_PER_WINDOW`).
+  | 'play/dare';
 
 export interface RateVerdict {
   readonly allowed: boolean;
@@ -249,7 +251,24 @@ interface Windows {
    * i počet jejich klíčů v mapě.
    */
   eventsCount: number;
+  /** Výzvy Dare – vlastní strop instance (`MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE`). */
+  dareCount: number;
 }
+
+/**
+ * Strop výzev Dare (P36B T5, nález revize 2. 10. 2026, `VERDICT: blocking`).
+ *
+ * **Z naměřené ceny, ne vybraný:** výzva přehraje celý běh na serveru – revize
+ * naměřila 139 ms (5 400 tiků, 32 živých změn po pěti nových tělech) a
+ * 200–250 ms (svět s fyzikou Rapier, 5 400 tiků). Pod obecným stropem dveří
+ * (50 za 10 s) by jeden volající vzal ~1,1 s práce za sekundu, tedy celou
+ * smyčku. 5 za 10 s je 0,5 × 250 ms ≈ **125 ms za sekundu** – týž podíl jedné
+ * instance jako `MAX_REQUESTS_PER_WINDOW` (14 %). Strop instance 10 za 10 s
+ * drží nejhorší případ na čtvrtině smyčky, ať střílí kolik chce volajících.
+ * Člověk pošle výzvu až po výhře, tedy nanejvýš jednou za desítky sekund.
+ */
+export const MAX_DARE_REQUESTS_PER_WINDOW = 5;
+export const MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE = 10;
 
 /**
  * Okna visí na `globalThis`, ne na modulu — týž naměřený důvod jako u procesové
@@ -261,7 +280,7 @@ const WINDOWS_KEY = '__worldsmithRateWindows';
 
 function windows(): Windows {
   const holder = globalThis as Record<string, unknown>;
-  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0, eventsCount: 0 };
+  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0, eventsCount: 0, dareCount: 0 };
   return holder[WINDOWS_KEY] as Windows;
 }
 
@@ -703,16 +722,19 @@ export function takeRateSlot(
     open.perCaller.clear();
     open.instanceCount = 0;
     open.eventsCount = 0;
+    open.dareCount = 0;
   }
 
   const retryAfterSeconds = Math.ceil((startedAtMs + RATE_WINDOW_MS - nowMs) / 1000);
   const events = door === 'play/events';
-  const instanceCount = events ? (open.eventsCount += 1) : (open.instanceCount += 1);
-  if (instanceCount > MAX_REQUESTS_PER_WINDOW_PER_INSTANCE)
+  const dare = door === 'play/dare';
+  const instanceCount = events ? (open.eventsCount += 1) : dare ? (open.dareCount += 1) : (open.instanceCount += 1);
+  const instanceLimit = dare ? MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE : MAX_REQUESTS_PER_WINDOW_PER_INSTANCE;
+  if (instanceCount > instanceLimit)
     return {
       allowed: false,
       count: instanceCount,
-      limit: MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
+      limit: instanceLimit,
       scope: 'instance',
       retryAfterSeconds,
     };
@@ -725,9 +747,8 @@ export function takeRateSlot(
   // **Skupina má vlastní strop, protože to není jeden člověk** (`T29-netfloor`).
   // Odůvodnění čísla i to, proč si tenhle kbelík volající nevybere, je
   // u `MAX_REQUESTS_PER_WINDOW_PER_GROUP`.
-  const limit = isGroupedCaller(caller)
-    ? MAX_REQUESTS_PER_WINDOW_PER_GROUP
-    : MAX_REQUESTS_PER_WINDOW;
+  const perCaller = dare ? MAX_DARE_REQUESTS_PER_WINDOW : MAX_REQUESTS_PER_WINDOW;
+  const limit = isGroupedCaller(caller) ? (dare ? 2 * MAX_DARE_REQUESTS_PER_WINDOW : MAX_REQUESTS_PER_WINDOW_PER_GROUP) : perCaller;
 
   return {
     allowed: window.count <= limit,
@@ -770,4 +791,5 @@ export function resetRateWindows(): void {
   open.perCaller.clear();
   open.instanceCount = 0;
   open.eventsCount = 0;
+  open.dareCount = 0;
 }

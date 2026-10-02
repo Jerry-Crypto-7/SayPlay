@@ -16,7 +16,7 @@ import { runBot } from '@/play/arcade/verify';
 import { packInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
-import { resetRateWindows } from '@/server/rate-limit';
+import { MAX_DARE_REQUESTS_PER_WINDOW, MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE, resetRateWindows } from '@/server/rate-limit';
 
 import { POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
@@ -36,8 +36,8 @@ function params(id: string): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id }) };
 }
 
-function send(id: string, body: unknown): Promise<Response> {
-  return dare(post(`/api/play/games/${id}/dare`, body), params(id));
+function send(id: string, body: unknown, headers: Record<string, string> = CALLER): Promise<Response> {
+  return dare(post(`/api/play/games/${id}/dare`, body, headers), params(id));
 }
 
 interface Game {
@@ -90,9 +90,12 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect(first.headers.get('cache-control')).toBe('no-store');
     const body = (await first.json()) as { dareId: string; score: number; ticks: number };
     expect(body).toEqual({ dareId: expect.stringMatching(/^[a-f0-9]{32}$/), score: expected.score, ticks: expected.tick });
-    expect(await stored(body.dareId)).toMatchObject({ versionId: game.id, score: expected.score, ticks: expected.tick, hash: expected.hash });
+    expect(await stored(body.dareId)).toMatchObject({ versionId: game.id, score: expected.score, ticks: expected.tick, hash: expected.hash, liveChanges: 0 });
 
-    const again = await send(game.id, { inputs: packInputs(bot) });
+    // Týž běh podruhé – i se vstupem po konci a s živou změnou, která už nepadla – je táž výzva.
+    const after = [...bot, { tick: ARCADE_LIMITS.maxTicks - 1, buttons: 1, axis: 0 }];
+    const late = [{ tick: ARCADE_LIMITS.maxTicks - 1, patch: { kind: 'visual', weather: 'rain' } }];
+    const again = await send(game.id, { inputs: packInputs(after), patches: late });
     expect(again.status).toBe(200);
     expect(((await again.json()) as { dareId: string }).dareId).toBe(body.dareId);
   });
@@ -116,6 +119,7 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     const record = await stored(((await response.json()) as { dareId: string }).dareId);
     expect(record?.hash).toBe(hashArcade(session.state()));
     expect(record?.score).toBe(session.snapshot().score);
+    expect(record?.liveChanges).toBe(1);
     // Bez změny je konec jiný: změna se opravdu přehrála, ne zahodila.
     expect(scoredReplay(game.world, session.inputs(), []).hash).not.toBe(record?.hash);
   });
@@ -174,6 +178,7 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
       { inputs, patches: Array.from({ length: 33 }, () => visual) },
       'not json',
     ]) {
+      resetRateWindows();
       const response = await send(game.id, body);
       expect(response.status, JSON.stringify(body)).toBe(400);
     }
@@ -194,22 +199,32 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect((await send('not-an-id', { inputs: [] })).status).toBe(404);
   });
 
-  it('51. požadavek v okně → 429 s retry-after', async () => {
+  it('výzva má vlastní přísnější okno: 6. od volajícího → 429, 11. na instanci → SERVER_AT_CAPACITY', async () => {
+    const codes: string[] = [];
+    for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW + 1; i += 1) {
+      const response = await send('0'.repeat(16), {});
+      codes.push(response.status === 429 ? ((await response.json()) as { error: { code: string } }).error.code : String(response.status));
+    }
+    expect(codes).toEqual([...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW }, () => '400'), 'TOO_MANY_REQUESTS']);
+
+    resetRateWindows();
     let last: Response | null = null;
-    for (let i = 0; i < 51; i += 1) last = await send('0'.repeat(16), {});
+    for (let i = 0; i <= MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) last = await send('0'.repeat(16), {}, { 'x-forwarded-for': `198.51.100.${String(i)}` });
     expect(last!.status).toBe(429);
     expect(last!.headers.get('retry-after')).toMatch(/^\d+$/);
+    expect(((await last!.json()) as { error: { code: string } }).error.code).toBe('SERVER_AT_CAPACITY');
   });
 
-  it('denní strop výzev → 429 DARE_QUOTA s retry-after', async () => {
+  it('denní strop výzev → 429 DARE_QUOTA s retry-after; týž běh podruhé strop neubírá', async () => {
     process.env.PLAY_DARE_DAILY_CAP = '1';
     __resetProcessVersionStore();
-    const game = await arcadeGame();
-    const bot = runBot(game.world).inputs;
-    expect((await send(game.id, { inputs: packInputs(bot) })).status).toBe(201);
-    // Jiný záznam (vstup po konci běhu) = jiná výzva; strop ji nepustí.
-    const later = [...bot, { tick: ARCADE_LIMITS.maxTicks - 1, buttons: 1, axis: 0 }];
-    const second = await send(game.id, { inputs: packInputs(later) });
+    const first = await arcadeGame();
+    const bot = packInputs(runBot(first.world).inputs);
+    expect((await send(first.id, { inputs: bot })).status).toBe(201);
+    expect((await send(first.id, { inputs: bot })).status).toBe(200);
+    // Výzva na jinou hru je nová výzva; strop ji nepustí.
+    const other = await arcadeGame((world) => JSON.stringify(world) !== JSON.stringify(first.world));
+    const second = await send(other.id, { inputs: packInputs(runBot(other.world).inputs) });
     expect(second.status).toBe(429);
     expect(second.headers.get('retry-after')).toBe('3600');
     expect(((await second.json()) as { error: { code: string } }).error.code).toBe('DARE_QUOTA');

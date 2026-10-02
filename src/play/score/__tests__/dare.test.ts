@@ -39,7 +39,7 @@ describe('packInputs / unpackInputs', () => {
 });
 
 describe('úložiště výzev', () => {
-  const dare = { dareId: 'a'.repeat(32), versionId: 'b'.repeat(16), score: 120, ticks: 900, hash: 'c0ffee', createdAt: '2026-10-02T00:00:00.000Z' };
+  const dare = { dareId: 'a'.repeat(32), versionId: 'b'.repeat(16), score: 120, ticks: 900, hash: 'c0ffee', liveChanges: 0, createdAt: '2026-10-02T00:00:00.000Z' };
 
   it('zapíše jednou, přečte zpátky; neznámá výzva je null', async () => {
     const store = memoryVersionStore();
@@ -52,6 +52,15 @@ describe('úložiště výzev', () => {
   it('denní strop výzev zastaví zápis', async () => {
     const store = memoryVersionStore({ ttlSeconds: 60, dailyCap: 10, dareDailyCap: 1 }, () => 0);
     expect(await store.putDare(dare)).toBe('stored');
+    // Týž záznam podruhé strop neubírá – jinak by jeden opakovaný požadavek zavřel výzvy všem.
+    expect(await store.putDare(dare)).toBe('exists');
     expect(await store.putDare({ ...dare, dareId: 'd'.repeat(32) })).toBe('quota');
+  });
+
+  it('opakovaný zápis existující výzvy denní strop nespotřebuje', async () => {
+    const store = memoryVersionStore({ ttlSeconds: 60, dailyCap: 10, dareDailyCap: 2 }, () => 0);
+    expect(await store.putDare(dare)).toBe('stored');
+    for (let i = 0; i < 5; i += 1) expect(await store.putDare(dare)).toBe('exists');
+    expect(await store.putDare({ ...dare, dareId: 'd'.repeat(32) })).toBe('stored');
   });
 });

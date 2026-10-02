@@ -101,6 +101,11 @@ export interface DareRecord {
   readonly ticks: number;
   /** Hash konce přehrání (`hashArcade`). */
   readonly hash: string;
+  /**
+   * Kolik živých změn běh použil (0 = hra beze změny). Skóre pak patří změněné
+   * hře – kamarád (T7) ho musí umět poznat (nález revize T5).
+   */
+  readonly liveChanges: number;
   readonly createdAt: string;
 }
 
@@ -150,13 +155,14 @@ export const DARE_ID_PATTERN = /^[a-f0-9]{32}$/;
 
 function isDare(value: unknown): value is DareRecord {
   if (typeof value !== 'object' || value === null) return false;
-  const { dareId, versionId, score, ticks, hash, createdAt } = value as Record<string, unknown>;
+  const { dareId, versionId, score, ticks, hash, liveChanges, createdAt } = value as Record<string, unknown>;
   return (
     typeof dareId === 'string' &&
     typeof versionId === 'string' &&
     Number.isInteger(score) &&
     Number.isInteger(ticks) &&
     typeof hash === 'string' &&
+    Number.isInteger(liveChanges) &&
     typeof createdAt === 'string'
   );
 }
@@ -370,6 +376,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     },
     async putDare(dare) {
       try {
+        // Týž běh podruhé denní strop neubírá: jinak jeden opakovaný požadavek zavře výzvy všem (nález revize T5).
+        if ((await raw.get(dareKey(dare.dareId))) !== null) return 'exists';
         if ((await raw.incr(dareQuotaKey(), 2 * 24 * 3600)) > (limits.dareDailyCap ?? DEFAULT_DARE_DAILY_CAP)) return 'quota';
         return (await raw.setNx(dareKey(dare.dareId), JSON.stringify(dare), limits.ttlSeconds)) ? 'stored' : 'exists';
       } catch (thrown) {

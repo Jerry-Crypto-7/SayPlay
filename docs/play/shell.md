@@ -71,13 +71,16 @@ Tělo: `{ inputs: number[], patches?: { tick, patch }[] }`. `inputs` jsou běhy 
 `[mezera, délka, tlačítka, osa]` (`packInputs` v `src/play/score/dare.ts` – držená osa je jedna čtveřice, nejhlučnější
 běh 90 s se vejde pod 64 kB), `patches` živé změny přijaté za běhu (`LiveEntry`, nejvýš 32). Server běh přehraje na uložené
 arkádové hře (`scoredReplay`, každá změna projde v tiku, kdy padne, `patchProblem`) a uloží `play:dare:<dareId>`
-`{ dareId, versionId, score, ticks, hash, createdAt }` s expirací hry. **Skóre, čas ani hash z těla se nečtou** – pole
-navíc se zahodí, neodmítnou. `dareId` = prvních 32 hex SHA-256 z (hra, vstupy, změny): týž běh podruhé je **200**
-s týmž id, nová výzva **201**; obě `{ dareId, score, ticks }`, `cache-control: no-store`.
+`{ dareId, versionId, score, ticks, hash, liveChanges, createdAt }` s expirací hry (`liveChanges` = kolik živých změn běh
+použil; skóre pak patří změněné hře). **Skóre, čas ani hash z těla se nečtou** – pole navíc se zahodí, neodmítnou.
+`dareId` = prvních 32 hex SHA-256 z (hra, vstupy a změny před koncem běhu, změny podle tiku): týž běh podruhé – i se
+vstupem po konci nebo s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
+`{ dareId, score, ticks }`, `cache-control: no-store`.
 
 | Krok | Kód | Stav |
 |---|---|---|
 | vypínač, identita, strop frekvence (dveře `play`, jako publikace) | `DISABLED` / `OWNER_IDENTITY_*` / `TOO_MANY_REQUESTS` | 503 / 403 / 429 |
+| vlastní okno výzev `play/dare`: 5 za 10 s na volajícího, 10 za 10 s na instanci – výzva přehraje celý běh, až ~250 ms CPU (`MAX_DARE_REQUESTS_PER_WINDOW` v `src/server/rate-limit.ts`) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
 | id bez tvaru nebo neznámá hra | `NOT_FOUND` | 404 |
 | tělo nad 64 kB / pozdě / souběh čtení | `BODY_TOO_LARGE` / `BODY_TIMEOUT` / `TOO_MANY_BODY_READS` | 413 / 408 / 429 |
 | tvar: vstupy nejsou čtveřice celých čísel, cizí tlačítka, osa mimo ±1000, běh delší než 5 400 tiků, změna mimo tvar nebo víc než 32 | `BAD_REQUEST` | 400 |

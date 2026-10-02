@@ -23,7 +23,9 @@ import { scoredReplay } from '@/play/score/replay';
 import { type DareRecord, VersionStoreUnavailable } from '@/play/version';
 
 import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
-import { admit, markVolatileStore, store } from '../../../_publish';
+import { rateLimitCode, takeRateSlot } from '@/server/rate-limit';
+
+import { admit, callerOf, markVolatileStore, store } from '../../../_publish';
 
 /** Živých změn za jeden běh – hráč jich v okénku udělá pár; strop drží cenu přehrání. */
 export const MAX_DARE_PATCHES = 32;
@@ -46,6 +48,12 @@ const bodySchema = z.object({
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }): Promise<Response> {
   const refused = await admit(request);
   if (refused !== null) return refused;
+  // Výzva přehrává celý běh (až ~250 ms CPU), proto má navíc vlastní, přísnější okno.
+  const slot = takeRateSlot('play/dare', callerOf(request));
+  if (!slot.allowed) {
+    const code = rateLimitCode(slot);
+    return fail(429, code, code === 'SERVER_AT_CAPACITY' ? 'this instance is at capacity right now' : 'too many requests from this client', { 'retry-after': String(slot.retryAfterSeconds) });
+  }
 
   const { id } = await context.params;
   if (!VERSION_ID_PATTERN.test(id)) return notFound();
@@ -68,11 +76,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (run.refusedPatch !== null) return fail(422, 'DARE_REJECTED', `a live change does not fit this game: ${run.refusedPatch}`);
   if (run.outcome !== 'won') return fail(422, 'DARE_REJECTED', 'this run does not win this game, so it cannot be a dare');
 
+  // Id jen z toho, co se opravdu přehrálo (vstupy a změny před koncem, změny podle tiku):
+  // přeházené pořadí nebo vstup po konci jinak dá tentýž běh pod novým id.
+  const played = [...patches].filter((entry) => entry.tick < run.tick).sort((a, b) => a.tick - b.tick);
   const dareId = createHash('sha256')
-    .update(JSON.stringify({ versionId: id, inputs: packInputs(inputs), patches }))
+    .update(JSON.stringify({ versionId: id, inputs: packInputs(inputs.filter((event) => event.tick < run.tick)), patches: played }))
     .digest('hex')
     .slice(0, 32);
-  const dare: DareRecord = { dareId, versionId: id, score: run.score, ticks: run.tick, hash: run.hash, createdAt: new Date().toISOString() };
+  const dare: DareRecord = { dareId, versionId: id, score: run.score, ticks: run.tick, hash: run.hash, liveChanges: played.length, createdAt: new Date().toISOString() };
   let outcome;
   try {
     outcome = await versions.putDare(dare);
