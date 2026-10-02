@@ -43,7 +43,7 @@ import { duelParts } from './pieces/duel';
 import { rhythmParts } from './pieces/rhythm';
 import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
-import { throwField, throwRules } from './pieces/throw';
+import { throwField, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
 import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
@@ -117,7 +117,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   if (spec.control === 'throw') {
     // Hod nemá čím ubrat život: `health` se nečte, prohra je „hody došly“.
     const params = throwField.params.parse({ ...spec.controlParams });
-    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules(), health: undefined };
+    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, params), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
   // Se životy náraz ubere život, překážka zmizí, běh jede dál a vteřinu milosti další náraz nic nebere (P36A T2).

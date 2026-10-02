@@ -17,11 +17,12 @@
 
 import { z } from 'zod';
 
-import { createCompileRng } from '@/play/compile/rng';
+import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
 import {
   ARCADE_HZ,
   ARCADE_LIMITS,
+  type ArcadeCounter,
   type ArcadeEffect,
   type ArcadeLevel,
   AXIS_MAX,
@@ -42,6 +43,7 @@ import {
   bodyBase,
 } from '../contract';
 import { GRAVITY } from '../kernel';
+import { census } from './shots';
 
 export const THROW_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type ThrowDifficulty = (typeof THROW_DIFFICULTIES)[number];
@@ -301,9 +303,41 @@ const generatorParams = z
     bounce: z.boolean().optional(),
     /** Hodů navíc nad počet cílů; bez hodnoty podle obtížnosti. */
     spareThrows: z.int().min(0).max(10).optional(),
+    /**
+     * Kola (P36A F5): odhad robota na celou hru v sekundách; kol tolik, kolik
+     * se do něj vejde, aspoň jedno. Bez hodnoty jedno pole jako dřív.
+     */
+    budget: z.int().min(1).max(90).optional(),
   })
   .strict();
 export type ThrowParams = z.infer<typeof generatorParams>;
+
+/**
+ * Kola hodu (P36A F5): po vyčištění pole přijdou nové cíle, výhra až
+ * v posledním. Každé další kolo je těžší – pás cílů o `shift` dál (nejvýš
+ * `farMax`), věž o blok vyšší každé druhé kolo (nejvýš `towerMax`) a hodů
+ * navíc o jeden méně každé druhé kolo (nejméně `spareMin`). Odhad robota na
+ * kolo: `perRound + perThrow × cíle kola` (sonda F5: … ).
+ */
+export const THROW_ROUNDS = {
+  max: 12,
+  shift: UNIT,
+  farMax: 24 * UNIT,
+  towerMax: 4,
+  spareMin: 1,
+  perRound: 1,
+  perThrow: 1.5,
+} as const;
+
+/**
+ * Číslo kola (0 = první) v čítači `trigger`: ten plní jen doplněk `+shoot`
+ * (hod doplňky nebere, `CAPABILITIES.throw`) a záznam držení pravidla
+ * `interact` (hráč hodu stojí daleko od všech cílů). Hody drží `ammo`.
+ */
+export const THROW_ROUND_COUNTER = 'trigger' satisfies ArcadeCounter;
+
+/** Odhad robota na kolo s `targets` těly k sestřelení (s). */
+export const throwRoundSeconds = (targets: number): number => THROW_ROUNDS.perRound + THROW_ROUNDS.perThrow * targets;
 
 const player: BodyInit = { role: 'player', kind: 'thrower', x: 0, y: 0, z: 0, w: THROW.playerW, h: THROW.playerH, d: THROW.playerD, solid: false };
 
@@ -342,56 +376,177 @@ function solvable(bodies: readonly BodyInit[], from: number, to: number): boolea
   return true;
 }
 
+/**
+ * Cíle jednoho pole od nejvzdálenějšího: bližší cíl se pak ověřuje s tím
+ * vzdálenějším na místě. Pás cílů posunutý o `shift` dál, věž `height` bloků,
+ * terč a koš zvednuté o 0 až `lifts` × 600.
+ */
+function placeGoals(rng: CompileRng, bodies: BodyInit[], goal: ThrowGoal, tier: Tier, shift: number, height: number, lifts = 2): void {
+  const near = tier.near + shift;
+  const band = Math.floor((tier.far - tier.near) / tier.goals);
+  for (let g = tier.goals - 1; g >= 0; g -= 1) {
+    const from = bodies.length;
+    let placed = false;
+    for (let attempt = 0; attempt < THROW_FIELD.placeTries && !placed; attempt += 1) {
+      const z = near + g * band + rng.int(0, band - 1500);
+      const lift = goal === 'tower' ? 0 : rng.int(0, lifts) * 600;
+      bodies.push(...goalBodies(goal, z, height, lift));
+      if (solvable(bodies, from, bodies.length)) placed = true;
+      else bodies.length = from;
+    }
+    // Nic nesedlo: nejnižší cíl na začátku pásu (tam řešení je vždy, zkontroluje test).
+    if (!placed) bodies.push(...goalBodies(goal, near + g * band, 1, 0));
+  }
+}
+
+const targetsIn = (bodies: readonly BodyInit[]): number => bodies.filter((body) => body.role === 'target' && body.template !== true).length;
+
+/** Podstavec kopií kol: díl 600 vysoký, vyšší podstavec je víc dílů na sobě. */
+const LIFT_STEP = 600;
+
+/**
+ * Tvar kopie musí být u druhu a role vždy týž: scéna slot, který spawn
+ * přepíše týmž druhem a rolí, nepřekreslí (`bodiesStale`). Podstavec terče
+ * proto jde po dílech `LIFT_STEP` (srážka i řešič vidí totéž), koš v dalších
+ * kolech stojí na zemi (tyč jedné výšky).
+ */
+const inSteps = (body: BodyInit): BodyInit[] =>
+  body.role === 'obstacle' && body.kind === 'wood-block' && body.h > LIFT_STEP
+    ? Array.from({ length: body.h / LIFT_STEP }, (_, k) => ({ ...body, y: body.y + k * LIFT_STEP, h: LIFT_STEP }))
+    : [body];
+
+const roundBody = z.int().min(0).max(ARCADE_LIMITS.maxBodies - 1);
+
+const roundsParams = z
+  .object({
+    /** Kola od druhého: těla (předloha, x, y, z po čtveřicích) a hody kola. */
+    rounds: z
+      .array(z.object({ bodies: z.array(z.int()).max(4 * 16), throws: z.int().min(1).max(30) }).strict())
+      .min(1)
+      .max(THROW_ROUNDS.max - 1),
+    /** Předlohy opěr (tyč koše, podstavec terče): živá překážka jejich druhu s koncem kola zmizí. */
+    supports: z.array(roundBody).max(4),
+  })
+  .strict();
+export type ThrowRoundsParams = z.infer<typeof roundsParams>;
+
+interface ThrowBuild {
+  readonly level: ArcadeLevel;
+  /** Kola od druhého; `null` = jedno pole jako dřív. */
+  readonly rounds: ThrowRoundsParams | null;
+}
+
+/**
+ * Pole hodu a jeho kola. Bez `budget` přesně dřívější pole (stejné losy).
+ * S ním další kola, dokud odhad robota na celou hru nepřetáhne rozpočet:
+ * kolo se postaví na prázdném poli (hráč, míček, zeď – opěry předchozího kola
+ * zmizí), jeho těla přijdou kopiemi předloh (jedna na tvar, za těly úrovně).
+ */
+function buildField(seed: number, params: ThrowParams): ThrowBuild {
+  const rng = createCompileRng(seed);
+  const tier = TIERS[params.difficulty];
+  const goal = params.goal ?? rng.pick(THROW_GOALS);
+  const bounce = params.bounce ?? goal === 'hoop';
+  const bodies: BodyInit[] = [
+    player,
+    { role: 'projectile', kind: 'ball', x: 0, y: 0, z: 0, w: THROW.ballSize, h: THROW.ballSize, d: THROW.ballSize, solid: false, template: true, gravity: true, lifetime: THROW.ballLifetime, bounce: bounce ? 450 : 0 },
+  ];
+  if (tier.wall) {
+    const wallH = rng.int(THROW_FIELD.wallH[0], THROW_FIELD.wallH[1]);
+    bodies.push({ role: 'obstacle', kind: 'wall', x: 0, y: 0, z: rng.int(THROW_FIELD.wallZ[0], THROW_FIELD.wallZ[1]), w: 4000, h: wallH, d: 400, solid: true });
+  }
+  const field = bodies.length;
+  placeGoals(rng, bodies, goal, tier, 0, tier.towerHeight);
+  const spare = params.spareThrows ?? tier.spareThrows;
+  const throws = targetsIn(bodies) + spare;
+  const single = (): ThrowBuild => ({ level: { bodies, length: 0, spawnSlots: 3, counters: { ammo: throws, reserve: 0 } }, rounds: null });
+  if (params.budget === undefined) return single();
+
+  // Další kola: jedna předloha na tvar, místa a hody kola do parametrů pravidla.
+  const templates: BodyInit[] = [];
+  const keys: string[] = [];
+  const templateOf = (body: BodyInit): number => {
+    const key = [body.role, body.kind, body.w, body.h, body.d, body.solid, body.gravity === true].join('|');
+    let at = keys.indexOf(key);
+    if (at < 0) {
+      at = keys.push(key) - 1;
+      templates.push({ ...body, x: 0, y: 0, z: 0, template: true });
+    }
+    return at;
+  };
+  const planned: { readonly bodies: readonly BodyInit[]; readonly throws: number }[] = [];
+  let seconds = throwRoundSeconds(targetsIn(bodies));
+  let widest = 0;
+  for (let k = 1; k < THROW_ROUNDS.max; k += 1) {
+    const scratch = bodies.slice(0, field);
+    const shift = Math.min(k * THROW_ROUNDS.shift, Math.max(0, THROW_ROUNDS.farMax - tier.far));
+    placeGoals(rng, scratch, goal, tier, shift, Math.min(THROW_ROUNDS.towerMax, tier.towerHeight + Math.floor(k / 2)), goal === 'hoop' ? 0 : 2);
+    const round = scratch.slice(field).flatMap(inSteps);
+    const next = seconds + throwRoundSeconds(targetsIn(round));
+    if (next > params.budget) break;
+    seconds = next;
+    widest = Math.max(widest, round.length);
+    planned.push({ bodies: round, throws: targetsIn(round) + Math.max(THROW_ROUNDS.spareMin, spare - Math.ceil(k / 2)) });
+  }
+  if (planned.length === 0) return single();
+  const rounds = planned.map((round) => ({ bodies: round.bodies.flatMap((body) => [bodies.length + templateOf(body), body.x, body.y, body.z]), throws: round.throws }));
+  const supports = templates.flatMap((body, k) => (body.role === 'obstacle' ? [bodies.length + k] : []));
+  return {
+    level: { bodies: [...bodies, ...templates], length: 0, spawnSlots: 3 + widest, counters: { ammo: throws, reserve: 0 } },
+    rounds: { rounds, supports },
+  };
+}
+
 export const throwField: GeneratorPiece<ThrowParams> = {
   id: 'throw_field',
   params: generatorParams,
   roles: ['player', 'projectile', 'target', 'obstacle'],
   cost: (params) => ({ bodies: 3 + TIERS[params.difficulty].goals * Math.max(2, TIERS[params.difficulty].towerHeight) + 4, rules: 4 }),
-  generate: (seed, params) => {
-    const rng = createCompileRng(seed);
-    const tier = TIERS[params.difficulty];
-    const goal = params.goal ?? rng.pick(THROW_GOALS);
-    const bounce = params.bounce ?? goal === 'hoop';
-    const bodies: BodyInit[] = [
-      player,
-      { role: 'projectile', kind: 'ball', x: 0, y: 0, z: 0, w: THROW.ballSize, h: THROW.ballSize, d: THROW.ballSize, solid: false, template: true, gravity: true, lifetime: THROW.ballLifetime, bounce: bounce ? 450 : 0 },
-    ];
-    if (tier.wall) {
-      const wallH = rng.int(THROW_FIELD.wallH[0], THROW_FIELD.wallH[1]);
-      bodies.push({ role: 'obstacle', kind: 'wall', x: 0, y: 0, z: rng.int(THROW_FIELD.wallZ[0], THROW_FIELD.wallZ[1]), w: 4000, h: wallH, d: 400, solid: true });
-    }
-
-    // Cíle od nejvzdálenějšího: bližší cíl se pak ověřuje s tím vzdálenějším na místě.
-    const band = Math.floor((tier.far - tier.near) / tier.goals);
-    for (let g = tier.goals - 1; g >= 0; g -= 1) {
-      const from = bodies.length;
-      let placed = false;
-      for (let attempt = 0; attempt < THROW_FIELD.placeTries && !placed; attempt += 1) {
-        const z = tier.near + g * band + rng.int(0, band - 1500);
-        const lift = goal === 'tower' ? 0 : rng.int(0, 2) * 600;
-        bodies.push(...goalBodies(goal, z, tier.towerHeight, lift));
-        if (solvable(bodies, from, bodies.length)) placed = true;
-        else bodies.length = from;
-      }
-      // Nic nesedlo: nejnižší cíl na začátku pásu (tam řešení je vždy, zkontroluje test).
-      if (!placed) bodies.push(...goalBodies(goal, tier.near + g * band, 1, 0));
-    }
-
-    const goals = bodies.filter((body) => body.role === 'target').length;
-    const throws = goals + (params.spareThrows ?? tier.spareThrows);
-    return { bodies, length: 0, spawnSlots: 3, counters: { ammo: throws, reserve: 0 } };
-  },
+  generate: (seed, params) => buildField(seed, params).level,
 };
 
-/** Pravidla hodu: odhoz, zásah, všechny cíle, hody došly. */
-export function throwRules(): PieceRef[] {
-  return [
-    { id: 'launch', params: { template: 1 } },
-    { id: 'shot_hit', params: {} },
-    { id: 'cleared', params: {} },
-    { id: 'out_of_ammo', params: {} },
-  ];
+/** Pole a pravidla hodu: odhoz, zásah, všechny cíle (s koly až poslední kolo), hody došly. */
+export function throwParts(seed: number, params: ThrowParams): { readonly level: ArcadeLevel; readonly rules: PieceRef[] } {
+  const { level, rounds } = buildField(seed, params);
+  return {
+    level,
+    rules: [
+      { id: 'launch', params: { template: 1 } },
+      { id: 'shot_hit', params: {} },
+      rounds === null ? { id: 'cleared', params: {} } : { id: 'throw_rounds', params: rounds },
+      { id: 'out_of_ammo', params: {} },
+    ],
+  };
 }
+
+/**
+ * Konec kola (spouštěč `counter`): pole je čisté → v posledním kole výhra,
+ * jinak opěry kola zmiznou, přijdou těla dalšího kola, hody na počet kola
+ * a čítač kola o jedno výš. Poslední míček ve vzduchu nic nemění: kolo
+ * začíná, až žádný cíl nestojí.
+ */
+export const throwRounds: RulePiece<ThrowRoundsParams> = {
+  id: 'throw_rounds',
+  params: roundsParams,
+  roles: ['target', 'obstacle'],
+  trigger: 'counter',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state }, params) => {
+    if (census(state).foes > 0) return [];
+    const next = params.rounds[state[HEADER.counters + COUNTER[THROW_ROUND_COUNTER]] as number];
+    if (next === undefined) return [{ kind: 'win' }];
+    const effects: ArcadeEffect[] = [];
+    const kinds = params.supports.map((template) => state[bodyBase(template) + BODY.kind] as number);
+    for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+      const base = bodyBase(i);
+      if (((state[base + BODY.flags] as number) & FLAG.alive) !== 0 && state[base + BODY.role] === ROLE.obstacle && kinds.includes(state[base + BODY.kind] as number)) effects.push({ kind: 'despawn', body: i });
+    }
+    for (let k = 0; k + 3 < next.bodies.length; k += 4) effects.push({ kind: 'spawn', template: next.bodies[k]!, x: next.bodies[k + 1]!, y: next.bodies[k + 2]!, z: next.bodies[k + 3]!, vx: 0, vy: 0, vz: 0 });
+    effects.push({ kind: 'count', counter: 'ammo', amount: next.throws - (state[HEADER.counters + COUNTER.ammo] as number) });
+    effects.push({ kind: 'count', counter: THROW_ROUND_COUNTER, amount: 1 });
+    return effects;
+  },
+};
 
 /** Tvrzení „hratelné z konstrukce“ nad hotovým polem; prázdné pole = hratelné. */
 export function checkThrowLevel(level: ArcadeLevel): string[] {
@@ -401,7 +556,7 @@ export function checkThrowLevel(level: ArcadeLevel): string[] {
   // Každý cíl sám (ostatní stojí): věž = souvislá řada bloků na stejném z.
   const byZ = new Map<number, number[]>();
   bodies.forEach((body, index) => {
-    if (body.role === 'target') byZ.set(body.z, [...(byZ.get(body.z) ?? []), index]);
+    if (body.role === 'target' && body.template !== true) byZ.set(body.z, [...(byZ.get(body.z) ?? []), index]);
   });
   for (const [z, indices] of byZ) {
     const removed = new Set<number>();
@@ -411,7 +566,7 @@ export function checkThrowLevel(level: ArcadeLevel): string[] {
       removed.add(target);
     }
   }
-  const goals = bodies.filter((body) => body.role === 'target').length;
+  const goals = targetsIn(bodies);
   if (goals === 0) issues.push('nothing to hit');
   if ((level.counters?.ammo ?? 0) < goals) issues.push(`${level.counters?.ammo ?? 0} throws for ${goals} targets`);
   const capacity = bodies.length + (level.spawnSlots ?? 0);
