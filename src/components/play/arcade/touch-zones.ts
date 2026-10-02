@@ -11,15 +11,15 @@ export interface TouchZone {
   readonly from: number;
   readonly to: number;
   readonly label: string;
-  /** Ikona před popiskem; `up` = šipka nahoru (otočená `chevron-right`). */
-  readonly icon?: IconName | 'up';
+  /** Ikona před popiskem. Šipku nahoru kit nemá a otáčení mimo nakloněné třídy zakazuje – skok nese jen slovo. */
+  readonly icon?: IconName;
 }
 
 /** Plošinovka: levá čtvrtina drží vlevo, druhá vpravo, pravá polovina skáče – palec vlevo běží, palec vpravo skáče. */
 export const PLATFORM_ZONES = [
   { from: 0, to: 0.25, label: 'Run', icon: 'chevron-left' },
   { from: 0.25, to: 0.5, label: 'Run', icon: 'chevron-right' },
-  { from: 0.5, to: 1, label: 'Jump', icon: 'up' },
+  { from: 0.5, to: 1, label: 'Jump' },
 ] as const satisfies readonly TouchZone[];
 
 /** Souboj: levá půlka uhne, pravá udeří. */

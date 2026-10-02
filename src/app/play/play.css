@@ -1560,11 +1560,6 @@
   height: var(--sp-size-icon-s);
 }
 
-.play-touch-zone-up {
-  display: inline-flex;
-  transform: rotate(-90deg);
-}
-
 /* Joystick arény a úkolu (P36C T2): kroužek tam, kam padl prst, páčka jede s tahem. */
 .play-stick {
   position: absolute;

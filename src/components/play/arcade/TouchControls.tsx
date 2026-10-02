@@ -33,11 +33,7 @@ export function TouchZones({ session, zones }: { readonly session: ArcadeSession
     <div className="play-touch-zones" data-testid="touch-zones" data-shown={shown ? 'true' : 'false'} aria-hidden="true">
       {zones.map((zone) => (
         <span key={`${zone.from}`} className="sp-hud-pill play-touch-zone" style={{ left: `${((zone.from + zone.to) / 2) * 100}%` }}>
-          {zone.icon !== undefined && (
-            <span className={zone.icon === 'up' ? 'play-touch-zone-up' : undefined}>
-              <Icon name={zone.icon === 'up' ? 'chevron-right' : zone.icon} />
-            </span>
-          )}
+          {zone.icon !== undefined && <Icon name={zone.icon} />}
           {zone.label}
         </span>
       ))}
