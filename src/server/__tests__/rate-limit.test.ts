@@ -77,6 +77,13 @@ describe('strop na frekvenci veřejných dveří', () => {
     expect(2 * MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP).toBeLessThan(MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE);
   });
 
+  it('výzvy: čtyři skupiny /64 na stropu instanci nezaplní, pátý klíč projde (revize T5r3-3)', () => {
+    let at = T0;
+    for (let g = 1; g <= 4; g += 1)
+      for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP + 1; i += 1, at += 500) takeRateSlot('play/dare', `net:2001:db8:0:${String(g)}::/64`, at);
+    expect(takeRateSlot('play/dare', '192.0.2.44', at)).toMatchObject({ allowed: true });
+  });
+
   it('výzvy na hranici okna: v žádné sekundě víc než 2 přehrání, odmítnutí strop okna neubírá (T5r2)', () => {
     // Nález 2. revize T5: 10 výzev v 9,9 s a 10 v 10,1 s pevné okno pustí všech 20 za sebou.
     const sent = [
