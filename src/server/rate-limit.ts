@@ -219,7 +219,9 @@ export type RateLimitedDoor =
   | 'commit'
   | 'play'
   // Události smyčky PLAY (P27D T4) mají vlastní okno: statistika nesmí ubrat hráči kvótu na tvorbu her.
-  | 'play/events';
+  | 'play/events'
+  // Výzva Dare (P36B T5) navíc ke slotu `play`: jedna stojí řádově víc CPU (`MAX_DARE_REQUESTS_PER_WINDOW`).
+  | 'play/dare';
 
 export interface RateVerdict {
   readonly allowed: boolean;
@@ -249,7 +251,54 @@ interface Windows {
    * i počet jejich klíčů v mapě.
    */
   eventsCount: number;
+  /** Výzvy Dare – vlastní strop instance (`MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE`). */
+  dareCount: number;
+  /** Začátky posledních `MAX_DARE_REPLAYS_PER_SECOND` přehrání výzev. S oknem se nevyprazdňuje – sekunda klouže přes jeho hranici. */
+  dareStartsMs: number[];
 }
+
+/**
+ * Strop výzev Dare (P36B T5, nález revize 2. 10. 2026, `VERDICT: blocking`).
+ *
+ * **Z naměřené ceny, ne vybraný:** výzva přehraje celý běh na serveru – revize
+ * naměřila 139 ms (5 400 tiků, 32 živých změn po pěti nových tělech) a
+ * 200–250 ms (svět s fyzikou Rapier, 5 400 tiků). Pod obecným stropem dveří
+ * (50 za 10 s) by jeden volající vzal ~1,1 s práce za sekundu, tedy celou
+ * smyčku. Strop instance 10 za 10 s drží nejhorší případ na čtvrtině smyčky,
+ * ať střílí kolik chce volajících.
+ *
+ * **Volající 1 za 10 s (T5r3, revize T5r3-1 a T5r3-2):** s pěti stačily dvě
+ * adresy a výzvy byly zavřené všem na instanci každé okno; se třemi čtyři –
+ * prohraným během i opakovaným vítězným (opakování je 200, přehrání ale
+ * stálo). Zaplnit instanci teď chce 10 adres IPv4. Náš klient posílá výzvu
+ * jednou po každé výhře a výhra trvá sekundy hraní, takže jeden hráč na strop
+ * nenarazí; porota za jednou IPv4 (NAT), když dva vyhrají v týchž 10 s, dá
+ * druhému obyčejný odkaz s větou – přijatelná cena za výzvy, které nezavře
+ * hrstka adres.
+ */
+export const MAX_DARE_REQUESTS_PER_WINDOW = 1;
+export const MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE = 10;
+/**
+ * Skupina (sdílená /64) je víc lidí než jedna adresa, ale skupiny se strop
+ * instance dělí stejně – pět jich ho zaplní (T5r3).
+ */
+export const MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP = 2;
+
+/**
+ * Přehrání výzev na instanci v jedné **klouzavé** sekundě (P36B T5r2, nález 2. revize T5).
+ *
+ * Pevné okno pustí na hranici dvou oken dvojnásobek stropu instance naráz
+ * (10 v 9,9 s + 10 v 10,1 s), tedy 20 přehrání za sebou. Naměřeno 2. 10. 2026
+ * (Node, pracovní stanice): přehrání světa s fyzikou Rapier na 5 400 tiků stojí
+ * **115–215 ms** (7 pravidlových světů s 1 i 12 tělesy s fyzikou, nečinný běh),
+ * takže 20 za sebou ≈ 4,3 s, kdy instance neobslouží nic jiného. Klouzavá
+ * sekunda drží nejvýš 2 přehrání (≈ 430 ms) v každé sekundě, i přes hranici oken.
+ * Časový rozpočet uvnitř přehrání to není schválně: replay cesta wall-clock
+ * číst nesmí (`CLAUDE.md`, determinismus). Dva výherci v téže sekundě projdou
+ * oba; třetí dostane 429 s `retry-after: 1` a sdílí obyčejný odkaz.
+ */
+export const MAX_DARE_REPLAYS_PER_SECOND = 2;
+const DARE_SPACING_MS = 1000;
 
 /**
  * Okna visí na `globalThis`, ne na modulu — týž naměřený důvod jako u procesové
@@ -261,7 +310,7 @@ const WINDOWS_KEY = '__worldsmithRateWindows';
 
 function windows(): Windows {
   const holder = globalThis as Record<string, unknown>;
-  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0, eventsCount: 0 };
+  holder[WINDOWS_KEY] ??= { startedAtMs: 0, perCaller: new Map<string, Window>(), instanceCount: 0, eventsCount: 0, dareCount: 0, dareStartsMs: [] };
   return holder[WINDOWS_KEY] as Windows;
 }
 
@@ -703,21 +752,47 @@ export function takeRateSlot(
     open.perCaller.clear();
     open.instanceCount = 0;
     open.eventsCount = 0;
+    open.dareCount = 0;
   }
 
   const retryAfterSeconds = Math.ceil((startedAtMs + RATE_WINDOW_MS - nowMs) / 1000);
   const events = door === 'play/events';
-  const instanceCount = events ? (open.eventsCount += 1) : (open.instanceCount += 1);
-  if (instanceCount > MAX_REQUESTS_PER_WINDOW_PER_INSTANCE)
+  const dare = door === 'play/dare';
+  const key = `${door} ${caller}`;
+  // Výzva soudí volajícího PRVNÍ: odmítnutý volající jinak dál ubírá strop
+  // instance a jedna adresa výzvy zavře všem (nález 3. revize T5). Mapu to
+  // nenafoukne – klíčů výzev je nanejvýš tolik, kolik pustí `admit()` (400).
+  if (dare) {
+    const own = open.perCaller.get(key)?.count ?? 0;
+    const ownLimit = isGroupedCaller(caller) ? MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP : MAX_DARE_REQUESTS_PER_WINDOW;
+    if (own >= ownLimit) return { allowed: false, count: own + 1, limit: ownLimit, scope: 'caller', retryAfterSeconds };
+    // Klouzavá sekunda instance (T5r2). Odmítnutí tu strop okna neubírá: jinak by jeden
+    // volající za sekundu naplnil `dareCount` odmítnutými a zavřel výzvy všem do konce okna.
+    // Začátek „v budoucnu“ (hodiny couvly) se nepočítá, jinak by výzvy stály, než je doženou.
+    const recent = open.dareStartsMs.filter((at) => at <= nowMs && nowMs - at < DARE_SPACING_MS).length;
+    // Plné i okno instance → čekat na jeho konec, ne na sekundu (revize T5r3-1, LOW).
+    if (recent >= MAX_DARE_REPLAYS_PER_SECOND)
+      return {
+        allowed: false,
+        count: recent + 1,
+        limit: MAX_DARE_REPLAYS_PER_SECOND,
+        scope: 'instance',
+        retryAfterSeconds: open.dareCount >= MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE ? retryAfterSeconds : 1,
+      };
+  }
+  const instanceCount = events ? (open.eventsCount += 1) : dare ? (open.dareCount += 1) : (open.instanceCount += 1);
+  const instanceLimit = dare ? MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE : MAX_REQUESTS_PER_WINDOW_PER_INSTANCE;
+  if (instanceCount > instanceLimit)
     return {
       allowed: false,
       count: instanceCount,
-      limit: MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
+      limit: instanceLimit,
       scope: 'instance',
       retryAfterSeconds,
     };
+  // Sem výzva dojde jen pod vlastním stropem (soudil se výš), takže je propuštěná.
+  if (dare) open.dareStartsMs = [...open.dareStartsMs, nowMs].slice(-MAX_DARE_REPLAYS_PER_SECOND);
 
-  const key = `${door} ${caller}`;
   const window = open.perCaller.get(key) ?? { count: 0 };
   window.count += 1;
   open.perCaller.set(key, window);
@@ -725,9 +800,8 @@ export function takeRateSlot(
   // **Skupina má vlastní strop, protože to není jeden člověk** (`T29-netfloor`).
   // Odůvodnění čísla i to, proč si tenhle kbelík volající nevybere, je
   // u `MAX_REQUESTS_PER_WINDOW_PER_GROUP`.
-  const limit = isGroupedCaller(caller)
-    ? MAX_REQUESTS_PER_WINDOW_PER_GROUP
-    : MAX_REQUESTS_PER_WINDOW;
+  const perCaller = dare ? MAX_DARE_REQUESTS_PER_WINDOW : MAX_REQUESTS_PER_WINDOW;
+  const limit = isGroupedCaller(caller) ? (dare ? MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP : MAX_REQUESTS_PER_WINDOW_PER_GROUP) : perCaller;
 
   return {
     allowed: window.count <= limit,
@@ -763,6 +837,19 @@ export function rateLimitedResponse(requestId: string, verdict: RateVerdict): Re
   );
 }
 
+/**
+ * Výzva, jejíž přehrání nevyhrálo, stojí volajícího zbytek okna výzev (P36B T5r3r1, revize T5r3-1).
+ * Klient výzvu posílá jen po výhře (`publishDare`), takže prohraný běh posílá cizí klient. Adresa
+ * se stropem 1 má okno utracené tak jako tak; platí to pro skupinu /64 (strop 2).
+ * Klíč volajícího už v okně je (slot vzal před přehráním), takže mapa nenaroste; po otočení okna
+ * klíč zmizel a není co utratit.
+ */
+export function spendDareWindow(caller: string): void {
+  // Týž klíč jako v `takeRateSlot`: dveře a volající oddělené znakem NUL.
+  const window = windows().perCaller.get(`play/dare\u0000${caller}`);
+  if (window !== undefined) window.count = isGroupedCaller(caller) ? MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP : MAX_DARE_REQUESTS_PER_WINDOW;
+}
+
 /** Jen pro testy: okna jsou proces-globální jako čítač souběžných generací. */
 export function resetRateWindows(): void {
   const open = windows();
@@ -770,4 +857,6 @@ export function resetRateWindows(): void {
   open.perCaller.clear();
   open.instanceCount = 0;
   open.eventsCount = 0;
+  open.dareCount = 0;
+  open.dareStartsMs = [];
 }

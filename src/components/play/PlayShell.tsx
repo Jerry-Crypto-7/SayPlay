@@ -17,10 +17,12 @@ import dynamic from 'next/dynamic';
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
 import type { Honesty } from '@/play/draft/unsupported';
+import type { Par } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import type { Dare } from './best';
 import { WithPlayEnv } from './arcade/look/play-env';
 import { HonestyStrip } from './HonestyStrip';
 import type { LabFacts, ReadFacts } from './lab';
@@ -41,6 +43,10 @@ export interface PlayShellProps {
   readonly read: ReadFacts;
   /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
   readonly upgrade: string | null;
+  /** Vítězný běh robota arkádové hry (`report.par`, P36B T1) – měřítko hvězd; mřížka ho nečte. */
+  readonly par?: Par | null;
+  /** Výzva kamaráda z odkazu `?dare=` (P36B T7), ověřená serverem; jen arkáda. */
+  readonly challenge?: Dare | null;
 }
 
 /**

@@ -592,6 +592,11 @@
   margin-left: var(--sp-space-2);
 }
 
+/* Rekord překonaný během běhu (P36B T4): „New best!“ vyskočí jako sebrané vejce. */
+.play-hud-count.is-new {
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
 .play-hud-count > .play-hud-num {
   margin-left: var(--sp-space-1);
 }
@@ -995,6 +1000,81 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Hvězdy proti paru (P36B T2): jako vejce HUD – získaná slunečná s inkoustovým obrysem,
+ * zbylá čárkovaný obrys. Naskočí po odznaku jedna po druhé (kit `ease-pop`, `duration-celebrate`). */
+.play-result-stars {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-space-2);
+  margin: var(--sp-space-3) 0 0;
+}
+
+.play-star {
+  --_i: 0;
+  width: 40px;
+  height: 40px;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+  animation-delay: calc(var(--_after) + 140ms * var(--_i));
+}
+
+.play-star:nth-child(2) {
+  --_i: 1;
+}
+
+.play-star:nth-child(3) {
+  --_i: 2;
+}
+
+.play-star polygon {
+  fill: none;
+  stroke: var(--sp-outline);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 3 2;
+}
+
+.play-star.is-earned polygon {
+  fill: var(--sp-secondary);
+  stroke-width: 2.2;
+  stroke-dasharray: none;
+}
+
+/* Skóre velké (display-l), jednotka pod ním jako popisek statistiky. */
+.play-result-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: var(--sp-space-3) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-result-score-unit {
+  font-size: var(--sp-text-caption-size);
+  font-weight: 700;
+  color: var(--sp-text-secondary);
+}
+
+/* Řádek rekordu; překonaný rekord je slunečná pilulka s obrysem (jedna oslava, ne druhá rajčatová akce). */
+.play-result-best {
+  align-self: center;
+  margin: var(--sp-space-2) 0 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-result-best[data-new='true'] {
+  padding: var(--sp-space-1) var(--sp-space-3);
+  background: var(--sp-secondary);
+  color: var(--sp-on-secondary);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-pill);
+  box-shadow: var(--sp-shadow-sm);
+  font-family: var(--sp-font-display);
+  font-weight: 900;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+  animation-delay: calc(var(--_after) + 420ms);
+}
+
 /* Statistiky v řadě po třech (kit Card & stat); vyjedou po listu, po výhře po odznaku, 60 ms po sobě. */
 .play-result-stats {
   display: grid;
@@ -1141,7 +1221,9 @@
 @media (prefers-reduced-motion: reduce) {
   .sp-badge,
   .play-result-sheet,
-  .play-result-stats > .sp-stat {
+  .play-result-stats > .sp-stat,
+  .play-star,
+  .play-result-best {
     animation: none;
   }
 }
@@ -1507,6 +1589,22 @@
   font-size: var(--sp-text-title-m-size);
   font-weight: 700;
   line-height: 1.2;
+}
+
+/* Výzva kamaráda (P36B T7): co porazit, nad „Tap to start“; poznámka o živých změnách pod tím menší. */
+.play-first-prompt-dare {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--sp-text-title-m-size);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.play-first-prompt-note {
+  font-size: var(--sp-text-body-l-size);
+  font-weight: 400;
+  color: var(--sp-text-secondary);
 }
 
 /* Klávesa jen tam, kde je klávesnice a myš; na telefonu je to šum (jako čísla karet, P33 T6). */

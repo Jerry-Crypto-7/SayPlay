@@ -441,7 +441,7 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     return versionId;
   }
 
-  it('návrh, remix ani ruční spec do feedu nejdou; autorské verze od nejnovější s počtem remixů', async () => {
+  it('návrh, remix ani ruční spec do feedu nejdou; autorské verze s počtem remixů, remixovaná výš', async () => {
     const first = await publish(MUSHROOMS);
     // Jiný titul než první hra: feed od P27B T2 stejný titul podruhé neukáže.
     const second = await publish(STARTERS[0].sentence);
@@ -459,12 +459,13 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
 
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);
-    expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([b, a]);
+    // Feed podle smyčky (P36B T9): remix táhne `a` nad novější `b` bez historie.
+    expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([a, b]);
     // Cíl a nálada jdou z řádku seznamu (D-R1): karta je ukáže bez stažení detailu.
     const firstSpec = (await versionStoreFromEnv(process.env).get(first.body.versionId))?.spec;
     if (firstSpec === undefined) throw new Error('draft missing');
     expect(firstSpec.tutorial.goalLine).not.toBe('');
-    expect(body.games[1]).toEqual({
+    expect(body.games[0]).toEqual({
       versionId: a,
       title: first.body.title,
       archetype: draftGameSpec(MUSHROOMS).archetype,
@@ -478,8 +479,8 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     const versions = versionStoreFromEnv(process.env);
     const legacy = (await versions.recent(RECENT_CAP)).map((row) => ({ ...row, goal: undefined, mood: undefined }));
     vi.spyOn(versions, 'recent').mockResolvedValueOnce(legacy);
-    expect((await feed('?recent=24')).body.games[1]).toMatchObject({ versionId: a, goal: null, mood: null });
-    expect(body.games[0].remixes).toBe(0);
+    expect((await feed('?recent=24')).body.games[0]).toMatchObject({ versionId: a, goal: null, mood: null });
+    expect(body.games[1].remixes).toBe(0);
     expect((await feed('?recent=1')).body.games).toHaveLength(1);
   });
 

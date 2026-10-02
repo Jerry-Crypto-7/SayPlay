@@ -25,6 +25,8 @@ export type PlayErrorCode =
   | 'DISABLED'
   | 'TOO_MANY_REQUESTS'
   | 'PUBLISH_QUOTA'
+  | 'DARE_REJECTED'
+  | 'DARE_QUOTA'
   | 'SERVER_AT_CAPACITY'
   | 'STORE_UNAVAILABLE';
 

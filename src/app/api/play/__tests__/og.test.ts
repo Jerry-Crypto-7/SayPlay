@@ -11,12 +11,12 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { GameSpecV1 } from '@/play/spec';
-import { __resetProcessVersionStore } from '@/play/version';
+import { __resetProcessVersionStore, type DareRecord, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
 
-import { OG_INK, OG_PALETTES, assetOriginFrom, dareBadge, fontCovers, ogPngFor, paletteForMood } from '../_og';
+import { OG_INK, OG_PALETTES, assetOriginFrom, dareBadge, dareScoreBadge, fontCovers, ogPngFor, paletteForMood } from '../_og';
 import { POST as createGame } from '../games/route';
 import { GET as ogImage } from '../games/[id]/og/route';
 
@@ -208,7 +208,7 @@ describe('GET /api/play/games/:id/og', () => {
     expect(fontCovers('Běžec')).toBe(false);
   });
 
-  // Karta ukáže čas jen tam, kde ho hra sama měří – nejlepší čas hráče se neukládá (P34 T6).
+  // Obyčejný odkaz nenese něčí běh: karta ukáže čas jen tam, kde ho hra sama měří (P34 T6).
   it('puts on the dare badge only a time the game itself measures (P34 T7)', () => {
     const spec = runnerFixture as unknown as GameSpecV1;
     expect(dareBadge(spec)).toEqual({ time: null, word: 'Your turn!' });
@@ -216,6 +216,42 @@ describe('GET /api/play/games/:id/og', () => {
     const timer = (onEnd: 'win' | 'lose'): GameSpecV1 => ({ ...spec, mechanics: [{ id: 'timer', params: { id: 'clock', seconds: 45, onEnd } }] });
     expect(dareBadge(timer('lose'))).toEqual({ time: '45s', word: 'Hurry!' });
     expect(dareBadge(timer('win'))).toEqual({ time: '45s', word: 'Survive!' });
+  });
+
+  // P36B T8: odkaz výzvy nese výsledek kamaráda – body, bez bodů jeho čas; přežití bez bodů zůstává „Survive!“.
+  it("puts the friend's verified score on a dare link's badge", () => {
+    const spec = runnerFixture as unknown as GameSpecV1;
+    expect(dareScoreBadge(spec, { score: 2450, ticks: 1860 })).toEqual({ time: '2,450', word: 'to beat' });
+    expect(dareScoreBadge(spec, { score: 0, ticks: 1860 })).toEqual({ time: '31.0s', word: 'to beat' });
+    const survive: GameSpecV1 = { ...spec, objective: { kind: 'survive', description: 'Last it.', seconds: 60 } };
+    expect(dareScoreBadge(survive, { score: 0, ticks: 3600 })).toEqual({ time: '60s', word: 'Survive!' });
+    expect(dareScoreBadge(survive, { score: 12450, ticks: 3600 })).toEqual({ time: '12,450', word: 'to beat' });
+  });
+
+  it("draws a dare link's card from its dare; a foreign, unknown or malformed dare gets the plain card for an hour (P36B T8)", async () => {
+    const game = await publishSpec('Canyon Dash');
+    const other = await publishSpec('Rooftop Sprint');
+    const versions = versionStoreFromEnv(process.env);
+    const dare = (dareId: string, versionId: string): DareRecord => ({ dareId, versionId, score: 2450, ticks: 1860, hash: 'f'.repeat(8), liveChanges: 0, createdAt: new Date().toISOString() });
+    const mine = 'a'.repeat(32);
+    const foreign = 'b'.repeat(32);
+    expect(await versions.putDare(dare(mine, game))).toBe('stored');
+    expect(await versions.putDare(dare(foreign, other))).toBe('stored');
+    const withDare = (id: string, value: string): Promise<Response> =>
+      ogImage(new Request(`http://play.test/api/play/games/${id}/og?dare=${encodeURIComponent(value)}`, { headers: CALLER }), params(id));
+
+    const plain = Buffer.from(await (await og(game)).arrayBuffer());
+    const challenged = await withDare(game, mine);
+    expect(challenged.status).toBe(200);
+    expect(challenged.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    expect(Buffer.from(await challenged.arrayBuffer()).equals(plain)).toBe(false);
+
+    for (const value of [foreign, 'c'.repeat(32), 'not-a-dare']) {
+      const response = await withDare(game, value);
+      expect(response.status, value).toBe(200);
+      expect(response.headers.get('cache-control'), value).toBe('public, max-age=0, s-maxage=3600');
+      expect(Buffer.from(await response.arrayBuffer()).equals(plain), value).toBe(true);
+    }
   });
 
   it('fetches a hero thumbnail only from a configured origin, never from the request host', () => {

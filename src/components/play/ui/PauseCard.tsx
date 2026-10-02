@@ -38,7 +38,7 @@ export interface HudKeyState {
 export type HudKeyEvent = Pick<KeyboardEvent, 'key' | 'repeat' | 'altKey' | 'ctrlKey' | 'metaKey' | 'target'>;
 
 /** Mezerník na tlačítku nebo odkazu ho zmáčkne – to není pauza. */
-const onControl = (target: EventTarget | null): boolean => target instanceof HTMLElement && target.closest('button, a[href], summary, [role="button"]') !== null;
+export const onControl = (target: EventTarget | null): boolean => target instanceof HTMLElement && target.closest('button, a[href], summary, [role="button"]') !== null;
 
 /**
  * Klávesa HUD → akce, nebo `null`. Esc kartu zavře, bez karty ji otevře

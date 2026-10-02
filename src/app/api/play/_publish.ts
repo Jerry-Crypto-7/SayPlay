@@ -12,6 +12,8 @@
  * v tom, co do hashe nejde (zpráva o kvalitě), a to je poctivých 409.
  */
 
+import { createHash } from 'node:crypto';
+
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
 import type { RepairIssue } from '@/play/director';
@@ -103,6 +105,11 @@ export async function admit(request: Request, lever: keyof KillState = 'sessions
 /** Klíč volajícího pro strop frekvence. */
 export function callerOf(request: Request): string {
   return trustedCallerKey(request) ?? callerKey(request);
+}
+
+/** Hlas volajícího pro čítače feedu (P36B T9): hash klíče `callerOf`, ať adresa do úložiště nejde. */
+export function voterOf(request: Request): string {
+  return createHash('sha256').update(callerOf(request)).digest('hex').slice(0, 16);
 }
 
 /** Společný počet všech volajících bez důvěryhodného klíče (R12). */
