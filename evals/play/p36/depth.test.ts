@@ -60,7 +60,8 @@ describe('numbers a sentence says', () => {
 describe('plan P36A targets over all 260 sentences', () => {
   const all = report.summary.all;
 
-  it.fails(`the robot wins in 30–90 s for ≥ ${String(DEPTH_TARGETS.inBandShare * 100)} % of sentences (T4 flips this)`, () => {
+  // T4 cíl splnil (2. 10. 2026: 236/260 = 90,8 % – úkol po kolech; mimo pásmo zbývá jen plavba).
+  it(`the robot wins in 30–90 s for ≥ ${String(DEPTH_TARGETS.inBandShare * 100)} % of sentences (T4 flipped this)`, () => {
     expect(all.inBandShare).toBeGreaterThanOrEqual(DEPTH_TARGETS.inBandShare);
   });
 

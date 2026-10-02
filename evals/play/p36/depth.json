@@ -1,5 +1,5 @@
 {
- "compilerVersion": "play-compiler-v8/arcade-v2",
+ "compilerVersion": "play-compiler-v9/arcade-v2",
  "bandSeconds": {
   "min": 30,
   "max": 90
@@ -14,8 +14,8 @@
    "sentences": 260,
    "playable": 260,
    "publishable": 260,
-   "inBand": 144,
-   "inBandShare": 0.554,
+   "inBand": 236,
+   "inBandShare": 0.908,
    "idle": {
     "won": 0,
     "lost": 260,
@@ -79,19 +79,19 @@
     },
     "quest.spatial": {
      "sentences": 48,
-     "medianWinSeconds": 13.86,
-     "minWinSeconds": 7.72,
-     "maxWinSeconds": 26.27,
-     "inBand": 0,
+     "medianWinSeconds": 55.63,
+     "minWinSeconds": 44.12,
+     "maxWinSeconds": 76.77,
+     "inBand": 48,
      "idleLoses": 48,
      "livesOver1": 48
     },
     "quest.station": {
      "sentences": 44,
-     "medianWinSeconds": 4,
-     "minWinSeconds": 1,
-     "maxWinSeconds": 4,
-     "inBand": 0,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 32,
+     "maxWinSeconds": 40,
+     "inBand": 44,
      "idleLoses": 44,
      "livesOver1": 44
     },
@@ -128,8 +128,8 @@
    "sentences": 200,
    "playable": 200,
    "publishable": 200,
-   "inBand": 108,
-   "inBandShare": 0.54,
+   "inBand": 181,
+   "inBandShare": 0.905,
    "idle": {
     "won": 0,
     "lost": 200,
@@ -193,19 +193,19 @@
     },
     "quest.spatial": {
      "sentences": 36,
-     "medianWinSeconds": 13.86,
-     "minWinSeconds": 7.72,
-     "maxWinSeconds": 26.27,
-     "inBand": 0,
+     "medianWinSeconds": 56.08,
+     "minWinSeconds": 44.12,
+     "maxWinSeconds": 76.2,
+     "inBand": 36,
      "idleLoses": 36,
      "livesOver1": 36
     },
     "quest.station": {
      "sentences": 37,
-     "medianWinSeconds": 4,
-     "minWinSeconds": 4,
-     "maxWinSeconds": 4,
-     "inBand": 0,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 40,
+     "maxWinSeconds": 40,
+     "inBand": 37,
      "idleLoses": 37,
      "livesOver1": 37
     },
@@ -242,8 +242,8 @@
    "sentences": 60,
    "playable": 60,
    "publishable": 60,
-   "inBand": 36,
-   "inBandShare": 0.6,
+   "inBand": 55,
+   "inBandShare": 0.917,
    "idle": {
     "won": 0,
     "lost": 60,
@@ -307,19 +307,19 @@
     },
     "quest.spatial": {
      "sentences": 12,
-     "medianWinSeconds": 14.69,
-     "minWinSeconds": 8.03,
-     "maxWinSeconds": 19.37,
-     "inBand": 0,
+     "medianWinSeconds": 53.96,
+     "minWinSeconds": 44.85,
+     "maxWinSeconds": 76.77,
+     "inBand": 12,
      "idleLoses": 12,
      "livesOver1": 12
     },
     "quest.station": {
      "sentences": 7,
-     "medianWinSeconds": 4,
-     "minWinSeconds": 1,
-     "maxWinSeconds": 4,
-     "inBand": 0,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 32,
+     "maxWinSeconds": 40,
+     "inBand": 7,
      "idleLoses": 7,
      "livesOver1": 7
     },
@@ -1616,10 +1616,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 980
+    "tick": 3338
    },
-   "winSeconds": 16.33,
-   "inBand": false,
+   "winSeconds": 55.63,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 622
@@ -1651,10 +1651,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 463
+    "tick": 2811
    },
-   "winSeconds": 7.72,
-   "inBand": false,
+   "winSeconds": 46.85,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 618
@@ -1686,10 +1686,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 485
+    "tick": 2966
    },
-   "winSeconds": 8.08,
-   "inBand": false,
+   "winSeconds": 49.43,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 622
@@ -1756,10 +1756,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 976
+    "tick": 4562
    },
-   "winSeconds": 16.27,
-   "inBand": false,
+   "winSeconds": 76.03,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 626
@@ -1896,10 +1896,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 889
+    "tick": 3231
    },
-   "winSeconds": 14.82,
-   "inBand": false,
+   "winSeconds": 53.85,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 595
@@ -1931,10 +1931,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1019
+    "tick": 3830
    },
-   "winSeconds": 16.98,
-   "inBand": false,
+   "winSeconds": 63.83,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 619
@@ -2001,10 +2001,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 714
+    "tick": 2722
    },
-   "winSeconds": 11.9,
-   "inBand": false,
+   "winSeconds": 45.37,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 623
@@ -2036,10 +2036,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 697
+    "tick": 2647
    },
-   "winSeconds": 11.62,
-   "inBand": false,
+   "winSeconds": 44.12,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 624
@@ -2071,10 +2071,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 482
+    "tick": 3184
    },
-   "winSeconds": 8.03,
-   "inBand": false,
+   "winSeconds": 53.07,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 602
@@ -2141,10 +2141,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 481
+    "tick": 3443
    },
-   "winSeconds": 8.02,
-   "inBand": false,
+   "winSeconds": 57.38,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 614
@@ -2281,13 +2281,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 943
+    "tick": 3196
    },
-   "winSeconds": 15.72,
-   "inBand": false,
+   "winSeconds": 53.27,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 577
+    "tick": 600
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2456,10 +2456,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 753
+    "tick": 3810
    },
-   "winSeconds": 12.55,
-   "inBand": false,
+   "winSeconds": 63.5,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 607
@@ -2701,10 +2701,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -2736,10 +2736,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -2806,10 +2806,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -2876,10 +2876,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -2946,10 +2946,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3051,10 +3051,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3086,10 +3086,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3156,10 +3156,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3191,10 +3191,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 557
+    "tick": 3238
    },
-   "winSeconds": 9.28,
-   "inBand": false,
+   "winSeconds": 53.97,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 606
@@ -3261,10 +3261,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3331,10 +3331,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3366,10 +3366,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1318
+    "tick": 3323
    },
-   "winSeconds": 21.97,
-   "inBand": false,
+   "winSeconds": 55.38,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 626
@@ -3401,10 +3401,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 482
+    "tick": 3109
    },
-   "winSeconds": 8.03,
-   "inBand": false,
+   "winSeconds": 51.82,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 626
@@ -3471,10 +3471,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 590
+    "tick": 3540
    },
-   "winSeconds": 9.83,
-   "inBand": false,
+   "winSeconds": 59,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 625
@@ -3506,10 +3506,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 588
+    "tick": 2856
    },
-   "winSeconds": 9.8,
-   "inBand": false,
+   "winSeconds": 47.6,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 616
@@ -3611,10 +3611,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 824
+    "tick": 3100
    },
-   "winSeconds": 13.73,
-   "inBand": false,
+   "winSeconds": 51.67,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 623
@@ -3646,10 +3646,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 819
+    "tick": 2909
    },
-   "winSeconds": 13.65,
-   "inBand": false,
+   "winSeconds": 48.48,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 633
@@ -3681,10 +3681,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 481
+    "tick": 3113
    },
-   "winSeconds": 8.02,
-   "inBand": false,
+   "winSeconds": 51.88,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 604
@@ -3716,10 +3716,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 971
+    "tick": 3420
    },
-   "winSeconds": 16.18,
-   "inBand": false,
+   "winSeconds": 57,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 632
@@ -3751,10 +3751,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3786,10 +3786,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3856,10 +3856,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3891,10 +3891,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -3996,10 +3996,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4031,10 +4031,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4101,10 +4101,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4486,10 +4486,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4556,10 +4556,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4591,10 +4591,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4626,10 +4626,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4696,10 +4696,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4731,10 +4731,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -4801,10 +4801,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 514
+    "tick": 3257
    },
-   "winSeconds": 8.57,
-   "inBand": false,
+   "winSeconds": 54.28,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 615
@@ -4836,10 +4836,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1019
+    "tick": 3937
    },
-   "winSeconds": 16.98,
-   "inBand": false,
+   "winSeconds": 65.62,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 632
@@ -4871,10 +4871,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 865
+    "tick": 3396
    },
-   "winSeconds": 14.42,
-   "inBand": false,
+   "winSeconds": 56.6,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 603
@@ -4906,10 +4906,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1075
+    "tick": 3366
    },
-   "winSeconds": 17.92,
-   "inBand": false,
+   "winSeconds": 56.1,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 630
@@ -4941,10 +4941,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 828
+    "tick": 3363
    },
-   "winSeconds": 13.8,
-   "inBand": false,
+   "winSeconds": 56.05,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 616
@@ -5011,10 +5011,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 815
+    "tick": 3731
    },
-   "winSeconds": 13.58,
-   "inBand": false,
+   "winSeconds": 62.18,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 608
@@ -5116,10 +5116,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -5151,10 +5151,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1380
+    "tick": 4376
    },
-   "winSeconds": 23,
-   "inBand": false,
+   "winSeconds": 72.93,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 622
@@ -5221,10 +5221,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 962
+    "tick": 3522
    },
-   "winSeconds": 16.03,
-   "inBand": false,
+   "winSeconds": 58.7,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 627
@@ -5326,10 +5326,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 913
+    "tick": 3819
    },
-   "winSeconds": 15.22,
-   "inBand": false,
+   "winSeconds": 63.65,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 626
@@ -5361,10 +5361,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 530
+    "tick": 3822
    },
-   "winSeconds": 8.83,
-   "inBand": false,
+   "winSeconds": 63.7,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 619
@@ -5676,10 +5676,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 958
+    "tick": 3627
    },
-   "winSeconds": 15.97,
-   "inBand": false,
+   "winSeconds": 60.45,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 598
@@ -5781,10 +5781,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1576
+    "tick": 4572
    },
-   "winSeconds": 26.27,
-   "inBand": false,
+   "winSeconds": 76.2,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 631
@@ -5921,10 +5921,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -5956,10 +5956,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6061,10 +6061,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 967
+    "tick": 4363
    },
-   "winSeconds": 16.12,
-   "inBand": false,
+   "winSeconds": 72.72,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 610
@@ -6131,10 +6131,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6166,10 +6166,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6201,10 +6201,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6236,10 +6236,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6271,10 +6271,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6306,10 +6306,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6341,10 +6341,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6376,10 +6376,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -6411,10 +6411,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -7041,10 +7041,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 945
+    "tick": 3327
    },
-   "winSeconds": 15.75,
-   "inBand": false,
+   "winSeconds": 55.45,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 627
@@ -7076,10 +7076,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -7111,10 +7111,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -7251,10 +7251,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 835
+    "tick": 3664
    },
-   "winSeconds": 13.92,
-   "inBand": false,
+   "winSeconds": 61.07,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 594
@@ -7356,10 +7356,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 485
+    "tick": 2966
    },
-   "winSeconds": 8.08,
-   "inBand": false,
+   "winSeconds": 49.43,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 622
@@ -7391,10 +7391,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 980
+    "tick": 3338
    },
-   "winSeconds": 16.33,
-   "inBand": false,
+   "winSeconds": 55.63,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 622
@@ -7671,10 +7671,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 482
+    "tick": 3184
    },
-   "winSeconds": 8.03,
-   "inBand": false,
+   "winSeconds": 53.07,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 602
@@ -7706,10 +7706,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 482
+    "tick": 3109
    },
-   "winSeconds": 8.03,
-   "inBand": false,
+   "winSeconds": 51.82,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 626
@@ -7741,10 +7741,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -7776,13 +7776,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 943
+    "tick": 3196
    },
-   "winSeconds": 15.72,
-   "inBand": false,
+   "winSeconds": 53.27,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 577
+    "tick": 600
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -7881,10 +7881,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 819
+    "tick": 2909
    },
-   "winSeconds": 13.65,
-   "inBand": false,
+   "winSeconds": 48.48,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 633
@@ -7951,10 +7951,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 530
+    "tick": 3822
    },
-   "winSeconds": 8.83,
-   "inBand": false,
+   "winSeconds": 63.7,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 619
@@ -8021,10 +8021,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -8231,10 +8231,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 60
+    "tick": 1920
    },
-   "winSeconds": 1,
-   "inBand": false,
+   "winSeconds": 32,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -8546,10 +8546,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1149
+    "tick": 2691
    },
-   "winSeconds": 19.15,
-   "inBand": false,
+   "winSeconds": 44.85,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 600
@@ -8581,10 +8581,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -8826,10 +8826,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -8861,10 +8861,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1041
+    "tick": 3834
    },
-   "winSeconds": 17.35,
-   "inBand": false,
+   "winSeconds": 63.9,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 631
@@ -8966,10 +8966,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 60
+    "tick": 1920
    },
-   "winSeconds": 1,
-   "inBand": false,
+   "winSeconds": 32,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -9036,10 +9036,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 240
+    "tick": 2400
    },
-   "winSeconds": 4,
-   "inBand": false,
+   "winSeconds": 40,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 1440
@@ -9246,10 +9246,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1162
+    "tick": 3814
    },
-   "winSeconds": 19.37,
-   "inBand": false,
+   "winSeconds": 63.57,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 623
@@ -9281,10 +9281,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 975
+    "tick": 4606
    },
-   "winSeconds": 16.25,
-   "inBand": false,
+   "winSeconds": 76.77,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 630
@@ -9421,10 +9421,10 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 619
+    "tick": 3279
    },
-   "winSeconds": 10.32,
-   "inBand": false,
+   "winSeconds": 54.65,
+   "inBand": true,
    "idle": {
     "end": "lost",
     "tick": 618

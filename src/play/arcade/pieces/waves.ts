@@ -20,7 +20,7 @@ import { z } from 'zod';
 
 import type { CompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeCounter, type ArcadeEffect, BODY, COUNTER, FLAG, HEADER, HP_MAX, ROLE, type RulePiece, UNIT, bodyBase, bodyHp } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeCounter, type ArcadeEffect, BODY, COUNTER, FLAG, HEADER, HP_MAX, ROLE, type RulePiece, TARGET_STATE_MAX, UNIT, bodyBase, bodyHp, targetStateOf } from '../contract';
 
 /**
  * Čítač vlny: náboje (`ammo`) aréna, útěk ani souboj nikdy nenesou – patří
@@ -39,8 +39,11 @@ export const PAUSE_COUNTER = 'reserve' satisfies ArcadeCounter;
 /** Pořadí běžící vlny (0 = první). */
 export const waveOf = (state: Int32Array): number => state[HEADER.counters + COUNTER[WAVE_COUNTER]] as number;
 
-/** Nejvíc vln jedné hry a nejvíc věcí v jedné vlně (= strop počtu věcí útěku a sběru). */
-export const WAVE_LIMITS = { waves: 12, items: 30, spots: 16 } as const;
+/**
+ * Nejvíc vln arény a nejvíc věcí v jedné vlně (= strop počtu věcí útěku a
+ * sběru). Kol úkolu může být víc (`rounds`): kolo jedné palačinky trvá 2 s.
+ */
+export const WAVE_LIMITS = { waves: 12, rounds: 24, items: 30, spots: 16 } as const;
 
 /**
  * Délka útěku a sběru ve vlnách. Robot sebere vlnu N věcí bez pronásledovatelů
@@ -170,10 +173,17 @@ const waveParams = z
   .object({
     /**
      * Kdy přijde další vlna: `items` = hráč sebral všechny věci vlny, `ticks` =
-     * nastal tik vlny (`at`), `enemies` = všichni soupeři leží a doběhla přestávka.
+     * nastal tik vlny (`at`), `enemies` = všichni soupeři leží a doběhla přestávka,
+     * `targets` = všechny cíle úkolu jsou v konečném stavu `done` (kolo úkolu).
      */
-    until: z.enum(['items', 'ticks', 'enemies']),
-    /** Předlohy kopií (index těla úrovně): věc, pronásledovatel, soupeř. */
+    until: z.enum(['items', 'ticks', 'enemies', 'targets']),
+    /** Kolo úkolu: konečný stav cíle (`states − 1`). */
+    done: z.int().min(1).max(TARGET_STATE_MAX).optional(),
+    /**
+     * Předlohy kopií (index těla úrovně): věc, pronásledovatel, soupeř. V kole
+     * úkolu je `item` předloha cíle: hotové cíle zmizí a nové přijdou na místa
+     * vlny; bez ní se tytéž cíle vrátí do stavu 0 (stanoviště).
+     */
     item: body.optional(),
     chaser: body.optional(),
     enemy: body.optional(),
@@ -195,7 +205,7 @@ const waveParams = z
           .strict(),
       )
       .min(1)
-      .max(WAVE_LIMITS.waves - 1),
+      .max(WAVE_LIMITS.rounds - 1),
   })
   .strict();
 export type WaveParams = z.infer<typeof waveParams>;
@@ -241,7 +251,7 @@ function enter(state: Int32Array, player: number, spots: readonly number[], temp
 export const arenaWaves: RulePiece<WaveParams> = {
   id: 'arena_waves',
   params: waveParams,
-  roles: ['player', 'collectible', 'chaser', 'enemy'],
+  roles: ['player', 'collectible', 'chaser', 'enemy', 'target'],
   trigger: 'counter',
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player }, params): readonly ArcadeEffect[] => {
@@ -249,6 +259,12 @@ export const arenaWaves: RulePiece<WaveParams> = {
     if (next === undefined) return [];
     const effects: ArcadeEffect[] = [];
     if (params.until === 'items' && aliveWith(state, ROLE.collectible).length > 0) return [];
+    if (params.until === 'targets') {
+      const targets = aliveWith(state, ROLE.target);
+      if (targets.some((i) => targetStateOf(state, i) < (params.done ?? 1))) return [];
+      // Hotové cíle: s předlohou zmizí (nové přijdou níž), bez ní začnou znovu od stavu 0.
+      for (const i of targets) effects.push(params.item === undefined ? { kind: 'stateChange', body: i, state: 0 } : { kind: 'despawn', body: i });
+    }
     if (params.until === 'ticks' && (state[HEADER.tick] as number) + 1 < (next.at ?? 0)) return [];
     if (params.until === 'enemies') {
       const enemies = aliveWith(state, ROLE.enemy);

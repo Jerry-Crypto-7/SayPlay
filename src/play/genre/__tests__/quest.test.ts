@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf, generatorOf } from '@/play/arcade/compile';
-import { BODY, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
 import { instantiate } from '@/play/arcade/kernel';
 import { verifyArcade } from '@/play/arcade/verify';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
@@ -44,6 +44,8 @@ function rolesOf(game: GameSpecV1): Map<number, number> {
   const state = instantiate(made.world);
   const counts = new Map<number, number>();
   for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    // Mrtvé předlohy dalších kol (P36A T4) na startu nehrají.
+    if (((state[bodyBase(body) + BODY.flags] as number) & FLAG.alive) === 0) continue;
     const role = state[bodyBase(body) + BODY.role] as number;
     counts.set(role, (counts.get(role) ?? 0) + 1);
   }
@@ -111,11 +113,15 @@ describe('quest genre – the sentence picks the mode, the verb kind and the tar
     expect(verbKindOf(verb as string)).toBe('fire');
   });
 
-  it('the round grows with the work: eight burning trees with three chasers get the longest round', () => {
+  it('the clock follows the work: eight burning trees with three chasers stay one long round, five candles get three rounds', () => {
     const timerOf = (game: GameSpecV1) => (game.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { seconds: number }).seconds;
+    const roundsOf = (game: GameSpecV1) => (game.controlParams as { tuning?: { rounds?: number } }).tuning?.rounds;
     const hard = { ...draft(HEROES.hasič), enemy: 'ghosts', params: { count: 8, chasers: 3 } };
-    expect(timerOf(gameOf(hard))).toBe(80);
-    expect(timerOf(gameOf(draft(HEROES.čaroděj)))).toBe(40);
+    // Hodiny = odhad robota × 1,5 + 15 s, nejvýš 88 s (P36A T4); dlouhá práce zůstane v jednom kole.
+    expect(roundsOf(gameOf(hard))).toBeUndefined();
+    expect(timerOf(gameOf(hard))).toBe(87);
+    expect(roundsOf(gameOf(draft(HEROES.čaroděj)))).toBe(3);
+    expect(timerOf(gameOf(draft(HEROES.čaroděj)))).toBe(88);
     expect(timerOf(gameOf({ ...hard, params: { ...hard.params, seconds: 30 } }))).toBe(30);
   });
 

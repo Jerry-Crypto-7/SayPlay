@@ -153,7 +153,7 @@ describe('the thing the player uses is never a role', () => {
     expect(game.spec.roles.map((role) => role.label)).not.toContain('water');
     // P36A T3: úkol v prostoru má vždy pronásledovatele – výchozího jednoho, s nepřítelem z věty, ne s vodou.
     expect(game.spec.roles.filter((role) => role.kind === 'chaser')).toEqual([expect.objectContaining({ label: 'fallen log', count: 1 })]);
-    expect(game.spec.objective.description).toBe('Extinguish all 5 burning tree before the fallen log catches you.');
+    expect(game.spec.objective.description).toBe('Extinguish all 5 burning tree in each of 2 rounds before the fallen log catches you.');
   });
 
   it('keeps the quick version off the tool too', () => {
@@ -183,7 +183,7 @@ describe('the AI version adds what the sentence says and the quick version misse
     expect(game.source).toBe('authored');
     expect(game.fallbackReason).toBeNull();
     expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog', count: 1 }));
-    expect(game.spec.objective.description).toBe('Hit all 5 snowman before the dog catches you.');
+    expect(game.spec.objective.description).toBe('Hit all 5 snowman in each of 3 rounds before the dog catches you.');
   });
 });
 

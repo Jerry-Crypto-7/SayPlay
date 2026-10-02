@@ -8,11 +8,9 @@
 
 import { readCountedNouns, nounPhrase } from '../draft/lexicon';
 import { ESCAPE } from '../arcade/pieces/arena';
-import { questSpatial, questStation } from '../arcade/pieces/quest';
+import { QUEST, questRounds, questSpatial, questStation, spatialRoundSeconds, stationRoundSeconds } from '../arcade/pieces/quest';
+import { WAVE_PLAN, wavesChasers } from '../arcade/pieces/waves';
 import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
-
-/** Nejkratší kolo, když ho spec neříká; `arenaWinOf` bere 20–80 s. */
-const ROUND_SECONDS = 40;
 
 /** Výchozí počty generátorů: bez `count` ve specu hraje, co by postavil generátor sám. */
 const SPATIAL = questSpatial.params.parse({});
@@ -125,15 +123,30 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   // Kolo roste s prací: kroky stavu × čas na krok, s honičkou robot hodně uhýbá. Měřeno (T4, p95 robota):
   // 8 stromů × 3 stavy bez honičky 23 s, se třemi pronásledovateli 75 s; 5 svíček + 2 duchové 29 s.
   const steps = count * (states - 1);
-  const seconds = spec.params?.seconds ?? clamp(steps * (chasers > 0 ? 7 : 3), ROUND_SECONDS, 80);
+  // Kola (P36A T4): po `count` cílech další kolo, výhra až v posledním; kol tolik, aby robot hrál 30–90 s.
+  // Oprava na místě drží 1 s – kolo dvou stanovišť by jinak trvalo 1 s.
+  const hold = station && states === 2 ? QUEST.rounds.stationHold : undefined;
+  const plan = station
+    ? questRounds(steps, () => stationRoundSeconds({ count, states, hold: hold ?? STATION.hold, after: STATION.after }))
+    : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)));
+  // Hodiny jako u sběru ve vlnách: robot je stihne s rezervou, pod horizontem ověření.
+  const seconds = spec.params?.seconds ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
   const hunter = spec.enemy ?? 'hunter';
   const verbText = capital(verb);
+  const each = plan.rounds > 1 ? ` in each of ${String(plan.rounds)} rounds` : '';
   return legacySpec(spec, {
     control: 'move_free',
     controlParams: {
       generator: station ? 'quest_station' : 'quest_spatial',
       // Pravidlo bere sloveso jedním slovem (`verbSchema`).
-      tuning: { count, states, verb: verb.trim().toLowerCase().replace(/\s+/g, '-'), ...(station ? {} : { chasers }) },
+      tuning: {
+        count,
+        states,
+        verb: verb.trim().toLowerCase().replace(/\s+/g, '-'),
+        ...(plan.rounds > 1 ? { rounds: plan.rounds } : {}),
+        ...(hold === undefined ? {} : { hold }),
+        ...(station ? {} : { chasers }),
+      },
     },
     // Změnit stav každého cíle je hádanka nad rolí cílů; počet nese `tuning` i role.
     archetype: 'switch_puzzle',
@@ -142,15 +155,15 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
       kind: 'puzzle',
       description:
         chasers > 0
-          ? `${verbText} all ${String(count)} ${label} before the ${hunter} ${chasers === 1 ? 'catches' : 'catch'} you.`
-          : `${verbText} all ${String(count)} ${label} within ${String(seconds)} seconds.`,
+          ? `${verbText} all ${String(count)} ${label}${each} before the ${hunter} ${chasers === 1 ? 'catches' : 'catch'} you.`
+          : `${verbText} all ${String(count)} ${label}${each} within ${String(seconds)} seconds.`,
       role: 'target',
     },
     // Tři životy (P36A T2); berou je pronásledovatelé v prostoru a přetečení na místě (T3, `boil_over`).
     mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }, livesMechanic()],
     roles: [{ id: 'target', kind: 'target', label, count }, ...(chasers > 0 ? [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }] : [])],
     tutorial: {
-      goalLine: `${verbText} all ${String(count)} ${label}.`,
+      goalLine: `${verbText} all ${String(count)} ${label}${plan.rounds > 1 ? `, ${String(plan.rounds)} rounds` : ''}.`,
       // Druhá věta jen pro kartu pauzy: výzva na startu bere první (`FirstPrompt`).
       controlsHint: station ? 'Drag or arrows to move, hold Use when it is ready. Stall and it boils over.' : 'Drag or arrows to move, hold Use next to a target.',
     },
