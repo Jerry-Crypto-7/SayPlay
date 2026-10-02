@@ -52,6 +52,7 @@ import { Scenery } from '../look/Scenery';
 import { questTargets } from '../quest/TargetStates';
 import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
+import { InkOutline } from '../look/rig/InkOutline';
 import { type Cast, FittedModel } from '../World';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
@@ -712,6 +713,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
               ) : (
                 // Náklon nápřahu, výpad a pád bojovníka (`drawFighter`); mimo souboj stojí rovně.
                 <group ref={(group) => { leans.current[view.index] = group; }}>
+                  {/* Obrys (P36C T6) jen na modelu – kruh, ukazatel zdraví a výstraha jsou mimo tuhle skupinu. */}
+                  <InkOutline ink={part === 'hero' ? 'hero' : 'foe'} />
                   {character !== undefined ? (
                     <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
                   ) : (

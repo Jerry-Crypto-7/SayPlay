@@ -35,6 +35,7 @@ import { type BodyView, bodiesOf, bodiesStale } from './bodies';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { loadBodyModel } from './look/load';
+import { type Ink, InkOutline } from './look/rig/InkOutline';
 import { Scenery } from './look/Scenery';
 import { RiggedModel } from './RiggedModel';
 import type { ArcadeSession } from './session';
@@ -247,6 +248,10 @@ const FRAME_TARGET_ROLES: ReadonlySet<number> = new Set([ROLE.obstacle, ROLE.col
 const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
   view.role === ROLE.player ? 'hero' : FRAME_TARGET_ROLES.has(view.role) && view.kind !== 'tire-barrier' ? 'target' : undefined;
 
+/** Obrys těla (P36C T6): hrdina inkoustem, nepřítel a pronásledovatel rajčatovou, ostatní bez obrysu. */
+const inkOf = (view: BodyView): Ink | undefined =>
+  view.role === ROLE.player ? 'hero' : view.role === ROLE.enemy || view.role === ROLE.chaser ? 'foe' : undefined;
+
 /**
  * Role věty, jejíž popisek tělo kreslí (P30B T5) – totéž rozhodnutí jako `modelIdOf`
  * a `arcadeScene` v `fidelity/chain.ts`. Nota, díl věže a soupeř souboje mají vlastní scény.
@@ -375,9 +380,10 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       if (control === 'platform') {
         // Kamera za výškou hráče jen dojíždí, ať skok netřese obrazem.
         followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 4));
-        // Na výšku mírně natočená, ať je vidět nejbližší mince či hrot ~11 m před startem
-        // i vedle širokého hrdiny (P27A T6, P30B T5, `e2e/play-frame`); hrdina zůstává ~22 m od kamery.
-        if (camera.aspect < 1) placeAngled(camera, look, z, followY.current + 1.2, 24, 25 * DEG, 4.5);
+        // Na výšku natočená do tří čtvrtin, ať je vidět nejbližší mince či hrot ~11 m před startem
+        // i vedle širokého hrdiny (P27A T6, P30B T5, `e2e/play-frame`). Hrdina ~13 m od kamery má
+        // ~10 % výšky obrazu – z 22 m při bočním pohledu měl 6 % a minimum je 8 % (P36C T6, `e2e/play-hero-size`).
+        if (camera.aspect < 1) placeAngled(camera, look, z, followY.current + 1.2, 16, 55 * DEG, 3.5);
         else placeSide(camera, look, z, followY.current + 1.2, 16, 7, 18, 0.4);
       } else if (control === 'flap') {
         // Na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera
@@ -418,6 +424,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
+            {inkOf(view) !== undefined && <InkOutline ink={inkOf(view)!} />}
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
               <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
             ) : rigged[view.index] !== undefined ? (

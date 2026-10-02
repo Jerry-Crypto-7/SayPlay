@@ -27,6 +27,7 @@ import type { ControlId } from '@/play/spec';
 import { ActionButton, actionsOf, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
+import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping, runnerGesture } from './input';
@@ -74,6 +75,8 @@ export interface FrameReport {
    * rovině: 0 = hledí do kamery, 180 = je k ní zády (P35 T12).
    */
   readonly heroFacing: number | null;
+  /** Kolik inkoustových obalů (obrys, P36C T6) sítě hrdiny nesou; obrys nezávisí na úrovni kvality. */
+  readonly heroInk: number;
   readonly target: FrameBox | null;
   /** Kolik viditelných kandidátů na cíl scéna má. */
   readonly targets: number;
@@ -157,7 +160,7 @@ const cornerOf = new Vector3();
 const inView = new Vector3();
 
 /** Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich. */
-function frameOf(object: Object3D, camera: Camera, width: number, height: number): FrameBox | null {
+export function frameOf(object: Object3D, camera: Camera, width: number, height: number): FrameBox | null {
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
@@ -165,7 +168,9 @@ function frameOf(object: Object3D, camera: Camera, width: number, height: number
   let behind = false;
   object.traverseVisible((node) => {
     const mesh = node as Mesh;
-    if (mesh.isMesh !== true) return;
+    // Obal obrysu (P36C T6) má kvádr svého těla. Riggovaný obal by navíc kostmi přepočítal
+    // každý vrchol (3× víc než tělo, `toCreasedNormals`) – `PromptSpot` to dělá každý snímek.
+    if (mesh.isMesh !== true || isInk(mesh)) return;
     let box: Box3;
     if ((mesh as SkinnedMesh).isSkinnedMesh === true) {
       // Riggovaná postava: kvádr s pózou kostí, ne klidová geometrie.
@@ -241,6 +246,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         height: size.height,
         hero: hero === null ? null : frameOf(hero, camera, size.width, size.height),
         heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
+        heroInk: hero === null ? 0 : inkCount(hero),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },

@@ -22,6 +22,7 @@ import { DUEL, DUEL_FOE, DUEL_PHASE } from '@/play/arcade/pieces/duel';
 
 import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
+import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 import { DUEL_ZONES, zoneAt } from '../touch-zones';
@@ -168,9 +169,11 @@ export function DuelScene({ session, look: scene, rivalModel }: { readonly sessi
       </mesh>
       {/* Sonda záběru (P27A T6): hráč je hrdina, soupeř cíl. */}
       <group position={[0, 0, hero.z]} userData={{ frame: 'hero' }}>
+        <InkOutline ink="hero" />
         <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
       </group>
       <group position={[0, 0, rival.z]} userData={{ frame: 'target', item: 'rival' }}>
+        <InkOutline ink="foe" />
         {/* Model hledí k hráči (−z). */}
         <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} model={rivalModel === undefined ? undefined : <group rotation={[0, Math.PI, 0]}>{rivalModel(rival.w, rival.h, rival.d)}</group>} />
       </group>
