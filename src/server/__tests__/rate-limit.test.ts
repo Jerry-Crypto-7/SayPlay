@@ -93,6 +93,17 @@ describe('strop na frekvenci veřejných dveří', () => {
     expect(takeRateSlot('play/dare', ROOM, T0 + 11_100)).toMatchObject({ allowed: false, scope: 'instance' });
   });
 
+  it('klouzavá sekunda: hodiny o sekundu zpět výzvy nezastaví; při plném okně retry-after do jeho konce (revize T5r3-1)', () => {
+    takeRateSlot('play/dare', ME, T0 + 5_000);
+    takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 5_000);
+    expect(takeRateSlot('play/dare', '192.0.2.1', T0 + 4_000)).toMatchObject({ allowed: true });
+
+    resetRateWindows();
+    for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) expect(takeRateSlot('play/dare', `192.0.2.${String(i)}`, T0 + i * 500).allowed).toBe(true);
+    const at = T0 + (MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE - 1) * 500 + 100;
+    expect(takeRateSlot('play/dare', '198.51.100.99', at)).toMatchObject({ allowed: false, scope: 'instance', retryAfterSeconds: Math.ceil((T0 + RATE_WINDOW_MS - at) / 1000) });
+  });
+
   it('flooder zavře dveře SOBĚ, ne ostatním', () => {
     // **Nález nezávislé revize 4. 9. 2026, `VERDICT: blocking`.** Dokud byl
     // čítač jeden na dveře, stačilo 5,1 požadavku za sekundu a dveře byly

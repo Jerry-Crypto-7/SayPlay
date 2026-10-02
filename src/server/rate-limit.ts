@@ -768,8 +768,15 @@ export function takeRateSlot(
     // volající za sekundu naplnil `dareCount` odmítnutými a zavřel výzvy všem do konce okna.
     // Začátek „v budoucnu“ (hodiny couvly) se nepočítá, jinak by výzvy stály, než je doženou.
     const recent = open.dareStartsMs.filter((at) => at <= nowMs && nowMs - at < DARE_SPACING_MS).length;
+    // Plné i okno instance → čekat na jeho konec, ne na sekundu (revize T5r3-1, LOW).
     if (recent >= MAX_DARE_REPLAYS_PER_SECOND)
-      return { allowed: false, count: recent + 1, limit: MAX_DARE_REPLAYS_PER_SECOND, scope: 'instance', retryAfterSeconds: 1 };
+      return {
+        allowed: false,
+        count: recent + 1,
+        limit: MAX_DARE_REPLAYS_PER_SECOND,
+        scope: 'instance',
+        retryAfterSeconds: open.dareCount >= MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE ? retryAfterSeconds : 1,
+      };
   }
   const instanceCount = events ? (open.eventsCount += 1) : dare ? (open.dareCount += 1) : (open.instanceCount += 1);
   const instanceLimit = dare ? MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE : MAX_REQUESTS_PER_WINDOW_PER_INSTANCE;
