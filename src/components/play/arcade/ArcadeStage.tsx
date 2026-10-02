@@ -328,7 +328,7 @@ const END_CLIP_MS = 1500;
 
 const JUMP_KEYS = new Set([' ', 'arrowup', 'w']);
 
-/** Běžec: ťuk/klik/mezerník = skok (hned při stisku), šipky/A-D a swipe = pruh, šipka dolů / swipe dolů = skluz. */
+/** Běžec: mezerník/šipka nahoru = skok, šipky/A-D = pruh, šipka dolů = skluz; dotyk a myš: `runnerGesture`. */
 function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
     if (!active) return;
@@ -355,16 +355,17 @@ function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivE
     const gesture = runnerGesture(session);
     const onDown = (event: PointerEvent) => gesture.down(event);
     const onMove = (event: PointerEvent) => gesture.move(event);
-    const onEnd = () => gesture.end();
+    const onUp = (event: PointerEvent) => gesture.up(event);
+    const onCancel = () => gesture.cancel();
     element.addEventListener('pointerdown', onDown);
     element.addEventListener('pointermove', onMove);
-    element.addEventListener('pointerup', onEnd);
-    element.addEventListener('pointercancel', onEnd);
+    element.addEventListener('pointerup', onUp);
+    element.addEventListener('pointercancel', onCancel);
     return () => {
       element.removeEventListener('pointerdown', onDown);
       element.removeEventListener('pointermove', onMove);
-      element.removeEventListener('pointerup', onEnd);
-      element.removeEventListener('pointercancel', onEnd);
+      element.removeEventListener('pointerup', onUp);
+      element.removeEventListener('pointercancel', onCancel);
     };
   }, [session, target, active]);
 }
