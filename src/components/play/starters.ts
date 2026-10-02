@@ -92,6 +92,11 @@ export const SO_CLOSE = 'So close.';
 export const NEW_BEST = 'New best!';
 export const DARE_A_FRIEND = 'Dare a friend to beat it';
 export const DARE_SHORT = 'Dare a friend';
+/** Výzva kamaráda (P36B T7): poražený kamarád – a hlavní akce po výhře pošle novou výzvu zpátky. */
+export const YOU_BEAT_IT = 'You beat it!';
+export const DARE_BACK = 'Dare back';
+/** Mezi body výzvy přebitými za běhu (P36B T7) – vyhrát ještě musí, proto ne „You beat it!“. */
+export const AHEAD = "You're ahead!";
 export const LINK_COPIED = 'Link copied. Go dare someone.';
 
 export const POST_RUN_CHIPS = [

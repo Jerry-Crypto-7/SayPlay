@@ -23,12 +23,14 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/components/play/PlayShell', () => ({ PlayShell: () => null }));
 
 const { default: PlayGamePage } = await import('../[id]/page');
+const { POST: createGame } = await import('@/app/api/play/games/route');
+const { STARTERS } = await import('@/components/play/starters');
 
 const ID = '0123456789abcdef';
 const temporary: string[] = [];
 
-async function render(): Promise<{ props: Record<string, unknown> }> {
-  return (await PlayGamePage({ params: Promise.resolve({ id: ID }) })) as { props: Record<string, unknown> };
+async function render(id = ID, search: Record<string, string> = {}): Promise<{ props: Record<string, unknown> }> {
+  return (await PlayGamePage({ params: Promise.resolve({ id }), searchParams: Promise.resolve(search) })) as { props: Record<string, unknown> };
 }
 
 function busy(element: { props: Record<string, unknown> }): boolean {
@@ -69,5 +71,35 @@ describe('/play/[id] page gate', () => {
     get.mockClear();
     expect(busy(await render())).toBe(true);
     expect(get).not.toHaveBeenCalled();
+  });
+});
+
+/** Výzva z odkazu (P36B T7): stránka dá hře jen výzvu téže hry; cizí, neplatná nebo neznámá = hra bez výzvy. */
+describe('/play/[id]?dare= – the friend’s verified result', () => {
+  async function arcadeId(): Promise<string> {
+    for (const { sentence } of STARTERS) {
+      const created = await createGame(new Request('http://play.test/api/play/games', { method: 'POST', headers: { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.22' }, body: JSON.stringify({ sentence }) }));
+      const { url } = (await created.json()) as { url: string };
+      const id = url.split('/').at(-1)!;
+      if ((await versionStoreFromEnv(process.env).get(id))?.arcade !== undefined) return id;
+    }
+    throw new Error('no arcade starter');
+  }
+
+  const challengeOf = (element: { props: Record<string, unknown> }): unknown =>
+    (element.props.children as { props: Record<string, unknown> }[]).find((child) => 'challenge' in child.props)?.props.challenge;
+
+  it('a dare of this game reaches the game; another game’s, a malformed or an unknown one does not', async () => {
+    const id = await arcadeId();
+    const versions = versionStoreFromEnv(process.env);
+    const dare = (dareId: string, versionId: string) => ({ dareId, versionId, score: 2450, ticks: 1860, hash: '0', liveChanges: 1, createdAt: '2026-10-02T00:00:00.000Z' });
+    await versions.putDare(dare('a'.repeat(32), id));
+    await versions.putDare(dare('b'.repeat(32), 'fedcba9876543210'));
+
+    expect(challengeOf(await render(id, { dare: 'a'.repeat(32) }))).toEqual({ score: 2450, ticks: 1860, liveChanges: 1 });
+    expect(challengeOf(await render(id, { dare: 'b'.repeat(32) }))).toBeNull();
+    expect(challengeOf(await render(id, { dare: 'A'.repeat(32) }))).toBeNull();
+    expect(challengeOf(await render(id, { dare: 'c'.repeat(32) }))).toBeNull();
+    expect(challengeOf(await render(id))).toBeNull();
   });
 });

@@ -2,10 +2,10 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { BEST_PREFIX, type BestOutcome, bestGoal, readBest, settleBest } from '../best';
+import { BEST_PREFIX, type BestOutcome, bestGoal, type Dare, dareGoal, dareStart, dareVerdict, readBest, settleBest } from '../best';
 import { PostRun, type RunFacts, runResult } from '../PostRun';
 import type { RemixJob } from '../RemixBox';
-import { NEW_BEST } from '../starters';
+import { DARE_BACK, NEW_BEST, YOU_BEAT_IT } from '../starters';
 import { GameHud, type HudCounter } from '../ui/GameHud';
 
 /**
@@ -160,5 +160,66 @@ describe('bestGoal – cíl k překonání v HUD (P36B T4)', () => {
       renderToStaticMarkup(createElement(GameHud, { title: 'T', goalLine: 'Go', counters: [counter], clock: { seconds: 3, countdown: false }, objective: false }));
     expect(hud({ label: 'best', count: 2450, text: 'Best 2,450' })).toMatch(/class="play-hud-count" data-testid="hud-counter-best"[^>]*>.*Best 2,450/);
     expect(hud({ label: 'best', count: 2451, text: NEW_BEST, fresh: true })).toMatch(/class="play-hud-count is-new" data-testid="hud-counter-best"[^>]*>.*New best!/);
+  });
+});
+
+/**
+ * Výzva kamaráda (P36B T7): cíl na kartě startu a v HUD, na konci výsledek
+ * proti kamarádovi. Body rozhodují první, při shodě čas.
+ */
+describe('dare – hra proti výsledku kamaráda (P36B T7)', () => {
+  const scored: Dare = { score: 2450, ticks: 1860, liveChanges: 0 };
+  const timed: Dare = { score: 0, ticks: 1860, liveChanges: 0 };
+
+  it('karta startu a HUD řeknou, co porazit: body a čas, u hry bez bodů jen čas', () => {
+    expect(dareStart(scored, 60, false)).toBe('Beat 2,450 in 31.0s');
+    expect(dareStart(timed, 60, false)).toBe('Beat 31.0s');
+    expect(dareStart({ ...timed, ticks: 5400 }, 60, true)).toBe('Survive 90.0s');
+    expect(dareGoal(scored, 60, false)).toEqual({ text: 'Beat 2,450', score: 2450 });
+    expect(dareGoal(timed, 60, false)).toEqual({ text: 'Beat 31.0s', score: null });
+  });
+
+  it('výhra s víc body kamaráda porazí, s méně ne – i když byla rychlejší', () => {
+    expect(dareVerdict({ won: true, score: 2800, ticks: 2400 }, scored, 60, false)).toEqual({ beat: true, text: "350 more than your friend's 2,450" });
+    expect(dareVerdict({ won: true, score: 2100, ticks: 900 }, scored, 60, false)).toEqual({ beat: false, text: "350 short of your friend's 2,450" });
+  });
+
+  it('při shodě bodů rozhodne čas; přesná shoda kamaráda neporazí', () => {
+    expect(dareVerdict({ won: true, score: 0, ticks: 1800 }, timed, 60, false)).toEqual({ beat: true, text: '1.0s faster than your friend' });
+    expect(dareVerdict({ won: true, score: 0, ticks: 1920 }, timed, 60, false)).toEqual({ beat: false, text: '1.0s slower than your friend' });
+    expect(dareVerdict({ won: true, score: 0, ticks: 1860 }, timed, 60, false).beat).toBe(false);
+    // Přežití bez bodů trvá každé výhře stejně: vydržet jako kamarád je výzvu splnit.
+    expect(dareVerdict({ won: true, score: 0, ticks: 5400 }, { ...timed, ticks: 5400 }, 60, true).beat).toBe(true);
+  });
+
+  it('prohra kamaráda nikdy neporazí, ani s víc body', () => {
+    expect(dareVerdict({ won: false, score: 900, ticks: 600 }, scored, 60, false)).toEqual({ beat: false, text: "1,550 short of your friend's 2,450" });
+    expect(dareVerdict({ won: false, score: 3000, ticks: 600 }, scored, 60, false).beat).toBe(false);
+    expect(dareVerdict({ won: false, score: 0, ticks: 1680 }, { ...timed, ticks: 1800 }, 60, true)).toEqual({ beat: false, text: '2 s short of your friend' });
+    expect(dareVerdict({ won: false, score: 0, ticks: 600 }, timed, 60, false)).toEqual({ beat: false, text: 'Your friend did it in 31.0s.' });
+  });
+
+  const renderDare = (facts: RunFacts, challenge: Dare) =>
+    renderToStaticMarkup(createElement(PostRun, { versionId: 'v1', remix: job, facts, record: { previous: { score: 1, ticks: 1, stars: 1 }, isNew: true }, challenge, onReplay: () => undefined }));
+
+  it('výsledek: „You beat it!“ a rozdíl místo rekordu, hlavní akce „Dare back“', () => {
+    const markup = renderDare(arcadeFacts({ score: { value: 2800, unit: 'coins' } }), scored);
+    expect(markup).toContain(`>${YOU_BEAT_IT}<`);
+    expect(markup).toMatch(/data-testid="play-dare-result" data-beat="true">350 more than your friend&#x27;s 2,450</);
+    expect(markup).not.toContain('data-testid="play-best"');
+    expect(markup).toMatch(new RegExp(`data-variant="primary"[^>]*>(<[^>]+>)*${DARE_BACK}<`));
+  });
+
+  it('prohraná výzva: „So close.“, kolik chybělo, hlavní akce zůstává „Try again“', () => {
+    const markup = renderDare(arcadeFacts({ won: false, score: { value: 900, unit: 'coins' }, stars: 0 }), scored);
+    expect(markup).toContain('>So close.<');
+    expect(markup).toMatch(/data-testid="play-dare-result" data-beat="false">1,550 short of your friend&#x27;s 2,450</);
+    expect(markup).not.toContain(DARE_BACK);
+  });
+
+  it('bez výzvy výsledek zůstává jako dřív', () => {
+    const result = runResult(arcadeFacts(), null);
+    expect(result.headline).toBe('You did it!');
+    expect(result.dare).toBeNull();
   });
 });

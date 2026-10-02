@@ -39,10 +39,10 @@ import { useEffect, useRef, useState } from 'react';
 import type { Stars as StarCount } from '@/play/score/stars';
 
 import { isTyping } from './arcade/input';
-import type { BestOutcome } from './best';
+import { type BestOutcome, type Dare, dareVerdict } from './best';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type DarePublish, type LivePublish, ShareButton } from './ShareButton';
-import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_DID_IT } from './starters';
+import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_BACK, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_BEAT_IT, YOU_DID_IT } from './starters';
 import { Button, Chip, Sheet } from './ui';
 import { clockText } from './ui/GameHud';
 import { onControl } from './ui/PauseCard';
@@ -84,6 +84,8 @@ export interface RunResult {
   readonly score: { readonly value: string; readonly unit: string } | null;
   /** Řádek rekordu; `null` = není co říct (žádný rekord, první výhra). */
   readonly best: { readonly text: string; readonly isNew: boolean } | null;
+  /** Výsledek proti výzvě kamaráda (P36B T7); `null` = hraje se bez výzvy. */
+  readonly dare: { readonly text: string; readonly beat: boolean } | null;
 }
 
 /** Do kolika sekund je výhra „Speedy!“. */
@@ -124,9 +126,15 @@ function bestLine(facts: RunFacts, record: BestOutcome | null): RunResult['best'
   return { text: `Your best: ${scored ? `${scoreText(previous.score)} · ${time}` : time}`, isNew: false };
 }
 
-/** Výsledek z fakt běhu: nadpis, odznak, věta, hvězdy, skóre, rekord a nejvýš tři statistiky (poslední je vždy čas). */
-export function runResult(facts: RunFacts, record: BestOutcome | null = null): RunResult {
+/**
+ * Výsledek z fakt běhu: nadpis, odznak, věta, hvězdy, skóre, rekord a nejvýš
+ * tři statistiky (poslední je vždy čas). S výzvou kamaráda (P36B T7) nadpis
+ * soudí výzvu – „You beat it!“ / „So close.“ – a řádek rekordu nahradí rozdíl
+ * proti kamarádovi; rekord se zapisuje dál, jen se tu neříká.
+ */
+export function runResult(facts: RunFacts, record: BestOutcome | null = null, challenge: Dare | null = null): RunResult {
   const seconds = facts.tick / facts.hz;
+  const dare = challenge === null ? null : dareVerdict({ won: facts.won, score: facts.score?.value ?? 0, ticks: facts.tick }, challenge, facts.hz, facts.survive);
   const time = clockText(seconds);
   const { goal } = facts;
   const summary =
@@ -139,14 +147,15 @@ export function runResult(facts: RunFacts, record: BestOutcome | null = null): R
         : `You lasted ${time}.`;
   const lead: ResultStat[] = goal === null ? [] : [{ value: `${goal.count}/${goal.need}`, label: goal.label }];
   return {
-    headline: facts.won ? YOU_DID_IT : SO_CLOSE,
+    headline: dare !== null ? (dare.beat ? YOU_BEAT_IT : SO_CLOSE) : facts.won ? YOU_DID_IT : SO_CLOSE,
     time,
     badge: !facts.won ? null : facts.survive ? 'Survived!' : seconds <= SPEEDY_SECONDS ? 'Speedy!' : 'Steady!',
     summary,
     stats: [...[...lead, ...facts.extra].slice(0, 2), { value: time, label: 'time' }],
     stars: facts.won ? (facts.stars ?? null) : null,
     score: facts.score === undefined || facts.score === null ? null : { value: scoreText(facts.score.value), unit: facts.score.unit },
-    best: bestLine(facts, record),
+    best: dare === null ? bestLine(facts, record) : null,
+    dare,
   };
 }
 
@@ -190,6 +199,7 @@ export function PostRun({
   clip = null,
   live,
   dare,
+  challenge = null,
   offline = false,
   record = null,
   onReplay,
@@ -204,6 +214,8 @@ export function PostRun({
   readonly live?: LivePublish;
   /** Výzva vítězného běhu arkády (P36B T6) – nese ji jen hlavní akce „Dare a friend to beat it“. */
   readonly dare?: DarePublish;
+  /** Výzva kamaráda, proti které se hrálo (P36B T7); výhra ji vrátí akcí „Dare back“. */
+  readonly challenge?: Dare | null;
   /** Ukázková hra domova (P28D T7) není v úložišti: jen znovu hrát, bez sdílení a remixu. */
   readonly offline?: boolean;
   readonly onReplay: (via: ReplayVia) => void;
@@ -274,7 +286,7 @@ export function PostRun({
     </>
   );
 
-  const result = runResult(facts, record);
+  const result = runResult(facts, record, challenge);
   const { won } = facts;
   // Hlavní akce: po výhře Dare, po prohře (a v ukázce domova) znovu hrát.
   const replayMain = offline || !won;
@@ -289,7 +301,7 @@ export function PostRun({
       variant={won ? 'primary' : 'secondary'}
       size={won ? 'l' : 'm'}
       className={won ? 'sp-btn--block' : ''}
-      label={won ? DARE_A_FRIEND : DARE_SHORT}
+      label={won ? (challenge === null ? DARE_A_FRIEND : DARE_BACK) : DARE_SHORT}
       clip={clip}
       live={live}
       dare={won ? dare : undefined}
@@ -322,6 +334,11 @@ export function PostRun({
         {result.best !== null && (
           <p className="play-result-best" data-testid="play-best" data-new={String(result.best.isNew)}>
             {result.best.text}
+          </p>
+        )}
+        {result.dare !== null && (
+          <p className="play-result-best" data-testid="play-dare-result" data-beat={String(result.dare.beat)}>
+            {result.dare.text}
           </p>
         )}
         {/* Samotný čas řádek statistik nenese: říká ho už věta shrnutí (a po výhře odznak) – na desktopu 720 px by vytlačil akce pod okraj. */}

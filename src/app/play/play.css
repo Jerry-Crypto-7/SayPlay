@@ -1591,6 +1591,22 @@
   line-height: 1.2;
 }
 
+/* Výzva kamaráda (P36B T7): co porazit, nad „Tap to start“; poznámka o živých změnách pod tím menší. */
+.play-first-prompt-dare {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--sp-text-title-m-size);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.play-first-prompt-note {
+  font-size: var(--sp-text-body-l-size);
+  font-weight: 400;
+  color: var(--sp-text-secondary);
+}
+
 /* Klávesa jen tam, kde je klávesnice a myš; na telefonu je to šum (jako čísla karet, P33 T6). */
 .play-first-prompt-keys {
   display: none;

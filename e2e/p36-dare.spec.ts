@@ -8,7 +8,8 @@ import { expect, test, type APIRequestContext, type BrowserContext, type Page } 
  */
 
 interface HandProbe {
-  readonly handPlay: (until: 'score' | 'end') => { readonly runState: string; readonly tick: number; readonly score: number };
+  readonly handPlay: (until: 'score' | 'end', lag?: number) => { readonly runState: string; readonly tick: number; readonly score: number };
+  readonly idleRun: () => { readonly runState: string; readonly tick: number };
 }
 
 interface Captured {
@@ -29,6 +30,8 @@ async function capture(context: BrowserContext): Promise<void> {
     const beacons: string[] = [];
     Object.assign(window, { __shared: shared, __beacons: beacons });
     Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: ShareData) => void shared.push(data) });
+    // Nabídka bere i klip běhu: bez toho by běh, který klip stihl nahrát, šel přes schránku (headless ji nedá).
+    Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
     Object.defineProperty(navigator, 'sendBeacon', {
       configurable: true,
       value: (_url: string, body: Blob) => {
@@ -39,14 +42,14 @@ async function capture(context: BrowserContext): Promise<void> {
   });
 }
 
-/** Robot dohraje „rukou“: lidský běh, jen takový posílá výzvu (`playWitness` ne). */
-async function winByHand(page: Page): Promise<{ readonly tick: number; readonly score: number }> {
+/** Robot dohraje „rukou“: lidský běh, jen takový posílá výzvu (`playWitness` ne). `lag` = stisky o tolik tiků později, pomalejší výhra. */
+async function winByHand(page: Page, lag = 0): Promise<{ readonly tick: number; readonly score: number }> {
   await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
-  const end = await page.evaluate(() => {
+  const end = await page.evaluate((late) => {
     Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
     document.dispatchEvent(new Event('visibilitychange'));
-    return (window.__playShell as unknown as HandProbe).handPlay('end');
-  });
+    return (window.__playShell as unknown as HandProbe).handPlay('end', late);
+  }, lag);
   expect(end.runState).toBe('won');
   await expect(page.getByTestId('play-postrun')).toBeVisible();
   return end;
@@ -69,7 +72,8 @@ test.describe('/play/[id] – send a dare (P36B T6)', () => {
     const posted = page.waitForResponse((response) => response.url().endsWith(`/api/play/games/${id}/dare`) && response.request().method() === 'POST');
     const end = await winByHand(page);
     const response = await posted;
-    expect(response.status()).toBe(201);
+    // 201 nová výzva; 200, když tentýž robotí běh už výzvou je (druhý průchod sadou nad týmž serverem).
+    expect([200, 201]).toContain(response.status());
     const dare = (await response.json()) as { dareId: string; score: number; ticks: number };
     expect({ score: dare.score, ticks: dare.ticks }).toEqual({ score: end.score, ticks: end.tick });
 
@@ -103,5 +107,62 @@ test.describe('/play/[id] – send a dare (P36B T6)', () => {
     expect(shared.url).toMatch(new RegExp(`/play/${id}\\?via=share$`));
     await expect(page.getByText("Couldn't attach your score, so the link opens just the game.")).toBeVisible();
     await context.close();
+  });
+});
+
+/**
+ * Hra proti výzvě (P36B T7): dva kontexty prohlížeče, jako dva lidé. A vyhraje
+ * pomaleji (robot o sekundu později) a výzva odejde na server; B otevře odkaz,
+ * vidí cíl na kartě startu i v HUD, prohraje (nic nedělá) a pak vyhraje rychleji.
+ * Dort: bez stisku prohraje (tik 324), robot o 60 tiků později pořád vyhraje
+ * (1 164 proti 1 104) – houbám bez stisku nic nehrozí, prohrát se nedají.
+ */
+test.describe('/play/[id]?dare= – play against a friend (P36B T7)', () => {
+  let url = '';
+  let id = '';
+
+  test.beforeAll(async ({ request }) => {
+    url = await publish(request, 'Carry a fragile cake across a kitchen to a party table.');
+    id = url.split('/').at(-1)!;
+  });
+
+  test('B sees the friend’s target, loses → So close., wins faster → You beat it! and Dare back', async ({ browser }) => {
+    const a = await browser.newContext();
+    await capture(a);
+    const pageA = await a.newPage();
+    await pageA.goto(url);
+    const posted = pageA.waitForResponse((response) => response.url().endsWith(`/api/play/games/${id}/dare`) && response.request().method() === 'POST');
+    const endA = await winByHand(pageA, 60);
+    const dareA = (await (await posted).json()) as { dareId: string; score: number; ticks: number };
+    expect(dareA.ticks).toBe(endA.tick);
+    await a.close();
+
+    const b = await browser.newContext();
+    await capture(b);
+    const pageB = await b.newPage();
+    await pageB.goto(`${url}?via=share&dare=${dareA.dareId}`);
+    const clock = `${(dareA.ticks / 60).toFixed(1)}s`;
+    await expect(pageB.getByTestId('play-dare-goal')).toHaveText(dareA.score > 0 ? `Beat ${dareA.score.toLocaleString('en-US')} in ${clock}` : `Beat ${clock}`);
+    await expect(pageB.getByTestId('hud-counter-dare')).toContainText('Beat');
+
+    await pageB.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
+    const lost = await pageB.evaluate(() => (window.__playShell as unknown as HandProbe).idleRun());
+    expect(lost.runState).toBe('lost');
+    await expect(pageB.getByTestId('play-postrun')).toContainText('So close.');
+    await expect(pageB.getByTestId('play-dare-result')).toHaveAttribute('data-beat', 'false');
+
+    const endB = await winByHand(pageB);
+    expect(endB.tick).toBeLessThan(endA.tick);
+    await expect(pageB.getByTestId('play-postrun')).toContainText('You beat it!');
+    await expect(pageB.getByTestId('play-dare-result')).toHaveAttribute('data-beat', 'true');
+    await expect(pageB.getByTestId('play-postrun').getByRole('button', { name: 'Dare back' })).toBeVisible();
+    await b.close();
+  });
+
+  test('an unknown dare opens the plain game without an error', async ({ page }) => {
+    await page.goto(`${url}?via=share&dare=${'0'.repeat(32)}`);
+    await expect(page.getByTestId('play-first-prompt')).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByTestId('play-dare-goal')).toHaveCount(0);
+    await expect(page.getByTestId('hud-counter-dare')).toHaveCount(0);
   });
 });

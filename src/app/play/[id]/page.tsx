@@ -6,6 +6,7 @@ import { cache } from 'react';
 import { VERSION_ID_PATTERN } from '@/app/api/play/_errors';
 import { admit } from '@/app/api/play/_publish';
 import { PrefetchPhysics } from '@/components/play/arcade/ArcadePlay';
+import type { Dare } from '@/components/play/best';
 import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
@@ -14,6 +15,22 @@ import { type Honesty, sentenceOf, unsupportedGame } from '@/play/draft/unsuppor
 import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
+type PageProps = Params & { searchParams: Promise<{ [key: string]: string | string[] | undefined }> };
+
+/** Id výzvy je hash obsahu zkrácený na 32 hex znaků (`…/dare/route.ts`). */
+const DARE_ID_PATTERN = /^[0-9a-f]{32}$/;
+
+/**
+ * Výzva kamaráda z odkazu `?dare=` (P36B T7): výsledek, který server ověřil
+ * přehráním. Jen výzva téhle hry; neplatné, cizí nebo prošlé id (i výpadek
+ * úložiště – `getDare` vrací `null`) = obyčejná hra, žádná chyba.
+ */
+async function challengeOf(id: string, dare: string | string[] | undefined): Promise<Dare | null> {
+  if (typeof dare !== 'string' || !DARE_ID_PATTERN.test(dare)) return null;
+  const record = await versionStoreFromEnv(process.env).getDare(dare);
+  if (record === null || record.versionId !== id) return null;
+  return { score: record.score, ticks: record.ticks, liveChanges: record.liveChanges };
+}
 
 /**
  * `/play/[id]` – PLAY shell. Hra se čte z úložiště verzí **přímo**, ne přes
@@ -74,7 +91,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function PlayGamePage({ params }: Params) {
+export default async function PlayGamePage({ params, searchParams }: PageProps) {
   const { id } = await params;
   const loaded = await load(id);
   if (loaded.kind === 'missing') notFound();
@@ -88,6 +105,8 @@ export default async function PlayGamePage({ params }: Params) {
   const { game, children, lineage, honesty, sentence } = loaded;
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
+  // Výzvu nese jen arkáda (P36B T5) – mřížková hra odkaz s `dare=` otevře jako obyčejnou hru.
+  const challenge = game.arcade === undefined ? null : await challengeOf(id, (await searchParams).dare);
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
   // Rapier (P32D T4) se začne stahovat v renderu stránky, souběžně se scénou – hra bez těles ho nestáhne.
   return (
@@ -107,6 +126,7 @@ export default async function PlayGamePage({ params }: Params) {
         honesty={honesty}
         upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
         par={game.report.par ?? null}
+        challenge={challenge}
       />
     </>
   );

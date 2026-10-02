@@ -24,8 +24,8 @@ import type { GameVersion } from '@/play/contracts';
 import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 
-import { type Best, type BestOutcome, bestGoal, readBest, settleBest } from '../best';
-import { NEW_BEST } from '../starters';
+import { type Best, type BestOutcome, bestGoal, type Dare, dareGoal, dareStart, readBest, settleBest } from '../best';
+import { AHEAD, NEW_BEST } from '../starters';
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
@@ -235,6 +235,8 @@ export interface ArcadePlayProps {
   readonly inFeed?: boolean;
   /** Vítězný běh robota z publikace (`report.par`, P36B T1); chybí = hvězdy jen 1 za výhru. */
   readonly par?: Par | null;
+  /** Výzva kamaráda z odkazu `?dare=` (P36B T7): cíl na kartě startu a v HUD, výsledek proti ní. */
+  readonly challenge?: Dare | null;
 }
 
 const END_PAUSE_MS = 600;
@@ -348,6 +350,7 @@ function ArcadePlayGame({
   offline = false,
   inFeed = false,
   par = null,
+  challenge = null,
   physicsReady,
 }: ArcadePlayProps & { readonly physicsReady: boolean }) {
   const [liveOpen, setLiveOpen] = useState(false);
@@ -567,11 +570,14 @@ function ArcadePlayGame({
 
   // Cíl k překonání v HUD (P36B T4): rekord z prohlížeče, přečtený po připojení a s každým
   // novým během (`record` se vynuluje). Přebité body ukážou na chvíli „New best!“, pak cíl zmizí.
+  // Výzva kamaráda (P36B T7) má přednost: cíl je jeho výsledek a přebité body řeknou „You're ahead!“.
   const [best, setBest] = useState<Best | null>(null);
   useEffect(() => {
     if (!offline && record === null) setBest(readBest(versionId));
   }, [offline, record, versionId]);
-  const goal = useMemo(() => bestGoal(best, ARCADE_HZ, arcade.rules.some((rule) => rule.id === 'survive_time')), [best, arcade]);
+  const survive = arcade.rules.some((rule) => rule.id === 'survive_time');
+  const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
+  const goalLabel = challenge === null ? 'best' : 'dare';
   const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
   const [cheered, setCheered] = useState(false);
   useEffect(() => {
@@ -583,7 +589,11 @@ function ArcadePlayGame({
     return () => window.clearTimeout(timer);
   }, [beaten]);
   const target: HudCounter | null =
-    goal === null || demo !== null || cheered ? null : beaten ? { label: 'best', count: snapshot.score, text: NEW_BEST, fresh: true } : { label: 'best', count: goal.score ?? 0, text: goal.text };
+    goal === null || demo !== null || cheered
+      ? null
+      : beaten
+        ? { label: goalLabel, count: snapshot.score, text: challenge === null ? NEW_BEST : AHEAD, fresh: true }
+        : { label: goalLabel, count: goal.score ?? 0, text: goal.text };
 
   // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
   // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness
@@ -698,10 +708,11 @@ function ArcadePlayGame({
        * Záznam robota zahraný „rukou“ (P28C T3): tytéž stisky tik po tiku cestou,
        * kterou jde klávesnice, takže běh je hráčův a odezva i zvuk reagují.
        * Stojí u prvního bodu (`score`) nebo na konci hry (`end`); `at` je
-       * `performance.now()` té chvíle.
+       * `performance.now()` té chvíle. `lag` posune stisky o tolik tiků později
+       * – e2e výzvy (P36B T7) tak dostane pomalejší výhru téhož robota.
        */
-      handPlay: (until: 'score' | 'end') => {
-        const inputs = session.botInputs();
+      handPlay: (until: 'score' | 'end', lag = 0) => {
+        const inputs = session.botInputs().map((event) => ({ ...event, tick: event.tick + lag }));
         session.restart();
         let next = 0;
         const done = (): boolean => {
@@ -749,7 +760,12 @@ function ArcadePlayGame({
           <>
             <Weather session={session} theme={spec.theme} />
             {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. Na plátně, ať ji stage postaví mimo hrdinu (P35 T6). */}
-            {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
+            {running && active && demo === null && snapshot.tick === 0 && (
+              <FirstPrompt
+                controlsHint={spec.tutorial.controlsHint}
+                dare={challenge === null ? null : { goal: dareStart(challenge, ARCADE_HZ, survive), changed: challenge.liveChanges > 0 }}
+              />
+            )}
           </>
         }
       />
@@ -845,6 +861,7 @@ function ArcadePlayGame({
           clip={clip}
           live={live}
           dare={dare}
+          challenge={challenge}
           offline={offline}
           record={record}
           onReplay={(via) => {

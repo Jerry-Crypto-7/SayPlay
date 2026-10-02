@@ -22,6 +22,7 @@ import type { GameSpecV1 } from '@/play/spec';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import type { Dare } from './best';
 import { WithPlayEnv } from './arcade/look/play-env';
 import { HonestyStrip } from './HonestyStrip';
 import type { LabFacts, ReadFacts } from './lab';
@@ -44,6 +45,8 @@ export interface PlayShellProps {
   readonly upgrade: string | null;
   /** Vítězný běh robota arkádové hry (`report.par`, P36B T1) – měřítko hvězd; mřížka ho nečte. */
   readonly par?: Par | null;
+  /** Výzva kamaráda z odkazu `?dare=` (P36B T7), ověřená serverem; jen arkáda. */
+  readonly challenge?: Dare | null;
 }
 
 /**

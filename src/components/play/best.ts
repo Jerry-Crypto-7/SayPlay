@@ -75,6 +75,49 @@ export function bestGoal(best: Best | null, hz: number, survive: boolean): BestG
 }
 
 /**
+ * Výzva kamaráda (P36B T7): výsledek, který server ověřil přehráním jeho
+ * vstupů (`DareRecord`) – bez jména, jen čísla. Body rozhodují první, při
+ * shodě čas; hvězdy ne (kamarádovy nikdo nespočítal).
+ */
+export interface Dare {
+  readonly score: number;
+  readonly ticks: number;
+  /** Kamarád hrál se živými změnami – jeho výsledek patří změněné hře. */
+  readonly liveChanges: number;
+}
+
+const points = (value: number): string => value.toLocaleString('en-US');
+
+/** Cíl výzvy v HUD: body („Beat 2,450“), u výzvy bez bodů čas („Beat 31.0s“, přežití „Survive 90.0s“). */
+export function dareGoal(dare: Dare, hz: number, survive: boolean): BestGoal {
+  if (dare.score > 0) return { text: `Beat ${points(dare.score)}`, score: dare.score };
+  return { text: `${survive ? 'Survive' : 'Beat'} ${clockText(dare.ticks / hz)}`, score: null };
+}
+
+/** Karta startu výzvy: body i čas kamaráda („Beat 2,450 in 31.0s“); bez bodů jen čas. */
+export function dareStart(dare: Dare, hz: number, survive: boolean): string {
+  return dare.score > 0 ? `Beat ${points(dare.score)} in ${clockText(dare.ticks / hz)}` : dareGoal(dare, hz, survive).text;
+}
+
+/** Konec běhu proti kamarádovi: porazil ho (jen výhra může) a o kolik. */
+export function dareVerdict(run: { readonly won: boolean; readonly score: number; readonly ticks: number }, dare: Dare, hz: number, survive: boolean): { readonly beat: boolean; readonly text: string } {
+  const diff = run.score - dare.score;
+  if (!run.won) {
+    if (diff < 0) return { beat: false, text: `${points(-diff)} short of your friend's ${points(dare.score)}` };
+    if (survive) return { beat: false, text: `${Math.max(1, Math.round((dare.ticks - run.ticks) / hz))} s short of your friend` };
+    return { beat: false, text: `Your friend did it in ${clockText(dare.ticks / hz)}.` };
+  }
+  if (diff > 0) return { beat: true, text: `${points(diff)} more than your friend's ${points(dare.score)}` };
+  if (diff < 0) return { beat: false, text: `${points(-diff)} short of your friend's ${points(dare.score)}` };
+  // Přežití bez rozdílu v bodech: každá výhra trvá stejně, vydržet jako kamarád je výzvu splnit.
+  if (survive) return { beat: true, text: 'You lasted as long as your friend.' };
+  const faster = dare.ticks - run.ticks;
+  if (faster > 0) return { beat: true, text: `${clockText(faster / hz)} faster than your friend` };
+  if (faster < 0) return { beat: false, text: `${clockText(-faster / hz)} slower than your friend` };
+  return { beat: false, text: 'Tied with your friend.' };
+}
+
+/**
  * Konec běhu: výhra, která je první nebo lepší, se zapíše. „New best!“ je jen
  * překonaný dřívější rekord – první výhra nemá co překonat. Prohra jen čte.
  */

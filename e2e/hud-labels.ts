@@ -6,4 +6,4 @@
  * (P34 T5) přidala `shots` (střelba a hod), `lives` (životy) a `defeated`
  * (cíl mřížky „poraz“). `best` je rekord k překonání (P36B T4).
  */
-export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best'];
+export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best', 'dare'];
