@@ -34,11 +34,14 @@ GET /api/play/games?recent=N[&cursor=C]
   counters always give the same order. Every third place goes to the newest game not shown yet, so a
   new game with no history still shows within the first three. With no counters the order is newest
   first, as before.
-- The counters live in the store (`<prefix>:play:loop:<finish|dare|skip>:<versionId>`) and grow when
-  `POST /api/play/events` reports `win`/`lose`, a `share` with `dare: true`, or `next_game` – only for
-  a game that exists in the store, so a made-up id creates no key. Remixes are the version's children.
-  A caller can still inflate a real game within the events door's own rate limit; the feed is a
-  showcase, not a leaderboard.
+- The counters live in the store (`<prefix>:play:loop:<finish|dare|skip>:<versionId>`). `finish` and
+  `skip` grow when `POST /api/play/events` reports `win`/`lose` or `next_game`; `dare` grows only when
+  `POST /api/play/games/:id/dare` stores a new server-verified dare – a client's `share` with
+  `dare: true` counts nothing. Each counter takes one vote per caller (hashed `callerOf` key) per game
+  per day (`<prefix>:play:loop-vote:…`, `SET NX`, 24 h), so one address cannot push a game up by
+  repeating events or rotating `session`; a repeat the instance already saw costs no store command.
+  Only a game that exists in the store is counted, so a made-up id creates no key. Remixes are the
+  version's children.
 - In every block of eight at most three games of one archetype (`diversify`), taken in the ranked
   order. Once no other archetype is left to mix in, the remaining games follow in that order without
   the rule – they are never dropped.

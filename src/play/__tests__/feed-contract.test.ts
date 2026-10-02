@@ -261,20 +261,28 @@ describe('GET /api/play/games?recent&cursor', () => {
   });
 
   // P36B T9: dohrání se započte při události a feed podle něj přeřadí; vymyšlené id čítač nedostane.
-  it('finishes reported through the event door move a game up; an unknown game gets no counter', async () => {
+  // Revize T9-1: jedna adresa započte hře dohrání jednou za den, ať mění relaci jak chce; výzvu slovem klienta nezapočte vůbec.
+  it('finishes reported through the event door move a game up, once per caller; forged dares and unknown games count nothing', async () => {
     const older = await authored('Collect the coins', 1);
     const newer = await authored('Run from the bear', 2);
     const order = async (): Promise<string[]> => (await feed('?recent=10')).body.games.map((g: { versionId: string }) => g.versionId);
+    const heat = async (versionId: string): Promise<LoopHeat | undefined> => (await versionStoreFromEnv(process.env).loopHeat([versionId])).get(versionId);
     expect(await order()).toEqual([newer, older]);
 
-    const report = (name: string, versionId: string): Promise<Response> =>
-      sendEvent(new Request('http://play.test/api/play/events', { method: 'POST', headers: CALLER, body: JSON.stringify({ name, versionId, session: 'abcdefghijkl' }) }));
-    for (const name of ['win', 'lose']) expect((await report(name, older)).status).toBe(204);
+    const report = (body: Record<string, unknown>, ip = '203.0.113.7'): Promise<Response> =>
+      sendEvent(new Request('http://play.test/api/play/events', { method: 'POST', headers: { 'x-forwarded-for': ip }, body: JSON.stringify({ session: 'abcdefghijkl', ...body }) }));
+    for (const name of ['win', 'lose']) expect((await report({ name, versionId: older })).status).toBe(204);
     expect(await order()).toEqual([older, newer]);
+    for (let n = 0; n < 5; n += 1) expect((await report({ name: 'win', versionId: newer, session: `session${String(n).padStart(6, '0')}` })).status).toBe(204);
+    expect(await heat(newer)).toMatchObject({ finishes: 1 });
+    expect((await report({ name: 'share', versionId: newer, dare: true })).status).toBe(204);
+    expect(await heat(newer)).toMatchObject({ dares: 0 });
+    expect(await heat(older)).toMatchObject({ finishes: 1 });
+    expect((await report({ name: 'win', versionId: older }, '198.51.100.4')).status).toBe(204);
+    expect(await heat(older)).toMatchObject({ finishes: 2 });
 
     const unknown = 'e'.repeat(32);
-    expect((await report('win', unknown)).status).toBe(204);
-    expect((await versionStoreFromEnv(process.env).loopHeat([unknown, older])).get(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, remixes: 0 });
-    expect((await versionStoreFromEnv(process.env).loopHeat([older])).get(older)).toMatchObject({ finishes: 2 });
+    expect((await report({ name: 'win', versionId: unknown })).status).toBe(204);
+    expect(await heat(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, remixes: 0 });
   });
 });

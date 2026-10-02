@@ -98,6 +98,8 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     const again = await send(game.id, { inputs: packInputs(after), patches: late });
     expect(again.status).toBe(200);
     expect(((await again.json()) as { dareId: string }).dareId).toBe(body.dareId);
+    // Feed (P36B T9, revize T9-1): výzvu započte server sám u nové ověřené výzvy, opakování ne.
+    expect((await versionStoreFromEnv(process.env).loopHeat([game.id])).get(game.id)).toMatchObject({ dares: 1 });
   });
 
   // T5r1: id z výsledku přehrání, ne z poslaných bajtů – jinak no-op vstup nebo prohozené změny

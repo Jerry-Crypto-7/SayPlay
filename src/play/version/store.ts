@@ -15,7 +15,8 @@
  * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu,
  * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4),
  * - `<prefix>:play:dare:<dareId>` – JSON `DareRecord` (P36B T5), denní strop `<prefix>:play:dare-quota:<den>`,
- * - `<prefix>:play:loop:<finish|dare|skip>:<versionId>` – čítače událostí smyčky pro řazení feedu (P36B T9).
+ * - `<prefix>:play:loop:<finish|dare|skip>:<versionId>` – čítače událostí smyčky pro řazení feedu (P36B T9),
+ *   hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den.
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -92,9 +93,12 @@ export interface VersionStore {
   getDare(dareId: string): Promise<DareRecord | null>;
   /**
    * Započte událost smyčky (P36B T9), jen hře, která v úložišti je – jinak by
-   * kdokoli zakládal klíče na vymyšlená id. Výpadek spolkne: čítač je statistika.
+   * kdokoli zakládal klíče na vymyšlená id – a nejvýš jednou za
+   * `LOOP_VOTE_TTL_SECONDS` na `voter` (hash volajícího), čítač a hru: falešné
+   * události z jedné adresy feed nepohnou (nález revize T9-1). Opakování zná
+   * proces sám a nestojí ani příkaz úložiště. Výpadek spolkne: čítač je statistika.
    */
-  countLoop(versionId: string, counter: LoopCounter): Promise<void>;
+  countLoop(versionId: string, counter: LoopCounter, voter: string): Promise<void>;
   /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
   loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
 }
@@ -117,6 +121,11 @@ export interface DareRecord {
   readonly liveChanges: number;
   readonly createdAt: string;
 }
+
+/** Jeden volající započte hře každý čítač smyčky nejvýš jednou za den (P36B T9, nález revize T9-1). */
+export const LOOP_VOTE_TTL_SECONDS = 24 * 3600;
+/** Kolik hlasů si proces pamatuje, než paměť zahodí (pak rozhodne `SET NX` v úložišti). */
+const MAX_VOTE_MEMO = 20_000;
 
 /** Co hráči s hrou udělali (P36B T9): čítače událostí smyčky a počet remixů (dětí verze). */
 export interface LoopHeat {
@@ -241,6 +250,9 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const dareKey = (dareId: string): string => `${prefix}:play:dare:${dareId}`;
   const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
   const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
+  const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
+  /** Hlasy, které proces už započetl, s koncem platnosti (ms); opakování nestojí příkaz úložiště. */
+  const voted = new Map<string, number>();
 
   const store: VersionStore = {
     id,
@@ -413,10 +425,17 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         return null;
       }
     },
-    async countLoop(versionId, counter) {
+    async countLoop(versionId, counter, voter) {
+      const vote = `${counter}:${versionId}:${voter}`;
+      if ((voted.get(vote) ?? 0) > now()) return;
+      if (voted.size >= MAX_VOTE_MEMO) voted.clear();
+      voted.set(vote, now() + LOOP_VOTE_TTL_SECONDS * 1000);
       try {
+        if (!(await raw.exists(versionKey(versionId)))) return;
+        // Hlas v úložišti platí napříč instancemi; teprve nový hlas zvýší čítač.
+        if (!(await raw.setNx(voteKey(vote), '1', LOOP_VOTE_TTL_SECONDS))) return;
         // Čítač žije nejvýš tak dlouho jako hra (expirace od prvního zvýšení).
-        if (await raw.exists(versionKey(versionId))) await raw.incr(loopKey(counter, versionId), limits.ttlSeconds);
+        await raw.incr(loopKey(counter, versionId), limits.ttlSeconds);
       } catch {
         // Nezapočtená událost jen trochu posune feed.
       }

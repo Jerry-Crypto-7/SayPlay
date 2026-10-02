@@ -25,7 +25,7 @@ import { type DareRecord, VersionStoreUnavailable } from '@/play/version';
 import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
 import { rateLimitCode, takeRateSlot } from '@/server/rate-limit';
 
-import { admit, callerOf, markVolatileStore, store } from '../../../_publish';
+import { admit, callerOf, markVolatileStore, store, voterOf } from '../../../_publish';
 
 /** Živých změn za jeden běh – hráč jich v okénku udělá pár; strop drží cenu přehrání. */
 export const MAX_DARE_PATCHES = 32;
@@ -96,6 +96,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     throw thrown;
   }
   if (outcome === 'quota') return fail(429, 'DARE_QUOTA', "today's dare quota is used up; try again tomorrow", { 'retry-after': '3600' });
+  // Výzvu pro řazení feedu počítá server jen tady, u nové ověřené výzvy – ne podle slova klienta (P36B T9, revize T9-1).
+  if (outcome === 'stored') await versions.countLoop(id, 'dare', voterOf(request));
   return markVolatileStore(
     Response.json({ dareId, score: run.score, ticks: run.tick }, { status: outcome === 'stored' ? 201 : 200, headers: { 'cache-control': 'no-store' } }),
   );

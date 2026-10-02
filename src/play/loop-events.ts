@@ -44,14 +44,15 @@ export function readLoopEvent(raw: unknown): LoopEvent | null {
 
 /**
  * Čítače, podle kterých feed řadí (P36B T9): dohrání (výhra i prohra), výzva
- * Dare a přeskočení (`next_game`). Ostatní události řazení nemění.
+ * Dare a přeskočení (`next_game`). Výzvu započtou jen dveře výzvy, když server
+ * uloží novou ověřenou výzvu – `share` s `dare: true` je slovo klienta a
+ * nepočítá se (nález revize T9-1). Ostatní události řazení nemění.
  */
 export type LoopCounter = 'finish' | 'dare' | 'skip';
 export const LOOP_COUNTERS: readonly LoopCounter[] = ['finish', 'dare', 'skip'];
 
-export function loopCounterOf(event: LoopEvent): LoopCounter | null {
+export function loopCounterOf(event: LoopEvent): 'finish' | 'skip' | null {
   if (event.name === 'win' || event.name === 'lose') return 'finish';
-  if (event.name === 'share' && event.dare === true) return 'dare';
   if (event.name === 'next_game') return 'skip';
   return null;
 }
