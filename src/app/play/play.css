@@ -842,21 +842,6 @@
   height: var(--sp-size-icon-s);
 }
 
-/* Nápověda ovládání: na dotyku bez kláves, s myší celá (jako výzva na startu, T11). */
-.play-controls-keys {
-  display: none;
-}
-
-@media (hover: hover) {
-  .play-controls-touch {
-    display: none;
-  }
-
-  .play-controls-keys {
-    display: inline;
-  }
-}
-
 /* Desktop (kit `05-layout.md`): scéna 16:9 nejvýš 1280×720 uprostřed, okolí krémové, HUD sedí na scéně. */
 @media (min-width: 1024px) {
   .play-shell:not(.play-pager-slide > .play-shell) {
@@ -1509,17 +1494,10 @@
   line-height: 1.2;
 }
 
-/* Klávesa jen tam, kde je klávesnice a myš; na telefonu je to šum (jako čísla karet, P33 T6). */
+/* Klávesa jen tam, kde se nehraje prstem (`useCoarsePointer`); na telefonu je to šum (P33 T6). */
 .play-first-prompt-keys {
-  display: none;
   font-size: var(--sp-text-body-l-size);
   color: var(--sp-text-secondary);
-}
-
-@media (hover: hover) {
-  .play-first-prompt-keys {
-    display: block;
-  }
 }
 
 /* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. */
@@ -1550,6 +1528,71 @@
   to {
     transform: scale(1.06);
   }
+}
+
+/* Dotykové zóny (P36C T2): plošinovka a souboj ukážou nad dolní řadou HUD, co dělá
+ * která část obrazovky – dokud hra čeká na dotek a 3 s hry, pak zhasnou. Štítky
+ * kitu (papír, inkoustový obrys), žádná průhledná plocha přes hrdinu. */
+.play-touch-zones {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity var(--sp-duration-base) var(--sp-ease-exit);
+}
+
+.play-touch-zones[data-shown='false'] {
+  opacity: 0;
+}
+
+.play-touch-zone {
+  position: absolute;
+  bottom: var(--_stack);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-space-1);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.play-touch-zone .sp-icon {
+  width: var(--sp-size-icon-s);
+  height: var(--sp-size-icon-s);
+}
+
+.play-touch-zone-up {
+  display: inline-flex;
+  transform: rotate(-90deg);
+}
+
+/* Joystick arény a úkolu (P36C T2): kroužek tam, kam padl prst, páčka jede s tahem. */
+.play-stick {
+  position: absolute;
+  z-index: 1;
+  display: none;
+  width: 96px;
+  height: 96px;
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: 50%;
+  box-shadow: 0 0 0 var(--sp-border-base) var(--sp-surface), inset 0 0 0 var(--sp-border-base) var(--sp-surface);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.play-stick[data-active='true'] {
+  display: block;
+}
+
+.play-stick-knob {
+  position: absolute;
+  top: calc(50% - 22px);
+  left: calc(50% - 22px);
+  width: 44px;
+  height: 44px;
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: 50%;
+  background: var(--sp-secondary);
+  box-shadow: var(--sp-shadow-sm);
 }
 
 @media (prefers-reduced-motion: reduce) {

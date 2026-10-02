@@ -37,6 +37,8 @@ import { RunnerWorld } from './runner/RunnerWorld';
 import type { ArcadeSession } from './session';
 import { useSteerInput } from './steer/SteerScene';
 import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
+import { TouchStick, TouchZones } from './TouchControls';
+import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
 
@@ -407,10 +409,10 @@ function usePlatformInput(session: ArcadeSession, target: React.RefObject<HTMLDi
     };
     const onDown = (event: PointerEvent) => {
       const box = element.getBoundingClientRect();
-      const at = (event.clientX - box.left) / Math.max(1, box.width);
-      if (at >= 0.5) session.press(BUTTON.TAP);
+      const zone = zoneAt(PLATFORM_ZONES, (event.clientX - box.left) / Math.max(1, box.width));
+      if (zone === 2) session.press(BUTTON.TAP);
       else {
-        pointers.set(event.pointerId, at < 0.25 ? 'left' : 'right');
+        pointers.set(event.pointerId, zone === 0 ? 'left' : 'right');
         sync();
       }
     };
@@ -683,6 +685,9 @@ export default function ArcadeStage({
       <StageCanvas session={session} cast={cast} look={look} enabled={enabled} live={live} surface={surface} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
+      {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
+      {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
+      {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
       {fires && enabled && <FireButton session={session} />}
       {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}
     </div>

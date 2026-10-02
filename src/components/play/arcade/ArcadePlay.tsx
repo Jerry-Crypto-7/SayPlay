@@ -44,6 +44,7 @@ import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
+import { ZONE_HINTS } from './touch-zones';
 import { Weather } from './Weather';
 import { createArcadeSession, loopDemo, type ArcadeSession, type ArcadeSnapshot } from './session';
 
@@ -334,6 +335,8 @@ function ArcadePlayGame({
     return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
+  // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
+  const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
   const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
@@ -667,7 +670,7 @@ function ArcadePlayGame({
           <>
             <Weather session={session} theme={spec.theme} />
             {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. Na plátně, ať ji stage postaví mimo hrdinu (P35 T6). */}
-            {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
+            {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} touch={zoneHint} />}
           </>
         }
       />
@@ -728,6 +731,7 @@ function ArcadePlayGame({
               : undefined
           }
           controlsHint={spec.tutorial.controlsHint}
+          touch={zoneHint}
         >
           <MuteButton />
           {read !== undefined && <AboutButton onOpen={() => setAboutOpen(true)} />}

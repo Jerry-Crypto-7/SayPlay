@@ -24,6 +24,7 @@ import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { DUEL_ZONES, zoneAt } from '../touch-zones';
 import { initialBody } from '../timing/TimingScene';
 
 const STRIKE_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
@@ -44,7 +45,7 @@ export function useDuelInput(session: ArcadeSession, target: React.RefObject<HTM
     };
     const onDown = (event: PointerEvent) => {
       const box = element.getBoundingClientRect();
-      session.press((event.clientX - box.left) / Math.max(1, box.width) >= 0.5 ? BUTTON.TAP : BUTTON.DOWN);
+      session.press(zoneAt(DUEL_ZONES, (event.clientX - box.left) / Math.max(1, box.width)) === 1 ? BUTTON.TAP : BUTTON.DOWN);
     };
     window.addEventListener('keydown', onKey);
     element.addEventListener('pointerdown', onDown);
