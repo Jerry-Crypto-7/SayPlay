@@ -5,8 +5,8 @@
  * slitý 5, takže řada domů podél trati nestojí stovky kreslicích volání navíc.
  */
 
-import type { BufferGeometry, Material, Mesh, Object3D, Side } from 'three';
-import { DoubleSide, Float32BufferAttribute, Group, Mesh as MeshClass, MeshStandardMaterial } from 'three';
+import type { Bone, BufferGeometry, Material, Mesh, Object3D, Side, SkinnedMesh, TypedArray } from 'three';
+import { BufferAttribute, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh as MeshClass, MeshStandardMaterial, SkinnedMesh as SkinnedMeshClass } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
@@ -193,6 +193,97 @@ export function mergeBody(model: Object3D): Object3D {
   }
   const merged = parts.length > 1 ? mergeGeometries(parts) : parts[0];
   return merged === null || merged === undefined ? model : new MeshClass(merged, bodyMaterial(side));
+}
+
+/** Síť a všichni předci až po `root` jsou vidět. */
+function shownUnder(node: Object3D, root: Object3D): boolean {
+  for (let at: Object3D | null = node; at !== null && at !== root; at = at.parent) if (!at.visible) return false;
+  return true;
+}
+
+/** Stejný typ pole a normalizace jako `like`, `count` × 4 složky. */
+const skinAttribute = (like: BufferAttribute, count: number): BufferAttribute =>
+  new BufferAttribute(new (like.array.constructor as new (length: number) => TypedArray)(count * 4), 4, like.normalized);
+
+/**
+ * Riggovaná postava z jednoho kusu (P36C T9): rytíř KayKit je 6 riggovaných sítí a 9 tuhých
+ * (zbraně, štíty, helma) zavěšených na kostech, všechno jedním materiálem – s obrysem
+ * (T6) a stínem 45 kreslicích volání na postavu; dva rytíři byli na telefonu víc než
+ * polovina arény. Sítě se slijí do jedné SkinnedMesh na materiál a kostru:
+ *
+ * - riggovaná geometrie se předem přenese svou `bindMatrix` – slitá síť má vazbu jednotkovou;
+ * - tuhá dostane váhu 1 na kost, pod kterou visí, a geometrii v prostoru vazby té kosti
+ *   (`boneInverse⁻¹ · kost⁻¹ · síť`, vše v klidu).
+ *
+ * Attached bind přepočítá `bindMatrixInverse` z `matrixWorld`, takže poloha vrcholu pak
+ * závisí jen na kostech a slitá postava stojí v každé póze tam, kde stály díly. Model bez
+ * kostry, síť s morfy, víc materiály, dětmi, cizí kostrou, jinými atributy nebo skrytá
+ * zůstane, jak je. Mění `root` na místě – volá se jednou na načtený model, před klonováním.
+ */
+export function mergeRig(root: Object3D): Object3D {
+  root.updateMatrixWorld(true);
+  let skeleton: SkinnedMesh['skeleton'] | null = null;
+  let template: BufferGeometry | null = null;
+  root.traverse((node) => {
+    if (skeleton === null && (node as SkinnedMesh).isSkinnedMesh === true) {
+      skeleton = (node as SkinnedMesh).skeleton;
+      template = (node as SkinnedMesh).geometry;
+    }
+  });
+  if (skeleton === null || template === null) return root;
+  const { bones, boneInverses } = skeleton as SkinnedMesh['skeleton'];
+  const skinIndex = (template as BufferGeometry).getAttribute('skinIndex') as BufferAttribute;
+  const skinWeight = (template as BufferGeometry).getAttribute('skinWeight') as BufferAttribute;
+  const sameBones = (other: SkinnedMesh['skeleton']): boolean => other.bones.length === bones.length && other.bones.every((bone, i) => bone === bones[i]);
+
+  const groups = new Map<Material, { readonly sources: Mesh[]; readonly parts: BufferGeometry[] }>();
+  root.traverse((node) => {
+    const mesh = node as Mesh;
+    const { geometry, material } = mesh;
+    if (mesh.isMesh !== true || mesh.children.length > 0 || Array.isArray(material) || Object.keys(geometry.morphAttributes).length > 0 || !shownUnder(mesh, root)) return;
+    let part: BufferGeometry;
+    if ((mesh as SkinnedMesh).isSkinnedMesh === true) {
+      if (!sameBones((mesh as SkinnedMesh).skeleton)) return;
+      part = geometry.clone().applyMatrix4((mesh as SkinnedMesh).bindMatrix);
+    } else {
+      let bone: Object3D | null = mesh.parent;
+      while (bone !== null && !bones.includes(bone as Bone)) bone = bone === root ? null : bone.parent;
+      if (bone === null) return;
+      const index = bones.indexOf(bone as Bone);
+      const toBind = boneInverses[index]!.clone().invert().multiply(bone.matrixWorld.clone().invert()).multiply(mesh.matrixWorld);
+      part = geometry.clone().applyMatrix4(toBind);
+      const count = part.getAttribute('position').count;
+      const indices = skinAttribute(skinIndex, count);
+      const weights = skinAttribute(skinWeight, count);
+      for (let i = 0; i < count; i += 1) {
+        indices.setXYZW(i, index, 0, 0, 0);
+        weights.setXYZW(i, 1, 0, 0, 0);
+      }
+      part.setAttribute('skinIndex', indices);
+      part.setAttribute('skinWeight', weights);
+    }
+    part.clearGroups();
+    const group = groups.get(material) ?? { sources: [], parts: [] };
+    group.sources.push(mesh);
+    group.parts.push(part);
+    groups.set(material, group);
+  });
+
+  const identity = new Matrix4();
+  for (const [material, { sources, parts }] of groups) {
+    if (parts.length < 2) continue;
+    // Jiné atributy nebo index jen u části dílů: `mergeGeometries` by vrátil null s chybou v konzoli.
+    const shape = (part: BufferGeometry): string => `${part.index !== null}:${Object.keys(part.attributes).sort().join(',')}`;
+    if (parts.some((part) => shape(part) !== shape(parts[0]!))) continue;
+    const geometry = mergeGeometries(parts);
+    if (geometry === null) continue;
+    const merged = new SkinnedMeshClass(geometry, material);
+    merged.frustumCulled = sources.every((source) => source.frustumCulled);
+    root.add(merged);
+    merged.bind(skeleton, identity);
+    for (const source of sources) source.removeFromParent();
+  }
+  return root;
 }
 
 const bodyCache = new Map<string, Promise<Object3D | null>>();

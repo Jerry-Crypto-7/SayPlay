@@ -141,8 +141,7 @@ function RenderProbe() {
       post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
       meshes: meshes(),
     });
-    window.__playRender = probe;
-    return () => {
+    window.__playRender = probe;    return () => {
       if (window.__playRender === probe) delete window.__playRender;
     };
   }, [gl, scene]);
@@ -160,8 +159,11 @@ const shown = (object: Object3D): boolean => {
 const cornerOf = new Vector3();
 const inView = new Vector3();
 
-/** Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich. */
-export function frameOf(object: Object3D, camera: Camera, width: number, height: number): FrameBox | null {
+/**
+ * Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich.
+ * `posed = false` vezme riggované postavě klidový kvádr geometrie místo pózy kostí.
+ */
+export function frameOf(object: Object3D, camera: Camera, width: number, height: number, posed = true): FrameBox | null {
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
@@ -173,7 +175,7 @@ export function frameOf(object: Object3D, camera: Camera, width: number, height:
     // každý vrchol (3× víc než tělo, `toCreasedNormals`) – `PromptSpot` to dělá každý snímek.
     if (mesh.isMesh !== true || isInk(mesh)) return;
     let box: Box3;
-    if ((mesh as SkinnedMesh).isSkinnedMesh === true) {
+    if (posed && (mesh as SkinnedMesh).isSkinnedMesh === true) {
       // Riggovaná postava: kvádr s pózou kostí, ne klidová geometrie.
       (mesh as SkinnedMesh).computeBoundingBox();
       box = (mesh as SkinnedMesh).boundingBox!;
@@ -292,7 +294,9 @@ function PromptSpot({ session, surface }: { readonly session: ArcadeSession; rea
         scene.traverseVisible((node) => {
           if (node.userData.frame === 'hero') hero = node;
         });
-        const box = hero === null ? null : frameOf(hero, camera, size.width, size.height);
+        // Klidový kvádr (P36C T9): póza kostí přepočítá každý vrchol postavy a tohle běží každý
+        // snímek tiku 0 – u rytířů ~30 % CPU telefonu. Na místo pro kartu stačí postava v klidu.
+        const box = hero === null ? null : frameOf(hero, camera, size.width, size.height, false);
         if (box === null || box.behind) {
           delete host.dataset.promptAt;
           return;

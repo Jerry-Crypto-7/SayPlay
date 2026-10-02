@@ -173,4 +173,23 @@ The user decided on 2026-09-25 to skip the iOS Safari and Android check. `device
 | runner | 3.01 → **2.64 s** | 3.46 → **2.97 s** | draw −0.30 s, tick −0.40 s |
 | arena | 2.87 → **2.47 s** | 2.93 → **2.54 s** | draw −0.35 s, tick −0.35 s |
 
-**Target ≤ 3 s: met in the median on this machine, not in every run.** One of the 5 rounds hit a load spike where both builds took 5.3–6.6 s. These absolute numbers are lower than the R2 table above (4.6–5.1 s) because the machine was quieter during this run, not only because of T5. The paired differences are the part that belongs to T5. The grid was not re-measured (not in the AC, untouched by T5).
+**Target ≤ 3 s: met in the median on this machine, not in every run.**
+
+## P36C T9 – arena draw calls on the phone (2026-10-02)
+
+**What cost the frame.** A scene dump on the phone profile (temporary hook, not in the repo) showed each KayKit knight as 15 meshes: 6 skinned body parts plus 9 rigid weapons, shields, helmet and cape hanging on bones, all one material. With the ink outline (P36C T6, one hull per mesh) and the shadow pass that is 45 draw calls per character; two knights were 90 of the arena's 150. A CPU profile (P36C T6) also put ~30 % of the knights' frame into `frameOf` → `SkinnedMesh.computeBoundingBox`: the "Tap to start" placement (`PromptSpot`) re-skinned every vertex of the hero on every frame while the game waited at tick 0.
+
+**Changes.**
+- `mergeRig` (`look/load.ts`) merges a rigged character into one `SkinnedMesh` per material when it loads: skinned parts are pre-transformed by their `bindMatrix`, rigid parts get weight 1 on the bone they hang from. Attached bind makes every vertex depend only on the bones, so the merged character stands where its parts stood in every pose (`rig-merge.test.ts`, including a clone and a model loaded off its bind pose). Knight and mage: 15 / 12 meshes → 1, so 45 / 36 calls → 3. Pets, the ghost and the robot have no skeleton and are untouched.
+- `PromptSpot` places the card from the hero's rest box instead of the posed one. The card now sits a little higher above a KayKit hero (the rest pose holds the weapons up); it still never covers the hero.
+- Scenery and floor decor were not instanced: after the merge both arenas were under the call target, and an instanced row would lose the per-prop fog culling the runner relies on.
+
+**How it was measured.** Two production builds side by side (before `06117aa4` on 3364, after on 3363), the T5 probe alternating A/B for 4 rounds under the `heavy.mjs` lock, Pixel 7 emulated with the CPU slowed ×4, ~11 one-second samples per run after the demo starts. Other projects' load on the machine was not recorded. Own sentences with the acceptance games' setup: "A knight duels rival knights in a castle courtyard" (duel arena) and "A wizard lights all the candles in a castle hall" (quest arena, castle paving).
+
+| game (phone, emulated) | draw calls at start, tier medium | draw calls in the demo | fps median before → after |
+|---|---|---|---|
+| knights | 150 → **66** | 108 → **24** (tier low) | 18.4 → **48.2** |
+| wizard | 87 → **54** | 51 (low) → **54** (stays medium) | 20.6 → **48.0** |
+
+- Both games now hold the medium tier or drop to low only during the first second; before, both fell to low and stayed at 12–27 fps.
+- The probe's hero height for the knights reads 17.5 % → 20.2 % with an unchanged picture (screenshots compared side by side): `frameOf` now boxes the whole character in one axis-aligned box instead of one box per part, and from the 48° arena camera that box projects taller. The e2e floor (hero ≥ 8 %) is measured with the same function, so it is now slightly more lenient for KayKit heroes. One of the 5 rounds hit a load spike where both builds took 5.3–6.6 s. These absolute numbers are lower than the R2 table above (4.6–5.1 s) because the machine was quieter during this run, not only because of T5. The paired differences are the part that belongs to T5. The grid was not re-measured (not in the AC, untouched by T5).

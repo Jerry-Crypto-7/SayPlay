@@ -20,6 +20,7 @@ import { PROCEDURAL_CLIP, type RiggedCharacter } from '@/play/arcade/models';
 import type { ClipState } from '@/play/arcade/motion';
 
 import { HIT_S, fallOf, jumpStretchOf, landSquashOf, squashPose, tiltPose } from './characterMotion';
+import { mergeRig } from './look/load';
 
 /** Výška postavy v GLB – `scripts/assets/rigged/build.mjs` ji tak normalizuje. */
 const RIGGED_HEIGHT_M = 1.8;
@@ -76,7 +77,14 @@ const cache = new Map<string, Promise<GLTF | null>>();
 function loadRigged(path: string): Promise<GLTF | null> {
   let pending = cache.get(path);
   if (pending === undefined) {
-    pending = new GLTFLoader().loadAsync(path).catch(() => null);
+    // Slít jednou na načtený model (P36C T9): klony z `cloneSkinned` pak nesou jednu síť na materiál.
+    pending = new GLTFLoader()
+      .loadAsync(path)
+      .then((gltf) => {
+        mergeRig(gltf.scene);
+        return gltf;
+      })
+      .catch(() => null);
     cache.set(path, pending);
   }
   return pending;
