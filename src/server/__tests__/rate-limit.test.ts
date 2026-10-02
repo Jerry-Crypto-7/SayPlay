@@ -116,6 +116,12 @@ describe('strop na frekvenci veřejných dveří', () => {
     takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 5_000);
     expect(takeRateSlot('play/dare', '192.0.2.1', T0 + 4_000)).toMatchObject({ allowed: true });
 
+    // Uprostřed okna: plná sekunda čeká 1 s, ne do konce okna (zbytek okna by tu byl 5 s).
+    resetRateWindows();
+    takeRateSlot('play/dare', ME, T0 + 5_000);
+    takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 5_000);
+    expect(takeRateSlot('play/dare', '192.0.2.2', T0 + 5_000)).toMatchObject({ allowed: false, scope: 'instance', retryAfterSeconds: 1 });
+
     resetRateWindows();
     for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) expect(takeRateSlot('play/dare', `192.0.2.${String(i)}`, T0 + i * 500).allowed).toBe(true);
     const at = T0 + (MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE - 1) * 500 + 100;
