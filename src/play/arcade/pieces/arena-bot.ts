@@ -10,7 +10,7 @@
 import { z } from 'zod';
 
 import { type ArcadeInput, BODY, type BotPiece, FLAG, HEADER, ROLE, UNIT, bodyBase } from '../contract';
-import { ARENA, DIRECTIONS, arenaAxis, axisOfDirection, chaseParams, directionOfAxis, directionToward, graceLeft } from './arena';
+import { ARENA, DIRECTIONS, arenaAxis, axisOfDirection, chaseParams, chaseSpeedOf, directionOfAxis, directionToward, graceLeft } from './arena';
 
 const REACTION = 8;
 /** Větší buňka blíž (okraj k okraji) než tohle = utíkat. */
@@ -150,7 +150,8 @@ export const arenaBot: BotPiece<z.infer<typeof botParams>> = {
   reactionTicks: REACTION,
   cost: () => ({ bodies: 0, rules: 0 }),
   decide: ({ state, player, recent }, params): ArcadeInput => {
-    if (params.chase !== undefined) return escapeDecide(state, player, recent, params.half, params.chase.speed);
+    // Ve vlnách (P36A T4) plánuje proti rychlosti vlny, kterou vidí.
+    if (params.chase !== undefined) return escapeDecide(state, player, recent, params.half, chaseSpeedOf(params.chase, state));
     const me = predict(state, player, recent);
     const size = state[bodyBase(player) + BODY.w] as number;
     const count = state[HEADER.bodyCount] as number;

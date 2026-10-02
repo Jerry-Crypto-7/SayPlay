@@ -1,6 +1,6 @@
 # Hloubka her – měřítko P36A (T1)
 
-Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T4 části 1, oddíl dole).
+Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T4 části 2, oddíl dole).
 
 ## Jak přeměřit
 
@@ -120,10 +120,31 @@ Přeměřeno s kompilátorem `play-compiler-v7/arcade-v2`. Běžec: trať ze tř
 - **Nečinný běžec** prohraje později než dřív (8,4 → 12,9 s medián): rozjezd má jednu překážku v řadě, takže do startovního pruhu narazí řidčeji.
 - Semínka se nepohnula u žádné věty, ostatní žánry beze změny. Pásmo a nečinného hráče dotáhnou části 2 (aréna: sběr 17 vět bez nebezpečí, souboj, útěk) a 3 (úkol, plavba).
 
+## Po T4, část 2 – aréna ve vlnách (2. 10. 2026)
+
+Přeměřeno s kompilátorem `play-compiler-v8/arcade-v2`. Všechny tři režimy arény jdou ve vlnách, každá další je těžší. Sběr: počet z věty je věcí v jedné vlně, první vlna bez nebezpečí, od druhé vbíhá pronásledovatel (od čtvrté druhý) a každá vlna je rychlejší; hodiny = odhad robota × 1,5 + 15 s, nejvýš 88 s. Útěk s věcmi: totéž od startu s pronásledovateli z věty, každá druhá vlna přivede dalšího (do tří). Přežití: délka 20 s + 10 s na pronásledovatele (aspoň 35 s), na třetinách času přiběhne další. Souboj: ležící soupeři vstanou s HP navíc, přidají se noví (nejvýš tři) a zrychlí; vln tolik, aby odhad přesáhl 44 s + 4 s na soupeře z věty.
+
+| | všech 260 | poptávka 200 | vývojová 60 | cíl plánu |
+|---|---:|---:|---:|---:|
+| robot vyhraje za 30–90 s | 95 → **144 = 55,4 %** | 108 = 54,0 % | 36 = 60,0 % | ≥ 85 % (část 3 T4) |
+| nečinný hráč prohraje | 243 → **260 = 100 %** | 200 = 100 % | 60 = 100 % | ≥ 95 % – **splněno**, test přepnut na `it` |
+| životy > 1 | 260 = 100 % | 200 = 100 % | 60 = 100 % | ≥ 80 % – splněno |
+| hra vyšla / publikovatelná | 260 / 260 | 200 / 200 | 60 / 60 | |
+
+| žánr | vět | robot – medián výhry | rozsah | v pásmu | nečinný hráč |
+|---|---:|---:|---:|---:|---|
+| arena.collect | 17 | 8,7 → **49,2 s** | 33,8–63,3 s | 0 → 17 | dřív nedohrál, teď prohraje 17/17 na hodinách 88 s |
+| arena.escape | 23 | 40,0 s | 40,0–72,6 s | 18 → 23 | prohraje 23/23, ~10 s |
+| arena.fight | 27 | 1,5 → **49,8 s** | 39,1–62,2 s | 0 → 27 | prohraje 27/27, ~23 s |
+
+- **Délka podle věty:** „collect 3 batteries“ / „… 20 batteries“, „collect three keys … dodging ghosts“ / „… 20 keys …“, „escape from one ghost“ / „… 4 ghosts“ a „fights a robot“ / „… three robots“ – druhá věta hraje déle, drží `src/play/genre/__tests__/waves.test.ts`. Na 260 větách počet skoro nikdo neříká, rozptyl dělá semínko.
+- **Dvě vady, které vlny odkryly:** (1) dva pronásledovatelé z opačných stran se u stojícího hráče zastavili těsně před dotykem (odstup od sebe přetlačil tah k hráči) – nečinný hráč v útěku „20 keys“ neprohrál; ve světě s vlnami odstup u hráče neplatí. (2) Poslední věc vlny uprostřed arény robot nesebral nikdy – krouží před pronásledovatelem a ten je vždy uvnitř kruhu (4 ze 40 semínek sběru 5 věcí prohrál na hodinách, remix „harder“, který čip zkouší na jediném semínku, pak vracel 422). Věci dalších vln leží aspoň 7 m od středu: 40/40.
+- Uložená hra bez `waves` staví týž svět a robot vyhraje na tomtéž tiku (test `stored arena games without waves`). Úkol a plavba beze změny – ty dotáhne část 3.
+
 ## Test (`depth.test.ts`)
 
 - Každá věta obou sad je v reportu právě jednou a se svým textem.
 - Souhrn se rovná přepočtu z řádků – ručně přepsaný souhrn neprojde.
 - Pásmo platí jen u výhry robota za 30–90 s.
 - Čtečka čísel z věty na vlastních větách.
-- **Cíle plánu jako `it.fails`** (životy > 1 překlopila T2 na `it`, zbývají pásmo délky a nečinný hráč) (≥ 85 % v pásmu, nečinný prohraje u ≥ 95 %, životy > 1 u ≥ 80 %). Dnes procházejí, protože report je pod cílem. Úloha, která cíl splní a report přeměří, uvidí svůj test zčervenat a přepne `it.fails` na `it`: životy T2, délka T4, nečinného hráče ta z T2–T4, která ho dotáhne.
+- **Cíle plánu jako `it.fails`** (životy > 1 překlopila T2 na `it`, nečinného hráče T4 část 2, zbývá pásmo délky) (≥ 85 % v pásmu, nečinný prohraje u ≥ 95 %, životy > 1 u ≥ 80 %). Dnes procházejí, protože report je pod cílem. Úloha, která cíl splní a report přeměří, uvidí svůj test zčervenat a přepne `it.fails` na `it`: životy T2, délka T4, nečinného hráče ta z T2–T4, která ho dotáhne.

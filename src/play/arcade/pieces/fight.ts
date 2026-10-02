@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
 
 import {
+  ARCADE_HZ,
   ARCADE_LIMITS,
   type ArcadeEffect,
   type ArcadeLevel,
@@ -37,6 +38,7 @@ import {
   HIT_GRACE,
   HP_MAX,
   type ModeGeneratorPiece,
+  type ModeParts,
   type PieceRef,
   ROLE,
   type RulePiece,
@@ -46,6 +48,7 @@ import {
   graceOf,
 } from '../contract';
 import { ARENA, DIRECTIONS, directionOfAxis, directionToward } from './arena';
+import { WAVE_LIMITS, entrySpots, waveOf } from './waves';
 
 export const FIGHT = {
   /** Polovina strany nádvoří. */
@@ -190,6 +193,11 @@ function stepEnemy(state: ArcadeState, i: number, player: number, enemies: reado
     setVelocity(state, i, -1, 0);
     return;
   }
+  // Ležící soupeř s HP vstal do další vlny (P36A T4, `arena_waves` ho léčí); bez vln HP ležícímu nic nevrátí.
+  if (phase === FIGHT_PHASE.down) {
+    setPhase(state, i, FIGHT_PHASE.approach, 0, locked);
+    return;
+  }
   if (phase === FIGHT_PHASE.approach) {
     if (length(dx, dz) <= FIGHT.engage) {
       setPhase(state, i, FIGHT_PHASE.telegraph, FIGHT.telegraph, Math.max(0, directionToward(dx, dz)));
@@ -259,6 +267,8 @@ const controlParams = z
   .object({
     half: z.int().min(5 * UNIT).max(20 * UNIT).default(FIGHT.half),
     enemySpeed: z.int().min(FIGHT.enemySpeed.min).max(FIGHT.enemySpeed.max).default(FIGHT.enemySpeed.default),
+    /** Vlny (P36A T4): o kolik každá další vlna (`waveOf`) zrychlí soupeře, nejvýš na strop `FIGHT.enemySpeed`. */
+    step: z.int().min(1).max(FIGHT.enemySpeed.max - FIGHT.enemySpeed.min).optional(),
   })
   .strict();
 export type FightControlParams = z.infer<typeof controlParams>;
@@ -290,8 +300,9 @@ export const fightControl: ControlPiece<FightControlParams> = {
       swing(state, player, enemies);
     } else if (cooldown > 0) state[p + BODY.aux1] = cooldown - 1;
 
+    const speed = params.step === undefined ? params.enemySpeed : Math.min(FIGHT.enemySpeed.max, params.enemySpeed + params.step * waveOf(state));
     for (const i of enemies) {
-      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, params.enemySpeed);
+      if (!(swung && phaseOf(state, i) === FIGHT_PHASE.stagger && phaseTicksLeft(state, i) === FIGHT.stagger)) stepEnemy(state, i, player, enemies, speed);
       keepInside(state, i, params.half);
     }
     keepInside(state, player, params.half);
@@ -338,10 +349,12 @@ const endParams = z
      * Bez něj 0 HP = prohra jako dřív.
      */
     knockout: z.object({ hp: z.int().min(1).max(HP_MAX), grace: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
+    /** Vlny (P36A T4): výhra až ve vlně `waves` (poslední); dřív další vlnu přivede `arena_waves`. Bez nich jako dřív. */
+    waves: z.int().min(2).max(WAVE_LIMITS.waves).optional(),
   })
   .strict();
 
-/** Hráč na 0 HP = prohra (s knockouty ztráta života), všichni nepřátelé na 0 = výhra. */
+/** Hráč na 0 HP = prohra (s knockouty ztráta života), všichni nepřátelé na 0 (ve vlnách v poslední) = výhra. */
 export const fightEnd: RulePiece<z.infer<typeof endParams>> = {
   id: 'fight_end',
   params: endParams,
@@ -358,6 +371,7 @@ export const fightEnd: RulePiece<z.infer<typeof endParams>> = {
         { kind: 'heal', body: player, hp: params.knockout.hp },
       ];
     }
+    if (params.waves !== undefined && waveOf(state) < params.waves - 1) return [];
     const enemies = enemiesOf(state);
     return enemies.length > 0 && enemies.every((i) => bodyHp(state, i) === 0) ? [{ kind: 'win' }] : [];
   },
@@ -375,9 +389,50 @@ const generatorParams = z
     enemyHp: z.int().min(FIGHT.enemyHp.min).max(FIGHT.enemyHp.max).default(FIGHT.enemyHp.default),
     enemySpeed: z.int().min(FIGHT.enemySpeed.min).max(FIGHT.enemySpeed.max).default(FIGHT.enemySpeed.default),
     playerHp: z.int().min(FIGHT.playerHp.min).max(FIGHT.playerHp.max).default(FIGHT.playerHp.default),
+    /** Vlny (P36A T4, píše je žánr): soupeři vstávají silnější a přidávají se noví; bez nich jeden zápas jako dřív. */
+    waves: z.int().min(2).max(WAVE_LIMITS.waves).optional(),
   })
   .strict();
 export type FightParams = z.infer<typeof generatorParams>;
+
+/**
+ * Souboj ve vlnách (P36A T4). Vlna k (od 1) má `min(3, nepřátel + k − 1)`
+ * soupeřů s `min(9, HP + k − 1)` HP a o `speedStep` rychlejších. Robot ubere
+ * bod HP jednomu soupeři za ~0,55 s, dvěma ~0,8 s, třem ~0,7 s (sonda P36A T4,
+ * 6 semínek × 27 sestav, robot nikdy neprohrál; „three robots“ 4 vlny 44 s);
+ * k tomu příchod a přestávka. Vln tolik, aby odhad přesáhl `floor + perEnemy ×
+ * soupeřů` – víc soupeřů z věty dá delší zápas. Odhad přestřeluje: 4 vlny s
+ * jedním soupeřem (odhad 40 s) robot na 27 větách hloubky vyhrál za 26–38 s.
+ */
+export const FIGHT_WAVES = {
+  perHp: [0, 0.55, 0.8, 0.7],
+  approach: 1.5,
+  /** Přestávka po poslední ráně vlny: soupeř dopadne, hráč si oddechne (tiky). */
+  pause: 60,
+  speedStep: 10,
+  floor: 44,
+  perEnemy: 4,
+  min: 2,
+  max: 8,
+} as const;
+
+/** Soupeři a jejich HP ve vlně `wave` (0 = první). */
+export const fightWaveOf = (params: Pick<FightParams, 'enemies' | 'enemyHp'>, wave: number): { readonly enemies: number; readonly hp: number } => ({
+  enemies: Math.min(FIGHT.enemies.max, params.enemies + wave),
+  hp: Math.min(FIGHT.enemyHp.max, params.enemyHp + wave),
+});
+
+/** Kolik vln souboje: nejmíň tolik, aby odhad robota přesáhl `floor + perEnemy × soupeřů`. */
+export function fightWaveCount(params: Pick<FightParams, 'enemies' | 'enemyHp'>): number {
+  const floor = FIGHT_WAVES.floor + FIGHT_WAVES.perEnemy * params.enemies;
+  let seconds = 0;
+  for (let wave = 0; wave < FIGHT_WAVES.max; wave += 1) {
+    const { enemies, hp } = fightWaveOf(params, wave);
+    seconds += enemies * hp * FIGHT_WAVES.perHp[enemies]! + FIGHT_WAVES.approach + (wave > 0 ? FIGHT_WAVES.pause / ARCADE_HZ : 0);
+    if (wave + 1 >= FIGHT_WAVES.min && seconds >= floor) return wave + 1;
+  }
+  return FIGHT_WAVES.max;
+}
 
 const fighter = (role: 'player' | 'enemy', x: number, zz: number, hp: number): BodyInit => ({
   role,
@@ -425,6 +480,37 @@ export function checkFightLevel(level: ArcadeLevel, half: number = FIGHT.half): 
 }
 
 /**
+ * Souboj ve vlnách (P36A T4): když všichni soupeři vlny leží, po přestávce
+ * vstanou s HP další vlny a z míst nejdál od hráče se přidají noví (nejvýš tři
+ * naráz); každá vlna je rychlejší. Výhra až v poslední vlně. Místa vstupu
+ * losuje stream `spawn`, nádvoří první vlny leží jako dřív.
+ */
+function fightWaveParts(seed: number, params: FightParams & { readonly waves: number }, health: number | undefined): ModeParts {
+  const level = courtyard(seed, params, params.playerHp);
+  const spots = entrySpots(createCompileRng(seed, 'spawn'), FIGHT.half - FIGHT.bodySize);
+  const later = Array.from({ length: params.waves - 1 }, (_, k) => {
+    const now = fightWaveOf(params, k + 1);
+    return { enemies: now.enemies - fightWaveOf(params, k).enemies, hp: now.hp };
+  });
+  const joining = fightWaveOf(params, params.waves - 1).enemies - params.enemies;
+  const rules: PieceRef[] = [
+    { id: 'fight_hits', params: {} },
+    { id: 'fight_end', params: health === undefined ? { waves: params.waves } : { knockout: { hp: params.playerHp, grace: HIT_GRACE }, waves: params.waves } },
+  ];
+  if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
+  // Předloha nových soupeřů je první soupeř úrovně – pravidlo ho před kopírováním uzdraví.
+  rules.push({ id: 'arena_waves', params: { until: 'enemies', enemy: 1, spots, pause: FIGHT_WAVES.pause, waves: later } });
+  return {
+    control: { id: 'fight', params: { half: FIGHT.half, enemySpeed: params.enemySpeed, step: FIGHT_WAVES.speedStep } },
+    bot: { id: 'fight_bot', params: {} },
+    level: { ...level, spawnSlots: joining },
+    rules,
+    issues: checkFightLevel(level),
+    health,
+  };
+}
+
+/**
  * Režim `arena.fight`: poraz všechny nepřátele dřív, než oni tebe. Hráč má HP
  * (`playerHp`, ukazuje je scéna). Životy ze specu (`health`, P36A T2) jsou
  * knockouty: na 0 HP hráč ztratí život a vstane s plným HP, prohra až po
@@ -437,6 +523,7 @@ export const fightArena: ModeGeneratorPiece<FightParams> = {
   cost: (params) => ({ bodies: 1 + params.enemies, rules: 3 }),
   generate: (seed, params) => courtyard(seed, params, params.playerHp),
   parts: (seed, params, health) => {
+    if (params.waves !== undefined) return fightWaveParts(seed, { ...params, waves: params.waves }, health);
     const level = courtyard(seed, params, params.playerHp);
     const rules: PieceRef[] =
       health === undefined

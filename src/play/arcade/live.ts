@@ -102,7 +102,9 @@ export function patchProblem(world: ArcadeWorld, state: ArcadeState, patch: Live
   if (!Number.isInteger(patch.amount) || patch.amount < 1 || patch.amount > LIMITS[patch.counter]) return `Add 1 to ${LIMITS[patch.counter]} at a time.`;
   if (patch.counter === 'health' && !world.rules.some((rule) => rule.id === 'out_of_health')) return 'This game has no lives.';
   if (patch.counter === 'time' && !world.rules.some((rule) => rule.id === 'time_limit')) return 'This game has no clock.';
-  if (patch.counter === 'ammo' && (state[HEADER.counters + COUNTER.ammo] as number) + (state[HEADER.counters + COUNTER.reserve] as number) <= 0) return 'This game has no ammo.';
+  // Ve světě s vlnami arény (P36A T4) je čítač nábojů číslo vlny – náboje tam nejsou.
+  const waves = world.rules.some((rule) => rule.id === 'arena_waves');
+  if (patch.counter === 'ammo' && (waves || (state[HEADER.counters + COUNTER.ammo] as number) + (state[HEADER.counters + COUNTER.reserve] as number) <= 0)) return 'This game has no ammo.';
   return null;
 }
 

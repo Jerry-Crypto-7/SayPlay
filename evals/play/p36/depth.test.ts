@@ -64,7 +64,8 @@ describe('plan P36A targets over all 260 sentences', () => {
     expect(all.inBandShare).toBeGreaterThanOrEqual(DEPTH_TARGETS.inBandShare);
   });
 
-  it.fails(`a player who does nothing loses ≥ ${String(DEPTH_TARGETS.idleLosesShare * 100)} % of games (the task that gets there flips this)`, () => {
+  // T4 cíl splnil (2. 10. 2026: nečinný prohraje 260/260 – sběr arény má hodiny a pronásledovatele od druhé vlny).
+  it(`a player who does nothing loses ≥ ${String(DEPTH_TARGETS.idleLosesShare * 100)} % of games (T4 flipped this)`, () => {
     expect(all.idleLosesShare).toBeGreaterThanOrEqual(DEPTH_TARGETS.idleLosesShare);
   });
 

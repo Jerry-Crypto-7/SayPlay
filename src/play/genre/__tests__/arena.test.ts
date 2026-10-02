@@ -8,7 +8,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf, compileArcade, generatorOf } from '@/play/arcade/compile';
-import { HEADER, ROLE, bodyBase, bodyHp } from '@/play/arcade/contract';
+import { BODY, FLAG, HEADER, ROLE, bodyBase, bodyHp } from '@/play/arcade/contract';
 import { instantiate } from '@/play/arcade/kernel';
 import { ESCAPE } from '@/play/arcade/pieces/arena';
 import { FIGHT } from '@/play/arcade/pieces/fight';
@@ -27,18 +27,20 @@ function read(spec: GenreSpec): GameSpecV1 {
 }
 
 /** Těla světa podle role jádra. */
-function bodiesOf(spec: GameSpecV1, seed = 1): { readonly roles: number[]; readonly hp: number[] } {
+function bodiesOf(spec: GameSpecV1, seed = 1): { readonly roles: number[]; readonly hp: number[]; readonly alive: boolean[] } {
   const made = arcadeWorldOf(spec, seed);
   if (!made.ok) throw new Error(made.issues.join('; '));
   const state = instantiate(made.world);
   const count = state[HEADER.bodyCount] as number;
   const roles: number[] = [];
   const hp: number[] = [];
+  const alive: boolean[] = [];
   for (let i = 0; i < count; i += 1) {
     roles.push(state[bodyBase(i) + 10] as number);
     hp.push(bodyHp(state, i));
+    alive.push(((state[bodyBase(i) + BODY.flags] as number) & FLAG.alive) !== 0);
   }
-  return { roles, hp };
+  return { roles, hp, alive };
 }
 
 describe('arena genre – the cat and the polar bear', () => {
@@ -70,10 +72,12 @@ describe('arena genre – the cat and the polar bear', () => {
     expect(compiled.ok ? compiled.value.winsAtTick : compiled.issues.join('; ')).toBe(30 * 60);
   });
 
-  it('collect has nobody chasing and wins after N items', () => {
+  it('collect starts with nobody chasing and wins after N items', () => {
     const spec = read({ genre: 'arena', mode: 'collect', hero: 'little fish', collectible: 'plankton', setting: 'coral reef', params: { items: 6 } });
     expect(generatorOf(spec)).toBe('arena_collect');
-    expect(bodiesOf(spec).roles.filter((role) => role === ROLE.chaser)).toEqual([]);
+    // Od P36A T4 leží v úrovni mrtvá předloha pronásledovatele dalších vln; na startu nehoní nikdo.
+    const { roles, alive } = bodiesOf(spec);
+    expect(roles.filter((role, i) => role === ROLE.chaser && alive[i])).toEqual([]);
     expect(compileArcade(spec, 1).ok).toBe(true);
   });
 });
