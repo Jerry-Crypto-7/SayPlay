@@ -24,7 +24,8 @@ describe('procedural pose of a rigged character without the clip (P32C T2)', () 
     const group = new Group();
     proceduralPose(group, 'run', 0.1, 1.8);
     expect(group.position.y).toBeGreaterThan(0);
-    proceduralPose(group, 'jump', 0, 1.8);
+    // Natažení naběhne za 0,08 s (P36C T8).
+    proceduralPose(group, 'jump', 0.1, 1.8);
     expect(group.scale.y).toBeGreaterThan(1);
     proceduralPose(group, null, 0, 1.8);
     expect([group.position.y, group.rotation.x, group.scale.y]).toEqual([0, 0, 1]);
@@ -47,7 +48,8 @@ describe('procedural pose of a rigged character without the clip (P32C T2)', () 
     expect(group.rotation.x).toBeCloseTo(0);
     tick('die', 0.3);
     expect(group.rotation.x).toBeCloseTo(0);
-    tick('die', 0.4);
+    // Pád zrychlí, odskočí a dosedne do 0,64 s (P36C T8).
+    tick('die', 0.7);
     expect(group.rotation.x).toBeCloseTo(-Math.PI / 2);
   });
 });

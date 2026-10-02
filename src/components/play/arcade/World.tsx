@@ -22,7 +22,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Group, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
 
-import { BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { ARCADE_HZ, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { type PropRole, fitScale, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
@@ -32,6 +32,7 @@ import { RUNNER } from '@/play/arcade/pieces/runner';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 
 import { type BodyView, bodiesOf, bodiesStale } from './bodies';
+import { deadFor, fallOf, headingOf, squashPose, tiltPose, turnToward } from './characterMotion';
 import { blinkHidden, hitStopHeld } from './effects/feel';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
@@ -286,12 +287,19 @@ const PICKUP_MS = 200;
 /** Role, jejichž model se hýbe podle stavu těla (P26B); plošiny, auta a překážky jedou bez pózy. */
 const POSED_ROLES: ReadonlySet<number> = new Set([ROLE.player, ROLE.enemy, ROLE.chaser]);
 
-/** Póza na vnitřní skupinu modelu: poskok, předklon, zmáčknutí (objem drží), bliknutí po zásahu. */
-function applyPose(group: Group, pose: Pose): void {
+/** Pod touhle rychlostí (m/s) se postava plošinovky neotáčí – drží směr, kterým šla. */
+const TURN_MIN_MPS = 0.5;
+/** Jak rychle se postava dotočí po směru (1/s). */
+const TURN_RATE = 12;
+
+/**
+ * Póza na vnitřní skupinu modelu: poskok, předklon, zmáčknutí (objem drží), bliknutí
+ * a zakymácení po zásahu, pád po smrti (`dead` = sekundy od ní, P36C T8).
+ */
+function applyPose(group: Group, pose: Pose, dead: number): void {
   group.position.y = pose.bob;
-  group.rotation.x = pose.lean;
-  const wide = 1 + pose.squash / 2;
-  group.scale.set(wide, 1 - pose.squash, wide);
+  tiltPose(group, pose.flash > 0 ? 1 - pose.flash : 1, fallOf(dead), pose.lean);
+  squashPose(group, pose.squash);
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
@@ -324,6 +332,9 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
   const drawClock = useRef(0);
   const hurtAt = useRef(-Infinity);
   const lastTick = useRef(0);
+  // Pohyb postav (P36C T8): natočení po směru (rad, po indexu těla) a tik smrti pro pád.
+  const yaws = useRef<(number | undefined)[]>([]);
+  const deaths = useRef(new Map<number, number>());
   useEffect(
     () =>
       session.onEvents((events) => {
@@ -343,7 +354,10 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     if (bodiesStale(views, session)) setViews(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
-    if ((state[HEADER.tick] as number) < lastTick.current) hurtAt.current = -Infinity;
+    if ((state[HEADER.tick] as number) < lastTick.current) {
+      hurtAt.current = -Infinity;
+      yaws.current = [];
+    }
     lastTick.current = state[HEADER.tick] as number;
     // Hit-stop (P36C T7, jako `FightFx` v aréně): jádro odtikalo, kresba i kamera 60 ms stojí.
     const sinceHurt = drawClock.current - hurtAt.current;
@@ -351,14 +365,23 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
+    const turn = 1 - Math.exp(-delta * TURN_RATE);
     let shots = 0;
     for (const view of views) {
       const inner = posed.current[view.index];
       const pose = poses.current[view.index];
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
+      const moving = POSED_ROLES.has(view.role) ? viewOf(state, prev, view.index) : null;
+      // Plošinovka chodí oběma směry: postava se otočí, kam jde (P36C T8). Jinde drží směr scéna – běžec a let míří po trati, plavbu točí `VoyageHero`.
+      if (control === 'platform' && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
+        yaws.current[view.index] = turnToward(yaws.current[view.index], headingOf(moving.vx, moving.vz), turn);
+      }
+      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) {
+        applyPose(inner, pose, moving === null ? 0 : deadFor(deaths.current, view.index, moving.alive, tick, ARCADE_HZ));
+        inner.rotation.y = yaws.current[view.index] ?? 0;
+      }
       // Po zásahu hrdina bliká (zhasíná vnitřek, ne skupinu – sondy záběru ji dál vidí).
       if (inner !== null && inner !== undefined && view.role === ROLE.player) inner.visible = !blinkHidden(sinceHurt);
-      if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) clips.current[view.index] = clipOf(viewOf(state, prev, view.index), pose, tick);
+      if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) clips.current[view.index] = clipOf(moving ?? viewOf(state, prev, view.index), pose, tick);
       const group = groups.current[view.index];
       if (group === null || group === undefined) continue;
       const base = bodyBase(view.index);
@@ -444,7 +467,6 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
         // Branka poletování je neviditelná: jen počítá průlet mezerou.
         view.kind === 'gate' ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
-            {inkOf(view) !== undefined && <InkOutline ink={inkOf(view)!} />}
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
               <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
             ) : rigged[view.index] !== undefined ? (
@@ -456,6 +478,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
                 fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                 // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
+                yaw={control === 'platform' ? () => yaws.current[view.index] ?? 0 : undefined}
               />
             ) : (
               <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
@@ -472,6 +495,8 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
                 />
               </group>
             )}
+            {/* Obrys až za modelem: běžec bere první dítě skupiny jako vnitřní pózu (`HeroPose`, poskok jízdy pryč). */}
+            {inkOf(view) !== undefined && <InkOutline ink={inkOf(view)!} />}
           </group>
         ),
       )}

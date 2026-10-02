@@ -44,6 +44,7 @@ import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
 import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade/pieces/fight';
 
 import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
+import { deadFor, fallOf, squashPose, tiltPose } from '../characterMotion';
 import { isTyping } from '../input';
 import { glowingCopy } from '../look/load';
 import { UNDER_PANORAMA } from '../look/under-panorama';
@@ -352,11 +353,14 @@ function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, asp
   return Math.max((Math.abs(qx) + r) / (edge * tan * aspect), (Math.abs(up) + r) / (edge * tan)) - along;
 }
 
-/** Póza statického modelu: poskok, zmáčknutí, bliknutí po zásahu. Předklon ne – směr drží otočení skupiny. */
-function applyPose(group: Group, pose: Pose): void {
+/**
+ * Póza statického modelu: poskok, zmáčknutí, bliknutí a zakymácení po zásahu, pád
+ * po prohře (`dead` = sekundy od ní, P36C T8). Předklon ne – směr drží otočení skupiny.
+ */
+function applyPose(group: Group, pose: Pose, dead: number): void {
   group.position.y = pose.bob;
-  const wide = 1 + pose.squash / 2;
-  group.scale.set(wide, 1 - pose.squash, wide);
+  tiltPose(group, pose.flash > 0 ? 1 - pose.flash : 1, fallOf(dead));
+  squashPose(group, pose.squash);
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
@@ -415,6 +419,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
   const poses = useRef<(Pose | null)[]>([]);
   const clips = useRef<ClipState[]>([]);
   const yaws = useRef<(number | undefined)[]>([]);
+  /** Tik prohry statického hrdiny pro pád (P36C T8). */
+  const deaths = useRef(new Map<number, number>());
   /** Tik, kdy se probuzený pronásledovatel (kopie od `spawnBase`) poprvé ukázal. */
   const woke = useRef(new Map<number, number>());
   const glows = useMemo(() => new Map<Material, Material>(), []);
@@ -551,7 +557,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
       }
       const pose = poses.current[view.index];
       const inner = posed.current[view.index];
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
+      // Bojovník padá v `drawFighter` (skupina `leans`); tady jen hrdina, kterého chytili nebo zasáhli naposled.
+      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose, fighter ? 0 : deadFor(deaths.current, view.index, viewOf(state, prev, view.index).alive, tick + alpha, ARCADE_HZ));
       if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) {
         const moving = clipOf(viewOf(state, prev, view.index), pose, tick + alpha);
         clips.current[view.index] = fighter ? fightClipOf(state, view.index, part === 'hero', watch, now, moving) : moving;
