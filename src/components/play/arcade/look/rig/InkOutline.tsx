@@ -21,6 +21,8 @@ import { toCreasedNormals } from 'three/addons/utils/BufferGeometryUtils.js';
 
 import { colorHex } from '@/brand/tokens';
 
+import { flagShadow } from './StyleRig';
+
 export type Ink = 'hero' | 'foe';
 
 /** Tloušťka obrysu v CSS pixelech (kit: inkoustové obrysy 2,5 px). */
@@ -118,6 +120,8 @@ export function inkMeshes(root: Object3D, ink: Ink): number {
     fresh.push(mesh);
   });
   for (const mesh of fresh) {
+    // Tělo vrhá stín hned, ne až s plošným průchodem rigu (`flagShadow`); obal níž stín nevrhá.
+    if (mesh.userData.rigShadow === undefined) flagShadow(mesh);
     const geometry = hullOf(mesh.geometry);
     const material = inkMaterialOf(ink, mesh, geometry);
     let hull: Mesh;

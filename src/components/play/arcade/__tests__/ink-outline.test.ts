@@ -50,6 +50,26 @@ describe('ink outline on the hero and foes (P36C T6)', () => {
     }
   });
 
+  it('the outlined body casts its shadow at once, the hull never does', () => {
+    // Rig stínů označí novou síť jen každý 30. snímek; na pomalém telefonu stál hrdina
+    // po dotažení modelu sekundy bez ostrého stínu (snímky P36C před/po).
+    const hero = new Group();
+    const body = new Mesh(new BoxGeometry(1, 2, 1), new MeshStandardMaterial());
+    hero.add(body);
+    inkMeshes(hero, 'hero');
+    expect(body.castShadow).toBe(true);
+    expect(body.receiveShadow).toBe(true);
+    expect(body.userData.rigShadow).toBe('both');
+    const [hull] = hullsOf(body);
+    expect(hull!.castShadow).toBe(false);
+    expect(hull!.userData.rigShadow).toBe('off');
+    // Síť, kterou scéna označila sama (např. jen přijímá), obrys nepřepíše.
+    const decal = new Mesh(new BoxGeometry(), new MeshStandardMaterial());
+    decal.userData.rigShadow = 'receive';
+    inkMeshes(decal, 'foe');
+    expect(decal.castShadow).toBe(false);
+  });
+
   it('foes get the threat colour, not the ink', () => {
     const foe = new Mesh(new BoxGeometry(), new MeshStandardMaterial());
     inkMeshes(foe, 'foe');
