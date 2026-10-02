@@ -267,20 +267,22 @@ interface Windows {
  * smyčku. Strop instance 10 za 10 s drží nejhorší případ na čtvrtině smyčky,
  * ať střílí kolik chce volajících.
  *
- * **Volající 3 za 10 s, ne 5 (T5r3, revize po T6, MED):** s pěti stačily dvě
- * adresy s prohraným během (422 až po přehrání) a výzvy byly zavřené všem na
- * instanci každé okno. Dva volající na stropu teď vezmou 6 z 10 a třetí projde.
- * Člověk pošle výzvu až po výhře, tedy nanejvýš jednou za desítky sekund; tři
- * stačí i porotě za jednou IPv4 (NAT), když tři vyhrají v týchž 10 s – čtvrtý
- * sdílí obyčejný odkaz a za okno to zkusí znovu.
+ * **Volající 1 za 10 s (T5r3, revize T5r3-1 a T5r3-2):** s pěti stačily dvě
+ * adresy a výzvy byly zavřené všem na instanci každé okno; se třemi čtyři –
+ * prohraným během i opakovaným vítězným (opakování je 200, přehrání ale
+ * stálo). Zaplnit instanci teď chce 10 adres IPv4. Náš klient posílá výzvu
+ * jednou po každé výhře a výhra trvá sekundy hraní, takže jeden hráč na strop
+ * nenarazí; porota za jednou IPv4 (NAT), když dva vyhrají v týchž 10 s, dá
+ * druhému obyčejný odkaz s větou – přijatelná cena za výzvy, které nezavře
+ * hrstka adres.
  */
-export const MAX_DARE_REQUESTS_PER_WINDOW = 3;
+export const MAX_DARE_REQUESTS_PER_WINDOW = 1;
 export const MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE = 10;
 /**
- * Skupina (sdílená /64) je víc lidí než jedna adresa, ale dvě skupiny spolu
- * musí zůstat pod stropem instance – týž důvod jako u volajícího (T5r3).
+ * Skupina (sdílená /64) je víc lidí než jedna adresa, ale skupiny se strop
+ * instance dělí stejně – pět jich ho zaplní (T5r3).
  */
-export const MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP = 4;
+export const MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP = 2;
 
 /**
  * Přehrání výzev na instanci v jedné **klouzavé** sekundě (P36B T5r2, nález 2. revize T5).
@@ -837,8 +839,8 @@ export function rateLimitedResponse(requestId: string, verdict: RateVerdict): Re
 
 /**
  * Výzva, jejíž přehrání nevyhrálo, stojí volajícího zbytek okna výzev (P36B T5r3r1, revize T5r3-1).
- * Klient výzvu posílá jen po výhře (`publishDare`), takže prohraný běh posílá cizí klient – a čtyři
- * adresy po třech prohraných přehráních by jinak zaplnily strop instance všem; teď na to chce 10 adres.
+ * Klient výzvu posílá jen po výhře (`publishDare`), takže prohraný běh posílá cizí klient. Adresa
+ * se stropem 1 má okno utracené tak jako tak; platí to pro skupinu /64 (strop 2).
  * Klíč volajícího už v okně je (slot vzal před přehráním), takže mapa nenaroste; po otočení okna
  * klíč zmizel a není co utratit.
  */

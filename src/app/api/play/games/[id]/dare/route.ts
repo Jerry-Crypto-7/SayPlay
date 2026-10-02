@@ -77,7 +77,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const run = scoredReplay(game.arcade, inputs, patches);
   // Prohrané přehrání posílá cizí klient (náš jen po výhře): stojí ho zbytek okna výzev (T5r3r1).
-  if (run.refusedPatch !== null || run.outcome !== 'won') spendDareWindow(caller);
+  // Odmítnutá živá změna sem patří taky – přehrání v ní stojí, takže hra nikdy není `won`.
+  if (run.outcome !== 'won') spendDareWindow(caller);
   if (run.refusedPatch !== null) return fail(422, 'DARE_REJECTED', `a live change does not fit this game: ${run.refusedPatch}`);
   if (run.outcome !== 'won') return fail(422, 'DARE_REJECTED', 'this run does not win this game, so it cannot be a dare');
 

@@ -55,6 +55,12 @@ async function winByHand(page: Page, lag = 0): Promise<{ readonly tick: number; 
   return end;
 }
 
+/**
+ * Každý „člověk“ z vlastní adresy: strop výzev je 1 za 10 s na volajícího (T5r3)
+ * a bez hlavičky je každý požadavek na localhostu týž volající.
+ */
+const person = (n: number) => ({ extraHTTPHeaders: { 'x-forwarded-for': `198.51.100.${String(n)}` } });
+
 test.describe('/play/[id] – send a dare (P36B T6)', () => {
   let url = '';
   let id = '';
@@ -65,7 +71,7 @@ test.describe('/play/[id] – send a dare (P36B T6)', () => {
   });
 
   test('a won run shares a link carrying the score the server replayed', async ({ browser, request }) => {
-    const context = await browser.newContext();
+    const context = await browser.newContext(person(1));
     await capture(context);
     const page = await context.newPage();
     await page.goto(url);
@@ -86,7 +92,7 @@ test.describe('/play/[id] – send a dare (P36B T6)', () => {
       .toMatchObject({ name: 'share', dare: true });
 
     // Server výzvu drží: týž běh podruhé je táž výzva (200), ne nová.
-    const again = await request.post(`/api/play/games/${id}/dare`, { data: JSON.parse(response.request().postData()!) as unknown });
+    const again = await request.post(`/api/play/games/${id}/dare`, { data: JSON.parse(response.request().postData()!) as unknown, headers: person(2).extraHTTPHeaders });
     expect(again.status()).toBe(200);
     expect(await again.json()).toEqual({ dareId: dare.dareId, score: end.score, ticks: end.tick });
     await context.close();
@@ -127,7 +133,7 @@ test.describe('/play/[id]?dare= – play against a friend (P36B T7)', () => {
   });
 
   test('B sees the friend’s target, loses → So close., wins faster → You beat it! and Dare back', async ({ browser }) => {
-    const a = await browser.newContext();
+    const a = await browser.newContext(person(3));
     await capture(a);
     const pageA = await a.newPage();
     await pageA.goto(url);
@@ -137,7 +143,7 @@ test.describe('/play/[id]?dare= – play against a friend (P36B T7)', () => {
     expect(dareA.ticks).toBe(endA.tick);
     await a.close();
 
-    const b = await browser.newContext();
+    const b = await browser.newContext(person(4));
     await capture(b);
     const pageB = await b.newPage();
     await pageB.goto(`${url}?via=share&dare=${dareA.dareId}`);

@@ -36,8 +36,12 @@ function params(id: string): { params: Promise<{ id: string }> } {
   return { params: Promise.resolve({ id }) };
 }
 
+let callers = 0;
+/** Pokaždé jiná adresa: strop volajícího výzev je 1 za okno (T5r3) a soudí ho jen testy, které adresu dají samy. */
+const freshCaller = (): Record<string, string> => ({ 'x-forwarded-for': `198.18.${String(Math.floor(callers / 256) % 256)}.${String(callers++ % 256)}` });
+
 /** Každá výzva o `stepMs` později – klouzavá sekunda instance (T5r2) pustí 2 za sekundu a testy tu nesoudí ji. */
-function send(id: string, body: unknown, headers: Record<string, string> = CALLER, stepMs = 500): Promise<Response> {
+function send(id: string, body: unknown, headers: Record<string, string> = freshCaller(), stepMs = 500): Promise<Response> {
   vi.setSystemTime(Date.now() + stepMs);
   return dare(post(`/api/play/games/${id}/dare`, body, headers), params(id));
 }
@@ -78,6 +82,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   delete process.env.PLAY_DARE_DAILY_CAP;
+  delete process.env.VERCEL;
 });
 
 describe('POST /api/play/games/:id/dare (P36B T5)', () => {
@@ -234,13 +239,13 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect((await send('not-an-id', { inputs: [] })).status).toBe(404);
   });
 
-  it('výzva má vlastní přísnější okno: 6. přehrání od volajícího → 429, 11. na instanci → SERVER_AT_CAPACITY', async () => {
+  it('výzva má vlastní přísnější okno: přehrání nad strop volajícího → 429, 11. na instanci → SERVER_AT_CAPACITY', async () => {
     const game = await arcadeGame();
     const bot = { inputs: packInputs(runBot(game.world).inputs) };
     resetRateWindows();
     const codes: string[] = [];
     for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW + 1; i += 1) {
-      const response = await send(game.id, bot);
+      const response = await send(game.id, bot, CALLER);
       codes.push(response.status === 429 ? ((await response.json()) as { error: { code: string } }).error.code : String(response.status));
     }
     expect(codes).toEqual(['201', ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW - 1 }, () => '200'), 'TOO_MANY_REQUESTS']);
@@ -253,19 +258,35 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect(((await last!.json()) as { error: { code: string } }).error.code).toBe('SERVER_AT_CAPACITY');
   });
 
-  it('prohraný běh stojí volajícího zbytek okna: čtyři adresy s prohranými během výzvy instanci nezavřou (T5r3, T5r3r1)', async () => {
+  it('devět adres s prohraným i opakovaným vítězným během výzvy instanci nezavře: desátá projde (T5r3, revize T5r3-1/2)', async () => {
     const game = await arcadeGame();
+    const win = packInputs(runBot(game.world).inputs);
     resetRateWindows();
-    // Nález revize T5r3-1: 3+3+3+1 prohraných přehrání zaplnilo strop instance 10.
-    for (const address of ['198.51.100.7', '198.51.100.8', '198.51.100.9', '198.51.100.10']) {
+    // Nálezy revizí: 3+3+3+1 prohraných (T5r3-1) i opakovaných vítězných (T5r3-2, opakování je 200) zaplnilo strop 10.
+    for (let a = 0; a < MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE - 1; a += 1) {
+      const address = { 'x-forwarded-for': `198.51.100.${String(a)}` };
+      const inputs = a % 2 === 0 ? win : packInputs([]);
       const codes: string[] = [];
-      for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW; i += 1) {
-        const response = await send(game.id, { inputs: packInputs([]) }, { 'x-forwarded-for': address });
+      for (let i = 0; i < 3; i += 1) {
+        const response = await send(game.id, { inputs }, address, i === 0 ? 500 : 0);
         codes.push(response.status === 429 ? ((await response.json()) as { error: { code: string } }).error.code : String(response.status));
       }
-      expect(codes).toEqual(['422', ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW - 1 }, () => 'TOO_MANY_REQUESTS')]);
+      expect(codes.slice(1)).toEqual(['TOO_MANY_REQUESTS', 'TOO_MANY_REQUESTS']);
     }
-    expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) }, { 'x-forwarded-for': '192.0.2.33' })).status).toBe(201);
+    expect((await send(game.id, { inputs: win }, { 'x-forwarded-for': '192.0.2.33' })).status).toBe(200);
+  });
+
+  it('skupina /64: prohraný běh i odmítnutá živá změna utratí zbytek jejího okna výzev (T5r3r1)', async () => {
+    const plain = await arcadeGame((world) => !hasLives(world));
+    const game = await arcadeGame();
+    resetRateWindows();
+    process.env.VERCEL = '1';
+    const group = (n: number) => ({ 'x-vercel-forwarded-for': `2001:db8:0:${String(n)}::5` });
+    const refused = { inputs: packInputs(runBot(plain.world).inputs), patches: [{ tick: 0, patch: { kind: 'count', counter: 'health', amount: 3 } }] };
+    for (const [n, id, body] of [[1, plain.id, refused], [2, game.id, { inputs: packInputs([]) }]] as const) {
+      expect((await send(id, body, group(n))).status).toBe(422);
+      expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) }, group(n))).status).toBe(429);
+    }
   });
 
   it('vadné požadavky slot výzev neberou: 11× {} od různých volajících výzvy instanci nezavře', async () => {
