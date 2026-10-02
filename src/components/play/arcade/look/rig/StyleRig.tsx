@@ -191,15 +191,23 @@ function ShadowFlags() {
     if (frames.current++ % 30 !== 0) return;
     scene.traverse((node) => {
       const mesh = node as Mesh;
-      if (mesh.isMesh !== true || mesh.userData.rigShadow !== undefined) return;
-      const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      const flat = mesh.geometry.type === 'PlaneGeometry' || materials.some((material) => !material.depthWrite || material.transparent);
-      mesh.userData.rigShadow = flat ? 'receive' : 'both';
-      mesh.receiveShadow = true;
-      mesh.castShadow = !flat;
+      if (mesh.isMesh === true && mesh.userData.rigShadow === undefined) flagShadow(mesh);
     });
   });
   return null;
+}
+
+/**
+ * Označí jednu síť jako `ShadowFlags`. Obrys (`inkMeshes`) to volá hned na síti, kterou
+ * obtáhne: plošný průchod jede jen každý 30. snímek a na pomalém telefonu by hrdina
+ * po dotažení modelu sekundy stál bez stínu.
+ */
+export function flagShadow(mesh: Mesh): void {
+  const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const flat = mesh.geometry.type === 'PlaneGeometry' || materials.some((material) => !material.depthWrite || material.transparent);
+  mesh.userData.rigShadow = flat ? 'receive' : 'both';
+  mesh.receiveShadow = true;
+  mesh.castShadow = !flat;
 }
 
 /** Rezerva za koncem mlhy na velikost kulisy (počítá se od její paty, vršek může sahat blíž). */

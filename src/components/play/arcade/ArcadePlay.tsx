@@ -18,7 +18,7 @@ import { instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
-import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
+import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook, vibrateFor } from '@/play/audio';
 import { musicFor, narrationUrl } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
 import { type Par, type RunResult, starsFor } from '@/play/score/stars';
@@ -41,12 +41,14 @@ import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
+import { type BotHand, botHand } from './bot-hand';
 import { type Clip, startClip } from './clip';
 import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
+import { ZONE_HINTS } from './touch-zones';
 import { Weather } from './Weather';
 import { createArcadeSession, loopDemo, type ArcadeSession, type ArcadeSnapshot } from './session';
 
@@ -364,6 +366,8 @@ function ArcadePlayGame({
     return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
+  // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
+  const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
   const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
@@ -633,13 +637,23 @@ function ArcadePlayGame({
   }, [active, offline, versionId]);
   useEffect(() => {
     const offEvents = session.onEvents((events) => {
-      for (const preset of presetsFor(events)) playSfx(preset);
+      const presets = presetsFor(events);
+      for (const preset of presets) playSfx(preset);
+      // Haptika (P36C T3): posluchač efektů slyší jen tiky, které hraje člověk.
+      vibrateFor(presets);
     });
+    const control = baseControlOf(session.world.control).id;
     let lastTick = -1;
+    let heard = 0;
     const offJump = session.subscribe(() => {
       const tick = session.state()[HEADER.tick] as number;
       if (tick === lastTick) return;
       lastTick = tick;
+      // Zvuky akcí (P36C T3) z nových záznamů vstupu; restart záznam zkrátí, přehrání a ukázka mlčí.
+      const inputs = session.inputs();
+      if (inputs.length < heard) heard = 0;
+      if (session.humanRun()) for (const preset of actionPresets(control, inputs, heard)) playSfx(preset);
+      heard = inputs.length;
       if (session.humanRun() && jumped(session.prev(), session.state())) playSfx('jump');
     });
     return () => {
@@ -692,7 +706,23 @@ function ArcadePlayGame({
   const bonus = session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === 'time' ? entry.patch.amount : 0), 0);
 
   useEffect(() => {
+    let hand: BotHand | null = null;
     const probe = {
+      /**
+       * Hra gesty (P36C T4, `bot-hand.ts`): `byHand(true)` na tiku 0 zastaví čas snímků,
+       * `botWants()` řekne, co by robot teď stiskl, e2e to zahraje dotykem a `tickByHand()`
+       * odtiká tik s tím, co gesta zapsala.
+       */
+      byHand: (on: boolean) => {
+        session.manualClock(on);
+        hand = on ? botHand(session) : null;
+      },
+      botWants: () => hand?.decide() ?? null,
+      tickByHand: () => {
+        hand?.step();
+        const now = session.snapshot();
+        return { runState: now.runState, tick: now.tick, progress: now.progress, score: now.score, items: now.items };
+      },
       inputs: () => session.inputs(),
       tick: () => session.snapshot().tick,
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
@@ -763,6 +793,7 @@ function ArcadePlayGame({
             {running && active && demo === null && snapshot.tick === 0 && (
               <FirstPrompt
                 controlsHint={spec.tutorial.controlsHint}
+                touch={zoneHint}
                 dare={challenge === null ? null : { goal: dareStart(challenge, ARCADE_HZ, survive), changed: challenge.liveChanges > 0 }}
               />
             )}
@@ -827,6 +858,7 @@ function ArcadePlayGame({
               : undefined
           }
           controlsHint={spec.tutorial.controlsHint}
+          touch={zoneHint}
         >
           <MuteButton />
           {read !== undefined && <AboutButton onOpen={() => setAboutOpen(true)} />}

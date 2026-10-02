@@ -24,10 +24,11 @@ import { riggedCharacter } from '@/play/arcade/models';
 import type { ClipState } from '@/play/arcade/motion';
 import { FIGHT, FIGHT_PHASE, attackCooldownOf, phaseOf, phaseTicksLeft } from '@/play/arcade/pieces/fight';
 
+import { HIT_STOP_MS } from '../effects/feel';
 import { type ArcadeSession, TICK_MS } from '../session';
 
-/** Hit-stop: kresba stojí tolik ms po zásahu, pak ji tolik ms dotahuje k živé poloze. */
-export const HIT_STOP_MS = 60;
+/** Hit-stop: kresba stojí `HIT_STOP_MS` po zásahu (stejně jako mimo arénu, `effects/feel.ts`), pak ji tolik ms dotahuje k živé poloze. */
+export { HIT_STOP_MS };
 const CATCH_UP_MS = 60;
 /** Záblesk zasaženého těla a otřes kamery (ms). */
 const FLASH_MS = 160;

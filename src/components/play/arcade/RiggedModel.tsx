@@ -19,6 +19,9 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { PROCEDURAL_CLIP, type RiggedCharacter } from '@/play/arcade/models';
 import type { ClipState } from '@/play/arcade/motion';
 
+import { HIT_S, fallOf, jumpStretchOf, landSquashOf, squashPose, tiltPose } from './characterMotion';
+import { mergeRig } from './look/load';
+
 /** Výška postavy v GLB – `scripts/assets/rigged/build.mjs` ji tak normalizuje. */
 const RIGGED_HEIGHT_M = 1.8;
 /** Prolnutí klipů (s). */
@@ -38,29 +41,34 @@ const FALLBACK: Readonly<Record<ClipState, readonly ClipState[]>> = {
 };
 
 /**
- * Pohyb stavu bez klipu, přičtený k postavě (`since` = sekundy ve stavu, `h` výška těla):
- * běh poskakuje, skok se natáhne, zásah cukne dozadu, smrt postavu položí. Klid nic nepřidá.
+ * Pohyb stavu bez klipu, přičtený k postavě (`since` = sekundy ve stavu, `h` výška těla,
+ * `sinceLand` = sekundy od dopadu skoku bez klipu): běh poskakuje, skok se natáhne a dopad
+ * zmáčkne, zásah cukne dozadu a zakymácí, smrt postavu položí (P36C T8, `characterMotion.ts`).
+ * Klid nic nepřidá; dopad doznívá i do stavu, na který postava klip má.
  */
-export function proceduralPose(group: Group, state: ClipState | null, since: number, h: number): void {
+export function proceduralPose(group: Group, state: ClipState | null, since: number, h: number, sinceLand = Infinity): void {
   group.position.y = state === 'run' ? h * 0.05 * Math.abs(Math.sin(since * 12)) : 0;
-  group.rotation.x = state === 'hit' ? -0.35 * Math.max(0, 1 - since / 0.3) : state === 'die' ? -(Math.PI / 2) * Math.min(1, since / 0.4) : 0;
-  const stretch = state === 'jump' ? 0.08 : 0;
-  group.scale.set(1 - stretch / 2, 1 + stretch, 1 - stretch / 2);
+  tiltPose(group, state === 'hit' ? since / HIT_S : 1, state === 'die' ? fallOf(since) : 0);
+  squashPose(group, state === 'jump' ? -jumpStretchOf(since) : landSquashOf(sinceLand));
 }
 
-/** Stav těla a jak dlouho v něm je (s). */
+/** Stav těla, jak dlouho v něm je a jak dávno dopadl skok bez klipu (s). */
 export interface HeldState {
   readonly state: ClipState;
   readonly since: number;
+  readonly sinceLand: number;
 }
 
 /**
  * Jeden snímek `useFrame` pro pohyb bez klipu: čas ve stavu roste, nový stav ho
  * vynuluje, a `proceduralPose` dostane stav jen tehdy, když na něj postava klip nemá.
+ * Skok bez klipu, který skončí během nebo klidem, je dopad.
  */
 export function poseTick(group: Group | null, held: HeldState | null, now: ClipState, hasClip: (state: ClipState) => boolean, step: number, h: number): HeldState {
-  const next = held?.state === now ? { state: now, since: held.since + step } : { state: now, since: 0 };
-  if (group !== null) proceduralPose(group, hasClip(now) ? null : now, next.since, h);
+  const landed = held?.state === 'jump' && (now === 'run' || now === 'idle') && !hasClip('jump');
+  const sinceLand = landed ? 0 : (held?.sinceLand ?? Infinity) + step;
+  const next = held?.state === now ? { state: now, since: held.since + step, sinceLand } : { state: now, since: 0, sinceLand };
+  if (group !== null) proceduralPose(group, hasClip(now) ? null : now, next.since, h, sinceLand);
   return next;
 }
 
@@ -69,7 +77,14 @@ const cache = new Map<string, Promise<GLTF | null>>();
 function loadRigged(path: string): Promise<GLTF | null> {
   let pending = cache.get(path);
   if (pending === undefined) {
-    pending = new GLTFLoader().loadAsync(path).catch(() => null);
+    // Slít jednou na načtený model (P36C T9): klony z `cloneSkinned` pak nesou jednu síť na materiál.
+    pending = new GLTFLoader()
+      .loadAsync(path)
+      .then((gltf) => {
+        mergeRig(gltf.scene);
+        return gltf;
+      })
+      .catch(() => null);
     cache.set(path, pending);
   }
   return pending;
@@ -87,6 +102,7 @@ export function RiggedModel({
   clip,
   onClip,
   fallback,
+  yaw,
 }: {
   readonly character: RiggedCharacter;
   /** Výška těla (m); postava se do ní vepíše. */
@@ -96,6 +112,8 @@ export function RiggedModel({
   /** Klip, který opravdu začal hrát (po náhradě). */
   readonly onClip?: (state: ClipState) => void;
   readonly fallback: string;
+  /** Natočení po směru pohybu (rad kolem y) – kde ho scéna nedrží sama nad modelem. */
+  readonly yaw?: () => number;
 }) {
   const [gltf, setGltf] = useState<GLTF | null | undefined>(undefined);
   useEffect(() => {
@@ -146,6 +164,7 @@ export function RiggedModel({
     const now = clip();
     const step = Math.min(delta, MAX_MIXER_STEP_S);
     held.current = poseTick(holder.current, held.current, now, (state) => rig.actions.has(state), step, h);
+    if (yaw !== undefined && holder.current !== null) holder.current.rotation.y = yaw();
     const wanted = FALLBACK[now].find((candidate) => rig.actions.has(candidate)) ?? 'idle';
     if (wanted !== playing.current) {
       const next = rig.actions.get(wanted);

@@ -27,6 +27,8 @@ import type { ControlId } from '@/play/spec';
 import { ActionButton, actionsOf, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
+import { comboOf } from './effects/feel';
+import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping, runnerGesture } from './input';
@@ -37,6 +39,8 @@ import { RunnerWorld } from './runner/RunnerWorld';
 import type { ArcadeSession } from './session';
 import { useSteerInput } from './steer/SteerScene';
 import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
+import { TouchStick, TouchZones } from './TouchControls';
+import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
 import { Snowfall } from './Weather';
 import { type Cast, FittedModel, World } from './World';
 
@@ -72,6 +76,8 @@ export interface FrameReport {
    * rovině: 0 = hledí do kamery, 180 = je k ní zády (P35 T12).
    */
   readonly heroFacing: number | null;
+  /** Kolik inkoustových obalů (obrys, P36C T6) sítě hrdiny nesou; obrys nezávisí na úrovni kvality. */
+  readonly heroInk: number;
   readonly target: FrameBox | null;
   /** Kolik viditelných kandidátů na cíl scéna má. */
   readonly targets: number;
@@ -135,8 +141,7 @@ function RenderProbe() {
       post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
       meshes: meshes(),
     });
-    window.__playRender = probe;
-    return () => {
+    window.__playRender = probe;    return () => {
       if (window.__playRender === probe) delete window.__playRender;
     };
   }, [gl, scene]);
@@ -154,8 +159,11 @@ const shown = (object: Object3D): boolean => {
 const cornerOf = new Vector3();
 const inView = new Vector3();
 
-/** Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich. */
-function frameOf(object: Object3D, camera: Camera, width: number, height: number): FrameBox | null {
+/**
+ * Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich.
+ * `posed = false` vezme riggované postavě klidový kvádr geometrie místo pózy kostí.
+ */
+export function frameOf(object: Object3D, camera: Camera, width: number, height: number, posed = true): FrameBox | null {
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
@@ -163,9 +171,11 @@ function frameOf(object: Object3D, camera: Camera, width: number, height: number
   let behind = false;
   object.traverseVisible((node) => {
     const mesh = node as Mesh;
-    if (mesh.isMesh !== true) return;
+    // Obal obrysu (P36C T6) má kvádr svého těla. Riggovaný obal by navíc kostmi přepočítal
+    // každý vrchol (3× víc než tělo, `toCreasedNormals`) – `PromptSpot` to dělá každý snímek.
+    if (mesh.isMesh !== true || isInk(mesh)) return;
     let box: Box3;
-    if ((mesh as SkinnedMesh).isSkinnedMesh === true) {
+    if (posed && (mesh as SkinnedMesh).isSkinnedMesh === true) {
       // Riggovaná postava: kvádr s pózou kostí, ne klidová geometrie.
       (mesh as SkinnedMesh).computeBoundingBox();
       box = (mesh as SkinnedMesh).boundingBox!;
@@ -239,6 +249,7 @@ function FrameProbe({ control }: { readonly control: string }) {
         height: size.height,
         hero: hero === null ? null : frameOf(hero, camera, size.width, size.height),
         heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
+        heroInk: hero === null ? 0 : inkCount(hero),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
@@ -283,7 +294,9 @@ function PromptSpot({ session, surface }: { readonly session: ArcadeSession; rea
         scene.traverseVisible((node) => {
           if (node.userData.frame === 'hero') hero = node;
         });
-        const box = hero === null ? null : frameOf(hero, camera, size.width, size.height);
+        // Klidový kvádr (P36C T9): póza kostí přepočítá každý vrchol postavy a tohle běží každý
+        // snímek tiku 0 – u rytířů ~30 % CPU telefonu. Na místo pro kartu stačí postava v klidu.
+        const box = hero === null ? null : frameOf(hero, camera, size.width, size.height, false);
         if (box === null || box.behind) {
           delete host.dataset.promptAt;
           return;
@@ -328,7 +341,7 @@ const END_CLIP_MS = 1500;
 
 const JUMP_KEYS = new Set([' ', 'arrowup', 'w']);
 
-/** Běžec: ťuk/klik/mezerník = skok (hned při stisku), šipky/A-D a swipe = pruh, šipka dolů / swipe dolů = skluz. */
+/** Běžec: mezerník/šipka nahoru = skok, šipky/A-D = pruh, šipka dolů = skluz; dotyk a myš: `runnerGesture`. */
 function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
     if (!active) return;
@@ -355,16 +368,17 @@ function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivE
     const gesture = runnerGesture(session);
     const onDown = (event: PointerEvent) => gesture.down(event);
     const onMove = (event: PointerEvent) => gesture.move(event);
-    const onEnd = () => gesture.end();
+    const onUp = (event: PointerEvent) => gesture.up(event);
+    const onCancel = () => gesture.cancel();
     element.addEventListener('pointerdown', onDown);
     element.addEventListener('pointermove', onMove);
-    element.addEventListener('pointerup', onEnd);
-    element.addEventListener('pointercancel', onEnd);
+    element.addEventListener('pointerup', onUp);
+    element.addEventListener('pointercancel', onCancel);
     return () => {
       element.removeEventListener('pointerdown', onDown);
       element.removeEventListener('pointermove', onMove);
-      element.removeEventListener('pointerup', onEnd);
-      element.removeEventListener('pointercancel', onEnd);
+      element.removeEventListener('pointerup', onUp);
+      element.removeEventListener('pointercancel', onCancel);
     };
   }, [session, target, active]);
 }
@@ -406,10 +420,10 @@ function usePlatformInput(session: ArcadeSession, target: React.RefObject<HTMLDi
     };
     const onDown = (event: PointerEvent) => {
       const box = element.getBoundingClientRect();
-      const at = (event.clientX - box.left) / Math.max(1, box.width);
-      if (at >= 0.5) session.press(BUTTON.TAP);
+      const zone = zoneAt(PLATFORM_ZONES, (event.clientX - box.left) / Math.max(1, box.width));
+      if (zone === 2) session.press(BUTTON.TAP);
       else {
-        pointers.set(event.pointerId, at < 0.25 ? 'left' : 'right');
+        pointers.set(event.pointerId, zone === 0 ? 'left' : 'right');
         sync();
       }
     };
@@ -505,7 +519,9 @@ export const SCORE_POP_MS = 500;
 
 interface ScorePop {
   readonly id: number;
-  readonly amount: number;
+  /** „+N“ za bod, „×N“ za kombo (P36C T7). */
+  readonly text: string;
+  readonly combo: boolean;
   /** Vodorovná poloha hráče na obrazovce v % (střed, když ji scéna nehlásí). */
   readonly left: number;
 }
@@ -531,9 +547,13 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
     };
     const off = session.onEvents((events) => {
       const amount = events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
-      if (amount > 0) {
-        const x = Number(surface.current?.dataset.playerX ?? 0);
-        const pop = { id: (next += 1), amount, left: 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50 };
+      const combo = comboOf(events);
+      const x = Number(surface.current?.dataset.playerX ?? 0);
+      const left = 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50;
+      const fresh: ScorePop[] = [];
+      if (amount > 0) fresh.push({ id: (next += 1), text: `+${amount}`, combo: false, left });
+      if (combo !== null) fresh.push({ id: (next += 1), text: `×${combo}`, combo: true, left });
+      for (const pop of fresh) {
         setPops((current) => [...current, pop]);
         later(SCORE_POP_MS, () => setPops((current) => current.filter((entry) => entry.id !== pop.id)));
       }
@@ -546,8 +566,8 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
   return (
     <>
       {pops.map((pop) => (
-        <span key={pop.id} className="play-score-pop" data-testid="score-pop" style={{ left: `${pop.left}%` }} aria-hidden="true">
-          +{pop.amount}
+        <span key={pop.id} className={pop.combo ? 'play-score-pop play-combo-pop' : 'play-score-pop'} data-testid={pop.combo ? 'combo-pop' : 'score-pop'} style={{ left: `${pop.left}%` }} aria-hidden="true">
+          {pop.text}
         </span>
       ))}
     </>
@@ -682,6 +702,9 @@ export default function ArcadeStage({
       <StageCanvas session={session} cast={cast} look={look} enabled={enabled} live={live} surface={surface} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
+      {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
+      {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
+      {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
       {fires && enabled && <FireButton session={session} />}
       {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}
     </div>

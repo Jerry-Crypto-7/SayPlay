@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+import { startGame } from './play-start';
+
 /**
  * Riggovaná postava v běžící hře (P26B T6): věta s rytířem projde skutečnými
  * dveřmi (návrh ze slov → běžec), scéna načte rytíře s klipy a klip hráče
@@ -34,6 +36,8 @@ test('the knight runs, then jumps when Space is pressed', async ({ page, request
     }).observe(element, { attributes: true, attributeFilter: ['data-anim-clip'] });
   });
 
+  // Hra čeká na první dotek (P33 T11) – rytíř do té doby stojí v klidu.
+  await startGame(page);
   await expect(stage).toHaveAttribute('data-anim-clip', 'run', { timeout: 30_000 });
   await page.keyboard.press('Space');
   await expect
