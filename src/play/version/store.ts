@@ -13,7 +13,8 @@
  * - `<prefix>:play:v:<versionId>` – JSON celé `PublishedGame`,
  * - `<prefix>:play:children:<parentId>` – JSON pole id dětí,
  * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu,
- * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4).
+ * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4),
+ * - `<prefix>:play:dare:<dareId>` – JSON `DareRecord` (P36B T5), denní strop `<prefix>:play:dare-quota:<den>`.
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -80,6 +81,27 @@ export interface VersionStore {
   recent(limit: number): Promise<RecentGame[]>;
   /** Počet dětí každé verze, jedním čtením; nedostupné úložiště jsou nuly. */
   childCounts(versionIds: readonly string[]): Promise<number[]>;
+  /**
+   * Výzva ověřená přehráním (P36B T5), zapsaná jednou (`SET NX`); `quota` =
+   * denní strop výzev vyčerpán, nic se nezapsalo. Výpadek je `VersionStoreUnavailable`.
+   */
+  putDare(dare: DareRecord): Promise<'stored' | 'exists' | 'quota'>;
+  /** `null` = neznámá, prošlá nebo nečitelná výzva, i při výpadku úložiště. */
+  getDare(dareId: string): Promise<DareRecord | null>;
+}
+
+/**
+ * Výzva Dare (P36B T5): výsledek, který server sám spočítal přehráním vstupů
+ * běhu – nikdy číslo od klienta. Anonymní, bez jména a bez vstupů.
+ */
+export interface DareRecord {
+  readonly dareId: string;
+  readonly versionId: string;
+  readonly score: number;
+  readonly ticks: number;
+  /** Hash konce přehrání (`hashArcade`). */
+  readonly hash: string;
+  readonly createdAt: string;
 }
 
 /** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
@@ -110,9 +132,34 @@ export interface WriteLimits {
   readonly ttlSeconds: number;
   /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; autorská dítě (`relation: 'upgrade'`) se nepočítají. */
   readonly dailyCap: number;
+  /**
+   * Kolik výzev Dare (pokusů o zápis) za den napříč všemi volajícími (P36B T5);
+   * chybí = `DEFAULT_DARE_DAILY_CAP`. Táž třída meze jako `dailyCap`: anonymní
+   * zápisy do obchodu, o který se dělí kniha stropu.
+   */
+  readonly dareDailyCap?: number;
 }
 
-export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 180 * 24 * 3600, dailyCap: 500 };
+/** Výzva je ~200 B; 2 000 denně je pod 0,5 MB za den i při plné expiraci. */
+export const DEFAULT_DARE_DAILY_CAP = 2_000;
+
+export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 180 * 24 * 3600, dailyCap: 500, dareDailyCap: DEFAULT_DARE_DAILY_CAP };
+
+/** Tvar id výzvy: 32 hex znaků. */
+export const DARE_ID_PATTERN = /^[a-f0-9]{32}$/;
+
+function isDare(value: unknown): value is DareRecord {
+  if (typeof value !== 'object' || value === null) return false;
+  const { dareId, versionId, score, ticks, hash, createdAt } = value as Record<string, unknown>;
+  return (
+    typeof dareId === 'string' &&
+    typeof versionId === 'string' &&
+    Number.isInteger(score) &&
+    Number.isInteger(ticks) &&
+    typeof hash === 'string' &&
+    typeof createdAt === 'string'
+  );
+}
 
 /** Den v UTC pro klíč počítadla. */
 function quotaDay(nowMs: number): string {
@@ -167,6 +214,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
   const recentKey = `${prefix}:play:recent`;
   const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
+  const dareKey = (dareId: string): string => `${prefix}:play:dare:${dareId}`;
+  const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
 
   const store: VersionStore = {
     id,
@@ -319,6 +368,24 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         return versionIds.map(() => 0);
       }
     },
+    async putDare(dare) {
+      try {
+        if ((await raw.incr(dareQuotaKey(), 2 * 24 * 3600)) > (limits.dareDailyCap ?? DEFAULT_DARE_DAILY_CAP)) return 'quota';
+        return (await raw.setNx(dareKey(dare.dareId), JSON.stringify(dare), limits.ttlSeconds)) ? 'stored' : 'exists';
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async getDare(dareId) {
+      try {
+        const text = await raw.get(dareKey(dareId));
+        if (text === null) return null;
+        const parsed: unknown = JSON.parse(text);
+        return isDare(parsed) ? parsed : null;
+      } catch {
+        return null;
+      }
+    },
   };
   return store;
 }
@@ -451,6 +518,7 @@ export function writeLimitsFromEnv(env: Record<string, string | undefined>): Wri
   return {
     ttlSeconds: positiveInt(env.PLAY_VERSION_TTL_SECONDS, DEFAULT_WRITE_LIMITS.ttlSeconds),
     dailyCap: positiveInt(env.PLAY_PUBLISH_DAILY_CAP, DEFAULT_WRITE_LIMITS.dailyCap),
+    dareDailyCap: positiveInt(env.PLAY_DARE_DAILY_CAP, DEFAULT_DARE_DAILY_CAP),
   };
 }
 
