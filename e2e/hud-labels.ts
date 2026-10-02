@@ -4,6 +4,6 @@
  * v `interface-language.spec.ts`. `ammo` přidal doplněk `+shoot` (P26D T7),
  * `collected` nese i počítadlo doplňku `+collect`. Pilulka postupu HUD kitu
  * (P34 T5) přidala `shots` (střelba a hod), `lives` (životy) a `defeated`
- * (cíl mřížky „poraz“).
+ * (cíl mřížky „poraz“). `best` je rekord k překonání (P36B T4).
  */
-export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated'];
+export const HUD_COUNTER_LABELS: readonly string[] = ['collected', 'gate', 'placed', 'mistakes', 'tools', 'step', 'ammo', 'shots', 'lives', 'defeated', 'best', 'dare'];

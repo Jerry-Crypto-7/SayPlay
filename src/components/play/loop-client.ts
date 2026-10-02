@@ -37,7 +37,7 @@ function session(): string {
   }
 }
 
-export function loopEvent(name: LoopEventName, versionId: string, extra?: { readonly withClip: boolean }): void {
+export function loopEvent(name: LoopEventName, versionId: string, extra?: { readonly withClip: boolean; readonly dare: boolean }): void {
   if (typeof window === 'undefined') return;
   const id = session();
   if (ONCE.has(name)) {

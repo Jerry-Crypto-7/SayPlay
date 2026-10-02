@@ -33,18 +33,43 @@ export interface SceneryPlace {
   readonly turn: number;
 }
 
-/** Kde rekvizity stojí: krok 7 m, odsazení a velikost se střídají podle pořadí. */
-export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayout, inner: number, from: number, to: number): SceneryPlace[] {
+/** Výška rekvizity z primitiv při měřítku 1 (m) – vršek nejvyššího dílu v `Prop`. */
+const PROP_HEIGHTS: Readonly<Record<PropKind, number>> = {
+  tree: 3.3, pine: 3.4, palm: 4.1, cactus: 2.2, rock: 0.8, building: 7, lamp: 3.3, shelf: 2, crate: 1, sofa: 1.2,
+  chimney: 6, tower: 6.6, grave: 1.35, coral: 1.8, seaweed: 2.4, crystal: 1.7, iceblock: 1.2, volcano: 5, buoy: 1.45,
+};
+
+/** Výška kulisy při měřítku 1 (m): model z katalogu (`SCENERY_MODELS`), primitivy z `PROP_HEIGHTS`. */
+export const sceneryHeight = (kind: SceneryKind): number => (isSceneryModel(kind) ? SCENERY_MODELS[kind] : PROP_HEIGHTS[kind]);
+
+/**
+ * Strop kulisy v popředí: nejvýš 3 výšky hrdiny (P36C T5). Kamera arény kouká
+ * pod 48°, první řada kulis stojí 4,5 m před hranou (mezera, stěna, odstup),
+ * takže hrdinovi u hrany zakryje nohy kulisa vyšší než 4,5 · tg 48° ≈ 5 m;
+ * 3 × 1,3 m nejmenšího hrdiny je 3,9 m – pod tím, a pořád dům nad hrdinou.
+ */
+export const FOREGROUND_TALLEST = 3;
+
+/** Řada na straně `side` (znaménko x) zůstane pod výškou `height` (m). */
+export interface SceneryCap {
+  readonly side: -1 | 1;
+  readonly height: number;
+}
+
+/** Kde rekvizity stojí: krok 7 m, odsazení a velikost se střídají podle pořadí. `cap` zmenší vysoké kulisy jedné řady. */
+export function sceneryPlaces(props: readonly SceneryKind[], layout: SceneryLayout, inner: number, from: number, to: number, cap?: SceneryCap): SceneryPlace[] {
   const places: SceneryPlace[] = [];
   const sides = layout === 'sides' ? [-1, 1] : [1];
   for (let index = 0, z = from; z <= to; index += 1, z += 7) {
     for (const side of sides) {
       const n = index * 7 + (side + 1) * 3;
+      const kind = props[n % props.length] as SceneryKind;
+      const scale = 0.8 + ((index * 29 + side * 7) % 5) * 0.12;
       places.push({
-        kind: props[n % props.length] as SceneryKind,
+        kind,
         x: side * (inner + ((index * 37 + side * 11) % 5) * 1.3),
         z: z + ((index * 13) % 3),
-        scale: 0.8 + ((index * 29 + side * 7) % 5) * 0.12,
+        scale: cap?.side === side ? Math.min(scale, cap.height / sceneryHeight(kind)) : scale,
         turn: (index % 4) * (Math.PI / 2),
       });
     }
@@ -254,10 +279,13 @@ const FOOT = 0.7;
  * Řada kulis. Matice se spočítají hned, takže rig (`SceneryWindow` v `StyleRig`)
  * podle `userData.scenery` smí kulisy za koncem mlhy vypnout – bez R3F tady,
  * stránka mřížky tenhle soubor importuje staticky (viz `Panorama` výš).
- * `ground` = výška terénu pod kulisou (údolí běžce, P32A T3), `cap` = barva sněhové čepičky.
+ * `ground` = výška terénu pod kulisou (údolí běžce, P32A T3), `cap` = barva sněhové čepičky,
+ * `tallest` = strop výšky řady v popředí (v metrech scény, už se `size`).
  */
-export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string }) {
-  const places = useMemo(() => sceneryPlaces(look.props, layout, inner, from, to), [look.props, layout, inner, from, to]);
+export function Scenery({ look, layout, inner, from, to, y = 0, size = 1, ground, cap, tallest }: { readonly look: Look; readonly layout: SceneryLayout; readonly inner: number; readonly from: number; readonly to: number; readonly y?: number; readonly size?: number; readonly ground?: (x: number, z: number) => number; readonly cap?: string; readonly tallest?: SceneryCap }) {
+  const side = tallest?.side;
+  const height = tallest === undefined ? undefined : tallest.height / size;
+  const places = useMemo(() => sceneryPlaces(look.props, layout, inner, from, to, side === undefined || height === undefined ? undefined : { side, height }), [look.props, layout, inner, from, to, side, height]);
   const heights = useMemo(
     () =>
       places.map((place) => {

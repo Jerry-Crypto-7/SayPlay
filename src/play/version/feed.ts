@@ -10,10 +10,16 @@
  * seznam ze řádků nejvýš po `top` – hra publikovaná mezi dvěma dotazy leží nad
  * `top` a pořadí pod ním nepohne. Posun umí jen to, co ze seznamu odpadne na
  * konci (expirace, strop `RECENT_CAP`), a to jsou nejstarší hry.
+ *
+ * **Pořadí podle smyčky** (P36B T9): hry, které lidé dohrávají, posílají jako
+ * výzvu a remixují, jdou výš (`byLoop`). Čítače se mezi dvěma stránkami smí
+ * pohnout, a s nimi pořadí – stránka pak může zopakovat hru, kterou čtenář už
+ * má (`FeedPager` ji zahodí), nebo minout hru, která mezitím stoupla nad jeho
+ * pozici (uvidí ji při dalším načtení). Bez čítačů platí záruka výš beze změny.
  */
 
 import { diversify } from './diversify';
-import { RECENT_CAP, type RecentGame } from './store';
+import { type LoopHeat, RECENT_CAP, type RecentGame } from './store';
 
 /** Co feed o hře potřebuje vědět, aby rozhodl, jestli ji ukáže. */
 export interface FeedCandidate {
@@ -103,13 +109,47 @@ export interface FeedPage {
   readonly next: string | null;
 }
 
+/** Každá `FRESH_EVERY`. pozice patří nejnovější hře, která ještě nebyla – nová hra bez historie tak dostane šanci. */
+export const FRESH_EVERY = 3;
+
+/** Útlum podle stáří: hra o den starší než nejnovější ve snímku má poloviční žár. */
+const HALF_LIFE_MS = 24 * 3600 * 1000;
+
+/** Žár hry: dohrání, výzva a remix táhnou nahoru (výzva a remix víc – hráč hru někomu ukázal), přeskočení dolů. */
+export function heatOf(heat: LoopHeat | undefined): number {
+  if (heat === undefined) return 0;
+  return Math.max(0, heat.finishes + 3 * heat.dares + 3 * heat.remixes - 0.5 * heat.skips);
+}
+
+/**
+ * Pořadí podle smyčky. `rows` jdou od nejnovější. Stáří se měří proti
+ * nejnovější hře snímku (`top`), ne proti hodinám – tentýž snímek a tytéž
+ * čítače dají vždy totéž pořadí. Bez čítačů (žár všude 0) vyjde přesně
+ * „od nejnovější“: obě fronty jsou pak tatáž.
+ */
+function byLoop(rows: readonly RecentGame[], heat: ReadonlyMap<string, LoopHeat>, top: FeedPosition): RecentGame[] {
+  const topAt = Date.parse(top.createdAt);
+  const score = new Map(rows.map((row) => [row.versionId, heatOf(heat.get(row.versionId)) * 0.5 ** ((topAt - Date.parse(row.createdAt)) / HALF_LIFE_MS)] as const));
+  const hot = [...rows].sort((a, b) => (score.get(b.versionId) ?? 0) - (score.get(a.versionId) ?? 0) || newerFirst(a, b));
+  const out: RecentGame[] = [];
+  const placed = new Set<string>();
+  const take = (queue: readonly RecentGame[]): RecentGame | undefined => queue.find((row) => !placed.has(row.versionId));
+  while (out.length < rows.length) {
+    const fresh = (out.length + 1) % FRESH_EVERY === 0;
+    const next = (fresh ? take(rows) : take(hot)) as RecentGame;
+    placed.add(next.versionId);
+    out.push(next);
+  }
+  return out;
+}
+
 /**
  * Jedna stránka feedu ze všech řádků seznamu. Z jedné rodiny (autorské verze
  * téhož návrhu, tj. téhož `parentId`) jde jen nejnovější a z her se stejným
  * titulkem po normalizaci taky – takže se neopakují ani v jedné stránce, ani
- * napříč stránkami.
+ * napříč stránkami. `heat` (čítače smyčky) pak rozhodne pořadí (`byLoop`).
  */
-export function feedPage(rows: readonly RecentGame[], limit: number, cursor: Cursor | null, hidden: ReadonlySet<string>): FeedPage {
+export function feedPage(rows: readonly RecentGame[], limit: number, cursor: Cursor | null, hidden: ReadonlySet<string>, heat: ReadonlyMap<string, LoopHeat> = new Map()): FeedPage {
   const sorted = [...rows].sort(newerFirst);
   const top = cursor?.top ?? sorted[0];
   if (top === undefined) return { games: [], next: null };
@@ -126,12 +166,14 @@ export function feedPage(rows: readonly RecentGame[], limit: number, cursor: Cur
     titles.add(title);
     return true;
   });
+  const ranked = byLoop(shown, heat, top);
+  const rank = new Map(ranked.map((row, index) => [row.versionId, index] as const));
   // `diversify` skončí, jakmile se do osmice nevejde žádná zbylá hra; zbytek
-  // jde za ni od nejnovější bez pravidla rozmanitosti, jinak by na žádné
+  // jde za ni v pořadí smyčky bez pravidla rozmanitosti, jinak by na žádné
   // stránce nebyl.
-  const placed = diversify(shown);
+  const placed = diversify(ranked, Number.POSITIVE_INFINITY, (a, b) => (rank.get(a.versionId) ?? 0) - (rank.get(b.versionId) ?? 0));
   const inPlace = new Set(placed.map((row) => row.versionId));
-  const all = [...placed, ...shown.filter((row) => !inPlace.has(row.versionId))];
+  const all = [...placed, ...ranked.filter((row) => !inPlace.has(row.versionId))];
   const offset = cursor?.offset ?? 0;
   const end = offset + limit;
   return {

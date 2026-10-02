@@ -592,6 +592,11 @@
   margin-left: var(--sp-space-2);
 }
 
+/* Rekord překonaný během běhu (P36B T4): „New best!“ vyskočí jako sebrané vejce. */
+.play-hud-count.is-new {
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
 .play-hud-count > .play-hud-num {
   margin-left: var(--sp-space-1);
 }
@@ -842,21 +847,6 @@
   height: var(--sp-size-icon-s);
 }
 
-/* Nápověda ovládání: na dotyku bez kláves, s myší celá (jako výzva na startu, T11). */
-.play-controls-keys {
-  display: none;
-}
-
-@media (hover: hover) {
-  .play-controls-touch {
-    display: none;
-  }
-
-  .play-controls-keys {
-    display: inline;
-  }
-}
-
 /* Desktop (kit `05-layout.md`): scéna 16:9 nejvýš 1280×720 uprostřed, okolí krémové, HUD sedí na scéně. */
 @media (min-width: 1024px) {
   .play-shell:not(.play-pager-slide > .play-shell) {
@@ -993,6 +983,81 @@
   font-weight: var(--sp-text-body-l-weight);
   line-height: var(--sp-text-body-l-leading);
   font-variant-numeric: tabular-nums;
+}
+
+/* Hvězdy proti paru (P36B T2): jako vejce HUD – získaná slunečná s inkoustovým obrysem,
+ * zbylá čárkovaný obrys. Naskočí po odznaku jedna po druhé (kit `ease-pop`, `duration-celebrate`). */
+.play-result-stars {
+  display: flex;
+  justify-content: center;
+  gap: var(--sp-space-2);
+  margin: var(--sp-space-3) 0 0;
+}
+
+.play-star {
+  --_i: 0;
+  width: 40px;
+  height: 40px;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+  animation-delay: calc(var(--_after) + 140ms * var(--_i));
+}
+
+.play-star:nth-child(2) {
+  --_i: 1;
+}
+
+.play-star:nth-child(3) {
+  --_i: 2;
+}
+
+.play-star polygon {
+  fill: none;
+  stroke: var(--sp-outline);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 3 2;
+}
+
+.play-star.is-earned polygon {
+  fill: var(--sp-secondary);
+  stroke-width: 2.2;
+  stroke-dasharray: none;
+}
+
+/* Skóre velké (display-l), jednotka pod ním jako popisek statistiky. */
+.play-result-score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: var(--sp-space-3) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-result-score-unit {
+  font-size: var(--sp-text-caption-size);
+  font-weight: 700;
+  color: var(--sp-text-secondary);
+}
+
+/* Řádek rekordu; překonaný rekord je slunečná pilulka s obrysem (jedna oslava, ne druhá rajčatová akce). */
+.play-result-best {
+  align-self: center;
+  margin: var(--sp-space-2) 0 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.play-result-best[data-new='true'] {
+  padding: var(--sp-space-1) var(--sp-space-3);
+  background: var(--sp-secondary);
+  color: var(--sp-on-secondary);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: var(--sp-radius-pill);
+  box-shadow: var(--sp-shadow-sm);
+  font-family: var(--sp-font-display);
+  font-weight: 900;
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+  animation-delay: calc(var(--_after) + 420ms);
 }
 
 /* Statistiky v řadě po třech (kit Card & stat); vyjedou po listu, po výhře po odznaku, 60 ms po sobě. */
@@ -1141,7 +1206,9 @@
 @media (prefers-reduced-motion: reduce) {
   .sp-badge,
   .play-result-sheet,
-  .play-result-stats > .sp-stat {
+  .play-result-stats > .sp-stat,
+  .play-star,
+  .play-result-best {
     animation: none;
   }
 }
@@ -1509,17 +1576,26 @@
   line-height: 1.2;
 }
 
-/* Klávesa jen tam, kde je klávesnice a myš; na telefonu je to šum (jako čísla karet, P33 T6). */
-.play-first-prompt-keys {
-  display: none;
+/* Výzva kamaráda (P36B T7): co porazit, nad „Tap to start“; poznámka o živých změnách pod tím menší. */
+.play-first-prompt-dare {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: var(--sp-text-title-m-size);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.play-first-prompt-note {
   font-size: var(--sp-text-body-l-size);
+  font-weight: 400;
   color: var(--sp-text-secondary);
 }
 
-@media (hover: hover) {
-  .play-first-prompt-keys {
-    display: block;
-  }
+/* Klávesa jen tam, kde se nehraje prstem (`useCoarsePointer`); na telefonu je to šum (P33 T6). */
+.play-first-prompt-keys {
+  font-size: var(--sp-text-body-l-size);
+  color: var(--sp-text-secondary);
 }
 
 /* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. */
@@ -1552,6 +1628,66 @@
   }
 }
 
+/* Dotykové zóny (P36C T2): plošinovka a souboj ukážou nad dolní řadou HUD, co dělá
+ * která část obrazovky – dokud hra čeká na dotek a 3 s hry, pak zhasnou. Štítky
+ * kitu (papír, inkoustový obrys), žádná průhledná plocha přes hrdinu. */
+.play-touch-zones {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity var(--sp-duration-base) var(--sp-ease-exit);
+}
+
+.play-touch-zones[data-shown='false'] {
+  opacity: 0;
+}
+
+.play-touch-zone {
+  position: absolute;
+  bottom: var(--_stack);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-space-1);
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.play-touch-zone .sp-icon {
+  width: var(--sp-size-icon-s);
+  height: var(--sp-size-icon-s);
+}
+
+/* Joystick arény a úkolu (P36C T2): kroužek tam, kam padl prst, páčka jede s tahem. */
+.play-stick {
+  position: absolute;
+  z-index: 1;
+  display: none;
+  width: 96px;
+  height: 96px;
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: 50%;
+  box-shadow: 0 0 0 var(--sp-border-base) var(--sp-surface), inset 0 0 0 var(--sp-border-base) var(--sp-surface);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.play-stick[data-active='true'] {
+  display: block;
+}
+
+.play-stick-knob {
+  position: absolute;
+  top: calc(50% - 22px);
+  left: calc(50% - 22px);
+  width: 44px;
+  height: 44px;
+  border: var(--sp-border-base) solid var(--sp-outline);
+  border-radius: 50%;
+  background: var(--sp-secondary);
+  box-shadow: var(--sp-shadow-sm);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .play-first-prompt-start {
     animation: none;
@@ -1582,6 +1718,22 @@
     opacity: 0;
     transform: translate(-50%, -48px) scale(1);
   }
+}
+
+/* Kombo (P36C T7): „×N“ v rajčatové, o kus výš než „+N“, ať se nepřekryjí. */
+.play-combo-pop {
+  top: 26%;
+  color: var(--sp-primary);
+}
+
+/* Prohra (P36C T7, `effects/feel.ts` LOSE_FADE_MS): scéna se za 0,6 s odbarví a ztmaví.
+ * Jen plátno – karta konce a HUD nad ním zůstávají v barvě. Restart atribut smaže. */
+.play-stage canvas {
+  transition: filter 600ms ease-out;
+}
+
+.play-stage[data-fx='lose'] canvas {
+  filter: grayscale(0.85) brightness(0.65);
 }
 
 /* Chycení hráče (P34 T5, kit `08-game-hud.md`): celá obrazovka se otřese nejvýš o 6 px

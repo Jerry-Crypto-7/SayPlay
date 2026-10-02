@@ -42,6 +42,7 @@ import type { Look } from '@/play/arcade/look';
 import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
 import type { ArcadeSession } from '../session';
 import { type EffectsBus, type VisualEventKind, createEffectsBus } from './bus';
+import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
 
 declare global {
@@ -50,9 +51,6 @@ declare global {
     __playFx?: () => Partial<Record<VisualEventKind, number>>;
   }
 }
-
-/** Největší posun kamery při otřesu (m). */
-const SHAKE_M = 0.14;
 
 /** Měkká kulatá tečka – jedna textura pro všechny částice. */
 function dotTexture(): CanvasTexture {
@@ -107,6 +105,9 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
   const bus = useRef<EffectsBus | null>(null);
+  /** Hodiny kresby (ms) a chvíle výhry na nich (P36C T7); −∞ = bez výhry. */
+  const clock = useRef(0);
+  const wonAt = useRef(-Infinity);
   const offset = useMemo(() => new Vector3(), []);
   const batch = useMemo(() => new BatchedRenderer(), []);
   const materials = useMemo(() => {
@@ -146,7 +147,7 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
         renderMode: RenderMode.BillBoard,
         behaviors: [
           new ApplyForce(new QVector3(0, -1, 0), new ConstantValue(burst.gravity)),
-          new SizeOverLife(burst.kind === 'flash' || burst.kind === 'puff' ? GROW : SHRINK),
+          new SizeOverLife(burst.kind === 'flash' || burst.kind === 'puff' || burst.kind === 'pop' ? GROW : SHRINK),
           new ColorOverLife(new Gradient([[new QVector3(1, 1, 1), 0], [new QVector3(1, 1, 1), 1]], [[1, 0], [0, 1]])),
         ],
       });
@@ -167,6 +168,9 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     window.__playFx = probe;
     const offBursts = created.subscribe((events) => {
       for (const event of events) heard[event.kind] = (heard[event.kind] ?? 0) + 1;
+      // Konec běhu (P36C T7): výhra zpomalí efekty a přiblíží kameru, prohra odbarví scénu (`play.css`).
+      if (events.some((event) => event.kind === 'win')) wonAt.current = clock.current;
+      if (surface.current !== null && events.some((event) => event.kind === 'lose')) surface.current.dataset.fx = 'lose';
       const now = performance.now() / 1000;
       director.update(now);
       // Barva sběratelné věci ze scény, dokud nějaká stojí; pak poslední známá.
@@ -177,7 +181,11 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     let seen = session.state()[HEADER.tick] as number;
     const offRestart = session.subscribe(() => {
       const tick = session.state()[HEADER.tick] as number;
-      if (tick < seen) director.reset();
+      if (tick < seen) {
+        director.reset();
+        wonAt.current = -Infinity;
+        if (surface.current !== null) delete surface.current.dataset.fx;
+      }
       seen = tick;
     });
     const tick = window.setInterval(() => director.update(performance.now() / 1000), 500);
@@ -189,6 +197,8 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
       created.dispose();
       director.reset();
       bus.current = null;
+      wonAt.current = -Infinity;
+      if (surface.current !== null) delete surface.current.dataset.fx;
     };
   }, [session, look, scene, batch, materials, surface]);
 
@@ -198,16 +208,24 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
   }, -1);
 
   useFrame((_, delta) => {
-    batch.update(delta);
-    const shake = bus.current?.shake() ?? 0;
-    if (shake === 0 || reducedMotion()) return;
+    clock.current += delta * 1000;
+    const reduced = reducedMotion();
+    const sinceWin = clock.current - wonAt.current;
+    batch.update(delta * winTimeScale(sinceWin, reduced));
+    // Přiblížení po výhře drží do restartu; jinak zoom 1 (i po restartu, který `wonAt` vrátí).
+    const zoom = winZoom(sinceWin, reduced);
+    if ('zoom' in camera && camera.zoom !== zoom) {
+      camera.zoom = zoom;
+      camera.updateProjectionMatrix();
+    }
+    const amount = shakeAmount(bus.current?.shake() ?? 0, reduced);
+    if (amount === 0) return;
     // Tlumený kmit: směr z doznívání (to jde po ticích), ne z náhody – týž záznam třese stejně.
-    offset.set(Math.sin(shake * 37), Math.cos(shake * 53), 0).multiplyScalar(shake * shake * SHAKE_M);
+    const shake = bus.current!.shake();
+    offset.set(Math.sin(shake * 37), Math.cos(shake * 53), 0).multiplyScalar(amount);
     camera.position.add(offset);
     camera.updateMatrixWorld();
   });
 
   return <primitive object={batch} />;
 }
-
-const reducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -44,6 +44,7 @@ import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
 import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade/pieces/fight';
 
 import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
+import { deadFor, fallOf, squashPose, tiltPose } from '../characterMotion';
 import { isTyping } from '../input';
 import { glowingCopy } from '../look/load';
 import { UNDER_PANORAMA } from '../look/under-panorama';
@@ -52,6 +53,7 @@ import { Scenery } from '../look/Scenery';
 import { questTargets } from '../quest/TargetStates';
 import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
+import { InkOutline } from '../look/rig/InkOutline';
 import { type Cast, FittedModel } from '../World';
 import { ArenaFloor } from './ArenaFloor';
 import { type TargetLayer, TargetsMount } from './TargetsMount';
@@ -263,6 +265,8 @@ const HERO_DRAWN_M = 1.3;
 const ITEM_DRAWN_M = 0.7;
 const ITEM_HOVER_M = 0.35;
 const ITEM_SPIN = 2;
+/** Odstup výzdoby podlahy od těla na startu (m): kamínek u nohy hrdiny ani trs pod věcí. */
+const DECOR_KEEP_M = 0.4;
 /** Záře věci nad prahem bloomu rigu (`bloomThreshold` ≈ 1,1). */
 const ITEM_GLOW = 2.4;
 const RING_GLOW = new Color(brand.sun).multiplyScalar(2.5);
@@ -349,11 +353,14 @@ function reachOf(qx: number, qy: number, qz: number, r: number, tan: number, asp
   return Math.max((Math.abs(qx) + r) / (edge * tan * aspect), (Math.abs(up) + r) / (edge * tan)) - along;
 }
 
-/** Póza statického modelu: poskok, zmáčknutí, bliknutí po zásahu. Předklon ne – směr drží otočení skupiny. */
-function applyPose(group: Group, pose: Pose): void {
+/**
+ * Póza statického modelu: poskok, zmáčknutí, bliknutí a zakymácení po zásahu, pád
+ * po prohře (`dead` = sekundy od ní, P36C T8). Předklon ne – směr drží otočení skupiny.
+ */
+function applyPose(group: Group, pose: Pose, dead: number): void {
   group.position.y = pose.bob;
-  const wide = 1 + pose.squash / 2;
-  group.scale.set(wide, 1 - pose.squash, wide);
+  tiltPose(group, pose.flash > 0 ? 1 - pose.flash : 1, fallOf(dead));
+  squashPose(group, pose.squash);
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
@@ -412,6 +419,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
   const poses = useRef<(Pose | null)[]>([]);
   const clips = useRef<ClipState[]>([]);
   const yaws = useRef<(number | undefined)[]>([]);
+  /** Tik prohry statického hrdiny pro pád (P36C T8). */
+  const deaths = useRef(new Map<number, number>());
   /** Tik, kdy se probuzený pronásledovatel (kopie od `spawnBase`) poprvé ukázal. */
   const woke = useRef(new Map<number, number>());
   const glows = useMemo(() => new Map<Material, Material>(), []);
@@ -433,6 +442,22 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
     () => views.map((view) => (!fight || (parts[view.index] !== 'hero' && parts[view.index] !== 'enemy') ? 0 : bodyHp(view.index < (initial[HEADER.bodyCount] as number) ? initial : session.state(), view.index))),
     [views, parts, fight, initial, session],
   );
+  /** Kam výzdoba podlahy nesmí: každé tělo na startu s odstupem; těla přidaná za hry nesou vlastní záři nad ní. */
+  const keep = useMemo(
+    () =>
+      views
+        .filter((view) => view.index < (initial[HEADER.bodyCount] as number))
+        .map((view) => {
+          const base = bodyBase(view.index);
+          const size = drawn[view.index]!;
+          return { x: -(initial[base + BODY.x] as number) / UNIT, z: (initial[base + BODY.z] as number) / UNIT, r: Math.max(size.w, size.d) / 2 + DECOR_KEEP_M };
+        }),
+    [views, drawn, initial],
+  );
+  const heroHeight = useMemo(() => {
+    const hero = parts.indexOf('hero');
+    return hero < 0 ? HERO_DRAWN_M : drawn[hero]!.h;
+  }, [parts, drawn]);
   const fxClock = useRef(0);
   const leans = useRef<(Group | null)[]>([]);
   const fighters = useRef<(Fighter | undefined)[]>([]);
@@ -532,7 +557,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
       }
       const pose = poses.current[view.index];
       const inner = posed.current[view.index];
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
+      // Bojovník padá v `drawFighter` (skupina `leans`); tady jen hrdina, kterého chytili nebo zasáhli naposled.
+      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose, fighter ? 0 : deadFor(deaths.current, view.index, viewOf(state, prev, view.index).alive, tick + alpha, ARCADE_HZ));
       if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) {
         const moving = clipOf(viewOf(state, prev, view.index), pose, tick + alpha);
         clips.current[view.index] = fighter ? fightClipOf(state, view.index, part === 'hero', watch, now, moving) : moving;
@@ -655,7 +681,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
 
   return (
     <>
-      <ArenaFloor look={scene} half={half / UNIT} />
+      <ArenaFloor look={scene} half={half / UNIT} seed={session.world.seed} keep={keep} hero={heroHeight} />
       {views.map((view) => {
         if (view.role === ROLE.target) return null; // Cíl úkolu kreslí vrstva cílů (`TargetsMount`), ne kvádr.
         const part = parts[view.index]!;
@@ -694,6 +720,8 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
               ) : (
                 // Náklon nápřahu, výpad a pád bojovníka (`drawFighter`); mimo souboj stojí rovně.
                 <group ref={(group) => { leans.current[view.index] = group; }}>
+                  {/* Obrys (P36C T6) jen na modelu – kruh, ukazatel zdraví a výstraha jsou mimo tuhle skupinu. */}
+                  <InkOutline ink={part === 'hero' ? 'hero' : 'foe'} />
                   {character !== undefined ? (
                     <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
                   ) : (

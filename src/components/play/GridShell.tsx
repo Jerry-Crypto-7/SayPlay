@@ -381,17 +381,22 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
     };
   }, [controller, blueprint, cards]);
 
-  // Restart z HUD a z karty pauzy (P34 T5): nová relace od tiku 0, hra zase čeká na první dotek.
-  const restart = useCallback(() => {
-    if (!witnessed.current) loopEvent('restart', versionId);
-    witnessed.current = false;
-    pending.current = null;
-    setSelected(null);
-    setPops([]);
-    setPaused(false);
-    setWaiting(true);
-    setController(bindRuntime(null, versionId, blueprint.world).controller);
-  }, [versionId, blueprint]);
+  // Nová relace od tiku 0 (P34 T5). Restart z HUD a z karty pauzy čeká na první dotek;
+  // nový pokus z výsledku (P36B T3) běží hned jako dřív – jen už nepřehrává prohraný záznam.
+  const startOver = useCallback(
+    (wait: boolean) => {
+      if (!witnessed.current) loopEvent('restart', versionId);
+      witnessed.current = false;
+      pending.current = null;
+      setSelected(null);
+      setPops([]);
+      setPaused(false);
+      setWaiting(wait);
+      setController(bindRuntime(null, versionId, blueprint.world).controller);
+    },
+    [versionId, blueprint],
+  );
+  const restart = useCallback(() => startOver(true), [startOver]);
   useHudKeys(running && built && changing === null && !aboutOpen, () => paused, (action) => {
     if (action === 'restart') restart();
     else setPaused(action === 'pause');
@@ -520,12 +525,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
           versionId={versionId}
           remix={remix}
           facts={gridFacts(spec, snapshot)}
-          onReplay={() => {
-            if (!witnessed.current) loopEvent('restart', versionId);
-            witnessed.current = false;
-            setWaiting(false);
-            controller.observeAt(0);
-          }}
+          onReplay={() => startOver(false)}
         />
       )}
     </main>

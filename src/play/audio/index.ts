@@ -9,16 +9,20 @@
  * relace ani do hashe – zvuk je ozdoba mimo stav.
  */
 
-import { type ArcadeEffect, BODY, HEADER, bodyBase } from '@/play/arcade/contract';
+import { type ArcadeEffect, BODY, BUTTON, HEADER, type InputEvent, bodyBase } from '@/play/arcade/contract';
 import type { LookId } from '@/play/arcade/look';
 
-import { musicEnabled, sfxFor } from './library';
+import { type SoundEvent, musicEnabled, sfxFor } from './library';
 import { ZZFX_RATE, type ZzfxParams, zzfxSamples } from './zzfx';
 
 /** Vypínač celé vrstvy (rollback plánu P28C): `false` = hry mlčí, tlačítko ztlumení zmizí. */
 export const PLAY_SFX = true;
 
-export type SfxPreset = 'jump' | 'pickup' | 'hit' | 'win' | 'lose';
+/** Pět událostí, které mohou mít vlastní soubor podle looku (`SoundEvent`), a zvuky akcí jen ze ZzFX (P36C T3). */
+export type SfxPreset = SoundEvent | 'lane' | 'slide' | 'shoot' | 'swing' | 'combo';
+
+const FILE_EVENTS: readonly SoundEvent[] = ['jump', 'pickup', 'hit', 'win', 'lose'];
+const hasFile = (preset: SfxPreset): preset is SoundEvent => (FILE_EVENTS as readonly SfxPreset[]).includes(preset);
 
 /** Náhoda 0: tentýž zvuk pokaždé, vzorky jdou uložit. */
 export const SFX_PRESETS: Readonly<Record<SfxPreset, ZzfxParams>> = {
@@ -26,22 +30,76 @@ export const SFX_PRESETS: Readonly<Record<SfxPreset, ZzfxParams>> = {
   pickup: [0.6, 0, 1180, 0, 0.03, 0.12, 1, 1, 0, 0, 520, 0.04],
   hit: [0.8, 0, 140, 0, 0.05, 0.2, 4, 1, -3, 0, 0, 0, 0, 0.8],
   win: [0.7, 0, 523, 0.02, 0.22, 0.35, 0, 1, 0, 0, 262, 0.1, 0.11],
-  lose: [0.7, 0, 330, 0.02, 0.2, 0.5, 2, 1, -3],
+  // Jemný „sting“: dva klesající tóny sinusem, žádná pila – prohra nemá trestat ucho.
+  lose: [0.55, 0, 392, 0.02, 0.12, 0.42, 0, 1, -0.6, 0, -98, 0.14],
+  // Akce hráče (P36C T3): krátké a tišší než události, ať je přehluší sebrání i zásah.
+  lane: [0.35, 0, 620, 0, 0.01, 0.05, 1, 1, 6],
+  slide: [0.4, 0, 180, 0.01, 0.06, 0.12, 4, 1, -2, 0, 0, 0, 0, 0.4],
+  shoot: [0.45, 0, 880, 0, 0.02, 0.08, 2, 1, -18],
+  swing: [0.45, 0, 300, 0.01, 0.03, 0.1, 4, 1, 4, 0, 0, 0, 0, 0.6],
+  combo: [0.5, 0, 784, 0, 0.04, 0.14, 1, 1, 0, 0, 392, 0.05],
 };
 
 /**
  * Co zazní za efekty jednoho tiku. Konec hry přehluší zbytek tiku (poslední
- * sebrání a výhra jsou jeden zvuk, ne dva přes sebe); jinak sebrání a zásah,
- * každý nejvýš jednou.
+ * sebrání a výhra jsou jeden zvuk, ne dva přes sebe); jinak sebrání, kombo
+ * a zásah, každý nejvýš jednou. Druhy jako řetězce: `combo` vystaví jádro až
+ * s P36A a smlouva efektů ho zatím nezná.
  */
 export function presetsFor(events: readonly ArcadeEffect[]): SfxPreset[] {
-  const kinds = new Set(events.map((event) => event.kind));
+  const kinds = new Set<string>(events.map((event) => event.kind));
   if (kinds.has('lose')) return ['lose'];
   if (kinds.has('win')) return ['win'];
   const out: SfxPreset[] = [];
   if (kinds.has('score')) out.push('pickup');
+  if (kinds.has('combo')) out.push('combo');
   if (kinds.has('damage')) out.push('hit');
   return out;
+}
+
+/**
+ * Zvuky akcí hráče (P36C T3) ze záznamu vstupu od indexu `from` – změna pruhu
+ * ani švih nic nesebere, efekt pravidla po nich nezůstane. Zní jen náběžná
+ * hrana: držené tlačítko jde do záznamu každý tik a mezera v záznamu znamená
+ * puštění. Tlačítko znamená v každém ovládání něco jiného, proto podle `control`
+ * (ťuk běžce je skok se zvukem `jump`, šipka dolů závodu je brzda, ne skluz).
+ */
+export function actionPresets(control: string, inputs: readonly InputEvent[], from: number): SfxPreset[] {
+  const out = new Set<SfxPreset>();
+  for (let index = Math.max(0, from); index < inputs.length; index += 1) {
+    const event = inputs[index] as InputEvent;
+    const before = index > 0 && (inputs[index - 1] as InputEvent).tick === event.tick - 1 ? (inputs[index - 1] as InputEvent).buttons : 0;
+    const pressed = event.buttons & ~before;
+    if (control === 'runner' && (pressed & (BUTTON.LEFT | BUTTON.RIGHT)) !== 0) out.add('lane');
+    if (control === 'runner' && (pressed & (BUTTON.DOWN | BUTTON.HOLD)) !== 0) out.add('slide');
+    if ((pressed & BUTTON.FIRE) !== 0 || (control === 'shooter' && (pressed & BUTTON.TAP) !== 0)) out.add('shoot');
+    if ((pressed & BUTTON.ATTACK) !== 0 || (control === 'duel' && (pressed & BUTTON.TAP) !== 0)) out.add('swing');
+  }
+  return [...out];
+}
+
+/** Vibrace podle zvuku (ms nebo vzor zap/vyp); akce hráče se necítí, jen co se mu stalo. */
+export const HAPTICS = {
+  hit: 30,
+  pickup: 10,
+  win: [40, 60, 40, 60, 120],
+  lose: [180, 80, 260],
+} as const satisfies Partial<Record<SfxPreset, number | readonly number[]>>;
+
+/** Od nejsilnějšího: jedno zavibrování za tik, nový vzor stejně ruší předchozí. */
+const HAPTIC_ORDER = ['lose', 'win', 'hit', 'pickup'] as const;
+
+type Vibrating = { readonly vibrate?: (pattern: number | number[]) => boolean };
+
+/**
+ * Haptika zvuků jednoho tiku (P36C T3). Jen kde prohlížeč Vibration API má
+ * (iOS Safari ne – tam nic) a ne při ztlumení: kdo ztlumil hru, nechce ani bzučení.
+ */
+export function vibrateFor(presets: readonly SfxPreset[], device: Vibrating | undefined = typeof navigator === 'undefined' ? undefined : navigator): boolean {
+  const strongest = HAPTIC_ORDER.find((preset) => presets.includes(preset));
+  if (strongest === undefined || typeof device?.vibrate !== 'function' || isMuted()) return false;
+  const pattern = HAPTICS[strongest];
+  return device.vibrate(typeof pattern === 'number' ? pattern : [...pattern]);
 }
 
 /**
@@ -168,7 +226,7 @@ function load(url: string): void {
 
 function preloadLook(): void {
   if (soundLook === null) return;
-  for (const preset of Object.keys(SFX_PRESETS) as SfxPreset[]) {
+  for (const preset of FILE_EVENTS) {
     const url = sfxFor(soundLook, preset);
     if (url !== null) load(url);
   }
@@ -181,7 +239,7 @@ export function setSoundLook(look: LookId | null): void {
 }
 
 export function playSfx(preset: SfxPreset): void {
-  const url = soundLook === null ? null : sfxFor(soundLook, preset);
+  const url = soundLook === null || !hasFile(preset) ? null : sfxFor(soundLook, preset);
   const file = url === null ? undefined : files.get(url);
   if (typeof file === 'object' && context?.state === 'running' && !isMuted()) playBuffer(file);
   else play(preset, SFX_PRESETS[preset]);

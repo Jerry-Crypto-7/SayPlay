@@ -27,6 +27,7 @@ import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { keySteer } from './key-steer';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
 
@@ -42,7 +43,7 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
   // Plavba (P32F T4): ovládání osu trati nenese, bere se z rozvržení; přistání má vlastní záběr.
   const voyage = voyageCams.get(camera);
   if (voyage?.layout.mode === 'land') {
-    placeLander(camera, look, x, voyage.hero?.position.y ?? voyage.layout.hero.y, z, voyage.layout.pad);
+    placeLander(camera, look, x, voyage.hero?.position.y ?? voyage.layout.hero.y, z, voyage.layout.pad, voyage.layout.hero.h);
     return;
   }
   if (voyage !== undefined) {
@@ -108,18 +109,33 @@ function aheadInView(camera: Camera, course: SteerCourse | undefined, z: number,
   return seen;
 }
 
+/** Nejmenší podíl výšky obrazu pro hrdinu přistání (P36C T5: cíl 8 %, s rezervou na náklon lodi). */
+const LANDER_HERO_SHARE = 0.09;
+/**
+ * Jak daleko od středu obrazu smí hrdina být, když se plocha do záběru nevejde (podíl poloviny šířky / výšky).
+ * Nahoru míň: horních ~15 % obrazu telefonu drží lišta HUD se štítkem cíle.
+ */
+const LANDER_REACH: readonly [x: number, y: number] = [0.7, 0.4];
+
 /**
  * Záběr přistání: přistávač i plocha v obraze, zboku (let jde v rovině x–y).
  * Vzdálenost ze zorného úhlu a poměru stran, na výšku strop 80 m – dál by
- * loď zmizela v mlze vesmíru.
+ * loď zmizela v mlze vesmíru. Hrdina (`heroH` m) má ale aspoň 9 % výšky
+ * obrazu (P36C T5, dřív 3,8 % na telefonu): když se loď s plochou nevejdou,
+ * kamera zůstane blíž a střed záběru se posune k ploše, jen co hrdina nevyjede
+ * z obrazu – plocha přijde do záběru, jak loď klesá.
  */
-function placeLander(camera: PerspectiveCamera, look: Vector3, x: number, y: number, z: number, pad: VoyageLayout['pad']): void {
+export function placeLander(camera: PerspectiveCamera, look: Vector3, x: number, y: number, z: number, pad: VoyageLayout['pad'], heroH: number): void {
   const [padX, padW] = pad === null ? [x, 10] : [pad.x, pad.w];
   const [left, right] = [Math.min(x - 3, padX - padW / 2 - 2), Math.max(x + 3, padX + padW / 2 + 2)];
   const [bottom, top] = [-1, y + 5];
   const tan = Math.tan((camera.fov * Math.PI) / 360);
-  const distance = Math.min(80, Math.max(16, (top - bottom) / 2 / tan, (right - left) / 2 / (tan * camera.aspect)) * 1.1);
-  const [cx, cy] = [(left + right) / 2, (bottom + top) / 2];
+  const fit = Math.min(80, Math.max(16, (top - bottom) / 2 / tan, (right - left) / 2 / (tan * camera.aspect)) * 1.1);
+  const distance = Math.min(fit, heroH / (2 * tan * LANDER_HERO_SHARE));
+  const [halfH, halfW] = [tan * distance, tan * distance * camera.aspect];
+  const clamp = (value: number, at: number, reach: number): number => Math.min(at + reach, Math.max(at - reach, value));
+  const cx = clamp((left + right) / 2, x, halfW * LANDER_REACH[0]);
+  const cy = clamp((bottom + top) / 2, y, halfH * LANDER_REACH[1]);
   camera.position.set(cx, cy + distance * 0.12, z - distance);
   look.set(cx, cy, z);
   camera.lookAt(look);
@@ -572,7 +588,7 @@ const BRAKE_KEYS = new Set(['arrowdown', 's']);
 const THRUST_KEYS = new Set(['arrowup', 'w', ' ']);
 
 /**
- * Šipky/A-D = zatáčení (osa), šipka dolů/S = brzda. Dotyk: první prst táhne
+ * Šipky/A-D = zatáčení (osa s náběhem ~0,25 s, `key-steer.ts`), šipka dolů/S = brzda. Dotyk: první prst táhne
  * do strany (osa podle vzdálenosti od místa stisku, plná po `DRAG_PX`),
  * druhý prst kdekoli brzdí. Brzda je držené tlačítko relace – padne do
  * každého tiku, ať snímků za sekundu je kolik chce (P28B T5).
@@ -598,11 +614,13 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     const pointers = new Map<number, { readonly x: number; axis: number }>();
     const sync = (): void => {
       const drag = [...pointers.values()][0]?.axis ?? 0;
-      const key = ((keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)) * AXIS_MAX;
       const second = pointers.size > 1;
-      session.hold(key !== 0 ? key : drag);
+      // Šipky točí volantem plynule (P36C T3); dojíždějící rejd po puštění má přednost před prstem jen do středu.
+      session.hold(wheel.axis() !== 0 ? wheel.axis() : drag);
       session.holdButtons((keys.has('brake') || (second && !lands) ? BUTTON.DOWN : 0) | (keys.has('thrust') || (second && lands) ? BUTTON.UP : 0));
     };
+    const wheel = keySteer(session, sync);
+    const steerKeys = (): void => wheel.aim(((keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)) * AXIS_MAX);
     const keyOf = (key: string): 'left' | 'right' | 'brake' | 'thrust' | null =>
       key === 'arrowleft' || key === 'a'
         ? 'left'
@@ -619,12 +637,14 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
       if (key === null) return;
       event.preventDefault();
       keys.add(key);
+      steerKeys();
       sync();
     };
     const onKeyUp = (event: KeyboardEvent) => {
       const key = keyOf(event.key.toLowerCase());
       if (key === null) return;
       keys.delete(key);
+      steerKeys();
       sync();
     };
     const onDown = (event: PointerEvent) => {
@@ -645,7 +665,7 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     const release = (): void => {
       keys.clear();
       pointers.clear();
-      sync();
+      wheel.reset();
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
@@ -655,6 +675,7 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     element.addEventListener('pointerup', onUp);
     element.addEventListener('pointercancel', onUp);
     return () => {
+      wheel.dispose();
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', release);

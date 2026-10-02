@@ -391,7 +391,7 @@ describe('VersionStore http', () => {
 describe('writeLimitsFromEnv', () => {
   it('reads positive integers and falls back to the defaults on anything else', () => {
     expect(writeLimitsFromEnv({})).toEqual(DEFAULT_WRITE_LIMITS);
-    expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '86400', PLAY_PUBLISH_DAILY_CAP: '20' })).toEqual({ ttlSeconds: 86400, dailyCap: 20 });
+    expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '86400', PLAY_PUBLISH_DAILY_CAP: '20' })).toEqual({ ttlSeconds: 86400, dailyCap: 20, dareDailyCap: 2000 });
     expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '0', PLAY_PUBLISH_DAILY_CAP: 'unlimited' })).toEqual(DEFAULT_WRITE_LIMITS);
     expect(writeLimitsFromEnv({ PLAY_PUBLISH_DAILY_CAP: '-5' }).dailyCap).toBe(DEFAULT_WRITE_LIMITS.dailyCap);
   });

@@ -22,8 +22,10 @@ import { DUEL, DUEL_FOE, DUEL_PHASE } from '@/play/arcade/pieces/duel';
 
 import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
+import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { DUEL_ZONES, zoneAt } from '../touch-zones';
 import { initialBody } from '../timing/TimingScene';
 
 const STRIKE_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
@@ -44,7 +46,7 @@ export function useDuelInput(session: ArcadeSession, target: React.RefObject<HTM
     };
     const onDown = (event: PointerEvent) => {
       const box = element.getBoundingClientRect();
-      session.press((event.clientX - box.left) / Math.max(1, box.width) >= 0.5 ? BUTTON.TAP : BUTTON.DOWN);
+      session.press(zoneAt(DUEL_ZONES, (event.clientX - box.left) / Math.max(1, box.width)) === 1 ? BUTTON.TAP : BUTTON.DOWN);
     };
     window.addEventListener('keydown', onKey);
     element.addEventListener('pointerdown', onDown);
@@ -167,9 +169,11 @@ export function DuelScene({ session, look: scene, rivalModel }: { readonly sessi
       </mesh>
       {/* Sonda záběru (P27A T6): hráč je hrdina, soupeř cíl. */}
       <group position={[0, 0, hero.z]} userData={{ frame: 'hero' }}>
+        <InkOutline ink="hero" />
         <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
       </group>
       <group position={[0, 0, rival.z]} userData={{ frame: 'target', item: 'rival' }}>
+        <InkOutline ink="foe" />
         {/* Model hledí k hráči (−z). */}
         <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} model={rivalModel === undefined ? undefined : <group rotation={[0, Math.PI, 0]}>{rivalModel(rival.w, rival.h, rival.d)}</group>} />
       </group>

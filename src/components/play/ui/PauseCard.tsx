@@ -14,7 +14,7 @@
 import { type ReactNode, useEffect, useId, useRef } from 'react';
 
 import { isTyping } from '../arcade/input';
-import { touchHint } from '../FirstPrompt';
+import { touchHint, useCoarsePointer } from '../FirstPrompt';
 import { CHANGE_ONE_THING } from '../starters';
 import { Button } from './Button';
 import { Icon } from './icons';
@@ -38,7 +38,7 @@ export interface HudKeyState {
 export type HudKeyEvent = Pick<KeyboardEvent, 'key' | 'repeat' | 'altKey' | 'ctrlKey' | 'metaKey' | 'target'>;
 
 /** Mezerník na tlačítku nebo odkazu ho zmáčkne – to není pauza. */
-const onControl = (target: EventTarget | null): boolean => target instanceof HTMLElement && target.closest('button, a[href], summary, [role="button"]') !== null;
+export const onControl = (target: EventTarget | null): boolean => target instanceof HTMLElement && target.closest('button, a[href], summary, [role="button"]') !== null;
 
 /**
  * Klávesa HUD → akce, nebo `null`. Esc kartu zavře, bez karty ji otevře
@@ -100,6 +100,7 @@ export function PauseCard({
   onRestart,
   onChange,
   controlsHint,
+  touch,
   children,
 }: {
   readonly onResume: () => void;
@@ -108,11 +109,14 @@ export function PauseCard({
   readonly onChange?: () => void;
   /** Nápověda ovládání hry – na dotyku bez kláves (`touchHint`), s myší celá. */
   readonly controlsHint?: string;
+  /** Nápověda pro dotyk tam, kde ji text hry neřekne (zóny plošinovky, `ZONE_HINTS`). */
+  readonly touch?: string;
   /** Řádek menších tlačítek pod hlavními akcemi. */
   readonly children?: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const coarse = useCoarsePointer();
   // Rodič posílá novou funkci při každém vykreslení; karta se kvůli tomu nesmí znovu připojit (fokus by skákal).
   const latestResume = useRef(onResume);
   useEffect(() => {
@@ -142,8 +146,7 @@ export function PauseCard({
         </h2>
         {controlsHint !== undefined && controlsHint !== '' && (
           <p className="play-pause-hint" data-testid="play-controls">
-            <span className="play-controls-touch">{touchHint(controlsHint)}</span>
-            <span className="play-controls-keys">{controlsHint}</span>
+            {coarse ? (touch ?? touchHint(controlsHint)) : controlsHint}
           </p>
         )}
         <Button size="l" className="sp-btn--block" data-testid="play-resume" title="Resume (Esc)" onClick={onResume}>

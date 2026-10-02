@@ -14,6 +14,7 @@ import { hashArcade } from '@/play/arcade/kernel';
 import { readGameSpec } from '@/play/spec';
 
 import { LIVE_TICKS, type VisualEvent, createEffectsBus } from '../effects/bus';
+import { BLINK_MS, HIT_STOP_MS, WIN_SLOW_MS, blinkHidden, comboOf, hitStopHeld, shakeAmount, winTimeScale, winZoom } from '../effects/feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from '../effects/particles';
 import { type ArcadeSession, createArcadeSession } from '../session';
 
@@ -140,7 +141,7 @@ describe('particle bursts from kernel events (P32A T4)', () => {
   });
 
   it('bursts carry no purple', () => {
-    const events: VisualEvent['kind'][] = ['pickup', 'hit', 'death', 'win', 'land'];
+    const events: VisualEvent['kind'][] = ['pickup', 'hit', 'death', 'win', 'land', 'lose'];
     for (const kind of events) {
       for (const burst of burstsOf({ kind, body: 0, role: 0, x: 0, y: 0, z: 0, tick: 0 }, LOOK)) {
         for (const color of burst.colors) {
@@ -149,5 +150,58 @@ describe('particle bursts from kernel events (P32A T4)', () => {
         }
       }
     }
+  });
+});
+
+/**
+ * Váha událostí (P36C T7). Prohra dřív nevypustila nic a „méně pohybu“ hlídalo
+ * jen otřes – tichá prohra i zpomalení navzdory nastavení by na snímku vypadaly
+ * dobře a byly špatně.
+ */
+describe('weight for pickups, hits, combos, wins and losses (P36C T7)', () => {
+  const at = (kind: VisualEvent['kind']): VisualEvent => ({ kind, body: 0, role: 0, x: 1, y: 0, z: 4, tick: 0 });
+
+  it('a loss bursts at the hero and a pickup pops before its sparks', () => {
+    const lose = burstsOf(at('lose'), LOOK);
+    expect(lose.length).toBeGreaterThan(0);
+    expect(lose.every((burst) => burst.at[0] === -1 && burst.at[2] === 4)).toBe(true);
+    expect(burstsOf(at('pickup'), LOOK).map((burst) => burst.kind)).toEqual(['pop', 'sparks']);
+  });
+
+  it('reduced motion turns off the shake, the slow-down and the zoom', () => {
+    const mid = WIN_SLOW_MS / 2;
+    expect(shakeAmount(1, false)).toBeGreaterThan(0);
+    expect(winTimeScale(mid, false)).toBeLessThan(1);
+    expect(winZoom(WIN_SLOW_MS, false)).toBeGreaterThan(1);
+    expect(shakeAmount(1, true)).toBe(0);
+    expect(winTimeScale(mid, true)).toBe(1);
+    expect(winZoom(WIN_SLOW_MS, true)).toBe(1);
+    // Zpomalení je krátké: po půl sekundě čas efektů běží zase naplno, přiblížení drží.
+    expect(winTimeScale(WIN_SLOW_MS, false)).toBe(1);
+    expect(winZoom(10 * WIN_SLOW_MS, false)).toBe(winZoom(WIN_SLOW_MS, false));
+    // Bez výhry je čas od ní +∞ (hodiny − (−∞)): žádné zpomalení ani přiblížení – jinak by kamera
+    // celou hru stála přiblížená a hrdina na kraji obrazu vypadl ze záběru (`e2e/play-frame`, hod).
+    expect(winTimeScale(Infinity, false)).toBe(1);
+    expect(winZoom(Infinity, false)).toBe(1);
+  });
+
+  it('a hit freezes the drawing for 60 ms, then the hero blinks and stays lit afterwards', () => {
+    expect(hitStopHeld(0)).toBe(true);
+    expect(hitStopHeld(HIT_STOP_MS - 1)).toBe(true);
+    expect(hitStopHeld(HIT_STOP_MS)).toBe(false);
+    expect(hitStopHeld(Infinity)).toBe(false);
+    // Ve stoji hrdina nezhasne; pak střídá, a po `BLINK_MS` svítí.
+    expect(blinkHidden(HIT_STOP_MS / 2)).toBe(false);
+    const flips = new Set<boolean>();
+    for (let ms = HIT_STOP_MS; ms < HIT_STOP_MS + BLINK_MS; ms += 10) flips.add(blinkHidden(ms));
+    expect([...flips].sort()).toEqual([false, true]);
+    expect(blinkHidden(HIT_STOP_MS + BLINK_MS)).toBe(false);
+    expect(blinkHidden(Infinity)).toBe(false);
+  });
+
+  it('a combo event sent by hand shows its multiplier; anything else shows none', () => {
+    expect(comboOf([{ kind: 'score' }, { kind: 'combo', multiplier: 3 } as { kind: string }])).toBe(3);
+    expect(comboOf([{ kind: 'combo', multiplier: 1 } as { kind: string }])).toBeNull();
+    expect(comboOf([{ kind: 'score' }])).toBeNull();
   });
 });

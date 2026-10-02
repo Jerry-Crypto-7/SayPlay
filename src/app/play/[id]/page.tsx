@@ -6,14 +6,28 @@ import { cache } from 'react';
 import { VERSION_ID_PATTERN } from '@/app/api/play/_errors';
 import { admit } from '@/app/api/play/_publish';
 import { PrefetchPhysics } from '@/components/play/arcade/ArcadePlay';
+import type { Dare } from '@/components/play/best';
 import { authorshipOf, labFacts, readFacts } from '@/components/play/lab';
 import { PlayShell } from '@/components/play/PlayShell';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import type { GameVersion } from '@/play/contracts';
 import { type Honesty, sentenceOf, unsupportedGame } from '@/play/draft/unsupported';
-import { type PublishedGame, versionStoreFromEnv } from '@/play/version';
+import { DARE_ID_PATTERN, type PublishedGame, versionStoreFromEnv } from '@/play/version';
 
 type Params = { params: Promise<{ id: string }> };
+type PageProps = Params & { searchParams: Promise<{ [key: string]: string | string[] | undefined }> };
+
+/**
+ * Výzva kamaráda z odkazu `?dare=` (P36B T7): výsledek, který server ověřil
+ * přehráním. Jen výzva téhle hry; neplatné, cizí nebo prošlé id (i výpadek
+ * úložiště – `getDare` vrací `null`) = obyčejná hra, žádná chyba.
+ */
+async function challengeOf(id: string, dare: string | string[] | undefined): Promise<Dare | null> {
+  if (typeof dare !== 'string' || !DARE_ID_PATTERN.test(dare)) return null;
+  const record = await versionStoreFromEnv(process.env).getDare(dare);
+  if (record === null || record.versionId !== id) return null;
+  return { score: record.score, ticks: record.ticks, liveChanges: record.liveChanges };
+}
 
 /**
  * `/play/[id]` – PLAY shell. Hra se čte z úložiště verzí **přímo**, ne přes
@@ -52,10 +66,12 @@ const load = cache(async (id: string): Promise<Loaded> => {
  * Náhled odkazu. `og:image` musí být absolutní adresa a kořenový layout
  * `metadataBase` nemá (a sahat na něj tenhle plán nesmí), proto se základ
  * skládá z hlaviček požadavku – na Vercelu i lokálně je to adresa, na kterou
- * se právě někdo díval.
+ * se právě někdo díval. Odkaz výzvy (`?dare=`) nese výsledek i do náhledu
+ * (P36B T8); jestli výzva platí a patří téhle hře, rozhodne route `og`.
  */
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { id } = await params;
+  const { dare } = await searchParams;
   const loaded = await load(id);
   if (loaded.kind !== 'game') return { title: 'sayplay' };
   const { game } = loaded;
@@ -64,7 +80,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const proto = incoming.get('x-forwarded-proto') ?? (host.startsWith('localhost') || host.startsWith('127.') ? 'http' : 'https');
   const title = `${game.spec.title} – sayplay`;
   const description = game.spec.tutorial.goalLine;
-  const image = `${proto}://${host}/api/play/games/${id}/og`;
+  const image = `${proto}://${host}/api/play/games/${id}/og${typeof dare === 'string' && DARE_ID_PATTERN.test(dare) ? `?dare=${dare}` : ''}`;
   return {
     title,
     description,
@@ -74,7 +90,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function PlayGamePage({ params }: Params) {
+export default async function PlayGamePage({ params, searchParams }: PageProps) {
   const { id } = await params;
   const loaded = await load(id);
   if (loaded.kind === 'missing') notFound();
@@ -88,6 +104,8 @@ export default async function PlayGamePage({ params }: Params) {
   const { game, children, lineage, honesty, sentence } = loaded;
   // Arkádová hra (P25A) nese svět v `arcade` a `blueprint: null`; hra bez obojího nemá kde běžet.
   if (game.blueprint === null && game.arcade === undefined) notFound();
+  // Výzvu nese jen arkáda (P36B T5) – mřížková hra odkaz s `dare=` otevře jako obyčejnou hru.
+  const challenge = game.arcade === undefined ? null : await challengeOf(id, (await searchParams).dare);
   // `key`: přechod na remix je klientská navigace a nová hra musí dostat nový runtime, ne ten rodičův.
   // Rapier (P32D T4) se začne stahovat v renderu stránky, souběžně se scénou – hra bez těles ho nestáhne.
   return (
@@ -106,6 +124,8 @@ export default async function PlayGamePage({ params }: Params) {
         read={readFacts(game.spec, authorshipOf(game), sentence, game.origin?.readBy ?? 'keywords')}
         honesty={honesty}
         upgrade={game.origin !== undefined && game.relation === undefined ? `/api/play/games/${game.version.versionId}/upgrade` : null}
+        par={game.report.par ?? null}
+        challenge={challenge}
       />
     </>
   );

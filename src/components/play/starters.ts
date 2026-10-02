@@ -88,8 +88,15 @@ export const STARTERS: readonly Starter[] = [
 export const CHANGE_ONE_THING = 'Change one thing';
 export const YOU_DID_IT = 'You did it!';
 export const SO_CLOSE = 'So close.';
+/** Překonaný osobní rekord (P36B T2) – na výsledku i v HUD. */
+export const NEW_BEST = 'New best!';
 export const DARE_A_FRIEND = 'Dare a friend to beat it';
 export const DARE_SHORT = 'Dare a friend';
+/** Výzva kamaráda (P36B T7): poražený kamarád – a hlavní akce po výhře pošle novou výzvu zpátky. */
+export const YOU_BEAT_IT = 'You beat it!';
+export const DARE_BACK = 'Dare back';
+/** Mezi body výzvy přebitými za běhu (P36B T7) – vyhrát ještě musí, proto ne „You beat it!“. */
+export const AHEAD = "You're ahead!";
 export const LINK_COPIED = 'Link copied. Go dare someone.';
 
 export const POST_RUN_CHIPS = [
@@ -120,8 +127,8 @@ export const VIDEO_AFTER_RUN = 'Your video is ready when the run ends.';
 
 /**
  * Karta výzvy – náhled odkazu (P34 T7, kit `13-assets.md` Dare card). Slovo
- * pod časem na slunečném odznaku: přežití, závod s časovačem, nebo hra bez
- * měřeného času (pak jen slovo).
+ * pod časem na slunečném odznaku: přežití, závod s časovačem, hra bez
+ * měřeného času (pak jen slovo), nebo výsledek kamaráda z odkazu výzvy (P36B T8).
  */
 export const CAN_YOU_BEAT_IT = 'Can you beat it?';
-export const DARE_BADGE = { survive: 'Survive!', hurry: 'Hurry!', none: 'Your turn!' } as const;
+export const DARE_BADGE = { survive: 'Survive!', hurry: 'Hurry!', none: 'Your turn!', dare: 'to beat' } as const;

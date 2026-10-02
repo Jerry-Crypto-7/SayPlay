@@ -13,16 +13,19 @@ import dynamic from 'next/dynamic';
 import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
-import { worldHasPhysics } from '@/play/arcade/kernel';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
-import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
+import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook, vibrateFor } from '@/play/audio';
 import { musicFor, narrationUrl } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
+import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 
+import { type Best, type BestOutcome, bestGoal, type Dare, dareGoal, dareStart, readBest, settleBest } from '../best';
+import { AHEAD, NEW_BEST } from '../starters';
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
@@ -31,19 +34,21 @@ import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, Icon, P
 import { timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { AboutButton, SentenceRead } from '../SentenceRead';
-import { type LivePublish, ShareButton } from '../ShareButton';
+import { type DarePublish, type LivePublish, publishDare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
 import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
 import { RemixReadyChip, useRemixJob } from '../RemixBox';
 import { UpgradeBanner } from '../UpgradeBanner';
 
+import { type BotHand, botHand } from './bot-hand';
 import { type Clip, startClip } from './clip';
 import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
 import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
+import { ZONE_HINTS } from './touch-zones';
 import { Weather } from './Weather';
 import { createArcadeSession, loopDemo, type ArcadeSession, type ArcadeSnapshot } from './session';
 
@@ -106,14 +111,16 @@ const hasLives = (spec: GameSpecV1): boolean => spec.mechanics.some((m) => m.id 
 /**
  * Fakta skončeného běhu pro výsledek (P34 T6) – jen čísla, která relace
  * arkády opravdu počítá: sebrané předměty, životy, body jednotkou hry
- * a uběhlá část trati (aréna, střelba a hod trať nemají).
+ * a uběhlá část trati (aréna, střelba a hod trať nemají). Body jdou zvlášť
+ * jako velké skóre (P36B T2) – jen u hry, která boduje: něco nabodoval hráč
+ * nebo robot paru. Hvězdy proti paru (`starsFor`); hra bez paru = 1 za výhru.
  */
-function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot): RunFacts {
+function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnapshot, par: Par | null, livesStart: number): RunFacts {
   const need = collectNeed(world);
   const extra: ResultStat[] = [];
   if (hasLives(spec)) extra.push({ value: String(snapshot.health), label: 'lives left' });
-  extra.push({ value: String(snapshot.score), label: scoreUnit(spec) });
   if (spec.control !== 'move_free' && !aiming(spec)) extra.push({ value: `${snapshot.progress}%`, label: 'of the way' });
+  const scoring = snapshot.score !== 0 || (par !== null && par.score > 0);
   return {
     won: snapshot.runState === 'won',
     tick: snapshot.tick,
@@ -121,8 +128,19 @@ function arcadeFacts(spec: GameSpecV1, world: ArcadeWorld, snapshot: ArcadeSnaps
     survive: world.rules.some((rule) => rule.id === 'survive_time'),
     goal: need === null ? null : { count: snapshot.items, need, label: 'collected' },
     extra,
+    score: scoring ? { value: snapshot.score, unit: scoreUnit(spec) } : null,
+    stars: starsFor(runOf(snapshot, livesStart), par),
   };
 }
+
+/** Konec běhu pro hvězdy a rekord; `livesStart` = čítač životů světa v tiku 0. */
+const runOf = (snapshot: ArcadeSnapshot, livesStart: number): RunResult => ({
+  won: snapshot.runState === 'won',
+  score: snapshot.score,
+  ticks: snapshot.tick,
+  lives: snapshot.health,
+  livesStart,
+});
 
 /**
  * HUD arkády podle kitu (P34 T5, dřív tenký pruh P33 T12). Pilulka postupu
@@ -140,6 +158,7 @@ function ArcadeHud({
   bonus,
   paused,
   caught,
+  target = null,
   onPause,
   bottom,
   children,
@@ -151,6 +170,8 @@ function ArcadeHud({
   readonly bonus: number;
   readonly paused: boolean;
   readonly caught: boolean;
+  /** Cíl k překonání (P36B T4) – poslední položka pilulky postupu. */
+  readonly target?: HudCounter | null;
   readonly onPause?: () => void;
   readonly bottom?: ReactNode;
   readonly children?: ReactNode;
@@ -162,6 +183,7 @@ function ArcadeHud({
   if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
   if (world.rules.some((rule) => rule.id === 'blaster')) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
   if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
+  if (target !== null) counters.push(target);
   const limit = limitOf(world);
   const elapsed = snapshot.tick / ARCADE_HZ;
   return (
@@ -213,9 +235,17 @@ export interface ArcadePlayProps {
   readonly offline?: boolean;
   /** Hra ve feedu (P33 T12): další hru nabízí listování feedu, sloupec akcí nemá „More“. */
   readonly inFeed?: boolean;
+  /** Vítězný běh robota z publikace (`report.par`, P36B T1); chybí = hvězdy jen 1 za výhru. */
+  readonly par?: Par | null;
+  /** Výzva kamaráda z odkazu `?dare=` (P36B T7): cíl na kartě startu a v HUD, výsledek proti ní. */
+  readonly challenge?: Dare | null;
 }
 
 const END_PAUSE_MS = 600;
+/** Po prohře výsledek dřív (P36B T3): oslava tu není a „Try again“ má být po ruce do 300 ms. */
+const LOSS_PAUSE_MS = 300;
+/** Jak dlouho HUD ukazuje „New best!“, když hráč rekord přebije za běhu (P36B T4); pak cíl zmizí. */
+const NEW_BEST_MS = 2000;
 
 /**
  * Je Rapier pro tenhle svět načtený (P29A T13)? Jádro je synchronní a bez něj
@@ -321,6 +351,8 @@ function ArcadePlayGame({
   active = true,
   offline = false,
   inFeed = false,
+  par = null,
+  challenge = null,
   physicsReady,
 }: ArcadePlayProps & { readonly physicsReady: boolean }) {
   const [liveOpen, setLiveOpen] = useState(false);
@@ -334,6 +366,8 @@ function ArcadePlayGame({
     return worldHasPhysics(arcade) ? holdUntilRapier(created) : created;
   });
   const snapshot = useSyncExternalStore(session.subscribe, session.snapshot, session.snapshot);
+  // Nápověda dotyku, kterou text hry neřekne (zóny plošinovky, P36C T2).
+  const zoneHint = ZONE_HINTS[baseControlOf(arcade.control).id];
   const cast = useMemo(() => ({ player: heroModel(spec), enemy: enemyModel(spec), chaser: chaserModel(spec), props: propModels(spec) }), [spec]);
   const running = snapshot.runState === 'running';
   const paused = useSyncExternalStore(session.subscribe, session.paused, session.paused);
@@ -345,16 +379,16 @@ function ArcadePlayGame({
   useEffect(() => {
     if (!canChange) setLiveOpen(false);
   }, [canChange]);
-  // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře či prohře – mezitím doběhne klip pádu nebo oslavy a zazní zvuk.
+  // Konec má váhu (P28C T3): výsledek až END_PAUSE_MS po výhře – mezitím doběhne klip oslavy a zazní zvuk; po prohře jen LOSS_PAUSE_MS.
   const [settled, setSettled] = useState(false);
   useEffect(() => {
     if (running) {
       setSettled(false);
       return;
     }
-    const timer = window.setTimeout(() => setSettled(true), END_PAUSE_MS);
+    const timer = window.setTimeout(() => setSettled(true), session.snapshot().runState === 'won' ? END_PAUSE_MS : LOSS_PAUSE_MS);
     return () => window.clearTimeout(timer);
-  }, [running]);
+  }, [running, session]);
 
   // Klip běhu (P29D T1): nahrává se od startu běhu hráče, po konci ještě dojezd plátna.
   // Ukázka robota klip nemá; plátno se načítá dynamicky, proto se hledá při každém tiku, než je.
@@ -492,23 +526,78 @@ function ArcadePlayGame({
   }, [active, session]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
+  // Na konci běhu se jednou vyřídí i osobní rekord (P36B T2); výsledek ho jen ukáže.
+  // Výhra pošle vstupy na server jako výzvu Dare (P36B T6) hned, ne až po stisku –
+  // nabídka sdílení chce čerstvé gesto. Odpověď staršího běhu se zahodí (`attempt`).
+  const livesStart = useMemo(() => instantiate(arcade)[HEADER.counters + COUNTER.health] as number, [arcade]);
+  const [record, setRecord] = useState<BestOutcome | null>(null);
+  const [dare, setDare] = useState<DarePublish | undefined>(undefined);
   useEffect(() => {
     if (active && !offline) loopImpression(versionId);
   }, [active, offline, versionId]);
   useEffect(() => {
     if (offline) return;
     let reported = false;
-    return session.subscribe(() => {
+    let attempt = 0;
+    const off = session.subscribe(() => {
       if (!session.humanRun()) return;
       const now = session.snapshot();
-      if (now.runState === 'running') reported = false;
+      if (now.runState === 'running') {
+        if (reported) {
+          setRecord(null);
+          setDare(undefined);
+          attempt += 1;
+        }
+        reported = false;
+      }
       if (session.inputs().length > 0) loopEvent('first_input', versionId);
       if (now.runState !== 'running' && !reported) {
         reported = true;
         loopEvent(now.runState === 'won' ? 'win' : 'lose', versionId);
+        const run = runOf(now, livesStart);
+        setRecord(settleBest(versionId, { won: run.won, score: run.score, ticks: run.ticks, stars: starsFor(run, par) }));
+        if (run.won) {
+          const mine = attempt;
+          setDare({ state: 'pending' });
+          publishDare(versionId, session.inputs(), session.patches()).then(
+            (dareId) => mine === attempt && setDare({ state: 'ready', dareId }),
+            () => mine === attempt && setDare({ state: 'failed' }),
+          );
+        }
       }
     });
-  }, [offline, session, versionId]);
+    return () => {
+      attempt += 1;
+      off();
+    };
+  }, [offline, session, versionId, livesStart, par]);
+
+  // Cíl k překonání v HUD (P36B T4): rekord z prohlížeče, přečtený po připojení a s každým
+  // novým během (`record` se vynuluje). Přebité body ukážou na chvíli „New best!“, pak cíl zmizí.
+  // Výzva kamaráda (P36B T7) má přednost: cíl je jeho výsledek a přebité body řeknou „You're ahead!“.
+  const [best, setBest] = useState<Best | null>(null);
+  useEffect(() => {
+    if (!offline && record === null) setBest(readBest(versionId));
+  }, [offline, record, versionId]);
+  const survive = arcade.rules.some((rule) => rule.id === 'survive_time');
+  const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
+  const goalLabel = challenge === null ? 'best' : 'dare';
+  const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
+  const [cheered, setCheered] = useState(false);
+  useEffect(() => {
+    if (!beaten) {
+      setCheered(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setCheered(true), NEW_BEST_MS);
+    return () => window.clearTimeout(timer);
+  }, [beaten]);
+  const target: HudCounter | null =
+    goal === null || demo !== null || cheered
+      ? null
+      : beaten
+        ? { label: goalLabel, count: snapshot.score, text: challenge === null ? NEW_BEST : AHEAD, fresh: true }
+        : { label: goalLabel, count: goal.score ?? 0, text: goal.text };
 
   // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
   // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness
@@ -548,13 +637,23 @@ function ArcadePlayGame({
   }, [active, offline, versionId]);
   useEffect(() => {
     const offEvents = session.onEvents((events) => {
-      for (const preset of presetsFor(events)) playSfx(preset);
+      const presets = presetsFor(events);
+      for (const preset of presets) playSfx(preset);
+      // Haptika (P36C T3): posluchač efektů slyší jen tiky, které hraje člověk.
+      vibrateFor(presets);
     });
+    const control = baseControlOf(session.world.control).id;
     let lastTick = -1;
+    let heard = 0;
     const offJump = session.subscribe(() => {
       const tick = session.state()[HEADER.tick] as number;
       if (tick === lastTick) return;
       lastTick = tick;
+      // Zvuky akcí (P36C T3) z nových záznamů vstupu; restart záznam zkrátí, přehrání a ukázka mlčí.
+      const inputs = session.inputs();
+      if (inputs.length < heard) heard = 0;
+      if (session.humanRun()) for (const preset of actionPresets(control, inputs, heard)) playSfx(preset);
+      heard = inputs.length;
       if (session.humanRun() && jumped(session.prev(), session.state())) playSfx('jump');
     });
     return () => {
@@ -607,7 +706,23 @@ function ArcadePlayGame({
   const bonus = session.patches().reduce((sum, entry) => sum + (entry.patch.kind === 'count' && entry.patch.counter === 'time' ? entry.patch.amount : 0), 0);
 
   useEffect(() => {
+    let hand: BotHand | null = null;
     const probe = {
+      /**
+       * Hra gesty (P36C T4, `bot-hand.ts`): `byHand(true)` na tiku 0 zastaví čas snímků,
+       * `botWants()` řekne, co by robot teď stiskl, e2e to zahraje dotykem a `tickByHand()`
+       * odtiká tik s tím, co gesta zapsala.
+       */
+      byHand: (on: boolean) => {
+        session.manualClock(on);
+        hand = on ? botHand(session) : null;
+      },
+      botWants: () => hand?.decide() ?? null,
+      tickByHand: () => {
+        hand?.step();
+        const now = session.snapshot();
+        return { runState: now.runState, tick: now.tick, progress: now.progress, score: now.score, items: now.items };
+      },
       inputs: () => session.inputs(),
       tick: () => session.snapshot().tick,
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
@@ -623,10 +738,11 @@ function ArcadePlayGame({
        * Záznam robota zahraný „rukou“ (P28C T3): tytéž stisky tik po tiku cestou,
        * kterou jde klávesnice, takže běh je hráčův a odezva i zvuk reagují.
        * Stojí u prvního bodu (`score`) nebo na konci hry (`end`); `at` je
-       * `performance.now()` té chvíle.
+       * `performance.now()` té chvíle. `lag` posune stisky o tolik tiků později
+       * – e2e výzvy (P36B T7) tak dostane pomalejší výhru téhož robota.
        */
-      handPlay: (until: 'score' | 'end') => {
-        const inputs = session.botInputs();
+      handPlay: (until: 'score' | 'end', lag = 0) => {
+        const inputs = session.botInputs().map((event) => ({ ...event, tick: event.tick + lag }));
         session.restart();
         let next = 0;
         const done = (): boolean => {
@@ -644,8 +760,15 @@ function ArcadePlayGame({
         const end = session.snapshot();
         return { runState: end.runState, tick: end.tick, score: end.score, at: performance.now() };
       },
+      /** Běh hráče bez jediného stisku až do konce (P36B T3): e2e prohraje bez čekání na hodiny. */
+      idleRun: () => {
+        session.restart();
+        while (session.snapshot().runState === 'running' && session.snapshot().tick < ARCADE_LIMITS.maxTicks) session.stepOnce();
+        const end = session.snapshot();
+        return { runState: end.runState, tick: end.tick };
+      },
     };
-    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick`, `playWitness` a `handPlay`.
+    // Tvar sondy je mřížkový (`inputs` vrací jiný záznam); e2e arkády čte jen `tick`, `playWitness`, `handPlay` a `idleRun`.
     window.__playShell = probe as unknown as Window['__playShell'];
     return () => {
       if (window.__playShell === (probe as unknown)) delete window.__playShell;
@@ -667,7 +790,13 @@ function ArcadePlayGame({
           <>
             <Weather session={session} theme={spec.theme} />
             {/* Hodiny stojí na tiku 0, dokud se hráč nedotkne (P33 T11); ukázka robota výzvu nemá. Na plátně, ať ji stage postaví mimo hrdinu (P35 T6). */}
-            {running && active && demo === null && snapshot.tick === 0 && <FirstPrompt controlsHint={spec.tutorial.controlsHint} />}
+            {running && active && demo === null && snapshot.tick === 0 && (
+              <FirstPrompt
+                controlsHint={spec.tutorial.controlsHint}
+                touch={zoneHint}
+                dare={challenge === null ? null : { goal: dareStart(challenge, ARCADE_HZ, survive), changed: challenge.liveChanges > 0 }}
+              />
+            )}
           </>
         }
       />
@@ -680,6 +809,7 @@ function ArcadePlayGame({
         bonus={bonus}
         paused={paused}
         caught={caught}
+        target={target}
         onPause={menu ? pauseGame : undefined}
         bottom={
           menu && (
@@ -728,6 +858,7 @@ function ArcadePlayGame({
               : undefined
           }
           controlsHint={spec.tutorial.controlsHint}
+          touch={zoneHint}
         >
           <MuteButton />
           {read !== undefined && <AboutButton onOpen={() => setAboutOpen(true)} />}
@@ -758,18 +889,19 @@ function ArcadePlayGame({
         <PostRun
           versionId={versionId}
           remix={remix}
-          facts={arcadeFacts(spec, arcade, snapshot)}
+          facts={arcadeFacts(spec, arcade, snapshot, par, livesStart)}
           clip={clip}
           live={live}
+          dare={dare}
+          challenge={challenge}
           offline={offline}
-          onReplay={
-            offline
-              ? () => session.restart()
-              : () => {
-                  if (session.humanRun()) loopEvent('restart', versionId);
-                  session.restart();
-                }
-          }
+          record={record}
+          onReplay={(via) => {
+            if (!offline && session.humanRun()) loopEvent('restart', versionId);
+            session.restart();
+            // Klávesa nového pokusu (P36B T3) je zároveň první dotek: nový běh jede hned, bez výzvy.
+            if (via === 'key') session.begin();
+          }}
         />
       )}
     </main>
