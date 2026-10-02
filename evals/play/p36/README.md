@@ -1,6 +1,6 @@
 # Hloubka her – měřítko P36A (T1)
 
-Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T5 – skóre, oddíl dole).
+Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T10 – střílečka a hod, oddíl dole).
 
 ## Jak přeměřit
 
@@ -218,6 +218,22 @@ Dvacet vlastních vět, které říkají životy, cílové skóre, časový limi
 - **Střelba 0 ze 2:** střílečka zatím není žánr (T10).
 - **Čas:** návrh nese 1 z 5 (úkol v prostoru), režisér 2 z 5 (navíc závod lodí přes `timeLimit`). Sběr v aréně a běžec čas z věty nenesou ani u režiséra.
 - **Nevyhratelné hry:** m10 „pop the balloons at the fair in 30 seconds“ – návrh i režisér dají úkol v prostoru s hodinami 30 s, ale kola z T4 se plánují na 36 s a víc, takže robot prohraje na všech čtyřech semínkách (úloha F3). m06 u režiséra: sběr v aréně, který robot nedohraje ani bez cíle skóre (měření bez `check` hru neopraví; v produkci by šla do opravného kola). m19: cíl 150 kompilátor ořízl na 100, víc robot nedosáhne.
+
+## Po T10 – střílečka a hod zpátky jako žánry (2. 10. 2026)
+
+Přeměřeno s kompilátorem `play-compiler-v11/arcade-v2` (verze se nezvedá: uložené hry staví týž svět, nové chování nese jen nová pole `rise`, `waveSize` a `combo`). Věty se `shoot`/`fire at`/`blast`/`aim at` a jmény střílení (shooter, archery, gun, sniper, fps) jdou do žánru Střílečka, věty s `throw`/`toss`/`fling`/`hurl`/`launch a`/`bowl` a jmény hodu (golf, bowling, basketball, slingshot, angry birds, cannon, catapult) do žánru Hod. Praskání, rozbíjení a zásah (`pop`, `hit`, `smash`, `zap`, `destroy`) zůstávají Úkolem.
+
+| | po T5 | po T10 |
+|---|---|---|
+| pásmo 30–90 s | 259/260 (99,6 %) | **241/260 (92,7 %)** – cíl ≥ 85 % |
+| nečinný prohraje | 260/260 | 260/260 |
+| životy > 1 | 260/260 | **242/260 (93,1 %)** – cíl ≥ 80 % |
+| skóre rozhoduje | 260/260 | 260/260 |
+| podíl Úkolu (spatial + station) | 36,5 % | **24,2 %** (19 + 44) |
+
+- **Střílečka (13 vět):** šest vln, každá rychlejší, robot vyhraje za 44,0–44,9 s (medián 44,8 s), nečinný prohraje 13/13, tři životy 13/13. Kombo zásahů v řadě a bonus na konci jako ostatní.
+- **Hod (18 vět):** hodiny 30 s, nečinný prohraje 18/18 na hodinách, kombo zásahů. **V pásmu 0/18 a bez životů – vědomě:** minutí už stojí hod (`spareThrows` jsou životy hodu), život navíc by trestal totéž dvakrát. Robot pole vyčistí za 4,4–13,5 s (medián 5,0 s) a víc cílů se na jedno pole nevejde; delší hod chce kola (nové cíle po vyčištění) – nový kus pravidla, protože vlny arény nesou číslo vlny v čítači `ammo`, kde hod drží zbývající hody. Úloha F5 v plánu.
+- **Pokrytí sloves** (`../rules/coverage.json`): věty, jejichž třídu slovesa hraje dílek, 52 → **74/200**. Třída `aim_shoot` 10/15 (souboj s040 vrátí T11, „tank battle“, „water gun fight“, obrana rybníka a hledání terče v davu rozhodne jiné sloveso), třída `throw` 12/14 (převrácení lahve a penalta). „toss a pancake“ a „knife throwing at a spinning log“ mají třídu `timing` a dnes hrají Hod – načasování vrátí T11.
 
 ## Test (`depth.test.ts`)
 

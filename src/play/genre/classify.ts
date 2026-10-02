@@ -58,6 +58,8 @@ const RACE = pair('voyage', 'race');
 const LAND = pair('voyage', 'land');
 const SPATIAL = pair('quest', 'spatial');
 const STATION = pair('quest', 'station');
+const SHOOTER = pair('shooter', 'default');
+const THROW = pair('throw', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -80,8 +82,11 @@ const VERBS: readonly Verb[] = [
   v('free', 'goal', SPATIAL, new RegExp(String.raw`\brescu(?:e|es|ing)\b|\b(?:free|frees|freeing|releas(?:e|es|ing)) ${OBJECT}`)),
   v('press', 'goal', SPATIAL, /\b(?:press(?:es|ing)?|toggl(?:e|es|ing)|flip(?:s|ping)?|pull(?:s|ing)?) (?:[a-z]+ ){0,3}?(?:switch(?:es)?|levers?|buttons?)\b|\bpress(?:es|ing)? (?:red|blue|green|yellow)\b/),
   v('deliver', 'goal', SPATIAL, /\b(?:carr(?:y|ies|ying)|deliver(?:s|ing)?|bring(?:s|ing)?)\b/),
-  // Míření na cíl je Úkol (spec „Pět žánrů“): střelba a házení jako samostatné ovládání končí.
-  v('hit', 'goal', SPATIAL, /\b(?:shoot(?:s|ing)?|throw(?:s|ing)?|toss(?:es|ing)?|pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b/),
+  // Střelba a hod jsou zase vlastní žánry (P36A T10); praskání, rozbíjení a zásah předmětů po scéně zůstávají Úkolem.
+  // „auto shooting wand“ (vampire survivors) střílí sám – hráč přežívá a uhýbá, takže rozhodne sloveso pohybu.
+  v('shoot', 'goal', SHOOTER, /(?<!auto[ -])\bshoot(?:s|ing|er|ers)?\b(?! stars?)|\bfir(?:e|es|ing) at\b|\bblast(?:s|ing)? (?:the|a|an|all|every|some|\d+)\b|\baim(?:s|ing)? at\b/),
+  v('throw', 'goal', THROW, /\bthrow(?:s|ing)?\b(?! punch)|\btoss(?:es|ing)?\b|\bfling(?:s|ing)?\b|\bhurl(?:s|ing)?\b|\blaunch(?:es|ing)? (?:a|an|the|some)\b|\bbowl(?:s|ing)?\b/),
+  v('hit', 'goal', SPATIAL, /\b(?:pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b/),
   // Úkol na místě: jedna stanice, předmět mění stav.
   v('cook', 'goal', STATION, /\b(?:cook(?:s|ing)?|bak(?:e|es|ing)|grill(?:s|ing)?|brew(?:s|ing)?)\b|\bflip(?:s|ping)? (?:the |a |an |some )?(?:[a-z]+ )?(?:pancakes?|burgers?|patt(?:y|ies)|eggs?|crepes?)\b/),
   v('repair', 'goal', STATION, /\b(?:repair(?:s|ing)?|fix(?:es|ing)?|mend(?:s|ing)?)\b/),
@@ -126,7 +131,9 @@ const NAMES: readonly (readonly [Pair, RegExp])[] = [
   [FIGHT, /\bswords?\b|\bninjas?\b|\bgladiators?\b|\bsamurai\b|\btower defen[cs]e\b/],
   [COLLECT, /\bsnake game\b|\bslither\b|\b[a-z]+[ .]io\b|\bagar\b|\bpac-?man\b/],
   [ESCAPE, /\bhorror\b|\bscary\b|\bcreepy\b|\bfive nights\b|\bfreddy'?s?\b|\bhide and seek\b|\bstealth\b|\bsneak(?:s|ing|y)?\b|\bfloor is lava\b/],
-  [SPATIAL, /\bshooter\b|\bgolf\b|\bbowling\b|\bbilliards\b|\barchery\b|\bbasketball\b|\bsoccer\b|\bfootball\b|\btennis\b|\bslingshot\b|\bangry birds\b|\bcannon\b|\bguns?\b|\bkrunker\b|\bbeat saber\b|\bpiano tiles\b|\bthe beat\b/],
+  [SHOOTER, /\bshooter\b|\bshooting (?:range|gallery|game)\b|\barchery\b|\bguns?\b|\bkrunker\b|\bsniper\b|\bfps\b/],
+  [THROW, /\bgolf\b|\bbowling\b|\bbilliards\b|\bbasketball\b|\bslingshot\b|\bangry birds\b|\bcannon\b|\bcatapult\b|\bragdoll\b|\bknock(?:s|ing)? (?:down|over) (?:the |a |an )?(?:[a-z]+ )?towers?\b/],
+  [SPATIAL, /\bsoccer\b|\bfootball\b|\btennis\b|\bbeat saber\b|\bpiano tiles\b|\bthe beat\b/],
   [STATION, /\bmatch[ -]?3\b|\bcandy crush\b|\btetris\b|\bmahjong\b|\bjenga\b|\bsuika\b|\bpuzzle\b|\bidle\b|\bclicker\b|\btycoon\b|\bovercooked\b|\bfarm game\b|\bsalon\b|\bmakeover\b|\bfashion\b|\bclinic\b|\bmatching game\b|\bword game\b|\bfishing\b|\bfactory\b|\bempire\b/],
 ];
 
@@ -142,8 +149,8 @@ const READ_CLASS: Partial<Record<VerbClass, Pair | null>> = {
   move_free: null,
   manipulate: STATION,
   build_place: STATION,
-  aim_shoot: SPATIAL,
-  throw: SPATIAL,
+  aim_shoot: SHOOTER,
+  throw: THROW,
 };
 
 /** Narážka modulu v libovolném tvaru slovesa: `slide` → slides, sliding; `hop` → hopping. */

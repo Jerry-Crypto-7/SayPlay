@@ -56,9 +56,9 @@ const pickupParams = z
 
 /**
  * Násobič dalšího sebrání: o 1 výš, když předchozí přišlo nejvýš `COMBO.window`
- * tiků zpátky a hráč mezitím nepřišel o život, jinak ×1.
+ * tiků zpátky a hráč mezitím nepřišel o život, jinak ×1. Čte ho i zásah střelou (`shot_hit`).
  */
-function nextMultiplier(state: Int32Array, keeper: number): number {
+export function nextMultiplier(state: Int32Array, keeper: number): number {
   const base = bodyBase(keeper);
   const last = state[base + BODY.aux1] as number;
   const health = state[HEADER.counters + COUNTER.health] as number;

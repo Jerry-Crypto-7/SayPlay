@@ -49,6 +49,13 @@ export const THROW_GOALS = ['target', 'hoop', 'tower'] as const;
 export type ThrowGoal = (typeof THROW_GOALS)[number];
 /** Popisek role `target` ve specu podle toho, co generátor postaví. */
 export const THROW_GOAL_LABELS: Readonly<Record<ThrowGoal, string>> = { target: 'target', hoop: 'hoop', tower: 'block' };
+/**
+ * Co se z věty hází do koše a co na věž; čte je šablona návrhu (`draft/controls.ts`)
+ * i žánr Hod. Bydlí tady, ne v návrhu – žánr jde do prohlížeče a návrh by s sebou
+ * přitáhl schémata `spec.ts` (`arcade-bundle.test.ts`).
+ */
+export const HOOP_CUES = /\b(?:basketball|hoops?|free throws?|trash can|bin|bucket)\b/;
+export const TOWER_CUES = /\b(?:angry birds|knock(?:s|ing)? (?:down|over)|towers?|boxes|bowling|pins|cans)\b/;
 
 export const THROW = {
   /** Rychlost míčku při nejslabším a nejsilnějším hodu (jednotek za tik). */

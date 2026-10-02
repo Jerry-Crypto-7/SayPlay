@@ -27,6 +27,8 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'voyage', mode: 'land', hero: 'rocket', enemy: 'meteor', setting: 'surface of Mars', palette: 'space' },
   { genre: 'quest', mode: 'spatial', hero: 'tiny wizard', enemy: 'ghost', target: { label: 'candle', verb: 'light', states: 2 }, setting: 'haunted castle' },
   { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'flip', states: 3 }, setting: 'restaurant kitchen' },
+  { genre: 'shooter', mode: 'default', hero: 'space marine', enemy: 'alien bug', setting: 'mining colony', palette: 'space' },
+  { genre: 'throw', mode: 'default', hero: 'kid', target: { label: 'snowman', verb: 'hit', states: 2 }, collectible: 'snowball', setting: 'snowy backyard', palette: 'snow' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */

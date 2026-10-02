@@ -22,7 +22,8 @@ import { genreDoubles } from './doubles';
 
 const demand = JSON.parse(readFileSync(new URL('../../../../evals/play/demand/corpus.json', import.meta.url), 'utf8')) as { readonly text: string }[];
 
-const LEGACY_CONTROLS = ['tap_go', 'flap', 'shooter', 'throw', 'timing', 'rhythm'];
+// Střílečka a hod jsou od P36A T10 zase žánry; zbylá ovládání vrátí T11.
+const LEGACY_CONTROLS = ['tap_go', 'flap', 'timing', 'rhythm'];
 
 const top = (sentence: string, modules = genreDoubles()) => classifyGenre(sentence, null, modules).ranked[0];
 
@@ -77,6 +78,11 @@ describe('classifyGenre', () => {
     ['A robot repairs a broken engine', 'quest.station', 'repair'],
     ['A knight frees the prisoners in a tower', 'quest.spatial', 'free'],
     ['A chef flips burgers', 'quest.station', 'cook'],
+    ['A space marine shoots alien bugs in a mining colony', 'shooter.default', 'shoot'],
+    ['shoot the ghosts in a haunted carnival shooting gallery', 'shooter.default', 'shoot'],
+    ['throwing snowballs at kids behind a snow fort', 'throw.default', 'throw'],
+    ['bowling in a haunted alley', 'throw.default', 'throw'],
+    ['satisfying game where you pop stuff', 'quest.spatial', 'hit'],
   ])('plays "%s" as %s with the verb %s', (sentence, mode, verb) => {
     const result = classifyGenre(sentence, null, GENRE_MODULES);
     expect(`${result.ranked[0].genre}.${result.ranked[0].mode}`).toBe(mode);
@@ -85,8 +91,8 @@ describe('classifyGenre', () => {
 
   it('ranks every mode of every genre once and gives a sentence with no cue the runner', () => {
     const result = classifyGenre('A key inside a glass box on a pedestal behind a locked gate.', null, genreDoubles());
-    expect(result.ranked).toHaveLength(9);
-    expect(new Set(result.ranked.map((choice) => `${choice.genre}.${choice.mode}`)).size).toBe(9);
+    expect(result.ranked).toHaveLength(11);
+    expect(new Set(result.ranked.map((choice) => `${choice.genre}.${choice.mode}`)).size).toBe(11);
     expect(result.ranked[0]).toMatchObject({ genre: 'runner', mode: 'default', score: 0 });
     expect(result.verb).toBeNull();
   });

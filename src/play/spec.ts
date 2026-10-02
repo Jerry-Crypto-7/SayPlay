@@ -40,7 +40,7 @@ import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform'
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
 import { DUEL_DIFFICULTIES } from './arcade/pieces/duel';
 import { RHYTHM, RHYTHM_DENSITIES } from './arcade/pieces/rhythm';
-import { SHOOTER_DIFFICULTIES } from './arcade/pieces/shooter';
+import { SHOOTER_DIFFICULTIES, SHOOTER_RISE_MAX, SHOOTER_WAVE_SIZE_MAX } from './arcade/pieces/shooter';
 import { STEER_DIFFICULTIES, STEER_TRACK } from './arcade/pieces/steer';
 import { THROW_DIFFICULTIES, THROW_GOALS } from './arcade/pieces/throw';
 import { TIMING, TIMING_MODES, TIMING_SPEEDS } from './arcade/pieces/timing';
@@ -311,6 +311,9 @@ export const shooterParamsSchema = z
     reloadS: z.number().min(0.5).max(4).optional(),
     moving: z.boolean().optional(),
     waves: z.int().min(1).max(6).optional(),
+    /** Nepřátel ve vlně a zrychlení za vlnu – žánr Střílečka (P36A T10); uložená hra bez nich jako dřív. */
+    waveSize: z.int().min(1).max(SHOOTER_WAVE_SIZE_MAX).optional(),
+    rise: z.int().min(1).max(SHOOTER_RISE_MAX).optional(),
   })
   .strict();
 export type ShooterSpecParams = z.infer<typeof shooterParamsSchema>;

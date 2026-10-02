@@ -231,7 +231,7 @@ function withScoring(level: ArcadeLevel, rules: readonly PieceRef[], lives: numb
   return {
     level: { ...level, bodies: [...level.bodies, counter] },
     rules: [
-      ...rules.map((ref) => (ref.id === 'pickup' ? { id: 'pickup', params: { ...ref.params, combo: keeper } } : ref)),
+      ...rules.map((ref) => (ref.id === 'pickup' || ref.id === 'shot_hit' ? { id: ref.id, params: { ...ref.params, combo: keeper } } : ref)),
       { id: 'score_bonus', params: { lives, limit, target } },
     ],
   };

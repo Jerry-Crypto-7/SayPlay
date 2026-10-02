@@ -27,7 +27,7 @@ import type { RhythmDensity } from '../arcade/pieces/rhythm';
 import type { RunnerDensity } from '../arcade/pieces/runner';
 import type { ShooterDifficulty } from '../arcade/pieces/shooter';
 import type { SteerDifficulty } from '../arcade/pieces/steer';
-import type { ThrowDifficulty, ThrowGoal } from '../arcade/pieces/throw';
+import { HOOP_CUES, TOWER_CUES, type ThrowDifficulty, type ThrowGoal } from '../arcade/pieces/throw';
 import type { TimingMode, TimingSpeed } from '../arcade/pieces/timing';
 import { CAPABILITIES } from '../capabilities';
 import { ADDONS, type AddonId } from '../spec';
@@ -141,10 +141,6 @@ const SHOOTER_CUES: readonly RegExp[] = [
   /\bwaves? of (?:zombies|enemies|aliens|robots)\b/,
   /\bspace invaders\b/,
 ];
-
-// Co se hází: koš, věž k sestřelení, jinak podle semínka.
-const HOOP_CUES = /\b(?:basketball|hoops?|free throws?|trash can|bin|bucket)\b/;
-const TOWER_CUES = /\b(?:angry birds|knock(?:s|ing)? (?:down|over)|towers?|boxes|bowling|pins|cans)\b/;
 
 const PLATFORM_STRONG: readonly RegExp[] = [
   /\bplatformer\b/,

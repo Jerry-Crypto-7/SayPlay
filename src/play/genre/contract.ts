@@ -31,7 +31,7 @@ export const GENRE_COMPILER_VERSION = 'genre.v1';
  */
 export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'health', params: { max: START_LIVES } });
 
-export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest'] as const;
+export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw'] as const;
 export type GenreId = (typeof GENRES)[number];
 
 export const GENRE_MODES = {
@@ -40,6 +40,8 @@ export const GENRE_MODES = {
   arena: ['escape', 'collect', 'fight'],
   voyage: ['race', 'land'],
   quest: ['spatial', 'station'],
+  shooter: ['default'],
+  throw: ['default'],
 } as const satisfies Readonly<Record<GenreId, readonly [string, ...string[]]>>;
 export type GenreMode<G extends GenreId = GenreId> = (typeof GENRE_MODES)[G][number];
 
@@ -128,7 +130,15 @@ const variant = <G extends GenreId>(genre: G) =>
  * Rozlišené podle `genre`, takže režim jiného žánru neprojde tvarem – bez
  * dodatečné kontroly a i ve JSON Schema, které z něj dostane režisér.
  */
-export const genreSpecSchema = z.discriminatedUnion('genre', [variant('runner'), variant('platformer'), variant('arena'), variant('voyage'), variant('quest')]);
+export const genreSpecSchema = z.discriminatedUnion('genre', [
+  variant('runner'),
+  variant('platformer'),
+  variant('arena'),
+  variant('voyage'),
+  variant('quest'),
+  variant('shooter'),
+  variant('throw'),
+]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
 
@@ -158,7 +168,8 @@ export interface GenreModule<G extends GenreId = GenreId> {
  * Režim → role → parametr modulu, ze kterého modul staví generátor, cíl i
  * `count` role. Žánr bez řádku počty nečte (plavba staví trať podle délky,
  * ne podle počtu; plošinovka počítá jen věci ke sběru, P35 T3; běžec od P36A T4
- * natahuje trať podle překážek i věcí). Hlídá test, že každý parametr má modul
+ * natahuje trať podle překážek i věcí; střílečka čte nepřátele jedné vlny, hod
+ * staví cíle podle obtížnosti). Hlídá test, že každý parametr má modul
  * v `paramBounds`.
  */
 export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode<G>]?: Readonly<Partial<Record<CountRole, string>>> } } = {
@@ -167,6 +178,8 @@ export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode
   arena: { escape: { enemy: 'chasers', collectible: 'items' }, collect: { collectible: 'items' }, fight: { enemy: 'enemies' } },
   voyage: {},
   quest: { spatial: { target: 'count', enemy: 'chasers' }, station: { target: 'count' } },
+  shooter: { default: { enemy: 'enemies', target: 'targets' } },
+  throw: {},
 };
 
 const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>

@@ -1034,7 +1034,15 @@ export function noVerbTopic(sentence: string): string | null {
 }
 
 /** Prostředí, když ho věta neříká; kuchař vaří v kuchyni, ne na vesnici. */
-const GENRE_SETTING: Readonly<Record<GenreId, string>> = { runner: 'forest trail', platformer: 'floating islands', arena: 'meadow', voyage: 'open country', quest: 'village' };
+const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
+  runner: 'forest trail',
+  platformer: 'floating islands',
+  arena: 'meadow',
+  voyage: 'open country',
+  quest: 'village',
+  shooter: 'desert outpost',
+  throw: 'park',
+};
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 
 /** „before the ghosts catch him“: kdo hráče chytá, i když `readRoles` pronásledovatele nenašel. */
@@ -1051,6 +1059,10 @@ function cleanLabel(phrase: string | null | undefined): string | null {
   const text = bare(phrase ?? null);
   return text === null || GENERIC_HERO.test(text) ? null : cap(text, 60);
 }
+
+/** Hod: na co se hází („at kids“, „into the trash can“) a co se hází, když věta začíná druhem hodu („knife throwing“). */
+const THROWN_AT = /\b(?:at|into|onto) (?:the |a |an |some )?([a-z][a-z -]*)/;
+const THROWN_BEFORE = /^([a-z]+) throwing\b/;
 
 const thing = (label: string | null | undefined): string | null => (label === null || label === undefined || NOT_A_THING.test(label) ? null : label);
 /** „escape from a haunted hospital“: místo, odkud se utíká, není pronásledovatel; „a goblin castle“ ale jmenuje goblina. */
@@ -1092,10 +1104,24 @@ function draftGenre(
   const said = ranking.after === null ? null : nounPhrase(ranking.after.replace(/^(?:on|at|up|down|out|to|into)\s+/, ''), 2);
   const object = thing(said);
   // Úkol: u hodu a střelby je předmětem terč („throw balls at rubber ducks“, „shooter against asteroids“), jinak předmět slovesa.
-  const aimed = verb === 'hit' || ranking.verb === null ? thing(roles.target) : null;
+  const aimed = verb === 'hit' || verb === 'shoot' || verb === 'throw' || ranking.verb === null ? thing(roles.target) : null;
   // Skákačka: cíl úrovně a jeho sloveso vyčte `draftFill` modulu („to find its battery“, P35 T3).
   const filledTarget = choice.genre === 'platformer' ? (fill.target ?? null) : null;
-  const target = choice.genre === 'quest' ? singular(aimed ?? object ?? namedFoe(sentence) ?? nouns.second ?? defaultTarget(verb)) : filledTarget === null ? null : singular(filledTarget.label);
+  // Hod (P36A T10): terč je to, na co se hází („at kids“, „into a hoop“, převlek „angry birds but with cats and cardboard boxes“);
+  // předmět slovesa je, co se hází, jen když nestojí za předložkou („throwing at a spinning log“) – „knife throwing“ hází nůž.
+  // Bez terče z věty rozhodne druh cíle modulu.
+  const thrown = choice.genre === 'throw';
+  const thrownAt = thrown ? (aimed ?? thing(nounPhrase(THROWN_AT.exec(text)?.[1] ?? '', 2)) ?? (ranking.verb === null ? nouns.second : null)) : null;
+  const target =
+    choice.genre === 'quest'
+      ? singular(aimed ?? object ?? namedFoe(sentence) ?? nouns.second ?? defaultTarget(verb))
+      : thrown
+        ? thrownAt === null
+          ? null
+          : singular(thrownAt)
+        : filledTarget === null
+          ? null
+          : singular(filledTarget.label);
   const foe = fight
     ? (roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
     : (foeIn(cleanLabel(fill.enemy)) ??
@@ -1107,7 +1133,10 @@ function draftGenre(
       (roles.setting !== null && NOT_A_PLACE.test(roles.setting.split(' ').at(-1)!) ? roles.setting : null));
   // „zombie shooter“: co se střílí, je terč úkolu, ne ještě jednou nepřítel; co hráč hází, taky ne (T7). Popisek role je jeden kus („cones“ → „cone“).
   const enemy = foe === null || singular(foe) === target || toolsOf(sentence).includes(singular(foe)) ? null : singular(foe);
-  const found = thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
+  const throwsAt = ranking.after !== null && /^(?:at|into|onto|on|to|toward|towards)\s/.test(ranking.after);
+  const found = thrown
+    ? (thing(THROWN_BEFORE.exec(text)?.[1]) ?? (throwsAt ? null : object) ?? thing(roles.collectible))
+    : thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
   const collectible = found === null ? null : singular(found);
   // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.
   const named = new Set([target, enemy, collectible].flatMap((label) => (label === null ? [] : [singular(label)])));
@@ -1122,7 +1151,9 @@ function draftGenre(
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   const escape = choice.genre === 'arena' && choice.mode === 'escape';
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
-  const itemLabel = collectible ?? (escape || choice.genre === 'voyage' ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
+  // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.
+  const noItem = escape || choice.genre === 'voyage' || choice.genre === 'shooter' || thrown;
+  const itemLabel = collectible ?? (noItem ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
   const seconds = reading?.numbers.seconds ?? readNumbers(sentence).seconds;
   const own = paramsOf(module, fill.params, seconds);
   const depth = depthOf(sentence);

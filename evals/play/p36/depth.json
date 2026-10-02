@@ -14,16 +14,16 @@
    "sentences": 260,
    "playable": 260,
    "publishable": 260,
-   "inBand": 259,
-   "inBandShare": 0.996,
+   "inBand": 241,
+   "inBandShare": 0.927,
    "idle": {
     "won": 0,
     "lost": 260,
     "unfinished": 0
    },
    "idleLosesShare": 1,
-   "livesOver1": 260,
-   "livesOver1Share": 1,
+   "livesOver1": 242,
+   "livesOver1Share": 0.931,
    "scoreDecides": 260,
    "scoreDecidesShare": 1,
    "numbers": {
@@ -51,13 +51,13 @@
      "livesOver1": 17
     },
     "arena.escape": {
-     "sentences": 23,
+     "sentences": 24,
      "medianWinSeconds": 40,
      "minWinSeconds": 40,
      "maxWinSeconds": 72.55,
-     "inBand": 23,
-     "idleLoses": 23,
-     "livesOver1": 23
+     "inBand": 24,
+     "idleLoses": 24,
+     "livesOver1": 24
     },
     "arena.fight": {
      "sentences": 27,
@@ -78,13 +78,13 @@
      "livesOver1": 26
     },
     "quest.spatial": {
-     "sentences": 48,
-     "medianWinSeconds": 55.63,
-     "minWinSeconds": 44.12,
+     "sentences": 19,
+     "medianWinSeconds": 60.45,
+     "minWinSeconds": 44.85,
      "maxWinSeconds": 76.77,
-     "inBand": 48,
-     "idleLoses": 48,
-     "livesOver1": 48
+     "inBand": 19,
+     "idleLoses": 19,
+     "livesOver1": 19
     },
     "quest.station": {
      "sentences": 44,
@@ -96,13 +96,31 @@
      "livesOver1": 44
     },
     "runner": {
-     "sentences": 51,
+     "sentences": 49,
      "medianWinSeconds": 39.98,
      "minWinSeconds": 35.07,
      "maxWinSeconds": 47.97,
-     "inBand": 51,
-     "idleLoses": 51,
-     "livesOver1": 51
+     "inBand": 49,
+     "idleLoses": 49,
+     "livesOver1": 49
+    },
+    "shooter": {
+     "sentences": 13,
+     "medianWinSeconds": 44.78,
+     "minWinSeconds": 43.95,
+     "maxWinSeconds": 44.93,
+     "inBand": 13,
+     "idleLoses": 13,
+     "livesOver1": 13
+    },
+    "throw": {
+     "sentences": 18,
+     "medianWinSeconds": 4.99,
+     "minWinSeconds": 4.42,
+     "maxWinSeconds": 13.5,
+     "inBand": 0,
+     "idleLoses": 18,
+     "livesOver1": 0
     },
     "voyage.land": {
      "sentences": 1,
@@ -114,13 +132,13 @@
      "livesOver1": 1
     },
     "voyage.race": {
-     "sentences": 23,
-     "medianWinSeconds": 40.23,
+     "sentences": 22,
+     "medianWinSeconds": 40.24,
      "minWinSeconds": 40.22,
      "maxWinSeconds": 41.5,
-     "inBand": 23,
-     "idleLoses": 23,
-     "livesOver1": 23
+     "inBand": 22,
+     "idleLoses": 22,
+     "livesOver1": 22
     }
    }
   },
@@ -128,16 +146,16 @@
    "sentences": 200,
    "playable": 200,
    "publishable": 200,
-   "inBand": 199,
-   "inBandShare": 0.995,
+   "inBand": 185,
+   "inBandShare": 0.925,
    "idle": {
     "won": 0,
     "lost": 200,
     "unfinished": 0
    },
    "idleLosesShare": 1,
-   "livesOver1": 200,
-   "livesOver1Share": 1,
+   "livesOver1": 186,
+   "livesOver1Share": 0.93,
    "scoreDecides": 200,
    "scoreDecidesShare": 1,
    "numbers": {
@@ -165,13 +183,13 @@
      "livesOver1": 14
     },
     "arena.escape": {
-     "sentences": 17,
+     "sentences": 18,
      "medianWinSeconds": 40,
      "minWinSeconds": 40,
      "maxWinSeconds": 72.55,
-     "inBand": 17,
-     "idleLoses": 17,
-     "livesOver1": 17
+     "inBand": 18,
+     "idleLoses": 18,
+     "livesOver1": 18
     },
     "arena.fight": {
      "sentences": 21,
@@ -192,13 +210,13 @@
      "livesOver1": 23
     },
     "quest.spatial": {
-     "sentences": 36,
-     "medianWinSeconds": 56.08,
-     "minWinSeconds": 44.12,
+     "sentences": 14,
+     "medianWinSeconds": 60.76,
+     "minWinSeconds": 53.27,
      "maxWinSeconds": 76.2,
-     "inBand": 36,
-     "idleLoses": 36,
-     "livesOver1": 36
+     "inBand": 14,
+     "idleLoses": 14,
+     "livesOver1": 14
     },
     "quest.station": {
      "sentences": 37,
@@ -210,13 +228,31 @@
      "livesOver1": 37
     },
     "runner": {
-     "sentences": 33,
+     "sentences": 31,
      "medianWinSeconds": 40.55,
      "minWinSeconds": 35.07,
      "maxWinSeconds": 47.97,
-     "inBand": 33,
-     "idleLoses": 33,
-     "livesOver1": 33
+     "inBand": 31,
+     "idleLoses": 31,
+     "livesOver1": 31
+    },
+    "shooter": {
+     "sentences": 10,
+     "medianWinSeconds": 44.78,
+     "minWinSeconds": 43.95,
+     "maxWinSeconds": 44.93,
+     "inBand": 10,
+     "idleLoses": 10,
+     "livesOver1": 10
+    },
+    "throw": {
+     "sentences": 14,
+     "medianWinSeconds": 4.99,
+     "minWinSeconds": 4.42,
+     "maxWinSeconds": 13.5,
+     "inBand": 0,
+     "idleLoses": 14,
+     "livesOver1": 0
     },
     "voyage.land": {
      "sentences": 1,
@@ -228,13 +264,13 @@
      "livesOver1": 1
     },
     "voyage.race": {
-     "sentences": 18,
+     "sentences": 17,
      "medianWinSeconds": 40.25,
      "minWinSeconds": 40.22,
      "maxWinSeconds": 41.5,
-     "inBand": 18,
-     "idleLoses": 18,
-     "livesOver1": 18
+     "inBand": 17,
+     "idleLoses": 17,
+     "livesOver1": 17
     }
    }
   },
@@ -242,16 +278,16 @@
    "sentences": 60,
    "playable": 60,
    "publishable": 60,
-   "inBand": 60,
-   "inBandShare": 1,
+   "inBand": 56,
+   "inBandShare": 0.933,
    "idle": {
     "won": 0,
     "lost": 60,
     "unfinished": 0
    },
    "idleLosesShare": 1,
-   "livesOver1": 60,
-   "livesOver1Share": 1,
+   "livesOver1": 56,
+   "livesOver1Share": 0.933,
    "scoreDecides": 60,
    "scoreDecidesShare": 1,
    "numbers": {
@@ -306,13 +342,13 @@
      "livesOver1": 3
     },
     "quest.spatial": {
-     "sentences": 12,
-     "medianWinSeconds": 53.96,
+     "sentences": 5,
+     "medianWinSeconds": 54.65,
      "minWinSeconds": 44.85,
      "maxWinSeconds": 76.77,
-     "inBand": 12,
-     "idleLoses": 12,
-     "livesOver1": 12
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
     },
     "quest.station": {
      "sentences": 7,
@@ -331,6 +367,24 @@
      "inBand": 18,
      "idleLoses": 18,
      "livesOver1": 18
+    },
+    "shooter": {
+     "sentences": 3,
+     "medianWinSeconds": 44.63,
+     "minWinSeconds": 44.28,
+     "maxWinSeconds": 44.78,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "throw": {
+     "sentences": 4,
+     "medianWinSeconds": 9.03,
+     "minWinSeconds": 4.63,
+     "maxWinSeconds": 13.5,
+     "inBand": 0,
+     "idleLoses": 4,
+     "livesOver1": 0
     },
     "voyage.race": {
      "sentences": 5,
@@ -1645,24 +1699,24 @@
    "set": "demand",
    "id": "s037",
    "text": "A space marine shoots alien bugs in a mining colony",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 867901906,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3338
+    "tick": 2687
    },
-   "winSeconds": 55.63,
+   "winSeconds": 44.78,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 622
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 410,
+   "botScore": 511,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -1681,24 +1735,24 @@
    "set": "demand",
    "id": "s038",
    "text": "shooting game",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 1548515046,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2811
+    "tick": 2696
    },
-   "winSeconds": 46.85,
+   "winSeconds": 44.93,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 618
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 520,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -1717,24 +1771,24 @@
    "set": "demand",
    "id": "s039",
    "text": "zombie shooter in a mall",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 2050291154,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2966
+    "tick": 2657
    },
-   "winSeconds": 49.43,
+   "winSeconds": 44.28,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 622
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 290,
+   "botScore": 520,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -1789,24 +1843,24 @@
    "set": "demand",
    "id": "s041",
    "text": "shoot balloons with a bow before they fly away",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 1591445611,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 4562
+    "tick": 2637
    },
-   "winSeconds": 76.03,
+   "winSeconds": 43.95,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 626
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 155,
+   "botScore": 527,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -1861,24 +1915,24 @@
    "set": "demand",
    "id": "s043",
    "text": "a spaceship shooting asteroids and ufos, retro vibes",
-   "genre": "voyage.race",
+   "genre": "shooter",
    "seed": 2057437881,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2414
+    "tick": 2693
    },
-   "winSeconds": 40.23,
+   "winSeconds": 44.88,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 4261
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 400,
+   "botScore": 515,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -1933,24 +1987,24 @@
    "set": "demand",
    "id": "s045",
    "text": "like krunker but with pirates",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 1495888187,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3231
+    "tick": 2693
    },
-   "winSeconds": 53.85,
+   "winSeconds": 44.88,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 595
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 420,
+   "botScore": 515,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -1969,24 +2023,24 @@
    "set": "demand",
    "id": "s046",
    "text": "shooting range with bottles and targets",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 929690251,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3830
+    "tick": 2648
    },
-   "winSeconds": 63.83,
+   "winSeconds": 44.13,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 619
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 220,
+   "botScore": 520,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -2041,24 +2095,24 @@
    "set": "demand",
    "id": "s048",
    "text": "fps where u shoot paint at robots",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 1741351680,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2722
+    "tick": 2687
    },
-   "winSeconds": 45.37,
+   "winSeconds": 44.78,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 623
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 460,
+   "botScore": 511,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -2077,24 +2131,24 @@
    "set": "demand",
    "id": "s049",
    "text": "survive waves of monsters with an auto shooting wand like vampire survivors",
-   "genre": "quest.spatial",
+   "genre": "arena.escape",
    "seed": 1711354026,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2647
+    "tick": 2400
    },
-   "winSeconds": 44.12,
+   "winSeconds": 40,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 624
+    "tick": 597
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 315,
+   "botScore": 100,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -2113,25 +2167,25 @@
    "set": "demand",
    "id": "s050",
    "text": "throwing snowballs at kids behind a snow fort",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1230807019,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3184
+    "tick": 290
    },
-   "winSeconds": 53.07,
-   "inBand": true,
+   "winSeconds": 4.83,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 602
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 420,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 129,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -2185,24 +2239,24 @@
    "set": "demand",
    "id": "s052",
    "text": "shoot the ghosts in a haunted carnival shooting gallery",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 1256326775,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3443
+    "tick": 2687
    },
-   "winSeconds": 57.38,
+   "winSeconds": 44.78,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 614
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 400,
+   "botScore": 520,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -3445,25 +3499,25 @@
    "set": "demand",
    "id": "s087",
    "text": "throw a basketball into a hoop from crazy angles",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1428471899,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3323
+    "tick": 298
    },
-   "winSeconds": 55.38,
-   "inBand": true,
+   "winSeconds": 4.97,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 626
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 260,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 128,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3481,25 +3535,25 @@
    "set": "demand",
    "id": "s088",
    "text": "angry birds but with cats and cardboard boxes",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1691046820,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3109
+    "tick": 793
    },
-   "winSeconds": 51.82,
-   "inBand": true,
+   "winSeconds": 13.22,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 626
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 430,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 95,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3553,25 +3607,25 @@
    "set": "demand",
    "id": "s090",
    "text": "launch a guy from a cannon as far as possible",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1185689664,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3540
+    "tick": 787
    },
-   "winSeconds": 59,
-   "inBand": true,
+   "winSeconds": 13.12,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 625
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 395,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 95,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3589,25 +3643,25 @@
    "set": "demand",
    "id": "s091",
    "text": "throw paper balls into the trash can in an office while the boss isnt looking",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1777015246,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2856
+    "tick": 283
    },
-   "winSeconds": 47.6,
-   "inBand": true,
+   "winSeconds": 4.72,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 616
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 300,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 129,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3625,25 +3679,25 @@
    "set": "demand",
    "id": "s092",
    "text": "ragdoll falling down stairs and breaking bones for points",
-   "genre": "runner",
+   "genre": "throw",
    "seed": 1997818078,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2771
+    "tick": 295
    },
-   "winSeconds": 46.18,
-   "inBand": true,
+   "winSeconds": 4.92,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 1000
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 506,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 128,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3661,25 +3715,25 @@
    "set": "demand",
    "id": "s093",
    "text": "knock down towers with a wrecking ball",
-   "genre": "runner",
+   "genre": "throw",
    "seed": 1620160351,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2285
+    "tick": 786
    },
-   "winSeconds": 38.08,
-   "inBand": true,
+   "winSeconds": 13.1,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 862
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 569,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 95,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3697,25 +3751,25 @@
    "set": "demand",
    "id": "s094",
    "text": "toss a pancake and catch it on the pan",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 563614945,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3100
+    "tick": 800
    },
-   "winSeconds": 51.67,
-   "inBand": true,
+   "winSeconds": 13.33,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 623
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 430,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 93,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3733,25 +3787,25 @@
    "set": "demand",
    "id": "s095",
    "text": "knife throwing at a spinning log",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1912319400,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2909
+    "tick": 810
    },
-   "winSeconds": 48.48,
-   "inBand": true,
+   "winSeconds": 13.5,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 633
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 445,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 93,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3769,25 +3823,25 @@
    "set": "demand",
    "id": "s096",
    "text": "slingshot fruit at a giant blender",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 59177403,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3113
+    "tick": 289
    },
-   "winSeconds": 51.88,
-   "inBand": true,
+   "winSeconds": 4.82,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 604
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 430,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 128,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -4921,25 +4975,25 @@
    "set": "demand",
    "id": "s128",
    "text": "basketball free throws",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1442034543,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3257
+    "tick": 301
    },
-   "winSeconds": 54.28,
-   "inBand": true,
+   "winSeconds": 5.02,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 615
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 415,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 128,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -4957,25 +5011,25 @@
    "set": "demand",
    "id": "s129",
    "text": "mini golf with windmills and loops",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 998656642,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3937
+    "tick": 265
    },
-   "winSeconds": 65.62,
-   "inBand": true,
+   "winSeconds": 4.42,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 632
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 360,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 129,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -4993,25 +5047,25 @@
    "set": "demand",
    "id": "s130",
    "text": "bowling in a haunted alley",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1781517049,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3396
+    "tick": 805
    },
-   "winSeconds": 56.6,
-   "inBand": true,
+   "winSeconds": 13.42,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 603
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 255,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 95,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -5065,24 +5119,24 @@
    "set": "demand",
    "id": "s132",
    "text": "archery olympics",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 1362415063,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3363
+    "tick": 2696
    },
-   "winSeconds": 56.05,
+   "winSeconds": 44.93,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 616
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 255,
+   "botScore": 511,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -5281,25 +5335,25 @@
    "set": "demand",
    "id": "s138",
    "text": "pool billiards trick shots",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 528190365,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 4376
+    "tick": 273
    },
-   "winSeconds": 72.93,
-   "inBand": true,
+   "winSeconds": 4.55,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 622
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 175,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 129,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -7549,24 +7603,24 @@
    "set": "dev",
    "id": "s039",
    "text": "zombie shooter in a mall",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 2050291154,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2966
+    "tick": 2657
    },
-   "winSeconds": 49.43,
+   "winSeconds": 44.28,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 622
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 290,
+   "botScore": 520,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -7585,24 +7639,24 @@
    "set": "dev",
    "id": "s037",
    "text": "A space marine shoots alien bugs in a mining colony",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 867901906,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3338
+    "tick": 2687
    },
-   "winSeconds": 55.63,
+   "winSeconds": 44.78,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 622
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 410,
+   "botScore": 511,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -7873,25 +7927,25 @@
    "set": "dev",
    "id": "s050",
    "text": "throwing snowballs at kids behind a snow fort",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1230807019,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3184
+    "tick": 290
    },
-   "winSeconds": 53.07,
-   "inBand": true,
+   "winSeconds": 4.83,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 602
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 420,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 129,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -7909,25 +7963,25 @@
    "set": "dev",
    "id": "s088",
    "text": "angry birds but with cats and cardboard boxes",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1691046820,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3109
+    "tick": 793
    },
-   "winSeconds": 51.82,
-   "inBand": true,
+   "winSeconds": 13.22,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 626
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 430,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 95,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -8089,25 +8143,25 @@
    "set": "dev",
    "id": "s095",
    "text": "knife throwing at a spinning log",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1912319400,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2909
+    "tick": 810
    },
-   "winSeconds": 48.48,
-   "inBand": true,
+   "winSeconds": 13.5,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 633
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 445,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 93,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -9097,24 +9151,24 @@
    "set": "dev",
    "id": "d04",
    "text": "shoot down paper planes over a school playground",
-   "genre": "quest.spatial",
+   "genre": "shooter",
    "seed": 809519851,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3834
+    "tick": 2678
    },
-   "winSeconds": 63.9,
+   "winSeconds": 44.63,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 631
+    "tick": 1480
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 370,
+   "botScore": 520,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -9493,25 +9547,25 @@
    "set": "dev",
    "id": "d15",
    "text": "throw frisbees to a dog on a sunny beach",
-   "genre": "quest.spatial",
+   "genre": "throw",
    "seed": 1684319401,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3814
+    "tick": 278
    },
-   "winSeconds": 63.57,
-   "inBand": true,
+   "winSeconds": 4.63,
+   "inBand": false,
    "idle": {
     "end": "lost",
-    "tick": 623
+    "tick": 1801
    },
-   "lives": 3,
-   "livesFrom": "counter",
-   "botScore": 220,
-   "worstScore": 50,
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 128,
+   "worstScore": 0,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {

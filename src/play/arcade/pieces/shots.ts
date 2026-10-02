@@ -5,10 +5,14 @@
 
 import { z } from 'zod';
 
-import { type ArcadeEffect, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeEffect, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase } from '../contract';
+import { nextMultiplier } from './rules';
 import { SHOOTER, gunOf, gunTick } from './shooter';
 
 const noParams = z.object({}).strict();
+
+/** Index těla-počítadla komba (P36A T10, `COMBO`); bez něj zásah za bod jako dřív. */
+const shotHitParams = z.object({ combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional() }).strict();
 
 const isFoe = (role: number): boolean => role === ROLE.target || role === ROLE.enemy;
 
@@ -27,20 +31,28 @@ export function census(state: Int32Array): { foes: number; projectiles: number }
   return { foes, projectiles };
 }
 
-/** Zásah terče nebo nepřítele → bod a tělo zmizí. Zásah zdi a minutí nic. */
-export const shotHit: RulePiece<z.infer<typeof noParams>> = {
+/** Zásah terče nebo nepřítele → bod a tělo zmizí; s `combo` bod krát násobič zásahů v řadě. Zásah zdi a minutí nic. */
+export const shotHit: RulePiece<z.infer<typeof shotHitParams>> = {
   id: 'shot_hit',
-  params: noParams,
+  params: shotHitParams,
   roles: ['projectile', 'target', 'enemy'],
   trigger: 'hit',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, other }) =>
-    other >= 0 && isFoe(state[bodyBase(other) + BODY.role] as number)
-      ? [
-          { kind: 'score', amount: 1 },
-          { kind: 'despawn', body: other },
-        ]
-      : [],
+  fire: ({ state, other }, params) => {
+    if (other < 0 || !isFoe(state[bodyBase(other) + BODY.role] as number)) return [];
+    if (params.combo === undefined) {
+      return [
+        { kind: 'score', amount: 1 },
+        { kind: 'despawn', body: other },
+      ];
+    }
+    const multiplier = nextMultiplier(state, params.combo);
+    return [
+      { kind: 'score', amount: multiplier },
+      { kind: 'despawn', body: other },
+      { kind: 'combo', body: params.combo, multiplier },
+    ];
+  },
 };
 
 /** Žádný živý terč ani nepřítel → výhra. */

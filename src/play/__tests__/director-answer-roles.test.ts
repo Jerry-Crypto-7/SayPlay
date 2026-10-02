@@ -158,7 +158,10 @@ describe('the thing the player uses is never a role', () => {
 
   it('keeps the quick version off the tool too', () => {
     expect(draftOf(FIRE).spec.roles.map((role) => role.label)).not.toContain('water');
-    expect(draftOf('An elf shoots arrows at goblins in a forest').genre.target?.label).toBe('goblin');
+    // Od P36A T10 Střílečka: goblini jdou ve vlnách jako nepřítel, šíp není role.
+    const elf = draftOf('An elf shoots arrows at goblins in a forest');
+    expect(elf.genre).toMatchObject({ genre: 'shooter', enemy: 'goblin' });
+    expect(elf.spec.roles.map((role) => role.label)).not.toContain('arrow');
   });
 });
 
@@ -175,15 +178,17 @@ describe('the AI version adds what the sentence says and the quick version misse
   });
 
   // P36A T3: rychlá verze honiče už nemine – výchozí pronásledovatel úkolu nese nepřítele z věty (psa).
-  // Odpověď, která psa nechá, se hraje jako autorská a psa nese dál.
+  // Odpověď, která psa nechá, se hraje jako autorská a psa nese dál. Do P36A T10 to byla věta SNOW; hod je teď
+  // vlastní žánr bez honiče, takže prostorový úkol nese praskání balónků.
   it('plays the chaser the sentence names – the quick version already has it as the default quest chaser', async () => {
-    const quick = draftOf(SNOW);
+    const CHASED = 'A kid pops balloons at a fair while a dog chases him';
+    const quick = draftOf(CHASED);
     expect(quick.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog', count: 1 }));
-    const game = await directed(SNOW, { ...quick.genre, params: { ...quick.genre.params, chasers: 1 } });
+    const game = await directed(CHASED, { ...quick.genre, params: { ...quick.genre.params, chasers: 1 } });
     expect(game.source).toBe('authored');
     expect(game.fallbackReason).toBeNull();
     expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog', count: 1 }));
-    expect(game.spec.objective.description).toBe('Hit all 5 snowman in each of 3 rounds before the dog catches you.');
+    expect(game.spec.objective.description).toBe('Hit all 5 balloon in each of 3 rounds before the dog catches you.');
   });
 });
 
