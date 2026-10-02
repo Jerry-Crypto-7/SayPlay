@@ -21,7 +21,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, type PieceRef, UNIT, bodyBase } from '../contract';
+import { ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const PLATFORM_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -341,10 +341,14 @@ export function platformControlRef(params: Pick<PlatformLevelParams, 'doubleJump
   return { id: 'platform', params: params.feel === undefined ? { doubleJump: params.doubleJump } : { doubleJump: params.doubleJump, feel: params.feel } };
 }
 
-/** Pravidla plošinovky: hrot, mince, cíl, pád; s checkpointy pád vrací místo prohry, se sběrem cíl čeká na všechny věci. */
+/**
+ * Pravidla plošinovky: hrot, mince, cíl, pád; s checkpointy pád vrací místo prohry, se sběrem cíl čeká na všechny věci.
+ * Se životy (P36A T2) hrot ubere život a vrátí hráče na poslední checkpoint (bez něj na start); hrot zůstává a vteřinu
+ * milosti jím hráč projde.
+ */
 export function platformRules(params: Pick<PlatformLevelParams, 'checkpoints' | 'collectAll'>, health?: number): PieceRef[] {
   const rules: PieceRef[] = [
-    { id: 'hit', params: { role: 'hazard', effect: health === undefined ? 'lose' : 'damage' } },
+    { id: 'hit', params: health === undefined ? { role: 'hazard', effect: 'lose' } : { role: 'hazard', effect: 'damage', grace: HIT_GRACE, after: 'respawn' } },
     { id: 'pickup', params: {} },
     { id: 'finish', params: params.collectAll === true ? { allItems: true } : {} },
     { id: 'fall_out', params: { belowY: PLATFORM.fallBelowY, effect: params.checkpoints ? 'respawn' : 'lose' } },

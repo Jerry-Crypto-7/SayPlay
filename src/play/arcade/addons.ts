@@ -28,6 +28,7 @@ import {
   type ControlPiece,
   FLAG,
   HEADER,
+  HIT_GRACE,
   type PieceRef,
   ROLE,
   type RulePiece,
@@ -97,6 +98,10 @@ export interface AddonPiece<P = unknown> {
 }
 
 const noParams = z.object({}).strict();
+
+/** Náraz do nového nepřítele: bez životů prohra, se životy ztráta života a vteřina milosti (P36A T2). */
+const hitParamsFor = (role: 'enemy' | 'chaser', health: number | undefined): Readonly<Record<string, unknown>> =>
+  health === undefined ? { role, effect: 'lose' } : { role, effect: 'damage', grace: HIT_GRACE };
 
 /** `+lives`: tři životy. Náraz pak ubere život místo prohry – pravidla ovládání to podle `health` udělají sama. */
 export const livesAddon: AddonPiece<z.infer<typeof noParams>> = {
@@ -403,7 +408,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
       { id: 'shot_hit', params: {} },
     ];
     // Aréna náraz do buňky řeší sama (`arena_eat`).
-    if (control !== 'move_free') rules.push({ id: 'hit', params: { role: 'enemy', effect: health === undefined ? 'lose' : 'damage' } });
+    if (control !== 'move_free') rules.push({ id: 'hit', params: hitParamsFor('enemy', health) });
     return {
       ...parts,
       control: wrapControl(parts, {}),
@@ -555,7 +560,7 @@ export const chaserAddon: AddonPiece<z.infer<typeof noParams>> = {
       ...parts,
       control: wrapControl(parts, { chase: made.speed }),
       level: { ...parts.level, bodies: [...parts.level.bodies, made.body] },
-      rules: [...parts.rules, { id: 'hit', params: { role: 'chaser', effect: health === undefined ? 'lose' : 'damage' } }],
+      rules: [...parts.rules, { id: 'hit', params: hitParamsFor('chaser', health) }],
     };
   },
   bot: chaseStep,

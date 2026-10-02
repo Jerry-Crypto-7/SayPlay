@@ -46,7 +46,9 @@ import {
   VERB_MOTION,
   bodyBase,
   bodyHp,
+  graceOf,
   setBodyHp,
+  setGrace,
   setTargetState,
   stateSize,
   targetStateOf,
@@ -621,6 +623,19 @@ function push(state: ArcadeState, body: number): boolean {
   return true;
 }
 
+/** Odhoz hráče od těla `body` rychlostí `speed` v rovině x–z (P36A T2); hráč přesně na místě těla letí vzad (−z). */
+function knockback(state: ArcadeState, body: number, speed: number): boolean {
+  const p = baseOf(state[HD.player] as number);
+  const base = baseOf(body);
+  const dx = (state[p + S.x] as number) - (state[base + S.x] as number);
+  const dz = (state[p + S.z] as number) - (state[base + S.z] as number);
+  // `Math.sqrt` je v IEEE 754 přesně zaokrouhlená, takže dává všude stejné celé číslo.
+  const length = Math.sqrt(dx * dx + dz * dz);
+  state[p + S.vx] = length === 0 ? 0 : Math.trunc((dx * speed) / length);
+  state[p + S.vz] = length === 0 ? -speed : Math.trunc((dz * speed) / length);
+  return true;
+}
+
 function toggle(state: ArcadeState, role: number): boolean {
   const count = state[HD.bodyCount] as number;
   const player = state[HD.player] as number;
@@ -644,8 +659,15 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     const effect = effects[i] as ArcadeEffect;
     let changed = true;
     if (effect.kind === 'score') state[HD.counters + CT.score] = (state[HD.counters + CT.score] as number) + effect.amount;
-    else if (effect.kind === 'damage') state[HD.counters + CT.health] = (state[HD.counters + CT.health] as number) - effect.amount;
-    else if (effect.kind === 'count') state[HD.counters + CT[effect.counter]] = (state[HD.counters + CT[effect.counter]] as number) + effect.amount;
+    else if (effect.kind === 'damage') {
+      const player = state[HD.player] as number;
+      // Milost (P36A T2): zásah v ní nic nebere; jinak ubere a milost nabije – i proti druhému zásahu téhož tiku.
+      if (effect.grace !== undefined && graceOf(state, player) > 0) changed = false;
+      else {
+        state[HD.counters + CT.health] = (state[HD.counters + CT.health] as number) - effect.amount;
+        if (effect.grace !== undefined) setGrace(state, player, effect.grace);
+      }
+    } else if (effect.kind === 'count') state[HD.counters + CT[effect.counter]] = (state[HD.counters + CT[effect.counter]] as number) + effect.amount;
     else if (effect.kind === 'lose') end.lost = true;
     else if (effect.kind === 'win') end.won = true;
     else if (effect.kind === 'spawn') changed = spawn(state, effect);
@@ -673,7 +695,12 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
       // Záporný zásah neléčí.
       setBodyHp(state, effect.body, before - Math.max(0, effect.amount));
       changed = bodyHp(state, effect.body) !== before;
-    } else if (effect.kind === 'stateChange') {
+    } else if (effect.kind === 'heal') {
+      const before = bodyHp(state, effect.body);
+      if (effect.hp > before) setBodyHp(state, effect.body, effect.hp);
+      changed = bodyHp(state, effect.body) !== before;
+    } else if (effect.kind === 'knockback') changed = knockback(state, effect.body, effect.speed);
+    else if (effect.kind === 'stateChange') {
       const before = targetStateOf(state, effect.body);
       setTargetState(state, effect.body, effect.state);
       changed = targetStateOf(state, effect.body) !== before;
@@ -729,6 +756,9 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   const count = state[HD.bodyCount] as number;
   const player = state[HD.player] as number;
   const none = { state, player, other: -1, source: -1, input };
+  // Milost po zásahu ubývá o tik; svět, který ji nikdy nenabil, má 0 a nepohne se (P36A T2).
+  const grace = graceOf(state, player);
+  if (grace > 0) setGrace(state, player, grace - 1);
 
   program.control.piece.step(state, player, input, program.control.params);
   // Stisk (P29A): hned za ovládáním, aby hod nebo zvednutí vyšlo už v tomto tiku.

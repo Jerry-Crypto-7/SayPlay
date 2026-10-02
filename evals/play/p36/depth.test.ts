@@ -68,7 +68,8 @@ describe('plan P36A targets over all 260 sentences', () => {
     expect(all.idleLosesShare).toBeGreaterThanOrEqual(DEPTH_TARGETS.idleLosesShare);
   });
 
-  it.fails(`≥ ${String(DEPTH_TARGETS.livesOver1Share * 100)} % of games start with more than one life (T2 flips this)`, () => {
+  // T2 cíl splnil (2. 10. 2026: 260/260 her začíná se třemi životy) – už ne `it.fails`.
+  it(`≥ ${String(DEPTH_TARGETS.livesOver1Share * 100)} % of games start with more than one life (T2 flipped this)`, () => {
     expect(all.livesOver1Share).toBeGreaterThanOrEqual(DEPTH_TARGETS.livesOver1Share);
   });
 });

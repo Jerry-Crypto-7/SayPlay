@@ -9,7 +9,7 @@
 import { readCountedNouns, nounPhrase } from '../draft/lexicon';
 import { ESCAPE } from '../arcade/pieces/arena';
 import { questSpatial, questStation } from '../arcade/pieces/quest';
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Nejkratší kolo, když ho spec neříká; `arenaWinOf` bere 20–80 s. */
 const ROUND_SECONDS = 40;
@@ -137,7 +137,8 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
       description: chasers > 0 ? `${verbText} all ${String(count)} ${label} before the ${hunter} catch you.` : `${verbText} all ${String(count)} ${label} within ${String(seconds)} seconds.`,
       role: 'target',
     },
-    mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }],
+    // Tři životy (P36A T2); bez pronásledovatelů je zatím nic nebere – nebezpečí úkolu přidá T3.
+    mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }, livesMechanic()],
     roles: [{ id: 'target', kind: 'target', label, count }, ...(chasers > 0 ? [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }] : [])],
     tutorial: {
       goalLine: `${verbText} all ${String(count)} ${label}.`,

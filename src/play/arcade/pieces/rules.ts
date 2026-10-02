@@ -5,27 +5,44 @@
 
 import { z } from 'zod';
 
-import { ARCADE_HZ, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase, graceOf } from '../contract';
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
 
-const hitParams = z.object({ role: z.enum(['obstacle', 'chaser', 'hazard', 'enemy']), effect: z.enum(['lose', 'damage']) }).strict();
+const hitParams = z
+  .object({
+    role: z.enum(['obstacle', 'chaser', 'hazard', 'enemy']),
+    effect: z.enum(['lose', 'damage']),
+    /** Milost po zásahu v ticích (P36A T2): po ztrátě života tolik tiků další zásah nic nebere. Bez ní jako dřív. */
+    grace: z.int().min(1).max(ARCADE_LIMITS.maxTicks).optional(),
+    /** Co po ztrátě života (P36A T2): překážka zmizí (výchozí, jako dřív), nebo se hráč vrátí na místo návratu (checkpoint). */
+    after: z.enum(['despawn', 'respawn']).optional(),
+  })
+  .strict();
 
-/** Náraz do role → prohra, nebo ztráta života (a překážka zmizí, aby nebrala život každý tik). */
+const solidBody = (state: Int32Array, body: number): boolean => ((state[bodyBase(body) + BODY.flags] as number) & FLAG.solid) !== 0;
+
+/**
+ * Náraz do role → prohra, nebo ztráta života: překážka zmizí, aby nebrala život
+ * každý tik, nebo (`after: 'respawn'`, hrot skákačky) se hráč vrátí na checkpoint.
+ * S `grace` hráč v milosti nepřijde o nic: nepevnou věcí projde, pevná zmizí,
+ * ať ho na trati nezastaví (běžec by za ní stál, dokud milost nedoběhne).
+ */
 export const hit: RulePiece<z.infer<typeof hitParams>> = {
   id: 'hit',
   params: hitParams,
   roles: ['player', 'obstacle', 'chaser', 'hazard', 'enemy'],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, other }, params) => {
+  fire: ({ state, player, other }, params) => {
     if (roleOf(state, other) !== ROLE[params.role]) return [];
-    return params.effect === 'lose'
-      ? [{ kind: 'lose' }]
-      : [
-          { kind: 'damage', amount: 1 },
-          { kind: 'despawn', body: other },
-        ];
+    if (params.effect === 'lose') return [{ kind: 'lose' }];
+    const despawn = params.after !== 'respawn';
+    if (params.grace !== undefined && graceOf(state, player) > 0) return despawn && solidBody(state, other) ? [{ kind: 'despawn', body: other }] : [];
+    return [
+      params.grace === undefined ? { kind: 'damage', amount: 1 } : { kind: 'damage', amount: 1, grace: params.grace },
+      despawn ? { kind: 'despawn', body: other } : { kind: 'respawn' },
+    ];
   },
 };
 

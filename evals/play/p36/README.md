@@ -64,10 +64,25 @@ Rozpad po sadách je v `depth.json` (`summary.demand.byGenre`, `summary.dev.byGe
 - **Čísla z vět:** žádná z 260 vět neříká počet životů, cílové skóre ani čas (jen „for points“ bez čísla), proto jsou `said` i `carried` dnes všude `null`. Čtečku čísel drží test na vlastních větách; jak hra nese čísla z vět, změří až sada mechanik z T9.
 - **Rozložení žánrů na poptávce:** úkol (quest) má 73 z 200 vět = 36,5 %, tedy už dnes nad stropem 35 % z T11. Běžec má 33 = 16,5 %.
 
+## Po T2 – tři životy s milostí (2. 10. 2026)
+
+Přeměřeno s kompilátorem `play-compiler-v4/arcade-v2`. `depth.json` teď nese tenhle stav; výchozí stav výš zůstává jako srovnání.
+
+| | všech 260 | poptávka 200 | vývojová 60 | cíl plánu |
+|---|---:|---:|---:|---:|
+| robot vyhraje za 30–90 s | 20 = 7,7 % | 17 = 8,5 % | 3 = 5,0 % | ≥ 85 % (T4) |
+| nečinný hráč prohraje | 217 = 83,5 % | 163 = 81,5 % | 54 = 90,0 % | ≥ 95 % |
+| životy > 1 | **260 = 100 %** | 200 = 100 % | 60 = 100 % | ≥ 80 % – **splněno**, test přepnut na `it` |
+| hra vyšla / publikovatelná | 260 / 260 | 200 / 200 | 60 / 60 | |
+
+- **Každý žánr a režim začíná se 3 životy** (souboj: 3 knockouty po 5 HP). Semínka ani časy výhry robota se nepohnuly – robot do ničeho nenaráží.
+- **Nečinný hráč prohrává dál, jen později:** medián konce běžec 2,7 → 8,4 s, útěk 5,4 → 10,0 s, souboj 8,4 → 22,9 s, přistání 5,4 → 16,2 s. Nedohraje dál 43 her (skákačka 26, sběr v aréně 17) – stát na místě je tam bezpečné; nebezpečí přidají T3 a T4.
+- **Životy, které zatím nic nebere:** sběr v aréně (17), úkol na místě (44) a úkol v prostoru bez pronásledovatelů (46 ze 48). Hra je nese podle plánu (HUD a konec běhu pro P36B jsou ve všech žánrech stejné); co je bere, přidá T3 (nebezpečí úkolu) a T4 (vlny).
+
 ## Test (`depth.test.ts`)
 
 - Každá věta obou sad je v reportu právě jednou a se svým textem.
 - Souhrn se rovná přepočtu z řádků – ručně přepsaný souhrn neprojde.
 - Pásmo platí jen u výhry robota za 30–90 s.
 - Čtečka čísel z věty na vlastních větách.
-- **Tři cíle plánu jako `it.fails`** (≥ 85 % v pásmu, nečinný prohraje u ≥ 95 %, životy > 1 u ≥ 80 %). Dnes procházejí, protože report je pod cílem. Úloha, která cíl splní a report přeměří, uvidí svůj test zčervenat a přepne `it.fails` na `it`: životy T2, délka T4, nečinného hráče ta z T2–T4, která ho dotáhne.
+- **Cíle plánu jako `it.fails`** (životy > 1 překlopila T2 na `it`, zbývají pásmo délky a nečinný hráč) (≥ 85 % v pásmu, nečinný prohraje u ≥ 95 %, životy > 1 u ≥ 80 %). Dnes procházejí, protože report je pod cílem. Úloha, která cíl splní a report přeměří, uvidí svůj test zčervenat a přepne `it.fails` na `it`: životy T2, délka T4, nečinného hráče ta z T2–T4, která ho dotáhne.

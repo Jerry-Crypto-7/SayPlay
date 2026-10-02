@@ -16,7 +16,7 @@ import { type LookId, lookFor } from '../arcade/look';
 import { LAND, VOYAGE, VOYAGE_TERRAINS } from '../arcade/pieces/steer';
 import { nounPhrase } from '../draft/lexicon';
 
-import { type GenreModule, type GenreSpecOf, type ModelClass, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, type ModelClass, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 type Terrain = (typeof VOYAGE_TERRAINS)[number];
 
@@ -99,6 +99,8 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
       objective: { kind: 'reach', description: 'Touch down slowly and level on the landing pad.', role: 'pad' },
       roles: [{ id: 'pad', kind: 'exit', label: 'landing pad' }],
       tutorial: { goalLine: 'Land softly and level on the pad.', controlsHint: 'Arrows or drag to tilt. Up, Space or a second finger fires the engine.' },
+      // Tvrdý dotyk ubere život a loď začne znovu nahoře (P36A T2).
+      mechanics: [livesMechanic()],
       mood: 'tense',
       targetDurationSec: 45,
     });
@@ -123,6 +125,8 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
       { id: 'finish', kind: 'exit', label: goal },
     ],
     tutorial: { goalLine: `Pass every gate and reach the ${goal}.`, controlsHint: 'Drag or arrows to steer. Down or a second finger brakes.' },
+    // Tři životy měla plavba vždy (`VOYAGE.lives`); ve specu je vidí i HUD a nese číslo z věty (P36A T2).
+    mechanics: [livesMechanic()],
     mood: 'adventurous',
   });
 }

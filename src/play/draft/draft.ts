@@ -70,6 +70,7 @@ import {
   nounPhrase,
   plural,
   readCountedNouns,
+  readLives,
   readNumbers,
   readRoles,
   scoreArchetypes,
@@ -1139,8 +1140,18 @@ function draftGenre(
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });
   if (!read.ok) return null;
-  const game = readGameSpec(module.compile(withCounts(read.value) as never));
+  const game = readGameSpec(withLives(module.compile(withCounts(read.value) as never), readLives(sentence)));
   return game.ok ? { genre: read.value, spec: game.value, heroSaid: heroSaid !== null } : null;
+}
+
+/**
+ * Životy z věty („with 5 lives“, P36A T2) do mechaniky `health`, kterou hra žánru
+ * nese (výchozí 3). `GenreSpec` je zatím nenese – pole `lives` v parametrech žánru
+ * přidá s režisérem T8.
+ */
+function withLives(spec: GameSpecV1, lives: number | null): GameSpecV1 {
+  if (lives === null || !spec.mechanics.some((mechanic) => mechanic.id === 'health')) return spec;
+  return { ...spec, mechanics: spec.mechanics.map((mechanic) => (mechanic.id === 'health' ? { id: 'health', params: { max: lives } } : mechanic)) };
 }
 
 /**

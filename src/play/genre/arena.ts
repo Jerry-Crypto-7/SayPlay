@@ -10,7 +10,7 @@
 
 import { ESCAPE } from '../arcade/pieces/arena';
 import { FIGHT } from '../arcade/pieces/fight';
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Délka kola přežití, když ji spec neříká; `arenaWinOf` bere 20–80 s. */
 const ROUND_SECONDS = 40;
@@ -42,6 +42,8 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
       objective: { kind: 'defeat_targets', description: `Dodge the wind-up, strike back and knock out the ${rival}.`, count: enemies, role: 'rival' },
       roles: [{ id: 'rival', kind: 'hazard', label: rival, count: enemies }],
       tutorial: { goalLine: `Knock out the ${rival}.`, controlsHint: 'Drag or arrows to move, Attack or J to strike. Step aside when it winds up.' },
+      // Životy souboje jsou knockouty: na 0 HP hrdina ztratí život a vstane s plným HP (P36A T2).
+      mechanics: [livesMechanic()],
       mood: 'tense',
       targetDurationSec: 45,
     });
@@ -57,6 +59,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
       objective: { kind: 'collect', description: `Collect ${String(items)} ${thing}.`, count: items, role: 'item' },
       roles: [{ id: 'item', kind: 'collectible', label: thing, count: items }],
       tutorial: { goalLine: `Collect ${String(items)} ${thing}.`, controlsHint: 'Drag or arrows to move.' },
+      mechanics: [livesMechanic()],
       mood: 'playful',
     });
   }
@@ -75,6 +78,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
       objective: { kind: 'collect', description: `Collect ${String(items)} ${spec.collectible} before the ${hunter} catches you.`, count: items, role: 'item' },
       roles: [...roles, { id: 'item', kind: 'collectible', label: spec.collectible, count: items }],
       tutorial: { goalLine: `Grab ${String(items)} ${spec.collectible}. Don't get caught.`, controlsHint: 'Drag or arrows to move.' },
+      mechanics: [livesMechanic()],
       mood: 'tense',
     });
   }
@@ -85,7 +89,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
     archetype: 'survival_timer',
     title: `${title} Escape`,
     objective: { kind: 'survive', description: `Stay away from the ${hunter} for ${String(seconds)} seconds.`, seconds },
-    mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'win' } }],
+    mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'win' } }, livesMechanic()],
     roles,
     tutorial: { goalLine: `Survive ${String(seconds)} seconds.`, controlsHint: 'Drag or arrows to move.' },
     mood: 'tense',

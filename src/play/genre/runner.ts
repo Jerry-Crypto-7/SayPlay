@@ -12,7 +12,7 @@ import { lookFor } from '../arcade/look';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from '../arcade/pieces/runner';
 import { nounPhrase, singular } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Překážka z věty: čemu se hrdina vyhýbá, co přeskakuje nebo podbíhá. */
 const OBSTACLE_CUE =
@@ -69,6 +69,8 @@ export const runnerGenre: GenreModule<'runner'> = {
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Run`,
       objective: { kind: 'reach', description: `Run to the finish without hitting a ${obstacle}.`, role: 'finish' },
+      // Náraz ubere život a běh jede dál (P36A T2).
+      mechanics: [livesMechanic()],
       roles: [
         { id: 'obstacle', kind: 'hazard', label: obstacle },
         { id: 'coin', kind: 'collectible', label: spec.collectible ?? 'coin' },

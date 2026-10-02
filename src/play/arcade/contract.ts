@@ -175,6 +175,29 @@ export function setBodyHp(state: Int32Array, body: number, hp: number): void {
   state[at] = ((state[at] as number) & ~(HP_MASK << HP_SHIFT)) | (clamped << HP_SHIFT);
 }
 
+/**
+ * Milost po zásahu (P36A T2): tiky, kdy hráč nepřijde o život, v bitech odrazu
+ * jeho `flags`. Hráč nikdy není fyzikální těleso (`buildWorld` to odmítne),
+ * takže tyhle bity má ve všech dosavadních hrách 0 – jádro je odpočítává jen
+ * od nuly výš a starý svět se nepohne. Nabíjí je efekt `damage` s `grace`.
+ */
+export const GRACE_SHIFT = RESTITUTION_SHIFT;
+export const GRACE_MASK = RESTITUTION_MASK;
+
+/** Výchozí milost po zásahu: 1 s. */
+export const HIT_GRACE = ARCADE_HZ;
+
+/** Životy, se kterými začíná hra žánru, když věta neřekne jiné číslo (P36A T2); věta smí 1–9 (`SENTENCE_LIVES`). */
+export const START_LIVES = 3;
+
+export const graceOf = (state: Int32Array, player: number): number => ((state[flagsAt(player)] as number) >> GRACE_SHIFT) & GRACE_MASK;
+
+export function setGrace(state: Int32Array, player: number, ticks: number): void {
+  const at = flagsAt(player);
+  const clamped = Math.max(0, Math.min(GRACE_MASK, ticks));
+  state[at] = ((state[at] as number) & ~(GRACE_MASK << GRACE_SHIFT)) | (clamped << GRACE_SHIFT);
+}
+
 export const targetStateOf = (state: Int32Array, body: number): number => ((state[flagsAt(body)] as number) >> TARGET_STATE_SHIFT) & TARGET_STATE_MASK;
 
 export function setTargetState(state: Int32Array, body: number, value: number): void {
@@ -350,7 +373,16 @@ export interface ControlPiece<P = unknown> extends PieceBase<P> {
 
 export type ArcadeEffect =
   | { readonly kind: 'score'; readonly amount: number }
-  | { readonly kind: 'damage'; readonly amount: number }
+  /**
+   * Ztráta života. S `grace` (P36A T2) zásah během milosti hráče (`graceOf`)
+   * nebere nic a jinak milost nabije na `grace` tiků – druhý zásah téhož tiku
+   * tak život už nevezme. Bez `grace` jako dřív.
+   */
+  | { readonly kind: 'damage'; readonly amount: number; readonly grace?: number }
+  /** Odhoz (P36A T2): rychlost hráče `speed` za tik v rovině x–z, směrem od těla `body`. */
+  | { readonly kind: 'knockback'; readonly body: number; readonly speed: number }
+  /** HP těla `body` zpět na `hp` (P36A T2, nový život v souboji); jen nahoru – léčení nezraní. */
+  | { readonly kind: 'heal'; readonly body: number; readonly hp: number }
   | { readonly kind: 'lose' }
   | { readonly kind: 'win' }
   | { readonly kind: 'despawn'; readonly body: number }

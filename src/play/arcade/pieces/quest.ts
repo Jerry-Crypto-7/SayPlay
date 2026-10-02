@@ -216,6 +216,13 @@ function questParts(level: ArcadeLevel, half: number, verb: string, interact: Co
   };
 }
 
+/**
+ * Životy úkolu (P36A T2): hra žánru začíná se třemi; bez pronásledovatelů je
+ * dnes nic nebere – nebezpečí úkolu přidá T3. Pravidlo prohry ale svět nese
+ * vždy, ať jde život i živě přidat (`live.ts`).
+ */
+const livesRules = (health: number | undefined): PieceRef[] => (health === undefined ? [] : [{ id: 'out_of_health', params: {} }]);
+
 export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
   id: 'quest_spatial',
   params: spatialParams,
@@ -227,12 +234,12 @@ export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
     const interact: CompiledInteract = { role: ROLE.target, radius: QUEST.radius, hold: params.hold, states: params.states };
     // Kdo drží „Use“, stojí u cíle: pronásledovatelé zatím běží poloviční rychlostí (G-R1).
     const chase: ChaseParams | undefined = params.chasers === 0 ? undefined : { speed: params.chaserSpeed, lead: ESCAPE.lead, slowWhileUse: true };
-    // Chycení jako v útěku: mimo ochranu prohra, se životy ztráta života a nová ochrana.
+    // Chycení jako v útěku: mimo ochranu prohra, se životy ztráta života, nová ochrana a odhoz (P36A T2).
     const catches: PieceRef[] =
       chase === undefined
         ? []
-        : [{ id: 'arena_eat', params: { effect: health === undefined ? 'lose' : 'damage', grace: ESCAPE.graceTicks } }, ...(health === undefined ? [] : [{ id: 'out_of_health', params: {} }])];
-    return questParts(level, QUEST.half, params.verb, interact, chase, catches, issues);
+        : [{ id: 'arena_eat', params: health === undefined ? { effect: 'lose', grace: ESCAPE.graceTicks } : { effect: 'damage', grace: ESCAPE.graceTicks, knockback: ESCAPE.knockback } }];
+    return questParts(level, QUEST.half, params.verb, interact, chase, [...catches, ...livesRules(health)], issues);
   },
 };
 
@@ -242,7 +249,7 @@ export const questStation: ModeGeneratorPiece<QuestStationParams> = {
   roles: ['player', 'target', 'obstacle'],
   cost: (params) => ({ bodies: 2 + params.count, rules: 1 }),
   generate: (_seed, params) => stationLevel(params),
-  parts: (_seed, params) => {
+  parts: (_seed, params, health) => {
     const interact: CompiledInteract = {
       role: ROLE.target,
       radius: QUEST.radius,
@@ -251,6 +258,6 @@ export const questStation: ModeGeneratorPiece<QuestStationParams> = {
       order: true,
       ready: { after: params.after, window: params.window },
     };
-    return questParts(stationLevel(params), QUEST.stationHalf, params.verb, interact, undefined, [], []);
+    return questParts(stationLevel(params), QUEST.stationHalf, params.verb, interact, undefined, livesRules(health), []);
   },
 };

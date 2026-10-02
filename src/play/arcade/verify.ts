@@ -112,7 +112,10 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number): strin
       return `respawn point moved ${at}`;
     case 'push':
     case 'throwHeld':
+    case 'knockback':
       return null;
+    case 'heal':
+      return `body ${String(effect.body)} healed, hp now ${String(bodyHp(after, effect.body))} ${at}`;
     // Švy P32-0 T4: jádro efekt ohlásí jen za skutečnou změnu HP nebo stavu cíle.
     case 'hit':
       return `body ${String(effect.body)} hit, hp now ${String(bodyHp(after, effect.body))} ${at}`;

@@ -15,7 +15,7 @@
 import { PLATFORM_LEVEL } from '../arcade/pieces/platform';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Sloveso cíle, u kterého se vyhrává sebráním všech věcí. */
 const COLLECT_VERB = /^(?:collect|grab|gather|pick)/;
@@ -46,6 +46,8 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,
     objective: { kind: 'reach', description: line ?? `Jump across the platforms to the flag without touching a ${spec.enemy ?? 'spike'}.`, role: 'finish' },
+    // Hrot ubere život a vrátí hrdinu na checkpoint (P36A T2).
+    mechanics: [livesMechanic()],
     roles: [
       { id: 'spikes', kind: 'hazard', label: spec.enemy ?? 'spikes', count: 5 },
       { id: 'coin', kind: 'collectible', label: item, ...(count === undefined ? {} : { count }) },

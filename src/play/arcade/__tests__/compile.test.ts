@@ -8,6 +8,7 @@ import { compileGame } from '@/play/compile';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 
 import { ARCADE_COMPILER_VERSION } from '../compile';
+import { HIT_GRACE } from '../contract';
 import flapFixture from '../__fixtures__/flap.json';
 import platformFixture from '../__fixtures__/platform.json';
 import runnerFixture from '../__fixtures__/runner.json';
@@ -97,7 +98,8 @@ describe('control v GameSpec a směrování kompilace', () => {
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     const rules = compiled.value.arcade?.rules.map((rule) => rule.id);
     expect(rules).toEqual(['hit', 'pickup', 'finish', 'out_of_health', 'time_limit']);
-    expect(compiled.value.arcade?.rules[0]?.params).toEqual({ role: 'obstacle', effect: 'damage' });
+    // P36A T2: nově zkompilovaný náraz se životy nese vteřinu milosti.
+    expect(compiled.value.arcade?.rules[0]?.params).toEqual({ role: 'obstacle', effect: 'damage', grace: HIT_GRACE });
     expect(reportFor(compiled.value).publishEligible).toBe(true);
   });
 

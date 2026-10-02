@@ -25,7 +25,7 @@ import delivery from '../__fixtures__/delivery.json';
 import hazardCrossing from '../__fixtures__/hazard_crossing.json';
 import survivalTimer from '../__fixtures__/survival_timer.json';
 import switchPuzzle from '../__fixtures__/switch_puzzle.json';
-import { CAPABILITIES, controlOf, readsMechanic } from '../capabilities';
+import { CAPABILITIES, controlOf, generatorOfSpec, readsMechanic } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
 import { classifyGenre } from '../genre/classify';
 import { COUNT_PARAMS, type CountRole, type GenreSpec, rulesYard } from '../genre/contract';
@@ -80,8 +80,9 @@ function dropVerificationOf(spec: Loose, mechanicId: string): void {
 /** Vyjme mechaniky, které zvolené ovládání nehraje (P26 T5, nález `UNSUPPORTED` s blokem). */
 function dropUnread(spec: Loose, applied: string[]): void {
   const control = controlOf(spec as Pick<GameSpecV1, 'control'>);
+  const generator = generatorOfSpec(spec as Pick<GameSpecV1, 'controlParams'>);
   spec.mechanics = mechanicsOf(spec).filter((mechanic) => {
-    if (readsMechanic(control, mechanic.id)) return true;
+    if (readsMechanic(control, mechanic.id, generator)) return true;
     applied.push(`dropped ${mechanic.id} (control ${control} does not play it)`);
     dropVerificationOf(spec, mechanic.id);
     return false;

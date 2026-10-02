@@ -14,7 +14,7 @@ import { type CompileGameResult, GAME_COMPILER_VERSION } from '@/play/contracts'
 import { type GameSpecV1, arenaWinOf } from '@/play/spec';
 
 import { type ArcadeParts, addonControlParams, addonLives, applyAddons } from './addons';
-import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, COUNTED_ROLES, type ModeGeneratorPiece, type PieceRef, rampMarks } from './contract';
+import { ARCADE_LIMITS, ARCADE_RUNTIME_VERSION, type ArcadeWorld, COUNTED_ROLES, HIT_GRACE, type ModeGeneratorPiece, type PieceRef, rampMarks } from './contract';
 import { buildWorld, replay, worldHasPhysics } from './kernel';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { rapierIfLoaded } from './physics/world';
@@ -100,8 +100,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, level: throwField.generate(seed, params), rules: throwRules(), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
+  // Se životy náraz ubere život, překážka zmizí, běh jede dál a vteřinu milosti další náraz nic nebere (P36A T2).
   const rules: PieceRef[] = [
-    { id: 'hit', params: { role: 'obstacle', effect: health === undefined ? 'lose' : 'damage' } },
+    { id: 'hit', params: health === undefined ? { role: 'obstacle', effect: 'lose' } : { role: 'obstacle', effect: 'damage', grace: HIT_GRACE } },
     { id: 'pickup', params: {} },
     { id: 'finish', params: {} },
   ];

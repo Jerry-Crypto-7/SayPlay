@@ -13,7 +13,7 @@ import { readGameSpec } from '@/play/spec';
 
 import steerFixture from '../__fixtures__/steer.json';
 import { arcadeWorldOf, compileArcade } from '../compile';
-import { type ArcadeWorld, BODY, BUTTON, COUNTER, FLAG, HEADER, type ModeParts, NO_INPUT, ROLE, RUN_STATE, bodyBase } from '../contract';
+import { type ArcadeWorld, BODY, BUTTON, COUNTER, FLAG, HEADER, type ModeParts, NO_INPUT, ROLE, RUN_STATE, bodyBase, graceOf } from '../contract';
 import { GRAVITY, buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { LAND, STEER, STEER_DIFFICULTIES, VOYAGE, steerSegments, voyageLand, voyageRace } from '../pieces/steer';
@@ -77,24 +77,42 @@ describe('voyage.race – gates between islands to the treasure', () => {
     for (const seed of SEEDS.slice(0, 40)) expect(replay(worldOf(raceParts(seed), seed), [], ARCADE_LIBRARY).outcome, `seed ${seed}`).toBe('lost');
   });
 
-  it('a shot costs a life and disappears; the third one sinks the ship', () => {
+  // P36A T2: mezi zásahy vteřina milosti – druhá střela hned po první loď mine, život bere až další po milosti.
+  it('a shot costs a life and disappears; one inside the grace second passes; the third life lost sinks the ship', () => {
     const world = worldOf(raceParts(1), 1);
     const state = instantiate(world);
     const program = loadProgram(world, ARCADE_LIBRARY);
     const p = bodyBase(0);
     const shots: number[] = [];
-    for (let i = 1; i < (state[HEADER.bodyCount] as number) && shots.length < 3; i += 1) if (state[bodyBase(i) + BODY.role] === ROLE.hazard) shots.push(i);
-    expect(shots.length).toBe(3);
-    const lives: number[] = [];
-    for (const shot of shots) {
+    for (let i = 1; i < (state[HEADER.bodyCount] as number) && shots.length < 4; i += 1) if (state[bodyBase(i) + BODY.role] === ROLE.hazard) shots.push(i);
+    expect(shots.length).toBe(4);
+    const onto = (shot: number): void => {
       // Střela přímo na lodi: kontakt v příštím tiku.
       state[p + BODY.x] = state[bodyBase(shot) + BODY.x] as number;
       state[p + BODY.z] = state[bodyBase(shot) + BODY.z] as number;
       step(state, NO_INPUT, program);
-      lives.push(state[HEADER.counters + COUNTER.health] as number);
-      expect((state[bodyBase(shot) + BODY.flags] as number) & FLAG.alive).toBe(0);
-    }
-    expect(lives).toEqual([VOYAGE.lives - 1, VOYAGE.lives - 2, VOYAGE.lives - 3]);
+    };
+    const health = (): number => state[HEADER.counters + COUNTER.health] as number;
+    const aliveShot = (shot: number): boolean => ((state[bodyBase(shot) + BODY.flags] as number) & FLAG.alive) !== 0;
+    /** Milost doběhne na startu, kde žádná střela neletí. */
+    const waitOutGrace = (): void => {
+      while (graceOf(state, 0) > 0) {
+        state[p + BODY.x] = 0;
+        state[p + BODY.z] = 0;
+        step(state, NO_INPUT, program);
+      }
+    };
+    const [first, second, third, fourth] = shots as [number, number, number, number];
+    onto(first);
+    expect([health(), aliveShot(first)]).toEqual([VOYAGE.lives - 1, false]);
+    onto(second);
+    expect([health(), aliveShot(second)]).toEqual([VOYAGE.lives - 1, true]);
+    waitOutGrace();
+    onto(third);
+    expect([health(), aliveShot(third), state[HEADER.runState]]).toEqual([VOYAGE.lives - 2, false, RUN_STATE.running]);
+    waitOutGrace();
+    onto(fourth);
+    expect([health(), aliveShot(fourth)]).toEqual([VOYAGE.lives - 3, false]);
     expect(state[HEADER.runState]).toBe(RUN_STATE.lost);
   });
 });

@@ -96,11 +96,27 @@ export function readsLabel(control: ControlId, role: Pick<GameRole, 'id' | 'kind
   return (labels as readonly string[]).includes(role.id);
 }
 
-/** Čte kompilátor tuhle mechaniku? */
-export function readsMechanic(control: ControlId, id: string): boolean {
+/**
+ * Generátory režimů žánru, které čtou mechaniku navíc proti svému ovládání:
+ * plavba (`steer`) bere životy, závod `steer_track` ne (P36A T2).
+ */
+const GENERATOR_MECHANICS: Readonly<Record<string, readonly MechanicId[]>> = {
+  voyage_race: ['health'],
+  voyage_land: ['health'],
+};
+
+/** Čte kompilátor tuhle mechaniku? `generator` = `controlParams.generator` hry žánru. */
+export function readsMechanic(control: ControlId, id: string, generator?: string): boolean {
   const { mechanics } = CAPABILITIES[control];
-  return mechanics === 'all' || (mechanics as readonly string[]).includes(id);
+  if (mechanics === 'all' || (mechanics as readonly string[]).includes(id)) return true;
+  return generator !== undefined && Object.hasOwn(GENERATOR_MECHANICS, generator) && (GENERATOR_MECHANICS[generator] as readonly string[]).includes(id);
 }
+
+/** Generátor režimu, který spec deleguje (`controlParams.generator`), nebo `undefined`. */
+export const generatorOfSpec = (spec: Pick<GameSpecV1, 'controlParams'>): string | undefined => {
+  const generator = (spec.controlParams as { readonly generator?: unknown } | undefined)?.generator;
+  return typeof generator === 'string' ? generator : undefined;
+};
 
 /** Položka specu, kterou ovládání nepoužije. */
 export interface UnreadItem {
@@ -110,11 +126,12 @@ export interface UnreadItem {
 }
 
 /** Co spec nese a hra z toho nic neukáže – vstup kritika. */
-export function unreadItems(spec: Pick<GameSpecV1, 'control' | 'mechanics' | 'roles'>): UnreadItem[] {
+export function unreadItems(spec: Pick<GameSpecV1, 'control' | 'mechanics' | 'roles'> & Partial<Pick<GameSpecV1, 'controlParams'>>): UnreadItem[] {
   const control = controlOf(spec);
+  const generator = generatorOfSpec(spec);
   const items: UnreadItem[] = [];
   spec.mechanics.forEach((mechanic, index) => {
-    if (!readsMechanic(control, mechanic.id)) items.push({ path: `/mechanics/${String(index)}`, kind: 'mechanic', what: mechanic.id });
+    if (!readsMechanic(control, mechanic.id, generator)) items.push({ path: `/mechanics/${String(index)}`, kind: 'mechanic', what: mechanic.id });
   });
   spec.roles.forEach((role, index) => {
     if (!readsLabel(control, role)) items.push({ path: `/roles/${String(index)}/label`, kind: 'label', what: role.label });

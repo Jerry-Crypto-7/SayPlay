@@ -45,6 +45,7 @@ import {
   FLAG,
   type GeneratorPiece,
   HEADER,
+  HIT_GRACE,
   type ModeGeneratorPiece,
   type PieceRef,
   ROLE,
@@ -502,7 +503,11 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
 // Pravidla
 
 const touchdownParams = z.object({ softVy: z.int().min(1), softVx: z.int().min(0), softTilt: z.int().min(0).max(LAND.maxTilt) }).strict();
-const rivalFinishParams = z.union([z.object({ atZ: z.int().min(0) }).strict(), z.object({ land: touchdownParams }).strict()]);
+const rivalFinishParams = z.union([
+  z.object({ atZ: z.int().min(0) }).strict(),
+  /** `retry` (P36A T2): tvrdý dotyk se životy ubere život a vrátí loď nahoru na start, prohra až po posledním. */
+  z.object({ land: touchdownParams, retry: z.literal(true).optional() }).strict(),
+]);
 
 /**
  * Soudce přistání: hráč se právě dotkl (`grounded`). Výhra jen na horní ploše
@@ -539,6 +544,7 @@ export const rivalFinish: RulePiece<z.infer<typeof rivalFinishParams>> = {
   fire: ({ state, player }, params) => {
     if ('land' in params) {
       const verdict = judgeTouchdown(state, player, params.land);
+      if (verdict === 'lose' && params.retry === true) return [{ kind: 'damage', amount: 1 }, { kind: 'respawn' }];
       return verdict === null ? [] : [{ kind: verdict }];
     }
     const count = state[HEADER.bodyCount] as number;
@@ -699,7 +705,8 @@ export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
       bot: { id: 'steer_bot', params: { topSpeed: params.topSpeed, course: courseOf(level), dodge: true } },
       level,
       rules: [
-        { id: 'hit', params: { role: 'hazard', effect: 'damage' } },
+        // Koule nebo útes ubere život a zmizí; vteřinu milosti další nic nebere (P36A T2).
+        { id: 'hit', params: { role: 'hazard', effect: 'damage', grace: HIT_GRACE } },
         { id: 'out_of_health', params: {} },
         { id: 'finish', params: {} },
         { id: 'checkpoint', params: {} },
@@ -743,14 +750,23 @@ export const voyageLand: ModeGeneratorPiece<VoyageLandParams> = {
       length: 0,
     };
   },
-  parts: (seed, params) => {
+  parts: (seed, params, health) => {
     const tier = LAND.tiers[params.difficulty];
+    const land = { softVy: tier.softVy, softVx: tier.softVx, softTilt: tier.softTilt };
+    // Se životy (P36A T2) tvrdý dotyk ubere život a loď začne znovu nahoře; bez nich jeden pokus jako dřív.
+    const rules: PieceRef[] =
+      health === undefined
+        ? [{ id: 'rival_finish', params: { land } }]
+        : [
+            { id: 'rival_finish', params: { land, retry: true } },
+            { id: 'out_of_health', params: {} },
+          ];
     return {
       control: { id: 'steer', params: { land: { gravity: params.gravity } } },
       bot: { id: 'steer_bot', params: { land: { gravity: params.gravity } } },
       level: voyageLand.generate(seed, params),
-      rules: [{ id: 'rival_finish', params: { land: { softVy: tier.softVy, softVx: tier.softVx, softTilt: tier.softTilt } } }],
-      health: undefined,
+      rules,
+      health,
     };
   },
 };

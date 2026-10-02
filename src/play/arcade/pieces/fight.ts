@@ -30,16 +30,20 @@ import {
   BODY,
   BUTTON,
   type BodyInit,
+  COUNTER,
   type ControlPiece,
   FLAG,
   HEADER,
+  HIT_GRACE,
   HP_MAX,
   type ModeGeneratorPiece,
+  type PieceRef,
   ROLE,
   type RulePiece,
   UNIT,
   bodyBase,
   bodyHp,
+  graceOf,
 } from '../contract';
 import { ARENA, DIRECTIONS, directionOfAxis, directionToward } from './arena';
 
@@ -302,7 +306,8 @@ const noParams = z.object({}).strict();
 /**
  * Zásahy tohoto tiku (spouštěč `press`, hned za ovládáním): nepřítel, který
  * právě začal vrávorat, dostal úder hráče; nepřítel, jehož úder právě začal a
- * dopadl, zasáhl hráče.
+ * dopadl, zasáhl hráče – v milosti po knockoutu (P36A T2) hráči HP nebere,
+ * odhodí ho jen.
  */
 export const fightHits: RulePiece<z.infer<typeof noParams>> = {
   id: 'fight_hits',
@@ -312,11 +317,12 @@ export const fightHits: RulePiece<z.infer<typeof noParams>> = {
   cost: () => ({ bodies: 0, rules: 1 }),
   fire: ({ state, player }) => {
     const effects: ArcadeEffect[] = [];
+    const shielded = graceOf(state, player) > 0;
     for (const i of enemiesOf(state)) {
       const phase = phaseOf(state, i);
       const left = phaseTicksLeft(state, i);
       if (phase === FIGHT_PHASE.stagger && left === FIGHT.stagger) effects.push({ kind: 'hit', body: i, by: player, amount: FIGHT.damage });
-      else if (phase === FIGHT_PHASE.strike && left === FIGHT.strike && ((state[bodyBase(i) + BODY.aux0] as number) & LANDED) !== 0) {
+      else if (!shielded && phase === FIGHT_PHASE.strike && left === FIGHT.strike && ((state[bodyBase(i) + BODY.aux0] as number) & LANDED) !== 0) {
         effects.push({ kind: 'hit', body: player, by: i, amount: FIGHT.damage });
       }
     }
@@ -324,15 +330,34 @@ export const fightHits: RulePiece<z.infer<typeof noParams>> = {
   },
 };
 
-/** Hráč na 0 HP = prohra, všichni nepřátelé na 0 = výhra. */
-export const fightEnd: RulePiece<z.infer<typeof noParams>> = {
+const endParams = z
+  .object({
+    /**
+     * Knockouty (P36A T2): hráč na 0 HP ztratí život (čítač `health`), vstane s `hp`
+     * a `grace` tiků ho úder nezraní; prohra až po posledním životě (`out_of_health`).
+     * Bez něj 0 HP = prohra jako dřív.
+     */
+    knockout: z.object({ hp: z.int().min(1).max(HP_MAX), grace: z.int().min(1).max(ARCADE_LIMITS.maxTicks) }).strict().optional(),
+  })
+  .strict();
+
+/** Hráč na 0 HP = prohra (s knockouty ztráta života), všichni nepřátelé na 0 = výhra. */
+export const fightEnd: RulePiece<z.infer<typeof endParams>> = {
   id: 'fight_end',
-  params: noParams,
+  params: endParams,
   roles: ['player', 'enemy'],
   trigger: 'tick',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, player }) => {
-    if (bodyHp(state, player) === 0) return [{ kind: 'lose' }];
+  fire: ({ state, player }, params) => {
+    if (bodyHp(state, player) === 0) {
+      if (params.knockout === undefined) return [{ kind: 'lose' }];
+      // Poslední život: jen ztráta, prohru vydá `out_of_health`; jinak nový život s plným HP.
+      if ((state[HEADER.counters + COUNTER.health] as number) <= 1) return [{ kind: 'damage', amount: 1 }];
+      return [
+        { kind: 'damage', amount: 1, grace: params.knockout.grace },
+        { kind: 'heal', body: player, hp: params.knockout.hp },
+      ];
+    }
     const enemies = enemiesOf(state);
     return enemies.length > 0 && enemies.every((i) => bodyHp(state, i) === 0) ? [{ kind: 'win' }] : [];
   },
@@ -400,28 +425,37 @@ export function checkFightLevel(level: ArcadeLevel, half: number = FIGHT.half): 
 }
 
 /**
- * Režim `arena.fight`: poraz všechny nepřátele dřív, než oni tebe. Životy ze
- * specu (`health`) jsou HP hráče; čítač životů režim nepoužívá.
+ * Režim `arena.fight`: poraz všechny nepřátele dřív, než oni tebe. Hráč má HP
+ * (`playerHp`, ukazuje je scéna). Životy ze specu (`health`, P36A T2) jsou
+ * knockouty: na 0 HP hráč ztratí život a vstane s plným HP, prohra až po
+ * posledním. Bez nich jeden knockout = prohra jako dřív.
  */
 export const fightArena: ModeGeneratorPiece<FightParams> = {
   id: 'fight',
   params: generatorParams,
   roles: ['player', 'enemy'],
-  cost: (params) => ({ bodies: 1 + params.enemies, rules: 2 }),
+  cost: (params) => ({ bodies: 1 + params.enemies, rules: 3 }),
   generate: (seed, params) => courtyard(seed, params, params.playerHp),
   parts: (seed, params, health) => {
-    const playerHp = health === undefined ? params.playerHp : Math.max(FIGHT.playerHp.min, Math.min(FIGHT.playerHp.max, health));
-    const level = courtyard(seed, params, playerHp);
+    const level = courtyard(seed, params, params.playerHp);
+    const rules: PieceRef[] =
+      health === undefined
+        ? [
+            { id: 'fight_hits', params: {} },
+            { id: 'fight_end', params: {} },
+          ]
+        : [
+            { id: 'fight_hits', params: {} },
+            { id: 'fight_end', params: { knockout: { hp: params.playerHp, grace: HIT_GRACE } } },
+            { id: 'out_of_health', params: {} },
+          ];
     return {
       control: { id: 'fight', params: { half: FIGHT.half, enemySpeed: params.enemySpeed } },
       bot: { id: 'fight_bot', params: {} },
       level,
-      rules: [
-        { id: 'fight_hits', params: {} },
-        { id: 'fight_end', params: {} },
-      ],
+      rules,
       issues: checkFightLevel(level),
-      health: undefined,
+      health,
     };
   },
 };

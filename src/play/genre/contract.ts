@@ -13,6 +13,7 @@
 
 import { z } from 'zod';
 
+import { START_LIVES } from '../arcade/contract';
 import { LOOK_IDS } from '../arcade/look';
 import { THINGS_MAX, type Rule, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { readRoles } from '../draft/lexicon';
@@ -21,6 +22,14 @@ import type { ControlId, GameRole, GameSpecV1 } from '../spec';
 
 /** Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`. */
 export const GENRE_COMPILER_VERSION = 'genre.v1';
+
+/**
+ * Životy hry žánru (P36A T2): mechanika `health` se třemi životy. Čte ji
+ * kompilátor (čítač životů, milost po zásahu) i HUD; číslo z věty („with 5
+ * lives“) do ní dosadí rychlý návrh (`draft.ts`). Spec uložený bez ní hraje
+ * dál bez životů, jako dřív.
+ */
+export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'health', params: { max: START_LIVES } });
 
 export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest'] as const;
 export type GenreId = (typeof GENRES)[number];
