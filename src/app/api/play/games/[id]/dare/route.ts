@@ -48,12 +48,6 @@ const bodySchema = z.object({
 export async function POST(request: Request, context: { params: Promise<{ id: string }> }): Promise<Response> {
   const refused = await admit(request);
   if (refused !== null) return refused;
-  // Výzva přehrává celý běh (až ~250 ms CPU), proto má navíc vlastní, přísnější okno.
-  const slot = takeRateSlot('play/dare', callerOf(request));
-  if (!slot.allowed) {
-    const code = rateLimitCode(slot);
-    return fail(429, code, code === 'SERVER_AT_CAPACITY' ? 'this instance is at capacity right now' : 'too many requests from this client', { 'retry-after': String(slot.retryAfterSeconds) });
-  }
 
   const { id } = await context.params;
   if (!VERSION_ID_PATTERN.test(id)) return notFound();
@@ -70,6 +64,14 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   const game = await versions.get(id);
   if (game === null) return markVolatileStore(notFound());
   if (game.arcade === undefined) return fail(422, 'DARE_REJECTED', 'this game cannot carry a dare');
+  // Výzva přehrává celý běh (až ~250 ms CPU), proto má navíc vlastní, přísnější okno.
+  // Slot bere až skutečné přehrání: levné vadné požadavky (400/404/422) jinak
+  // zaplní strop instance a výzvy zavřou všem (nález 2. revize T5).
+  const slot = takeRateSlot('play/dare', callerOf(request));
+  if (!slot.allowed) {
+    const code = rateLimitCode(slot);
+    return fail(429, code, code === 'SERVER_AT_CAPACITY' ? 'this instance is at capacity right now' : 'too many requests from this client', { 'retry-after': String(slot.retryAfterSeconds) });
+  }
   if (worldHasPhysics(game.arcade)) await loadRapier();
 
   const run = scoredReplay(game.arcade, inputs, patches);

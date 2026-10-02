@@ -16,7 +16,12 @@ import { runBot } from '@/play/arcade/verify';
 import { packInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
 import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
-import { MAX_DARE_REQUESTS_PER_WINDOW, MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE, resetRateWindows } from '@/server/rate-limit';
+import {
+  MAX_DARE_REQUESTS_PER_WINDOW,
+  MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP,
+  MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE,
+  resetRateWindows,
+} from '@/server/rate-limit';
 
 import { POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
@@ -199,20 +204,37 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect((await send('not-an-id', { inputs: [] })).status).toBe(404);
   });
 
-  it('výzva má vlastní přísnější okno: 6. od volajícího → 429, 11. na instanci → SERVER_AT_CAPACITY', async () => {
+  it('výzva má vlastní přísnější okno: 6. přehrání od volajícího → 429, 11. na instanci → SERVER_AT_CAPACITY', async () => {
+    const game = await arcadeGame();
+    const bot = { inputs: packInputs(runBot(game.world).inputs) };
+    resetRateWindows();
     const codes: string[] = [];
     for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW + 1; i += 1) {
-      const response = await send('0'.repeat(16), {});
+      const response = await send(game.id, bot);
       codes.push(response.status === 429 ? ((await response.json()) as { error: { code: string } }).error.code : String(response.status));
     }
-    expect(codes).toEqual([...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW }, () => '400'), 'TOO_MANY_REQUESTS']);
+    expect(codes).toEqual(['201', ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW - 1 }, () => '200'), 'TOO_MANY_REQUESTS']);
 
     resetRateWindows();
     let last: Response | null = null;
-    for (let i = 0; i <= MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) last = await send('0'.repeat(16), {}, { 'x-forwarded-for': `198.51.100.${String(i)}` });
+    for (let i = 0; i <= MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) last = await send(game.id, bot, { 'x-forwarded-for': `198.51.100.${String(i)}` });
     expect(last!.status).toBe(429);
     expect(last!.headers.get('retry-after')).toMatch(/^\d+$/);
     expect(((await last!.json()) as { error: { code: string } }).error.code).toBe('SERVER_AT_CAPACITY');
+  });
+
+  it('vadné požadavky slot výzev neberou: 11× {} od různých volajících výzvy instanci nezavře', async () => {
+    const game = await arcadeGame();
+    resetRateWindows();
+    for (let i = 0; i <= MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) {
+      expect((await send(game.id, {}, { 'x-forwarded-for': `198.51.100.${String(i)}` })).status).toBe(400);
+      expect((await send('0'.repeat(16), { inputs: [] }, { 'x-forwarded-for': `203.0.113.${String(i)}` })).status).toBe(404);
+    }
+    expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) })).status).toBe(201);
+  });
+
+  it('skupina adres zůstane pod stropem instance', () => {
+    expect(MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP).toBeLessThan(MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE);
   });
 
   it('denní strop výzev → 429 DARE_QUOTA s retry-after; týž běh podruhé strop neubírá', async () => {

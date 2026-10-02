@@ -269,6 +269,8 @@ interface Windows {
  */
 export const MAX_DARE_REQUESTS_PER_WINDOW = 5;
 export const MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE = 10;
+/** Skupina (sdílená /64) musí zůstat pod stropem instance, jinak sama zavře výzvy všem ostatním. */
+export const MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP = 8;
 
 /**
  * Okna visí na `globalThis`, ne na modulu — týž naměřený důvod jako u procesové
@@ -748,7 +750,7 @@ export function takeRateSlot(
   // Odůvodnění čísla i to, proč si tenhle kbelík volající nevybere, je
   // u `MAX_REQUESTS_PER_WINDOW_PER_GROUP`.
   const perCaller = dare ? MAX_DARE_REQUESTS_PER_WINDOW : MAX_REQUESTS_PER_WINDOW;
-  const limit = isGroupedCaller(caller) ? (dare ? 2 * MAX_DARE_REQUESTS_PER_WINDOW : MAX_REQUESTS_PER_WINDOW_PER_GROUP) : perCaller;
+  const limit = isGroupedCaller(caller) ? (dare ? MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP : MAX_REQUESTS_PER_WINDOW_PER_GROUP) : perCaller;
 
   return {
     allowed: window.count <= limit,
