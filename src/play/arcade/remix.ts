@@ -92,7 +92,9 @@ export function difficultyHarder(child: GameSpecV1): boolean {
   const flap = child.control === 'flap';
   const steer = child.control === 'steer';
   const params = steer ? steerTrack.params.parse({ ...child.controlParams }) : flap ? flapTrack.params.parse({ ...child.controlParams }) : platformLevel.params.parse({ ...child.controlParams });
-  const difficulty = next<string>(steer ? STEER_DIFFICULTIES : flap ? FLAP_DIFFICULTIES : PLATFORM_DIFFICULTIES, params.difficulty);
+  // Poletování s `rise` (P36A T11) obtížnost nečte – stoupá po třetinách samo, přitvrdí jen delší trať.
+  const rises = flap && 'rise' in params && params.rise === true;
+  const difficulty = rises ? null : next<string>(steer ? STEER_DIFFICULTIES : flap ? FLAP_DIFFICULTIES : PLATFORM_DIFFICULTIES, params.difficulty);
   const ceiling = steer ? STEER_TRACK.maxLengthM : flap ? FLAP_TRACK.maxLengthM : PLATFORM_LEVEL.maxLengthM;
   const change = difficulty !== null ? { difficulty } : params.lengthM < ceiling ? { lengthM: Math.min(ceiling, params.lengthM + 50) } : null;
   if (change === null) return false;
@@ -118,8 +120,12 @@ export function beatHarder(child: GameSpecV1): boolean {
     change = speed !== null ? { speed } : params.rounds < TIMING.maxRounds ? { rounds: Math.min(TIMING.maxRounds, params.rounds + 3) } : null;
   } else if (child.control === 'rhythm') {
     const params = rhythmLevel.params.parse({ ...child.controlParams });
-    const density = next(RHYTHM_DENSITIES, params.density);
-    change = density !== null ? { density } : params.bpm < RHYTHM.maxBpm ? { bpm: Math.min(RHYTHM.maxBpm, params.bpm + 20) } : null;
+    // Rytmus s `ramp` (P36A T11) hustotu nečte – houstne po třetinách samo, přitvrdí jen tempo.
+    const density = params.ramp === true ? null : next(RHYTHM_DENSITIES, params.density);
+    // Rychlejší tempo nese víc dob, aby písnička neztratila délku (pásmo 30–90 s).
+    const bpm = Math.min(RHYTHM.maxBpm, params.bpm + 20);
+    const beats = Math.min(RHYTHM.maxBeats, Math.round((params.beats * bpm) / params.bpm));
+    change = density !== null ? { density } : params.bpm < RHYTHM.maxBpm ? { bpm, beats } : null;
   } else {
     const difficulty = next(DUEL_DIFFICULTIES, duelArena.params.parse({ ...child.controlParams }).difficulty);
     change = difficulty !== null ? { difficulty } : null;

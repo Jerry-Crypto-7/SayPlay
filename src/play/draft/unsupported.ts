@@ -136,8 +136,8 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
   const text = sentence.toLowerCase();
   const match = CLASSES.find((entry) => entry.cues.some((cue) => cue.test(text)));
   if (match === undefined) {
-    // Jen dokud hra je návrh věty bez slovesa – od P36A T11 sběr v Aréně, u hry bez žánru běžec; AI verze s jinou hrou hlášku nepotřebuje.
-    const plain = draft.genre === undefined ? draft.control === 'runner' : draft.genre.id === 'arena' && draft.genre.mode === 'collect';
+    // Jen dokud hra je návrh věty bez slovesa – od P36A T11 sběr v Aréně, uložené hry dřív běžec; AI verze s jinou hrou hlášku nepotřebuje.
+    const plain = draft.control === 'runner' || (draft.genre?.id === 'arena' && draft.genre.mode === 'collect');
     const topic = plain ? noVerbTopic(sentence) : null;
     if (topic === null) return null;
     const game = closestOf(draft);

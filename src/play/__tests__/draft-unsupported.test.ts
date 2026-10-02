@@ -66,6 +66,8 @@ describe('a sentence without a game verb', () => {
     expect(unsupportedGame('a romantic dinner date on the moon', draftGameSpec('a romantic dinner date on the moon'))?.reason).toContain('collecting game about dinner');
     // Hra bez žánru (uložená před P32) je dál běžec a hláška to tak řekne.
     expect(unsupportedGame(sentence, { archetype: 'hazard_crossing', control: 'runner' })?.reason).toContain('an endless runner about grandma');
+    // Běžec žánrového modulu uložený před P36A T11 hlášku neztratí.
+    expect(unsupportedGame(sentence, { archetype: 'hazard_crossing', control: 'runner', genre: { id: 'runner', mode: 'default', compilerVersion: 'play-compiler-v4' } })?.reason).toContain('an endless runner about grandma');
   });
 
   it('stays quiet for a sentence with a verb, a noun cue, or once the AI version is another game', () => {
