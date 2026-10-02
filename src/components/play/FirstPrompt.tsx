@@ -90,14 +90,31 @@ export function desktopKeys(controlsHint: string): string | null {
  * jeden povel a na desktopu klávesa. Na dotyku povel z nápovědy bez kláves
  * (`touch` ji dodá, kde ji text hry neřekne – zóny plošinovky) a bez řádku
  * klávesy. Klepnutí jde skrz na plátno – ten dotek hru pustí. Mřížka posílá
- * vlastní řádek klávesy (`keys`), protože karty cílů mají čísla.
+ * vlastní řádek klávesy (`keys`), protože karty cílů mají čísla. Výzva kamaráda
+ * (P36B T7) přidá nahoru, co porazit; hrál-li kamarád se živými změnami, řekne to.
  */
-export function FirstPrompt({ controlsHint, touch, keys }: { readonly controlsHint: string; readonly touch?: string; readonly keys?: string }) {
+export function FirstPrompt({
+  controlsHint,
+  touch,
+  keys,
+  dare = null,
+}: {
+  readonly controlsHint: string;
+  readonly touch?: string;
+  readonly keys?: string;
+  readonly dare?: { readonly goal: string; readonly changed: boolean } | null;
+}) {
   const coarse = useCoarsePointer();
   const action = callToAction(coarse ? (touch ?? touchHint(controlsHint)) : controlsHint);
   const keyLine = coarse ? null : (keys ?? desktopKeys(controlsHint));
   return (
     <div className="play-first-prompt" data-testid="play-first-prompt" aria-hidden="true">
+      {dare !== null && (
+        <p className="play-first-prompt-dare" data-testid="play-dare-goal">
+          {dare.goal}
+          {dare.changed && <span className="play-first-prompt-note">Your friend changed the game while playing.</span>}
+        </p>
+      )}
       <p className="play-first-prompt-start">Tap to start</p>
       {action !== '' && <p className="play-first-prompt-action" data-testid="play-first-prompt-action">{action}</p>}
       {keyLine !== null && <p className="play-first-prompt-keys">{keyLine}</p>}

@@ -24,10 +24,13 @@ import { createElement as h } from 'react';
 import catalog from '@/assets/catalog.json';
 import { color } from '@/brand/tokens';
 import { CAN_YOU_BEAT_IT, DARE_BADGE } from '@/components/play/starters';
+import { clockText } from '@/components/play/ui/GameHud';
 import { canonicalHash } from '@/ir/worlddoc';
+import { ARCADE_HZ } from '@/play/arcade/contract';
 import { sceneLook } from '@/play/arcade/look';
 import { heroModel } from '@/play/arcade/models';
 import { arenaWinOf, type GameSpecV1 } from '@/play/spec';
+import type { DareRecord } from '@/play/version';
 
 import { encodePng, hexToRgb } from '../og/png';
 
@@ -112,11 +115,12 @@ export interface DareBadge {
 }
 
 /**
- * Čas na slunečném odznaku. Nejlepší čas hráče se nikde neukládá (nález
- * P34 T6), proto karta ukáže jen limit, který hra sama měří: přežití
- * (`survive` s `seconds`, aréna na přežití, časovač končící výhrou) je
- * „Survive!“, časovač končící prohrou je závod s časem „Hurry!“. Hra bez
- * měřeného času dostane jen slovo – vymyšlené číslo by lhalo.
+ * Čas na slunečném odznaku obyčejného odkazu: ten nese jen hru, ne něčí běh,
+ * takže karta ukáže limit, který hra sama měří – přežití (`survive`
+ * s `seconds`, aréna na přežití, časovač končící výhrou) je „Survive!“,
+ * časovač končící prohrou je závod s časem „Hurry!“. Hra bez měřeného času
+ * dostane jen slovo – vymyšlené číslo by lhalo. Výsledek kamaráda nese odkaz
+ * výzvy (`dareScoreBadge`).
  */
 export function dareBadge(spec: GameSpecV1): DareBadge {
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds?: unknown; readonly onEnd?: unknown } | undefined;
@@ -133,6 +137,18 @@ export function dareBadge(spec: GameSpecV1): DareBadge {
   if (survive !== undefined) return { time: `${survive}s`, word: DARE_BADGE.survive };
   if (timerSeconds !== undefined) return { time: `${timerSeconds}s`, word: DARE_BADGE.hurry };
   return { time: null, word: DARE_BADGE.none };
+}
+
+/**
+ * Odznak odkazu výzvy (P36B T8): výsledek kamaráda, který server ověřil
+ * přehráním (`DareRecord`) – body („2,450 to beat“), bez bodů jeho čas
+ * („31.0s to beat“), stejně jako cíl výzvy v HUD. Výhra hry na přežití trvá
+ * vždy celý limit, takže bez bodů zůstane její odznak „Survive!“.
+ */
+export function dareScoreBadge(spec: GameSpecV1, dare: Pick<DareRecord, 'score' | 'ticks'>): DareBadge {
+  if (dare.score > 0) return { time: dare.score.toLocaleString('en-US'), word: DARE_BADGE.dare };
+  const own = dareBadge(spec);
+  return own.word === DARE_BADGE.survive ? own : { time: clockText(dare.ticks / ARCADE_HZ), word: DARE_BADGE.dare };
 }
 
 /**
@@ -242,12 +258,13 @@ function badge({ time, word }: DareBadge): Node {
         transform: 'rotate(-6deg)',
       },
     },
-    time === null ? null : h('div', { style: { fontSize: 60, fontWeight: 900, lineHeight: 1, letterSpacing: -1.8 } }, time),
+    // Body výzvy bývají delší než čas („12,450“): nad pět znaků menší písmo, ať se vejdou do kruhu.
+    time === null ? null : h('div', { style: { fontSize: time.length > 5 ? 44 : 60, fontWeight: 900, lineHeight: 1, letterSpacing: time.length > 5 ? -1.3 : -1.8 } }, time),
     h('div', { style: { marginTop: time === null ? 0 : 6, fontSize: time === null ? 34 : 24, fontWeight: time === null ? 900 : 700, lineHeight: 1.1, textAlign: 'center' } }, word),
   );
 }
 
-function dareCard(spec: GameSpecV1, hero: string | null, logo: string | null): Node {
+function dareCard(spec: GameSpecV1, hero: string | null, logo: string | null, sun: DareBadge): Node {
   const look = sceneLook(spec.theme);
   const long = spec.title.length > 24;
   return h(
@@ -292,7 +309,7 @@ function dareCard(spec: GameSpecV1, hero: string | null, logo: string | null): N
       h(
         'div',
         { style: { display: 'flex', alignItems: 'center', gap: 36 } },
-        badge(dareBadge(spec)),
+        badge(sun),
         // Šířka láme otázku na „Can you / beat it?“, ne „Can you beat / it?“.
         h('div', { style: { width: 240, fontSize: 54, fontWeight: 900, lineHeight: 1.02, letterSpacing: -1.6 } }, CAN_YOU_BEAT_IT),
       ),
@@ -329,23 +346,26 @@ export interface GamePreview {
 }
 
 /**
- * PNG náhled konkrétní verze. Verze se nemění, takže klíč `versionId` stačí a
- * úplný render se platí jednou na verzi a proces. Selhání vrátí `null` a
- * nezapamatuje se – další požadavek zkusí kreslit znovu.
+ * PNG náhled konkrétní verze, s výzvou (P36B T8) její výsledek na odznaku.
+ * Verze ani výzva se nemění, takže klíč `versionId` (s výzvou
+ * `versionId:dareId`) stačí a úplný render se platí jednou na kartu a proces.
+ * Selhání vrátí `null` a nezapamatuje se – další požadavek zkusí kreslit znovu.
  */
-export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string | null): Promise<GamePreview | null> {
-  const ready = PREVIEWS.get(versionId);
+export async function gamePreviewPng(versionId: string, spec: GameSpecV1, origin: string | null, dare: DareRecord | null = null): Promise<GamePreview | null> {
+  const key = dare === null ? versionId : `${versionId}:${dare.dareId}`;
+  const ready = PREVIEWS.get(key);
   if (ready !== undefined) return { png: ready, complete: true };
   try {
     const model = heroModel(spec);
     const [hero, fonts, logo] = await Promise.all([heroImage(model, origin), dareFonts(origin), logoLockup(origin)]);
     const complete = (hero !== null || !THUMBNAILS.has(model)) && fonts !== null && logo !== null && fontCovers(spec.title);
     // Bez Roboto kreslí `next/og` svým výchozím písmem – náhled je pak jen dočasný (`complete: false`).
-    const response = new ImageResponse(dareCard(spec, hero, logo), { width: OG_WIDTH, height: OG_HEIGHT, ...(fonts === null ? {} : { fonts: [...fonts] }) });
+    const sun = dare === null ? dareBadge(spec) : dareScoreBadge(spec, dare);
+    const response = new ImageResponse(dareCard(spec, hero, logo, sun), { width: OG_WIDTH, height: OG_HEIGHT, ...(fonts === null ? {} : { fonts: [...fonts] }) });
     const png = new Uint8Array(await response.arrayBuffer());
     if (complete) {
       if (PREVIEWS.size >= PREVIEW_CAP) PREVIEWS.delete(PREVIEWS.keys().next().value as string);
-      PREVIEWS.set(versionId, png);
+      PREVIEWS.set(key, png);
     }
     return { png, complete };
   } catch (error) {

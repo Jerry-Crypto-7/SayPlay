@@ -3,6 +3,10 @@ import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import {
+  MAX_DARE_REPLAYS_PER_SECOND,
+  MAX_DARE_REQUESTS_PER_WINDOW,
+  MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP,
+  MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE,
   MAX_REQUESTS_PER_WINDOW,
   MAX_REQUESTS_PER_WINDOW_PER_GROUP,
   MAX_REQUESTS_PER_WINDOW_PER_INSTANCE,
@@ -12,6 +16,7 @@ import {
   rateLimitCode,
   rateLimitedResponse,
   resetRateWindows,
+  spendDareWindow,
   takeRateSlot,
   trustedCallerKey,
   UNIDENTIFIED_CALLER,
@@ -45,6 +50,82 @@ describe('strop na frekvenci veřejných dveří', () => {
       limit: MAX_REQUESTS_PER_WINDOW,
       scope: 'caller',
     });
+  });
+
+  it('výzvy: odmítnutý volající ani skupina neubírá strop instance, další člověk projde', () => {
+    for (const flooder of [ME, ROOM]) {
+      resetRateWindows();
+      // Po 500 ms, ať soudí strop volajícího, ne klouzavá sekunda instance.
+      for (let i = 0; i < 2 * MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) takeRateSlot('play/dare', flooder, T0 + i * 500);
+      expect(takeRateSlot('play/dare', flooder, T0 + 9_900)).toMatchObject({ allowed: false, scope: 'caller' });
+      expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 9_900)).toMatchObject({ allowed: true });
+    }
+  });
+
+  it('výzvy: dvě adresy ani dvě skupiny na vlastním stropu nezavřou výzvu třetí (T5r3)', () => {
+    for (const [pair, cap] of [
+      [[ME, SOMEONE_ELSE], MAX_DARE_REQUESTS_PER_WINDOW],
+      [[ROOM, 'net:2001:db8:0:1::/64'], MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP],
+    ] as const) {
+      resetRateWindows();
+      let at = T0;
+      // Každý na strop a o dva přes – po 500 ms, ať soudí okno, ne klouzavá sekunda.
+      for (const caller of pair) for (let i = 0; i < cap + 2; i += 1, at += 500) takeRateSlot('play/dare', caller, at);
+      expect(takeRateSlot('play/dare', pair[0], at)).toMatchObject({ allowed: false, scope: 'caller' });
+      expect(takeRateSlot('play/dare', '192.0.2.33', at)).toMatchObject({ allowed: true });
+    }
+    expect(2 * MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP).toBeLessThan(MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE);
+  });
+
+  it('výzvy: čtyři skupiny /64 na stropu instanci nezaplní, pátý klíč projde (revize T5r3-3)', () => {
+    let at = T0;
+    for (let g = 1; g <= 4; g += 1)
+      for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP + 1; i += 1, at += 500) takeRateSlot('play/dare', `net:2001:db8:0:${String(g)}::/64`, at);
+    expect(takeRateSlot('play/dare', '192.0.2.44', at)).toMatchObject({ allowed: true });
+  });
+
+  it('výzvy na hranici okna: v žádné sekundě víc než 2 přehrání, odmítnutí strop okna neubírá (T5r2)', () => {
+    // Nález 2. revize T5: 10 výzev v 9,9 s a 10 v 10,1 s pevné okno pustí všech 20 za sebou.
+    const sent = [
+      ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE }, (_, i) => ({ at: T0 + 9_900, caller: `198.51.100.${String(i)}` })),
+      ...Array.from({ length: MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE }, (_, i) => ({ at: T0 + 10_100, caller: `203.0.113.${String(i)}` })),
+    ];
+    const verdicts = sent.map(({ at, caller }) => ({ at, verdict: takeRateSlot('play/dare', caller, at) }));
+    const allowed = verdicts.filter(({ verdict }) => verdict.allowed);
+    expect(allowed).toHaveLength(MAX_DARE_REPLAYS_PER_SECOND);
+    expect(verdicts.find(({ verdict }) => !verdict.allowed)?.verdict).toMatchObject({ scope: 'instance', retryAfterSeconds: 1 });
+
+    // O sekundu později projde další – 18 odmítnutých nezaplnilo strop nového okna.
+    expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 11_100)).toMatchObject({ allowed: true });
+    expect(takeRateSlot('play/dare', ME, T0 + 11_100)).toMatchObject({ allowed: true });
+    expect(takeRateSlot('play/dare', ROOM, T0 + 11_100)).toMatchObject({ allowed: false, scope: 'instance' });
+  });
+
+  it('prohrané přehrání utratí okno výzev volajícímu i skupině, cizí okno nezaloží (T5r3r1)', () => {
+    for (const caller of [ME, ROOM]) {
+      expect(takeRateSlot('play/dare', caller, T0).allowed).toBe(true);
+      spendDareWindow(caller);
+      expect(takeRateSlot('play/dare', caller, T0 + 1_000)).toMatchObject({ allowed: false, scope: 'caller' });
+    }
+    spendDareWindow(SOMEONE_ELSE);
+    expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 1_000)).toMatchObject({ allowed: true });
+  });
+
+  it('klouzavá sekunda: hodiny o sekundu zpět výzvy nezastaví; při plném okně retry-after do jeho konce (revize T5r3-1)', () => {
+    takeRateSlot('play/dare', ME, T0 + 5_000);
+    takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 5_000);
+    expect(takeRateSlot('play/dare', '192.0.2.1', T0 + 4_000)).toMatchObject({ allowed: true });
+
+    // Uprostřed okna: plná sekunda čeká 1 s, ne do konce okna (zbytek okna by tu byl 5 s).
+    resetRateWindows();
+    takeRateSlot('play/dare', ME, T0 + 5_000);
+    takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 5_000);
+    expect(takeRateSlot('play/dare', '192.0.2.2', T0 + 5_000)).toMatchObject({ allowed: false, scope: 'instance', retryAfterSeconds: 1 });
+
+    resetRateWindows();
+    for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE; i += 1) expect(takeRateSlot('play/dare', `192.0.2.${String(i)}`, T0 + i * 500).allowed).toBe(true);
+    const at = T0 + (MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE - 1) * 500 + 100;
+    expect(takeRateSlot('play/dare', '198.51.100.99', at)).toMatchObject({ allowed: false, scope: 'instance', retryAfterSeconds: Math.ceil((T0 + RATE_WINDOW_MS - at) / 1000) });
   });
 
   it('flooder zavře dveře SOBĚ, ne ostatním', () => {

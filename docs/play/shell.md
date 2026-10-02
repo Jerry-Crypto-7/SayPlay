@@ -65,15 +65,44 @@ z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`.
 `twist` přidá mechaniku s rolí a keypointem, `swap_enemy` jiný nepřítel (bez něj `harder`),
 `reskin` jen `theme`, titul a `label`y.
 
+### `POST /api/play/games/:id/dare` – výzva Dare (P36B T5)
+
+Tělo: `{ inputs: number[], patches?: { tick, patch }[] }`. `inputs` jsou běhy vstupů zhuštěné po čtveřicích
+`[mezera, délka, tlačítka, osa]` (`packInputs` v `src/play/score/dare.ts` – držená osa je jedna čtveřice, nejhlučnější
+běh 90 s se vejde pod 64 kB), `patches` živé změny přijaté za běhu (`LiveEntry`, nejvýš 32). Server běh přehraje na uložené
+arkádové hře (`scoredReplay`, každá změna projde v tiku, kdy padne, `patchProblem`) a uloží `play:dare:<dareId>`
+`{ dareId, versionId, score, ticks, hash, liveChanges, createdAt }` s expirací hry (`liveChanges` = kolik živých změn běh
+použil; skóre pak patří změněné hře). **Skóre, čas ani hash z těla se nečtou** – pole navíc se zahodí, neodmítnou.
+`dareId` = prvních 32 hex SHA-256 z (hra, výsledek přehrání – hash konce, tik, skóre – a změny před koncem běhu
+seřazené i uvnitř tiku), ne z poslaných vstupů: týž běh podruhé – i s no-op vstupem, se vstupem po konci nebo
+s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
+`{ dareId, score, ticks }`, `cache-control: no-store`.
+
+| Krok | Kód | Stav |
+|---|---|---|
+| vypínač, identita, strop frekvence (dveře `play`, jako publikace) | `DISABLED` / `OWNER_IDENTITY_*` / `TOO_MANY_REQUESTS` | 503 / 403 / 429 |
+| vlastní okno výzev `play/dare`: 1 za 10 s na volajícího (2 na skupinu /64; přehrání, které nevyhrálo, skupině utratí zbytek okna), 10 za 10 s na instanci a nejvýš 2 přehrání v každé klouzavé sekundě (pak `retry-after: 1`) – výzva přehraje celý běh, až ~250 ms CPU (`MAX_DARE_REQUESTS_PER_WINDOW`, `MAX_DARE_REPLAYS_PER_SECOND` v `src/server/rate-limit.ts`) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
+| id bez tvaru nebo neznámá hra | `NOT_FOUND` | 404 |
+| tělo nad 64 kB / pozdě / souběh čtení | `BODY_TOO_LARGE` / `BODY_TIMEOUT` / `TOO_MANY_BODY_READS` | 413 / 408 / 429 |
+| tvar: vstupy nejsou čtveřice celých čísel, cizí tlačítka, osa mimo ±1000, běh delší než 5 400 tiků, změna mimo tvar nebo víc než 32 | `BAD_REQUEST` | 400 |
+| mřížková hra, změna, kterou hra nevezme, běh, který hru nevyhraje (i vstupy jiné hry) | `DARE_REJECTED` | 422 |
+| denní strop výzev napříč volajícími (`PLAY_DARE_DAILY_CAP`, výchozí 2 000) | `DARE_QUOTA` | 429 + `retry-after: 3600` |
+| úložiště neodpovídá | `STORE_UNAVAILABLE` | 503 |
+
+Bez Upstash žije výzva v paměti procesu jako hry (`x-play-store: memory` v produkci). Testy: `src/app/api/play/__tests__/dare.test.ts`.
+
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
 Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |
 restart | next_game | share | shared_open` (`src/play/loop-events.ts`), `versionId` hex id verze, `session` náhodné id záložky
-(12–32 znaků `[a-z0-9]`). Klíč navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
+(12–32 znaků `[a-z0-9]`); jen `share` smí nést booleany `withClip` (šel klip) a `dare` (odkaz nesl výzvu, P36B T6). Klíč
+navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
 frekvence (`play/events`), takže statistika hráči neubere kvótu na tvorbu; páka `sessions` vypne i tyhle dveře. Zápis: řádek
 do `data/play/events/<den>.jsonl` pod `next start`, na Vercelu řádek `[play-loop] {…}` do logu funkce; souhrn s jmenovateli
 `scripts/play-loop-report.mjs`. Robot ověřovače (sonda `playWitness`) ani ukázka „Show me how“ události neposílají.
-Sdílený odkaz nese `?via=share` a jeho otevření je `shared_open` – samotné sdílení doručení nedokládá.
+Sdílený odkaz nese `?via=share` a jeho otevření je `shared_open` – samotné sdílení doručení nedokládá. Po výhře arkády
+pošle klient vstupy běhu na `…/dare` hned (nabídka sdílení chce čerstvé gesto) a „Dare a friend to beat it“ sdílí
+`/play/<hraná verze>?via=share&dare=<dareId>`; když výzva nevyjde, obyčejný odkaz a toast „Couldn't attach your score…“.
 
 ## Verze a úložiště
 

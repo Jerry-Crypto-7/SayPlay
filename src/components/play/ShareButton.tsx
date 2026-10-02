@@ -32,9 +32,19 @@
  * zašedlé s větou, že video přijde po konci (hotové ho nese výsledek). Hra pod
  * listem běží dál; klávesy z listu do ní nepropadnou, Tab a Esc patří listu.
  * Odeslaný odkaz list zavře a toast ukáže bublina nad dolní řadou.
+ *
+ * Dare po výhře (P36B T6): vstupy běhu jdou na server hned po výhře
+ * (`publishDare`, ze stejného důvodu jako živé změny – stisk na síť nečeká),
+ * server je přehraje a vrátí id výzvy. Odkaz pak nese `&dare=<id>` a míří na
+ * hranou verzi – na ní server skóre ověřil, i s živými změnami běhu. Když
+ * výzva nevyjde, odejde obyčejný odkaz a toast to řekne.
  */
 
 import { useEffect, useId, useRef, useState } from 'react';
+
+import type { InputEvent } from '@/play/arcade/contract';
+import type { LiveEntry } from '@/play/arcade/live';
+import { packInputs } from '@/play/score/dare';
 
 import { loopEvent, SHARE_MARK } from './loop-client';
 import { COPY_LINK, DARE_SHORT, LINK_COPIED, SAVE_VIDEO, SHARE_TITLE, VIDEO_AFTER_RUN } from './starters';
@@ -90,6 +100,21 @@ export type LivePublish =
   | { readonly state: 'ready'; readonly share: LiveShare | null }
   | { readonly state: 'failed' };
 
+/** Výzva Dare vítězného běhu: `pending` = server přehrává, `ready` = ověřená, `failed` = sdílí se obyčejný odkaz. */
+export type DarePublish = { readonly state: 'pending' } | { readonly state: 'ready'; readonly dareId: string } | { readonly state: 'failed' };
+
+/** Vstupy a živé změny vítězného běhu → id výzvy, kterou server ověřil přehráním (`POST …/dare`, P36B T5). */
+export async function publishDare(versionId: string, inputs: readonly InputEvent[], patches: readonly LiveEntry[]): Promise<string> {
+  const response = await fetch(`/api/play/games/${versionId}/dare`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ inputs: packInputs(inputs), patches }),
+  });
+  const body = (await response.json()) as { dareId?: unknown };
+  if (!response.ok || typeof body.dareId !== 'string') throw new Error(`dare refused: ${String(response.status)}`);
+  return body.dareId;
+}
+
 export function ShareButton({
   versionId: playing,
   title,
@@ -100,6 +125,7 @@ export function ShareButton({
   className = '',
   clip = null,
   live,
+  dare,
   recording = false,
 }: {
   readonly versionId: string;
@@ -114,6 +140,8 @@ export function ShareButton({
   readonly clip?: Blob | null;
   /** Verze s živými změnami běhu (P29D T10), `undefined` = běh žádné nemá. */
   readonly live?: LivePublish;
+  /** Výzva vítězného běhu (P36B T6), `undefined` = odkaz bez výzvy. */
+  readonly dare?: DarePublish;
   /** Běh se nahrává (arkáda, P29D T1): list sdílení v HUD ukáže Save video, zatím zašedlé. */
   readonly recording?: boolean;
 }) {
@@ -123,13 +151,17 @@ export function ShareButton({
   const [share, setShare] = useState<Share>('idle');
   const [href, setHref] = useState('');
   const [volatile, setVolatile] = useState(false);
-  const [lostLive, setLostLive] = useState<'none' | 'some' | 'all'>('none');
+  const [lostLive, setLostLive] = useState<'none' | 'some' | 'all' | 'dare'>('none');
+  const [noScore, setNoScore] = useState(false);
+  const dareId = dare?.state === 'ready' ? dare.dareId : null;
 
   const toast = [
     share === 'copied' ? LINK_COPIED : share === 'saved' ? `Video saved. ${LINK_COPIED}` : '',
+    noScore ? "Couldn't attach your score, so the link opens just the game." : '',
     volatile ? 'This server keeps games in memory only: the link stops working when it restarts.' : '',
     lostLive === 'all' ? 'Your live changes could not be saved, so the link opens the game without them.' : '',
     lostLive === 'some' ? 'Some live changes (lives, time, or what this game cannot start with) stay in your run only.' : '',
+    lostLive === 'dare' ? 'Your friend gets the game without your live changes.' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -139,6 +171,7 @@ export function ShareButton({
       setShare((now) => (now === 'manual' ? now : 'idle'));
       setVolatile(false);
       setLostLive('none');
+      setNoScore(false);
     }, TOAST_MS);
     return () => window.clearTimeout(timer);
   }, [toast]);
@@ -171,11 +204,13 @@ export function ShareButton({
   /** `onlyCopy` = „Copy link“: jen schránka, bez nabídky a klipu. Vrací `true`, když odkaz odešel. */
   async function run(onlyCopy: boolean): Promise<boolean> {
     // Žádné `await` před `navigator.share` – jinak vyprší gesto (R4).
-    const shared = live?.state === 'ready' ? live.share : null;
+    // Výzva patří hrané verzi (tam ji server přehrál); verze se živými změnami jde jen bez výzvy.
+    const shared = dareId === null && live?.state === 'ready' ? live.share : null;
     const versionId = shared?.versionId ?? playing;
-    setLostLive(live?.state === 'failed' ? 'all' : shared?.partial === true ? 'some' : 'none');
+    setNoScore(dare?.state === 'failed');
+    setLostLive(dareId !== null ? (live === undefined ? 'none' : 'dare') : live?.state === 'failed' ? 'all' : shared?.partial === true ? 'some' : 'none');
     // `?via=share` je jediný doklad, že odkaz došel: jeho otevření je `shared_open` (P27D T4).
-    const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}`;
+    const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}${dareId === null ? '' : `&dare=${dareId}`}`;
     setHref(url);
     void checkLasting(versionId);
     // Klip běhu (P29D T2) jde s odkazem, kde nabídka sdílení soubory bere; jinak se stáhne a odkaz zkopíruje.
@@ -185,7 +220,7 @@ export function ShareButton({
       try {
         await navigator.share(withFile ? { title: title ?? document.title, url, files: [file] } : { title: title ?? document.title, url });
         // Sdílení patří hrané verzi – tam leží i zobrazení a výhra běhu (revize fáze 2 P29D).
-        loopEvent('share', playing, { withClip: withFile });
+        loopEvent('share', playing, { withClip: withFile, dare: dareId !== null });
         return true;
       } catch (error) {
         // Hráč nabídku zavřel – nic dalšího. Jiná chyba: zkusit schránku.
@@ -196,7 +231,7 @@ export function ShareButton({
     try {
       await navigator.clipboard.writeText(url);
       setShare(file === null ? 'copied' : 'saved');
-      loopEvent('share', playing, { withClip: file !== null });
+      loopEvent('share', playing, { withClip: file !== null, dare: dareId !== null });
       return true;
     } catch {
       // Odkaz nedošel (jen ruční pole) – `share` se nepočítá, s klipem ani bez něj.
@@ -208,7 +243,7 @@ export function ShareButton({
   /** Stisk v listu sdílení: odeslaný odkaz list zavře, toast pak ukáže bublina nad dolní řadou. */
   const send = (onlyCopy: boolean) => () => void run(onlyCopy).then((sent) => sent && setOpen(false));
 
-  const pending = live?.state === 'pending';
+  const pending = dare?.state === 'pending' || (dareId === null && live?.state === 'pending');
   const manualField = <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />;
   return (
     <>

@@ -13,7 +13,10 @@
  * - `<prefix>:play:v:<versionId>` – JSON celé `PublishedGame`,
  * - `<prefix>:play:children:<parentId>` – JSON pole id dětí,
  * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu,
- * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4).
+ * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4),
+ * - `<prefix>:play:dare:<dareId>` – JSON `DareRecord` (P36B T5), denní strop `<prefix>:play:dare-quota:<den>`,
+ * - `<prefix>:play:loop:<finish|dare|skip>:<versionId>` – čítače událostí smyčky pro řazení feedu (P36B T9),
+ *   hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den.
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -32,6 +35,7 @@
  */
 
 import { canonical } from '@/ir/worlddoc';
+import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
 import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
 import type { GameVersion } from '../contracts';
@@ -80,6 +84,61 @@ export interface VersionStore {
   recent(limit: number): Promise<RecentGame[]>;
   /** Počet dětí každé verze, jedním čtením; nedostupné úložiště jsou nuly. */
   childCounts(versionIds: readonly string[]): Promise<number[]>;
+  /**
+   * Výzva ověřená přehráním (P36B T5), zapsaná jednou (`SET NX`); `quota` =
+   * denní strop výzev vyčerpán, nic se nezapsalo. Výpadek je `VersionStoreUnavailable`.
+   */
+  putDare(dare: DareRecord): Promise<'stored' | 'exists' | 'quota'>;
+  /** `null` = neznámá, prošlá nebo nečitelná výzva, i při výpadku úložiště. */
+  getDare(dareId: string): Promise<DareRecord | null>;
+  /**
+   * Započte událost smyčky (P36B T9), jen hře, která v úložišti je – jinak by
+   * kdokoli zakládal klíče na vymyšlená id – a nejvýš jednou za
+   * `LOOP_VOTE_TTL_SECONDS` na `voter` (hash volajícího), čítač a hru: falešné
+   * události z jedné adresy feed nepohnou (nález revize T9-1). Opakování zná
+   * proces sám a nestojí ani příkaz úložiště. Výpadek spolkne: čítač je statistika.
+   */
+  countLoop(versionId: string, counter: LoopCounter, voter: string): Promise<void>;
+  /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
+  loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
+}
+
+/**
+ * Výzva Dare (P36B T5): výsledek, který server sám spočítal přehráním vstupů
+ * běhu – nikdy číslo od klienta. Anonymní, bez jména a bez vstupů.
+ */
+export interface DareRecord {
+  readonly dareId: string;
+  readonly versionId: string;
+  readonly score: number;
+  readonly ticks: number;
+  /** Hash konce přehrání (`hashArcade`). */
+  readonly hash: string;
+  /**
+   * Kolik živých změn běh použil (0 = hra beze změny). Skóre pak patří změněné
+   * hře – kamarád (T7) ho musí umět poznat (nález revize T5).
+   */
+  readonly liveChanges: number;
+  readonly createdAt: string;
+}
+
+/** Jeden volající započte hře každý čítač smyčky nejvýš jednou za den (P36B T9, nález revize T9-1). */
+export const LOOP_VOTE_TTL_SECONDS = 24 * 3600;
+/** Kolik hlasů si proces pamatuje, než paměť zahodí (pak rozhodne `SET NX` v úložišti). */
+const MAX_VOTE_MEMO = 20_000;
+/**
+ * Hlasy, které proces už započetl, s koncem platnosti (ms) – na úrovni modulu,
+ * protože s Upstash vzniká úložiště při každém `store()` znovu (nález revize T9-2).
+ * Klíč nese druh a předponu úložiště; testy ji mažou s úložištěm procesu.
+ */
+const voted = new Map<string, number>();
+
+/** Co hráči s hrou udělali (P36B T9): čítače událostí smyčky a počet remixů (dětí verze). */
+export interface LoopHeat {
+  readonly finishes: number;
+  readonly dares: number;
+  readonly skips: number;
+  readonly remixes: number;
 }
 
 /** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
@@ -110,9 +169,35 @@ export interface WriteLimits {
   readonly ttlSeconds: number;
   /** Kolik publikací (pokusů o zápis) za den napříč všemi volajícími; autorská dítě (`relation: 'upgrade'`) se nepočítají. */
   readonly dailyCap: number;
+  /**
+   * Kolik výzev Dare (pokusů o zápis) za den napříč všemi volajícími (P36B T5);
+   * chybí = `DEFAULT_DARE_DAILY_CAP`. Táž třída meze jako `dailyCap`: anonymní
+   * zápisy do obchodu, o který se dělí kniha stropu.
+   */
+  readonly dareDailyCap?: number;
 }
 
-export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 180 * 24 * 3600, dailyCap: 500 };
+/** Výzva je ~200 B; 2 000 denně je pod 0,5 MB za den i při plné expiraci. */
+export const DEFAULT_DARE_DAILY_CAP = 2_000;
+
+export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 180 * 24 * 3600, dailyCap: 500, dareDailyCap: DEFAULT_DARE_DAILY_CAP };
+
+/** Tvar id výzvy: 32 hex znaků. */
+export const DARE_ID_PATTERN = /^[a-f0-9]{32}$/;
+
+function isDare(value: unknown): value is DareRecord {
+  if (typeof value !== 'object' || value === null) return false;
+  const { dareId, versionId, score, ticks, hash, liveChanges, createdAt } = value as Record<string, unknown>;
+  return (
+    typeof dareId === 'string' &&
+    typeof versionId === 'string' &&
+    Number.isInteger(score) &&
+    Number.isInteger(ticks) &&
+    typeof hash === 'string' &&
+    Number.isInteger(liveChanges) &&
+    typeof createdAt === 'string'
+  );
+}
 
 /** Den v UTC pro klíč počítadla. */
 function quotaDay(nowMs: number): string {
@@ -143,6 +228,7 @@ interface RawStore {
   head(key: string, count: number): Promise<string[]>;
   /** Hodnoty klíčů v témž pořadí, chybějící jako `null`. */
   getMany(keys: readonly string[]): Promise<(string | null)[]>;
+  exists(key: string): Promise<boolean>;
 }
 
 /** Jediná serializace pro zápis: seřazené klíče, bez `undefined`. */
@@ -167,6 +253,10 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const quotaKey = (): string => `${prefix}:play:quota:${quotaDay(now())}`;
   const recentKey = `${prefix}:play:recent`;
   const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
+  const dareKey = (dareId: string): string => `${prefix}:play:dare:${dareId}`;
+  const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
+  const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
+  const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
 
   const store: VersionStore = {
     id,
@@ -319,6 +409,68 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         return versionIds.map(() => 0);
       }
     },
+    async putDare(dare) {
+      try {
+        // Týž běh podruhé denní strop neubírá: jinak jeden opakovaný požadavek zavře výzvy všem (nález revize T5).
+        if ((await raw.get(dareKey(dare.dareId))) !== null) return 'exists';
+        if ((await raw.incr(dareQuotaKey(), 2 * 24 * 3600)) > (limits.dareDailyCap ?? DEFAULT_DARE_DAILY_CAP)) return 'quota';
+        return (await raw.setNx(dareKey(dare.dareId), JSON.stringify(dare), limits.ttlSeconds)) ? 'stored' : 'exists';
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async getDare(dareId) {
+      try {
+        const text = await raw.get(dareKey(dareId));
+        if (text === null) return null;
+        const parsed: unknown = JSON.parse(text);
+        return isDare(parsed) ? parsed : null;
+      } catch {
+        return null;
+      }
+    },
+    async countLoop(versionId, counter, voter) {
+      const vote = `${counter}:${versionId}:${voter}`;
+      const seen = `${id}:${prefix}:${vote}`;
+      if ((voted.get(seen) ?? 0) > now()) return;
+      if (voted.size >= MAX_VOTE_MEMO) voted.clear();
+      voted.set(seen, now() + LOOP_VOTE_TTL_SECONDS * 1000);
+      try {
+        if (!(await raw.exists(versionKey(versionId)))) return;
+        // Hlas v úložišti platí napříč instancemi; teprve nový hlas zvýší čítač.
+        if (!(await raw.setNx(voteKey(vote), '1', LOOP_VOTE_TTL_SECONDS))) return;
+        // Čítač žije nejvýš tak dlouho jako hra (expirace od prvního zvýšení).
+        await raw.incr(loopKey(counter, versionId), limits.ttlSeconds);
+      } catch {
+        // Nezapočtená událost jen trochu posune feed.
+      }
+    },
+    async loopHeat(versionIds) {
+      if (versionIds.length === 0) return new Map();
+      const per = LOOP_COUNTERS.length + 1;
+      try {
+        const texts = await raw.getMany(versionIds.flatMap((versionId) => [...LOOP_COUNTERS.map((counter) => loopKey(counter, versionId)), childrenKey(versionId)]));
+        const count = (text: string | null | undefined): number => {
+          const value = Number(text ?? '0');
+          return Number.isSafeInteger(value) && value > 0 ? value : 0;
+        };
+        const remixes = (text: string | null | undefined): number => {
+          try {
+            return text === null || text === undefined ? 0 : (JSON.parse(text) as string[]).length;
+          } catch {
+            return 0;
+          }
+        };
+        return new Map(
+          versionIds.map((versionId, index) => {
+            const [finishes, dares, skips, children] = texts.slice(index * per, index * per + per);
+            return [versionId, { finishes: count(finishes), dares: count(dares), skips: count(skips), remixes: remixes(children) }];
+          }),
+        );
+      } catch {
+        return new Map();
+      }
+    },
   };
   return store;
 }
@@ -367,6 +519,7 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
     },
     head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
     getMany: (keys) => Promise.resolve(keys.map(live)),
+    exists: (key) => Promise.resolve(live(key) !== null),
   };
   return versionStoreOver('memory', 'memory', raw, limits, now);
 }
@@ -437,6 +590,7 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
       if (!Array.isArray(result) || result.length !== keys.length) throw new Error('version store answered a shape this server cannot read');
       return result.map((item) => (typeof item === 'string' ? item : null));
     },
+    exists: async (key) => (await command(['EXISTS', key])) === 1,
   };
   return versionStoreOver('http', config.prefix, raw, config.limits ?? DEFAULT_WRITE_LIMITS, config.now ?? Date.now);
 }
@@ -451,6 +605,7 @@ export function writeLimitsFromEnv(env: Record<string, string | undefined>): Wri
   return {
     ttlSeconds: positiveInt(env.PLAY_VERSION_TTL_SECONDS, DEFAULT_WRITE_LIMITS.ttlSeconds),
     dailyCap: positiveInt(env.PLAY_PUBLISH_DAILY_CAP, DEFAULT_WRITE_LIMITS.dailyCap),
+    dareDailyCap: positiveInt(env.PLAY_DARE_DAILY_CAP, DEFAULT_DARE_DAILY_CAP),
   };
 }
 
@@ -460,6 +615,7 @@ let processStore: VersionStore | null = null;
 /** Jen pro testy. */
 export function __resetProcessVersionStore(): void {
   processStore = null;
+  voted.clear();
 }
 
 /**

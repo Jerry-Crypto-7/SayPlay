@@ -2,20 +2,20 @@
  * `POST /api/play/events` – jedna událost herní smyčky (P27D T4, B4).
  *
  * Tělo: `{ name, versionId, session }`, u `share` ještě volitelné `withClip`
- * (boolean, P29D T2), a nic jiného (`src/play/loop-events.ts`);
+ * (boolean, P29D T2) a `dare` (boolean, P36B T6), a nic jiného (`src/play/loop-events.ts`);
  * klíč navíc, věta nebo volný text je 400. Odpověď `204`. Nic neplatí a nic
  * nezakládá, přesto má vlastní strop frekvence a páku `sessions` – kdo vypne
  * zakládání, nechce ani zápis statistik.
  */
 
-import { readLoopEvent } from '@/play/loop-events';
+import { loopCounterOf, readLoopEvent } from '@/play/loop-events';
 import { killState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
 import { rateLimitCode, takeRateSlot } from '@/server/rate-limit';
 
 import { recordLoopEvent } from '../_events';
 import { fail, readJsonBody } from '../_errors';
-import { callerOf } from '../_publish';
+import { callerOf, store, voterOf } from '../_publish';
 
 export async function POST(request: Request): Promise<Response> {
   if ((await killState(process.env)).sessions) return fail(503, 'DISABLED', 'this part of PLAY is switched off right now');
@@ -30,7 +30,10 @@ export async function POST(request: Request): Promise<Response> {
   const body = await readJsonBody(request);
   if (!body.ok) return body.response;
   const event = readLoopEvent(body.value);
-  if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session }, plus an optional boolean withClip on share, and nothing else');
+  if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session }, plus optional booleans withClip and dare on share, and nothing else');
   recordLoopEvent(event);
+  // Dohrání a přeskočení řadí feed (P36B T9): jen hra, která v úložišti je, a jeden hlas volajícího za den.
+  const counter = loopCounterOf(event);
+  if (counter !== null) await store().countLoop(event.versionId, counter, voterOf(request));
   return new Response(null, { status: 204 });
 }

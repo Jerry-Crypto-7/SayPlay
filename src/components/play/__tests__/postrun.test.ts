@@ -1,8 +1,8 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PostRun, type RunFacts, runResult } from '../PostRun';
+import { PostRun, type RunFacts, retryKey, runResult } from '../PostRun';
 import type { RemixJob } from '../RemixBox';
 
 /**
@@ -63,5 +63,45 @@ describe('PostRun', () => {
       { value: '12.3s', label: 'time' },
     ]);
     expect(runResult({ ...facts(true), goal: null, extra: [] }).stats).toEqual([{ value: '12.3s', label: 'time' }]);
+  });
+});
+
+/** Node nemá DOM: cíl klávesy pozná `isTyping`, tlačítko i otevřený list podle `HTMLElement` a `closest`. */
+class Element {
+  readonly isContentEditable = false;
+  constructor(private readonly within: readonly string[]) {}
+  closest(selector: string): object | null {
+    return selector.split(',').some((part) => this.within.includes(part.trim())) ? {} : null;
+  }
+}
+
+describe('retry keys on the result (P36B T3)', () => {
+  beforeEach(() => vi.stubGlobal('HTMLElement', Element));
+  afterEach(() => vi.unstubAllGlobals());
+
+  const key = (value: string, within: readonly string[] = [], extra: Partial<KeyboardEvent> = {}) =>
+    retryKey({ key: value, repeat: false, altKey: false, ctrlKey: false, metaKey: false, target: new Element(within) as unknown as EventTarget, ...extra });
+
+  it('R, Space and Enter start a new run', () => {
+    expect(key('r')).toBe(true);
+    expect(key('R')).toBe(true);
+    expect(key(' ')).toBe(true);
+    expect(key('Enter')).toBe(true);
+    expect(key('x')).toBe(false);
+    expect(key('Escape')).toBe(false);
+  });
+
+  it('Space and Enter on a focused button press that button, R still retries', () => {
+    expect(key(' ', ['button'])).toBe(false);
+    expect(key('Enter', ['a[href]'])).toBe(false);
+    expect(key('r', ['button'])).toBe(true);
+  });
+
+  it('never while typing, inside an open sheet, held down or with a browser shortcut', () => {
+    expect(key('r', ['input'])).toBe(false);
+    expect(key('Enter', ['[role="dialog"]'])).toBe(false);
+    expect(key('r', [], { repeat: true })).toBe(false);
+    expect(key('r', [], { ctrlKey: true })).toBe(false);
+    expect(key('r', [], { metaKey: true })).toBe(false);
   });
 });

@@ -46,11 +46,12 @@ const MAX_FEED = 48;
 /**
  * `GET /api/play/games?recent=N[&cursor=C]` – feed (P23-D T4, stránky P27B T2):
  * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes, goal,
- * mood }], next }` od nejnovější (`goal`/`mood` z řádku seznamu, starší řádky
- * `null`), v každé osmici nejvýš tři hry téhož archetypu
- * (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do feedu smí,
- * říká `feedEligible` – kontrakt v `docs/play/feed.md`. Stojí dva příkazy
- * úložiště (seznam a počty dětí), vlastní páku `feed` a strop jako každé čtení;
+ * mood }], next }` podle smyčky – dohrání, výzvy a remixy výš, každá třetí
+ * pozice nejnovější hra (P36B T9; bez čítačů od nejnovější); `goal`/`mood`
+ * z řádku seznamu, starší řádky `null`; v každé osmici nejvýš tři hry téhož
+ * archetypu (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do
+ * feedu smí, říká `feedEligible` – kontrakt v `docs/play/feed.md`. Stojí dva
+ * příkazy úložiště (seznam a čítače s počty dětí), vlastní páku `feed` a strop jako každé čtení;
  * hrana ho smí 15 s držet, a proto dotaz nesmí nést nic jiného než `recent`
  * a `cursor` – náhodný parametr navíc by cache obešel pokaždé.
  */
@@ -72,18 +73,20 @@ export async function GET(request: Request): Promise<Response> {
 
   const versions = store();
   // Celý seznam (jeden příkaz): stránka se počítá ze snímku, viz `feed.ts`.
-  const page = feedPage(await versions.recent(RECENT_CAP), limit, cursor, hiddenFromEnv(process.env));
-  const remixes = await versions.childCounts(page.games.map((row) => row.versionId));
+  const rows = await versions.recent(RECENT_CAP);
+  // Čítače smyčky a počty remixů všech řádků (druhý příkaz) řadí feed (P36B T9).
+  const heat = await versions.loopHeat(rows.map((row) => row.versionId));
+  const page = feedPage(rows, limit, cursor, hiddenFromEnv(process.env), heat);
   return markVolatileStore(
     Response.json(
       {
-        games: page.games.map((row, index) => ({
+        games: page.games.map((row) => ({
           versionId: row.versionId,
           title: row.title,
           archetype: row.archetype,
           createdAt: row.createdAt,
           parentId: row.parentId,
-          remixes: remixes[index] ?? 0,
+          remixes: heat.get(row.versionId)?.remixes ?? 0,
           goal: row.goal ?? null,
           mood: row.mood ?? null,
         })),

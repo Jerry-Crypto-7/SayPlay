@@ -28,9 +28,23 @@ GET /api/play/games?recent=N[&cursor=C]
 - `goal` is the spec's `tutorial.goalLine` and `mood` its `theme.mood`, written into the list row
   at publish so a card shows them without fetching the game. Rows written before that carry `null`.
 
-- Newest first; in every block of eight at most three games of one archetype (`diversify`). Once no
-  other archetype is left to mix in, the remaining games follow newest first without that rule –
-  they are never dropped.
+- Ranked by the loop (P36B T9): games people finish, send as a dare and remix go up, games people
+  skip go down. Heat = finishes + 3 × dares + 3 × remixes − ½ × skips (never below 0), halved for
+  every day a game is older than the newest one in the snapshot (`top`), so the same snapshot and
+  counters always give the same order. Every third place goes to the newest game not shown yet, so a
+  new game with no history still shows within the first three. With no counters the order is newest
+  first, as before.
+- The counters live in the store (`<prefix>:play:loop:<finish|dare|skip>:<versionId>`). `finish` and
+  `skip` grow when `POST /api/play/events` reports `win`/`lose` or `next_game`; `dare` grows only when
+  `POST /api/play/games/:id/dare` stores a new server-verified dare – a client's `share` with
+  `dare: true` counts nothing. Each counter takes one vote per caller (hashed `callerOf` key) per game
+  per day (`<prefix>:play:loop-vote:…`, `SET NX`, 24 h), so one address cannot push a game up by
+  repeating events or rotating `session`; a repeat the instance already saw costs no store command.
+  Only a game that exists in the store is counted, so a made-up id creates no key. Remixes are the
+  version's children.
+- In every block of eight at most three games of one archetype (`diversify`), taken in the ranked
+  order. Once no other archetype is left to mix in, the remaining games follow in that order without
+  the rule – they are never dropped.
 - `next` is the cursor of the following page, `null` on the last one. An empty store is
   `{ "games": [], "next": null }`.
 - `?recent=N` without a cursor returns the first page in the same shape as before, plus `next`.
@@ -43,8 +57,12 @@ The first page remembers the newest row of the list (`top`); the cursor carries 
 games were already handed out. Every later page recomputes the same ordered, diversified list from
 rows no newer than `top`. So:
 
-- **Pages never overlap and never skip.** A game published between two requests sits above `top`
-  and does not move anything below it; the reader sees it on the next fresh load.
+- **Pages never overlap and never skip while the counters stand still.** A game published between
+  two requests sits above `top` and does not move anything below it; the reader sees it on the next
+  fresh load.
+- Counters that move between two pages can move the ranked order: a later page may repeat a game the
+  reader already has (`FeedPager` drops it) or miss one that rose above the reader's position (it
+  shows on the next fresh load).
 - Only the oldest end can shift: a game that expires (TTL, 180 days) or falls off the 200-row cap
   between two pages drops out.
 - Games stored before the TTL went from 60 to 180 days keep their old expiry until
