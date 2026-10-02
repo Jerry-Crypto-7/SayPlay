@@ -179,9 +179,10 @@ describe('weight for pickups, hits, combos, wins and losses (P36C T7)', () => {
     // Zpomalení je krátké: po půl sekundě čas efektů běží zase naplno, přiblížení drží.
     expect(winTimeScale(WIN_SLOW_MS, false)).toBe(1);
     expect(winZoom(10 * WIN_SLOW_MS, false)).toBe(winZoom(WIN_SLOW_MS, false));
-    // Bez výhry (−∞) nic.
-    expect(winTimeScale(-Infinity, false)).toBe(1);
-    expect(winZoom(-Infinity, false)).toBe(1);
+    // Bez výhry je čas od ní +∞ (hodiny − (−∞)): žádné zpomalení ani přiblížení – jinak by kamera
+    // celou hru stála přiblížená a hrdina na kraji obrazu vypadl ze záběru (`e2e/play-frame`, hod).
+    expect(winTimeScale(Infinity, false)).toBe(1);
+    expect(winZoom(Infinity, false)).toBe(1);
   });
 
   it('a hit freezes the drawing for 60 ms, then the hero blinks and stays lit afterwards', () => {

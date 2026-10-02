@@ -40,9 +40,9 @@ export function blinkHidden(ms: number): boolean {
 /** Rychlost času efektů `ms` po výhře: první půl sekundy zpomaleně, s „méně pohybu“ vždy 1. */
 export const winTimeScale = (ms: number, reduced: boolean): number => (reduced || ms < 0 || ms >= WIN_SLOW_MS ? 1 : WIN_SLOW_SCALE);
 
-/** Přiblížení kamery `ms` po výhře: náběh za `WIN_SLOW_MS` (ease-out), pak drží do restartu. */
+/** Přiblížení kamery `ms` po výhře: náběh za `WIN_SLOW_MS` (ease-out), pak drží do restartu. Bez výhry je `ms` +∞. */
 export function winZoom(ms: number, reduced: boolean): number {
-  if (reduced || ms < 0) return 1;
+  if (reduced || ms < 0 || ms === Infinity) return 1;
   const t = Math.min(1, ms / WIN_SLOW_MS);
   return 1 + (WIN_ZOOM - 1) * (1 - (1 - t) ** 3);
 }
