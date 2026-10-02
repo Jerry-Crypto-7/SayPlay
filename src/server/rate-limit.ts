@@ -264,15 +264,23 @@ interface Windows {
  * naměřila 139 ms (5 400 tiků, 32 živých změn po pěti nových tělech) a
  * 200–250 ms (svět s fyzikou Rapier, 5 400 tiků). Pod obecným stropem dveří
  * (50 za 10 s) by jeden volající vzal ~1,1 s práce za sekundu, tedy celou
- * smyčku. 5 za 10 s je 0,5 × 250 ms ≈ **125 ms za sekundu** – týž podíl jedné
- * instance jako `MAX_REQUESTS_PER_WINDOW` (14 %). Strop instance 10 za 10 s
- * drží nejhorší případ na čtvrtině smyčky, ať střílí kolik chce volajících.
- * Člověk pošle výzvu až po výhře, tedy nanejvýš jednou za desítky sekund.
+ * smyčku. Strop instance 10 za 10 s drží nejhorší případ na čtvrtině smyčky,
+ * ať střílí kolik chce volajících.
+ *
+ * **Volající 3 za 10 s, ne 5 (T5r3, revize po T6, MED):** s pěti stačily dvě
+ * adresy s prohraným během (422 až po přehrání) a výzvy byly zavřené všem na
+ * instanci každé okno. Dva volající na stropu teď vezmou 6 z 10 a třetí projde.
+ * Člověk pošle výzvu až po výhře, tedy nanejvýš jednou za desítky sekund; tři
+ * stačí i porotě za jednou IPv4 (NAT), když tři vyhrají v týchž 10 s – čtvrtý
+ * sdílí obyčejný odkaz a za okno to zkusí znovu.
  */
-export const MAX_DARE_REQUESTS_PER_WINDOW = 5;
+export const MAX_DARE_REQUESTS_PER_WINDOW = 3;
 export const MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE = 10;
-/** Skupina (sdílená /64) musí zůstat pod stropem instance, jinak sama zavře výzvy všem ostatním. */
-export const MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP = 8;
+/**
+ * Skupina (sdílená /64) je víc lidí než jedna adresa, ale dvě skupiny spolu
+ * musí zůstat pod stropem instance – týž důvod jako u volajícího (T5r3).
+ */
+export const MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP = 4;
 
 /**
  * Přehrání výzev na instanci v jedné **klouzavé** sekundě (P36B T5r2, nález 2. revize T5).

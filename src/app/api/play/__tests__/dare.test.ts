@@ -252,6 +252,14 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect(((await last!.json()) as { error: { code: string } }).error.code).toBe('SERVER_AT_CAPACITY');
   });
 
+  it('dvě adresy s prohraným během na vlastním stropu výzvy instanci nezavřou: třetí projde (T5r3)', async () => {
+    const game = await arcadeGame();
+    resetRateWindows();
+    for (const address of ['198.51.100.7', '198.51.100.8'])
+      for (let i = 0; i < MAX_DARE_REQUESTS_PER_WINDOW; i += 1) expect((await send(game.id, { inputs: packInputs([]) }, { 'x-forwarded-for': address })).status).toBe(422);
+    expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) }, { 'x-forwarded-for': '192.0.2.33' })).status).toBe(201);
+  });
+
   it('vadné požadavky slot výzev neberou: 11× {} od různých volajících výzvy instanci nezavře', async () => {
     const game = await arcadeGame();
     resetRateWindows();

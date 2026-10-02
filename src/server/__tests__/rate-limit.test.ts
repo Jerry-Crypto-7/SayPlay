@@ -4,6 +4,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import {
   MAX_DARE_REPLAYS_PER_SECOND,
+  MAX_DARE_REQUESTS_PER_WINDOW,
+  MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP,
   MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE,
   MAX_REQUESTS_PER_WINDOW,
   MAX_REQUESTS_PER_WINDOW_PER_GROUP,
@@ -57,6 +59,21 @@ describe('strop na frekvenci veřejných dveří', () => {
       expect(takeRateSlot('play/dare', flooder, T0 + 9_900)).toMatchObject({ allowed: false, scope: 'caller' });
       expect(takeRateSlot('play/dare', SOMEONE_ELSE, T0 + 9_900)).toMatchObject({ allowed: true });
     }
+  });
+
+  it('výzvy: dvě adresy ani dvě skupiny na vlastním stropu nezavřou výzvu třetí (T5r3)', () => {
+    for (const [pair, cap] of [
+      [[ME, SOMEONE_ELSE], MAX_DARE_REQUESTS_PER_WINDOW],
+      [[ROOM, 'net:2001:db8:0:1::/64'], MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP],
+    ] as const) {
+      resetRateWindows();
+      let at = T0;
+      // Každý na strop a o dva přes – po 500 ms, ať soudí okno, ne klouzavá sekunda.
+      for (const caller of pair) for (let i = 0; i < cap + 2; i += 1, at += 500) takeRateSlot('play/dare', caller, at);
+      expect(takeRateSlot('play/dare', pair[0], at)).toMatchObject({ allowed: false, scope: 'caller' });
+      expect(takeRateSlot('play/dare', '192.0.2.33', at)).toMatchObject({ allowed: true });
+    }
+    expect(2 * MAX_DARE_REQUESTS_PER_WINDOW_PER_GROUP).toBeLessThan(MAX_DARE_REQUESTS_PER_WINDOW_PER_INSTANCE);
   });
 
   it('výzvy na hranici okna: v žádné sekundě víc než 2 přehrání, odmítnutí strop okna neubírá (T5r2)', () => {

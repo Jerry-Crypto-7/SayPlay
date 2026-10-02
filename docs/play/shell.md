@@ -81,7 +81,7 @@ s přeházenými změnami – je **200** s týmž id a denní strop neubírá, n
 | Krok | Kód | Stav |
 |---|---|---|
 | vypínač, identita, strop frekvence (dveře `play`, jako publikace) | `DISABLED` / `OWNER_IDENTITY_*` / `TOO_MANY_REQUESTS` | 503 / 403 / 429 |
-| vlastní okno výzev `play/dare`: 5 za 10 s na volajícího, 10 za 10 s na instanci – výzva přehraje celý běh, až ~250 ms CPU (`MAX_DARE_REQUESTS_PER_WINDOW` v `src/server/rate-limit.ts`) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
+| vlastní okno výzev `play/dare`: 3 za 10 s na volajícího (4 na skupinu /64), 10 za 10 s na instanci a nejvýš 2 přehrání v každé klouzavé sekundě (pak `retry-after: 1`) – výzva přehraje celý běh, až ~250 ms CPU (`MAX_DARE_REQUESTS_PER_WINDOW`, `MAX_DARE_REPLAYS_PER_SECOND` v `src/server/rate-limit.ts`) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
 | id bez tvaru nebo neznámá hra | `NOT_FOUND` | 404 |
 | tělo nad 64 kB / pozdě / souběh čtení | `BODY_TOO_LARGE` / `BODY_TIMEOUT` / `TOO_MANY_BODY_READS` | 413 / 408 / 429 |
 | tvar: vstupy nejsou čtveřice celých čísel, cizí tlačítka, osa mimo ±1000, běh delší než 5 400 tiků, změna mimo tvar nebo víc než 32 | `BAD_REQUEST` | 400 |
