@@ -143,8 +143,11 @@ export function directorSystemPrompt(): string {
   return [GENRE_RULES, GENRE_SHAPE_LINE, genrePromptLines(), rulesPromptLines()].join('\n\n');
 }
 
-/** Hash systémového textu – klíč cache a otisk verze promptu. */
-export const DIRECTOR_PROMPT_VERSION = canonicalHash(directorSystemPrompt());
+/**
+ * Hash systémového textu a schématu odpovědi – klíč cache a otisk verze
+ * promptu. Schéma je v něm od P36A T7: dřív jeho změna cache nezneplatnila.
+ */
+export const DIRECTOR_PROMPT_VERSION = canonicalHash({ system: directorSystemPrompt(), schema: GENRE_ANSWER_SCHEMA });
 
 /** Návrh ze slov jako výchozí bod; hra bez žánru (mřížka archetypu) žádný nedá. */
 export function startingPoint(draft: GenreSpec | null): string {

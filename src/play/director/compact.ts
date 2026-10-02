@@ -24,7 +24,8 @@ export function compactSystemPrompt(): string {
   return ["Choose how the user's sentence plays. Never output code. Answer one JSON object {plan, spec}: plan = one short line, spec = the GenreSpec.", genrePromptLines(), rulesPromptLines()].join('\n');
 }
 
-export const COMPACT_PROMPT_VERSION = canonicalHash(compactSystemPrompt());
+/** Jako `DIRECTOR_PROMPT_VERSION`: text i schéma odpovědi (P36A T7), změna kteréhokoli zneplatní cache. */
+export const COMPACT_PROMPT_VERSION = canonicalHash({ system: compactSystemPrompt(), schema: GENRE_ANSWER_SCHEMA });
 
 /** `examples` (P30A T8): za výchozí bod 3–5 ověřených her k podobným větám; bez nich je zpráva jako dřív. */
 export function buildCompactRequest(sentence: string, draft: GenreSpec | null, examples = false): UpstreamRequest {
