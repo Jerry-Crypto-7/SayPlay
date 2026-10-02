@@ -252,6 +252,21 @@ Přeměřeno s `play-compiler-v11/arcade-v2` (verze se nezvedá: uložené hry �
 - **Vědomě jinak:** „toss a pancake“ a „knife throwing at a spinning log“ (třída `timing`) hrají dál Hod, „one tap game where a ball bounces down a helix tower“ skákačku, „stack the jenga blocks“ (třída `manipulate`) věž načasování.
 - **Pokrytí sloves dílkem** 74 → **91/200**: načasování 9/16, rytmus 6/6, poletování 1/1; `melee` 0/5 dál (rvačky hraje Aréna).
 
+## Po F4 – úsilí přemýšlení do llama.cpp (2. 10. 2026)
+
+Požadavek do llama.cpp teď nese `reasoning_effort` (u režiséra `low`) nahoře v těle – README serveru llama.cpp b11200: „Otherwise, the value is made available to the jinja template“, odkud ho čte šablona gpt-oss. Přeměřeno `director.cmd` na `79a412a9` (kód F4); hned potom ve stejné relaci GPU základ větve `1d85e991` skriptem `../local-director.measure.ts` z dočasného worktree (jen korpus 30, řádky z logu běhu).
+
+| | cíl F4 | hlava s F4 | základ `1d85e991`, táž relace |
+|---|---:|---:|---:|
+| platná hra, korpus 30 | ≥ 28/30 | **30/30** | 24/30 |
+| medián odezvy | ≤ 1,3× základu | **2,2 s** (0,28×) | 8,0 s |
+| p90 odezvy | | 4,4 s | 24,9 s |
+
+- Vývojová `d01–d20`: platná hra **20/20** (T9 15/20), medián 1,7 s. Věrnost korpusu 0,809 / 0,800 (read / drawn), vývojové 0,712 / 0,658.
+- Žádné „cut at max_tokens“: přemýšlení na `low` se do 4 000 tokenů vejde. Selhání základu (6× rychlý návrh místo režiséra) jsou tytéž jako v T9.
+- Sada mechanik: čas z věty návrh nese 2/5 (T9 1/5 – F3 opravila m10), režisér 4/5 (T9 2/5); ostatní pole beze změny.
+- **Inference:** základ běžel, když na CPU jely sondy vitestu, hlava v klidu – poměr tím trochu nadsazený, rozdíl 3,6× v mediánu ale nese přemýšlení, ne zátěž.
+
 ## Test (`depth.test.ts`)
 
 - Každá věta obou sad je v reportu právě jednou a se svým textem.
