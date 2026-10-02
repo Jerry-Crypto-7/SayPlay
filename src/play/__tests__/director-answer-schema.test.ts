@@ -188,11 +188,13 @@ describe('director answer schema for a GenreSpec', () => {
         mode: 'race',
         hero: 'pirate ship',
         enemy: 'reef',
+        // P36A T8: chování nepřítele a parametry hloubky má každý žánr.
+        enemyMoves: null,
         collectible: null,
         target: null,
         setting: 'stormy sea',
         palette: 'ocean',
-        params: { lengthM: null, topSpeed: null, gravity: null },
+        params: { lengthM: null, topSpeed: null, gravity: null, lives: null, targetScore: null, timeLimit: null },
         ruleRoles: null,
         things: null,
         rules: null,
@@ -224,8 +226,8 @@ describe('director answer schema for a GenreSpec', () => {
   });
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
-    const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null };
-    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
+    const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
+    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', enemyMoves: null, collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
     expect(validate(GENRE_SPEC, ok)).toEqual([]);
     // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
     expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null } })).toEqual([]);

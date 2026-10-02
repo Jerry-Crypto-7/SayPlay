@@ -81,9 +81,11 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
     const items = spec.params?.items ?? ESCAPE.items.collectDefault;
     const waves = itemWaveCount(items, chasers);
     const things = plural(singular(spec.collectible), items);
+    // Hlídka (P36A T8) jen při sběru: v přežití by nečinný hráč stráže přečkal a vyhrál.
+    const patrol: Record<string, number> = spec.enemyMoves === 'patrol' ? { patrol: ESCAPE.patrolSight } : {};
     return legacySpec(spec, {
       control: 'move_free',
-      controlParams: { generator: 'arena_escape', tuning: tuningOf(spec, { items, waves }) },
+      controlParams: { generator: 'arena_escape', tuning: tuningOf(spec, { items, waves, ...patrol }) },
       // `chase_escape` čeká cíl `reach`; sběr s pronásledovatelem je `collect_exit` (bere i `chaser`).
       archetype: 'collect_exit',
       title: `${title} Escape`,

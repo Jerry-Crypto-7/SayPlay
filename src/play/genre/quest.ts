@@ -119,7 +119,11 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   // Scéna umí nakreslit jen stavy svého druhu; počet ze specu platí jen pro sloveso bez druhu.
   const states = kind === null ? (spec.target?.states ?? 2) : KIND_STATES[kind];
   const count = spec.params?.count ?? (station ? STATION.count : SPATIAL.count);
-  const chasers = station ? 0 : (spec.params?.chasers ?? (spec.enemy === undefined ? DEFAULT_CHASERS : ESCAPE.chasers.default));
+  const said = spec.params?.chasers ?? (spec.enemy === undefined ? DEFAULT_CHASERS : ESCAPE.chasers.default);
+  // Chování nepřítele (P36A T8): stojící nepřítel = úkol bez honiče, honič i hlídka aspoň jeden.
+  const moves = spec.enemyMoves;
+  const chasers = station || moves === 'still' ? 0 : moves === 'chase' || moves === 'patrol' ? Math.max(1, said) : said;
+  const patrol = moves === 'patrol' && chasers > 0 ? { patrol: ESCAPE.patrolSight } : {};
   // Kolo roste s prací: kroky stavu × čas na krok, s honičkou robot hodně uhýbá. Měřeno (T4, p95 robota):
   // 8 stromů × 3 stavy bez honičky 23 s, se třemi pronásledovateli 75 s; 5 svíček + 2 duchové 29 s.
   const steps = count * (states - 1);
@@ -146,6 +150,7 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
         ...(plan.rounds > 1 ? { rounds: plan.rounds } : {}),
         ...(hold === undefined ? {} : { hold }),
         ...(station ? {} : { chasers }),
+        ...patrol,
       },
     },
     // Změnit stav každého cíle je hádanka nad rolí cílů; počet nese `tuning` i role.

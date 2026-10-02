@@ -18,8 +18,8 @@
 import { draftGenreFor } from '../draft/draft';
 import { singular } from '../draft/lexicon';
 import type { GenreModules } from '../genre/classify';
-import { type GenreModule, type GenreSpec, withCounts } from '../genre/contract';
-import { GENRE_MODULES, readGenreSpec } from '../genre/index';
+import type { GenreModule, GenreSpec } from '../genre/contract';
+import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
 import { RIDE_WORDS } from '../genre/runner';
 import type { Reading } from '../read/schema';
 import { MECHANIC_IDS } from '../registry';
@@ -162,7 +162,7 @@ export function withoutAnswerRules(body: unknown): unknown {
 
 /** `GenreSpec` → hra modulem jeho žánru, přečtená jako spec od modelu; počty rolí jdou do parametrů modulu (B-R4). */
 export function compileGenreSpec(genre: GenreSpec, modules: GenreModules = GENRE_MODULES): DirectorRead {
-  return readModelSpec((modules[genre.genre] as GenreModule).compile(withCounts(genre) as never));
+  return readModelSpec(compileWith(modules[genre.genre] as GenreModule, genre));
 }
 
 /**

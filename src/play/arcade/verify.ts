@@ -14,7 +14,7 @@ import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeInput, type ArcadeObservat
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
-import { rulesPlanner } from './rules/bot';
+import { lossPlanner, losingVerbs, rulesPlanner } from './rules/bot';
 
 export interface BotRun {
   readonly inputs: readonly InputEvent[];
@@ -164,12 +164,13 @@ export function movedOf(motion: Motion, state: ArcadeState): string | null {
  * Odehraje hru robotem. Robot v tiku *t* vidí stav z tiku *t − reactionTicks*
  * (kruhový buffer kopií) a vlastní stisky z té doby, které ještě nevidí.
  */
-export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, options: { readonly planner?: boolean } = {}): BotRun {
+export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, options: { readonly planner?: boolean; readonly seek?: ReadonlySet<string> } = {}): BotRun {
   const piece = library.bots[world.bot.id];
   if (piece === undefined) throw new Error(`arcade: unknown bot ${world.bot.id}`);
   const params = piece.params.parse(world.bot.params);
   // Hru, kterou vyhrávají pravidla specu, hraje plánovač cílů (P29A); `planner: false` = kontrolní běh robotem světa.
-  const planner = options.planner === false ? null : rulesPlanner(world);
+  // `seek` = běh „na prohru“ (P36A T8): plánovač jde do pravidel prohry s těmi slovesy.
+  const planner = options.seek !== undefined ? lossPlanner(world, options.seek) : options.planner === false ? null : rulesPlanner(world);
   const bot = planner ?? { reactionTicks: piece.reactionTicks, decide: (observation: ArcadeObservation) => piece.decide(observation, params) };
   // Slovesa pravidel: stav na začátku tiku, ať jde změnu po efektu změřit (P30B T2).
   const verbOf = world.rules.map((ref) => (typeof ref.params.verb === 'string' ? ref.params.verb : null));
@@ -261,6 +262,25 @@ function verbsOf(world: ArcadeWorld, firstFired: readonly number[], changes: Rea
   });
 }
 
+/**
+ * Pravidlo prohry či zranění („touch lava“) vítězný robot obchází, a tak ho
+ * nevystřelí (P36A T8). Sloveso, které nesou jen taková pravidla a vítězný běh
+ * ho nedokázal, dokazuje druhý běh robota, který do pravidla schválně vleze.
+ * Co nedokáže ani ten (tělo nikdo nedosáhne, ovládání bez plánovače), zůstane
+ * neprokázané.
+ */
+function withLossProofs(world: ArcadeWorld, library: ArcadeLibrary, verbs: VerbProof[]): VerbProof[] {
+  const losing = losingVerbs(world);
+  const seek = new Set(verbs.filter((proof) => !proof.changed && losing.has(proof.verb)).map((proof) => proof.verb));
+  if (seek.size === 0 || lossPlanner(world, seek) === null) return verbs;
+  const probe = runBot(world, library, { seek });
+  const found = new Map(verbsOf(world, probe.firstFired, probe.changes).map((proof) => [proof.verb, proof]));
+  return verbs.map((proof) => {
+    const lost = seek.has(proof.verb) ? found.get(proof.verb) : undefined;
+    return lost?.changed === true ? lost : proof;
+  });
+}
+
 export interface ArcadeVerdict {
   readonly bot: BotRun;
   readonly idle: { readonly outcome: ArcadeOutcome; readonly tick: number; readonly hash: string };
@@ -290,7 +310,7 @@ export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE
   if (idle.outcome === 'won') failures.push(`idle_loses: a player who does nothing wins at tick ${idle.tick} – the game plays itself`);
   if (!replayEqual) failures.push('replay_equal: two replays of the bot record ended in different states');
   if (!withinLimits) failures.push(`within_limits: ${bodies} bodies / ${world.rules.length} rules exceed the kernel limits`);
-  const verbs = verbsOf(world, bot.firstFired, bot.changes);
+  const verbs = withLossProofs(world, library, verbsOf(world, bot.firstFired, bot.changes));
   for (const proof of verbs) {
     if (!proof.fired) failures.push(`verbs_proved: VERB_UNPROVED:${proof.verb} – no rule with the verb "${proof.verb}" fired while the bot played`);
     else if (!proof.changed) failures.push(`verbs_proved: VERB_NO_EFFECT:${proof.verb} – a rule with the verb "${proof.verb}" fired, but the bot saw nothing change that its effects promise`);

@@ -21,7 +21,7 @@ import { z } from 'zod';
 
 import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
-import { GENRE_MODULES } from '../genre/index';
+import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
 
 type Json = Record<string, unknown>;
@@ -83,7 +83,8 @@ function genreVariant(module: GenreModule): Json | null {
   const modes = readyModes(module);
   if (modes.length === 0) return null;
   const base = genreSpecSchema.options.find((option) => option.shape.genre.value === module.id)!;
-  const bounds = Object.entries(module.paramBounds);
+  // Parametry modulu a hloubky (P36A T8: životy, cílové skóre, časový limit).
+  const bounds = Object.entries(paramBoundsOf(module));
   const params = z.object(Object.fromEntries(bounds.map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
   const counts = countsOf(module, modes);
   const variant = bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() });

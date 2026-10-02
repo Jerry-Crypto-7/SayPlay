@@ -422,18 +422,44 @@ export interface RulesPlanner {
  */
 export function rulesPlanner(world: ArcadeWorld): RulesPlanner | null {
   if (world.control.id !== 'move_free') return null;
-  const rules = world.rules.filter((ref) => ref.id in SPEC_RULES).map((ref) => compiledRuleSchema.parse(ref.params));
-  const wins = rules.filter((rule) => has(rule, 'win'));
-  if (wins.length === 0) return null;
+  const rules = specRules(world);
+  return plannerFor(rules, rules.filter((rule) => has(rule, 'win')));
+}
+
+const specRules = (world: ArcadeWorld): CompiledRule[] => world.rules.filter((ref) => ref.id in SPEC_RULES).map((ref) => compiledRuleSchema.parse(ref.params));
+
+/** Plánovač, který jde po prvním z `goals`, jehož cestu zná; žádný cíl = null. */
+function plannerFor(rules: readonly CompiledRule[], goals: readonly CompiledRule[]): RulesPlanner | null {
+  if (goals.length === 0) return null;
   return {
     reactionTicks: REACTION,
     decide: ({ state, player, recent }) => {
       const view: View = { state, player, me: predict(state, player, recent), rules, wall: wallOf(state) };
-      for (const rule of wins) {
+      for (const rule of goals) {
         const action = achieve(view, rule, 0, new Set());
         if (action !== null) return inputOf(view, action);
       }
       return NO_INPUT;
     },
   };
+}
+
+/** Pravidlo, které hru prohraje nebo ubere život a nic nevyhrává (P36A T8). */
+const losing = (rule: CompiledRule): boolean => (has(rule, 'lose') || has(rule, 'damage')) && !has(rule, 'win');
+
+/** Slovesa, která nesou jen pravidla prohry či zranění – vítězný robot je obchází, dokáže je až běh „na prohru“. */
+export function losingVerbs(world: ArcadeWorld): Set<string> {
+  const rules = specRules(world);
+  return new Set(rules.filter((rule) => rules.every((other) => other.verb !== rule.verb || losing(other))).map((rule) => rule.verb));
+}
+
+/**
+ * Robot „na prohru“ (P36A T8): schválně jde do pravidel prohry či zranění se
+ * slovesy `verbs` („touch lava“), aby je ověření dokázalo. Jen volný pohyb,
+ * jako plánovač výhry; null = není co hledat.
+ */
+export function lossPlanner(world: ArcadeWorld, verbs: ReadonlySet<string>): RulesPlanner | null {
+  if (world.control.id !== 'move_free') return null;
+  const rules = specRules(world);
+  return plannerFor(rules, rules.filter((rule) => losing(rule) && verbs.has(rule.verb)));
 }

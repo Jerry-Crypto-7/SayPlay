@@ -88,5 +88,15 @@
     "id": "e18",
     "sentence": "take the silver key and open the treasure chest on a pirate island",
     "answer": { "plan": "Opening the chest is the task; the key opens it.", "spec": { "genre": "quest", "mode": "spatial", "hero": "turtle", "target": { "label": "treasure chest", "verb": "open", "states": 2 }, "setting": "pirate island", "palette": "beach" } }
+  },
+  {
+    "id": "e19",
+    "sentence": "a thief has 5 lives to crack the vaults before time runs out in 80 seconds while guards patrol the halls",
+    "answer": { "plan": "Cracking the vaults is the task; the guards patrol, 5 lives and an 80 s limit as said.", "spec": { "genre": "quest", "mode": "spatial", "hero": "thief", "enemy": "guard", "enemyMoves": "patrol", "target": { "label": "vault", "verb": "crack", "states": 2 }, "setting": "museum halls", "palette": "castle", "params": { "lives": 5, "timeLimit": 80 } } }
+  },
+  {
+    "id": "e20",
+    "sentence": "a ninja runs across rooftops shooting drones and must score 300 points",
+    "answer": { "plan": "Running is the main verb; the drones are shot down; 300 points to win.", "spec": { "genre": "runner", "mode": "default", "hero": "ninja", "enemy": "drone", "enemyMoves": "shoot", "setting": "city rooftops", "params": { "targetScore": 300 } } }
   }
 ]

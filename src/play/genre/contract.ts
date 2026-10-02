@@ -85,6 +85,16 @@ export const ruleRoleSchema = z
   })
   .strict();
 
+/**
+ * Jak se nepřítel chová (P36A T8), namapované na existující kusy: `chase` =
+ * pronásledovatel (doplněk `chaser`, honiči arény a úkolu), `patrol` = honič
+ * bloudí, dokud hráče nezahlédne, `shoot` = nepřátelé, které hráč sestřelí
+ * (doplněk `shoot`), `still` = nepřítel stojí (úkol bez honiče). Žánr, který
+ * chování nemá čím zahrát, ho přejde – dnešní hra.
+ */
+export const ENEMY_MOVES = ['chase', 'patrol', 'shoot', 'still'] as const;
+export type EnemyMove = (typeof ENEMY_MOVES)[number];
+
 const variant = <G extends GenreId>(genre: G) =>
   z
     .object({
@@ -92,6 +102,8 @@ const variant = <G extends GenreId>(genre: G) =>
       mode: z.enum(GENRE_MODES[genre]),
       hero: label,
       enemy: label.optional(),
+      /** Chování nepřítele (P36A T8); bez něj žánr hraje své výchozí. */
+      enemyMoves: z.enum(ENEMY_MOVES).optional(),
       collectible: label.optional(),
       target: genreTargetSchema.optional(),
       setting: z.string().min(1).max(80),

@@ -137,6 +137,8 @@ const spatialParams = z
     seconds: z.int().min(20).max(80).optional(),
     /** Kola (P36A T4, píše je žánr): tolik kol po `count` cílech; bez nich jedno kolo jako dřív. */
     rounds: z.int().min(2).max(WAVE_LIMITS.rounds).optional(),
+    /** Hlídka (P36A T8, píše žánr): pronásledovatelé honí až hráče v dohledu (`ChaseParams.patrol`). */
+    patrol: z.int().min(UNIT).max(40 * UNIT).optional(),
   })
   .strict();
 export type QuestSpatialParams = z.infer<typeof spatialParams>;
@@ -426,12 +428,13 @@ export const questSpatial: ModeGeneratorPiece<QuestSpatialParams> = {
     const { rounds } = params;
     const interact: CompiledInteract = { role: ROLE.target, radius: QUEST.radius, hold: params.hold, states: params.states, ...(rounds === undefined ? {} : { rounds }) };
     // Kdo drží „Use“, stojí u cíle: pronásledovatelé zatím běží poloviční rychlostí (G-R1). V kolech každé další zrychlí.
+    const patrol = params.patrol === undefined ? {} : { patrol: params.patrol };
     const chase: ChaseParams | undefined =
       rounds !== undefined
-        ? { speed: params.chaserSpeed, lead: ESCAPE.lead, slowWhileUse: true, step: waveSpeedStep(rounds) }
+        ? { speed: params.chaserSpeed, lead: ESCAPE.lead, slowWhileUse: true, step: waveSpeedStep(rounds), ...patrol }
         : params.chasers === 0
           ? undefined
-          : { speed: params.chaserSpeed, lead: ESCAPE.lead, slowWhileUse: true };
+          : { speed: params.chaserSpeed, lead: ESCAPE.lead, slowWhileUse: true, ...patrol };
     // Chycení jako v útěku: mimo ochranu prohra, se životy ztráta života, nová ochrana a odhoz (P36A T2).
     const catches: PieceRef[] =
       chase === undefined

@@ -42,8 +42,8 @@ import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
 import type { Reading } from '../read/schema';
 import { type GenreChoice, type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
-import { COUNT_PARAMS, COUNT_ROLES as GENRE_COUNT_ROLES, type CountRole, type GenreId, type GenreModule, type GenreSpec, withCounts } from '../genre/contract';
-import { GENRE_MODULES, readGenreSpec } from '../genre/index';
+import { COUNT_PARAMS, COUNT_ROLES as GENRE_COUNT_ROLES, type CountRole, type GenreId, type GenreModule, type GenreSpec } from '../genre/contract';
+import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
 import { defaultCollectible, defaultEnemy, defaultHero, defaultTarget, heroFits } from '../genre/roles';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
@@ -1124,7 +1124,9 @@ function draftGenre(
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   const itemLabel = collectible ?? (escape || choice.genre === 'voyage' ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
   const seconds = reading?.numbers.seconds ?? readNumbers(sentence).seconds;
-  const params = paramsOf(module, fill.params, seconds);
+  const own = paramsOf(module, fill.params, seconds);
+  const depth = depthOf(sentence);
+  const params = Object.keys(depth).length === 0 ? own : { ...own, ...depth };
   // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
   const counts = countsOf(sentence, reading, { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
   const candidate = {
@@ -1141,23 +1143,19 @@ function draftGenre(
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });
   if (!read.ok) return null;
-  const game = readGameSpec(withTarget(withLives(module.compile(withCounts(read.value) as never), readLives(sentence)), readTargetScore(sentence)));
+  const game = readGameSpec(compileWith(module, read.value));
   return game.ok ? { genre: read.value, spec: game.value, heroSaid: heroSaid !== null } : null;
 }
 
-/** Cílové skóre z věty („score 100 points“, P36A T5) do hry žánru; kompilátor ho ořízne na dosažitelné. */
-function withTarget(spec: GameSpecV1, target: number | null): GameSpecV1 {
-  return target === null || spec.scoring === undefined ? spec : { ...spec, scoring: { ...spec.scoring, target } };
-}
-
 /**
- * Životy z věty („with 5 lives“, P36A T2) do mechaniky `health`, kterou hra žánru
- * nese (výchozí 3). `GenreSpec` je zatím nenese – pole `lives` v parametrech žánru
- * přidá s režisérem T8.
+ * Životy a cílové skóre z věty („with 5 lives“, „score 100 points“, P36A T2/T5)
+ * jako parametry hloubky `GenreSpec` (T8): do hry je propíše `compileWith`
+ * stejně jako z odpovědi režiséra a režisér je vidí ve výchozím bodě.
  */
-function withLives(spec: GameSpecV1, lives: number | null): GameSpecV1 {
-  if (lives === null || !spec.mechanics.some((mechanic) => mechanic.id === 'health')) return spec;
-  return { ...spec, mechanics: spec.mechanics.map((mechanic) => (mechanic.id === 'health' ? { id: 'health', params: { max: lives } } : mechanic)) };
+function depthOf(sentence: string): Record<string, number> {
+  const lives = readLives(sentence);
+  const target = readTargetScore(sentence);
+  return { ...(lives === null ? {} : { lives }), ...(target === null ? {} : { targetScore: target }) };
 }
 
 /**
