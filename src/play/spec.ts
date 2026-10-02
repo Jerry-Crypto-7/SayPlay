@@ -327,6 +327,8 @@ export const throwParamsSchema = z
     goal: z.enum(THROW_GOALS).optional(),
     bounce: z.boolean().optional(),
     spareThrows: z.int().min(0).max(10).optional(),
+    /** Rozpočet robota na celou hru v sekundách – pole naplánuje kola, která se do něj vejdou (P36A F5); bez něj jedno pole. */
+    budget: z.int().min(1).max(90).optional(),
   })
   .strict();
 export type ThrowSpecParams = z.infer<typeof throwParamsSchema>;

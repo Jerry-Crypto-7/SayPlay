@@ -317,7 +317,9 @@ export type ThrowParams = z.infer<typeof generatorParams>;
  * v posledním. Každé další kolo je těžší – pás cílů o `shift` dál (nejvýš
  * `farMax`), věž o blok vyšší každé druhé kolo (nejvýš `towerMax`) a hodů
  * navíc o jeden méně každé druhé kolo (nejméně `spareMin`). Odhad robota na
- * kolo: `perRound + perThrow × cíle kola` (sonda F5: … ).
+ * kolo: `perRound + perThrow × cíle kola` (sonda F5, 6 semínek, rozpočet 48:
+ * terč 8 kol 40–41 s, koš 8 kol 43–45 s, věž 2–3 kola 40–47 s; 18 vět žánru
+ * Hod 40,6–47,7 s).
  */
 export const THROW_ROUNDS = {
   max: 12,

@@ -15,13 +15,18 @@
 import { describe, expect, it } from 'vitest';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
-import { compileArcade } from '@/play/arcade/compile';
+import throwFixture from '@/play/arcade/__fixtures__/throw.json';
+import { arcadeWorldOf, compileArcade } from '@/play/arcade/compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, COUNTER, HEADER, HIT_GRACE, ROLE, bodyBase } from '@/play/arcade/contract';
-import { instantiate, replay } from '@/play/arcade/kernel';
+import { hashArcade, instantiate, replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { shooterRules } from '@/play/arcade/pieces/shooter';
+import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta } from '@/play/draft';
-import type { GameSpecV1 } from '@/play/spec';
+import type { GenreModule, GenreSpec } from '@/play/genre/contract';
+import { compileWith } from '@/play/genre/index';
+import { throwClock, throwGenre } from '@/play/genre/throw';
+import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 /** Věty poptávky (`evals/play/demand/corpus.json`), kde hráč střílí. */
 const SHOOT = [
@@ -145,6 +150,78 @@ describe('the shooter genre has depth', () => {
 
   it('a stored shooter range without the new fields keeps its rules', () => {
     expect(shooterRules({ difficulty: 'normal', moving: true }, 3)).toContainEqual({ id: 'hit', params: { role: 'enemy', effect: 'damage' } });
+  });
+});
+
+/**
+ * Hod v kolech (P36A F5): jedno pole robot vyčistí za 5–13 s, takže hra bez
+ * kol je mimo pásmo 30–90 s. Co by vypadalo dobře a bylo špatně: kola
+ * existují v kusu jádra, ale žánr mu rozpočet nepošle; nebo pošle a hodiny
+ * zůstanou 30 s, takže robot prohraje na čase; nebo čas z věty hodiny přepíše
+ * až po překladu a kola se do něj nevejdou.
+ */
+describe('the throw genre comes in rounds', () => {
+  it.each(['bowling in a haunted alley', 'basketball free throws', 'angry birds but with cats and cardboard boxes'])(
+    '"%s": the robot wins in 30–90 s over several rounds, an idle player loses',
+    (sentence) => {
+      const game = publish(sentence);
+      expect(game.winSeconds).toBeGreaterThanOrEqual(30);
+      expect(game.winSeconds).toBeLessThanOrEqual(90);
+      expect(game.world.rules.some((rule) => rule.id === 'throw_rounds')).toBe(true);
+      expect(game.idle.outcome).toBe('lost');
+    },
+  );
+
+  // Hodiny z věty: kola se plánují do nich, ne do výchozích 87 s.
+  it('seconds from the sentence are the clock the rounds fit into', () => {
+    expect(throwClock(undefined)).toEqual({ budget: 48, seconds: 87 });
+    expect(throwClock(45)).toEqual({ budget: 20, seconds: 45 });
+    expect(throwClock(20)).toEqual({ budget: 3, seconds: 20 });
+    // Jako odpověď režiséra s `timeLimit`: hodiny jdou do modulu před překladem.
+    const genre = draftGameSpecWithMeta('bowling in a haunted alley', 1).genre as GenreSpec;
+    const game = publish('bowling in a haunted alley', () => compileWith(throwGenre as GenreModule, { ...genre, params: { ...genre.params, timeLimit: 45 } }));
+    expect(game.spec.controlParams).toMatchObject({ budget: 20 });
+    expect(game.spec.mechanics).toContainEqual({ id: 'timer', params: { id: 'clock', seconds: 45, onEnd: 'lose' } });
+    expect(game.winSeconds).toBeLessThanOrEqual(45);
+  });
+});
+
+/**
+ * Uložené hry hodu bez rozpočtu (P36A F5) staví týž svět – počáteční stav,
+ * tik a hash výhry robota i hash nečinného hráče změřené na `79a412a9` (před
+ * koly). Hodiny 30 s jako hra žánru z T10, `fixture` bez hodin jako hra před P36A.
+ */
+const STORED_THROW = [
+  ['fixture', '57cde84e', 777, 'ff0295d0', '4ca5d739'],
+  ['target.easy', '6cecfe2a', 140, 'd6697f17', '6ca536b4'],
+  ['hoop.easy', 'e563a0de', 157, '56eeb72e', '2666a3c0'],
+  ['tower.easy', '33273ea8', 278, '0d54a3c3', 'fc2873a6'],
+  ['target.normal', '2f524ba8', 256, '9a0184c4', '5b0a1e22'],
+  ['hoop.normal', '1e0e1598', 281, 'd99ef966', 'b63d58f6'],
+  ['tower.normal', 'c6efecf8', 803, 'fca4394f', 'ca546d8e'],
+  ['target.hard', '7e53de2c', 281, 'bdeb1a93', '4500899a'],
+  ['hoop.hard', '9241eb88', 298, 'fa41fac4', 'dabf171a'],
+  ['tower.hard', '0c4954d8', 1166, 'bd7a9c04', 'c0d0f6ba'],
+] as const;
+
+describe('stored throw games without a budget build the world they had before rounds', () => {
+  it.each(STORED_THROW)('%s', (name, initial, tick, won, idle) => {
+    const [goal, difficulty] = name.split('.');
+    const clock = difficulty !== undefined;
+    const spec = readGameSpec({
+      ...throwFixture,
+      controlParams: clock ? { difficulty, goal } : { difficulty: 'normal' },
+      mechanics: clock ? [{ id: 'timer', params: { id: 'clock', seconds: 30, onEnd: 'lose' } }] : [],
+    });
+    if (!spec.ok) throw new Error(spec.issues.join('; '));
+    const made = arcadeWorldOf(spec.value, 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    const bot = runBot(made.world);
+    expect(hashArcade(instantiate(made.world))).toBe(initial);
+    expect(bot.tick).toBe(tick);
+    expect(bot.hash).toBe(won);
+    expect(replay(made.world, [], ARCADE_LIBRARY).hash).toBe(idle);
+    expect(made.world.rules.some((rule) => rule.id === 'throw_rounds')).toBe(false);
   });
 });
 

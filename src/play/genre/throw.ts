@@ -5,19 +5,29 @@
  *
  * Hloubka: hodiny (nečinný hráč prohraje, když doběhnou) a kombo zásahů
  * v řadě. **Životy hod nemá:** minutí už stojí hod (`spareThrows` jsou jeho
- * životy, HUD je ukazuje) – život navíc by trestal totéž dvakrát. **Délku
- * 30–90 s zatím nemá:** robot pole vyčistí za 5–20 s (terč a koš ~5 s, věž
- * ~13 s) a víc cílů na jedno pole se nevejde; delší hra chce kola (nové cíle
- * po vyčištění) – nový kus pravidla, protože vlny arény nesou číslo vlny
- * v čítači `ammo`, ve kterém hod drží zbývající hody.
+ * životy, HUD je ukazuje) – život navíc by trestal totéž dvakrát. **Délka
+ * 30–90 s jde z kol (P36A F5):** jedno pole robot vyčistí za 5–13 s, takže
+ * pole dostane rozpočet robota `budget` a naplánuje si tolik kol, kolik se do
+ * něj vejde (druh cíle losuje semínko, žánr ho nezná); hodiny = rozpočet ×
+ * faktor + rezerva jako hodiny úkolu. Čas z věty je hodinami a rozpočet se
+ * z nich spočítá zpátky.
  */
 
 import { HOOP_CUES, THROW_GOALS, THROW_GOAL_LABELS, TOWER_CUES } from '../arcade/pieces/throw';
+import { WAVE_PLAN } from '../arcade/pieces/waves';
 
 import { type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
 
-/** Hodiny výchozí (robot na nejdelší věži ~13 s) a v mezích. */
-export const THROW_GENRE = { seconds: 30, minSeconds: 20, maxSeconds: 90 } as const;
+/** Rozpočet robota na celou hru bez času z věty (sonda F5: 40–47 s ve všech druzích cíle) a meze hodin. */
+export const THROW_GENRE = { budget: 48, minSeconds: 20, maxSeconds: 90 } as const;
+
+/** Rozpočet robota a hodiny: bez času z věty výchozí rozpočet, s ním rozpočet, který se do hodin vejde (aspoň 1 s). */
+export function throwClock(seconds: number | undefined): { readonly budget: number; readonly seconds: number } {
+  if (seconds === undefined) {
+    return { budget: THROW_GENRE.budget, seconds: Math.min(WAVE_PLAN.clockMax, Math.round(THROW_GENRE.budget * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin)) };
+  }
+  return { budget: Math.max(1, Math.floor((seconds - WAVE_PLAN.clockMargin) / WAVE_PLAN.clockFactor)), seconds };
+}
 
 /** Cíl hodu z věty: koš, věž (kuželky, krabice), jinak terč, když věta jmenuje, na co se hází. */
 function goalOf(text: string): number | null {
@@ -38,14 +48,16 @@ export const throwGenre: GenreModule<'throw'> = {
     spareThrows: { min: 0, max: 10 },
     seconds: { min: THROW_GENRE.minSeconds, max: THROW_GENRE.maxSeconds },
   },
+  clockParam: 'seconds',
   availability: () => 'ready',
   compile: (spec) => {
-    const { goal: goalIndex, spareThrows, seconds = THROW_GENRE.seconds } = spec.params ?? {};
+    const { goal: goalIndex, spareThrows } = spec.params ?? {};
+    const { budget, seconds } = throwClock(spec.params?.seconds);
     const goal = goalIndex === undefined ? undefined : THROW_GOALS[goalIndex];
     const label = spec.target?.label ?? (goal === undefined ? 'target' : THROW_GOAL_LABELS[goal]);
     return legacySpec(spec, {
       control: 'throw',
-      controlParams: { ...(goal === undefined ? {} : { goal }), ...(spareThrows === undefined ? {} : { spareThrows }) },
+      controlParams: { ...(goal === undefined ? {} : { goal }), ...(spareThrows === undefined ? {} : { spareThrows }), budget },
       archetype: 'combat_lite',
       title: `${titleCase(spec.hero)} Throw`,
       objective: { kind: 'defeat_targets', description: `Hit every ${label} in ${String(seconds)} seconds before you run out of throws.`, count: 3, role: 'target' },
