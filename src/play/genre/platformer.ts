@@ -9,6 +9,10 @@
  * cíle („collect“, „grab“, „gather“) mění výhru: doskákat k cíli až se všemi
  * věcmi (`collectAll`); ostatní slovesa vyhrávají doskokem, věci jsou bonus.
  *
+ * Úroveň má tři úseky s rostoucí obtížností a checkpointem na začátku druhého
+ * a třetího (P36A T4, `sections` v `tuning`); věc ke sběru navíc úroveň prodlouží
+ * a hodiny (robot je stihne s rezervou) dají prohrát i hráči, který stojí.
+ *
  * Referenční věta: „A frog jumps across lily pads to reach the island“.
  */
 
@@ -41,7 +45,8 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
     controlParams: {
       checkpoints: true,
       ...(spec.params?.lengthM === undefined ? {} : { lengthM: spec.params.lengthM }),
-      tuning: { feel: 2, ...(collect ? { collectAll: true, coinCount: count } : {}) },
+      // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4).
+      tuning: { feel: 2, sections: 3, ...(collect ? { collectAll: true, coinCount: count } : {}) },
     },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,

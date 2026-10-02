@@ -503,6 +503,11 @@ export interface ArcadeLevel {
   readonly spawnSlots?: number;
   /** Počáteční čítače úrovně (zásobník, rezerva); `health` nastavuje svět, ne úroveň. */
   readonly counters?: Readonly<Partial<Record<Exclude<ArcadeCounter, 'health'>, number>>>;
+  /**
+   * Trať z úseků (P36A T4): `z`, kde začíná druhý, třetí… úsek; první začíná na startu.
+   * Běžec na nich zrychlí (značky rampy), plošinovka na nich má checkpoint. Bez pole úroveň úseky nemá.
+   */
+  readonly sectionStarts?: readonly number[];
 }
 
 /** Stavba úrovně: seed + parametry → těla. Hratelnost z konstrukce je jeho povinnost. */

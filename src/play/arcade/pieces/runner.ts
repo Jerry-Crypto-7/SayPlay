@@ -9,6 +9,9 @@
  * podklouznout. `checkRunnerLevel` to samé tvrzení přepočítá nad hotovou
  * úrovní – test i ověření ho čtou.
  *
+ * Se `sections: 3` (P36A T4, žánr Běžec) je trať ze tří úseků, každý hustší
+ * a rychlejší, s délkou podle obsahu věty (`RUNNER_SECTIONS`).
+ *
  * S `feel: 2` (P36A T6, výchozí v žánru Běžec) skok odpouští jako skákačka:
  * ještě 100 ms po sběhnutí z hrany a stisk až 120 ms před dopadem skočí při
  * dopadu. Ťuk ze země skočí přesně jako dřív, takže odstupy řad platí dál.
@@ -16,9 +19,9 @@
 
 import { z } from 'zod';
 
-import { createCompileRng } from '@/play/compile/rng';
+import { type CompileRng, createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, RAMP_STEP_PCT, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
 import { PLATFORM_FEEL } from './platform';
 
@@ -170,6 +173,29 @@ const GAP_TICKS: Readonly<Record<RunnerDensity, number>> = { low: 110, normal: 8
 /** Kolik pruhů řada obsadí: [min, max]. */
 const ROW_LANES: Readonly<Record<RunnerDensity, readonly [number, number]>> = { low: [1, 1], normal: [1, 2], high: [2, 3] };
 
+/**
+ * Trať z úseků (P36A T4): rozjezd, hustší, nejtěžší. Každý úsek je o stupeň
+ * hustší (`RUNNER_DENSITIES` od `density` − 1 po `density` + 1: odstup řad
+ * v ticích i obsazené pruhy) a o `RAMP_STEP_PCT` rychlejší – značky rampy stojí
+ * na začátcích úseků (`ArcadeLevel.sectionStarts`), ne na třetinách tratě.
+ *
+ * Délka podle obsahu: tolik řad, kolik věta počítá (`rows` z překážek,
+ * `coinCount` z věcí ke sběru – jedna řada na každou), bez počtu náhodně
+ * z `rows` podle semínka věty. Pak se trať natáhne nebo zkrátí po řadách, aby
+ * ji robot (běží stálou rychlostí úseku) uběhl za `minTicks`..`maxTicks` a byla
+ * aspoň `lengthM` dlouhá. Jedna náhoda: proud `layout` semínka (`createCompileRng`).
+ */
+export const RUNNER_SECTIONS = {
+  /** Podíl řad v úsecích, procenta. */
+  share: [25, 35, 40],
+  /** Řad, když věta žádný počet neřekne: náhodně z rozsahu. */
+  rows: [22, 30],
+  maxRows: 60,
+  /** Robot doběhne nejdřív za 33 s a nejpozději za 84 s – pásmo 30–90 s s rezervou. */
+  minTicks: 33 * ARCADE_HZ,
+  maxTicks: 84 * ARCADE_HZ,
+} as const;
+
 const generatorParams = z
   .object({
     speed: z.enum(RUNNER_SPEEDS).default('normal'),
@@ -182,6 +208,11 @@ const generatorParams = z
     rows: z.int().min(1).max(60).optional(),
     /** Odpuštění skoku pro ovládání (P36A T6); jen se předá ovládání, trať nemění. */
     feel: z.literal(2).optional(),
+    /**
+     * Trať ze tří úseků s délkou podle obsahu (P36A T4, `RUNNER_SECTIONS`); žánr Běžec ho
+     * píše vždy. Bez něj trať jako dřív – uložený spec bez něj staví tentýž svět.
+     */
+    sections: z.literal(3).optional(),
   })
   .strict();
 export type RunnerTrackParams = z.infer<typeof generatorParams>;
@@ -193,12 +224,111 @@ function obstacleBody(kind: ObstacleKind, lane: number, z: number): BodyInit {
   return { role: 'obstacle', kind, x: laneX(lane), y: shape.y, z, w: shape.w, h: shape.h, d: shape.d, solid: shape.solid };
 }
 
+const LANES = [-1, 0, 1] as const;
+
+const playerBody = (): BodyInit => ({ role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: RUNNER.playerW, h: RUNNER.runH, d: RUNNER.playerD, solid: false });
+
+const finishBody = (length: number): BodyInit => ({ role: 'goal', kind: 'finish', x: 0, y: 0, z: length, w: RUNNER.lanes * RUNNER.laneWidth + 2 * UNIT, h: 3 * UNIT, d: 400, solid: false });
+
+/** Řada překážek: náhodné pruhy v mezích hustoty; první řada vždy i ve startovním pruhu, žádná nezavře všechny tři. */
+function obstacleRow(rng: CompileRng, params: RunnerTrackParams, density: RunnerDensity, first: boolean, z: number): BodyInit[] {
+  const passable = params.obstacles.filter((kind) => OBSTACLES[kind].passBy !== 'lane');
+  const [minLanes, maxLanes] = ROW_LANES[density];
+  // Bez přeskočitelné překážky smí řada obsadit nejvýš dva pruhy.
+  const cap = passable.length > 0 ? maxLanes : Math.min(maxLanes, RUNNER.lanes - 1);
+  const taken = rng.shuffle(LANES).slice(0, rng.int(Math.min(minLanes, cap), cap));
+  // Nečinný hráč nesmí trať proběhnout.
+  if (first && !taken.includes(0)) taken[0] = 0;
+  const kinds = taken.map(() => rng.pick(params.obstacles));
+  if (kinds.length === RUNNER.lanes && kinds.every((kind) => OBSTACLES[kind].passBy === 'lane')) kinds[0] = rng.pick(passable);
+  return taken.map((lane, index) => obstacleBody(kinds[index] as ObstacleKind, lane, z));
+}
+
+interface SectionedTrack {
+  readonly level: ArcadeLevel;
+  readonly rows: number;
+  /** Za kolik tiků trať uběhne robot (běží stálou rychlostí úseku, nikdy nezpomalí). */
+  readonly ticks: number;
+}
+
+/** Řad v úsecích podle `RUNNER_SECTIONS.share`, v každém aspoň jedna. */
+function sectionRows(rows: number): readonly [number, number, number] {
+  const [first, second] = RUNNER_SECTIONS.share.map((pct) => Math.max(1, Math.round((rows * pct) / 100))) as [number, number];
+  return [first, second, Math.max(1, rows - first - second)];
+}
+
+/** Trať z úseků s `extra` řadami navíc (záporné = méně) proti obsahu věty. */
+function sectionedLayout(seed: number, params: RunnerTrackParams, extra: number): SectionedTrack {
+  const rng = createCompileRng(seed);
+  // Los řad jde vždy první: proud je stejný s počtem z věty i bez něj.
+  const drawn = rng.int(RUNNER_SECTIONS.rows[0], RUNNER_SECTIONS.rows[1]);
+  const said = Math.max(params.rows ?? 0, params.coinCount ?? 0);
+  const rows = Math.max(RUNNER.lanes, Math.min(RUNNER_SECTIONS.maxRows, (said > 0 ? said : drawn) + extra));
+  const base = SPEED[params.speed];
+  const step = RUNNER_DENSITIES.indexOf(params.density);
+  const bodies: BodyInit[] = [playerBody()];
+  const zs: number[] = [];
+  const starts: number[] = [];
+  let z = RUNNER_TRACK.startClear;
+  let ticks = Math.ceil(z / base);
+  let speed = base;
+  sectionRows(rows).forEach((count, section) => {
+    const density = RUNNER_DENSITIES[Math.max(0, Math.min(RUNNER_DENSITIES.length - 1, step + section - 1))] as RunnerDensity;
+    // Úsek začíná na poslední řadě předchozího: celý odstup k jeho první řadě se běží jeho rychlostí (`rampedSpeed`).
+    if (section > 0) starts.push(zs[zs.length - 1] as number);
+    speed = Math.floor((base * (100 + RAMP_STEP_PCT * section)) / 100);
+    for (let i = 0; i < count; i += 1) {
+      if (zs.length > 0) {
+        const gap = GAP_TICKS[density] + rng.int(0, 20);
+        z += gap * speed;
+        ticks += gap;
+      }
+      bodies.push(...obstacleRow(rng, params, density, zs.length === 0, z));
+      zs.push(z);
+    }
+  });
+  const length = z + RUNNER_TRACK.endClear;
+  ticks += Math.ceil(RUNNER_TRACK.endClear / speed);
+
+  if (params.coins) {
+    // Skupiny po třech rozložené po celé trati, ve středu mezery mezi řadami – i v posledním úseku.
+    const gaps = zs.length;
+    const total = Math.min(params.coinCount ?? Math.min(RUNNER_TRACK.maxCoins, 3 * gaps), ARCADE_LIMITS.maxBodies - bodies.length - 1);
+    const groups = Math.ceil(total / 3);
+    for (let group = 0; group < groups; group += 1) {
+      const at = Math.floor(((group + 0.5) * gaps) / groups);
+      const mid = Math.floor(((zs[at] as number) + (zs[at + 1] ?? length)) / 2);
+      const lane = rng.pick(LANES);
+      for (let c = 0; c < Math.min(3, total - 3 * group); c += 1) {
+        bodies.push({ role: 'collectible', kind: 'coin', x: laneX(lane), y: 300, z: mid + (c - 1) * 1500, w: 500, h: 500, d: 500, solid: false });
+      }
+    }
+  }
+
+  bodies.push(finishBody(length));
+  return { level: { bodies, length, sectionStarts: starts }, rows, ticks };
+}
+
+/** Trať z úseků natažená nebo zkrácená po řadách do `minTicks`..`maxTicks` a aspoň na `lengthM`. */
+function sectionedTrack(seed: number, params: RunnerTrackParams): ArcadeLevel {
+  const short = (track: SectionedTrack): boolean => track.ticks < RUNNER_SECTIONS.minTicks || track.level.length < params.lengthM * UNIT;
+  let extra = 0;
+  let track = sectionedLayout(seed, params, extra);
+  while (short(track) && track.rows < RUNNER_SECTIONS.maxRows) track = sectionedLayout(seed, params, (extra += 1));
+  while (track.ticks > RUNNER_SECTIONS.maxTicks && track.rows > RUNNER.lanes) track = sectionedLayout(seed, params, (extra -= 1));
+  return track.level;
+}
+
 export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
   id: 'runner_track',
   params: generatorParams,
   roles: ['player', 'obstacle', 'collectible', 'goal'],
-  cost: (params) => ({ bodies: 2 + Math.ceil((params.lengthM * UNIT) / (RUNNER_TRACK.minGapTicks * SPEED[params.speed])) * 3 + RUNNER_TRACK.maxCoins, rules: 3 }),
+  cost: (params) => ({
+    bodies: 2 + (params.sections === undefined ? Math.ceil((params.lengthM * UNIT) / (RUNNER_TRACK.minGapTicks * SPEED[params.speed])) : RUNNER_SECTIONS.maxRows) * 3 + RUNNER_TRACK.maxCoins,
+    rules: 3,
+  }),
   generate: (seed, params) => {
+    if (params.sections !== undefined) return sectionedTrack(seed, params);
     const rng = createCompileRng(seed);
     const length = params.lengthM * UNIT;
     const speed = SPEED[params.speed];
@@ -256,7 +386,7 @@ export const runnerTrack: GeneratorPiece<RunnerTrackParams> = {
  * Tvrzení „hratelné z konstrukce“ nad hotovou úrovní: vrací porušení, prázdné
  * pole = hratelná. Řada = překážky se stejným `z`.
  */
-export function checkRunnerLevel(level: ArcadeLevel, speed: RunnerSpeed, ramp: readonly number[] | undefined = rampMarks(level.length)): string[] {
+export function checkRunnerLevel(level: ArcadeLevel, speed: RunnerSpeed, ramp: readonly number[] | undefined = level.sectionStarts ?? rampMarks(level.length)): string[] {
   const issues: string[] = [];
   const rows = new Map<number, BodyInit[]>();
   for (const body of level.bodies) {

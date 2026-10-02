@@ -1,13 +1,13 @@
 {
   "schema": "play-regression-report.v1",
-  "measuredAt": "2026-10-02T05:29:59.216Z",
+  "measuredAt": "2026-10-02T06:19:00.743Z",
   "seed": 1,
   "rows": [
     {
       "id": "chase_escape-1",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 52.5,
+      "draftMs": 138.4,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -20,14 +20,14 @@
       "winsAtTick": 2400,
       "entities": 3,
       "rules": 3,
-      "compileMs": 193.1,
-      "verifyMs": 134
+      "compileMs": 513.9,
+      "verifyMs": 390.8
     },
     {
       "id": "chase_escape-2",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 9.5,
+      "draftMs": 11.2,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -40,14 +40,14 @@
       "winsAtTick": 2400,
       "entities": 3,
       "rules": 3,
-      "compileMs": 89.1,
-      "verifyMs": 151.5
+      "compileMs": 233.9,
+      "verifyMs": 291
     },
     {
       "id": "chase_escape-3",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 3.5,
+      "draftMs": 3.6,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -60,14 +60,14 @@
       "winsAtTick": 2400,
       "entities": 3,
       "rules": 3,
-      "compileMs": 78.5,
-      "verifyMs": 99.4
+      "compileMs": 188.6,
+      "verifyMs": 285.8
     },
     {
       "id": "chase_escape-4",
       "bucket": "chase_escape",
       "expectArchetype": "chase_escape",
-      "draftMs": 2.5,
+      "draftMs": 2.8,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -80,14 +80,14 @@
       "winsAtTick": 2400,
       "entities": 3,
       "rules": 3,
-      "compileMs": 69.1,
-      "verifyMs": 110.2
+      "compileMs": 248.9,
+      "verifyMs": 283.3
     },
     {
       "id": "collect_exit-1",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 3.8,
+      "draftMs": 6.4,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -100,14 +100,14 @@
       "winsAtTick": 300,
       "entities": 9,
       "rules": 3,
-      "compileMs": 20.9,
-      "verifyMs": 12.4
+      "compileMs": 75,
+      "verifyMs": 18.9
     },
     {
       "id": "collect_exit-2",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 2.2,
+      "draftMs": 2.3,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -120,14 +120,14 @@
       "winsAtTick": 436,
       "entities": 13,
       "rules": 3,
-      "compileMs": 22.8,
-      "verifyMs": 22.2
+      "compileMs": 87.1,
+      "verifyMs": 24.2
     },
     {
       "id": "collect_exit-3",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 1.4,
+      "draftMs": 1.6,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -140,14 +140,14 @@
       "winsAtTick": 169,
       "entities": 6,
       "rules": 3,
-      "compileMs": 10.8,
-      "verifyMs": 10.6
+      "compileMs": 14,
+      "verifyMs": 12.8
     },
     {
       "id": "collect_exit-4",
       "bucket": "collect_exit",
       "expectArchetype": "collect_exit",
-      "draftMs": 1.9,
+      "draftMs": 2,
       "archetype": "collect_exit",
       "genre": "arena.collect",
       "genreHit": true,
@@ -160,14 +160,14 @@
       "winsAtTick": 397,
       "entities": 10,
       "rules": 3,
-      "compileMs": 31.7,
-      "verifyMs": 15.4
+      "compileMs": 17.4,
+      "verifyMs": 28.2
     },
     {
       "id": "survival_timer-1",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 2.9,
+      "draftMs": 2.8,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -180,14 +180,14 @@
       "winsAtTick": 3600,
       "entities": 3,
       "rules": 3,
-      "compileMs": 130.5,
-      "verifyMs": 167.2
+      "compileMs": 273.3,
+      "verifyMs": 326
     },
     {
       "id": "survival_timer-2",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 9.9,
+      "draftMs": 24.2,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -197,17 +197,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 62.2,
-      "verifyMs": 38.8
+      "compileMs": 168.1,
+      "verifyMs": 145.4
     },
     {
       "id": "survival_timer-3",
       "bucket": "survival_timer",
       "expectArchetype": "survival_timer",
-      "draftMs": 1.5,
+      "draftMs": 2.7,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": true,
@@ -220,8 +220,8 @@
       "winsAtTick": 2700,
       "entities": 3,
       "rules": 3,
-      "compileMs": 120.4,
-      "verifyMs": 146.2
+      "compileMs": 372.1,
+      "verifyMs": 478.1
     },
     {
       "id": "survival_timer-4",
@@ -240,14 +240,14 @@
       "winsAtTick": 4800,
       "entities": 3,
       "rules": 3,
-      "compileMs": 218,
-      "verifyMs": 270.2
+      "compileMs": 397.4,
+      "verifyMs": 604.5
     },
     {
       "id": "checkpoint_race-1",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 4,
+      "draftMs": 6.1,
       "archetype": "hazard_crossing",
       "genre": "voyage.race",
       "genreHit": true,
@@ -260,14 +260,14 @@
       "winsAtTick": 1374,
       "entities": 48,
       "rules": 5,
-      "compileMs": 63.4,
-      "verifyMs": 52.2
+      "compileMs": 99.1,
+      "verifyMs": 97
     },
     {
       "id": "checkpoint_race-2",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 2.7,
+      "draftMs": 4.1,
       "archetype": "hazard_crossing",
       "genre": "voyage.race",
       "genreHit": true,
@@ -280,14 +280,14 @@
       "winsAtTick": 1374,
       "entities": 48,
       "rules": 5,
-      "compileMs": 31.4,
-      "verifyMs": 37.1
+      "compileMs": 74.1,
+      "verifyMs": 49.5
     },
     {
       "id": "checkpoint_race-3",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 5.3,
+      "draftMs": 7.1,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": false,
@@ -300,14 +300,14 @@
       "winsAtTick": 998,
       "entities": 11,
       "rules": 4,
-      "compileMs": 82.5,
-      "verifyMs": 59
+      "compileMs": 117.7,
+      "verifyMs": 103.3
     },
     {
       "id": "checkpoint_race-4",
       "bucket": "checkpoint_race",
       "expectArchetype": "checkpoint_race",
-      "draftMs": 1.7,
+      "draftMs": 2.2,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -317,17 +317,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 21,
-      "verifyMs": 30.5
+      "compileMs": 144.4,
+      "verifyMs": 155.5
     },
     {
       "id": "delivery-1",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 3.3,
+      "draftMs": 3,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -340,14 +340,14 @@
       "winsAtTick": 510,
       "entities": 11,
       "rules": 4,
-      "compileMs": 16.7,
-      "verifyMs": 23.2
+      "compileMs": 20.5,
+      "verifyMs": 25.3
     },
     {
       "id": "delivery-2",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 1.9,
+      "draftMs": 2.1,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -360,14 +360,14 @@
       "winsAtTick": 970,
       "entities": 10,
       "rules": 4,
-      "compileMs": 32.5,
-      "verifyMs": 42.6
+      "compileMs": 54.3,
+      "verifyMs": 81.1
     },
     {
       "id": "delivery-3",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 1.8,
+      "draftMs": 2.4,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -380,14 +380,14 @@
       "winsAtTick": 970,
       "entities": 10,
       "rules": 4,
-      "compileMs": 31.3,
-      "verifyMs": 37.2
+      "compileMs": 76.3,
+      "verifyMs": 83.4
     },
     {
       "id": "delivery-4",
       "bucket": "delivery",
       "expectArchetype": "delivery",
-      "draftMs": 1.7,
+      "draftMs": 1.8,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -400,14 +400,14 @@
       "winsAtTick": 970,
       "entities": 10,
       "rules": 4,
-      "compileMs": 29.5,
-      "verifyMs": 42.1
+      "compileMs": 82.3,
+      "verifyMs": 47.6
     },
     {
       "id": "switch_puzzle-1",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 1.8,
+      "draftMs": 2,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -420,14 +420,14 @@
       "winsAtTick": 970,
       "entities": 10,
       "rules": 4,
-      "compileMs": 31.1,
-      "verifyMs": 37.2
+      "compileMs": 81.4,
+      "verifyMs": 49
     },
     {
       "id": "switch_puzzle-2",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
-      "draftMs": 1.8,
+      "draftMs": 2,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": true,
@@ -440,31 +440,11 @@
       "winsAtTick": 183,
       "entities": 8,
       "rules": 4,
-      "compileMs": 6,
-      "verifyMs": 7.5
+      "compileMs": 6.9,
+      "verifyMs": 8.3
     },
     {
       "id": "switch_puzzle-3",
-      "bucket": "switch_puzzle",
-      "expectArchetype": "switch_puzzle",
-      "draftMs": 1.7,
-      "archetype": "switch_puzzle",
-      "genre": "quest.spatial",
-      "genreHit": true,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 5,
-      "keypointsTotal": 5,
-      "winsAtTick": 970,
-      "entities": 10,
-      "rules": 4,
-      "compileMs": 27.5,
-      "verifyMs": 41.2
-    },
-    {
-      "id": "switch_puzzle-4",
       "bucket": "switch_puzzle",
       "expectArchetype": "switch_puzzle",
       "draftMs": 1.9,
@@ -480,14 +460,34 @@
       "winsAtTick": 970,
       "entities": 10,
       "rules": 4,
-      "compileMs": 31.7,
-      "verifyMs": 40.4
+      "compileMs": 99.4,
+      "verifyMs": 173.5
+    },
+    {
+      "id": "switch_puzzle-4",
+      "bucket": "switch_puzzle",
+      "expectArchetype": "switch_puzzle",
+      "draftMs": 2.2,
+      "archetype": "switch_puzzle",
+      "genre": "quest.spatial",
+      "genreHit": true,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 5,
+      "keypointsTotal": 5,
+      "winsAtTick": 970,
+      "entities": 10,
+      "rules": 4,
+      "compileMs": 37.5,
+      "verifyMs": 111.9
     },
     {
       "id": "hazard_crossing-1",
       "bucket": "hazard_platforming",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 2.6,
+      "draftMs": 4,
       "archetype": "hazard_crossing",
       "genre": "platformer.default",
       "genreHit": true,
@@ -497,17 +497,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1701,
-      "entities": 55,
-      "rules": 6,
-      "compileMs": 50.3,
-      "verifyMs": 42.9
+      "winsAtTick": 2430,
+      "entities": 71,
+      "rules": 7,
+      "compileMs": 187.8,
+      "verifyMs": 162.1
     },
     {
       "id": "hazard_crossing-2",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 1.6,
+      "draftMs": 2,
       "archetype": "hazard_crossing",
       "genre": "platformer.default",
       "genreHit": true,
@@ -517,17 +517,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1701,
-      "entities": 55,
-      "rules": 6,
-      "compileMs": 28.7,
-      "verifyMs": 38.8
+      "winsAtTick": 2430,
+      "entities": 71,
+      "rules": 7,
+      "compileMs": 124.4,
+      "verifyMs": 141.3
     },
     {
       "id": "hazard_crossing-3",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 2.9,
+      "draftMs": 5.6,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": false,
@@ -537,17 +537,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 16.8,
-      "verifyMs": 24.6
+      "compileMs": 145,
+      "verifyMs": 191.7
     },
     {
       "id": "hazard_crossing-4",
       "bucket": "hazard_crossing",
       "expectArchetype": "hazard_crossing",
-      "draftMs": 1.2,
+      "draftMs": 1.9,
       "archetype": "hazard_crossing",
       "genre": "platformer.default",
       "genreHit": true,
@@ -557,17 +557,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1701,
-      "entities": 55,
-      "rules": 6,
-      "compileMs": 26.7,
-      "verifyMs": 39.9
+      "winsAtTick": 2430,
+      "entities": 71,
+      "rules": 7,
+      "compileMs": 160.3,
+      "verifyMs": 209.9
     },
     {
       "id": "combat_lite-1",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 1.3,
+      "draftMs": 1.7,
       "archetype": "combat_lite",
       "genre": "arena.fight",
       "genreHit": true,
@@ -580,14 +580,14 @@
       "winsAtTick": 415,
       "entities": 4,
       "rules": 3,
-      "compileMs": 22.5,
-      "verifyMs": 23.2
+      "compileMs": 24.5,
+      "verifyMs": 65.5
     },
     {
       "id": "combat_lite-2",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 2,
+      "draftMs": 1.7,
       "archetype": "combat_lite",
       "genre": "arena.fight",
       "genreHit": true,
@@ -600,14 +600,14 @@
       "winsAtTick": 415,
       "entities": 4,
       "rules": 3,
-      "compileMs": 14.1,
-      "verifyMs": 13.6
+      "compileMs": 29.7,
+      "verifyMs": 20.5
     },
     {
       "id": "combat_lite-3",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 1.6,
+      "draftMs": 1.8,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": false,
@@ -620,14 +620,14 @@
       "winsAtTick": 998,
       "entities": 11,
       "rules": 4,
-      "compileMs": 28.3,
-      "verifyMs": 41.7
+      "compileMs": 82.9,
+      "verifyMs": 122.4
     },
     {
       "id": "combat_lite-4",
       "bucket": "combat_lite",
       "expectArchetype": "combat_lite",
-      "draftMs": 1.7,
+      "draftMs": 1.6,
       "archetype": "switch_puzzle",
       "genre": "quest.spatial",
       "genreHit": false,
@@ -640,14 +640,14 @@
       "winsAtTick": 970,
       "entities": 10,
       "rules": 4,
-      "compileMs": 43.4,
-      "verifyMs": 44.5
+      "compileMs": 66.1,
+      "verifyMs": 57.5
     },
     {
       "id": "ambiguity-1",
       "bucket": "ambiguity",
       "expectArchetype": null,
-      "draftMs": 6,
+      "draftMs": 11.4,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": null,
@@ -657,17 +657,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 23.4,
-      "verifyMs": 28.3
+      "compileMs": 148.7,
+      "verifyMs": 131
     },
     {
       "id": "contradiction-1",
       "bucket": "contradiction",
       "expectArchetype": null,
-      "draftMs": 3.2,
+      "draftMs": 4.3,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": null,
@@ -677,17 +677,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 29.9,
-      "verifyMs": 29.8
+      "compileMs": 120,
+      "verifyMs": 180.6
     },
     {
       "id": "scale-1",
       "bucket": "scale",
       "expectArchetype": null,
-      "draftMs": 1.6,
+      "draftMs": 2,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": null,
@@ -700,14 +700,14 @@
       "winsAtTick": 4800,
       "entities": 3,
       "rules": 3,
-      "compileMs": 206.1,
-      "verifyMs": 214.7
+      "compileMs": 499,
+      "verifyMs": 584.5
     },
     {
       "id": "remix-1",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 1.6,
+      "draftMs": 1.8,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": null,
@@ -717,36 +717,16 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 14.4,
-      "verifyMs": 22.4
+      "compileMs": 90.3,
+      "verifyMs": 158.9
     },
     {
       "id": "remix-2",
       "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 1.4,
-      "archetype": "hazard_crossing",
-      "genre": "runner.default",
-      "genreHit": null,
-      "specValid": true,
-      "compiled": true,
-      "reason": null,
-      "publishEligible": true,
-      "keypointsPassed": 4,
-      "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
-      "rules": 4,
-      "compileMs": 14.4,
-      "verifyMs": 23.1
-    },
-    {
-      "id": "remix-3",
-      "bucket": "remix",
-      "expectArchetype": null,
       "draftMs": 1.6,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
@@ -757,17 +737,17 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 14.3,
-      "verifyMs": 26.1
+      "compileMs": 73.6,
+      "verifyMs": 131.2
     },
     {
-      "id": "count-1",
-      "bucket": "count",
+      "id": "remix-3",
+      "bucket": "remix",
       "expectArchetype": null,
-      "draftMs": 1.7,
+      "draftMs": 1.5,
       "archetype": "hazard_crossing",
       "genre": "runner.default",
       "genreHit": null,
@@ -777,17 +757,37 @@
       "publishEligible": true,
       "keypointsPassed": 4,
       "keypointsTotal": 4,
-      "winsAtTick": 1522,
-      "entities": 73,
+      "winsAtTick": 2897,
+      "entities": 111,
       "rules": 4,
-      "compileMs": 17.1,
-      "verifyMs": 26.7
+      "compileMs": 84.9,
+      "verifyMs": 157.1
+    },
+    {
+      "id": "count-1",
+      "bucket": "count",
+      "expectArchetype": null,
+      "draftMs": 1.8,
+      "archetype": "hazard_crossing",
+      "genre": "runner.default",
+      "genreHit": null,
+      "specValid": true,
+      "compiled": true,
+      "reason": null,
+      "publishEligible": true,
+      "keypointsPassed": 4,
+      "keypointsTotal": 4,
+      "winsAtTick": 2897,
+      "entities": 111,
+      "rules": 4,
+      "compileMs": 159.3,
+      "verifyMs": 180.1
     },
     {
       "id": "relation-1",
       "bucket": "relation",
       "expectArchetype": null,
-      "draftMs": 1.5,
+      "draftMs": 1.9,
       "archetype": "survival_timer",
       "genre": "arena.escape",
       "genreHit": null,
@@ -800,8 +800,8 @@
       "winsAtTick": 2400,
       "entities": 3,
       "rules": 3,
-      "compileMs": 89.2,
-      "verifyMs": 104.3
+      "compileMs": 200.5,
+      "verifyMs": 165.9
     }
   ],
   "summary": {
@@ -811,7 +811,7 @@
     "total": 40,
     "genreHits": 26,
     "withExpect": 32,
-    "medianCompileMs": 29.9,
-    "p90CompileMs": 120.4
+    "medianCompileMs": 99.1,
+    "p90CompileMs": 273.3
   }
 }

@@ -1,5 +1,5 @@
 {
- "compilerVersion": "play-compiler-v6/arcade-v2",
+ "compilerVersion": "play-compiler-v7/arcade-v2",
  "bandSeconds": {
   "min": 30,
   "max": 90
@@ -14,14 +14,14 @@
    "sentences": 260,
    "playable": 260,
    "publishable": 260,
-   "inBand": 20,
-   "inBandShare": 0.077,
+   "inBand": 95,
+   "inBandShare": 0.365,
    "idle": {
     "won": 0,
-    "lost": 217,
-    "unfinished": 43
+    "lost": 243,
+    "unfinished": 17
    },
-   "idleLosesShare": 0.835,
+   "idleLosesShare": 0.935,
    "livesOver1": 260,
    "livesOver1Share": 1,
    "scoreDecides": 0,
@@ -70,11 +70,11 @@
     },
     "platformer": {
      "sentences": 26,
-     "medianWinSeconds": 28.37,
-     "minWinSeconds": 27.33,
-     "maxWinSeconds": 30.32,
-     "inBand": 2,
-     "idleLoses": 0,
+     "medianWinSeconds": 42.53,
+     "minWinSeconds": 35.13,
+     "maxWinSeconds": 51.3,
+     "inBand": 26,
+     "idleLoses": 26,
      "livesOver1": 26
     },
     "quest.spatial": {
@@ -97,10 +97,10 @@
     },
     "runner": {
      "sentences": 51,
-     "medianWinSeconds": 25.37,
-     "minWinSeconds": 25.37,
-     "maxWinSeconds": 25.37,
-     "inBand": 0,
+     "medianWinSeconds": 39.98,
+     "minWinSeconds": 35.07,
+     "maxWinSeconds": 47.97,
+     "inBand": 51,
      "idleLoses": 51,
      "livesOver1": 51
     },
@@ -128,14 +128,14 @@
    "sentences": 200,
    "playable": 200,
    "publishable": 200,
-   "inBand": 17,
-   "inBandShare": 0.085,
+   "inBand": 71,
+   "inBandShare": 0.355,
    "idle": {
     "won": 0,
-    "lost": 163,
-    "unfinished": 37
+    "lost": 186,
+    "unfinished": 14
    },
-   "idleLosesShare": 0.815,
+   "idleLosesShare": 0.93,
    "livesOver1": 200,
    "livesOver1Share": 1,
    "scoreDecides": 0,
@@ -184,11 +184,11 @@
     },
     "platformer": {
      "sentences": 23,
-     "medianWinSeconds": 28.33,
-     "minWinSeconds": 27.33,
-     "maxWinSeconds": 30.32,
-     "inBand": 2,
-     "idleLoses": 0,
+     "medianWinSeconds": 42.53,
+     "minWinSeconds": 35.13,
+     "maxWinSeconds": 51.3,
+     "inBand": 23,
+     "idleLoses": 23,
      "livesOver1": 23
     },
     "quest.spatial": {
@@ -211,10 +211,10 @@
     },
     "runner": {
      "sentences": 33,
-     "medianWinSeconds": 25.37,
-     "minWinSeconds": 25.37,
-     "maxWinSeconds": 25.37,
-     "inBand": 0,
+     "medianWinSeconds": 40.55,
+     "minWinSeconds": 35.07,
+     "maxWinSeconds": 47.97,
+     "inBand": 33,
      "idleLoses": 33,
      "livesOver1": 33
     },
@@ -242,14 +242,14 @@
    "sentences": 60,
    "playable": 60,
    "publishable": 60,
-   "inBand": 3,
-   "inBandShare": 0.05,
+   "inBand": 24,
+   "inBandShare": 0.4,
    "idle": {
     "won": 0,
-    "lost": 54,
-    "unfinished": 6
+    "lost": 57,
+    "unfinished": 3
    },
-   "idleLosesShare": 0.9,
+   "idleLosesShare": 0.95,
    "livesOver1": 60,
    "livesOver1Share": 1,
    "scoreDecides": 0,
@@ -298,11 +298,11 @@
     },
     "platformer": {
      "sentences": 3,
-     "medianWinSeconds": 28.4,
-     "minWinSeconds": 27.33,
-     "maxWinSeconds": 29.33,
-     "inBand": 0,
-     "idleLoses": 0,
+     "medianWinSeconds": 42.05,
+     "minWinSeconds": 37.2,
+     "maxWinSeconds": 48.43,
+     "inBand": 3,
+     "idleLoses": 3,
      "livesOver1": 3
     },
     "quest.spatial": {
@@ -325,10 +325,10 @@
     },
     "runner": {
      "sentences": 18,
-     "medianWinSeconds": 25.37,
-     "minWinSeconds": 25.37,
-     "maxWinSeconds": 25.37,
-     "inBand": 0,
+     "medianWinSeconds": 39.52,
+     "minWinSeconds": 35.7,
+     "maxWinSeconds": 47.08,
+     "inBand": 18,
      "idleLoses": 18,
      "livesOver1": 18
     },
@@ -356,17 +356,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1680
+    "tick": 2361
    },
-   "winSeconds": 28,
-   "inBand": false,
+   "winSeconds": 39.35,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4381
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 34,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -461,17 +461,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2642
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 44.03,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 351
+    "tick": 412
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 28,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -496,17 +496,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2697
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 44.95,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 340
+    "tick": 529
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 25,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -531,17 +531,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2593
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 43.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 501
+    "tick": 1876
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 27,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -566,17 +566,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2372
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.53,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 343
+    "tick": 399
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 9,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -601,17 +601,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2372
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.53,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 600
+    "tick": 782
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 15,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -636,13 +636,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2849
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 47.48,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 615
+    "tick": 398
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -706,17 +706,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2851
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 47.52,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 441
+    "tick": 1131
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 15,
+   "botScore": 9,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -741,17 +741,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2254
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 37.57,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 437
+    "tick": 1213
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 23,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -776,17 +776,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2442
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 40.7,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 430
+    "tick": 526
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 15,
+   "botScore": 12,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -811,17 +811,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2374
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.57,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 343
+    "tick": 865
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 15,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -846,17 +846,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2122
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 35.37,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 340
+    "tick": 1018
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 12,
+   "botScore": 18,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -881,17 +881,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2221
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 37.02,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 773
+    "tick": 780
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 6,
+   "botScore": 27,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -916,17 +916,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2853
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 47.55,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 358
+    "tick": 653
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 18,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -951,13 +951,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2233
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 37.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 334
+    "tick": 767
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -986,17 +986,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1696
+    "tick": 3001
    },
-   "winSeconds": 28.27,
-   "inBand": false,
+   "winSeconds": 50.02,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 40,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1021,17 +1021,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1712
+    "tick": 2751
    },
-   "winSeconds": 28.53,
-   "inBand": false,
+   "winSeconds": 45.85,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 40,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1056,17 +1056,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1640
+    "tick": 2523
    },
-   "winSeconds": 27.33,
-   "inBand": false,
+   "winSeconds": 42.05,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4981
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 39,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1091,17 +1091,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1704
+    "tick": 2232
    },
-   "winSeconds": 28.4,
-   "inBand": false,
+   "winSeconds": 37.2,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 31,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1126,17 +1126,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1670
+    "tick": 2284
    },
-   "winSeconds": 27.83,
-   "inBand": false,
+   "winSeconds": 38.07,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4321
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 31,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1161,17 +1161,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1791
+    "tick": 2924
    },
-   "winSeconds": 29.85,
-   "inBand": false,
+   "winSeconds": 48.73,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 40,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1196,17 +1196,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1695
+    "tick": 3078
    },
-   "winSeconds": 28.25,
-   "inBand": false,
+   "winSeconds": 51.3,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 43,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1266,17 +1266,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1671
+    "tick": 2377
    },
-   "winSeconds": 27.85,
-   "inBand": false,
+   "winSeconds": 39.62,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4561
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 34,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1301,17 +1301,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1734
+    "tick": 2108
    },
-   "winSeconds": 28.9,
-   "inBand": false,
+   "winSeconds": 35.13,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 31,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1336,13 +1336,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1698
+    "tick": 2818
    },
-   "winSeconds": 28.3,
-   "inBand": false,
+   "winSeconds": 46.97,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5041
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -1371,17 +1371,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1765
+    "tick": 2260
    },
-   "winSeconds": 29.42,
-   "inBand": false,
+   "winSeconds": 37.67,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4501
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 34,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1406,17 +1406,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1678
+    "tick": 2898
    },
-   "winSeconds": 27.97,
-   "inBand": false,
+   "winSeconds": 48.3,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 43,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1441,17 +1441,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1668
+    "tick": 2781
    },
-   "winSeconds": 27.8,
-   "inBand": false,
+   "winSeconds": 46.35,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 40,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1476,17 +1476,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2464
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 41.07,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 688
+    "tick": 1062
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 9,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1511,17 +1511,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1680
+    "tick": 2236
    },
-   "winSeconds": 28,
-   "inBand": false,
+   "winSeconds": 37.27,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4501
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 34,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1546,17 +1546,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2357
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.28,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 860
+    "tick": 752
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -1581,17 +1581,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2152
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 35.87,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 674
+    "tick": 944
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 15,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -2316,17 +2316,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1805
+    "tick": 2224
    },
-   "winSeconds": 30.08,
+   "winSeconds": 37.07,
    "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4561
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 34,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -2526,17 +2526,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1819
+    "tick": 2766
    },
-   "winSeconds": 30.32,
+   "winSeconds": 46.1,
    "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5101
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 38,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -2771,17 +2771,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2853
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 47.55,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 679
+    "tick": 526
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 20,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -2981,17 +2981,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2433
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 40.55,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 775
+    "tick": 960
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 31,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -3121,13 +3121,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2569
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 42.82,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 925
+    "tick": 989
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -3226,17 +3226,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2198
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 36.63,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 621
+    "tick": 775
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 12,
+   "botScore": 28,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -3541,17 +3541,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2771
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 46.18,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 338
+    "tick": 1000
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 15,
+   "botScore": 17,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -3576,17 +3576,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2285
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 38.08,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 615
+    "tick": 862
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 6,
+   "botScore": 24,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -3821,17 +3821,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1699
+    "tick": 2551
    },
-   "winSeconds": 28.32,
-   "inBand": false,
+   "winSeconds": 42.52,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4861
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 38,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -3926,17 +3926,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1774
+    "tick": 2608
    },
-   "winSeconds": 29.57,
-   "inBand": false,
+   "winSeconds": 43.47,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4921
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 38,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -3961,17 +3961,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1718
+    "tick": 2700
    },
-   "winSeconds": 28.63,
-   "inBand": false,
+   "winSeconds": 45,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 40,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -4066,17 +4066,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1798
+    "tick": 3056
    },
-   "winSeconds": 29.97,
-   "inBand": false,
+   "winSeconds": 50.93,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 43,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -4276,17 +4276,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1700
+    "tick": 2552
    },
-   "winSeconds": 28.33,
-   "inBand": false,
+   "winSeconds": 42.53,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4861
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 35,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -4311,17 +4311,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2878
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 47.97,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 625
+    "tick": 1123
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 14,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -4661,17 +4661,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2399
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.98,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 344
+    "tick": 530
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 22,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -4976,17 +4976,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2728
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 45.47,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 584
+    "tick": 1057
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 12,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -5396,17 +5396,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1724
+    "tick": 2445
    },
-   "winSeconds": 28.73,
-   "inBand": false,
+   "winSeconds": 40.75,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4621
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 34,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -5991,17 +5991,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2425
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 40.42,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 333
+    "tick": 945
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 18,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -6026,17 +6026,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2104
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 35.07,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 678
+    "tick": 1135
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 33,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -6096,17 +6096,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2838
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 47.3,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 744
+    "tick": 1636
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 33,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -6971,17 +6971,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2803
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 46.72,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 350
+    "tick": 764
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 12,
+   "botScore": 18,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7146,17 +7146,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2162
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 36.03,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 527
+    "tick": 659
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 24,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7181,17 +7181,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2208
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 36.8,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 340
+    "tick": 724
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 24,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7216,17 +7216,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2581
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 43.02,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 514
+    "tick": 872
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7496,17 +7496,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2593
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 43.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 501
+    "tick": 1876
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 21,
+   "botScore": 27,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7531,17 +7531,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2372
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.53,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 600
+    "tick": 782
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 15,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7566,17 +7566,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1704
+    "tick": 2232
    },
-   "winSeconds": 28.4,
-   "inBand": false,
+   "winSeconds": 37.2,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 31,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7601,17 +7601,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1640
+    "tick": 2523
    },
-   "winSeconds": 27.33,
-   "inBand": false,
+   "winSeconds": 42.05,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 4981
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 27,
+   "botScore": 39,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -7636,17 +7636,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2357
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.28,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 860
+    "tick": 752
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8266,17 +8266,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2219
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 36.98,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 449
+    "tick": 402
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8301,17 +8301,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2142
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 35.7,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 549
+    "tick": 669
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 15,
+   "botScore": 12,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8371,17 +8371,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2358
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.3,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 353
+    "tick": 764
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 9,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8406,17 +8406,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2209
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 36.82,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 522
+    "tick": 623
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 15,
+   "botScore": 6,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8441,13 +8441,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2532
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 42.2,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 353
+    "tick": 763
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -8476,17 +8476,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2561
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 42.68,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 449
+    "tick": 528
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 15,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8616,17 +8616,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2370
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.5,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 357
+    "tick": 646
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 6,
+   "botScore": 33,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8686,17 +8686,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1760
+    "tick": 2906
    },
-   "winSeconds": 29.33,
-   "inBand": false,
+   "winSeconds": 48.43,
+   "inBand": true,
    "idle": {
-    "end": "unfinished",
-    "tick": 5400
+    "end": "lost",
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 28,
+   "botScore": 40,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8756,17 +8756,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2588
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 43.13,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 546
+    "tick": 538
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 13,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8791,17 +8791,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2161
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 36.02,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 345
+    "tick": 830
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 33,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -8896,17 +8896,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2336
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 38.93,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 505
+    "tick": 640
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 18,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -9106,17 +9106,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2396
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 39.93,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 704
+    "tick": 1026
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 24,
+   "botScore": 36,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -9176,13 +9176,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2825
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 47.08,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 351
+    "tick": 882
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -9316,17 +9316,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2734
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 45.57,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 703
+    "tick": 656
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 6,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -9351,17 +9351,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2525
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 42.08,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 359
+    "tick": 776
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 15,
+   "botScore": 21,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {
@@ -9386,17 +9386,17 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1522
+    "tick": 2203
    },
-   "winSeconds": 25.37,
-   "inBand": false,
+   "winSeconds": 36.72,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 425
+    "tick": 867
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 12,
+   "botScore": 18,
    "scoreDecides": false,
    "scoreGoal": null,
    "said": {

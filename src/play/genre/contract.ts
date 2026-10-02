@@ -144,12 +144,13 @@ export interface GenreModule<G extends GenreId = GenreId> {
 
 /**
  * Režim → role → parametr modulu, ze kterého modul staví generátor, cíl i
- * `count` role. Žánr bez řádku počty nečte (běžec a plavba staví trať podle
- * délky, ne podle počtu; plošinovka počítá jen věci ke sběru, P35 T3). Hlídá
- * test, že každý parametr má modul v `paramBounds`.
+ * `count` role. Žánr bez řádku počty nečte (plavba staví trať podle délky,
+ * ne podle počtu; plošinovka počítá jen věci ke sběru, P35 T3; běžec od P36A T4
+ * natahuje trať podle překážek i věcí). Hlídá test, že každý parametr má modul
+ * v `paramBounds`.
  */
 export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode<G>]?: Readonly<Partial<Record<CountRole, string>>> } } = {
-  runner: {},
+  runner: { default: { enemy: 'obstacles', collectible: 'items' } },
   platformer: { default: { collectible: 'items' } },
   arena: { escape: { enemy: 'chasers', collectible: 'items' }, collect: { collectible: 'items' }, fight: { enemy: 'enemies' } },
   voyage: {},

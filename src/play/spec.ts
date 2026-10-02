@@ -274,6 +274,8 @@ export const runnerParamsSchema = z
      * ten hru označí za delegovanou a čipy remixu běžce by ztichly (`director/remix.ts`).
      */
     feel: z.literal(2).optional(),
+    /** Trať ze tří úseků s délkou podle obsahu (P36A T4); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    sections: z.literal(3).optional(),
   })
   .strict();
 export type RunnerParams = z.infer<typeof runnerParamsSchema>;

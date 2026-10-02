@@ -1,6 +1,6 @@
 # Hloubka her – měřítko P36A (T1)
 
-Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T3, oddíl dole).
+Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T4 části 1, oddíl dole).
 
 ## Jak přeměřit
 
@@ -99,6 +99,26 @@ Přeměřeno s kompilátorem `play-compiler-v5/arcade-v2`. Úkol v prostoru má 
 - **Robot vyhrává všech 92 úkolů na stejných semínkách jako dřív.** V prostoru uhýbá pronásledovateli, proto výhra trvá déle; na místě posouvá cíl nejvýš po ~1,5 s, takže přetečení nikdy nezažije.
 - **Rychlost pronásledovatele** (sonda, 100 semínek, jeden pronásledovatel): 60 a 70 robot vyhraje 100/100 u 5 cílů i u 8 cílů × 3 stavy, 80 už jen 80/100 u velkého úkolu, 90 15/100. Nečinný hráč při každé z nich přijde o první život po ~5,5 s a o hru po ~10,3 s (férový start roste s rychlostí). Zůstala 60 – nejvíc rezervy pro robota a nečinnému se nic nemění; rychlost je volná páka pro rostoucí tlak v T4.
 - Ostatní žánry: řádky, semínka i časy beze změny.
+
+## Po T4, část 1 – běžec a skákačka z úseků (2. 10. 2026)
+
+Přeměřeno s kompilátorem `play-compiler-v7/arcade-v2`. Běžec: trať ze tří úseků (rozjezd, hustší, nejtěžší), každý o stupeň hustší a o 10 % rychlejší; řad tolik, kolik věta počítá (překážky nebo věci ke sběru), bez počtu 22–30 podle semínka, pak natažená nebo zkrácená do 33–84 s robota. Skákačka: tři úseky od lehčí po těžší obtížnost, druhý a třetí začínají checkpointem, ve třetím jezdí pohyblivá plošina; věc ke sběru nad pět přidá dvě plošiny; odhad robota 36–62 s a hodiny = odhad × 1,6 + 10 s, nejvýš 88 s.
+
+| | všech 260 | poptávka 200 | vývojová 60 | cíl plánu |
+|---|---:|---:|---:|---:|
+| robot vyhraje za 30–90 s | 20 → **95 = 36,5 %** | 71 = 35,5 % | 24 = 40,0 % | ≥ 85 % (části 2–3 T4) |
+| nečinný hráč prohraje | 217 → **243 = 93,5 %** | 186 = 93,0 % | 57 = 95,0 % | ≥ 95 % |
+| životy > 1 | 260 = 100 % | 200 = 100 % | 60 = 100 % | ≥ 80 % – splněno |
+| hra vyšla / publikovatelná | 260 / 260 | 200 / 200 | 60 / 60 | |
+
+| žánr | vět | robot – medián výhry | rozsah | v pásmu | nečinný hráč |
+|---|---:|---:|---:|---:|---|
+| runner | 51 | 25,4 → **40,0 s** | 35,1–48,0 s (46 různých časů) | 0 → 51 | prohraje 51/51 nárazy, 6,6–31,3 s (medián 12,9 s) |
+| platformer | 26 | 28,4 → **42,5 s** | 35,1–51,3 s | 2 → 26 | dřív nedohrál 26/26, teď prohraje 26/26 na hodinách, 71–88 s |
+
+- **Délka podle věty:** žádná z 260 vět počet překážek ani věcí neříká, rozptyl dělá semínko věty (počet řad a plošin). Počet z věty trať natáhne: „run and dodge 20 cars“ / „… 45 cars“ a „collect 3 flies“ / „… 8 flies“ drží test `src/play/genre/__tests__/sections.test.ts`.
+- **Nečinný běžec** prohraje později než dřív (8,4 → 12,9 s medián): rozjezd má jednu překážku v řadě, takže do startovního pruhu narazí řidčeji.
+- Semínka se nepohnula u žádné věty, ostatní žánry beze změny. Pásmo a nečinného hráče dotáhnou části 2 (aréna: sběr 17 vět bez nebezpečí, souboj, útěk) a 3 (úkol, plavba).
 
 ## Test (`depth.test.ts`)
 
