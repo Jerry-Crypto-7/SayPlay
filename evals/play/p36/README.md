@@ -9,7 +9,7 @@ npx vitest run --config vitest.measure.mts evals/play/p36/depth.measure.ts
 npx vitest run evals/play/p36/depth.test.ts
 ```
 
-První příkaz přepíše `depth.json` (asi 10 s, bez modelu a bez sítě), druhý report hlídá. Report nenese žádný čas ani datum, takže nový běh bez změny kódu nechá `depth.json` v gitu beze změny. Výpočet je v `depth.ts`.
+První příkaz přepíše `depth.json` (asi 10 s, bez modelu a bez sítě), druhý report hlídá. Režisér (T9) se měří zvlášť na lokálním modelu – `director.cmd`, viz oddíl T9. Report nenese žádný čas ani datum, takže nový běh bez změny kódu nechá `depth.json` v gitu beze změny. Výpočet je v `depth.ts`.
 
 ## Co se měří
 
@@ -179,6 +179,45 @@ Přeměřeno s kompilátorem `play-compiler-v11/arcade-v2`. Každá nová hra ž
 - **Inference:** 100 % nese hlavně bonus za životy a čas – nejhorší výhra má jeden život a nulový čas, takže 2× splní skoro každá hra konstrukcí. Kombo samo přidá jen tam, kde robot sbírá v řadě (běžec, skákačka, plavba); robot běžce a skákačky mince cíleně nehoní.
 - **Aréna kombo nemá:** `score` je tam velikost hrdiny a postup k `grow_to` – násobič by cíl zkrátil. Dostává jen bonus na konci.
 - **Cílové skóre z věty** („score 100 points“, „get 500“, `readTargetScore`) dnes v korpusu ani ve vývojové sadě není (`said.score` 0). Kompilátor ho ořízne na skóre, které robot na tom světě opravdu dosáhne (dolů na desítky), takže hra jde vždy vyhrát; dosažený cíl = výhra hned, výhra jinou cestou pod cílem = prohra.
+
+## T9 – režisér s poli hloubky na lokálním gpt-oss-20b (2. 10. 2026)
+
+Měřeno na `2ea6234e` skriptem `director.measure.ts` (spouští ho `director.cmd` pod zámkem GPU, příkaz je v hlavičce skriptu): kompaktní režisér, llama.cpp, teplota 0, strop 4 000 výstupních tokenů – stejné nastavení jako P29B T9 (`../local-director.json`). Robot (`check`) se nepouští, stejně jako tehdy. Výstup `director.json`; srovnání se základem větve ve stejné relaci GPU je v `director-ab.json`.
+
+| | cíl T9 | 26. 9. (P29B) | dnes, běh 1 | dnes, běh 2 (A/B) | základ větve `1d85e991` (A/B) |
+|---|---:|---:|---:|---:|---:|
+| platná hra, korpus 30 | ≥ 28/30 | 28/30 | **24/30** | 24/30 | 24/30 |
+| medián odezvy | ≤ 5,9 s (1,3 × 4,5 s) | 4,5 s | **26,2 s** | 23,7 s | 17,5 s |
+| p90 odezvy | | 11,1 s | 56,5 s | 56,2 s | 59,1 s |
+| systémový prompt (kompaktní) | | | 5 471 B | | 4 961 B |
+| schéma odpovědi (JSON bez mezer) | | | 18 408 B | | 39 245 B |
+
+Vývojová sada `d01–d20`: platná hra 15/20, medián 27,9 s. Věrnost (podíl položek checklistu, které hra přečte / vykreslí): korpus 0,809 / 0,745 (rychlý návrh 0,800 / 0,736), vývojová 0,753 / 0,658 (návrh 0,712 / 0,616).
+
+- **Platných her je pod cílem, ale P36A to nezpůsobil.** Základ větve dává ve stejné relaci taky 24/30. Oba dnešní běhy selhaly na týchž šesti větách (s008, s050, s095, h02, h04, h08), základ na jiných šesti. Všech dvanáct selhání je „cut at max_tokens“: model spotřeboval celých 4 000 tokenů na přemýšlení a nevrátil žádný text.
+- **Proč (fakt):** požadavek do llama.cpp nese `max_tokens` a `temperature: 0`, ale ne `reasoning_effort` (`src/server/upstream.ts:1016`) – `effort: 'low'` z konfigurace k modelu nedojde a gpt-oss přemýšlí výchozí délkou. Hostovaná cesta (Groq) `reasoning_effort` posílá, produkční režisér tím tedy postižený není. **Inference:** teplota 0 vysvětluje, proč selhávají pořád tytéž věty; propad z 28/30 vznikl mezi 26. 9. a základem větve (mezi tím přišla mimo jiné odpověď žánrem z P32B), ne v T7/T8. Oprava je úloha F4 v plánu.
+- **Odezva:** karta byla během měření sdílená (tři klienti Unrealu a Playwright z jiných worktree, generování ~53 tokenů/s), takže absolutní čísla proti 26. 9. srovnatelná nejsou. Ve stejné relaci je dnešek proti základu 1,35× (jen platné hry 18,6 s proti 13,9 s = 1,34×), těsně nad hranicí 1,3×. **Inference:** prompt je o 10 % delší (pole hloubky v pěti žánrech a `enemyMoves`), délku odezvy ale drží hlavně přemýšlení – rozhodne až měření po F4.
+
+### Sada mechanik (`mechanics.json`)
+
+Dvacet vlastních vět, které říkají životy, cílové skóre, časový limit nebo chování nepřítele (`expect` u každé věty). Hra rychlého návrhu i hra režiséra se postaví cestou publikace (první semínko z `derivedSeeds`, na kterém `compileArcade` projde) a měří se, jestli svět nese, co věta říká.
+
+| pole | věty ho říkají | rychlý návrh nese | režisér nese |
+|---|---:|---:|---:|
+| životy | 7 | 7 | 7 |
+| cílové skóre | 4 | 3 | 2 |
+| časový limit | 5 | 1 | 2 |
+| chování nepřítele | 9 | 3 | 3 |
+| **celkem** | 25 | **14 = 56 %** | **14 = 56 %** |
+| věta nese všechno | 20 | 10 | 10 |
+
+„Nese“ znamená: životy = čítač `health` na startu; skóre = cíl `score_bonus.target` přesně jako ve větě (ořez na dosažitelné se nepočítá); limit = `time_limit` nebo `survive_time` s týmiž sekundami; nepřítel = pravidlo `blaster` (`shoot`), klíč `patrol` (`patrol`), pronásledovatel kdekoli ve světě (`chase`). Režisér vrátil platnou odpověď u 15 z 20 vět; u pěti (cut at max_tokens) hraje rychlý návrh a počítá se do sloupce režiséra.
+
+- **Životy** nesou oba vždy – T8 dává životy z věty do týchž `params`, které režisér vidí ve výchozím bodě.
+- **Hlídka 0 ze 4 u obou:** věty s hlídkou padnou do sběru v aréně (m11, m18), úkolu na místě (m12) a běžce (m20). Hlídku umí jen úkol v prostoru a útěk se sběrem (T8). Sběr v aréně má pronásledovatele z vln vždy, proto se čte jako `chase`.
+- **Střelba 0 ze 2:** střílečka zatím není žánr (T10).
+- **Čas:** návrh nese 1 z 5 (úkol v prostoru), režisér 2 z 5 (navíc závod lodí přes `timeLimit`). Sběr v aréně a běžec čas z věty nenesou ani u režiséra.
+- **Nevyhratelné hry:** m10 „pop the balloons at the fair in 30 seconds“ – návrh i režisér dají úkol v prostoru s hodinami 30 s, ale kola z T4 se plánují na 36 s a víc, takže robot prohraje na všech čtyřech semínkách (úloha F3). m06 u režiséra: sběr v aréně, který robot nedohraje ani bez cíle skóre (měření bez `check` hru neopraví; v produkci by šla do opravného kola). m19: cíl 150 kompilátor ořízl na 100, víc robot nedosáhne.
 
 ## Test (`depth.test.ts`)
 

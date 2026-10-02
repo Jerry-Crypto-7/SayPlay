@@ -1,0 +1,463 @@
+{
+ "about": "P36A T9 A/B: compact director on gpt-oss-20b (llama.cpp, temperature 0, max_tokens 4000), fidelity corpus (30), one GPU session on 2026-10-02 – head first, then the branch base. Same config as evals/play/p36/director.json. See evals/play/p36/README.md.",
+ "head": {
+  "commit": "2ea6234e",
+  "summary": {
+   "valid": {
+    "hit": 24,
+    "of": 30
+   },
+   "latencyMs": {
+    "p50": 23689,
+    "p90": 56158,
+    "max": 68837
+   },
+   "authoredLatencyMs": {
+    "p50": 18571
+   },
+   "cutAtMaxTokens": 6
+  },
+  "rows": [
+   {
+    "id": "s039",
+    "ms": 15626,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s037",
+    "ms": 21064,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s002",
+    "ms": 14976,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s003",
+    "ms": 8740,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s006",
+    "ms": 14180,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s008",
+    "ms": 56158,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s022",
+    "ms": 40275,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s021",
+    "ms": 15681,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s035",
+    "ms": 20763,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": "critic UNFAITHFUL: VERB_OUTSIDE_MODE /mode: the sentence names no verb the genres know, so only its first genre voyage.race is proved"
+   },
+   {
+    "id": "s050",
+    "ms": 61075,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s088",
+    "ms": 13136,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s069",
+    "ms": 30832,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s056",
+    "ms": 17406,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s058",
+    "ms": 12639,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s111",
+    "ms": 24338,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s095",
+    "ms": 68837,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s188",
+    "ms": 23689,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s144",
+    "ms": 56081,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s155",
+    "ms": 25651,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s099",
+    "ms": 31563,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h01",
+    "ms": 15272,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h02",
+    "ms": 52775,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "h03",
+    "ms": 32294,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h04",
+    "ms": 48666,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "h05",
+    "ms": 18268,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h06",
+    "ms": 17152,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h07",
+    "ms": 18557,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h08",
+    "ms": 46065,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "h09",
+    "ms": 18571,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h10",
+    "ms": 28501,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   }
+  ]
+ },
+ "base": {
+  "commit": "1d85e991",
+  "summary": {
+   "valid": {
+    "hit": 24,
+    "of": 30
+   },
+   "latencyMs": {
+    "p50": 17498,
+    "p90": 59073,
+    "max": 71956
+   },
+   "authoredLatencyMs": {
+    "p50": 13860
+   },
+   "cutAtMaxTokens": 6
+  },
+  "rows": [
+   {
+    "id": "s039",
+    "ms": 13372,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s037",
+    "ms": 13860,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s002",
+    "ms": 33684,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s003",
+    "ms": 12601,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s006",
+    "ms": 55063,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s008",
+    "ms": 4877,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s022",
+    "ms": 55090,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s021",
+    "ms": 56770,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s035",
+    "ms": 22919,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": "critic UNFAITHFUL: VERB_OUTSIDE_MODE /mode: the sentence names no verb the genres know, so only its first genre voyage.race is proved"
+   },
+   {
+    "id": "s050",
+    "ms": 40374,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s088",
+    "ms": 12060,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s069",
+    "ms": 71956,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s056",
+    "ms": 10607,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s058",
+    "ms": 8375,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s111",
+    "ms": 9028,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s095",
+    "ms": 59073,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "s188",
+    "ms": 12095,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s144",
+    "ms": 15285,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s155",
+    "ms": 27064,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "s099",
+    "ms": 65046,
+    "source": "draft",
+    "fallbackReason": "MALFORMED",
+    "failure": "model MALFORMED_RESPONSE: the llama.cpp text is not JSON (cut at max_tokens): Unexpected end of JSON input"
+   },
+   {
+    "id": "h01",
+    "ms": 23208,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h02",
+    "ms": 33251,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h03",
+    "ms": 10602,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h04",
+    "ms": 9710,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h05",
+    "ms": 21683,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h06",
+    "ms": 17498,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h07",
+    "ms": 9595,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h08",
+    "ms": 23043,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h09",
+    "ms": 14560,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   },
+   {
+    "id": "h10",
+    "ms": 8999,
+    "source": "authored",
+    "fallbackReason": null,
+    "failure": null
+   }
+  ]
+ }
+}

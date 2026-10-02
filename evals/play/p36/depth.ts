@@ -185,7 +185,7 @@ export function worstWinOf(world: ArcadeWorld): number | null {
   return Math.max(bonus.target, grow?.points ?? 0) + endBonus(bonus, Math.min(1, bonus.lives), bonus.limit);
 }
 
-function livesOf(world: ArcadeWorld): { readonly lives: number; readonly livesFrom: DepthRow['livesFrom'] } {
+export function livesOf(world: ArcadeWorld): { readonly lives: number; readonly livesFrom: DepthRow['livesFrom'] } {
   const initial = Int32Array.from(world.initial);
   const counter = initial[HEADER.counters + COUNTER.health] as number;
   if (counter > 0) return { lives: counter, livesFrom: 'counter' };
