@@ -1,5 +1,5 @@
 {
- "compilerVersion": "play-compiler-v9/arcade-v2",
+ "compilerVersion": "play-compiler-v10/arcade-v2",
  "bandSeconds": {
   "min": 30,
   "max": 90
@@ -14,8 +14,8 @@
    "sentences": 260,
    "playable": 260,
    "publishable": 260,
-   "inBand": 236,
-   "inBandShare": 0.908,
+   "inBand": 259,
+   "inBandShare": 0.996,
    "idle": {
     "won": 0,
     "lost": 260,
@@ -115,10 +115,10 @@
     },
     "voyage.race": {
      "sentences": 23,
-     "medianWinSeconds": 22.9,
-     "minWinSeconds": 22.9,
-     "maxWinSeconds": 24.07,
-     "inBand": 0,
+     "medianWinSeconds": 40.23,
+     "minWinSeconds": 40.22,
+     "maxWinSeconds": 41.5,
+     "inBand": 23,
      "idleLoses": 23,
      "livesOver1": 23
     }
@@ -128,8 +128,8 @@
    "sentences": 200,
    "playable": 200,
    "publishable": 200,
-   "inBand": 181,
-   "inBandShare": 0.905,
+   "inBand": 199,
+   "inBandShare": 0.995,
    "idle": {
     "won": 0,
     "lost": 200,
@@ -229,10 +229,10 @@
     },
     "voyage.race": {
      "sentences": 18,
-     "medianWinSeconds": 22.9,
-     "minWinSeconds": 22.9,
-     "maxWinSeconds": 24.07,
-     "inBand": 0,
+     "medianWinSeconds": 40.25,
+     "minWinSeconds": 40.22,
+     "maxWinSeconds": 41.5,
+     "inBand": 18,
      "idleLoses": 18,
      "livesOver1": 18
     }
@@ -242,8 +242,8 @@
    "sentences": 60,
    "playable": 60,
    "publishable": 60,
-   "inBand": 55,
-   "inBandShare": 0.917,
+   "inBand": 60,
+   "inBandShare": 1,
    "idle": {
     "won": 0,
     "lost": 60,
@@ -334,10 +334,10 @@
     },
     "voyage.race": {
      "sentences": 5,
-     "medianWinSeconds": 22.92,
-     "minWinSeconds": 22.9,
-     "maxWinSeconds": 22.95,
-     "inBand": 0,
+     "medianWinSeconds": 40.22,
+     "minWinSeconds": 40.22,
+     "maxWinSeconds": 40.75,
+     "inBand": 5,
      "idleLoses": 5,
      "livesOver1": 5
     }
@@ -1231,13 +1231,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2413
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -1826,13 +1826,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2414
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.23,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2176,13 +2176,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2413
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2211,13 +2211,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2490
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 41.5,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4381
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2246,13 +2246,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1378
+    "tick": 2439
    },
-   "winSeconds": 22.97,
-   "inBand": false,
+   "winSeconds": 40.65,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4321
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2351,13 +2351,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2413
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2386,13 +2386,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2446
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.77,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4321
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2421,13 +2421,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1377
+    "tick": 2413
    },
-   "winSeconds": 22.95,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2561,13 +2561,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1377
+    "tick": 2413
    },
-   "winSeconds": 22.95,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2596,13 +2596,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2413
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2631,13 +2631,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1444
+    "tick": 2415
    },
-   "winSeconds": 24.07,
-   "inBand": false,
+   "winSeconds": 40.25,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2701
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -2666,13 +2666,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2413
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -3296,13 +3296,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2424
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.4,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -5046,13 +5046,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1375
+    "tick": 2415
    },
-   "winSeconds": 22.92,
-   "inBand": false,
+   "winSeconds": 40.25,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -5081,13 +5081,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2457
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.95,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4321
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -6761,13 +6761,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2487
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 41.45,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4381
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -7006,13 +7006,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2464
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 41.07,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4321
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -7321,13 +7321,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2455
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.92,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4321
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -7811,13 +7811,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2413
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -8091,13 +8091,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1375
+    "tick": 2445
    },
-   "winSeconds": 22.92,
-   "inBand": false,
+   "winSeconds": 40.75,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4321
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -8511,13 +8511,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1377
+    "tick": 2413
    },
-   "winSeconds": 22.95,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -8931,13 +8931,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1374
+    "tick": 2413
    },
-   "winSeconds": 22.9,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",
@@ -9141,13 +9141,13 @@
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 1376
+    "tick": 2413
    },
-   "winSeconds": 22.93,
-   "inBand": false,
+   "winSeconds": 40.22,
+   "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 2581
+    "tick": 4261
    },
    "lives": 3,
    "livesFrom": "counter",

@@ -163,6 +163,14 @@ Přeměřeno s kompilátorem `play-compiler-v9/arcade-v2`. Úkol jde po kolech: 
 - **Jedno kolo zbude dlouhé práci:** 8 hořících stromů se třemi pronásledovateli trvá samo ~48 s – žánr pak `rounds` nepíše.
 - Uložená hra bez `rounds` staví týž svět a robot vyhraje na tomtéž tiku jako na v8 (test `stored quest games without rounds`, tři věty z `depth.json` v8).
 
+## Po T4, část 3b – plavba ve třetinách (2. 10. 2026)
+
+Přeměřeno s kompilátorem `play-compiler-v10/arcade-v2`. Závod nové hry má 620 m místo 350 m a ve třetinách trati houstnou překážky (rozestup 20 → 15 → 11 m) a zrychlují dělové koule (100 → 115 → 130 %). **V pásmu 236 → 259 = 99,6 %** (poptávka 199/200, vývojová 60/60); voyage.race 22,9 → **40,2 s** (40,2–41,5 s, 0 → 23/23), nečinný prohraje 23/23 na hodinách (~71 s).
+
+- **Mimo pásmo zůstává jediná věta, přistání** („flip a bottle so it lands standing“, 13,5 s): je to jeden dotyk; víc přistání za sebou by byly fáze hry, které plán P36A vylučuje.
+- **Houstnutí není vidět na každé trati:** kde má poslední třetina jen krátké rovinky, vejde se na každou jedna překážka („boat race through a jungle river…“). Rozptyl délky mezi větami je malý (40–42 s) – délku trati mění jen `lengthM` od režiséra (T8).
+- Uložený závod bez `sections` (350 m) jede na tomtéž tiku jako dřív (test `stored voyage races without sections`); připíchnutá čísla rozvržení piráta (`voyageLayout.test.ts`) čtou uložený 350m závod.
+
 ## Test (`depth.test.ts`)
 
 - Každá věta obou sad je v reportu právě jednou a se svým textem.

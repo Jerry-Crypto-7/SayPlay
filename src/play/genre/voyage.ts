@@ -113,8 +113,9 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
     controlParams: {
       generator: 'voyage_race',
       difficulty: 'normal',
-      ...(params.lengthM === undefined ? {} : { lengthM: params.lengthM }),
-      tuning: { terrain, ...(params.topSpeed === undefined ? {} : { topSpeed: params.topSpeed }) },
+      // Delší trať ve třetinách, ke konci hustší překážky (P36A T4); uložená hra bez `sections` jede jako dřív.
+      lengthM: params.lengthM ?? VOYAGE.sectionLengthM,
+      tuning: { terrain, sections: 3, ...(params.topSpeed === undefined ? {} : { topSpeed: params.topSpeed }) },
     },
     archetype: 'hazard_crossing',
     title: `${title} Voyage`,

@@ -149,6 +149,14 @@ export const VOYAGE = {
   /** Časový limit: ideální jízda × procenta + rezerva v sekundách. */
   timePct: 160,
   timeSlackS: 6,
+  /**
+   * Úseky (P36A T4): trať nové hry má `sectionLengthM` (robot ~40 s místo 23 s
+   * na výchozích 350 m) a ve třetinách houstnou překážky (rozestup) a zrychlují
+   * dělové koule (procenta rychlosti obtížnosti).
+   */
+  sectionLengthM: 620,
+  sectionGaps: [20 * UNIT, 15 * UNIT, 11 * UNIT],
+  sectionShotPct: [100, 115, 130],
 } as const;
 
 export const VOYAGE_TERRAINS = ['islands', 'rocks', 'buildings'] as const;
@@ -638,9 +646,14 @@ const voyageRaceParams = z
     lengthM: z.int().min(VOYAGE.lengthM.min).max(VOYAGE.lengthM.max).default(VOYAGE.lengthM.default),
     topSpeed: z.int().min(VOYAGE.topSpeed.min).max(VOYAGE.topSpeed.max).default(VOYAGE.topSpeed.default),
     terrain: z.enum(VOYAGE_TERRAINS).default('islands'),
+    /** Úseky (P36A T4, píše je žánr): ve třetinách trati hustší překážky a rychlejší koule; bez nich jako dřív. */
+    sections: z.literal(3).optional(),
   })
   .strict();
 export type VoyageRaceParams = z.infer<typeof voyageRaceParams>;
+
+/** Třetina trati (0..2), ve které leží `z`. */
+const thirdOf = (z: number, length: number): number => Math.min(2, Math.floor((3 * z) / Math.max(1, length)));
 
 const raceTrack = (params: VoyageRaceParams): SteerTrackParams => ({ difficulty: params.difficulty, lengthM: params.lengthM, rivals: false, turbo: false, topSpeed: params.topSpeed, drift: false });
 
@@ -666,7 +679,10 @@ export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
   id: 'voyage_race',
   params: voyageRaceParams,
   roles: ['player', 'obstacle', 'checkpoint', 'hazard', 'goal'],
-  cost: (params) => ({ bodies: steerTrack.cost(raceTrack(params)).bodies + 2 * Math.ceil((params.lengthM * UNIT) / VOYAGE.hazardGap), rules: 5 }),
+  cost: (params) => ({
+    bodies: steerTrack.cost(raceTrack(params)).bodies + 2 * Math.ceil((params.lengthM * UNIT) / (params.sections === undefined ? VOYAGE.hazardGap : Math.min(...VOYAGE.sectionGaps))),
+    rules: 5,
+  }),
   generate: (seed, params) => {
     const track = steerTrack.generate(seed, raceTrack(params));
     const rng = createCompileRng(seed ^ 0x5eed);
@@ -685,11 +701,13 @@ export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
     for (const lane of steerSegments(track).filter((s) => s.far - s.near > STEER_TRACK.segment && s.near > 0)) {
       gates.push({ role: 'checkpoint', kind: 'gate', x: lane.center, y: 0, z: lane.near + VOYAGE.gateInset, w: lane.width, h: VOYAGE.gateH, d: VOYAGE.gateD, solid: false });
       const end = Math.min(lane.far, track.length) - VOYAGE.hazardBeforeEnd;
-      for (let z0 = lane.near + VOYAGE.hazardFrom; z0 <= end; z0 += VOYAGE.hazardGap) {
+      // S úseky ke konci hustší překážky a rychlejší koule (P36A T4).
+      const third = (z0: number): number => (params.sections === undefined ? 0 : thirdOf(z0, track.length));
+      for (let z0 = lane.near + VOYAGE.hazardFrom; z0 <= end; z0 += params.sections === undefined ? VOYAGE.hazardGap : VOYAGE.sectionGaps[third(z0)]!) {
         const quarter = Math.floor(lane.width / 4);
         hazards.push(
           hazards.length % 2 === 0
-            ? shotAcross(lane, z0, speed, rng.int(0, 1) === 0 ? -1 : 1)
+            ? shotAcross(lane, z0, Math.floor((speed * VOYAGE.sectionShotPct[third(z0)]!) / 100), rng.int(0, 1) === 0 ? -1 : 1)
             : { role: 'hazard', kind: 'snag', x: lane.center + rng.int(-quarter, quarter), y: 0, z: z0, w: VOYAGE.snag, h: VOYAGE.snagH, d: VOYAGE.snag, solid: false },
         );
       }
