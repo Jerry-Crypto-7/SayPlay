@@ -5,6 +5,7 @@ export {
   DEFAULT_DARE_DAILY_CAP,
   DEFAULT_WRITE_LIMITS,
   type DareRecord,
+  type LoopHeat,
   MAX_LINEAGE,
   RECENT_CAP,
   VERSION_STORE_TIMEOUT_MS,

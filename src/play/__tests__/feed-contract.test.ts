@@ -6,10 +6,11 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { POST as sendEvent } from '@/app/api/play/events/route';
 import { GET as listGames, POST as createGame } from '@/app/api/play/games/route';
 import { GET as readGame } from '@/app/api/play/games/[id]/route';
-import { __resetProcessVersionStore, decodeCursor, feedEligible, feedPage, hiddenFromEnv, RECENT_CAP, type RecentGame, versionStoreFromEnv } from '@/play/version';
-import { encodeCursor } from '@/play/version/feed';
+import { __resetProcessVersionStore, decodeCursor, feedEligible, feedPage, type FeedPage, hiddenFromEnv, type LoopHeat, RECENT_CAP, type RecentGame, versionStoreFromEnv } from '@/play/version';
+import { encodeCursor, FRESH_EVERY } from '@/play/version/feed';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -167,6 +168,47 @@ describe('feedPage', () => {
   });
 });
 
+describe('feed ranked by the loop (P36B T9)', () => {
+  const heat = (fields: Partial<LoopHeat>): LoopHeat => ({ finishes: 0, dares: 0, skips: 0, remixes: 0, ...fields });
+  const ids = (page: FeedPage): string[] => page.games.map((game) => game.versionId);
+
+  it('without counters the order stays newest first', () => {
+    const rows = Array.from({ length: 12 }, (_, n) => row(n + 1));
+    const plain = ids(feedPage(rows, 12, null, NONE));
+    expect(ids(feedPage(rows, 12, null, NONE, new Map()))).toEqual(plain);
+    expect(ids(feedPage(rows, 12, null, NONE, new Map(rows.map((r) => [r.versionId, heat({})]))))).toEqual(plain);
+    expect(plain[0]).toBe(rows[11].versionId);
+  });
+
+  it('a game people dare goes ahead of an equally old one nobody dares', () => {
+    const rows = Array.from({ length: 6 }, (_, n) => row(n + 1));
+    const at = rows[0].createdAt;
+    const dared = row(0x20, { createdAt: at, archetype: 'collect_exit' });
+    const plain = row(0x21, { createdAt: at, archetype: 'chase_escape' });
+    const all = [...rows, dared, plain];
+    const before = ids(feedPage(all, 8, null, NONE));
+    expect(before.indexOf(plain.versionId)).toBeLessThan(before.indexOf(dared.versionId));
+    const after = ids(feedPage(all, 8, null, NONE, new Map([[dared.versionId, heat({ dares: 2 })]])));
+    expect(after.indexOf(dared.versionId)).toBe(0);
+    expect(after.indexOf(dared.versionId)).toBeLessThan(after.indexOf(plain.versionId));
+  });
+
+  it('a new game with no history still shows within the first three places', () => {
+    const rows = Array.from({ length: 12 }, (_, n) => row(n + 1));
+    const newest = rows[11];
+    const hot = new Map(rows.slice(0, 11).map((r) => [r.versionId, heat({ finishes: 5, remixes: 1 })]));
+    const order = ids(feedPage(rows, 12, null, NONE, hot));
+    expect(order.indexOf(newest.versionId)).toBeLessThan(FRESH_EVERY);
+    expect(order.indexOf(newest.versionId)).toBeGreaterThanOrEqual(0);
+  });
+
+  it('skips pull a game down: with equal finishes the older unskipped game goes first', () => {
+    const rows = Array.from({ length: 6 }, (_, n) => row(n + 1));
+    const order = ids(feedPage(rows, 6, null, NONE, new Map([[rows[4].versionId, heat({ finishes: 3, skips: 4 })], [rows[1].versionId, heat({ finishes: 3 })]])));
+    expect(order.slice(0, 2)).toEqual([rows[1].versionId, rows[4].versionId]);
+  });
+});
+
 describe('GET /api/play/games?recent&cursor', () => {
   const CALLER = { 'x-forwarded-for': '203.0.113.7' };
   const feed = async (query: string): Promise<{ status: number; body: Record<string, any> }> => {
@@ -216,5 +258,23 @@ describe('GET /api/play/games?recent&cursor', () => {
     const shown = (await feed('?recent=10')).body.games.map((g: { versionId: string }) => g.versionId);
     expect(shown).not.toContain(ids[0]);
     expect((await readGame(new Request(`http://play.test/api/play/games/${ids[0]}`), { params: Promise.resolve({ id: ids[0] }) })).status).toBe(200);
+  });
+
+  // P36B T9: dohrání se započte při události a feed podle něj přeřadí; vymyšlené id čítač nedostane.
+  it('finishes reported through the event door move a game up; an unknown game gets no counter', async () => {
+    const older = await authored('Collect the coins', 1);
+    const newer = await authored('Run from the bear', 2);
+    const order = async (): Promise<string[]> => (await feed('?recent=10')).body.games.map((g: { versionId: string }) => g.versionId);
+    expect(await order()).toEqual([newer, older]);
+
+    const report = (name: string, versionId: string): Promise<Response> =>
+      sendEvent(new Request('http://play.test/api/play/events', { method: 'POST', headers: CALLER, body: JSON.stringify({ name, versionId, session: 'abcdefghijkl' }) }));
+    for (const name of ['win', 'lose']) expect((await report(name, older)).status).toBe(204);
+    expect(await order()).toEqual([older, newer]);
+
+    const unknown = 'e'.repeat(32);
+    expect((await report('win', unknown)).status).toBe(204);
+    expect((await versionStoreFromEnv(process.env).loopHeat([unknown, older])).get(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, remixes: 0 });
+    expect((await versionStoreFromEnv(process.env).loopHeat([older])).get(older)).toMatchObject({ finishes: 2 });
   });
 });

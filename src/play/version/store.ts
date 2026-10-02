@@ -14,7 +14,8 @@
  * - `<prefix>:play:children:<parentId>` – JSON pole id dětí,
  * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu,
  * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4),
- * - `<prefix>:play:dare:<dareId>` – JSON `DareRecord` (P36B T5), denní strop `<prefix>:play:dare-quota:<den>`.
+ * - `<prefix>:play:dare:<dareId>` – JSON `DareRecord` (P36B T5), denní strop `<prefix>:play:dare-quota:<den>`,
+ * - `<prefix>:play:loop:<finish|dare|skip>:<versionId>` – čítače událostí smyčky pro řazení feedu (P36B T9).
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -33,6 +34,7 @@
  */
 
 import { canonical } from '@/ir/worlddoc';
+import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
 import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
 import type { GameVersion } from '../contracts';
@@ -88,6 +90,13 @@ export interface VersionStore {
   putDare(dare: DareRecord): Promise<'stored' | 'exists' | 'quota'>;
   /** `null` = neznámá, prošlá nebo nečitelná výzva, i při výpadku úložiště. */
   getDare(dareId: string): Promise<DareRecord | null>;
+  /**
+   * Započte událost smyčky (P36B T9), jen hře, která v úložišti je – jinak by
+   * kdokoli zakládal klíče na vymyšlená id. Výpadek spolkne: čítač je statistika.
+   */
+  countLoop(versionId: string, counter: LoopCounter): Promise<void>;
+  /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
+  loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
 }
 
 /**
@@ -107,6 +116,14 @@ export interface DareRecord {
    */
   readonly liveChanges: number;
   readonly createdAt: string;
+}
+
+/** Co hráči s hrou udělali (P36B T9): čítače událostí smyčky a počet remixů (dětí verze). */
+export interface LoopHeat {
+  readonly finishes: number;
+  readonly dares: number;
+  readonly skips: number;
+  readonly remixes: number;
 }
 
 /** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
@@ -196,6 +213,7 @@ interface RawStore {
   head(key: string, count: number): Promise<string[]>;
   /** Hodnoty klíčů v témž pořadí, chybějící jako `null`. */
   getMany(keys: readonly string[]): Promise<(string | null)[]>;
+  exists(key: string): Promise<boolean>;
 }
 
 /** Jediná serializace pro zápis: seřazené klíče, bez `undefined`. */
@@ -222,6 +240,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
   const dareKey = (dareId: string): string => `${prefix}:play:dare:${dareId}`;
   const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
+  const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
 
   const store: VersionStore = {
     id,
@@ -394,6 +413,40 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         return null;
       }
     },
+    async countLoop(versionId, counter) {
+      try {
+        // Čítač žije nejvýš tak dlouho jako hra (expirace od prvního zvýšení).
+        if (await raw.exists(versionKey(versionId))) await raw.incr(loopKey(counter, versionId), limits.ttlSeconds);
+      } catch {
+        // Nezapočtená událost jen trochu posune feed.
+      }
+    },
+    async loopHeat(versionIds) {
+      if (versionIds.length === 0) return new Map();
+      const per = LOOP_COUNTERS.length + 1;
+      try {
+        const texts = await raw.getMany(versionIds.flatMap((versionId) => [...LOOP_COUNTERS.map((counter) => loopKey(counter, versionId)), childrenKey(versionId)]));
+        const count = (text: string | null | undefined): number => {
+          const value = Number(text ?? '0');
+          return Number.isSafeInteger(value) && value > 0 ? value : 0;
+        };
+        const remixes = (text: string | null | undefined): number => {
+          try {
+            return text === null || text === undefined ? 0 : (JSON.parse(text) as string[]).length;
+          } catch {
+            return 0;
+          }
+        };
+        return new Map(
+          versionIds.map((versionId, index) => {
+            const [finishes, dares, skips, children] = texts.slice(index * per, index * per + per);
+            return [versionId, { finishes: count(finishes), dares: count(dares), skips: count(skips), remixes: remixes(children) }];
+          }),
+        );
+      } catch {
+        return new Map();
+      }
+    },
   };
   return store;
 }
@@ -442,6 +495,7 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
     },
     head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
     getMany: (keys) => Promise.resolve(keys.map(live)),
+    exists: (key) => Promise.resolve(live(key) !== null),
   };
   return versionStoreOver('memory', 'memory', raw, limits, now);
 }
@@ -512,6 +566,7 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
       if (!Array.isArray(result) || result.length !== keys.length) throw new Error('version store answered a shape this server cannot read');
       return result.map((item) => (typeof item === 'string' ? item : null));
     },
+    exists: async (key) => (await command(['EXISTS', key])) === 1,
   };
   return versionStoreOver('http', config.prefix, raw, config.limits ?? DEFAULT_WRITE_LIMITS, config.now ?? Date.now);
 }

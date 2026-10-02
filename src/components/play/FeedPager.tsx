@@ -211,7 +211,12 @@ export function FeedPager() {
       feedPage(cursor).then(
         (page) => {
           loadingMore.current = false;
-          setFeed((prev) => (prev.kind === 'ready' && prev.next === cursor ? { kind: 'ready', games: [...prev.games, ...page.games], next: page.next } : prev));
+          setFeed((prev) => {
+            if (prev.kind !== 'ready' || prev.next !== cursor) return prev;
+            // Feed řazený podle smyčky se mezi stránkami smí pohnout (P36B T9): hra, která už v seznamu je, se nepřidá podruhé.
+            const had = new Set(prev.games.map((game) => game.versionId));
+            return { kind: 'ready', games: [...prev.games, ...page.games.filter((game) => !had.has(game.versionId))], next: page.next };
+          });
         },
         () => {
           // Další stránka nepřišla: feed končí tím, co už má.

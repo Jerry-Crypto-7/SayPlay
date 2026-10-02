@@ -18,9 +18,13 @@ export interface FeedRow {
   readonly createdAt: string;
 }
 
-export function diversify<Row extends FeedRow>(rows: readonly Row[], limit: number = Number.POSITIVE_INFINITY): Row[] {
-  // Stabilní řazení od nejnovější; ISO čas se řadí jako text.
-  const pending = [...rows].sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+/** Výchozí pořadí: od nejnovější; ISO čas se řadí jako text. */
+const newestFirst = (a: FeedRow, b: FeedRow): number => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0);
+
+/** `order` – pořadí, ve kterém hry osmice berou (feed řazený podle smyčky, P36B T9, dává vlastní). */
+export function diversify<Row extends FeedRow>(rows: readonly Row[], limit: number = Number.POSITIVE_INFINITY, order: (a: Row, b: Row) => number = newestFirst): Row[] {
+  // Stabilní řazení.
+  const pending = [...rows].sort(order);
   const out: Row[] = [];
   let block = new Map<string, number>();
   while (out.length < limit && pending.length > 0) {

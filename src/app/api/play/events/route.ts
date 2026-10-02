@@ -8,14 +8,14 @@
  * zakládání, nechce ani zápis statistik.
  */
 
-import { readLoopEvent } from '@/play/loop-events';
+import { loopCounterOf, readLoopEvent } from '@/play/loop-events';
 import { killState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
 import { rateLimitCode, takeRateSlot } from '@/server/rate-limit';
 
 import { recordLoopEvent } from '../_events';
 import { fail, readJsonBody } from '../_errors';
-import { callerOf } from '../_publish';
+import { callerOf, store } from '../_publish';
 
 export async function POST(request: Request): Promise<Response> {
   if ((await killState(process.env)).sessions) return fail(503, 'DISABLED', 'this part of PLAY is switched off right now');
@@ -32,5 +32,8 @@ export async function POST(request: Request): Promise<Response> {
   const event = readLoopEvent(body.value);
   if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session }, plus optional booleans withClip and dare on share, and nothing else');
   recordLoopEvent(event);
+  // Dohrání, výzva a přeskočení řadí feed (P36B T9); čítač dostane jen hra, která v úložišti je.
+  const counter = loopCounterOf(event);
+  if (counter !== null) await store().countLoop(event.versionId, counter);
   return new Response(null, { status: 204 });
 }
