@@ -14,8 +14,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf, compileArcade } from '@/play/arcade/compile';
-import type { ArcadeWorld } from '@/play/arcade/contract';
-import { replay } from '@/play/arcade/kernel';
+import { type ArcadeWorld, BODY, BODY_STRIDE, COUNTER, GRACE_MASK, GRACE_SHIFT, HEADER, HEADER_SIZE, HIT_GRACE, NO_INPUT, bodyBase } from '@/play/arcade/contract';
+import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { verifyArcade } from '@/play/arcade/verify';
 import { applyRemix, remixPatch } from '@/play/director/remix';
@@ -154,5 +154,43 @@ describe('a lose rule is proved by a robot that walks into it (P36A T8)', () => 
     const hidden = { ...lava, things: [{ role: 'lava', start: 'hidden' }] };
     const verdict = verifyArcade(world(game(hidden)));
     expect(verdict.failures.some((failure) => failure.includes('VERB_UNPROVED:touch'))).toBe(true);
+  });
+
+  // F1 (z T8): `damage` z pravidla specu dřív bral život každý tik – tři životy padly za tři tiky v lávě.
+  it('a damage rule takes one life per hit: 30 ticks in lava cost exactly one life', () => {
+    const arcade = world(game({ ...lava, rules: [{ id: 'burn', verb: 'touch', when: { contact: ['player', 'lava'] }, do: [{ damage: 1 }] }] }));
+    const lavaRole = (arcade.rules.find((ref) => ref.id === 'rule_contact')!.params as { when: { contact: readonly [number, number] } }).when.contact[1];
+    const state = instantiate(arcade);
+    const bodies = (state.length - HEADER_SIZE) / BODY_STRIDE;
+    const pool = Array.from({ length: bodies }, (_, i) => i).find((i) => state[bodyBase(i) + BODY.role] === lavaRole)!;
+    const player = bodyBase(state[HEADER.player] as number);
+    state[player + BODY.x] = state[bodyBase(pool) + BODY.x] as number;
+    state[player + BODY.z] = state[bodyBase(pool) + BODY.z] as number;
+    const lives = state[HEADER.counters + COUNTER.health] as number;
+    expect(lives).toBe(3);
+    const program = loadProgram(arcade, ARCADE_LIBRARY);
+    // Tiky, ve kterých padl život; milost chrání i poslední.
+    const lost: number[] = [];
+    for (let tick = 0, left = lives; tick < 4 * HIT_GRACE && left > 0; tick += 1) {
+      step(state, NO_INPUT, program);
+      if (tick === 29) expect(state[HEADER.counters + COUNTER.health], '30 ticks in lava').toBe(lives - 1);
+      if ((state[HEADER.counters + COUNTER.health] as number) < left) (lost.push(tick), (left = state[HEADER.counters + COUNTER.health] as number));
+    }
+    expect(lost).toHaveLength(lives);
+    for (let i = 1; i < lost.length; i += 1) expect(lost[i]! - lost[i - 1]!, `life ${String(i + 1)}`).toBeGreaterThanOrEqual(HIT_GRACE);
+  });
+
+  it('a damage rule in a game without lives sets no grace, so the old state does not move', () => {
+    const arcade = world(game({ ...lava, rules: [{ id: 'burn', verb: 'touch', when: { contact: ['player', 'lava'] }, do: [{ damage: 1 }] }] }));
+    const noLives = { ...arcade, initial: arcade.initial.map((value, i) => (i === HEADER.counters + COUNTER.health ? 0 : value)) };
+    const lavaRole = (arcade.rules.find((ref) => ref.id === 'rule_contact')!.params as { when: { contact: readonly [number, number] } }).when.contact[1];
+    const state = instantiate(noLives);
+    const pool = Array.from({ length: (state.length - HEADER_SIZE) / BODY_STRIDE }, (_, i) => i).find((i) => state[bodyBase(i) + BODY.role] === lavaRole)!;
+    const player = bodyBase(state[HEADER.player] as number);
+    state[player + BODY.x] = state[bodyBase(pool) + BODY.x] as number;
+    state[player + BODY.z] = state[bodyBase(pool) + BODY.z] as number;
+    step(state, NO_INPUT, loadProgram(noLives, ARCADE_LIBRARY));
+    expect(state[HEADER.counters + COUNTER.health]).toBe(-1);
+    expect(((state[player + BODY.flags] as number) >> GRACE_SHIFT) & GRACE_MASK).toBe(0);
   });
 });

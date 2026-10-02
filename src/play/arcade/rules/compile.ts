@@ -35,6 +35,7 @@ import {
   COUNTER,
   FLAG,
   HEADER,
+  HIT_GRACE,
   type PieceRef,
   ROLE,
   type RuleContext,
@@ -180,7 +181,12 @@ function effectsOf(ctx: RuleContext, rule: CompiledRule, self: number, other: nu
   const at = (body: number): { x: number; z: number } => ({ x: state[bodyBase(body) + BODY.x] as number, z: state[bodyBase(body) + BODY.z] as number });
   for (const effect of rule.do as readonly CompiledDo[]) {
     if ('score' in effect) out.push({ kind: 'score', amount: effect.score });
-    else if ('damage' in effect) out.push({ kind: 'damage', amount: effect.damage });
+    else if ('damage' in effect) {
+      // Milost po zásahu jako u zásahů jádra (P36A F1) – jen ve hře se životy: hra bez nich má
+      // čítač 0 (`buildWorld`), zásah tam milost nepotřebuje a stav se nepohne proti dřívějšku.
+      const lives = (state[HEADER.counters + COUNTER.health] as number) > 0;
+      out.push(lives ? { kind: 'damage', amount: effect.damage, grace: HIT_GRACE } : { kind: 'damage', amount: effect.damage });
+    }
     else if ('win' in effect) out.push({ kind: 'win' });
     else if ('lose' in effect) out.push({ kind: 'lose' });
     else if ('respawn' in effect) out.push({ kind: 'respawn' });
