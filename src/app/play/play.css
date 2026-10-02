@@ -1034,7 +1034,7 @@
   stroke-dasharray: none;
 }
 
-/* Skóre velké (display-xl), jednotka pod ním jako popisek statistiky. */
+/* Skóre velké (display-l), jednotka pod ním jako popisek statistiky. */
 .play-result-score {
   display: flex;
   flex-direction: column;

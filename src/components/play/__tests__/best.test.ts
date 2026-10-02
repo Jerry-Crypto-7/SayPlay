@@ -125,6 +125,11 @@ describe('PostRun – skóre, hvězdy a rekord (P36B T2)', () => {
     expect(markup).toContain('>2 s off your best<');
   });
 
+  it('samotný čas řádek statistik nemá – říká ho věta shrnutí; s dalším číslem řádek zůstává', () => {
+    expect(render(arcadeFacts({ extra: [] }), null)).not.toContain('aria-label="Your run"');
+    expect(render(arcadeFacts(), null)).toContain('aria-label="Your run"');
+  });
+
   it('hra bez skóre a bez hvězd (mřížka) je ukáže jako dřív – jen statistiky', () => {
     const grid = runResult({ won: true, tick: 246, hz: 20, survive: false, goal: null, extra: [] }, null);
     expect(grid.stars).toBeNull();

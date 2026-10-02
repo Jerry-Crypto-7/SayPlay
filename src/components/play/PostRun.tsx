@@ -276,7 +276,7 @@ export function PostRun({
         {result.stars !== null && <StarRow count={result.stars} />}
         {result.score !== null && (
           <p className="play-result-score" data-testid="play-score">
-            <span className="sp-display-xl play-result-score-value">{result.score.value}</span>
+            <span className="sp-display-l play-result-score-value">{result.score.value}</span>
             <span className="play-result-score-unit">{result.score.unit}</span>
           </p>
         )}
@@ -289,14 +289,17 @@ export function PostRun({
             {result.best.text}
           </p>
         )}
-        <ul className="play-result-stats" aria-label="Your run">
-          {result.stats.map((stat) => (
-            <li key={stat.label} className="sp-stat">
-              <span className="sp-stat__value">{stat.value}</span>
-              <span className="sp-stat__label">{stat.label}</span>
-            </li>
-          ))}
-        </ul>
+        {/* Samotný čas řádek statistik nenese: říká ho už věta shrnutí (a po výhře odznak) – na desktopu 720 px by vytlačil akce pod okraj. */}
+        {result.stats.length > 1 && (
+          <ul className="play-result-stats" aria-label="Your run">
+            {result.stats.map((stat) => (
+              <li key={stat.label} className="sp-stat">
+                <span className="sp-stat__value">{stat.value}</span>
+                <span className="sp-stat__label">{stat.label}</span>
+              </li>
+            ))}
+          </ul>
+        )}
         <div className="play-result-actions">
           {offline ? (
             replay
