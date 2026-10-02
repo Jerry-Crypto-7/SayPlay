@@ -88,7 +88,7 @@ describe('compileGame – blueprint over the eight fixtures', () => {
       expect(simHashOf(game.blueprint.world), archetype).toBe(game.worldHash);
       expect(game.blueprint.world.simHash, archetype).toBe(game.worldHash);
       // P36A T2–T4 a T6 zvedly verzi kompilátoru (životy, nebezpečí úkolu, úseky, vlny arény, kola úkolu, třetiny plavby, odpuštění skoku v arkádě); mřížkový svět se nepohnul, jen štítek.
-      expect(game.compilerVersion).toBe('play-compiler-v10');
+      expect(game.compilerVersion).toBe('play-compiler-v11');
       expect(game.seed).toBe(1);
       expect(game.blueprint.sessionSeed).toBe(1);
     }

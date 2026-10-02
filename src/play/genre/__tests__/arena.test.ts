@@ -31,7 +31,8 @@ function bodiesOf(spec: GameSpecV1, seed = 1): { readonly roles: number[]; reado
   const made = arcadeWorldOf(spec, seed);
   if (!made.ok) throw new Error(made.issues.join('; '));
   const state = instantiate(made.world);
-  const count = state[HEADER.bodyCount] as number;
+  // Hra se `score_bonus` (P36A T5) má za tělesy úrovně ještě počítadlo komba – do souboje nepatří.
+  const count = (state[HEADER.bodyCount] as number) - (made.world.rules.some((ref) => ref.id === 'score_bonus') ? 1 : 0);
   const roles: number[] = [];
   const hp: number[] = [];
   const alive: boolean[] = [];

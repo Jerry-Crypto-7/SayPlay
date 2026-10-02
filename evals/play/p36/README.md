@@ -1,6 +1,6 @@
 # Hloubka her – měřítko P36A (T1)
 
-Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T4 části 3a – úkol, oddíl dole).
+Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T5 – skóre, oddíl dole).
 
 ## Jak přeměřit
 
@@ -22,8 +22,8 @@ Každá ze 200 vět poptávky (`../demand/corpus.json`) a 60 vět vývojové sad
 | `inBand` | robot vyhrál za 30–90 s |
 | `idle` | „nečinný hráč“: prázdné vstupy až do horizontu jádra (90 s = 5 400 tiků); `won` / `lost` / `unfinished` a tik konce |
 | `lives` | životy na startu = čítač `health`. Souboj ho nepoužívá a nese HP hráče (`livesFrom: "hp"`). Hra bez obojího má 1 – první zásah běh ukončí (`livesFrom: "none"`) |
-| `scoreDecides` | **definice T1:** běh končí pravidlem, které čte čítač `score` (`scoreGoal` ho jmenuje). `grow_to` v aréně se nepočítá – `score` tam jen počítá sebrané věci a výhra přijde vždy při témže čísle. T5 definici zpřesní: cíl `score`, nebo se nejlepší a nejhorší výhra robota liší aspoň 2× |
-| `botScore` | čítač `score` na konci robotovy výhry – jen pro srovnání, dnes nic nerozhoduje |
+| `scoreDecides` | **definice T5:** cíl `score` (`score_bonus` s `target`, `scoreGoal` ho jmenuje), nebo robotova výhra je aspoň 2× nejhorší výhra na tomtéž světě (`worstScore`). Definice T1 (jen pravidlo čtoucí `score`, bez `grow_to`) platí pro řádky před T5 |
+| `botScore` / `worstScore` | čítač `score` na konci robotovy výhry / nejhorší výhra na tomtéž světě: poslední život, aspoň jeden zásah, výhra na limitu, jen body, které výhra vyžaduje (`worstWinOf`); `null` = svět bez bonusu na konci |
 | `said` / `carried` | číslo ve větě: životy („3 lives“, „one life“, „no lives“ = 1), cílové skóre („200 points“, „score of 50“), čas („30 seconds“, „two minute“). `carried` = hra ho nese: tolik životů na startu, práh pravidla skóre, `time_limit` nebo `survive_time` se stejnými sekundami |
 | `playable` / `publishable` | robot vyhrál a nečinný nevyhrál / navíc prošly všechny kontroly `verifyArcade` |
 
@@ -170,6 +170,15 @@ Přeměřeno s kompilátorem `play-compiler-v10/arcade-v2`. Závod nové hry má
 - **Mimo pásmo zůstává jediná věta, přistání** („flip a bottle so it lands standing“, 13,5 s): je to jeden dotyk; víc přistání za sebou by byly fáze hry, které plán P36A vylučuje.
 - **Houstnutí není vidět na každé trati:** kde má poslední třetina jen krátké rovinky, vejde se na každou jedna překážka („boat race through a jungle river…“). Rozptyl délky mezi větami je malý (40–42 s) – délku trati mění jen `lengthM` od režiséra (T8).
 - Uložený závod bez `sections` (350 m) jede na tomtéž tiku jako dřív (test `stored voyage races without sections`); připíchnutá čísla rozvržení piráta (`voyageLayout.test.ts`) čtou uložený 350m závod.
+
+## Po T5 – skóre, které rozhoduje (2. 10. 2026)
+
+Přeměřeno s kompilátorem `play-compiler-v11/arcade-v2`. Každá nová hra žánru má `scoring`: kombo za sebrání v řadě (do 1,5 s, ×2 … ×5, ztráta života ho shodí), na konci výhry bonus 50 za každý zbylý život, 100 bez ztráty života a 5 za každou celou sekundu pod limitem (časový limit hry, jinak 90 s). **Skóre rozhoduje 0 → 260/260 = 100 %**; pásmo, nečinný hráč a životy beze změny (99,6 %, 100 %, 100 %), hratelných 260/260.
+
+- **Definice T5:** `scoreDecides` = cíl `score` (`score_bonus` s `target`), nebo robotova výhra (`botScore`) je aspoň dvojnásobek nejhorší výhry na tomtéž světě (`worstScore`: poslední život, aspoň jeden zásah, výhra na limitu, jen body, které výhra sama vyžaduje – cíl `grow_to` nebo `target`). Poměr `botScore / worstScore`: nejmíň 2,0, medián 9,1, nejvýš 12,6.
+- **Inference:** 100 % nese hlavně bonus za životy a čas – nejhorší výhra má jeden život a nulový čas, takže 2× splní skoro každá hra konstrukcí. Kombo samo přidá jen tam, kde robot sbírá v řadě (běžec, skákačka, plavba); robot běžce a skákačky mince cíleně nehoní.
+- **Aréna kombo nemá:** `score` je tam velikost hrdiny a postup k `grow_to` – násobič by cíl zkrátil. Dostává jen bonus na konci.
+- **Cílové skóre z věty** („score 100 points“, „get 500“, `readTargetScore`) dnes v korpusu ani ve vývojové sadě není (`said.score` 0). Kompilátor ho ořízne na skóre, které robot na tom světě opravdu dosáhne (dolů na desítky), takže hra jde vždy vyhrát; dosažený cíl = výhra hned, výhra jinou cestou pod cílem = prohra.
 
 ## Test (`depth.test.ts`)
 

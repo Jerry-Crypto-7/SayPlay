@@ -5,7 +5,7 @@
 
 import { z } from 'zod';
 
-import { ARCADE_HZ, ARCADE_LIMITS, BODY, COUNTER, FLAG, HEADER, ROLE, type RulePiece, bodyBase, graceOf } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, BODY, COMBO, COUNTER, FLAG, HEADER, ROLE, type RulePiece, type ScoreBonusParams, bodyBase, graceOf } from '../contract';
 
 const roleOf = (state: Int32Array, body: number): number => state[bodyBase(body) + BODY.role] as number;
 
@@ -46,22 +46,71 @@ export const hit: RulePiece<z.infer<typeof hitParams>> = {
   },
 };
 
-const pickupParams = z.object({ points: z.int().min(1).max(100).default(1) }).strict();
+const pickupParams = z
+  .object({
+    points: z.int().min(1).max(100).default(1),
+    /** Index těla-počítadla komba (P36A T5, `COMBO`); bez něj body bez násobiče jako dřív. */
+    combo: z.int().min(1).max(ARCADE_LIMITS.maxBodies - 1).optional(),
+  })
+  .strict();
 
-/** Sebraný předmět → body a předmět zmizí. */
+/**
+ * Násobič dalšího sebrání: o 1 výš, když předchozí přišlo nejvýš `COMBO.window`
+ * tiků zpátky a hráč mezitím nepřišel o život, jinak ×1.
+ */
+function nextMultiplier(state: Int32Array, keeper: number): number {
+  const base = bodyBase(keeper);
+  const last = state[base + BODY.aux1] as number;
+  const health = state[HEADER.counters + COUNTER.health] as number;
+  const inRow = last > 0 && (state[HEADER.tick] as number) + 1 - last <= COMBO.window && health >= (state[base + BODY.x] as number);
+  return inRow ? Math.min(COMBO.max, Math.max(1, state[base + BODY.aux0] as number) + 1) : 1;
+}
+
+/** Sebraný předmět → body a předmět zmizí. S `combo` body krát násobič a počítadlo si sebrání zapíše. */
 export const pickup: RulePiece<z.infer<typeof pickupParams>> = {
   id: 'pickup',
   params: pickupParams,
   roles: ['player', 'collectible'],
   trigger: 'contact',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, other }, params) =>
-    roleOf(state, other) === ROLE.collectible
-      ? [
-          { kind: 'score', amount: params.points },
-          { kind: 'despawn', body: other },
-        ]
-      : [],
+  fire: ({ state, other }, params) => {
+    if (roleOf(state, other) !== ROLE.collectible) return [];
+    if (params.combo === undefined) {
+      return [
+        { kind: 'score', amount: params.points },
+        { kind: 'despawn', body: other },
+      ];
+    }
+    const multiplier = nextMultiplier(state, params.combo);
+    return [
+      { kind: 'score', amount: params.points * multiplier },
+      { kind: 'despawn', body: other },
+      { kind: 'combo', body: params.combo, multiplier },
+    ];
+  },
+};
+
+const scoreBonusParams = z
+  .object({
+    lives: z.int().min(0).max(9),
+    limit: z.int().min(1).max(ARCADE_LIMITS.maxTicks),
+    target: z.int().min(0).max(9999),
+  })
+  .strict() satisfies z.ZodType<ScoreBonusParams>;
+
+/**
+ * Skóre, které rozhoduje (P36A T5). Bonus na konci výhry přičte jádro
+ * (`endBonus` v `kernel.ts`, čte parametry tohohle pravidla). Pravidlo samo
+ * hlídá cílové skóre: dosažený `target` = výhra hned, v průchodu čítačů. Výhra
+ * jinou cestou pod cílem po bonusu je prohra – to rozhodne jádro.
+ */
+export const scoreBonus: RulePiece<z.infer<typeof scoreBonusParams>> = {
+  id: 'score_bonus',
+  params: scoreBonusParams,
+  roles: ['player'],
+  trigger: 'counter',
+  cost: () => ({ bodies: 1, rules: 1 }),
+  fire: ({ state }, params) => (params.target > 0 && (state[HEADER.counters + COUNTER.score] as number) >= params.target ? [{ kind: 'win' }] : []),
 };
 
 const noParams = z.object({}).strict();
@@ -135,4 +184,4 @@ export const checkpoint: RulePiece<z.infer<typeof noParams>> = {
   fire: ({ state, other }) => (roleOf(state, other) === ROLE.checkpoint ? [{ kind: 'checkpoint', body: other }] : []),
 };
 
-export const RULES = { hit, pickup, finish, out_of_health: outOfHealth, time_limit: timeLimit, fall_out: fallOut, checkpoint } as const;
+export const RULES = { hit, pickup, finish, out_of_health: outOfHealth, time_limit: timeLimit, fall_out: fallOut, checkpoint, score_bonus: scoreBonus } as const;

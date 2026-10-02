@@ -28,7 +28,7 @@ import { readFileSync } from 'node:fs';
 
 import { derivedSeeds, seedFrom } from '@/app/api/play/_publish';
 import { ARCADE_COMPILER_VERSION, arcadeWorldOf } from '@/play/arcade/compile';
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, type PieceRef, bodyHp } from '@/play/arcade/contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeWorld, COUNTER, HEADER, type InputEvent, NO_INPUT, type PieceRef, type ScoreBonusParams, bodyHp, endBonus } from '@/play/arcade/contract';
 import { instantiate, loadProgram, outcomeOf, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { releasePhysics } from '@/play/arcade/physics/step';
@@ -72,6 +72,8 @@ export interface DepthRow extends DepthSentence {
   readonly livesFrom: 'counter' | 'hp' | 'none';
   /** Čítač `score` na konci robotova běhu. */
   readonly botScore: number | null;
+  /** Nejhorší výhra na tomtéž světě (`worstWinOf`); `null` = svět bez bonusu na konci. */
+  readonly worstScore: number | null;
   readonly scoreDecides: boolean;
   /** Pravidlo, které výsledek čte ze skóre (`rule:<verb> >= N`); `null` = žádné. */
   readonly scoreGoal: string | null;
@@ -158,15 +160,29 @@ interface CompiledRuleLike {
   readonly do?: readonly Record<string, unknown>[];
 }
 
-/** Pravidlo, které běh ukončí podle čítače `score` (definice T1); `grow_to` je počítadlo věcí, ne skóre. */
+/** Pravidlo, které běh ukončí podle čítače `score` (definice T1, T5 přidala cíl `score_bonus`); `grow_to` je počítadlo věcí, ne skóre. */
 export function scoreGoalOf(rules: readonly PieceRef[]): { readonly label: string; readonly points: number | null } | null {
   for (const ref of rules) {
+    const target = ref.id === 'score_bonus' ? (ref.params as { readonly target?: number }).target : undefined;
+    if (target !== undefined && target > 0) return { label: `score_bonus >= ${String(target)}`, points: target };
     const rule = ref.params as CompiledRuleLike;
     const ends = (rule.do ?? []).some((effect) => 'win' in effect || 'lose' in effect);
     const onScore = rule.when?.counter?.name === 'score' ? rule.when.counter : rule.if?.find((cond) => cond.counter?.name === 'score')?.counter;
     if (ends && onScore !== undefined) return { label: `rule:${rule.verb ?? ref.id} >= ${String(onScore.atLeast ?? 0)}`, points: onScore.atLeast ?? null };
   }
   return null;
+}
+
+/**
+ * Nejhorší výhra na tomhle světě (T5): poslední život, aspoň jeden zásah, výhra
+ * na limitu a jen body, které výhra sama vyžaduje (cíl `grow_to` / `score_bonus`).
+ * `null` = svět bonus na konci nemá – skóre tam výhru nerozliší.
+ */
+export function worstWinOf(world: ArcadeWorld): number | null {
+  const bonus = world.rules.find((ref) => ref.id === 'score_bonus')?.params as ScoreBonusParams | undefined;
+  if (bonus === undefined) return null;
+  const grow = world.rules.find((ref) => ref.id === 'grow_to')?.params as { readonly points: number } | undefined;
+  return Math.max(bonus.target, grow?.points ?? 0) + endBonus(bonus, Math.min(1, bonus.lives), bonus.limit);
 }
 
 function livesOf(world: ArcadeWorld): { readonly lives: number; readonly livesFrom: DepthRow['livesFrom'] } {
@@ -197,7 +213,7 @@ const round2 = (value: number): number => Math.round(value * 100) / 100;
 /** Řádek pro větu, jejíž svět nevznikl nebo není arkádový. */
 function deadRow(sentence: DepthSentence, genre: string, failures: readonly string[], said: DepthRow['said']): DepthRow {
   const none = { lives: said.lives === null ? null : false, score: said.score === null ? null : false, seconds: said.seconds === null ? null : false };
-  return { ...sentence, genre, seed: null, playable: false, publishable: false, failures, bot: { end: 'unfinished', tick: 0 }, winSeconds: null, inBand: false, idle: { end: 'unfinished', tick: 0 }, lives: 0, livesFrom: 'none', botScore: null, scoreDecides: false, scoreGoal: null, said, carried: none };
+  return { ...sentence, genre, seed: null, playable: false, publishable: false, failures, bot: { end: 'unfinished', tick: 0 }, winSeconds: null, inBand: false, idle: { end: 'unfinished', tick: 0 }, lives: 0, livesFrom: 'none', botScore: null, worstScore: null, scoreDecides: false, scoreGoal: null, said, carried: none };
 }
 
 interface SeedRun {
@@ -233,6 +249,8 @@ export function measureSentence(sentence: DepthSentence): DepthRow {
   const winSeconds = won ? round2(verdict.bot.tick / ARCADE_HZ) : null;
   const { lives, livesFrom } = livesOf(world);
   const goal = scoreGoalOf(world.rules);
+  const botScore = won ? scoreAfter(world, verdict.bot.inputs) : null;
+  const worstScore = worstWinOf(world);
   const timed = world.rules.some((ref) => (ref.id === 'time_limit' || ref.id === 'survive_time') && ref.params.seconds === said.seconds);
   return {
     ...sentence,
@@ -247,8 +265,10 @@ export function measureSentence(sentence: DepthSentence): DepthRow {
     idle: { end: endOf(verdict.idle.outcome), tick: verdict.idle.tick },
     lives,
     livesFrom,
-    botScore: won ? scoreAfter(world, verdict.bot.inputs) : null,
-    scoreDecides: goal !== null,
+    botScore,
+    worstScore,
+    // T5: cíl `score`, nebo robotova výhra je aspoň dvojnásobek nejhorší výhry na tomtéž světě.
+    scoreDecides: goal !== null || (botScore !== null && worstScore !== null && botScore >= 2 * Math.max(1, worstScore)),
     scoreGoal: goal?.label ?? null,
     said,
     carried: {

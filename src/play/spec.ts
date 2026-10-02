@@ -459,6 +459,16 @@ export const gameSpecSchema = z
     rules: rulesSchema.optional(),
     /** Doplňky rolí pro pravidla (skryté na startu). */
     things: thingsSchema.optional(),
+    /**
+     * Skóre, které rozhoduje (P36A T5, `arcade/compile.ts` `withScoring`):
+     * kombo za sebrání v řadě a bonus na konci výhry; `target` = výhra až po
+     * dosažení cílového skóre. Jen arkáda; bez výchozí hodnoty, jako `control` –
+     * uložený spec bez pole staví tentýž svět.
+     */
+    scoring: z
+      .object({ target: z.int().min(10).max(9999).optional() })
+      .strict()
+      .optional(),
   })
   .strict();
 

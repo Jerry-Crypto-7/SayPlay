@@ -74,6 +74,8 @@ function changeOf(effect: ArcadeEffect, after: ArcadeState, tick: number): strin
       return counter('health', -effect.amount);
     case 'win':
     case 'lose':
+    // Kombo je zápis počítadla k sebrání – změnu za slovesem dokládá skóre téhož pravidla.
+    case 'combo':
       return null;
     case 'despawn':
       return effect.body >= 0 && effect.body < (after[HEADER.bodyCount] as number) && !alive(after, effect.body) ? `body ${String(effect.body)} gone ${at}` : null;

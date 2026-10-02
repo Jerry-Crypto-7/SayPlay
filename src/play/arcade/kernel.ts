@@ -43,9 +43,11 @@ import {
   type RulePiece,
   type RuleTrigger,
   RESTITUTION_SHIFT,
+  type ScoreBonusParams,
   VERB_MOTION,
   bodyBase,
   bodyHp,
+  endBonus,
   graceOf,
   setBodyHp,
   setGrace,
@@ -76,6 +78,8 @@ export interface ArcadeProgram {
   readonly rules: readonly Bound<RulePiece>[];
   /** Svět má fyzikální těleso (i předlohu): tik spouští fázi Rapieru (P29A). */
   readonly physics: boolean;
+  /** Parametry pravidla `score_bonus` (P36A T5): bonus a cílové skóre na konci výhry; `null` = svět bez nich. */
+  readonly bonus: ScoreBonusParams | null;
 }
 
 export type ArcadeOutcome = 'running' | 'won' | 'lost';
@@ -87,10 +91,13 @@ function bind<T extends { readonly params: { parse(input: unknown): unknown } }>
 }
 
 export function loadProgram(world: ArcadeWorld, library: ArcadeLibrary): ArcadeProgram {
+  const rules = world.rules.map((ref) => bind(library.rules, ref, 'rule'));
   return {
     control: bind(library.controls, world.control, 'control'),
-    rules: world.rules.map((ref) => bind(library.rules, ref, 'rule')),
+    rules,
     physics: worldHasPhysics(world),
+    // Bonus na konci počítá jádro: po výhře už žádné pravidlo nevystřelí.
+    bonus: (rules.find((rule) => rule.piece.id === 'score_bonus')?.params as ScoreBonusParams | undefined) ?? null,
   };
 }
 
@@ -688,6 +695,13 @@ function apply(state: ArcadeState, effects: readonly ArcadeEffect[], from: numbe
     else if (effect.kind === 'push') changed = push(state, effect.body);
     else if (effect.kind === 'toggle') changed = toggle(state, effect.role);
     else if (effect.body < 0 || effect.body >= (state[HD.bodyCount] as number)) changed = false;
+    else if (effect.kind === 'combo') {
+      // Počítadlo komba (P36A T5): násobič, tik sebrání + 1 a životy v tu chvíli.
+      const base = baseOf(effect.body);
+      state[base + S.aux0] = effect.multiplier;
+      state[base + S.aux1] = (state[HD.tick] as number) + 1;
+      state[base + S.x] = state[HD.counters + CT.health] as number;
+    }
     // Předloha spawnu ani mrtvé tělo zásah nenese – kopie by zdědily jeho HP (revize P32-0 T4).
     else if ((effect.kind === 'hit' || effect.kind === 'stateChange') && !alive(state, baseOf(effect.body))) changed = false;
     else if (effect.kind === 'hit') {
@@ -732,6 +746,17 @@ interface TickEnd {
 function settleRun(state: ArcadeState, end: TickEnd): void {
   if (end.lost) state[HD.runState] = RUN_STATE.lost;
   else if (end.won) state[HD.runState] = RUN_STATE.won;
+}
+
+/**
+ * Konec výhry se `score_bonus` (P36A T5): bonus za zbylé životy, běh bez ztráty
+ * života a čas pod limitem do čítače `score`; s cílovým skóre výhra pod cílem
+ * i po bonusu končí prohrou („So close“).
+ */
+function finishScore(state: ArcadeState, bonus: ScoreBonusParams): void {
+  const score = (state[HD.counters + CT.score] as number) + endBonus(bonus, state[HD.counters + CT.health] as number, state[HD.tick] as number);
+  state[HD.counters + CT.score] = score;
+  if (bonus.target > 0 && score < bonus.target) state[HD.runState] = RUN_STATE.lost;
 }
 
 /**
@@ -795,6 +820,7 @@ export function step(state: ArcadeState, input: ArcadeInput, program: ArcadeProg
   fireRules(effects, owners, program, 'counter', none);
   apply(state, effects, countersFrom, counted, owners, trace);
   settleRun(state, counted);
+  if (program.bonus !== null && state[HD.runState] === RUN_STATE.won) finishScore(state, program.bonus);
 
   state[HD.tick] = (state[HD.tick] as number) + 1;
   if (program.physics && state[HD.runState] !== RUN_STATE.running) releasePhysics(state);

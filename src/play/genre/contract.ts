@@ -236,6 +236,8 @@ export function legacySpec(spec: GenreSpec, game: LegacyGame): GameSpecV1 {
     roles,
     ...(rules.length === 0 ? {} : { rules }),
     ...(spec.things === undefined || spec.things.length === 0 ? {} : { things: spec.things }),
+    // Kombo a bonus na konci (P36A T5) má každá nová hra žánru; cílové skóre z věty dosadí rychlý návrh.
+    scoring: {},
     tutorial: game.tutorial,
     verification: [{ id: 'winnable', kind: 'reachability', assert: { runState: 'won' } }],
     budgets: { maxEntities: 40, maxRules: 120, maxTriangles: 200000 },

@@ -133,12 +133,13 @@ describe('sectioned tracks stay playable by construction', () => {
 });
 
 describe('a game stored before T4 (no `sections`) builds the world it had', () => {
-  /** Spec, jak ho žánr zapsal před T4: bez `sections` v parametrech ovládání ani v `tuning`. */
+  /** Spec, jak ho žánr zapsal před T4: bez `sections` v parametrech ovládání ani v `tuning` a bez `scoring` (to přišlo až s T5). */
   function storedBefore(sentence: string): GameSpecV1 {
     const { spec } = draftGameSpecWithMeta(sentence, 1);
+    const { scoring: _scoring, ...unscored } = spec;
     const { sections: _sections, tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly sections?: number; readonly tuning?: Record<string, unknown> };
     const { sections: _inTuning, ...rest } = tuning ?? {};
-    return { ...spec, controlParams: { ...own, ...(tuning === undefined ? {} : { tuning: rest }) } } as GameSpecV1;
+    return { ...unscored, controlParams: { ...own, ...(tuning === undefined ? {} : { tuning: rest }) } } as GameSpecV1;
   }
 
   // Čísla z `evals/play/regression/report.json` před T4 (semínko 1): běžec 1522 tiků a 73 těl, skákačka 1701 tiků, 55 těl, 6 pravidel.

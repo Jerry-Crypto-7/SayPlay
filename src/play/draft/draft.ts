@@ -73,6 +73,7 @@ import {
   readLives,
   readNumbers,
   readRoles,
+  readTargetScore,
   scoreArchetypes,
   singular,
   type SentenceRoles,
@@ -1140,8 +1141,13 @@ function draftGenre(
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });
   if (!read.ok) return null;
-  const game = readGameSpec(withLives(module.compile(withCounts(read.value) as never), readLives(sentence)));
+  const game = readGameSpec(withTarget(withLives(module.compile(withCounts(read.value) as never), readLives(sentence)), readTargetScore(sentence)));
   return game.ok ? { genre: read.value, spec: game.value, heroSaid: heroSaid !== null } : null;
+}
+
+/** Cílové skóre z věty („score 100 points“, P36A T5) do hry žánru; kompilátor ho ořízne na dosažitelné. */
+function withTarget(spec: GameSpecV1, target: number | null): GameSpecV1 {
+  return target === null || spec.scoring === undefined ? spec : { ...spec, scoring: { ...spec.scoring, target } };
 }
 
 /**

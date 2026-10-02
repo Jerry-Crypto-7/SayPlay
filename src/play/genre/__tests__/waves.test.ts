@@ -174,7 +174,8 @@ const STORED = [
 
 describe('stored arena games without waves', () => {
   it.each(STORED)('„%s“ keeps its old world and win tick', (sentence, seed, ticks, hash) => {
-    const { spec } = draftGameSpecWithMeta(sentence, 1);
+    // Uložená hra neměla ani `scoring` (T5).
+    const { spec: { scoring: _scoring, ...spec } } = draftGameSpecWithMeta(sentence, 1);
     const { tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly tuning: Record<string, unknown> };
     const { waves: _waves, ...old } = tuning;
     const compiled = compileArcade({ ...spec, controlParams: { ...own, tuning: old } as GameSpecV1['controlParams'] }, seed);
