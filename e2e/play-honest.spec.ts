@@ -22,7 +22,8 @@ test.describe('/play/[id] – honesty strip', () => {
     const strip = page.getByTestId('play-honest');
     await expect(strip).toBeVisible();
     await expect(strip).toContainText("This one isn't playable yet – here's the closest game we can build");
-    await expect(page.getByTestId('play-honest-reason')).toContainText('an endless runner');
+    // Hláška jmenuje hru, kterou návrh postaví – od žánrových návrhů úkol, ne běžec (naměřeno P36A T12).
+    await expect(page.getByTestId('play-honest-reason')).toContainText('a quest');
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
 
@@ -35,7 +36,8 @@ test.describe('/play/[id] – honesty strip', () => {
     const game = await publish(request, 'Explain quantum physics to my grandma.');
     await page.goto(game.url);
     await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a collecting game about grandma. Try: ‘Dodge …’, ‘Collect …’');
-    await expect(page.getByRole('heading', { name: 'Explain Quantum Physics Grandma' })).toBeVisible();
+    // Sběr v Aréně se jmenuje podle tématu věty („<téma> Hunt“), dřív běžec podle celé věty.
+    await expect(page.getByRole('heading', { name: 'Grandma Hunt' })).toBeVisible();
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());

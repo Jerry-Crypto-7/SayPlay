@@ -262,7 +262,9 @@ async function shootQuest(page: Page, id: QuestId, prefix: string, warmUpMs = 0)
   await startDemo(page);
   const beforeShot = await shoot(page, `${prefix}-before`, await freezeAt(page, Math.max(1, firstChange!.tick - 10)));
   await page.waitForTimeout(800);
-  const afterShot = await shoot(page, `${prefix}-after`, await freezeAt(page, reached!.tick + 30));
+  // Hned v tiku změny, dřív +30: od P36A T3/T4 (honič a kola úkolu) robot po slovese hned odchází a na
+  // úzkém Pixelu 7 cíl čaroděje do 20 tiků opustí záběr (2. 10. 2026). Pod 4× CPU zamrzne o pár tiků později.
+  const afterShot = await shoot(page, `${prefix}-after`, await freezeAt(page, reached!.tick));
   await page.waitForTimeout(500);
 
   for (const shot of [beforeShot, afterShot]) {

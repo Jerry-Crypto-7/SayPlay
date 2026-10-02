@@ -220,8 +220,12 @@ async function shootChase(page: Page, prefix: string, warmUpMs = 0): Promise<rea
 /**
  * Kolik výšky obrazu hrdina zabírá aspoň (P35 T2): v O10 měla kočka a čaroděj
  * kolem 4,7 % a astra je naslepo nepoznala. Telefon víc – obraz je menší.
+ * Telefon 0,09 → 0,08 (P36A T12, naměřeno 2. 10. 2026): útěk jde od T4 ve
+ * vlnách a honič vstupuje od okraje arény, takže start kočky (tik 30) kamera
+ * odtáhne až k němu – hrdina 8,4 % výšky (probuzení 11,4 %, honička 13,7 %).
+ * Pořád ~1,8× nad 4,7 %; kameru dělá P36C a po sloučení se přeměří.
  */
-const HERO_SHARE = { desktop: 0.07, phone: 0.09 } as const;
+const HERO_SHARE = { desktop: 0.07, phone: 0.08 } as const;
 
 /**
  * Pronásledovatel, který se s velkým hrdinou do záběru nevejde, ukazuje šipka
@@ -418,7 +422,8 @@ async function shootFight(page: Page, prefix: string, warmUpMs = 0): Promise<rea
   shots.push(await shoot(page, `${prefix}-ko`, end.tick, 'enemy'));
   const labels = await meterLabels(page);
   test.info().annotations.push({ type: 'meters', description: labels.join(' | ') });
-  expect(labels[1], 'HP soupeře po KO pro čtečku').toMatch(/^Rival [a-z ]+ health 0 of 3$/);
+  // Souboj jde od P36A T4 ve vlnách: soupeři vlny se číslují a každá vlna má o 1 HP víc (3 → 7 v páté).
+  expect(labels[1], 'HP soupeře po KO pro čtečku').toMatch(/^Rival [a-z ]+ \d+ health 0 of 7$/);
   return shots;
 }
 
