@@ -18,7 +18,7 @@ import { worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
-import { installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook } from '@/play/audio';
+import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook, vibrateFor } from '@/play/audio';
 import { musicFor, narrationUrl } from '@/play/audio/library';
 import type { GameVersion } from '@/play/contracts';
 import type { GameSpecV1 } from '@/play/spec';
@@ -551,13 +551,23 @@ function ArcadePlayGame({
   }, [active, offline, versionId]);
   useEffect(() => {
     const offEvents = session.onEvents((events) => {
-      for (const preset of presetsFor(events)) playSfx(preset);
+      const presets = presetsFor(events);
+      for (const preset of presets) playSfx(preset);
+      // Haptika (P36C T3): posluchač efektů slyší jen tiky, které hraje člověk.
+      vibrateFor(presets);
     });
+    const control = baseControlOf(session.world.control).id;
     let lastTick = -1;
+    let heard = 0;
     const offJump = session.subscribe(() => {
       const tick = session.state()[HEADER.tick] as number;
       if (tick === lastTick) return;
       lastTick = tick;
+      // Zvuky akcí (P36C T3) z nových záznamů vstupu; restart záznam zkrátí, přehrání a ukázka mlčí.
+      const inputs = session.inputs();
+      if (inputs.length < heard) heard = 0;
+      if (session.humanRun()) for (const preset of actionPresets(control, inputs, heard)) playSfx(preset);
+      heard = inputs.length;
       if (session.humanRun() && jumped(session.prev(), session.state())) playSfx('jump');
     });
     return () => {

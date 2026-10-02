@@ -27,6 +27,7 @@ import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { keySteer } from './key-steer';
 import { VoyageHero } from './VoyageHero';
 import { type VoyageLayout, centerOf, nearShotsInView, voyageLayoutOf } from './voyageLayout';
 
@@ -572,7 +573,7 @@ const BRAKE_KEYS = new Set(['arrowdown', 's']);
 const THRUST_KEYS = new Set(['arrowup', 'w', ' ']);
 
 /**
- * Šipky/A-D = zatáčení (osa), šipka dolů/S = brzda. Dotyk: první prst táhne
+ * Šipky/A-D = zatáčení (osa s náběhem ~0,25 s, `key-steer.ts`), šipka dolů/S = brzda. Dotyk: první prst táhne
  * do strany (osa podle vzdálenosti od místa stisku, plná po `DRAG_PX`),
  * druhý prst kdekoli brzdí. Brzda je držené tlačítko relace – padne do
  * každého tiku, ať snímků za sekundu je kolik chce (P28B T5).
@@ -598,11 +599,13 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     const pointers = new Map<number, { readonly x: number; axis: number }>();
     const sync = (): void => {
       const drag = [...pointers.values()][0]?.axis ?? 0;
-      const key = ((keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)) * AXIS_MAX;
       const second = pointers.size > 1;
-      session.hold(key !== 0 ? key : drag);
+      // Šipky točí volantem plynule (P36C T3); dojíždějící rejd po puštění má přednost před prstem jen do středu.
+      session.hold(wheel.axis() !== 0 ? wheel.axis() : drag);
       session.holdButtons((keys.has('brake') || (second && !lands) ? BUTTON.DOWN : 0) | (keys.has('thrust') || (second && lands) ? BUTTON.UP : 0));
     };
+    const wheel = keySteer(session, sync);
+    const steerKeys = (): void => wheel.aim(((keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0)) * AXIS_MAX);
     const keyOf = (key: string): 'left' | 'right' | 'brake' | 'thrust' | null =>
       key === 'arrowleft' || key === 'a'
         ? 'left'
@@ -619,12 +622,14 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
       if (key === null) return;
       event.preventDefault();
       keys.add(key);
+      steerKeys();
       sync();
     };
     const onKeyUp = (event: KeyboardEvent) => {
       const key = keyOf(event.key.toLowerCase());
       if (key === null) return;
       keys.delete(key);
+      steerKeys();
       sync();
     };
     const onDown = (event: PointerEvent) => {
@@ -645,7 +650,7 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     const release = (): void => {
       keys.clear();
       pointers.clear();
-      sync();
+      wheel.reset();
     };
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
@@ -655,6 +660,7 @@ export function useSteerInput(session: ArcadeSession, target: React.RefObject<HT
     element.addEventListener('pointerup', onUp);
     element.addEventListener('pointercancel', onUp);
     return () => {
+      wheel.dispose();
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', release);
