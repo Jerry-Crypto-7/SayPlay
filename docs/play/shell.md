@@ -94,11 +94,14 @@ Bez Upstash žije výzva v paměti procesu jako hry (`x-play-store: memory` v pr
 
 Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |
 restart | next_game | share | shared_open` (`src/play/loop-events.ts`), `versionId` hex id verze, `session` náhodné id záložky
-(12–32 znaků `[a-z0-9]`). Klíč navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
+(12–32 znaků `[a-z0-9]`); jen `share` smí nést booleany `withClip` (šel klip) a `dare` (odkaz nesl výzvu, P36B T6). Klíč
+navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
 frekvence (`play/events`), takže statistika hráči neubere kvótu na tvorbu; páka `sessions` vypne i tyhle dveře. Zápis: řádek
 do `data/play/events/<den>.jsonl` pod `next start`, na Vercelu řádek `[play-loop] {…}` do logu funkce; souhrn s jmenovateli
 `scripts/play-loop-report.mjs`. Robot ověřovače (sonda `playWitness`) ani ukázka „Show me how“ události neposílají.
-Sdílený odkaz nese `?via=share` a jeho otevření je `shared_open` – samotné sdílení doručení nedokládá.
+Sdílený odkaz nese `?via=share` a jeho otevření je `shared_open` – samotné sdílení doručení nedokládá. Po výhře arkády
+pošle klient vstupy běhu na `…/dare` hned (nabídka sdílení chce čerstvé gesto) a „Dare a friend to beat it“ sdílí
+`/play/<hraná verze>?via=share&dare=<dareId>`; když výzva nevyjde, obyčejný odkaz a toast „Couldn't attach your score…“.
 
 ## Verze a úložiště
 

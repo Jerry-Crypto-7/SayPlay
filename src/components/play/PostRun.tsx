@@ -13,7 +13,8 @@
  * (čas vždy, zbytek jen to, co hra opravdu počítá) a akce.
  *
  * Právě jedna rajčatová akce: po výhře „Dare a friend to beat it“ (sdílení
- * P27B T5), po prohře „Try again“ a Dare jde mezi papírová M tlačítka.
+ * P27B T5; od P36B T6 odkaz nese výzvu se skóre, které server ověřil), po
+ * prohře „Try again“ a Dare jde mezi papírová M tlačítka.
  * „Remix it“ otevře list „Change one thing“ (čipy jako návrhy), odkazy jsou
  * „Copy link“ a „Save video“ (klip běhu P29D T1). „Post to story“ z kitu tu
  * není: produkt ho neumí.
@@ -40,7 +41,7 @@ import type { Stars as StarCount } from '@/play/score/stars';
 import { isTyping } from './arcade/input';
 import type { BestOutcome } from './best';
 import { RemixBox, type RemixJob } from './RemixBox';
-import { type LivePublish, ShareButton } from './ShareButton';
+import { type DarePublish, type LivePublish, ShareButton } from './ShareButton';
 import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_DID_IT } from './starters';
 import { Button, Chip, Sheet } from './ui';
 import { clockText } from './ui/GameHud';
@@ -188,6 +189,7 @@ export function PostRun({
   facts,
   clip = null,
   live,
+  dare,
   offline = false,
   record = null,
   onReplay,
@@ -200,6 +202,8 @@ export function PostRun({
   readonly clip?: Blob | null;
   /** Verze se živými změnami běhu (P29D T10) – sdílí se místo hrané. */
   readonly live?: LivePublish;
+  /** Výzva vítězného běhu arkády (P36B T6) – nese ji jen hlavní akce „Dare a friend to beat it“. */
+  readonly dare?: DarePublish;
   /** Ukázková hra domova (P28D T7) není v úložišti: jen znovu hrát, bez sdílení a remixu. */
   readonly offline?: boolean;
   readonly onReplay: (via: ReplayVia) => void;
@@ -279,7 +283,7 @@ export function PostRun({
       {won ? 'Play again' : 'Try again'}
     </Button>
   );
-  const dare = (
+  const dareAction = (
     <ShareButton
       versionId={versionId}
       variant={won ? 'primary' : 'secondary'}
@@ -288,6 +292,7 @@ export function PostRun({
       label={won ? DARE_A_FRIEND : DARE_SHORT}
       clip={clip}
       live={live}
+      dare={won ? dare : undefined}
     />
   );
 
@@ -335,9 +340,9 @@ export function PostRun({
             replay
           ) : (
             <>
-              {won ? dare : replay}
+              {won ? dareAction : replay}
               <div className="play-result-more">
-                {won ? replay : dare}
+                {won ? replay : dareAction}
                 <Button variant="secondary" aria-haspopup="dialog" onClick={() => setChanging(true)}>
                   {REMIX_IT}
                 </Button>

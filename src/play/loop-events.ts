@@ -17,11 +17,13 @@ export interface LoopEvent {
   readonly session: string;
   /** Jen u `share` (P29D T2): šel se sdílením i klip běhu, nebo jen odkaz. */
   readonly withClip?: boolean;
+  /** Jen u `share` (P36B T6): odkaz nesl výzvu Dare s ověřeným skóre. */
+  readonly dare?: boolean;
 }
 
 const VERSION = /^[a-f0-9]{8,64}$/;
 const SESSION = /^[a-z0-9]{12,32}$/;
-const KEYS = new Set(['name', 'versionId', 'session', 'withClip']);
+const KEYS = new Set(['name', 'versionId', 'session', 'withClip', 'dare']);
 
 /** Tělo z dveří → událost, nebo `null`. Klíč navíc (třeba `sentence`) celé tělo odmítne. */
 export function readLoopEvent(raw: unknown): LoopEvent | null {
@@ -32,10 +34,12 @@ export function readLoopEvent(raw: unknown): LoopEvent | null {
   if (typeof name !== 'string' || !(LOOP_EVENTS as readonly string[]).includes(name)) return null;
   if (typeof versionId !== 'string' || !VERSION.test(versionId)) return null;
   if (typeof session !== 'string' || !SESSION.test(session)) return null;
-  const { withClip } = body;
-  if (withClip === undefined) return { name: name as LoopEventName, versionId, session };
-  if (name !== 'share' || typeof withClip !== 'boolean') return null;
-  return { name, versionId, session, withClip };
+  const { withClip, dare } = body;
+  if (withClip === undefined && dare === undefined) return { name: name as LoopEventName, versionId, session };
+  if (name !== 'share') return null;
+  if (withClip !== undefined && typeof withClip !== 'boolean') return null;
+  if (dare !== undefined && typeof dare !== 'boolean') return null;
+  return { name, versionId, session, ...(withClip === undefined ? {} : { withClip }), ...(dare === undefined ? {} : { dare }) };
 }
 
 export interface LoopRate {

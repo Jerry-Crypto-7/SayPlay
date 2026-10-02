@@ -33,6 +33,8 @@ describe('readLoopEvent', () => {
     ['an array', [{ name: 'win', versionId: VERSION, session: SESSION }]],
     ['withClip on anything but share', { name: 'win', versionId: VERSION, session: SESSION, withClip: true }],
     ['withClip that is not a boolean', { name: 'share', versionId: VERSION, session: SESSION, withClip: 'yes' }],
+    ['dare on anything but share', { name: 'win', versionId: VERSION, session: SESSION, dare: true }],
+    ['dare that is not a boolean', { name: 'share', versionId: VERSION, session: SESSION, withClip: false, dare: 'a1b2c3d4' }],
   ])('refuses %s', (_why, body) => {
     expect(readLoopEvent(body)).toBeNull();
   });
@@ -40,6 +42,11 @@ describe('readLoopEvent', () => {
   it('a share says whether the clip went with it (P29D T2)', () => {
     expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: true })).toEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: true });
     expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: false })).toEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: false });
+  });
+
+  it('a share says whether the link carried a dare (P36B T6)', () => {
+    expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: false, dare: true })).toStrictEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: false, dare: true });
+    expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: true, dare: false })).toStrictEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: true, dare: false });
   });
 });
 

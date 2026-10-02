@@ -34,7 +34,7 @@ import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, Icon, P
 import { timerLeft } from '../timer';
 import type { LabFacts, ReadFacts } from '../lab';
 import { AboutButton, SentenceRead } from '../SentenceRead';
-import { type LivePublish, ShareButton } from '../ShareButton';
+import { type DarePublish, type LivePublish, publishDare, ShareButton } from '../ShareButton';
 import { Lineage } from '../Lineage';
 import { MuteButton } from '../MuteButton';
 import { PostRun, type ResultStat, type RunFacts } from '../PostRun';
@@ -520,19 +520,27 @@ function ArcadePlayGame({
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
   // Na konci běhu se jednou vyřídí i osobní rekord (P36B T2); výsledek ho jen ukáže.
+  // Výhra pošle vstupy na server jako výzvu Dare (P36B T6) hned, ne až po stisku –
+  // nabídka sdílení chce čerstvé gesto. Odpověď staršího běhu se zahodí (`attempt`).
   const livesStart = useMemo(() => instantiate(arcade)[HEADER.counters + COUNTER.health] as number, [arcade]);
   const [record, setRecord] = useState<BestOutcome | null>(null);
+  const [dare, setDare] = useState<DarePublish | undefined>(undefined);
   useEffect(() => {
     if (active && !offline) loopImpression(versionId);
   }, [active, offline, versionId]);
   useEffect(() => {
     if (offline) return;
     let reported = false;
-    return session.subscribe(() => {
+    let attempt = 0;
+    const off = session.subscribe(() => {
       if (!session.humanRun()) return;
       const now = session.snapshot();
       if (now.runState === 'running') {
-        if (reported) setRecord(null);
+        if (reported) {
+          setRecord(null);
+          setDare(undefined);
+          attempt += 1;
+        }
         reported = false;
       }
       if (session.inputs().length > 0) loopEvent('first_input', versionId);
@@ -541,8 +549,20 @@ function ArcadePlayGame({
         loopEvent(now.runState === 'won' ? 'win' : 'lose', versionId);
         const run = runOf(now, livesStart);
         setRecord(settleBest(versionId, { won: run.won, score: run.score, ticks: run.ticks, stars: starsFor(run, par) }));
+        if (run.won) {
+          const mine = attempt;
+          setDare({ state: 'pending' });
+          publishDare(versionId, session.inputs(), session.patches()).then(
+            (dareId) => mine === attempt && setDare({ state: 'ready', dareId }),
+            () => mine === attempt && setDare({ state: 'failed' }),
+          );
+        }
       }
     });
+    return () => {
+      attempt += 1;
+      off();
+    };
   }, [offline, session, versionId, livesStart, par]);
 
   // Cíl k překonání v HUD (P36B T4): rekord z prohlížeče, přečtený po připojení a s každým
@@ -824,6 +844,7 @@ function ArcadePlayGame({
           facts={arcadeFacts(spec, arcade, snapshot, par, livesStart)}
           clip={clip}
           live={live}
+          dare={dare}
           offline={offline}
           record={record}
           onReplay={(via) => {
