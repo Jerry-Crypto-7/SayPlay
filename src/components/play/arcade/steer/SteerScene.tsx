@@ -43,7 +43,7 @@ export function placeChase(camera: PerspectiveCamera, look: Vector3, x: number, 
   // Plavba (P32F T4): ovládání osu trati nenese, bere se z rozvržení; přistání má vlastní záběr.
   const voyage = voyageCams.get(camera);
   if (voyage?.layout.mode === 'land') {
-    placeLander(camera, look, x, voyage.hero?.position.y ?? voyage.layout.hero.y, z, voyage.layout.pad);
+    placeLander(camera, look, x, voyage.hero?.position.y ?? voyage.layout.hero.y, z, voyage.layout.pad, voyage.layout.hero.h);
     return;
   }
   if (voyage !== undefined) {
@@ -109,18 +109,33 @@ function aheadInView(camera: Camera, course: SteerCourse | undefined, z: number,
   return seen;
 }
 
+/** Nejmenší podíl výšky obrazu pro hrdinu přistání (P36C T5: cíl 8 %, s rezervou na náklon lodi). */
+const LANDER_HERO_SHARE = 0.09;
+/**
+ * Jak daleko od středu obrazu smí hrdina být, když se plocha do záběru nevejde (podíl poloviny šířky / výšky).
+ * Nahoru míň: horních ~15 % obrazu telefonu drží lišta HUD se štítkem cíle.
+ */
+const LANDER_REACH: readonly [x: number, y: number] = [0.7, 0.4];
+
 /**
  * Záběr přistání: přistávač i plocha v obraze, zboku (let jde v rovině x–y).
  * Vzdálenost ze zorného úhlu a poměru stran, na výšku strop 80 m – dál by
- * loď zmizela v mlze vesmíru.
+ * loď zmizela v mlze vesmíru. Hrdina (`heroH` m) má ale aspoň 9 % výšky
+ * obrazu (P36C T5, dřív 3,8 % na telefonu): když se loď s plochou nevejdou,
+ * kamera zůstane blíž a střed záběru se posune k ploše, jen co hrdina nevyjede
+ * z obrazu – plocha přijde do záběru, jak loď klesá.
  */
-function placeLander(camera: PerspectiveCamera, look: Vector3, x: number, y: number, z: number, pad: VoyageLayout['pad']): void {
+export function placeLander(camera: PerspectiveCamera, look: Vector3, x: number, y: number, z: number, pad: VoyageLayout['pad'], heroH: number): void {
   const [padX, padW] = pad === null ? [x, 10] : [pad.x, pad.w];
   const [left, right] = [Math.min(x - 3, padX - padW / 2 - 2), Math.max(x + 3, padX + padW / 2 + 2)];
   const [bottom, top] = [-1, y + 5];
   const tan = Math.tan((camera.fov * Math.PI) / 360);
-  const distance = Math.min(80, Math.max(16, (top - bottom) / 2 / tan, (right - left) / 2 / (tan * camera.aspect)) * 1.1);
-  const [cx, cy] = [(left + right) / 2, (bottom + top) / 2];
+  const fit = Math.min(80, Math.max(16, (top - bottom) / 2 / tan, (right - left) / 2 / (tan * camera.aspect)) * 1.1);
+  const distance = Math.min(fit, heroH / (2 * tan * LANDER_HERO_SHARE));
+  const [halfH, halfW] = [tan * distance, tan * distance * camera.aspect];
+  const clamp = (value: number, at: number, reach: number): number => Math.min(at + reach, Math.max(at - reach, value));
+  const cx = clamp((left + right) / 2, x, halfW * LANDER_REACH[0]);
+  const cy = clamp((bottom + top) / 2, y, halfH * LANDER_REACH[1]);
   camera.position.set(cx, cy + distance * 0.12, z - distance);
   look.set(cx, cy, z);
   camera.lookAt(look);

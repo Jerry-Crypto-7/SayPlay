@@ -263,6 +263,8 @@ const HERO_DRAWN_M = 1.3;
 const ITEM_DRAWN_M = 0.7;
 const ITEM_HOVER_M = 0.35;
 const ITEM_SPIN = 2;
+/** Odstup výzdoby podlahy od těla na startu (m): kamínek u nohy hrdiny ani trs pod věcí. */
+const DECOR_KEEP_M = 0.4;
 /** Záře věci nad prahem bloomu rigu (`bloomThreshold` ≈ 1,1). */
 const ITEM_GLOW = 2.4;
 const RING_GLOW = new Color(brand.sun).multiplyScalar(2.5);
@@ -433,6 +435,22 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
     () => views.map((view) => (!fight || (parts[view.index] !== 'hero' && parts[view.index] !== 'enemy') ? 0 : bodyHp(view.index < (initial[HEADER.bodyCount] as number) ? initial : session.state(), view.index))),
     [views, parts, fight, initial, session],
   );
+  /** Kam výzdoba podlahy nesmí: každé tělo na startu s odstupem; těla přidaná za hry nesou vlastní záři nad ní. */
+  const keep = useMemo(
+    () =>
+      views
+        .filter((view) => view.index < (initial[HEADER.bodyCount] as number))
+        .map((view) => {
+          const base = bodyBase(view.index);
+          const size = drawn[view.index]!;
+          return { x: -(initial[base + BODY.x] as number) / UNIT, z: (initial[base + BODY.z] as number) / UNIT, r: Math.max(size.w, size.d) / 2 + DECOR_KEEP_M };
+        }),
+    [views, drawn, initial],
+  );
+  const heroHeight = useMemo(() => {
+    const hero = parts.indexOf('hero');
+    return hero < 0 ? HERO_DRAWN_M : drawn[hero]!.h;
+  }, [parts, drawn]);
   const fxClock = useRef(0);
   const leans = useRef<(Group | null)[]>([]);
   const fighters = useRef<(Fighter | undefined)[]>([]);
@@ -655,7 +673,7 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
 
   return (
     <>
-      <ArenaFloor look={scene} half={half / UNIT} />
+      <ArenaFloor look={scene} half={half / UNIT} seed={session.world.seed} keep={keep} hero={heroHeight} />
       {views.map((view) => {
         if (view.role === ROLE.target) return null; // Cíl úkolu kreslí vrstva cílů (`TargetsMount`), ne kvádr.
         const part = parts[view.index]!;
