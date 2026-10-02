@@ -592,6 +592,11 @@
   margin-left: var(--sp-space-2);
 }
 
+/* Rekord překonaný během běhu (P36B T4): „New best!“ vyskočí jako sebrané vejce. */
+.play-hud-count.is-new {
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop) both;
+}
+
 .play-hud-count > .play-hud-num {
   margin-left: var(--sp-space-1);
 }

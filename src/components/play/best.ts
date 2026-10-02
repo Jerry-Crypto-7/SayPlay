@@ -5,6 +5,8 @@
  * výjimku a výsledek se vykreslí bez rekordu. Leží mimo hashovaný stav.
  */
 
+import { clockText } from './ui/GameHud';
+
 export const BEST_PREFIX = 'sp-best:';
 
 export interface Best {
@@ -53,6 +55,23 @@ export function readBest(versionId: string, store: Store | null = browserStore()
   } catch {
     return null;
   }
+}
+
+/** Cíl k překonání během běhu (P36B T4): text položky HUD a body, které ho přebijí (`null` = rozhodne až čas na konci). */
+export interface BestGoal {
+  readonly text: string;
+  readonly score: number | null;
+}
+
+/**
+ * Rekord jako cíl v HUD: u rekordu s body jeho body („Best 2,450“), jinak jeho
+ * čas („Best 31.0s“). Hra na přežití bez bodů cíl nemá – každá její výhra trvá
+ * stejně dlouho. Bez rekordu cíl není.
+ */
+export function bestGoal(best: Best | null, hz: number, survive: boolean): BestGoal | null {
+  if (best === null) return null;
+  if (best.score > 0) return { text: `Best ${best.score.toLocaleString('en-US')}`, score: best.score };
+  return survive ? null : { text: `Best ${clockText(best.ticks / hz)}`, score: null };
 }
 
 /**

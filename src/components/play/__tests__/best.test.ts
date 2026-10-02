@@ -2,9 +2,11 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
 
-import { BEST_PREFIX, type BestOutcome, readBest, settleBest } from '../best';
+import { BEST_PREFIX, type BestOutcome, bestGoal, readBest, settleBest } from '../best';
 import { PostRun, type RunFacts, runResult } from '../PostRun';
 import type { RemixJob } from '../RemixBox';
+import { NEW_BEST } from '../starters';
+import { GameHud, type HudCounter } from '../ui/GameHud';
 
 /**
  * Osobní rekord (P36B T2): `localStorage` je jen pomůcka – první výhra rekord
@@ -135,5 +137,28 @@ describe('PostRun – skóre, hvězdy a rekord (P36B T2)', () => {
     expect(grid.stars).toBeNull();
     expect(grid.score).toBeNull();
     expect(grid.best).toBeNull();
+  });
+});
+
+describe('bestGoal – cíl k překonání v HUD (P36B T4)', () => {
+  it('hráč bez rekordu cíl nevidí', () => {
+    expect(bestGoal(null, 60, false)).toBeNull();
+  });
+
+  it('rekord s body je cíl v bodech – ty se dají přebít už za běhu', () => {
+    expect(bestGoal({ score: 2450, ticks: 1860, stars: 2 }, 60, false)).toEqual({ text: 'Best 2,450', score: 2450 });
+    expect(bestGoal({ score: 12, ticks: 5400, stars: 3 }, 60, true)).toEqual({ text: 'Best 12', score: 12 });
+  });
+
+  it('rekord bez bodů je cíl v čase; hra na přežití bez bodů cíl nemá', () => {
+    expect(bestGoal({ score: 0, ticks: 1860, stars: 2 }, 60, false)).toEqual({ text: 'Best 31.0s', score: null });
+    expect(bestGoal({ score: 0, ticks: 5400, stars: 3 }, 60, true)).toBeNull();
+  });
+
+  it('HUD ukáže cíl jako položku pilulky postupu; přebitý rekord vyskočí', () => {
+    const hud = (counter: HudCounter) =>
+      renderToStaticMarkup(createElement(GameHud, { title: 'T', goalLine: 'Go', counters: [counter], clock: { seconds: 3, countdown: false }, objective: false }));
+    expect(hud({ label: 'best', count: 2450, text: 'Best 2,450' })).toMatch(/class="play-hud-count" data-testid="hud-counter-best"[^>]*>.*Best 2,450/);
+    expect(hud({ label: 'best', count: 2451, text: NEW_BEST, fresh: true })).toMatch(/class="play-hud-count is-new" data-testid="hud-counter-best"[^>]*>.*New best!/);
   });
 });

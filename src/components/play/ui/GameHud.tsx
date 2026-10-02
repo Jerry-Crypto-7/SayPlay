@@ -26,6 +26,8 @@ export interface HudCounter {
   readonly count: number;
   readonly text: string;
   readonly icon?: IconName;
+  /** Právě překonaný rekord (P36B T4): položka vyskočí jako sebrané vejce. */
+  readonly fresh?: boolean;
 }
 
 /** Čas běhu: uběhlý, nebo odpočet (hra na přežití, časový limit). */
@@ -124,7 +126,7 @@ export function GameHud({
         <p className={flash('sp-hud-pill play-hud-progress', caught)} data-testid="play-progress-pill">
           {goal !== null && <Goal goal={goal} />}
           {counters.map((counter) => (
-            <span key={counter.label} className="play-hud-count" data-testid={`hud-counter-${counter.label}`} data-count={counter.count}>
+            <span key={counter.label} className={counter.fresh === true ? 'play-hud-count is-new' : 'play-hud-count'} data-testid={`hud-counter-${counter.label}`} data-count={counter.count}>
               {counter.icon !== undefined && <Icon name={counter.icon} />}
               <span className="play-hud-num">{counter.text}</span>
               {counter.icon === 'heart' && <span className="play-sr-only"> lives</span>}

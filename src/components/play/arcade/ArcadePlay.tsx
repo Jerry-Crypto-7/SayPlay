@@ -24,7 +24,8 @@ import type { GameVersion } from '@/play/contracts';
 import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 
-import { type BestOutcome, settleBest } from '../best';
+import { type Best, type BestOutcome, bestGoal, readBest, settleBest } from '../best';
+import { NEW_BEST } from '../starters';
 import { HowItWorks } from '../HowItWorks';
 import { loopEvent, loopImpression } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
@@ -155,6 +156,7 @@ function ArcadeHud({
   bonus,
   paused,
   caught,
+  target = null,
   onPause,
   bottom,
   children,
@@ -166,6 +168,8 @@ function ArcadeHud({
   readonly bonus: number;
   readonly paused: boolean;
   readonly caught: boolean;
+  /** Cíl k překonání (P36B T4) – poslední položka pilulky postupu. */
+  readonly target?: HudCounter | null;
   readonly onPause?: () => void;
   readonly bottom?: ReactNode;
   readonly children?: ReactNode;
@@ -177,6 +181,7 @@ function ArcadeHud({
   if (aiming(spec)) counters.push({ label: 'shots', count: snapshot.shots, text: `${snapshot.shots} ${spec.control === 'throw' ? 'throws' : 'shots'} left` });
   if (world.rules.some((rule) => rule.id === 'blaster')) counters.push({ label: 'ammo', count: snapshot.shots, text: `${snapshot.shots} ammo` });
   if (hasLives(spec)) counters.push({ label: 'lives', count: snapshot.health, text: String(snapshot.health), icon: 'heart' });
+  if (target !== null) counters.push(target);
   const limit = limitOf(world);
   const elapsed = snapshot.tick / ARCADE_HZ;
   return (
@@ -235,6 +240,8 @@ export interface ArcadePlayProps {
 const END_PAUSE_MS = 600;
 /** Po prohře výsledek dřív (P36B T3): oslava tu není a „Try again“ má být po ruce do 300 ms. */
 const LOSS_PAUSE_MS = 300;
+/** Jak dlouho HUD ukazuje „New best!“, když hráč rekord přebije za běhu (P36B T4); pak cíl zmizí. */
+const NEW_BEST_MS = 2000;
 
 /**
  * Je Rapier pro tenhle svět načtený (P29A T13)? Jádro je synchronní a bez něj
@@ -538,6 +545,26 @@ function ArcadePlayGame({
     });
   }, [offline, session, versionId, livesStart, par]);
 
+  // Cíl k překonání v HUD (P36B T4): rekord z prohlížeče, přečtený po připojení a s každým
+  // novým během (`record` se vynuluje). Přebité body ukážou na chvíli „New best!“, pak cíl zmizí.
+  const [best, setBest] = useState<Best | null>(null);
+  useEffect(() => {
+    if (!offline && record === null) setBest(readBest(versionId));
+  }, [offline, record, versionId]);
+  const goal = useMemo(() => bestGoal(best, ARCADE_HZ, arcade.rules.some((rule) => rule.id === 'survive_time')), [best, arcade]);
+  const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
+  const [cheered, setCheered] = useState(false);
+  useEffect(() => {
+    if (!beaten) {
+      setCheered(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setCheered(true), NEW_BEST_MS);
+    return () => window.clearTimeout(timer);
+  }, [beaten]);
+  const target: HudCounter | null =
+    goal === null || demo !== null || cheered ? null : beaten ? { label: 'best', count: snapshot.score, text: NEW_BEST, fresh: true } : { label: 'best', count: goal.score ?? 0, text: goal.text };
+
   // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
   // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness
   // `scripts/p32/shots.mjs` měří od kliknutí právě k ní – první snímek plátna
@@ -715,6 +742,7 @@ function ArcadePlayGame({
         bonus={bonus}
         paused={paused}
         caught={caught}
+        target={target}
         onPause={menu ? pauseGame : undefined}
         bottom={
           menu && (
