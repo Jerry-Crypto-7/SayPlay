@@ -173,6 +173,46 @@ export function readNumbers(sentence: string): SentenceNumbers {
 }
 
 /**
+ * Meze životů z věty (P36A T2); horní mez je táž jako u mechaniky `health`
+ * (`registry.ts`, test je drží rovné). Odtamtud se neimportuje: lexikon načítá
+ * i holý Node (`scripts/assets/cc0/select.mjs`), který cestu bez přípony nerozřeší.
+ */
+export const SENTENCE_LIVES = { min: 1, max: 9 } as const;
+
+const LIVES_SAID = new RegExp(`\\b(\\d+|no|${Object.keys(NUMBER_WORDS).join('|')})\\s+(?:extra\\s+)?(?:lives|life|hearts?)\\b`);
+
+/**
+ * Kolik životů věta říká (P36A T2): „with 5 lives“, „one life“, „three hearts“.
+ * „no lives“ znamená jeden pokus (1); číslo mimo 1–9 se ořízne. `null` = věta
+ * životy neříká.
+ */
+export function readLives(sentence: string): number | null {
+  const match = LIVES_SAID.exec(sentence.toLowerCase());
+  if (match === null) return null;
+  const token = match[1] as string;
+  const value = token === 'no' ? SENTENCE_LIVES.min : toNumber(token);
+  return Math.max(SENTENCE_LIVES.min, Math.min(SENTENCE_LIVES.max, value));
+}
+
+/** Meze cílového skóre z věty (P36A T5); táž jako `scoring.target` ve `spec.ts`. */
+export const SENTENCE_TARGET = { min: 10, max: 9999 } as const;
+
+const POINTS_SAID = new RegExp(`\\b(\\d+|${Object.keys(NUMBER_WORDS).join('|')})\\s+points?\\b`);
+/** „score 200“, „get 500“, „reach a score of 300“ – číslo bez podstatného jména za ním („get 5 coins“ není skóre). */
+const SCORE_SAID = /\b(?:score|get|reach|earn)\s+(?:a score of\s+|of\s+|at least\s+)?(\d+)(?=\s*(?:$|[.,!?;]|before\b|to\b|in\b|within\b|and\b|or\b))/;
+
+/**
+ * Cílové skóre z věty (P36A T5): „score 100 points“, „get 500“. Číslo se ořízne
+ * do `SENTENCE_TARGET`; `null` = věta žádné neříká.
+ */
+export function readTargetScore(sentence: string): number | null {
+  const lower = sentence.toLowerCase();
+  const token = POINTS_SAID.exec(lower)?.[1] ?? SCORE_SAID.exec(lower)?.[1];
+  if (token === undefined) return null;
+  return Math.max(SENTENCE_TARGET.min, Math.min(SENTENCE_TARGET.max, toNumber(token)));
+}
+
+/**
  * Počty s podstatným jménem („five coins“, „10 big rocks“) pro arkádu (P26D T9):
  * číslo, nejvýš jedno přídavné jméno a podstatné jméno v množném čísle.
  */

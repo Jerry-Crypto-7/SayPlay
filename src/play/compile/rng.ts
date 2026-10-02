@@ -1,14 +1,14 @@
 /**
  * Seedovaná náhoda kompilátoru her (P23-A).
  *
- * Jediný zdroj je `layout` stream z `src/sim/rng.ts` – tentýž `pure-rand`, který
+ * Zdroj je `layout` stream z `src/sim/rng.ts` (vlny arény `spawn`) – tentýž `pure-rand`, který
  * pohání runtime, takže `compileGame(spec, seed)` dá pro stejný seed vždy týž
  * `WorldDoc`. Nic tady nesmí sáhnout na globální generátor ani na čas.
  */
 
 import type { JumpableRandomGenerator } from 'pure-rand/types/JumpableRandomGenerator';
 
-import { createStreams, nextInt } from '@/sim/rng';
+import { type Subsystem, createStreams, nextInt } from '@/sim/rng';
 
 export interface CompileRng {
   /** Celé číslo z uzavřeného intervalu `[from, to]`. */
@@ -18,8 +18,13 @@ export interface CompileRng {
   shuffle<T>(items: readonly T[]): T[];
 }
 
-export function createCompileRng(seed: number): CompileRng {
-  const stream: JumpableRandomGenerator = createStreams(seed).layout;
+/**
+ * `subsystem` vybere oddělený stream: rozvržení úrovně je `layout`, to, co
+ * přijde až za běhu (vlny arény, P36A T4), `spawn` – další los vln tak
+ * nepohne ani jedním tělem úrovně.
+ */
+export function createCompileRng(seed: number, subsystem: Subsystem = 'layout'): CompileRng {
+  const stream: JumpableRandomGenerator = createStreams(seed)[subsystem];
   const int = (from: number, to: number): number => nextInt(stream, from, to);
   return {
     int,

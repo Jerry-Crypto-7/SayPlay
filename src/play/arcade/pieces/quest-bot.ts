@@ -22,7 +22,7 @@ import { z } from 'zod';
 
 import { type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, UNIT, bodyBase, targetStateOf } from '../contract';
 import { compiledInteractWhen, interactRecord, isLocked } from '../rules/interact';
-import { ARENA, DIRECTIONS, axisOfDirection, chaseParams, directionOfAxis, graceLeft } from './arena';
+import { ARENA, DIRECTIONS, axisOfDirection, chaseParams, chaseSpeedOf, directionOfAxis, graceLeft } from './arena';
 import { predict } from './arena-bot';
 
 const REACTION = 8;
@@ -175,7 +175,8 @@ function decide(state: Int32Array, player: number, recent: readonly ArcadeInput[
   const me = predict(state, player, recent);
   const { size, rocks, chasers, open } = bodiesOf(state, player, lag, interact);
   if (open.length === 0) return NO_INPUT;
-  const pursuit: Pursuit = { chasers, speed: params.chase?.speed ?? 1, lead: params.chase?.lead ?? 0, asleep: Math.max(0, graceLeft(state) - lag) };
+  // V kolech (P36A T4) plánuje proti rychlosti kola, kterou vidí.
+  const pursuit: Pursuit = { chasers, speed: params.chase === undefined ? 1 : chaseSpeedOf(params.chase, state), lead: params.chase?.lead ?? 0, asleep: Math.max(0, graceLeft(state) - lag) };
   const record = interactRecord(state);
   const reach = interact.radius - CLEARANCE;
   const limit = half - size / 2;

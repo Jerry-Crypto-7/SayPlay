@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { canonicalHash } from '@/ir/worlddoc';
+import { compileGenre } from '@/play/genre/index';
 import { readGameSpec } from '@/play/spec';
 
 import platformFixture from '../__fixtures__/platform.json';
@@ -28,10 +29,9 @@ function worldOf(level: ArcadeLevel, p: PlatformLevelParams): ArcadeWorld {
   return built.world;
 }
 
-/** Hra krok po kroku: stejná úroveň s pocitem `feel` nebo bez něj. */
-function play(feel: 2 | undefined) {
-  const p = params(feel === undefined ? {} : { feel });
-  const world = worldOf(platformLevel.generate(1, params()), p);
+/** Hra krok po kroku: stejná úroveň s pocitem `feel` nebo bez něj, nebo hotový svět. */
+function play(feel: 2 | undefined | ArcadeWorld) {
+  const world = typeof feel === 'object' ? feel : worldOf(platformLevel.generate(1, params()), params(feel === undefined ? {} : { feel }));
   const state = instantiate(world);
   const program = loadProgram(world, ARCADE_LIBRARY);
   const base = bodyBase(0);
@@ -47,7 +47,7 @@ const RUN: ArcadeInput = { buttons: 0, axis: 1000 };
 const JUMP: ArcadeInput = { buttons: BUTTON.TAP, axis: 1000 };
 
 /** Doběhne za hranu startovní plošiny: vrátí hru v prvním tiku, kdy hráč nestojí (a neskočil). */
-function offTheEdge(feel: 2 | undefined) {
+function offTheEdge(feel: 2 | undefined | ArcadeWorld) {
   const game = play(feel);
   for (let i = 0; i < 600 && game.grounded(); i += 1) game.step(RUN);
   expect(game.grounded()).toBe(false);
@@ -74,18 +74,48 @@ describe('feel: 2 – coyote time', () => {
   });
 });
 
-describe('feel: 2 – jump buffer', () => {
-  /** Skok z místa: tik, po kterém hráč znovu stojí, a hra v tom tiku. */
-  function landingTick(): number {
-    const game = play(undefined);
-    game.step({ buttons: BUTTON.TAP, axis: 0 });
-    for (let tick = 1; tick < 200; tick += 1) {
-      game.step();
-      if (game.grounded()) return tick;
-    }
-    throw new Error('never landed');
+/** Skok z místa: tik, po kterém hráč znovu stojí. */
+function landingTick(): number {
+  const game = play(undefined);
+  game.step({ buttons: BUTTON.TAP, axis: 0 });
+  for (let tick = 1; tick < 200; tick += 1) {
+    game.step();
+    if (game.grounded()) return tick;
   }
+  throw new Error('never landed');
+}
 
+describe('feel: 2 reaches the platformer genre (P36A T6)', () => {
+  // Žánr psal `feel: 2` do `tuning` od P32F, kompilátor ho ale ovládání nepředal – skákačka neodpouštěla.
+  const genreWorld = (): ArcadeWorld => {
+    const made = arcadeWorldOf(compileGenre({ genre: 'platformer', mode: 'default', hero: 'frog', setting: 'pond' }), 1);
+    if (!made.ok) throw new Error(made.issues.join('; '));
+    return made.world;
+  };
+
+  it('the genre world carries feel: 2 in its control', () => {
+    expect(genreWorld().control.params).toMatchObject({ feel: 2 });
+  });
+
+  it('a jump pressed 4 ticks after running off an edge jumps', () => {
+    const game = offTheEdge(genreWorld());
+    for (let i = 0; i < 3; i += 1) game.step(RUN);
+    game.step(JUMP);
+    expect(game.vy()).toBe(PLATFORM.jumpVy - GRAVITY);
+  });
+
+  it('a jump pressed 5 ticks before landing jumps right after landing', () => {
+    const land = landingTick();
+    const game = play(genreWorld());
+    game.step({ buttons: BUTTON.TAP, axis: 0 });
+    for (let tick = 1; tick <= land; tick += 1) game.step(tick === land - 5 ? { buttons: BUTTON.TAP, axis: 0 } : NO_INPUT);
+    expect(game.grounded()).toBe(true);
+    game.step();
+    expect(game.vy()).toBe(PLATFORM.jumpVy - GRAVITY);
+  });
+});
+
+describe('feel: 2 – jump buffer', () => {
   it('a press 6 ticks (100 ms) before touching down jumps again on landing; without feel it is lost', () => {
     const land = landingTick();
     for (const feel of [2, undefined] as const) {

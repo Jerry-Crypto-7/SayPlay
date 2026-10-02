@@ -6,7 +6,7 @@
  * (2) přijme každý `GenreSpec`, který píše draft – schéma, které platnou hru
  * nepustí, by model donutilo psát jinou; (3) nepustí režim, který nehraje,
  * ani parametr mimo meze modulu. Validátor je malý a pokrývá jen podmnožinu,
- * kterou `strictSchema` vyrábí.
+ * kterou `strictSchema` vyrábí, a odkazy `#/$defs/…` do kořene (P36A T7).
  */
 
 import { describe, expect, it } from 'vitest';
@@ -33,8 +33,14 @@ function typeOf(value: unknown): string {
   return typeof value;
 }
 
+/** Sdílené definice kořene; `{$ref: '#/$defs/<jméno>'}` míří sem (P36A T7). */
+const DEFS = (GENRE_ANSWER_SCHEMA.$defs ?? {}) as Record<string, Json>;
+const DEF_REF = /^#\/\$defs\/([A-Za-z]+)$/;
+const deref = (schema: Json): Json => DEFS[DEF_REF.exec(schema.$ref as string)![1]!]!;
+
 /** Chyby hodnoty proti schématu; prázdné = platí. */
 function validate(schema: Json, value: unknown, path = ''): string[] {
+  if (typeof schema.$ref === 'string') return validate(deref(schema), value, path);
   if (Array.isArray(schema.anyOf)) {
     return (schema.anyOf as Json[]).some((branch) => validate(branch, value, path).length === 0) ? [] : [`${path}: no anyOf branch fits`];
   }
@@ -67,6 +73,7 @@ function validate(schema: Json, value: unknown, path = ''): string[] {
 
 /** Spec → tvar přísné odpovědi: chybějící pole jako `null`, slovníky jako dvojice. Větev unie volí validátor. */
 function encode(schema: Json, value: unknown): unknown {
+  if (typeof schema.$ref === 'string') return encode(deref(schema), value);
   if (Array.isArray(schema.anyOf)) {
     for (const branch of schema.anyOf as Json[]) {
       const candidate = encode(branch, value);
@@ -94,13 +101,21 @@ function walk(node: unknown, visit: (node: Json, path: string) => void, path = '
 const GENRE_SPEC = (GENRE_ANSWER_SCHEMA.properties as Record<string, Json>).spec;
 
 describe('director answer schema (strict mode)', () => {
-  it('is strict in every node: all keys required, no extras, a type or anyOf, no const/default/$ref', () => {
+  it('is strict in every node: all keys required, no extras, a type, anyOf or a bare $ref, no const/default', () => {
     const problems: string[] = [];
     walk(GENRE_ANSWER_SCHEMA, (node, path) => {
-      // Uzel schématu, ne mapa `properties` – ta nese jména polí.
-      if (path.endsWith('/properties')) return;
+      // Uzel schématu, ne mapa `properties` ani `$defs` – ty nesou jména.
+      if (path.endsWith('/properties') || path === '/$defs') return;
+      // Přísný režim OpenAI i Groq: `$defs` jen v kořeni, `$ref` jen do nich a bez sourozenců.
+      if ('$ref' in node) {
+        if (Object.keys(node).length !== 1) problems.push(`${path}: $ref with siblings`);
+        const name = DEF_REF.exec(String(node.$ref))?.[1];
+        if (name === undefined || !(name in DEFS)) problems.push(`${path}: $ref ${String(node.$ref)} is not a root definition`);
+        return;
+      }
+      if ('$defs' in node && path !== '') problems.push(`${path}: $defs below the root`);
       if (node.type === undefined && node.anyOf === undefined) problems.push(`${path}: no type`);
-      for (const key of ['const', 'default', '$ref', '$defs', 'propertyNames']) if (key in node) problems.push(`${path}: ${key}`);
+      for (const key of ['const', 'default', 'propertyNames']) if (key in node) problems.push(`${path}: ${key}`);
       if (node.type === 'object') {
         if (node.additionalProperties !== false) problems.push(`${path}: additionalProperties`);
         const keys = Object.keys((node.properties as Json | undefined) ?? {});
@@ -108,6 +123,21 @@ describe('director answer schema (strict mode)', () => {
       }
     });
     expect(problems).toEqual([]);
+  });
+
+  // P36A T7: pravidla, jejich role a doplňky jsou ve všech žánrech stejné – schéma je nese jednou, žánr na ně odkazuje.
+  it('defines the rule grammar once in $defs and every genre refers to it', () => {
+    const text = JSON.stringify(GENRE_ANSWER_SCHEMA);
+    const variants = GENRE_SPEC.anyOf as Json[];
+    // Uzel pravidla `{id, verb, when, if, do}` a efekt `throwHeld` zná jen gramatika pravidel: jednou = gramatika je ve schématu jednou.
+    expect(text.split('"required":["id","verb","when","if","do"]').length - 1).toBe(1);
+    expect(text.split('"required":["throwHeld"]').length - 1).toBe(1);
+    expect(Object.keys(DEFS).sort()).toEqual(['ruleRoles', 'rules', 'things']);
+    for (const key of Object.keys(DEFS)) {
+      for (const variant of variants) expect((variant.properties as Record<string, Json>)[key]).toEqual({ anyOf: [{ $ref: `#/$defs/${key}` }, { type: 'null' }] });
+      expect(text.split(`"#/$defs/${key}"`).length - 1).toBe(variants.length);
+    }
+    expect(DEFS.rules).toMatchObject({ type: 'array', maxItems: expect.any(Number), items: { type: 'object', required: ['id', 'verb', 'when', 'if', 'do'] } });
   });
 
   it('turns the contact pair of a rule into an array of exactly two roles (strict mode has no tuples)', () => {
@@ -158,11 +188,13 @@ describe('director answer schema for a GenreSpec', () => {
         mode: 'race',
         hero: 'pirate ship',
         enemy: 'reef',
+        // P36A T8: chování nepřítele a parametry hloubky má každý žánr.
+        enemyMoves: null,
         collectible: null,
         target: null,
         setting: 'stormy sea',
         palette: 'ocean',
-        params: { lengthM: null, topSpeed: null, gravity: null },
+        params: { lengthM: null, topSpeed: null, gravity: null, lives: null, targetScore: null, timeLimit: null },
         ruleRoles: null,
         things: null,
         rules: null,
@@ -194,8 +226,8 @@ describe('director answer schema for a GenreSpec', () => {
   });
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
-    const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null };
-    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
+    const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
+    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', enemyMoves: null, collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
     expect(validate(GENRE_SPEC, ok)).toEqual([]);
     // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
     expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null } })).toEqual([]);

@@ -1,0 +1,9907 @@
+{
+ "compilerVersion": "play-compiler-v11/arcade-v2",
+ "bandSeconds": {
+  "min": 30,
+  "max": 90
+ },
+ "targets": {
+  "inBandShare": 0.85,
+  "idleLosesShare": 0.95,
+  "livesOver1Share": 0.8
+ },
+ "summary": {
+  "all": {
+   "sentences": 260,
+   "playable": 260,
+   "publishable": 260,
+   "inBand": 259,
+   "inBandShare": 0.996,
+   "idle": {
+    "won": 0,
+    "lost": 260,
+    "unfinished": 0
+   },
+   "idleLosesShare": 1,
+   "livesOver1": 242,
+   "livesOver1Share": 0.931,
+   "scoreDecides": 260,
+   "scoreDecidesShare": 1,
+   "numbers": {
+    "lives": {
+     "said": 0,
+     "carried": 0
+    },
+    "score": {
+     "said": 0,
+     "carried": 0
+    },
+    "seconds": {
+     "said": 0,
+     "carried": 0
+    }
+   },
+   "byGenre": {
+    "arena.collect": {
+     "sentences": 36,
+     "medianWinSeconds": 46.08,
+     "minWinSeconds": 33.8,
+     "maxWinSeconds": 63.32,
+     "inBand": 36,
+     "idleLoses": 36,
+     "livesOver1": 36
+    },
+    "arena.escape": {
+     "sentences": 25,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 40,
+     "maxWinSeconds": 72.55,
+     "inBand": 25,
+     "idleLoses": 25,
+     "livesOver1": 25
+    },
+    "arena.fight": {
+     "sentences": 23,
+     "medianWinSeconds": 49.6,
+     "minWinSeconds": 39.08,
+     "maxWinSeconds": 55.13,
+     "inBand": 23,
+     "idleLoses": 23,
+     "livesOver1": 23
+    },
+    "duel": {
+     "sentences": 3,
+     "medianWinSeconds": 33.52,
+     "minWinSeconds": 32.7,
+     "maxWinSeconds": 34.07,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "flap": {
+     "sentences": 2,
+     "medianWinSeconds": 37.17,
+     "minWinSeconds": 37.17,
+     "maxWinSeconds": 37.17,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
+    "platformer": {
+     "sentences": 21,
+     "medianWinSeconds": 42.05,
+     "minWinSeconds": 35.13,
+     "maxWinSeconds": 51.3,
+     "inBand": 21,
+     "idleLoses": 21,
+     "livesOver1": 21
+    },
+    "quest.spatial": {
+     "sentences": 15,
+     "medianWinSeconds": 57,
+     "minWinSeconds": 44.85,
+     "maxWinSeconds": 76.77,
+     "inBand": 15,
+     "idleLoses": 15,
+     "livesOver1": 15
+    },
+    "quest.station": {
+     "sentences": 35,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 32,
+     "maxWinSeconds": 40,
+     "inBand": 35,
+     "idleLoses": 35,
+     "livesOver1": 35
+    },
+    "rhythm": {
+     "sentences": 8,
+     "medianWinSeconds": 35.52,
+     "minWinSeconds": 35.52,
+     "maxWinSeconds": 35.52,
+     "inBand": 8,
+     "idleLoses": 8,
+     "livesOver1": 8
+    },
+    "runner": {
+     "sentences": 26,
+     "medianWinSeconds": 40.89,
+     "minWinSeconds": 35.37,
+     "maxWinSeconds": 47.97,
+     "inBand": 26,
+     "idleLoses": 26,
+     "livesOver1": 26
+    },
+    "shooter": {
+     "sentences": 13,
+     "medianWinSeconds": 44.78,
+     "minWinSeconds": 43.95,
+     "maxWinSeconds": 44.93,
+     "inBand": 13,
+     "idleLoses": 13,
+     "livesOver1": 13
+    },
+    "throw": {
+     "sentences": 18,
+     "medianWinSeconds": 42.68,
+     "minWinSeconds": 40.55,
+     "maxWinSeconds": 47.72,
+     "inBand": 18,
+     "idleLoses": 18,
+     "livesOver1": 0
+    },
+    "timing.bridge": {
+     "sentences": 1,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "timing.precision": {
+     "sentences": 3,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "timing.stack": {
+     "sentences": 8,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 8,
+     "idleLoses": 8,
+     "livesOver1": 8
+    },
+    "voyage.land": {
+     "sentences": 1,
+     "medianWinSeconds": 13.47,
+     "minWinSeconds": 13.47,
+     "maxWinSeconds": 13.47,
+     "inBand": 0,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "voyage.race": {
+     "sentences": 22,
+     "medianWinSeconds": 40.24,
+     "minWinSeconds": 40.22,
+     "maxWinSeconds": 41.5,
+     "inBand": 22,
+     "idleLoses": 22,
+     "livesOver1": 22
+    }
+   }
+  },
+  "demand": {
+   "sentences": 200,
+   "playable": 200,
+   "publishable": 200,
+   "inBand": 199,
+   "inBandShare": 0.995,
+   "idle": {
+    "won": 0,
+    "lost": 200,
+    "unfinished": 0
+   },
+   "idleLosesShare": 1,
+   "livesOver1": 186,
+   "livesOver1Share": 0.93,
+   "scoreDecides": 200,
+   "scoreDecidesShare": 1,
+   "numbers": {
+    "lives": {
+     "said": 0,
+     "carried": 0
+    },
+    "score": {
+     "said": 0,
+     "carried": 0
+    },
+    "seconds": {
+     "said": 0,
+     "carried": 0
+    }
+   },
+   "byGenre": {
+    "arena.collect": {
+     "sentences": 23,
+     "medianWinSeconds": 48.45,
+     "minWinSeconds": 39.78,
+     "maxWinSeconds": 63.32,
+     "inBand": 23,
+     "idleLoses": 23,
+     "livesOver1": 23
+    },
+    "arena.escape": {
+     "sentences": 18,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 40,
+     "maxWinSeconds": 72.55,
+     "inBand": 18,
+     "idleLoses": 18,
+     "livesOver1": 18
+    },
+    "arena.fight": {
+     "sentences": 18,
+     "medianWinSeconds": 49.58,
+     "minWinSeconds": 39.08,
+     "maxWinSeconds": 55.13,
+     "inBand": 18,
+     "idleLoses": 18,
+     "livesOver1": 18
+    },
+    "duel": {
+     "sentences": 1,
+     "medianWinSeconds": 34.07,
+     "minWinSeconds": 34.07,
+     "maxWinSeconds": 34.07,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "flap": {
+     "sentences": 1,
+     "medianWinSeconds": 37.17,
+     "minWinSeconds": 37.17,
+     "maxWinSeconds": 37.17,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "platformer": {
+     "sentences": 19,
+     "medianWinSeconds": 42.53,
+     "minWinSeconds": 35.13,
+     "maxWinSeconds": 51.3,
+     "inBand": 19,
+     "idleLoses": 19,
+     "livesOver1": 19
+    },
+    "quest.spatial": {
+     "sentences": 11,
+     "medianWinSeconds": 60.45,
+     "minWinSeconds": 53.27,
+     "maxWinSeconds": 76.2,
+     "inBand": 11,
+     "idleLoses": 11,
+     "livesOver1": 11
+    },
+    "quest.station": {
+     "sentences": 30,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 40,
+     "maxWinSeconds": 40,
+     "inBand": 30,
+     "idleLoses": 30,
+     "livesOver1": 30
+    },
+    "rhythm": {
+     "sentences": 6,
+     "medianWinSeconds": 35.52,
+     "minWinSeconds": 35.52,
+     "maxWinSeconds": 35.52,
+     "inBand": 6,
+     "idleLoses": 6,
+     "livesOver1": 6
+    },
+    "runner": {
+     "sentences": 21,
+     "medianWinSeconds": 41.07,
+     "minWinSeconds": 35.37,
+     "maxWinSeconds": 47.97,
+     "inBand": 21,
+     "idleLoses": 21,
+     "livesOver1": 21
+    },
+    "shooter": {
+     "sentences": 10,
+     "medianWinSeconds": 44.78,
+     "minWinSeconds": 43.95,
+     "maxWinSeconds": 44.93,
+     "inBand": 10,
+     "idleLoses": 10,
+     "livesOver1": 10
+    },
+    "throw": {
+     "sentences": 14,
+     "medianWinSeconds": 42.68,
+     "minWinSeconds": 40.55,
+     "maxWinSeconds": 47.72,
+     "inBand": 14,
+     "idleLoses": 14,
+     "livesOver1": 0
+    },
+    "timing.bridge": {
+     "sentences": 1,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "timing.precision": {
+     "sentences": 3,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "timing.stack": {
+     "sentences": 6,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 6,
+     "idleLoses": 6,
+     "livesOver1": 6
+    },
+    "voyage.land": {
+     "sentences": 1,
+     "medianWinSeconds": 13.47,
+     "minWinSeconds": 13.47,
+     "maxWinSeconds": 13.47,
+     "inBand": 0,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "voyage.race": {
+     "sentences": 17,
+     "medianWinSeconds": 40.25,
+     "minWinSeconds": 40.22,
+     "maxWinSeconds": 41.5,
+     "inBand": 17,
+     "idleLoses": 17,
+     "livesOver1": 17
+    }
+   }
+  },
+  "dev": {
+   "sentences": 60,
+   "playable": 60,
+   "publishable": 60,
+   "inBand": 60,
+   "inBandShare": 1,
+   "idle": {
+    "won": 0,
+    "lost": 60,
+    "unfinished": 0
+   },
+   "idleLosesShare": 1,
+   "livesOver1": 56,
+   "livesOver1Share": 0.933,
+   "scoreDecides": 60,
+   "scoreDecidesShare": 1,
+   "numbers": {
+    "lives": {
+     "said": 0,
+     "carried": 0
+    },
+    "score": {
+     "said": 0,
+     "carried": 0
+    },
+    "seconds": {
+     "said": 0,
+     "carried": 0
+    }
+   },
+   "byGenre": {
+    "arena.collect": {
+     "sentences": 13,
+     "medianWinSeconds": 44.18,
+     "minWinSeconds": 33.8,
+     "maxWinSeconds": 60.6,
+     "inBand": 13,
+     "idleLoses": 13,
+     "livesOver1": 13
+    },
+    "arena.escape": {
+     "sentences": 7,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 40,
+     "maxWinSeconds": 66.23,
+     "inBand": 7,
+     "idleLoses": 7,
+     "livesOver1": 7
+    },
+    "arena.fight": {
+     "sentences": 5,
+     "medianWinSeconds": 49.6,
+     "minWinSeconds": 41.73,
+     "maxWinSeconds": 55.13,
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
+    },
+    "duel": {
+     "sentences": 2,
+     "medianWinSeconds": 33.11,
+     "minWinSeconds": 32.7,
+     "maxWinSeconds": 33.52,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
+    "flap": {
+     "sentences": 1,
+     "medianWinSeconds": 37.17,
+     "minWinSeconds": 37.17,
+     "maxWinSeconds": 37.17,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "platformer": {
+     "sentences": 2,
+     "medianWinSeconds": 39.63,
+     "minWinSeconds": 37.2,
+     "maxWinSeconds": 42.05,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
+    "quest.spatial": {
+     "sentences": 4,
+     "medianWinSeconds": 53.96,
+     "minWinSeconds": 44.85,
+     "maxWinSeconds": 76.77,
+     "inBand": 4,
+     "idleLoses": 4,
+     "livesOver1": 4
+    },
+    "quest.station": {
+     "sentences": 5,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 32,
+     "maxWinSeconds": 40,
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
+    },
+    "rhythm": {
+     "sentences": 2,
+     "medianWinSeconds": 35.52,
+     "minWinSeconds": 35.52,
+     "maxWinSeconds": 35.52,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
+    "runner": {
+     "sentences": 5,
+     "medianWinSeconds": 39.53,
+     "minWinSeconds": 38.93,
+     "maxWinSeconds": 43.22,
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
+    },
+    "shooter": {
+     "sentences": 3,
+     "medianWinSeconds": 44.63,
+     "minWinSeconds": 44.28,
+     "maxWinSeconds": 44.78,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "throw": {
+     "sentences": 4,
+     "medianWinSeconds": 44.66,
+     "minWinSeconds": 40.93,
+     "maxWinSeconds": 47.6,
+     "inBand": 4,
+     "idleLoses": 4,
+     "livesOver1": 0
+    },
+    "timing.stack": {
+     "sentences": 2,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
+    "voyage.race": {
+     "sentences": 5,
+     "medianWinSeconds": 40.22,
+     "minWinSeconds": 40.22,
+     "maxWinSeconds": 40.75,
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
+    }
+   }
+  }
+ },
+ "rows": [
+  {
+   "set": "demand",
+   "id": "s001",
+   "text": "jumping arcade game with a lot of obstacles",
+   "genre": "platformer",
+   "seed": 647874815,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2361
+   },
+   "winSeconds": 39.35,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4381
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 504,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s002",
+   "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "genre": "arena.escape",
+   "seed": 1291481298,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3120
+   },
+   "winSeconds": 52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 603
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 452,
+   "worstScore": 62,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s003",
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "genre": "arena.escape",
+   "seed": 1924202525,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 605
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s004",
+   "text": "endless runner in a neon city",
+   "genre": "runner",
+   "seed": 1670897226,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2642
+   },
+   "winSeconds": 44.03,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 412
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 538,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s005",
+   "text": "like subway surfers but on a pirate ship",
+   "genre": "runner",
+   "seed": 381473123,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2697
+   },
+   "winSeconds": 44.95,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 529
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 543,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s006",
+   "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "genre": "runner",
+   "seed": 1113955911,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2593
+   },
+   "winSeconds": 43.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1876
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 550,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s007",
+   "text": "run and dodge cars",
+   "genre": "runner",
+   "seed": 1950173331,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2372
+   },
+   "winSeconds": 39.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 399
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 518,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s008",
+   "text": "temple run but you're a banana running from a monkey",
+   "genre": "runner",
+   "seed": 56939890,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2372
+   },
+   "winSeconds": 39.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 782
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 530,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s009",
+   "text": "a ninja running on rooftops sliding under laser beams",
+   "genre": "runner",
+   "seed": 1621820161,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2849
+   },
+   "winSeconds": 47.48,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 398
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 496,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s010",
+   "text": "runner game where you collect people and your crowd gets bigger then fight the boss at the end",
+   "genre": "arena.fight",
+   "seed": 1392313044,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2994
+   },
+   "winSeconds": 49.9,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1374
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 450,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s011",
+   "text": "skateboard down a hill avoiding trash cans and grannies",
+   "genre": "runner",
+   "seed": 988765076,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2851
+   },
+   "winSeconds": 47.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1131
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 478,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s012",
+   "text": "i want to run on a rainbow road and collect stars",
+   "genre": "runner",
+   "seed": 2142357215,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2254
+   },
+   "winSeconds": 37.57,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1213
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 571,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s013",
+   "text": "A penguin slides down an icy mountain collecting fish",
+   "genre": "runner",
+   "seed": 1625509907,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2442
+   },
+   "winSeconds": 40.7,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 526
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 519,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s014",
+   "text": "endles runner with zombies chasing u",
+   "genre": "runner",
+   "seed": 2048634468,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2374
+   },
+   "winSeconds": 39.57,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 865
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 542,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s015",
+   "text": "a girl running late to school, jump over dogs and puddles",
+   "genre": "runner",
+   "seed": 1919520708,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2122
+   },
+   "winSeconds": 35.37,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1018
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 564,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s016",
+   "text": "runner where you pick gates that multiply or divide your army",
+   "genre": "runner",
+   "seed": 559808301,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2221
+   },
+   "winSeconds": 37.02,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 780
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 612,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s017",
+   "text": "a mouse runs through a kitchen dodging knives and pans",
+   "genre": "runner",
+   "seed": 1246415050,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2853
+   },
+   "winSeconds": 47.55,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 653
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 504,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s018",
+   "text": "lava floor runner",
+   "genre": "runner",
+   "seed": 2034705649,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2233
+   },
+   "winSeconds": 37.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 767
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 566,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s019",
+   "text": "a platformer where you jump between floating islands in the sky",
+   "genre": "platformer",
+   "seed": 1958114836,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3001
+   },
+   "winSeconds": 50.02,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 553,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s020",
+   "text": "like mario but you're a frog",
+   "genre": "platformer",
+   "seed": 1599001636,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2751
+   },
+   "winSeconds": 45.85,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 553,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s021",
+   "text": "obby game with lava and spinning bars",
+   "genre": "platformer",
+   "seed": 292625551,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2523
+   },
+   "winSeconds": 42.05,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4981
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 565,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s022",
+   "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "genre": "platformer",
+   "seed": 658723869,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2232
+   },
+   "winSeconds": 37.2,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 495,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s023",
+   "text": "jump king style game where falling is super punishing",
+   "genre": "platformer",
+   "seed": 558745558,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2284
+   },
+   "winSeconds": 38.07,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4321
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 486,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s024",
+   "text": "parkour on skyscrapers",
+   "genre": "platformer",
+   "seed": 574910003,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2924
+   },
+   "winSeconds": 48.73,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 561,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s025",
+   "text": "a slime that bounces higher every time it eats a candy",
+   "genre": "platformer",
+   "seed": 1986923328,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3078
+   },
+   "winSeconds": 51.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 558,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s026",
+   "text": "only up but in a candy land",
+   "genre": "voyage.race",
+   "seed": 583061281,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s027",
+   "text": "doodle jump but in space with asteroids",
+   "genre": "platformer",
+   "seed": 1584219774,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2377
+   },
+   "winSeconds": 39.62,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4561
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 527,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s028",
+   "text": "jump across rooftops of a medieval village at night",
+   "genre": "platformer",
+   "seed": 1888903347,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2108
+   },
+   "winSeconds": 35.13,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 507,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s029",
+   "text": "a squirrel jumping from tree to tree collecting acorns before winter",
+   "genre": "platformer",
+   "seed": 1550906620,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2818
+   },
+   "winSeconds": 46.97,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5041
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 440,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s030",
+   "text": "hard platformer with spikes everywhere that makes me rage",
+   "genre": "platformer",
+   "seed": 825276855,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2260
+   },
+   "winSeconds": 37.67,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4501
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 533,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s031",
+   "text": "fall guys style obstacle course",
+   "genre": "platformer",
+   "seed": 439078106,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2898
+   },
+   "winSeconds": 48.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 576,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s032",
+   "text": "a sock trying to climb out of a washing machine",
+   "genre": "platformer",
+   "seed": 589074925,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2781
+   },
+   "winSeconds": 46.35,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 571,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s033",
+   "text": "geometry dash but 3d",
+   "genre": "runner",
+   "seed": 561881567,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2464
+   },
+   "winSeconds": 41.07,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1062
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 508,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s034",
+   "text": "hop on lily pads across a pond without falling in",
+   "genre": "platformer",
+   "seed": 1557494803,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2236
+   },
+   "winSeconds": 37.27,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4501
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 549,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s035",
+   "text": "like flappy bird but underwater",
+   "genre": "flap",
+   "seed": 1363119617,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2230
+   },
+   "winSeconds": 37.17,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 32
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 875,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s036",
+   "text": "a chicken crossing an endless road like crossy road",
+   "genre": "runner",
+   "seed": 628086119,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2152
+   },
+   "winSeconds": 35.87,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 944
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 558,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s037",
+   "text": "A space marine shoots alien bugs in a mining colony",
+   "genre": "shooter",
+   "seed": 867901906,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2687
+   },
+   "winSeconds": 44.78,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 511,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s038",
+   "text": "shooting game",
+   "genre": "shooter",
+   "seed": 1548515046,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2696
+   },
+   "winSeconds": 44.93,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s039",
+   "text": "zombie shooter in a mall",
+   "genre": "shooter",
+   "seed": 2050291154,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2657
+   },
+   "winSeconds": 44.28,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s040",
+   "text": "cowboy duel at high noon, first to shoot wins",
+   "genre": "duel",
+   "seed": 949504361,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2044
+   },
+   "winSeconds": 34.07,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 245
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 570,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s041",
+   "text": "shoot balloons with a bow before they fly away",
+   "genre": "shooter",
+   "seed": 1591445611,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2637
+   },
+   "winSeconds": 43.95,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 527,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s042",
+   "text": "sniper game where you have to find the target in a crowd",
+   "genre": "arena.collect",
+   "seed": 611826795,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3134
+   },
+   "winSeconds": 52.23,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s043",
+   "text": "a spaceship shooting asteroids and ufos, retro vibes",
+   "genre": "shooter",
+   "seed": 2057437881,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2693
+   },
+   "winSeconds": 44.88,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 515,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s044",
+   "text": "water gun fight in a backyard with my little brothers",
+   "genre": "arena.fight",
+   "seed": 1301170367,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2756
+   },
+   "winSeconds": 45.93,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1375
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 470,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s045",
+   "text": "like krunker but with pirates",
+   "genre": "shooter",
+   "seed": 1495888187,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2693
+   },
+   "winSeconds": 44.88,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 515,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s046",
+   "text": "shooting range with bottles and targets",
+   "genre": "shooter",
+   "seed": 929690251,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2648
+   },
+   "winSeconds": 44.13,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s047",
+   "text": "A duck with a laser gun defends its pond from robot frogs",
+   "genre": "arena.fight",
+   "seed": 1991380824,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3185
+   },
+   "winSeconds": 53.08,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1375
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 430,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s048",
+   "text": "fps where u shoot paint at robots",
+   "genre": "shooter",
+   "seed": 1741351680,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2687
+   },
+   "winSeconds": 44.78,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 511,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s049",
+   "text": "survive waves of monsters with an auto shooting wand like vampire survivors",
+   "genre": "arena.escape",
+   "seed": 1711354026,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 597
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s050",
+   "text": "throwing snowballs at kids behind a snow fort",
+   "genre": "throw",
+   "seed": 1230807019,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2538
+   },
+   "winSeconds": 42.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 246,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s051",
+   "text": "tank battle in a desert",
+   "genre": "arena.fight",
+   "seed": 1879711137,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3213
+   },
+   "winSeconds": 53.55,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1378
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 430,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s052",
+   "text": "shoot the ghosts in a haunted carnival shooting gallery",
+   "genre": "shooter",
+   "seed": 1256326775,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2687
+   },
+   "winSeconds": 44.78,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s053",
+   "text": "car racing game",
+   "genre": "voyage.race",
+   "seed": 1014124212,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s054",
+   "text": "drift around a mountain road at night",
+   "genre": "voyage.race",
+   "seed": 1842470922,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2490
+   },
+   "winSeconds": 41.5,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4381
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 405,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s055",
+   "text": "like mario kart but with shopping carts",
+   "genre": "voyage.race",
+   "seed": 626277074,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2439
+   },
+   "winSeconds": 40.65,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4321
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 405,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s056",
+   "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+   "genre": "quest.spatial",
+   "seed": 1903847485,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3196
+   },
+   "winSeconds": 53.27,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 600
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 420,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s057",
+   "text": "monster truck jumping over cars",
+   "genre": "platformer",
+   "seed": 1584482806,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2224
+   },
+   "winSeconds": 37.07,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4561
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 531,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s058",
+   "text": "boat race through a jungle river full of crocodiles",
+   "genre": "voyage.race",
+   "seed": 2142346050,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s059",
+   "text": "racing snails lol",
+   "genre": "voyage.race",
+   "seed": 510867929,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2446
+   },
+   "winSeconds": 40.77,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4321
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 405,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s060",
+   "text": "motorbike stunts on crazy ramps in the sky",
+   "genre": "voyage.race",
+   "seed": 1643680481,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s061",
+   "text": "parking game where you have to park without hitting anything",
+   "genre": "quest.spatial",
+   "seed": 1905381292,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3810
+   },
+   "winSeconds": 63.5,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 607
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 220,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s062",
+   "text": "escape the police in a stolen ice cream truck",
+   "genre": "arena.escape",
+   "seed": 195457214,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 598
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s063",
+   "text": "hill climb racing but with a bathtub on wheels",
+   "genre": "platformer",
+   "seed": 379657209,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2766
+   },
+   "winSeconds": 46.1,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5101
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 533,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s064",
+   "text": "formula 1 race in monaco",
+   "genre": "voyage.race",
+   "seed": 2117477979,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s065",
+   "text": "A kid races a sled down a snowy hill against a yeti",
+   "genre": "voyage.race",
+   "seed": 1437273564,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s066",
+   "text": "bumper cars arena",
+   "genre": "voyage.race",
+   "seed": 545396988,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2415
+   },
+   "winSeconds": 40.25,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s067",
+   "text": "horse race on a beach at sunset",
+   "genre": "voyage.race",
+   "seed": 93333698,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s068",
+   "text": "a match 3 game with fruits",
+   "genre": "quest.station",
+   "seed": 1866922033,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s069",
+   "text": "candy crush but with gems in a cave",
+   "genre": "quest.station",
+   "seed": 771957274,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s070",
+   "text": "puzzle where you slide blocks to get the red car out",
+   "genre": "runner",
+   "seed": 596615917,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2853
+   },
+   "winSeconds": 47.55,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 526
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 505,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s071",
+   "text": "sort colored balls into tubes",
+   "genre": "quest.station",
+   "seed": 1899567027,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s072",
+   "text": "A lost robot must push boxes onto switches to open the door",
+   "genre": "arena.escape",
+   "seed": 1907659442,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 602
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s073",
+   "text": "untangle ropes puzzle",
+   "genre": "quest.station",
+   "seed": 427756182,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s074",
+   "text": "find the hidden objects in a messy bedroom",
+   "genre": "arena.collect",
+   "seed": 1393980744,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3199
+   },
+   "winSeconds": 53.32,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 450,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s075",
+   "text": "connect pipes so the water reaches the flowers",
+   "genre": "quest.station",
+   "seed": 440666449,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s076",
+   "text": "a maze game where the walls move",
+   "genre": "arena.collect",
+   "seed": 156829954,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2907
+   },
+   "winSeconds": 48.45,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 475,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s077",
+   "text": "escape room in a spaceship",
+   "genre": "arena.escape",
+   "seed": 1808719132,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 616
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s078",
+   "text": "tetris but in 3D with furniture",
+   "genre": "quest.station",
+   "seed": 1195567802,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s079",
+   "text": "unscrew the screws to drop all the plates like those ads",
+   "genre": "quest.station",
+   "seed": 1459746243,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s080",
+   "text": "a cat must knock things off shelves in the right order to reach the fish",
+   "genre": "arena.collect",
+   "seed": 294323279,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3021
+   },
+   "winSeconds": 50.35,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 465,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s081",
+   "text": "mahjong tiles but 3d",
+   "genre": "quest.station",
+   "seed": 1227100663,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s082",
+   "text": "guide light beams with mirrors to light up a temple",
+   "genre": "quest.spatial",
+   "seed": 1689668422,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3238
+   },
+   "winSeconds": 53.97,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 606
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 420,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s083",
+   "text": "pull the pins to save the guy from lava",
+   "genre": "arena.collect",
+   "seed": 1660790067,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2835
+   },
+   "winSeconds": 47.25,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 480,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s084",
+   "text": "matching game with cute animals",
+   "genre": "quest.station",
+   "seed": 555253481,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s085",
+   "text": "park the cars in a jammed parking lot, tap them to drive out in the right order",
+   "genre": "voyage.race",
+   "seed": 1296560810,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2424
+   },
+   "winSeconds": 40.4,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s086",
+   "text": "a word game where letters fall from the sky",
+   "genre": "quest.station",
+   "seed": 1427150095,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s087",
+   "text": "throw a basketball into a hoop from crazy angles",
+   "genre": "throw",
+   "seed": 1428471899,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2541
+   },
+   "winSeconds": 42.35,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 246,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s088",
+   "text": "angry birds but with cats and cardboard boxes",
+   "genre": "throw",
+   "seed": 1691046820,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2821
+   },
+   "winSeconds": 47.02,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 243,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s089",
+   "text": "flip a bottle so it lands standing",
+   "genre": "voyage.land",
+   "seed": 77020755,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 808
+   },
+   "winSeconds": 13.47,
+   "inBand": false,
+   "idle": {
+    "end": "lost",
+    "tick": 969
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 630,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s090",
+   "text": "launch a guy from a cannon as far as possible",
+   "genre": "throw",
+   "seed": 1185689664,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2863
+   },
+   "winSeconds": 47.72,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 236,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s091",
+   "text": "throw paper balls into the trash can in an office while the boss isnt looking",
+   "genre": "throw",
+   "seed": 1777015246,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2533
+   },
+   "winSeconds": 42.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 247,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s092",
+   "text": "ragdoll falling down stairs and breaking bones for points",
+   "genre": "throw",
+   "seed": 1997818078,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2548
+   },
+   "winSeconds": 42.47,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 246,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s093",
+   "text": "knock down towers with a wrecking ball",
+   "genre": "throw",
+   "seed": 1620160351,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2815
+   },
+   "winSeconds": 46.92,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 243,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s094",
+   "text": "toss a pancake and catch it on the pan",
+   "genre": "throw",
+   "seed": 563614945,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2838
+   },
+   "winSeconds": 47.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 237,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s095",
+   "text": "knife throwing at a spinning log",
+   "genre": "throw",
+   "seed": 1912319400,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2856
+   },
+   "winSeconds": 47.6,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 235,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s096",
+   "text": "slingshot fruit at a giant blender",
+   "genre": "throw",
+   "seed": 59177403,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2553
+   },
+   "winSeconds": 42.55,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 245,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s097",
+   "text": "destroy everything in a house with a hammer, smash simulator",
+   "genre": "quest.spatial",
+   "seed": 294222000,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3420
+   },
+   "winSeconds": 57,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 632
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 255,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s098",
+   "text": "stack blocks as high as u can",
+   "genre": "timing.stack",
+   "seed": 2124024167,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s099",
+   "text": "build the tallest pancake tower before it falls over",
+   "genre": "timing.stack",
+   "seed": 1256944565,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s100",
+   "text": "tap at the right time to stop the moving platform",
+   "genre": "timing.precision",
+   "seed": 176315849,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s101",
+   "text": "stack burgers on a plate as they fly across the screen",
+   "genre": "timing.stack",
+   "seed": 1030526171,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s102",
+   "text": "A crane operator stacks containers on a ship in a storm",
+   "genre": "timing.stack",
+   "seed": 1268051831,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s103",
+   "text": "one tap game where a ball bounces down a helix tower",
+   "genre": "platformer",
+   "seed": 1096524248,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2608
+   },
+   "winSeconds": 43.47,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4921
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 545,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s104",
+   "text": "time your jumps through spinning rings",
+   "genre": "timing.precision",
+   "seed": 1293246394,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s105",
+   "text": "stack animals on top of each other on noah's ark",
+   "genre": "timing.stack",
+   "seed": 1385489716,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s106",
+   "text": "cut the rope at the right moment to feed the monster",
+   "genre": "timing.precision",
+   "seed": 1039930207,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s107",
+   "text": "hold to grow a bridge and let go to cross the gap",
+   "genre": "timing.bridge",
+   "seed": 1044144696,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s108",
+   "text": "stack the jenga blocks without it falling",
+   "genre": "timing.stack",
+   "seed": 368080058,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s109",
+   "text": "like agar.io but you're a fish eating smaller fish",
+   "genre": "arena.collect",
+   "seed": 606909267,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3124
+   },
+   "winSeconds": 52.07,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s110",
+   "text": "snake game where you grow and cut off other snakes",
+   "genre": "arena.collect",
+   "seed": 1370969659,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3165
+   },
+   "winSeconds": 52.75,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s111",
+   "text": "a black hole that swallows a city, it gets bigger the more it eats",
+   "genre": "arena.collect",
+   "seed": 479113336,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2391
+   },
+   "winSeconds": 39.85,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s112",
+   "text": "paper io style capture territory",
+   "genre": "arena.collect",
+   "seed": 303785544,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2616
+   },
+   "winSeconds": 43.6,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 500,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s113",
+   "text": "sumo push everyone off an ice platform",
+   "genre": "platformer",
+   "seed": 1879510031,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2552
+   },
+   "winSeconds": 42.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4861
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 519,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s114",
+   "text": "A snowball rolls through a village getting bigger and flattening snowmen",
+   "genre": "runner",
+   "seed": 901724661,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2878
+   },
+   "winSeconds": 47.97,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1123
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 487,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s115",
+   "text": "battle royale with chickens",
+   "genre": "arena.fight",
+   "seed": 166905188,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2861
+   },
+   "winSeconds": 47.68,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1378
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 460,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s116",
+   "text": "collect coins in an arena and bump other players out",
+   "genre": "arena.collect",
+   "seed": 509511131,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3093
+   },
+   "winSeconds": 51.55,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 460,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s117",
+   "text": "slither io but with dragons",
+   "genre": "arena.collect",
+   "seed": 465246727,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2504
+   },
+   "winSeconds": 41.73,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 510,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s118",
+   "text": "eat everything as a hungry shark",
+   "genre": "arena.collect",
+   "seed": 516653309,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2585
+   },
+   "winSeconds": 43.08,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 500,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s119",
+   "text": "idle game where i build a donut empire",
+   "genre": "quest.station",
+   "seed": 1950389615,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s120",
+   "text": "merge swords to make stronger swords and fight monsters",
+   "genre": "arena.fight",
+   "seed": 1390038337,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3090
+   },
+   "winSeconds": 51.5,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1368
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 440,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s121",
+   "text": "clicker game with cookies but in space",
+   "genre": "quest.station",
+   "seed": 1135055688,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s122",
+   "text": "merge cute animals to get rare ones",
+   "genre": "quest.station",
+   "seed": 84667954,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s123",
+   "text": "A gold mine where I hire dwarves and upgrade the elevator",
+   "genre": "quest.station",
+   "seed": 545268179,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s124",
+   "text": "tap to grow a garden that makes money while im away",
+   "genre": "arena.collect",
+   "seed": 1965382786,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2501
+   },
+   "winSeconds": 41.68,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 510,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s125",
+   "text": "idle factory making toys",
+   "genre": "quest.station",
+   "seed": 1177305076,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s126",
+   "text": "merge watermelons like suika game",
+   "genre": "quest.station",
+   "seed": 350712039,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s127",
+   "text": "penalty kicks against a goalkeeper",
+   "genre": "arena.fight",
+   "seed": 1462041002,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2706
+   },
+   "winSeconds": 45.1,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1374
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 470,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s128",
+   "text": "basketball free throws",
+   "genre": "throw",
+   "seed": 1442034543,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2568
+   },
+   "winSeconds": 42.8,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 245,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s129",
+   "text": "mini golf with windmills and loops",
+   "genre": "throw",
+   "seed": 998656642,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2433
+   },
+   "winSeconds": 40.55,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 260,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s130",
+   "text": "bowling in a haunted alley",
+   "genre": "throw",
+   "seed": 1781517049,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2822
+   },
+   "winSeconds": 47.03,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 240,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s131",
+   "text": "soccer game but the players are hamsters",
+   "genre": "quest.spatial",
+   "seed": 1930768684,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3366
+   },
+   "winSeconds": 56.1,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 630
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 255,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s132",
+   "text": "archery olympics",
+   "genre": "shooter",
+   "seed": 1362415063,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2696
+   },
+   "winSeconds": 44.93,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 511,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s133",
+   "text": "ski jumping",
+   "genre": "runner",
+   "seed": 767179055,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2728
+   },
+   "winSeconds": 45.47,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1057
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 528,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s134",
+   "text": "table tennis vs a robot",
+   "genre": "quest.spatial",
+   "seed": 509434658,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3731
+   },
+   "winSeconds": 62.18,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 608
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 375,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s135",
+   "text": "A surfer rides giant waves and does tricks while avoiding sharks",
+   "genre": "voyage.race",
+   "seed": 1751300037,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2415
+   },
+   "winSeconds": 40.25,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 250,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s136",
+   "text": "rocket league with tractors",
+   "genre": "voyage.race",
+   "seed": 1240691003,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2457
+   },
+   "winSeconds": 40.95,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4321
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 405,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s137",
+   "text": "fishing game on a frozen lake",
+   "genre": "quest.station",
+   "seed": 1232040823,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s138",
+   "text": "pool billiards trick shots",
+   "genre": "throw",
+   "seed": 528190365,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2534
+   },
+   "winSeconds": 42.23,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 246,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s139",
+   "text": "boxing match against a kangaroo",
+   "genre": "arena.fight",
+   "seed": 1504971231,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2989
+   },
+   "winSeconds": 49.82,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1377
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 450,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s140",
+   "text": "tap to the beat with glowing tiles",
+   "genre": "rhythm",
+   "seed": 84854976,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 310
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 781,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s141",
+   "text": "like beat saber but with swords cutting fruit to music",
+   "genre": "rhythm",
+   "seed": 657537446,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 280
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 799,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s142",
+   "text": "a dance battle in a disco",
+   "genre": "rhythm",
+   "seed": 324849240,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 280
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 811,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s143",
+   "text": "piano tiles but falling from space",
+   "genre": "rhythm",
+   "seed": 630771286,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 310
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 811,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s144",
+   "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "genre": "rhythm",
+   "seed": 589712644,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 310
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 811,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s145",
+   "text": "music game where a ball rolls on a road to the beat and jumps on the drops",
+   "genre": "rhythm",
+   "seed": 723449068,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 310
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 793,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s146",
+   "text": "sneak past guards in a museum and steal a diamond",
+   "genre": "arena.collect",
+   "seed": 1770467287,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2387
+   },
+   "winSeconds": 39.78,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s147",
+   "text": "A kid sneaks down at night to steal cookies without waking mom",
+   "genre": "arena.collect",
+   "seed": 619978278,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2949
+   },
+   "winSeconds": 49.15,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 470,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s148",
+   "text": "stealth game as a ninja cat",
+   "genre": "arena.escape",
+   "seed": 661069432,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 592
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 250,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s149",
+   "text": "hide and seek in a big house",
+   "genre": "arena.escape",
+   "seed": 1643621786,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 605
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s150",
+   "text": "prison escape, avoid the flashlights",
+   "genre": "arena.escape",
+   "seed": 1403252802,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 606
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s151",
+   "text": "A cat steals fish from a market while dodging the owner",
+   "genre": "arena.escape",
+   "seed": 986947312,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 4353
+   },
+   "winSeconds": 72.55,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 598
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 215,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s152",
+   "text": "sneak into the teachers room to change my grades lol",
+   "genre": "arena.escape",
+   "seed": 117294259,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 602
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s153",
+   "text": "red light green light like squid game",
+   "genre": "quest.spatial",
+   "seed": 796848251,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3627
+   },
+   "winSeconds": 60.45,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 598
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 385,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s154",
+   "text": "tower defense with cats defending a sofa from mice",
+   "genre": "arena.fight",
+   "seed": 743761750,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2345
+   },
+   "winSeconds": 39.08,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1373
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 500,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s155",
+   "text": "defend the castle from waves of goblins",
+   "genre": "arena.fight",
+   "seed": 970598172,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2650
+   },
+   "winSeconds": 44.17,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1370
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 475,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s156",
+   "text": "plants vs zombies but with vegetables vs bugs",
+   "genre": "quest.spatial",
+   "seed": 600617627,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 4572
+   },
+   "winSeconds": 76.2,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 631
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 305,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s157",
+   "text": "tower defense in space",
+   "genre": "arena.fight",
+   "seed": 588429225,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3058
+   },
+   "winSeconds": 50.97,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1368
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 445,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s158",
+   "text": "place snowmen to stop evil penguins from stealing presents",
+   "genre": "arena.collect",
+   "seed": 672717133,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2978
+   },
+   "winSeconds": 49.63,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 470,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s159",
+   "text": "protect the cake from ants",
+   "genre": "arena.fight",
+   "seed": 21205471,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2960
+   },
+   "winSeconds": 49.33,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1382
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 450,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s160",
+   "text": "cooking game where you make burgers fast for customers",
+   "genre": "quest.station",
+   "seed": 2120940894,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s161",
+   "text": "like overcooked but in a food truck",
+   "genre": "quest.station",
+   "seed": 375065719,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s162",
+   "text": "run a sushi restaurant with a conveyor belt",
+   "genre": "runner",
+   "seed": 716505926,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2425
+   },
+   "winSeconds": 40.42,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 945
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 539,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s163",
+   "text": "A barista rushes orders during the morning coffee rush",
+   "genre": "arena.collect",
+   "seed": 1077976419,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3423
+   },
+   "winSeconds": 57.05,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 430,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s164",
+   "text": "make pizza and deliver it",
+   "genre": "quest.spatial",
+   "seed": 1424872766,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 4363
+   },
+   "winSeconds": 72.72,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 610
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 325,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s165",
+   "text": "run a supermarket, stock shelves and scan items at the checkout",
+   "genre": "runner",
+   "seed": 1759998826,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2838
+   },
+   "winSeconds": 47.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1636
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 534,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s166",
+   "text": "farm game plant carrots harvest sell",
+   "genre": "quest.station",
+   "seed": 176479897,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s167",
+   "text": "manage a hotel for monsters",
+   "genre": "quest.station",
+   "seed": 1193305453,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s168",
+   "text": "bake a cake and decorate it",
+   "genre": "quest.station",
+   "seed": 116456741,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s169",
+   "text": "a vet clinic where you heal cute pets",
+   "genre": "quest.station",
+   "seed": 1886626420,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s170",
+   "text": "dress up a princess for the royal ball",
+   "genre": "quest.station",
+   "seed": 1805727874,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s171",
+   "text": "fashion show runway where you pick outfits that match the theme",
+   "genre": "quest.station",
+   "seed": 145709833,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s172",
+   "text": "makeover game for a messy zombie",
+   "genre": "quest.station",
+   "seed": 1977625276,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s173",
+   "text": "design my own room with cute furniture",
+   "genre": "quest.station",
+   "seed": 204259488,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s174",
+   "text": "nail salon asmr",
+   "genre": "quest.station",
+   "seed": 278986006,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s175",
+   "text": "scary game in an abandoned hospital",
+   "genre": "arena.escape",
+   "seed": 1650482087,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 601
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 250,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s176",
+   "text": "five nights at freddys but in a school",
+   "genre": "arena.escape",
+   "seed": 295236874,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 604
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 250,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s177",
+   "text": "A girl explores a foggy forest with only a flashlight while something follows her",
+   "genre": "arena.escape",
+   "seed": 258016927,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 605
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 250,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s178",
+   "text": "horror game where a creepy doll moves when u dont look",
+   "genre": "arena.escape",
+   "seed": 1612955325,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 604
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s179",
+   "text": "escape granny's house",
+   "genre": "arena.escape",
+   "seed": 369553971,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 605
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s180",
+   "text": "backrooms but you have to find the exit before the lights go out",
+   "genre": "arena.collect",
+   "seed": 1830690069,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3799
+   },
+   "winSeconds": 63.32,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s181",
+   "text": "survive the night in a cabin with a monster outside",
+   "genre": "arena.escape",
+   "seed": 106933453,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 602
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s182",
+   "text": "A dragon searches a volcano for its stolen egg",
+   "genre": "arena.collect",
+   "seed": 2067861111,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2761
+   },
+   "winSeconds": 46.02,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 490,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s183",
+   "text": "treasure hunt on a tropical island",
+   "genre": "arena.escape",
+   "seed": 1992012547,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 596
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s184",
+   "text": "explore underwater ruins as a little submarine",
+   "genre": "voyage.race",
+   "seed": 2014390974,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2487
+   },
+   "winSeconds": 41.45,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4381
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 405,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s185",
+   "text": "zelda like dungeon with a sword and keys",
+   "genre": "arena.fight",
+   "seed": 1681190166,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2746
+   },
+   "winSeconds": 45.77,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1378
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 470,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s186",
+   "text": "sword fighting game with ninjas",
+   "genre": "arena.fight",
+   "seed": 622780555,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2778
+   },
+   "winSeconds": 46.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1374
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 465,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s187",
+   "text": "stickman fight on a rooftop",
+   "genre": "arena.fight",
+   "seed": 1612774548,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3073
+   },
+   "winSeconds": 51.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1370
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 440,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s188",
+   "text": "A grandma karate fights a gang of pigeons in the park",
+   "genre": "arena.fight",
+   "seed": 1909502514,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3308
+   },
+   "winSeconds": 55.13,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1369
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 420,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s189",
+   "text": "pillow fight in a sleepover",
+   "genre": "arena.fight",
+   "seed": 1251186680,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3295
+   },
+   "winSeconds": 54.92,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1370
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 425,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s190",
+   "text": "goat simulator but you're a raccoon in a city",
+   "genre": "arena.collect",
+   "seed": 1168192157,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3255
+   },
+   "winSeconds": 54.25,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 445,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s191",
+   "text": "fly a paper plane through a house",
+   "genre": "voyage.race",
+   "seed": 882165427,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2464
+   },
+   "winSeconds": 41.07,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4321
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 250,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s192",
+   "text": "be a bee collecting pollen and bringing it to the hive",
+   "genre": "quest.spatial",
+   "seed": 293204294,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3327
+   },
+   "winSeconds": 55.45,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 627
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 410,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s193",
+   "text": "survive on a raft in the ocean, catch debris and build",
+   "genre": "quest.station",
+   "seed": 2011950316,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s194",
+   "text": "minecraft but tiny, mine and craft to survive the first night",
+   "genre": "quest.station",
+   "seed": 697675745,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s195",
+   "text": "something relaxing with bubbles",
+   "genre": "arena.collect",
+   "seed": 240344146,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2423
+   },
+   "winSeconds": 40.38,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 515,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s196",
+   "text": "a cozy game",
+   "genre": "arena.collect",
+   "seed": 1038582479,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2505
+   },
+   "winSeconds": 41.75,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 510,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s197",
+   "text": "something fun and colorful for my little sister",
+   "genre": "arena.collect",
+   "seed": 1138001617,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2711
+   },
+   "winSeconds": 45.18,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 490,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s198",
+   "text": "satisfying game where you pop stuff",
+   "genre": "quest.spatial",
+   "seed": 179217892,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3664
+   },
+   "winSeconds": 61.07,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 594
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 380,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s199",
+   "text": "An open world where I'm a dragon rider, fight bosses, level up, upgrade my dragon and explore three kingdoms",
+   "genre": "arena.fight",
+   "seed": 1905155430,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2693
+   },
+   "winSeconds": 44.88,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1380
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 475,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "demand",
+   "id": "s200",
+   "text": "A multiplayer city where I build my house, drive cars, rob banks and the cops chase me like GTA",
+   "genre": "voyage.race",
+   "seed": 301704671,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2455
+   },
+   "winSeconds": 40.92,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4321
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 405,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s039",
+   "text": "zombie shooter in a mall",
+   "genre": "shooter",
+   "seed": 2050291154,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2657
+   },
+   "winSeconds": 44.28,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s037",
+   "text": "A space marine shoots alien bugs in a mining colony",
+   "genre": "shooter",
+   "seed": 867901906,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2687
+   },
+   "winSeconds": 44.78,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 511,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s002",
+   "text": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "genre": "arena.escape",
+   "seed": 1291481298,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3120
+   },
+   "winSeconds": 52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 603
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 452,
+   "worstScore": 62,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s003",
+   "text": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "genre": "arena.escape",
+   "seed": 1924202525,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 605
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s006",
+   "text": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "genre": "runner",
+   "seed": 1113955911,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2593
+   },
+   "winSeconds": 43.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1876
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 550,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s008",
+   "text": "temple run but you're a banana running from a monkey",
+   "genre": "runner",
+   "seed": 56939890,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2372
+   },
+   "winSeconds": 39.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 782
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 530,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s022",
+   "text": "A tiny robot climbs a tower of moving platforms to reach its charger",
+   "genre": "platformer",
+   "seed": 658723869,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2232
+   },
+   "winSeconds": 37.2,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 495,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s021",
+   "text": "obby game with lava and spinning bars",
+   "genre": "platformer",
+   "seed": 292625551,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2523
+   },
+   "winSeconds": 42.05,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4981
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 565,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s035",
+   "text": "like flappy bird but underwater",
+   "genre": "flap",
+   "seed": 1363119617,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2230
+   },
+   "winSeconds": 37.17,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 32
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 875,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s050",
+   "text": "throwing snowballs at kids behind a snow fort",
+   "genre": "throw",
+   "seed": 1230807019,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2538
+   },
+   "winSeconds": 42.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 246,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s088",
+   "text": "angry birds but with cats and cardboard boxes",
+   "genre": "throw",
+   "seed": 1691046820,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2821
+   },
+   "winSeconds": 47.02,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 243,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s069",
+   "text": "candy crush but with gems in a cave",
+   "genre": "quest.station",
+   "seed": 771957274,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s056",
+   "text": "A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+   "genre": "quest.spatial",
+   "seed": 1903847485,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3196
+   },
+   "winSeconds": 53.27,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 600
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 420,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s058",
+   "text": "boat race through a jungle river full of crocodiles",
+   "genre": "voyage.race",
+   "seed": 2142346050,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s111",
+   "text": "a black hole that swallows a city, it gets bigger the more it eats",
+   "genre": "arena.collect",
+   "seed": 479113336,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2391
+   },
+   "winSeconds": 39.85,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s095",
+   "text": "knife throwing at a spinning log",
+   "genre": "throw",
+   "seed": 1912319400,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2856
+   },
+   "winSeconds": 47.6,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 235,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s188",
+   "text": "A grandma karate fights a gang of pigeons in the park",
+   "genre": "arena.fight",
+   "seed": 1909502514,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3308
+   },
+   "winSeconds": 55.13,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1369
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 420,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s144",
+   "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
+   "genre": "rhythm",
+   "seed": 589712644,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 310
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 811,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s155",
+   "text": "defend the castle from waves of goblins",
+   "genre": "arena.fight",
+   "seed": 970598172,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2650
+   },
+   "winSeconds": 44.17,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1370
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 475,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "s099",
+   "text": "build the tallest pancake tower before it falls over",
+   "genre": "timing.stack",
+   "seed": 1256944565,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h01",
+   "text": "a cat stealing fish from a market while dodging the fishmonger",
+   "genre": "arena.escape",
+   "seed": 2102213776,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3974
+   },
+   "winSeconds": 66.23,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 616
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 245,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h02",
+   "text": "shopping cart race in a supermarket",
+   "genre": "voyage.race",
+   "seed": 1227587564,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2445
+   },
+   "winSeconds": 40.75,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4321
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 405,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h03",
+   "text": "defend a castle from dragons by throwing snowballs",
+   "genre": "arena.fight",
+   "seed": 328920478,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2979
+   },
+   "winSeconds": 49.65,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1370
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 450,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h04",
+   "text": "a robot collects batteries on Mars",
+   "genre": "arena.collect",
+   "seed": 177461931,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3636
+   },
+   "winSeconds": 60.6,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 415,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h05",
+   "text": "boxing a kangaroo in the australian outback",
+   "genre": "arena.fight",
+   "seed": 727311170,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2976
+   },
+   "winSeconds": 49.6,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1371
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 450,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h06",
+   "text": "I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him",
+   "genre": "quest.station",
+   "seed": 559306708,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1920
+   },
+   "winSeconds": 32,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h07",
+   "text": "purple elephants doing taxes on a volcano",
+   "genre": "arena.collect",
+   "seed": 1182459602,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3103
+   },
+   "winSeconds": 51.72,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 460,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h08",
+   "text": "a romantic dinner date on the moon",
+   "genre": "arena.collect",
+   "seed": 173969465,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2421
+   },
+   "winSeconds": 40.35,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 515,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h09",
+   "text": "escape from a haunted hospital with a flashlight",
+   "genre": "arena.escape",
+   "seed": 2015944287,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 605
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "h10",
+   "text": "a penguin that slides down a glacier, jumps over seals and catches fish",
+   "genre": "runner",
+   "seed": 1739667422,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2358
+   },
+   "winSeconds": 39.3,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 764
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 576,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j01",
+   "text": "Explain quantum physics to my grandma.",
+   "genre": "arena.collect",
+   "seed": 1760529582,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2768
+   },
+   "winSeconds": 46.13,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 485,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j02",
+   "text": "a sleepy cat naps in a cozy rainy café",
+   "genre": "arena.collect",
+   "seed": 1202141043,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2723
+   },
+   "winSeconds": 45.38,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 490,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j03",
+   "text": "my startup pitch to investors in a glass skyscraper",
+   "genre": "arena.collect",
+   "seed": 585042078,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2651
+   },
+   "winSeconds": 44.18,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 495,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j04",
+   "text": "walk my dog along the beach while eating an ice cream",
+   "genre": "voyage.race",
+   "seed": 936404094,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j05",
+   "text": "pop ten balloons at a birthday party",
+   "genre": "quest.spatial",
+   "seed": 1823895065,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2691
+   },
+   "winSeconds": 44.85,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 600
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 460,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j06",
+   "text": "a chef flips pancakes in a busy kitchen",
+   "genre": "quest.station",
+   "seed": 1881373714,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j07",
+   "text": "a squirrel hoards acorns before winter comes",
+   "genre": "arena.collect",
+   "seed": 768103657,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2803
+   },
+   "winSeconds": 46.72,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 485,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j08",
+   "text": "a wizard defends a crystal tower from flying skeletons",
+   "genre": "arena.fight",
+   "seed": 1631427981,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2504
+   },
+   "winSeconds": 41.73,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1371
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 490,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j09",
+   "text": "a dragon burns down villages and dodges arrows from knights",
+   "genre": "arena.escape",
+   "seed": 1360559991,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 606
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "j10",
+   "text": "an elf princess escapes a goblin castle through a dark forest",
+   "genre": "arena.escape",
+   "seed": 690762712,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 601
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 100,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d01",
+   "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+   "genre": "runner",
+   "seed": 1538884031,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2588
+   },
+   "winSeconds": 43.13,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 538
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 505,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d02",
+   "text": "teach my little brother the multiplication table",
+   "genre": "arena.collect",
+   "seed": 507830144,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2215
+   },
+   "winSeconds": 36.92,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 535,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d03",
+   "text": "a witch brews potions in a crooked tower during a thunderstorm",
+   "genre": "quest.station",
+   "seed": 1279517972,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2400
+   },
+   "winSeconds": 40,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d04",
+   "text": "shoot down paper planes over a school playground",
+   "genre": "shooter",
+   "seed": 809519851,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2678
+   },
+   "winSeconds": 44.63,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1480
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d05",
+   "text": "a sloth tries to cross a busy jungle highway",
+   "genre": "runner",
+   "seed": 48605400,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2336
+   },
+   "winSeconds": 38.93,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 640
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 555,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d06",
+   "text": "race hot air balloons over a desert canyon",
+   "genre": "voyage.race",
+   "seed": 1432642382,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d07",
+   "text": "my grandpa fixing his old car in the garage",
+   "genre": "quest.station",
+   "seed": 1294905270,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1920
+   },
+   "winSeconds": 32,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 1440
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 455,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d08",
+   "text": "a mermaid collects pearls while avoiding jellyfish",
+   "genre": "arena.escape",
+   "seed": 277883877,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2761
+   },
+   "winSeconds": 46.02,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 618
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 300,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d09",
+   "text": "stack cheese wheels into a wobbly tower at a farm market",
+   "genre": "timing.stack",
+   "seed": 1726936063,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1892
+   },
+   "winSeconds": 31.53,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 903
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 648,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d10",
+   "text": "a pirate duels a skeleton captain on a sinking ship",
+   "genre": "duel",
+   "seed": 173605571,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2011
+   },
+   "winSeconds": 33.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 244
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 575,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d11",
+   "text": "tap along to the drums at a jungle festival",
+   "genre": "rhythm",
+   "seed": 20597539,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2131
+   },
+   "winSeconds": 35.52,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 250
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 823,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d12",
+   "text": "a goldfish swims through a sunken city dodging sharks",
+   "genre": "voyage.race",
+   "seed": 902257336,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2413
+   },
+   "winSeconds": 40.22,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 4261
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 400,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d13",
+   "text": "write a thank-you letter to my teacher",
+   "genre": "arena.collect",
+   "seed": 1599319316,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2386
+   },
+   "winSeconds": 39.77,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 520,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d14",
+   "text": "a bear sneaks into a campsite to steal honey",
+   "genre": "arena.collect",
+   "seed": 1748251458,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2028
+   },
+   "winSeconds": 33.8,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 550,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d15",
+   "text": "throw frisbees to a dog on a sunny beach",
+   "genre": "throw",
+   "seed": 1684319401,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2456
+   },
+   "winSeconds": 40.93,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5221
+   },
+   "lives": 1,
+   "livesFrom": "none",
+   "botScore": 256,
+   "worstScore": 0,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d16",
+   "text": "an owl delivers letters across a snowy mountain village",
+   "genre": "quest.spatial",
+   "seed": 521034969,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 4606
+   },
+   "winSeconds": 76.77,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 630
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 155,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d17",
+   "text": "a robot vacuum cleans the house before the family comes home",
+   "genre": "arena.collect",
+   "seed": 1120813366,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3230
+   },
+   "winSeconds": 53.83,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 450,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d18",
+   "text": "a sumo wrestler pushes rivals out of a bouncy ring",
+   "genre": "duel",
+   "seed": 1807700313,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 1962
+   },
+   "winSeconds": 32.7,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 234
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 580,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d19",
+   "text": "plan a budget for my family vacation",
+   "genre": "arena.collect",
+   "seed": 335024891,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 2571
+   },
+   "winSeconds": 42.85,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 5281
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 505,
+   "worstScore": 80,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  },
+  {
+   "set": "dev",
+   "id": "d20",
+   "text": "a knight rides a unicorn to rescue a prince from a cloud castle",
+   "genre": "quest.spatial",
+   "seed": 301012022,
+   "playable": true,
+   "publishable": true,
+   "failures": [],
+   "bot": {
+    "end": "won",
+    "tick": 3279
+   },
+   "winSeconds": 54.65,
+   "inBand": true,
+   "idle": {
+    "end": "lost",
+    "tick": 618
+   },
+   "lives": 3,
+   "livesFrom": "counter",
+   "botScore": 265,
+   "worstScore": 50,
+   "scoreDecides": true,
+   "scoreGoal": null,
+   "said": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   },
+   "carried": {
+    "lives": null,
+    "score": null,
+    "seconds": null
+   }
+  }
+ ]
+}

@@ -83,7 +83,13 @@ describe('director prompt', () => {
   // Revize fáze 3: 6 746 B – `interact` jen jako vítězné pravidlo. Kolo 2: 6 777 B – vyhrává se až se všemi cíli.
   // O9: 6 788 B – po sloučení všech stop popisují moduly žánrů E, F a G víc parametrů výchozího bodu.
   // P35 T3: 6 828 B – skákačka počítá věci ke sběru (`items 1..8`, `counts collectible`) a výchozí bod nese cíl z věty.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 6 828 B)', () => {
+  // P36A T4: 6 884 B – běžec natahuje trať podle počtů (`items 1..50, obstacles 1..50`, `counts enemy/collectible`).
+  // P36A T8: 7 569 B – hloubka pro všechny žánry (`lives`, `targetScore`, `timeLimit`, `enemyMoves`), dva příklady s ní
+  // a věta, že pravidlo prohry dokáže robot, který do něj vleze.
+  // P36A T10: 7 989 B – dva žánry navíc (Střílečka, Hod) se svými režimy a parametry (`waves`, `enemies`, `targets`;
+  // `goal`, `spareThrows`, `seconds`) a hloubkou.
+  // P36A T11: 8 540 B – čtyři žánry navíc (Načasování se třemi režimy, Rytmus, Souboj, Poletování), řádek z modulu.
+  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 8 540 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -92,7 +98,7 @@ describe('director prompt', () => {
       }
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(6_828);
+    expect(max).toBeLessThanOrEqual(8_540);
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

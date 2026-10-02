@@ -69,6 +69,16 @@ const CONTROL_OF_MODE: Readonly<Record<string, string>> = {
   'voyage.land': 'steer',
   'quest.spatial': 'move_free',
   'quest.station': 'move_free',
+  // P36A T10: střelba a hod jsou zase žánry na svých ovládáních.
+  'shooter.default': 'shooter',
+  'throw.default': 'throw',
+  // P36A T11: načasování, rytmus, souboj a poletování taky.
+  'timing.stack': 'timing',
+  'timing.precision': 'timing',
+  'timing.bridge': 'timing',
+  'rhythm.default': 'rhythm',
+  'duel.default': 'duel',
+  'flap.default': 'flap',
 };
 
 /** Režim → věta, jejíž hlavní sloveso ho hraje (kontrola věrnosti, P32B T5); hrdina fox a nepřítel wolf jako v `genreAnswer`. */
@@ -82,6 +92,14 @@ const SENTENCE_OF_MODE: Readonly<Record<string, string>> = {
   'voyage.land': 'A fox lands on a dark forest clearing past a wolf',
   'quest.spatial': 'A fox lights lanterns in a dark forest while a wolf prowls',
   'quest.station': 'A fox cooks soup in a dark forest kitchen while a wolf prowls',
+  'shooter.default': 'A fox shoots wolves in a dark forest',
+  'throw.default': 'A fox throws stones at a wolf in a dark forest',
+  'timing.stack': 'A fox stacks logs in a dark forest while a wolf prowls',
+  'timing.precision': 'A fox taps at the right time to stop the swinging log in a dark forest while a wolf prowls',
+  'timing.bridge': 'A fox grows a bridge over a dark forest gorge while a wolf prowls',
+  'rhythm.default': 'A fox dances in a dark forest while a wolf prowls',
+  'duel.default': 'A fox duels a wolf in a dark forest',
+  'flap.default': 'A fox flaps through a dark forest past a wolf',
 };
 
 function clock(): () => number {

@@ -46,6 +46,13 @@ export const DUEL = {
   /** Výchozí životy hráče, když spec žádné neurčí. */
   lives: 3,
   gap: 2200,
+  /** Soupeřů za sebou nejvýš (žánr Souboj, P36A T11). */
+  maxRounds: 10,
+  /** O kolik tiků každý další soupeř zkrátí nápřah i mezeru. */
+  rise: 3,
+  /** Kratší nápřah a mezeru zrychlení neudělá: obojí nad reakcí robota a mezera + nápřah stačí na úhyb i zotavení. */
+  minWindup: 18,
+  minRecover: 17,
 } as const;
 
 /** Fáze soupeře v `aux0`. */
@@ -58,10 +65,25 @@ export const DUEL_FOE = 1;
 const attack = z.object({ windup: z.int().min(0).max(ARCADE_HZ * 5), recover: z.int().min(0).max(ARCADE_HZ * 5) }).strict();
 export type DuelAttack = z.infer<typeof attack>;
 
-const controlParams = z.object({ pattern: z.array(attack).min(1).max(8), foeHealth: z.int().min(1).max(20) }).strict();
+const controlParams = z
+  .object({
+    pattern: z.array(attack).min(1).max(8),
+    foeHealth: z.int().min(1).max(20),
+    /** Soupeřů za sebou, každý s `foeHealth` životy (žánr Souboj, P36A T11); bez toho jeden. */
+    rounds: z.int().min(1).max(DUEL.maxRounds).optional(),
+    /** O kolik tiků další soupeř zkrátí nápřah i mezeru (nejvýš na `minWindup` / `minRecover`). */
+    rise: z.int().min(0).max(10).optional(),
+  })
+  .strict();
 export type DuelControlParams = z.infer<typeof controlParams>;
 
 const S = BODY;
+
+/** Útok vzorce u soupeře `round` (od 0): o `rise` tiků za soupeře kratší, ne pod mez – co už pod ní je, zůstane. */
+export function duelAttackAt(move: DuelAttack, round: number, rise: number): DuelAttack {
+  const shorter = (ticks: number, floor: number): number => Math.max(Math.min(ticks, floor), ticks - round * rise);
+  return { windup: shorter(move.windup, DUEL.minWindup), recover: shorter(move.recover, DUEL.minRecover) };
+}
 
 export const duelControl: ControlPiece<DuelControlParams> = {
   id: 'duel',
@@ -89,6 +111,10 @@ export const duelControl: ControlPiece<DuelControlParams> = {
       } else if (phase !== DUEL_PHASE.struck) timer = -DUEL.stagger;
     }
 
+    const hits = Math.floor((state[p + S.z] as number) / UNIT);
+    // Soupeř, se kterým se teď bojuje (od 0): každý další útočí rychleji.
+    const round = Math.floor(hits / params.foeHealth);
+    const moveAt = (index: number): DuelAttack => duelAttackAt(params.pattern[index] as DuelAttack, round, params.rise ?? 0);
     if ((state[HEADER.tick] as number) >= DUEL.lead) {
       if (left > 0) left -= 1;
       if (left === 0) {
@@ -97,14 +123,14 @@ export const duelControl: ControlPiece<DuelControlParams> = {
           if (timer <= 0) state[p + S.aux0] = -1;
           const index = (state[HEADER.counters + DUEL_COUNTER.attack] as number) % params.pattern.length;
           phase = DUEL_PHASE.open;
-          left = (params.pattern[index] as DuelAttack).recover;
+          left = moveAt(index).recover;
           state[HEADER.counters + DUEL_COUNTER.attack] = (state[HEADER.counters + DUEL_COUNTER.attack] as number) + 1;
         }
         // Mezera (nebo start) skončila: další nápřah. Mezera 0 = nápřah hned po úderu.
         if (left === 0) {
           const index = (state[HEADER.counters + DUEL_COUNTER.attack] as number) % params.pattern.length;
           phase = DUEL_PHASE.windup;
-          left = Math.max(1, (params.pattern[index] as DuelAttack).windup);
+          left = Math.max(1, moveAt(index).windup);
         }
       }
     }
@@ -113,7 +139,9 @@ export const duelControl: ControlPiece<DuelControlParams> = {
     state[foe + S.aux1] = left;
     state[p + S.aux1] = timer;
     state[p + S.h] = timer > 0 ? DUEL.crouchH : DUEL.playerH;
-    state[HEADER.counters + DUEL_COUNTER.foeHealth] = params.foeHealth - Math.floor((state[p + S.z] as number) / UNIT);
+    // Životy soupeře, se kterým se bojuje; s jedním soupeřem prostě zbylé zásahy.
+    const remaining = params.foeHealth * (params.rounds ?? 1) - hits;
+    state[HEADER.counters + DUEL_COUNTER.foeHealth] = remaining <= 0 ? 0 : ((remaining - 1) % params.foeHealth) + 1;
   },
 };
 
@@ -132,7 +160,13 @@ const TIERS: Readonly<Record<DuelDifficulty, Tier>> = {
   hard: { windup: [18, 26], recover: [16, 22], foeHealth: 6 },
 };
 
-const generatorParams = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES).default('normal') }).strict();
+const generatorParams = z
+  .object({
+    difficulty: z.enum(DUEL_DIFFICULTIES).default('normal'),
+    /** Žánr Souboj (P36A T11): soupeřů za sebou, každý rychlejší o `DUEL.rise`; bez toho jeden soupeř. */
+    rounds: z.int().min(1).max(DUEL.maxRounds).optional(),
+  })
+  .strict();
 export type DuelLevelParams = z.infer<typeof generatorParams>;
 
 /** Vzorec čtyř útoků ze semínka; za běhu se jen opakuje, žádná náhoda. */
@@ -152,14 +186,18 @@ export const duelArena: GeneratorPiece<DuelLevelParams> = {
       { role: 'player', kind: 'fighter', x: 0, y: 0, z: 0, w: 800, h: DUEL.playerH, d: 600, solid: false },
       { role: 'enemy', kind: 'foe', x: 0, y: 0, z: DUEL.gap, w: 800, h: DUEL.playerH, d: 600, solid: false },
     ];
-    return { bodies, length: TIERS[params.difficulty].foeHealth * UNIT };
+    return { bodies, length: TIERS[params.difficulty].foeHealth * (params.rounds ?? 1) * UNIT };
   },
 };
 
-/** Tvrzení „hratelné z konstrukce“ nad vzorcem; prázdné pole = hratelný. */
-export function checkDuelPattern(pattern: readonly DuelAttack[]): string[] {
+/**
+ * Tvrzení „hratelné z konstrukce“ nad vzorcem; prázdné pole = hratelný. Se
+ * zrychlením platí i pro posledního soupeře – tam jsou nápřah i mezera nejkratší.
+ */
+export function checkDuelPattern(base: readonly DuelAttack[], last = 0, rise = 0): string[] {
   const issues: string[] = [];
   const need = DUEL.reaction + DUEL.margin;
+  const pattern = base.map((move) => duelAttackAt(move, last, rise));
   pattern.forEach((move, index) => {
     const next = pattern[(index + 1) % pattern.length] as DuelAttack;
     if (move.windup <= need) issues.push(`attack ${index + 1} winds up for ${move.windup} ticks – a dodge needs more than ${need}`);
@@ -177,12 +215,14 @@ export function duelParts(seed: number, raw: Readonly<Record<string, unknown>>, 
   const pattern = duelPattern(seed, params);
   const foeHealth = TIERS[params.difficulty].foeHealth;
   const lives = health ?? DUEL.lives;
+  const rounds = params.rounds ?? 1;
+  const ramp = params.rounds === undefined ? {} : { rounds, rise: DUEL.rise };
   return {
-    control: { id: 'duel', params: { pattern, foeHealth } },
+    control: { id: 'duel', params: { pattern, foeHealth, ...ramp } },
     bot: { id: 'duel_bot', params: {} },
     level,
-    rules: judgeRules(foeHealth, lives),
-    issues: checkDuelPattern(pattern),
+    rules: judgeRules(foeHealth * rounds, lives),
+    issues: checkDuelPattern(pattern, rounds - 1, params.rounds === undefined ? 0 : DUEL.rise),
     health: lives,
   };
 }

@@ -1,0 +1,25 @@
+{
+ "about": "P36A T9: 20 own sentences that state a mechanic - lives, a target score, a time limit or how the enemies move. Written before any run, not taken from the demand corpus, the dev set or a sealed set. `expect` lists only what the sentence says; director.measure.ts checks whether the built game carries it (draft vs director).",
+ "sentences": [
+  { "id": "m01", "text": "a knight explores a castle and you have 3 lives", "expect": { "lives": 3 } },
+  { "id": "m02", "text": "dodge falling rocks in a canyon with only one life", "expect": { "lives": 1 } },
+  { "id": "m03", "text": "a cat collects fish on the pier and gets 5 lives", "expect": { "lives": 5 } },
+  { "id": "m04", "text": "jump across the rooftops with two lives", "expect": { "lives": 2 } },
+  { "id": "m05", "text": "score 200 points before time runs out picking apples in an orchard", "expect": { "score": 200 } },
+  { "id": "m06", "text": "collect coins in a cave until you reach 500 points", "expect": { "score": 500 } },
+  { "id": "m07", "text": "a ninja runs across the city and must score 300 points", "expect": { "score": 300 } },
+  { "id": "m08", "text": "race a speedboat around the bay in 60 seconds", "expect": { "seconds": 60 } },
+  { "id": "m09", "text": "light all the lanterns in the temple within 45 seconds", "expect": { "seconds": 45 } },
+  { "id": "m10", "text": "pop the balloons at the fair in 30 seconds", "expect": { "seconds": 30 } },
+  { "id": "m11", "text": "guards patrol the halls while a thief steals jewels from the museum", "expect": { "enemy": "patrol" } },
+  { "id": "m12", "text": "sneak past patrolling robots to fix the machines in the factory", "expect": { "enemy": "patrol" } },
+  { "id": "m13", "text": "zombies chase you through the mall while you grab supplies", "expect": { "enemy": "chase" } },
+  { "id": "m14", "text": "a wolf hunts the rabbit across the meadow as it gathers carrots", "expect": { "enemy": "chase" } },
+  { "id": "m15", "text": "shoot down the alien drones while running through the space station", "expect": { "enemy": "shoot" } },
+  { "id": "m16", "text": "a cowboy rides through the desert blasting bandits", "expect": { "enemy": "shoot" } },
+  { "id": "m17", "text": "you have 3 lives and 60 seconds to collect the stars in the sky", "expect": { "lives": 3, "seconds": 60 } },
+  { "id": "m18", "text": "guards patrol the bank vault, grab the gold, you have two lives", "expect": { "enemy": "patrol", "lives": 2 } },
+  { "id": "m19", "text": "a dragon chases the princess through the forest, score 150 points to win", "expect": { "enemy": "chase", "score": 150 } },
+  { "id": "m20", "text": "a robot cleans the lab in 90 seconds with 4 lives while drones patrol", "expect": { "seconds": 90, "lives": 4, "enemy": "patrol" } }
+ ]
+}

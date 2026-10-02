@@ -16,13 +16,15 @@ import {
   simulateThrow,
   solveThrow,
   throwField,
-  throwRules,
+  throwParts,
   throwSpeed,
 } from '../pieces/throw';
 import { throwBot } from '../pieces/throw-bot';
 import { runBot, verifyArcade } from '../verify';
 
 const params = (difficulty: ThrowDifficulty, extra: Record<string, unknown> = {}) => throwField.params.parse({ difficulty, ...extra });
+/** Pravidla jednoho pole (bez kol): odhoz, zásah, všechny cíle, hody došly. */
+const throwRules = () => throwParts(1, params('normal')).rules;
 
 const idle = { id: 'idle', params: z.object({}), roles: [], reactionTicks: 0, cost: () => ({ bodies: 0, rules: 0 }), decide: () => NO_INPUT };
 const library: ArcadeLibrary = { ...ARCADE_LIBRARY, bots: { ...ARCADE_LIBRARY.bots, idle } };

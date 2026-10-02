@@ -12,13 +12,16 @@
  * `additionalProperties: false`, u každého uzlu `type` a nezná volné slovníky.
  * `strictSchema` proto: volitelné pole → „nebo null“, konstantu → výčet,
  * slovník → seznam dvojic `{key, value}`. `readGenreAnswer` pole `null` zahodí.
+ *
+ * Gramatika pravidel je ve všech žánrech stejná, a tak ji schéma nese jednou
+ * v `$defs` kořene a žánry na ni odkazují (P36A T7).
  */
 
 import { z } from 'zod';
 
-import { THINGS_MAX } from '../arcade/rules/schema';
+import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
-import { GENRE_MODULES } from '../genre/index';
+import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
 
 type Json = Record<string, unknown>;
@@ -80,16 +83,33 @@ function genreVariant(module: GenreModule): Json | null {
   const modes = readyModes(module);
   if (modes.length === 0) return null;
   const base = genreSpecSchema.options.find((option) => option.shape.genre.value === module.id)!;
-  const bounds = Object.entries(module.paramBounds);
+  // Parametry modulu a hloubky (P36A T8: životy, cílové skóre, časový limit).
+  const bounds = Object.entries(paramBoundsOf(module));
   const params = z.object(Object.fromEntries(bounds.map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
   const counts = countsOf(module, modes);
-  const variant = (bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() })).extend({ ruleRoles: z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX).optional() });
+  const variant = bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() });
   const counted = counts === null ? variant.omit({ counts: true }) : variant.extend({ counts: counts.optional() });
-  return strictSchema(toJson(counted.extend({ mode: z.enum(modes as [string, ...string[]]) })));
+  const schema = strictSchema(toJson(counted.extend({ mode: z.enum(modes as [string, ...string[]]) })));
+  // Pole zůstane na svém místě (pořadí polí drží i gramatika llama.cpp), obsah je odkaz do `$defs`.
+  const properties = schema.properties as Record<string, Json>;
+  for (const key of Object.keys(RULE_DEFS)) properties[key] = { anyOf: [{ $ref: `#/$defs/${key}` }, { type: 'null' }] };
+  return schema;
 }
 
 /** Druhy rolí, které smí nést jen pravidla – hráče staví modul. */
 const RULE_ROLE_KINDS = ROLE_KINDS.filter((kind) => kind !== 'player') as [string, ...string[]];
+
+/**
+ * Pravidla P29A s jejich rolemi a doplňky (B-R5), jednou pro všechny žánry
+ * (P36A T7): dřív je nesla každá varianta zvlášť, 5× po 6 KB. `$defs` v kořeni
+ * a `$ref` bez sourozenců bere přísný režim OpenAI (i `codex --output-schema`)
+ * a Groq; llama.cpp odkaz `#/$defs/…` rozbalí při převodu na gramatiku.
+ */
+const RULE_DEFS: Readonly<Record<'ruleRoles' | 'things' | 'rules', Json>> = {
+  ruleRoles: strictSchema(toJson(z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX))),
+  things: strictSchema(toJson(thingsSchema)),
+  rules: strictSchema(toJson(modelRulesSchema)),
+};
 
 /**
  * Počty rolí, které žánr čte (B-R4): jen role, které některý režim `ready`
@@ -118,4 +138,5 @@ export const GENRE_ANSWER_SCHEMA: Json = {
     plan: { type: 'string' },
     spec: { anyOf: (Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? []) },
   },
+  $defs: RULE_DEFS,
 };

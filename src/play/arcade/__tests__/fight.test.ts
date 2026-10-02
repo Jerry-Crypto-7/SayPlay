@@ -15,7 +15,7 @@ import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 import duelFixture from '../__fixtures__/duel.json';
 import { arcadeWorldOf } from '../compile';
-import { type ArcadeInput, type ArcadeWorld, BODY, BUTTON, HEADER, NO_INPUT, bodyBase, bodyHp } from '../contract';
+import { type ArcadeInput, type ArcadeWorld, BODY, BUTTON, HEADER, HIT_GRACE, NO_INPUT, bodyBase, bodyHp } from '../contract';
 import { buildWorld, instantiate, loadProgram, replay, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { DIRECTIONS, arenaAxis } from '../pieces/arena';
@@ -62,10 +62,19 @@ describe('fight – a fair courtyard from every seed', () => {
     expect(checkFightLevel({ ...level, bodies: [{ ...player, hp: 0 }, enemy] })).toContain('the player has no HP');
   });
 
-  it('lives from the spec become the player HP and the mode keeps no life counter', () => {
+  // P36A T2: životy ze specu jsou knockouty – HP hráče zůstává, čítač životů je nese svět (dřív HP = životy).
+  it('lives from the spec are knockouts: the player keeps its HP and the world counts the lives', () => {
     const parts = fightArena.parts(1, fightArena.params.parse({}), 3);
-    expect(parts.level.bodies[0]?.hp).toBe(3);
-    expect('health' in parts && parts.health === undefined).toBe(true);
+    expect(parts.level.bodies[0]?.hp).toBe(FIGHT.playerHp.default);
+    expect(parts.health).toBe(3);
+    expect(parts.rules).toEqual([
+      { id: 'fight_hits', params: {} },
+      { id: 'fight_end', params: { knockout: { hp: FIGHT.playerHp.default, grace: HIT_GRACE } } },
+      { id: 'out_of_health', params: {} },
+    ]);
+    const plain = fightArena.parts(1, fightArena.params.parse({}), undefined);
+    expect(plain.health).toBeUndefined();
+    expect(plain.rules.map((rule) => rule.params)).toEqual([{}, {}]);
   });
 });
 

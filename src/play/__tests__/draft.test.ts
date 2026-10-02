@@ -22,7 +22,8 @@ const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8'))
 const fidelitySet = (file: string) =>
   (JSON.parse(readFileSync(`evals/play/fidelity/${file}`, 'utf8')) as { sentences: { id: string; text: string; checklist: ChecklistEntry[] }[] }).sentences;
 const baseline = JSON.parse(readFileSync('evals/play/p30b/losses.json', 'utf8')) as { rows: { source: string; id: string; item: string; role: string; drawn: boolean }[] };
-const LEGACY_CONTROLS = ['tap_go', 'flap', 'shooter', 'throw', 'timing', 'rhythm'];
+// Střílečka a hod jsou od P36A T10 zase žánry, poletování, načasování, rytmus a souboj od T11; žánr nemá jen `tap_go`.
+const LEGACY_CONTROLS = ['tap_go'];
 
 describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
   it.each(sentenceSet.sentences)('gives $id the genre, mode and hero the sentence says', (entry) => {
@@ -44,10 +45,10 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
     expect(draftGameSpecWithMeta('Two knights duel in a castle', 1, { modules: genreDoubles() }).genre).toMatchObject({ hero: 'knight', enemy: 'knight' });
   });
 
-  // Revize fáze 3, nález 2: „two knights“ je hrdina a jeden soupeř, ne rytíř proti dvěma.
+  // Revize fáze 3, nález 2: „two knights“ je hrdina a jeden soupeř, ne rytíř proti dvěma. Od P36A T11 hraje souboj žánr Souboj.
   it('two knights duel one against one: the counted subject is not a count of rivals', () => {
     const duel = draftGameSpecWithMeta('Two knights duel in a castle', 1);
-    expect(duel.genre).toMatchObject({ genre: 'arena', mode: 'fight', hero: 'knight', enemy: 'knight' });
+    expect(duel.genre).toMatchObject({ genre: 'duel', mode: 'default', hero: 'knight', enemy: 'knight' });
     expect(duel.genre?.counts?.enemy).toBeUndefined();
     expect(duel.spec.roles.filter((role) => role.label === 'knight').map((role) => role.count ?? 1)).toEqual([1, 1]);
     // Číslovka před soupeřem, který není podmět, dál platí.
@@ -95,10 +96,11 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       expect(genre('Escape the flooded subway before the security drone catches you.').collectible).not.toBe('you');
     });
 
-    it('does not make the target of a shooter its enemy too', () => {
+    // Od P36A T10 je „zombie shooter“ Střílečka: zombíci jdou ve vlnách jako nepřítel, terč střelnice je jiná role.
+    it('does not make the enemy of a shooter its target too', () => {
       const zombie = genre('zombie shooter in a mall');
-      expect(zombie.target?.label).toBe('zombie');
-      expect(zombie.enemy).not.toBe('zombie');
+      expect(zombie).toMatchObject({ genre: 'shooter', enemy: 'zombie' });
+      expect(zombie.target?.label).not.toBe('zombie');
     });
 
     it('does not set the game in a phrase that names one of its roles', () => {

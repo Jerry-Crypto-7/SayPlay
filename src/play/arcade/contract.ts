@@ -175,6 +175,62 @@ export function setBodyHp(state: Int32Array, body: number, hp: number): void {
   state[at] = ((state[at] as number) & ~(HP_MASK << HP_SHIFT)) | (clamped << HP_SHIFT);
 }
 
+/**
+ * Milost po zásahu (P36A T2): tiky, kdy hráč nepřijde o život, v bitech odrazu
+ * jeho `flags`. Hráč nikdy není fyzikální těleso (`buildWorld` to odmítne),
+ * takže tyhle bity má ve všech dosavadních hrách 0 – jádro je odpočítává jen
+ * od nuly výš a starý svět se nepohne. Nabíjí je efekt `damage` s `grace`.
+ */
+export const GRACE_SHIFT = RESTITUTION_SHIFT;
+export const GRACE_MASK = RESTITUTION_MASK;
+
+/** Výchozí milost po zásahu: 1 s. */
+export const HIT_GRACE = ARCADE_HZ;
+
+/** Životy, se kterými začíná hra žánru, když věta neřekne jiné číslo (P36A T2); věta smí 1–9 (`SENTENCE_LIVES`). */
+export const START_LIVES = 3;
+
+/**
+ * Kombo (P36A T5): sebrání do `window` tiků po předchozím zvedne násobič o 1
+ * (×2, ×3 … nejvýš `max`), mezera nebo ztráta života mezi dvěma sebráními ho
+ * vrátí na ×1. Stav nese tělo-počítadlo (`comboKeeper`): mrtvá předloha za
+ * tělesy úrovně, kterou nic nekreslí ani nesrazí – `aux0` = násobič,
+ * `aux1` = tik posledního sebrání + 1 (0 = ještě nic), `x` = životy v tu chvíli.
+ * Hlavička ani čítače volný slot nemají a uložené hry počítadlo nemají, takže
+ * jejich hash se nepohne.
+ */
+export const COMBO = { window: 90, max: 5 } as const;
+
+/** Bonus na konci výhry (P36A T5): za každý zbylý život, za běh bez ztráty života a za každou celou sekundu pod limitem. */
+export const SCORE_BONUS = { perLife: 50, noHit: 100, perSecond: 5 } as const;
+
+/** Co rozhoduje bonus na konci (parametry pravidla `score_bonus`): životy na startu, limit v ticích a cílové skóre (0 = bez cíle). */
+export interface ScoreBonusParams {
+  readonly lives: number;
+  readonly limit: number;
+  readonly target: number;
+}
+
+/**
+ * Bonus na konci výhry v tiku `tick` se `lives` zbylými životy. Bez životů ve
+ * hře (`params.lives` 0) za ně nic není, bonus za čas platí vždy.
+ */
+export function endBonus(params: ScoreBonusParams, lives: number, tick: number): number {
+  const kept = params.lives > 0 ? SCORE_BONUS.perLife * Math.max(0, lives) + (lives >= params.lives ? SCORE_BONUS.noHit : 0) : 0;
+  return kept + SCORE_BONUS.perSecond * Math.max(0, Math.floor((params.limit - tick) / ARCADE_HZ));
+}
+
+/** Násobič komba v počítadle `keeper` (1 = bez komba, i když počítadlo ještě nic nezapsalo). */
+export const comboOf = (state: Int32Array, keeper: number): number => Math.max(1, state[HEADER_SIZE + keeper * BODY_STRIDE + BODY.aux0] as number);
+
+export const graceOf = (state: Int32Array, player: number): number => ((state[flagsAt(player)] as number) >> GRACE_SHIFT) & GRACE_MASK;
+
+export function setGrace(state: Int32Array, player: number, ticks: number): void {
+  const at = flagsAt(player);
+  const clamped = Math.max(0, Math.min(GRACE_MASK, ticks));
+  state[at] = ((state[at] as number) & ~(GRACE_MASK << GRACE_SHIFT)) | (clamped << GRACE_SHIFT);
+}
+
 export const targetStateOf = (state: Int32Array, body: number): number => ((state[flagsAt(body)] as number) >> TARGET_STATE_SHIFT) & TARGET_STATE_MASK;
 
 export function setTargetState(state: Int32Array, body: number, value: number): void {
@@ -350,7 +406,16 @@ export interface ControlPiece<P = unknown> extends PieceBase<P> {
 
 export type ArcadeEffect =
   | { readonly kind: 'score'; readonly amount: number }
-  | { readonly kind: 'damage'; readonly amount: number }
+  /**
+   * Ztráta života. S `grace` (P36A T2) zásah během milosti hráče (`graceOf`)
+   * nebere nic a jinak milost nabije na `grace` tiků – druhý zásah téhož tiku
+   * tak život už nevezme. Bez `grace` jako dřív.
+   */
+  | { readonly kind: 'damage'; readonly amount: number; readonly grace?: number }
+  /** Odhoz (P36A T2): rychlost hráče `speed` za tik v rovině x–z, směrem od těla `body`. */
+  | { readonly kind: 'knockback'; readonly body: number; readonly speed: number }
+  /** HP těla `body` zpět na `hp` (P36A T2, nový život v souboji); jen nahoru – léčení nezraní. */
+  | { readonly kind: 'heal'; readonly body: number; readonly hp: number }
   | { readonly kind: 'lose' }
   | { readonly kind: 'win' }
   | { readonly kind: 'despawn'; readonly body: number }
@@ -391,7 +456,12 @@ export type ArcadeEffect =
   /** Zásah (P32-0 T4): tělu `body` ubere `amount` HP (nejníž 0); `by` = kdo udeřil. */
   | { readonly kind: 'hit'; readonly body: number; readonly by: number; readonly amount: number }
   /** Stav cíle `body` na `state` (0..`TARGET_STATE_MAX`). */
-  | { readonly kind: 'stateChange'; readonly body: number; readonly state: number };
+  | { readonly kind: 'stateChange'; readonly body: number; readonly state: number }
+  /**
+   * Sebrání v kombu (P36A T5): počítadlo `body` (`COMBO`) si zapíše násobič,
+   * tik a životy. Zároveň je to zpráva pro efekty scény (P36C) – „×3“.
+   */
+  | { readonly kind: 'combo'; readonly body: number; readonly multiplier: number };
 
 /**
  * `hit` = projektil skončil: zasáhl terč, nepřítele nebo pevné tělo (`other`),
@@ -471,6 +541,11 @@ export interface ArcadeLevel {
   readonly spawnSlots?: number;
   /** Počáteční čítače úrovně (zásobník, rezerva); `health` nastavuje svět, ne úroveň. */
   readonly counters?: Readonly<Partial<Record<Exclude<ArcadeCounter, 'health'>, number>>>;
+  /**
+   * Trať z úseků (P36A T4): `z`, kde začíná druhý, třetí… úsek; první začíná na startu.
+   * Běžec na nich zrychlí (značky rampy), plošinovka na nich má checkpoint. Bez pole úroveň úseky nemá.
+   */
+  readonly sectionStarts?: readonly number[];
 }
 
 /** Stavba úrovně: seed + parametry → těla. Hratelnost z konstrukce je jeho povinnost. */

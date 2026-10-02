@@ -45,9 +45,9 @@ describe('place named without a preposition', () => {
 
 describe('foe named without a verb', () => {
   it('reads the foe before "shooter" and after "defend … from"', () => {
-    // Střelnice je od P32B T2 šablona remixu; nová hra dá zombíky do terče Úkolu, kreslí ho modul žánru (P32B T6).
+    // Střelnice je od P32B T2 šablona remixu; od P36A T10 dá nová hra zombíky do vln nepřátel žánru Střílečka.
     expect(itemOf('s039', 'zombie', legacyDraft)).toEqual(['zombie', true, 'ok']);
-    expect(draftGameSpecWithMeta('zombie shooter in a mall').genre?.target?.label).toBe('zombie');
+    expect(draftGameSpecWithMeta('zombie shooter in a mall').genre).toMatchObject({ genre: 'shooter', enemy: 'zombie' });
     // Hod je taky šablona remixu; nová hra dá draky do soupeře souboje arény – nakreslí ho, až scéna bude číst `rival` (B-R9).
     expect(itemOf('h03', 'dragon', legacyDraft)).toEqual(['dragon', true, 'ok']);
     expect(draftGameSpecWithMeta('defend a castle from dragons by throwing snowballs').genre?.enemy).toBe('dragon');
@@ -59,7 +59,12 @@ describe('foe named without a verb', () => {
     expect(template).toBeDefined();
     expect(label(shooter('a space shooter'), 'enemy')).toBe(template);
     expect(label(shooter('a top-down shooter'), 'enemy')).toBe(template);
-    for (const sentence of ['a space shooter', 'a top-down shooter']) expect(draftGameSpecWithMeta(sentence).genre?.target?.label).not.toMatch(/space|top-down/);
+    for (const sentence of ['a space shooter', 'a top-down shooter']) {
+      const shot = draftGameSpecWithMeta(sentence).genre;
+      expect(shot?.genre).toBe('shooter');
+      expect(shot?.enemy).toBeDefined();
+      expect(shot?.enemy).not.toMatch(/space|top-down/);
+    }
   });
 });
 

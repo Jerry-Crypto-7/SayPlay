@@ -34,8 +34,24 @@ const LANE_OF = (x: number): number => Math.round(x / RHYTHM.laneW + (RHYTHM.lan
 const FLASH_TICKS = 12;
 const TRACK_M = 60;
 
-/** `noteModel` (P30B T4): nota z popisku role `note` („lily pads“) na svítící desce v barvě pruhu. */
-export function RhythmScene({ session, look: scene, noteModel }: { readonly session: ArcadeSession; readonly look: Look; readonly noteModel?: BodyModel }) {
+/** Hranice mezi pruhy (0|1, 1|2, 2|3) v `x` noty, jednotky jádra; kreslí se zrcadlově (`-x`). */
+const LANE_EDGES = Array.from({ length: RHYTHM.lanes - 1 }, (_, i) => (i + 1 - RHYTHM.lanes / 2) * RHYTHM.laneW);
+
+/**
+ * `noteModel` (P30B T4): nota z popisku role `note` („lily pads“) na svítící desce v barvě pruhu.
+ * `surface` (P36A T11): plocha, které scéna zapíše hranice pruhů u lišty (`data-lane-edges`) – z nich ťuk pozná dráhu.
+ */
+export function RhythmScene({
+  session,
+  look: scene,
+  noteModel,
+  surface,
+}: {
+  readonly session: ArcadeSession;
+  readonly look: Look;
+  readonly noteModel?: BodyModel;
+  readonly surface?: React.RefObject<HTMLDivElement | null>;
+}) {
   const world = session.world;
   const count = world.initial[HEADER.bodyCount] as number;
   const notes = useMemo(() => Array.from({ length: count - 1 }, (_, i) => initialBody(world, i + 1)), [world, count]);
@@ -45,6 +61,7 @@ export function RhythmScene({ session, look: scene, noteModel }: { readonly sess
   const flash = useRef<{ tick: number; hit: boolean } | null>(null);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
+  const edge = useMemo(() => new Vector3(), []);
   const hitWindow = (world.control.params as { window?: number }).window ?? RHYTHM.window;
   const reach = hitWindow * RHYTHM.noteSpeed;
 
@@ -85,6 +102,12 @@ export function RhythmScene({ session, look: scene, noteModel }: { readonly sess
     const back = Math.max(4.5, (bar.w + 0.8) / (2 * tan * camera.aspect) - 1);
     camera.position.set(0, 3.2 * (back / 4.5), -back);
     camera.lookAt(look);
+    const host = surface?.current;
+    if (host != null) {
+      camera.updateMatrixWorld();
+      const edges = LANE_EDGES.map((x) => ((edge.set(-x / UNIT, 0, 0).project(camera).x + 1) / 2).toFixed(4)).join(',');
+      if (host.dataset.laneEdges !== edges) host.dataset.laneEdges = edges;
+    }
   });
 
   const laneW = RHYTHM.laneW / UNIT;

@@ -15,14 +15,15 @@ import sentenceSet from '../../../../evals/play/p32/sentences.json';
 import type { Reading } from '../../read/schema';
 import { readGameSpec } from '../../spec';
 import { classifyGenre, verbPlayedBy } from '../classify';
-import type { GenreModule, GenreSpec } from '../contract';
+import { GENRES, GENRE_MODES, type GenreModule, type GenreSpec } from '../contract';
 import { GENRE_MODULES } from '../index';
 
 import { genreDoubles } from './doubles';
 
 const demand = JSON.parse(readFileSync(new URL('../../../../evals/play/demand/corpus.json', import.meta.url), 'utf8')) as { readonly text: string }[];
 
-const LEGACY_CONTROLS = ['tap_go', 'flap', 'shooter', 'throw', 'timing', 'rhythm'];
+// Střílečka a hod jsou od P36A T10 zase žánry, poletování, načasování, rytmus a souboj od T11; žánr nemá jen `tap_go`.
+const LEGACY_CONTROLS = ['tap_go'];
 
 const top = (sentence: string, modules = genreDoubles()) => classifyGenre(sentence, null, modules).ranked[0];
 
@@ -77,18 +78,51 @@ describe('classifyGenre', () => {
     ['A robot repairs a broken engine', 'quest.station', 'repair'],
     ['A knight frees the prisoners in a tower', 'quest.spatial', 'free'],
     ['A chef flips burgers', 'quest.station', 'cook'],
+    ['A space marine shoots alien bugs in a mining colony', 'shooter.default', 'shoot'],
+    ['shoot the ghosts in a haunted carnival shooting gallery', 'shooter.default', 'shoot'],
+    ['throwing snowballs at kids behind a snow fort', 'throw.default', 'throw'],
+    ['bowling in a haunted alley', 'throw.default', 'throw'],
+    ['satisfying game where you pop stuff', 'quest.spatial', 'hit'],
+    // P36A T11: načasování, rytmus, souboj a poletování.
+    ['stack blocks as high as u can', 'timing.stack', 'stack'],
+    ['build the tallest pancake tower before it falls over', 'timing.stack', 'stack'],
+    ['tap at the right time to stop the moving platform', 'timing.precision', 'time'],
+    ['hold to grow a bridge and let go to cross the gap', 'timing.bridge', 'bridge'],
+    ['a dance battle in a disco', 'rhythm.default', 'dance'],
+    ['tap to the beat with glowing tiles', 'rhythm.default', 'beat'],
+    ['A pirate duels a skeleton captain on a sinking ship', 'duel.default', 'duel'],
+    ['A little bird flaps through the pipes', 'flap.default', 'flap'],
+    // Rvačka a box s víc soupeři zůstávají Arénou, hod nožem a placky hodem (třída slovesa v poptávce je načasování).
+    ['A grandma karate fights a gang of pigeons in the park', 'arena.fight', 'fight'],
+    ['knife throwing at a spinning log', 'throw.default', 'throw'],
+    ['toss a pancake and catch it on the pan', 'throw.default', 'throw'],
   ])('plays "%s" as %s with the verb %s', (sentence, mode, verb) => {
     const result = classifyGenre(sentence, null, GENRE_MODULES);
     expect(`${result.ranked[0].genre}.${result.ranked[0].mode}`).toBe(mode);
     expect(result.verb).toBe(verb);
   });
 
-  it('ranks every mode of every genre once and gives a sentence with no cue the runner', () => {
+  it('ranks every mode of every genre once and gives a sentence with no cue the arena collect, the runner last', () => {
     const result = classifyGenre('A key inside a glass box on a pedestal behind a locked gate.', null, genreDoubles());
-    expect(result.ranked).toHaveLength(9);
-    expect(new Set(result.ranked.map((choice) => `${choice.genre}.${choice.mode}`)).size).toBe(9);
-    expect(result.ranked[0]).toMatchObject({ genre: 'runner', mode: 'default', score: 0 });
+    const modes = GENRES.flatMap((genre) => GENRE_MODES[genre]).length;
+    expect(result.ranked).toHaveLength(modes);
+    expect(new Set(result.ranked.map((choice) => `${choice.genre}.${choice.mode}`)).size).toBe(modes);
+    expect(result.ranked[0]).toMatchObject({ genre: 'arena', mode: 'collect', score: 0 });
+    expect(result.ranked.at(-1)).toMatchObject({ genre: 'runner', mode: 'default', score: 0 });
     expect(result.verb).toBeNull();
+  });
+
+  // P36A T11: věta bez slovesa z tabulky – rozhodne jméno nebo téma, ne pořadí žánrů.
+  it.each([
+    ['piano tiles but falling from space', 'rhythm.default'],
+    ['a song about the sea with drums and lights', 'rhythm.default'],
+    ['my rival from school at high noon', 'duel.default'],
+    ['like flappy bird but underwater', 'flap.default'],
+    ['a sloth tries to cross a busy jungle highway', 'runner.default'],
+  ])('plays the verbless "%s" as %s', (sentence, mode) => {
+    const first = classifyGenre(sentence, null, GENRE_MODULES).ranked[0];
+    expect(`${first.genre}.${first.mode}`).toBe(mode);
+    expect(first.score).toBeGreaterThan(0);
   });
 
   it('lets the reading add its main verb and chaser', () => {

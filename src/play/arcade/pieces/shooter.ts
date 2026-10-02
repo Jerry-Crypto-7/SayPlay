@@ -33,6 +33,7 @@ import {
   type ControlPiece,
   type GeneratorPiece,
   HEADER,
+  HIT_GRACE,
   type PieceRef,
   type RulePiece,
   UNIT,
@@ -221,6 +222,10 @@ export const SHOOTER_RANGE = {
   minWarning: 5 * ARCADE_HZ,
 } as const;
 
+/** Meze vln žánru Střílečka (P36A T10): nejvíc nepřátel ve vlně a zrychlení za vlnu. */
+export const SHOOTER_WAVE_SIZE_MAX = 6;
+export const SHOOTER_RISE_MAX = 8;
+
 const generatorParams = z
   .object({
     difficulty: z.enum(SHOOTER_DIFFICULTIES).default('normal'),
@@ -235,11 +240,20 @@ const generatorParams = z
     /** Přesný počet terčů a nepřátel z počtu rolí (P26D T9); bez hodnoty podle obtížnosti. */
     targets: z.int().min(1).max(8).optional(),
     enemies: z.int().min(1).max(24).optional(),
+    /** Nepřátel v jedné vlně (žánr Střílečka, P36A T10); bez hodnoty podle obtížnosti. */
+    waveSize: z.int().min(1).max(SHOOTER_WAVE_SIZE_MAX).optional(),
+    /**
+     * O kolik jednotek za tik jde každá další vlna rychleji (P36A T10): tlak
+     * roste a nepřítel je v dostřelu kratší dobu. Střelnice s `rise` bere život
+     * s milostí po zásahu; uložená bez něj hraje jako dřív.
+     */
+    rise: z.int().min(1).max(SHOOTER_RISE_MAX).optional(),
   })
   .strict();
 
 /** Vln tolik, aby unesly daný počet nepřátel (poslední je kratší). */
 const wavesOf = (params: ShooterParams, size: number): number => (params.enemies === undefined ? (params.waves ?? TIERS[params.difficulty].waves) : Math.ceil(params.enemies / size));
+const waveSizeOf = (params: ShooterParams): number => params.waveSize ?? TIERS[params.difficulty].waveSize;
 export type ShooterParams = z.infer<typeof generatorParams>;
 
 /** Parametry zbraně pro úroveň (šablona střely je tělo 1). */
@@ -262,7 +276,8 @@ export const shooterRange: GeneratorPiece<ShooterParams> = {
   roles: ['player', 'projectile', 'target', 'enemy'],
   cost: (params) => {
     const tier = TIERS[params.difficulty];
-    return { bodies: 2 + (params.targets ?? tier.targets) + wavesOf(params, tier.waveSize) * tier.waveSize + BULLET_LIFETIME / SHOOTER.fireInterval + 2, rules: 5 };
+    const size = waveSizeOf(params);
+    return { bodies: 2 + (params.targets ?? tier.targets) + wavesOf(params, size) * size + BULLET_LIFETIME / SHOOTER.fireInterval + 2, rules: 5 };
   },
   generate: (seed, params) => {
     const rng = createCompileRng(seed);
@@ -289,15 +304,15 @@ export const shooterRange: GeneratorPiece<ShooterParams> = {
       } else bodies.push({ ...base, x: rng.int(-reach, reach) });
     }
 
-    // Vlny: nepřítel jde po přímce k hráči a dorazí přesně v tiku `arrive`.
-    const size = tier.waveSize;
+    // Vlny: nepřítel jde po přímce k hráči a dorazí přesně v tiku `arrive`; s `rise` každá další vlna rychleji.
+    const size = waveSizeOf(params);
     const interval = Math.max(tier.interval, waveSpacing(size, gunParams));
     const lastAllowed = ARCADE_LIMITS.maxTicks - SHOOTER_RANGE.endMargin;
     const maxWaves = Math.max(1, 1 + Math.floor((lastAllowed - tier.firstArrive - (size - 1) * SHOOTER_RANGE.memberGap) / interval));
     const waves = Math.min(wavesOf(params, size), maxWaves);
-    const speed = tier.enemySpeed;
-    const lane = Math.floor(SHOOTER_RANGE.laneSpread * SHOOTER.tanMax * speed);
     for (let k = 0; k < waves; k += 1) {
+      const speed = tier.enemySpeed + k * (params.rise ?? 0);
+      const lane = Math.floor(SHOOTER_RANGE.laneSpread * SHOOTER.tanMax * speed);
       const lanes = rng.shuffle(Array.from({ length: size }, (_, j) => (size === 1 ? 0 : Math.round(-lane + (2 * lane * j) / (size - 1)))));
       lanes.forEach((vx, j) => {
         if (params.enemies !== undefined && k * size + j >= params.enemies) return;
@@ -317,13 +332,18 @@ export const shooterRange: GeneratorPiece<ShooterParams> = {
   },
 };
 
-/** Pravidla střelnice: zbraň, zásah, nepřítel u hráče, vyčištěno, munice došla. */
+/**
+ * Pravidla střelnice: zbraň, zásah, nepřítel u hráče, vyčištěno, munice došla.
+ * Střelnice žánru (s `rise`) bere život s milostí: jinak tři nepřátelé jedné
+ * vlny vezmou tři životy během třetiny sekundy.
+ */
 export function shooterRules(params: ShooterParams, health?: number): PieceRef[] {
   const gunParams = shooterGun(params);
+  const damage = params.rise === undefined ? { effect: 'damage' } : { effect: 'damage', grace: HIT_GRACE };
   const rules: PieceRef[] = [
     { id: 'gun', params: { ...gunParams } },
     { id: 'shot_hit', params: {} },
-    { id: 'hit', params: { role: 'enemy', effect: health === undefined ? 'lose' : 'damage' } },
+    { id: 'hit', params: { role: 'enemy', ...(health === undefined ? { effect: 'lose' } : damage) } },
     { id: 'cleared', params: {} },
     { id: 'out_of_ammo', params: {} },
   ];

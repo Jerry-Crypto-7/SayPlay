@@ -31,7 +31,7 @@ import {
   bodyBase,
   targetStateOf,
 } from '../contract';
-import { ARENA, arenaAxis } from '../pieces/arena';
+import { ARENA, DIRECTIONS, arenaAxis, axisOfDirection, directionOfAxis } from '../pieces/arena';
 import { predict } from '../pieces/arena-bot';
 import { type CompiledRule, SPEC_RULES, YARD, compiledRuleSchema, heldOf } from './compile';
 import { type CompiledInteract, interactRecord, interactTarget, isLocked } from './interact';
@@ -422,18 +422,105 @@ export interface RulesPlanner {
  */
 export function rulesPlanner(world: ArcadeWorld): RulesPlanner | null {
   if (world.control.id !== 'move_free') return null;
-  const rules = world.rules.filter((ref) => ref.id in SPEC_RULES).map((ref) => compiledRuleSchema.parse(ref.params));
-  const wins = rules.filter((rule) => has(rule, 'win'));
-  if (wins.length === 0) return null;
+  const rules = specRules(world);
+  return plannerFor(rules, rules.filter((rule) => has(rule, 'win')));
+}
+
+const specRules = (world: ArcadeWorld): CompiledRule[] => world.rules.filter((ref) => ref.id in SPEC_RULES).map((ref) => compiledRuleSchema.parse(ref.params));
+
+/** Plánovač, který jde po prvním z `goals`, jehož cestu zná; žádný cíl = null. */
+function plannerFor(rules: readonly CompiledRule[], goals: readonly CompiledRule[]): RulesPlanner | null {
+  if (goals.length === 0) return null;
   return {
     reactionTicks: REACTION,
     decide: ({ state, player, recent }) => {
       const view: View = { state, player, me: predict(state, player, recent), rules, wall: wallOf(state) };
-      for (const rule of wins) {
+      for (const rule of goals) {
         const action = achieve(view, rule, 0, new Set());
         if (action !== null) return inputOf(view, action);
       }
       return NO_INPUT;
     },
   };
+}
+
+/** Pravidlo, které hru prohraje nebo ubere život a nic nevyhrává (P36A T8). */
+const losing = (rule: CompiledRule): boolean => (has(rule, 'lose') || has(rule, 'damage')) && !has(rule, 'win');
+
+/** Slovesa, která nesou jen pravidla prohry či zranění – vítězný robot je obchází, dokáže je až běh „na prohru“. */
+export function losingVerbs(world: ArcadeWorld): Set<string> {
+  const rules = specRules(world);
+  return new Set(rules.filter((rule) => rules.every((other) => other.verb !== rule.verb || losing(other))).map((rule) => rule.verb));
+}
+
+/** Jak daleko dopředu robot světa hlídá tělesa prohry (tiky plnou rychlostí) a o kolik je obchází. */
+const AVOID = { ticks: 15, margin: 300 } as const;
+
+/**
+ * Role, do kterých vítězný robot nesmí (P36A F2): cíl dotyku pravidla prohry
+ * či zranění – kromě rolí, které potřebuje i pravidlo, jež neprohrává.
+ */
+function losingRoles(rules: readonly CompiledRule[]): Set<number> {
+  const touched = (rule: CompiledRule): number[] => ('contact' in rule.when ? rule.when.contact.filter((role) => role !== ROLE.player) : []);
+  const needed = new Set(rules.filter((rule) => !losing(rule)).flatMap(touched));
+  return new Set(rules.filter(losing).flatMap(touched).filter((role) => !needed.has(role)));
+}
+
+/**
+ * Robot světa (aréna, úkol) volného pohybu, který obchází tělesa pravidel
+ * prohry (P36A F2): vede-li jeho tah do takového tělesa do `AVOID.ticks`,
+ * vezme nejbližší směr, který nevede; jinak jeho tah beze změny. Svět
+ * bez takových pravidel dostane robota tak, jak je.
+ */
+export function avoidingLosses(world: ArcadeWorld, decide: (observation: ArcadeObservation) => ArcadeInput): (observation: ArcadeObservation) => ArcadeInput {
+  const roles = world.control.id === 'move_free' ? losingRoles(specRules(world)) : new Set<number>();
+  if (roles.size === 0) return decide;
+  return (observation) => {
+    const input = decide(observation);
+    const wanted = directionOfAxis(input.axis);
+    if (wanted < 0) return input;
+    const { state, player, recent } = observation;
+    const me = predict(state, player, recent);
+    const own = bodyBase(player);
+    const w = state[own + BODY.w] as number;
+    const d = state[own + BODY.d] as number;
+    const hits = (x: number, z: number, h: { x: number; z: number; w: number; d: number }): boolean =>
+      Math.abs(x - h.x) * 2 < w + h.w + AVOID.margin && Math.abs(z - h.z) * 2 < d + h.d + AVOID.margin;
+    const hazards: { x: number; z: number; w: number; d: number }[] = [];
+    for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+      const base = bodyBase(i);
+      if (i === player || ((state[base + BODY.flags] as number) & FLAG.alive) === 0 || !roles.has(state[base + BODY.role] as number)) continue;
+      const hazard = { x: state[base + BODY.x] as number, z: state[base + BODY.z] as number, w: state[base + BODY.w] as number, d: state[base + BODY.d] as number };
+      // Z tělesa, ve kterém už stojí, robot ven smí kterýmkoli směrem.
+      if (!hits(me.x, me.z, hazard)) hazards.push(hazard);
+    }
+    const blocked = (direction: number): boolean => {
+      const dir = DIRECTIONS[direction]!;
+      for (let t = 1; t <= AVOID.ticks; t += 1) {
+        const x = me.x + (dir.dx * ARENA.speed * t) / 1000;
+        const z = me.z + (dir.dz * ARENA.speed * t) / 1000;
+        if (hazards.some((hazard) => hits(x, z, hazard))) return true;
+      }
+      return false;
+    };
+    if (hazards.length === 0 || !blocked(wanted)) return input;
+    for (let turn = 1; turn <= DIRECTIONS.length / 2; turn += 1) {
+      for (const side of [1, -1]) {
+        const direction = (wanted + side * turn + DIRECTIONS.length) % DIRECTIONS.length;
+        if (!blocked(direction)) return { ...input, axis: axisOfDirection(direction) };
+      }
+    }
+    return input;
+  };
+}
+
+/**
+ * Robot „na prohru“ (P36A T8): schválně jde do pravidel prohry či zranění se
+ * slovesy `verbs` („touch lava“), aby je ověření dokázalo. Jen volný pohyb,
+ * jako plánovač výhry; null = není co hledat.
+ */
+export function lossPlanner(world: ArcadeWorld, verbs: ReadonlySet<string>): RulesPlanner | null {
+  if (world.control.id !== 'move_free') return null;
+  const rules = specRules(world);
+  return plannerFor(rules, rules.filter((rule) => losing(rule) && verbs.has(rule.verb)));
 }

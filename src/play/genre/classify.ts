@@ -30,7 +30,7 @@ export interface GenreChoice {
 }
 
 export interface GenreRanking {
-  /** Všech devět režimů, nejlepší první. */
+  /** Všechny režimy všech žánrů, nejlepší první. */
   readonly ranked: readonly GenreChoice[];
   /** První režim hraje náhradu (`availability = 'fallback'`), protože nic jiného neslyšel. */
   readonly fallback: boolean;
@@ -58,6 +58,14 @@ const RACE = pair('voyage', 'race');
 const LAND = pair('voyage', 'land');
 const SPATIAL = pair('quest', 'spatial');
 const STATION = pair('quest', 'station');
+const SHOOTER = pair('shooter', 'default');
+const THROW = pair('throw', 'default');
+const STACK = pair('timing', 'stack');
+const PRECISION = pair('timing', 'precision');
+const BRIDGE = pair('timing', 'bridge');
+const RHYTHM = pair('rhythm', 'default');
+const DUEL = pair('duel', 'default');
+const FLAP = pair('flap', 'default');
 
 interface Verb {
   /** Základní tvar – ten se vrací jako `verb` a čte ho kontrola věrnosti. */
@@ -80,15 +88,24 @@ const VERBS: readonly Verb[] = [
   v('free', 'goal', SPATIAL, new RegExp(String.raw`\brescu(?:e|es|ing)\b|\b(?:free|frees|freeing|releas(?:e|es|ing)) ${OBJECT}`)),
   v('press', 'goal', SPATIAL, /\b(?:press(?:es|ing)?|toggl(?:e|es|ing)|flip(?:s|ping)?|pull(?:s|ing)?) (?:[a-z]+ ){0,3}?(?:switch(?:es)?|levers?|buttons?)\b|\bpress(?:es|ing)? (?:red|blue|green|yellow)\b/),
   v('deliver', 'goal', SPATIAL, /\b(?:carr(?:y|ies|ying)|deliver(?:s|ing)?|bring(?:s|ing)?)\b/),
-  // Míření na cíl je Úkol (spec „Pět žánrů“): střelba a házení jako samostatné ovládání končí.
-  v('hit', 'goal', SPATIAL, /\b(?:shoot(?:s|ing)?|throw(?:s|ing)?|toss(?:es|ing)?|pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b/),
+  // Střelba a hod jsou zase vlastní žánry (P36A T10); praskání, rozbíjení a zásah předmětů po scéně zůstávají Úkolem.
+  // „auto shooting wand“ (vampire survivors) střílí sám – hráč přežívá a uhýbá, takže rozhodne sloveso pohybu.
+  v('shoot', 'goal', SHOOTER, /(?<!auto[ -])\bshoot(?:s|ing|er|ers)?\b(?! stars?)|\bfir(?:e|es|ing) at\b|\bblast(?:s|ing)? (?:the|a|an|all|every|some|\d+)\b|\baim(?:s|ing)? at\b/),
+  v('throw', 'goal', THROW, /\bthrow(?:s|ing)?\b(?! punch)|\btoss(?:es|ing)?\b|\bfling(?:s|ing)?\b|\bhurl(?:s|ing)?\b|\blaunch(?:es|ing)? (?:a|an|the|some)\b|\bbowl(?:s|ing)?\b/),
+  v('hit', 'goal', SPATIAL, /\b(?:pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b/),
   // Úkol na místě: jedna stanice, předmět mění stav.
   v('cook', 'goal', STATION, /\b(?:cook(?:s|ing)?|bak(?:e|es|ing)|grill(?:s|ing)?|brew(?:s|ing)?)\b|\bflip(?:s|ping)? (?:the |a |an |some )?(?:[a-z]+ )?(?:pancakes?|burgers?|patt(?:y|ies)|eggs?|crepes?)\b/),
   v('repair', 'goal', STATION, /\b(?:repair(?:s|ing)?|fix(?:es|ing)?|mend(?:s|ing)?)\b/),
+  // Načasování a rytmus (P36A T11): ťuk ve správnou chvíli. Před `make` – „build the tallest“ začíná na stejném místě jako „build“ a shodu rozhodne pořadí tabulky.
+  v('stack', 'goal', STACK, /\bstack(?:s|ing)?\b|\bbuild(?:s|ing)? (?:the |a |an )?(?:tallest|highest|biggest)\b/),
+  v('bridge', 'goal', BRIDGE, /\bgrow(?:s|ing)? (?:a |the )?bridge\b|\bstretch(?:es|ing)? (?:a |the )?(?:bridge|stick|pole)\b/),
+  v('time', 'goal', PRECISION, /\bat the (?:right|perfect|exact) (?:time|moment|second)\b|\btim(?:e|es|ing) (?:your|his|her|their|each|every)\b|\bstop(?:s|ping)? the (?:moving|swinging|spinning|sliding)\b|\bcut(?:s|ting)? the ropes?\b/),
+  v('dance', 'goal', RHYTHM, /\bdanc(?:e|es|ing)\b/),
+  v('beat', 'goal', RHYTHM, /\b(?:to|with|on) the (?:beat|music|rhythm)\b|\bto music\b/),
   // Skládačky, stavění, péče a obsluha – sloveso na předmětu na jednom místě.
-  v('make', 'goal', STATION, /\b(?:stack(?:s|ing)?|merg(?:e|es|ing)|sort(?:s|ing)?|build(?:s|ing)?|connect(?:s|ing)?|unscrew(?:s|ing)?|untangl(?:e|es|ing)|decorat(?:e|es|ing)|design(?:s|ing)?|harvest(?:s|ing)?|heal(?:s|ing)?|serv(?:e|es|ing)|feed(?:s|ing)?|craft(?:s|ing)?|upgrad(?:e|es|ing)|manag(?:e|es|ing)|hir(?:e|es|ing)|dress(?:es|ing)? up|cut(?:s|ting)? the rope)\b/),
-  // Souboj.
-  v('duel', 'goal', FIGHT, /\bduel(?:s|ing|led|ling)?\b/),
+  v('make', 'goal', STATION, /\b(?:merg(?:e|es|ing)|sort(?:s|ing)?|build(?:s|ing)?|connect(?:s|ing)?|unscrew(?:s|ing)?|untangl(?:e|es|ing)|decorat(?:e|es|ing)|design(?:s|ing)?|harvest(?:s|ing)?|heal(?:s|ing)?|serv(?:e|es|ing)|feed(?:s|ing)?|craft(?:s|ing)?|upgrad(?:e|es|ing)|manag(?:e|es|ing)|hir(?:e|es|ing)|dress(?:es|ing)? up)\b/),
+  // Souboj jeden na jednoho je Souboj (P36A T11); rvačka a box s víc soupeři po scéně zůstávají Arénou.
+  v('duel', 'goal', DUEL, /\bduel(?:s|ing|led|ling)?\b/),
   v('fight', 'goal', FIGHT, /\bfight(?:s|ing)?\b(?! (?:the )?(?:fires?|flames?))|\bbattl(?:e|es|ing)\b|\bwrestl(?:e|es|ing)\b|\bspar(?:s|ring)?\b|\bbrawl(?:s|ing)?\b/),
   v('box', 'goal', FIGHT, /\bboxing\b|\bbox(?:es)? (?:against|with)\b|\bpunch(?:es|ing)?\b|\bkick(?:s|ing)?\b/),
   v('defeat', 'goal', FIGHT, /\bdefeat(?:s|ing)?\b|\bknock(?:s|ing)? out\b|\bbeat(?:s|ing)? up\b|\battack(?:s|ing)?\b/),
@@ -101,7 +118,8 @@ const VERBS: readonly Verb[] = [
   v('jump', 'move', PLATFORMER, /\bjump(?:s|ing)?\b|\bhop(?:s|ping)?\b|\bleap(?:s|ing)?\b|\bbounc(?:e|es|ing)\b|\bplatform(?:er|s)?\b/),
   v('climb', 'move', PLATFORMER, /\bclimb(?:s|ing)?\b|\bcross(?:es|ing)? (?:the |a |an )?(?:[a-z]+ )?(?:islands?|platforms?|stones?|lava|river|gaps?|chasms?|pits?)\b/),
   v('sail', 'move', RACE, /\bsail(?:s|ing)?\b|\brow(?:s|ing)? (?:a |the )?boat\b|\bcruis(?:e|es|ing)\b|\bnavigat(?:e|es|ing)\b/),
-  v('fly', 'move', RACE, /\bfl(?:y|ies|ying)\b|\bflap(?:s|ping)?\b|\bglid(?:e|es|ing)\b|\bsoar(?:s|ing)?\b|\bpilot(?:s|ing)?\b/),
+  v('flap', 'move', FLAP, /\bflap(?:s|ping)?\b|\bflutter(?:s|ing)?\b/),
+  v('fly', 'move', RACE, /\bfl(?:y|ies|ying)\b|\bglid(?:e|es|ing)\b|\bsoar(?:s|ing)?\b|\bpilot(?:s|ing)?\b/),
   v('drive', 'move', RACE, /\bdriv(?:e|es|ing)\b|\bsteer(?:s|ing)?\b|\brac(?:e|es|ing|er)\b|\bzoom(?:s|ing)?\b/),
   v('ride', 'move', RACE, /\brid(?:e|es|ing)\b/),
   v('walk', 'move', RACE, /\bwalk(?:s|ing)?\b|\bstroll(?:s|ing)?\b|\bwander(?:s|ing)?\b|\btravel(?:s|ling|ing)?\b|\bswim(?:s|ming)?\b/),
@@ -120,13 +138,18 @@ const VERBS: readonly Verb[] = [
  * Hlavním slovesem se nestanou – kontrola věrnosti čte jen slovesa.
  */
 const NAMES: readonly (readonly [Pair, RegExp])[] = [
-  [RUNNER, /\bsubway surfers?\b|\btemple run\b|\bskateboard(?:s|ing)?\b|\bcrossy road\b|\bfrogger\b|\bcross(?:es|ing)? (?:the |an? )?(?:endless |busy |big )?(?:road|street|highway)\b|\broll(?:s|ing)? (?:down|through)\b/],
+  [RUNNER, /\bsubway surfers?\b|\btemple run\b|\bskateboard(?:s|ing)?\b|\bcrossy road\b|\bfrogger\b|\bcross(?:es|ing)? (?:the |an? )?(?:endless |busy |big )?(?:[a-z]+ )?(?:road|street|highway|lake)\b|\broll(?:s|ing)? (?:down|through)\b/],
   [PLATFORMER, /\bmario\b(?! kart)|\bobby\b|\bparkour\b|\bfall guys\b|\bobstacle course\b|\bsonic\b/],
-  [RACE, /\bkarts?\b|\bdrift(?:s|ing)?\b|\bmotorbikes?\b|\bbikes?\b|\bcars?\b|\bboats?\b|\bplanes?\b|\bspaceships?\b|\bsubmarines?\b|\btractors?\b|\bflapp?y\b|\bstunts?\b|\bramps?\b/],
+  [RACE, /\bkarts?\b|\bdrift(?:s|ing)?\b|\bmotorbikes?\b|\bbikes?\b|\bcars?\b|\bboats?\b|\bplanes?\b|\bspaceships?\b|\bsubmarines?\b|\btractors?\b|\bstunts?\b|\bramps?\b/],
+  [FLAP, /\bflapp?y\b/],
+  [RHYTHM, /\bpiano tiles\b|\bbeat saber\b|\bguitar hero\b|\bthe beat\b|\bdrummers?\b|\bdrums?\b|\bsongs?\b|\bmusic(?:al)?\b|\bdisco\b|\bconcert\b|\bkaraoke\b/],
+  [DUEL, /\brivals?\b|\bhigh noon\b|\bshowdown\b|\bstand-?off\b|\bquick ?draw\b/],
   [FIGHT, /\bswords?\b|\bninjas?\b|\bgladiators?\b|\bsamurai\b|\btower defen[cs]e\b/],
   [COLLECT, /\bsnake game\b|\bslither\b|\b[a-z]+[ .]io\b|\bagar\b|\bpac-?man\b/],
   [ESCAPE, /\bhorror\b|\bscary\b|\bcreepy\b|\bfive nights\b|\bfreddy'?s?\b|\bhide and seek\b|\bstealth\b|\bsneak(?:s|ing|y)?\b|\bfloor is lava\b/],
-  [SPATIAL, /\bshooter\b|\bgolf\b|\bbowling\b|\bbilliards\b|\barchery\b|\bbasketball\b|\bsoccer\b|\bfootball\b|\btennis\b|\bslingshot\b|\bangry birds\b|\bcannon\b|\bguns?\b|\bkrunker\b|\bbeat saber\b|\bpiano tiles\b|\bthe beat\b/],
+  [SHOOTER, /\bshooter\b|\bshooting (?:range|gallery|game)\b|\barchery\b|\bguns?\b|\bkrunker\b|\bsniper\b|\bfps\b/],
+  [THROW, /\bgolf\b|\bbowling\b|\bbilliards\b|\bbasketball\b|\bslingshot\b|\bangry birds\b|\bcannon\b|\bcatapult\b|\bragdoll\b|\bknock(?:s|ing)? (?:down|over) (?:the |a |an )?(?:[a-z]+ )?towers?\b/],
+  [SPATIAL, /\bsoccer\b|\bfootball\b|\btennis\b/],
   [STATION, /\bmatch[ -]?3\b|\bcandy crush\b|\btetris\b|\bmahjong\b|\bjenga\b|\bsuika\b|\bpuzzle\b|\bidle\b|\bclicker\b|\btycoon\b|\bovercooked\b|\bfarm game\b|\bsalon\b|\bmakeover\b|\bfashion\b|\bclinic\b|\bmatching game\b|\bword game\b|\bfishing\b|\bfactory\b|\bempire\b/],
 ];
 
@@ -137,13 +160,15 @@ const READ_CLASS: Partial<Record<VerbClass, Pair | null>> = {
   runner: RUNNER,
   platform: PLATFORMER,
   steer: RACE,
-  flap: RACE,
+  flap: FLAP,
+  timing: PRECISION,
+  rhythm: RHYTHM,
   melee: FIGHT,
   move_free: null,
   manipulate: STATION,
   build_place: STATION,
-  aim_shoot: SPATIAL,
-  throw: SPATIAL,
+  aim_shoot: SHOOTER,
+  throw: THROW,
 };
 
 /** Narážka modulu v libovolném tvaru slovesa: `slide` → slides, sliding; `hop` → hopping. */
@@ -157,6 +182,14 @@ function cuePattern(cue: string): RegExp {
 
 const PAIRS: readonly Pair[] = GENRES.flatMap((genre) => GENRE_MODES[genre].map((mode) => pair(genre, mode)));
 const key = (p: Pair): string => `${p.genre}.${p.mode}`;
+
+/**
+ * Věta, ve které žádný režim nic neslyšel („a cozy game“, „a squirrel hoards
+ * acorns before winter comes“, P36A T11): napřed sběr v Aréně – volná chůze po
+ * scéně z věty s věcmi z prostředí sedí skoro každému tématu –, pak ostatní
+ * v pořadí žánrů a běžec až poslední. Dřív hrála každá taková věta běžce.
+ */
+const unheard = (p: Pair): number => (key(p) === key(COLLECT) ? 0 : key(p) === key(RUNNER) ? 2 : 1);
 
 /** „dodging the fishmonger“, „avoid the guards“: sběr s někým, komu se hráč vyhýbá. */
 const AVOID = /\bdodg(?:e|es|ing)\b|\bavoid(?:s|ing)?\b/;
@@ -174,7 +207,7 @@ export function verbPlayedBy(forms: readonly string[], genre: string, mode: stri
   return entry.pick === null ? collects : entry.pick.genre === genre && entry.pick.mode === mode;
 }
 
-/** Věta (a čtení modelem, když je) → všech devět režimů seřazených od nejlepšího. */
+/** Věta (a čtení modelem, když je) → všechny režimy seřazené od nejlepšího. */
 export function classifyGenre(sentence: string, reading: Reading | null, modules: GenreModules = GENRE_MODULES): GenreRanking {
   const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
   const scores = new Map<string, { score: number; why: string[] }>(PAIRS.map((p) => [key(p), { score: 0, why: [] }]));
@@ -205,6 +238,9 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     const match = pattern.exec(text);
     if (match !== null) add(pick, 2, `"${match[0]}"`);
   }
+  // „a dragon burns down villages and dodges arrows“ (P36A T11): uhýbání bez slovesa z tabulky je útěk, ne sběr věty bez narážky.
+  const dodged = AVOID.exec(text);
+  if (dodged !== null) add(ESCAPE, 1, `"${dodged[0]}"`);
 
   for (const genre of GENRES) {
     for (const cue of modules[genre].cues) {
@@ -223,8 +259,8 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
   }
 
   const availability = (p: Pair): 'ready' | 'fallback' => (modules[p.genre] as GenreModule).availability(p.mode as never);
-  // Režim, který hraje náhradu, jde za všechny `ready`, které něco slyšely; věta bez narážky dá `ready` v pořadí žánrů.
-  const tier = (p: Pair, score: number): number => (score > 0 ? 0 : 2) + (availability(p) === 'ready' ? 0 : 1);
+  // Režim, který hraje náhradu, jde za všechny `ready`, které něco slyšely; věta bez narážky dá `ready` v pořadí `unheard`.
+  const tier = (p: Pair, score: number): number => (score > 0 ? 0 : 2 + 2 * unheard(p)) + (availability(p) === 'ready' ? 0 : 1);
   const ranked = PAIRS.map((p, index) => {
     const entry = scores.get(key(p)) ?? { score: 0, why: [] };
     return { choice: { genre: p.genre, mode: p.mode, score: entry.score, why: entry.why.join(', ') || 'no cue' }, index };

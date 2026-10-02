@@ -1,0 +1,1951 @@
+{
+ "about": "P36A T9: compact director with the depth fields (lives, targetScore, timeLimit, enemyMoves) on a local model; corpus = evals/play/fidelity/corpus.json (30), dev = d01-d20 of evals/play/p30/dev.json, mechanics = evals/play/p36/mechanics.json. See evals/play/p36/README.md.",
+ "measuredAt": "2026-10-02T17:42:43.728Z",
+ "commit": "79a412a9",
+ "model": "gpt-oss-20b",
+ "endpoint": "http://127.0.0.1:8792",
+ "director": "measured",
+ "sizes": {
+  "compactPromptBytes": 6442,
+  "fullPromptBytes": 6858,
+  "answerSchemaBytes": 30642,
+  "promptVersion": "62a11842"
+ },
+ "corpus": {
+  "summary": {
+   "sentences": 30,
+   "valid": {
+    "hit": 30,
+    "of": 30,
+    "share": 1
+   },
+   "latencyMs": {
+    "p50": 2233,
+    "p90": 4439,
+    "max": 10768
+   },
+   "read": 0.809,
+   "drawn": 0.8,
+   "draftRead": 0.827,
+   "draftDrawn": 0.818,
+   "fallbackReasons": {
+    "VERB_UNPROVED": 1
+   }
+  },
+  "rows": [
+   {
+    "id": "s039",
+    "ms": 4017,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "shooter",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s037",
+    "ms": 1676,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "shooter",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    }
+   },
+   {
+    "id": "s002",
+    "ms": 2352,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.escape",
+    "final": {
+     "items": 5,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 5,
+     "read": 5,
+     "drawn": 5
+    }
+   },
+   {
+    "id": "s003",
+    "ms": 1481,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.escape",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    }
+   },
+   {
+    "id": "s006",
+    "ms": 3060,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "runner",
+    "final": {
+     "items": 5,
+     "read": 5,
+     "drawn": 5
+    },
+    "draft": {
+     "items": 5,
+     "read": 5,
+     "drawn": 5
+    }
+   },
+   {
+    "id": "s008",
+    "ms": 1530,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "runner",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s022",
+    "ms": 4206,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "platformer",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s021",
+    "ms": 1469,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "platformer",
+    "final": {
+     "items": 3,
+     "read": 1,
+     "drawn": 1
+    },
+    "draft": {
+     "items": 3,
+     "read": 1,
+     "drawn": 1
+    }
+   },
+   {
+    "id": "s035",
+    "ms": 1416,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "flap",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s050",
+    "ms": 1731,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "throw",
+    "final": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s088",
+    "ms": 2709,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "throw",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s069",
+    "ms": 3370,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "quest.station",
+    "final": {
+     "items": 3,
+     "read": 1,
+     "drawn": 1
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "s056",
+    "ms": 2013,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "quest.spatial",
+    "final": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "s058",
+    "ms": 1806,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "voyage.race",
+    "final": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s111",
+    "ms": 3343,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s095",
+    "ms": 1779,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "throw",
+    "final": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "s188",
+    "ms": 1754,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.fight",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    }
+   },
+   {
+    "id": "s144",
+    "ms": 2233,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "rhythm",
+    "final": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s155",
+    "ms": 2135,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.fight",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "s099",
+    "ms": 2313,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "timing.stack",
+    "final": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "h01",
+    "ms": 2202,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.escape",
+    "final": {
+     "items": 5,
+     "read": 5,
+     "drawn": 5
+    },
+    "draft": {
+     "items": 5,
+     "read": 5,
+     "drawn": 5
+    }
+   },
+   {
+    "id": "h02",
+    "ms": 10768,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "voyage.race",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "h03",
+    "ms": 1494,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.fight",
+    "final": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 4,
+     "read": 1,
+     "drawn": 1
+    }
+   },
+   {
+    "id": "h04",
+    "ms": 9735,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    }
+   },
+   {
+    "id": "h05",
+    "ms": 4439,
+    "source": "authored",
+    "fallbackReason": "VERB_UNPROVED",
+    "repairRounds": 2,
+    "calls": 3,
+    "genre": "arena.fight",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "h06",
+    "ms": 2777,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "quest.station",
+    "final": {
+     "items": 5,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 5,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "h07",
+    "ms": 1340,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "h08",
+    "ms": 3648,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "h09",
+    "ms": 1323,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.escape",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "h10",
+    "ms": 2348,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "runner",
+    "final": {
+     "items": 5,
+     "read": 5,
+     "drawn": 5
+    },
+    "draft": {
+     "items": 5,
+     "read": 5,
+     "drawn": 5
+    }
+   }
+  ]
+ },
+ "dev": {
+  "summary": {
+   "sentences": 20,
+   "valid": {
+    "hit": 20,
+    "of": 20,
+    "share": 1
+   },
+   "latencyMs": {
+    "p50": 1705,
+    "p90": 3770,
+    "max": 8257
+   },
+   "read": 0.712,
+   "drawn": 0.658,
+   "draftRead": 0.685,
+   "draftDrawn": 0.63,
+   "fallbackReasons": {}
+  },
+  "rows": [
+   {
+    "id": "d01",
+    "ms": 2856,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "runner",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    }
+   },
+   {
+    "id": "d02",
+    "ms": 3770,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 3,
+     "read": 0,
+     "drawn": 0
+    },
+    "draft": {
+     "items": 3,
+     "read": 0,
+     "drawn": 0
+    }
+   },
+   {
+    "id": "d03",
+    "ms": 2427,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "quest.station",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d04",
+    "ms": 1667,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "shooter",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d05",
+    "ms": 1313,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "runner",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d06",
+    "ms": 1839,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "voyage.race",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d07",
+    "ms": 2472,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "quest.station",
+    "final": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d08",
+    "ms": 1705,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.escape",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 4
+    }
+   },
+   {
+    "id": "d09",
+    "ms": 1356,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "timing.stack",
+    "final": {
+     "items": 3,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "d10",
+    "ms": 1288,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "duel",
+    "final": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d11",
+    "ms": 1675,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "rhythm",
+    "final": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 3,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "d12",
+    "ms": 1599,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "voyage.race",
+    "final": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 3,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d13",
+    "ms": 1346,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 3,
+     "read": 1,
+     "drawn": 1
+    },
+    "draft": {
+     "items": 3,
+     "read": 1,
+     "drawn": 1
+    }
+   },
+   {
+    "id": "d14",
+    "ms": 1178,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d15",
+    "ms": 1151,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "throw",
+    "final": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "d16",
+    "ms": 8257,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "quest.spatial",
+    "final": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    },
+    "draft": {
+     "items": 4,
+     "read": 4,
+     "drawn": 3
+    }
+   },
+   {
+    "id": "d17",
+    "ms": 1267,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    }
+   },
+   {
+    "id": "d18",
+    "ms": 1975,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "duel",
+    "final": {
+     "items": 4,
+     "read": 2,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 4,
+     "read": 0,
+     "drawn": 0
+    }
+   },
+   {
+    "id": "d19",
+    "ms": 2559,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "arena.collect",
+    "final": {
+     "items": 3,
+     "read": 0,
+     "drawn": 0
+    },
+    "draft": {
+     "items": 3,
+     "read": 0,
+     "drawn": 0
+    }
+   },
+   {
+    "id": "d20",
+    "ms": 2176,
+    "source": "authored",
+    "fallbackReason": null,
+    "repairRounds": 0,
+    "calls": 1,
+    "genre": "quest.spatial",
+    "final": {
+     "items": 5,
+     "read": 3,
+     "drawn": 2
+    },
+    "draft": {
+     "items": 5,
+     "read": 3,
+     "drawn": 2
+    }
+   }
+  ]
+ },
+ "mechanics": {
+  "summary": {
+   "draft": {
+    "perField": {
+     "lives": {
+      "said": 7,
+      "carried": 7,
+      "share": 1
+     },
+     "score": {
+      "said": 4,
+      "carried": 3,
+      "share": 0.75
+     },
+     "seconds": {
+      "said": 5,
+      "carried": 2,
+      "share": 0.4
+     },
+     "enemy": {
+      "said": 9,
+      "carried": 3,
+      "share": 0.333
+     }
+    },
+    "fields": {
+     "said": 25,
+     "carried": 15,
+     "share": 0.6
+    },
+    "sentencesFullyCarried": {
+     "hit": 11,
+     "of": 20,
+     "share": 0.55
+    }
+   },
+   "director": {
+    "perField": {
+     "lives": {
+      "said": 7,
+      "carried": 7,
+      "share": 1
+     },
+     "score": {
+      "said": 4,
+      "carried": 2,
+      "share": 0.5
+     },
+     "seconds": {
+      "said": 5,
+      "carried": 4,
+      "share": 0.8
+     },
+     "enemy": {
+      "said": 9,
+      "carried": 3,
+      "share": 0.333
+     }
+    },
+    "fields": {
+     "said": 25,
+     "carried": 16,
+     "share": 0.64
+    },
+    "sentencesFullyCarried": {
+     "hit": 11,
+     "of": 20,
+     "share": 0.55
+    }
+   }
+  },
+  "rows": [
+   {
+    "id": "m01",
+    "text": "a knight explores a castle and you have 3 lives",
+    "expect": {
+     "lives": 3
+    },
+    "draft": {
+     "genre": "arena.collect",
+     "seed": 1994130049,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    },
+    "director": {
+     "ms": 6989,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.collect",
+     "seed": 1994130049,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       83
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    }
+   },
+   {
+    "id": "m02",
+    "text": "dodge falling rocks in a canyon with only one life",
+    "expect": {
+     "lives": 1
+    },
+    "draft": {
+     "genre": "runner",
+     "seed": 939539296,
+     "why": null,
+     "got": {
+      "lives": 1,
+      "score": null,
+      "seconds": [],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    },
+    "director": {
+     "ms": 21409,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "runner",
+     "seed": 939539296,
+     "why": null,
+     "got": {
+      "lives": 1,
+      "score": null,
+      "seconds": [],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    }
+   },
+   {
+    "id": "m03",
+    "text": "a cat collects fish on the pier and gets 5 lives",
+    "expect": {
+     "lives": 5
+    },
+    "draft": {
+     "genre": "arena.collect",
+     "seed": 817399245,
+     "why": null,
+     "got": {
+      "lives": 5,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    },
+    "director": {
+     "ms": 9899,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.collect",
+     "seed": 817399245,
+     "why": null,
+     "got": {
+      "lives": 5,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    }
+   },
+   {
+    "id": "m04",
+    "text": "jump across the rooftops with two lives",
+    "expect": {
+     "lives": 2
+    },
+    "draft": {
+     "genre": "platformer",
+     "seed": 349463632,
+     "why": null,
+     "got": {
+      "lives": 2,
+      "score": null,
+      "seconds": [
+       86
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    },
+    "director": {
+     "ms": 4678,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "platformer",
+     "seed": 349463632,
+     "why": null,
+     "got": {
+      "lives": 2,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true
+     }
+    }
+   },
+   {
+    "id": "m05",
+    "text": "score 200 points before time runs out picking apples in an orchard",
+    "expect": {
+     "score": 200
+    },
+    "draft": {
+     "genre": "runner",
+     "seed": 190741316,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": 200,
+      "seconds": [],
+      "enemy": "still",
+      "specTarget": 200
+     },
+     "carried": {
+      "score": true
+     }
+    },
+    "director": {
+     "ms": 2586,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "runner",
+     "seed": 190741316,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": 200,
+      "seconds": [
+       60
+      ],
+      "enemy": "still",
+      "specTarget": 200
+     },
+     "carried": {
+      "score": true
+     }
+    }
+   },
+   {
+    "id": "m06",
+    "text": "collect coins in a cave until you reach 500 points",
+    "expect": {
+     "score": 500
+    },
+    "draft": {
+     "genre": "arena.collect",
+     "seed": 886328988,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": 500,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": 500
+     },
+     "carried": {
+      "score": true
+     }
+    },
+    "director": {
+     "ms": 6857,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.collect",
+     "seed": null,
+     "why": "UNWINNABLE: the bot did not finish at tick 5400, 0 m into the track",
+     "got": null,
+     "carried": {
+      "score": false
+     }
+    }
+   },
+   {
+    "id": "m07",
+    "text": "a ninja runs across the city and must score 300 points",
+    "expect": {
+     "score": 300
+    },
+    "draft": {
+     "genre": "runner",
+     "seed": 205399750,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": 300,
+      "seconds": [],
+      "enemy": "still",
+      "specTarget": 300
+     },
+     "carried": {
+      "score": true
+     }
+    },
+    "director": {
+     "ms": 2402,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "runner",
+     "seed": 205399750,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": 300,
+      "seconds": [],
+      "enemy": "chase",
+      "specTarget": 300
+     },
+     "carried": {
+      "score": true
+     }
+    }
+   },
+   {
+    "id": "m08",
+    "text": "race a speedboat around the bay in 60 seconds",
+    "expect": {
+     "seconds": 60
+    },
+    "draft": {
+     "genre": "voyage.race",
+     "seed": 1214403486,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       72
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "seconds": false
+     }
+    },
+    "director": {
+     "ms": 2053,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "voyage.race",
+     "seed": 1214403486,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       72,
+       60
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "seconds": true
+     }
+    }
+   },
+   {
+    "id": "m09",
+    "text": "light all the lanterns in the temple within 45 seconds",
+    "expect": {
+     "seconds": 45
+    },
+    "draft": {
+     "genre": "quest.spatial",
+     "seed": 1234727867,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       45
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "seconds": true
+     }
+    },
+    "director": {
+     "ms": 2357,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "quest.spatial",
+     "seed": 1234727867,
+     "why": null,
+     "got": {
+      "lives": 1,
+      "score": null,
+      "seconds": [
+       45
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "seconds": true
+     }
+    }
+   },
+   {
+    "id": "m10",
+    "text": "pop the balloons at the fair in 30 seconds",
+    "expect": {
+     "seconds": 30
+    },
+    "draft": {
+     "genre": "quest.spatial",
+     "seed": 1622518196,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       30
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "seconds": true
+     }
+    },
+    "director": {
+     "ms": 5285,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "quest.spatial",
+     "seed": 1622518196,
+     "why": null,
+     "got": {
+      "lives": 1,
+      "score": null,
+      "seconds": [
+       30
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "seconds": true
+     }
+    }
+   },
+   {
+    "id": "m11",
+    "text": "guards patrol the halls while a thief steals jewels from the museum",
+    "expect": {
+     "enemy": "patrol"
+    },
+    "draft": {
+     "genre": "arena.collect",
+     "seed": 1220927741,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    },
+    "director": {
+     "ms": 2722,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.collect",
+     "seed": 1220927741,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       83
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    }
+   },
+   {
+    "id": "m12",
+    "text": "sneak past patrolling robots to fix the machines in the factory",
+    "expect": {
+     "enemy": "patrol"
+    },
+    "draft": {
+     "genre": "quest.station",
+     "seed": 369751609,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       73
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    },
+    "director": {
+     "ms": 2619,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "quest.station",
+     "seed": 369751609,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       73
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    }
+   },
+   {
+    "id": "m13",
+    "text": "zombies chase you through the mall while you grab supplies",
+    "expect": {
+     "enemy": "chase"
+    },
+    "draft": {
+     "genre": "arena.escape",
+     "seed": 1769744377,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": true
+     }
+    },
+    "director": {
+     "ms": 1553,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.escape",
+     "seed": 1769744377,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": true
+     }
+    }
+   },
+   {
+    "id": "m14",
+    "text": "a wolf hunts the rabbit across the meadow as it gathers carrots",
+    "expect": {
+     "enemy": "chase"
+    },
+    "draft": {
+     "genre": "arena.escape",
+     "seed": 362290079,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": true
+     }
+    },
+    "director": {
+     "ms": 1721,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.escape",
+     "seed": 362290079,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": true
+     }
+    }
+   },
+   {
+    "id": "m15",
+    "text": "shoot down the alien drones while running through the space station",
+    "expect": {
+     "enemy": "shoot"
+    },
+    "draft": {
+     "genre": "shooter",
+     "seed": 2003577397,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    },
+    "director": {
+     "ms": 3244,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "shooter",
+     "seed": 2003577397,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    }
+   },
+   {
+    "id": "m16",
+    "text": "a cowboy rides through the desert blasting bandits",
+    "expect": {
+     "enemy": "shoot"
+    },
+    "draft": {
+     "genre": "voyage.race",
+     "seed": 1844588448,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       71
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    },
+    "director": {
+     "ms": 1655,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "voyage.race",
+     "seed": 1844588448,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       71
+      ],
+      "enemy": "still",
+      "specTarget": null
+     },
+     "carried": {
+      "enemy": false
+     }
+    }
+   },
+   {
+    "id": "m17",
+    "text": "you have 3 lives and 60 seconds to collect the stars in the sky",
+    "expect": {
+     "lives": 3,
+     "seconds": 60
+    },
+    "draft": {
+     "genre": "arena.collect",
+     "seed": 1218760338,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true,
+      "seconds": false
+     }
+    },
+    "director": {
+     "ms": 5536,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.collect",
+     "seed": 1218760338,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true,
+      "seconds": false
+     }
+    }
+   },
+   {
+    "id": "m18",
+    "text": "guards patrol the bank vault, grab the gold, you have two lives",
+    "expect": {
+     "enemy": "patrol",
+     "lives": 2
+    },
+    "draft": {
+     "genre": "arena.collect",
+     "seed": 2011647471,
+     "why": null,
+     "got": {
+      "lives": 2,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true,
+      "enemy": false
+     }
+    },
+    "director": {
+     "ms": 2070,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.collect",
+     "seed": 2011647471,
+     "why": null,
+     "got": {
+      "lives": 2,
+      "score": null,
+      "seconds": [
+       80
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true,
+      "enemy": false
+     }
+    }
+   },
+   {
+    "id": "m19",
+    "text": "a dragon chases the princess through the forest, score 150 points to win",
+    "expect": {
+     "enemy": "chase",
+     "score": 150
+    },
+    "draft": {
+     "genre": "arena.escape",
+     "seed": 196244113,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": 100,
+      "seconds": [
+       40
+      ],
+      "enemy": "chase",
+      "specTarget": 150
+     },
+     "carried": {
+      "score": false,
+      "enemy": true
+     }
+    },
+    "director": {
+     "ms": 1852,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.escape",
+     "seed": 196244113,
+     "why": null,
+     "got": {
+      "lives": 3,
+      "score": 100,
+      "seconds": [
+       40
+      ],
+      "enemy": "chase",
+      "specTarget": 150
+     },
+     "carried": {
+      "score": false,
+      "enemy": true
+     }
+    }
+   },
+   {
+    "id": "m20",
+    "text": "a robot cleans the lab in 90 seconds with 4 lives while drones patrol",
+    "expect": {
+     "seconds": 90,
+     "lives": 4,
+     "enemy": "patrol"
+    },
+    "draft": {
+     "genre": "arena.collect",
+     "seed": 806880270,
+     "why": null,
+     "got": {
+      "lives": 4,
+      "score": null,
+      "seconds": [
+       88
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true,
+      "seconds": false,
+      "enemy": false
+     }
+    },
+    "director": {
+     "ms": 2128,
+     "source": "authored",
+     "fallbackReason": null,
+     "genre": "arena.collect",
+     "seed": 806880270,
+     "why": null,
+     "got": {
+      "lives": 4,
+      "score": null,
+      "seconds": [
+       80,
+       90
+      ],
+      "enemy": "chase",
+      "specTarget": null
+     },
+     "carried": {
+      "lives": true,
+      "seconds": true,
+      "enemy": false
+     }
+    }
+   }
+  ]
+ }
+}

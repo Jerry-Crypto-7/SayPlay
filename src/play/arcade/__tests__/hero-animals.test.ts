@@ -18,6 +18,12 @@ const CONTROL: Readonly<Record<GenreId, string>> = {
   arena: 'move_free',
   voyage: 'steer',
   quest: 'move_free',
+  shooter: 'shooter',
+  throw: 'throw',
+  timing: 'timing',
+  rhythm: 'rhythm',
+  duel: 'duel',
+  flap: 'flap',
 };
 
 /** Slovo věty → model, který to zvíře zobrazuje; `clips` = hýbe se klipy z GLB. */

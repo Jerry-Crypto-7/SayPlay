@@ -16,7 +16,11 @@ const SENTENCES = (JSON.parse(readFileSync(join(process.cwd(), 'evals/play/p32/s
 function worldOf(id: string) {
   const read = readGenreSpec(voyageGenre.draftFill(SENTENCES.find((entry) => entry.id === id)!.text, null));
   if (!read.ok) throw new Error(read.issues.join('; '));
-  const made = arcadeWorldOf(compileGenre(read.value), 1);
+  // Připíchnutá čísla platí pro závod uložený před P36A T4 (350 m, bez třetin): test čte rozvržení, ne délku trati.
+  const game = compileGenre(read.value);
+  const { lengthM: _length, tuning, ...rest } = game.controlParams as { lengthM?: number; tuning?: Record<string, unknown> };
+  const { sections: _sections, ...stored } = tuning ?? {};
+  const made = arcadeWorldOf({ ...game, controlParams: { ...rest, tuning: stored } }, 1);
   if (!made.ok) throw new Error(made.issues.join('; '));
   return made.world;
 }

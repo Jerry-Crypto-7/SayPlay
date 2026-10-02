@@ -24,7 +24,12 @@ import type { RepairIssue } from '../director/repair';
 import { draftForControl } from '../draft';
 import type { GameSpecV1 } from '../spec';
 
-const SENTENCE = throwRock.sentence;
+/**
+ * Věta nahrávky „… throw it at the old bronze bell“ je od P36A T10 žánr Hod a režisér
+ * odpověď v Úkolu přepne na něj. Tenhle soubor zkouší opravné kolo pravidel, ne volbu
+ * žánru, proto věta, jejíž hlavní sloveso (`hit`) dál hraje prostorový úkol.
+ */
+const SENTENCE = 'pick up a round rock and hit the old bronze bell with it';
 
 /** Pravidla nahrávky v tvaru specu (bez `if: null`). */
 const RULES = throwRock.answer.rules.map(({ if: cond, ...rule }) => (cond === null ? rule : { ...rule, if: cond }));
@@ -46,7 +51,7 @@ function robot(spec: GameSpecV1): RepairIssue[] {
 }
 
 /**
- * První odpověď věrná větě: „throw … at the bell“ je zásah, takže hlavní sloveso
+ * První odpověď věrná větě: „hit the old bronze bell“ je zásah, takže hlavní sloveso
  * hraje úkol (`quest.spatial`, se skutečnými moduly `ready`). Pravidla, jejich
  * role a `if: null` jsou, jak je model píše v přísném schématu.
  */

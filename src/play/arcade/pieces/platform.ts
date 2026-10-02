@@ -10,6 +10,9 @@
  * na rozběh a dopad. `checkPlatformLevel` to samé tvrzení přepočítá nad
  * hotovou úrovní – test i ověření ho čtou.
  *
+ * Se `sections: 3` (P36A T4, žánr Skákačka) je úroveň ze tří úseků s rostoucí
+ * obtížností a checkpointy, délkou podle obsahu a hodinami (`PLATFORM_SECTIONS`).
+ *
  * Pocit skoku `feel: 2` (P32F T2) odpouští: skok ještě 100 ms po sběhnutí
  * z hrany (coyote time), stisk až 120 ms před dopadem skočí při dopadu
  * (buffer) a držení po odrazu skok prodlouží. Ťuk skočí přesně jako dřív,
@@ -21,7 +24,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, type PieceRef, UNIT, bodyBase } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeInput, type ArcadeLevel, AXIS_MAX, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const PLATFORM_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -231,9 +234,53 @@ const generatorParams = z
     collectAll: z.boolean().optional(),
     /** Nový pocit skoku (P32-0 T4 šev, naplní P32F T2); přijde z `controlParams.tuning`. Bez něj úroveň beze změny. */
     feel: z.literal(2).optional(),
+    /**
+     * Úroveň ze tří úseků s rostoucí obtížností, délka podle obsahu a časový limit
+     * (P36A T4, `PLATFORM_SECTIONS`); žánr Skákačka ho píše do `tuning`. Bez něj úroveň jako dřív.
+     */
+    sections: z.literal(3).optional(),
   })
   .strict();
 export type PlatformLevelParams = z.infer<typeof generatorParams>;
+
+/**
+ * Úroveň z úseků (P36A T4). Každý úsek je o stupeň obtížnosti těžší
+ * (`PLATFORM_DIFFICULTIES` od `difficulty` − 1 po `difficulty` + 1: širší mezery,
+ * vyšší schody, hustší hroty), druhý a třetí začínají checkpointem na plošině bez
+ * hrotu a ve třetím (s `movingPlatforms` i ve druhém) jezdí pohyblivá plošina.
+ *
+ * Délka podle obsahu: plošin náhodně z `platforms` podle semínka věty, věc ke
+ * sběru nad výchozí počet přidá `perItem` plošin (pod ním ubere). Pak se úroveň
+ * natáhne nebo zkrátí po plošinách, aby ji robot podle odhadu (`platformPaceTicks`)
+ * doběhl za `minTicks`..`maxTicks` a byla aspoň `lengthM` dlouhá.
+ *
+ * Nečinný hráč na startu nic neriskuje, proto má úroveň hodiny
+ * (`platformSeconds`): odhad robota × `limitPct` + `limitSlackS`, nejvýš `maxLimitS`.
+ */
+export const PLATFORM_SECTIONS = {
+  /** Plošin za startovní, když věta věci nepočítá: náhodně z rozsahu. */
+  platforms: [16, 22],
+  /** Plošin navíc za každou věc ke sběru nad `PLATFORM_LEVEL.collectCount`. */
+  perItem: 2,
+  maxPlatforms: 40,
+  /** Podíl plošin v úsecích, procenta. */
+  share: [30, 33, 37],
+  /**
+   * Tempo robota v procentech běhu plnou rychlostí (`PLATFORM.maxRun`) podle obtížnosti úseku –
+   * sonda 20 semínek × 120–250 m (2. 10. 2026): easy 148–154 %, normal 158–167 %, hard 171–184 %.
+   */
+  pace: { easy: 155, normal: 167, hard: 184 } satisfies Readonly<Record<PlatformDifficulty, number>>,
+  /**
+   * Robot podle odhadu doběhne nejdřív za 36 s a nejpozději za 62 s; hodiny pak nejvýš 88 s.
+   * Skutečný čas robota je 0,86–1,15 × odhad (sonda 30 semínek × 3 obtížnosti × 5 variant).
+   */
+  minTicks: 36 * ARCADE_HZ,
+  maxTicks: 62 * ARCADE_HZ,
+  limitPct: 160,
+  limitSlackS: 10,
+  /** Pod horizontem jádra (90 s): nečinný hráč prohraje dřív, než ověření skončí. */
+  maxLimitS: 88,
+} as const;
 
 const slab = (near: number, far: number, top: number): BodyInit => ({
   role: 'platform',
@@ -249,27 +296,166 @@ const slab = (near: number, far: number, top: number): BodyInit => ({
 
 const coin = (z: number, y: number): BodyInit => ({ role: 'collectible', kind: 'coin', x: 0, y, z, w: 500, h: 500, d: 500, solid: false });
 
+const playerBody = (): BodyInit => ({ role: 'player', kind: 'player', x: 0, y: PLATFORM.baseTop, z: 0, w: PLATFORM.playerW, h: PLATFORM.playerH, d: PLATFORM.playerD, solid: false });
+
+const spikeBody = (z: number, top: number): BodyInit => ({ role: 'hazard', kind: 'spikes', x: 0, y: top, z, w: 1200, h: PLATFORM.spikeH, d: PLATFORM.spikeD, solid: false });
+
+const checkpointBody = (z: number, top: number): BodyInit => ({ role: 'checkpoint', kind: 'checkpoint', x: 0, y: top, z, w: 400, h: 2000, d: 400, solid: false });
+
+/** Pohyblivá plošina kyvadlem mezi hranami mezery `gap` za hranou `far`. */
+function shuttleBody(far: number, gap: number, top: number): BodyInit {
+  const half = PLATFORM_LEVEL.shuttleSlab / 2;
+  const from = far + PLATFORM_LEVEL.shuttleClear + half;
+  const period = Math.floor((gap - 2 * PLATFORM_LEVEL.shuttleClear - PLATFORM_LEVEL.shuttleSlab) / PLATFORM_LEVEL.shuttleSpeed);
+  return { ...slab(from - half, from + half, top), kind: 'platform-moving', kinematic: true, vz: PLATFORM_LEVEL.shuttleSpeed, period };
+}
+
+/** Věci ke sběru na hotové úrovni: se sbíráním všeho jen na zemi rozložené po trati, jinak co místo dá. */
+function placeCoins(bodies: BodyInit[], params: PlatformLevelParams, spots: { readonly coinSpots: readonly Spot[]; readonly runMids: readonly Spot[]; readonly runSides: readonly Spot[] }): void {
+  if (params.collectAll === true) {
+    // Mince nad hrotem robot mine, když skočí jinde – musí se sebrat všechno, takže jen zem, rozložená po trati.
+    const want = Math.min(params.coinCount ?? PLATFORM_LEVEL.collectCount, ARCADE_LIMITS.maxBodies - bodies.length - 1);
+    const pool = spots.runMids.length >= want ? spots.runMids : [...spots.runMids, ...spots.runSides].sort((a, b) => a.z - b.z);
+    const take = Math.min(want, pool.length);
+    for (let i = 0; i < take; i += 1) {
+      const spot = pool[Math.floor(((i + 0.5) * pool.length) / take)]!;
+      bodies.push(coin(spot.z, spot.y));
+    }
+  } else if (params.coins) {
+    const budget = Math.min(params.coinCount ?? PLATFORM_LEVEL.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
+    for (const spot of spots.coinSpots.slice(0, Math.max(0, budget))) bodies.push(coin(spot.z, spot.y));
+  }
+}
+
+interface Spot {
+  readonly z: number;
+  readonly y: number;
+}
+
+/** Obtížnost úseku `section` (0–2): o stupeň pod `difficulty`, ona, o stupeň nad ní – v mezích. */
+const sectionDifficulty = (difficulty: PlatformDifficulty, section: number): PlatformDifficulty =>
+  PLATFORM_DIFFICULTIES[Math.max(0, Math.min(PLATFORM_DIFFICULTIES.length - 1, PLATFORM_DIFFICULTIES.indexOf(difficulty) + section - 1))] as PlatformDifficulty;
+
+/**
+ * Odhad, za kolik tiků úroveň z úseků doběhne robot: dráha každého úseku plnou
+ * rychlostí × tempo jeho obtížnosti (`PLATFORM_SECTIONS.pace`) a na každé
+ * pohyblivé plošině jedna perioda čekání.
+ */
+export function platformPaceTicks(level: ArcadeLevel, difficulty: PlatformDifficulty): number {
+  const bounds = [0, ...(level.sectionStarts ?? []), level.length];
+  let ticks = 0;
+  for (let section = 0; section + 1 < bounds.length; section += 1) {
+    const span = (bounds[section + 1] as number) - (bounds[section] as number);
+    ticks += (span * PLATFORM_SECTIONS.pace[sectionDifficulty(difficulty, section)]) / (100 * PLATFORM.maxRun);
+  }
+  for (const body of level.bodies) if (body.kinematic === true) ticks += body.period ?? 0;
+  return Math.ceil(ticks);
+}
+
+/** Hodiny úrovně z úseků v sekundách: odhad robota × `limitPct` + `limitSlackS`, nejvýš `maxLimitS`. */
+export const platformSeconds = (level: ArcadeLevel, difficulty: PlatformDifficulty): number =>
+  Math.min(PLATFORM_SECTIONS.maxLimitS, Math.ceil((platformPaceTicks(level, difficulty) * PLATFORM_SECTIONS.limitPct) / 100 / ARCADE_HZ) + PLATFORM_SECTIONS.limitSlackS);
+
+/** Plošin v úsecích podle `PLATFORM_SECTIONS.share`, v každém aspoň jedna. */
+function sectionPlatforms(count: number): readonly [number, number, number] {
+  const [first, second] = PLATFORM_SECTIONS.share.map((pct) => Math.max(1, Math.round((count * pct) / 100))) as [number, number];
+  return [first, second, Math.max(1, count - first - second)];
+}
+
+/** Úroveň z úseků s `extra` plošinami navíc (záporné = méně) proti obsahu věty. */
+function sectionedLayout(seed: number, params: PlatformLevelParams, extra: number): { readonly level: ArcadeLevel; readonly platforms: number } {
+  const rng = createCompileRng(seed);
+  // Los plošin jde vždy první: proud je stejný s počtem z věty i bez něj.
+  const drawn = rng.int(PLATFORM_SECTIONS.platforms[0], PLATFORM_SECTIONS.platforms[1]);
+  const items = params.collectAll === true ? (params.coinCount ?? PLATFORM_LEVEL.collectCount) - PLATFORM_LEVEL.collectCount : 0;
+  const platforms = Math.max(3, Math.min(PLATFORM_SECTIONS.maxPlatforms, drawn + PLATFORM_SECTIONS.perItem * items + extra));
+  const { startSlab, finalSlab } = PLATFORM_LEVEL;
+
+  const slabs: BodyInit[] = [slab(-2000, startSlab - 2000, PLATFORM.baseTop)];
+  const extras: BodyInit[] = [];
+  const spots = { coinSpots: [] as Spot[], runMids: [] as Spot[], runSides: [] as Spot[] };
+  const starts: number[] = [];
+  let far = startSlab - 2000;
+  let top: number = PLATFORM.baseTop;
+  const counts = sectionPlatforms(platforms);
+  counts.forEach((count, section) => {
+    const tier = TIERS[sectionDifficulty(params.difficulty, section)];
+    // Pohyblivá plošina uprostřed třetího úseku, s `movingPlatforms` i druhého; nikdy na checkpointu ani v cíli.
+    const shuttleAt = section === 2 || (section === 1 && params.movingPlatforms) ? Math.floor(count / 2) : -1;
+    for (let i = 0; i < count; i += 1) {
+      const last = section === counts.length - 1 && i === count - 1;
+      const shuttle = i === shuttleAt && i > 0 && !last;
+      const rise = shuttle ? 0 : rng.int(-tier.rise, tier.rise);
+      const nextTop = Math.max(PLATFORM.minTop, Math.min(PLATFORM.maxTop, top + rise));
+      if (shuttle) {
+        const gap = rng.int(PLATFORM_LEVEL.shuttleGap[0], PLATFORM_LEVEL.shuttleGap[1]);
+        extras.push(shuttleBody(far, gap, top));
+        far += gap;
+      } else far += Math.min(rng.int(tier.gap[0], tier.gap[1]), maxGap(nextTop - top));
+
+      const near = far;
+      far = near + (last ? finalSlab : rng.int(tier.slab[0], tier.slab[1]));
+      top = nextTop;
+      slabs.push(slab(near, far, top));
+      if (last) break;
+
+      const mid = Math.floor((near + far) / 2);
+      // Úsek začíná checkpointem na plošině bez hrotu – po návratu se nezačíná skokem přes hrot.
+      if (i === 0 && section > 0) {
+        starts.push(near);
+        if (params.checkpoints) extras.push(checkpointBody(near + 800, top));
+      }
+      if (i > 0 && i % tier.spikeEvery === 0) {
+        extras.push(spikeBody(mid, top));
+        // Mince nad hrotem odmění skok přes něj.
+        spots.coinSpots.push({ z: mid, y: top + 1400 });
+      } else {
+        for (let c = -1; c <= 1; c += 1) spots.coinSpots.push({ z: mid + c * 1000, y: top + 300 });
+        spots.runMids.push({ z: mid, y: top + 300 });
+        spots.runSides.push({ z: mid - 1000, y: top + 300 }, { z: mid + 1000, y: top + 300 });
+      }
+    }
+  });
+
+  const lastSlab = slabs[slabs.length - 1] as BodyInit;
+  const goalZ = lastSlab.z + lastSlab.d / 2 - 1500;
+  const bodies = [playerBody(), ...slabs, ...extras];
+  placeCoins(bodies, params, spots);
+  bodies.push({ role: 'goal', kind: 'finish', x: 0, y: top, z: goalZ, w: PLATFORM.slabW, h: 3 * UNIT, d: 400, solid: false });
+  return { level: { bodies, length: goalZ, sectionStarts: starts }, platforms };
+}
+
+/** Úroveň z úseků natažená nebo zkrácená po plošinách do `minTicks`..`maxTicks` odhadu robota a aspoň na `lengthM`. */
+function sectionedLevel(seed: number, params: PlatformLevelParams): ArcadeLevel {
+  const ticks = (level: ArcadeLevel): number => platformPaceTicks(level, params.difficulty);
+  const short = (level: ArcadeLevel): boolean => ticks(level) < PLATFORM_SECTIONS.minTicks || level.length < params.lengthM * UNIT;
+  let extra = 0;
+  let built = sectionedLayout(seed, params, extra);
+  while (short(built.level) && built.platforms < PLATFORM_SECTIONS.maxPlatforms) built = sectionedLayout(seed, params, (extra += 1));
+  while (ticks(built.level) > PLATFORM_SECTIONS.maxTicks && built.platforms > 3) built = sectionedLayout(seed, params, (extra -= 1));
+  return built.level;
+}
+
 export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
   id: 'platform_level',
   params: generatorParams,
   roles: ['player', 'platform', 'hazard', 'collectible', 'checkpoint', 'goal'],
   cost: (params) => {
-    const slabs = Math.ceil((params.lengthM * UNIT) / (TIERS[params.difficulty].slab[0] + TIERS[params.difficulty].gap[0])) + 2;
-    return { bodies: 2 + slabs * 3 + PLATFORM_LEVEL.maxCoins, rules: params.checkpoints ? 5 : 4 };
+    const slabs = params.sections === undefined ? Math.ceil((params.lengthM * UNIT) / (TIERS[params.difficulty].slab[0] + TIERS[params.difficulty].gap[0])) + 2 : PLATFORM_SECTIONS.maxPlatforms + 1;
+    return { bodies: 2 + slabs * 3 + PLATFORM_LEVEL.maxCoins, rules: (params.checkpoints ? 5 : 4) + (params.sections === undefined ? 0 : 1) };
   },
   generate: (seed, params) => {
+    if (params.sections !== undefined) return sectionedLevel(seed, params);
     const rng = createCompileRng(seed);
     const tier = TIERS[params.difficulty];
     const length = (params.movingPlatforms ? Math.min(params.lengthM, PLATFORM_LEVEL.maxMovingLengthM) : params.lengthM) * UNIT;
     const { startSlab, finalSlab } = PLATFORM_LEVEL;
 
-    const player: BodyInit = { role: 'player', kind: 'player', x: 0, y: PLATFORM.baseTop, z: 0, w: PLATFORM.playerW, h: PLATFORM.playerH, d: PLATFORM.playerD, solid: false };
     const slabs: BodyInit[] = [slab(-2000, startSlab - 2000, PLATFORM.baseTop)];
     const extras: BodyInit[] = [];
-    const coinSpots: { readonly z: number; readonly y: number }[] = [];
     /** Místa na zemi plošin bez hrotu: středy napřed, pak po stranách – sbírání všeho na ně spoléhá. */
-    const runMids: { readonly z: number; readonly y: number }[] = [];
-    const runSides: { readonly z: number; readonly y: number }[] = [];
+    const spots = { coinSpots: [] as Spot[], runMids: [] as Spot[], runSides: [] as Spot[] };
+    const { coinSpots, runMids, runSides } = spots;
 
     let far = startSlab - 2000;
     let top: number = PLATFORM.baseTop;
@@ -282,10 +468,7 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
       if (shuttle) {
         // Pohyblivá plošina kyvadlem mezi hranami široké mezery.
         const gap = rng.int(PLATFORM_LEVEL.shuttleGap[0], PLATFORM_LEVEL.shuttleGap[1]);
-        const half = PLATFORM_LEVEL.shuttleSlab / 2;
-        const from = far + PLATFORM_LEVEL.shuttleClear + half;
-        const period = Math.floor((gap - 2 * PLATFORM_LEVEL.shuttleClear - PLATFORM_LEVEL.shuttleSlab) / PLATFORM_LEVEL.shuttleSpeed);
-        extras.push({ ...slab(from - half, from + half, top), kind: 'platform-moving', kinematic: true, vz: PLATFORM_LEVEL.shuttleSpeed, period });
+        extras.push(shuttleBody(far, gap, top));
         far += gap;
       } else {
         const gap = Math.min(rng.int(tier.gap[0], tier.gap[1]), maxGap(dh));
@@ -302,7 +485,7 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
 
       const mid = Math.floor((near + far) / 2);
       if (index % tier.spikeEvery === 0) {
-        extras.push({ role: 'hazard', kind: 'spikes', x: 0, y: top, z: mid, w: 1200, h: PLATFORM.spikeH, d: PLATFORM.spikeD, solid: false });
+        extras.push(spikeBody(mid, top));
         // Mince nad hrotem odmění skok přes něj.
         coinSpots.push({ z: mid, y: top + 1400 });
       } else {
@@ -310,28 +493,14 @@ export const platformLevel: GeneratorPiece<PlatformLevelParams> = {
         runMids.push({ z: mid, y: top + 300 });
         runSides.push({ z: mid - 1000, y: top + 300 }, { z: mid + 1000, y: top + 300 });
       }
-      if (params.checkpoints && index % 4 === 0) extras.push({ role: 'checkpoint', kind: 'checkpoint', x: 0, y: top, z: near + 800, w: 400, h: 2000, d: 400, solid: false });
+      if (params.checkpoints && index % 4 === 0) extras.push(checkpointBody(near + 800, top));
     }
 
     const lastSlab = slabs[slabs.length - 1] as BodyInit;
     const goalZ = lastSlab.z + lastSlab.d / 2 - 1500;
-    const goal: BodyInit = { role: 'goal', kind: 'finish', x: 0, y: top, z: goalZ, w: PLATFORM.slabW, h: 3 * UNIT, d: 400, solid: false };
-
-    const bodies = [player, ...slabs, ...extras];
-    if (params.collectAll === true) {
-      // Mince nad hrotem robot mine, když skočí jinde – musí se sebrat všechno, takže jen zem, rozložená po trati.
-      const want = Math.min(params.coinCount ?? PLATFORM_LEVEL.collectCount, ARCADE_LIMITS.maxBodies - bodies.length - 1);
-      const pool = runMids.length >= want ? runMids : [...runMids, ...runSides].sort((a, b) => a.z - b.z);
-      const take = Math.min(want, pool.length);
-      for (let i = 0; i < take; i += 1) {
-        const spot = pool[Math.floor(((i + 0.5) * pool.length) / take)]!;
-        bodies.push(coin(spot.z, spot.y));
-      }
-    } else if (params.coins) {
-      const budget = Math.min(params.coinCount ?? PLATFORM_LEVEL.maxCoins, ARCADE_LIMITS.maxBodies - bodies.length - 1);
-      for (const spot of coinSpots.slice(0, Math.max(0, budget))) bodies.push(coin(spot.z, spot.y));
-    }
-    bodies.push(goal);
+    const bodies = [playerBody(), ...slabs, ...extras];
+    placeCoins(bodies, params, spots);
+    bodies.push({ role: 'goal', kind: 'finish', x: 0, y: top, z: goalZ, w: PLATFORM.slabW, h: 3 * UNIT, d: 400, solid: false });
     return { bodies, length: goalZ };
   },
 };
@@ -341,16 +510,21 @@ export function platformControlRef(params: Pick<PlatformLevelParams, 'doubleJump
   return { id: 'platform', params: params.feel === undefined ? { doubleJump: params.doubleJump } : { doubleJump: params.doubleJump, feel: params.feel } };
 }
 
-/** Pravidla plošinovky: hrot, mince, cíl, pád; s checkpointy pád vrací místo prohry, se sběrem cíl čeká na všechny věci. */
-export function platformRules(params: Pick<PlatformLevelParams, 'checkpoints' | 'collectAll'>, health?: number): PieceRef[] {
+/**
+ * Pravidla plošinovky: hrot, mince, cíl, pád; s checkpointy pád vrací místo prohry, se sběrem cíl čeká na všechny věci.
+ * Se životy (P36A T2) hrot ubere život a vrátí hráče na poslední checkpoint (bez něj na start); hrot zůstává a vteřinu
+ * milosti jím hráč projde. Úroveň z úseků (P36A T4) má hodiny `seconds` (`platformSeconds`).
+ */
+export function platformRules(params: Pick<PlatformLevelParams, 'checkpoints' | 'collectAll'>, health?: number, seconds?: number): PieceRef[] {
   const rules: PieceRef[] = [
-    { id: 'hit', params: { role: 'hazard', effect: health === undefined ? 'lose' : 'damage' } },
+    { id: 'hit', params: health === undefined ? { role: 'hazard', effect: 'lose' } : { role: 'hazard', effect: 'damage', grace: HIT_GRACE, after: 'respawn' } },
     { id: 'pickup', params: {} },
     { id: 'finish', params: params.collectAll === true ? { allItems: true } : {} },
     { id: 'fall_out', params: { belowY: PLATFORM.fallBelowY, effect: params.checkpoints ? 'respawn' : 'lose' } },
   ];
   if (params.checkpoints) rules.push({ id: 'checkpoint', params: {} });
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
+  if (seconds !== undefined) rules.push({ id: 'time_limit', params: { seconds } });
   return rules;
 }
 

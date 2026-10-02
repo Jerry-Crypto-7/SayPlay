@@ -1,18 +1,19 @@
 /**
  * Žánr Běžec (P32A T7): pruhy + skok + skluz, trať k cíli. Překládá na dnešní
  * ovládání `runner`: překážky a sběratelné věci z rolí věty, sada vzhledu
- * z prostředí, rychlost a hustota v mezích. Rampa rychlosti jde s délkou
- * tratě sama (`rampMarks`), spec ji nenese.
+ * z prostředí, rychlost a hustota v mezích. Trať je ze tří úseků (P36A T4,
+ * `RUNNER_SECTIONS`): každý hustší a rychlejší, délka podle počtů z věty
+ * („dodge 40 cars“, „collect 30 coins“), robot ji uběhne za 30–90 s.
  *
  * Referenční věta: „A penguin slides down an icy mountain, collects snowflakes
  * and avoids rocks“ → tučňák, kámen, vločka, sníh (`__fixtures__/penguin.json`).
  */
 
 import { lookFor } from '../arcade/look';
-import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from '../arcade/pieces/runner';
+import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SECTIONS, RUNNER_SPEEDS, RUNNER_TRACK } from '../arcade/pieces/runner';
 import { nounPhrase, singular } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Překážka z věty: čemu se hrdina vyhýbá, co přeskakuje nebo podbíhá. */
 const OBSTACLE_CUE =
@@ -30,6 +31,9 @@ const OVERHEAD = /\b(?:low|overhead|hanging)\b|\b(?:branch|bar|beam|pipe|sign|ba
  */
 export const RIDE_WORDS =
   /\b(?:slid(?:e|es|ing)|ski(?:s|ed|ing|er|ers)?|surf(?:s|ed|ing|er|ers|board|boards)?|snowboard(?:s|ed|ing|er|ers)?|skat(?:e|es|ed|ing|er|ers)|skateboard(?:s|ing|er|ers)?|sled(?:s|ge|ges|ding)?|toboggan(?:s|ed|ing)?)\b/;
+
+/** Nejvyšší počet z věty: strop `count` role ve `spec.ts` (generátor unese víc, `RUNNER_SECTIONS.maxRows`). */
+const COUNT_MAX = Math.min(50, RUNNER_SECTIONS.maxRows, RUNNER_TRACK.maxCoins);
 
 /** Druhy role nepřítele ve čtení modelem – tytéž, které čte `draftRoles`. */
 const ENEMY_KINDS = ['chaser', 'threat', 'hazard', 'obstacle'];
@@ -52,12 +56,16 @@ export const runnerGenre: GenreModule<'runner'> = {
     density: { min: 0, max: RUNNER_DENSITIES.length - 1 },
     /** 1 = hrdina jede (klouže, lyžuje, surfuje), ne běží – jen póza ve scéně (`theme.motion`, T5-R1). */
     ride: { min: 0, max: 1 },
+    /** Kolik věcí sebrat po trati (`counts.collectible`, P36A T4); trať má aspoň tolik řad. */
+    items: { min: 1, max: COUNT_MAX },
+    /** Kolik řad překážek uhnout (`counts.enemy`, P36A T4). */
+    obstacles: { min: 1, max: COUNT_MAX },
   },
   availability: () => 'ready',
   compile: (spec) => {
     const obstacle = spec.enemy ?? 'rock';
     const palette = spec.palette ?? lookFor(spec.setting) ?? undefined;
-    const { lengthM, speed, density, ride } = spec.params ?? {};
+    const { lengthM, speed, density, ride, items, obstacles: rows } = spec.params ?? {};
     const game = legacySpec(palette === undefined ? spec : { ...spec, palette }, {
       control: 'runner',
       controlParams: {
@@ -65,13 +73,20 @@ export const runnerGenre: GenreModule<'runner'> = {
         ...(speed === undefined ? {} : { speed: RUNNER_SPEEDS[speed] }),
         ...(density === undefined ? {} : { density: RUNNER_DENSITIES[density] }),
         obstacles: OVERHEAD.test(obstacle) ? [...OBSTACLE_KINDS] : OBSTACLE_KINDS.filter((kind) => kind !== 'slide-bar'),
+        // Skok odpouští jako skákačka: chvilku po hraně i stisk těsně před dopadem (P36A T6).
+        feel: 2,
+        // Rozjezd, hustší, nejtěžší úsek; délka podle počtů z věty (P36A T4).
+        sections: 3,
       },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Run`,
       objective: { kind: 'reach', description: `Run to the finish without hitting a ${obstacle}.`, role: 'finish' },
+      // Náraz ubere život a běh jede dál (P36A T2).
+      mechanics: [livesMechanic()],
+      // Počet role čte generátor (`COUNTED_ROLES`): řady překážek a mince na trati.
       roles: [
-        { id: 'obstacle', kind: 'hazard', label: obstacle },
-        { id: 'coin', kind: 'collectible', label: spec.collectible ?? 'coin' },
+        { id: 'obstacle', kind: 'hazard', label: obstacle, ...(rows === undefined ? {} : { count: rows }) },
+        { id: 'coin', kind: 'collectible', label: spec.collectible ?? 'coin', ...(items === undefined ? {} : { count: items }) },
         { id: 'finish', kind: 'exit', label: 'finish line' },
       ],
       tutorial: { goalLine: 'Reach the finish line. Jump, slide and switch lanes.', controlsHint: 'Tap or Space to jump, swipe or arrows to change lane.' },

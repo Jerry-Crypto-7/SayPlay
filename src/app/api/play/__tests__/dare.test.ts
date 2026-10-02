@@ -163,12 +163,13 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect(scoredReplay(game.world, session.inputs(), []).hash).not.toBe(record?.hash);
   });
 
-  it('živá změna, kterou hra nevezme (životy hře bez životů) → 422, nic se neuložilo', async () => {
-    const game = await arcadeGame((world) => !hasLives(world));
+  // Od P36A mají životy všechny startovní hry; odmítnutá změna je proto prázdná vizuální („Nothing to change.“).
+  it('živá změna, kterou hra nevezme (vizuální bez změny) → 422, nic se neuložilo', async () => {
+    const game = await arcadeGame();
     const putDare = vi.spyOn(versionStoreFromEnv(process.env), 'putDare');
     const response = await send(game.id, {
       inputs: packInputs(runBot(game.world).inputs),
-      patches: [{ tick: 0, patch: { kind: 'count', counter: 'health', amount: 3 } }],
+      patches: [{ tick: 0, patch: { kind: 'visual' } }],
     });
     expect(response.status).toBe(422);
     expect(((await response.json()) as { error: { code: string } }).error.code).toBe('DARE_REJECTED');
@@ -277,13 +278,12 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
   });
 
   it('skupina /64: prohraný běh i odmítnutá živá změna utratí zbytek jejího okna výzev (T5r3r1)', async () => {
-    const plain = await arcadeGame((world) => !hasLives(world));
     const game = await arcadeGame();
     resetRateWindows();
     process.env.VERCEL = '1';
     const group = (n: number) => ({ 'x-vercel-forwarded-for': `2001:db8:0:${String(n)}::5` });
-    const refused = { inputs: packInputs(runBot(plain.world).inputs), patches: [{ tick: 0, patch: { kind: 'count', counter: 'health', amount: 3 } }] };
-    for (const [n, id, body] of [[1, plain.id, refused], [2, game.id, { inputs: packInputs([]) }]] as const) {
+    const refused = { inputs: packInputs(runBot(game.world).inputs), patches: [{ tick: 0, patch: { kind: 'visual' } }] };
+    for (const [n, id, body] of [[1, game.id, refused], [2, game.id, { inputs: packInputs([]) }]] as const) {
       expect((await send(id, body, group(n))).status).toBe(422);
       expect((await send(game.id, { inputs: packInputs(runBot(game.world).inputs) }, group(n))).status).toBe(429);
     }

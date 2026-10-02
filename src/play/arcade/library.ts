@@ -14,7 +14,7 @@ import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
 import { platformControl, platformLevel } from './pieces/platform';
 import { platformBot } from './pieces/platform-bot';
-import { questSpatial, questStation } from './pieces/quest';
+import { boilOver, questSpatial, questStation } from './pieces/quest';
 import { questBot } from './pieces/quest-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
@@ -28,10 +28,11 @@ import { shooterBot } from './pieces/shooter-bot';
 import { SHOT_RULES } from './pieces/shots';
 import { rivalFinish, steerControl, steerTrack, voyageLand, voyageRace } from './pieces/steer';
 import { steerBot } from './pieces/steer-bot';
-import { launch, throwControl, throwField } from './pieces/throw';
+import { launch, throwControl, throwField, throwRounds } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
 import { judgeRule, timingControl, timingLevel } from './pieces/timing';
 import { timingBot } from './pieces/timing-bot';
+import { arenaWaves } from './pieces/waves';
 import { SPEC_RULES } from './rules/compile';
 
 const BASE_BOTS = {
@@ -78,7 +79,7 @@ const BASE_CONTROLS = {
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

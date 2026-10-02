@@ -14,7 +14,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, type PieceRef, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
+import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const FLAP_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
@@ -97,9 +97,19 @@ const generatorParams = z
     coins: z.boolean().default(true),
     /** Přesný počet mincí z počtu rolí (P26D T9); bez hodnoty co mezery dají. */
     coinCount: z.int().min(1).max(FLAP_TRACK.maxCoins).optional(),
+    /**
+     * Žánr Poletování (P36A T11): mezery se po třetinách tratě zužují (lehká →
+     * normální → těžká, místo `difficulty`) a náraz se životy ubere jeden život
+     * s milostí (`flapRules`). Uložená trať bez něj jako dřív.
+     */
+    rise: z.boolean().optional(),
   })
   .strict();
 export type FlapTrackParams = z.infer<typeof generatorParams>;
+
+/** Obtížnost úseku trati v `z`: s `rise` podle třetiny, jinak obtížnost trati. */
+const tierAt = (params: FlapTrackParams, z: number, length: number): Tier =>
+  params.rise === true ? TIERS[FLAP_DIFFICULTIES[Math.min(2, Math.floor((3 * z) / length))] as FlapDifficulty] : TIERS[params.difficulty];
 
 const pipe = (z: number, bottom: number, top: number): BodyInit => ({ role: 'obstacle', kind: 'pipe', x: 0, y: bottom, z, w: FLAP.pipeW, h: top - bottom, d: FLAP.pipeD, solid: false });
 
@@ -107,14 +117,15 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
   id: 'flap_track',
   params: generatorParams,
   roles: ['player', 'obstacle', 'collectible', 'platform', 'goal'],
-  cost: (params) => ({ bodies: 3 + Math.ceil((params.lengthM * UNIT) / TIERS[params.difficulty].spacing[0]) * 3 + FLAP_TRACK.maxCoins, rules: 4 }),
+  cost: (params) => ({ bodies: 3 + Math.ceil((params.lengthM * UNIT) / TIERS[params.rise === true ? 'hard' : params.difficulty].spacing[0]) * 3 + FLAP_TRACK.maxCoins, rules: 4 }),
   generate: (seed, params) => {
     const rng = createCompileRng(seed);
-    const tier = TIERS[params.difficulty];
     const length = params.lengthM * UNIT;
     const lowest = FLAP.minPipe;
-    const highest = FLAP.ceiling - FLAP.minPipe - tier.gap;
+    // Nejvyšší spodní hrana podle mezery úseku: užší mezera smí výš.
+    const highestAt = (tier: Tier): number => FLAP.ceiling - FLAP.minPipe - tier.gap;
     const ramp = rampMarks(length);
+    let tier = tierAt(params, 0, length);
 
     const bodies: BodyInit[] = [
       { role: 'player', kind: 'bird', x: 0, y: FLAP.startY, z: 0, w: FLAP.size, h: FLAP.size, d: FLAP.size, solid: false },
@@ -122,10 +133,11 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
       { role: 'platform', kind: 'ceiling', x: 0, y: FLAP.ceiling, z: length / 2, w: FLAP.pipeW, h: 500, d: length + 20 * UNIT, solid: true },
     ];
     const coinSpots: { z: number; y: number }[] = [];
-    let bottom = Math.max(lowest, Math.min(highest, FLAP.startY - tier.gap / 2 + rng.int(-300, 300)));
+    let bottom = Math.max(lowest, Math.min(highestAt(tier), FLAP.startY - tier.gap / 2 + rng.int(-300, 300)));
     let z = FLAP_TRACK.startClear;
     let prev: { z: number; bottom: number } | null = null;
     while (z <= length - FLAP_TRACK.endClear) {
+      tier = tierAt(params, z, length);
       bodies.push(pipe(z, 0, bottom), pipe(z, bottom + tier.gap, FLAP.ceiling));
       // Branka v mezeře: průlet = bod.
       bodies.push({ role: 'collectible', kind: 'gate', x: 0, y: bottom, z, w: FLAP.pipeW, h: tier.gap, d: 200, solid: false });
@@ -133,7 +145,8 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
       prev = { z, bottom };
       const spacing = rng.int(tier.spacing[0], tier.spacing[1]);
       const reach = Math.min(tier.shift, climbOver(spacing, z + spacing, ramp));
-      bottom = Math.max(lowest, Math.min(highest, bottom + rng.int(-reach, reach)));
+      // Další mezera smí výš jen podle svého úseku (užší mezera má vyšší strop spodní hrany).
+      bottom = Math.max(lowest, Math.min(highestAt(tierAt(params, z + spacing, length)), bottom + rng.int(-reach, reach)));
       z += spacing;
     }
     if (params.coins) {
@@ -145,10 +158,15 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
   },
 };
 
-/** Pravidla poletování: trubka, branka/mince, cíl, dotek země. */
-export function flapRules(health?: number): PieceRef[] {
+/**
+ * Pravidla poletování: trubka, branka/mince, cíl, dotek země. `grace` (trať
+ * s `rise`, P36A T11): náraz ubere jeden život a vteřinu další nebere – trubkou
+ * se proletí za ~13 tiků, bez milosti by v ní padly všechny životy.
+ */
+export function flapRules(health?: number, grace = false): PieceRef[] {
+  const damage = grace ? { effect: 'damage', grace: HIT_GRACE } : { effect: 'damage' };
   const rules: PieceRef[] = [
-    { id: 'hit', params: { role: 'obstacle', effect: health === undefined ? 'lose' : 'damage' } },
+    { id: 'hit', params: { role: 'obstacle', ...(health === undefined ? { effect: 'lose' } : damage) } },
     { id: 'pickup', params: {} },
     { id: 'finish', params: {} },
     // Země drží hráče na y = 0: dotek země = spodní stěna pod 1.

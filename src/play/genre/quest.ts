@@ -1,18 +1,16 @@
 /**
  * Žánr Úkol (P32G T4): slovesa na předmětech – zapal, uhas, oprav, uvař. Věta
  * dá sloveso, předmět a počet; sloveso určí druh vizuálu (`verbKind`) a kolik
- * viditelných stavů předmět projde. V prostoru hraje `quest_spatial` (volitelně
- * s pronásledovateli), na místě `quest_station` (sporák, dílna); stav cíle
- * posouvá pravidlo `interact`.
+ * viditelných stavů předmět projde. V prostoru hraje `quest_spatial` (s
+ * pronásledovateli, aspoň s jedním výchozím), na místě `quest_station` (sporák,
+ * dílna, s přetečením); stav cíle posouvá pravidlo `interact`.
  */
 
 import { readCountedNouns, nounPhrase } from '../draft/lexicon';
 import { ESCAPE } from '../arcade/pieces/arena';
-import { questSpatial, questStation } from '../arcade/pieces/quest';
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, titleCase } from './contract';
-
-/** Nejkratší kolo, když ho spec neříká; `arenaWinOf` bere 20–80 s. */
-const ROUND_SECONDS = 40;
+import { QUEST, questRounds, questSpatial, questStation, spatialRoundSeconds, stationRoundSeconds } from '../arcade/pieces/quest';
+import { WAVE_PLAN, wavesChasers } from '../arcade/pieces/waves';
+import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Výchozí počty generátorů: bez `count` ve specu hraje, co by postavil generátor sám. */
 const SPATIAL = questSpatial.params.parse({});
@@ -21,6 +19,12 @@ const STATION = questStation.params.parse({});
 const STATION_MAX = 3;
 /** Čtyři pronásledovatelé robot vyhraje jen u 94 % semínek (T2); tři a méně spolehlivě. */
 const CHASERS_MAX = 3;
+/**
+ * Úkol v prostoru bez honičky ve větě má jednoho pronásledovatele (P36A T3):
+ * bez něj nečinnému hráči nic nehrozí a tři životy by nikdo nebral. Rychlost
+ * zůstává `QUEST.chaserSpeed` – férový start ho k nečinnému pustí až po 5 s.
+ */
+export const DEFAULT_CHASERS = 1;
 
 export type VerbKind = 'fire' | 'flame' | 'cook' | 'repair' | 'free' | 'grow';
 
@@ -115,33 +119,60 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   // Scéna umí nakreslit jen stavy svého druhu; počet ze specu platí jen pro sloveso bez druhu.
   const states = kind === null ? (spec.target?.states ?? 2) : KIND_STATES[kind];
   const count = spec.params?.count ?? (station ? STATION.count : SPATIAL.count);
-  const chasers = station ? 0 : (spec.params?.chasers ?? (spec.enemy === undefined ? 0 : ESCAPE.chasers.default));
+  const said = spec.params?.chasers ?? (spec.enemy === undefined ? DEFAULT_CHASERS : ESCAPE.chasers.default);
+  // Chování nepřítele (P36A T8): stojící nepřítel = úkol bez honiče, honič i hlídka aspoň jeden.
+  const moves = spec.enemyMoves;
+  const chasers = station || moves === 'still' ? 0 : moves === 'chase' || moves === 'patrol' ? Math.max(1, said) : said;
+  const patrol = moves === 'patrol' && chasers > 0 ? { patrol: ESCAPE.patrolSight } : {};
   // Kolo roste s prací: kroky stavu × čas na krok, s honičkou robot hodně uhýbá. Měřeno (T4, p95 robota):
   // 8 stromů × 3 stavy bez honičky 23 s, se třemi pronásledovateli 75 s; 5 svíček + 2 duchové 29 s.
   const steps = count * (states - 1);
-  const seconds = spec.params?.seconds ?? clamp(steps * (chasers > 0 ? 7 : 3), ROUND_SECONDS, 80);
+  // Kola (P36A T4): po `count` cílech další kolo, výhra až v posledním; kol tolik, aby robot hrál 30–90 s.
+  // Oprava na místě drží 1 s – kolo dvou stanovišť by jinak trvalo 1 s.
+  const hold = station && states === 2 ? QUEST.rounds.stationHold : undefined;
+  // Čas z věty (nebo `timeLimit` režiséra, `compileWith`) jsou hodiny: kol jen tolik, kolik se do nich vejde (F3).
+  const clock = spec.params?.seconds;
+  const plan = station
+    ? questRounds(steps, () => stationRoundSeconds({ count, states, hold: hold ?? STATION.hold, after: STATION.after }), clock)
+    : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)), clock);
+  // Hodiny jako u sběru ve vlnách: robot je stihne s rezervou, pod horizontem ověření.
+  const seconds = clock ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
   const hunter = spec.enemy ?? 'hunter';
   const verbText = capital(verb);
+  const each = plan.rounds > 1 ? ` in each of ${String(plan.rounds)} rounds` : '';
   return legacySpec(spec, {
     control: 'move_free',
     controlParams: {
       generator: station ? 'quest_station' : 'quest_spatial',
       // Pravidlo bere sloveso jedním slovem (`verbSchema`).
-      tuning: { count, states, verb: verb.trim().toLowerCase().replace(/\s+/g, '-'), ...(station ? {} : { chasers }) },
+      tuning: {
+        count,
+        states,
+        verb: verb.trim().toLowerCase().replace(/\s+/g, '-'),
+        ...(plan.rounds > 1 ? { rounds: plan.rounds } : {}),
+        ...(hold === undefined ? {} : { hold }),
+        ...(station ? {} : { chasers }),
+        ...patrol,
+      },
     },
     // Změnit stav každého cíle je hádanka nad rolí cílů; počet nese `tuning` i role.
     archetype: 'switch_puzzle',
     title: `${titleCase(spec.hero)} Quest`,
     objective: {
       kind: 'puzzle',
-      description: chasers > 0 ? `${verbText} all ${String(count)} ${label} before the ${hunter} catch you.` : `${verbText} all ${String(count)} ${label} within ${String(seconds)} seconds.`,
+      description:
+        chasers > 0
+          ? `${verbText} all ${String(count)} ${label}${each} before the ${hunter} ${chasers === 1 ? 'catches' : 'catch'} you.`
+          : `${verbText} all ${String(count)} ${label}${each} within ${String(seconds)} seconds.`,
       role: 'target',
     },
-    mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }],
+    // Tři životy (P36A T2); berou je pronásledovatelé v prostoru a přetečení na místě (T3, `boil_over`).
+    mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }, livesMechanic()],
     roles: [{ id: 'target', kind: 'target', label, count }, ...(chasers > 0 ? [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }] : [])],
     tutorial: {
-      goalLine: `${verbText} all ${String(count)} ${label}.`,
-      controlsHint: station ? 'Drag or arrows to move, hold Use when it is ready.' : 'Drag or arrows to move, hold Use next to a target.',
+      goalLine: `${verbText} all ${String(count)} ${label}${plan.rounds > 1 ? `, ${String(plan.rounds)} rounds` : ''}.`,
+      // Druhá věta jen pro kartu pauzy: výzva na startu bere první (`FirstPrompt`).
+      controlsHint: station ? 'Drag or arrows to move, hold Use when it is ready. Stall and it boils over.' : 'Drag or arrows to move, hold Use next to a target.',
     },
     mood: chasers > 0 ? 'tense' : 'playful',
   });
@@ -157,6 +188,7 @@ export const questGenre: GenreModule<'quest'> = {
     count: { min: 1, max: 8 },
     chasers: { min: 0, max: CHASERS_MAX },
   },
+  clockParam: 'seconds',
   availability: () => 'ready',
   compile: compileQuest,
   draftFill: (sentence, reading) => {
@@ -171,8 +203,8 @@ export const questGenre: GenreModule<'quest'> = {
     const count = target?.count ?? null;
     const params = {
       ...(count === null ? {} : { count: clamp(count, 1, station ? STATION_MAX : 8) }),
-      // Honí jen ten, kdo „chytí“; nepřítel ze slovníku (oheň u hasiče) pronásledovatel není.
-      ...(station ? {} : { chasers: chase === null ? 0 : clamp(chase.count ?? ESCAPE.chasers.default, 1, CHASERS_MAX) }),
+      // Počet honičů říká jen ten, kdo „chytí“; jinak jeden výchozí (P36A T3) – nese popisek nepřítele ze slovníku, když ho věta má.
+      ...(station ? {} : { chasers: chase === null ? DEFAULT_CHASERS : clamp(chase.count ?? ESCAPE.chasers.default, 1, CHASERS_MAX) }),
     };
     return {
       genre: 'quest',

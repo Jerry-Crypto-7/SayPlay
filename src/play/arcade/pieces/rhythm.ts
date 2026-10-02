@@ -22,7 +22,7 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, UNIT, bodyBase } from '../contract';
+import { ARCADE_HZ, ARCADE_LIMITS, AXIS_MAX, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, UNIT, bodyBase } from '../contract';
 import { judgeRules } from './timing';
 
 export const RHYTHM_DENSITIES = ['sparse', 'normal', 'dense'] as const;
@@ -48,10 +48,26 @@ export const RHYTHM = {
 /** Tik beatu `i` (celé tiky, bez driftu: počítá se z BPM, ne přičítáním). */
 export const beatTick = (bpm: number, beat: number): number => RHYTHM.leadIn + Math.floor((beat * ARCADE_HZ * 60) / bpm);
 
+/**
+ * Dráhy (P36A T11): ťuk nese dráhu v ose vstupu – dráha `l` je osa
+ * `(2l − 3) · 250`, takže nula (ťuk bez dráhy, mezerník) žádnou dráhu nejmenuje.
+ * Dráha noty je její `x` (pruh `laneW` široký, střed tratě mezi prostředními).
+ */
+const LANE_AXIS = AXIS_MAX / RHYTHM.lanes;
+export const rhythmLaneAxis = (lane: number): number => (2 * lane - (RHYTHM.lanes - 1)) * LANE_AXIS;
+export const rhythmLaneOfAxis = (axis: number): number => Math.min(RHYTHM.lanes - 1, Math.max(0, Math.round((axis / LANE_AXIS + RHYTHM.lanes - 1) / 2)));
+export const rhythmLaneOfX = (x: number): number => Math.round(x / RHYTHM.laneW + (RHYTHM.lanes - 1) / 2);
+
 // ---------------------------------------------------------------------------
 // Ovládání
 
-const controlParams = z.object({ window: z.int().min(1).max(30) }).strict();
+const controlParams = z
+  .object({
+    window: z.int().min(1).max(30),
+    /** Ťuk s dráhou bere jen notu té dráhy (žánr Rytmus, P36A T11); bez toho nejbližší notu v kterékoli. */
+    lanes: z.boolean().optional(),
+  })
+  .strict();
 export type RhythmControlParams = z.infer<typeof controlParams>;
 
 const S = BODY;
@@ -73,6 +89,8 @@ export const rhythmControl: ControlPiece<RhythmControlParams> = {
     const count = state[HEADER.bodyCount] as number;
     const reach = params.window * RHYTHM.noteSpeed;
     const tapped = (input.buttons & BUTTON.TAP) !== 0;
+    // Ťuk do dráhy (klávesy D/F/J/K, pozice prstu) hledá notu jen v ní; mezerník bez dráhy kteroukoli.
+    const lane = params.lanes === true && input.axis !== 0 ? rhythmLaneOfAxis(input.axis) : -1;
     let resolved = 0;
     let missed = false;
     let nearest = -1;
@@ -87,7 +105,7 @@ export const rhythmControl: ControlPiece<RhythmControlParams> = {
         state[base + S.flags] = (state[base + S.flags] as number) & ~FLAG.alive;
         resolved += 1;
         missed = true;
-      } else if (tapped && z <= reach && (nearest < 0 || Math.abs(z) < Math.abs(nearestZ))) {
+      } else if (tapped && z <= reach && (lane < 0 || rhythmLaneOfX(state[base + S.x] as number) === lane) && (nearest < 0 || Math.abs(z) < Math.abs(nearestZ))) {
         nearest = i;
         nearestZ = z;
       }
@@ -117,9 +135,17 @@ const generatorParams = z
     density: z.enum(RHYTHM_DENSITIES).default('normal'),
     beats: z.int().min(RHYTHM.minBeats).max(RHYTHM.maxBeats).default(48),
     window: z.int().min(1).max(30).default(RHYTHM.window),
+    /** Žánr Rytmus (P36A T11): písnička houstne po třetinách (řídká → normální → hustá) místo jedné hustoty. */
+    ramp: z.boolean().optional(),
+    /** Žánr Rytmus: ťuk míří do dráhy (`rhythmControl` `lanes`). */
+    lanes: z.boolean().optional(),
   })
   .strict();
 export type RhythmLevelParams = z.infer<typeof generatorParams>;
+
+/** Hustota doby `beat`: s `ramp` podle třetiny písničky, jinak hustota úrovně. */
+const densityAt = (params: RhythmLevelParams, beat: number): RhythmDensity =>
+  params.ramp === true ? (RHYTHM_DENSITIES[Math.min(2, Math.floor((3 * beat) / params.beats))] as RhythmDensity) : params.density;
 
 /** Tiky not: beaty podle hustoty, půldoby jen u `dense` a jen když se okna nepotkají. */
 export function beatMap(seed: number, params: RhythmLevelParams): number[] {
@@ -132,10 +158,11 @@ export function beatMap(seed: number, params: RhythmLevelParams): number[] {
   };
   for (let beat = 0; beat < params.beats; beat += 1) {
     const on = beatTick(params.bpm, beat);
+    const density = densityAt(params, beat);
     // Řídké: každá sudá doba, liché čtvrtinou; normální: 5 dob ze 6; husté: každá doba.
-    const keep = params.density === 'sparse' ? beat % 2 === 0 || rng.int(0, 3) === 0 : params.density === 'normal' ? beat === 0 || rng.int(0, 5) !== 0 : true;
+    const keep = density === 'sparse' ? beat % 2 === 0 || rng.int(0, 3) === 0 : density === 'normal' ? beat === 0 || rng.int(0, 5) !== 0 : true;
     if (keep) push(on);
-    if (params.density === 'dense' && rng.int(0, 1) === 0) push(Math.floor((on + beatTick(params.bpm, beat + 1)) / 2));
+    if (density === 'dense' && rng.int(0, 1) === 0) push(Math.floor((on + beatTick(params.bpm, beat + 1)) / 2));
   }
   return ticks.slice(0, ARCADE_LIMITS.maxBodies - 1);
 }
@@ -155,7 +182,7 @@ export const rhythmLevel: GeneratorPiece<RhythmLevelParams> = {
         (tick): BodyInit => ({
           role: 'target',
           kind: 'note',
-          // Pruh je jen obraz – ťuk platí na notu nejblíž liště v kterémkoli pruhu.
+          // Pruh ze semínka; ťuk s dráhou (`lanes`) platí jen na notu v ní, jinak na nejbližší v kterémkoli pruhu.
           x: (rng.int(0, RHYTHM.lanes - 1) * 2 - (RHYTHM.lanes - 1)) * (RHYTHM.laneW / 2),
           y: 0,
           z: tick * RHYTHM.noteSpeed,
@@ -201,9 +228,10 @@ export function rhythmParts(seed: number, raw: Readonly<Record<string, unknown>>
   const level = rhythmLevel.generate(seed, params);
   const notes = level.bodies.length - 1;
   const lives = health === undefined ? undefined : Math.max(1, Math.min(health, Math.floor(notes / 4)));
+  const lanes = params.lanes === true ? { lanes: true } : {};
   return {
-    control: { id: 'rhythm', params: { window: params.window } },
-    bot: { id: 'rhythm_bot', params: {} },
+    control: { id: 'rhythm', params: { window: params.window, ...lanes } },
+    bot: { id: 'rhythm_bot', params: lanes },
     level,
     rules: judgeRules(notes, lives),
     issues: checkRhythmLevel(level, params.window),

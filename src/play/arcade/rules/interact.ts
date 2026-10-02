@@ -34,6 +34,7 @@
 import { z } from 'zod';
 
 import { ARCADE_HZ, type ArcadeEffect, BODY, BUTTON, COUNTER, FLAG, HEADER, type RuleContext, bodyBase, targetStateOf } from '../contract';
+import { WAVE_LIMITS, waveOf } from '../pieces/waves';
 
 const states = z.union([z.literal(2), z.literal(3)]);
 
@@ -48,11 +49,24 @@ export const interactWhen = (role: z.ZodString) =>
 /** Okno připravenosti v ticích: `after` od posunu zavřené, pak `window` otevřené, dokola. */
 const ready = z.object({ after: z.int().min(1).max(10 * ARCADE_HZ), window: z.int().min(1).max(10 * ARCADE_HZ) }).strict();
 
-/** Po překladu: `role` = kód jádra, `radius` v jednotkách. */
+/**
+ * Po překladu: `role` = kód jádra, `radius` v jednotkách. `rounds` (jen po
+ * překladu, staví ho generátor úkolu, P36A T4): hra má tolik kol a vyhrává se
+ * až v posledním – další kolo spustí pravidlo `arena_waves`, které zvedá
+ * čítač vlny (`waveOf`).
+ */
 export const compiledInteractWhen = z
   .object({
     interact: z
-      .object({ role: z.int().min(0).max(255), radius: z.int().min(0), hold: z.int().min(0).max(5 * ARCADE_HZ), states, order: z.boolean().optional(), ready: ready.optional() })
+      .object({
+        role: z.int().min(0).max(255),
+        radius: z.int().min(0),
+        hold: z.int().min(0).max(5 * ARCADE_HZ),
+        states,
+        order: z.boolean().optional(),
+        ready: ready.optional(),
+        rounds: z.int().min(2).max(WAVE_LIMITS.rounds).optional(),
+      })
       .strict(),
   })
   .strict();
@@ -171,8 +185,9 @@ export function interactFire(ctx: RuleContext, interact: CompiledInteract, reach
   const entry = interact.ready === undefined || final ? 0 : (tick % ENTRY_SPAN) + 1;
   const effects: ArcadeEffect[] = [...remember(state, pack(target, LOCKED, entry)), { kind: 'stateChange', body: target, state: next }];
   if (!final) return effects;
-  // `win` v `do` znamená „tohle je vítězné pravidlo“ – vyhrává se až se všemi cíli role, ne s prvním.
-  const done = allDone(state, target, interact);
+  // `win` v `do` znamená „tohle je vítězné pravidlo“ – vyhrává se až se všemi cíli role, ne s prvním,
+  // a v úkolu po kolech až v posledním kole.
+  const done = allDone(state, target, interact) && (interact.rounds === undefined || waveOf(state) >= interact.rounds - 1);
   effects.push(...reached(target).filter((effect) => effect.kind !== 'win'));
   if (done) effects.push({ kind: 'win' });
   return effects;

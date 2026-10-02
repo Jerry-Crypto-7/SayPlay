@@ -17,6 +17,12 @@ const CUES: { readonly [G in GenreId]: readonly string[] } = {
   arena: ['chase', 'catch', 'escape', 'collect', 'gather', 'fight', 'duel', 'battle'],
   voyage: ['sail', 'fly', 'ride', 'drive', 'pilot', 'land'],
   quest: ['light', 'extinguish', 'cook', 'repair', 'free', 'flip'],
+  shooter: ['shoot', 'blast', 'aim'],
+  throw: ['throw', 'toss', 'bowl'],
+  timing: ['stack', 'timing'],
+  rhythm: ['beat', 'music', 'drum'],
+  duel: ['rival', 'showdown'],
+  flap: ['flap', 'flappy', 'wing'],
 };
 
 const HERO_CLASSES: { readonly [G in GenreId]: readonly ModelClass[] } = {
@@ -25,6 +31,12 @@ const HERO_CLASSES: { readonly [G in GenreId]: readonly ModelClass[] } = {
   arena: ['animal', 'bird', 'robot', 'vehicle', 'humanoid', 'monster'],
   voyage: ['boat', 'aircraft', 'vehicle', 'animal', 'humanoid'],
   quest: ['humanoid', 'robot', 'animal', 'bird', 'monster'],
+  shooter: ['humanoid', 'robot', 'animal', 'monster'],
+  throw: ['humanoid', 'robot', 'animal', 'monster'],
+  timing: ['humanoid', 'robot', 'animal', 'bird', 'monster', 'vehicle'],
+  rhythm: ['humanoid', 'animal', 'bird', 'robot', 'monster'],
+  duel: ['humanoid', 'animal', 'robot', 'monster'],
+  flap: ['bird', 'aircraft', 'animal', 'monster', 'robot', 'humanoid'],
 };
 
 /** Hra s cílovou čárou: běžec, skákačka, plavba. */
@@ -80,8 +92,9 @@ function duel(spec: GenreSpec): LegacyGame {
 }
 
 function compileDouble(spec: GenreSpec) {
-  if (spec.genre === 'arena' && spec.mode === 'fight') return legacySpec(spec, duel(spec));
-  if (spec.genre === 'arena' || spec.genre === 'quest') return legacySpec(spec, roam(spec));
+  if ((spec.genre === 'arena' && spec.mode === 'fight') || spec.genre === 'duel') return legacySpec(spec, duel(spec));
+  if (spec.genre === 'arena' || spec.genre === 'quest' || spec.genre === 'shooter' || spec.genre === 'throw' || spec.genre === 'timing' || spec.genre === 'rhythm') return legacySpec(spec, roam(spec));
+  if (spec.genre === 'flap') return legacySpec(spec, track(spec, 'steer'));
   return legacySpec(spec, track(spec, spec.genre === 'runner' ? 'runner' : spec.genre === 'platformer' ? 'platform' : 'steer'));
 }
 
@@ -107,5 +120,11 @@ export function genreDoubles(fallback: readonly string[] = []): { readonly [G in
     arena: double('arena', set),
     voyage: double('voyage', set),
     quest: double('quest', set),
+    shooter: double('shooter', set),
+    throw: double('throw', set),
+    timing: double('timing', set),
+    rhythm: double('rhythm', set),
+    duel: double('duel', set),
+    flap: double('flap', set),
   };
 }

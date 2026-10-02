@@ -224,7 +224,7 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
       const generator = spec.controlParams?.generator;
       const mode = typeof generator === 'string' ? GENERATOR_MODE[generator] : undefined;
       const byGenre = mode !== undefined && verbPlayedBy([entry.item, ...(entry.match ?? [])], mode[0], mode[1], roles.some((role) => role.kind === 'collectible' && readsRole(role)));
-      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id)) || byRule.some(proved) || byGenre;
+      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id, typeof generator === 'string' ? generator : undefined)) || byRule.some(proved) || byGenre;
       // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika, vystřelené pravidlo nebo režim žánru je vidět hraním.
       return stage(entry, byControl || byAddon || byMechanic.length > 0 || byRule.length > 0 || byGenre, read, read);
     }

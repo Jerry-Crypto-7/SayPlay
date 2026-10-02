@@ -626,7 +626,7 @@ const StageCanvas = memo(function StageCanvas({
           {control === 'timing' ? (
             <TimingScene session={session} look={look} blockModel={blockModel} />
           ) : control === 'rhythm' ? (
-            <RhythmScene session={session} look={look} noteModel={noteModel} />
+            <RhythmScene session={session} look={look} noteModel={noteModel} surface={surface} />
           ) : control === 'move_free' || control === 'fight' ? (
             <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} />
           ) : control === 'runner' ? (
@@ -682,7 +682,7 @@ export default function ArcadeStage({
   useFlapInput(session, surface, enabled && control === 'flap');
   useSteerInput(session, surface, enabled && control === 'steer');
   useArenaInput(session, surface, enabled && (control === 'move_free' || control === 'fight'));
-  useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'));
+  useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'), control === 'rhythm');
   useDuelInput(session, surface, enabled && control === 'duel');
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
   // Po konci ale ještě END_CLIP_MS naplno – klip pádu či oslavy (P28C T3) by jinak stál na prvním snímku.

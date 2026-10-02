@@ -55,7 +55,8 @@ describe('catalog coverage of sentence nouns', () => {
   });
 
   it('does not count an alias or a missing model as exact', () => {
-    expect(exactModel('werewolf')).toEqual({ model: 'goblin', exact: false });
+    // Vlkodlak má od 1909e75d vlastní model z gen3d, alias na goblina teď drží démon.
+    expect(exactModel('demon')).toEqual({ model: 'goblin', exact: false });
     // Banán má od e5b840b model z gen3d, chybějící věc je teď vzducholoď.
     expect(exactModel('zeppelin')).toEqual({ model: undefined, exact: false });
     expect(exactModel('robot')).toEqual({ model: 'robot', exact: true });

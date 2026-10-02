@@ -986,16 +986,18 @@ const REFUSED_US: Readonly<Record<number, string>> = {
 };
 
 /**
- * `reasoning_effort` hostovaného poskytovatele. gpt-oss přes API dokumentuje jen
+ * `reasoning_effort` chat API. gpt-oss přes API dokumentuje jen
  * low/medium/high, takže vyšší úroveň z Messages (`xhigh`, `max`) by každé
  * volání skončila čtyřistovkou; sníží se na nejvyšší, kterou znají všichni.
+ * llama.cpp (b11200, README serveru) pole nahoře v těle předá šabloně modelu.
  */
-const HOSTED_EFFORT: Readonly<Record<Effort, 'low' | 'medium' | 'high'>> = { low: 'low', medium: 'medium', high: 'high', xhigh: 'high', max: 'high' };
+const CHAT_EFFORT: Readonly<Record<Effort, 'low' | 'medium' | 'high'>> = { low: 'low', medium: 'medium', high: 'high', xhigh: 'high', max: 'high' };
 
 /**
  * OpenAI chat API pro llama.cpp (`llamacpp:`) i hostovaného poskytovatele
- * (`openai:`). Liší se tím, co hostovaný poskytovatel navíc chce: povinný klíč,
- * `reasoning_effort` a u OpenAI API `max_completion_tokens`.
+ * (`openai:`). Liší se tím, co hostovaný poskytovatel navíc chce: povinný klíč
+ * a u OpenAI API `max_completion_tokens`. `reasoning_effort` jde oběma – bez něj
+ * lokální gpt-oss přemýšlí výchozí úrovní a sní celé `max_tokens` (P36A F4).
  */
 async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fetchImpl: typeof fetch, signal?: AbortSignal): Promise<GenerationOutcome> {
   const hosted = config.endpoint.startsWith(OPENAI_PREFIX);
@@ -1011,9 +1013,10 @@ async function generateViaChat(call: GenerationCall, config: UpstreamConfig, fet
   // čtyřistovkou; ostatní poskytovatelé dokumentují `max_tokens`. Teplota se
   // hostovanému poskytovateli neposílá – gpt-oss ji doporučuje nechat výchozí.
   const tokenField = hosted && new URL(root).hostname === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens';
+  const effort = CHAT_EFFORT[effortForCall(call, config)];
   const body = hosted
-    ? { model: config.model, [tokenField]: config.maxOutputTokens, reasoning_effort: HOSTED_EFFORT[effortForCall(call, config)], messages, response_format: format }
-    : { model: config.model, max_tokens: config.maxOutputTokens, temperature: 0, messages, response_format: format };
+    ? { model: config.model, [tokenField]: config.maxOutputTokens, reasoning_effort: effort, messages, response_format: format }
+    : { model: config.model, max_tokens: config.maxOutputTokens, temperature: 0, reasoning_effort: effort, messages, response_format: format };
   let response: Response;
   try {
     response = await observePhaseAsync(serverPhaseObserver, 'provider-http-request', () => fetchImpl(`${root}/v1/chat/completions`, {

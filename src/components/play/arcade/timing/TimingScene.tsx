@@ -17,6 +17,7 @@ import { Vector3 } from 'three';
 
 import { BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
+import { RHYTHM, rhythmLaneAxis } from '@/play/arcade/pieces/rhythm';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
 
 import { isTyping } from '../input';
@@ -25,25 +26,50 @@ import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
 const TAP_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
+/** Klávesy drah rytmu zleva doprava (P36A T11). */
+const LANE_KEYS = ['d', 'f', 'j', 'k'];
 
-/** Ťuk kamkoli nebo mezerník/Enter/šipka nahoru = TAP (hned při stisku). Sdílí rytmus. */
-export function useTapInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
+/**
+ * Dráha rytmu pod prstem: hranice drah u lišty jako zlomky šířky plochy, které
+ * zapisuje `RhythmScene` do `data-lane-edges` (mezi drahami 0|1, 1|2, 2|3).
+ * `null`, dokud scéna hranice nezapsala.
+ */
+function laneUnder(element: HTMLElement, clientX: number): number | null {
+  const edges = element.dataset.laneEdges?.split(',').map(Number);
+  if (edges === undefined || edges.length !== RHYTHM.lanes - 1) return null;
+  const rect = element.getBoundingClientRect();
+  const at = (clientX - rect.left) / rect.width;
+  return edges[0]! < edges.at(-1)! ? edges.filter((edge) => at > edge).length : edges.filter((edge) => at < edge).length;
+}
+
+/**
+ * Ťuk kamkoli nebo mezerník/Enter/šipka nahoru = TAP (hned při stisku). Sdílí
+ * rytmus; s `lanes` ťuk nese dráhu pod prstem a D/F/J/K dráhu klávesy (jádro ji
+ * čte jen u hry s drahami, mezerník bere kteroukoli).
+ */
+export function useTapInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean, lanes = false): void {
   useEffect(() => {
     const element = target.current;
     if (!active || element === null) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !TAP_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target)) return;
+      const key = event.key.toLowerCase();
+      const lane = lanes ? LANE_KEYS.indexOf(key) : -1;
+      if (lane < 0 && !TAP_KEYS.has(key)) return;
       event.preventDefault();
-      session.press(BUTTON.TAP);
+      session.press(BUTTON.TAP, lane < 0 ? 0 : rhythmLaneAxis(lane));
     };
-    const onDown = () => session.press(BUTTON.TAP);
+    const onDown = (event: PointerEvent) => {
+      const lane = lanes ? laneUnder(element, event.clientX) : null;
+      session.press(BUTTON.TAP, lane === null ? 0 : rhythmLaneAxis(lane));
+    };
     window.addEventListener('keydown', onKey);
     element.addEventListener('pointerdown', onDown);
     return () => {
       window.removeEventListener('keydown', onKey);
       element.removeEventListener('pointerdown', onDown);
     };
-  }, [session, target, active]);
+  }, [session, target, active, lanes]);
 }
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;

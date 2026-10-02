@@ -128,6 +128,20 @@ describe('llama.cpp generate', () => {
     ]);
   });
 
+  // P36A F4: bez `reasoning_effort` lokální gpt-oss přemýšlel výchozí úrovní a 12/30 odpovědí skončilo prázdných na max_tokens.
+  it('sends the reasoning effort of the config, low by default and capped at high', async () => {
+    const sent: unknown[] = [];
+    const root = await stub((_req, body, res) => {
+      sent.push((JSON.parse(body) as { reasoning_effort?: unknown }).reasoning_effort);
+      res.end(chat('{"plan":"run"}'));
+    });
+    const config = fallbackOf({ WORLDSMITH_FALLBACK_ENDPOINT: `llamacpp:${root}` });
+    for (const effort of [undefined, 'medium', 'max'] as const) {
+      await upstreamBranch(effort === undefined ? config : { ...config, effort }).generate(CALL);
+    }
+    expect(sent).toEqual(['low', 'medium', 'high']);
+  });
+
   it('sends WORLDSMITH_FALLBACK_KEY as a bearer token, and no authorization without it', async () => {
     const seen: (string | undefined)[] = [];
     const root = await stub((req, _body, res) => {

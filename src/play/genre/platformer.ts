@@ -9,13 +9,17 @@
  * cíle („collect“, „grab“, „gather“) mění výhru: doskákat k cíli až se všemi
  * věcmi (`collectAll`); ostatní slovesa vyhrávají doskokem, věci jsou bonus.
  *
+ * Úroveň má tři úseky s rostoucí obtížností a checkpointem na začátku druhého
+ * a třetího (P36A T4, `sections` v `tuning`); věc ke sběru navíc úroveň prodlouží
+ * a hodiny (robot je stihne s rezervou) dají prohrát i hráči, který stojí.
+ *
  * Referenční věta: „A frog jumps across lily pads to reach the island“.
  */
 
 import { PLATFORM_LEVEL } from '../arcade/pieces/platform';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Sloveso cíle, u kterého se vyhrává sebráním všech věcí. */
 const COLLECT_VERB = /^(?:collect|grab|gather|pick)/;
@@ -41,11 +45,14 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
     controlParams: {
       checkpoints: true,
       ...(spec.params?.lengthM === undefined ? {} : { lengthM: spec.params.lengthM }),
-      tuning: { feel: 2, ...(collect ? { collectAll: true, coinCount: count } : {}) },
+      // Tři úseky s rostoucí obtížností, checkpoint na začátku druhého a třetího, hodiny (P36A T4).
+      tuning: { feel: 2, sections: 3, ...(collect ? { collectAll: true, coinCount: count } : {}) },
     },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,
     objective: { kind: 'reach', description: line ?? `Jump across the platforms to the flag without touching a ${spec.enemy ?? 'spike'}.`, role: 'finish' },
+    // Hrot ubere život a vrátí hrdinu na checkpoint (P36A T2).
+    mechanics: [livesMechanic()],
     roles: [
       { id: 'spikes', kind: 'hazard', label: spec.enemy ?? 'spikes', count: 5 },
       { id: 'coin', kind: 'collectible', label: item, ...(count === undefined ? {} : { count }) },

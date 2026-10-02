@@ -1,5 +1,5 @@
 /**
- * Kontrakt žánrů (P32-0 T3): pět žánrů PLAY, jejich režimy, tvar `GenreSpec`,
+ * Kontrakt žánrů (P32-0 T3): žánry PLAY, jejich režimy, tvar `GenreSpec`,
  * který píše AI i rychlá verze, a rozhraní modulu žánru.
  *
  * **Žánr je vrstva nad `GameSpecV1`.** Modul přeloží `GenreSpec` na dnešní spec
@@ -13,6 +13,7 @@
 
 import { z } from 'zod';
 
+import { START_LIVES } from '../arcade/contract';
 import { LOOK_IDS } from '../arcade/look';
 import { THINGS_MAX, type Rule, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { readRoles } from '../draft/lexicon';
@@ -22,7 +23,16 @@ import type { ControlId, GameRole, GameSpecV1 } from '../spec';
 /** Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`. */
 export const GENRE_COMPILER_VERSION = 'genre.v1';
 
-export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest'] as const;
+/**
+ * Životy hry žánru (P36A T2): mechanika `health` se třemi životy. Čte ji
+ * kompilátor (čítač životů, milost po zásahu) i HUD; číslo z věty („with 5
+ * lives“) do ní dosadí rychlý návrh (`draft.ts`). Spec uložený bez ní hraje
+ * dál bez životů, jako dřív.
+ */
+export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'health', params: { max: START_LIVES } });
+
+/** Od P36A T10/T11 jedenáct žánrů: pět z P32 a šest vrácených ovládání (střelba, hod, načasování, rytmus, souboj, poletování). */
+export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap'] as const;
 export type GenreId = (typeof GENRES)[number];
 
 export const GENRE_MODES = {
@@ -31,6 +41,12 @@ export const GENRE_MODES = {
   arena: ['escape', 'collect', 'fight'],
   voyage: ['race', 'land'],
   quest: ['spatial', 'station'],
+  shooter: ['default'],
+  throw: ['default'],
+  timing: ['stack', 'precision', 'bridge'],
+  rhythm: ['default'],
+  duel: ['default'],
+  flap: ['default'],
 } as const satisfies Readonly<Record<GenreId, readonly [string, ...string[]]>>;
 export type GenreMode<G extends GenreId = GenreId> = (typeof GENRE_MODES)[G][number];
 
@@ -76,6 +92,16 @@ export const ruleRoleSchema = z
   })
   .strict();
 
+/**
+ * Jak se nepřítel chová (P36A T8), namapované na existující kusy: `chase` =
+ * pronásledovatel (doplněk `chaser`, honiči arény a úkolu), `patrol` = honič
+ * bloudí, dokud hráče nezahlédne, `shoot` = nepřátelé, které hráč sestřelí
+ * (doplněk `shoot`), `still` = nepřítel stojí (úkol bez honiče). Žánr, který
+ * chování nemá čím zahrát, ho přejde – dnešní hra.
+ */
+export const ENEMY_MOVES = ['chase', 'patrol', 'shoot', 'still'] as const;
+export type EnemyMove = (typeof ENEMY_MOVES)[number];
+
 const variant = <G extends GenreId>(genre: G) =>
   z
     .object({
@@ -83,6 +109,8 @@ const variant = <G extends GenreId>(genre: G) =>
       mode: z.enum(GENRE_MODES[genre]),
       hero: label,
       enemy: label.optional(),
+      /** Chování nepřítele (P36A T8); bez něj žánr hraje své výchozí. */
+      enemyMoves: z.enum(ENEMY_MOVES).optional(),
       collectible: label.optional(),
       target: genreTargetSchema.optional(),
       setting: z.string().min(1).max(80),
@@ -107,7 +135,19 @@ const variant = <G extends GenreId>(genre: G) =>
  * Rozlišené podle `genre`, takže režim jiného žánru neprojde tvarem – bez
  * dodatečné kontroly a i ve JSON Schema, které z něj dostane režisér.
  */
-export const genreSpecSchema = z.discriminatedUnion('genre', [variant('runner'), variant('platformer'), variant('arena'), variant('voyage'), variant('quest')]);
+export const genreSpecSchema = z.discriminatedUnion('genre', [
+  variant('runner'),
+  variant('platformer'),
+  variant('arena'),
+  variant('voyage'),
+  variant('quest'),
+  variant('shooter'),
+  variant('throw'),
+  variant('timing'),
+  variant('rhythm'),
+  variant('duel'),
+  variant('flap'),
+]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
 
@@ -124,6 +164,12 @@ export interface GenreModule<G extends GenreId = GenreId> {
   /** Třídy modelů, které smějí hrát hrdinu. */
   readonly heroClasses: readonly ModelClass[];
   readonly paramBounds: ParamBounds;
+  /**
+   * Parametr modulu, který nese hodiny končící prohrou (úkol: `seconds`, P36A F3).
+   * `timeLimit` režiséra do něj jde už před překladem, aby modul naplánoval
+   * délku hry do těch hodin – `withDepth` jinak přepíše jen hotové hodiny.
+   */
+  readonly clockParam?: string;
   availability(mode: GenreMode<G>): ModeAvailability;
   compile(spec: GenreSpecOf<G>): GameSpecV1;
   /** Co jde z věty vyčíst bez AI; `reading` je čtení modelem, když je k dispozici. */
@@ -135,16 +181,25 @@ export interface GenreModule<G extends GenreId = GenreId> {
 
 /**
  * Režim → role → parametr modulu, ze kterého modul staví generátor, cíl i
- * `count` role. Žánr bez řádku počty nečte (běžec a plavba staví trať podle
- * délky, ne podle počtu; plošinovka počítá jen věci ke sběru, P35 T3). Hlídá
- * test, že každý parametr má modul v `paramBounds`.
+ * `count` role. Žánr bez řádku počty nečte (plavba staví trať podle délky,
+ * ne podle počtu; plošinovka počítá jen věci ke sběru, P35 T3; běžec od P36A T4
+ * natahuje trať podle překážek i věcí; střílečka čte nepřátele jedné vlny, hod
+ * staví cíle podle obtížnosti; načasování, rytmus, souboj a poletování mají
+ * délku z kol, dob a metrů, ne z počtu). Hlídá test, že každý parametr má modul
+ * v `paramBounds`.
  */
 export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode<G>]?: Readonly<Partial<Record<CountRole, string>>> } } = {
-  runner: {},
+  runner: { default: { enemy: 'obstacles', collectible: 'items' } },
   platformer: { default: { collectible: 'items' } },
   arena: { escape: { enemy: 'chasers', collectible: 'items' }, collect: { collectible: 'items' }, fight: { enemy: 'enemies' } },
   voyage: {},
   quest: { spatial: { target: 'count', enemy: 'chasers' }, station: { target: 'count' } },
+  shooter: { default: { enemy: 'enemies', target: 'targets' } },
+  throw: {},
+  timing: {},
+  rhythm: {},
+  duel: {},
+  flap: {},
 };
 
 const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>
@@ -226,6 +281,8 @@ export function legacySpec(spec: GenreSpec, game: LegacyGame): GameSpecV1 {
     roles,
     ...(rules.length === 0 ? {} : { rules }),
     ...(spec.things === undefined || spec.things.length === 0 ? {} : { things: spec.things }),
+    // Kombo a bonus na konci (P36A T5) má každá nová hra žánru; cílové skóre z věty dosadí rychlý návrh.
+    scoring: {},
     tutorial: game.tutorial,
     verification: [{ id: 'winnable', kind: 'reachability', assert: { runState: 'won' } }],
     budgets: { maxEntities: 40, maxRules: 120, maxTriangles: 200000 },
