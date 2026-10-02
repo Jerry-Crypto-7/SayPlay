@@ -96,6 +96,11 @@ export interface QualityReport {
   readonly publishEligible: boolean;
   /** Slovesa pravidel arkády (P29A) a zda je robot během běhu viděl vystřelit; jen hra s pravidly. */
   readonly verbs?: readonly VerbProof[];
+  /**
+   * Vítězný běh robota arkádové hry se skóre (P36B T1) – měřítko hvězd
+   * (`src/play/score/stars.ts`). Chybí u mřížkové hry a u her publikovaných dřív.
+   */
+  readonly par?: { readonly score: number; readonly ticks: number };
 }
 
 /**
