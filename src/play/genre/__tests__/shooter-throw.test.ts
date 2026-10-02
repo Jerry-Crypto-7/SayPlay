@@ -184,6 +184,18 @@ describe('the throw genre comes in rounds', () => {
     expect(game.spec.mechanics).toContainEqual({ id: 'timer', params: { id: 'clock', seconds: 45, onEnd: 'lose' } });
     expect(game.winSeconds).toBeLessThanOrEqual(45);
   });
+
+  // Rozpočet a hodiny jsou dvě pole uložené hry: remix „only 30 seconds“ přepíše jen hodiny (review F5).
+  it('a remix that shortens only the clock still plays its rounds inside it', () => {
+    const shorter = (spec: GameSpecV1): GameSpecV1 => ({
+      ...spec,
+      mechanics: spec.mechanics.map((mechanic) => (mechanic.id === 'timer' ? { ...mechanic, params: { ...mechanic.params, seconds: 30 } } : mechanic)),
+    });
+    const game = publish('bowling in a haunted alley', shorter);
+    expect(game.spec.controlParams).toMatchObject({ budget: 48 });
+    expect(game.winSeconds).toBeLessThanOrEqual(30);
+    expect(game.idle.outcome).toBe('lost');
+  });
 });
 
 /**

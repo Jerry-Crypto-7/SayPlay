@@ -44,6 +44,7 @@ import {
 } from '../contract';
 import { GRAVITY } from '../kernel';
 import { census } from './shots';
+import { WAVE_PLAN } from './waves';
 
 export const THROW_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type ThrowDifficulty = (typeof THROW_DIFFICULTIES)[number];
@@ -340,6 +341,9 @@ export const THROW_ROUND_COUNTER = 'trigger' satisfies ArcadeCounter;
 
 /** Odhad robota na kolo s `targets` těly k sestřelení (s). */
 export const throwRoundSeconds = (targets: number): number => THROW_ROUNDS.perRound + THROW_ROUNDS.perThrow * targets;
+
+/** Rozpočet robota, který se vejde do hodin `seconds` (hodiny = rozpočet × faktor + rezerva jako hodiny úkolu), aspoň 1 s. */
+export const throwBudgetIn = (seconds: number): number => Math.max(1, Math.floor((seconds - WAVE_PLAN.clockMargin) / WAVE_PLAN.clockFactor));
 
 const player: BodyInit = { role: 'player', kind: 'thrower', x: 0, y: 0, z: 0, w: THROW.playerW, h: THROW.playerH, d: THROW.playerD, solid: false };
 

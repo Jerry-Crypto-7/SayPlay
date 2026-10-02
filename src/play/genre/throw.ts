@@ -13,7 +13,7 @@
  * z nich spočítá zpátky.
  */
 
-import { HOOP_CUES, THROW_GOALS, THROW_GOAL_LABELS, TOWER_CUES } from '../arcade/pieces/throw';
+import { HOOP_CUES, THROW_GOALS, THROW_GOAL_LABELS, TOWER_CUES, throwBudgetIn } from '../arcade/pieces/throw';
 import { WAVE_PLAN } from '../arcade/pieces/waves';
 
 import { type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
@@ -26,7 +26,7 @@ export function throwClock(seconds: number | undefined): { readonly budget: numb
   if (seconds === undefined) {
     return { budget: THROW_GENRE.budget, seconds: Math.min(WAVE_PLAN.clockMax, Math.round(THROW_GENRE.budget * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin)) };
   }
-  return { budget: Math.max(1, Math.floor((seconds - WAVE_PLAN.clockMargin) / WAVE_PLAN.clockFactor)), seconds };
+  return { budget: throwBudgetIn(seconds), seconds };
 }
 
 /** Cíl hodu z věty: koš, věž (kuželky, krabice), jinak terč, když věta jmenuje, na co se hází. */

@@ -43,7 +43,7 @@ import { duelParts } from './pieces/duel';
 import { rhythmParts } from './pieces/rhythm';
 import { shooterBotRef, shooterRange, shooterRules } from './pieces/shooter';
 import { steerBotRef, steerControlRef, steerRules, steerTrack } from './pieces/steer';
-import { throwField, throwParts } from './pieces/throw';
+import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
 import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
@@ -117,7 +117,10 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
   if (spec.control === 'throw') {
     // Hod nemá čím ubrat život: `health` se nečte, prohra je „hody došly“.
     const params = throwField.params.parse({ ...spec.controlParams });
-    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, params), health: undefined };
+    // Rozpočet kol a hodiny jsou dvě pole specu: remix, který zkrátí jen hodiny, by nechal kola na delší hru (review P36A F5).
+    const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
+    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(clock.seconds)) };
+    return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, fitted), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
   // Se životy náraz ubere život, překážka zmizí, běh jede dál a vteřinu milosti další náraz nic nebere (P36A T2).
