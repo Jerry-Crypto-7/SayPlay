@@ -126,6 +126,12 @@ export interface DareRecord {
 export const LOOP_VOTE_TTL_SECONDS = 24 * 3600;
 /** Kolik hlasů si proces pamatuje, než paměť zahodí (pak rozhodne `SET NX` v úložišti). */
 const MAX_VOTE_MEMO = 20_000;
+/**
+ * Hlasy, které proces už započetl, s koncem platnosti (ms) – na úrovni modulu,
+ * protože s Upstash vzniká úložiště při každém `store()` znovu (nález revize T9-2).
+ * Klíč nese druh a předponu úložiště; testy ji mažou s úložištěm procesu.
+ */
+const voted = new Map<string, number>();
 
 /** Co hráči s hrou udělali (P36B T9): čítače událostí smyčky a počet remixů (dětí verze). */
 export interface LoopHeat {
@@ -251,8 +257,6 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
   const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
   const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
-  /** Hlasy, které proces už započetl, s koncem platnosti (ms); opakování nestojí příkaz úložiště. */
-  const voted = new Map<string, number>();
 
   const store: VersionStore = {
     id,
@@ -427,9 +431,10 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     },
     async countLoop(versionId, counter, voter) {
       const vote = `${counter}:${versionId}:${voter}`;
-      if ((voted.get(vote) ?? 0) > now()) return;
+      const seen = `${id}:${prefix}:${vote}`;
+      if ((voted.get(seen) ?? 0) > now()) return;
       if (voted.size >= MAX_VOTE_MEMO) voted.clear();
-      voted.set(vote, now() + LOOP_VOTE_TTL_SECONDS * 1000);
+      voted.set(seen, now() + LOOP_VOTE_TTL_SECONDS * 1000);
       try {
         if (!(await raw.exists(versionKey(versionId)))) return;
         // Hlas v úložišti platí napříč instancemi; teprve nový hlas zvýší čítač.
@@ -610,6 +615,7 @@ let processStore: VersionStore | null = null;
 /** Jen pro testy. */
 export function __resetProcessVersionStore(): void {
   processStore = null;
+  voted.clear();
 }
 
 /**
