@@ -64,13 +64,14 @@ function firstProvenSeed(game: GameSpecV1): { readonly seed: number; readonly fa
 }
 
 describe('quest genre – the sentence picks the mode, the verb kind and the target', () => {
-  it('hasič: spatial, fire with three states, burning trees', () => {
+  it('hasič: spatial, fire with three states, burning trees, one default chaser (P36A T3)', () => {
     const spec = draft(HEROES.hasič);
     expect(spec.mode).toBe('spatial');
     expect(spec.target?.label).toMatch(/trees$/);
     expect(verbKindOf(spec.target?.verb ?? '')).toBe('fire');
     expect(spec.target?.states).toBe(3);
-    expect(spec.params?.chasers ?? 0).toBe(0);
+    // Věta honičku neříká: jeden výchozí pronásledovatel, ne dva jako u „before the ghosts catch“.
+    expect(spec.params?.chasers).toBe(1);
   });
 
   it('čaroděj: spatial, flame with two states, five candles, ghosts chasing', () => {

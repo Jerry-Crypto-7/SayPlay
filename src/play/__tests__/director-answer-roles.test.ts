@@ -147,12 +147,13 @@ describe('the thing the player uses is never a role', () => {
     expect(fidelity(read.genre, FIRE)).toContainEqual(expect.objectContaining({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: expect.stringContaining('"water"') }));
   });
 
-  it('repairs it with the enemy and the chaser count of the sentence, so nothing chases the firefighter', async () => {
+  it('repairs it with the enemy and the chaser count of the sentence, so the water never chases the firefighter', async () => {
     const game = await directed(FIRE, WATER_CHASES);
     expect(game.fallbackReason).toBeNull();
     expect(game.spec.roles.map((role) => role.label)).not.toContain('water');
-    expect(game.spec.roles.some((role) => role.kind === 'chaser')).toBe(false);
-    expect(game.spec.objective.description).toBe('Extinguish all 5 burning tree within 40 seconds.');
+    // P36A T3: úkol v prostoru má vždy pronásledovatele – výchozího jednoho, s nepřítelem z věty, ne s vodou.
+    expect(game.spec.roles.filter((role) => role.kind === 'chaser')).toEqual([expect.objectContaining({ label: 'fallen log', count: 1 })]);
+    expect(game.spec.objective.description).toBe('Extinguish all 5 burning tree before the fallen log catches you.');
   });
 
   it('keeps the quick version off the tool too', () => {
@@ -173,14 +174,16 @@ describe('the AI version adds what the sentence says and the quick version misse
     }
   });
 
-  it('plays the chaser the sentence names when the frozen answer adds it', async () => {
+  // P36A T3: rychlá verze honiče už nemine – výchozí pronásledovatel úkolu nese nepřítele z věty (psa).
+  // Odpověď, která psa nechá, se hraje jako autorská a psa nese dál.
+  it('plays the chaser the sentence names – the quick version already has it as the default quest chaser', async () => {
     const quick = draftOf(SNOW);
-    expect(quick.spec.roles.some((role) => role.kind === 'chaser')).toBe(false);
+    expect(quick.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog', count: 1 }));
     const game = await directed(SNOW, { ...quick.genre, params: { ...quick.genre.params, chasers: 1 } });
     expect(game.source).toBe('authored');
     expect(game.fallbackReason).toBeNull();
-    expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog' }));
-    expect(game.spec.objective.description).not.toBe(quick.spec.objective.description);
+    expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog', count: 1 }));
+    expect(game.spec.objective.description).toBe('Hit all 5 snowman before the dog catches you.');
   });
 });
 

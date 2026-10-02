@@ -270,7 +270,8 @@ describe('arena and quest – a catch costs a life, throws the hero back and buy
     expect([lives(g), runState(g)]).toEqual([0, RUN_STATE.lost]);
   });
 
-  it.each(['arena.collect', 'quest.station'] as const)('%s: nothing in the mode takes a life yet (danger comes with T3/T4) – the lives stay', (key) => {
+  // Úkol na místě bere životy přetečením od T3 (`quest-danger.test.ts`); sběr v aréně čeká na vlny T4.
+  it.each(['arena.collect'] as const)('%s: nothing in the mode takes a life yet (danger comes with T4) – the lives stay', (key) => {
     const g = game(key);
     for (let t = 0; t < 30 * 60 && runState(g) === RUN_STATE.running; t += 1) tick(g);
     expect(lives(g)).toBe(START_LIVES);

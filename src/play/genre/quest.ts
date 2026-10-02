@@ -1,9 +1,9 @@
 /**
  * Žánr Úkol (P32G T4): slovesa na předmětech – zapal, uhas, oprav, uvař. Věta
  * dá sloveso, předmět a počet; sloveso určí druh vizuálu (`verbKind`) a kolik
- * viditelných stavů předmět projde. V prostoru hraje `quest_spatial` (volitelně
- * s pronásledovateli), na místě `quest_station` (sporák, dílna); stav cíle
- * posouvá pravidlo `interact`.
+ * viditelných stavů předmět projde. V prostoru hraje `quest_spatial` (s
+ * pronásledovateli, aspoň s jedním výchozím), na místě `quest_station` (sporák,
+ * dílna, s přetečením); stav cíle posouvá pravidlo `interact`.
  */
 
 import { readCountedNouns, nounPhrase } from '../draft/lexicon';
@@ -21,6 +21,12 @@ const STATION = questStation.params.parse({});
 const STATION_MAX = 3;
 /** Čtyři pronásledovatelé robot vyhraje jen u 94 % semínek (T2); tři a méně spolehlivě. */
 const CHASERS_MAX = 3;
+/**
+ * Úkol v prostoru bez honičky ve větě má jednoho pronásledovatele (P36A T3):
+ * bez něj nečinnému hráči nic nehrozí a tři životy by nikdo nebral. Rychlost
+ * zůstává `QUEST.chaserSpeed` – férový start ho k nečinnému pustí až po 5 s.
+ */
+export const DEFAULT_CHASERS = 1;
 
 export type VerbKind = 'fire' | 'flame' | 'cook' | 'repair' | 'free' | 'grow';
 
@@ -115,7 +121,7 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
   // Scéna umí nakreslit jen stavy svého druhu; počet ze specu platí jen pro sloveso bez druhu.
   const states = kind === null ? (spec.target?.states ?? 2) : KIND_STATES[kind];
   const count = spec.params?.count ?? (station ? STATION.count : SPATIAL.count);
-  const chasers = station ? 0 : (spec.params?.chasers ?? (spec.enemy === undefined ? 0 : ESCAPE.chasers.default));
+  const chasers = station ? 0 : (spec.params?.chasers ?? (spec.enemy === undefined ? DEFAULT_CHASERS : ESCAPE.chasers.default));
   // Kolo roste s prací: kroky stavu × čas na krok, s honičkou robot hodně uhýbá. Měřeno (T4, p95 robota):
   // 8 stromů × 3 stavy bez honičky 23 s, se třemi pronásledovateli 75 s; 5 svíček + 2 duchové 29 s.
   const steps = count * (states - 1);
@@ -134,15 +140,19 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
     title: `${titleCase(spec.hero)} Quest`,
     objective: {
       kind: 'puzzle',
-      description: chasers > 0 ? `${verbText} all ${String(count)} ${label} before the ${hunter} catch you.` : `${verbText} all ${String(count)} ${label} within ${String(seconds)} seconds.`,
+      description:
+        chasers > 0
+          ? `${verbText} all ${String(count)} ${label} before the ${hunter} ${chasers === 1 ? 'catches' : 'catch'} you.`
+          : `${verbText} all ${String(count)} ${label} within ${String(seconds)} seconds.`,
       role: 'target',
     },
-    // Tři životy (P36A T2); bez pronásledovatelů je zatím nic nebere – nebezpečí úkolu přidá T3.
+    // Tři životy (P36A T2); berou je pronásledovatelé v prostoru a přetečení na místě (T3, `boil_over`).
     mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }, livesMechanic()],
     roles: [{ id: 'target', kind: 'target', label, count }, ...(chasers > 0 ? [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }] : [])],
     tutorial: {
       goalLine: `${verbText} all ${String(count)} ${label}.`,
-      controlsHint: station ? 'Drag or arrows to move, hold Use when it is ready.' : 'Drag or arrows to move, hold Use next to a target.',
+      // Druhá věta jen pro kartu pauzy: výzva na startu bere první (`FirstPrompt`).
+      controlsHint: station ? 'Drag or arrows to move, hold Use when it is ready. Stall and it boils over.' : 'Drag or arrows to move, hold Use next to a target.',
     },
     mood: chasers > 0 ? 'tense' : 'playful',
   });
@@ -172,8 +182,8 @@ export const questGenre: GenreModule<'quest'> = {
     const count = target?.count ?? null;
     const params = {
       ...(count === null ? {} : { count: clamp(count, 1, station ? STATION_MAX : 8) }),
-      // Honí jen ten, kdo „chytí“; nepřítel ze slovníku (oheň u hasiče) pronásledovatel není.
-      ...(station ? {} : { chasers: chase === null ? 0 : clamp(chase.count ?? ESCAPE.chasers.default, 1, CHASERS_MAX) }),
+      // Počet honičů říká jen ten, kdo „chytí“; jinak jeden výchozí (P36A T3) – nese popisek nepřítele ze slovníku, když ho věta má.
+      ...(station ? {} : { chasers: chase === null ? DEFAULT_CHASERS : clamp(chase.count ?? ESCAPE.chasers.default, 1, CHASERS_MAX) }),
     };
     return {
       genre: 'quest',

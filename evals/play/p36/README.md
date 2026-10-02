@@ -1,6 +1,6 @@
 # Hloubka her – měřítko P36A (T1)
 
-Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry).
+Výchozí stav změřený 2. 10. 2026 na větvi `features/p36a-depth` (kompilátor `play-compiler-v3/arcade-v2`). Proti němu porovnávají další úlohy P36A: T2 (životy), T3 (nebezpečí úkolu), T4 (délka 30–90 s), T5 (skóre), T10 a T11 (nové žánry). `depth.json` nese vždy poslední přeměření (teď po T3, oddíl dole).
 
 ## Jak přeměřit
 
@@ -78,6 +78,27 @@ Přeměřeno s kompilátorem `play-compiler-v4/arcade-v2`. `depth.json` teď nes
 - **Každý žánr a režim začíná se 3 životy** (souboj: 3 knockouty po 5 HP). Semínka ani časy výhry robota se nepohnuly – robot do ničeho nenaráží.
 - **Nečinný hráč prohrává dál, jen později:** medián konce běžec 2,7 → 8,4 s, útěk 5,4 → 10,0 s, souboj 8,4 → 22,9 s, přistání 5,4 → 16,2 s. Nedohraje dál 43 her (skákačka 26, sběr v aréně 17) – stát na místě je tam bezpečné; nebezpečí přidají T3 a T4.
 - **Životy, které zatím nic nebere:** sběr v aréně (17), úkol na místě (44) a úkol v prostoru bez pronásledovatelů (46 ze 48). Hra je nese podle plánu (HUD a konec běhu pro P36B jsou ve všech žánrech stejné); co je bere, přidá T3 (nebezpečí úkolu) a T4 (vlny).
+
+## Po T3 – nebezpečí v úkolu (2. 10. 2026)
+
+Přeměřeno s kompilátorem `play-compiler-v5/arcade-v2`. Úkol v prostoru má vždy pronásledovatele (bez honičky ve větě jednoho výchozího, rychlost 60 jako dřív), úkol na místě přetéká: 8 s bez posunu cíle stojí život.
+
+| | všech 260 | poptávka 200 | vývojová 60 | cíl plánu |
+|---|---:|---:|---:|---:|
+| robot vyhraje za 30–90 s | 20 = 7,7 % | 17 = 8,5 % | 3 = 5,0 % | ≥ 85 % (T4) |
+| nečinný hráč prohraje | 217 = 83,5 % | 163 = 81,5 % | 54 = 90,0 % | ≥ 95 % |
+| životy > 1 | 260 = 100 % | 200 = 100 % | 60 = 100 % | ≥ 80 % – splněno |
+| hra vyšla / publikovatelná | 260 / 260 | 200 / 200 | 60 / 60 | |
+
+| úkol | vět | robot – medián výhry | rozsah | nečinný hráč dřív | nečinný hráč teď |
+|---|---:|---:|---:|---:|---:|
+| quest.spatial | 48 | 9,3 → **13,9 s** | 7,7–26,3 s | prohra na hodinách 40 s (46 ze 48) | prohra po třech chyceních 9,6–10,6 s |
+| quest.station | 44 | 4,0 s (beze změny) | 1,0–4,0 s | prohra na hodinách 40 s | prohra po třech přetečeních, 24,0 s u všech 44 |
+
+- **Podíl prohry nečinného se nepohnul** (83,5 %): úkol prohrával už dřív – na hodinách. Teď prohrává na nebezpečí, dřív, než doběhne čas, a první život ztratí v prostoru asi po 5 s (férový start), na místě po 8 s. Nedohraje dál 43 her (skákačka 26, sběr v aréně 17) – to je T4.
+- **Robot vyhrává všech 92 úkolů na stejných semínkách jako dřív.** V prostoru uhýbá pronásledovateli, proto výhra trvá déle; na místě posouvá cíl nejvýš po ~1,5 s, takže přetečení nikdy nezažije.
+- **Rychlost pronásledovatele** (sonda, 100 semínek, jeden pronásledovatel): 60 a 70 robot vyhraje 100/100 u 5 cílů i u 8 cílů × 3 stavy, 80 už jen 80/100 u velkého úkolu, 90 15/100. Nečinný hráč při každé z nich přijde o první život po ~5,5 s a o hru po ~10,3 s (férový start roste s rychlostí). Zůstala 60 – nejvíc rezervy pro robota a nečinnému se nic nemění; rychlost je volná páka pro rostoucí tlak v T4.
+- Ostatní žánry: řádky, semínka i časy beze změny.
 
 ## Test (`depth.test.ts`)
 

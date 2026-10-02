@@ -14,7 +14,7 @@ import { flapControl, flapTrack } from './pieces/flap';
 import { flapBot } from './pieces/flap-bot';
 import { platformControl, platformLevel } from './pieces/platform';
 import { platformBot } from './pieces/platform-bot';
-import { questSpatial, questStation } from './pieces/quest';
+import { boilOver, questSpatial, questStation } from './pieces/quest';
 import { questBot } from './pieces/quest-bot';
 import { RULES } from './pieces/rules';
 import { runnerControl, runnerTrack } from './pieces/runner';
@@ -78,7 +78,7 @@ const BASE_CONTROLS = {
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

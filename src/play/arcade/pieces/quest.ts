@@ -18,14 +18,36 @@
  * - **Na místě:** 1–3 stanoviště v řadě na pultu před hrdinou (palačinky na
  *   sporáku, díly na stole), v pořadí zleva. Krok ze stavu 1 dál jde jen v okně
  *   připravenosti (`ready`): nalít (držet), počkat, obrátit, až je zlatá.
- *   Pult přes celou šířku drží hrdinu za ním.
+ *   Pult přes celou šířku drží hrdinu za ním. **Přetečení** (P36A T3): kdo
+ *   `QUEST.boil` tiků neposune žádný cíl, tomu hrnec přeteče (dílna se
+ *   přehřeje) – pravidlo `boil_over` vezme život a hodiny jdou znovu od nuly.
  */
 
 import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_HZ, type ArcadeLevel, type BodyInit, type ModeGeneratorPiece, type ModeParts, type PieceRef, ROLE, UNIT } from '../contract';
+import {
+  ARCADE_HZ,
+  ARCADE_LIMITS,
+  type ArcadeCounter,
+  type ArcadeEffect,
+  type ArcadeLevel,
+  BODY,
+  type BodyInit,
+  COUNTER,
+  FLAG,
+  HEADER,
+  HIT_GRACE,
+  type ModeGeneratorPiece,
+  type ModeParts,
+  type PieceRef,
+  ROLE,
+  type RulePiece,
+  UNIT,
+  bodyBase,
+  targetStateOf,
+} from '../contract';
 import type { CompiledRule } from '../rules/compile';
 import type { CompiledInteract } from '../rules/interact';
 import { verbSchema } from '../rules/schema';
@@ -61,6 +83,13 @@ export const QUEST = {
   station: { w: 600, h: 300, d: 600 },
   /** Peče se 1,5 s, pak je 1 s zlatá; minutou chvíli se peče znovu. */
   ready: { after: 90, window: 60 },
+  /**
+   * Přetečení (P36A T3): tolik tiků bez pokroku stojí život. 8 s – robot posune
+   * cíl nejpozději za ~1,5 s (`ready.after`), člověk, který se rozkouká, má
+   * rezervu; nečinný přijde o tři životy za 24 s, dřív než mu doběhne nejkratší
+   * kolo úkolu (40 s).
+   */
+  boil: 8 * ARCADE_HZ,
 } as const;
 
 /** Tolik pokusů má každé náhodné umístění, pak generátor úroveň odmítne. */
@@ -197,6 +226,79 @@ function stationLevel(params: QuestStationParams): ArcadeLevel {
 }
 
 // ---------------------------------------------------------------------------
+// Přetečení stanoviště (P36A T3)
+
+/**
+ * Hodiny přetečení v hashovaném stavu: čítač `reserve`. Stanoviště nemá
+ * pronásledovatele, jejichž ochranu (`GRACE_COUNTER`) tenhle slot jinde nese;
+ * `trigger` drží rozdělané držení `interact`, `cooldown` čte póza výstřelu
+ * (`motion.ts`), `score` a `items` smějí měnit pravidla specu. HUD ho ukazuje
+ * jen u střelby, a ta na stanovišti není.
+ */
+const BOIL_COUNTER = 'reserve' satisfies ArcadeCounter;
+/** Hodnota čítače = hotové kroky × `BOIL_SPAN` + tiky od posledního kroku (nad horizont jádra). */
+const BOIL_SPAN = 1 << 13;
+
+/** Tiky od posledního posunu cíle a kolik kroků stavu bylo tehdy hotových – scéna z nich smí kreslit, jak hrnec kypí. */
+export function boilOf(state: Int32Array): { readonly ticks: number; readonly done: number } {
+  const value = state[HEADER.counters + COUNTER[BOIL_COUNTER]] as number;
+  return { ticks: value % BOIL_SPAN, done: Math.floor(value / BOIL_SPAN) };
+}
+
+/** Hotové kroky stavu všech živých cílů – pokrok jde jen nahoru, takže jeho změna = hráč posunul cíl. */
+function stepsDone(state: Int32Array): number {
+  let done = 0;
+  for (let body = 0; body < (state[HEADER.bodyCount] as number); body += 1) {
+    const base = bodyBase(body);
+    if (state[base + BODY.role] === ROLE.target && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0) done += targetStateOf(state, body);
+  }
+  return done;
+}
+
+/**
+ * Lhůta přetečení: `QUEST.boil`, u pomalého stanoviště dvojnásobek celého
+ * kroku (držení + pečení + okno), ať ji robot, který posouvá cíl bez otálení,
+ * nikdy nedožije – ani s nejdelším oknem, které generátor pustí.
+ */
+export const boilTicks = (params: Pick<QuestStationParams, 'hold' | 'after' | 'window'>): number => Math.max(QUEST.boil, 2 * (params.hold + params.after + params.window));
+
+const boilParams = z
+  .object({
+    ticks: z.int().min(ARCADE_HZ).max(ARCADE_LIMITS.maxTicks),
+    /** Bez životů prohra (jako chycení v prostoru), se životy ztráta života s vteřinou milosti. */
+    effect: z.enum(['lose', 'damage']),
+  })
+  .strict();
+
+/**
+ * Každý tik: pokrok se změnil → hodiny od nuly; jinak tik navíc a po `ticks`
+ * tikách bez pokroku přetečení – život (nebo prohra) a hodiny znovu od nuly.
+ * Výhra přijde vždy s posunem cíle, takže přetečení v témže tiku nenastane.
+ */
+export const boilOver: RulePiece<z.infer<typeof boilParams>> = {
+  id: 'boil_over',
+  params: boilParams,
+  roles: ['player', 'target'],
+  trigger: 'tick',
+  cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state }, params) => {
+    const at = HEADER.counters + COUNTER[BOIL_COUNTER];
+    const before = state[at] as number;
+    const seen = boilOf(state);
+    const done = stepsDone(state);
+    let ticks = done === seen.done ? seen.ticks + 1 : 0;
+    const effects: ArcadeEffect[] = [];
+    if (ticks >= params.ticks) {
+      effects.push(params.effect === 'lose' ? { kind: 'lose' } : { kind: 'damage', amount: 1, grace: HIT_GRACE });
+      ticks = 0;
+    }
+    const next = done * BOIL_SPAN + ticks;
+    if (next !== before) effects.push({ kind: 'count', counter: BOIL_COUNTER, amount: next - before });
+    return effects;
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Díly režimů
 
 const interactRule = (verb: string, interact: CompiledInteract): PieceRef => {
@@ -217,9 +319,9 @@ function questParts(level: ArcadeLevel, half: number, verb: string, interact: Co
 }
 
 /**
- * Životy úkolu (P36A T2): hra žánru začíná se třemi; bez pronásledovatelů je
- * dnes nic nebere – nebezpečí úkolu přidá T3. Pravidlo prohry ale svět nese
- * vždy, ať jde život i živě přidat (`live.ts`).
+ * Životy úkolu (P36A T2): hra žánru začíná se třemi; berou je pronásledovatelé
+ * v prostoru a přetečení na místě (T3). Pravidlo prohry svět nese vždy, ať jde
+ * život i živě přidat (`live.ts`).
  */
 const livesRules = (health: number | undefined): PieceRef[] => (health === undefined ? [] : [{ id: 'out_of_health', params: {} }]);
 
@@ -247,7 +349,7 @@ export const questStation: ModeGeneratorPiece<QuestStationParams> = {
   id: 'quest_station',
   params: stationParams,
   roles: ['player', 'target', 'obstacle'],
-  cost: (params) => ({ bodies: 2 + params.count, rules: 1 }),
+  cost: (params) => ({ bodies: 2 + params.count, rules: 2 }),
   generate: (_seed, params) => stationLevel(params),
   parts: (_seed, params, health) => {
     const interact: CompiledInteract = {
@@ -258,6 +360,8 @@ export const questStation: ModeGeneratorPiece<QuestStationParams> = {
       order: true,
       ready: { after: params.after, window: params.window },
     };
-    return questParts(stationLevel(params), QUEST.stationHalf, params.verb, interact, undefined, livesRules(health), []);
+    // Přetečení (P36A T3): kdo stojí, přijde o život, bez životů o hru – jako chycení v prostoru.
+    const boil: PieceRef = { id: 'boil_over', params: { ticks: boilTicks(params), effect: health === undefined ? 'lose' : 'damage' } };
+    return questParts(stationLevel(params), QUEST.stationHalf, params.verb, interact, undefined, [boil, ...livesRules(health)], []);
   },
 };
