@@ -185,15 +185,17 @@ describe('the throw genre comes in rounds', () => {
     expect(game.winSeconds).toBeLessThanOrEqual(45);
   });
 
-  // Rozpočet a hodiny jsou dvě pole uložené hry: remix „only 30 seconds“ přepíše jen hodiny (review F5).
+  // Rozpočet a hodiny jsou dvě pole uložené hry: remix „only 40 seconds“ přepíše jen hodiny (review F5).
+  // Koš s rozpočtem 48 hraje 8 kol 43–45 s; ve 40 s se vejdou 2 kola.
   it('a remix that shortens only the clock still plays its rounds inside it', () => {
     const shorter = (spec: GameSpecV1): GameSpecV1 => ({
       ...spec,
-      mechanics: spec.mechanics.map((mechanic) => (mechanic.id === 'timer' ? { ...mechanic, params: { ...mechanic.params, seconds: 30 } } : mechanic)),
+      mechanics: spec.mechanics.map((mechanic) => (mechanic.id === 'timer' ? { ...mechanic, params: { ...mechanic.params, seconds: 40 } } : mechanic)),
     });
-    const game = publish('bowling in a haunted alley', shorter);
+    const game = publish('basketball free throws', shorter);
     expect(game.spec.controlParams).toMatchObject({ budget: 48 });
-    expect(game.winSeconds).toBeLessThanOrEqual(30);
+    expect(game.world.rules.some((rule) => rule.id === 'throw_rounds')).toBe(true);
+    expect(game.winSeconds).toBeLessThanOrEqual(40);
     expect(game.idle.outcome).toBe('lost');
   });
 });

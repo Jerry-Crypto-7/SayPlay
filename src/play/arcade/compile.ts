@@ -73,6 +73,9 @@ function countParams(spec: GameSpecV1): Record<string, number> {
   return out;
 }
 
+/** Hodiny, které jádro opravdu hlídá: časovač specu oříznutý na 10 s až horizont ověření. */
+const limitSeconds = (seconds: number): number => Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, seconds));
+
 /** Ovládání, trať a pravidla, která se liší podle `control`. */
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
   const counts = countParams(spec);
@@ -119,7 +122,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = throwField.params.parse({ ...spec.controlParams });
     // Rozpočet kol a hodiny jsou dvě pole specu: remix, který zkrátí jen hodiny, by nechal kola na delší hru (review P36A F5).
     const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
-    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(clock.seconds)) };
+    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(limitSeconds(clock.seconds))) };
     return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, fitted), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });
@@ -206,7 +209,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
     return { ok: false, issues: [`rules: this ${spec.control} game already uses ${builtIn} built-in rules, so the spec may add at most ${ARCADE_LIMITS.maxRules - builtIn} (it has ${ruled.rules.length}) – merge or drop rules`] };
   }
   rules.push(...ruled.rules);
-  if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: Math.min(ARCADE_LIMITS.maxTicks / 60, Math.max(10, timer.seconds)) } });
+  if (timer?.onEnd === 'lose') rules.push({ id: 'time_limit', params: { seconds: limitSeconds(timer.seconds) } });
   const scored = spec.scoring === undefined ? { level, rules } : withScoring(level, rules, lives ?? 0, target ?? spec.scoring.target ?? 0);
   if (scored.rules.length > ARCADE_LIMITS.maxRules) {
     return { ok: false, issues: [`rules: this ${spec.control} game with scoring uses ${scored.rules.length} rules, over the ${ARCADE_LIMITS.maxRules} limit – merge or drop rules`] };
