@@ -27,6 +27,7 @@ import type { ControlId } from '@/play/spec';
 import { ActionButton, actionsOf, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
+import { comboOf } from './effects/feel';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
@@ -514,7 +515,9 @@ export const SCORE_POP_MS = 500;
 
 interface ScorePop {
   readonly id: number;
-  readonly amount: number;
+  /** „+N“ za bod, „×N“ za kombo (P36C T7). */
+  readonly text: string;
+  readonly combo: boolean;
   /** Vodorovná poloha hráče na obrazovce v % (střed, když ji scéna nehlásí). */
   readonly left: number;
 }
@@ -540,9 +543,13 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
     };
     const off = session.onEvents((events) => {
       const amount = events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
-      if (amount > 0) {
-        const x = Number(surface.current?.dataset.playerX ?? 0);
-        const pop = { id: (next += 1), amount, left: 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50 };
+      const combo = comboOf(events);
+      const x = Number(surface.current?.dataset.playerX ?? 0);
+      const left = 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50;
+      const fresh: ScorePop[] = [];
+      if (amount > 0) fresh.push({ id: (next += 1), text: `+${amount}`, combo: false, left });
+      if (combo !== null) fresh.push({ id: (next += 1), text: `×${combo}`, combo: true, left });
+      for (const pop of fresh) {
         setPops((current) => [...current, pop]);
         later(SCORE_POP_MS, () => setPops((current) => current.filter((entry) => entry.id !== pop.id)));
       }
@@ -555,8 +562,8 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
   return (
     <>
       {pops.map((pop) => (
-        <span key={pop.id} className="play-score-pop" data-testid="score-pop" style={{ left: `${pop.left}%` }} aria-hidden="true">
-          +{pop.amount}
+        <span key={pop.id} className={pop.combo ? 'play-score-pop play-combo-pop' : 'play-score-pop'} data-testid={pop.combo ? 'combo-pop' : 'score-pop'} style={{ left: `${pop.left}%` }} aria-hidden="true">
+          {pop.text}
         </span>
       ))}
     </>

@@ -1627,6 +1627,22 @@
   }
 }
 
+/* Kombo (P36C T7): „×N“ v rajčatové, o kus výš než „+N“, ať se nepřekryjí. */
+.play-combo-pop {
+  top: 26%;
+  color: var(--sp-primary);
+}
+
+/* Prohra (P36C T7, `effects/feel.ts` LOSE_FADE_MS): scéna se za 0,6 s odbarví a ztmaví.
+ * Jen plátno – karta konce a HUD nad ním zůstávají v barvě. Restart atribut smaže. */
+.play-stage canvas {
+  transition: filter 600ms ease-out;
+}
+
+.play-stage[data-fx='lose'] canvas {
+  filter: grayscale(0.85) brightness(0.65);
+}
+
 /* Chycení hráče (P34 T5, kit `08-game-hud.md`): celá obrazovka se otřese nejvýš o 6 px
  * na 200 ms (`ArcadePlay`). Třídu `.play-stage-shake`, kterou scéna dává po zásahu jen
  * plátnu (7 px, 150 ms), tenhle otřes nahrazuje – proto už nemá pravidlo. */

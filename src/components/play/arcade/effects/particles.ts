@@ -9,13 +9,15 @@
 
 import { Color } from 'three';
 
+import { color as brand } from '@/brand/tokens';
+
 import type { QualityTier } from '../look/rig/quality';
 import type { VisualEvent } from './bus';
 
 /** Strop živých částic celé scény; telefon na `low` jich unese míň. */
 export const PARTICLE_CAP: Readonly<Record<QualityTier, number>> = { high: 2000, medium: 2000, low: 500 };
 
-export type BurstKind = 'sparks' | 'debris' | 'flash' | 'puff' | 'confetti' | 'dust';
+export type BurstKind = 'sparks' | 'debris' | 'flash' | 'puff' | 'confetti' | 'dust' | 'pop';
 
 export interface Burst {
   readonly kind: BurstKind;
@@ -52,13 +54,23 @@ const CONFETTI: readonly (readonly [string, string])[] = [
   ['#06b6d4', '#3b82f6'],
 ];
 
-/** Co vypustí jedna událost. Prohra, změna stavu a nové tělo částice nemají. */
+/** Co vypustí jedna událost. Změna stavu a nové tělo částice nemají. */
 export function burstsOf(event: VisualEvent, look: BurstLook): Burst[] {
   const x = -event.x;
   const { y, z } = event;
   switch (event.kind) {
     case 'pickup':
-      return [{ kind: 'sparks', at: [x, y + 0.4, z], count: 24, colors: [look.collectible, lighter(look.collectible)], life: [0.3, 0.55], speed: [2, 4.5], size: [0.08, 0.16], gravity: 3, glow: true }];
+      return [
+        // „Pop“ (P36C T7): věc se nafoukne a zmizí – jedna rostoucí a blednoucí koule v její barvě.
+        { kind: 'pop', at: [x, y + 0.4, z], count: 1, colors: [lighter(look.collectible), lighter(look.collectible)], life: [0.18, 0.2], speed: [0, 0], size: [1.1, 1.2], gravity: 0, glow: true },
+        { kind: 'sparks', at: [x, y + 0.4, z], count: 24, colors: [look.collectible, lighter(look.collectible)], life: [0.3, 0.55], speed: [2, 4.5], size: [0.08, 0.16], gravity: 3, glow: true },
+      ];
+    case 'lose':
+      // Prohra (P36C T7): tmavé úlomky a kouř z hrdiny; scéna se k tomu odbarví (`data-fx="lose"`).
+      return [
+        { kind: 'debris', at: [x, y + 0.5, z], count: 28, colors: [brand['ink-soft'], brand.ink], life: [0.5, 0.9], speed: [3, 6], size: [0.1, 0.22], gravity: 10, glow: false },
+        { kind: 'puff', at: [x, y + 0.5, z], count: 12, colors: [brand['ink-faint'], brand['ink-soft']], life: [0.6, 0.9], speed: [0.8, 1.8], size: [0.4, 0.7], gravity: -0.6, glow: false },
+      ];
     case 'hit':
       return [
         { kind: 'debris', at: [x, y + 0.5, z], count: 18, colors: [look.debris, '#1f2937'], life: [0.45, 0.8], speed: [2.5, 5], size: [0.1, 0.2], gravity: 12, glow: false },

@@ -32,6 +32,7 @@ import { RUNNER } from '@/play/arcade/pieces/runner';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
 
 import { type BodyView, bodiesOf, bodiesStale } from './bodies';
+import { blinkHidden, hitStopHeld } from './effects/feel';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { loadBodyModel } from './look/load';
@@ -319,6 +320,17 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     [session],
   );
   const introClock = useIntroClock();
+  // Zásah hráče (P36C T7): hodiny kresby (ms) a chvíle zásahu na nich – hit-stop a blikání; tik kvůli restartu.
+  const drawClock = useRef(0);
+  const hurtAt = useRef(-Infinity);
+  const lastTick = useRef(0);
+  useEffect(
+    () =>
+      session.onEvents((events) => {
+        if (events.some((event) => event.kind === 'damage')) hurtAt.current = drawClock.current;
+      }),
+    [session],
+  );
 
   // Role těl, pro která scéna postavila model – doplněk, který jádro hraje a scéna nekreslí, e2e takhle pozná.
   useEffect(() => {
@@ -326,10 +338,16 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
   }, [views, surface]);
 
   useFrame((_, delta) => {
+    drawClock.current += delta * 1000;
     const alpha = session.advance(delta * 1000);
     if (bodiesStale(views, session)) setViews(bodiesOf(session));
     const state = session.state();
     const prev = session.prev();
+    if ((state[HEADER.tick] as number) < lastTick.current) hurtAt.current = -Infinity;
+    lastTick.current = state[HEADER.tick] as number;
+    // Hit-stop (P36C T7, jako `FightFx` v aréně): jádro odtikalo, kresba i kamera 60 ms stojí.
+    const sinceHurt = drawClock.current - hurtAt.current;
+    if (hitStopHeld(sinceHurt)) return;
     // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
@@ -338,6 +356,8 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       const inner = posed.current[view.index];
       const pose = poses.current[view.index];
       if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
+      // Po zásahu hrdina bliká (zhasíná vnitřek, ne skupinu – sondy záběru ji dál vidí).
+      if (inner !== null && inner !== undefined && view.role === ROLE.player) inner.visible = !blinkHidden(sinceHurt);
       if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) clips.current[view.index] = clipOf(viewOf(state, prev, view.index), pose, tick);
       const group = groups.current[view.index];
       if (group === null || group === undefined) continue;
