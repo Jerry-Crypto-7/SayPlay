@@ -88,7 +88,8 @@ describe('director prompt', () => {
   // a věta, že pravidlo prohry dokáže robot, který do něj vleze.
   // P36A T10: 7 989 B – dva žánry navíc (Střílečka, Hod) se svými režimy a parametry (`waves`, `enemies`, `targets`;
   // `goal`, `spareThrows`, `seconds`) a hloubkou.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 7 989 B)', () => {
+  // P36A T11: 8 540 B – čtyři žánry navíc (Načasování se třemi režimy, Rytmus, Souboj, Poletování), řádek z modulu.
+  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 8 540 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -97,7 +98,7 @@ describe('director prompt', () => {
       }
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(7_989);
+    expect(max).toBeLessThanOrEqual(8_540);
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

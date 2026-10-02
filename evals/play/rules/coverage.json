@@ -1,21 +1,20 @@
 {
  "total": 200,
  "before": {
-  "piece": 74,
-  "none": 126
+  "piece": 91,
+  "none": 109
  },
  "after": {
-  "piece": 74,
-  "template": 17,
-  "none": 109
+  "piece": 91,
+  "template": 12,
+  "none": 97
  },
  "byTemplate": {
   "carry": 3,
   "push": 3,
   "open": 3,
   "throw": 2,
-  "stack": 5,
-  "give": 1
+  "stack": 1
  },
  "topUncovered": [
   {
@@ -35,14 +34,6 @@
    "count": 5
   },
   {
-   "verb": "tap",
-   "count": 5
-  },
-  {
-   "verb": "jump",
-   "count": 4
-  },
-  {
    "verb": "match",
    "count": 4
   },
@@ -55,7 +46,15 @@
    "count": 3
   },
   {
-   "verb": "(rhythm)",
+   "verb": "defend",
+   "count": 3
+  },
+  {
+   "verb": "fish",
+   "count": 3
+  },
+  {
+   "verb": "merge",
    "count": 3
   }
  ],
@@ -394,8 +393,8 @@
   {
    "id": "s035",
    "verbClass": "flap",
-   "drafted": "runner",
-   "cover": "none",
+   "drafted": "flap",
+   "cover": "piece",
    "template": null,
    "verbs": []
   },
@@ -439,7 +438,7 @@
   {
    "id": "s040",
    "verbClass": "aim_shoot",
-   "drafted": "move_free",
+   "drafted": "duel",
    "cover": "none",
    "template": null,
    "verbs": [
@@ -787,7 +786,7 @@
   {
    "id": "s076",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -823,7 +822,7 @@
   {
    "id": "s080",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "none",
    "template": null,
    "verbs": [
@@ -849,7 +848,7 @@
   {
    "id": "s083",
    "verbClass": "manipulate",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "template",
    "template": "open",
    "verbs": [
@@ -988,8 +987,8 @@
   {
    "id": "s098",
    "verbClass": "timing",
-   "drafted": "move_free",
-   "cover": "template",
+   "drafted": "timing",
+   "cover": "piece",
    "template": "stack",
    "verbs": [
     "stack"
@@ -998,8 +997,8 @@
   {
    "id": "s099",
    "verbClass": "timing",
-   "drafted": "move_free",
-   "cover": "none",
+   "drafted": "timing",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "build"
@@ -1008,8 +1007,8 @@
   {
    "id": "s100",
    "verbClass": "timing",
-   "drafted": "platform",
-   "cover": "none",
+   "drafted": "timing",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "tap"
@@ -1018,8 +1017,8 @@
   {
    "id": "s101",
    "verbClass": "timing",
-   "drafted": "move_free",
-   "cover": "template",
+   "drafted": "timing",
+   "cover": "piece",
    "template": "stack",
    "verbs": [
     "stack",
@@ -1029,8 +1028,8 @@
   {
    "id": "s102",
    "verbClass": "timing",
-   "drafted": "move_free",
-   "cover": "template",
+   "drafted": "timing",
+   "cover": "piece",
    "template": "stack",
    "verbs": [
     "stack"
@@ -1050,8 +1049,8 @@
   {
    "id": "s104",
    "verbClass": "timing",
-   "drafted": "platform",
-   "cover": "none",
+   "drafted": "timing",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "jump"
@@ -1060,8 +1059,8 @@
   {
    "id": "s105",
    "verbClass": "timing",
-   "drafted": "move_free",
-   "cover": "template",
+   "drafted": "timing",
+   "cover": "piece",
    "template": "stack",
    "verbs": [
     "stack"
@@ -1070,8 +1069,8 @@
   {
    "id": "s106",
    "verbClass": "timing",
-   "drafted": "move_free",
-   "cover": "template",
+   "drafted": "timing",
+   "cover": "piece",
    "template": "give",
    "verbs": [
     "feed",
@@ -1081,8 +1080,8 @@
   {
    "id": "s107",
    "verbClass": "timing",
-   "drafted": "platform",
-   "cover": "none",
+   "drafted": "timing",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "grow"
@@ -1091,7 +1090,7 @@
   {
    "id": "s108",
    "verbClass": "manipulate",
-   "drafted": "move_free",
+   "drafted": "timing",
    "cover": "template",
    "template": "stack",
    "verbs": [
@@ -1247,7 +1246,7 @@
   {
    "id": "s124",
    "verbClass": "idle",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "none",
    "template": null,
    "verbs": [
@@ -1394,8 +1393,8 @@
   {
    "id": "s140",
    "verbClass": "rhythm",
-   "drafted": "move_free",
-   "cover": "none",
+   "drafted": "rhythm",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "tap"
@@ -1404,8 +1403,8 @@
   {
    "id": "s141",
    "verbClass": "rhythm",
-   "drafted": "move_free",
-   "cover": "none",
+   "drafted": "rhythm",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "cut"
@@ -1414,32 +1413,32 @@
   {
    "id": "s142",
    "verbClass": "rhythm",
-   "drafted": "move_free",
-   "cover": "none",
+   "drafted": "rhythm",
+   "cover": "piece",
    "template": null,
    "verbs": []
   },
   {
    "id": "s143",
    "verbClass": "rhythm",
-   "drafted": "move_free",
-   "cover": "none",
+   "drafted": "rhythm",
+   "cover": "piece",
    "template": null,
    "verbs": []
   },
   {
    "id": "s144",
    "verbClass": "rhythm",
-   "drafted": "move_free",
-   "cover": "none",
+   "drafted": "rhythm",
+   "cover": "piece",
    "template": null,
    "verbs": []
   },
   {
    "id": "s145",
    "verbClass": "rhythm",
-   "drafted": "platform",
-   "cover": "none",
+   "drafted": "rhythm",
+   "cover": "piece",
    "template": null,
    "verbs": [
     "jump",
@@ -1619,7 +1618,7 @@
   {
    "id": "s163",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -1871,8 +1870,8 @@
   {
    "id": "s190",
    "verbClass": "move_free",
-   "drafted": "runner",
-   "cover": "none",
+   "drafted": "move_free",
+   "cover": "piece",
    "template": null,
    "verbs": []
   },
@@ -1923,7 +1922,7 @@
   {
    "id": "s195",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -1931,7 +1930,7 @@
   {
    "id": "s196",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "none",
    "template": null,
    "verbs": []
@@ -1939,7 +1938,7 @@
   {
    "id": "s197",
    "verbClass": "tap_go",
-   "drafted": "runner",
+   "drafted": "move_free",
    "cover": "none",
    "template": null,
    "verbs": []

@@ -1,5 +1,5 @@
 /**
- * Kontrakt žánrů (P32-0 T3): pět žánrů PLAY, jejich režimy, tvar `GenreSpec`,
+ * Kontrakt žánrů (P32-0 T3): žánry PLAY, jejich režimy, tvar `GenreSpec`,
  * který píše AI i rychlá verze, a rozhraní modulu žánru.
  *
  * **Žánr je vrstva nad `GameSpecV1`.** Modul přeloží `GenreSpec` na dnešní spec
@@ -31,7 +31,8 @@ export const GENRE_COMPILER_VERSION = 'genre.v1';
  */
 export const livesMechanic = (): GameSpecV1['mechanics'][number] => ({ id: 'health', params: { max: START_LIVES } });
 
-export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw'] as const;
+/** Od P36A T10/T11 jedenáct žánrů: pět z P32 a šest vrácených ovládání (střelba, hod, načasování, rytmus, souboj, poletování). */
+export const GENRES = ['runner', 'platformer', 'arena', 'voyage', 'quest', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'flap'] as const;
 export type GenreId = (typeof GENRES)[number];
 
 export const GENRE_MODES = {
@@ -42,6 +43,10 @@ export const GENRE_MODES = {
   quest: ['spatial', 'station'],
   shooter: ['default'],
   throw: ['default'],
+  timing: ['stack', 'precision', 'bridge'],
+  rhythm: ['default'],
+  duel: ['default'],
+  flap: ['default'],
 } as const satisfies Readonly<Record<GenreId, readonly [string, ...string[]]>>;
 export type GenreMode<G extends GenreId = GenreId> = (typeof GENRE_MODES)[G][number];
 
@@ -138,6 +143,10 @@ export const genreSpecSchema = z.discriminatedUnion('genre', [
   variant('quest'),
   variant('shooter'),
   variant('throw'),
+  variant('timing'),
+  variant('rhythm'),
+  variant('duel'),
+  variant('flap'),
 ]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
@@ -169,7 +178,8 @@ export interface GenreModule<G extends GenreId = GenreId> {
  * `count` role. Žánr bez řádku počty nečte (plavba staví trať podle délky,
  * ne podle počtu; plošinovka počítá jen věci ke sběru, P35 T3; běžec od P36A T4
  * natahuje trať podle překážek i věcí; střílečka čte nepřátele jedné vlny, hod
- * staví cíle podle obtížnosti). Hlídá test, že každý parametr má modul
+ * staví cíle podle obtížnosti; načasování, rytmus, souboj a poletování mají
+ * délku z kol, dob a metrů, ne z počtu). Hlídá test, že každý parametr má modul
  * v `paramBounds`.
  */
 export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode<G>]?: Readonly<Partial<Record<CountRole, string>>> } } = {
@@ -180,6 +190,10 @@ export const COUNT_PARAMS: { readonly [G in GenreId]: { readonly [M in GenreMode
   quest: { spatial: { target: 'count', enemy: 'chasers' }, station: { target: 'count' } },
   shooter: { default: { enemy: 'enemies', target: 'targets' } },
   throw: {},
+  timing: {},
+  rhythm: {},
+  duel: {},
+  flap: {},
 };
 
 const countParamsOf = (spec: Pick<GenreSpec, 'genre' | 'mode'>): Readonly<Partial<Record<CountRole, string>>> =>

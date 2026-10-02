@@ -42,67 +42,94 @@
    },
    "byGenre": {
     "arena.collect": {
-     "sentences": 17,
-     "medianWinSeconds": 49.15,
+     "sentences": 36,
+     "medianWinSeconds": 46.08,
      "minWinSeconds": 33.8,
      "maxWinSeconds": 63.32,
-     "inBand": 17,
-     "idleLoses": 17,
-     "livesOver1": 17
+     "inBand": 36,
+     "idleLoses": 36,
+     "livesOver1": 36
     },
     "arena.escape": {
-     "sentences": 24,
+     "sentences": 25,
      "medianWinSeconds": 40,
      "minWinSeconds": 40,
      "maxWinSeconds": 72.55,
-     "inBand": 24,
-     "idleLoses": 24,
-     "livesOver1": 24
+     "inBand": 25,
+     "idleLoses": 25,
+     "livesOver1": 25
     },
     "arena.fight": {
-     "sentences": 27,
-     "medianWinSeconds": 49.82,
+     "sentences": 23,
+     "medianWinSeconds": 49.6,
      "minWinSeconds": 39.08,
-     "maxWinSeconds": 62.17,
-     "inBand": 27,
-     "idleLoses": 27,
-     "livesOver1": 27
+     "maxWinSeconds": 55.13,
+     "inBand": 23,
+     "idleLoses": 23,
+     "livesOver1": 23
+    },
+    "duel": {
+     "sentences": 3,
+     "medianWinSeconds": 33.52,
+     "minWinSeconds": 32.7,
+     "maxWinSeconds": 34.07,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "flap": {
+     "sentences": 2,
+     "medianWinSeconds": 37.17,
+     "minWinSeconds": 37.17,
+     "maxWinSeconds": 37.17,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
     },
     "platformer": {
-     "sentences": 26,
-     "medianWinSeconds": 42.53,
+     "sentences": 21,
+     "medianWinSeconds": 42.05,
      "minWinSeconds": 35.13,
      "maxWinSeconds": 51.3,
-     "inBand": 26,
-     "idleLoses": 26,
-     "livesOver1": 26
+     "inBand": 21,
+     "idleLoses": 21,
+     "livesOver1": 21
     },
     "quest.spatial": {
-     "sentences": 19,
-     "medianWinSeconds": 60.45,
+     "sentences": 15,
+     "medianWinSeconds": 57,
      "minWinSeconds": 44.85,
      "maxWinSeconds": 76.77,
-     "inBand": 19,
-     "idleLoses": 19,
-     "livesOver1": 19
+     "inBand": 15,
+     "idleLoses": 15,
+     "livesOver1": 15
     },
     "quest.station": {
-     "sentences": 44,
+     "sentences": 35,
      "medianWinSeconds": 40,
      "minWinSeconds": 32,
      "maxWinSeconds": 40,
-     "inBand": 44,
-     "idleLoses": 44,
-     "livesOver1": 44
+     "inBand": 35,
+     "idleLoses": 35,
+     "livesOver1": 35
+    },
+    "rhythm": {
+     "sentences": 8,
+     "medianWinSeconds": 35.52,
+     "minWinSeconds": 35.52,
+     "maxWinSeconds": 35.52,
+     "inBand": 8,
+     "idleLoses": 8,
+     "livesOver1": 8
     },
     "runner": {
-     "sentences": 49,
-     "medianWinSeconds": 39.98,
-     "minWinSeconds": 35.07,
+     "sentences": 26,
+     "medianWinSeconds": 40.89,
+     "minWinSeconds": 35.37,
      "maxWinSeconds": 47.97,
-     "inBand": 49,
-     "idleLoses": 49,
-     "livesOver1": 49
+     "inBand": 26,
+     "idleLoses": 26,
+     "livesOver1": 26
     },
     "shooter": {
      "sentences": 13,
@@ -121,6 +148,33 @@
      "inBand": 0,
      "idleLoses": 18,
      "livesOver1": 0
+    },
+    "timing.bridge": {
+     "sentences": 1,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "timing.precision": {
+     "sentences": 3,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "timing.stack": {
+     "sentences": 8,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 8,
+     "idleLoses": 8,
+     "livesOver1": 8
     },
     "voyage.land": {
      "sentences": 1,
@@ -174,13 +228,13 @@
    },
    "byGenre": {
     "arena.collect": {
-     "sentences": 14,
-     "medianWinSeconds": 49.39,
+     "sentences": 23,
+     "medianWinSeconds": 48.45,
      "minWinSeconds": 39.78,
      "maxWinSeconds": 63.32,
-     "inBand": 14,
-     "idleLoses": 14,
-     "livesOver1": 14
+     "inBand": 23,
+     "idleLoses": 23,
+     "livesOver1": 23
     },
     "arena.escape": {
      "sentences": 18,
@@ -192,49 +246,76 @@
      "livesOver1": 18
     },
     "arena.fight": {
-     "sentences": 21,
-     "medianWinSeconds": 49.9,
+     "sentences": 18,
+     "medianWinSeconds": 49.58,
      "minWinSeconds": 39.08,
-     "maxWinSeconds": 59.42,
-     "inBand": 21,
-     "idleLoses": 21,
-     "livesOver1": 21
+     "maxWinSeconds": 55.13,
+     "inBand": 18,
+     "idleLoses": 18,
+     "livesOver1": 18
+    },
+    "duel": {
+     "sentences": 1,
+     "medianWinSeconds": 34.07,
+     "minWinSeconds": 34.07,
+     "maxWinSeconds": 34.07,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "flap": {
+     "sentences": 1,
+     "medianWinSeconds": 37.17,
+     "minWinSeconds": 37.17,
+     "maxWinSeconds": 37.17,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
     },
     "platformer": {
-     "sentences": 23,
+     "sentences": 19,
      "medianWinSeconds": 42.53,
      "minWinSeconds": 35.13,
      "maxWinSeconds": 51.3,
-     "inBand": 23,
-     "idleLoses": 23,
-     "livesOver1": 23
+     "inBand": 19,
+     "idleLoses": 19,
+     "livesOver1": 19
     },
     "quest.spatial": {
-     "sentences": 14,
-     "medianWinSeconds": 60.76,
+     "sentences": 11,
+     "medianWinSeconds": 60.45,
      "minWinSeconds": 53.27,
      "maxWinSeconds": 76.2,
-     "inBand": 14,
-     "idleLoses": 14,
-     "livesOver1": 14
+     "inBand": 11,
+     "idleLoses": 11,
+     "livesOver1": 11
     },
     "quest.station": {
-     "sentences": 37,
+     "sentences": 30,
      "medianWinSeconds": 40,
      "minWinSeconds": 40,
      "maxWinSeconds": 40,
-     "inBand": 37,
-     "idleLoses": 37,
-     "livesOver1": 37
+     "inBand": 30,
+     "idleLoses": 30,
+     "livesOver1": 30
+    },
+    "rhythm": {
+     "sentences": 6,
+     "medianWinSeconds": 35.52,
+     "minWinSeconds": 35.52,
+     "maxWinSeconds": 35.52,
+     "inBand": 6,
+     "idleLoses": 6,
+     "livesOver1": 6
     },
     "runner": {
-     "sentences": 31,
-     "medianWinSeconds": 40.55,
-     "minWinSeconds": 35.07,
+     "sentences": 21,
+     "medianWinSeconds": 41.07,
+     "minWinSeconds": 35.37,
      "maxWinSeconds": 47.97,
-     "inBand": 31,
-     "idleLoses": 31,
-     "livesOver1": 31
+     "inBand": 21,
+     "idleLoses": 21,
+     "livesOver1": 21
     },
     "shooter": {
      "sentences": 10,
@@ -253,6 +334,33 @@
      "inBand": 0,
      "idleLoses": 14,
      "livesOver1": 0
+    },
+    "timing.bridge": {
+     "sentences": 1,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "timing.precision": {
+     "sentences": 3,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 3,
+     "idleLoses": 3,
+     "livesOver1": 3
+    },
+    "timing.stack": {
+     "sentences": 6,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 6,
+     "idleLoses": 6,
+     "livesOver1": 6
     },
     "voyage.land": {
      "sentences": 1,
@@ -306,67 +414,94 @@
    },
    "byGenre": {
     "arena.collect": {
-     "sentences": 3,
-     "medianWinSeconds": 39.85,
+     "sentences": 13,
+     "medianWinSeconds": 44.18,
      "minWinSeconds": 33.8,
      "maxWinSeconds": 60.6,
-     "inBand": 3,
-     "idleLoses": 3,
-     "livesOver1": 3
+     "inBand": 13,
+     "idleLoses": 13,
+     "livesOver1": 13
     },
     "arena.escape": {
-     "sentences": 6,
-     "medianWinSeconds": 43.01,
-     "minWinSeconds": 40,
-     "maxWinSeconds": 66.23,
-     "inBand": 6,
-     "idleLoses": 6,
-     "livesOver1": 6
-    },
-    "arena.fight": {
-     "sentences": 6,
-     "medianWinSeconds": 49.63,
-     "minWinSeconds": 41.73,
-     "maxWinSeconds": 62.17,
-     "inBand": 6,
-     "idleLoses": 6,
-     "livesOver1": 6
-    },
-    "platformer": {
-     "sentences": 3,
-     "medianWinSeconds": 42.05,
-     "minWinSeconds": 37.2,
-     "maxWinSeconds": 48.43,
-     "inBand": 3,
-     "idleLoses": 3,
-     "livesOver1": 3
-    },
-    "quest.spatial": {
-     "sentences": 5,
-     "medianWinSeconds": 54.65,
-     "minWinSeconds": 44.85,
-     "maxWinSeconds": 76.77,
-     "inBand": 5,
-     "idleLoses": 5,
-     "livesOver1": 5
-    },
-    "quest.station": {
      "sentences": 7,
      "medianWinSeconds": 40,
-     "minWinSeconds": 32,
-     "maxWinSeconds": 40,
+     "minWinSeconds": 40,
+     "maxWinSeconds": 66.23,
      "inBand": 7,
      "idleLoses": 7,
      "livesOver1": 7
     },
+    "arena.fight": {
+     "sentences": 5,
+     "medianWinSeconds": 49.6,
+     "minWinSeconds": 41.73,
+     "maxWinSeconds": 55.13,
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
+    },
+    "duel": {
+     "sentences": 2,
+     "medianWinSeconds": 33.11,
+     "minWinSeconds": 32.7,
+     "maxWinSeconds": 33.52,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
+    "flap": {
+     "sentences": 1,
+     "medianWinSeconds": 37.17,
+     "minWinSeconds": 37.17,
+     "maxWinSeconds": 37.17,
+     "inBand": 1,
+     "idleLoses": 1,
+     "livesOver1": 1
+    },
+    "platformer": {
+     "sentences": 2,
+     "medianWinSeconds": 39.63,
+     "minWinSeconds": 37.2,
+     "maxWinSeconds": 42.05,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
+    "quest.spatial": {
+     "sentences": 4,
+     "medianWinSeconds": 53.96,
+     "minWinSeconds": 44.85,
+     "maxWinSeconds": 76.77,
+     "inBand": 4,
+     "idleLoses": 4,
+     "livesOver1": 4
+    },
+    "quest.station": {
+     "sentences": 5,
+     "medianWinSeconds": 40,
+     "minWinSeconds": 32,
+     "maxWinSeconds": 40,
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
+    },
+    "rhythm": {
+     "sentences": 2,
+     "medianWinSeconds": 35.52,
+     "minWinSeconds": 35.52,
+     "maxWinSeconds": 35.52,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
+    },
     "runner": {
-     "sentences": 18,
-     "medianWinSeconds": 39.52,
-     "minWinSeconds": 35.7,
-     "maxWinSeconds": 47.08,
-     "inBand": 18,
-     "idleLoses": 18,
-     "livesOver1": 18
+     "sentences": 5,
+     "medianWinSeconds": 39.53,
+     "minWinSeconds": 38.93,
+     "maxWinSeconds": 43.22,
+     "inBand": 5,
+     "idleLoses": 5,
+     "livesOver1": 5
     },
     "shooter": {
      "sentences": 3,
@@ -385,6 +520,15 @@
      "inBand": 0,
      "idleLoses": 4,
      "livesOver1": 0
+    },
+    "timing.stack": {
+     "sentences": 2,
+     "medianWinSeconds": 31.53,
+     "minWinSeconds": 31.53,
+     "maxWinSeconds": 31.53,
+     "inBand": 2,
+     "idleLoses": 2,
+     "livesOver1": 2
     },
     "voyage.race": {
      "sentences": 5,
@@ -1627,24 +1771,24 @@
    "set": "demand",
    "id": "s035",
    "text": "like flappy bird but underwater",
-   "genre": "runner",
+   "genre": "flap",
    "seed": 1363119617,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2357
+    "tick": 2230
    },
-   "winSeconds": 39.28,
+   "winSeconds": 37.17,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 752
+    "tick": 32
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 550,
+   "botScore": 875,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -1807,24 +1951,24 @@
    "set": "demand",
    "id": "s040",
    "text": "cowboy duel at high noon, first to shoot wins",
-   "genre": "arena.fight",
+   "genre": "duel",
    "seed": 949504361,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3277
+    "tick": 2044
    },
-   "winSeconds": 54.62,
+   "winSeconds": 34.07,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1381
+    "tick": 245
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 425,
+   "botScore": 570,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -3103,25 +3247,25 @@
    "set": "demand",
    "id": "s076",
    "text": "a maze game where the walls move",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 156829954,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2433
+    "tick": 2907
    },
-   "winSeconds": 40.55,
+   "winSeconds": 48.45,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 960
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 576,
-   "worstScore": 50,
+   "botScore": 475,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3247,25 +3391,25 @@
    "set": "demand",
    "id": "s080",
    "text": "a cat must knock things off shelves in the right order to reach the fish",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 294323279,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2569
+    "tick": 3021
    },
-   "winSeconds": 42.82,
+   "winSeconds": 50.35,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 989
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 509,
-   "worstScore": 50,
+   "botScore": 465,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3355,25 +3499,25 @@
    "set": "demand",
    "id": "s083",
    "text": "pull the pins to save the guy from lava",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1660790067,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2198
+    "tick": 2835
    },
-   "winSeconds": 36.63,
+   "winSeconds": 47.25,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 775
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 596,
-   "worstScore": 50,
+   "botScore": 480,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -3895,24 +4039,24 @@
    "set": "demand",
    "id": "s098",
    "text": "stack blocks as high as u can",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 2124024167,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -3931,24 +4075,24 @@
    "set": "demand",
    "id": "s099",
    "text": "build the tallest pancake tower before it falls over",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 1256944565,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -3967,24 +4111,24 @@
    "set": "demand",
    "id": "s100",
    "text": "tap at the right time to stop the moving platform",
-   "genre": "platformer",
+   "genre": "timing.precision",
    "seed": 176315849,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2551
+    "tick": 1892
    },
-   "winSeconds": 42.52,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 4861
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 559,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4003,24 +4147,24 @@
    "set": "demand",
    "id": "s101",
    "text": "stack burgers on a plate as they fly across the screen",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 1030526171,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4039,24 +4183,24 @@
    "set": "demand",
    "id": "s102",
    "text": "A crane operator stacks containers on a ship in a storm",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 1268051831,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4111,24 +4255,24 @@
    "set": "demand",
    "id": "s104",
    "text": "time your jumps through spinning rings",
-   "genre": "platformer",
+   "genre": "timing.precision",
    "seed": 1293246394,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2700
+    "tick": 1892
    },
-   "winSeconds": 45,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 5281
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 569,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4147,24 +4291,24 @@
    "set": "demand",
    "id": "s105",
    "text": "stack animals on top of each other on noah's ark",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 1385489716,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4183,24 +4327,24 @@
    "set": "demand",
    "id": "s106",
    "text": "cut the rope at the right moment to feed the monster",
-   "genre": "quest.station",
+   "genre": "timing.precision",
    "seed": 1039930207,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4219,24 +4363,24 @@
    "set": "demand",
    "id": "s107",
    "text": "hold to grow a bridge and let go to cross the gap",
-   "genre": "platformer",
+   "genre": "timing.bridge",
    "seed": 1044144696,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3056
+    "tick": 1892
    },
-   "winSeconds": 50.93,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 5281
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 545,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4255,24 +4399,24 @@
    "set": "demand",
    "id": "s108",
    "text": "stack the jenga blocks without it falling",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 368080058,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -4831,25 +4975,25 @@
    "set": "demand",
    "id": "s124",
    "text": "tap to grow a garden that makes money while im away",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1965382786,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2399
+    "tick": 2501
    },
-   "winSeconds": 39.98,
+   "winSeconds": 41.68,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 530
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 554,
-   "worstScore": 50,
+   "botScore": 510,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -5407,24 +5551,24 @@
    "set": "demand",
    "id": "s140",
    "text": "tap to the beat with glowing tiles",
-   "genre": "quest.spatial",
+   "genre": "rhythm",
    "seed": 84854976,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3522
+    "tick": 2131
    },
-   "winSeconds": 58.7,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 627
+    "tick": 310
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 395,
+   "botScore": 781,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -5443,24 +5587,24 @@
    "set": "demand",
    "id": "s141",
    "text": "like beat saber but with swords cutting fruit to music",
-   "genre": "arena.fight",
+   "genre": "rhythm",
    "seed": 657537446,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3565
+    "tick": 2131
    },
-   "winSeconds": 59.42,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1378
+    "tick": 280
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 250,
+   "botScore": 799,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -5479,24 +5623,24 @@
    "set": "demand",
    "id": "s142",
    "text": "a dance battle in a disco",
-   "genre": "arena.fight",
+   "genre": "rhythm",
    "seed": 324849240,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3173
+    "tick": 2131
    },
-   "winSeconds": 52.88,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1376
+    "tick": 280
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 435,
+   "botScore": 811,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -5515,24 +5659,24 @@
    "set": "demand",
    "id": "s143",
    "text": "piano tiles but falling from space",
-   "genre": "quest.spatial",
+   "genre": "rhythm",
    "seed": 630771286,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3819
+    "tick": 2131
    },
-   "winSeconds": 63.65,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 626
+    "tick": 310
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 370,
+   "botScore": 811,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -5551,24 +5695,24 @@
    "set": "demand",
    "id": "s144",
    "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
-   "genre": "quest.spatial",
+   "genre": "rhythm",
    "seed": 589712644,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3822
+    "tick": 2131
    },
-   "winSeconds": 63.7,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 619
+    "tick": 310
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 370,
+   "botScore": 811,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -5587,24 +5731,24 @@
    "set": "demand",
    "id": "s145",
    "text": "music game where a ball rolls on a road to the beat and jumps on the drops",
-   "genre": "platformer",
+   "genre": "rhythm",
    "seed": 723449068,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2445
+    "tick": 2131
    },
-   "winSeconds": 40.75,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 4621
+    "tick": 310
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 527,
+   "botScore": 793,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -6235,25 +6379,25 @@
    "set": "demand",
    "id": "s163",
    "text": "A barista rushes orders during the morning coffee rush",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1077976419,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2104
+    "tick": 3423
    },
-   "winSeconds": 35.07,
+   "winSeconds": 57.05,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1135
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 570,
-   "worstScore": 50,
+   "botScore": 430,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -7207,25 +7351,25 @@
    "set": "demand",
    "id": "s190",
    "text": "goat simulator but you're a raccoon in a city",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1168192157,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2803
+    "tick": 3255
    },
-   "winSeconds": 46.72,
+   "winSeconds": 54.25,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 764
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 509,
-   "worstScore": 50,
+   "botScore": 445,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -7387,25 +7531,25 @@
    "set": "demand",
    "id": "s195",
    "text": "something relaxing with bubbles",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 240344146,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2162
+    "tick": 2423
    },
-   "winSeconds": 36.03,
+   "winSeconds": 40.38,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 659
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 588,
-   "worstScore": 50,
+   "botScore": 515,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -7423,25 +7567,25 @@
    "set": "demand",
    "id": "s196",
    "text": "a cozy game",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1038582479,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2208
+    "tick": 2505
    },
-   "winSeconds": 36.8,
+   "winSeconds": 41.75,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 724
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 579,
-   "worstScore": 50,
+   "botScore": 510,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -7459,25 +7603,25 @@
    "set": "demand",
    "id": "s197",
    "text": "something fun and colorful for my little sister",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1138001617,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2581
+    "tick": 2711
    },
-   "winSeconds": 43.02,
+   "winSeconds": 45.18,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 872
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 535,
-   "worstScore": 50,
+   "botScore": 490,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -7891,24 +8035,24 @@
    "set": "dev",
    "id": "s035",
    "text": "like flappy bird but underwater",
-   "genre": "runner",
+   "genre": "flap",
    "seed": 1363119617,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2357
+    "tick": 2230
    },
-   "winSeconds": 39.28,
+   "winSeconds": 37.17,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 752
+    "tick": 32
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 550,
+   "botScore": 875,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -8215,24 +8359,24 @@
    "set": "dev",
    "id": "s144",
    "text": "A drummer frog plays on lily pads and the pond lights up with the beat",
-   "genre": "quest.spatial",
+   "genre": "rhythm",
    "seed": 589712644,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3822
+    "tick": 2131
    },
-   "winSeconds": 63.7,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 619
+    "tick": 310
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 370,
+   "botScore": 811,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -8287,24 +8431,24 @@
    "set": "dev",
    "id": "s099",
    "text": "build the tallest pancake tower before it falls over",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 1256944565,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -8539,25 +8683,25 @@
    "set": "dev",
    "id": "h07",
    "text": "purple elephants doing taxes on a volcano",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1182459602,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2219
+    "tick": 3103
    },
-   "winSeconds": 36.98,
+   "winSeconds": 51.72,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 402
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 583,
-   "worstScore": 50,
+   "botScore": 460,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -8575,25 +8719,25 @@
    "set": "dev",
    "id": "h08",
    "text": "a romantic dinner date on the moon",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 173969465,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2142
+    "tick": 2421
    },
-   "winSeconds": 35.7,
+   "winSeconds": 40.35,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 669
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 561,
-   "worstScore": 50,
+   "botScore": 515,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -8683,25 +8827,25 @@
    "set": "dev",
    "id": "j01",
    "text": "Explain quantum physics to my grandma.",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1760529582,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2209
+    "tick": 2768
    },
-   "winSeconds": 36.82,
+   "winSeconds": 46.13,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 623
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 527,
-   "worstScore": 50,
+   "botScore": 485,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -8719,25 +8863,25 @@
    "set": "dev",
    "id": "j02",
    "text": "a sleepy cat naps in a cozy rainy café",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1202141043,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2532
+    "tick": 2723
    },
-   "winSeconds": 42.2,
+   "winSeconds": 45.38,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 763
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 527,
-   "worstScore": 50,
+   "botScore": 490,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -8755,25 +8899,25 @@
    "set": "dev",
    "id": "j03",
    "text": "my startup pitch to investors in a glass skyscraper",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 585042078,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2561
+    "tick": 2651
    },
-   "winSeconds": 42.68,
+   "winSeconds": 44.18,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 528
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 515,
-   "worstScore": 50,
+   "botScore": 495,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -8899,25 +9043,25 @@
    "set": "dev",
    "id": "j07",
    "text": "a squirrel hoards acorns before winter comes",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 768103657,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2370
+    "tick": 2803
    },
-   "winSeconds": 39.5,
+   "winSeconds": 46.72,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 646
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 590,
-   "worstScore": 50,
+   "botScore": 485,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -8971,24 +9115,24 @@
    "set": "dev",
    "id": "j09",
    "text": "a dragon burns down villages and dodges arrows from knights",
-   "genre": "platformer",
+   "genre": "arena.escape",
    "seed": 1360559991,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2906
+    "tick": 2400
    },
-   "winSeconds": 48.43,
+   "winSeconds": 40,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 5281
+    "tick": 606
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 549,
+   "botScore": 100,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -9079,25 +9223,25 @@
    "set": "dev",
    "id": "d02",
    "text": "teach my little brother the multiplication table",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 507830144,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2161
+    "tick": 2215
    },
-   "winSeconds": 36.02,
+   "winSeconds": 36.92,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 830
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 611,
-   "worstScore": 50,
+   "botScore": 535,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -9331,24 +9475,24 @@
    "set": "dev",
    "id": "d09",
    "text": "stack cheese wheels into a wobbly tower at a farm market",
-   "genre": "quest.station",
+   "genre": "timing.stack",
    "seed": 1726936063,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2400
+    "tick": 1892
    },
-   "winSeconds": 40,
+   "winSeconds": 31.53,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1440
+    "tick": 903
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 455,
+   "botScore": 648,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -9367,24 +9511,24 @@
    "set": "dev",
    "id": "d10",
    "text": "a pirate duels a skeleton captain on a sinking ship",
-   "genre": "arena.fight",
+   "genre": "duel",
    "seed": 173605571,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 3730
+    "tick": 2011
    },
-   "winSeconds": 62.17,
+   "winSeconds": 33.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1374
+    "tick": 244
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 385,
+   "botScore": 575,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -9403,24 +9547,24 @@
    "set": "dev",
    "id": "d11",
    "text": "tap along to the drums at a jungle festival",
-   "genre": "runner",
+   "genre": "rhythm",
    "seed": 20597539,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2396
+    "tick": 2131
    },
-   "winSeconds": 39.93,
+   "winSeconds": 35.52,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 1026
+    "tick": 250
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 596,
+   "botScore": 823,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -9475,25 +9619,25 @@
    "set": "dev",
    "id": "d13",
    "text": "write a thank-you letter to my teacher",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1599319316,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2825
+    "tick": 2386
    },
-   "winSeconds": 47.08,
+   "winSeconds": 39.77,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 882
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 496,
-   "worstScore": 50,
+   "botScore": 520,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -9619,25 +9763,25 @@
    "set": "dev",
    "id": "d17",
    "text": "a robot vacuum cleans the house before the family comes home",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 1120813366,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2734
+    "tick": 3230
    },
-   "winSeconds": 45.57,
+   "winSeconds": 53.83,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 656
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 512,
-   "worstScore": 50,
+   "botScore": 450,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {
@@ -9655,24 +9799,24 @@
    "set": "dev",
    "id": "d18",
    "text": "a sumo wrestler pushes rivals out of a bouncy ring",
-   "genre": "runner",
+   "genre": "duel",
    "seed": 1807700313,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2525
+    "tick": 1962
    },
-   "winSeconds": 42.08,
+   "winSeconds": 32.7,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 776
+    "tick": 234
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 544,
+   "botScore": 580,
    "worstScore": 50,
    "scoreDecides": true,
    "scoreGoal": null,
@@ -9691,25 +9835,25 @@
    "set": "dev",
    "id": "d19",
    "text": "plan a budget for my family vacation",
-   "genre": "runner",
+   "genre": "arena.collect",
    "seed": 335024891,
    "playable": true,
    "publishable": true,
    "failures": [],
    "bot": {
     "end": "won",
-    "tick": 2203
+    "tick": 2571
    },
-   "winSeconds": 36.72,
+   "winSeconds": 42.85,
    "inBand": true,
    "idle": {
     "end": "lost",
-    "tick": 867
+    "tick": 5281
    },
    "lives": 3,
    "livesFrom": "counter",
-   "botScore": 559,
-   "worstScore": 50,
+   "botScore": 505,
+   "worstScore": 80,
    "scoreDecides": true,
    "scoreGoal": null,
    "said": {

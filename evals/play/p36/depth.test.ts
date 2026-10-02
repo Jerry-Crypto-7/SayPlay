@@ -74,4 +74,12 @@ describe('plan P36A targets over all 260 sentences', () => {
   it(`≥ ${String(DEPTH_TARGETS.livesOver1Share * 100)} % of games start with more than one life (T2 flipped this)`, () => {
     expect(all.livesOver1Share).toBeGreaterThanOrEqual(DEPTH_TARGETS.livesOver1Share);
   });
+
+  // T11 (2. 10. 2026): věta bez slovesa už nehraje vždy běžce; na poptávce je největší Aréna s 59/200 = 29,5 %.
+  it('no genre takes more than 35 % of the demand sentences (T11)', () => {
+    const demand = report.rows.filter((row) => row.set === 'demand');
+    const counts = new Map<string, number>();
+    for (const row of demand) counts.set(row.genre.split('.')[0]!, (counts.get(row.genre.split('.')[0]!) ?? 0) + 1);
+    expect(Math.max(...counts.values()) / demand.length).toBeLessThanOrEqual(0.35);
+  });
 });

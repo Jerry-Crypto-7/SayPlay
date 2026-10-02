@@ -30,11 +30,11 @@ test.describe('/play/[id] – honesty strip', () => {
     await expect(strip).toHaveCount(0);
   });
 
-  // P28D T4 (R-12): věta, která hru nechce, dostane běžce o svém tématu a hlášku, jak psát příště.
-  test('a sentence without a game verb says so and still plays a runner titled from the sentence', async ({ page, request }) => {
+  // P28D T4 (R-12): věta, která hru nechce, dostane hru o svém tématu a hlášku, jak psát příště (od P36A T11 sběr v Aréně, dřív běžec).
+  test('a sentence without a game verb says so and still plays a game titled from the sentence', async ({ page, request }) => {
     const game = await publish(request, 'Explain quantum physics to my grandma.');
     await page.goto(game.url);
-    await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’');
+    await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a collecting game about grandma. Try: ‘Dodge …’, ‘Collect …’');
     await expect(page.getByRole('heading', { name: 'Explain Quantum Physics Grandma' })).toBeVisible();
     await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });

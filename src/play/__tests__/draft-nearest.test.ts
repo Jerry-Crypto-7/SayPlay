@@ -46,9 +46,11 @@ describe('nearest arcade game for a sentence the draft does not know', () => {
     expect(nearestControl('explain quantum physics to my grandma')).toMatchObject({ choice: { control: 'runner' }, why: 'default' });
   });
 
-  it('drafts a sentence without any cue as a runner, not as mushrooms on the grid', () => {
+  // Nová hra jde přes klasifikátor žánru (P36A T11): věta bez narážky je sběr v Aréně, běžec až poslední možnost.
+  it('drafts a sentence without any cue as an arena collect, not as mushrooms on the grid', () => {
     const spec = draftGameSpec('Explain quantum physics to my grandma.');
-    expect(spec.control).toBe('runner');
+    expect(spec.control).toBe('move_free');
+    expect(spec.genre).toMatchObject({ id: 'arena', mode: 'collect' });
     expect(spec.roles.map((role) => role.label.toLowerCase()).join(' ')).not.toMatch(/mushroom/);
   });
 

@@ -235,6 +235,23 @@ Přeměřeno s kompilátorem `play-compiler-v11/arcade-v2` (verze se nezvedá: u
 - **Hod (18 vět):** hodiny 30 s, nečinný prohraje 18/18 na hodinách, kombo zásahů. **V pásmu 0/18 a bez životů – vědomě:** minutí už stojí hod (`spareThrows` jsou životy hodu), život navíc by trestal totéž dvakrát. Robot pole vyčistí za 4,4–13,5 s (medián 5,0 s) a víc cílů se na jedno pole nevejde; delší hod chce kola (nové cíle po vyčištění) – nový kus pravidla, protože vlny arény nesou číslo vlny v čítači `ammo`, kde hod drží zbývající hody. Úloha F5 v plánu.
 - **Pokrytí sloves** (`../rules/coverage.json`): věty, jejichž třídu slovesa hraje dílek, 52 → **74/200**. Třída `aim_shoot` 10/15 (souboj s040 vrátí T11, „tank battle“, „water gun fight“, obrana rybníka a hledání terče v davu rozhodne jiné sloveso), třída `throw` 12/14 (převrácení lahve a penalta). „toss a pancake“ a „knife throwing at a spinning log“ mají třídu `timing` a dnes hrají Hod – načasování vrátí T11.
 
+## Po T11 – načasování, rytmus, souboj a poletování zpátky, běžec už není výchozí (2. 10. 2026)
+
+Přeměřeno s `play-compiler-v11/arcade-v2` (verze se nezvedá: uložené hry čtyř ovládání staví týž svět – 18 variant připíchnutých v `src/play/arcade/__tests__/legacy-controls-hash.test.ts`, změřeno na `638ac326`). Pásmo 241/260 (92,7 %), nečinný 260/260, životy > 1 242/260, skóre 260/260 – beze změny; mimo pásmo dál jen Hod (F5) a přistání.
+
+| žánr | věty | robot vyhraje (medián, rozpětí) | v pásmu | nečinný prohraje |
+|---|---|---|---|---|
+| Načasování (stack 8, precision 3, bridge 1) | 12 | 31,5 s (36 kol, každé rychlejší) | 12 | 12 |
+| Rytmus | 8 | 35,5 s (písnička 33 s + náběh, houstne po třetinách, ťuk míří do dráhy) | 8 | 8 |
+| Souboj | 3 | 33,5 s (32,7–34,1; 9 soupeřů za sebou, 7 jich bylo 28 s) | 3 | 3 |
+| Poletování | 2 | 37,2 s (trať 220 m, mezery se po třetinách zužují) | 2 | 2 |
+
+- **Rozložení na poptávce (200 vět):** Aréna 29,5 %, Úkol 20,5 %, běžec 10,5 % (po T10 15,5 %), skákačka 9,5 %, plavba 9 %, hod 7 %, střílečka a načasování po 5 %, rytmus 3 %, poletování a souboj po 0,5 %. Žádný žánr nad 35 % – hlídá `depth.test.ts`.
+- **Věta bez narážky** (9 vět poptávky, 11 vývojové sady – „a cozy game“, „a squirrel hoards acorns before winter comes“) hraje sběr v Aréně, běžec je v pořadí poslední. Hláška hráči říká „here is a collecting game about …“.
+- **Klasifikátor:** slovesa `stack`, „build the tallest“ → věž; „grow a bridge“ → most; „at the right time/moment“, „time your“, „stop the moving“, „cut the rope“ → přesnost; `dance`, „to/with/on the beat“ → rytmus; `duel` → Souboj (rvačka a box s víc soupeři zůstávají Arénou); `flap` → poletování. Jména: piano tiles, beat saber, the beat, drummer, drums, song, music, disco → rytmus; rival, high noon, showdown → souboj; flappy → poletování. „dodge/avoid“ bez slovesa → útěk.
+- **Vědomě jinak:** „toss a pancake“ a „knife throwing at a spinning log“ (třída `timing`) hrají dál Hod, „one tap game where a ball bounces down a helix tower“ skákačku, „stack the jenga blocks“ (třída `manipulate`) věž načasování.
+- **Pokrytí sloves dílkem** 74 → **91/200**: načasování 9/16, rytmus 6/6, poletování 1/1; `melee` 0/5 dál (rvačky hraje Aréna).
+
 ## Test (`depth.test.ts`)
 
 - Každá věta obou sad je v reportu právě jednou a se svým textem.

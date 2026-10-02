@@ -1,5 +1,5 @@
 /**
- * Registr žánrů (P32-0 T3, od P36A T10 sedm): moduly a čtení `GenreSpec` včetně mezí
+ * Registr žánrů (P32-0 T3, od P36A T11 jedenáct): moduly a čtení `GenreSpec` včetně mezí
  * parametrů, které drží modul žánru.
  */
 
@@ -9,11 +9,15 @@ import type { GameSpecV1 } from '../spec';
 
 import { arenaGenre } from './arena';
 import { type EnemyMove, type GenreId, type GenreModule, type GenreSpec, type ParamBounds, countIssues, genreSpecSchema, withCounts } from './contract';
+import { duelGenre } from './duel';
+import { flapGenre } from './flap';
 import { platformerGenre } from './platformer';
 import { questGenre } from './quest';
+import { rhythmGenre } from './rhythm';
 import { runnerGenre } from './runner';
 import { shooterGenre } from './shooter';
 import { throwGenre } from './throw';
+import { timingGenre } from './timing';
 import { voyageGenre } from './voyage';
 
 export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
@@ -24,6 +28,10 @@ export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
   quest: questGenre,
   shooter: shooterGenre,
   throw: throwGenre,
+  timing: timingGenre,
+  rhythm: rhythmGenre,
+  duel: duelGenre,
+  flap: flapGenre,
 };
 
 /**

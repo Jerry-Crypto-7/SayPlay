@@ -108,7 +108,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = flapTrack.params.parse({ ...spec.controlParams, ...counts });
     const level = flapTrack.generate(seed, params);
     const ramp = rampMarks(level.length);
-    return { control: { id: 'flap', params: { ramp } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health) };
+    return { control: { id: 'flap', params: { ramp } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true) };
   }
   if (spec.control === 'shooter') {
     const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });

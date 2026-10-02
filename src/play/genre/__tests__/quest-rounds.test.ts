@@ -132,7 +132,8 @@ describe('quest in rounds – 30 to 90 s for the robot, the count of the sentenc
  * a se starými hodinami musí hrát stejně.
  */
 const STORED = [
-  { sentence: 'build the tallest pancake tower before it falls over', seed: 1256944565, tick: 240 },
+  // Do P36A T11 tu byla „build the tallest pancake tower before it falls over“ – stavění věže je teď žánr Načasování.
+  { sentence: 'candy crush but with gems in a cave', seed: 771957274, tick: 240 },
   { sentence: 'I want a game where a tiny astronaut repairs a broken spaceship by collecting glowing crystals on an icy moon while avoiding cracks in the ice and a grumpy alien that throws snowballs at him', seed: 559306708, tick: 60 },
   // Do P36A T10 tu byla „A space marine shoots alien bugs…“ – střelba je teď žánr Střílečka.
   { sentence: 'destroy everything in a house with a hammer, smash simulator', seed: 294222000, tick: 971 },

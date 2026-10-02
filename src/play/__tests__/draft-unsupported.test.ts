@@ -51,21 +51,21 @@ describe('unsupportedGame over the demand corpus', () => {
   });
 });
 
-// P28D T4 (R-12): věta bez herního slovesa dostane běžce o svém tématu a řekne to.
+// P28D T4 (R-12): věta bez herního slovesa dostane hru o svém tématu a řekne to – od P36A T11 sběr v Aréně, běžec až poslední.
 describe('a sentence without a game verb', () => {
-  it('plays a runner about its longest noun and says so, with two example verbs', () => {
+  it('plays an arena collect about its longest noun and says so, with two example verbs', () => {
     const sentence = 'Explain quantum physics to my grandma.';
     const spec = draftGameSpec(sentence);
-    expect(spec.control).toBe('runner');
+    expect(spec.genre).toMatchObject({ id: 'arena', mode: 'collect' });
     expect(spec.roles.find((role) => role.kind === 'player')?.label).toBe('grandma');
-    // P32B T2: titul dává modul žánru z hrdiny, ne slova věty.
-    expect(spec.title).toBe('Grandma Run');
     expect(unsupportedGame(sentence, spec)).toEqual({
       kind: 'no_verb',
-      reason: 'No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’',
-      closest: 'an endless runner',
+      reason: 'No game verb found – here is a collecting game about grandma. Try: ‘Dodge …’, ‘Collect …’',
+      closest: 'a collecting game',
     });
-    expect(unsupportedGame('a romantic dinner date on the moon', draftGameSpec('a romantic dinner date on the moon'))?.reason).toContain('runner about dinner');
+    expect(unsupportedGame('a romantic dinner date on the moon', draftGameSpec('a romantic dinner date on the moon'))?.reason).toContain('collecting game about dinner');
+    // Hra bez žánru (uložená před P32) je dál běžec a hláška to tak řekne.
+    expect(unsupportedGame(sentence, { archetype: 'hazard_crossing', control: 'runner' })?.reason).toContain('an endless runner about grandma');
   });
 
   it('stays quiet for a sentence with a verb, a noun cue, or once the AI version is another game', () => {
@@ -96,7 +96,7 @@ describe('unsupportedGame', () => {
   it('names the game the player actually got, not the template archetype', () => {
     for (const [sentence, closest] of [
       ['a tower defense platformer where you jump between ledges', 'a platformer'],
-      ['an idle clicker where a bird flaps through pipes', 'a race'],
+      ['an idle clicker where a bird flaps through pipes', 'a flappy game'],
     ] as const) {
       const draft = draftGameSpec(sentence);
       expect(draft.archetype, sentence).toBe('hazard_crossing');

@@ -38,7 +38,7 @@ import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
-import { DUEL_DIFFICULTIES } from './arcade/pieces/duel';
+import { DUEL, DUEL_DIFFICULTIES } from './arcade/pieces/duel';
 import { RHYTHM, RHYTHM_DENSITIES } from './arcade/pieces/rhythm';
 import { SHOOTER_DIFFICULTIES, SHOOTER_RISE_MAX, SHOOTER_WAVE_SIZE_MAX } from './arcade/pieces/shooter';
 import { STEER_DIFFICULTIES, STEER_TRACK } from './arcade/pieces/steer';
@@ -299,6 +299,8 @@ export const flapParamsSchema = z
     difficulty: z.enum(FLAP_DIFFICULTIES).optional(),
     lengthM: z.int().min(FLAP_TRACK.minLengthM).max(FLAP_TRACK.maxLengthM).optional(),
     coins: z.boolean().optional(),
+    /** Mezery se po třetinách zužují, náraz bere život s milostí – žánr Poletování (P36A T11); uložená hra bez něj jako dřív. */
+    rise: z.boolean().optional(),
   })
   .strict();
 export type FlapParams = z.infer<typeof flapParamsSchema>;
@@ -358,6 +360,8 @@ export const timingParamsSchema = z
     speed: z.enum(TIMING_SPEEDS).optional(),
     tolerance: z.int().min(TIMING.minSpecTolerance).max(TIMING.maxTolerance).optional(),
     rounds: z.int().min(TIMING.minRounds).max(TIMING.maxRounds).optional(),
+    /** Každé kolo rychlejší – žánr Načasování (P36A T11); uložená hra bez něj jako dřív. */
+    rise: z.boolean().optional(),
   })
   .strict();
 export type TimingParams = z.infer<typeof timingParamsSchema>;
@@ -368,12 +372,15 @@ export const rhythmParamsSchema = z
     bpm: z.int().min(RHYTHM.minBpm).max(RHYTHM.maxBpm).optional(),
     density: z.enum(RHYTHM_DENSITIES).optional(),
     beats: z.int().min(RHYTHM.minBeats).max(RHYTHM.maxBeats).optional(),
+    /** Písnička houstne po třetinách a ťuk míří do dráhy – žánr Rytmus (P36A T11); uložená hra bez nich jako dřív. */
+    ramp: z.boolean().optional(),
+    lanes: z.boolean().optional(),
   })
   .strict();
 export type RhythmParams = z.infer<typeof rhythmParamsSchema>;
 
-/** Parametry souboje (P25H): obtížnost určí vzorec soupeře a jeho životy. */
-export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES).optional() }).strict();
+/** Parametry souboje (P25H): obtížnost určí vzorec soupeře a jeho životy; `rounds` soupeřů za sebou, každý rychlejší (žánr Souboj, P36A T11). */
+export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES).optional(), rounds: z.int().min(1).max(DUEL.maxRounds).optional() }).strict();
 export type DuelParams = z.infer<typeof duelParamsSchema>;
 
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */

@@ -91,7 +91,19 @@ const PLACE_ROLES: Readonly<Record<LookId, PlaceRoles>> = {
 
 /** Místo, které sady neznají („village“): nástraha podle žánru, hrdina liška, mince. */
 const UNKNOWN_PLACE: PlaceRoles = { hero: 'fox', craft: 'car', enemy: 'rock', collectible: 'coin' };
-const GENRE_ENEMY: Readonly<Record<GenreId, string>> = { runner: 'rock', platformer: 'spike', arena: 'wolf', voyage: 'rock', quest: 'shadow', shooter: 'robot', throw: 'can' };
+const GENRE_ENEMY: Readonly<Record<GenreId, string>> = {
+  runner: 'rock',
+  platformer: 'spike',
+  arena: 'wolf',
+  voyage: 'rock',
+  quest: 'shadow',
+  shooter: 'robot',
+  throw: 'can',
+  timing: 'wind',
+  rhythm: 'wrong note',
+  duel: 'rival',
+  flap: 'pipe',
+};
 
 const placeRoles = (setting: string): PlaceRoles | null => {
   const look = lookFor(setting);

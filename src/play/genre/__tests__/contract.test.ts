@@ -29,6 +29,12 @@ const SAMPLES: readonly GenreSpec[] = [
   { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'flip', states: 3 }, setting: 'restaurant kitchen' },
   { genre: 'shooter', mode: 'default', hero: 'space marine', enemy: 'alien bug', setting: 'mining colony', palette: 'space' },
   { genre: 'throw', mode: 'default', hero: 'kid', target: { label: 'snowman', verb: 'hit', states: 2 }, collectible: 'snowball', setting: 'snowy backyard', palette: 'snow' },
+  { genre: 'timing', mode: 'stack', hero: 'crane operator', collectible: 'container', setting: 'harbour in a storm' },
+  { genre: 'timing', mode: 'precision', hero: 'monkey', setting: 'jungle temple' },
+  { genre: 'timing', mode: 'bridge', hero: 'ninja', setting: 'mountain gorge' },
+  { genre: 'rhythm', mode: 'default', hero: 'drummer frog', collectible: 'lily pad', setting: 'pond at night' },
+  { genre: 'duel', mode: 'default', hero: 'cowboy', enemy: 'outlaw', setting: 'dusty town' },
+  { genre: 'flap', mode: 'default', hero: 'fish', collectible: 'pearl', setting: 'underwater reef' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
@@ -42,7 +48,7 @@ function firstWinningSeed(spec: Parameters<typeof compileArcade>[0]): ReturnType
 }
 
 describe('genre contract (P32-0 T3)', () => {
-  it('registers exactly the five genres with the modes of the contract', () => {
+  it('registers exactly the genres with the modes of the contract', () => {
     expect(Object.keys(GENRE_MODULES).sort()).toEqual([...GENRES].sort());
     for (const genre of GENRES) {
       expect(GENRE_MODULES[genre].id).toBe(genre);

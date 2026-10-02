@@ -1042,6 +1042,10 @@ const GENRE_SETTING: Readonly<Record<GenreId, string>> = {
   quest: 'village',
   shooter: 'desert outpost',
   throw: 'park',
+  timing: 'windy hilltop',
+  rhythm: 'neon stage',
+  duel: 'dusty town',
+  flap: 'bright sky',
 };
 const VERB_SETTING: Readonly<Record<string, string>> = { cook: 'kitchen', repair: 'workshop' };
 
@@ -1099,7 +1103,8 @@ function draftGenre(
     FLAPPY.exec(text)?.[1] ??
     topicHero;
   const catcher = CATCH_BEFORE.exec(text)?.[1];
-  const fight = choice.genre === 'arena' && choice.mode === 'fight';
+  // Souboj (P36A T11) bere soupeře z věty stejně jako rvačka v Aréně.
+  const fight = (choice.genre === 'arena' && choice.mode === 'fight') || choice.genre === 'duel';
   const verb = ranking.verb ?? 'use';
   const said = ranking.after === null ? null : nounPhrase(ranking.after.replace(/^(?:on|at|up|down|out|to|into)\s+/, ''), 2);
   const object = thing(said);
@@ -1152,7 +1157,8 @@ function draftGenre(
   const escape = choice.genre === 'arena' && choice.mode === 'escape';
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.
-  const noItem = escape || choice.genre === 'voyage' || choice.genre === 'shooter' || thrown;
+  // Načasování skládá, co řekne věta, jinak blok; rytmus hraje noty z věty, jinak dlaždice; souboj nesbírá nic (P36A T11).
+  const noItem = escape || choice.genre === 'voyage' || choice.genre === 'shooter' || thrown || choice.genre === 'timing' || choice.genre === 'rhythm' || choice.genre === 'duel';
   const itemLabel = collectible ?? (noItem ? null : spare(defaultCollectible(setting), [singular(hero), foeLabel]));
   const seconds = reading?.numbers.seconds ?? readNumbers(sentence).seconds;
   const own = paramsOf(module, fill.params, seconds);
