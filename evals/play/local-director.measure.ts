@@ -123,7 +123,7 @@ async function main(): Promise<void> {
       ...previous.models,
       [model]: {
         measuredAt: new Date().toISOString(),
-        commit: execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
+        commit: execFileSync('git', ['--no-replace-objects', 'rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
         endpoint,
         corpus,
         judge10,

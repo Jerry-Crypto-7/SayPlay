@@ -97,7 +97,7 @@ async function main(): Promise<void> {
   const report = {
     about: 'P29B T3: local reader vs keyword draft on the 200-sentence demand set (hand labels in evals/play/demand). See README.md.',
     measuredAt: new Date().toISOString(),
-    commit: execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
+    commit: execFileSync('git', ['--no-replace-objects', 'rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
     endpoint,
     model: process.env.PLAY_READER_MODEL ?? null,
     sentences: rows.length,

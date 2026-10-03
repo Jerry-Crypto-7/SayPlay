@@ -258,7 +258,7 @@ it('writes evals/play/p36/director.json', async () => {
   const report: Record<string, unknown> = {
     about: 'P36A T9: compact director with the depth fields (lives, targetScore, timeLimit, enemyMoves) on a local model; corpus = evals/play/fidelity/corpus.json (30), dev = d01-d20 of evals/play/p30/dev.json, mechanics = evals/play/p36/mechanics.json. See evals/play/p36/README.md.',
     measuredAt: new Date().toISOString(),
-    commit: execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
+    commit: execFileSync('git', ['--no-replace-objects', 'rev-parse', '--short', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(),
     model,
     endpoint,
     director: up ? 'measured' : `not measured – no model at ${endpoint}`,
