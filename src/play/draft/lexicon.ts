@@ -485,7 +485,7 @@ export function readRoles(sentence: string): SentenceRoles {
     /\b(?:hunted|chased|pursued|followed) by (?:a |an |the )?([a-z][a-z -]*)/,
     /\b(?:flees|escapes|escape|flee|run from|runs from|outrun|outruns) (?:from )?(?:a |an |the )?([a-z][a-z -]*)/,
   ], 2);
-  const collectible = first(text, [/\b(?:collect|gather|find|pick up|grab|steal)(?:s|ing)? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
+  const collectible = first(text, [/\b(?:collect|gather|hoard|find|pick up|grab|steal)(?:s|ing)? (?:all |every )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/], 2);
   const delivery = /\b(?:carry|deliver|bring|take|escort)s? (?:a |an |the )?([a-z][a-z -]*?) (?:from (?:a |an |the )?[a-z][a-z -]*? )?(?:across (?:a |an |the )?[a-z][a-z -]*? )?to (?:a |an |the )?([a-z][a-z -]*)/.exec(text);
   const target = first(text, [
     /\b(?:defeat|destroy|knock out|knock down|hit|smash|beat)s? (?:all |every |the )?(?:of )?(?:the )?((?:\d+ |[a-z]+ )?[a-z][a-z -]*)/,

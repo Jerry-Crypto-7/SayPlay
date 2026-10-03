@@ -186,6 +186,12 @@ describe('draftGameSpec', () => {
     expect(city.mechanics.find((m) => m.id === 'collectible')?.params.count).toBe(20);
   });
 
+  it('collects what a hoarding hero hoards, not the place default', () => {
+    // Věrnost j07 (P32B T6): bez slovesa „hoard“ sbírala veverka na louce květiny.
+    const squirrel = draftGameSpec('a squirrel hoards acorns before winter comes');
+    expect(squirrel.roles?.find((r) => r.kind === 'collectible')?.label).toBe('acorn');
+  });
+
   it('puts the right article in front of the renamed role', () => {
     expect(grid('A lone knight gathers three iron keys inside a haunted castle.').tutorial.controlsHint).toMatch(/^Tap an iron key /);
     expect(grid('A knight must collect three keys in a haunted castle.').tutorial.controlsHint).toMatch(/^Tap a key /);
