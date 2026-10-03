@@ -801,11 +801,12 @@ describe('the paid run cannot start from npm test', () => {
     return [...list[1].matchAll(/'([^']+)'/g)].map((hit) => hit[1]);
   };
 
-  it('collects nothing but *.test.ts by default', () => {
+  it('collects nothing but *.test.ts and *.test.tsx by default', () => {
     // Kdyby sem přibyl glob, který chytá i `.measure.ts`, spustí se placené
     // měření při každém `npm test` — a to je vada, která se ozve až na účtu.
+    // `*.test.tsx` (komponenty arény) měření nechytí.
     for (const glob of includesOf(read('vitest.config.mts'))) {
-      expect(glob.endsWith('*.test.ts')).toBe(true);
+      expect(glob, glob).toMatch(/\*\.test\.tsx?$/);
     }
   });
 
