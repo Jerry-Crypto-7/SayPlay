@@ -14,7 +14,7 @@
  * Do stavu hry nic z toho nepíše.
  */
 
-import { Billboard } from '@react-three/drei';
+import { Billboard } from '@react-three/drei/core/Billboard';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { Color, DoubleSide, type Group, type Material, type Mesh, MeshBasicMaterial, RingGeometry, Vector3 } from 'three';
 

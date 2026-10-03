@@ -28,7 +28,7 @@
  * soupeře zákonem a červení, KO klipem `die` nebo pádem.
  */
 
-import { Billboard } from '@react-three/drei';
+import { Billboard } from '@react-three/drei/core/Billboard';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Color, type Group, type Material, type Mesh, type MeshStandardMaterial, type PerspectiveCamera, Vector3 } from 'three';
