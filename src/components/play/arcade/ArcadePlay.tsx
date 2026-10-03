@@ -65,17 +65,22 @@ if (typeof window !== 'undefined') void import('./ArcadeStage');
 /** Střelba a hod nemají trať: místo metrů ukazují zbývající rány. */
 const aiming = (spec: GameSpecV1): boolean => spec.control === 'shooter' || spec.control === 'throw';
 
-/** Co hra počítá: mince u běžce a plošinovky, turba v závodě, snědené v aréně, jinak body. */
+/**
+ * Co hra počítá: se `scoring` (P36A T5) body s kombem a bonusem za výhru, ne kusy;
+ * jinak mince u běžce a plošinovky, turba v závodě, snědené v aréně, jinak body.
+ */
 const scoreUnit = (spec: GameSpecV1): string =>
-  spec.control === 'runner' || spec.control === 'platform'
-    ? 'coins'
-    : spec.control === 'steer'
-      ? 'turbos'
-      : spec.control === 'move_free'
-        ? 'eaten'
-        : aiming(spec)
-          ? 'hits'
-          : 'points';
+  spec.scoring !== undefined
+    ? 'points'
+    : spec.control === 'runner' || spec.control === 'platform'
+      ? 'coins'
+      : spec.control === 'steer'
+        ? 'turbos'
+        : spec.control === 'move_free'
+          ? 'eaten'
+          : aiming(spec)
+            ? 'hits'
+            : 'points';
 
 // `z` hráče je u načasování, rytmu a souboje počítadlo úkolů, ne dráha (P25H).
 const COUNT_UNIT: Readonly<Record<string, string>> = { timing: 'rounds', rhythm: 'notes', duel: 'hits' };
