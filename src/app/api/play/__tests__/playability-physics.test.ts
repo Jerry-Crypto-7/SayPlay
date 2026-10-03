@@ -37,6 +37,12 @@ describe('playabilityIssues without Rapier', () => {
     expect(load.mock.calls.length).toBe(before + 1);
   });
 
+  it('a physics game with a target score names the missing engine before the score probe runs the bot', () => {
+    const scored = read({ ...throwRock, things: [{ role: 'rock', physics: true }], scoring: { target: 100 } });
+    const compiled = compileArcade(scored, 1);
+    expect(compiled.ok ? [] : compiled.issues).toEqual([PHYSICS_NOT_LOADED]);
+  });
+
   it('a spec error in a game without physics still reaches the repair round', () => {
     const broken = read({ ...arena, things: [{ role: 'coin', start: 'hidden' }] });
     expect(playabilityIssues(broken, [1])).toEqual([expect.objectContaining({ code: 'WORLD_REJECTED' })]);

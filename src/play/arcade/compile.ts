@@ -289,6 +289,8 @@ export async function preloadPhysics(spec: GameSpecV1, loadRapier: () => Promise
 }
 
 export function compileArcade(spec: GameSpecV1, seed: number): CompileGameResult {
+  // Sonda cílového skóre pouští robota taky – bez Rapieru by spadla na výjimce jádra dřív než kontrola níž.
+  if (specNeedsPhysics(spec) && rapierIfLoaded() === null) return { ok: false, reason: 'WORLD_REJECTED', issues: [PHYSICS_NOT_LOADED] };
   const wanted = spec.scoring?.target ?? 0;
   const made = arcadeWorldOf(spec, seed, wanted > 0 ? (reachableTarget(spec, seed, wanted) ?? wanted) : undefined);
   if (!made.ok) return { ok: false, reason: 'WORLD_REJECTED', issues: made.issues };
