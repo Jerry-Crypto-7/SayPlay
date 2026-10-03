@@ -6,6 +6,16 @@ Offline řetěz `scripts/play-fidelity.mjs` nad korpusem 30 a `judge-10`, bez mo
 - **draft** – slovní draft nové hry, od P32B T2 hra žánru.
 - **ai** – zmrazené AI specy `p30b/live.json`. Jsou to hry z doby před žánry, nový režisér (GenreSpec) offline změřit nejde – to je živé HALT O10.
 
+## Přeměřeno 3. 10. 2026 po P36A
+
+`fidelity-b.json` je přepsaný týmž skriptem na HEAD po sloučení P36A (žánry timing, rhythm, duel, flap, shooter, throw zpátky) a opravě slovesa „hoard“ v draftu. Součty proti P30B: hrdina 39 → 42, položky 67 → 70, prostředí 58 → 59, slovesa 61 → 61.
+
+- **Vrátilo se 11 položek** ze ztrát níž: zombie (`s039`), alien bug (`s037`), kid (`s050`), cardboard box a launch (`s088`), log (`s095`), flap (`s035`), drum to the beat (`s144`), arrow (`j09`); nově kreslené jsou lily pad (`s144`), pancake (`s099`) a dodge (`j09`).
+- **Jediná výměna je žába v `s144`:** věta zase hraje rytmus a rytmická scéna hrdinu nemá (`not-read-by-control`). V P30B žába taky nehrála, proti P30B to tedy ztráta není.
+- Pořád ztracené proti P30B: `s056`, `h03`, `j04`, `j05` – důvody v tabulce níž platí.
+
+Tabulky níž jsou stav P32B z 30. 9. 2026.
+
 ## Součty (draft + ai, obě sady)
 
 | role | P30B | P32B | rozdíl |

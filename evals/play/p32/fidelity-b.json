@@ -1,7 +1,7 @@
 {
  "about": "P32B T6: offline fidelity after the genre rewire. before = evals/play/p30b/after.json (P30B T7, after), after = HEAD. Word draft (a genre game since P32B T2) and the frozen AI specs of evals/play/p30b/live.json, corpus 30 + judge-10, no model. Losses explained in fidelity-b.md.",
- "measuredAt": "2026-09-30T21:17:40.580Z",
- "commit": "7e33a394",
+ "measuredAt": "2026-10-03T15:19:07.469Z",
+ "commit": "5c33c1e2",
  "baseline": {
   "file": "evals/play/p30b/after.json",
   "commit": "6bc1d390"
@@ -12,12 +12,12 @@
     "hero": {
      "of": 18,
      "before": 14,
-     "after": 18
+     "after": 17
     },
     "item": {
      "of": 38,
      "before": 22,
-     "after": 19
+     "after": 26
     },
     "setting": {
      "of": 24,
@@ -27,7 +27,7 @@
     "verb": {
      "of": 30,
      "before": 25,
-     "after": 21
+     "after": 24
     }
    },
    "ai": {
@@ -63,7 +63,7 @@
     "item": {
      "of": 13,
      "before": 7,
-     "after": 5
+     "after": 6
     },
     "setting": {
      "of": 9,
@@ -73,7 +73,7 @@
     "verb": {
      "of": 10,
      "before": 4,
-     "after": 4
+     "after": 5
     }
    },
    "ai": {
@@ -106,14 +106,14 @@
    "source": "draft",
    "id": "s039",
    "controlBefore": "shooter",
-   "control": "move_free",
+   "control": "shooter",
    "items": [
     {
      "item": "zombie",
      "role": "item",
      "before": true,
-     "after": false,
-     "why": "no-model"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "mall",
@@ -136,7 +136,7 @@
    "source": "draft",
    "id": "s037",
    "controlBefore": "shooter",
-   "control": "move_free",
+   "control": "shooter",
    "items": [
     {
      "item": "space marine",
@@ -149,8 +149,8 @@
      "item": "alien bug",
      "role": "item",
      "before": true,
-     "after": false,
-     "why": "no-model"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "mining colony",
@@ -342,7 +342,7 @@
      "role": "item",
      "before": false,
      "after": false,
-     "why": "not-in-spec"
+     "why": "no-model"
     },
     {
      "item": "tower",
@@ -395,7 +395,7 @@
    "source": "draft",
    "id": "s035",
    "controlBefore": "flap",
-   "control": "runner",
+   "control": "flap",
    "items": [
     {
      "item": "bird",
@@ -415,8 +415,8 @@
      "item": "flap",
      "role": "verb",
      "before": true,
-     "after": false,
-     "why": "not-in-spec"
+     "after": true,
+     "why": "ok"
     }
    ]
   },
@@ -425,21 +425,21 @@
    "source": "draft",
    "id": "s050",
    "controlBefore": "throw",
-   "control": "move_free",
+   "control": "throw",
    "items": [
     {
      "item": "snowball",
      "role": "item",
      "before": false,
      "after": false,
-     "why": "not-in-spec"
+     "why": "not-read-by-control"
     },
     {
      "item": "kid",
      "role": "item",
      "before": true,
-     "after": false,
-     "why": "no-model"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "snow fort",
@@ -462,7 +462,7 @@
    "source": "draft",
    "id": "s088",
    "controlBefore": "throw",
-   "control": "move_free",
+   "control": "throw",
    "items": [
     {
      "item": "cat",
@@ -475,15 +475,15 @@
      "item": "cardboard box",
      "role": "item",
      "before": true,
-     "after": false,
-     "why": "no-model"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "launch",
      "role": "verb",
      "before": true,
-     "after": false,
-     "why": "not-in-spec"
+     "after": true,
+     "why": "ok"
     }
    ]
   },
@@ -626,21 +626,21 @@
    "source": "draft",
    "id": "s095",
    "controlBefore": "throw",
-   "control": "move_free",
+   "control": "throw",
    "items": [
     {
      "item": "knife",
      "role": "item",
      "before": false,
      "after": false,
-     "why": "not-in-spec"
+     "why": "not-read-by-control"
     },
     {
      "item": "log",
      "role": "item",
      "before": true,
-     "after": false,
-     "why": "no-model"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "throw",
@@ -693,21 +693,21 @@
    "source": "draft",
    "id": "s144",
    "controlBefore": "rhythm",
-   "control": "move_free",
+   "control": "rhythm",
    "items": [
     {
      "item": "frog",
      "role": "hero",
      "before": false,
-     "after": true,
-     "why": "ok"
+     "after": false,
+     "why": "not-read-by-control"
     },
     {
      "item": "lily pad",
      "role": "item",
      "before": false,
-     "after": false,
-     "why": "not-in-spec"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "pond",
@@ -720,8 +720,8 @@
      "item": "drum to the beat",
      "role": "verb",
      "before": true,
-     "after": false,
-     "why": "not-in-spec"
+     "after": true,
+     "why": "ok"
     }
    ]
   },
@@ -760,21 +760,21 @@
    "source": "draft",
    "id": "s099",
    "controlBefore": "timing",
-   "control": "move_free",
+   "control": "timing",
    "items": [
     {
      "item": "pancake",
      "role": "item",
      "before": false,
-     "after": false,
-     "why": "no-model"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "tower",
      "role": "item",
      "before": false,
      "after": false,
-     "why": "not-in-spec"
+     "why": "not-read-by-control"
     },
     {
      "item": "stack",
@@ -1012,7 +1012,7 @@
    "source": "draft",
    "id": "h07",
    "controlBefore": "runner",
-   "control": "runner",
+   "control": "move_free",
    "items": [
     {
      "item": "elephant",
@@ -1042,7 +1042,7 @@
    "source": "draft",
    "id": "h08",
    "controlBefore": "runner",
-   "control": "runner",
+   "control": "move_free",
    "items": [
     {
      "item": "dinner",
@@ -2186,7 +2186,7 @@
    "source": "draft",
    "id": "j01",
    "controlBefore": "runner",
-   "control": "runner",
+   "control": "move_free",
    "items": [
     {
      "item": "grandma",
@@ -2216,7 +2216,7 @@
    "source": "draft",
    "id": "j02",
    "controlBefore": "tap_go",
-   "control": "runner",
+   "control": "move_free",
    "items": [
     {
      "item": "cat",
@@ -2246,7 +2246,7 @@
    "source": "draft",
    "id": "j03",
    "controlBefore": "runner",
-   "control": "runner",
+   "control": "move_free",
    "items": [
     {
      "item": "investor",
@@ -2380,7 +2380,7 @@
    "source": "draft",
    "id": "j07",
    "controlBefore": "runner",
-   "control": "runner",
+   "control": "move_free",
    "items": [
     {
      "item": "squirrel",
@@ -2454,7 +2454,7 @@
    "source": "draft",
    "id": "j09",
    "controlBefore": "shooter",
-   "control": "platform",
+   "control": "move_free",
    "items": [
     {
      "item": "dragon",
@@ -2474,8 +2474,8 @@
      "item": "arrow",
      "role": "item",
      "before": true,
-     "after": false,
-     "why": "not-read-by-control"
+     "after": true,
+     "why": "ok"
     },
     {
      "item": "village",
@@ -2488,8 +2488,8 @@
      "item": "dodge",
      "role": "verb",
      "before": false,
-     "after": false,
-     "why": "not-in-spec"
+     "after": true,
+     "why": "ok"
     }
    ]
   },
