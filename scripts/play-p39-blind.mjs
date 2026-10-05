@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 /**
  * Slepý soud P39 T14: dvanáct vět, hra „před“ (build `88245889`, main před P39)
- * proti hře „po“ (HEAD). Každá strana běží na vlastním `next start` se živým
+ * proti hře „po“ (HEAD). Kolo 2: soudí se jen dvojice, kde se hra před a po liší
+ * (kolo 1 mělo 7 z 12 tutéž hru na obou stranách – remíza bez informace). `play`
+ * hraje zásobník vět v pořadí, dokud nemá `JUDGED` lišících se dvojic; `judge`
+ * vezme prvních `JUDGED` z nich. Každá strana běží na vlastním `next start` se živým
  * režisérem; snímky jsou jen plátno (text stránky skrytý), první snímek a snímek
  * po 3 s hry robota. Soudce (astra přes předplatné, `codex exec -i`) vidí list se
  * dvěma hrami „A“ a „B“ v prázdném adresáři jako `sheet.png` – jméno souboru ani
  * cesta mu stranu neprozradí. Kdo je vlevo, losuje `pure-rand` ze zapsaného seedu.
  *
  *   node scripts/play-p39-blind.mjs play  --before http://127.0.0.1:3150 --after http://127.0.0.1:3151 [--run <id>] [--only wolf,d12] [--gpu]
- *   node scripts/play-p39-blind.mjs judge [--run <id>] [--seed 39014] [--concurrency 2]
+ *   node scripts/play-p39-blind.mjs judge [--run <id>] [--seed 39015] [--concurrency 2]
  *
  * Hotová věta (strana) se při dalším `play` přeskočí, hotová odpověď soudce se
  * nepřeptává. Snímky a listy leží v `evals/play/fidelity/runs/<id>/` (gitignored),
@@ -35,23 +38,38 @@ const { assertNotTrainingDir } = await import('./assets/qa-astra.mjs');
 const { xoroshiro128plus } = await import('pure-rand/generator/xoroshiro128plus');
 const { uniformInt } = await import('pure-rand/distribution/uniformInt');
 
-/** Dvanáct vět a proč je každá v sadě (výběr podle plánu P39 T14); id `dNN` / `sNNN` jsou z `evals/play/p30/dev.json`. */
+/**
+ * Zásobník vět kola 2 v pořadí, ve kterém se hrají a vybírají, a proč je každá v sadě (výběr podle plánu P39 T14).
+ * Kromě `squirrel` (liší se jen AI verze – munice, `0f8a2178`) jsou to věty, jejichž rychlá verze se před a po
+ * liší (sonda nad oběma stromy, `draftGameSpec`); `d12` a `d10` jsou šestý žánr, rychlou verzi P39 nemění, AI verzi
+ * snad ano. Id `dNN` / `sNNN` jsou z `evals/play/p30/dev.json`, ostatní vlastní.
+ */
 export const SENTENCES = [
   { id: 'trigger', text: 'jumping and shooting game in the forest against animals', covers: ['trigger sentence', 'platformer', 'shoot in a platformer'] },
-  { id: 'zombies', text: 'jump and shoot zombies in a graveyard', covers: ['platformer', 'shoot in a platformer'] },
   { id: 'drones', text: 'run and shoot drones on a highway', covers: ['runner', 'shoot in a runner'] },
   { id: 'mansion', text: 'collect coins, dodge ghosts and shoot bats in a haunted mansion', covers: ['shooter', 'three roles'] },
   { id: 'squirrel', text: 'a squirrel grabs acorns, dodges owls and throws pinecones at a fox', covers: ['throw', 'three roles'] },
-  { id: 'wolf', text: 'a rabbit runs from a hungry wolf in a snowy forest', covers: ['arena', 'no model in the library (wolf drawn as dog)'] },
-  { id: 's037', text: 'A space marine shoots alien bugs in a mining colony', covers: ['shooter'] },
+  { id: 'zombies', text: 'jump and shoot zombies in a graveyard', covers: ['platformer', 'shoot in a platformer'] },
+  { id: 'dino', text: 'a dinosaur stomps cars and dodges helicopters in a city', covers: ['arena', 'two roles'] },
   { id: 'd12', text: 'a goldfish swims through a sunken city dodging sharks', covers: ['voyage'] },
   { id: 'd10', text: 'a pirate duels a skeleton captain on a sinking ship', covers: ['duel'] },
-  { id: 's006', text: 'A corgi runs through a park grabbing sausages and jumping over sprinklers', covers: ['runner', 'two roles'] },
-  { id: 's002', text: 'A knight must collect three keys in a haunted castle while dodging ghosts.', covers: ['arena', 'two roles'] },
-  { id: 's003', text: 'A hamster escaping a supermarket while a giant Roomba hunts me', covers: ['arena', 'chase'] },
+  { id: 'dogcity', text: 'a dog runs through a city chased by a dogcatcher grabbing bones', covers: ['runner', 'three roles', 'no model in the library (dogcatcher)'] },
+  { id: 'skeletons', text: 'shoot skeletons and collect potions in a dungeon', covers: ['shooter', 'two roles'] },
+  { id: 'zombierun', text: 'run from zombies and jump over cars in a city', covers: ['platformer', 'chase'] },
+  { id: 'desert', text: 'jump over cactus and shoot scorpions in a desert', covers: ['platformer', 'shoot in a platformer'] },
+  { id: 's008', text: "temple run but you're a banana running from a monkey", covers: ['runner', 'chase'] },
+  { id: 'alien', text: 'an astronaut shoots aliens and collects crystals on the moon', covers: ['shooter', 'two roles'] },
+  { id: 'batcave', text: 'a bat flies through a cave dodging stalactites and shooting spiders', covers: ['shooter', 'two roles'] },
+  { id: 'storm', text: 'a boat sails through a storm dodging icebergs and shooting pirates', covers: ['shooter', 'two roles'] },
+  { id: 'ufo', text: 'shoot ufos and dodge meteors in space', covers: ['shooter', 'two roles'] },
+  { id: 'robots', text: 'a cat jumps over boxes and shoots robots in a factory', covers: ['platformer', 'shoot in a platformer'] },
+  { id: 'dragon', text: 'a knight jumps over lava and shoots dragons in a volcano', covers: ['platformer', 'shoot in a platformer'] },
+  { id: 's022', text: 'A tiny robot climbs a tower of moving platforms to reach its charger', covers: ['platformer'] },
 ];
 
-export const SEED = 39014;
+/** Kolik lišících se dvojic jde soudci (plán: 12 verdiktů). */
+export const JUDGED = 12;
+export const SEED = 39015;
 export const PLAY_TICKS = 180;
 
 export const QUESTION_SCHEMA = {
@@ -96,6 +114,14 @@ function args() {
     else out._.push(list[i]);
   }
   return out;
+}
+
+/** Liší se hra před a po? `undefined` = věta ještě nemá obě strany. Stejná spec = táž hra, remíza bez informace. */
+function differs(runDir, id) {
+  const files = ['before', 'after'].map((side) => join(runDir, `${id}-${side}.json`));
+  if (!files.every((file) => existsSync(file))) return undefined;
+  const [before, after] = files.map((file) => JSON.stringify(readJson(file).spec));
+  return before !== after;
 }
 
 async function gameOf(base, id) {
@@ -204,6 +230,9 @@ async function play(options) {
         writeJson(join(runDir, `${sentence.id}-${side}.json`), { id: sentence.id, text: sentence.text, side, ...game });
         console.log(`${sentence.id} ${side}: ${game.version} (${game.upgrade}) ${game.genre} ${game.seconds} s robot ${game.shots.robot ? `tick ${game.shots.tick}` : 'no'}`);
       }
+      const ready = SENTENCES.filter((entry) => differs(runDir, entry.id) === true).length;
+      console.log(`${sentence.id}: ${differs(runDir, sentence.id) ? 'differs' : 'same game'} – ${ready} / ${JUDGED} differing pairs`);
+      if (only === null && ready >= JUDGED) break;
     }
   } finally {
     await browser.close();
@@ -231,7 +260,10 @@ async function judge(options) {
   assertNotTrainingDir(runDir);
   const seed = typeof options.seed === 'string' ? Number(options.seed) : SEED;
   const concurrency = Number(options.concurrency ?? 2);
-  const left = sides(seed, SENTENCES.length);
+  // Výběr před souzením: prvních `JUDGED` vět zásobníku, kde se hra před a po liší.
+  const picked = SENTENCES.filter((sentence) => differs(runDir, sentence.id) === true).slice(0, JUDGED);
+  if (picked.length < JUDGED) throw new Error(`only ${picked.length} differing pairs in ${runDir}, need ${JUDGED} – play more of the pool`);
+  const left = sides(seed, picked.length);
   const schemaFile = join(runDir, 'blind-schema.json');
   writeJson(schemaFile, QUESTION_SCHEMA);
 
@@ -240,7 +272,7 @@ async function judge(options) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 1480, height: 900 } });
   try {
-    for (const [index, sentence] of SENTENCES.entries()) {
+    for (const [index, sentence] of picked.entries()) {
       const right = left[index] === 'before' ? 'after' : 'before';
       const file = join(runDir, `${sentence.id}-sheet.png`);
       if (!existsSync(file)) await sheet(page, join(runDir, `${sentence.id}-${left[index]}`), join(runDir, `${sentence.id}-${right}`), file);
@@ -249,7 +281,7 @@ async function judge(options) {
     await browser.close();
   }
 
-  const queue = SENTENCES.map((sentence, index) => ({ sentence, index })).filter(({ sentence }) => !existsSync(join(runDir, `${sentence.id}-answer.json`)));
+  const queue = picked.map((sentence, index) => ({ sentence, index })).filter(({ sentence }) => !existsSync(join(runDir, `${sentence.id}-answer.json`)));
   const worker = async () => {
     for (let job = queue.shift(); job !== undefined; job = queue.shift()) {
       const run = await ask(join(runDir, `${job.sentence.id}-sheet.png`), schemaFile, join(runDir, `${job.sentence.id}-answer.json`), question(job.sentence.text));
@@ -258,7 +290,7 @@ async function judge(options) {
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
 
-  const verdicts = SENTENCES.map((sentence, index) => {
+  const verdicts = picked.map((sentence, index) => {
     const answer = readJson(join(runDir, `${sentence.id}-answer.json`));
     const runs = Object.fromEntries(['before', 'after'].map((side) => [side, readJson(join(runDir, `${sentence.id}-${side}.json`))]));
     const game = ({ version, upgrade, genre, spec, shots: { robot } }) => ({ version, upgrade, genre, roles: spec.roles.map((role) => `${role.kind}:${role.label}`), robot });
@@ -266,8 +298,8 @@ async function judge(options) {
     const sameSpec = JSON.stringify(runs.before.spec) === JSON.stringify(runs.after.spec);
     return { id: sentence.id, sentence: sentence.text, covers: sentence.covers, left: left[index], winner: answer.winner, winnerSide: winnerSide(answer.winner, left[index]), why: answer.why, sameSpec, before: game(runs.before), after: game(runs.after) };
   });
-  const before = readJson(join(runDir, `${SENTENCES[0].id}-before.json`)).base;
-  const after = readJson(join(runDir, `${SENTENCES[0].id}-after.json`)).base;
+  const before = readJson(join(runDir, `${picked[0].id}-before.json`)).base;
+  const after = readJson(join(runDir, `${picked[0].id}-after.json`)).base;
   const result = {
     about: 'P39 T14 blind judgement: the same sentence as a game before P39 (main 88245889) and after (HEAD), judged side by side by Codex over the subscription. See README.md.',
     judgedAt: new Date().toISOString(),
@@ -275,6 +307,8 @@ async function judge(options) {
     builds: { before: { commit: '88245889', server: before }, after: { commit: shaOf(ROOT), server: after } },
     judge: { how: 'codex exec -i sheet.png in an empty mkdtemp dir, --output-schema {winner, why}; page text hidden, canvas only', question: question('<sentence>') },
     order: { prng: 'pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in list order; 0 = before is A (left)', seed },
+    // Kolo 2: zásobník v pořadí a co z něj šlo soudci – jen dvojice, kde se hra před a po liší (`differs`).
+    pool: SENTENCES.map(({ id }) => ({ id, played: differs(runDir, id) !== undefined, differs: differs(runDir, id) ?? null, judged: picked.some((entry) => entry.id === id) })),
     score: score(verdicts),
     verdicts,
   };
