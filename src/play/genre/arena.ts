@@ -132,7 +132,8 @@ export const arenaGenre: GenreModule<'arena'> = {
   compile: compileArena,
   draftFill: (sentence, reading) => {
     const roles = draftRoles(sentence, reading);
-    const mode = FIGHT_WORDS.test(sentence) ? 'fight' : roles.enemy === undefined && roles.collectible !== undefined ? 'collect' : 'escape';
+    const cast = roles.cast ?? [];
+    const mode = FIGHT_WORDS.test(sentence) ? 'fight' : cast.length > 0 && cast.every((item) => item.does === 'collect') ? 'collect' : 'escape';
     return { genre: 'arena', mode, ...roles };
   },
 };

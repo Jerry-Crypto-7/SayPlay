@@ -18,8 +18,8 @@
 
 import type { Reading, VerbClass } from '../read/schema';
 
-import { GENRES, GENRE_MODES, type GenreId, type GenreMode, type GenreModule } from './contract';
-import { FAMILIES } from './families';
+import { type CastRole, GENRES, GENRE_MODES, type GenreId, type GenreMode, type GenreModule } from './contract';
+import { FAMILIES, type VerbFamily } from './families';
 import { GENRE_MODULES } from './index';
 
 export interface GenreChoice {
@@ -43,6 +43,12 @@ export interface GenreRanking {
   readonly pick: { readonly genre: GenreId; readonly mode: GenreMode } | null;
   /** Druhé sloveso hráče, které jede na pohybu hlavního slovesa (P38: skok + střelba); `null` když žádné. */
   readonly ride: 'shoot' | null;
+  /**
+   * Co hlavní sloveso dělá se svým předmětem (P39, `after`): střelba ho sestřelí, hod na něj míří,
+   * rvačka se s ním bije, úkol k němu jde, sběr ho sebere. `null` = předmět slovesa není věc obsazení
+   * (cesta pohybu, místo útěku, kus načasování) nebo věta hlavní sloveso nemá.
+   */
+  readonly does: CastRole | null;
 }
 
 export type GenreModules = { readonly [G in GenreId]: GenreModule<G> };
@@ -77,12 +83,32 @@ interface Verb {
   /** Sběr (`pickup`) žánr nemá, dostane ho podle zbytku věty. */
   readonly pick: Pair | null;
   readonly pattern: RegExp;
+  /** Co sloveso dělá se svým předmětem (P39); `null` = předmět není věc obsazení. */
+  readonly does: CastRole | null;
 }
 
 const OBJECT = String.raw`(?:the|a|an|all|every|each|some|\d+|two|three|four|five|six|seven|eight|nine|ten|twelve)\b`;
 const PRONOUN = String.raw`(?:it|you|me|him|her|them|us|the player)\b`;
 
-const v = (verb: string, kind: Kind, pick: Pair | null, pattern: RegExp): Verb => ({ verb, kind, pick, pattern });
+/**
+ * Co sloveso dělá se svým předmětem (P39): režim slovesa to říká – střelba sestřelí, hod míří, rvačka a
+ * duel se bijí, úkol jde k předmětu, sběr („collect“) ho sebere. Obrana chrání („defend the castle“),
+ * spor v Souboji jmenuje téma („negotiate a raise“), hledání místo („explore the ruins“) – ti předmět nemají,
+ * stejně jako pohyb, útěk, načasování a rytmus.
+ */
+function objectDoes(verb: string, kind: Kind, pick: Pair | null): CastRole | null {
+  if (kind === 'pickup') return verb === 'collect' ? 'collect' : null;
+  if (pick === SHOOTER) return 'shoot_at';
+  if (pick === THROW) return 'throw_at';
+  if (pick === FIGHT) return verb === 'defend' ? null : 'fight';
+  if (pick === DUEL) return verb === 'duel' ? 'fight' : null;
+  return pick === SPATIAL || pick === STATION ? 'reach' : null;
+}
+
+/** Předmět slovesa rodiny (P37A T3): co se uklízí, se sbírá, cíl úkolu je cíl; rodina bez předmětu (stříkání, rytmus) nemá nic. */
+const FAMILY_DOES: Readonly<Record<VerbFamily['object'], CastRole | null>> = { collectible: 'collect', target: 'reach', none: null };
+
+const v = (verb: string, kind: Kind, pick: Pair | null, pattern: RegExp, does = objectDoes(verb, kind, pick)): Verb => ({ verb, kind, pick, pattern, does });
 
 const VERBS: readonly Verb[] = [
   // Úkol v prostoru: předměty rozeseté po scéně.
@@ -103,7 +129,7 @@ const VERBS: readonly Verb[] = [
   v('hit', 'goal', SPATIAL, /\b(?:pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b|\bknock(?:s|ing)? on\b/),
   // Rodiny sloves (P37A T3, T4): úklid, vaření, sekání, řemeslo, zahrada, opravy (dřív sloveso `repair` tady), malování, péče,
   // stříkání, pastevectví, vystoupení a papíry – `families.ts`.
-  ...FAMILIES.flatMap((family) => family.members.map((member) => v(member.verb, 'goal', family.pick, member.pattern))),
+  ...FAMILIES.flatMap((family) => family.members.map((member) => v(member.verb, 'goal', family.pick, member.pattern, FAMILY_DOES[family.object]))),
   // Načasování a rytmus (P36A T11): ťuk ve správnou chvíli. Před `make` – „build the tallest“ začíná na stejném místě jako „build“ a shodu rozhodne pořadí tabulky.
   v('stack', 'goal', STACK, /\bstack(?:s|ing)?\b|\bbuild(?:s|ing)? (?:the |a |an )?(?:tallest|highest|biggest)\b/),
   v('bridge', 'goal', BRIDGE, /\bgrow(?:s|ing)? (?:a |the )?bridge\b|\bstretch(?:es|ing)? (?:a |the )?(?:bridge|stick|pole)\b/),
@@ -256,7 +282,7 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     return match === null ? [] : [{ ...entry, at: match.index, end: match.index + match[0].length }];
   });
   // P38: „a jumping game where you shoot animals“ – skok nebo běh nese žánr a střelba jede jako doplněk
-  // (`ride`, v návrhu `enemyMoves: 'shoot'`); samotná střelba by skákání zahodila.
+  // (`ride`, v návrhu věc obsazení s `does: 'shoot_at'`); samotná střelba by skákání zahodila.
   const shot = heard.some((entry) => entry.verb === 'shoot');
   const carrier = shot ? heard.find((entry) => entry.kind === 'move' && (entry.pick === PLATFORMER || entry.pick === RUNNER)) : undefined;
   const main = carrier ?? [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
@@ -312,5 +338,6 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     after: main === undefined ? null : text.slice(main.end).trim() || null,
     pick: main === undefined ? null : (main.pick ?? pickup()),
     ride: carrier === undefined ? null : 'shoot',
+    does: main?.does ?? null,
   };
 }

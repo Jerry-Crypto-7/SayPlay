@@ -213,7 +213,10 @@ const GOALS: Readonly<Record<string, (said: Said) => string | null>> = {
 export function twistGoal(spec: GenreSpec, sentence: string): string | null {
   const rule = GOALS[`${spec.genre}.${spec.mode}`];
   if (rule === undefined) return null;
-  const enemy = said(spec.enemy, sentence) ? spec.enemy : null;
-  const goal = rule({ thing: said(spec.collectible, sentence) ? many(spec.collectible) : null, foe: enemy === null ? null : many(enemy), rival: enemy });
+  // Protivník je první věc obsazení, která hráče ohrožuje nebo se s ní bije (P39); věc je první, která se sbírá.
+  const foe = spec.cast?.find((item) => item.does === 'chase_me' || item.does === 'avoid' || item.does === 'fight' || item.does === 'shoot_at')?.label;
+  const item = spec.cast?.find((entry) => entry.does === 'collect')?.label;
+  const enemy = said(foe, sentence) ? foe : null;
+  const goal = rule({ thing: said(item, sentence) ? many(item) : null, foe: enemy === null ? null : many(enemy), rival: enemy });
   return goal === null || goal.length > 80 ? null : goal;
 }

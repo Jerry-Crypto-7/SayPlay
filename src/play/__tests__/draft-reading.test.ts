@@ -54,7 +54,8 @@ describe('draft from the local reading', () => {
     const meta = draftGameSpecWithMeta('something with a knight and three keys', 1, {
       reading: reading({ control: 'tap_go', hero: 'a knight', roles: [{ noun: 'keys', kind: 'collectible', count: 3 }], setting: 'a haunted castle' }),
     });
-    expect(meta.genre).toMatchObject({ hero: 'knight', collectible: 'key', setting: 'haunted castle' });
+    expect(meta.genre).toMatchObject({ hero: 'knight', setting: 'haunted castle' });
+    expect(meta.genre?.cast).toContainEqual({ label: 'key', does: 'collect' });
     expect(label(meta.spec, 'player')).toBe('knight');
     expect(meta.spec.theme.setting).toBe('haunted castle');
     expect(meta.spec.roles.map((role) => role.label)).toContain('key');

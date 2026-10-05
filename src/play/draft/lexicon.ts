@@ -9,6 +9,7 @@
  * jako pin skutečného čísla, ne jako cíl.
  */
 
+import type { CastRole } from '../genre/contract';
 import type { ArchetypeId } from '../registry';
 
 /** Věta o plížení: stráže s výhledem místo slepých hlídek. */
@@ -369,6 +370,16 @@ export function toolsOf(sentence: string): readonly string[] {
   return [...new Set(tools)];
 }
 
+/**
+ * Věc, kterou věta jmenuje se slovesem, a co podle něj ve hře dělá (P39).
+ * `does: null` = protivník, kterému věta sloveso nedává („against robots“,
+ * „destroy the towers“) – roli mu dá žánr.
+ */
+export interface NamedThing {
+  readonly label: string;
+  readonly does: CastRole | null;
+}
+
 export interface SentenceRoles {
   readonly player: string | null;
   readonly chaser: string | null;
@@ -390,17 +401,19 @@ export interface SentenceRoles {
   /** Spínače podle barev; `required` jsou ty před „but not / never". */
   readonly switches: { readonly all: readonly string[]; readonly required: readonly string[] } | null;
   readonly setting: string | null;
+  /** Každá věc věty se slovesem, které k ní patří (P39), v pořadí věty a jednotném čísle; hrdina ani nástroj tu nejsou. */
+  readonly named: readonly NamedThing[];
 }
 
 const COLOURS = ['red', 'blue', 'green', 'yellow', 'orange', 'white', 'black', 'gold', 'golden', 'silver', 'pink'];
 const HAZARD_WORDS = /\b(lava|magma|acid|spikes?|fire|flames?|red tiles|red floor tiles|searchlights?|lasers?|ice|thin ice|pits?|holes?|water|electric floor|poison)\b/;
 
-function first(text: string, patterns: readonly RegExp[], max = 3): string | null {
+/** První fráze vzorů v jejich pořadí; s `keep` projde každý výskyt vzoru a fráze, kterou `keep` odmítne, se přeskočí. */
+function first(text: string, patterns: readonly RegExp[], max = 3, keep?: (phrase: string) => boolean): string | null {
   for (const pattern of patterns) {
-    const match = pattern.exec(text);
-    if (match !== null) {
-      const phrase = nounPhrase(match[1], max);
-      if (phrase !== null) return phrase;
+    for (const match of keep === undefined ? [pattern.exec(text)] : everyMatch(pattern, text)) {
+      const phrase = match === null ? null : nounPhrase(match[1], max);
+      if (phrase !== null && (keep?.(phrase) ?? true)) return phrase;
     }
   }
   return null;
@@ -471,6 +484,74 @@ export const withoutPossessor = (text: string): string =>
         : '',
   );
 
+/** „against“ i s překlepem rychlého prstu: „againts“, „agains“, „agaisnt“, „aginst“. */
+const AGAINST = String.raw`\b(?:against|againts|agains|agaisnt|aginst)`;
+/** Střelba ve větě, sloveso i žánr („shooter“): „against X“ pak jmenuje, do čeho se střílí. Padající hvězdy střelba nejsou. */
+const SHOOTING = /\bshoot(?:s|ing|er|ers)?\b(?! stars?\b)|\bfir(?:e|es|ing) at\b|\bblast(?:s|ing)?\b|\bguns?\b/;
+/** Rvačka ve větě: „against X“ pak jmenuje soupeře. */
+const FIGHTING = /\bfight(?:s|ing)?\b|\bbattl(?:e|es|ing)\b|\bbox(?:es|ing)?\b|\bduel(?:s|ing)?\b|\bwrestl(?:e|es|ing)\b|\bpunch(?:es|ing)?\b/;
+/** Hlava fráze, která věc ve hře nejmenuje: zájmeno, čas, přesila, skóre („race against time“, „beat your high score“). */
+const NOT_A_THING = /^(?:any|every|some|no)(?:thing|one|body)$|^(?:stuff|things?|all|it|them|him|her|us|me|you|time|clock|odds|gravity|other|others|score|record|way)$/;
+/** Za „at“ čas nebo místo, ne terč: „shoot at night“, „throw at home“. */
+const NOT_AIMED = '(?!(?:night|dawn|dusk|noon|midnight|sunset|sunrise|home|school|sea|once)\\b)';
+/** Předmět slovesa: člen nebo číslo, pak slova až po interpunkci („collect 5 coins, dodge…“). */
+const OBJECT = String.raw`(?:all |every |any |the |a |an |some )?((?:\d+ )?[a-z][a-z -]*)`;
+
+/** Je fráze věc, kterou scéna nakreslí? Rozhoduje hlava – žánr („shooting game“), zájmeno ani čas ne. */
+const isThing = (phrase: string): boolean => {
+  const head = phrase.split(' ').at(-1) ?? '';
+  return !NOT_A_CHARACTER.has(head) && !NOT_A_THING.test(head);
+};
+
+/**
+ * Sloveso → co jeho předmět dělá (P39). `null` = sloveso říká, že jde o
+ * protivníka, ne jak s ním hrát – roli dá žánr. „against X“ se dosadí podle
+ * věty (`namedThings`).
+ */
+const NAMED: readonly (readonly [RegExp, CastRole | null])[] = [
+  // Střelba: „shoot down the drones“, „fire at aliens“; předmět s cílem za ním je nástroj („shoots arrows at goblins“, `toolsOf`).
+  [new RegExp(String.raw`\b(?:shoot|blast|zap)(?:s|ing|ping)? (?:down )?(?!stars?\b)${OBJECT}`), 'shoot_at'],
+  [new RegExp(String.raw`\b(?:aim|fire|shoot|blast)(?:s|es|ing)? (?:[a-z]+ ){0,2}?at ${NOT_AIMED}${OBJECT}`), 'shoot_at'],
+  [new RegExp(String.raw`\b(?:throw|toss|fling|hurl|lob|launch)(?:s|es|ing)? (?:[a-z]+ ){0,2}?(?:at|into|onto) ${NOT_AIMED}${OBJECT}`), 'throw_at'],
+  // Honí hráče: „a ghost hunts you“, „chased by a T-rex“, „runs from a bear“, „before the ghosts catch him“.
+  [/\b([a-z]+(?: [a-z]+)?) (?:hunts|chases|pursues|catches|follows|stalks) (?:it|you|me|them|him|her|us|the player)\b/, 'chase_me'],
+  [new RegExp(String.raw`\b(?:hunted|chased|pursued|followed|stalked) by ${OBJECT}`), 'chase_me'],
+  [new RegExp(String.raw`\b(?:flee|flees|fleeing|escape|escapes|escaping|outrun|outruns|outrunning|(?:run|runs|running)(?: away)? from) (?:from )?${OBJECT}`), 'chase_me'],
+  [/\bbefore (?:the |a |an )?([a-z]+(?: [a-z]+)?) (?:catch|catches|get|gets|reach|reaches|grab|grabs) (?:him|her|you|me|them|us|it|the player)\b/, 'chase_me'],
+  // Vyhýbá se: „dodge ghosts“, „sneak past the guards“, „jump over logs“.
+  [new RegExp(String.raw`\b(?:dodg|avoid|evad)(?:e|es|ed|ing)? ${OBJECT}`), 'avoid'],
+  [new RegExp(String.raw`\b(?:sneak(?:s|ing)? past|without waking|(?:jump|hop|leap)(?:s|ing)? over) ${OBJECT}`), 'avoid'],
+  [new RegExp(String.raw`\b(?:collect|gather|hoard|find|pick up|grab|steal)(?:s|ing|bing)? (?:of )?${OBJECT}`), 'collect'],
+  // Rvačka: „fights three wolves“, „defeat the dragon“, „beat up bullies“; „fight fires“ je hašení.
+  [new RegExp(String.raw`\b(?:fight(?:s|ing)?|battl(?:e|es|ing)|defeat(?:s|ing)?|beat(?:s|ing)?(?: up)?|duel(?:s|ing)?) (?!(?:the )?(?:fires?|flames?)\b)(?:against )?${OBJECT}`), 'fight'],
+  // Ničení: „destroy the towers“, „smash boxes“ – roli dá žánr.
+  [new RegExp(String.raw`\b(?:destroy(?:s|ing)?|knock(?:s|ing)? (?:out|down)|hit(?:s|ting)?|smash(?:es|ing)?) ${OBJECT}`), null],
+];
+
+/**
+ * Každá věc, kterou věta jmenuje se slovesem, a co dělá (P39): „collect coins,
+ * dodge ghosts and shoot bats“ → mince se sbírá, duchům se uhýbá, do netopýrů
+ * se střílí. „against X“ je terč ve větě se střelbou, soupeř v rvačce, jinak
+ * protivník bez slovesa. Nástroj („shoots arrows at…“) věcí není. V pořadí
+ * věty; věc jmenovaná dvakrát drží první sloveso, které roli říká.
+ */
+function namedThings(text: string, tools: readonly string[]): readonly NamedThing[] {
+  const against: CastRole | null = SHOOTING.test(text) ? 'shoot_at' : FIGHTING.test(text) ? 'fight' : null;
+  const found = [...NAMED, [new RegExp(`${AGAINST} ${OBJECT}`), against] as const].flatMap(([pattern, does]) =>
+    everyMatch(pattern, text).flatMap((match) => {
+      const phrase = nounPhrase(match[1], 2);
+      const label = phrase === null || !isThing(phrase) ? null : singular(phrase);
+      return label === null || tools.includes(label) ? [] : [{ at: match.index, label, does }];
+    }),
+  );
+  const named = new Map<string, NamedThing>();
+  for (const { label, does } of found.sort((a, b) => a.at - b.at)) {
+    const known = named.get(label);
+    if (known === undefined || known.does === null) named.set(label, { label, does });
+  }
+  return [...named.values()];
+}
+
 export function readRoles(sentence: string): SentenceRoles {
   const text = withoutPossessor(sentence.toLowerCase().replace(/\s+/g, ' ').trim());
   const player =
@@ -493,11 +574,13 @@ export function readRoles(sentence: string): SentenceRoles {
     // T7: s „at“ je terčem to za ním, předmět je nástroj („shoots arrows at goblins“).
     /\b(?:throw|toss|aim|fire|shoot|blast|launch)(?:s|es|ing)? (?:[a-z]+ ){0,2}?at (?!(?:night|dawn|dusk|noon|midnight|sunset|sunrise|home|school|sea|once)\b)(?:the |a |an )?([a-z][a-z -]*)/,
     /\b(?:shoot|blast|zap)(?:s|ing)? (?:down )?(?:all |every |the )?([a-z][a-z -]*)/,
-    /\bagainst (?:the |a |an )?([a-z][a-z -]*)/,
-  ], 2);
+    // P39: i s překlepem („againts“); „shooting game … against animals“ – žánr terčem není, čte se další výskyt.
+    new RegExp(`${AGAINST} (?:the |a |an )?([a-z][a-z -]*)`),
+  ], 2, isThing);
   const checkpointMatch = /(?:[a-z]+ )?((?:[a-z]+ )?(?:gates?|hoops?|rings?|checkpoints?|flags?|arches?|posts?))\b/.exec(text);
   // Co hráč stříká nebo hází, není nástraha („sprays water“, „throws water balloons“).
-  const tool = toolsOf(text).flatMap((phrase) => phrase.split(' '));
+  const tools = toolsOf(text);
+  const tool = tools.flatMap((phrase) => phrase.split(' '));
   const hazardMatch = [...text.matchAll(new RegExp(HAZARD_WORDS.source, 'g'))].find((match) => !tool.includes(singular(match[1]))) ?? null;
   const colours = COLOURS.filter((colour) => new RegExp(`\\b${colour}\\b`).test(text));
   let switches: SentenceRoles['switches'] = null;
@@ -530,6 +613,7 @@ export function readRoles(sentence: string): SentenceRoles {
     threat,
     switches,
     setting,
+    named: namedThings(text, tools),
   };
 }
 

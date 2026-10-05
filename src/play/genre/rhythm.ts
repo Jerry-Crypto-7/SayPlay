@@ -65,7 +65,7 @@ export const rhythmGenre: GenreModule<'rhythm'> = {
       mode: 'default',
       ...(hero === undefined ? {} : { hero }),
       ...(setting === undefined ? {} : { setting }),
-      ...(note === undefined ? {} : { collectible: note }),
+      ...(note === undefined ? {} : { cast: [{ label: note, does: 'collect' as const }] }),
     };
   },
 };

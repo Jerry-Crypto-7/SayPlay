@@ -10,7 +10,7 @@ import { readCountedNouns, nounPhrase } from '../draft/lexicon';
 import { ESCAPE } from '../arcade/pieces/arena';
 import { QUEST, questRounds, questSpatial, questStation, spatialRoundSeconds, stationRoundSeconds } from '../arcade/pieces/quest';
 import { WAVE_PLAN, wavesChasers } from '../arcade/pieces/waves';
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type CastItem, type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Výchozí počty generátorů: bez `count` ve specu hraje, co by postavil generátor sám. */
 const SPATIAL = questSpatial.params.parse({});
@@ -217,12 +217,17 @@ export const questGenre: GenreModule<'quest'> = {
       // Počet honičů říká jen ten, kdo „chytí“; jinak jeden výchozí (P36A T3) – nese popisek nepřítele ze slovníku, když ho věta má.
       ...(station ? {} : { chasers: chase === null ? DEFAULT_CHASERS : clamp(chase.count ?? ESCAPE.chasers.default, 1, CHASERS_MAX) }),
     };
+    // Kdo „chytí“, je pronásledovatel dřív než protivník ze čtení: draft bere z obsazení první věc každé role.
+    const cast: CastItem[] = [
+      ...(chase === null ? [] : [{ label: chase.label, does: 'chase_me' as const }]),
+      ...(roles.cast ?? []),
+      ...(found === null || target === null ? [] : [{ label: target.label, does: 'reach' as const, verb: found.verb, states: kind === null ? 2 : KIND_STATES[kind] }]),
+    ];
     return {
       genre: 'quest',
       mode: station ? 'station' : 'spatial',
       ...roles,
-      ...(chase === null ? {} : { enemy: chase.label }),
-      ...(found === null || target === null ? {} : { target: { label: target.label, verb: found.verb, states: kind === null ? 2 : KIND_STATES[kind] } }),
+      ...(cast.length === 0 ? {} : { cast }),
       ...(Object.keys(params).length > 0 ? { params } : {}),
     };
   },

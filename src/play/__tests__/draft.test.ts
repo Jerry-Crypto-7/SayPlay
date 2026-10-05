@@ -39,16 +39,19 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
 
   it('reads the object of a quest verb and the pursuer named after “before”', () => {
     const wizard = draftGameSpecWithMeta('A tiny wizard rides a broom through a haunted castle and must light five candles before the ghosts catch him', 1, { modules: genreDoubles() }).genre;
-    expect(wizard).toMatchObject({ target: { label: 'candle', verb: 'light', states: 2 }, enemy: 'ghost' });
+    expect(wizard?.cast).toEqual(expect.arrayContaining([{ label: 'candle', does: 'reach', verb: 'light', states: 2 }, { label: 'ghost', does: 'chase_me' }]));
     const chef = draftGameSpecWithMeta('A chef cooks pancakes', 1, { modules: genreDoubles() }).genre;
-    expect(chef).toMatchObject({ target: { label: 'pancake', verb: 'cook', states: 3 }, setting: 'kitchen' });
-    expect(draftGameSpecWithMeta('Two knights duel in a castle', 1, { modules: genreDoubles() }).genre).toMatchObject({ hero: 'knight', enemy: 'knight' });
+    expect(chef?.cast).toContainEqual({ label: 'pancake', does: 'reach', verb: 'cook', states: 3 });
+    expect(chef?.setting).toBe('kitchen');
+    const knights = draftGameSpecWithMeta('Two knights duel in a castle', 1, { modules: genreDoubles() }).genre;
+    expect(knights?.hero).toBe('knight');
+    expect(knights?.cast).toContainEqual({ label: 'knight', does: 'fight' });
   });
 
   // Revize fáze 3, nález 2: „two knights“ je hrdina a jeden soupeř, ne rytíř proti dvěma. Od P36A T11 hraje souboj žánr Souboj.
   it('two knights duel one against one: the counted subject is not a count of rivals', () => {
     const duel = draftGameSpecWithMeta('Two knights duel in a castle', 1);
-    expect(duel.genre).toMatchObject({ genre: 'duel', mode: 'default', hero: 'knight', enemy: 'knight' });
+    expect(duel.genre).toMatchObject({ genre: 'duel', mode: 'default', hero: 'knight', cast: [{ label: 'knight', does: 'fight' }] });
     expect(duel.genre?.counts?.enemy).toBeUndefined();
     expect(duel.spec.roles.filter((role) => role.label === 'knight').map((role) => role.count ?? 1)).toEqual([1, 1]);
     // Číslovka před soupeřem, který není podmět, dál platí.
@@ -90,33 +93,36 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
   // B-R4: čtyři pravidla role a místa, bez kterých draft dál vypadá rozumně – po jedné větě, kde pravidlo mění výstup.
   describe('keeps roles and place apart', () => {
     const genre = (sentence: string) => draftGameSpecWithMeta(sentence, 1).genre!;
+    const labels = (sentence: string) => (genre(sentence).cast ?? []).map((item) => item.label);
+    /** Protivník obsazení: první položka, která hráče ohrožuje nebo se do ní střílí či bije. */
+    const foe = (sentence: string) => genre(sentence).cast?.find((item) => ['shoot_at', 'chase_me', 'avoid', 'fight'].includes(item.does))?.label;
 
     it('never collects a pronoun', () => {
-      expect(genre(sentenceSet.sentences.find((entry) => entry.id === 'wizard')!.text).collectible).not.toBe('him');
-      expect(genre('Escape the flooded subway before the security drone catches you.').collectible).not.toBe('you');
+      expect(labels(sentenceSet.sentences.find((entry) => entry.id === 'wizard')!.text)).not.toContain('him');
+      expect(labels('Escape the flooded subway before the security drone catches you.')).not.toContain('you');
     });
 
     // Od P36A T10 je „zombie shooter“ Střílečka: zombíci jdou ve vlnách jako nepřítel, terč střelnice je jiná role.
     it('does not make the enemy of a shooter its target too', () => {
       const zombie = genre('zombie shooter in a mall');
-      expect(zombie).toMatchObject({ genre: 'shooter', enemy: 'zombie' });
-      expect(zombie.target?.label).not.toBe('zombie');
+      expect(zombie).toMatchObject({ genre: 'shooter' });
+      expect(zombie.cast?.filter((item) => item.label === 'zombie')).toEqual([{ label: 'zombie', does: 'shoot_at' }]);
     });
 
     it('does not set the game in a phrase that names one of its roles', () => {
       const log = genre('knife throwing at a spinning log');
-      expect(log.target?.label).toBe('spinning log');
+      expect(log.cast).toContainEqual(expect.objectContaining({ label: 'spinning log', does: 'throw_at' }));
       expect(log.setting).not.toBe('spinning log');
     });
 
     // B-R1: „farmer's dog“ se dělením slov rozlomil na roli „s dog“ – v cíli i na liště cílů.
     it('keeps a possessive whole instead of making "s dog" a role', () => {
       const fox = draftGameSpecWithMeta("A fox steals eggs from a farm while the farmer's dog chases it", 1);
-      expect(["farmer's dog", 'dog']).toContain(fox.genre!.enemy);
+      expect(["farmer's dog", 'dog']).toContain(fox.genre!.cast?.find((item) => item.does === 'chase_me')?.label);
       expect(JSON.stringify(fox.spec)).not.toMatch(/\bs dog\b/);
-      expect(genre("Two knights duel the king's guard in a castle").enemy).toBe('guard');
+      expect(foe("Two knights duel the king's guard in a castle")).toBe('guard');
       // Obrana („defends … from“) jde přes `namedFoe` – i ta musí vlastníka odtrhnout.
-      expect(genre("A knight defends the castle from the king's guards").enemy).toBe('guard');
+      expect(foe("A knight defends the castle from the king's guards")).toBe('guard');
       expect(withoutPossessor("it's a race where the king's horse runs")).toBe("it's a race where the horse runs");
     });
 
@@ -130,6 +136,48 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
 
     it('prefers the place the look set knows', () => {
       expect(genre('Fly a paper plane through four hoops in the right order across a classroom.').setting).toBe('classroom');
+    });
+  });
+
+  // P39 T5: každá věc, kterou věta jmenuje, je v obsazení s tím, co o ní říká sloveso – ve všech žánrech.
+  describe('reads every named thing and what it does into the cast', () => {
+    const cast = (sentence: string) => draftGameSpecWithMeta(sentence, 1).genre?.cast ?? [];
+
+    it('shoots at what a shooting sentence is "against", typo or not, instead of a forest default', () => {
+      for (const sentence of ['jumping and shooting game in the forest against animals', 'jumping and shooting game in the forest againts animals']) {
+        expect(readRoles(sentence).named).toContainEqual({ label: 'animal', does: 'shoot_at' });
+        const meta = draftGameSpecWithMeta(sentence, 1);
+        expect(meta.genre?.genre).toBe('platformer');
+        expect(meta.genre?.cast).toContainEqual({ label: 'animal', does: 'shoot_at' });
+        // Les dá vlka jen tam, kde věta nikoho nejmenuje.
+        expect(meta.genre?.cast?.map((item) => item.label)).not.toContain('wolf');
+      }
+    });
+
+    it('keeps three named things with three different roles', () => {
+      const sentence = 'collect coins, dodge ghosts and shoot bats';
+      expect(readRoles(sentence).named).toEqual([
+        { label: 'coin', does: 'collect' },
+        { label: 'ghost', does: 'avoid' },
+        { label: 'bat', does: 'shoot_at' },
+      ]);
+      expect(cast(sentence)).toEqual(expect.arrayContaining([{ label: 'coin', does: 'collect' }, { label: 'ghost', does: 'avoid' }, { label: 'bat', does: 'shoot_at' }]));
+    });
+
+    it('lets what chases the hero chase it in a runner too', () => {
+      expect(cast('A dinosaur runs through a jungle, chased by a T-rex')).toContainEqual({ label: 't-rex', does: 'chase_me' });
+    });
+
+    it('reads targets in every genre, not only in fights, quests and throws', () => {
+      const meta = draftGameSpecWithMeta('A frog hops across lily pads and shoots down the drones', 1);
+      expect(['arena', 'quest', 'throw', 'duel']).not.toContain(meta.genre?.genre);
+      expect(meta.genre?.cast).toContainEqual({ label: 'drone', does: 'shoot_at' });
+    });
+
+    it('never casts a place, the hero or one thing twice', () => {
+      const escape = cast('Escape the flooded subway before the security drone catches you.');
+      expect(escape.map((item) => item.label)).toEqual(['security drone']);
+      expect(cast('A knight fights three wolves in a castle').filter((item) => item.label.includes('wolf'))).toEqual([{ label: 'wolf', does: 'fight' }]);
     });
   });
 });

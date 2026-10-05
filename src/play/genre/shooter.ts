@@ -63,6 +63,8 @@ export const shooterGenre: GenreModule<'shooter'> = {
     const text = sentence.toLowerCase();
     const match = AIMED_AT.exec(text) ?? AIM_CUE.exec(text);
     const shot = match === null ? null : nounPhrase(match[1]!, 2);
-    return { genre: 'shooter', mode: 'default', ...roles, ...(shot === null ? {} : { enemy: singular(shot) }) };
+    // Na co věta míří, je terč dřív než protivník ze čtení: draft bere z obsazení první věc každé role.
+    const cast = [...(shot === null ? [] : [{ label: singular(shot), does: 'shoot_at' as const }]), ...(roles.cast ?? [])];
+    return { genre: 'shooter', mode: 'default', ...roles, ...(cast.length === 0 ? {} : { cast }) };
   },
 };

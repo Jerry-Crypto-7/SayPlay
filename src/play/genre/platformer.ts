@@ -19,7 +19,7 @@
 import { PLATFORM_LEVEL } from '../arcade/pieces/platform';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type CastItem, type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Sloveso cíle, u kterého se vyhrává sebráním všech věcí. */
 const COLLECT_VERB = /^(?:collect|grab|gather|pick)/;
@@ -64,7 +64,7 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
 }
 
 /** Věc a cíl z věty bez modelu (rychlá verze): sbírací sloveso dá věc, „find / reach / get to“ cíl. */
-function sentenceGoal(sentence: string): Pick<Partial<GenreSpecOf<'platformer'>>, 'collectible' | 'target'> {
+function sentenceGoal(sentence: string): CastItem[] {
   const text = sentence.toLowerCase();
   const gathered = COLLECT_CUE.exec(text);
   const reached = GOAL_CUE.exec(text);
@@ -76,10 +76,10 @@ function sentenceGoal(sentence: string): Pick<Partial<GenreSpecOf<'platformer'>>
   const goal = reached === null ? null : phrase(reached[2]!);
   const verb = gathered !== null && item !== null ? gathered[1]! : reached !== null && goal !== null ? reached[1]!.replace(/^get\w*/, 'get') : null;
   const label = goal ?? item;
-  return {
-    ...(item === null ? {} : { collectible: item }),
-    ...(verb === null || label === null ? {} : { target: { label, verb, states: 2 as const } }),
-  };
+  return [
+    ...(item === null ? [] : [{ label: item, does: 'collect' as const }]),
+    ...(verb === null || label === null ? [] : [{ label, does: 'reach' as const, verb, states: 2 as const }]),
+  ];
 }
 
 export const platformerGenre: GenreModule<'platformer'> = {
@@ -96,7 +96,8 @@ export const platformerGenre: GenreModule<'platformer'> = {
   compile: compilePlatformer,
   draftFill: (sentence, reading) => {
     const roles = draftRoles(sentence, reading);
-    const said = sentenceGoal(sentence);
-    return { genre: 'platformer', mode: 'default', ...said, ...roles };
+    // Čtení má přednost: draft bere z obsazení první věc každé role.
+    const cast = [...(roles.cast ?? []), ...sentenceGoal(sentence)];
+    return { genre: 'platformer', mode: 'default', ...roles, ...(cast.length === 0 ? {} : { cast }) };
   },
 };
