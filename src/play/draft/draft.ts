@@ -57,6 +57,7 @@ import {
 import { familyOf, heroActionOf } from '../genre/families';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
 import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
+import { AMMO_VERB } from '../genre/throw';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -1254,9 +1255,12 @@ function draftGenre(
   const doesOf = (label: string, own: CastRole): CastRole => spoken.find((item) => item.label === label)?.does ?? (fillFoe?.label === label ? fillFoe.does : own);
   // Sbírací sloveso, které doplněk modulu dal věci („gather 3 apples“ ve skákačce), zůstane u ní.
   const itemVerb = fill.cast?.find((item) => item.does === 'collect' && item.verb !== undefined && singular(item.label) === itemLabel)?.verb;
+  // Co hod hází, je náboj (projektil = `scenery` se slovesem hodu, P39 T14), ne věc ke sběru – ta zůstane, jak ji věta říká.
+  const item: CastItem | null =
+    itemLabel === null ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
   const cast = castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
-    ...(itemLabel === null ? [] : [{ label: itemLabel, does: 'collect' as const, ...(itemVerb === undefined ? {} : { verb: itemVerb }) }]),
+    ...(item === null ? [] : [item]),
     ...(target === null ? [] : [{ label: target, does: thrown ? ('throw_at' as const) : ('reach' as const), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? (3 as const) : (2 as const) }]),
   ], spoken.map((item) => ({ label: item.label, does: item.does ?? ownFoe })));
   // Střelba bez terče ve větě střílí do protivníka z prostředí.
