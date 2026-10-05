@@ -134,10 +134,9 @@ function withEnemyAddon(spec: GameSpecV1, genre: Pick<GenreSpec, 'genre' | 'cast
   const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
   if (generator !== undefined || spec.control === undefined) return spec;
   const allowed = CAPABILITIES[spec.control].addons;
-  const added = (genre.cast ?? []).flatMap((item) => {
-    const addon = item.does === FOE_DOES[genre.genre] ? undefined : ENEMY_ADDONS[item.does];
-    return addon === undefined || !allowed.includes(addon) ? [] : [addon];
-  });
+  const wanted = new Set((genre.cast ?? []).map((item) => (item.does === FOE_DOES[genre.genre] ? undefined : ENEMY_ADDONS[item.does])));
+  // Pevné pořadí (pronásledovatel, střelba), ne pořadí obsazení: doplňky přidávají těla, takže pořadí obsazení by pohnulo hashem světa (T8).
+  const added = Object.values(ENEMY_ADDONS).filter((addon) => wanted.has(addon) && allowed.includes(addon));
   if (added.length === 0) return spec;
   const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
   return {
