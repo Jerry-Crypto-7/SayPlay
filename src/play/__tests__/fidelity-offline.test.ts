@@ -25,9 +25,10 @@ describe('offline fidelity loss map', () => {
     expect(first.summary.sentences).toBe(30);
     expect(first.sentences).toHaveLength(30);
     for (const sentence of first.sentences) {
-      for (const item of sentence.items) expect(Object.keys(item).sort()).toEqual(['drawn', 'inSpec', 'item', 'read', 'slot', 'why']);
+      for (const item of sentence.items) expect(Object.keys(item).sort()).toEqual(['drawn', 'inSpec', 'item', 'read', 'role', 'slot', 'why']);
     }
-    // Stupně jdou po sobě: nakreslené je čtené, čtené je ve specu.
+    // Stupně jdou po sobě: ve správné roli je nakreslené (P39), nakreslené je čtené, čtené je ve specu.
+    expect(first.summary.role).toBeLessThanOrEqual(first.summary.drawn);
     expect(first.summary.drawn).toBeLessThanOrEqual(first.summary.read);
     expect(first.summary.read).toBeLessThanOrEqual(first.summary.inSpec);
   });

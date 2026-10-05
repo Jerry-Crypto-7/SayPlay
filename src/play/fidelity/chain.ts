@@ -59,6 +59,11 @@ export interface ChainItem {
   readonly inSpec: boolean;
   readonly read: boolean;
   readonly drawn: boolean;
+  /**
+   * P39: věc hraje roli, kterou jí věta dává (`ChecklistEntry.does`) – nakreslené tělo, které se tak
+   * chová. Bez `does` stačí `drawn`; sloveso, které hraje jen doplněk, chce jmenovaný terč doplňku ve správné roli.
+   */
+  readonly role: boolean;
   readonly why: FidelityWhy;
 }
 
@@ -80,6 +85,26 @@ const GENERATOR_MODE: Readonly<Record<string, readonly [genre: string, mode: str
   quest_spatial: ['quest', 'spatial'],
   quest_station: ['quest', 'station'],
 };
+
+/** Co dělají těla, která doplněk přidá (P39): sloveso hrané jen doplňkem chce tuhle roli u věci, kterou věta jmenuje. */
+const ADDON_DOES: Readonly<Partial<Record<AddonId, CastRole>>> = { shoot: 'shoot_at', chaser: 'chase_me', collect: 'collect' };
+
+/**
+ * Co role ve hře dělá (P39, stupeň `role`) – podle druhu role, ovládání, doplňků
+ * a generátoru, stejně jako je hra hraje: nepřítel `+shoot` nebo střílečky se
+ * sestřelí, nebezpečí souboje je soupeř, jinde se mu uhýbá.
+ */
+function playsAs(role: GameRole, control: ControlId, addons: readonly AddonId[], generator: unknown): CastRole {
+  if (PLAYER(role)) return 'hero';
+  if (role.kind === 'chaser' || role.kind === 'patrol') return 'chase_me';
+  if (role.id === 'enemy' && (addons.includes('shoot') || control === 'shooter')) return 'shoot_at';
+  if (role.kind === 'hazard' && (control === 'duel' || generator === 'fight')) return 'fight';
+  if (role.kind === 'hazard' || role.kind === 'zone') return 'avoid';
+  if (role.kind === 'collectible' || role.kind === 'key' || role.kind === 'item') return 'collect';
+  if (role.kind === 'target') return control === 'throw' ? 'throw_at' : control === 'shooter' ? 'shoot_at' : 'reach';
+  if (role.kind === 'exit' || role.kind === 'destination' || role.kind === 'checkpoint' || role.kind === 'door') return 'reach';
+  return 'scenery';
+}
 
 /** Role, kterou doplněk přidá do hry a scéna ji kreslí podle popisku (nepřítel `+shoot`, pronásledovatel `+chaser`). */
 const addonRole = (role: Pick<GameRole, 'id' | 'kind'>, addons: readonly AddonId[]): boolean =>
@@ -195,6 +220,7 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   const addons = spec.addons ?? [];
   const roles = spec.roles ?? [];
   const mechanicIds: readonly string[] = (spec.mechanics ?? []).map((mechanic) => mechanic.id);
+  const generator = spec.controlParams?.generator;
   let built: ArcadeScene | undefined;
   const scene = (): ArcadeScene => (built ??= arcadeScene(spec));
   // Generátor stylizované arény čte roli, ze které postavil tělo – `move_free` sám popisky nečte (agar).
@@ -203,34 +229,47 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   // Dokázané je sloveso, po kterém se hra změnila (`VerbProof.changed`, P30B R2), ne jen vystřelené pravidlo.
   const proved = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.changed);
 
-  const stage = (entry: ChecklistEntry, inSpec: boolean, read: boolean, drawn: boolean): ChainItem => ({
+  const stage = (entry: ChecklistEntry, inSpec: boolean, read: boolean, drawn: boolean, role = drawn): ChainItem => ({
     item: entry.item,
     slot: entry.slot,
     inSpec,
     read,
     drawn,
+    role,
     why: !inSpec ? 'not-in-spec' : !read ? 'not-read-by-control' : !drawn ? 'no-model' : 'ok',
   });
 
-  return checklist.map((entry) => {
-    if (entry.slot === 'verb') {
-      const controls = entry.controls ?? [];
-      const mechanics = entry.mechanics ?? [];
-      const byControl = controls.includes(control);
-      const byMechanic = mechanics.filter((id) => mechanicIds.includes(id));
-      const byAddon = addons.some((addon) => {
-        const verb = ADDON_VERB[addon];
-        return (verb.control !== undefined && controls.includes(verb.control)) || (verb.mechanic !== undefined && mechanics.includes(verb.mechanic));
-      });
-      const byRule = (spec.rules ?? []).filter((rule) => mentions(rule.verb, [entry.item, ...(entry.match ?? [])])).map((rule) => rule.verb);
-      // Hra žánru nese sloveso režimem: generátor souboje hraje „fight“, ne ovládání `duel` ze seznamu.
-      const generator = spec.controlParams?.generator;
-      const mode = typeof generator === 'string' ? GENERATOR_MODE[generator] : undefined;
-      const byGenre = mode !== undefined && verbPlayedBy([entry.item, ...(entry.match ?? [])], mode[0], mode[1], roles.some((role) => role.kind === 'collectible' && readsRole(role)));
-      const read = byControl || byAddon || byMechanic.some((id) => readsMechanic(control, id, typeof generator === 'string' ? generator : undefined)) || byRule.some(proved) || byGenre;
-      // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika, vystřelené pravidlo nebo režim žánru je vidět hraním.
-      return stage(entry, byControl || byAddon || byMechanic.length > 0 || byRule.length > 0 || byGenre, read, read);
-    }
+  // Jména napřed: sloveso hrané jen doplňkem soudí podle toho, jestli jeho jmenovaný terč hraje svou roli.
+  const nouns = new Map<ChecklistEntry, ChainItem>();
+  for (const entry of checklist) if (entry.slot !== 'verb') nouns.set(entry, nounStage(entry));
+  return checklist.map((entry) => nouns.get(entry) ?? verbStage(entry));
+
+  function verbStage(entry: ChecklistEntry): ChainItem {
+    const controls = entry.controls ?? [];
+    const mechanics = entry.mechanics ?? [];
+    const byControl = controls.includes(control);
+    const byMechanic = mechanics.filter((id) => mechanicIds.includes(id));
+    const byAddon = addons.filter((addon) => {
+      const verb = ADDON_VERB[addon];
+      return (verb.control !== undefined && controls.includes(verb.control)) || (verb.mechanic !== undefined && mechanics.includes(verb.mechanic));
+    });
+    const byRule = (spec.rules ?? []).filter((rule) => mentions(rule.verb, [entry.item, ...(entry.match ?? [])])).map((rule) => rule.verb);
+    // Hra žánru nese sloveso režimem: generátor souboje hraje „fight“, ne ovládání `duel` ze seznamu.
+    const mode = typeof generator === 'string' ? GENERATOR_MODE[generator] : undefined;
+    const byGenre = mode !== undefined && verbPlayedBy([entry.item, ...(entry.match ?? [])], mode[0], mode[1], roles.some((role) => role.kind === 'collectible' && readsRole(role)));
+    const played = byControl || byMechanic.some((id) => readsMechanic(control, id, typeof generator === 'string' ? generator : undefined)) || byRule.some(proved) || byGenre;
+    const read = played || byAddon.length > 0;
+    // Sloveso hrané jen doplňkem je ve správné roli, když věc, kterou věta jmenuje jako jeho terč, hraje tu roli (P39) –
+    // „shoot animals“ s doplňkem, který střílí roboty, ne.
+    const aimed = byAddon.some((addon) => {
+      const does = ADDON_DOES[addon];
+      return does === undefined || [...nouns].every(([noun, item]) => noun.does !== does || item.role);
+    });
+    // Sloveso se kreslí tím, že se hraje: čtené ovládání, mechanika, vystřelené pravidlo nebo režim žánru je vidět hraním.
+    return stage(entry, byControl || byAddon.length > 0 || byMechanic.length > 0 || byRule.length > 0 || byGenre, read, read, played || aimed);
+  }
+
+  function nounStage(entry: ChecklistEntry): ChainItem {
     const match = entry.match ?? [];
     if (entry.slot === 'setting') {
       const inSpec = mentions(spec.theme?.setting ?? '', match);
@@ -242,7 +281,9 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
     }
     const candidates = roles.filter((role) => (entry.slot === 'hero' ? PLAYER(role) : entry.slot === 'role' ? !PLAYER(role) : true));
     const hits = candidates.filter((role) => mentions(role.label, match));
-    const readHits = hits.filter(readsRole);
-    return stage(entry, hits.length > 0, readHits.length > 0, readHits.some((role) => drawsRole(spec, control, role, scene)));
-  });
+    const drawnHits = hits.filter(readsRole).filter((role) => drawsRole(spec, control, role, scene));
+    const does = entry.does;
+    const role = does === undefined || does === 'scenery' ? drawnHits.length > 0 : drawnHits.some((hit) => playsAs(hit, control, addons, generator) === does);
+    return stage(entry, hits.length > 0, hits.some(readsRole), drawnHits.length > 0, role);
+  }
 }
