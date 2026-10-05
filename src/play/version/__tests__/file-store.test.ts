@@ -13,7 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { markVolatileStore } from '@/app/api/play/_publish';
 
 import builtinGames from '../builtin-games.json';
-import { __resetProcessVersionStore, fileStoreDirFromEnv, fileVersionStore, RECENT_CAP, versionStoreFromEnv } from '../store';
+import { __resetProcessVersionStore, DEFAULT_WRITE_LIMITS, fileStoreDirFromEnv, fileVersionStore, RECENT_CAP, versionStoreFromEnv } from '../store';
 import type { PublishedGame } from '../version';
 
 /** Disk, který přejmenování odmítne – antivir drží soubor (Windows EPERM) nebo je plný. */
@@ -162,6 +162,37 @@ describe('fileVersionStore', () => {
     expect(readdirSync(dir)).toHaveLength(1);
     fileVersionStore(dir, undefined, now);
     expect(readdirSync(dir)).toEqual([]);
+  });
+
+  it('dvě instance nad týmž adresářem si nepřepíšou feed, děti ani kvótu a vidí hry té druhé', async () => {
+    const dir = freshDir();
+    const limits = { ...DEFAULT_WRITE_LIMITS, dailyCap: 2 };
+    // Druhý server nebo pod `next dev` druhá route – obě načtou adresář dřív, než ta první zapíše.
+    const a = fileVersionStore(dir, limits);
+    const b = fileVersionStore(dir, limits);
+    const visitor = (mark: string): PublishedGame => ({ ...parent, version: { ...parent.version, versionId: mark.repeat(32) } });
+    const kid = (game: PublishedGame): PublishedGame => ({ ...game, version: { ...game.version, parentId: parent.version.versionId } });
+    // `feature` = uložit a zařadit do feedu (sám `put` řadí jen verzi od režiséra).
+    expect(await a.feature(visitor('a'))).toBe('stored');
+    expect(await b.feature(visitor('b'))).toBe('stored');
+    expect(await a.put(parent)).toBe('stored');
+    expect(await a.put(kid(games[1]!))).toBe('stored');
+    expect(await b.put(kid(games[2]!))).toBe('stored');
+    expect(await b.get('a'.repeat(32))).not.toBeNull();
+
+    const later = fileVersionStore(dir, limits);
+    expect((await later.recent(RECENT_CAP)).map((row) => row.versionId)).toEqual(expect.arrayContaining(['a'.repeat(32), 'b'.repeat(32)]));
+    expect([...(await later.childrenOf(parent.version.versionId))].sort()).toEqual([games[1]!.version.versionId, games[2]!.version.versionId].sort());
+    // Obě publikace návštěvníků v kvótě: strop 2 je vyčerpaný.
+    expect(await later.canPublish()).toBe(false);
+  });
+
+  it('soubor, který nejde přečíst, nechá klíč z paměti – feed se zápisem nesmaže', async () => {
+    const dir = freshDir();
+    const store = fileVersionStore(dir);
+    await store.feature(parent);
+    for (const name of readdirSync(dir)) writeFileSync(join(dir, name), '{ not json');
+    expect((await store.recent(RECENT_CAP)).map((row) => row.versionId)).toEqual([parent.version.versionId]);
   });
 
   it('zápis nenechá v adresáři dočasné soubory', async () => {

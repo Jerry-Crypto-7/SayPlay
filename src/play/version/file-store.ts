@@ -103,12 +103,38 @@ export function loadMemoryState(dir: string, now: () => number): MemoryState {
       rmSync(path, { force: true });
       continue;
     }
-    if (record.value !== undefined) state.entries.set(record.key, record.value);
-    if (record.list !== undefined) state.lists.set(record.key, record.list);
-    if (record.set !== undefined) state.sets.set(record.key, new Map(record.set));
-    if (record.expiresAt !== undefined) state.expiresAt.set(record.key, record.expiresAt);
+    putSaved(state, record);
   }
   return state;
+}
+
+function putSaved(state: MemoryState, record: Saved): void {
+  if (record.value !== undefined) state.entries.set(record.key, record.value);
+  if (record.list !== undefined) state.lists.set(record.key, record.list);
+  if (record.set !== undefined) state.sets.set(record.key, new Map(record.set));
+  if (record.expiresAt !== undefined) state.expiresAt.set(record.key, record.expiresAt);
+}
+
+/**
+ * Klíč znovu z disku (P40 T3c): jiná instance nad týmž adresářem – druhý server,
+ * nebo pod `next dev` každá route s vlastní kopií úložiště – ho mohla změnit.
+ * Feed, děti a kvóta jsou „přečti, přidej, zapiš“; ze staré kopie by zápis
+ * smazal cizí položky. Soubor, který nejde přečíst jinak než „není“ (antivir
+ * ho drží, useknutý ručně), nechá kopii v paměti – prázdný seznam by feed smazal.
+ */
+export function reloadMemoryKey(dir: string, state: MemoryState, key: string): void {
+  let record: unknown = null;
+  try {
+    record = JSON.parse(readFileSync(fileOf(dir, key), 'utf8'));
+  } catch (thrown) {
+    if ((thrown as NodeJS.ErrnoException).code !== 'ENOENT') return;
+  }
+  if (record !== null && (!isSaved(record) || record.key !== key)) return;
+  state.entries.delete(key);
+  state.lists.delete(key);
+  state.sets.delete(key);
+  state.expiresAt.delete(key);
+  if (record !== null) putSaved(state, record);
 }
 
 /**

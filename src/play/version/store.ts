@@ -48,7 +48,7 @@ import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 import type { GameVersion } from '../contracts';
 import { BUILTIN_IDS, withBuiltinGames } from './builtin';
 import { feedEligible } from './feed';
-import { emptyMemoryState, loadMemoryState, type MemoryState, saveMemoryKey, writableDir } from './file-store';
+import { emptyMemoryState, loadMemoryState, type MemoryState, reloadMemoryKey, saveMemoryKey, writableDir } from './file-store';
 import type { PublishedGame } from './version';
 
 /** Skrytí platí až při čtení feedu (`PLAY_FEED_HIDE`); zápis do seznamu ho nezná. */
@@ -751,11 +751,19 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
 /**
  * Hry, remixy a čítače na disku (P40 T3), jinak totéž co `memoryVersionStore`:
  * stav se načte z `dir` a každý změněný klíč se hned zapíše (`file-store.ts`).
- * Přežije restart serveru; sdílený mezi instancemi není – to umí jen Upstash.
+ * Přežije restart serveru. Každý klíč se před použitím dočte z disku, takže
+ * instance nad týmž adresářem si zápisy nepřepíšou (P40 T3c); zámek mezi nimi
+ * ale není – dva zápisy v téže chvíli umí jen Upstash.
  */
 export function fileVersionStore(dir: string, limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
   const state = loadMemoryState(dir, now);
-  return versionStoreOver('file', 'file', memoryRaw(state, now, (key) => saveMemoryKey(dir, state, key)), limits, now);
+  const raw = memoryRaw(
+    state,
+    now,
+    (key) => saveMemoryKey(dir, state, key),
+    (key) => reloadMemoryKey(dir, state, key),
+  );
+  return versionStoreOver('file', 'file', raw, limits, now);
 }
 
 function restore<T>(map: Map<string, T>, key: string, value: T | undefined): void {
@@ -763,10 +771,19 @@ function restore<T>(map: Map<string, T>, key: string, value: T | undefined): voi
   else map.set(key, value);
 }
 
-/** Příkazy úložiště nad stavem v paměti; `changed` dostane každý klíč, který se změnil nebo vypršel. */
-function memoryRaw(state: MemoryState, now: () => number, changed: (key: string) => void = () => undefined): RawStore {
+/**
+ * Příkazy úložiště nad stavem v paměti; `changed` dostane každý klíč, který se změnil nebo vypršel,
+ * `reload` každý klíč před čtením a před „přečti, přidej, zapiš“.
+ */
+function memoryRaw(
+  state: MemoryState,
+  now: () => number,
+  changed: (key: string) => void = () => undefined,
+  reload: (key: string) => void = () => undefined,
+): RawStore {
   const { entries, expiresAt, lists, sets } = state;
   const live = (key: string): string | null => {
+    reload(key);
     const until = expiresAt.get(key);
     if (until !== undefined && now() >= until) {
       entries.delete(key);
@@ -801,6 +818,7 @@ function memoryRaw(state: MemoryState, now: () => number, changed: (key: string)
   };
   /** Schodiště nejlepších (člen → hodnocení a čas zápisu) s expirací jako hodnoty. */
   const liveSet = (key: string): Map<string, { readonly rank: number; readonly at: number }> | undefined => {
+    reload(key);
     const until = expiresAt.get(key);
     if (until !== undefined && now() >= until) {
       sets.delete(key);
@@ -833,10 +851,14 @@ function memoryRaw(state: MemoryState, now: () => number, changed: (key: string)
       return Promise.resolve(next);
     },
     pushCapped: (key, value, cap) => {
+      reload(key);
       commit(key, () => lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap)));
       return Promise.resolve();
     },
-    head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
+    head: (key, count) => {
+      reload(key);
+      return Promise.resolve((lists.get(key) ?? []).slice(0, count));
+    },
     getMany: (keys) => Promise.resolve(keys.map(live)),
     exists: (key) => Promise.resolve(live(key) !== null),
     keepBest: (key, member, rank, at, staleBefore, keep, ttlSeconds) => {
