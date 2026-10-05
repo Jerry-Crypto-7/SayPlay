@@ -34,7 +34,7 @@ describe('sentenceChecklist', () => {
     const draft = draftGameSpecWithMeta(sentence).genre;
     // Návrh má nepřítele a prostředí, které věta neříká.
     expect(draft).toMatchObject({ genre: 'rhythm', setting: 'neon stage' });
-    expect(draft?.enemy).toBeDefined();
+    expect(draft?.cast?.length).toBeGreaterThan(0);
     const { checklist, verb } = sentenceChecklist(sentence);
     expect(checklist).toEqual([
       { item: 'grandma cat', slot: 'hero', match: ['cat'] },

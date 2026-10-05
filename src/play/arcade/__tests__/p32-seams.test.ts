@@ -25,14 +25,14 @@ import { compileRules } from '../rules/compile';
 import { ruleWhenSchema } from '../rules/schema';
 
 const SAMPLE: Readonly<Record<string, GenreSpec>> = {
-  platformer: { genre: 'platformer', mode: 'default', hero: 'firefighter robot', enemy: 'fallen log', collectible: 'water drop', setting: 'burning forest' },
-  escape: { genre: 'arena', mode: 'escape', hero: 'cat', enemy: 'polar bear', collectible: 'glowing fish', setting: 'frozen lake' },
-  collect: { genre: 'arena', mode: 'collect', hero: 'little fish', enemy: 'shark', collectible: 'plankton', setting: 'coral reef' },
-  fight: { genre: 'arena', mode: 'fight', hero: 'knight', enemy: 'black knight', setting: 'castle courtyard' },
-  race: { genre: 'voyage', mode: 'race', hero: 'pirate ship', enemy: 'cannonball', collectible: 'treasure', setting: 'sea between islands' },
-  land: { genre: 'voyage', mode: 'land', hero: 'rocket', enemy: 'meteor', setting: 'surface of Mars' },
-  spatial: { genre: 'quest', mode: 'spatial', hero: 'tiny wizard', enemy: 'ghost', target: { label: 'candle', verb: 'light', states: 2 }, setting: 'haunted castle' },
-  station: { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'flip', states: 3 }, setting: 'restaurant kitchen' },
+  platformer: { genre: 'platformer', mode: 'default', hero: 'firefighter robot', cast: [{ label: 'fallen log', does: 'avoid' }, { label: 'water drop', does: 'collect' }], setting: 'burning forest' },
+  escape: { genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'glowing fish', does: 'collect' }], setting: 'frozen lake' },
+  collect: { genre: 'arena', mode: 'collect', hero: 'little fish', cast: [{ label: 'shark', does: 'chase_me' }, { label: 'plankton', does: 'collect' }], setting: 'coral reef' },
+  fight: { genre: 'arena', mode: 'fight', hero: 'knight', cast: [{ label: 'black knight', does: 'fight' }], setting: 'castle courtyard' },
+  race: { genre: 'voyage', mode: 'race', hero: 'pirate ship', cast: [{ label: 'cannonball', does: 'avoid' }, { label: 'treasure', does: 'collect' }], setting: 'sea between islands' },
+  land: { genre: 'voyage', mode: 'land', hero: 'rocket', cast: [{ label: 'meteor', does: 'avoid' }], setting: 'surface of Mars' },
+  spatial: { genre: 'quest', mode: 'spatial', hero: 'tiny wizard', cast: [{ label: 'ghost', does: 'chase_me' }, { label: 'candle', does: 'reach', verb: 'light', states: 2 }], setting: 'haunted castle' },
+  station: { genre: 'quest', mode: 'station', hero: 'chef', cast: [{ label: 'pancake', does: 'reach', verb: 'flip', states: 3 }], setting: 'restaurant kitchen' },
 };
 
 /** Režim → (vzorek, generátor). Platforma `feel: 2` jede dnešním generátorem s `tuning`. */
@@ -129,7 +129,7 @@ describe('P32-0 T4 kernel seams', () => {
 
   it('tuning may not carry a key the control already validates in spec.ts, so it cannot slip past its bounds', () => {
     // 30 s výherní časovač + `tuning: {seconds: 60}` hrál na růst; timing `tuning: {tolerance: 50}` obešel mez 100 (revize T4).
-    const runner = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope' });
+    const runner = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', cast: [{ label: 'rock', does: 'avoid' }, { label: 'snowflake', does: 'collect' }], setting: 'icy mountain slope' });
     // Souboj už jde přes `move_free` (P32E T4); `duel` pokrývá uložený duel.
     const plains = [runner, read(duelFixture), ...Object.values(SAMPLE).map((sample) => compileGenre(sample))];
     const controls = new Set(plains.map((plain) => plain.control));
@@ -157,7 +157,7 @@ describe('P32-0 T4 kernel seams', () => {
   });
 
   it('remix chips leave a game with a delegated generator alone instead of crashing', () => {
-    const runner = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope' });
+    const runner = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', cast: [{ label: 'rock', does: 'avoid' }, { label: 'snowflake', does: 'collect' }], setting: 'icy mountain slope' });
     for (const extra of [{ generator: 'runner_track' }, { tuning: { coins: false } }]) {
       const spec = read(delegate(runner, extra));
       for (const chip of ['harder', 'twist', 'swap_enemy'] as const) expect(remixPatch(chip, spec, 1), `${chip} ${JSON.stringify(extra)}`).toEqual([]);

@@ -135,7 +135,7 @@ describe('runner feel: 2 – who gets it', () => {
   const controlOf = (world: ArcadeWorld): Record<string, unknown> => world.control.params as Record<string, unknown>;
 
   it('every runner genre game carries feel: 2 to the control', () => {
-    const spec = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope' });
+    const spec = compileGenre({ genre: 'runner', mode: 'default', hero: 'penguin', cast: [{ label: 'rock', does: 'avoid' }, { label: 'snowflake', does: 'collect' }], setting: 'icy mountain slope' });
     expect(spec.controlParams).toMatchObject({ feel: 2 });
     const made = arcadeWorldOf(spec, 1);
     if (!made.ok) throw new Error(made.issues.join('; '));

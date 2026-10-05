@@ -226,7 +226,7 @@ describe('arena escape and collect – the bot wins', () => {
   });
 
   it('an escape spec delegated through readGameSpec compiles, the bot wins and an idle player loses', () => {
-    const sample: GenreSpec = { genre: 'arena', mode: 'escape', hero: 'cat', enemy: 'polar bear', collectible: 'glowing fish', setting: 'frozen lake' };
+    const sample: GenreSpec = { genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'glowing fish', does: 'collect' }], setting: 'frozen lake' };
     const base = compileGenre(sample);
     const read = readGameSpec({ ...base, controlParams: { ...base.controlParams, generator: 'arena_escape', tuning: { chasers: 2 } } });
     if (!read.ok) throw new Error(read.issues.join('; '));

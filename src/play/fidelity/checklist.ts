@@ -92,7 +92,8 @@ export function sentenceChecklist(sentence: string): SentenceChecklist {
   const hero = said([genre?.hero, roles.player], 'hero', 1);
   const setting = said([genre?.setting, roles.setting], 'setting', 1);
   const others = said(
-    [genre?.enemy, genre?.collectible, genre?.target?.label, roles.threat?.label, roles.target, roles.collectible, roles.item, roles.destination],
+    // Obsazení návrhu (P39): každá jmenovaná věc kromě hrdiny, v pořadí návrhu.
+    [...(genre?.cast ?? []).filter((item) => item.does !== 'hero').map((item) => item.label), roles.threat?.label, roles.target, roles.collectible, roles.item, roles.destination],
     'role',
     MAX_NOUNS - hero.length - setting.length,
   );
