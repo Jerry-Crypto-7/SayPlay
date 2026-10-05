@@ -1,6 +1,7 @@
 /**
  * Prompt režiséra (P23-B T3, na žánrech od P32B T4): model píše `GenreSpec` –
- * žánr, režim, role a prostředí – a hru z něj složí modul žánru. Nabídka
+ * žánr, režim, hrdinu, obsazení s rolí každé věci (P39) a prostředí – a hru
+ * z něj složí modul žánru. Nabídka
  * žánrů je **vyrenderovaná ze zdroje** (`GENRE_MODULES`): jen režimy `ready`,
  * narážky, třídy hrdinů a meze parametrů, takže režim, který modul dokončí,
  * projde do promptu sám a nedokončený v něm není. `DIRECTOR_PROMPT_VERSION`
@@ -17,7 +18,7 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { LOOK_IDS } from '../arcade/look';
 import { sentenceChecklist } from '../fidelity/checklist';
-import { COUNT_PARAMS, COUNT_ROLES, type GenreModule, type GenreSpec } from '../genre/contract';
+import { CAST_MAX, CAST_ROLES, COUNT_PARAMS, COUNT_ROLES, type CastRole, type GenreModule, type GenreSpec } from '../genre/contract';
 import { DEPTH_PARAM_BOUNDS, GENRE_MODULES } from '../genre/index';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
 import { ROLE_KINDS } from '../spec';
@@ -28,8 +29,22 @@ import { GENRE_ANSWER_SCHEMA, readyModes } from './answer-schema';
 export const GENRE_RULES =
   'Return ONLY a GenreSpec: pick the genre and mode the sentence plays and name its roles with the sentence\'s nouns; the game is built from it. Never output code. Answer {plan, spec}: plan = one short line of reasoning.';
 
-export const GENRE_SHAPE_LINE =
-  'spec: {genre, mode, hero: string<=60, enemy?: string<=60, enemyMoves?: chase|patrol|shoot|still, collectible?: string<=60, target?: {label: string<=60, verb: string<=24, states: 2|3}, setting: string<=80, palette?, params?, counts?: {enemy?, collectible?, target?: int}, ruleRoles?, things?, rules?}; a missing optional field is null.';
+/** Co smí věc obsazení dělat – hrdina do obsazení nepatří, je v `hero`. */
+const CAST_DOES = CAST_ROLES.filter((does): does is Exclude<CastRole, 'hero'> => does !== 'hero');
+
+/** Jeden řádek promptu na každé `does` (P39): co věc ve hře dělá a které sloveso věty ji tak obsadí. */
+const CAST_DOES_LINES: Readonly<Record<Exclude<CastRole, 'hero'>, string>> = {
+  shoot_at: 'the player shoots it down ("shoot the drones", "a shooting game against animals")',
+  chase_me: 'it hunts the player ("a ghost chases you", "run from the bear"); patrol: true when it wanders until it sees the player ("guards patrol")',
+  avoid: 'an obstacle or threat the player dodges or jumps over ("dodge rocks", "jump over logs")',
+  collect: 'the player gathers it ("grab 5 coins", "eat plankton")',
+  reach: 'the goal, or what the main verb acts on, with verb and states ({"label":"candle","does":"reach","verb":"light","states":2})',
+  fight: 'a rival the player beats up close ("duel a ninja", "fight monsters")',
+  throw_at: 'what the player throws at ("throw snowballs at a snowman")',
+  scenery: 'a thing of the place with no rule',
+};
+
+export const GENRE_SHAPE_LINE = `spec: {genre, mode, hero: string<=60, cast?: [{label: string<=60, does: ${CAST_DOES.join('|')}, verb?: string<=24, states?: 2|3, patrol?: bool}]<=${String(CAST_MAX)}, setting: string<=80, palette?, params?, counts?: {enemy?, collectible?, target?: int}, ruleRoles?, things?, rules?}; a missing optional field is null.`;
 
 const ID_PATTERN_SOURCE = '^[A-Za-z][A-Za-z0-9_.]{0,63}$';
 
@@ -117,19 +132,21 @@ export function genrePromptLines(): string {
     ...genres,
     'genre and mode: the ones whose cues fit the main verb – the verb that carries the goal or the win. A task (light, fight, land) beats moving (run, sail, jump), moving beats collecting, collecting beats escaping.',
     'hero: the 1–3 word English noun the player is ("pirate ship", "wizard"). It must be a kind the genre lists (a ship sails, a car drives); if it cannot be, pick the genre it can play.',
-    'enemy: the chaser, threat or rival the sentence names. collectible: what the player gathers. target {label, verb, states}: what the main verb acts on ("light" a "candle"). Null when the sentence names none – the game then picks one from the setting.',
+    // P39: obsazení místo jednoho `enemy` – každá věc věty a co s ní dělá její sloveso.
+    'cast: every thing the sentence names except the hero and the place, each {label, does}; does = what the verb at that thing makes it:',
+    ...CAST_DOES.map((does) => `- ${does}: ${CAST_DOES_LINES[does]}`),
+    'The genre plays each does it can and the nearest one for the rest. Null cast when the sentence names nothing – the game then picks from the setting. Never add a thing the sentence does not name.',
     `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}. params: only for a number the sentence says, else null.`,
-    'counts: how many enemies, collectibles or targets the sentence says ("grab 5 coins" = collectible 5), only for roles the genre counts, else null.',
+    'counts: how many the sentence says ("grab 5 coins" = collectible 5): enemy for shoot_at|chase_me|avoid|fight, collectible for collect, target for reach|throw_at; only roles the genre counts, else null.',
     `Every genre takes params ${Object.entries(DEPTH_PARAM_BOUNDS)
       .map(([key, range]) => `${key} ${String(range.min)}..${String(range.max)}`)
       .join(', ')} when the sentence says them: lives ("3 lives"), points to win ("score 200 points"), seconds before the player loses.`,
-    'enemyMoves, when the sentence says how the enemy acts, else null: chase = hunts the player, patrol = wanders until it sees the player ("guards patrol"), shoot = the player shoots them down, still = never moves.',
-    "Keep the user's nouns, numbers and names. Role labels are singular (\"rock\", not \"rocks\"). The enemy is never what the player holds, sprays or throws.",
+    "Keep the user's nouns, numbers and names. Cast labels are singular (\"rock\", not \"rocks\"). A cast thing is never what the player holds, sprays or throws.",
     // P38: výchozí bod je odhad ze slov, ne kostra – „ponech a přidej jednu věc“ držel AI verzi u návrhu.
-    'The starting point is a rough keyword guess the player sees while you work, not a frame. Build the game the sentence asks for: change the genre, mode, hero, enemy or anything else the guess got wrong; keep only what it got right.',
-    'Every action the player does in the sentence must be playable. When it names two (jump and shoot, run and collect), the genre plays one and the other rides on it: jump + shoot = platformer with enemyMoves shoot; run + shoot = runner with enemyMoves shoot.',
+    'The starting point is a rough keyword guess the player sees while you work, not a frame. Build the game the sentence asks for: change the genre, mode, hero, cast or anything else the guess got wrong; keep only what it got right.',
+    'Every action the player does in the sentence must be playable. When it names two (jump and shoot, run and collect), the genre plays one and the other rides on it: jump + shoot = platformer with the shot things shoot_at; run + shoot = runner with shoot_at.',
     'A sentence in another language is read for its meaning; every label you write stays English.',
-    'Checklist and main verb (in the request) are what the keyword reader found – a sentence it could not read gives none, then read the sentence yourself. Carry each checklist thing in a role label or the setting, and play the main verb in its genre and mode.',
+    'Checklist and main verb (in the request) are what the keyword reader found – a sentence it could not read gives none, then read the sentence yourself. Carry each checklist thing in a cast label or the setting, and play the main verb in its genre and mode.',
   ].join('\n');
 }
 

@@ -220,7 +220,7 @@ describe('genre-switching repair of the director', () => {
   const answer = (spec: Record<string, unknown>) => ({ plan: 'scripted', spec });
   const run = (sentence: string, body: unknown, modules = genreDoubles()) => direct(sentence, { branch: fakeBranch([answered(body)]), now: () => 0, modules });
   const labels = (spec: GameSpecV1, kind: string): string[] => spec.roles.filter((role) => role.kind === kind).map((role) => role.label);
-  const wizardOnVoyage = answer({ genre: 'voyage', mode: 'race', hero: 'wizard', collectible: 'candle', setting: 'haunted castle' });
+  const wizardOnVoyage = answer({ genre: 'voyage', mode: 'race', hero: 'wizard', cast: [{ label: 'candle', does: 'collect' }], setting: 'haunted castle' });
 
   it('moves a wizard on a voyage with candles to the quest', async () => {
     const game = await run(text('wizard'), wizardOnVoyage);
@@ -253,7 +253,7 @@ describe('genre-switching repair of the director', () => {
   it('plays the draft genre when the sentence has a verb no genre knows', async () => {
     const sentence = 'A robot juggles oranges';
     const drafted = draftGameSpecWithMeta(sentence, 1, { modules: genreDoubles() }).genre!;
-    const game = await run(sentence, answer({ genre: 'quest', mode: 'station', hero: 'robot', target: { label: 'orange', verb: 'juggle', states: 3 }, setting: 'circus' }));
+    const game = await run(sentence, answer({ genre: 'quest', mode: 'station', hero: 'robot', cast: [{ label: 'orange', does: 'reach', verb: 'juggle', states: 3 }], setting: 'circus' }));
     expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
     // Hra vznikla přepnutím žánru, ne pádem na draft (ten nese `failure`).
     expect(game.failure).toBeUndefined();
@@ -278,12 +278,51 @@ describe('switchGenre over the real genre modules', () => {
   it('walks past the first mode of the ranking to the one the main verb plays', () => {
     // „swords“ dá souboji první místo, „make“ hraje stanice úkolu.
     const switched = switchGenre({ genre: 'arena', mode: 'fight', hero: 'fox', setting: 'meadow' }, 'merge swords to make stronger swords and fight monsters');
-    expect(switched?.genre).toMatchObject({ genre: 'quest', mode: 'station', target: { label: 'sword', verb: 'make' } });
+    expect(switched?.genre).toMatchObject({ genre: 'quest', mode: 'station' });
+    expect(switched?.genre.cast).toContainEqual(expect.objectContaining({ label: 'sword', does: 'reach', verb: 'make' }));
   });
 
   it('gives the quest the object of the sentence when the answer names none', () => {
     const wizard = sentenceSet.sentences.find((entry) => entry.id === 'wizard')!.text;
     const switched = switchGenre({ genre: 'voyage', mode: 'race', hero: 'wizard', setting: 'haunted castle' }, wizard);
-    expect(switched?.genre).toMatchObject({ genre: 'quest', mode: 'spatial', target: { label: 'candle', verb: 'light' } });
+    expect(switched?.genre).toMatchObject({ genre: 'quest', mode: 'spatial' });
+    expect(switched?.genre.cast).toContainEqual(expect.objectContaining({ label: 'candle', does: 'reach', verb: 'light' }));
+  });
+
+  // P39: oprava nevrací AI na obsazení rychlé verze. Věc z věty, kterou rychlá verze nemá, zůstane;
+  // nahradí se jen vymyšlená věc (vlastní věcí draftu téže role) a doplní chybějící věc věty.
+  it('keeps the cast things of the sentence and rebuilds only what the critic flags', () => {
+    const real = 'a fox jumps over logs while animals watch in the forest';
+    const quick = draftGameSpecWithMeta(real).genre!;
+    expect(quick.cast!.map((item) => item.label)).not.toContain('animal');
+    const written = { genre: 'platformer', mode: 'default', hero: 'fox', cast: [{ label: 'animal', does: 'shoot_at' }, { label: 'giant Roomba', does: 'avoid' }], setting: 'forest' } as const;
+    const switched = switchGenre({ ...written, cast: [...written.cast] }, real);
+    expect(switched?.genre).toMatchObject({ genre: 'platformer', mode: 'default' });
+    expect(switched?.genre.cast).toEqual([{ label: 'animal', does: 'shoot_at' }, { label: 'log', does: 'avoid' }]);
+    expect(switched?.spec.addons).toContain('shoot');
+    // Věc z věty se špatnou rolí dostane roli ze slovesa (přeskočit polena = překážka), jméno zůstane odpovědi.
+    const wrong = switchGenre({ ...written, cast: [{ label: 'animal', does: 'shoot_at' }, { label: 'logs', does: 'collect' }] }, real);
+    expect(wrong?.genre.cast).toEqual([{ label: 'animal', does: 'shoot_at' }, { label: 'logs', does: 'avoid' }]);
+  });
+
+  // Chybějící věc věty předběhne výchozí věc prostředí téže role: žánr hraje první věc role, žalud by houby stínil.
+  it('puts a missing thing of the sentence before the default of its role, with the count of the sentence', () => {
+    const mushrooms = 'Collect five glowing mushrooms in a moonlit forest, then escape through the portal';
+    const written = { genre: 'arena', mode: 'escape', hero: 'fox', cast: [{ label: 'wolf', does: 'chase_me' }, { label: 'acorn', does: 'collect' }], setting: 'dark forest', counts: { collectible: 8 } } as const;
+    const switched = switchGenre({ ...written, cast: [...written.cast] }, mushrooms);
+    expect(switched?.genre.cast).toEqual([{ label: 'wolf', does: 'chase_me' }, { label: 'glowing mushroom', does: 'collect' }, { label: 'acorn', does: 'collect' }]);
+    expect(switched?.genre.counts).toEqual({ collectible: 5 });
+    expect(switched?.spec.roles.find((role) => role.kind === 'collectible')?.label).toBe('glowing mushroom');
+  });
+
+  // T7 s obsazením: vyměněná věc bere z draftu i svůj počet, ostatní počty zůstanou odpovědi.
+  it('takes the count of a swapped thing from the quick version and keeps the other counts', () => {
+    const fish = sentenceSet.sentences.find((entry) => entry.id === 'cat')!.text;
+    const switched = switchGenre(
+      { genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'giant Roomba', does: 'chase_me' }, { label: 'glowing fish', does: 'collect' }], setting: 'frozen lake', counts: { enemy: 4, collectible: 6 } },
+      fish,
+    );
+    expect(switched?.genre.cast).toEqual([expect.objectContaining({ label: 'polar bear', does: 'chase_me' }), { label: 'glowing fish', does: 'collect' }]);
+    expect(switched?.genre.counts).toEqual({ collectible: 6 });
   });
 });

@@ -261,7 +261,7 @@ describe('openai: generate', () => {
 });
 
 /** Odpověď režiséra `{plan, spec}` se žánrem, ze které modul složí hratelnou hru. */
-const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', enemy: undefined, collectible: undefined, setting: 'frozen iceberg field', palette: 'snow' });
+const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', cast: undefined, setting: 'frozen iceberg field', palette: 'snow' });
 const SENTENCE = 'a penguin jumps over icebergs';
 const USAGE = { inputTokens: 2000, outputTokens: 900 };
 

@@ -35,7 +35,6 @@ import { COMPACT_PROMPT_VERSION, compactSystemPrompt } from '@/play/director/com
 import { directorSystemPrompt } from '@/play/director/prompt';
 import { draftGameSpec } from '@/play/draft';
 import { fidelityChain, type ChecklistEntry } from '@/play/fidelity/chain';
-import type { EnemyMove } from '@/play/genre/contract';
 import type { GameSpecV1 } from '@/play/spec';
 import { upstreamBranch, type UpstreamConfig } from '@/server/upstream';
 
@@ -49,6 +48,12 @@ interface Sentence {
   readonly text: string;
   readonly checklist: readonly ChecklistEntry[];
 }
+
+/**
+ * Jak se nepřítel ve světě chová – měřítko P36A T9. Do P39 to byl `EnemyMove`
+ * ze smlouvy žánru (`enemyMoves`); obsazení ho nahradilo, měření čte svět dál stejně.
+ */
+type EnemyMove = 'chase' | 'patrol' | 'shoot' | 'still';
 
 interface Expect {
   readonly lives?: number;

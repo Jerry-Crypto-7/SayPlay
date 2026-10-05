@@ -1216,9 +1216,10 @@ function draftGenre(
   const piece = twist !== null && (choice.genre === 'timing' || choice.genre === 'rhythm') && object !== null && !isPerson(object) && !isScenery(object) ? object : null;
   const found = thrown ? (thing(THROWN_BEFORE.exec(text)?.[1]) ?? (throwsAt ? null : object) ?? thing(roles.collectible)) : noVerb ? (twistThing ?? heard) : (heard ?? piece ?? twistThing);
   const collectible = found === null ? null : singular(found);
-  // P39: každá věc, kterou věta jmenuje se slovesem, i předmět hlavního slovesa – kromě místa a hrdiny.
+  // P39: každá věc, kterou věta jmenuje se slovesem, i předmět hlavního slovesa – kromě místa, hrdiny a nástroje
+  // („shoots arrows at goblins“: šíp letí, terčem je goblin – T7).
   const heroLabel = heroSaid === null ? null : singular(heroSaid);
-  const verbThing = object === null || ranking.does === null ? [] : [{ label: singular(object), does: ranking.does }];
+  const verbThing = object === null || ranking.does === null || toolsOf(sentence).includes(singular(object)) ? [] : [{ label: singular(object), does: ranking.does }];
   const spoken = [...roles.named, ...verbThing].filter(({ label }) => !isPlace(label) && label !== heroLabel);
   const saidFoe = spoken.find((item) => item.does === null || FOE_ROLES.has(item.does))?.label ?? null;
   // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.

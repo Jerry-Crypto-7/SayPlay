@@ -2,101 +2,101 @@
   {
     "id": "e01",
     "sentence": "a fox runs through a burning forest jumping over fallen logs and grabbing acorns",
-    "answer": { "plan": "Run forward through the forest; the logs are in the way, acorns to grab.", "spec": { "genre": "runner", "mode": "default", "hero": "fox", "enemy": "fallen log", "collectible": "acorn", "setting": "burning forest", "palette": "forest" } }
+    "answer": { "plan": "Run forward through the forest; the logs are in the way, acorns to grab.", "spec": { "genre": "runner", "mode": "default", "hero": "fox", "cast": [{ "label": "fallen log", "does": "avoid" }, { "label": "acorn", "does": "collect" }], "setting": "burning forest", "palette": "forest" } }
   },
   {
     "id": "e02",
     "sentence": "a mouse runs from a cat through the kitchen dodging pots",
-    "answer": { "plan": "Running from a cat is escaping it; the cat hunts the mouse.", "spec": { "genre": "arena", "mode": "escape", "hero": "mouse", "enemy": "cat", "setting": "busy kitchen", "palette": "living_room" } }
+    "answer": { "plan": "Running from a cat is escaping it; the cat hunts the mouse, the pots are dodged.", "spec": { "genre": "arena", "mode": "escape", "hero": "mouse", "cast": [{ "label": "cat", "does": "chase_me" }, { "label": "pot", "does": "avoid" }], "setting": "busy kitchen", "palette": "living_room" } }
   },
   {
     "id": "e03",
     "sentence": "a robot jumps across factory platforms and shoots rust bugs",
-    "answer": { "plan": "Jumping across platforms is the main verb; rust bugs stand in the way.", "spec": { "genre": "platformer", "mode": "default", "hero": "robot", "enemy": "rust bug", "setting": "old factory", "palette": "factory" } }
+    "answer": { "plan": "Jumping across platforms is the main verb; the rust bugs are shot down on the way.", "spec": { "genre": "platformer", "mode": "default", "hero": "robot", "cast": [{ "label": "rust bug", "does": "shoot_at" }], "setting": "old factory", "palette": "factory" } }
   },
   {
     "id": "e04",
     "sentence": "an astronaut hops between moon craters collecting crystals",
-    "answer": { "plan": "Hopping between craters, crystals to collect on the way.", "spec": { "genre": "platformer", "mode": "default", "hero": "astronaut", "collectible": "crystal", "setting": "moon craters", "palette": "space" } }
+    "answer": { "plan": "Hopping between craters, crystals to collect on the way.", "spec": { "genre": "platformer", "mode": "default", "hero": "astronaut", "cast": [{ "label": "crystal", "does": "collect" }], "setting": "moon craters", "palette": "space" } }
   },
   {
     "id": "e05",
     "sentence": "a paper plane flutters between skyscrapers collecting stars",
-    "answer": { "plan": "A plane flies, so a voyage; the skyscrapers are in the way, stars to collect.", "spec": { "genre": "voyage", "mode": "race", "hero": "paper plane", "enemy": "skyscraper", "collectible": "star", "setting": "city skyline", "palette": "city" } }
+    "answer": { "plan": "A plane flies, so a voyage; the skyscrapers are in the way, stars to collect.", "spec": { "genre": "voyage", "mode": "race", "hero": "paper plane", "cast": [{ "label": "skyscraper", "does": "avoid" }, { "label": "star", "does": "collect" }], "setting": "city skyline", "palette": "city" } }
   },
   {
     "id": "e06",
     "sentence": "race a snowmobile down a glacier past other riders and grab speed boosts",
-    "answer": { "plan": "A race on a snowmobile; riders are the rivals, speed boosts to grab.", "spec": { "genre": "voyage", "mode": "race", "hero": "snowmobile", "enemy": "rider", "collectible": "speed boost", "setting": "glacier slope", "palette": "snow" } }
+    "answer": { "plan": "A race on a snowmobile; riders are in the way, speed boosts to grab.", "spec": { "genre": "voyage", "mode": "race", "hero": "snowmobile", "cast": [{ "label": "rider", "does": "avoid" }, { "label": "speed boost", "does": "collect" }], "setting": "glacier slope", "palette": "snow" } }
   },
   {
     "id": "e07",
     "sentence": "fly a biplane through the canyon and dodge the rocks",
-    "answer": { "plan": "Flying through a canyon; the rocks are in the way.", "spec": { "genre": "voyage", "mode": "race", "hero": "biplane", "enemy": "rock", "setting": "desert canyon", "palette": "desert" } }
+    "answer": { "plan": "Flying through a canyon; the rocks are in the way.", "spec": { "genre": "voyage", "mode": "race", "hero": "biplane", "cast": [{ "label": "rock", "does": "avoid" }], "setting": "desert canyon", "palette": "desert" } }
   },
   {
     "id": "e08",
     "sentence": "a tiny jellyfish eats plankton and grows while sharks hunt it",
-    "answer": { "plan": "Eat to grow is collecting; the sharks hunt the jellyfish.", "spec": { "genre": "arena", "mode": "collect", "hero": "jellyfish", "enemy": "shark", "collectible": "plankton", "setting": "deep sea", "palette": "underwater" } }
+    "answer": { "plan": "Eat to grow is collecting; the sharks hunt the jellyfish.", "spec": { "genre": "arena", "mode": "collect", "hero": "jellyfish", "cast": [{ "label": "shark", "does": "chase_me" }, { "label": "plankton", "does": "collect" }], "setting": "deep sea", "palette": "underwater" } }
   },
   {
     "id": "e09",
     "sentence": "defend the space station by shooting down asteroids",
-    "answer": { "plan": "Shooting down is a fight; the asteroids are the enemy.", "spec": { "genre": "arena", "mode": "fight", "hero": "space station", "enemy": "asteroid", "setting": "orbit around a space station", "palette": "space" } }
+    "answer": { "plan": "Shooting down is a fight; the asteroids are shot down.", "spec": { "genre": "arena", "mode": "fight", "hero": "space station", "cast": [{ "label": "asteroid", "does": "shoot_at" }], "setting": "orbit around a space station", "palette": "space" } }
   },
   {
     "id": "e10",
     "sentence": "a pirate ship fires cannonballs at sea monsters and has three lives",
-    "answer": { "plan": "A ship can only sail, so a voyage; the sea monsters are in the way.", "spec": { "genre": "voyage", "mode": "race", "hero": "pirate ship", "enemy": "sea monster", "setting": "stormy sea", "palette": "ocean" } }
+    "answer": { "plan": "A ship can only sail, so a voyage; it fires at the sea monsters, the voyage puts them in the way.", "spec": { "genre": "voyage", "mode": "race", "hero": "pirate ship", "cast": [{ "label": "sea monster", "does": "shoot_at" }], "setting": "stormy sea", "palette": "ocean" } }
   },
   {
     "id": "e11",
     "sentence": "throw snowballs at a snowman in the park",
-    "answer": { "plan": "Hitting the snowman is the task; no hero named, keep the starting point's.", "spec": { "genre": "quest", "mode": "spatial", "hero": "penguin", "target": { "label": "snowman", "verb": "hit", "states": 2 }, "setting": "snowy park", "palette": "snow" } }
+    "answer": { "plan": "Hitting the snowman is the task; no hero named, keep the starting point's.", "spec": { "genre": "quest", "mode": "spatial", "hero": "penguin", "cast": [{ "label": "snowman", "does": "reach", "verb": "hit", "states": 2 }], "setting": "snowy park", "palette": "snow" } }
   },
   {
     "id": "e12",
     "sentence": "stack pancakes as high as you can in a diner",
-    "answer": { "plan": "Making a stack of pancakes at one station.", "spec": { "genre": "quest", "mode": "station", "hero": "fox", "target": { "label": "pancake", "verb": "make", "states": 3 }, "setting": "diner kitchen" } }
+    "answer": { "plan": "Making a stack of pancakes at one station.", "spec": { "genre": "quest", "mode": "station", "hero": "fox", "cast": [{ "label": "pancake", "does": "reach", "verb": "make", "states": 3 }], "setting": "diner kitchen" } }
   },
   {
     "id": "e13",
     "sentence": "tap to the beat of the drums at a beach party",
-    "answer": { "plan": "Playing the drums is the task at the party.", "spec": { "genre": "quest", "mode": "spatial", "hero": "turtle", "target": { "label": "drum", "verb": "use", "states": 2 }, "setting": "beach party at sunset", "palette": "beach" } }
+    "answer": { "plan": "Playing the drums is the task at the party.", "spec": { "genre": "quest", "mode": "spatial", "hero": "turtle", "cast": [{ "label": "drum", "does": "reach", "verb": "use", "states": 2 }], "setting": "beach party at sunset", "palette": "beach" } }
   },
   {
     "id": "e14",
     "sentence": "a samurai duels a ninja on a temple roof",
-    "answer": { "plan": "A duel is a fight; the ninja is the rival.", "spec": { "genre": "arena", "mode": "fight", "hero": "samurai", "enemy": "ninja", "setting": "temple roof at night", "palette": "castle" } }
+    "answer": { "plan": "A duel is a fight; the ninja is the rival.", "spec": { "genre": "arena", "mode": "fight", "hero": "samurai", "cast": [{ "label": "ninja", "does": "fight" }], "setting": "temple roof at night", "palette": "castle" } }
   },
   {
     "id": "e15",
     "sentence": "a squirrel collects five nuts in the garden and hides in its tree",
-    "answer": { "plan": "Collecting nuts in the garden, nobody hunts the squirrel.", "spec": { "genre": "arena", "mode": "collect", "hero": "squirrel", "collectible": "nut", "setting": "back garden", "palette": "meadow" } }
+    "answer": { "plan": "Collecting nuts in the garden, nobody hunts the squirrel.", "spec": { "genre": "arena", "mode": "collect", "hero": "squirrel", "cast": [{ "label": "nut", "does": "collect" }], "setting": "back garden", "palette": "meadow" } }
   },
   {
     "id": "e16",
     "sentence": "sneak past the guard dogs to reach the treasure room",
-    "answer": { "plan": "Sneaking past guards is escaping them; no hero named, the castle gives a knight.", "spec": { "genre": "arena", "mode": "escape", "hero": "knight", "enemy": "guard dog", "setting": "castle vault", "palette": "castle" } }
+    "answer": { "plan": "Sneaking past guards is escaping them; no hero named, the castle gives a knight.", "spec": { "genre": "arena", "mode": "escape", "hero": "knight", "cast": [{ "label": "guard dog", "does": "avoid" }], "setting": "castle vault", "palette": "castle" } }
   },
   {
     "id": "e17",
     "sentence": "carry the lost puppy back to its kennel in the park",
-    "answer": { "plan": "Delivering the puppy home is the task.", "spec": { "genre": "quest", "mode": "spatial", "hero": "fox", "target": { "label": "lost puppy", "verb": "deliver", "states": 2 }, "setting": "city park", "palette": "meadow" } }
+    "answer": { "plan": "Delivering the puppy home is the task.", "spec": { "genre": "quest", "mode": "spatial", "hero": "fox", "cast": [{ "label": "lost puppy", "does": "reach", "verb": "deliver", "states": 2 }], "setting": "city park", "palette": "meadow" } }
   },
   {
     "id": "e18",
     "sentence": "take the silver key and open the treasure chest on a pirate island",
-    "answer": { "plan": "Opening the chest is the task; the key opens it.", "spec": { "genre": "quest", "mode": "spatial", "hero": "turtle", "target": { "label": "treasure chest", "verb": "open", "states": 2 }, "setting": "pirate island", "palette": "beach" } }
+    "answer": { "plan": "Opening the chest is the task; the key opens it.", "spec": { "genre": "quest", "mode": "spatial", "hero": "turtle", "cast": [{ "label": "treasure chest", "does": "reach", "verb": "open", "states": 2 }], "setting": "pirate island", "palette": "beach" } }
   },
   {
     "id": "e19",
     "sentence": "a thief has 5 lives to crack the vaults before time runs out in 80 seconds while guards patrol the halls",
-    "answer": { "plan": "Cracking the vaults is the task; the guards patrol, 5 lives and an 80 s limit as said.", "spec": { "genre": "quest", "mode": "spatial", "hero": "thief", "enemy": "guard", "enemyMoves": "patrol", "target": { "label": "vault", "verb": "crack", "states": 2 }, "setting": "museum halls", "palette": "castle", "params": { "lives": 5, "timeLimit": 80 } } }
+    "answer": { "plan": "Cracking the vaults is the task; the guards patrol, 5 lives and an 80 s limit as said.", "spec": { "genre": "quest", "mode": "spatial", "hero": "thief", "cast": [{ "label": "guard", "does": "chase_me", "patrol": true }, { "label": "vault", "does": "reach", "verb": "crack", "states": 2 }], "setting": "museum halls", "palette": "castle", "params": { "lives": 5, "timeLimit": 80 } } }
   },
   {
     "id": "e20",
     "sentence": "a ninja runs across rooftops shooting drones and must score 300 points",
-    "answer": { "plan": "Running is the main verb; the drones are shot down; 300 points to win.", "spec": { "genre": "runner", "mode": "default", "hero": "ninja", "enemy": "drone", "enemyMoves": "shoot", "setting": "city rooftops", "params": { "targetScore": 300 } } }
+    "answer": { "plan": "Running is the main verb; the drones are shot down; 300 points to win.", "spec": { "genre": "runner", "mode": "default", "hero": "ninja", "cast": [{ "label": "drone", "does": "shoot_at" }], "setting": "city rooftops", "params": { "targetScore": 300 } } }
   }
 ]

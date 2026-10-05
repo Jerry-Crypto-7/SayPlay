@@ -30,7 +30,7 @@ const LIVE = {
   PLAY_DIRECTOR_HEDGE_MS: '30000',
 };
 
-const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', enemy: undefined, collectible: undefined, setting: 'frozen iceberg field', palette: 'snow' });
+const COMPACT = genreAnswer({ genre: 'platformer', mode: 'default', hero: 'penguin', cast: undefined, setting: 'frozen iceberg field', palette: 'snow' });
 
 const ok = (model: string): GenerationOutcome => ({ ok: true, body: { model }, usage: null, provenance: { model } });
 const down: GenerationOutcome = { ok: false, reason: 'UPSTREAM_UNAVAILABLE', detail: 'down', usage: null };

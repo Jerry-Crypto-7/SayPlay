@@ -23,7 +23,7 @@ import { DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRe
 import { readDirectorAnswer } from '../director/read';
 import { repairDeterministically } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
-import type { GenreModule } from '../genre/contract';
+import { CAST_ROLES, type GenreModule } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
 import { ARCHETYPE_IDS, MECHANIC_IDS } from '../registry';
 import { CONTROLS } from '../spec';
@@ -56,7 +56,25 @@ describe('director prompt', () => {
       expect(request.user).toContain('Main verb: "stir" (family cook) – genre quest, mode station.');
       expect(request.system).toContain('Checklist and main verb (in the request) are what the keyword reader found');
       // P38: dvě činnosti věty se hrají obě – skákání nese žánr, střelbu doplněk.
-      expect(request.system).toContain('jump + shoot = platformer with enemyMoves shoot');
+      expect(request.system).toContain('jump + shoot = platformer with the shot things shoot_at');
+    }
+  });
+
+  // P39: model staví obsazení – každá věc věty s tím, co dělá – a o starém jednom nepříteli neslyší.
+  it('asks for the cast with every does explained, never for enemy, collectible or target', () => {
+    const draft = draftGameSpecWithMeta('a robot jumps across factory platforms and shoots rust bugs').genre;
+    for (const system of [buildDirectorRequest('x', draft).system, buildCompactRequest('x', draft, true).system]) {
+      expect(system).toContain('cast: every thing the sentence names except the hero and the place, each {label, does}');
+      for (const does of CAST_ROLES.filter((role) => role !== 'hero')) expect(system, does).toMatch(new RegExp(`^- ${does}: \\S`, 'm'));
+      expect(system).not.toMatch(/\benemyMoves\b|\benemy\?:|\bcollectible\?:|\btarget\?: \{|\benemy:|\bcollectible:/);
+    }
+    expect(GENRE_SHAPE_LINE).toContain('cast?: [{label: string<=60, does: shoot_at|chase_me|avoid|collect|reach|fight|throw_at|scenery');
+    // Schéma odpovědi je ze zod: každá varianta nese obsazení s uzavřeným výčtem `does`, žádný starý slot.
+    const variants = ((GENRE_ANSWER_SCHEMA.properties as Record<string, { anyOf: { properties: Record<string, unknown> }[] }>).spec.anyOf);
+    for (const variant of variants) {
+      expect(Object.keys(variant.properties)).toContain('cast');
+      expect(Object.keys(variant.properties).filter((key) => ['enemy', 'enemyMoves', 'collectible', 'target'].includes(key))).toEqual([]);
+      expect(JSON.stringify(variant.properties.cast)).toContain('"shoot_at"');
     }
   });
 
@@ -109,7 +127,8 @@ describe('director prompt', () => {
   // P36A T11: 8 540 B – čtyři žánry navíc (Načasování se třemi režimy, Rytmus, Souboj, Poletování), řádek z modulu.
   // P37A T8: 8 908 B – kontrolní seznam věty a hlavní sloveso s rodinou v požadavku a řádek, podle kterého brána upgradu AI verzi pustí.
   // P38: 9 254 B – výchozí bod je odhad, ne kostra; dvě činnosti věty (skok + střelba); věta v jiném jazyce.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 9 254 B)', () => {
+  // P39 T11: 10 082 B – obsazení místo `enemy`/`enemyMoves`/`collectible`/`target`: tvar položky a řádek na každé `does`.
+  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 10 082 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -118,7 +137,7 @@ describe('director prompt', () => {
       }
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(9_254);
+    expect(max).toBeLessThanOrEqual(10_082);
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

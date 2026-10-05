@@ -10,12 +10,14 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
+import { goldenPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { GOOD_ANSWERS, answerFixture } from '../director/__fixtures__';
-import { CRITIC_CODES, UNISSUED_PACK_CODES, blockingIssues, critique, fidelity, type CriticIssue } from '../director/critic';
+import { CRITIC_CODES, UNISSUED_PACK_CODES, blockingIssues, critique, fidelity, type CriticIssue, type FidelityIssue } from '../director/critic';
+import { DIRECTOR_EXAMPLES, exampleSpec } from '../director/retrieval';
 import { draftGameSpecWithMeta } from '../draft';
 import { genreDoubles } from '../genre/__tests__/doubles';
-import type { GenreSpec } from '../genre/contract';
+import type { CastRole, GenreSpec } from '../genre/contract';
 import { ARCHETYPE_IDS } from '../registry';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
@@ -156,26 +158,67 @@ describe('fidelity of a GenreSpec answer', () => {
   });
 
   it('refuses a voyage for a wizard who lights candles', () => {
-    expect(codes({ genre: 'voyage', mode: 'race', hero: 'wizard', collectible: 'candle', setting: 'haunted castle' }, 'wizard')).toContain('VERB_OUTSIDE_MODE');
+    expect(codes({ genre: 'voyage', mode: 'race', hero: 'wizard', cast: [{ label: 'candle', does: 'collect' }], setting: 'haunted castle' }, 'wizard')).toContain('VERB_OUTSIDE_MODE');
   });
 
-  it('refuses an enemy that is neither in the sentence nor the default of the setting', () => {
+  it('refuses a cast thing that is neither in the sentence nor a default of the setting', () => {
     const cat = draftGameSpecWithMeta(text('cat'), 1, { modules }).genre!;
-    expect(codes({ ...cat, enemy: 'giant Roomba' }, 'cat')).toEqual(['ENEMY_NOT_SAID']);
+    const roomba = { label: 'giant Roomba', does: 'chase_me' } as const;
+    // Roomba místo ledního medvěda: vymyšlená věc a chybějící věc věty, každá svým nálezem.
+    const swapped = fidelity({ ...cat, cast: [roomba, ...cat.cast!.filter((item) => item.label !== 'polar bear')] }, text('cat'), { modules });
+    expect(swapped.map((issue) => [issue.code, issue.path])).toEqual([['CAST_NOT_SAID', '/cast/0'], ['CAST_MISSING', '/cast']]);
+    expect(swapped[1]!.thing).toMatchObject({ label: 'polar bear', does: 'chase_me' });
     const knights = draftGameSpecWithMeta(text('knights'), 1, { modules }).genre!;
-    expect(codes({ ...knights, enemy: 'dragon' }, 'knights')).toContain('ENEMY_NOT_SAID');
+    expect(codes({ ...knights, cast: [{ label: 'dragon', does: 'fight' }] }, 'knights')).toContain('CAST_NOT_SAID');
     // Věta bez nepřítele: projde jen výchozí nepřítel prostředí (město → auto), vzorová Roomba ne.
     const dog = { genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city' } as const;
-    expect(codes({ ...dog, enemy: 'car' }, 'dog')).toEqual([]);
-    expect(codes({ ...dog, enemy: 'giant Roomba' }, 'dog')).toEqual(['ENEMY_NOT_SAID']);
+    expect(codes({ ...dog, cast: [{ label: 'car', does: 'avoid' }] }, 'dog')).toEqual([]);
+    expect(codes({ ...dog, cast: [{ label: 'giant Roomba', does: 'avoid' }] }, 'dog')).toEqual(['CAST_NOT_SAID']);
+    // Každá role, ne jen nepřítel: vymyšlená věc ke sběru i cíl. Kulisa z místa odpovědi projde.
+    expect(codes({ ...dog, cast: [{ label: 'golden bone', does: 'collect' }] }, 'dog')).toEqual(['CAST_NOT_SAID']);
+    expect(codes({ ...dog, cast: [{ label: 'lighthouse', does: 'reach', verb: 'reach', states: 2 }] }, 'dog')).toEqual(['CAST_NOT_SAID']);
+    expect(codes({ ...dog, setting: 'city park with a fountain', cast: [{ label: 'fountain', does: 'scenery' }] }, 'dog')).toEqual([]);
+  });
+
+  // P39 (oprava `critic.ts:413` třídou): AI smí obsadit věc věty, kterou rychlá verze nemá – soudí se věta, ne rychlá verze.
+  it('keeps a cast thing the sentence says even when the quick version does not have it', () => {
+    const real = 'a fox jumps over logs while animals watch in the forest';
+    const quick = draftGameSpecWithMeta(real).genre!;
+    expect(quick.genre).toBe('platformer');
+    expect(quick.cast!.map((item) => item.label)).not.toContain('animal');
+    const written: GenreSpec = { ...quick, cast: [...quick.cast!, { label: 'animals', does: 'shoot_at' }] };
+    expect(fidelity(written, real)).toEqual([]);
+    // Tatáž věc mimo větu (vlk je výchozí v lese, medvěd ne) neprojde.
+    expect(fidelity({ ...quick, cast: [...quick.cast!, { label: 'bear', does: 'shoot_at' }] }, real).map((issue) => issue.code)).toEqual(['CAST_NOT_SAID']);
+    expect(fidelity({ ...quick, cast: [...quick.cast!, { label: 'wolf', does: 'shoot_at' }] }, real)).toEqual([]);
+  });
+
+  // P39: role musí sedět ke slovesu, které k věci ve větě patří – co se střílí, není překážka.
+  it('refuses a role that does not fit the verb the sentence gives the thing', () => {
+    const shoot = 'a robot jumps across factory platforms and shoots rust bugs';
+    const quick = draftGameSpecWithMeta(shoot).genre!;
+    expect(quick.cast).toContainEqual({ label: 'rust bug', does: 'shoot_at' });
+    const as = (does: CastRole): FidelityIssue[] => fidelity({ ...quick, cast: [{ label: 'rust bug', does }] }, shoot);
+    for (const does of ['avoid', 'chase_me', 'collect', 'scenery'] as const) {
+      expect(as(does), does).toEqual([expect.objectContaining({ code: 'CAST_ROLE_WRONG', path: '/cast/0', thing: { label: 'rust bug', does: 'shoot_at' } })]);
+    }
+    // Útok je útok: žánr, který nestřílí, hraje střílenou věc jako soupeře nebo terč.
+    for (const does of ['shoot_at', 'fight', 'throw_at'] as const) expect(as(does), does).toEqual([]);
+    // Co sbírá, se nehoní; cíl úkolu je předmět slovesa a sedí ke sběru i k útoku.
+    const fish = text('cat');
+    const cat = draftGameSpecWithMeta(fish, 1, { modules }).genre!;
+    const fishAs = (does: CastRole): string[] => fidelity({ ...cat, cast: cat.cast!.map((item) => (item.label === 'glowing fish' ? { ...item, does } : item)) }, fish, { modules }).map((issue) => issue.code);
+    expect(fishAs('chase_me')).toEqual(['CAST_ROLE_WRONG']);
+    expect(fishAs('reach')).toEqual([]);
+    expect(fidelity({ ...quick, cast: [{ label: 'rust bug', does: 'reach', verb: 'hit', states: 2 }] }, shoot)).toEqual([]);
   });
 
   // Nad skutečnými moduly (B-R7): 2 z 249 vět, kde hlavní sloveso hraje jiný režim než první v pořadí.
   it('proves the mode the main verb plays, not the first mode of the ranking', () => {
     const swords = 'merge swords to make stronger swords and fight monsters';
     const verbCodes = (genre: GenreSpec) => fidelity(genre, swords).filter((issue) => issue.code === 'VERB_OUTSIDE_MODE');
-    expect(verbCodes({ genre: 'quest', mode: 'station', hero: 'fox', target: { label: 'sword', verb: 'make', states: 3 }, setting: 'meadow' })).toEqual([]);
-    expect(verbCodes({ genre: 'arena', mode: 'fight', hero: 'fox', enemy: 'monster', setting: 'meadow' })).toHaveLength(1);
+    expect(verbCodes({ genre: 'quest', mode: 'station', hero: 'fox', cast: [{ label: 'sword', does: 'reach', verb: 'make', states: 3 }], setting: 'meadow' })).toEqual([]);
+    expect(verbCodes({ genre: 'arena', mode: 'fight', hero: 'fox', cast: [{ label: 'monster', does: 'fight' }], setting: 'meadow' })).toHaveLength(1);
   });
 
   // P38: věta, ve které tabulka sloves nic nenajde (česky), žánr nedokazuje – režisér ho vybere sám,
@@ -183,11 +226,33 @@ describe('fidelity of a GenreSpec answer', () => {
   it('lets the director pick the genre when the sentence has no verb the table knows', () => {
     const czech = 'skákací hra se střílením do zvířat v lese';
     const verbCodes = (genre: GenreSpec) => fidelity(genre, czech).filter((issue) => issue.code === 'VERB_OUTSIDE_MODE');
-    expect(verbCodes({ genre: 'platformer', mode: 'default', hero: 'fox', enemy: 'wolf', enemyMoves: 'shoot', setting: 'forest' })).toEqual([]);
-    // Nepřítele (zvíře z věty) slova nepřečtou, takže ho kontrola nesmí shodit jako vymyšleného.
-    expect(fidelity({ genre: 'platformer', mode: 'default', hero: 'hunter', enemy: 'deer', enemyMoves: 'shoot', setting: 'forest' }, czech)).toEqual([]);
+    expect(verbCodes({ genre: 'platformer', mode: 'default', hero: 'fox', cast: [{ label: 'wolf', does: 'shoot_at' }], setting: 'forest' })).toEqual([]);
+    // Zvíře z věty slova nepřečtou, takže ho kontrola nesmí shodit jako vymyšlené.
+    expect(fidelity({ genre: 'platformer', mode: 'default', hero: 'hunter', cast: [{ label: 'deer', does: 'shoot_at' }], setting: 'forest' }, czech)).toEqual([]);
     // Věta se slovesem z tabulky dál dokazuje režim.
-    expect(fidelity({ genre: 'arena', mode: 'fight', hero: 'fox', enemy: 'wolf', setting: 'forest' }, 'a fox jumps over logs in the forest').map((issue) => issue.code)).toContain('VERB_OUTSIDE_MODE');
+    expect(fidelity({ genre: 'arena', mode: 'fight', hero: 'fox', cast: [{ label: 'wolf', does: 'fight' }], setting: 'forest' }, 'a fox jumps over logs in the forest').map((issue) => issue.code)).toContain('VERB_OUTSIDE_MODE');
+  });
+
+  // Rychlá verze je poslední záloha opravy (`switchGenre` bere její věci): kontrola, která by shodila
+  // i ji, by AI verzi poslala zpátky na návrh. Nad skutečnými moduly, 300 vět zlaté, poptávkové a vývojové sady.
+  it('passes the cast of the quick version of every golden, demand and dev sentence', () => {
+    const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
+    const dev = JSON.parse(readFileSync('evals/play/p30/dev.json', 'utf8')) as { readonly sentences: { readonly text: string }[] };
+    const texts = [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text), ...dev.sentences.map((entry) => entry.text)];
+    expect(texts).toHaveLength(300);
+    for (const sentence of texts) {
+      const genre = draftGameSpecWithMeta(sentence).genre;
+      if (genre === null || genre === undefined) continue;
+      expect(fidelity(genre, sentence).filter((issue) => issue.code.startsWith('CAST_')), sentence).toEqual([]);
+    }
+  });
+
+  // Příklady jdou do promptu jako vzor tvaru (`retrieval.ts`): obsazení, které by kritik shodil, by model učil chybu.
+  it('passes the cast of every director example', () => {
+    for (const example of DIRECTOR_EXAMPLES) {
+      const cast = fidelity(exampleSpec(example), example.sentence).filter((issue) => issue.code.startsWith('CAST_'));
+      expect(cast, example.id).toEqual([]);
+    }
   });
 
   it('refuses a mode that only plays a stand-in, and then proves the best ready mode', () => {
