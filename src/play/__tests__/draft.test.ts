@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { goldenPrompts, packBucketPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { draftForControl, draftGameSpec, draftGameSpecWithMeta, readNumbers, readRoles } from '../draft';
-import { withoutPossessor } from '../draft/lexicon';
+import { toolsOf, withoutPossessor } from '../draft/lexicon';
 import { type ChecklistEntry, fidelityChain } from '../fidelity/chain';
 import { genreDoubles } from '../genre/__tests__/doubles';
 import { type GameSpecV1, readGameSpec } from '../spec';
@@ -172,6 +172,17 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       const meta = draftGameSpecWithMeta('A frog hops across lily pads and shoots down the drones', 1);
       expect(['arena', 'quest', 'throw', 'duel']).not.toContain(meta.genre?.genre);
       expect(meta.genre?.cast).toContainEqual({ label: 'drone', does: 'shoot_at' });
+    });
+
+    // P39 T14: „shoot drones on a highway“ – za „on“ stojí místo, kde se střílí, ne cíl. Drony se četly jako nástroj
+    // („shoots arrows at goblins“), z věty zmizely a střílelo se do aut z prostředí.
+    it('shoots the drones named on a highway, not the cars of the place', () => {
+      const meta = draftGameSpecWithMeta('run and shoot drones on a highway', 1);
+      expect(meta.genre?.genre).toBe('runner');
+      expect(meta.genre?.cast?.filter((item) => item.does === 'shoot_at')).toEqual([{ label: 'drone', does: 'shoot_at' }]);
+      expect(toolsOf('run and shoot drones on a highway')).toEqual([]);
+      // Za „on“ bez místa je to dál nástroj: voda letí na oheň.
+      expect(toolsOf('shoot water on the fire')).toEqual(['water']);
     });
 
     it('never casts a place, the hero or one thing twice', () => {

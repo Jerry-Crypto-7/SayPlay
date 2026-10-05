@@ -9,6 +9,7 @@
  * jako pin skutečného čísla, ne jako cíl.
  */
 
+import { lookFor } from '../arcade/look';
 import type { CastRole } from '../genre/contract';
 import type { ArchetypeId } from '../registry';
 
@@ -341,7 +342,17 @@ function singularWord(word: string): string {
 /** Slovesa, jejichž předmět hráč drží nebo vrhá („sprays water“, „throws snowballs“); tvar -ing i minulý. */
 const TOOL_USE = /\b(?:spray|squirt|pour|splash|sprinkle|throw|toss|fling|hurl|lob|swing|wield|cast|us(?=e|ing))(?:s|es|e|ed|d|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*)/;
 /** „shoots arrows at goblins“: předmět střelby je nástroj jen s cílem za ním, jinak je terčem („shoot the zombies“). */
-const TOOL_AIMED = /\b(?:shoot|fire|launch)(?:s|es|ed|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*?) (?:at|on|into|toward|towards)\b/;
+const TOOL_AIMED = /\b(?:shoot|fire|launch)(?:s|es|ed|ing)? (?:the |a |an |some |his |her |its |their )?([a-z][a-z -]*?) (at|on|into|toward|towards)\b/;
+
+/**
+ * „shoot drones on a highway“ (P39 T14): za „on“ stojí místo, kde se střílí, ne cíl –
+ * předmět je terč, ne nástroj. „shoot water on the fire“ cíl má, voda je nástroj.
+ */
+function placeAfterOn(match: RegExpExecArray, text: string): boolean {
+  if (match[2] !== 'on') return false;
+  const phrase = nounPhrase(text.slice(match.index + match[0].length), 2);
+  return phrase !== null && lookFor(phrase.split(' ').at(-1)!) !== null;
+}
 
 /** Každý výskyt vzoru, i ten uvnitř předchozího („a bully throws rocks while a kid throws snowballs“). */
 function everyMatch(pattern: RegExp, text: string): RegExpExecArray[] {
@@ -363,7 +374,7 @@ function everyMatch(pattern: RegExp, text: string): RegExpExecArray[] {
  */
 export function toolsOf(sentence: string): readonly string[] {
   const text = withoutPossessor(sentence.toLowerCase().replace(/\s+/g, ' ').trim());
-  const tools = [...everyMatch(TOOL_USE, text), ...everyMatch(TOOL_AIMED, text)].flatMap((match) => {
+  const tools = [...everyMatch(TOOL_USE, text), ...everyMatch(TOOL_AIMED, text).filter((match) => !placeAfterOn(match, text))].flatMap((match) => {
     const phrase = nounPhrase(match[1], 2);
     return phrase === null ? [] : [singular(phrase)];
   });
