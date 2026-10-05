@@ -114,7 +114,7 @@ describe('the director prompt', () => {
     await direct(sentence, { branch: plain.branch, now: Date.now, compact: true });
     expect(draft).not.toBeNull();
     // P37A T8: zpráva nese mezi větou a výchozím bodem kontrolní seznam věty (`checklistLines`); příklady dál jen s přepínačem.
-    expect(plain.seen).toEqual([`${sentence}\n\n${checklistLines(sentence)}\n\nStarting point (keep or improve): ${JSON.stringify(draft)}`]);
+    expect(plain.seen).toEqual([`${sentence}\n\n${checklistLines(sentence)}\n\nStarting point (a keyword guess, replace what it got wrong): ${JSON.stringify(draft)}`]);
     expect(buildCompactRequest(sentence, draft)).toEqual(buildCompactRequest(sentence, draft, false));
   });
 

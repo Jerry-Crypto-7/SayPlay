@@ -13,6 +13,7 @@ import { verifyArcade } from '../arcade/verify';
 // P32B T2: doplňky ovládání nese jen šablona remixu uložených legacy her – zkouší se přes ni.
 import { legacyDraft } from './legacy-draft';
 import { pickControl } from '../draft/controls';
+import { draftGameSpecWithMeta } from '../draft';
 
 interface DemandEntry {
   readonly id: string;
@@ -60,6 +61,21 @@ describe('two verbs in the word draft', () => {
       expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
     }
     expect(legacyDraft('jump and shoot the zombies', 7).tutorial.controlsHint).toMatch(/Fire to shoot/);
+  });
+
+  // P38: živý návrh jde přes žánr – skok nese skákačku, střelba jede jako doplněk, a robot hru pořád vyhraje.
+  it.each(['a jumping game where you shoot animals in the forest', 'jump and shoot the zombies'])('genre draft: %s → platformer with +shoot', (sentence) => {
+    const drafted = draftGameSpecWithMeta(sentence);
+    expect(drafted.genre).toMatchObject({ genre: 'platformer', enemyMoves: 'shoot' });
+    expect(drafted.spec.control).toBe('platform');
+    expect(drafted.spec.addons).toContain('shoot');
+    const built = arcadeWorldOf(drafted.spec, 7);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    expect(verifyArcade(built.world).publishEligible).toBe(true);
+  });
+
+  it('shooting alone stays a shooter', () => {
+    expect(draftGameSpecWithMeta('shoot the aliens before they land').genre).toMatchObject({ genre: 'shooter' });
   });
 
   // Naměřeno 24. 9. 2026: 5 z 5 (s006, s010, s012, s029 sbírají, s014 honí).

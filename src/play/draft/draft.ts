@@ -1211,6 +1211,8 @@ function draftGenre(
     setting: cap(setting, 80),
     ...(place === null ? {} : { palette: place }),
     ...(params === null ? {} : { params }),
+    // P38: střelba na skoku nebo běhu – `compileWith` z ní udělá doplněk `shoot`.
+    ...(ranking.ride === 'shoot' && (choice.genre === 'platformer' || choice.genre === 'runner') ? { enemyMoves: 'shoot' } : {}),
   };
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });

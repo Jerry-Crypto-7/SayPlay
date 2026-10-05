@@ -125,9 +125,11 @@ export function genrePromptLines(): string {
       .join(', ')} when the sentence says them: lives ("3 lives"), points to win ("score 200 points"), seconds before the player loses.`,
     'enemyMoves, when the sentence says how the enemy acts, else null: chase = hunts the player, patrol = wanders until it sees the player ("guards patrol"), shoot = the player shoots them down, still = never moves.',
     "Keep the user's nouns, numbers and names. Role labels are singular (\"rock\", not \"rocks\"). The enemy is never what the player holds, sprays or throws.",
-    'The starting point is the quick version the player already has. Keep what it got right and add one thing the sentence says and it misses: the chaser it names (params/counts), a count it says, the enemy or place it names. Never return it unchanged.',
-    // P37A T8: brána upgradu měří AI verzi proti návrhu na tomtéž seznamu (`fidelity/score.ts`).
-    'Checklist and main verb (in the request) are what the sentence names: carry each checklist thing in a role label or the setting, and play the main verb in its genre and mode. The player gets your version only if it carries more of the checklist than the starting point.',
+    // P38: výchozí bod je odhad ze slov, ne kostra – „ponech a přidej jednu věc“ držel AI verzi u návrhu.
+    'The starting point is a rough keyword guess the player sees while you work, not a frame. Build the game the sentence asks for: change the genre, mode, hero, enemy or anything else the guess got wrong; keep only what it got right.',
+    'Every action the player does in the sentence must be playable. When it names two (jump and shoot, run and collect), the genre plays one and the other rides on it: jump + shoot = platformer with enemyMoves shoot; run + shoot = runner with enemyMoves shoot.',
+    'A sentence in another language is read for its meaning; every label you write stays English.',
+    'Checklist and main verb (in the request) are what the keyword reader found – a sentence it could not read gives none, then read the sentence yourself. Carry each checklist thing in a role label or the setting, and play the main verb in its genre and mode.',
   ].join('\n');
 }
 
@@ -177,7 +179,7 @@ export const DIRECTOR_PROMPT_VERSION = canonicalHash({ system: directorSystemPro
 
 /** Návrh ze slov jako výchozí bod; hra bez žánru (mřížka archetypu) žádný nedá. */
 export function startingPoint(draft: GenreSpec | null): string {
-  return draft === null ? 'Starting point: none – choose from the sentence.' : `Starting point (keep or improve): ${JSON.stringify(draft)}`;
+  return draft === null ? 'Starting point: none – choose from the sentence.' : `Starting point (a keyword guess, replace what it got wrong): ${JSON.stringify(draft)}`;
 }
 
 export function buildDirectorRequest(sentence: string, draft: GenreSpec | null): UpstreamRequest {
