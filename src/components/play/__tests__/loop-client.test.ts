@@ -64,14 +64,14 @@ describe('bounce', () => {
     expect((await sent()).filter((line) => line.startsWith('bounce'))).toEqual([]);
   });
 
-  it('a finished run or Play again is not a bounce, even when the swallowed first tap sent no first_input', async () => {
+  // Arkáda první stisk spolkne: jediný dotek skončí prohrou bez `first_input`.
+  it.each(['win', 'lose', 'restart'] as const)('a game that sent %s is not a bounce, by next game or by closing the page', async (played) => {
     const { loopEvent, loopImpression } = await import('../loop-client');
     loopImpression(A);
-    loopEvent('lose', A);
-    loopEvent('restart', A);
+    loopEvent(played, A);
     loopEvent('next_game', A);
     loopImpression(B);
-    loopEvent('win', B);
+    loopEvent(played, B);
     leave();
     expect((await sent()).filter((line) => line.startsWith('bounce'))).toEqual([]);
   });

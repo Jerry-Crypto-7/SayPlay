@@ -121,8 +121,9 @@ export const FRESH_EVERY = 3;
 const HALF_LIFE_MS = 24 * 3600 * 1000;
 
 /**
- * Žár hry: dohrání, výzva a remix táhnou nahoru (výzva a remix víc – hráč hru
- * někomu ukázal), přeskočení dolů. P40 T5 – k čemu se lidi vrací:
+ * Žár hry: dohrání, výzva a remix táhnou nahoru (výzva a remix víc – obojí
+ * ověřil server: uložená vítězná jízda, nová hra v úložišti), přeskočení dolů.
+ * P40 T5 – k čemu se lidi vrací:
  * - opakování `+1`: hráč si hru dal znovu, váží jako další dohrání (čítač je
  *   jeden hlas volajícího za den, takže na hráče jednou);
  * - sdílení `+2`: hru někomu poslal, ale je to slovo klienta, proto méně než
