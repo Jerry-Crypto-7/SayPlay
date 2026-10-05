@@ -84,17 +84,18 @@ test('working → ready: the banner counts seconds, then offers the AI version w
   await running(page);
   const banner = page.getByTestId('upgrade-state');
   await expect(banner).toHaveAttribute('data-kind', 'working');
-  // Texty od P34 T4 (kit `11-voice-copy.md`): běh je pilulka `.sp-status` s větou kitu – bez
-  // počítadla sekund, protože kromě pulzující tečky se nic nehýbe samo – a hotová verze toast
-  // `.sp-toast` s tlačítkem `Play it`.
+  // Přepínač Quick | Full detail (P38) je pilulka `.sp-status`; věta kitu (`11-voice-copy.md`) jde
+  // čtečce – bez počítadla sekund, protože kromě pulzující tečky se nic nehýbe samo. Full detail
+  // je během práce neaktivní, hotová verze ho rozsvítí.
   await expect(banner).toContainText('Quick version · the full-detail one is on its way');
   await expect(banner).toHaveClass(/sp-status/);
   await expect(banner).not.toContainText('%');
+  await expect(page.getByTestId('upgrade-action')).toBeDisabled();
 
   await expect(banner).toHaveAttribute('data-kind', 'ready', { timeout: 15_000 });
   await expect(banner).toContainText('Full-detail version ready');
-  await expect(banner).toHaveClass(/sp-toast/);
-  await expect(page.getByTestId('upgrade-action')).toHaveText('Play it');
+  await expect(page.getByTestId('upgrade-action')).toHaveText('Full detail');
+  await expect(page.getByTestId('upgrade-action')).toBeEnabled();
   // Hotová verze hru sama nevymění – hráč pořád hraje návrh.
   await page.waitForTimeout(2_500);
   expect(new URL(page.url()).pathname).toBe(draft.url);
@@ -102,7 +103,6 @@ test('working → ready: the banner counts seconds, then offers the AI version w
   await page.getByTestId('upgrade-action').click();
   await page.waitForURL(`**/play/${target}`);
 });
-
 test('working → final: the banner says why, and one double-clicked retry asks the server once', async ({ page, request }) => {
   const draft = await draftFromSentence(request);
   const asked = await fakeUpgrade(page, draft, (count) => (count < 2 ? pending : count === 2 ? { status: 'draft-final', reason: 'NOT_PLAYABLE' } : { status: 'draft-final', reason: 'MODEL_UNAVAILABLE' }));

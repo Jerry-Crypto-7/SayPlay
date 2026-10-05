@@ -882,7 +882,8 @@ function ArcadePlayGame({
         )}
         {/* Živá změna (P29D T9): Enter otevírá pole jen tam, kde Enter nehraje (střelba, úder, ťuk). */}
         {canChange && <LiveBox session={session} spec={spec} remix={remix} enterOpens={enterOpensLiveBox(arcade)} open={liveOpen} setOpen={setLiveOpen} />}
-        <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} />
+        {/* AI verze vede přepínačem zpátky na rychlou (P38); feed mezi verzemi nepřepíná. */}
+        <UpgradeBanner request={upgrade} sentence={read?.sentence ?? null} quick={aiVersion && !inFeed ? (lineage.at(-2)?.versionId ?? null) : null} />
         {running && <RemixReadyChip job={remix} />}
       </ArcadeHud>
       <Lineage lineage={lineage} remixes={remixes} aiVersion={aiVersion} />
