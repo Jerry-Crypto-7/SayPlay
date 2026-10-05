@@ -138,7 +138,8 @@ export async function POST(request: Request): Promise<Response> {
       void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
       return publishedResponse(draft.value, true, unsupportedGame(sentence, drafted));
     }
-    if (draft.response.status !== 422) return draft.response;
+    // Návrh se zakázaným textem (P40 T2) nečeká na režiséra: rychlá verze se nevrátí a model se neplatí.
+    if (draft.response.status !== 422 || draft.issues?.[0] === 'CONTENT_REJECTED') return draft.response;
     if (refused !== null) return refused;
     // Návrh, který se nedá hrát, nemá co ukázat hned – věta čeká na režiséra jako před T2.
     const directed = await getDirector(startedAt, caller, (candidate) => playabilityIssues(candidate, seeds))(sentence);

@@ -12,6 +12,7 @@ import { moderatePrompt, PLAY_MODERATION } from '@/server/moderation';
 export type PlayErrorCode =
   | 'BAD_REQUEST'
   | 'SENTENCE_REJECTED'
+  | 'CONTENT_REJECTED'
   | 'BODY_TOO_LARGE'
   | 'BODY_TIMEOUT'
   | 'TOO_MANY_BODY_READS'
@@ -57,6 +58,24 @@ export const SENTENCE_BLOCKED = "We can't make that one. Try a different idea.";
  */
 export function refuseSentence(sentence: string): Response | null {
   return moderatePrompt(sentence, PLAY_MODERATION).ok ? null : fail(422, 'SENTENCE_REJECTED', SENTENCE_BLOCKED);
+}
+
+/**
+ * První řetězec hry na zakázané téma (P40 T2), jinak `null`. Čte všechny
+ * řetězce, ne pole rolí – P39 mění role na `cast` a kontrola nesmí po sloučení
+ * oslepnout. Každý řetězec zvlášť: „Make“ v titulku a „bomb“ v popisku nejsou věta.
+ */
+export function blockedText(value: unknown): string | null {
+  if (typeof value === 'string') {
+    const verdict = moderatePrompt(value, PLAY_MODERATION);
+    return !verdict.ok && verdict.category === 'DISALLOWED' ? value : null;
+  }
+  const items = Array.isArray(value) ? value : value !== null && typeof value === 'object' ? Object.values(value) : [];
+  for (const item of items) {
+    const found = blockedText(item);
+    if (found !== null) return found;
+  }
+  return null;
 }
 
 /** Tvar id verze: hex z `canonicalHash`. Cokoli jiného je 404 dřív, než se sáhne na úložiště. */

@@ -35,8 +35,8 @@ const IDEA_LOOKS = ['sp-idea--mint sp-tilt-l', 'sp-idea--sun sp-tilt-r', 'sp-ide
  */
 function doorMessage(status: number, code: unknown, message: unknown): string {
   if (typeof message !== 'string' || message === '') return BUILD_FAILED;
-  // Zakázané téma (P40 T1): dveře posílají větu kitu „Blocked content“ – „Try fewer rules“ by hráče poslal zkoušet totéž znovu.
-  if (code === 'SENTENCE_REJECTED') return message;
+  // Zakázané téma ve větě (P40 T1) i v návrhu z ní (T2): dveře posílají větu kitu „Blocked content“ – „Try fewer rules“ by hráče poslal zkoušet totéž znovu.
+  if (code === 'SENTENCE_REJECTED' || code === 'CONTENT_REJECTED') return message;
   if (status === 422) return BUILD_FAILED;
   return message[0]!.toUpperCase() + message.slice(1);
 }

@@ -46,6 +46,7 @@ const REASONS: ReadonlySet<string> = new Set<DraftFinalReason>([
   'NOT_PLAYABLE',
   'STORE_UNAVAILABLE',
   'NOT_FROM_SENTENCE',
+  'BLOCKED',
   'FAILED',
 ]);
 
@@ -150,6 +151,7 @@ export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
   NOT_PLAYABLE: "The full-detail version wasn't playable in a test run. The quick one stays.",
   STORE_UNAVAILABLE: "Couldn't save the full-detail version. The quick one stays.",
   NOT_FROM_SENTENCE: "This game wasn't made from an idea, so there's no full-detail version.",
+  BLOCKED: "We can't show the full-detail version. The quick one stays.",
   FAILED: "Couldn't finish the full-detail version. The quick one stays.",
 };
 
