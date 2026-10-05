@@ -1251,9 +1251,11 @@ function draftGenre(
   const ownFoe: CastRole = rideShot ? 'shoot_at' : fight ? 'fight' : FOE_DOES[choice.genre];
   // Co věc dělá: sloveso u ní ve větě, pak doplněk modulu (čtení modelem), pak role, kterou žánr hraje sám.
   const doesOf = (label: string, own: CastRole): CastRole => spoken.find((item) => item.label === label)?.does ?? (fillFoe?.label === label ? fillFoe.does : own);
+  // Sbírací sloveso, které doplněk modulu dal věci („gather 3 apples“ ve skákačce), zůstane u ní.
+  const itemVerb = fill.cast?.find((item) => item.does === 'collect' && item.verb !== undefined && singular(item.label) === itemLabel)?.verb;
   const cast = castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
-    ...(itemLabel === null ? [] : [{ label: itemLabel, does: 'collect' as const }]),
+    ...(itemLabel === null ? [] : [{ label: itemLabel, does: 'collect' as const, ...(itemVerb === undefined ? {} : { verb: itemVerb }) }]),
     ...(target === null ? [] : [{ label: target, does: thrown ? ('throw_at' as const) : ('reach' as const), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? (3 as const) : (2 as const) }]),
   ], spoken.map((item) => ({ label: item.label, does: item.does ?? ownFoe })));
   // Střelba bez terče ve větě střílí do protivníka z prostředí.

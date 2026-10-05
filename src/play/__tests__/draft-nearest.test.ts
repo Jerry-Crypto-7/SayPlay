@@ -17,6 +17,7 @@ import { compileGame } from '../compile';
 import { fidelityChain } from '../fidelity/chain';
 import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import { nearestControl } from '../draft/controls';
+import { castFor } from '../genre/contract';
 
 import { legacyDraft } from './legacy-draft';
 
@@ -66,12 +67,13 @@ describe('nearest arcade game for a sentence the draft does not know', () => {
     const corgi = 'A corgi runs through a park grabbing sausages and jumping over sprinklers';
     expect(label(corgi, 'coin')).toBe('sausage');
     expect(label(corgi, 'obstacle')).toBe('sprinkler');
-    expect(label("temple run but you're a banana running from a monkey", 'obstacle')).toBe('monkey');
+    // P39: „running from a monkey“ – opice honí (doplněk pronásledovatele), není to kámen v cestě.
+    expect(label("temple run but you're a banana running from a monkey", 'chaser')).toBe('monkey');
     const cats = 'angry birds but with cats and cardboard boxes';
     expect(label(cats, 'player')).toBe('cat');
     // Terč hodu je šablona remixu; žánrový Úkol dá krabice do svého terče.
     expect(legacyDraft(cats).roles.find((role) => role.id === 'target')?.label).toBe('cardboard box');
-    expect(draftGameSpecWithMeta(cats).genre?.target?.label).toBe('cardboard box');
+    expect(castFor(draftGameSpecWithMeta(cats).genre!, 'throw_at')?.label).toBe('cardboard box');
     expect(label('purple elephants doing taxes on a volcano', 'player')).toBe('purple elephant');
     // Sloveso na -ing frázi končí: ne „swords cutting“.
     expect(draftGameSpec('like beat saber but with swords cutting fruit to music').roles.map((role) => role.label)).not.toContain('swords cutting');

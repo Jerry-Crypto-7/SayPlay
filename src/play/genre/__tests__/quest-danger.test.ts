@@ -103,7 +103,7 @@ describe('quest danger – an idle player loses a life before the clock runs out
   it('spatial: a sentence without a chase gets one default chaser, a spec without params too', () => {
     const drafted = draft(SENTENCES.spatial);
     expect(drafted.params?.chasers).toBe(DEFAULT_CHASERS);
-    const bare: GenreSpecOf<'quest'> = { genre: 'quest', mode: 'spatial', hero: 'wizard', target: { label: 'candle', verb: 'light', states: 2 }, setting: 'castle' };
+    const bare: GenreSpecOf<'quest'> = { genre: 'quest', mode: 'spatial', hero: 'wizard', cast: [{ label: 'candle', does: 'reach', verb: 'light', states: 2 }], setting: 'castle' };
     for (const game of [gameOf(drafted), gameOf(bare)]) {
       expect(game.roles.find((role) => role.kind === 'chaser')?.count).toBe(DEFAULT_CHASERS);
       const { world } = publishedWorld(game);

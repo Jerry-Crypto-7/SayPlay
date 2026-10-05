@@ -13,7 +13,7 @@
 import { SHOOTER_WAVE_SIZE_MAX } from '../arcade/pieces/shooter';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Vln výchozí a v mezích (méně než 5 vln robot dohraje pod 30 s, víc než 6 spec nebere), zrychlení za vlnu (jednotek za tik). */
 export const SHOOTER_GENRE = { waves: 6, minWaves: 5, maxWaves: 6, rise: 4 } as const;
@@ -38,7 +38,10 @@ export const shooterGenre: GenreModule<'shooter'> = {
   },
   availability: () => 'ready',
   compile: (spec) => {
-    const enemy = spec.enemy ?? 'invader';
+    // Nepřítel vln je první věc, do které věta střílí, pak nejbližší protivník; druhá střílená věc stojí na střelnici (P39).
+    const shots = (spec.cast ?? []).filter((item) => item.does === 'shoot_at');
+    const enemy = (shots[0] ?? castFor(spec, 'chase_me', 'fight', 'avoid'))?.label ?? 'invader';
+    const target = (castFor(spec, 'throw_at', 'reach') ?? shots[1])?.label ?? 'target';
     const { waves = SHOOTER_GENRE.waves, enemies, targets } = spec.params ?? {};
     const foes = plural(singular(enemy), 2);
     return legacySpec(spec, {
@@ -51,7 +54,7 @@ export const shooterGenre: GenreModule<'shooter'> = {
       mechanics: [livesMechanic()],
       // Počet terčů čte generátor (`COUNTED_ROLES`); nepřítel počet nenese – celkový počet by přebil vlny.
       roles: [
-        { id: 'target', kind: 'target', label: spec.target?.label ?? 'target', ...(targets === undefined ? {} : { count: targets }) },
+        { id: 'target', kind: 'target', label: target, ...(targets === undefined ? {} : { count: targets }) },
         { id: 'enemy', kind: 'hazard', label: enemy },
       ],
       tutorial: { goalLine: `Stop ${String(waves)} waves of ${foes}. Each wave is faster.`, controlsHint: 'Tap where you aim to shoot. Arrows aim, Space fires.' },

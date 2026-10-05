@@ -23,8 +23,9 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { shooterRules } from '@/play/arcade/pieces/shooter';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta } from '@/play/draft';
-import type { GenreModule, GenreSpec } from '@/play/genre/contract';
+import { type GenreModule, type GenreSpec, castFor } from '@/play/genre/contract';
 import { compileWith } from '@/play/genre/index';
+import { shooterGenre } from '@/play/genre/shooter';
 import { throwClock, throwGenre } from '@/play/genre/throw';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
@@ -111,10 +112,10 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     ['throw a basketball into a hoop from crazy angles', 'basketball', 'hoop'],
     ['angry birds but with cats and cardboard boxes', undefined, 'cardboard box'],
   ])('"%s" throws %s at the %s', (sentence, thrown, target) => {
-    const genre = draftGameSpecWithMeta(sentence, 1).genre;
-    expect(genre?.collectible).toBe(thrown);
-    expect(genre?.target?.label).toBe(target);
-    expect(genre?.setting).not.toBe(target);
+    const genre = draftGameSpecWithMeta(sentence, 1).genre!;
+    expect(castFor(genre, 'collect')?.label).toBe(thrown);
+    expect(castFor(genre, 'throw_at')?.label).toBe(target);
+    expect(genre.setting).not.toBe(target);
   });
 
   // Věta bez věci před „at/into“: předmět za předložkou je terč, ne ještě jednou to, co se hází.
@@ -122,9 +123,31 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     ['throwing at a spinning log', 'spinning log'],
     ['toss into the bucket', 'bucket'],
   ])('"%s" does not throw the %s at itself', (sentence, target) => {
-    const genre = draftGameSpecWithMeta(sentence, 1).genre;
-    expect(genre?.target?.label).toBe(target);
-    expect(genre?.collectible).not.toBe(target);
+    const genre = draftGameSpecWithMeta(sentence, 1).genre!;
+    expect(castFor(genre, 'throw_at')?.label).toBe(target);
+    expect(castFor(genre, 'collect')?.label).not.toBe(target);
+  });
+});
+
+// P39 T7: co věta střílí, je nepřítel vln; druhá střílená věc stojí na střelnici. Hod míří na terč, hází, co se sbírá.
+describe('shooter and throw read the cast', () => {
+  const roleOf = (game: GameSpecV1, id: string) => game.roles.find((role) => role.id === id)?.label;
+
+  it('the shooter takes the thing it shoots as the enemy, not the first thing named', () => {
+    const game = shooterGenre.compile({ genre: 'shooter', mode: 'default', hero: 'ranger', setting: 'forest', cast: [{ label: 'wolf', does: 'avoid' }, { label: 'bat', does: 'shoot_at' }] });
+    expect(roleOf(game, 'enemy')).toBe('bat');
+  });
+
+  it('a second thing to shoot stands on the range', () => {
+    const game = shooterGenre.compile({ genre: 'shooter', mode: 'default', hero: 'ranger', setting: 'fair', cast: [{ label: 'zombie', does: 'shoot_at' }, { label: 'bottle', does: 'shoot_at' }] });
+    expect(roleOf(game, 'enemy')).toBe('zombie');
+    expect(roleOf(game, 'target')).toBe('bottle');
+  });
+
+  it('the throw hits the thing it is thrown at with the thing it collects', () => {
+    const game = throwGenre.compile({ genre: 'throw', mode: 'default', hero: 'kid', setting: 'park', cast: [{ label: 'snowball', does: 'collect' }, { label: 'snowman', does: 'throw_at' }] });
+    expect(roleOf(game, 'target')).toBe('snowman');
+    expect(roleOf(game, 'ball')).toBe('snowball');
   });
 });
 

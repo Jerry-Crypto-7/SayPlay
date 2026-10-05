@@ -126,17 +126,23 @@ const ENEMY_ADDONS: Partial<Readonly<Record<CastRole, AddonId>>> = { chase_me: '
 /**
  * Doplněk jen hře, která staví trať ovládáním (běžec, skákačka) a ovládání ho
  * bere (`CAPABILITIES`). Hra s generátorem režimu (aréna, plavba, úkol) hraje
- * chování ve svém modulu, nebo ho nemá čím zahrát. Role, kterou žánr hraje
- * sám (`FOE_DOES`: aréna honí, střílečka střílí), doplněk nedostane.
+ * chování ve svém modulu podle `does` (lovec, hlídka). Role, kterou žánr hraje
+ * sám (`FOE_DOES`: aréna honí, střílečka střílí), doplněk nedostane. Každá
+ * role obsazení dostane svůj doplněk (P39 T7), v pořadí obsazení.
  */
 function withEnemyAddon(spec: GameSpecV1, genre: Pick<GenreSpec, 'genre' | 'cast'>): GameSpecV1 {
-  const addon = (genre.cast ?? []).map((item) => (item.does === FOE_DOES[genre.genre] ? undefined : ENEMY_ADDONS[item.does])).find((found) => found !== undefined);
   const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
-  if (addon === undefined || generator !== undefined || spec.control === undefined || !CAPABILITIES[spec.control].addons.includes(addon)) return spec;
+  if (generator !== undefined || spec.control === undefined) return spec;
+  const allowed = CAPABILITIES[spec.control].addons;
+  const added = (genre.cast ?? []).flatMap((item) => {
+    const addon = item.does === FOE_DOES[genre.genre] ? undefined : ENEMY_ADDONS[item.does];
+    return addon === undefined || !allowed.includes(addon) ? [] : [addon];
+  });
+  if (added.length === 0) return spec;
   const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
   return {
     ...spec,
-    addons: [...new Set([...(spec.addons ?? []), addon])],
-    ...(addon === 'shoot' && fireHint.length <= 80 ? { tutorial: { ...spec.tutorial, controlsHint: fireHint } } : {}),
+    addons: [...new Set([...(spec.addons ?? []), ...added])],
+    ...(added.includes('shoot') && fireHint.length <= 80 ? { tutorial: { ...spec.tutorial, controlsHint: fireHint } } : {}),
   };
 }

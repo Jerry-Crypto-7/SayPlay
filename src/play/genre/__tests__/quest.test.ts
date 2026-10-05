@@ -14,7 +14,7 @@ import { instantiate } from '@/play/arcade/kernel';
 import { verifyArcade } from '@/play/arcade/verify';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
-import type { GenreSpecOf } from '../contract';
+import { type GenreSpecOf, castFor } from '../contract';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
 import { KIND_STATES, VERB_KIND, verbKindOf } from '../quest';
 
@@ -68,10 +68,11 @@ function firstProvenSeed(game: GameSpecV1): { readonly seed: number; readonly fa
 describe('quest genre – the sentence picks the mode, the verb kind and the target', () => {
   it('hasič: spatial, fire with three states, burning trees, one default chaser (P36A T3)', () => {
     const spec = draft(HEROES.hasič);
+    const goal = castFor(spec, 'reach');
     expect(spec.mode).toBe('spatial');
-    expect(spec.target?.label).toMatch(/trees$/);
-    expect(verbKindOf(spec.target?.verb ?? '')).toBe('fire');
-    expect(spec.target?.states).toBe(3);
+    expect(goal?.label).toMatch(/trees$/);
+    expect(verbKindOf(goal?.verb ?? '')).toBe('fire');
+    expect(goal?.states).toBe(3);
     // Věta honičku neříká: jeden výchozí pronásledovatel, ne dva jako u „before the ghosts catch“.
     expect(spec.params?.chasers).toBe(1);
   });
@@ -79,10 +80,10 @@ describe('quest genre – the sentence picks the mode, the verb kind and the tar
   it('čaroděj: spatial, flame with two states, five candles, ghosts chasing', () => {
     const spec = draft(HEROES.čaroděj);
     expect(spec.mode).toBe('spatial');
-    expect(spec.target).toEqual({ label: 'candles', verb: 'light', states: 2 });
+    expect(castFor(spec, 'reach')).toEqual({ label: 'candles', does: 'reach', verb: 'light', states: 2 });
     expect(verbKindOf('light')).toBe('flame');
     expect(spec.params?.count).toBe(5);
-    expect(spec.enemy).toBe('ghosts');
+    expect(castFor(spec, 'chase_me')?.label).toBe('ghosts');
     expect(spec.params?.chasers).toBeGreaterThan(0);
     const roles = rolesOf(gameOf(spec));
     expect(roles.get(ROLE.target)).toBe(5);
@@ -92,7 +93,7 @@ describe('quest genre – the sentence picks the mode, the verb kind and the tar
   it('kuchař: station, cook with three states, pancakes', () => {
     const spec = draft(HEROES.kuchař);
     expect(spec.mode).toBe('station');
-    expect(spec.target).toEqual({ label: 'pancakes', verb: 'flip', states: 3 });
+    expect(castFor(spec, 'reach')).toEqual({ label: 'pancakes', does: 'reach', verb: 'flip', states: 3 });
     expect(verbKindOf('flip')).toBe('cook');
   });
 
@@ -116,7 +117,8 @@ describe('quest genre – the sentence picks the mode, the verb kind and the tar
   it('the clock follows the work: eight burning trees with three chasers stay one long round, five candles get three rounds', () => {
     const timerOf = (game: GameSpecV1) => (game.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { seconds: number }).seconds;
     const roundsOf = (game: GameSpecV1) => (game.controlParams as { tuning?: { rounds?: number } }).tuning?.rounds;
-    const hard = { ...draft(HEROES.hasič), enemy: 'ghosts', params: { count: 8, chasers: 3 } };
+    const fire = draft(HEROES.hasič);
+    const hard = { ...fire, cast: [{ label: 'ghosts', does: 'chase_me' as const }, ...(fire.cast ?? [])], params: { count: 8, chasers: 3 } };
     // Hodiny = odhad robota × 1,5 + 15 s, nejvýš 88 s (P36A T4); dlouhá práce zůstane v jednom kole.
     expect(roundsOf(gameOf(hard))).toBeUndefined();
     expect(timerOf(gameOf(hard))).toBe(87);
@@ -126,7 +128,8 @@ describe('quest genre – the sentence picks the mode, the verb kind and the tar
   });
 
   it('a spec whose target states disagree with the verb kind plays the states the scene can draw', () => {
-    const spec = { ...draft(HEROES.čaroděj), target: { label: 'candles', verb: 'light', states: 3 as const } };
+    const wizard = draft(HEROES.čaroděj);
+    const spec = { ...wizard, cast: (wizard.cast ?? []).map((item) => (item.does === 'reach' ? { ...item, states: 3 as const } : item)) };
     const made = arcadeWorldOf(gameOf(spec), 1);
     if (!made.ok) throw new Error(made.issues.join('; '));
     const interact = made.world.rules.find((rule) => rule.id === 'interact')?.params as { when: { interact: { states: number } } };
@@ -192,7 +195,29 @@ describe('quest genre – module shape', () => {
 
   it('draftFill caps the chasers a sentence names at three instead of refusing the quest', () => {
     const spec = draft('A tiny wizard lights five candles before six ghosts catch him');
-    expect(spec.enemy).toBe('ghosts');
+    expect(castFor(spec, 'chase_me')?.label).toBe('ghosts');
     expect(spec.params?.chasers).toBe(3);
+  });
+});
+
+// P39 T7: cíl úkolu je věc, ke které se jde, pronásledovatel věc, která honí – ne první věc v obsazení.
+describe('quest genre reads the cast', () => {
+  const base = { genre: 'quest', mode: 'spatial', hero: 'wizard', setting: 'castle' } as const;
+  const roleOf = (game: GameSpecV1, id: string) => game.roles.find((role) => role.id === id)?.label;
+
+  it('takes the thing it reaches as the target and the thing that chases as the hunter', () => {
+    const game = gameOf({ ...base, cast: [{ label: 'coin', does: 'collect' }, { label: 'ghost', does: 'chase_me' }, { label: 'candle', does: 'reach', verb: 'light', states: 2 }] });
+    expect(roleOf(game, 'target')).toBe('candle');
+    expect(roleOf(game, 'hunter')).toBe('ghost');
+    expect(game.objective.description).toMatch(/^Light all \d+ candle/);
+  });
+
+  it('a thing to dodge is a hunter too: a named thing never drops out', () => {
+    expect(roleOf(gameOf({ ...base, cast: [{ label: 'bat', does: 'avoid' }, { label: 'candle', does: 'reach', verb: 'light', states: 2 }] }), 'hunter')).toBe('bat');
+  });
+
+  it('a hunter that patrols reaches the generator', () => {
+    const game = gameOf({ ...base, cast: [{ label: 'guard', does: 'chase_me', patrol: true }, { label: 'vault', does: 'reach', verb: 'open', states: 2 }] });
+    expect((game.controlParams as { readonly tuning: { readonly patrol?: number } }).tuning.patrol).toBeGreaterThan(0);
   });
 });

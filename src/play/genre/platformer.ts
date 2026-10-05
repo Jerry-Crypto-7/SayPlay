@@ -31,10 +31,12 @@ const GOAL_CUE = /\b(find|reach|get(?:s|ting)? to)(?:s|es|ing)? (.+)/;
 
 function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
   const target = castFor(spec, 'reach');
-  const collectible = castFor(spec, 'collect')?.label;
+  const collected = castFor(spec, 'collect');
+  const collectible = collected?.label;
   // Bodák nese jméno toho, čemu se uhýbá; soupeř zblízka a terč hodu jsou taky jen nástraha (P39).
   const hazard = castFor(spec, 'avoid', 'fight', 'throw_at')?.label;
-  const verb = target?.verb?.toLowerCase() ?? '';
+  // Bez cíle nese sbírací sloveso sama věc („gather 3 apples“): sebrat všechny a k vlajce.
+  const verb = (target ?? collected)?.verb?.toLowerCase() ?? '';
   const collect = COLLECT_VERB.test(verb);
   const same = (a: string | undefined, b: string | undefined): boolean => a !== undefined && b !== undefined && singular(a) === singular(b);
   // Sbírací cíl, který jmenuje věc („collect carrots“), není cíl úrovně – zůstane vlajka. Jinak je cíl
@@ -81,10 +83,10 @@ function sentenceGoal(sentence: string): CastItem[] {
   const item = gathered === null ? null : phrase(gathered[2]!);
   const goal = reached === null ? null : phrase(reached[2]!);
   const verb = gathered !== null && item !== null ? gathered[1]! : reached !== null && goal !== null ? reached[1]!.replace(/^get\w*/, 'get') : null;
-  const label = goal ?? item;
+  // „gather 3 apples“ bez cíle: sloveso nese sama věc ke sběru – cíl se jménem věci by obsazení bez dvojic zahodilo (P39 T7).
   return [
-    ...(item === null ? [] : [{ label: item, does: 'collect' as const }]),
-    ...(verb === null || label === null ? [] : [{ label, does: 'reach' as const, verb, states: 2 as const }]),
+    ...(item === null ? [] : [{ label: item, does: 'collect' as const, ...(goal === null && verb !== null ? { verb } : {}) }]),
+    ...(verb === null || goal === null ? [] : [{ label: goal, does: 'reach' as const, verb, states: 2 as const }]),
   ];
 }
 

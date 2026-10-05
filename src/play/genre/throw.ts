@@ -16,7 +16,7 @@
 import { HOOP_CUES, THROW_GOALS, THROW_GOAL_LABELS, TOWER_CUES, throwBudgetIn } from '../arcade/pieces/throw';
 import { WAVE_PLAN } from '../arcade/pieces/waves';
 
-import { type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
+import { type GenreModule, castFor, draftRoles, legacySpec, titleCase } from './contract';
 
 /** Rozpočet robota na celou hru bez času z věty (sonda F5: 40–47 s ve všech druzích cíle) a meze hodin. */
 export const THROW_GENRE = { budget: 48, minSeconds: 20, maxSeconds: 90 } as const;
@@ -54,7 +54,8 @@ export const throwGenre: GenreModule<'throw'> = {
     const { goal: goalIndex, spareThrows } = spec.params ?? {};
     const { budget, seconds } = throwClock(spec.params?.seconds);
     const goal = goalIndex === undefined ? undefined : THROW_GOALS[goalIndex];
-    const label = spec.target?.label ?? (goal === undefined ? 'target' : THROW_GOAL_LABELS[goal]);
+    // Terč je věc, na kterou se hází; bez ní nejbližší protivník nebo cíl (P39).
+    const label = castFor(spec, 'throw_at', 'shoot_at', 'fight', 'chase_me', 'avoid', 'reach')?.label ?? (goal === undefined ? 'target' : THROW_GOAL_LABELS[goal]);
     return legacySpec(spec, {
       control: 'throw',
       controlParams: { ...(goal === undefined ? {} : { goal }), ...(spareThrows === undefined ? {} : { spareThrows }), budget },
@@ -64,7 +65,7 @@ export const throwGenre: GenreModule<'throw'> = {
       mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }],
       roles: [
         { id: 'target', kind: 'target', label, count: 3 },
-        { id: 'ball', kind: 'item', label: spec.collectible ?? 'ball' },
+        { id: 'ball', kind: 'item', label: castFor(spec, 'collect')?.label ?? 'ball' },
       ],
       tutorial: { goalLine: `Hit every ${label} in ${String(seconds)} seconds.`, controlsHint: 'Hold to power up, drag up or down to aim, let go to throw.' },
       mood: 'playful',

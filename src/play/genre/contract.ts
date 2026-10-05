@@ -231,7 +231,8 @@ export function legacyCast(input: unknown): unknown {
   const { enemy, enemyMoves, collectible, target, ...rest } = input as Record<string, unknown>;
   if (enemy === undefined && enemyMoves === undefined && collectible === undefined && target === undefined) return input;
   const genre = rest.genre as GenreId;
-  const foe = (typeof enemyMoves === 'string' ? MOVE_DOES[enemyMoves] : undefined) ?? (genre === 'arena' && rest.mode === 'fight' ? 'fight' : (FOE_DOES[genre] ?? 'avoid'));
+  // Neznámé chování („fly“) zůstane, jak je, ať ho schéma odmítne.
+  const foe = (typeof enemyMoves === 'string' ? (MOVE_DOES[enemyMoves] ?? enemyMoves) : undefined) ?? (genre === 'arena' && rest.mode === 'fight' ? 'fight' : (FOE_DOES[genre] ?? 'avoid'));
   const goal = TARGET_DOES[genre] ?? 'reach';
   const cast = [
     ...(Array.isArray(rest.cast) ? (rest.cast as unknown[]) : []),

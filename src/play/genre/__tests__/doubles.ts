@@ -9,7 +9,7 @@
  * P32B T6.
  */
 
-import { GENRE_MODES, type GenreId, type GenreModule, type GenreMode, type GenreSpec, type GenreSpecOf, type LegacyGame, type ModelClass, draftRoles, legacySpec, titleCase } from '../contract';
+import { GENRE_MODES, type GenreId, type GenreModule, type GenreMode, type GenreSpec, type GenreSpecOf, type LegacyGame, type ModelClass, castFor, draftRoles, legacySpec, titleCase } from '../contract';
 
 const CUES: { readonly [G in GenreId]: readonly string[] } = {
   runner: ['run', 'dash', 'slide', 'ski', 'sled'],
@@ -39,6 +39,10 @@ const HERO_CLASSES: { readonly [G in GenreId]: readonly ModelClass[] } = {
   flap: ['bird', 'aircraft', 'animal', 'monster', 'robot', 'humanoid'],
 };
 
+/** Protivník a věc z obsazení (P39), jak je dvojník čte. */
+const foeOf = (spec: GenreSpec): string | undefined => castFor(spec, 'avoid', 'chase_me', 'shoot_at', 'fight', 'throw_at')?.label;
+const itemOf = (spec: GenreSpec): string | undefined => castFor(spec, 'reach', 'collect')?.label;
+
 /** Hra s cílovou čárou: běžec, skákačka, plavba. */
 function track(spec: GenreSpec, control: 'runner' | 'platform' | 'steer'): LegacyGame {
   return {
@@ -46,10 +50,10 @@ function track(spec: GenreSpec, control: 'runner' | 'platform' | 'steer'): Legac
     ...(control === 'runner' ? {} : { controlParams: control === 'platform' ? { checkpoints: true } : { difficulty: 'normal' } }),
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Run`,
-    objective: { kind: 'reach', description: `Reach the finish past every ${spec.enemy ?? 'rock'}.`, role: 'finish' },
+    objective: { kind: 'reach', description: `Reach the finish past every ${foeOf(spec) ?? 'rock'}.`, role: 'finish' },
     roles: [
-      { id: 'obstacle', kind: 'hazard', label: spec.enemy ?? 'rock', count: 5 },
-      { id: 'coin', kind: 'collectible', label: spec.target?.label ?? spec.collectible ?? 'coin', count: 3 },
+      { id: 'obstacle', kind: 'hazard', label: foeOf(spec) ?? 'rock', count: 5 },
+      { id: 'coin', kind: 'collectible', label: itemOf(spec) ?? 'coin', count: 3 },
       { id: 'finish', kind: 'exit', label: 'finish line' },
     ],
     tutorial: { goalLine: 'Reach the finish line.', controlsHint: 'Arrows to move.' },
@@ -63,11 +67,11 @@ function roam(spec: GenreSpec): LegacyGame {
     control: 'move_free',
     archetype: 'survival_timer',
     title: `${titleCase(spec.hero)} Arena`,
-    objective: { kind: 'survive', description: `Stay away from the ${spec.enemy ?? 'hunters'} for 40 seconds.`, seconds: 40 },
+    objective: { kind: 'survive', description: `Stay away from the ${foeOf(spec) ?? 'hunters'} for 40 seconds.`, seconds: 40 },
     mechanics: [{ id: 'timer', params: { id: 'clock', seconds: 40, onEnd: 'win' } }],
     roles: [
-      { id: 'hunter', kind: 'hazard', label: spec.enemy ?? 'hunter', count: 3 },
-      { id: 'coin', kind: 'collectible', label: spec.target?.label ?? spec.collectible ?? 'coin', count: 12 },
+      { id: 'hunter', kind: 'hazard', label: foeOf(spec) ?? 'hunter', count: 3 },
+      { id: 'coin', kind: 'collectible', label: itemOf(spec) ?? 'coin', count: 12 },
     ],
     tutorial: { goalLine: 'Survive 40 seconds.', controlsHint: 'Drag or arrows to move.' },
     mood: 'tense',
@@ -80,10 +84,10 @@ function duel(spec: GenreSpec): LegacyGame {
     controlParams: { difficulty: 'normal' },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Duel`,
-    objective: { kind: 'reach', description: `Knock out the ${spec.enemy ?? 'rival'}.`, role: 'finish' },
+    objective: { kind: 'reach', description: `Knock out the ${foeOf(spec) ?? 'rival'}.`, role: 'finish' },
     mechanics: [{ id: 'health', params: { max: 3 } }],
     roles: [
-      { id: 'rival', kind: 'hazard', label: spec.enemy ?? 'rival' },
+      { id: 'rival', kind: 'hazard', label: foeOf(spec) ?? 'rival' },
       { id: 'finish', kind: 'exit', label: 'knockout' },
     ],
     tutorial: { goalLine: 'Knock out the rival.', controlsHint: 'Tap right to strike, left to dodge.' },

@@ -92,3 +92,25 @@ describe('flap reads the cast', () => {
     expect(meta.spec.roles.find((role) => role.id === 'pipe')?.label).toBe('pipe');
   });
 });
+
+// P39 T7: souboj bije, s čím se věta bije; věž skládá a rytmus hraje, co věta sbírá – ne první jmenovanou věc.
+describe('duel, timing and rhythm read the cast', () => {
+  const roleOf = (game: { readonly roles: readonly { readonly id: string; readonly label: string }[] }, id: string) => game.roles.find((role) => role.id === id)?.label;
+
+  it('the duel fights the thing it fights', () => {
+    const game = GENRE_MODULES.duel.compile({ genre: 'duel', mode: 'default', hero: 'samurai', setting: 'dojo', cast: [{ label: 'crow', does: 'avoid' }, { label: 'ninja', does: 'fight' }] });
+    expect(roleOf(game, 'rival')).toBe('ninja');
+  });
+
+  it('the stack stacks the thing it collects, the song plays it', () => {
+    const cast = [{ label: 'wolf', does: 'scenery' as const }, { label: 'pancake', does: 'collect' as const }];
+    expect(roleOf(GENRE_MODULES.timing.compile({ genre: 'timing', mode: 'stack', hero: 'chef', setting: 'kitchen', cast }), 'block')).toBe('pancake');
+    expect(roleOf(GENRE_MODULES.rhythm.compile({ genre: 'rhythm', mode: 'default', hero: 'frog', setting: 'pond', cast }), 'note')).toBe('pancake');
+  });
+
+  it('a sentence that names what it stacks reaches the stack through the draft', () => {
+    const meta = draftGameSpecWithMeta('stack pancakes as high as you can', 1);
+    expect(meta.genre?.genre).toBe('timing');
+    expect(meta.spec.roles.find((role) => role.id === 'block')?.label).toBe('pancake');
+  });
+});
