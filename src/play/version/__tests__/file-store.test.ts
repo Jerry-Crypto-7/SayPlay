@@ -128,6 +128,42 @@ describe('fileVersionStore', () => {
     expect(await fileVersionStore(dir).takeDirectorCall('caller', 1)).toBe(false);
   });
 
+  it('denní čítače vyprší i na disku: po dvou dnech se při startu nenačtou a jejich soubory zmizí', async () => {
+    const dir = freshDir();
+    let clock = Date.parse('2026-10-05T10:00:00Z');
+    const now = (): number => clock;
+    const store = fileVersionStore(dir, undefined, now);
+    expect(await store.takeDirectorCall('caller', 1)).toBe(true);
+    expect(readdirSync(dir)).toHaveLength(1);
+    // Hra návštěvníka (ne vestavěná) ubere z denní kvóty publikací.
+    const visitorGame: PublishedGame = { ...parent, version: { ...parent.version, versionId: 'f'.repeat(32) } };
+    expect(await store.put(visitorGame)).toBe('stored');
+    const files = readdirSync(dir).length;
+
+    clock += 3 * 24 * 3600 * 1000;
+    const restarted = fileVersionStore(dir, undefined, now);
+    // Zmizely právě dva soubory – čítač režiséra a kvóta; hra žije půl roku.
+    expect(readdirSync(dir)).toHaveLength(files - 2);
+    expect(await restarted.get(visitorGame.version.versionId)).not.toBeNull();
+  });
+
+  it('čítač pod TTL se dál sčítá a expirace se dalším zvýšením neposune', async () => {
+    const dir = freshDir();
+    // Klíč čítače nese den (UTC): obě zvýšení musí padnout do téhož dne.
+    let clock = Date.parse('2026-10-05T00:00:01Z');
+    const now = (): number => clock;
+    const store = fileVersionStore(dir, undefined, now);
+    expect(await store.takeDirectorCall('caller', 2)).toBe(true);
+    clock = Date.parse('2026-10-05T23:59:00Z');
+    expect(await store.takeDirectorCall('caller', 2)).toBe(true);
+    expect(await store.takeDirectorCall('caller', 2)).toBe(false);
+    // 2 dny od PRVNÍHO zvýšení: od posledního by čítač žil ještě do půlnoci.
+    clock = Date.parse('2026-10-07T12:00:00Z');
+    expect(readdirSync(dir)).toHaveLength(1);
+    fileVersionStore(dir, undefined, now);
+    expect(readdirSync(dir)).toEqual([]);
+  });
+
   it('zápis nenechá v adresáři dočasné soubory', async () => {
     const dir = freshDir();
     await fileVersionStore(dir).put(parent);

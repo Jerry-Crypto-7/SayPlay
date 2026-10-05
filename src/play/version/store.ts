@@ -741,8 +741,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
 
 /**
  * Hodnoty (`set`/`setNx`) vyprší po svém TTL jako v Redisu – krátké záznamy
- * remixů by jinak rostly do restartu (P27C T4d). Seznamy a počítadla neexpirují,
- * drží je strop délky a denní klíč.
+ * remixů by jinak rostly do restartu (P27C T4d). Počítadla vyprší od prvního
+ * zvýšení (P40 T3b). Seznamy neexpirují, drží je strop délky.
  */
 export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
   return versionStoreOver('memory', 'memory', memoryRaw(emptyMemoryState(), now), limits, now);
@@ -821,9 +821,15 @@ function memoryRaw(state: MemoryState, now: () => number, changed: (key: string)
       return Promise.resolve();
     },
     // Počítadlo leží mezi hodnotami jako text, stejně jako v Redisu – `get` ho přečte.
-    incr: (key) => {
-      const next = Number(entries.get(key) ?? '0') + 1;
-      commit(key, () => entries.set(key, String(next)));
+    // Expirace při prvním zvýšení jako `INCR` + `EXPIRE` v `httpVersionStore` (P40 T3b): denní
+    // čítače by jinak na disku přibývaly a četly se při každém startu. Bez expirace = soubor z doby
+    // před T3b, dostane ji teď.
+    incr: (key, ttlSeconds) => {
+      const next = Number(live(key) ?? '0') + 1;
+      commit(key, () => {
+        entries.set(key, String(next));
+        if (!expiresAt.has(key)) expiresAt.set(key, now() + ttlSeconds * 1000);
+      });
       return Promise.resolve(next);
     },
     pushCapped: (key, value, cap) => {
