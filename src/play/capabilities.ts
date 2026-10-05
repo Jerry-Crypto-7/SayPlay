@@ -28,8 +28,8 @@ export interface ControlCapability {
   readonly finish: boolean;
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
-  /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3). */
-  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'note' | 'block' | 'finish')[];
+  /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3; nástrahy `spikes`, `pipe`, `hazard` – P39 T9). */
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -63,10 +63,10 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // P26D T9: počty od 2 čte generátor – běžec mince a řady překážek, plošinovka a poletování mince, střelnice terče a nepřátele.
   runner: arcade({ setting: true, counts: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
   // P35 T3: cíl na konci úrovně kreslí model z popisku („moon“, „battery“), jinak vlajku.
-  platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin', 'finish'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
-  flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: ROAMING }),
+  platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin', 'finish', 'spikes'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
+  flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin', 'pipe'], mechanics: LIVES_AND_TIMER, addons: ROAMING }),
   // P27A T3: závod a aréna kreslí kulisy sady prostředí mimo dráhu a za hranou arény.
-  steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player', 'rival', 'barrier'], mechanics: ['timer'] }),
+  steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player', 'rival', 'barrier', 'hazard'], mechanics: ['timer'] }),
   move_free: arcade({
     setting: true,
     cues: 'agar.io, eat smaller, grow',

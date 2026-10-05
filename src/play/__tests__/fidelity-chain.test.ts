@@ -109,7 +109,8 @@ describe('fidelityChain', () => {
 
     it('fails a shoot-at noun that the platformer plays as spikes, and the shoot verb the addon alone plays', () => {
       expect(roleStage(wolfAsSpikes, [animal, shoot])).toEqual([
-        ['animal', false, false],
+        // Od P39 T9 bodák kreslí vlka z věty – věc je vidět, ale role (uhýbat místo střílet) dál nesedí.
+        ['animal', true, false],
         // Doplněk sloveso hraje (`read`), ale střílí se do robotů, ne do zvířat z věty.
         ['shoot', true, false],
       ]);

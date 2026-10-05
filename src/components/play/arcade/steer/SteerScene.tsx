@@ -170,6 +170,7 @@ export function SteerBackdrop({
   length,
   look,
   ghost,
+  namedHazard = false,
 }: {
   readonly session: ArcadeSession;
   readonly course: SteerCourse | undefined;
@@ -177,11 +178,13 @@ export function SteerBackdrop({
   readonly look: Look;
   readonly heroAction: HeroAction;
   readonly ghost?: ArcadeGhost;
+  /** Nástraha plavby z věty (P39 T9): kreslí ji `World` modelem jejího jména, útesy a koule scény se schovají. */
+  readonly namedHazard?: boolean;
 }) {
   const voyage = useVoyageSession();
   return (
     <>
-      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} /> : <RoadBackdrop course={course} length={length} look={look} />}
+      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} /> : <RoadBackdrop course={course} length={length} look={look} />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -347,7 +350,7 @@ function shoreOf(layout: VoyageLayout, far: number): IslandSpot[] {
  * těl kreslí (model nemá), se schovají – běží po `World`, protože se připojí
  * až s rozvržením.
  */
-function VoyageBackdrop({ session, layout, length, look }: { readonly session: ArcadeSession; readonly layout: VoyageLayout; readonly length: number; readonly look: Look }) {
+function VoyageBackdrop({ session, layout, length, look, namedHazard }: { readonly session: ArcadeSession; readonly layout: VoyageLayout; readonly length: number; readonly look: Look; readonly namedHazard: boolean }) {
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
   const gl = useThree((three) => three.gl);
@@ -433,7 +436,7 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
     }
     for (const body of bodies.current) {
       if (body.userData.frame === 'hero') cam.current.hero = body;
-      else body.visible = false;
+      else if (!namedHazard || body.userData.item !== 'hazard') body.visible = false;
     }
     const playerZ = (state[bodyBase(state[HEADER.player] as number) + BODY.z] as number) / UNIT;
     // Projetá brána zezelená (všechny tři trámy).
@@ -565,14 +568,14 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
         </group>
       )}
       {shots.length > 0 && (
-        <instancedMesh key={`shots${shots.length}`} ref={shotMesh} args={[undefined, undefined, shots.length]} frustumCulled={false} castShadow>
+        <instancedMesh key={`shots${shots.length}`} ref={shotMesh} args={[undefined, undefined, shots.length]} frustumCulled={false} castShadow visible={!namedHazard}>
           <sphereGeometry args={[0.5, 14, 10]} />
           <meshStandardMaterial color={color.ink} roughness={0.35} metalness={0.6} />
         </instancedMesh>
       )}
       {snags.length > 0 && (
         // Útes nebo vrak: napůl pod hladinou, hitbox jádra (2 × 1 × 2 m) celý pokryje.
-        <instancedMesh key={`snags${snags.length}`} ref={snagMesh} args={[undefined, undefined, snags.length]} frustumCulled={false} castShadow>
+        <instancedMesh key={`snags${snags.length}`} ref={snagMesh} args={[undefined, undefined, snags.length]} frustumCulled={false} castShadow visible={!namedHazard}>
           <dodecahedronGeometry args={[0.6, 0]} />
           <meshStandardMaterial color={rock} roughness={1} flatShading />
         </instancedMesh>

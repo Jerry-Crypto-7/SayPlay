@@ -9,6 +9,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import duel from '../arcade/__fixtures__/duel.json';
+import flap from '../arcade/__fixtures__/flap.json';
+import platform from '../arcade/__fixtures__/platform.json';
 import runner from '../arcade/__fixtures__/runner.json';
 import shooter from '../arcade/__fixtures__/shooter.json';
 import steer from '../arcade/__fixtures__/steer.json';
@@ -16,6 +18,8 @@ import throwGame from '../arcade/__fixtures__/throw.json';
 import { enemyModel, heroModel, modelOf, modelPath, propModels, riggedCharacter } from '../arcade/models';
 import { lookOf } from '../arcade/look';
 import { draftGameSpec } from '../draft';
+import { compileGenre } from '../genre';
+import type { GenreSpec } from '../genre/contract';
 import type { GameSpecV1 } from '../spec';
 
 import { legacyDraft } from './legacy-draft';
@@ -57,6 +61,30 @@ describe('arcade model choice from role labels', () => {
     // Zástupci (hydrant za kropítko) skončili v P30B T4: kropítko má vlastní model, věc bez modelu zůstane tělem jádra.
     expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'sprinkler' });
     expect(propModels(withLabel(runner, 'obstacle', 'deadlines'))).toEqual({});
+  });
+
+  // P39 T9: věc z věty se kreslí svým jménem v každé roli; primitiv (bodák, trubka, útes) jen bez jména z věty.
+  it('draws every hazard from its cast name and keeps the primitive only when the sentence names nothing', () => {
+    expect(propModels(withLabel(platform, 'spikes', 'animals')).spikes).toBe('dog');
+    expect(propModels(withLabel(flap, 'pipe', 'trees')).pipe).toBe('oak-tree');
+    const voyage = (cast: GenreSpec['cast']): GameSpecV1 => compileGenre({ genre: 'voyage', mode: 'race', hero: 'boat', setting: 'river', ...(cast === undefined ? {} : { cast }) } as GenreSpec);
+    expect(propModels(voyage([{ label: 'crocodiles', does: 'avoid' }])).hazard).toBe('gen3d-crocodile');
+    // Výchozí nástraha žánru zůstane primitivem jádra.
+    expect(propModels(platform as GameSpecV1).spikes).toBeUndefined();
+    expect(propModels(flap as GameSpecV1).pipe).toBeUndefined();
+    expect(propModels(voyage(undefined)).hazard).toBeUndefined();
+  });
+
+  it('a named thing without its own model takes the nearest model, never the robot or the spike', () => {
+    expect(enemyModel(withLabel(shooter, 'enemy', 'animals'))).toBe('dog');
+    // Vlk katalog nemá; „wolves“ → „wolf“ → blízký pes, ne robot ani bodák.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'wolves'))).toBe('dog');
+    expect(propModels(withLabel(platform, 'spikes', 'wolves')).spikes).toBe('dog');
+    // Nejbližší model pod prahem čtení (aligátor → krokodýl 0,55) jen jako poslední možnost před robotem.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'alligators'))).toBe('gen3d-crocodile');
+    expect(propModels(withLabel(flap, 'pipe', 'alligators')).pipe).toBe('gen3d-crocodile');
+    // Jméno, které tabulka nejbližších vůbec nezná, nechá výchozí model role.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'zorbles'))).toBe('robot');
   });
 
   it('a flappy bird is the bird, not the nest', () => {

@@ -97,7 +97,34 @@ function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.obstacle && view.kind === 'tire-barrier') return cast.props.barrier ?? view.kind;
   // P28D T3: kostky věže hodu jsou terč – „cardboard boxes“ postaví věž z krabic.
   if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return cast.props.target ?? view.kind;
+  // P39 T9: nástraha z věty – bodák skákačky, trubka poletování, útes a koule plavby – nese model svého jména.
+  const hazard = hazardTagOf(view);
+  if (hazard !== undefined) return cast.props[hazard] ?? view.kind;
   return view.kind;
+}
+
+/** Role nástrahy, kterou tělo kreslí (`HAZARD_ROLES` v `@/play/arcade/models`). */
+function hazardTagOf(view: BodyView): 'spikes' | 'pipe' | 'hazard' | undefined {
+  if (view.kind === 'spikes' || view.kind === 'pipe') return view.kind;
+  return view.role === ROLE.hazard && (view.kind === 'snag' || view.kind === 'shot') ? 'hazard' : undefined;
+}
+
+/**
+ * Trubka poletování s modelem z věty (P39 T9): sloupec modelů po buňkách zhruba šířky trubky –
+ * jeden model vepsaný do celé výšky by se zmenšil na šířku a srážka by trčela do prázdna.
+ */
+function ModelColumn({ id, w, h, d, fallback }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string }) {
+  const cells = Math.max(1, Math.round(h / Math.max(w, d)));
+  const cell = h / cells;
+  return (
+    <>
+      {Array.from({ length: cells }, (_, index) => (
+        <group key={index} position={[0, index * cell, 0]}>
+          <FittedModel id={id} w={w} h={cell} d={d} fallback={fallback} />
+        </group>
+      ))}
+    </>
+  );
 }
 
 /**
@@ -271,7 +298,7 @@ function itemTagOf(view: BodyView): 'enemy' | 'chaser' | PropRole | undefined {
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return 'obstacle';
   if (view.role === ROLE.obstacle && view.kind === 'tire-barrier') return 'barrier';
   if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return 'target';
-  return undefined;
+  return hazardTagOf(view);
 }
 
 export interface WorldProps {
@@ -464,7 +491,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     <>
       {backdrop ??
         (control === 'steer' ? (
-          <SteerBackdrop session={session} course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} />
+          <SteerBackdrop session={session} course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} />
         ) : (
           <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
         ))}
@@ -489,6 +516,8 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
                 yaw={control === 'platform' ? () => yaws.current[view.index] ?? 0 : undefined}
               />
+            ) : view.kind === 'pipe' ? (
+              <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
             ) : (
               <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
                 {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}

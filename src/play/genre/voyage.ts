@@ -26,8 +26,11 @@ const STREETS: readonly LookId[] = ['city', 'mall', 'supermarket', 'factory', 'l
 
 const terrainOf = (look: LookId | undefined): Terrain => (look === undefined || WATER.includes(look) ? 'islands' : STREETS.includes(look) ? 'buildings' : 'rocks');
 
-/** Co letí přes trať, když věta nejmenuje nepřítele: koule mezi ostrovy, balvan mezi skálami, auto přes ulici. */
-const CROSSING: Readonly<Record<Terrain, string>> = { islands: 'cannonball', rocks: 'boulder', buildings: 'car' };
+/**
+ * Co letí přes trať, když věta nejmenuje nepřítele: koule mezi ostrovy, balvan mezi skálami, auto přes ulici.
+ * Scéna je kreslí primitivem jádra (`arcade/models.ts`), model z popisku dostane jen nástraha z věty (P39 T9).
+ */
+export const CROSSING:Readonly<Record<Terrain, string>> = { islands: 'cannonball', rocks: 'boulder', buildings: 'car' };
 
 /**
  * Kam se jede, když věta cíl neříká (P35 T8): místo, které k prostředí patří

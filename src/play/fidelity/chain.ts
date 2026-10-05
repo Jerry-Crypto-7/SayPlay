@@ -157,6 +157,9 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     else if (role === ROLE.obstacle && kind === 'tire-barrier') bodies.add('barrier');
     else if (role === ROLE.target && kind === 'note') bodies.add('note');
     else if (role === ROLE.platform && kind === 'block') bodies.add('block');
+    // P39 T9: nástrahy z věty – bodák skákačky, trubka poletování, útes a koule plavby (`hazardTagOf` ve `World.tsx`).
+    else if (kind === 'spikes' || kind === 'pipe') bodies.add(kind);
+    else if (role === ROLE.hazard && (kind === 'snag' || kind === 'shot')) bodies.add('hazard');
   }
   return { bodies, styled };
 }
