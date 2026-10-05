@@ -146,6 +146,20 @@ describe('shooter and throw read the cast', () => {
     expect(roleOf(game, 'target')).toBe('bottle');
   });
 
+  // P39 T14: „collect coins, dodge ghosts and shoot bats in a haunted mansion“ střílelo netopýry a na střelnici
+  // stály holé terče – mince ani duchové ve hře nebyli. Volné místo terče bere další věc z věty, nejbližší role první.
+  it('a thing to collect or dodge stands on the range instead of a bare bullseye', () => {
+    const shooter = (cast: GenreSpec['cast']) => shooterGenre.compile({ genre: 'shooter', mode: 'default', hero: 'kid', setting: 'haunted mansion', cast });
+    const mansion = shooter([{ label: 'bat', does: 'shoot_at' }, { label: 'ghost', does: 'avoid' }, { label: 'coin', does: 'collect' }]);
+    expect(roleOf(mansion, 'enemy')).toBe('bat');
+    expect(roleOf(mansion, 'target')).toBe('coin');
+    expect(roleOf(shooter([{ label: 'bat', does: 'shoot_at' }, { label: 'ghost', does: 'avoid' }]), 'target')).toBe('ghost');
+    // Nepřítel vln na střelnici podruhé nestojí.
+    expect(roleOf(shooter([{ label: 'wolf', does: 'chase_me' }]), 'target')).toBe('target');
+    const drafted = draftGameSpecWithMeta('collect coins, dodge ghosts and shoot bats in a haunted mansion', 1).spec;
+    expect(drafted.roles.map((role) => role.label)).toEqual(expect.arrayContaining(['bat', 'coin']));
+  });
+
   it('the throw hits the thing it is thrown at with the thing it collects', () => {
     const game = throwGenre.compile({ genre: 'throw', mode: 'default', hero: 'kid', setting: 'park', cast: [{ label: 'snowball', does: 'collect' }, { label: 'snowman', does: 'throw_at' }] });
     expect(roleOf(game, 'target')).toBe('snowman');

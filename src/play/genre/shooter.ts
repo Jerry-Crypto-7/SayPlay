@@ -40,8 +40,12 @@ export const shooterGenre: GenreModule<'shooter'> = {
   compile: (spec) => {
     // Nepřítel vln je první věc, do které věta střílí, pak nejbližší protivník; druhá střílená věc stojí na střelnici (P39).
     const shots = (spec.cast ?? []).filter((item) => item.does === 'shoot_at');
-    const enemy = (shots[0] ?? castFor(spec, 'chase_me', 'fight', 'avoid'))?.label ?? 'invader';
-    const target = (castFor(spec, 'throw_at', 'reach') ?? shots[1])?.label ?? 'target';
+    const foe = shots[0] ?? castFor(spec, 'chase_me', 'fight', 'avoid');
+    const enemy = foe?.label ?? 'invader';
+    // Volné místo terče bere další věc z věty – sbíraná dřív než protivník (T14): „collect coins, dodge ghosts and shoot bats“
+    // by jinak mince i duchy zahodilo a na střelnici stál holý terč.
+    const rest = { cast: (spec.cast ?? []).filter((item) => item !== foe) };
+    const target = (castFor(spec, 'throw_at', 'reach') ?? shots[1] ?? castFor(rest, 'collect', 'avoid', 'chase_me', 'fight'))?.label ?? 'target';
     const { waves = SHOOTER_GENRE.waves, enemies, targets } = spec.params ?? {};
     const foes = plural(singular(enemy), 2);
     return legacySpec(spec, {
