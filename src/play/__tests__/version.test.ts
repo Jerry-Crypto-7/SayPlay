@@ -417,10 +417,11 @@ describe('writeLimitsFromEnv', () => {
 describe('versionStoreFromEnv', () => {
   afterEach(() => __resetProcessVersionStore());
 
+  // Bez `VERCEL` by prázdné prostředí od P40 T3 zvolilo soubory v `data/play/store`.
   it('falls back to one memory store per process', () => {
-    const first = versionStoreFromEnv({});
+    const first = versionStoreFromEnv({ VERCEL: '1' });
     expect(first.id).toBe('memory');
-    expect(versionStoreFromEnv({})).toBe(first);
+    expect(versionStoreFromEnv({ VERCEL: '1' })).toBe(first);
   });
 
   it('uses the shared store when the environment names one', () => {
@@ -437,11 +438,11 @@ describe('versionStoreFromEnv', () => {
   it('flags a production process that holds games only in memory, and warns once', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     try {
-      expect(volatileVersionStore({ NODE_ENV: 'production' })).toBe(true);
-      expect(volatileVersionStore({ NODE_ENV: 'development' })).toBe(false);
-      expect(volatileVersionStore({ NODE_ENV: 'production', KV_REST_API_URL: 'https://x', KV_REST_API_TOKEN: 't' })).toBe(false);
-      versionStoreFromEnv({ NODE_ENV: 'production' });
-      versionStoreFromEnv({ NODE_ENV: 'production' });
+      expect(volatileVersionStore({ NODE_ENV: 'production', VERCEL: '1' })).toBe(true);
+      expect(volatileVersionStore({ NODE_ENV: 'development', VERCEL: '1' })).toBe(false);
+      expect(volatileVersionStore({ NODE_ENV: 'production', VERCEL: '1', KV_REST_API_URL: 'https://x', KV_REST_API_TOKEN: 't' })).toBe(false);
+      versionStoreFromEnv({ NODE_ENV: 'production', VERCEL: '1' });
+      versionStoreFromEnv({ NODE_ENV: 'production', VERCEL: '1' });
       expect(warn).toHaveBeenCalledTimes(1);
     } finally {
       warn.mockRestore();
