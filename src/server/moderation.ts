@@ -125,7 +125,7 @@ export const PLAY_DENIED_TOPICS: readonly DeniedTopic[] = [
   {
     id: 'weapon-build',
     pattern: new RegExp(
-      String.raw`\b(?:build|make|construct|assemble|synthesi[sz]e|vyrob\w*|sestroj\w*)\s+(?:(?!${CLAUSE_BREAK}\b)[\p{L}\p{N}-]+\s+){0,3}(?:bomb(?:s|a|u|y|ou)?\b|explosives?\b|nerve\s+agents?\b|výbušn|nálož)`,
+      String.raw`\b(?:build|make|construct|assemble|synthesi[sz]e|vyrob\p{L}*|sestroj\p{L}*)\s+(?:(?!${CLAUSE_BREAK}\b)[\p{L}\p{N}-]+\s+){0,3}(?:bomb(?:s|a|u|y|ou)?\b|explosives?\b|nerve\s+agents?\b|výbušn|nálož)`,
       'iu',
     ),
     detail: 'the sentence asks how to build a weapon or an explosive',

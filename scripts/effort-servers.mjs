@@ -184,6 +184,9 @@ async function start() {
       WORLDSMITH_UPSTREAM_TIMEOUT_MS: '600000',
     };
     if (variant.effort !== undefined) env.WORLDSMITH_MODEL_EFFORT = variant.effort;
+    // Vlastní prázdné úložiště her: sdílené `data/play/store` (P40 T3) by variantě
+    // vrátilo AI verze, které napsala jiná varianta nebo předchozí běh.
+    env.PLAY_STORE_DIR = mkdtempSync(join(tmpdir(), `play-store-${variant.id}-`));
     const log = openSync(join(LOGS, `${variant.id}.log`), 'a');
     // Servery zůstávají dětmi tohohle procesu a on čeká, dokud žijí. Odpojené
     // (`detached` + `unref`) je prostředí agenta 14. 9. 2026 do pár minut

@@ -55,6 +55,10 @@ const DENIED_SENTENCES = [
   'synthesize a nerve agent',
   'build an explosive device step by step',
   'jak vyrobit bombu',
+  // `\w` v JS bere jen ASCII: tvar slovesa s diakritikou dřív pravidlo minul.
+  'jak si doma vyrobím bombu',
+  'sestrojím bombu',
+  'vyrobíme výbušninu',
   'how to kill myself',
   'jak se zabít',
   'porn with kids',

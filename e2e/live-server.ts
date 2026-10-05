@@ -1,6 +1,8 @@
 import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
+import { mkdtempSync } from 'node:fs';
 import { createServer as createNetServer } from 'node:net';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { requestStage } from '../src/model/worldstream-prompt';
@@ -86,6 +88,8 @@ export async function startLiveServer(upstreamPort: number): Promise<{ readonly 
     KV_REST_API_URL: '',
     KV_REST_API_TOKEN: '',
     VERCEL_ENV: 'production',
+    // Bez Upstash by sdílel `data/play/store` (P40 T3) s hlavním serverem.
+    PLAY_STORE_DIR: mkdtempSync(join(tmpdir(), 'play-store-live-')),
   };
   delete env.VERCEL;
   // Playwright překládá spec do CJS, takže `import.meta.url` tu není; cesta
