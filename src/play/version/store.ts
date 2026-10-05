@@ -38,6 +38,8 @@
  * `stored`: publikace, o které se neví, jestli dorazila, není publikace.
  */
 
+import { join } from 'node:path';
+
 import { canonical } from '@/ir/worlddoc';
 import type { LiveEntry } from '@/play/arcade/live';
 import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
@@ -46,6 +48,7 @@ import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 import type { GameVersion } from '../contracts';
 import { BUILTIN_IDS, withBuiltinGames } from './builtin';
 import { feedEligible } from './feed';
+import { emptyMemoryState, loadMemoryState, type MemoryState, saveMemoryKey, writableDir } from './file-store';
 import type { PublishedGame } from './version';
 
 /** Skrytí platí až při čtení feedu (`PLAY_FEED_HIDE`); zápis do seznamu ho nezná. */
@@ -724,32 +727,47 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
  * drží je strop délky a denní klíč.
  */
 export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
-  const entries = new Map<string, string>();
-  const expiresAt = new Map<string, number>();
-  const lists = new Map<string, string[]>();
+  return versionStoreOver('memory', 'memory', memoryRaw(emptyMemoryState(), now), limits, now);
+}
+
+/**
+ * Hry, remixy a čítače na disku (P40 T3), jinak totéž co `memoryVersionStore`:
+ * stav se načte z `dir` a každý změněný klíč se hned zapíše (`file-store.ts`).
+ * Přežije restart serveru; sdílený mezi instancemi není – to umí jen Upstash.
+ */
+export function fileVersionStore(dir: string, limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
+  const state = loadMemoryState(dir, now);
+  return versionStoreOver('file', 'file', memoryRaw(state, now, (key) => saveMemoryKey(dir, state, key)), limits, now);
+}
+
+/** Příkazy úložiště nad stavem v paměti; `changed` dostane každý klíč, který se změnil nebo vypršel. */
+function memoryRaw(state: MemoryState, now: () => number, changed: (key: string) => void = () => undefined): RawStore {
+  const { entries, expiresAt, lists, sets } = state;
   const live = (key: string): string | null => {
     const until = expiresAt.get(key);
     if (until !== undefined && now() >= until) {
       entries.delete(key);
       expiresAt.delete(key);
+      changed(key);
     }
     return entries.get(key) ?? null;
   };
   const write = (key: string, value: string, ttlSeconds: number): void => {
     entries.set(key, value);
     expiresAt.set(key, now() + ttlSeconds * 1000);
+    changed(key);
   };
   /** Schodiště nejlepších (člen → hodnocení a čas zápisu) s expirací jako hodnoty. */
-  const sets = new Map<string, Map<string, { readonly rank: number; readonly at: number }>>();
   const liveSet = (key: string): Map<string, { readonly rank: number; readonly at: number }> | undefined => {
     const until = expiresAt.get(key);
     if (until !== undefined && now() >= until) {
       sets.delete(key);
       expiresAt.delete(key);
+      changed(key);
     }
     return sets.get(key);
   };
-  const raw: RawStore = {
+  return {
     get: (key) => Promise.resolve(live(key)),
     setNx: (key, value, ttlSeconds) => {
       if (live(key) !== null) return Promise.resolve(false);
@@ -764,10 +782,12 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
     incr: (key) => {
       const next = Number(entries.get(key) ?? '0') + 1;
       entries.set(key, String(next));
+      changed(key);
       return Promise.resolve(next);
     },
     pushCapped: (key, value, cap) => {
       lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap));
+      changed(key);
       return Promise.resolve();
     },
     head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
@@ -781,6 +801,7 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
       sets.set(key, new Map(kept.filter((_, index) => index === 0 || index > kept.length - keep)));
       expiresAt.set(key, now() + ttlSeconds * 1000);
+      changed(key);
       return Promise.resolve();
     },
     top: (key, count) => {
@@ -794,10 +815,10 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
       sets.set(key, new Map(kept));
       expiresAt.set(key, now() + ttlSeconds * 1000);
+      changed(key);
       return Promise.resolve();
     },
   };
-  return versionStoreOver('memory', 'memory', raw, limits, now);
 }
 
 export interface HttpVersionStoreConfig {
@@ -965,12 +986,25 @@ export function __resetProcessVersionStore(): void {
  * Dveře to přiznají hlavičkou `x-play-store: memory`, odkaz nesmí předstírat trvalost.
  */
 export function volatileVersionStore(env: Record<string, string | undefined>): boolean {
-  return env.NODE_ENV === 'production' && sharedStoreFromEnv(env) === null;
+  return env.NODE_ENV === 'production' && sharedStoreFromEnv(env) === null && versionStoreFromEnv(env).id !== 'file';
 }
 
 /**
- * Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak paměť procesu.
- * Obojí s vestavěnou sadou her (P37C T6): feed ani odkaz na ni nezůstanou prázdné.
+ * Adresář souborového úložiště (P40 T3): `PLAY_STORE_DIR`, jinak `data/play/store`.
+ * `null` na Vercelu (souborový systém jen pro čtení, produkce jde přes Upstash)
+ * a pod vitestem bez `PLAY_STORE_DIR` – testy by si jinak přes restart nesly hry
+ * z disku. Podle `NODE_ENV` se nevolí: lokální `next start` je taky produkce.
+ */
+export function fileStoreDirFromEnv(env: Record<string, string | undefined>): string | null {
+  if (env.VERCEL !== undefined) return null;
+  if (env.PLAY_STORE_DIR !== undefined) return env.PLAY_STORE_DIR;
+  return env.VITEST !== undefined ? null : join(process.cwd(), 'data', 'play', 'store');
+}
+
+/**
+ * Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak soubory
+ * v zapisovatelném `fileStoreDirFromEnv`, jinak paměť procesu. Vše s vestavěnou sadou her
+ * (P37C T6): feed ani odkaz na ni nezůstanou prázdné.
  */
 export function versionStoreFromEnv(env: Record<string, string | undefined>, fetchImpl: typeof fetch = fetch): VersionStore {
   const shared = sharedStoreFromEnv(env);
@@ -978,8 +1012,10 @@ export function versionStoreFromEnv(env: Record<string, string | undefined>, fet
   if (shared !== null)
     return withBuiltinGames(httpVersionStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: VERSION_STORE_TIMEOUT_MS, limits }, fetchImpl));
   if (processStore === null) {
-    processStore = withBuiltinGames(memoryVersionStore(limits));
-    if (volatileVersionStore(env)) console.warn('[play] no shared store configured: published games live only in this process and vanish with it');
+    const dir = fileStoreDirFromEnv(env);
+    const onDisk = dir !== null && writableDir(dir);
+    processStore = withBuiltinGames(onDisk ? fileVersionStore(dir, limits) : memoryVersionStore(limits));
+    if (!onDisk && env.NODE_ENV === 'production') console.warn('[play] no shared store configured: published games live only in this process and vanish with it');
   }
   return processStore;
 }
