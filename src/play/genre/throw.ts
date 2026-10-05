@@ -32,13 +32,18 @@ export function throwClock(seconds: number | undefined): { readonly budget: numb
 /** Sloveso, kterým obsazení značí náboj hodu: věc `scenery` (projektil, `CAST_ROLES`), kterou hrdina hází. */
 export const AMMO_VERB = 'throw';
 
+/** Položka obsazení, kterou hrdina hází (`AMMO_VERB`). */
+export function isAmmo(item: CastItem): boolean {
+  return item.does === 'scenery' && item.verb === AMMO_VERB;
+}
+
 /**
  * Co hrdina hází (P39 T14): náboj není věc ke sběru – „grabs acorns … throws
  * pinecones“ hází šišky, i když žalud stojí v obsazení dřív. Obsazení bez
  * náboje (starý tvar `collectible`, odpověď režiséra) hází první sbíranou věc.
  */
 export function ammoOf(spec: Pick<GenreSpec, 'cast'>): CastItem | undefined {
-  return spec.cast?.find((item) => item.does === 'scenery' && item.verb === AMMO_VERB) ?? castFor(spec, 'collect');
+  return spec.cast?.find(isAmmo) ?? castFor(spec, 'collect');
 }
 
 /** Cíl hodu z věty: koš, věž (kuželky, krabice), jinak terč, když věta jmenuje, na co se hází. */

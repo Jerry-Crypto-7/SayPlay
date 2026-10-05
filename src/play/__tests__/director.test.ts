@@ -31,9 +31,9 @@ import { readGameSpec, type GameSpecV1 } from '../spec';
 /** Věta, které je výchozí odpověď (`genreAnswer`: vlk a žaludy lesa) věrná – P39 soudí obsazení proti větě. */
 const SENTENCE = 'Collect five acorns in a moonlit forest, then escape through the portal';
 
-/** Hra, kterou z odpovědi složí modul žánru – to, co režisér vrátí bez oprav. */
-function compiled(answer = genreAnswer()): GameSpecV1 {
-  const read = readGenreAnswer(answer);
+/** Hra, kterou z odpovědi (čtené proti větě, je-li dána) složí modul žánru – to, co režisér vrátí bez oprav. */
+function compiled(answer = genreAnswer(), sentence?: string): GameSpecV1 {
+  const read = readGenreAnswer(answer, undefined, sentence);
   if (!read.ok) throw new Error(`${read.reason}: ${read.detail}`);
   return read.spec;
 }
@@ -139,7 +139,8 @@ describe('direct – the model answers', () => {
       const game = await run(fakeBranch([answered(answer)]), {}, SENTENCE_OF_MODE[name]);
       expect(game, name).toMatchObject({ source: 'authored', fallbackReason: null, calls: 1 });
       // Věrná odpověď se nepřepíná: hra je přesně ta, kterou z odpovědi složí modul žánru.
-      expect(game.spec, name).toEqual(compiled(answer));
+      // Čtení proti větě doplní, co odpověď nenapsala – hod „throws stones“ hází kameny (P39 T14).
+      expect(game.spec, name).toEqual(compiled(answer, SENTENCE_OF_MODE[name]));
       expect(game.spec.control, name).toBe(CONTROL_OF_MODE[name]);
       expect(game.spec.roles.find((role) => role.kind === 'player')?.label, name).toBe('fox');
     }

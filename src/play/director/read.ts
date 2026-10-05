@@ -21,6 +21,7 @@ import type { GenreModules } from '../genre/classify';
 import { CAST_MAX, type GenreModule, type GenreSpec, castFor } from '../genre/contract';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
 import { RIDE_WORDS } from '../genre/runner';
+import { isAmmo } from '../genre/throw';
 import type { Reading } from '../read/schema';
 import { MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1 } from '../spec';
@@ -82,7 +83,7 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
   const read = readGenreSpec(withoutNulls(raw));
   if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
-  const genre = sentence === undefined ? singularRoles(read.value) : goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules);
+  const genre = sentence === undefined ? singularRoles(read.value) : ammoOfSentence(goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules), sentence, reading, modules);
   const game = compileGenreSpec(genre, modules);
   if (!game.ok) return game;
   // Věta mimo hry (P37A T5): AI verze řekne cíl slovy věty jako návrh („Dodge the long queues!“).
@@ -122,6 +123,18 @@ function goalOfSentence(genre: GenreSpec, sentence: string, reading: Reading | n
     ...(cast.length === 0 ? {} : { cast }),
     ...(counted ? {} : { counts: { ...genre.counts, collectible: words.counts!.collectible } }),
   };
+}
+
+/**
+ * Náboj hodu podle věty (P39 T14): prompt zakazuje obsadit, co hráč hází, takže
+ * odpověď náboj nemá a hod by vzal první sbíranou věc („grabs acorns … throws
+ * pinecones“ házel žaludy). Náboj, který odpověď nenapsala, doplní rychlá verze
+ * téhož režimu; co napsala, platí – i ořez na `CAST_MAX`.
+ */
+export function ammoOfSentence(genre: GenreSpec, sentence: string, reading: Reading | null, modules: GenreModules): GenreSpec {
+  if (genre.genre !== 'throw' || genre.cast?.some(isAmmo) === true) return genre;
+  const ammo = draftGenreFor(sentence, genre.genre, genre.mode, { reading, modules })?.cast?.find(isAmmo);
+  return ammo === undefined ? genre : { ...genre, cast: [...(genre.cast ?? []), ammo].slice(0, CAST_MAX) };
 }
 
 /**

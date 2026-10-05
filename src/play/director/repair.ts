@@ -35,7 +35,7 @@ import { gameSpecSchema, readGameSpec, type ControlId, type GameSpecV1, type Ver
 
 import { type CriticIssue, type FidelityIssue, type FidelityOptions, blockingIssues, critique, fidelity, saidIn, sameRole } from './critic';
 import { renderRegistry } from './prompt';
-import { type DirectorReadReason, compileGenreSpec, readModelSpec } from './read';
+import { type DirectorReadReason, ammoOfSentence, compileGenreSpec, readModelSpec } from './read';
 
 export const MAX_REPAIR_ROUNDS = 2;
 
@@ -624,7 +624,8 @@ export function switchGenre(answer: GenreSpec, sentence: string, options: Fideli
       ...(cast.length === 0 ? {} : { cast }),
       ...(params === undefined || choice.genre !== answer.genre ? {} : { params }),
     } as GenreSpec;
-    const candidate = withSentenceRoles(moved, words, fidelity(moved, sentence, { reading, modules }), sentence);
+    // Hod bere náboj z věty i po přepnutí a opravě (P39 T14) – oprava náboj mimo větu zahodí a hod by vzal první sbíranou věc.
+    const candidate = ammoOfSentence(withSentenceRoles(moved, words, fidelity(moved, sentence, { reading, modules }), sentence), sentence, reading, modules);
     if (fidelity(candidate, sentence, { reading, modules }).length > 0) continue;
     const read = readGenreSpec(candidate);
     if (!read.ok) continue;

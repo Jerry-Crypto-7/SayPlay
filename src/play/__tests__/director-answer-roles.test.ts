@@ -20,6 +20,7 @@ import { readGenreAnswer } from '../director/read';
 import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import { readRoles, singular, toolsOf } from '../draft/lexicon';
 import type { GenreSpec } from '../genre/contract';
+import { isAmmo } from '../genre/throw';
 
 const sentence = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
 const draftOf = (text: string) => {
@@ -312,5 +313,32 @@ describe('the AI version plays a cast thing of the sentence the quick version mi
     expect(game.failure).toBeUndefined();
     expect(game.spec.addons).toContain('shoot');
     expect(game.spec.roles).toContainEqual(expect.objectContaining({ id: 'enemy', label: 'animal' }));
+  });
+});
+
+/**
+ * P39 T14: prompt zakazuje obsadit, co hráč hází, takže odpověď náboj nemá – a hod
+ * pak vzal první sbíranou věc (žaludy místo šišek). Náboj doplní rychlá verze.
+ */
+describe('the AI version throws what the sentence throws', () => {
+  const SQUIRREL = 'a squirrel grabs acorns, dodges owls and throws pinecones at a fox';
+  const ballOf = (spec: { readonly roles: readonly { readonly id: string; readonly label: string }[] }) => spec.roles.find((role) => role.id === 'ball')?.label;
+
+  it('throws the pinecones the answer left out, not the acorns it collects', async () => {
+    const quick = draftOf(SQUIRREL);
+    expect(quick.genre.genre).toBe('throw');
+    const game = await directed(SQUIRREL, { ...quick.genre, cast: quick.genre.cast!.filter((item) => !isAmmo(item)) });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    expect(ballOf(game.spec)).toBe('pinecone');
+  });
+
+  // Odpověď s náhradním nábojem mimo větu neprojde věrností; oprava ho zahodí a náboj z věty musí přijít i potom.
+  it('throws the pinecones after the repair drops an ammo the sentence never said', async () => {
+    const quick = draftOf(SQUIRREL);
+    const cast = quick.genre.cast!.map((item) => (isAmmo(item) ? { ...item, label: 'snowball' } : item));
+    const game = await directed(SQUIRREL, { ...quick.genre, cast });
+    expect(game.source).toBe('authored');
+    expect(game.failure).toBeUndefined();
+    expect(ballOf(game.spec)).toBe('pinecone');
   });
 });
