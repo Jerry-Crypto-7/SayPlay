@@ -1,0 +1,463 @@
+{
+ "about": "P39 T14 blind judgement: the same sentence as a game before P39 (main 88245889) and after (HEAD), judged side by side by Codex over the subscription. See README.md.",
+ "judgedAt": "2026-10-05T22:20:35.254Z",
+ "runId": "p39-blind-2026-10-05",
+ "builds": {
+  "before": {
+   "commit": "88245889",
+   "server": "http://127.0.0.1:3150"
+  },
+  "after": {
+   "commit": "1d39daaf",
+   "server": "http://127.0.0.1:3151"
+  }
+ },
+ "judge": {
+  "how": "codex exec -i sheet.png in an empty mkdtemp dir, --output-schema {winner, why}; page text hidden, canvas only",
+  "question": "The attached image shows two small 3D video games, both made from the same request: \"<sentence>\". Game A is the left column, game B the right column. The top row is each game's first frame, the bottom row the same game after 3 seconds of play. Page text is hidden, so judge only what the 3D scenes show. Which game better shows what the request asks for: the things the request names are visible and each plays the role the request gives it (something to shoot, to dodge, to collect, to run from, to fight, to reach, to throw at), the place looks like the place named, and it is the kind of game asked for (jumping, running, shooting, swimming ...)? Answer \"tie\" only when neither is better. Reply only with the JSON the schema asks for: winner = \"A\", \"B\" or \"tie\"; why = one or two sentences naming what you see in each game."
+ },
+ "order": {
+  "prng": "pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in list order; 0 = before is A (left)",
+  "seed": 39014
+ },
+ "score": {
+  "newWins": 3,
+  "ties": 9,
+  "oldWins": 0,
+  "of": 12,
+  "pass": false,
+  "sameGame": 7
+ },
+ "verdicts": [
+  {
+   "id": "trigger",
+   "sentence": "jumping and shooting game in the forest against animals",
+   "covers": [
+    "trigger sentence",
+    "platformer",
+    "shoot in a platformer"
+   ],
+   "left": "after",
+   "winner": "A",
+   "winnerSide": "after",
+   "why": "Both show a fox jumping between floating platforms with trees, suggesting a forest platformer. A also shows an animal opponent on the right in the first frame, while B shows a blocky robot there, so A better matches fighting against animals.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:fox",
+     "hazard:wolf",
+     "collectible:acorn",
+     "exit:flag"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:fox",
+     "hazard:spikes",
+     "collectible:acorn",
+     "exit:flag",
+     "hazard:animal"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "zombies",
+   "sentence": "jump and shoot zombies in a graveyard",
+   "covers": [
+    "platformer",
+    "shoot in a platformer"
+   ],
+   "left": "after",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both games show a character jumping between rocky platforms, sparse gravestones in a dark moonlit setting, and a partially visible enemy at the right edge of the first frame. Neither visibly demonstrates shooting or makes the zombie targets clearer than the other.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:kid",
+     "hazard:ghost",
+     "collectible:candle",
+     "exit:flag"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:kid",
+     "hazard:spikes",
+     "collectible:candle",
+     "exit:flag",
+     "hazard:zombie"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "drones",
+   "sentence": "run and shoot drones on a highway",
+   "covers": [
+    "runner",
+    "shoot in a runner"
+   ],
+   "left": "after",
+   "winner": "A",
+   "winnerSide": "after",
+   "why": "Both show a third-person runner on a road with cars and a line of yellow shots or pickups. A has distant red, box-shaped flying targets that look more like drones, while B’s targets look like upright figures and a red car.",
+   "sameSpec": false,
+   "before": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "runner",
+    "roles": [
+     "player:kid",
+     "hazard:car",
+     "collectible:coin",
+     "exit:finish line"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "runner",
+    "roles": [
+     "player:kid",
+     "hazard:rock",
+     "collectible:coin",
+     "exit:finish line",
+     "hazard:car"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "mansion",
+   "sentence": "collect coins, dodge ghosts and shoot bats in a haunted mansion",
+   "covers": [
+    "shooter",
+    "three roles"
+   ],
+   "left": "after",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both games show essentially identical scenes: a character aiming at red bat-like targets, circular coin-like objects, and faint ghosts near distant towers. Both suggest shooting and collecting, but the grassy outdoor setting looks more like a castle courtyard than a haunted mansion.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:kid",
+     "target:target",
+     "hazard:bat",
+     "hazard:ghost"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:kid",
+     "target:target",
+     "hazard:bat"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "squirrel",
+   "sentence": "a squirrel grabs acorns, dodges owls and throws pinecones at a fox",
+   "covers": [
+    "throw",
+    "three roles"
+   ],
+   "left": "before",
+   "winner": "B",
+   "winnerSide": "after",
+   "why": "Both scenes show a squirrel facing rows of small fox-like animals in a wooded clearing. Game B more clearly shows throwing in action after three seconds, with a visible projectile separated from the squirrel along the dotted arc; Game A mainly shows the arc.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "throw",
+    "roles": [
+     "player:squirrel",
+     "target:fox",
+     "item:acorn",
+     "collectible:acorn",
+     "hazard:owl"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "throw",
+    "roles": [
+     "player:squirrel",
+     "target:fox",
+     "item:acorn"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "wolf",
+   "sentence": "a rabbit runs from a hungry wolf in a snowy forest",
+   "covers": [
+    "arena",
+    "no model in the library (wolf drawn as dog)"
+   ],
+   "left": "after",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both scenes show the same rabbit and wolf-like predators in a snowy clearing bordered by sparse trees. After three seconds, both show wolves approaching with alert markers, conveying the same running-from-predators gameplay.",
+   "sameSpec": true,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "arena",
+    "roles": [
+     "player:rabbit",
+     "chaser:hungry wolf"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "arena",
+    "roles": [
+     "player:rabbit",
+     "chaser:hungry wolf"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "s037",
+   "sentence": "A space marine shoots alien bugs in a mining colony",
+   "covers": [
+    "shooter"
+   ],
+   "left": "before",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both games show the same armored space marine firing a red beam toward small distant targets, with metallic domes and rocky terrain suggesting a space colony. Neither makes alien bugs or mining activity more recognizable than the other.",
+   "sameSpec": true,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:space marine",
+     "target:target",
+     "hazard:alien bug"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:space marine",
+     "target:target",
+     "hazard:alien bug"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "d12",
+   "sentence": "a goldfish swims through a sunken city dodging sharks",
+   "covers": [
+    "voyage"
+   ],
+   "left": "before",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both games show essentially identical underwater channels with sparse submerged structures and a dark fish-like player surrounded by a white ring. Neither clearly shows a goldfish, recognizable sharks to dodge, or a convincing sunken city.",
+   "sameSpec": true,
+   "before": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "voyage",
+    "roles": [
+     "player:goldfish",
+     "checkpoint:gate",
+     "hazard:shark",
+     "exit:ruins"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "voyage",
+    "roles": [
+     "player:goldfish",
+     "checkpoint:gate",
+     "hazard:shark",
+     "exit:ruins"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "d10",
+   "sentence": "a pirate duels a skeleton captain on a sinking ship",
+   "covers": [
+    "duel"
+   ],
+   "left": "after",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both games show the same blue figure facing a skeletal captain on a flat platform surrounded by water, with boats nearby. In both, the blue figure lowers after three seconds, but neither clearly shows a duel or a sinking ship.",
+   "sameSpec": true,
+   "before": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "duel",
+    "roles": [
+     "player:pirate",
+     "hazard:skeleton captain",
+     "exit:knockout"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "duel",
+    "roles": [
+     "player:pirate",
+     "hazard:skeleton captain",
+     "exit:knockout"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "s006",
+   "sentence": "A corgi runs through a park grabbing sausages and jumping over sprinklers",
+   "covers": [
+    "runner",
+    "two roles"
+   ],
+   "left": "before",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both games show essentially the same corgi running along a grassy park path, with sausages ahead and sprinklers as obstacles. Trees and benches establish the park setting equally well, and neither sequence clearly shows a jump or collection.",
+   "sameSpec": true,
+   "before": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "runner",
+    "roles": [
+     "player:corgi",
+     "hazard:sprinkler",
+     "collectible:sausage",
+     "exit:finish line"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "runner",
+    "roles": [
+     "player:corgi",
+     "hazard:sprinkler",
+     "collectible:sausage",
+     "exit:finish line"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "s002",
+   "sentence": "A knight must collect three keys in a haunted castle while dodging ghosts.",
+   "covers": [
+    "arena",
+    "two roles"
+   ],
+   "left": "before",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both scenes show an armored knight, glowing gold collectibles, and pale ghosts with alert markers in a stone castle courtyard. The visible objects and movement are nearly identical, so neither more clearly shows collecting three keys while dodging ghosts.",
+   "sameSpec": true,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "arena",
+    "roles": [
+     "player:knight",
+     "chaser:ghost",
+     "collectible:key"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "arena",
+    "roles": [
+     "player:knight",
+     "chaser:ghost",
+     "collectible:key"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "s003",
+   "sentence": "A hamster escaping a supermarket while a giant Roomba hunts me",
+   "covers": [
+    "arena",
+    "chase"
+   ],
+   "left": "before",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both show a small hamster in a tiled, debris-strewn enclosure with large dark Roombas approaching and displaying alert marks after three seconds. The scenes are nearly identical, and neither clearly establishes a supermarket or an escape destination.",
+   "sameSpec": true,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "arena",
+    "roles": [
+     "player:hamster",
+     "chaser:giant Roomba"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "arena",
+    "roles": [
+     "player:hamster",
+     "chaser:giant Roomba"
+    ],
+    "robot": true
+   }
+  }
+ ]
+}
