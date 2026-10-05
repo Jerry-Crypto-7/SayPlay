@@ -41,6 +41,8 @@ export interface GenreRanking {
   readonly after: string | null;
   /** Režim, který hlavní sloveso podle tabulky `VERBS` hraje; `null` když věta žádné z tabulky nemá. Čte ho kontrola věrnosti. */
   readonly pick: { readonly genre: GenreId; readonly mode: GenreMode } | null;
+  /** Druhé sloveso hráče, které jede na pohybu hlavního slovesa (P38: skok + střelba); `null` když žádné. */
+  readonly ride: 'shoot' | null;
 }
 
 export type GenreModules = { readonly [G in GenreId]: GenreModule<G> };
@@ -253,7 +255,11 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     const match = entry.pattern.exec(text);
     return match === null ? [] : [{ ...entry, at: match.index, end: match.index + match[0].length }];
   });
-  const main = [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
+  // P38: „a jumping game where you shoot animals“ – skok nebo běh nese žánr a střelba jede jako doplněk
+  // (`ride`, v návrhu `enemyMoves: 'shoot'`); samotná střelba by skákání zahodila.
+  const shot = heard.some((entry) => entry.verb === 'shoot');
+  const carrier = shot ? heard.find((entry) => entry.kind === 'move' && (entry.pick === PLATFORMER || entry.pick === RUNNER)) : undefined;
+  const main = carrier ?? [...heard].sort((a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.at - b.at)[0];
   const firstMove = heard.filter((entry) => entry.kind === 'move').sort((a, b) => a.at - b.at)[0];
   // T5b: i to, čemu se hráč vyhýbá („while dodging ghosts“, hrozba ze čtení) – skutečný sběr v Aréně nepřítele nemá, útěk ano.
   const chaser = heard.some((entry) => entry.kind === 'chase') || reading?.roles.some((role) => role.kind === 'chaser' || role.kind === 'threat') === true || AVOID.test(text);
@@ -305,5 +311,6 @@ export function classifyGenre(sentence: string, reading: Reading | null, modules
     verb: main?.verb ?? reading?.verbs[0]?.word ?? null,
     after: main === undefined ? null : text.slice(main.end).trim() || null,
     pick: main === undefined ? null : (main.pick ?? pickup()),
+    ride: carrier === undefined ? null : 'shoot',
   };
 }

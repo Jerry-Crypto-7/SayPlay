@@ -39,6 +39,9 @@ export const QUICK_VERSION = 'Quick version';
 export const QUICK_VERSION_REST = ' · the full-detail one is on its way';
 export const FULL_READY = 'Full-detail version ready';
 export const PLAY_FULL = 'Play it';
+/** Přepínač verzí (P38): slovník kitu říká „quick“ a „full-detail“, ne „AI“ (`11-voice-copy.md`). */
+export const QUICK_LABEL = 'Quick';
+export const FULL_LABEL = 'Full detail';
 
 /** Strop věty z kitu (`07-components.md`, Prompt); dveře serveru snesou víc. */
 export const SENTENCE_LIMIT = 140;

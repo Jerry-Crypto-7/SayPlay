@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import type { DraftFinalReason } from '@/app/api/play/_upgrade';
 
 import { forgetPending, type PendingUpgrade, pendingUpgrades, rememberPending } from './pending-upgrades';
-import { FULL_READY, PLAY_FULL, QUICK_VERSION, QUICK_VERSION_REST } from './starters';
+import { FULL_LABEL, FULL_READY, PLAY_FULL, QUICK_LABEL, QUICK_VERSION, QUICK_VERSION_REST } from './starters';
 import { Button, Icon } from './ui';
 
 export type UpgradeView =
@@ -190,16 +190,16 @@ function draftIdOf(request: string): string | null {
 }
 
 /**
- * Stav AI verze nad hrou podle kitu (P34 T4). Běží-li práce, je to `.sp-status`
- * – inkoustová pilulka s pulzující slunečnou tečkou vlevo pod pruhem, mimo
- * sloupec akcí vpravo a řádku ovládání dole; na telefonu jen „Quick version“
- * (jako v HUD kitu), zbytek věty dostane čtečka. Hotová verze je `.sp-toast`
- * s tlačítkem dole uprostřed, konec bez AI verze malá poznámka na místě
- * pilulky. Rozehraná hra se nevymění – nová se otevře jen tlačítkem.
- * Rozběhnutou práci si prohlížeč zapamatuje (T3), `final` jen jednou ukáže
- * a zapomene.
+ * Přepínač Quick | Full detail nad hrou (P38, nahrazuje pilulku a toast P34 T4).
+ * Je to `.sp-status` – inkoustová pilulka mimo sloupec akcí a řádku ovládání.
+ * Na rychlé verzi svítí Quick; Full detail má během práce pulzující tečku
+ * a je neaktivní, hotová verze ho rozsvítí a klepnutí ji otevře. Na AI verzi
+ * (`quick` = id návrhu) svítí Full detail a Quick vede zpátky. Věta kitu jde
+ * čtečce. Rozehraná hra se nevymění – přepne se jen klepnutím. Konec bez AI
+ * verze zůstává malá poznámka na místě pilulky. Rozběhnutou práci si prohlížeč
+ * zapamatuje (T3), `final` jen jednou ukáže a zapomene.
  */
-export function UpgradeBanner({ request, sentence }: { readonly request: string | null; readonly sentence: string | null }) {
+export function UpgradeBanner({ request, sentence, quick = null }: { readonly request: string | null; readonly sentence: string | null; readonly quick?: string | null }) {
   const router = useRouter();
   const { view, retry } = useUpgrade(request);
   const draftId = request === null ? null : draftIdOf(request);
@@ -228,27 +228,45 @@ export function UpgradeBanner({ request, sentence }: { readonly request: string 
     };
   }, [readyId]);
 
-  const notice = noticeOf(view, title !== null && title.id === readyId ? title.title : null);
-  if (notice === null) return null;
-  if (view.kind === 'working') {
+  if (quick !== null) {
     return (
-      <aside className="sp-status play-upgrade-status" data-testid="upgrade-state" data-kind="working" role="status">
-        <span className="sp-status__dot" aria-hidden="true" />
-        <span>
-          {QUICK_VERSION}
-          <span className="play-upgrade-rest">{QUICK_VERSION_REST}</span>
+      <aside className="sp-status play-upgrade-status play-version-switch" data-testid="upgrade-state" data-kind="full">
+        <button type="button" className="play-version-switch__item" data-testid="version-quick" onClick={() => router.push(`/play/${quick}`)}>
+          {QUICK_LABEL}
+        </button>
+        <span className="play-version-switch__item is-active" aria-current="true">
+          {FULL_LABEL}
         </span>
       </aside>
     );
   }
+
+  const notice = noticeOf(view, title !== null && title.id === readyId ? title.title : null);
+  if (notice === null) return null;
   const act = (): void => {
     if (view.kind !== 'ready') return retry();
     if (draftId !== null) forgetPending(draftId);
     router.push(`/play/${view.versionId}`);
   };
+  if (view.kind === 'working' || view.kind === 'ready') {
+    const ready = view.kind === 'ready';
+    return (
+      <aside className="sp-status play-upgrade-status play-version-switch" data-testid="upgrade-state" data-kind={view.kind}>
+        <span className="play-sr-only" role="status">
+          {notice.text}
+        </span>
+        <span className="play-version-switch__item is-active" aria-current="true">
+          {QUICK_LABEL}
+        </span>
+        <button type="button" className={ready ? 'play-version-switch__item is-ready' : 'play-version-switch__item'} data-testid="upgrade-action" disabled={!ready} title={notice.text} onClick={act}>
+          {ready ? <Icon name="check" /> : <span className="sp-status__dot" aria-hidden="true" />}
+          {FULL_LABEL}
+        </button>
+      </aside>
+    );
+  }
   return (
-    <aside className={view.kind === 'ready' ? 'sp-toast play-upgrade-toast' : 'sp-toast play-upgrade-toast play-upgrade-note'} data-testid="upgrade-state" data-kind={view.kind} role="status">
-      {view.kind === 'ready' && <Icon name="check" />}
+    <aside className="sp-toast play-upgrade-toast play-upgrade-note" data-testid="upgrade-state" data-kind={view.kind} role="status">
       <span>{notice.text}</span>
       {notice.action !== null && (
         <Button variant="secondary" size="s" data-testid="upgrade-action" onClick={act}>

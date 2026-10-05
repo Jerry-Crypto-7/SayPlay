@@ -493,7 +493,7 @@ export default function GridShell({ versionId, spec, blueprint, lineage, remixes
             send(hit.action, hit.selected);
           }} />
         )}
-        <UpgradeBanner request={upgrade} sentence={read.sentence} />
+        <UpgradeBanner request={upgrade} sentence={read.sentence} quick={aiVersion ? (lineage.at(-2)?.versionId ?? null) : null} />
         {running && <RemixReadyChip job={remix} />}
       </Hud>
       {running && waiting && <FirstPrompt controlsHint={spec.tutorial.controlsHint} keys="or press the number on a card" />}

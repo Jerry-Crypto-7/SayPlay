@@ -780,6 +780,51 @@
   bottom: auto;
 }
 
+/* Přepínač Quick | Full detail (P38): inkoustová pilulka, svítící půlka krémová, hotová AI verze slunečná. */
+.play-version-switch {
+  gap: 2px;
+  min-height: var(--sp-size-touch-min);
+  padding: 3px;
+}
+
+.play-version-switch__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-space-2);
+  min-height: calc(var(--sp-size-touch-min) - 6px);
+  padding: 0 var(--sp-space-4);
+  border: 0;
+  border-radius: var(--sp-radius-pill);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+}
+
+.play-version-switch__item.is-active {
+  background: var(--sp-color-cream);
+  color: var(--sp-color-ink);
+}
+
+.play-version-switch__item.is-ready {
+  background: var(--sp-secondary);
+  color: var(--sp-color-ink);
+  animation: sp-pop-in var(--sp-duration-celebrate) var(--sp-ease-pop);
+}
+
+.play-version-switch__item:disabled {
+  opacity: 0.75;
+}
+
+button.play-version-switch__item:not(:disabled) {
+  cursor: pointer;
+}
+
+.play-version-switch__item svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Otevřené pole změny sedí nad dolní řadou vlevo – pilulka stavu mu uhne výš. */
 .play-hud:has(> .play-live) > .play-upgrade-status {
   bottom: calc(var(--_stack) + var(--sp-size-touch-min) + var(--sp-space-8));

@@ -6,9 +6,8 @@
  * `score` = podíl položek, které ovládání čte (`read`), `drawnScore` = podíl
  * položek, které scéna nakreslí – obojí zaokrouhlené na tři místa.
  *
- * Brána: AI verze se hráči nabídne, jen když proti návrhu ze slov na témž
- * kontrolním seznamu přidá aspoň `MIN_UPGRADE_GAIN`. Jinak zůstane návrh
- * a hráč na nic nečeká – verze, která věty nenese víc, nestojí za přepnutí.
+ * `upgradeGain` byl brána AI verze (P37A T8); od P38 server AI verzi nabídne
+ * vždy a o přepnutí rozhodne hráč. Zisk zůstává jako měření pro skripty.
  */
 
 import type { ControlId, GameSpecV1 } from '../spec';

@@ -28,7 +28,7 @@ describe('compact request', () => {
     const request = buildCompactRequest(SENTENCE, draftGameSpecWithMeta(SENTENCE).genre);
     expect(Buffer.byteLength(request.system + request.user, 'utf8')).toBeLessThanOrEqual(12_700);
     expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
-    expect(request.user).toContain('Starting point (keep or improve): {"genre":"platformer"');
+    expect(request.user).toContain('Starting point (a keyword guess, replace what it got wrong): {"genre":"platformer"');
     expect(COMPACT_PROMPT_VERSION).not.toBe(DIRECTOR_PROMPT_VERSION);
     expect(compactSystemPrompt()).toContain(genrePromptLines());
   });

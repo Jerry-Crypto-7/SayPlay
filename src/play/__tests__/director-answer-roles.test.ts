@@ -171,7 +171,7 @@ describe('the AI version adds what the sentence says and the quick version misse
   it('asks for it in both prompt forms', () => {
     const quick = draftOf(SNOW).genre;
     for (const request of [buildDirectorRequest(SNOW, quick), buildCompactRequest(SNOW, quick, true)]) {
-      expect(request.system).toContain('add one thing the sentence says and it misses');
+      expect(request.system).toContain('Build the game the sentence asks for');
       expect(request.system).toContain('Role labels are singular');
       expect(request.system).toContain('The enemy is never what the player holds, sprays or throws');
     }

@@ -374,13 +374,14 @@ function saidIn(label: string, sentence: string): boolean {
 /**
  * Hraje žánr a režim hlavní sloveso věty? Režim slovesa dává tabulka sloves
  * klasifikátoru (`ranking.pick`). Hraje-li ten režim jen náhradu, věrný je
- * nejlepší `ready` režim, který klasifikátor dá místo něj; věta bez slovesa
- * z tabulky nedokazuje nic jiného než první režim pořadí – žánr draftu.
+ * nejlepší `ready` režim, který klasifikátor dá místo něj. Věta bez slovesa
+ * z tabulky (jiný jazyk, slovo mimo tabulku) nedokazuje nic – žánr vybere
+ * režisér, který větu přečetl (P38; dřív ho to vracelo k žánru draftu).
  */
 function verbFits(genre: GenreSpec, ranking: GenreRanking, modules: GenreModules): boolean {
   const is = (pair: { readonly genre: string; readonly mode: string } | undefined): boolean => pair !== undefined && pair.genre === genre.genre && pair.mode === genre.mode;
   const { pick } = ranking;
-  if (pick === null) return is(ranking.ranked[0]);
+  if (pick === null) return true;
   return is(pick) || ((modules[pick.genre] as GenreModule).availability(pick.mode as never) === 'fallback' && is(ranking.ranked[0]));
 }
 
@@ -408,7 +409,8 @@ export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOp
     issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `the sentence's enemy is "${saidEnemy}", the answer has ${genre.enemy === undefined ? 'none' : `"${genre.enemy}"`}` });
   }
   const settingEnemies = [defaultEnemy(genre.setting, genre.genre), ...(words?.enemy === undefined ? [] : [words.enemy])];
-  if (saidEnemy === null && genre.enemy !== undefined && !settingEnemies.some((label) => sameRole(genre.enemy!, label))) {
+  // P38: větu, ve které tabulka sloves nic nenajde (česky), slova nečtou – nepřítele z ní přečetl režisér.
+  if (ranking.pick !== null && saidEnemy === null && genre.enemy !== undefined && !settingEnemies.some((label) => sameRole(genre.enemy!, label))) {
     issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `"${genre.enemy}" is neither in the sentence nor the default of the setting (${settingEnemies.join(', ')})` });
   }
   // T7: co hráč stříká nebo hází, ho nehoní („sprays water“ → „before the water catch you“).

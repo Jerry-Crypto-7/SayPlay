@@ -178,6 +178,18 @@ describe('fidelity of a GenreSpec answer', () => {
     expect(verbCodes({ genre: 'arena', mode: 'fight', hero: 'fox', enemy: 'monster', setting: 'meadow' })).toHaveLength(1);
   });
 
+  // P38: věta, ve které tabulka sloves nic nenajde (česky), žánr nedokazuje – režisér ho vybere sám,
+  // jinak by ho kontrola vrátila k náhradní Aréně draftu.
+  it('lets the director pick the genre when the sentence has no verb the table knows', () => {
+    const czech = 'skákací hra se střílením do zvířat v lese';
+    const verbCodes = (genre: GenreSpec) => fidelity(genre, czech).filter((issue) => issue.code === 'VERB_OUTSIDE_MODE');
+    expect(verbCodes({ genre: 'platformer', mode: 'default', hero: 'fox', enemy: 'wolf', enemyMoves: 'shoot', setting: 'forest' })).toEqual([]);
+    // Nepřítele (zvíře z věty) slova nepřečtou, takže ho kontrola nesmí shodit jako vymyšleného.
+    expect(fidelity({ genre: 'platformer', mode: 'default', hero: 'hunter', enemy: 'deer', enemyMoves: 'shoot', setting: 'forest' }, czech)).toEqual([]);
+    // Věta se slovesem z tabulky dál dokazuje režim.
+    expect(fidelity({ genre: 'arena', mode: 'fight', hero: 'fox', enemy: 'wolf', setting: 'forest' }, 'a fox jumps over logs in the forest').map((issue) => issue.code)).toContain('VERB_OUTSIDE_MODE');
+  });
+
   it('refuses a mode that only plays a stand-in, and then proves the best ready mode', () => {
     const stand = { modules: genreDoubles(['quest.spatial', 'quest.station']) };
     const chef = { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'cook', states: 3 }, setting: 'kitchen' } as const;

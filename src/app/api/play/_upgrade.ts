@@ -13,8 +13,9 @@
  * Slib práce nikdy neodmítne – každá chyba je `draft-final` s důvodem, aby
  * neodchycená výjimka na pozadí neshodila proces.
  *
- * AI verze se publikuje jen, když porazí návrh (P37A T8, `beatsDraft`): jinak
- * zůstane návrh a hráč nic nečeká.
+ * AI verze se nabídne vždy, když projde ověřením (P38, ruší bránu P37A T8):
+ * kontrolní seznam věty počítá jen jména a slovesa, ne jak se hra hraje, takže
+ * o přepnutí rozhodne hráč přepínačem Quick | AI (`UpgradeBanner.tsx`).
  *
  * Podtržítko v názvu: Next.js soubor nebere jako route.
  */
@@ -24,11 +25,7 @@ import { join } from 'node:path';
 
 import { after } from 'next/server';
 
-import { preloadPhysics } from '@/play/arcade/compile';
-import { loadRapier } from '@/play/arcade/physics/world';
-import { sentenceChecklist } from '@/play/fidelity/checklist';
-import { MIN_UPGRADE_GAIN, upgradeGain } from '@/play/fidelity/score';
-import { type GameSpecV1, gameSpecHash } from '@/play/spec';
+import { gameSpecHash } from '@/play/spec';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
 import { DIRECTOR_BUDGET_MS, getDirector } from './_director';
@@ -200,27 +197,6 @@ export function recordUpgradeFailure(draftId: string, sentence: string, reason: 
   }
 }
 
-/**
- * Důvod v záznamu selhání, když AI verze nese větu o méně než `MIN_UPGRADE_GAIN`
- * víc než návrh (P37A T8). Hráč dostane `UNCHANGED` – „návrh už má všechno“,
- * konečný a bez nového pokusu: vlastní důvod by klient (`UpgradeBanner.tsx`,
- * `FINAL_REASON_TEXT`) bez vlastní věty nepřečetl a ukázal by „Try again“.
- */
-const NOT_BETTER = 'NOT_BETTER';
-
-/**
- * Brána upgradu (P37A T8): AI verze se publikuje, jen když na kontrolním
- * seznamu věty (`sentenceChecklist`) zvedne věrnost o `MIN_UPGRADE_GAIN` proti
- * návrhu, který hráč už hraje. Rapier napřed: sloveso pravidla ve fyzikálním
- * světě se počítá, jen když ho robot dokázal (`fidelityChain`).
- */
-async function beatsDraft(draft: GameSpecV1, ai: GameSpecV1, sentence: string): Promise<{ readonly ok: boolean; readonly detail: string }> {
-  await Promise.all([preloadPhysics(draft, loadRapier), preloadPhysics(ai, loadRapier)]);
-  const { checklist } = sentenceChecklist(sentence);
-  const gain = upgradeGain(draft, ai, checklist);
-  return { ok: gain.better, detail: `checklist fidelity ${String(gain.draft)} -> ${String(gain.ai)} over ${String(checklist.length)} items, gain ${String(gain.gain)} under ${String(MIN_UPGRADE_GAIN)}` };
-}
-
 async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
   const draftId = draft.version.versionId;
   const final = (reason: DraftFinalReason, failure?: UpgradeFailure): UpgradeOutcome => {
@@ -244,8 +220,6 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const directorMs = performance.now() - directorStarted;
   if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
-  const better = await beatsDraft(draft.spec, directed.spec, request.sentence);
-  if (!better.ok) return final('UNCHANGED', { stage: 'upgrade', reason: NOT_BETTER, detail: better.detail, raw: directed.spec });
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
   // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 

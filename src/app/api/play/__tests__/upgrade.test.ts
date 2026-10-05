@@ -63,16 +63,6 @@ vi.mock('@/play/director/read', async (importOriginal) => {
   return { ...actual, readGenreAnswer };
 });
 
-// P37A T8: brána upgradu (`fidelity/score.ts`) pustí AI verzi, jen když nese větu víc než návrh. Odpovědi testů
-// toku níž nesou větu stejně jako návrh (křeček, Roomba, supermarket), takže by je brána právem zastavila; testy
-// měří, co se stane s verzí, kterou brána pustila, a bránu drží otevřenou. Skutečné skóre zapíná `gate.real`
-// (describe „brána upgradu“ na konci souboru).
-const gate = vi.hoisted(() => ({ real: false }));
-vi.mock('@/play/fidelity/score', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/play/fidelity/score')>();
-  return { ...actual, upgradeGain: (...args: Parameters<typeof actual.upgradeGain>) => (gate.real ? actual.upgradeGain(...args) : { draft: 0, ai: 1, gain: 1, better: true }) };
-});
-
 const { POST: createGame } = await import('../games/route');
 const { GET: readGame } = await import('../games/[id]/route');
 const { GET: readUpgrade } = await import('../games/[id]/upgrade/route');
@@ -133,7 +123,6 @@ beforeEach(() => {
   director.script = [answered(genreAnswer())];
   director.gate = Promise.resolve();
   genre.unplayable = null;
-  gate.real = false;
 });
 
 afterEach(() => {
@@ -476,65 +465,26 @@ describe('GET …/upgrade', () => {
 });
 
 /**
- * Brána upgradu se skutečným skóre (P37A T8). Návrh věty je Úkol stanice
- * s mrožem a hrncem a kontrolní seznam věty má čtyři položky: kuchař, hrnec,
- * ledovec, „stir“. Ledovec nese návrh jen v popisku prostředí – sadu scény pro
- * něj nemá, takže ho ovládání nečte: návrh 0,75. Odpovědi mění právě to, co
- * seznam vidí.
+ * Bez brány věrnosti (P38 ruší P37A T8): AI verze, která projde ověřením, se
+ * nabídne vždy – i když kontrolní seznam věty (kuchař, hrnec, ledovec, „stir“)
+ * nenese víc než návrh. O přepnutí rozhodne hráč přepínačem Quick | AI.
  */
-describe('brána upgradu: AI verze jen když porazí návrh (P37A T8)', () => {
+describe('AI verze se nabídne i bez zisku věrnosti (P38)', () => {
   const WALRUS = 'a walrus chef stirs a big pot of soup on an iceberg';
   const station = (spec: Record<string, unknown> = {}) => ({
     plan: 'stir the soup',
     spec: { genre: 'quest', mode: 'station', hero: 'walrus chef', enemy: 'shadow', collectible: 'coin', target: { label: 'big pot', verb: 'stir', states: 3 }, setting: 'iceberg', ...spec },
   });
 
-  beforeEach(() => {
-    gate.real = true;
-  });
-
-  /** Řádky konce pokusu o upgrade návrhu `id` (`upgradeEndedLine`). */
-  async function endedLines(id: string, run: () => Promise<void>): Promise<string[]> {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    try {
-      await run();
-      return warn.mock.calls.map(([line]) => String(line)).filter((line) => line.startsWith(`[play] upgrade of ${id} ended`));
-    } finally {
-      warn.mockRestore();
-    }
-  }
-
-  it('verze, která nese větu víc (ledovec dostane sadu sněhu), se publikuje', async () => {
-    director.script = [answered(station({ palette: 'snow' }))];
+  it.each([
+    ['věrnější (ledovec dostane sadu sněhu)', { palette: 'snow' }],
+    ['stejně věrná (jen jiný nepřítel)', { enemy: 'seal' }],
+    ['méně věrná (hrnec zmizel z cíle)', { target: { label: 'ladle', verb: 'stir', states: 3 } }],
+  ])('%s verze je hotová jako dítě návrhu', async (_name, change) => {
+    director.script = [answered(station(change))];
     const created = await publish({ sentence: WALRUS });
     const ready = await settled(created.body.versionId);
     expect(ready.status).toBe('ready');
     expect((await game(ready.versionId)).version.parentId).toBe(created.body.versionId);
-  });
-
-  it('stejně věrná verze (jen jiný nepřítel) zůstane návrhem – konečně, bez nového pokusu', async () => {
-    director.script = [answered(station({ enemy: 'seal' }))];
-    const created = await publish({ sentence: WALRUS });
-    const id = created.body.versionId as string;
-    const lines = await endedLines(id, async () => {
-      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'UNCHANGED' });
-    });
-    expect(lines).toEqual([`[play] upgrade of ${id} ended UNCHANGED at upgrade: NOT_BETTER – checklist fidelity 0.75 -> 0.75 over 4 items, gain 0 under 0.05`]);
-    expect(await versionStoreFromEnv(process.env).childrenOf(id)).toEqual([]);
-    // Verdikt o větě: proces bez záznamu ho najde v úložišti a režiséra nezaplatí znovu.
-    __resetUpgrades();
-    expect(await upgrade(id)).toEqual({ status: 'draft-final', reason: 'UNCHANGED' });
-    expect(director.calls).toBe(1);
-  });
-
-  it('horší spec (hrnec zmizel z cíle) žádný upgrade nedostane', async () => {
-    director.script = [answered(station({ target: { label: 'ladle', verb: 'stir', states: 3 } }))];
-    const created = await publish({ sentence: WALRUS });
-    const id = created.body.versionId as string;
-    const lines = await endedLines(id, async () => {
-      expect(await settled(id)).toEqual({ status: 'draft-final', reason: 'UNCHANGED' });
-    });
-    expect(lines).toEqual([`[play] upgrade of ${id} ended UNCHANGED at upgrade: NOT_BETTER – checklist fidelity 0.75 -> 0.5 over 4 items, gain -0.25 under 0.05`]);
-    expect(await versionStoreFromEnv(process.env).childrenOf(id)).toEqual([]);
   });
 });

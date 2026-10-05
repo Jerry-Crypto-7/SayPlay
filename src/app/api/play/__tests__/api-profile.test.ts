@@ -33,13 +33,6 @@ vi.mock('@/play/director/read', async (importOriginal) => {
   return { ...actual, readGenreAnswer };
 });
 
-// P37A T8: brána upgradu otevřená – odpovědi dvojníka nesou větu stejně jako návrh a test měří profil API,
-// ne bránu; tu se skutečným skóre drží `upgrade.test.ts` („brána upgradu“).
-vi.mock('@/play/fidelity/score', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/play/fidelity/score')>()),
-  upgradeGain: () => ({ draft: 0, ai: 1, gain: 1, better: true }),
-}));
-
 // Bez předpony `sk-`: tvar skutečného klíče by zastavil `blind-check` před pushem.
 const KEY = 'test-key-d1-never-leaves-the-server';
 

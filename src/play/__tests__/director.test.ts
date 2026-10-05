@@ -124,7 +124,7 @@ describe('direct – the model answers', () => {
     expect(branch.calls).toHaveLength(1);
     const request = branch.calls[0]!.request;
     expect(request.user).toContain(SENTENCE);
-    expect(request.user).toContain(`Starting point (keep or improve): ${JSON.stringify(draftGameSpecWithMeta(SENTENCE).genre)}`);
+    expect(request.user).toContain(`Starting point (a keyword guess, replace what it got wrong): ${JSON.stringify(draftGameSpecWithMeta(SENTENCE).genre)}`);
     expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
     expect(game.ms).toBeGreaterThan(0);
   });
