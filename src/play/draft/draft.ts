@@ -1230,8 +1230,10 @@ function draftGenre(
   const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence);
   // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
-  // Les dá vlka, jen když věta žádného protivníka nejmenuje.
-  const foeLabel = enemy ?? saidFoe ?? spare(defaultFoe(setting, choice.genre).label, [singular(hero)]);
+  // Les dá vlka, jen když věta žádného protivníka nejmenuje. Skákačka a poletování mají vlastní překážku
+  // (bodák, trubka), kterou protivník z prostředí nepřejmenuje – primitiv zůstává, kde věta nic neřekla.
+  const ownHazard = choice.genre === 'platformer' || choice.genre === 'flap';
+  const foeLabel = enemy ?? saidFoe ?? (ownHazard ? null : spare(defaultFoe(setting, choice.genre).label, [singular(hero)]));
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.

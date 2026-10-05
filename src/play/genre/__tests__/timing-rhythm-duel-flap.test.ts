@@ -78,3 +78,17 @@ describe('a sentence without a verb of the table is not always a runner', () => 
     expect(draftGameSpecWithMeta(sentence, 1).genre?.genre as string).toBe(genre);
   });
 });
+
+// P39 T6: poletování střelbu neumí – co se ve větě střílí, je překážka s tím jménem, ne zahozená věc.
+describe('flap reads the cast', () => {
+  it('turns a thing it cannot shoot into the obstacle it dodges', () => {
+    const game = GENRE_MODULES.flap.compile({ genre: 'flap', mode: 'default', hero: 'bird', setting: 'cave', cast: [{ label: 'bat', does: 'shoot_at' }, { label: 'gem', does: 'collect' }] });
+    expect(game.roles.find((role) => role.id === 'pipe')?.label).toBe('bat');
+    expect(game.roles.find((role) => role.id === 'coin')?.label).toBe('gem');
+  });
+
+  it('keeps the pipe where the sentence names nothing to dodge', () => {
+    const meta = draftGameSpecWithMeta('a tiny bird with wings in a cave full of pipes', 1);
+    expect(meta.spec.roles.find((role) => role.id === 'pipe')?.label).toBe('pipe');
+  });
+});

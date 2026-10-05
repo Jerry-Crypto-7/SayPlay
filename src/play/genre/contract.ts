@@ -186,6 +186,33 @@ export const FOE_DOES: Readonly<Record<GenreId, CastRole>> = {
   flap: 'avoid',
 };
 
+/**
+ * Věc obsazení pro roli žánru (P39): první položka s rolí `does[0]`, jinak
+ * `does[1]`… Žánr, který roli věty neumí, ji takhle čte jako nejbližší, kterou
+ * umí (střílená věc je v poletování překážka) – nikdy ji nezahodí.
+ */
+export function castFor(spec: Pick<GenreSpec, 'cast'>, ...does: readonly CastRole[]): CastItem | undefined {
+  for (const role of does) {
+    const found = spec.cast?.find((item) => item.does === role);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/**
+ * Role hry pro věci, které hraje doplněk ovládání (P39): střelba míří na roli
+ * `enemy`, pronásledovatel je role druhu `chaser`. Model a měření je čtou
+ * podle popisku (`enemyModel`, `chaserModel`), jinak by kreslily robota.
+ */
+export function addonRoles(spec: Pick<GenreSpec, 'cast'>): { readonly id: string; readonly kind: 'hazard' | 'chaser'; readonly label: string }[] {
+  const shot = castFor(spec, 'shoot_at');
+  const chaser = castFor(spec, 'chase_me');
+  return [
+    ...(shot === undefined ? [] : [{ id: 'enemy', kind: 'hazard' as const, label: shot.label }]),
+    ...(chaser === undefined ? [] : [{ id: 'chaser', kind: 'chaser' as const, label: chaser.label }]),
+  ];
+}
+
 /** Chování nepřítele ve starém tvaru (`enemyMoves`, P36A T8) → co dělá. */
 const MOVE_DOES: Readonly<Record<string, CastRole>> = { chase: 'chase_me', patrol: 'chase_me', shoot: 'shoot_at', still: 'avoid' };
 

@@ -16,7 +16,7 @@ import { type LookId, lookFor } from '../arcade/look';
 import { LAND, VOYAGE, VOYAGE_TERRAINS } from '../arcade/pieces/steer';
 import { nounPhrase } from '../draft/lexicon';
 
-import { type GenreModule, type GenreSpecOf, type ModelClass, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, type ModelClass, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 type Terrain = (typeof VOYAGE_TERRAINS)[number];
 
@@ -106,8 +106,9 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
     });
   }
   const terrain = terrainOf(palette);
-  const hazard = spec.enemy ?? CROSSING[terrain];
-  const goal = spec.collectible ?? spec.target?.label ?? destinationOf(palette);
+  // Plavba neumí střelbu ani honičku: každý protivník věty je nástraha na trati, věc i cíl jsou místo, kam se pluje (P39).
+  const hazard = castFor(spec, 'avoid', 'chase_me', 'shoot_at', 'fight', 'throw_at')?.label ?? CROSSING[terrain];
+  const goal = castFor(spec, 'collect', 'reach')?.label ?? destinationOf(palette);
   return legacySpec(looked, {
     control: 'steer',
     controlParams: {

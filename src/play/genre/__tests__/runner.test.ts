@@ -11,13 +11,22 @@ import { heroFor } from '@/play/assets/manifest';
 import { readGameSpec } from '@/play/spec';
 
 import penguin from '../__fixtures__/penguin.json';
-import { type GenreSpecOf, genreSpecSchema } from '../contract';
+import { type GenreSpecOf, genreSpecSchema, legacyCast } from '../contract';
 import { compileGenre, readGenreSpec } from '../index';
 import { runnerGenre } from '../runner';
 
 const PENGUIN_SENTENCE = 'A penguin slides down an icy mountain, collects snowflakes and avoids rocks';
 
-const base: GenreSpecOf<'runner'> = { genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope' };
+const base: GenreSpecOf<'runner'> = {
+  genre: 'runner',
+  mode: 'default',
+  hero: 'penguin',
+  cast: [
+    { label: 'rock', does: 'avoid' },
+    { label: 'snowflake', does: 'collect' },
+  ],
+  setting: 'icy mountain slope',
+};
 
 function firstWinningSeed(spec: Parameters<typeof compileArcade>[0]): ReturnType<typeof compileArcade> {
   let last: ReturnType<typeof compileArcade> | null = null;
@@ -31,7 +40,8 @@ function firstWinningSeed(spec: Parameters<typeof compileArcade>[0]): ReturnType
 describe('runner genre (P32A T7)', () => {
   it('draftFill reads the penguin sentence: hero, obstacle, collectible and setting', () => {
     const fill = runnerGenre.draftFill(PENGUIN_SENTENCE, null);
-    expect(fill).toMatchObject({ genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', palette: 'snow' });
+    expect(fill).toMatchObject({ genre: 'runner', mode: 'default', hero: 'penguin', palette: 'snow' });
+    expect(fill.cast).toEqual(expect.arrayContaining([{ label: 'rock', does: 'avoid' }, { label: 'snowflake', does: 'collect' }]));
     expect(fill.setting).toMatch(/icy mountain/);
   });
 
@@ -42,7 +52,7 @@ describe('runner genre (P32A T7)', () => {
   });
 
   it('compile(penguin.json) reads, the bot wins and the hero is the penguin model', () => {
-    const spec = runnerGenre.compile(genreSpecSchema.parse(penguin) as GenreSpecOf<'runner'>);
+    const spec = runnerGenre.compile(genreSpecSchema.parse(legacyCast(penguin)) as GenreSpecOf<'runner'>);
     const read = readGameSpec(spec);
     if (!read.ok) throw new Error(`${read.reason}: ${read.issues.join('; ')}`);
     const compiled = firstWinningSeed(read.value);
@@ -63,7 +73,7 @@ describe('runner genre (P32A T7)', () => {
 
   it('a rock cannot be slid under: only the dodge-or-jump obstacle kinds carry it', () => {
     expect(runnerGenre.compile(base).controlParams).toMatchObject({ obstacles: expect.not.arrayContaining(['slide-bar']) });
-    expect(runnerGenre.compile({ ...base, enemy: 'low branch' }).controlParams).toMatchObject({ obstacles: expect.arrayContaining(['slide-bar']) });
+    expect(runnerGenre.compile({ ...base, cast: [{ label: 'low branch', does: 'avoid' }] }).controlParams).toMatchObject({ obstacles: expect.arrayContaining(['slide-bar']) });
   });
 
   it('maps speed and density params to the runner piece inside their bounds', () => {
@@ -90,7 +100,7 @@ describe('runner genre (P32A T7)', () => {
   });
 
   it('theme.motion is look-only: the old game reads as before and the kernel state is the same with or without it', () => {
-    const old = runnerGenre.compile(genreSpecSchema.parse(penguin) as GenreSpecOf<'runner'>);
+    const old = runnerGenre.compile(genreSpecSchema.parse(legacyCast(penguin)) as GenreSpecOf<'runner'>);
     const riding = { ...old, theme: { ...old.theme, motion: 'ride' as const } };
     expect(readGameSpec(old).ok).toBe(true);
     expect(readGameSpec(riding).ok).toBe(true);

@@ -19,7 +19,7 @@
 import { PLATFORM_LEVEL } from '../arcade/pieces/platform';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
-import { type CastItem, type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type CastItem, type GenreModule, type GenreSpecOf, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Sloveso cíle, u kterého se vyhrává sebráním všech věcí. */
 const COLLECT_VERB = /^(?:collect|grab|gather|pick)/;
@@ -30,13 +30,17 @@ const COLLECT_CUE = /\b(collect|grab|gather|pick up)(?:s|es|ing)? (.+)/;
 const GOAL_CUE = /\b(find|reach|get(?:s|ting)? to)(?:s|es|ing)? (.+)/;
 
 function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
-  const verb = spec.target?.verb.toLowerCase() ?? '';
+  const target = castFor(spec, 'reach');
+  const collectible = castFor(spec, 'collect')?.label;
+  // Bodák nese jméno toho, čemu se uhýbá; soupeř zblízka a terč hodu jsou taky jen nástraha (P39).
+  const hazard = castFor(spec, 'avoid', 'fight', 'throw_at')?.label;
+  const verb = target?.verb?.toLowerCase() ?? '';
   const collect = COLLECT_VERB.test(verb);
   const same = (a: string | undefined, b: string | undefined): boolean => a !== undefined && b !== undefined && singular(a) === singular(b);
   // Sbírací cíl, který jmenuje věc („collect carrots“), není cíl úrovně – zůstane vlajka. Jinak je cíl
   // vždy cíl a věc, která ho opakuje („find its crown“ čte slovník i jako věc), je mince.
-  const item = collect ? (spec.collectible ?? spec.target?.label ?? 'coin') : same(spec.collectible, spec.target?.label) ? 'coin' : (spec.collectible ?? 'coin');
-  const named = spec.target === undefined || (collect && same(spec.target.label, item)) ? null : spec.target.label;
+  const item = collect ? (collectible ?? target?.label ?? 'coin') : same(collectible, target?.label) ? 'coin' : (collectible ?? 'coin');
+  const named = target === undefined || (collect && same(target.label, item)) ? null : target.label;
   const goal = named ?? 'flag';
   const count = spec.params?.items ?? (collect ? PLATFORM_LEVEL.collectCount : undefined);
   const line = collect ? `Collect ${String(count)} ${plural(singular(item), count!)} and reach the ${goal}.` : named === null ? null : `${verb.startsWith('find') ? 'Find' : 'Reach'} the ${goal}.`;
@@ -50,13 +54,15 @@ function compilePlatformer(spec: GenreSpecOf<'platformer'>) {
     },
     archetype: 'hazard_crossing',
     title: `${titleCase(spec.hero)} Jump`,
-    objective: { kind: 'reach', description: line ?? `Jump across the platforms to the flag without touching a ${spec.enemy ?? 'spike'}.`, role: 'finish' },
+    objective: { kind: 'reach', description: line ?? `Jump across the platforms to the flag without touching a ${hazard ?? 'spike'}.`, role: 'finish' },
     // Hrot ubere život a vrátí hrdinu na checkpoint (P36A T2).
     mechanics: [livesMechanic()],
     roles: [
-      { id: 'spikes', kind: 'hazard', label: spec.enemy ?? 'spikes', count: 5 },
+      { id: 'spikes', kind: 'hazard', label: hazard ?? 'spikes', count: 5 },
       { id: 'coin', kind: 'collectible', label: item, ...(count === undefined ? {} : { count }) },
       { id: 'finish', kind: 'exit', label: goal },
+      // Co se střílí a co honí, hraje doplněk (`withEnemyAddon`).
+      ...addonRoles(spec),
     ],
     tutorial: { goalLine: line ?? 'Reach the flag. Jump over gaps and hazards.', controlsHint: 'Arrows or A/D to move, Space or tap to jump.' },
     mood: 'playful',
