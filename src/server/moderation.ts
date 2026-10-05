@@ -164,8 +164,11 @@ export function moderatePrompt(
       detail: `prompt is ${trimmed.length} characters, the limit is ${rules.maxChars}`,
     };
 
+  // Pravidla jsou psaná pro složené znaky: rozložené „í“ (i + čárka) by
+  // `\p{L}*` u sloves utnulo a větu pustilo.
+  const composed = trimmed.normalize('NFC');
   for (const topic of rules.denied)
-    if (topic.pattern.test(trimmed))
+    if (topic.pattern.test(composed))
       return { ok: false, category: 'DISALLOWED', ruleId: topic.id, detail: topic.detail };
 
   return { ok: true, prompt: trimmed };

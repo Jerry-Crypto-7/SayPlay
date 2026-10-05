@@ -43,6 +43,15 @@ function fileOf(dir: string, key: string): string {
   return join(dir, `${createHash('sha1').update(key).digest('hex')}.json`);
 }
 
+/** Položka schodiště `[člen, { rank, at }]` – jiný tvar by `new Map` shodil při startu. */
+function isRankedEntry(item: unknown): boolean {
+  if (!Array.isArray(item) || item.length !== 2 || typeof item[0] !== 'string') return false;
+  const ranked: unknown = item[1];
+  if (typeof ranked !== 'object' || ranked === null) return false;
+  const { rank, at } = ranked as Record<string, unknown>;
+  return typeof rank === 'number' && typeof at === 'number';
+}
+
 function isSaved(value: unknown): value is Saved {
   if (typeof value !== 'object' || value === null) return false;
   const record = value as Record<string, unknown>;
@@ -50,7 +59,7 @@ function isSaved(value: unknown): value is Saved {
     typeof record.key === 'string' &&
     (record.value === undefined || typeof record.value === 'string') &&
     (record.list === undefined || (Array.isArray(record.list) && record.list.every((item) => typeof item === 'string'))) &&
-    (record.set === undefined || Array.isArray(record.set)) &&
+    (record.set === undefined || (Array.isArray(record.set) && record.set.every(isRankedEntry))) &&
     (record.expiresAt === undefined || typeof record.expiresAt === 'number')
   );
 }

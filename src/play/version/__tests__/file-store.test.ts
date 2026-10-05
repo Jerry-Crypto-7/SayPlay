@@ -81,6 +81,15 @@ describe('fileVersionStore', () => {
     expect(await fileVersionStore(dir).get(parent.version.versionId)).not.toBeNull();
   });
 
+  it('soubor se špatnou položkou schodiště se přeskočí, ostatní hry zůstanou', async () => {
+    const dir = freshDir();
+    await fileVersionStore(dir).put(parent);
+    writeFileSync(join(dir, 'broken.json'), JSON.stringify({ key: 'k', set: [null] }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect(await fileVersionStore(dir).get(parent.version.versionId)).not.toBeNull();
+    expect(warn).toHaveBeenCalled();
+  });
+
   it('zápis nenechá v adresáři dočasné soubory', async () => {
     const dir = freshDir();
     await fileVersionStore(dir).put(parent);

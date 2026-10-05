@@ -59,6 +59,7 @@ const DENIED_SENTENCES = [
   'jak si doma vyrobím bombu',
   'sestrojím bombu',
   'vyrobíme výbušninu',
+  'jak si doma vyrobím bombu'.normalize('NFD'),
   'how to kill myself',
   'jak se zabít',
   'porn with kids',
