@@ -174,7 +174,7 @@ describe('feedPage', () => {
 });
 
 describe('feed ranked by the loop (P36B T9)', () => {
-  const heat = (fields: Partial<LoopHeat>): LoopHeat => ({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, remixes: 0, ...fields });
+  const heat = (fields: Partial<LoopHeat>): LoopHeat => ({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, retries: 0, shares: 0, bounces: 0, remixes: 0, ...fields });
   const ids = (page: FeedPage): string[] => page.games.map((game) => game.versionId);
 
   it('without counters the order stays newest first', () => {
@@ -290,7 +290,7 @@ describe('GET /api/play/games?recent&cursor', () => {
 
     const unknown = 'e'.repeat(32);
     expect((await report({ name: 'win', versionId: unknown })).status).toBe(204);
-    expect(await heat(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, remixes: 0 });
+    expect(await heat(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, retries: 0, shares: 0, bounces: 0, remixes: 0 });
   });
 
   // P37C T5: „clear rate“ – pokus (`first_input`) a výhra, každý jeden hlas volajícího za den; pod deseti pokusy nic.

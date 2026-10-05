@@ -45,6 +45,7 @@ describe('fileVersionStore', () => {
     expect(await first.feature(parent)).toBe('exists');
     await first.countLoop(parent.version.versionId, ['finish', 'start'], 'voter-a');
     await first.countLoop(parent.version.versionId, ['finish'], 'voter-b');
+    await first.countLoop(parent.version.versionId, ['retry', 'share', 'bounce'], 'voter-a');
 
     const restarted = fileVersionStore(dir);
     expect((await restarted.get(parent.version.versionId))?.spec).toEqual(parent.spec);
@@ -52,7 +53,7 @@ describe('fileVersionStore', () => {
     expect(await restarted.childrenOf(parent.version.versionId)).toEqual([child.version.versionId]);
     expect((await restarted.lineageOf(child.version.versionId)).map((version) => version.versionId)).toEqual([parent.version.versionId, child.version.versionId]);
     expect((await restarted.recent(RECENT_CAP)).map((row) => row.versionId)).toEqual([parent.version.versionId]);
-    expect((await restarted.loopHeat([parent.version.versionId])).get(parent.version.versionId)).toMatchObject({ finishes: 2, starts: 1, remixes: 1 });
+    expect((await restarted.loopHeat([parent.version.versionId])).get(parent.version.versionId)).toMatchObject({ finishes: 2, starts: 1, retries: 1, shares: 1, bounces: 1, remixes: 1 });
   });
 
   it('hlas na hráče za 24 h platí i po restartu: týž hráč čítač znovu nezvýší', async () => {

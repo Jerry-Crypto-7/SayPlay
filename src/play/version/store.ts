@@ -205,6 +205,10 @@ export interface LoopHeat {
   /** Pokusy a výhry pro „clear rate“ (P37C T5); feed podle nich neřadí. */
   readonly starts: number;
   readonly clears: number;
+  /** Opakování, sdílení a okamžité odchody (P40 T4), každé jeden hlas volajícího za den. */
+  readonly retries: number;
+  readonly shares: number;
+  readonly bounces: number;
   readonly remixes: number;
 }
 
@@ -709,8 +713,22 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         };
         return new Map(
           versionIds.map((versionId, index) => {
-            const [finishes, dares, skips, starts, clears, children] = texts.slice(index * per, index * per + per);
-            return [versionId, { finishes: count(finishes), dares: count(dares), skips: count(skips), starts: count(starts), clears: count(clears), remixes: remixes(children) }];
+            // Pořadí je `LOOP_COUNTERS`, za nimi děti verze.
+            const [finishes, dares, skips, starts, clears, retries, shares, bounces, children] = texts.slice(index * per, index * per + per);
+            return [
+              versionId,
+              {
+                finishes: count(finishes),
+                dares: count(dares),
+                skips: count(skips),
+                starts: count(starts),
+                clears: count(clears),
+                retries: count(retries),
+                shares: count(shares),
+                bounces: count(bounces),
+                remixes: remixes(children),
+              },
+            ];
           }),
         );
       } catch {

@@ -881,5 +881,10 @@ describe('čítače smyčky nad Upstash (P37C T5)', () => {
     await shared.countLoop(game, ['start', 'finish', 'clear'], 'voter-t5-known');
     expect(commands().filter((command) => command === 'EXISTS')).toHaveLength(1);
     for (const counter of ['start', 'finish', 'clear']) expect(kv.get(`test:play:loop:${counter}:${game}`), counter).toBe('1');
+
+    // P40 T4: opakování, sdílení a odchod jdou týmiž klíči a vrátí se v `loopHeat`.
+    await shared.countLoop(game, ['retry', 'share', 'bounce'], 'voter-t5-known');
+    await shared.countLoop(game, ['retry', 'share', 'bounce'], 'voter-t5-known');
+    expect((await shared.loopHeat([game])).get(game)).toMatchObject({ starts: 1, retries: 1, shares: 1, bounces: 1 });
   });
 });

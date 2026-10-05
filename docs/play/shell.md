@@ -114,7 +114,8 @@ jiné hry → 404 `NOT_FOUND`.
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
 Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |
-restart | next_game | share | shared_open` (`src/play/loop-events.ts`), `versionId` hex id verze, `session` náhodné id záložky
+restart | next_game | share | shared_open | bounce` (`src/play/loop-events.ts`; `bounce` = klient odešel od zobrazené hry
+další hrou nebo zavřením stránky bez jediného vstupu, P40 T4), `versionId` hex id verze, `session` náhodné id záložky
 (12–32 znaků `[a-z0-9]`); jen `share` smí nést booleany `withClip` (šel klip) a `dare` (odkaz nesl výzvu, P36B T6). Klíč
 navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
 frekvence (`play/events`), takže statistika hráči neubere kvótu na tvorbu; páka `sessions` vypne i tyhle dveře. Zápis: řádek

@@ -10,6 +10,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CLEAR_RATE_MIN_STARTS, clearRate, type LoopEvent, loopCountersOf, readLoopEvent, summarizeLoop } from '@/play/loop-events';
+import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
+import { BUILTIN_GAMES } from '@/play/version/builtin';
 import { MAX_REQUESTS_PER_WINDOW, MAX_REQUESTS_PER_WINDOW_PER_INSTANCE, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 
 import { MAX_DAY_BYTES } from '../_events';
@@ -39,6 +41,11 @@ describe('readLoopEvent', () => {
     expect(readLoopEvent(body)).toBeNull();
   });
 
+  it('takes a bounce (P40 T4), but no share booleans on it', () => {
+    expect(readLoopEvent({ name: 'bounce', versionId: VERSION, session: SESSION })).toEqual({ name: 'bounce', versionId: VERSION, session: SESSION });
+    expect(readLoopEvent({ name: 'bounce', versionId: VERSION, session: SESSION, withClip: true })).toBeNull();
+  });
+
   it('a share says whether the clip went with it (P29D T2)', () => {
     expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: true })).toEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: true });
     expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: false })).toEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: false });
@@ -57,7 +64,10 @@ describe('clear rate (P37C T5)', () => {
     expect(of('win')).toEqual(['start', 'finish', 'clear']);
     expect(of('lose')).toEqual(['start', 'finish']);
     expect(of('next_game')).toEqual(['skip']);
-    for (const name of ['impression', 'restart', 'share', 'shared_open'] as const) expect(of(name)).toEqual([]);
+    expect(of('restart')).toEqual(['retry']);
+    expect(of('share')).toEqual(['share']);
+    expect(of('bounce')).toEqual(['bounce']);
+    for (const name of ['impression', 'shared_open'] as const) expect(of(name)).toEqual([]);
   });
 
   it(`says nothing below ${String(CLEAR_RATE_MIN_STARTS)} attempts, rounds to a whole percent and never goes above 100`, () => {
@@ -116,6 +126,20 @@ describe('POST /api/play/events', () => {
   const post = (body: unknown) => sendEvent(new Request('http://play.test/api/play/events', { method: 'POST', headers: CALLER, body: JSON.stringify(body) }));
   const lines = (): Record<string, unknown>[] =>
     readdirSync(dir).flatMap((file) => readFileSync(join(dir, file), 'utf8').trim().split('\n').filter(Boolean).map((line) => JSON.parse(line) as Record<string, unknown>));
+
+  // P40 T4: opakování, sdílení a okamžitý odchod mají čítač – jeden hlas volajícího za den, ať mění relaci jak chce.
+  it('counts restarts, shares and bounces once per caller a day, across sessions', async () => {
+    __resetProcessVersionStore();
+    const game = BUILTIN_GAMES[0]!.version.versionId;
+    const report = (name: string, ip: string, session: string): Promise<Response> =>
+      sendEvent(new Request('http://play.test/api/play/events', { method: 'POST', headers: { 'x-forwarded-for': ip }, body: JSON.stringify({ name, versionId: game, session }) }));
+    for (const name of ['restart', 'share', 'bounce'])
+      for (let n = 0; n < 3; n += 1) expect((await report(name, '203.0.113.61', `repeat${String(n).padStart(6, '0')}`)).status).toBe(204);
+    expect((await report('restart', '198.51.100.61', SESSION)).status).toBe(204);
+    const heat = (await versionStoreFromEnv(process.env).loopHeat([game])).get(game);
+    expect(heat).toMatchObject({ retries: 2, shares: 1, bounces: 1, finishes: 0, skips: 0 });
+    __resetProcessVersionStore();
+  });
 
   it('stores the event with a server time and nothing else', async () => {
     expect((await post({ name: 'first_input', versionId: VERSION, session: SESSION })).status).toBe(204);

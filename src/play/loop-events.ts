@@ -8,7 +8,12 @@
  * nepošle (`ArcadePlay`, `PlayShell`), tady se jen počítá.
  */
 
-export const LOOP_EVENTS = ['impression', 'first_input', 'win', 'lose', 'restart', 'next_game', 'share', 'shared_open'] as const;
+/**
+ * `bounce` (P40 T4) je odchod od zobrazené hry bez jediného vstupu – další hra
+ * nebo zavřená stránka. Pozná ho jen klient (`loop-client.ts`): server konec
+ * relace nevidí, a čekat na něj by znamenalo pamatovat si každé zobrazení.
+ */
+export const LOOP_EVENTS = ['impression', 'first_input', 'win', 'lose', 'restart', 'next_game', 'share', 'shared_open', 'bounce'] as const;
 export type LoopEventName = (typeof LOOP_EVENTS)[number];
 
 export interface LoopEvent {
@@ -47,10 +52,12 @@ export function readLoopEvent(raw: unknown): LoopEvent | null {
  * Dare a přeskočení (`next_game`). Výzvu započtou jen dveře výzvy, když server
  * uloží novou ověřenou výzvu – `share` s `dare: true` je slovo klienta a
  * nepočítá se (nález revize T9-1). Pokus (`first_input`) a výhra dávají
- * „clear rate“ (P37C T5). Ostatní události nic nepočítají.
+ * „clear rate“ (P37C T5). Opakování (`restart`), sdílení a okamžitý odchod
+ * (`bounce`) řadí feed podle toho, k čemu se lidi vrací (P40 T4). Ostatní
+ * události nic nepočítají.
  */
-export type LoopCounter = 'finish' | 'dare' | 'skip' | 'start' | 'clear';
-export const LOOP_COUNTERS: readonly LoopCounter[] = ['finish', 'dare', 'skip', 'start', 'clear'];
+export type LoopCounter = 'finish' | 'dare' | 'skip' | 'start' | 'clear' | 'retry' | 'share' | 'bounce';
+export const LOOP_COUNTERS: readonly LoopCounter[] = ['finish', 'dare', 'skip', 'start', 'clear', 'retry', 'share', 'bounce'];
 
 /**
  * Čítače, které událost z dveří událostí zvýší; výzvu (`dare`) nikdy – tu počítají
@@ -63,6 +70,9 @@ export function loopCountersOf(event: LoopEvent): readonly Exclude<LoopCounter, 
   if (event.name === 'lose') return ['start', 'finish'];
   if (event.name === 'next_game') return ['skip'];
   if (event.name === 'first_input') return ['start'];
+  if (event.name === 'restart') return ['retry'];
+  if (event.name === 'share') return ['share'];
+  if (event.name === 'bounce') return ['bounce'];
   return [];
 }
 
@@ -104,12 +114,12 @@ export interface LoopReport {
 }
 
 /**
- * Záznam → trychtýř. `impression`, `first_input` a `shared_open` se počítají
+ * Záznam → trychtýř. `impression`, `first_input`, `shared_open` a `bounce` se počítají
  * jednou za relaci a verzi; konec hry, restart, další hra a sdílení každý
  * zvlášť (hráč smí hrát dvakrát).
  */
 export function summarizeLoop(events: readonly LoopEvent[]): LoopReport {
-  const once = new Set<LoopEventName>(['impression', 'first_input', 'shared_open']);
+  const once = new Set<LoopEventName>(['impression', 'first_input', 'shared_open', 'bounce']);
   const seen = new Set<string>();
   const counts = Object.fromEntries(LOOP_EVENTS.map((name) => [name, 0])) as Record<LoopEventName, number>;
   for (const event of events) {
