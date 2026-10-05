@@ -16,6 +16,19 @@ import builtinGames from '../builtin-games.json';
 import { __resetProcessVersionStore, fileStoreDirFromEnv, fileVersionStore, RECENT_CAP, versionStoreFromEnv } from '../store';
 import type { PublishedGame } from '../version';
 
+/** Disk, který přejmenování odmítne – antivir drží soubor (Windows EPERM) nebo je plný. */
+const disk = vi.hoisted(() => ({ broken: false }));
+vi.mock('node:fs', async (importOriginal) => {
+  const fs = await importOriginal<typeof import('node:fs')>();
+  return {
+    ...fs,
+    renameSync: (...args: Parameters<typeof fs.renameSync>) => {
+      if (disk.broken) throw Object.assign(new Error('EPERM: operation not permitted, rename'), { code: 'EPERM' });
+      fs.renameSync(...args);
+    },
+  };
+});
+
 const games = builtinGames as unknown as PublishedGame[];
 const parent = games[0]!;
 /** Dítě rodiče: jiná vestavěná hra s `parentId` – tvar jako remix. */
@@ -30,6 +43,7 @@ function freshDir(): string {
 }
 
 afterEach(() => {
+  disk.broken = false;
   vi.unstubAllEnvs();
   vi.restoreAllMocks();
   __resetProcessVersionStore();
@@ -89,6 +103,29 @@ describe('fileVersionStore', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     expect(await fileVersionStore(dir).get(parent.version.versionId)).not.toBeNull();
     expect(warn).toHaveBeenCalled();
+  });
+
+  it('hra, kterou disk nepřijal, není ani v paměti: další put ji zapíše znovu a přežije restart', async () => {
+    const dir = freshDir();
+    const store = fileVersionStore(dir);
+    disk.broken = true;
+    await expect(store.put(parent)).rejects.toThrow();
+    expect(await store.get(parent.version.versionId)).toBeNull();
+    disk.broken = false;
+    // Ne `exists` nad kopií jen v paměti: odkaz by po restartu hlásil „Game not found“.
+    expect(await store.put(parent)).toBe('stored');
+    expect(await fileVersionStore(dir).get(parent.version.versionId)).not.toBeNull();
+  });
+
+  it('čítač, který disk nepřijal, se nezvýší ani v paměti', async () => {
+    const dir = freshDir();
+    const store = fileVersionStore(dir);
+    disk.broken = true;
+    await expect(store.takeDirectorCall('caller', 1)).rejects.toThrow();
+    disk.broken = false;
+    // První započtené volání je pořád první – selhaný zápis ho neukousl.
+    expect(await store.takeDirectorCall('caller', 1)).toBe(true);
+    expect(await fileVersionStore(dir).takeDirectorCall('caller', 1)).toBe(false);
   });
 
   it('zápis nenechá v adresáři dočasné soubory', async () => {

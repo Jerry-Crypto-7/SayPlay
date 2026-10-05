@@ -758,6 +758,11 @@ export function fileVersionStore(dir: string, limits: WriteLimits = DEFAULT_WRIT
   return versionStoreOver('file', 'file', memoryRaw(state, now, (key) => saveMemoryKey(dir, state, key)), limits, now);
 }
 
+function restore<T>(map: Map<string, T>, key: string, value: T | undefined): void {
+  if (value === undefined) map.delete(key);
+  else map.set(key, value);
+}
+
 /** Příkazy úložiště nad stavem v paměti; `changed` dostane každý klíč, který se změnil nebo vypršel. */
 function memoryRaw(state: MemoryState, now: () => number, changed: (key: string) => void = () => undefined): RawStore {
   const { entries, expiresAt, lists, sets } = state;
@@ -770,10 +775,29 @@ function memoryRaw(state: MemoryState, now: () => number, changed: (key: string)
     }
     return entries.get(key) ?? null;
   };
+  /**
+   * Změna klíče platí, jen když ji `changed` zapíše (P40 T3a): selhaný zápis na disk
+   * vrátí klíč v paměti, jak byl, a chybu pustí dál. Jinak by hra po 503 zůstala
+   * jen v paměti a další `put` by ji ohlásil jako uloženou, než ji restart smaže.
+   */
+  const commit = (key: string, apply: () => void): void => {
+    const before = { value: entries.get(key), until: expiresAt.get(key), list: lists.get(key), set: sets.get(key) };
+    apply();
+    try {
+      changed(key);
+    } catch (thrown) {
+      restore(entries, key, before.value);
+      restore(expiresAt, key, before.until);
+      restore(lists, key, before.list);
+      restore(sets, key, before.set);
+      throw thrown;
+    }
+  };
   const write = (key: string, value: string, ttlSeconds: number): void => {
-    entries.set(key, value);
-    expiresAt.set(key, now() + ttlSeconds * 1000);
-    changed(key);
+    commit(key, () => {
+      entries.set(key, value);
+      expiresAt.set(key, now() + ttlSeconds * 1000);
+    });
   };
   /** Schodiště nejlepších (člen → hodnocení a čas zápisu) s expirací jako hodnoty. */
   const liveSet = (key: string): Map<string, { readonly rank: number; readonly at: number }> | undefined => {
@@ -799,13 +823,11 @@ function memoryRaw(state: MemoryState, now: () => number, changed: (key: string)
     // Počítadlo leží mezi hodnotami jako text, stejně jako v Redisu – `get` ho přečte.
     incr: (key) => {
       const next = Number(entries.get(key) ?? '0') + 1;
-      entries.set(key, String(next));
-      changed(key);
+      commit(key, () => entries.set(key, String(next)));
       return Promise.resolve(next);
     },
     pushCapped: (key, value, cap) => {
-      lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap));
-      changed(key);
+      commit(key, () => lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap)));
       return Promise.resolve();
     },
     head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
@@ -817,9 +839,10 @@ function memoryRaw(state: MemoryState, now: () => number, changed: (key: string)
       // Pořadí Redisu: hodnocení, při shodě člen podle bajtů; vrchol je poslední. Nový běh leží na indexu 0,
       // nad `keep` odejdou členové těsně nad ním – jako `ZREMRANGEBYRANK key 1 -keep`.
       kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
-      sets.set(key, new Map(kept.filter((_, index) => index === 0 || index > kept.length - keep)));
-      expiresAt.set(key, now() + ttlSeconds * 1000);
-      changed(key);
+      commit(key, () => {
+        sets.set(key, new Map(kept.filter((_, index) => index === 0 || index > kept.length - keep)));
+        expiresAt.set(key, now() + ttlSeconds * 1000);
+      });
       return Promise.resolve();
     },
     top: (key, count) => {
@@ -831,9 +854,10 @@ function memoryRaw(state: MemoryState, now: () => number, changed: (key: string)
       const kept = [...(liveSet(key) ?? [])].filter(([other]) => !drop.includes(other) && other !== member);
       kept.push([member, { rank, at }]);
       kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
-      sets.set(key, new Map(kept));
-      expiresAt.set(key, now() + ttlSeconds * 1000);
-      changed(key);
+      commit(key, () => {
+        sets.set(key, new Map(kept));
+        expiresAt.set(key, now() + ttlSeconds * 1000);
+      });
       return Promise.resolve();
     },
   };
