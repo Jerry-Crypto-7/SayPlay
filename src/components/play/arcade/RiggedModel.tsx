@@ -5,18 +5,22 @@
  * `SkeletonUtils.clone` – `clone(true)` by nechal skin ukazovat na kosti
  * originálu a všechny kopie by se hýbaly jako jedna. `AnimationMixer` běží
  * v `useFrame`, mimo hashovaný stav; klip volí scéna funkcí `clipOf` ze stavu
- * těla a tady se jen prolne. Stav, který postava klip nemá (hit u Kenney),
- * hraje nejbližší náhradu.
+ * těla a tady se jen prolne. Klipy mapuje manifest (P32C T2); stav, na který
+ * postava klip nemá (`procedural`, hit u Kenney), hraje nejbližší náhradu
+ * a pohyb stavu (poskok, zásah, pád) k ní dopočítá `proceduralPose`.
  */
 
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type AnimationAction, AnimationMixer, LoopOnce, type Object3D } from 'three';
+import { type AnimationAction, AnimationMixer, type Group, LoopOnce, type Object3D } from 'three';
 import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
-import type { RiggedCharacter } from '@/play/arcade/models';
+import { PROCEDURAL_CLIP, type RiggedCharacter } from '@/play/arcade/models';
 import type { ClipState } from '@/play/arcade/motion';
+
+import { HIT_S, fallOf, jumpStretchOf, landSquashOf, squashPose, tiltPose } from './characterMotion';
+import { mergeRig } from './look/load';
 
 /** Výška postavy v GLB – `scripts/assets/rigged/build.mjs` ji tak normalizuje. */
 const RIGGED_HEIGHT_M = 1.8;
@@ -36,12 +40,51 @@ const FALLBACK: Readonly<Record<ClipState, readonly ClipState[]>> = {
   die: ['die', 'idle'],
 };
 
+/**
+ * Pohyb stavu bez klipu, přičtený k postavě (`since` = sekundy ve stavu, `h` výška těla,
+ * `sinceLand` = sekundy od dopadu skoku bez klipu): běh poskakuje, skok se natáhne a dopad
+ * zmáčkne, zásah cukne dozadu a zakymácí, smrt postavu položí (P36C T8, `characterMotion.ts`).
+ * Klid nic nepřidá; dopad doznívá i do stavu, na který postava klip má.
+ */
+export function proceduralPose(group: Group, state: ClipState | null, since: number, h: number, sinceLand = Infinity): void {
+  group.position.y = state === 'run' ? h * 0.05 * Math.abs(Math.sin(since * 12)) : 0;
+  tiltPose(group, state === 'hit' ? since / HIT_S : 1, state === 'die' ? fallOf(since) : 0);
+  squashPose(group, state === 'jump' ? -jumpStretchOf(since) : landSquashOf(sinceLand));
+}
+
+/** Stav těla, jak dlouho v něm je a jak dávno dopadl skok bez klipu (s). */
+export interface HeldState {
+  readonly state: ClipState;
+  readonly since: number;
+  readonly sinceLand: number;
+}
+
+/**
+ * Jeden snímek `useFrame` pro pohyb bez klipu: čas ve stavu roste, nový stav ho
+ * vynuluje, a `proceduralPose` dostane stav jen tehdy, když na něj postava klip nemá.
+ * Skok bez klipu, který skončí během nebo klidem, je dopad.
+ */
+export function poseTick(group: Group | null, held: HeldState | null, now: ClipState, hasClip: (state: ClipState) => boolean, step: number, h: number): HeldState {
+  const landed = held?.state === 'jump' && (now === 'run' || now === 'idle') && !hasClip('jump');
+  const sinceLand = landed ? 0 : (held?.sinceLand ?? Infinity) + step;
+  const next = held?.state === now ? { state: now, since: held.since + step, sinceLand } : { state: now, since: 0, sinceLand };
+  if (group !== null) proceduralPose(group, hasClip(now) ? null : now, next.since, h, sinceLand);
+  return next;
+}
+
 const cache = new Map<string, Promise<GLTF | null>>();
 
 function loadRigged(path: string): Promise<GLTF | null> {
   let pending = cache.get(path);
   if (pending === undefined) {
-    pending = new GLTFLoader().loadAsync(path).catch(() => null);
+    // Slít jednou na načtený model (P36C T9): klony z `cloneSkinned` pak nesou jednu síť na materiál.
+    pending = new GLTFLoader()
+      .loadAsync(path)
+      .then((gltf) => {
+        mergeRig(gltf.scene);
+        return gltf;
+      })
+      .catch(() => null);
     cache.set(path, pending);
   }
   return pending;
@@ -59,6 +102,7 @@ export function RiggedModel({
   clip,
   onClip,
   fallback,
+  yaw,
 }: {
   readonly character: RiggedCharacter;
   /** Výška těla (m); postava se do ní vepíše. */
@@ -68,6 +112,8 @@ export function RiggedModel({
   /** Klip, který opravdu začal hrát (po náhradě). */
   readonly onClip?: (state: ClipState) => void;
   readonly fallback: string;
+  /** Natočení po směru pohybu (rad kolem y) – kde ho scéna nedrží sama nad modelem. */
+  readonly yaw?: () => number;
 }) {
   const [gltf, setGltf] = useState<GLTF | null | undefined>(undefined);
   useEffect(() => {
@@ -86,6 +132,7 @@ export function RiggedModel({
     const mixer = new AnimationMixer(scene);
     const actions = new Map<ClipState, AnimationAction>();
     for (const [state, name] of Object.entries(character.clips) as [ClipState, string][]) {
+      if (name === PROCEDURAL_CLIP) continue;
       const source = gltf.animations.find((animation) => animation.name === name);
       if (source === undefined) continue;
       const action = mixer.clipAction(source);
@@ -109,9 +156,16 @@ export function RiggedModel({
   );
 
   const playing = useRef<ClipState | null>(null);
+  const holder = useRef<Group>(null);
+  /** Stav těla a jak dlouho v něm je – pro pohyb stavu, na který postava klip nemá. */
+  const held = useRef<HeldState | null>(null);
   useFrame((_, delta) => {
     if (rig === null) return;
-    const wanted = FALLBACK[clip()].find((state) => rig.actions.has(state)) ?? 'idle';
+    const now = clip();
+    const step = Math.min(delta, MAX_MIXER_STEP_S);
+    held.current = poseTick(holder.current, held.current, now, (state) => rig.actions.has(state), step, h);
+    if (yaw !== undefined && holder.current !== null) holder.current.rotation.y = yaw();
+    const wanted = FALLBACK[now].find((candidate) => rig.actions.has(candidate)) ?? 'idle';
     if (wanted !== playing.current) {
       const next = rig.actions.get(wanted);
       const before = playing.current === null ? undefined : rig.actions.get(playing.current);
@@ -124,10 +178,16 @@ export function RiggedModel({
     }
     // Pauza a konec běhu kreslí na požádání (P28E T2): první snímek po nich nese celou
     // dobu stání a animace by přes ni skočila. Stání se nepřehrává.
-    rig.mixer.update(Math.min(delta, MAX_MIXER_STEP_S));
+    rig.mixer.update(step);
   });
 
-  if (rig !== null) return <primitive object={rig.scene} scale={h / RIGGED_HEIGHT_M} />;
+  if (rig !== null) {
+    return (
+      <group ref={holder}>
+        <primitive object={rig.scene} scale={h / RIGGED_HEIGHT_M} />
+      </group>
+    );
+  }
   return (
     <mesh position={[0, h / 2, 0]}>
       <boxGeometry args={[h * 0.4, h, h * 0.4]} />

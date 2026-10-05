@@ -1,0 +1,16 @@
+# Čtvrtá dávka, druhá část: slova, která dávka přeskočí, protože je zapsala už první dávka 26. 9.
+# (tehdy rozsypané sítě, v QA zamítnuté). Nový název = nový pokus. Tvar: předmět  # původní slovo.
+green frog  # frog
+red squirrel  # squirrel
+ninja warrior  # ninja
+snow yeti  # yeti
+white snowball  # snowball
+soccer goalkeeper  # goalkeeper
+chocolate chip cookie  # cookie
+yellow submarine  # submarine
+pirate captain  # pirate
+red ant  # ant
+garden snail  # snail
+wrapped candy  # candy
+snowman with hat  # snowman
+black hole portal  # black hole

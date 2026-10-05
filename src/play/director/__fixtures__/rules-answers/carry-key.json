@@ -1,0 +1,24 @@
+{
+  "sentence": "carry the golden key to the castle door and climb the tower stairs",
+  "answer": {
+    "plan": "Walk around the yard; carrying and opening are verbs move_free cannot play, so rules add them.",
+    "control": "move_free",
+    "addons": [],
+    "look": null,
+    "setting": "castle courtyard at dusk",
+    "title": "The Locked Tower",
+    "labels": [{ "role": "player", "label": "knight" }],
+    "goal": "Carry the key to the door and climb the stairs.",
+    "ruleRoles": [
+      { "id": "key", "kind": "key", "label": "golden key", "count": null },
+      { "id": "door", "kind": "door", "label": "castle door", "count": null },
+      { "id": "stairs", "kind": "exit", "label": "tower stairs", "count": null }
+    ],
+    "things": [],
+    "rules": [
+      { "id": "take_key", "verb": "carry", "when": { "contact": ["player", "key"] }, "if": [{ "notHolding": true }], "do": [{ "grab": "other" }] },
+      { "id": "open_door", "verb": "open", "when": { "contact": ["player", "door"] }, "if": [{ "holding": "key" }], "do": [{ "toggle": "door" }, { "despawn": "held" }] },
+      { "id": "climb", "verb": "climb", "when": { "contact": ["player", "stairs"] }, "if": null, "do": [{ "win": true }] }
+    ]
+  }
+}

@@ -254,7 +254,8 @@ const propertyTransformParams = z
     afterSeconds: seconds.default(10),
   })
   .strict();
-const healthParams = z.object({ max: z.int().min(1).max(5) }).strict();
+/** Životy 1–9 (P36A T2: věta smí říct „with 7 lives“, `LIVES_RANGE` arkády). */
+const healthParams = z.object({ max: z.int().min(1).max(9) }).strict();
 const defeatParams = z.object({ role: roleRef, count: z.int().min(1).max(12), hitsPerTarget: z.int().min(1).max(3) }).strict();
 
 export const MECHANICS = {

@@ -19,10 +19,16 @@ import { Vector3 } from 'three';
 import { BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { DUEL, DUEL_FOE, DUEL_PHASE } from '@/play/arcade/pieces/duel';
+import type { HeroAction } from '@/play/spec';
 
+import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
+import { UNDER_PANORAMA } from '../look/under-panorama';
+import { HeroActionBody } from '../hero-action/HeroActionBody';
+import { InkOutline } from '../look/rig/InkOutline';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { DUEL_ZONES, zoneAt } from '../touch-zones';
 import { initialBody } from '../timing/TimingScene';
 
 const STRIKE_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
@@ -43,7 +49,7 @@ export function useDuelInput(session: ArcadeSession, target: React.RefObject<HTM
     };
     const onDown = (event: PointerEvent) => {
       const box = element.getBoundingClientRect();
-      session.press((event.clientX - box.left) / Math.max(1, box.width) >= 0.5 ? BUTTON.TAP : BUTTON.DOWN);
+      session.press(zoneAt(DUEL_ZONES, (event.clientX - box.left) / Math.max(1, box.width)) === 1 ? BUTTON.TAP : BUTTON.DOWN);
     };
     window.addEventListener('keydown', onKey);
     element.addEventListener('pointerdown', onDown);
@@ -107,9 +113,23 @@ function Figure({ fighter, color, facing, w, h, model }: { readonly fighter: Fig
 /** Model soupeře vepsaný do jeho těla (m); scéna arkády ho dodá, když popisek model jmenuje. */
 export type RivalModel = (w: number, h: number, d: number) => React.ReactNode;
 
-export function DuelScene({ session, look: scene, rivalModel }: { readonly session: ArcadeSession; readonly look: Look; readonly rivalModel?: RivalModel }) {
+export function DuelScene({
+  session,
+  look: scene,
+  rivalModel,
+  heroAction,
+  ghost,
+}: {
+  readonly session: ArcadeSession;
+  readonly look: Look;
+  readonly rivalModel?: RivalModel;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
+}) {
   const world = session.world;
   const hero = initialBody(world, 0);
+  // Boční kamera vidí ring podél z: duch stojí za hrdinou, dál od soupeře.
+  const ghostSpot = useMemo(() => besideHero(0, hero.z, hero.w / 2, 'z'), [hero.z, hero.w]);
   const rival = initialBody(world, DUEL_FOE);
   const player: Fighter = { body: useRef(null), arm: useRef(null), material: useRef(null) };
   const foe: Fighter = { body: useRef(null), arm: useRef(null), material: useRef(null) };
@@ -151,13 +171,11 @@ export function DuelScene({ session, look: scene, rivalModel }: { readonly sessi
 
   return (
     <>
-      <color attach="background" args={[scene.sky]} />
-      <hemisphereLight args={['#e2e8f0', '#0f172a', 1]} />
-      <directionalLight position={[-6, 10, -2]} intensity={1.5} />
+      {/* Obloha, mlha, světla, stín a ladění jsou rigu (`look/rig/StyleRig.tsx`, P37B T3). */}
       {/* Prostředí (P27A T4): zem sady a kulisy za ringem – boční kamera na −x je vidí za soupeři. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.12, midZ]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.12, midZ]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[60, 60]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
       </mesh>
       <Scenery look={scene} layout="behind" inner={4} from={midZ - 12} to={midZ + 12} />
       <mesh position={[0, -0.1, midZ]}>
@@ -166,9 +184,16 @@ export function DuelScene({ session, look: scene, rivalModel }: { readonly sessi
       </mesh>
       {/* Sonda záběru (P27A T6): hráč je hrdina, soupeř cíl. */}
       <group position={[0, 0, hero.z]} userData={{ frame: 'hero' }}>
-        <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
+        <InkOutline ink="hero" />
+        {/* Činnost hrdiny (P37B T2) – `none` nechá postavu beze změny stromu. */}
+        <HeroActionBody action={heroAction} session={session} h={hero.h}>
+          <Figure fighter={player} color="#2563eb" facing={1} w={hero.w} h={hero.h} />
+        </HeroActionBody>
       </group>
-      <group position={[0, 0, rival.z]} userData={{ frame: 'target' }}>
+      {/* Slot ducha (P37-0 T3) vedle hrdiny, ne v jeho skupině. */}
+      <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
+      <group position={[0, 0, rival.z]} userData={{ frame: 'target', item: 'rival' }}>
+        <InkOutline ink="foe" />
         {/* Model hledí k hráči (−z). */}
         <Figure fighter={foe} color={PHASE_COLOR[DUEL_PHASE.ready]!} facing={-1} w={rival.w} h={rival.h} model={rivalModel === undefined ? undefined : <group rotation={[0, Math.PI, 0]}>{rivalModel(rival.w, rival.h, rival.d)}</group>} />
       </group>

@@ -6,7 +6,7 @@
  * a při změně seznam postaví znovu.
  */
 
-import { BODY, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
+import { BODY, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
 
 import type { ArcadeSession } from './session';
 
@@ -18,6 +18,13 @@ export interface BodyView {
   readonly h: number;
   readonly d: number;
 }
+
+/**
+ * Tělo, které scéna nekreslí: neviditelná branka poletování a holá role `thing` –
+ * počítadlo komba (P36A T5, `withScoring` v `compile.ts`) nese druh hrdiny, takže
+ * by scéna stahovala neexistující `player-lod1.glb`. Věci pravidel mají vlastní kód role od 32.
+ */
+export const drawsNothing = (view: Pick<BodyView, 'kind' | 'role'>): boolean => view.kind === 'gate' || view.role === ROLE.thing;
 
 const kindOf = (session: Pick<ArcadeSession, 'world'>, code: number): string => session.world.kinds[code] ?? 'crate';
 

@@ -15,11 +15,11 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { arcadeReport, verifyArcade } from '@/play/arcade/verify';
+import { loadRapier } from '@/play/arcade/physics/world';
 import { compileGame } from '@/play/compile';
 import { draftGameSpec } from '@/play/draft';
 import { readGameSpec } from '@/play/spec';
-import { verifyGame } from '@/play/verify';
+import { reportFor } from '@/app/api/play/_report';
 
 import { goldenPrompts } from '../golden';
 
@@ -27,16 +27,37 @@ const ARTIFACT = fileURLToPath(new URL('./report.json', import.meta.url));
 const TABLE = fileURLToPath(new URL('./report.md', import.meta.url));
 const SEED = 1;
 
-/** Naměřeno prvním během 21. 9. 2026 – pin, ne dolní strop z AC. */
-const PIN = { specValid: 40, compiled: 40, eligible: 40, archetypeHits: 32 } as const;
+/**
+ * Naměřeno prvním během 21. 9. 2026 – pin, ne dolní strop z AC. Od P32B T2 jde
+ * návrh přes žánr a archetyp mřížky nevybírá, trefa se proto měří žánrem, který
+ * kbelík věty slibuje (týž slib jako startovní karty). 26/32 naměřeno 29. 9.
+ * 2026: šest vět hraje žánr svého slovesa – běžce („Run a lap“, „Sprint
+ * through“, „Cross a frozen lake“, „Last 90 seconds“) nebo úkol („Destroy“,
+ * „Hit every wasp nest“).
+ */
+const PIN = { specValid: 40, compiled: 40, eligible: 40, genreHits: 26 } as const;
 const P90_COMPILE_MS_CAP = 1000;
+
+/** Žánr a režim, který kbelík archetypu slibuje (`starters.test.ts`). */
+const BUCKET_GENRE: Readonly<Record<string, string>> = {
+  chase_escape: 'arena.escape',
+  collect_exit: 'arena.collect',
+  survival_timer: 'arena.escape',
+  checkpoint_race: 'voyage.race',
+  delivery: 'quest.spatial',
+  switch_puzzle: 'quest.spatial',
+  hazard_crossing: 'platformer.default',
+  combat_lite: 'arena.fight',
+};
 
 interface Row {
   readonly id: string;
   readonly bucket: string;
   readonly archetype: string | null;
   readonly expectArchetype: string | null;
-  readonly archetypeHit: boolean | null;
+  /** `žánr.režim` návrhu; `null`, když návrh žánr nemá. */
+  readonly genre: string | null;
+  readonly genreHit: boolean | null;
   readonly specValid: boolean;
   readonly compiled: boolean;
   readonly reason: string | null;
@@ -61,7 +82,7 @@ interface Report {
     readonly compiled: number;
     readonly eligible: number;
     readonly total: number;
-    readonly archetypeHits: number;
+    readonly genreHits: number;
     readonly withExpect: number;
     readonly medianCompileMs: number;
     readonly p90CompileMs: number;
@@ -83,26 +104,28 @@ function measure(entry: ReturnType<typeof goldenPrompts>[number]): Row {
   const base = { id: entry.id, bucket: entry.bucket, expectArchetype: entry.expectArchetype, draftMs };
   const none = { compiled: false, publishEligible: false, keypointsPassed: 0, winsAtTick: null, entities: null, rules: null, verifyMs: 0 };
   if (!read.ok) {
-    return { ...base, ...none, archetype: null, archetypeHit: null, specValid: false, reason: read.reason, keypointsTotal: 0, compileMs: 0 };
+    return { ...base, ...none, archetype: null, genre: null, genreHit: null, specValid: false, reason: read.reason, keypointsTotal: 0, compileMs: 0 };
   }
   const spec = read.value;
   const archetype = spec.archetype;
-  const archetypeHit = entry.expectArchetype === null ? null : archetype === entry.expectArchetype;
+  const genre = spec.genre === undefined ? null : `${spec.genre.id}.${spec.genre.mode}`;
+  const promised = entry.expectArchetype === null ? undefined : BUCKET_GENRE[entry.expectArchetype];
+  const genreHit = promised === undefined ? null : genre === promised;
   const compileStarted = performance.now();
   const compiled = compileGame(spec, SEED);
   const compileMs = round(performance.now() - compileStarted);
   if (!compiled.ok) {
-    return { ...base, ...none, archetype, archetypeHit, specValid: true, reason: `${compiled.reason}: ${compiled.issues.join('; ')}`, keypointsTotal: spec.verification.length, compileMs };
+    return { ...base, ...none, archetype, genre, genreHit, specValid: true, reason: `${compiled.reason}: ${compiled.issues.join('; ')}`, keypointsTotal: spec.verification.length, compileMs };
   }
   const verifyStarted = performance.now();
-  // Arkádu (P28D: návrh volí nejbližší arkádovou hru) ověřuje táž cesta jako publikace (`_report.ts`).
-  const arcade = compiled.value.arcade;
-  const quality = arcade === undefined ? verifyGame(compiled.value) : arcadeReport(verifyArcade(arcade), arcade, compiled.value);
+  // Táž výhybka jako publikace: arkádová hra (P28D T1 k ní návrh vede častěji) jde přes `verifyArcade`.
+  const quality = reportFor(compiled.value);
   const verifyMs = round(performance.now() - verifyStarted);
   return {
     ...base,
     archetype,
-    archetypeHit,
+    genre,
+    genreHit,
     specValid: true,
     compiled: true,
     reason: null,
@@ -130,16 +153,17 @@ function table(report: Report): string {
     '',
     `Naměřeno ${report.measuredAt}, semínko ${String(report.seed)}, bez modelu (návrh ze slov). Generuje \`golden.test.ts\`.`,
     '',
-    `Spec platný ${String(summary.specValid)}/${String(summary.total)} · zkompilováno ${String(summary.compiled)}/${String(summary.total)} · publikovatelné ${String(summary.eligible)}/${String(summary.total)} · archetyp trefen ${String(summary.archetypeHits)}/${String(summary.withExpect)} · kompilace medián ${String(summary.medianCompileMs)} ms, p90 ${String(summary.p90CompileMs)} ms`,
+    `Spec platný ${String(summary.specValid)}/${String(summary.total)} · zkompilováno ${String(summary.compiled)}/${String(summary.total)} · publikovatelné ${String(summary.eligible)}/${String(summary.total)} · žánr trefen ${String(summary.genreHits)}/${String(summary.withExpect)} · kompilace medián ${String(summary.medianCompileMs)} ms, p90 ${String(summary.p90CompileMs)} ms`,
     '',
-    '| id | kbelík | archetyp | trefa | kompilace | publikovatelné | keypointy | výhra (tik) | entity | pravidla | kompilace ms | kontrola ms |',
-    '|---|---|---|---|---|---|---|---|---|---|---|---|',
+    '| id | kbelík | archetyp | žánr | trefa | kompilace | publikovatelné | keypointy | výhra (tik) | entity | pravidla | kompilace ms | kontrola ms |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|---|',
     ...report.rows.map((row) =>
       [
         row.id,
         row.bucket,
         row.archetype ?? '–',
-        row.archetypeHit === null ? '–' : row.archetypeHit ? 'ano' : '**ne**',
+        row.genre ?? '–',
+        row.genreHit === null ? '–' : row.genreHit ? 'ano' : '**ne**',
         row.compiled ? 'ano' : `**ne** (${row.reason ?? ''})`,
         row.publishEligible ? 'ano' : '**ne**',
         `${String(row.keypointsPassed)}/${String(row.keypointsTotal)}`,
@@ -165,7 +189,7 @@ describe('regression harness – forty golden sentences, draft only', () => {
       compiled: rows.filter((row) => row.compiled).length,
       eligible: rows.filter((row) => row.publishEligible).length,
       total: rows.length,
-      archetypeHits: rows.filter((row) => row.archetypeHit === true).length,
+      genreHits: rows.filter((row) => row.genreHit === true).length,
       withExpect: rows.filter((row) => row.expectArchetype !== null).length,
       medianCompileMs: round(quantile(compileTimes, 0.5)),
       p90CompileMs: round(quantile(compileTimes, 0.9)),
@@ -180,11 +204,44 @@ describe('regression harness – forty golden sentences, draft only', () => {
     expect(summary.specValid).toBe(PIN.specValid);
     expect(summary.compiled, failures.join('\n')).toBeGreaterThanOrEqual(PIN.compiled);
     expect(summary.eligible, failures.join('\n')).toBeGreaterThanOrEqual(PIN.eligible);
-    expect(summary.archetypeHits).toBeGreaterThanOrEqual(PIN.archetypeHits);
+    expect(summary.genreHits).toBeGreaterThanOrEqual(PIN.genreHits);
     expect(summary.p90CompileMs).toBeLessThanOrEqual(P90_COMPILE_MS_CAP);
 
     const report: Report = { schema: 'play-regression-report.v1', measuredAt: new Date().toISOString(), seed: SEED, rows, summary };
     writeFileSync(ARTIFACT, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
     writeFileSync(TABLE, table(report), 'utf8');
   }, 180_000);
+});
+
+/**
+ * Šest ručních her pravidel (P29A T14) a jedna s fyzikou: každá se zkompiluje,
+ * je publikovatelná a robot v ní vystřelí **každé** sloveso. Tiché přepsání
+ * verdiktu by jinak vypadalo jako hra, která jde – jen bez slovesa z věty.
+ */
+describe('regression harness – rules fixtures', () => {
+  const RULES_FIXTURES = ['carry-key', 'throw-rock', 'push-crate', 'give-flower', 'lever-bridge', 'collect-gate'] as const;
+  const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`../../../src/play/arcade/__fixtures__/rules/${name}.json`, import.meta.url), 'utf8'));
+
+  function verdictOf(raw: unknown): string {
+    const read = readGameSpec(raw);
+    if (!read.ok) return `spec: ${read.reason}`;
+    const compiled = compileGame(read.value, SEED);
+    if (!compiled.ok) return `${compiled.reason}: ${compiled.issues.join('; ')}`;
+    const quality = reportFor(compiled.value);
+    if (!quality.publishEligible) return 'not publishable';
+    const verbs = quality.verbs ?? [];
+    const silent = verbs.filter((proof) => !proof.fired).map((proof) => proof.verb);
+    if (verbs.length === 0) return 'no verbs';
+    return silent.length > 0 ? `unfired: ${silent.join(', ')}` : 'ok';
+  }
+
+  it.each(RULES_FIXTURES)('%s compiles, publishes and fires every verb', (name) => {
+    expect(verdictOf(fixture(name))).toBe('ok');
+  });
+
+  it('throw-rock with a physics rock does the same once Rapier is loaded', async () => {
+    const raw = { ...(fixture('throw-rock') as Record<string, unknown>), things: [{ role: 'rock', physics: true }] };
+    await loadRapier();
+    expect(verdictOf(raw)).toBe('ok');
+  });
 });

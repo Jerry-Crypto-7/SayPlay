@@ -1,0 +1,26 @@
+{
+  "schema": "catalog-batch.v1",
+  "entries": [
+    {
+      "id": "acorn",
+      "nouns": ["acorn", "nut"],
+      "glb": "D:/caches/p37d/acorn/acorn-lod0.glb",
+      "lod1": "D:/caches/p37d/acorn/acorn-lod1.glb",
+      "bounds": [0.42, 0.61, 0.42],
+      "palette": ["#8a5a2b", "#c48a3f", "#4f6b2a"],
+      "source": { "pipeline": "ops/gen3d", "imageModel": "FLUX.2-klein-4B", "shapeModel": "TRELLIS.2-4B", "seed": 1337 },
+      "licence": "LicenseRef-Worldsmith-Generated",
+      "checked": { "judge": "blind-sheet", "verdict": "pass" }
+    },
+    {
+      "id": "alien-bug",
+      "nouns": ["alien bug", "alien"],
+      "glb": "D:/caches/p37d/alien-bug/alien-bug-lod0.glb",
+      "bounds": [0.9, 0.5, 1.1],
+      "palette": ["#3f8f4a", "#d9c24a"],
+      "source": { "pipeline": "ops/gen3d", "imageModel": "Z-Image-Turbo", "shapeModel": "TRELLIS.2-4B", "seed": 7 },
+      "licence": "LicenseRef-Worldsmith-Generated",
+      "checked": { "judge": "blind-sheet", "verdict": "fail" }
+    }
+  ]
+}

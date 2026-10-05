@@ -88,6 +88,20 @@ Výsledek má tvar `QualityReport` (`src/play/contracts.ts`), takže publikace, 
 
 Hotové: `runner` (P25A), `platform` a `flap` (P25C). Ostatní řádky jsou plán fází 2–4 řídicího plánu.
 
+## Živé změny (P29D)
+
+Věta uprostřed hry („more enemies“, „make it rain“) mění běžící relaci bez nové adresy. Jádro se kvůli tomu nemění (`src/play/arcade/live.ts`):
+
+- **Záznam:** živá změna je `{tick, patch}` v logu relace vedle vstupů. V tiku, na který padla, se promění v existující `ArcadeEffect` (`spawn`, `count`), který vydá jednorázové pravidlo `tick` přidané k programu jen pro ten krok – efekty aplikuje jádro samo.
+- **Povolené patche:**
+  - `spawn` role, kterou hra už má – hrozby a sběr (`enemy`, `obstacle`, `hazard`, `collectible`, `chaser`), 1–5 najednou, aspoň 5 m od hráče (na trati před ním). Chybí-li ve stavu místo, stav se prodlouží.
+  - `count` – životy (1–3, jen s pravidlem `out_of_health`), náboje (1–20, jen když hra náboje má) a čas (1–30 s, jen s `time_limit` – přepíše parametr pravidla od toho tiku dál).
+  - `visual` – počasí (déšť, sníh, mlha) a denní doba. Do stavu nesahá, žije jen v logu (`visualAt`), hash nemění.
+- **Replay:** `replayLive` přehraje vstupy i patche od tiku 0 a dá týž hash jako živý běh; bez patchů je to přesně `replay` jádra, takže staré připíchnuté hashe drží. Patch o tik později dá jiný hash (test to drží).
+- **Ověření:** `acceptLive` přijme patch, jen když dává smysl pro tuhle hru (`patchProblem`, anglická hláška pro hráče) a robot ověřovače hru s ním pořád vyhraje. Robot hraje nejdřív od tiku 0; když patch nepotká (vyhrál dřív, nebo ho jeho stav nevzal), dohraje hru ze stavu hráče. Prohraje-li odtud i bez patche, patch se odmítne jako neověřitelný (`The game cannot check that change from here.`).
+- **Co jde remixem:** nová role, nové ovládání, jiný svět – `director/live-intent.ts` to pozná a spustí dnešní remix na novou verzi, hotovou ukáže čip `remix-ready`. Věta, kterou nejde přečíst, dostane poctivé „nerozumím“ s příklady, ne tichou změnu. Věta napůl („rain and extra life“ v běžci bez životů) provede, co jde, a řekne `Done in part.`
+- **Sdílení:** `liveRemixSpec` převede živé změny na spec dítěte (počty rolí od skutečného startu hry, počasí a denní doba do `theme`). Hra ho publikuje dopředu 800 ms po poslední změně přes `POST …/remix`, takže Share nečeká na síť. Co do specu nejde (životy, čas, běžec nad stropem 50 mincí), zůstane jen v běhu a hráč se to dozví.
+
 ## Výkon
 
 Krok jádra (22. 9. 2026, čistý Node 22, bundle přes rolldown, fixtura běžce, 5 semínek × 5 opakování, 600 tiků se vstupy robota): **medián 0,0024 ms/tik, nejhorší vzorek 0,013 ms/tik** – cíl < 1 ms drží s rezervou ~80×. Pod vitestem je jádro ~15× pomalejší (importy jsou gettery), proto se neměří tam.
@@ -95,3 +109,49 @@ Krok jádra (22. 9. 2026, čistý Node 22, bundle přes rolldown, fixtura běžc
 Plošinovka a poletování (22. 9. 2026, P25C T6, pod vitestem a souběžně s `npm run build`, fixtury `platform.json` a `flap.json`, 5 opakování × 600 tiků se vstupy robota): **plošinovka 0,0035–0,0059 ms/tik, poletování 0,0030–0,0047 ms/tik** (běžec týmž měřením 0,0047–0,0075, první zahřívací vzorek 0,037). I se ~15× přirážkou vitestu cíl < 1 ms drží s rezervou přes 150×.
 
 Prohlížeč: `ArcadeStage` tiká pevným krokem 1/60 s z `useFrame` (akumulátor, strop 250 ms na snímek – skrytá záložka hru nedohraje) a těla interpoluje mezi dvěma posledními tiky. Scéna podle `control`: běžec kamera za hráčem, plošinovka a poletování boční kamera (stojí na −x, +z jde doprava; na výšku ustoupí, aby byla vidět trať vpředu). Plošinovka drží osu (`session.hold`, zapisuje se do každého tiku, kdy je nenulová); dotyk: levá čtvrtina vlevo, druhá vpravo, pravá polovina skok. Poletování čeká na první ťuk (`waitForInput`), jinak by ptáček spadl dřív, než ho hráč uvidí.
+
+## Prostředí (P29C)
+
+Za každou hrou (arkáda, grid, timing, rhythm, duel) visí 360° panorama prostředí z věty místo jedné ploché barvy oblohy. Je to jen obraz: jádro, hash replaye ani robot ověřovače o něm neví.
+
+**Knihovna.** `public/assets/worldstream/env/` – 94 panoramat 2048×1024 (+ náhled 512×256, ~20 MB), 18 looků × 3 varianty a 40 prostředí z korpusů. Katalog `src/play/arcade/look/env-catalog.json` nese id, look, štítky (slova prostředí, která obraz ukazuje) a barvu horizontu. Generuje je lokálně `ops/env` (FLUX.2 klein 4B, Apache-2.0).
+
+**Výběr.** `envFor(theme, seed)` (`src/play/arcade/look/env.ts`) vezme panorama, které nese nejvíc slov z `theme.setting` („snowy forest“ → sníh i les); když žádné, jednu ze tří variant `lookOf(theme)`. Seed je hash id verze, takže tatáž hra má vždy totéž pozadí. Nad 33 větami korpusu věrnosti, jejichž checklist prostředí jmenuje, ukáže pozadí slovo prostředí u **27 (0,818)**; všech šest minutí vzniká už v návrhu ze slov, který slovo z věty do `setting` nepřenese (`evals/play/env/README.md`).
+
+**Obraz.** `Panorama.tsx` je koule kolem kamery (poloměr 0,9 × vzdálená rovina), kreslená první, bez mlhy a bez zápisu hloubky. Stahuje se až po prvním snímku – nejdřív náhled, pak plné – a mlha se pak srovná s horizontem panoramatu. Plátno nese `data-env` (id na obrazovce). Kontext `PlayEnv` dává obal hry (`PlayShell`, feed) v samostatném `play-env.tsx` a grid načítá Panoramu líně: statický import vtáhl `@react-three/fiber` do úvodního balíku stránky gridu a první snímek se zpozdil o 31 %. Po úpravě první snímek (desktop, medián): runner 522 → 507 ms, grid 710 → 684 ms.
+
+**Nové prostředí na požádání.** Hra, jejíž prostředí žádný štítek knihovny nenese, založí při publikaci úlohu na službě `ops/env/server.py` (lokální RTX 3090, za klíčem, `PLAY_ENV_ENDPOINT` + `PLAY_ENV_KEY`; neblokuje, `after()`). `GET /api/play/games/:id/env` vrací `library | pending | ready | failed | unavailable` a hotové obrázky přeposílá (`?file=full|low`), takže klíč služby prohlížeč nevidí. Route je bezstavová: služba drží jednu úlohu na prostředí a hotové čte z cache na disku. Panorama se ptá každých 5 s nejvýš 5 minut a hotové vymění bez přenačtení stránky. Selhaná úloha drží ve službě hodinu, aby ji dotazy klientů nepouštěly na kartu znovu. Bez služby, po chybě nebo s pákou `env` (či `all`) ve vypínači zůstává knihovní panorama.
+
+**Splat ne.** Gaussian splat (FlashWorld → Spark) byl podmíněná vrstva nad panoramatem. Váhy FlashWorld jsou CC-BY-NC-SA-4.0, což `RULES.md` §4 nepovoluje (`evals/play/env/flashworld.md`), takže vrstva nevznikla.
+
+## Pravidla (P29A)
+
+Sloveso z věty, které žádný dílek neumí, dopíše pravidlo – **data, ne kód**. Jazyk je v `src/play/arcade/rules/schema.ts`, ve specu pole `rules[]` (nejvýš 16 = `ARCADE_LIMITS.maxRules`) a `things[]`.
+
+Pravidlo = `{ id, verb, when, if?, do[] }`. Na tělesa odkazuje **jménem role** (`player` nebo `roles[].id`), nikdy indexem. Jen celá čísla, žádné výrazy ani smyčky.
+
+| Část | Tvary |
+|---|---|
+| `when` (spouštěč) | `{contact:[roleA,roleB]}` (dotyk, jedna role smí být `player`) · `{press:'action'\|'alt'}` · `{every:n}` (tiky) · `{counter:{name,atLeast}}` · `{hit:role}` (projektil zasáhl) |
+| `if[]` (vše musí platit) | `{holding:role}` · `{notHolding:true}` · `{counter:{name,atLeast\|below}}` · `{near:{role,within}}` (metry; vybere i tělo `other`) |
+| `do[]` (efekty) | `score` · `damage` · `win` · `lose` · `despawn:'other'\|'self'\|'held'` · `spawn:{role,at:'player'\|'other'}` · `count:{counter,amount}` · `respawn` · `checkpoint` · `grab` · `release` · `throwHeld` · `push` · `toggle:role` |
+
+`other` = druhá role kontaktu, zasažené tělo, nebo tělo z `near`; `self` = první role kontaktu, který není hráč; `held` = co hráč nese. Čítače pravidel: `score`, `items`, `health`. `things[]` = `{role, start:'present'|'hidden'}` – skryté tělo (most) se ukáže až po `toggle`.
+
+`verb` je jedno anglické slovo malými písmeny. Robot ho musí během vítězného běhu uvidět vystřelit, jinak hra neprojde (`VERB_UNPROVED`).
+
+### Důkaz slovesa
+
+`step(…, trace)` hlásí index pravidla pokaždé, když vydá efekt; `runBot` si pamatuje první tik výstřelu a `verifyArcade` z toho skládá `verbs[]` (`{verb, fired}`) v pořadí prvního výskytu. Kritik vrátí nevystřelené sloveso do opravného kola režiséra, `fidelityChain` počítá sloveso za čtené a kreslené až po výstřelu. Hash ani replay stopu nevidí. Regrese: `evals/play/regression/golden.test.ts` drží, že šest ručních her z `src/play/arcade/__fixtures__/rules/` (a hod kamenem s fyzikou) se zkompiluje, publikuje a vystřelí každé sloveso.
+
+### Fyzika (Rapier)
+
+`things[]` s `physics: true` udělá z věci pravidel fyzikální těleso (`FLAG.physics`): padá, klouže, odráží se a převrací věže. Hýbe s ním `@dimforge/rapier3d-compat` (`src/play/arcade/physics/step.ts`), ostatní dál jádro.
+
+- **Stav zůstává v `Int32Array`.** Svět Rapieru patří jedné instanci stavu a vzniká při prvním tiku. Fáze běží mezi `integrate`/`settle` a `collide`; po ní jsou poloha a rychlost kvantované do jednotek, natočení v `aux0/aux1` (`packRotation`, qx|qy a qz|(10000 − qw) po 16 bitech). Co mezitím přepíše jádro nebo efekt (strčení, zvednutí, hod, návrat), Rapier převezme před dalším krokem. Hry bez fyziky fázi nespustí a mají staré hashe.
+- **Tik = 4 kroky Rapieru po 1/240 s** (`PHYSICS_SUBSTEPS`, jedna iterace řešiče). Jeden krok 1/60 s nechal míč zapadnout 13 cm pod zem; měkké CCD zapadnutí zastavilo, ale spolklo odraz. Gravitace se po podkrocích sčítá tak, že poloha za tik klesne o `g·5/8`, ne o celé `g` – s tím počítá `throwFlight(plan, true)`, které let fyzikálního míče předpoví do 1 jednotky až po tik dopadu.
+- **Nesené těleso** Rapier vypne a veze ho hráč; `release`/`throwHeld` ho vrátí s rychlostí ze stavu, jádro mu gravitaci ani tření nepřidá. Hráč v Rapieru není, jeho kolize řeší jádro; ostatní pevná tělesa jsou kinematické překážky.
+- **Determinismus:** Node a Chromium dávají bit po bitu totéž (T11, `evals/play/rules/rapier.md`).
+- **Načítání jen když je potřeba.** Modul se importuje dynamicky (`loadRapier`, ~0,6 MB). Jádro je synchronní, takže `compileArcade` svět s fyzikou bez načteného Rapieru odmítne (`preloadPhysics(spec)` napřed) a `ArcadePlay` počká na `usePhysicsReady`. Hra bez fyziky modul nestáhne (`physics-lazy.test.ts`). Server ho načítá hned při importu `_publish.ts`, protože kontrola hratelnosti v opravném kole režiséra je synchronní.
+- **Past:** svět Rapieru se hledá podle identity pole stavu. Kopie stavu, která by dál krokovala (přetočení, obnova snímku), dostane nový svět ze zaokrouhlených hodnot a rozejde se s replayem – taková funkce musí replay pustit od tiku 0. Dnes ji nic nedělá (kopie robota v `verify.ts` se jen čtou).
+- **Zatím chybí:** kreslení natočení (převrácená bedna je vidět jen posunutá) a `physics` u rolí, které staví generátor (ignoruje se).

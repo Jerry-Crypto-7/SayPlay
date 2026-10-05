@@ -6,9 +6,42 @@ import { describe, expect, it } from 'vitest';
 import { MAX_SENTENCE_CHARS } from '@/app/api/play/_publish';
 import { ARCHETYPES } from '@/play/registry';
 import { REMIX_CHIP_LABELS as CHIP_LABELS, REMIX_CHIPS as CHIPS } from '@/play/director/remix';
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
 
-import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, PLACEHOLDER, POST_RUN_CHIPS, SENTENCE_LIMIT, STARTERS, SUBHEAD } from '../starters';
+import {
+  BUILD_FAILED,
+  BUILD_STEPS,
+  CAN_YOU_BEAT_IT,
+  CHANGE_ONE_THING,
+  COPY_LINK,
+  DARE_A_FRIEND,
+  DARE_BADGE,
+  DARE_SHORT,
+  FULL_READY,
+  HERO,
+  IDEA_LIMIT,
+  IDEAS,
+  LINK_COPIED,
+  NOT_SENT,
+  OFFLINE,
+  PLACEHOLDER,
+  PLAY_FULL,
+  POST_RUN_CHIPS,
+  PROMPT_LABEL,
+  QUICK_VERSION,
+  QUICK_VERSION_REST,
+  REMIX_IT,
+  REMIX_LABEL,
+  REMIX_PLACEHOLDER,
+  SAVE_VIDEO,
+  SENTENCE_LIMIT,
+  SHARE_TITLE,
+  SO_CLOSE,
+  STARTERS,
+  SUBHEAD,
+  VIDEO_AFTER_RUN,
+  YOU_DID_IT,
+} from '../starters';
 
 /**
  * Stránka `/play` vypadá hotově i s kartou, která pošle větu na cizí archetyp,
@@ -18,7 +51,8 @@ import { BUILD_STEPS, CHALLENGE_A_FRIEND, CHANGE_ONE_THING, HERO, PLACEHOLDER, P
 const ROOT = process.cwd();
 const COPY = readFileSync(join(ROOT, 'docs/play/pack/PRODUCT_COPY.md'), 'utf-8');
 const GOLDEN = readFileSync(join(ROOT, 'docs/play/pack/golden_prompts.csv'), 'utf-8');
-const CSS = readFileSync(join(ROOT, 'src/app/play/play.css'), 'utf-8');
+// Od P34 nese `play.css` jen `var(--sp-…)` (hex zakazuje `brand-guard.test.ts`); hexy palety jsou v tokenech kitu.
+const CSS = ['src/app/play/play.css', 'src/brand/tokens.css'].map((file) => readFileSync(join(ROOT, file), 'utf-8')).join('\n');
 
 function copyLine(label: string): string {
   const line = COPY.split('\n').find((row) => row.startsWith(`${label}:`));
@@ -31,8 +65,25 @@ describe('startovní karty', () => {
     expect(STARTERS.map((starter) => starter.archetype).sort()).toEqual(Object.keys(ARCHETYPES).sort());
   });
 
-  it('věta karty přistane v návrhu ze slov na svém archetypu', () => {
-    for (const starter of STARTERS) expect(draftGameSpec(starter.sentence).archetype, starter.archetype).toBe(starter.archetype);
+  // P32B T2: návrh nové hry vybírá žánr, archetyp mřížky už ne – karta musí přistát v žánru, který slibuje její štítek.
+  it('věta karty přistane v návrhu ze slov v žánru svého štítku', () => {
+    const promised: Readonly<Record<string, string>> = {
+      Chase: 'arena.escape',
+      Collect: 'arena.collect',
+      Survive: 'arena.escape',
+      Race: 'voyage.race',
+      Deliver: 'quest.spatial',
+      Puzzle: 'quest.spatial',
+      Cross: 'platformer.default',
+      Fight: 'arena.fight',
+    };
+    for (const starter of STARTERS) {
+      const meta = draftGameSpecWithMeta(starter.sentence);
+      expect(meta.fellBack, starter.label).toBe(false);
+      expect(`${meta.genre?.genre}.${meta.genre?.mode}`, starter.label).toBe(promised[starter.label]);
+      // „Cross floating islands“: sloveso karty není hrdina.
+      expect(meta.genre?.hero, starter.label).not.toBe(starter.label.toLowerCase());
+    }
   });
 
   it('věty jsou zlaté prompty z balíčku (hazard_platforming → hazard_crossing)', () => {
@@ -43,29 +94,69 @@ describe('startovní karty', () => {
     }
   });
 
-  it('žádná věta nepřesáhne strop dveří a strop je týž jako na serveru', () => {
-    expect(SENTENCE_LIMIT).toBe(MAX_SENTENCE_CHARS);
+  // P34: strop pole je 140 z kitu; dveře serveru (veřejné API mimo P34) snesou víc, nikdy míň.
+  it('žádná věta nepřesáhne strop pole 140 znaků a dveře serveru snesou celé pole', () => {
+    expect(SENTENCE_LIMIT).toBe(140);
+    expect(SENTENCE_LIMIT).toBeLessThanOrEqual(MAX_SENTENCE_CHARS);
     for (const starter of STARTERS) expect(starter.sentence.length).toBeLessThanOrEqual(SENTENCE_LIMIT);
   });
 });
 
+describe('karty nápadů (P34 T3)', () => {
+  it('jsou čtyři, každá nejvýš 45 znaků a doslova z balíčku', () => {
+    expect(IDEAS).toHaveLength(4);
+    for (const idea of IDEAS) expect(idea.sentence.length, idea.sentence).toBeLessThanOrEqual(IDEA_LIMIT);
+    expect(IDEA_LIMIT).toBe(45);
+    expect(IDEAS.map((idea) => idea.sentence)).toEqual(copyLine('Ideas').replace(/\.$/, '').split(' / '));
+  });
+
+  it('věta karty přistane v návrhu ze slov na archetypu, který karta slibuje', () => {
+    expect(new Set(IDEAS.map((idea) => idea.archetype)).size).toBe(IDEAS.length);
+    for (const idea of IDEAS) {
+      const meta = draftGameSpecWithMeta(idea.sentence);
+      // P32B T5b: věta hraje žánr. Skutečná Aréna nemá cíl „dojdi“ (`chase_escape`): honička je útěk
+      // Arény – přežít, nebo sbírat s pronásledovatelem. Donáška („carry … to“) je Úkol se slovesem
+      // „deliver“ (`switch_puzzle`). Archetyp karty je tu jen klíč a testid.
+      if (idea.archetype === 'chase_escape') expect(meta.genre, idea.sentence).toMatchObject({ genre: 'arena', mode: 'escape' });
+      else if (idea.archetype === 'delivery') expect(meta.genre, idea.sentence).toMatchObject({ genre: 'quest', target: { verb: 'deliver' } });
+      else expect(draftGameSpec(idea.sentence).archetype, idea.sentence).toBe(idea.archetype);
+    }
+  });
+});
+
 describe('měď z PRODUCT_COPY.md', () => {
-  it('hero, subhead a placeholder jsou doslova z balíčku', () => {
+  it('hero, subhead, popisek a placeholder jsou doslova z balíčku', () => {
     expect(HERO).toBe(copyLine('Hero'));
     expect(SUBHEAD).toBe(copyLine('Subhead'));
+    expect(PROMPT_LABEL).toBe(copyLine('Label'));
     expect(PLACEHOLDER).toBe(copyLine('Placeholder'));
   });
 
-  it('po dohrání: nadpis, sdílení a čipy doslova z balíčku, čipy v pořadí a se jmény z remixu', () => {
+  // P34 T6: věty výsledku a sdílení mluví kitem ve větném tvaru – karta je už nepřepisuje.
+  it('po dohrání: nadpisy, list, sdílení a čipy doslova z balíčku, čipy v pořadí a se jmény z remixu', () => {
+    expect([YOU_DID_IT, SO_CLOSE]).toEqual(copyLine('Result').split(' / '));
     expect(CHANGE_ONE_THING).toBe(copyLine('Post-run'));
-    expect(CHALLENGE_A_FRIEND).toBe(copyLine('Share'));
+    expect([DARE_A_FRIEND, DARE_SHORT, LINK_COPIED]).toEqual(copyLine('Share').split(' / '));
     expect(POST_RUN_CHIPS.map((entry) => entry.label)).toEqual(copyLine('Chips').replace(/.$/, '').split(' / '));
     expect(POST_RUN_CHIPS.map((entry) => entry.chip)).toEqual([...CHIPS]);
     for (const entry of POST_RUN_CHIPS) expect(entry.label).toBe(CHIP_LABELS[entry.chip]);
   });
 
+  // P34 T7: list „Change one thing“, list sdílení v HUD a karta výzvy (náhled odkazu).
+  it('remix, list sdílení a karta výzvy jsou doslova z balíčku', () => {
+    expect([REMIX_LABEL, REMIX_PLACEHOLDER, REMIX_IT]).toEqual(copyLine('Remix').split(' / '));
+    expect([SHARE_TITLE, COPY_LINK, SAVE_VIDEO, VIDEO_AFTER_RUN]).toEqual(copyLine('Share sheet').split(' / '));
+    expect([CAN_YOU_BEAT_IT, DARE_BADGE.survive, DARE_BADGE.hurry, DARE_BADGE.none, DARE_BADGE.dare]).toEqual(copyLine('Dare card').split(' / '));
+  });
+
   it('stavový řádek jde přes čtyři stavy v pořadí balíčku', () => {
     expect(BUILD_STEPS).toEqual(copyLine('States').split('->').map((step) => step.trim().replace(/\.$/, '')));
+  });
+
+  // P34 T4: pilulka, toast AI verze a chyby dveří mluví kitem (`11-voice-copy.md`).
+  it('pilulka a toast AI verze a chyby dveří jsou doslova z balíčku', () => {
+    expect([QUICK_VERSION + QUICK_VERSION_REST, FULL_READY, PLAY_FULL]).toEqual(copyLine('AI version').split(' / ').slice(0, 3));
+    expect([BUILD_FAILED, OFFLINE, NOT_SENT]).toEqual(copyLine('Errors').split(' / '));
   });
 });
 

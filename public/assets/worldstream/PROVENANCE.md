@@ -1,5 +1,10 @@
 # Worldsmith original starter assets
 
+This file covers the original models in this folder. The other model sets have
+their own provenance files: `cc0/PROVENANCE.md` (CC0 packs), `game/PROVENANCE.md`
+(built by code in Blender), `gen3d/PROVENANCE.md` (332 models generated offline
+by `ops/gen3d`, used at runtime) and `rigged/PROVENANCE.md` (rigged CC0 characters).
+
 These six models were authored for this project on 2026-09-17 using the
 Codex-assisted source `scripts/assets/originals.mjs`. No external model,
 photograph, texture, or third-party asset was imported. Three.js creates and

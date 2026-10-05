@@ -1,17 +1,23 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { expect, test, type APIRequestContext } from '@playwright/test';
+
+import { openPause, startGame } from './play-start';
 
 /**
  * `/play/[id]` (P23-C T5): hra se načte bez technického panelu, tik roste,
  * klepnutí na kartu cíle zapíše vstup do runtime, mobil nescrolluje do
- * strany, a svědek světa přehraný sondou skončí na „You won“.
+ * strany, a svědek světa přehraný sondou skončí na „You did it!“ (P34 T6:
+ * slovník kitu, dřív „You won“).
  *
  * Hra vzniká skutečnými dveřmi `POST /api/play/games` (dvojník režiséra,
  * žádný model). Sonda `window.__playShell` je stejný vzor jako
  * `__worldstreamStage` – ptá se na to, co se z obrázku plátna přečíst nedá.
  */
 
-async function publish(request: APIRequestContext, sentence: string): Promise<string> {
-  const response = await request.post('/api/play/games', { data: { sentence } });
+async function publish(request: APIRequestContext, spec: unknown): Promise<string> {
+  const response = await request.post('/api/play/games', { data: { spec } });
   expect(response.status(), await response.text()).toBeLessThan(300);
   const body = (await response.json()) as { url: string };
   return body.url;
@@ -20,14 +26,16 @@ async function publish(request: APIRequestContext, sentence: string): Promise<st
 test.describe('/play/[id] – play shell', () => {
   let url = '';
 
+  // Mřížková sběrací hra: od P32B T2 z věty vzniká žánr, mřížku mají uložené hry a remixy – publikuje se proto fixtura.
   test.beforeAll(async ({ request }) => {
-    url = await publish(request, 'Collect five glowing mushrooms then open a portal.');
+    url = await publish(request, JSON.parse(readFileSync(join(process.cwd(), 'src/play/__fixtures__/collect_exit.json'), 'utf8')) as unknown);
   });
 
   test('HUD shows the goal, the tick advances, no technical panel is rendered', async ({ page }) => {
     await page.goto(url);
     await expect(page.getByTestId('play-goal')).toBeVisible();
     await expect(page.getByTestId('play-goal')).not.toHaveText('');
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const first = Number(await page.getByTestId('play-tick').getAttribute('data-tick'));
     await page.waitForTimeout(500);
@@ -41,6 +49,7 @@ test.describe('/play/[id] – play shell', () => {
 
   test('tapping the first target card records an input in the runtime', async ({ page }) => {
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const card = page.locator('[data-testid^="play-target-"]').first();
     await expect(card).toBeVisible();
@@ -74,19 +83,44 @@ test.describe('/play/[id] – play shell', () => {
         { timeout: 30_000 },
       );
     }
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     expect(taps).toBeLessThanOrEqual(targets + 1);
     const inputs = await page.evaluate(() => window.__playShell!.inputs());
     expect(inputs.some((input) => input.actionId !== 'moveTo')).toBe(true);
   });
 
-  test('a one-command prompt says what to tap and goes away on the first tap (P28C T5)', async ({ page }) => {
+  // P33 T11: mřížka stojí na tiku 0 pod „Tap to start“, dokud se hráč nedotkne.
+  test('the grid waits on tick 0 under "Tap to start" and the first tap starts it (P28C T5, P33 T11)', async ({ page }) => {
     await page.goto(url);
     const prompt = page.getByTestId('play-first-prompt');
     await expect(prompt).toBeVisible({ timeout: 60_000 });
-    await expect(prompt).toHaveText(/^Tap (a|an|the) /);
+    await expect(prompt).toContainText('Tap to start');
+    await expect(page.getByTestId('play-first-prompt-action')).toHaveText(/^Tap (a|an|the) /);
+    await page.waitForTimeout(1_500);
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
     await page.getByTestId('play-grid-stage').click({ position: { x: 5, y: 5 } });
     await expect(prompt).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(0);
+  });
+
+  // P34 T5 (kit `05-layout.md`, dřív pruh 64 px a sloupec akcí P33 T12): na desktopu scéna 16:9 nejvýš
+  // 1280×720 uprostřed a HUD sedí na ní, ne na okně; zvuk, „About“ a Quit jsou na kartě pauzy.
+  test('desktop 1440×900: a 1280×720 stage in the middle, the HUD on the stage, actions on the pause card', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(url);
+    await expect(page.getByTestId('play-goal')).toBeVisible();
+    const stage = (await page.getByTestId('play-grid-stage').boundingBox())!;
+    expect(stage).toEqual({ x: 80, y: 90, width: 1280, height: 720 });
+    const hud = (await page.locator('.play-hud').boundingBox())!;
+    expect(hud).toEqual(stage);
+    const pause = (await page.getByTestId('play-pause').boundingBox())!;
+    expect(pause.x + pause.width).toBeLessThanOrEqual(stage.x + stage.width);
+    expect(pause.y).toBeGreaterThanOrEqual(stage.y);
+    expect(pause.height).toBeGreaterThanOrEqual(50);
+    await openPause(page);
+    await expect(page.getByTestId('play-mute')).toBeVisible();
+    await expect(page.getByTestId('play-info')).toBeVisible();
+    await expect(page.getByTestId('play-more')).toHaveAttribute('href', '/play');
   });
 
   test('a phone viewport has no horizontal scroll', async ({ page }) => {
@@ -104,9 +138,9 @@ test.describe('/play/[id] – play shell', () => {
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());
     expect(outcome.runState).toBe('won');
     await expect(page.getByTestId('play-outcome')).toBeVisible();
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
-    // Sekundy, ne tiky (P28B F-15): grid tiká 20× za sekundu.
-    await expect(page.getByTestId('play-outcome')).toContainText(`in ${(outcome.tick / 20).toFixed(1)} s`);
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
+    // Sekundy, ne tiky (P28B F-15): grid tiká 20× za sekundu. Od P34 T6 čas psaný jako časovač kitu („12.3s“, bez mezery).
+    await expect(page.getByTestId('play-outcome')).toContainText(`in ${(outcome.tick / 20).toFixed(1)}s`);
     await expect(page.getByTestId('play-outcome')).not.toContainText('tick');
     await expect(page.getByTestId('play-tick')).toHaveText('');
   });
@@ -128,7 +162,7 @@ test.describe('/play/[id] – play shell', () => {
       if (step.left === 0) break;
     }
     expect(pickups).toBeGreaterThanOrEqual(5);
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     await expect.poll(shown).toBe(before);
     // Snímek pro lidské oko; WebGL pixely se mezi stroji liší, takže se nesrovnává.
     await test.info().attach('won-without-mushrooms', { body: await page.locator('canvas').first().screenshot(), contentType: 'image/png' });

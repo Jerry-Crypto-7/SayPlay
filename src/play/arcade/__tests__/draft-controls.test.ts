@@ -10,7 +10,8 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-import { draftGameSpec } from '../../draft';
+// P32B T2: šablony ovládání staví jen remix uložených legacy her – zkouší se přes něj.
+import { legacyDraft } from '../../__tests__/legacy-draft';
 import { pickControl } from '../../draft/controls';
 import { type RunnerParams, readGameSpec } from '../../spec';
 import { arcadeWorldOf } from '../compile';
@@ -85,7 +86,7 @@ describe('draft control choice', () => {
       ['throw a basketball into a hoop from crazy angles', 'throw'],
       ['knock down towers with a wrecking ball', 'throw'],
     ] as const) {
-      const spec = draftGameSpec(sentence);
+      const spec = legacyDraft(sentence);
       expect(spec.control, sentence).toBe(control);
       for (const seed of [1, 2, 3]) {
         const built = arcadeWorldOf(spec, seed);
@@ -93,7 +94,7 @@ describe('draft control choice', () => {
         expect(verifyArcade(built.world).publishEligible, `${sentence}/${seed}`).toBe(true);
       }
     }
-    expect(draftGameSpec('knock down towers with a wrecking ball').roles.find((r) => r.kind === 'target')?.label).toBe('block');
+    expect(legacyDraft('knock down towers with a wrecking ball').roles.find((r) => r.kind === 'target')?.label).toBe('block');
   });
 
   // P25H T5, naměřeno 23. 9. 2026. Načasování nechytí s059 (závod šneků),
@@ -128,14 +129,14 @@ describe('draft control choice', () => {
       ['boxing match against a kangaroo', 'duel'],
       ['pillow fight in a sleepover', 'duel'],
     ] as const) {
-      const spec = draftGameSpec(sentence);
+      const spec = legacyDraft(sentence);
       expect(spec.control, sentence).toBe(control);
       expect(readGameSpec(spec).ok).toBe(true);
       const built = arcadeWorldOf(spec, 1);
       if (!built.ok) throw new Error(built.issues.join('; '));
       expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
     }
-    expect(draftGameSpec('hold to grow a bridge and let go to cross the gap').tutorial.controlsHint).toBe('Tap or Space to drop the plank.');
+    expect(legacyDraft('hold to grow a bridge and let go to cross the gap').tutorial.controlsHint).toBe('Tap or Space to drop the plank.');
   });
 
   it('keeps genre priority: flap > runner genre > platform genre > runner words > platform words', () => {
@@ -154,14 +155,14 @@ describe('draft control choice', () => {
       ['a squirrel jumping from tree to tree collecting acorns before winter', 'platform'],
       ['like flappy bird but underwater', 'flap'],
     ] as const) {
-      const spec = draftGameSpec(sentence);
+      const spec = legacyDraft(sentence);
       expect(spec.control, sentence).toBe(control);
       expect(readGameSpec(spec).ok).toBe(true);
       const built = arcadeWorldOf(spec, 1);
       if (!built.ok) throw new Error(built.issues.join('; '));
       expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
     }
-    expect(draftGameSpec('like flappy bird but underwater').roles.find((r) => r.kind === 'player')?.label).toBe('bird');
+    expect(legacyDraft('like flappy bird but underwater').roles.find((r) => r.kind === 'player')?.label).toBe('bird');
   });
 
   // P25F T6, naměřeno 23. 9. 2026: řízení 18/19 (s134 stolní tenis), aréna
@@ -184,15 +185,16 @@ describe('draft control choice', () => {
       ['like agar.io but you are a fish eating smaller fish', 'move_free'],
       ['a hard arena full of monsters, eat smaller ones and grow', 'move_free'],
     ] as const) {
-      const spec = draftGameSpec(sentence);
+      const spec = legacyDraft(sentence);
       expect(spec.control, sentence).toBe(control);
       const built = arcadeWorldOf(spec, 1);
       if (!built.ok) throw new Error(built.issues.join('; '));
       expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
     }
-    expect(draftGameSpec('drift around a mountain road at night').controlParams).toMatchObject({ drift: true });
-    expect(draftGameSpec('a hard arena full of monsters, eat smaller ones and grow').controlParams).toMatchObject({ density: 'dense' });
-    expect(draftGameSpec('car racing game').roles.find((r) => r.kind === 'player')?.label).toBe('race car');
+    expect(legacyDraft('drift around a mountain road at night').controlParams).toMatchObject({ drift: true });
+    expect(legacyDraft('a hard arena full of monsters, eat smaller ones and grow').controlParams).toMatchObject({ density: 'dense' });
+    // Závodní auto šablony se nedědí (P32B T3): řízení bez plavidla ve větě jede na výchozím autě.
+    expect(legacyDraft('car racing game').roles.find((r) => r.kind === 'player')?.label).toBe('car');
   });
 
   it('reads the obstacle density from quantifiers', () => {
@@ -207,12 +209,12 @@ describe('draft control choice', () => {
   it('keeps crossing and chase sentences on the grid unless a genre cue says runner', () => {
     expect(pickControl('a frog must hop across the road and dodge cars')).toBeNull();
     expect(pickControl('run from the zombie and avoid the traps')).toBeNull();
-    expect(draftGameSpec('A frog must hop across the road and dodge cars').archetype).toBe('hazard_crossing');
+    expect(legacyDraft('A frog must hop across the road and dodge cars').archetype).toBe('hazard_crossing');
     expect(pickControl('an endless runner where you escape a giant boulder')?.control).toBe('runner');
   });
 
   it('drafts a valid runner spec that the arcade verifier publishes', () => {
-    const spec = draftGameSpec('jumping arcade game with a lot of obstacles');
+    const spec = legacyDraft('jumping arcade game with a lot of obstacles');
     expect(spec.control).toBe('runner');
     expect((spec.controlParams as RunnerParams | undefined)?.density).toBe('high');
     expect(readGameSpec(spec).ok).toBe(true);

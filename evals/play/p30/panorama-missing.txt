@@ -1,0 +1,2 @@
+# P30A T4: settings from src/play/env/baked.json without a baked panorama (scripts/cloud/bake-panoramas.mjs).
+# none

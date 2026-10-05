@@ -12,9 +12,13 @@
  * v tom, co do hashe nejde (zpráva o kvalitě), a to je poctivých 409.
  */
 
+import { createHash } from 'node:crypto';
+
 import { canonicalHash } from '@/ir/worlddoc';
 import type { CompileGameReason, CompileGameResult } from '@/play/contracts';
 import type { RepairIssue } from '@/play/director';
+import { PHYSICS_NOT_LOADED, preloadPhysics } from '@/play/arcade/compile';
+import { loadRapier } from '@/play/arcade/physics/world';
 import type { Honesty } from '@/play/draft/unsupported';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStore, VersionStoreUnavailable, sealVersion, versionStoreFromEnv, volatileVersionStore } from '@/play/version';
@@ -23,11 +27,18 @@ import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
 
 import { getCompiler } from './_compiler';
+import { startCustomEnv } from './_env';
 import { fail, VERSION_ID_PATTERN } from './_errors';
 import { reportFor } from './_report';
+import { scheduleVoice } from './_voice';
 
 /** Nejdelší věta, kterou dveře vezmou. Delší je 413, ne oříznutí. */
 export const MAX_SENTENCE_CHARS = 500;
+
+// Rapier pro fyzikální věci (P29A T13) se na serveru načítá hned: kontrola
+// hratelnosti v opravném kole režiséra je synchronní a čekat na něj nemůže.
+// Prohlížeč ho stahuje jen ke hře, která fyziku má (`ArcadePlay`).
+loadRapier().catch(() => undefined);
 
 /**
  * Semínko je celé číslo 1..2^31 − 1 (strop `sessionSeed` v blueprintu); bez něj
@@ -94,6 +105,11 @@ export async function admit(request: Request, lever: keyof KillState = 'sessions
 /** Klíč volajícího pro strop frekvence. */
 export function callerOf(request: Request): string {
   return trustedCallerKey(request) ?? callerKey(request);
+}
+
+/** Hlas volajícího pro čítače feedu (P36B T9): hash klíče `callerOf`, ať adresa do úložiště nejde. */
+export function voterOf(request: Request): string {
+  return createHash('sha256').update(callerOf(request)).digest('hex').slice(0, 16);
 }
 
 /** Společný počet všech volajících bez důvěryhodného klíče (R12). */
@@ -190,6 +206,12 @@ function compileOnSeeds(spec: GameSpecV1, seeds: readonly number[]): CompileGame
  */
 export function playabilityIssues(spec: GameSpecV1, seeds: readonly number[]): RepairIssue[] {
   const compiled = compileOnSeeds(spec, seeds);
+  if (!compiled.ok && compiled.issues.includes(PHYSICS_NOT_LOADED)) {
+    // Rapier se nenačetl: vada serveru, ne specu – model by kvůli ní fyziku zahodil.
+    // Nálezy žádné; publikace (`publishReadSpec`) Rapier načte znovu a hru ověří sama.
+    loadRapier().catch(() => undefined);
+    return [];
+  }
   if (!compiled.ok) {
     return [{ code: compiled.reason, path: '', evidence: compiled.issues.join('; ').slice(0, 500), repairHint: 'change the spec so the game compiles and the robot player can win it' }];
   }
@@ -216,6 +238,7 @@ export async function publishReadSpec(
   parentId: string | null,
   extras: PublishExtras = {},
 ): Promise<PublishResult> {
+  await preloadPhysics(spec, loadRapier);
   const compileStarted = performance.now();
   const compiled = compileOnSeeds(spec, seeds);
   const compileMs = performance.now() - compileStarted;
@@ -245,7 +268,11 @@ export async function publishReadSpec(
   };
 
   const existing = await versions.get(version.versionId);
-  if (existing !== null) return { ok: true, value: { status: 200, game: existing } };
+  if (existing !== null) {
+    // Táž hra podruhé: hlas mohl minule spadnout se službou – služba má cache, zeptat se znovu nic nestojí.
+    scheduleVoice(existing.spec);
+    return { ok: true, value: { status: 200, game: existing } };
+  }
 
   let outcome: PutOutcome;
   try {
@@ -259,6 +286,10 @@ export async function publishReadSpec(
     return { ok: false, response: fail(429, 'PUBLISH_QUOTA', "today's publishing quota is used up; try again tomorrow", { 'retry-after': '3600' }) };
   if (outcome === 'conflict')
     return { ok: false, response: fail(409, 'VERSION_CONFLICT', 'a different game already holds this version id') };
+  // Prostředí, které knihovna nezná, se začne generovat hned (P29C T7); neblokuje.
+  if (outcome === 'stored') startCustomEnv(spec.theme.setting);
+  // Hlas vypravěče (P29D T11) na pozadí – publikace na něj nečeká a bez služby je stejná.
+  scheduleVoice(spec);
   return { ok: true, value: { status: outcome === 'stored' ? 201 : 200, game } };
 }
 

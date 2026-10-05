@@ -19,6 +19,12 @@ WorldDoc; kompilaci do světa dělá P23-A, obálku a remix UI P23-C.
 6. Přijatý spec → cache → `authored`. Cokoli jiného → `draft` s `fallbackReason`
    (`MODEL_UNAVAILABLE` | `MALFORMED` | `UNREPAIRED`). Nikdy výjimka.
 
+**Od P32B (T4, T5)** model píše `GenreSpec` (`readGenreAnswer`) a hru skládá modul žánru. Mezi
+krok 3 a 4 přibyla kontrola věrnosti (`fidelity`: hrdina a nepřítel z věty, hlavní sloveso hraje
+žánr a režim, režim `ready`); neprošlá odpověď přepne žánr po pořadí klasifikátoru
+(`switchGenre`) s rolemi z odpovědi. Co neprojde ničím, ani opravnými koly, dohraje žánr draftu
+jako `authored` bez `fallbackReason` (obálka: `UNCHANGED`) – `UNREPAIRED` režisér nevrací.
+
 Remix: čtyři čipy (`Make it harder`, `Add a twist`, `Swap the enemy`, `Change the world, keep the
 rules`) jsou RFC 6902 záplaty bez modelu (`remixPatch`); volná věta se zařadí (`classifyRemix`) a
 jde přes model (`buildRemixRequest`).
@@ -54,6 +60,37 @@ z tabulky, a protože oprava RFC 6902 stojí nad přečteným specem, opravné k
 - Návrh jako výchozí bod modelu neškodí: `archetypeHit` je 8/8 u `authored` i u `draft`, takže
   architektonická otázka z plánu („model opravuje návrh, nebo píše od nuly") zůstává rozhodnutá
   pro návrh v `user`.
+
+## Čtečka a záloha (P29B, 26. 9. 2026)
+
+Dva lokální modely přes llama.cpp na RTX 3090 (`ops/llm/`, instalace `install.ps1`, kontrola `check.mjs`):
+
+| Role | Model | Port | Env | Stav |
+|---|---|---|---|---|
+| čtečka věty | Qwen3-4B-Instruct-2507 Q5_K_M | 8791 | `PLAY_READER=on`, `PLAY_READER_ENDPOINT`, `PLAY_READER_BUDGET_MS` (1500) | **vypnutá** ve výchozím stavu |
+| záloha režiséra | gpt-oss-20b MXFP4 | 8792 | `WORLDSMITH_FALLBACK_ENDPOINT=llamacpp:http://127.0.0.1:8792`, `WORLDSMITH_FALLBACK_MODEL`, `WORLDSMITH_FALLBACK_TIMEOUT_MS`, `PLAY_DIRECTOR_HEDGE_MS` (30 000) | zapne ji vyplněný endpoint |
+
+**Čtečka** přečte větu před draftem (route tvorby i `direct()`) a draft vezme ovládání, hrdinu, role,
+místo a počty z čtení; klíčová slova doplní zbytek. Neodpoví-li do rozpočtu, draft je ze slov jako dřív.
+Panel „From your sentence“ pak píše „read by a local AI model“ místo „from the keywords“.
+**Pravidlo pro zapnutí:** judge-10 `read` ≥ klíčová slova + 0,10 a p95 ≤ 1 500 ms. Naměřeno 0,351
+proti 0,514 a p95 1,5–2,1 s, proto vypnutá (`evals/play/read/README.md`).
+
+**Záloha** se rozběhne, když předplatné do `PLAY_DIRECTOR_HEDGE_MS` neodpoví (nebo hned, když selže);
+vyhrává první platná odpověď, zrušené volání se dopočítá do stropu. Odmítne-li primár strop nebo kvóta,
+záloha se nezkouší. Autor hry je v `authoredBy`. Naměřeno na 30 + 10 větách: platných 38/40,
+p50 4,5 s, judge-10 `read` 0,676 (`evals/play/local-director.json`); Qwen3.6-35B-A3B prohrál
+(29/40, p50 31 s).
+
+Spuštění (měření vždy pod zámkem GPU; za `-Then` jeden skript bez mezer):
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role reader
+powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role fallback
+node D:/claude/_shared/gpu-lock.mjs -- powershell -NoProfile -ExecutionPolicy Bypass -File ops/llm/start.ps1 -Role reader -Then evals/play/read/measure-all.cmd
+```
+
+Bez `-Then` server běží dál a skript vypíše PID (zastavit `Stop-Process -Id <PID>`).
 
 ## Co příště měřit jinak
 

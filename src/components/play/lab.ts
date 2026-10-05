@@ -28,6 +28,8 @@ export function authorshipOf(game: Pick<PublishedGame, 'origin' | 'sentence' | '
 /** Co se z věty stalo – panel „From your sentence“. */
 export interface ReadFacts {
   readonly authorship: Authorship;
+  /** Kdo větu návrhu přečetl (P29B T6): lokální model, nebo klíčová slova. */
+  readonly readBy: 'model' | 'keywords';
   readonly sentence: string | null;
   readonly game: string;
   readonly world: string;
@@ -54,11 +56,12 @@ const OPPONENT_KINDS: ReadonlySet<string> = new Set(['hazard', 'chaser', 'patrol
 
 const words = (id: string): string => id.replaceAll('_', ' ');
 
-export function readFacts(spec: GameSpecV1, authorship: Authorship, sentence: string | null): ReadFacts {
+export function readFacts(spec: GameSpecV1, authorship: Authorship, sentence: string | null, readBy: ReadFacts['readBy'] = 'keywords'): ReadFacts {
   const control = spec.control === undefined || spec.control === 'tap_go' ? null : spec.control;
   const game = control === null ? words(spec.archetype) : (CONTROL_NAME[control] ?? words(control));
   return {
     authorship,
+    readBy,
     sentence,
     game: game.charAt(0).toUpperCase() + game.slice(1),
     world: `${spec.theme.setting} · ${spec.theme.mood}`,

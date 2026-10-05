@@ -8,7 +8,8 @@
  * `title` a `label`y; `mechanics`, `objective` a `verification` zůstávají
  * bajtově stejné (test to drží). `harder` mění právě jeden parametr mechaniky
  * a dorovná čísla, která na něm stojí (`objective.count`, `count` role),
- * jinak by kritik vrátil `CONTRADICTION`.
+ * jinak by kritik vrátil `CONTRADICTION`. U hry žánru posune parametr
+ * generátoru režimu (`GENRE_HARDER`); ostatní čipy kromě `reskin` ji nemění.
  *
  * `classifyRemix` řadí volnou větu do třídy kontraktu (`RemixClass`); třídy
  * `mechanic`, `topology` a `objective` jdou vždy přes model
@@ -22,50 +23,29 @@ import { type Operation, applyPatch, createPatch } from 'rfc6902';
 
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
+import { MODE_GENERATORS } from '../arcade/library';
+import { STEER_DIFFICULTIES } from '../arcade/pieces/steer';
 import { aimHarder, aimSwap, beatHarder, difficultyHarder, hazardSwap, runnerHarder, runnerSwapObstacles, runnerTwist, targetSwap } from '../arcade/remix';
-import type { RemixClass } from '../contracts';
 import { pickControl } from '../draft/controls';
 import { ARCHETYPES, type MechanicId } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1, type GameRole } from '../spec';
 
 import { renderRegistry } from './prompt';
+import { OBJECTIVE_WORDS, type RemixChip, classifyRemix } from './remix-words';
 import { REPAIR_RULES, keypointFor } from './repair';
 
-export const REMIX_CHIPS = ['harder', 'twist', 'swap_enemy', 'reskin'] as const;
-export type RemixChip = (typeof REMIX_CHIPS)[number];
-
-/** Doslova `docs/play/pack/PRODUCT_COPY.md`; test drží shodu se souborem. */
-export const REMIX_CHIP_LABELS: Readonly<Record<RemixChip, string>> = {
-  harder: 'Make it harder',
-  twist: 'Add a twist',
-  swap_enemy: 'Swap the enemy',
-  reskin: 'Change the world, keep the rules',
-};
-
-const CHIP_CLASS: Readonly<Record<RemixChip, RemixClass>> = { harder: 'parameter', swap_enemy: 'parameter', twist: 'mechanic', reskin: 'presentation' };
-
-const MECHANIC_VERBS = /\b(stun|stuns|freeze|freezes|carry|carries|press|presses|collect|collects|chase|chases)\b/i;
-const TOPOLOGY_WORDS = /\b(bigger|smaller|maze|rooms|islands|layout)\b/i;
-const OBJECTIVE_WORDS = /\b(instead|goal|win by|objective)\b/i;
-const PARAMETER_WORDS = /\b(twice as fast|faster|slower|more|fewer|\d+ seconds)\b/i;
-const PRESENTATION_WORDS = /\b(neon|sci-fi|forest|underwater|make it look|theme)\b/i;
-
-export function chipOf(sentence: string): RemixChip | null {
-  const text = sentence.trim().toLowerCase();
-  return REMIX_CHIPS.find((chip) => chip === text || REMIX_CHIP_LABELS[chip].toLowerCase() === text) ?? null;
-}
-
-/** Deterministická třída věty; `parent` je tu pro kontrakt, pravidla zatím čtou jen text. */
-export function classifyRemix(sentence: string, _parent: GameSpecV1): RemixClass {
-  const chip = chipOf(sentence);
-  if (chip !== null) return CHIP_CLASS[chip];
-  if (MECHANIC_VERBS.test(sentence)) return 'mechanic';
-  if (TOPOLOGY_WORDS.test(sentence)) return 'topology';
-  if (OBJECTIVE_WORDS.test(sentence)) return 'objective';
-  if (PARAMETER_WORDS.test(sentence)) return 'parameter';
-  if (PRESENTATION_WORDS.test(sentence)) return 'presentation';
-  return 'mechanic';
-}
+export {
+  MECHANIC_VERBS,
+  OBJECTIVE_WORDS,
+  PARAMETER_WORDS,
+  PRESENTATION_WORDS,
+  REMIX_CHIPS,
+  REMIX_CHIP_LABELS,
+  type RemixChip,
+  TOPOLOGY_WORDS,
+  chipOf,
+  classifyRemix,
+} from './remix-words';
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -137,6 +117,64 @@ function harder(child: GameSpecV1): boolean {
     const role = child.roles.find((r) => r.id === checkpoint.role);
     if (role !== undefined && role.count < checkpoint.count) role.count = checkpoint.count;
     return true;
+  }
+  return false;
+}
+
+interface GenreStep {
+  readonly key: string;
+  /** Krok čísla (záporný = menší je těžší), nebo pořadí hodnot od nejlehčí. */
+  readonly step: number | readonly string[];
+  /** Druh role, jejíž počet parametr nese – dorovná se v roli, v cíli i v jeho textu. */
+  readonly role?: GameRole['kind'];
+}
+
+/**
+ * Čip `harder` u hry žánru (P32B T5b): parametr generátoru režimu o krok, první
+ * z řádku, který mez schématu generátoru ještě pustí a hra s ním projde `accept`.
+ * Rychlost a výdrž soupeře před počtem – počet mění i to, co hra slibuje.
+ */
+const GENRE_HARDER: Readonly<Record<string, readonly GenreStep[]>> = {
+  arena_escape: [{ key: 'chaserSpeed', step: 10 }, { key: 'chasers', step: 1, role: 'chaser' }],
+  arena_collect: [{ key: 'items', step: 2, role: 'collectible' }],
+  fight: [{ key: 'enemyHp', step: 1 }, { key: 'enemySpeed', step: 10 }],
+  quest_spatial: [{ key: 'rocks', step: 1 }, { key: 'chaserSpeed', step: 10 }],
+  quest_station: [{ key: 'window', step: -15 }],
+  voyage_race: [{ key: 'difficulty', step: STEER_DIFFICULTIES }, { key: 'lengthM', step: 50 }],
+  voyage_land: [{ key: 'difficulty', step: STEER_DIFFICULTIES }, { key: 'lengthM', step: 50 }],
+};
+
+function genreHarder(child: GameSpecV1, accept?: (spec: GameSpecV1) => boolean): boolean {
+  const { generator, tuning = {}, ...own } = child.controlParams as Record<string, unknown> & { readonly generator?: string; readonly tuning?: Record<string, unknown> };
+  const mode = generator !== undefined && Object.hasOwn(MODE_GENERATORS, generator) ? MODE_GENERATORS[generator] : undefined;
+  if (generator === undefined || mode === undefined) return false;
+  // Generátor čte vlastní parametry ovládání i `tuning` (`ownParams` v `arcade/compile.ts`).
+  const params = { ...own, ...tuning };
+  const current = mode.params.parse(params) as Record<string, unknown>;
+  for (const { key, step, role: kind } of GENRE_HARDER[generator] ?? []) {
+    const now = current[key];
+    const value = typeof step === 'number' ? (typeof now === 'number' ? now + step : undefined) : step[step.indexOf(String(now)) + 1];
+    if (value === undefined || !mode.params.safeParse({ ...params, [key]: value }).success) continue;
+    // Klíč, který soudí schéma ovládání (obtížnost plavby), patří do `controlParams`, jinak do `tuning` (`spec.ts`).
+    const inTuning = { tuning: { ...tuning, [key]: value } };
+    const places = Object.hasOwn(tuning, key) ? [inTuning] : Object.hasOwn(own, key) ? [{ [key]: value }] : [inTuning, { [key]: value }];
+    for (const place of places) {
+      const probe = clone(child);
+      probe.controlParams = { ...probe.controlParams, ...place };
+      const role = kind === undefined ? undefined : probe.roles.find((candidate) => candidate.kind === kind);
+      if (role !== undefined && typeof now === 'number' && typeof value === 'number') {
+        role.count = value;
+        if (probe.objective.role === role.id && probe.objective.count !== undefined) {
+          probe.objective.count = value;
+          const old = new RegExp(`\\b${String(now)}\\b`);
+          probe.objective.description = probe.objective.description.replace(old, String(value));
+          probe.tutorial.goalLine = probe.tutorial.goalLine.replace(old, String(value));
+        }
+      }
+      if (!readGameSpec(probe).ok || (accept !== undefined && !accept(probe))) continue;
+      Object.assign(child, probe);
+      return true;
+    }
   }
   return false;
 }
@@ -253,6 +291,10 @@ export function remixPatch(chip: RemixChip, parent: GameSpecV1, seed = 1, accept
   const rng = xoroshiro128plus(seed);
   const pick = (max: number): number => uniformInt(rng, 0, max - 1);
   const child = clone(parent);
+  // Parametry hry s delegovaným generátorem (P32-0 T4) patří generátoru režimu: `harder` zná jeho krok, ostatní čipy ne.
+  const delegated = parent.controlParams !== undefined && ('generator' in parent.controlParams || 'tuning' in parent.controlParams);
+  if (delegated && chip === 'harder') return genreHarder(child, accept) ? createPatch(parent, child) : [];
+  if (delegated && chip !== 'reskin') return [];
   if (parent.control === 'runner' && chip !== 'reskin') {
     if (chip === 'harder') runnerHarder(child);
     else if (chip === 'twist') runnerTwist(child, pick, accept);

@@ -23,7 +23,7 @@ GameVersion = hash(specHash, worldHash, seed, verze schématu/kompilátoru/runti
 | Integrace, feed, regresní harness, brány | `src/play/index.ts`, `evals/play/regression/**`, `docs/play/GATES.md` | P23-D (po sloučení A+B+C) |
 
 Pravidla, která drží paralelní běh bez konfliktů: **žádný plán nesahá do adresáře jiného
-plánu**, nepřidává závislost do `package.json`, nemění `vitest.config.mts`, `playwright.config.ts`,
+plánu**, nepřidává závislost do `package.json` (výjimka z rozhodnutí uživatele 26. 9. 2026: `@dimforge/rapier3d-compat` pro P29A, měření v `evals/play/rules/rapier.md`), nemění `vitest.config.mts`, `playwright.config.ts`,
 `src/app/page.tsx` ani `CLAUDE.md`. Dvojníka cizí vrstvy si každý plán píše u sebe v
 `__fixtures__` z fixtur základu. Sdílený typ chybí → nález do `CONTRACT-CHANGES.md`, ne úprava
 `contracts.ts`.
@@ -43,3 +43,7 @@ Balíček GPT (prompty režiséra/kritika/opravy, zlatý korpus, měď produktu,
    ne rychlejším modelem. Astra přes Codex CLI zůstává (rozhodnutí 18. 9.), placené API až na finále.
 4. `chaser` se snižuje na pravidla `onSeen` + `inZone(player, Z) → moveTo(chaser, soket Z)` nad
    zónami mřížky – žádné nové primitivum tiku.
+
+## Pravidla vedle knihovny dílků (P29A, 26. 9. 2026)
+
+`GameSpec` smí nést `rules[]` a `things[]` (jazyk v `src/play/arcade/rules/schema.ts`, popis v `docs/play/ARCADE.md` → „Pravidla“). Obě pole jsou volitelná **bez výchozí hodnoty**, takže `specHash` dnešních her se nepohne; `readGameSpec` je přijme jen u arkády a odkazy na role soudí proti `roles[]` (`DANGLING_REFERENCE` s cestou pole). Výjimka z tabulky výše: základ (`spec.ts`) mění plán P29A na rozhodnutí uživatele z 26. 9.

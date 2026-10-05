@@ -57,8 +57,9 @@ describe('sada věrnosti', () => {
     const settings = corpus.sentences.flatMap((entry) => entry.checklist.filter((item) => item.slot === 'setting').map((item) => item.item));
     const missing = settings.filter((setting) => lookFor(setting) === null);
     expect(settings.length).toBeGreaterThanOrEqual(20);
-    // „a tower of moving platforms“: věž je sama trať z plošin, ne prostředí kolem ní.
-    expect(missing).toEqual(['tower']);
+    // Dřív chyběla „tower“ (věž = sama trať z plošin). P30B T6: porota věž z plošin nad
+    // vodou nepoznala, samotná věž je proto hrad s věžemi a kamennými plošinami.
+    expect(missing).toEqual([]);
   });
 });
 
@@ -67,8 +68,8 @@ describe('kulisy z katalogu', () => {
     const ids = new Set(catalog.assets.map((asset) => asset.assetId));
     expect(Object.keys(SCENERY_MODELS).filter((id) => !ids.has(id))).toEqual([]);
     const primitiveOnly = LOOK_IDS.filter((id) => !LOOKS[id].props.some(isSceneryModel));
-    // Sopka stojí na vlastním primitivu `volcano`: katalog kužel sopky nemá.
-    expect(primitiveOnly).toEqual(['volcano']);
+    // Od 28. 9. má i sopka model z gen3d, primitiv `volcano` zůstal vedle něj.
+    expect(primitiveOnly).toEqual([]);
   });
 });
 

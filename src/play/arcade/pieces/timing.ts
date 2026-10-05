@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, type PieceRef, type RulePiece, UNIT, bodyBase } from '../contract';
+import { PLATFORM_FEEL } from './platform';
 
 export const TIMING_MODES = ['stack', 'precision', 'bridge'] as const;
 export type TimingMode = (typeof TIMING_MODES)[number];
@@ -51,7 +52,10 @@ export const TIMING = {
   minBlockW: 400,
   depth: 2400,
   minRounds: 3,
-  maxRounds: 15,
+  /** Žánr Načasování (P36A T11) hraje 30–40 kol; uložené hry jich mají nejvýš 15. */
+  maxRounds: 40,
+  /** O kolik jednotek za tik je jezdec v posledním kole rychlejší než v prvním (`rise`). */
+  rise: 40,
 } as const;
 
 /** Indexy těl úrovně. */
@@ -71,12 +75,36 @@ export const timingWindowTicks = (speed: number, tolerance: number): number => 2
 // ---------------------------------------------------------------------------
 // Ovládání
 
-const controlParams = z.object({ mode: z.enum(TIMING_MODES), rounds: z.int().min(1).max(TIMING.maxRounds) }).strict();
+const controlParams = z
+  .object({
+    mode: z.enum(TIMING_MODES),
+    rounds: z.int().min(1).max(TIMING.maxRounds),
+    /** Odpuštění brzkého a pozdního ťuku (P37A T7, `forgivenX`); bez něj platí jen okno – uložený svět beze změny. */
+    feel: z.literal(2).optional(),
+  })
+  .strict();
 export type TimingControlParams = z.infer<typeof controlParams>;
 
 const S = BODY;
 
-/** Jezdec na start kola `round`: kraj a směr z předlohy, nový kyv. */
+/**
+ * Odpuštění `feel: 2` (P37A T7) se stejnými okny jako skok skákačky
+ * (`PLATFORM_FEEL`): ťuk mimo okno platí, když do něj jezdec dojede nejvýš za
+ * `bufferTicks` tiků (brzký stisk), nebo z něj vyjel nejvýš před `coyoteTicks`
+ * tiky (pozdní). Platí jako trefa na kraji okna (1 bod); vrací tu polohu, jinak `null`.
+ */
+export function forgivenX(x: number, vx: number, center: number, tolerance: number): number | null {
+  const side = Math.sign(x - center);
+  const coming = Math.sign(vx) === -side;
+  const ticks = coming ? PLATFORM_FEEL.bufferTicks : PLATFORM_FEEL.coyoteTicks;
+  return Math.abs(x - center) - tolerance <= ticks * Math.abs(vx) ? center + side * tolerance : null;
+}
+
+/**
+ * Jezdec na start kola `round`: kraj, směr a rychlost z předlohy, nový kyv.
+ * Perioda podle rychlosti kola – úroveň s `rise` zrychluje po kolech; ve
+ * světě bez něj mají všechna kola rychlost jezdce, takže perioda zůstane.
+ */
 function startRound(state: Int32Array, round: number): void {
   const slider = bodyBase(TIMING_SLOTS.slider);
   const mark = bodyBase(TIMING_SLOTS.marks + round);
@@ -84,6 +112,7 @@ function startRound(state: Int32Array, round: number): void {
   state[slider + S.y] = state[mark + S.y] as number;
   state[slider + S.vx] = state[mark + S.vx] as number;
   state[slider + S.aux0] = 0;
+  state[slider + S.aux1] = timingPeriod(Math.abs(state[mark + S.vx] as number));
 }
 
 /**
@@ -116,14 +145,19 @@ export const timingControl: ControlPiece<TimingControlParams> = {
       return;
     }
     state[p + S.aux1] = 0;
-    const x = state[slider + S.x] as number;
-    const offset = Math.abs(x - (state[target + S.x] as number));
+    const center = state[target + S.x] as number;
     const tolerance = Math.floor((state[target + S.w] as number) / 2);
-    if (offset > tolerance) {
-      state[p + S.aux0] = -1;
-      startRound(state, done);
-      return;
+    let x = state[slider + S.x] as number;
+    if (Math.abs(x - center) > tolerance) {
+      const forgiven = params.feel === 2 ? forgivenX(x, state[slider + S.vx] as number, center, tolerance) : null;
+      if (forgiven === null) {
+        state[p + S.aux0] = -1;
+        startRound(state, done);
+        return;
+      }
+      x = forgiven;
     }
+    const offset = Math.abs(x - center);
     state[p + S.aux0] = timingPoints(offset, tolerance);
     const mark = bodyBase(TIMING_SLOTS.marks + done);
     const width = state[slider + S.w] as number;
@@ -189,9 +223,19 @@ const generatorParams = z
     // Generátor pustí i toleranci pod dráhou za tik – `checkTimingLevel` ji odmítne s důvodem.
     tolerance: z.int().min(10).max(TIMING.maxTolerance).default(TIMING.tolerance),
     rounds: z.int().min(TIMING.minRounds).max(TIMING.maxRounds).default(8),
+    /** Žánr Načasování (P36A T11): každé kolo rychlejší, v posledním o `TIMING.rise`; bez něj stálá rychlost. */
+    rise: z.boolean().optional(),
+    /** Odpuštění ťuku (P37A T7) – čte ho ovládání, úroveň ne. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type TimingLevelParams = z.infer<typeof generatorParams>;
+
+/** Rychlost jezdce v kole `round`: s `rise` roste rovnoměrně od rychlosti úrovně. */
+export function timingSpeedOf(params: TimingLevelParams, round: number): number {
+  const base = TIMING.speed[params.speed];
+  return params.rise === true && params.rounds > 1 ? base + Math.floor((TIMING.rise * round) / (params.rounds - 1)) : base;
+}
 
 const KINDS: Readonly<Record<TimingMode, { readonly base: string; readonly slider: string; readonly w: number }>> = {
   stack: { base: 'base', slider: 'block', w: TIMING.blockW },
@@ -206,14 +250,18 @@ export const timingLevel: GeneratorPiece<TimingLevelParams> = {
   cost: (params) => ({ bodies: 3 + params.rounds, rules: 2 }),
   generate: (seed, params) => {
     const rng = createCompileRng(seed);
-    const speed = TIMING.speed[params.speed];
+    const speed = timingSpeedOf(params, 0);
     const period = timingPeriod(speed);
     const amplitude = (period * speed) / 2;
     const kinds = KINDS[params.mode];
     const heightOf = (round: number): number => TIMING.baseH + (params.mode === 'stack' ? round * TIMING.blockH : 0);
-    // Každé kolo začne na kraji, stranu určí semínko.
+    // Každé kolo začne na kraji svého kyvu, stranu určí semínko.
     const starts = Array.from({ length: params.rounds }, () => (rng.int(0, 1) === 0 ? -1 : 1));
     const first = starts[0] as number;
+    const edgeOf = (round: number): { readonly speed: number; readonly amplitude: number } => {
+      const own = timingSpeedOf(params, round);
+      return { speed: own, amplitude: (timingPeriod(own) * own) / 2 };
+    };
     const bodies: BodyInit[] = [
       { role: 'player', kind: kinds.base, x: 0, y: 0, z: 0, w: TIMING.blockW, h: TIMING.baseH, d: TIMING.depth, solid: false },
       {
@@ -231,21 +279,22 @@ export const timingLevel: GeneratorPiece<TimingLevelParams> = {
         period,
       },
       { role: 'target', kind: 'zone', x: 0, y: TIMING.baseH, z: 0, w: 2 * params.tolerance, h: 40, d: TIMING.depth, solid: false },
-      ...starts.map(
-        (side, round): BodyInit => ({
+      ...starts.map((side, round): BodyInit => {
+        const edge = edgeOf(round);
+        return {
           role: 'platform',
           kind: kinds.slider,
-          x: side * amplitude,
+          x: side * edge.amplitude,
           y: heightOf(round),
           z: 0,
           w: kinds.w,
           h: TIMING.blockH,
           d: TIMING.depth,
           solid: false,
-          vx: -side * speed,
+          vx: -side * edge.speed,
           template: true,
-        }),
-      ),
+        };
+      }),
     ];
     return { bodies, length: params.rounds * UNIT };
   },
@@ -259,7 +308,7 @@ export function timingParts(seed: number, raw: Readonly<Record<string, unknown>>
   const params = timingLevel.params.parse(raw);
   const level = timingLevel.generate(seed, params);
   return {
-    control: { id: 'timing', params: { mode: params.mode, rounds: params.rounds } },
+    control: { id: 'timing', params: { mode: params.mode, rounds: params.rounds, ...(params.feel === undefined ? {} : { feel: params.feel }) } },
     bot: { id: 'timing_bot', params: {} },
     level,
     rules: timingRules(params.rounds, health),
@@ -283,9 +332,13 @@ export function checkTimingLevel(level: ArcadeLevel): string[] {
   if (tolerance <= speed) issues.push(`the tolerance ${m(tolerance)} is not wider than one tick of travel (${m(speed)}) – a tap on the right moment can still miss`);
   if (Math.abs(target.x) + tolerance > amplitude) issues.push(`the target window reaches past the swing (${m(amplitude)} each way)`);
   if (marks.length === 0) issues.push('no rounds to play');
+  if (marks[0] !== undefined && Math.abs(marks[0].vx ?? 0) !== speed) issues.push('round 1 does not start at the speed of the slider');
   marks.forEach((mark, round) => {
-    // Kyv musí začít na kraji a mířit ke středu, jinak ho kyvadlo jádra přežene za kraj.
-    if (Math.abs(mark.x) !== amplitude || Math.sign(mark.vx ?? 0) !== -Math.sign(mark.x) || Math.abs(mark.vx ?? 0) !== speed) issues.push(`round ${round + 1} does not start at the edge of the swing`);
+    // Kyv kola (`rise` ho zrychluje) musí začít na kraji a mířit ke středu, jinak ho kyvadlo jádra přežene za kraj.
+    const own = Math.abs(mark.vx ?? 0);
+    const reach = (timingPeriod(own) * own) / 2;
+    if (own === 0 || Math.abs(mark.x) !== reach || Math.sign(mark.vx ?? 0) !== -Math.sign(mark.x)) issues.push(`round ${round + 1} does not start at the edge of the swing`);
+    else if (own !== speed && tolerance <= own) issues.push(`round ${round + 1}: the tolerance ${m(tolerance)} is not wider than one tick of travel (${m(own)})`);
   });
   if (level.length !== marks.length * UNIT) issues.push(`length ${level.length} does not match ${marks.length} rounds`);
   if (level.bodies.length > ARCADE_LIMITS.maxBodies) issues.push(`${level.bodies.length} bodies exceed the ${ARCADE_LIMITS.maxBodies} body limit`);

@@ -1,4 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { expect, test, type APIRequestContext } from '@playwright/test';
+
+import { startGame } from './play-start';
 
 /**
  * Poctivá hláška (P25E T2): věta, kterou knihovna ovládání neumí, dostane nad
@@ -7,7 +12,19 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
  */
 
 async function publish(request: APIRequestContext, sentence: string): Promise<{ url: string; honesty?: unknown }> {
-  const response = await request.post('/api/play/games', { data: { sentence } });
+  return post(request, { sentence });
+}
+
+/**
+ * Stráž a objednávky kreslí jen mřížka (`GridShell.tsx`). Věta mřížku od žánrů (P32B) nedá –
+ * každá nová jde do arkády –, takže se mřížka publikuje jako uložená hra z fixtury téže věty.
+ */
+async function publishGrid(request: APIRequestContext, fixture: string): Promise<{ url: string }> {
+  return post(request, { spec: JSON.parse(readFileSync(join(process.cwd(), 'src/play/__fixtures__', fixture), 'utf8')) as unknown });
+}
+
+async function post(request: APIRequestContext, data: unknown): Promise<{ url: string; honesty?: unknown }> {
+  const response = await request.post('/api/play/games', { data });
   expect(response.status(), await response.text()).toBeLessThan(300);
   return (await response.json()) as { url: string; honesty?: unknown };
 }
@@ -20,19 +37,23 @@ test.describe('/play/[id] – honesty strip', () => {
     const strip = page.getByTestId('play-honest');
     await expect(strip).toBeVisible();
     await expect(strip).toContainText("This one isn't playable yet – here's the closest game we can build");
-    await expect(page.getByTestId('play-honest-reason')).toContainText('an endless runner');
+    // Hláška jmenuje hru, kterou návrh postaví – od žánrových návrhů úkol, ne běžec (naměřeno P36A T12).
+    await expect(page.getByTestId('play-honest-reason')).toContainText('a quest');
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
 
     await strip.getByRole('button', { name: 'Got it' }).click();
     await expect(strip).toHaveCount(0);
   });
 
-  // P28D T4 (R-12): věta, která hru nechce, dostane běžce o svém tématu a hlášku, jak psát příště.
-  test('a sentence without a game verb says so and still plays a runner titled from the sentence', async ({ page, request }) => {
+  // P28D T4 (R-12): věta, která hru nechce, dostane hru o svém tématu a hlášku, jak psát příště (od P36A T11 sběr v Aréně, dřív běžec).
+  test('a sentence without a game verb says so and still plays a game titled from the sentence', async ({ page, request }) => {
     const game = await publish(request, 'Explain quantum physics to my grandma.');
     await page.goto(game.url);
-    await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’');
-    await expect(page.getByRole('heading', { name: 'Explain Quantum Physics Grandma' })).toBeVisible();
+    await expect(page.getByTestId('play-honest-reason')).toHaveText('No game verb found – here is a collecting game about grandma. Try: ‘Dodge …’, ‘Collect …’');
+    // Sběr v Aréně se jmenuje podle tématu věty („<téma> Hunt“), dřív běžec podle celé věty.
+    await expect(page.getByRole('heading', { name: 'Grandma Hunt' })).toBeVisible();
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());
     expect(outcome.runState).toBe('won');
@@ -53,7 +74,8 @@ test.describe('/play/[id] – honesty strip', () => {
  */
 test.describe('/play/[id] – what the scene shows', () => {
   test('a stealth game draws the guard beats, one of them watched', async ({ page, request }) => {
-    const game = await publish(request, 'sneak past guards in a museum and steal a diamond');
+    // Mřížka věty „sneak past guards in a museum and steal a diamond“.
+    const game = await publishGrid(request, 'collect_exit_stealth.json');
     await page.goto(game.url);
     await page.waitForFunction(() => window.__playSight !== undefined && window.__playSight().beats > 0, undefined, { timeout: 60_000 });
     const sight = await page.evaluate(() => window.__playSight!());
@@ -61,7 +83,8 @@ test.describe('/play/[id] – what the scene shows', () => {
   });
 
   test('a game without stealth draws no beats and no order bubbles', async ({ page, request }) => {
-    const game = await publish(request, 'Collect five glowing mushrooms then open a portal.');
+    // Mřížka věty „Collect five glowing mushrooms then open a portal.“
+    const game = await publishGrid(request, 'collect_exit.json');
     await page.goto(game.url);
     // Sondy musí existovat: vrstvy, které se nepřipojily vůbec, by „nula“ jen předstíraly.
     await page.waitForFunction(() => window.__playSight !== undefined && window.__playOrders !== undefined, undefined, { timeout: 60_000 });
@@ -70,7 +93,8 @@ test.describe('/play/[id] – what the scene shows', () => {
   });
 
   test('every customer shows a bubble until served', async ({ page, request }) => {
-    const game = await publish(request, 'cooking game where you make burgers fast for customers');
+    // Mřížka věty „cooking game where you make burgers fast for customers“.
+    const game = await publishGrid(request, 'delivery_orders.json');
     await page.goto(game.url);
     await page.waitForFunction(() => window.__playOrders !== undefined && window.__playOrders().orders > 0, undefined, { timeout: 60_000 });
     const before = await page.evaluate(() => window.__playOrders!());

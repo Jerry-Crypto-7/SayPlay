@@ -1,0 +1,1982 @@
+{
+ "total": 200,
+ "before": {
+  "piece": 91,
+  "none": 109
+ },
+ "after": {
+  "piece": 91,
+  "template": 12,
+  "none": 97
+ },
+ "byTemplate": {
+  "carry": 3,
+  "push": 3,
+  "open": 3,
+  "throw": 2,
+  "stack": 1
+ },
+ "topUncovered": [
+  {
+   "verb": "(tap_go)",
+   "count": 19
+  },
+  {
+   "verb": "fight",
+   "count": 7
+  },
+  {
+   "verb": "(manipulate)",
+   "count": 6
+  },
+  {
+   "verb": "escape",
+   "count": 5
+  },
+  {
+   "verb": "match",
+   "count": 4
+  },
+  {
+   "verb": "steal",
+   "count": 4
+  },
+  {
+   "verb": "(build_place)",
+   "count": 3
+  },
+  {
+   "verb": "defend",
+   "count": 3
+  },
+  {
+   "verb": "fish",
+   "count": 3
+  },
+  {
+   "verb": "merge",
+   "count": 3
+  }
+ ],
+ "sentences": [
+  {
+   "id": "s001",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump"
+   ]
+  },
+  {
+   "id": "s002",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "dodge",
+    "collect"
+   ]
+  },
+  {
+   "id": "s003",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "escape",
+    "hunt"
+   ]
+  },
+  {
+   "id": "s004",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s005",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s006",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "park",
+    "jump",
+    "run"
+   ]
+  },
+  {
+   "id": "s007",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "dodge",
+    "run"
+   ]
+  },
+  {
+   "id": "s008",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "run"
+   ]
+  },
+  {
+   "id": "s009",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "slide",
+    "run"
+   ]
+  },
+  {
+   "id": "s010",
+   "verbClass": "runner",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "fight",
+    "collect"
+   ]
+  },
+  {
+   "id": "s011",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "avoid"
+   ]
+  },
+  {
+   "id": "s012",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "collect",
+    "run"
+   ]
+  },
+  {
+   "id": "s013",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "fish",
+    "collect",
+    "slide"
+   ]
+  },
+  {
+   "id": "s014",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "chase"
+   ]
+  },
+  {
+   "id": "s015",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump",
+    "run"
+   ]
+  },
+  {
+   "id": "s016",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s017",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "dodge",
+    "run"
+   ]
+  },
+  {
+   "id": "s018",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s019",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump"
+   ]
+  },
+  {
+   "id": "s020",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s021",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s022",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "climb"
+   ]
+  },
+  {
+   "id": "s023",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump"
+   ]
+  },
+  {
+   "id": "s024",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s025",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "bounce",
+    "eat"
+   ]
+  },
+  {
+   "id": "s026",
+   "verbClass": "platform",
+   "drafted": "steer",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s027",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump"
+   ]
+  },
+  {
+   "id": "s028",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump"
+   ]
+  },
+  {
+   "id": "s029",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump",
+    "collect"
+   ]
+  },
+  {
+   "id": "s030",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s031",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s032",
+   "verbClass": "platform",
+   "drafted": "platform",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "climb",
+    "wash"
+   ]
+  },
+  {
+   "id": "s033",
+   "verbClass": "runner",
+   "drafted": "runner",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s034",
+   "verbClass": "tap_go",
+   "drafted": "platform",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s035",
+   "verbClass": "flap",
+   "drafted": "flap",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s036",
+   "verbClass": "tap_go",
+   "drafted": "runner",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s037",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "shoot",
+    "mine"
+   ]
+  },
+  {
+   "id": "s038",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "s039",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s040",
+   "verbClass": "aim_shoot",
+   "drafted": "duel",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "s041",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "fly",
+    "shoot"
+   ]
+  },
+  {
+   "id": "s042",
+   "verbClass": "aim_shoot",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s043",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "s044",
+   "verbClass": "aim_shoot",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "water",
+    "fight"
+   ]
+  },
+  {
+   "id": "s045",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s046",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "s047",
+   "verbClass": "aim_shoot",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "defend"
+   ]
+  },
+  {
+   "id": "s048",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "shoot",
+    "paint"
+   ]
+  },
+  {
+   "id": "s049",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "shoot",
+    "survive"
+   ]
+  },
+  {
+   "id": "s050",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": "throw",
+   "verbs": [
+    "throw"
+   ]
+  },
+  {
+   "id": "s051",
+   "verbClass": "aim_shoot",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s052",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "shoot"
+   ]
+  },
+  {
+   "id": "s053",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "race"
+   ]
+  },
+  {
+   "id": "s054",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s055",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s056",
+   "verbClass": "steer",
+   "drafted": "move_free",
+   "cover": "template",
+   "template": "carry",
+   "verbs": [
+    "race",
+    "deliver"
+   ]
+  },
+  {
+   "id": "s057",
+   "verbClass": "steer",
+   "drafted": "platform",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "jump"
+   ]
+  },
+  {
+   "id": "s058",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "race"
+   ]
+  },
+  {
+   "id": "s059",
+   "verbClass": "timing",
+   "drafted": "steer",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "race"
+   ]
+  },
+  {
+   "id": "s060",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s061",
+   "verbClass": "steer",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "park"
+   ]
+  },
+  {
+   "id": "s062",
+   "verbClass": "steer",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "escape"
+   ]
+  },
+  {
+   "id": "s063",
+   "verbClass": "steer",
+   "drafted": "platform",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "race",
+    "climb"
+   ]
+  },
+  {
+   "id": "s064",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "race"
+   ]
+  },
+  {
+   "id": "s065",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "race"
+   ]
+  },
+  {
+   "id": "s066",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s067",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "race"
+   ]
+  },
+  {
+   "id": "s068",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "match"
+   ]
+  },
+  {
+   "id": "s069",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s070",
+   "verbClass": "manipulate",
+   "drafted": "runner",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "slide"
+   ]
+  },
+  {
+   "id": "s071",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "sort"
+   ]
+  },
+  {
+   "id": "s072",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "template",
+   "template": "push",
+   "verbs": [
+    "push",
+    "open"
+   ]
+  },
+  {
+   "id": "s073",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s074",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s075",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "water",
+    "connect"
+   ]
+  },
+  {
+   "id": "s076",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s077",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "escape"
+   ]
+  },
+  {
+   "id": "s078",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s079",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "drop"
+   ]
+  },
+  {
+   "id": "s080",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "fish"
+   ]
+  },
+  {
+   "id": "s081",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s082",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s083",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "template",
+   "template": "open",
+   "verbs": [
+    "pull",
+    "save"
+   ]
+  },
+  {
+   "id": "s084",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "match"
+   ]
+  },
+  {
+   "id": "s085",
+   "verbClass": "manipulate",
+   "drafted": "steer",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "drive",
+    "park",
+    "tap"
+   ]
+  },
+  {
+   "id": "s086",
+   "verbClass": "manipulate",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s087",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": "throw",
+   "verbs": [
+    "throw"
+   ]
+  },
+  {
+   "id": "s088",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s089",
+   "verbClass": "throw",
+   "drafted": "steer",
+   "cover": "template",
+   "template": "open",
+   "verbs": []
+  },
+  {
+   "id": "s090",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "launch"
+   ]
+  },
+  {
+   "id": "s091",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": "throw",
+   "verbs": [
+    "throw"
+   ]
+  },
+  {
+   "id": "s092",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s093",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s094",
+   "verbClass": "timing",
+   "drafted": "throw",
+   "cover": "template",
+   "template": "throw",
+   "verbs": [
+    "catch"
+   ]
+  },
+  {
+   "id": "s095",
+   "verbClass": "timing",
+   "drafted": "throw",
+   "cover": "template",
+   "template": "throw",
+   "verbs": [
+    "throw"
+   ]
+  },
+  {
+   "id": "s096",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s097",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s098",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": "stack",
+   "verbs": [
+    "stack"
+   ]
+  },
+  {
+   "id": "s099",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "build"
+   ]
+  },
+  {
+   "id": "s100",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "tap"
+   ]
+  },
+  {
+   "id": "s101",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": "stack",
+   "verbs": [
+    "stack",
+    "fly"
+   ]
+  },
+  {
+   "id": "s102",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": "stack",
+   "verbs": [
+    "stack"
+   ]
+  },
+  {
+   "id": "s103",
+   "verbClass": "timing",
+   "drafted": "platform",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "bounce",
+    "tap"
+   ]
+  },
+  {
+   "id": "s104",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump"
+   ]
+  },
+  {
+   "id": "s105",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": "stack",
+   "verbs": [
+    "stack"
+   ]
+  },
+  {
+   "id": "s106",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": "give",
+   "verbs": [
+    "feed",
+    "cut"
+   ]
+  },
+  {
+   "id": "s107",
+   "verbClass": "timing",
+   "drafted": "timing",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "grow"
+   ]
+  },
+  {
+   "id": "s108",
+   "verbClass": "manipulate",
+   "drafted": "timing",
+   "cover": "template",
+   "template": "stack",
+   "verbs": [
+    "stack"
+   ]
+  },
+  {
+   "id": "s109",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "fish",
+    "eat"
+   ]
+  },
+  {
+   "id": "s110",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "grow",
+    "cut"
+   ]
+  },
+  {
+   "id": "s111",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "eat"
+   ]
+  },
+  {
+   "id": "s112",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s113",
+   "verbClass": "move_free",
+   "drafted": "platform",
+   "cover": "template",
+   "template": "push",
+   "verbs": [
+    "push"
+   ]
+  },
+  {
+   "id": "s114",
+   "verbClass": "steer",
+   "drafted": "runner",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "roll"
+   ]
+  },
+  {
+   "id": "s115",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s116",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "collect"
+   ]
+  },
+  {
+   "id": "s117",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s118",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "eat"
+   ]
+  },
+  {
+   "id": "s119",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "build"
+   ]
+  },
+  {
+   "id": "s120",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "merge",
+    "fight"
+   ]
+  },
+  {
+   "id": "s121",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s122",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "merge"
+   ]
+  },
+  {
+   "id": "s123",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "mine",
+    "upgrade"
+   ]
+  },
+  {
+   "id": "s124",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "grow",
+    "tap"
+   ]
+  },
+  {
+   "id": "s125",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s126",
+   "verbClass": "timing",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "merge"
+   ]
+  },
+  {
+   "id": "s127",
+   "verbClass": "throw",
+   "drafted": "move_free",
+   "cover": "template",
+   "template": "push",
+   "verbs": [
+    "kick"
+   ]
+  },
+  {
+   "id": "s128",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": "throw",
+   "verbs": [
+    "throw"
+   ]
+  },
+  {
+   "id": "s129",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s130",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s131",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s132",
+   "verbClass": "aim_shoot",
+   "drafted": "shooter",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s133",
+   "verbClass": "timing",
+   "drafted": "runner",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "jump",
+    "ski"
+   ]
+  },
+  {
+   "id": "s134",
+   "verbClass": "steer",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s135",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "ride",
+    "avoid"
+   ]
+  },
+  {
+   "id": "s136",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s137",
+   "verbClass": "timing",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "fish"
+   ]
+  },
+  {
+   "id": "s138",
+   "verbClass": "throw",
+   "drafted": "throw",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s139",
+   "verbClass": "melee",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "match"
+   ]
+  },
+  {
+   "id": "s140",
+   "verbClass": "rhythm",
+   "drafted": "rhythm",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "tap"
+   ]
+  },
+  {
+   "id": "s141",
+   "verbClass": "rhythm",
+   "drafted": "rhythm",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "cut"
+   ]
+  },
+  {
+   "id": "s142",
+   "verbClass": "rhythm",
+   "drafted": "rhythm",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s143",
+   "verbClass": "rhythm",
+   "drafted": "rhythm",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s144",
+   "verbClass": "rhythm",
+   "drafted": "rhythm",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s145",
+   "verbClass": "rhythm",
+   "drafted": "rhythm",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "jump",
+    "drop",
+    "roll"
+   ]
+  },
+  {
+   "id": "s146",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "sneak",
+    "guard",
+    "steal"
+   ]
+  },
+  {
+   "id": "s147",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "sneak",
+    "steal"
+   ]
+  },
+  {
+   "id": "s148",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s149",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "hide"
+   ]
+  },
+  {
+   "id": "s150",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "escape",
+    "avoid"
+   ]
+  },
+  {
+   "id": "s151",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "dodge",
+    "fish",
+    "steal"
+   ]
+  },
+  {
+   "id": "s152",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "sneak"
+   ]
+  },
+  {
+   "id": "s153",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s154",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "defend"
+   ]
+  },
+  {
+   "id": "s155",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "defend"
+   ]
+  },
+  {
+   "id": "s156",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "plant"
+   ]
+  },
+  {
+   "id": "s157",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s158",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "place",
+    "steal"
+   ]
+  },
+  {
+   "id": "s159",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "protect"
+   ]
+  },
+  {
+   "id": "s160",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "cook"
+   ]
+  },
+  {
+   "id": "s161",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s162",
+   "verbClass": "tap_go",
+   "drafted": "runner",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "run"
+   ]
+  },
+  {
+   "id": "s163",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s164",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "template",
+   "template": "carry",
+   "verbs": [
+    "deliver"
+   ]
+  },
+  {
+   "id": "s165",
+   "verbClass": "tap_go",
+   "drafted": "runner",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "run"
+   ]
+  },
+  {
+   "id": "s166",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "plant"
+   ]
+  },
+  {
+   "id": "s167",
+   "verbClass": "idle",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "manage"
+   ]
+  },
+  {
+   "id": "s168",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "decorate",
+    "bake"
+   ]
+  },
+  {
+   "id": "s169",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s170",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "dress"
+   ]
+  },
+  {
+   "id": "s171",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "match"
+   ]
+  },
+  {
+   "id": "s172",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s173",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "design"
+   ]
+  },
+  {
+   "id": "s174",
+   "verbClass": "build_place",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s175",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s176",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s177",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "explore"
+   ]
+  },
+  {
+   "id": "s178",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s179",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "escape"
+   ]
+  },
+  {
+   "id": "s180",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s181",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "survive"
+   ]
+  },
+  {
+   "id": "s182",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s183",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "hunt"
+   ]
+  },
+  {
+   "id": "s184",
+   "verbClass": "tap_go",
+   "drafted": "steer",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "explore"
+   ]
+  },
+  {
+   "id": "s185",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s186",
+   "verbClass": "melee",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "fight"
+   ]
+  },
+  {
+   "id": "s187",
+   "verbClass": "melee",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "fight"
+   ]
+  },
+  {
+   "id": "s188",
+   "verbClass": "melee",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "park",
+    "fight"
+   ]
+  },
+  {
+   "id": "s189",
+   "verbClass": "melee",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "fight"
+   ]
+  },
+  {
+   "id": "s190",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s191",
+   "verbClass": "steer",
+   "drafted": "steer",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "fly"
+   ]
+  },
+  {
+   "id": "s192",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "template",
+   "template": "carry",
+   "verbs": [
+    "collect"
+   ]
+  },
+  {
+   "id": "s193",
+   "verbClass": "move_free",
+   "drafted": "move_free",
+   "cover": "piece",
+   "template": null,
+   "verbs": [
+    "build",
+    "catch",
+    "survive"
+   ]
+  },
+  {
+   "id": "s194",
+   "verbClass": "sandbox",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "craft",
+    "mine",
+    "survive"
+   ]
+  },
+  {
+   "id": "s195",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s196",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s197",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": []
+  },
+  {
+   "id": "s198",
+   "verbClass": "tap_go",
+   "drafted": "move_free",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "pop"
+   ]
+  },
+  {
+   "id": "s199",
+   "verbClass": "sandbox",
+   "drafted": "move_free",
+   "cover": "template",
+   "template": "open",
+   "verbs": [
+    "fight",
+    "upgrade",
+    "explore",
+    "open"
+   ]
+  },
+  {
+   "id": "s200",
+   "verbClass": "sandbox",
+   "drafted": "steer",
+   "cover": "none",
+   "template": null,
+   "verbs": [
+    "build",
+    "drive",
+    "chase"
+   ]
+  }
+ ]
+}

@@ -12,37 +12,66 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import type { Group, Mesh, PerspectiveCamera } from 'three';
+import type { Group, Object3D, PerspectiveCamera } from 'three';
 import { Vector3 } from 'three';
 
 import { BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
+import { RHYTHM, rhythmLaneAxis } from '@/play/arcade/pieces/rhythm';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
+import type { HeroAction } from '@/play/spec';
 
+import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
+import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
 
 const TAP_KEYS = new Set([' ', 'enter', 'arrowup', 'w']);
+/** Klávesy drah rytmu zleva doprava (P36A T11). */
+const LANE_KEYS = ['d', 'f', 'j', 'k'];
 
-/** Ťuk kamkoli nebo mezerník/Enter/šipka nahoru = TAP (hned při stisku). Sdílí rytmus. */
-export function useTapInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
+/**
+ * Dráha rytmu pod prstem: hranice drah u lišty jako zlomky šířky plochy, které
+ * zapisuje `RhythmScene` do `data-lane-edges` (mezi drahami 0|1, 1|2, 2|3).
+ * `null`, dokud scéna hranice nezapsala.
+ */
+function laneUnder(element: HTMLElement, clientX: number): number | null {
+  const edges = element.dataset.laneEdges?.split(',').map(Number);
+  if (edges === undefined || edges.length !== RHYTHM.lanes - 1) return null;
+  const rect = element.getBoundingClientRect();
+  const at = (clientX - rect.left) / rect.width;
+  return edges[0]! < edges.at(-1)! ? edges.filter((edge) => at > edge).length : edges.filter((edge) => at < edge).length;
+}
+
+/**
+ * Ťuk kamkoli nebo mezerník/Enter/šipka nahoru = TAP (hned při stisku). Sdílí
+ * rytmus; s `lanes` ťuk nese dráhu pod prstem a D/F/J/K dráhu klávesy (jádro ji
+ * čte jen u hry s drahami, mezerník bere kteroukoli).
+ */
+export function useTapInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean, lanes = false): void {
   useEffect(() => {
     const element = target.current;
     if (!active || element === null) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target) || !TAP_KEYS.has(event.key.toLowerCase())) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.repeat || isTyping(event.target)) return;
+      const key = event.key.toLowerCase();
+      const lane = lanes ? LANE_KEYS.indexOf(key) : -1;
+      if (lane < 0 && !TAP_KEYS.has(key)) return;
       event.preventDefault();
-      session.press(BUTTON.TAP);
+      session.press(BUTTON.TAP, lane < 0 ? 0 : rhythmLaneAxis(lane));
     };
-    const onDown = () => session.press(BUTTON.TAP);
+    const onDown = (event: PointerEvent) => {
+      const lane = lanes ? laneUnder(element, event.clientX) : null;
+      session.press(BUTTON.TAP, lane === null ? 0 : rhythmLaneAxis(lane));
+    };
     window.addEventListener('keydown', onKey);
     element.addEventListener('pointerdown', onDown);
     return () => {
       window.removeEventListener('keydown', onKey);
       element.removeEventListener('pointerdown', onDown);
     };
-  }, [session, target, active]);
+  }, [session, target, active, lanes]);
 }
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
@@ -62,16 +91,35 @@ export function initialBody(world: ArcadeSession['world'], index: number) {
 /** Jak daleko za hrací plochou (m po +z) stojí řada kulis – za zemí hrací plochy. */
 const SCENERY_BEHIND = 7;
 
-export function TimingScene({ session, look: scene }: { readonly session: ArcadeSession; readonly look: Look }) {
+/** Model z popisku role vepsaný do kvádru těla (w × h × d, metry), postavený na zem. */
+export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
+
+/** `blockModel` (P30B T4): díl věže z popisku role `block` („pancakes“), vyplní kvádr dílu; jen u stavění věže. */
+export function TimingScene({
+  session,
+  look: scene,
+  blockModel,
+  ghost,
+}: {
+  readonly session: ArcadeSession;
+  readonly look: Look;
+  readonly blockModel?: BodyModel;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
+}) {
   const world = session.world;
   const base = initialBody(world, 0);
+  // Duch stojí u paty věže, vedle podstavy (hráčovo `z` jsou kola, ne dráha).
+  const ghostSpot = useMemo(() => besideHero(0, 0, base.w / 2, 'x'), [base.w]);
   const sliderInit = initialBody(world, TIMING_SLOTS.slider);
   const target = initialBody(world, TIMING_SLOTS.target);
   const marks = (world.initial[HEADER.bodyCount] as number) - TIMING_SLOTS.marks;
   const baseKind = base.kind;
   const sliderKind = sliderInit.kind;
   const slider = useRef<Group | null>(null);
-  const placed = useRef<(Mesh | null)[]>([]);
+  const placed = useRef<(Object3D | null)[]>([]);
+  // Jehla a prkno můstku nejsou díly věže – model z popisku nese jen `block`.
+  const blocks = sliderKind === 'block' ? blockModel : undefined;
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(), []);
   const followY = useRef<number | null>(null);
@@ -102,7 +150,9 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
     // Vidět celý kyv (±amplituda + blok) i na výšku: vzdálenost z poměru stran.
     const tan = Math.tan((camera.fov * Math.PI) / 360);
     const dist = Math.max(10 / (2 * tan * camera.aspect), 7 / (2 * tan), 8);
-    camera.position.set(0, followY.current + 1.5, -dist);
+    // Na výšku je kamera daleko a díl by měl pod 4 % výšky obrazu: víc shora je vidět i jeho
+    // vršek, takže je na snímku vyšší a pozná se (P30B T5).
+    camera.position.set(0, followY.current + (camera.aspect < 1 ? 3.5 : 1.5), -dist);
     look.set(0, followY.current, 0);
     camera.lookAt(look);
   });
@@ -111,13 +161,11 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
   const blockH = TIMING.blockH / UNIT;
   return (
     <>
-      <color attach="background" args={[scene.sky]} />
-      <hemisphereLight args={['#fff7ed', '#78350f', 1]} />
-      <directionalLight position={[3, 12, -8]} intensity={1.4} />
+      {/* Obloha, mlha, světla a stíny jsou rigu (`look/rig/StyleRig.tsx`, P32A T10). */}
       {/* Zem a základna (věž stojí na ní, můstek začíná sloupem, lišta je deska). */}
-      <mesh position={[0, -0.05, 0]}>
+      <mesh position={[0, -0.05, 0]} renderOrder={UNDER_PANORAMA}>
         <boxGeometry args={[40, 0.1, 12]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
       </mesh>
       {/* Kulisy sady prostředí (P27A T4) v řadě za hrací plochou: otočená sada „behind“ jde přes x v hloubce +z. */}
       <group rotation={[0, -Math.PI / 2, 0]}>
@@ -133,18 +181,32 @@ export function TimingScene({ session, look: scene }: { readonly session: Arcade
         <boxGeometry args={[target.w, top + 1, 0.02]} />
         <meshBasicMaterial color="#16a34a" transparent opacity={0.28} />
       </mesh>
-      {Array.from({ length: marks }, (_, round) => (
-        <mesh key={round} ref={(mesh) => { placed.current[round] = mesh; }} visible={false}>
-          <boxGeometry args={[1, blockH, depth]} />
-          <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
-        </mesh>
-      ))}
-      <group ref={slider} userData={{ frame: 'hero' }}>
-        <mesh position={[0, blockH / 2, 0]}>
-          <boxGeometry args={[sliderInit.w, blockH, depth]} />
-          <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
-        </mesh>
+      {/* Položený díl má jednotkovou šířku a `scale.x` mu dá šířku z jádra; model dílu stojí na zemi, proto o půl výšky níž. */}
+      {Array.from({ length: marks }, (_, round) =>
+        blocks !== undefined ? (
+          <group key={round} ref={(group) => { placed.current[round] = group; }} visible={false} userData={{ item: 'block' }}>
+            <group position={[0, -blockH / 2, 0]}>{blocks(1, blockH, depth)}</group>
+          </group>
+        ) : (
+          <mesh key={round} ref={(mesh) => { placed.current[round] = mesh; }} visible={false} userData={{ item: sliderKind === 'block' ? 'block' : undefined }}>
+            <boxGeometry args={[1, blockH, depth]} />
+            <meshStandardMaterial color={MARK_COLORS[round % MARK_COLORS.length]} roughness={0.6} />
+          </mesh>
+        ),
+      )}
+      {/* Jezdec věže je zároveň díl z věty (P30B T5, `item`), sonda ho počítá i jako položku. */}
+      <group ref={slider} userData={{ frame: 'hero', item: sliderKind === 'block' ? 'block' : undefined }}>
+        {blocks !== undefined ? (
+          blocks(sliderInit.w, blockH, depth)
+        ) : (
+          <mesh position={[0, blockH / 2, 0]}>
+            <boxGeometry args={[sliderInit.w, blockH, depth]} />
+            <meshStandardMaterial color={SLIDER_COLOR[sliderKind] ?? '#f59e0b'} roughness={0.5} />
+          </mesh>
+        )}
       </group>
+      {/* Slot ducha (P37-0 T3) vedle jezdce, ne v jeho skupině. */}
+      <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
     </>
   );
 }

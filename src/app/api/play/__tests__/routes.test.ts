@@ -13,24 +13,36 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import chaseEscape from '@/play/__fixtures__/chase_escape.json';
 import collectExit from '@/play/__fixtures__/collect_exit.json';
 import hazardCrossing from '@/play/__fixtures__/hazard_crossing.json';
 import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
-import { GAME_COMPILER_VERSION } from '@/play/contracts';
+import { ARCADE_COMPILER_VERSION } from '@/play/arcade/compile';
+import type { GameCompiler } from '@/play/contracts';
 import { STARTERS } from '@/components/play/starters';
 import { draftGameSpec } from '@/play/draft';
-import { __resetProcessVersionStore, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { legacyDraft } from '@/play/__tests__/legacy-draft';
+import { __resetProcessVersionStore, RECENT_CAP, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { BUILTIN_GAMES } from '@/play/version/builtin';
 import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
+
+/** Semínko, na kterém šev kompilátoru hlásí nevyhratelné rozvržení; `null` = skutečný kompilátor beze změny. */
+const refused = vi.hoisted(() => ({ seed: null as number | null }));
+vi.mock('../_compiler', async (original) => {
+  const real = (await original<typeof import('../_compiler')>()).getCompiler();
+  const compile: GameCompiler = (spec, seed) => (seed === refused.seed ? { ok: false, reason: 'UNWINNABLE', issues: ['refused by the test seam'] } : real(spec, seed));
+  return { getCompiler: () => compile };
+});
 
 import { GET as listGames, POST as createGame } from '../games/route';
 import { GET as readGame } from '../games/[id]/route';
 import { POST as remixGame } from '../games/[id]/remix/route';
 
 const CALLER = { 'x-forwarded-for': '203.0.113.9' };
+const MUSHROOMS = 'Collect five glowing mushrooms in a moonlit forest';
 
 function post(path: string, body: unknown, headers: Record<string, string> = CALLER): Request {
   return new Request(`http://play.test${path}`, {
@@ -65,6 +77,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  refused.seed = null;
   vi.useRealTimers();
   delete process.env.WORLDSMITH_CONTROL_FILE;
   delete process.env.VERCEL;
@@ -73,10 +86,12 @@ afterEach(() => {
 
 describe('publikace → čtení → remix → rodokmen', () => {
   it('201 s odkazem, GET 200 s celou hrou, remix 201 s rodičem, rodokmen na obou stranách', async () => {
-    const created = await publish('Collect five glowing mushrooms in a moonlit forest');
+    const created = await publish(MUSHROOMS);
     expect(created.status).toBe(201);
-    // Titulek píše návrh ze slov („Collect Five Glowing Mushrooms"), ne opis věty.
-    expect(created.body).toMatchObject({ parentId: null, archetype: 'collect_exit', title: 'Collect Five Glowing Mushrooms' });
+    // Archetyp a titulek píše návrh ze slov (od P32B T2 žánrový modul), ne opis věty.
+    const drafted = draftGameSpec(MUSHROOMS);
+    expect(created.body).toMatchObject({ parentId: null, archetype: drafted.archetype, title: drafted.title });
+    expect(created.body.title).not.toBe(MUSHROOMS);
     expect(created.body.versionId).toMatch(/^[a-f0-9]{8,64}$/);
     expect(created.body.url).toBe(`/play/${created.body.versionId}`);
 
@@ -85,7 +100,9 @@ describe('publikace → čtení → remix → rodokmen', () => {
     expect(game.response.headers.get('cache-control')).toBe('public, max-age=0, s-maxage=60');
     expect(game.body.version.versionId).toBe(created.body.versionId);
     expect(game.body.spec.schema).toBe('gamespec.v1');
-    expect(game.body.blueprint.world.sim).toBeDefined();
+    // Žánrová hra běží v jádře arkády: svět místo blueprintu mřížky.
+    expect(game.body.blueprint).toBeNull();
+    expect(game.body.arcade.control.id).toBe(game.body.spec.control);
     expect(game.body.report.publishEligible).toBe(true);
     expect(game.body.children).toEqual([]);
     expect(game.body.lineage.map((v: { versionId: string }) => v.versionId)).toEqual([created.body.versionId]);
@@ -106,8 +123,11 @@ describe('publikace → čtení → remix → rodokmen', () => {
       created.body.versionId,
       child.versionId,
     ]);
-    // Těžší = víc hub k sesbírání; spec dítěte je vlastní, ne rodičův.
-    expect(childRead.body.spec.objective.count).toBe(parent.body.spec.objective.count + 2);
+    // Houby sbírá sběr arény (P32B T5b, dřív agar s hustotou): těžší = o dvě houby víc a cíl to říká; spec dítěte je vlastní, ne rodičův.
+    expect(parent.body.spec.control).toBe('move_free');
+    expect(parent.body.spec.controlParams).toMatchObject({ generator: 'arena_collect', tuning: { items: 5 } });
+    expect(childRead.body.spec.controlParams).toMatchObject({ generator: 'arena_collect', tuning: { items: 7 } });
+    expect(childRead.body.spec.objective).toMatchObject({ count: 7, description: expect.stringMatching(/^Collect 7 /) });
   });
 
   it('táž věta podruhé je 200 exists s týmž versionId', async () => {
@@ -408,8 +428,28 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     expect(listed.headers.get('x-play-store')).toBeNull();
   });
 
-  it('prázdný feed je prázdné pole, ne vymyšlené hry', async () => {
-    expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [], next: null } });
+  // P37C T6: prázdné úložiště ukáže vestavěnou sadu ověřených her, nikdy prázdný feed.
+  it('prázdné úložiště vrací vestavěnou sadu a každá hra z ní jde otevřít', async () => {
+    const builtin = new Set(BUILTIN_GAMES.map((game) => game.version.versionId));
+    const first = await feed('?recent=24');
+    expect(first.status).toBe(200);
+    expect(first.body.games).toHaveLength(24);
+    expect(first.body.games.every((game: { versionId: string }) => builtin.has(game.versionId))).toBe(true);
+    const rest = await feed(`?recent=24&cursor=${first.body.next as string}`);
+    expect(new Set([...first.body.games, ...rest.body.games].map((game: { versionId: string }) => game.versionId))).toEqual(builtin);
+    expect(rest.body.next).toBeNull();
+    const opened = await read(first.body.games[0].versionId);
+    expect(opened.status).toBe(200);
+    expect(opened.body.lineage).toHaveLength(1);
+  });
+
+  it('skryté vestavěné hry nechají feed prázdný, ne vymyšlený', async () => {
+    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
+    try {
+      expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [], next: null } });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   /** Autorská verze návrhu, jak by ji zapsal upgrade na pozadí – bez modelu v testu. */
@@ -422,8 +462,13 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     return versionId;
   }
 
-  it('návrh, remix ani ruční spec do feedu nejdou; autorské verze od nejnovější s počtem remixů', async () => {
-    const first = await publish('Collect five glowing mushrooms in a moonlit forest');
+  it('návrh, remix ani ruční spec do feedu nejdou; autorské verze s počtem remixů, remixovaná výš', async () => {
+    // Kontrakt nad uloženými hrami: vestavěnou sadu (P37C T6) provozovatel skryje.
+    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
+    onTestFinished(() => {
+      vi.unstubAllEnvs();
+    });
+    const first = await publish(MUSHROOMS);
     // Jiný titul než první hra: feed od P27B T2 stejný titul podruhé neukáže.
     const second = await publish(STARTERS[0].sentence);
     const remix = await remixGame(post(`/api/play/games/${first.body.versionId}/remix`, { chip: 'harder' }), params(first.body.versionId));
@@ -440,16 +485,30 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
 
     const { status, body } = await feed('?recent=24');
     expect(status).toBe(200);
-    expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([b, a]);
-    expect(body.games[1]).toEqual({
+    // Feed podle smyčky (P36B T9): remix táhne `a` nad novější `b` bez historie.
+    expect(body.games.map((g: { versionId: string }) => g.versionId)).toEqual([a, b]);
+    // Cíl a nálada jdou z řádku seznamu (D-R1): karta je ukáže bez stažení detailu.
+    const firstSpec = (await versionStoreFromEnv(process.env).get(first.body.versionId))?.spec;
+    if (firstSpec === undefined) throw new Error('draft missing');
+    expect(firstSpec.tutorial.goalLine).not.toBe('');
+    expect(body.games[0]).toEqual({
       versionId: a,
       title: first.body.title,
-      archetype: 'collect_exit',
+      archetype: draftGameSpec(MUSHROOMS).archetype,
       createdAt: new Date(1_700_000_001_000).toISOString(),
       parentId: first.body.versionId,
       remixes: 1,
+      // Pod deseti pokusy „N% beat this“ není (P37C T5).
+      beat: null,
+      goal: firstSpec.tutorial.goalLine,
+      mood: firstSpec.theme.mood,
     });
-    expect(body.games[0].remixes).toBe(0);
+    // Řádek zapsaný před D-R1 cíl ani náladu nemá: přijde `null`, ne chybějící klíč.
+    const versions = versionStoreFromEnv(process.env);
+    const legacy = (await versions.recent(RECENT_CAP)).map((row) => ({ ...row, goal: undefined, mood: undefined }));
+    vi.spyOn(versions, 'recent').mockResolvedValueOnce(legacy);
+    expect((await feed('?recent=24')).body.games[0]).toMatchObject({ versionId: a, goal: null, mood: null });
+    expect(body.games[1].remixes).toBe(0);
     expect((await feed('?recent=1')).body.games).toHaveLength(1);
   });
 
@@ -484,20 +543,21 @@ const SHORT_RACE = 'Race through five neon gates in 2 seconds.';
 const UNWINNABLE_RACE_SEED = 1;
 
 describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
-  it('osm startovních vět → osm různých archetypů; každá 201 a GET nese ověřené keypointy', async () => {
-    const archetypes = new Set<string>();
+  // P32B T2: nová hra jde přes žánr, osm karet tedy přistane ve čtyřech žánrech (aréna, plavba, úkol, plošinovka), ne v osmi archetypech mřížky.
+  it('osm startovních vět → čtyři žánry; každá 201 a GET nese ověřené keypointy', async () => {
+    const genres = new Set<string>();
     for (const starter of STARTERS) {
       const created = await publish(starter.sentence);
       expect(created.status, starter.sentence).toBe(201);
-      expect(created.body.archetype, starter.sentence).toBe(starter.archetype);
-      archetypes.add(created.body.archetype);
       const game = await read(created.body.versionId);
-      expect(game.body.version.compilerVersion).toBe(GAME_COMPILER_VERSION);
+      expect(game.body.spec.genre?.id, starter.sentence).toBeDefined();
+      genres.add(game.body.spec.genre.id);
+      expect(game.body.version.compilerVersion).toBe(ARCADE_COMPILER_VERSION);
       expect(game.body.report.keypoints.length, starter.sentence).toBeGreaterThan(0);
       expect(game.body.report.publishEligible, starter.sentence).toBe(true);
       expect('stub' in game.body.report).toBe(false);
     }
-    expect(archetypes.size).toBe(8);
+    expect([...genres].sort()).toEqual(['arena', 'platformer', 'quest', 'voyage']);
   });
 
   it('spec, jehož keypoint neprojde, je 422 NOT_PUBLISHABLE s ids a nic se neuložilo', async () => {
@@ -514,7 +574,7 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
   });
 
   it('semínko zvolené volajícím se nemění: nevyhratelné rozvržení je 422 UNWINNABLE, bez semínka se hra najde', async () => {
-    const spec = draftGameSpec(SHORT_RACE);
+    const spec = legacyDraft(SHORT_RACE);
     const pinned = await createGame(post('/api/play/games', { spec, seed: UNWINNABLE_RACE_SEED }));
     expect(pinned.status).toBe(422);
     expect((await pinned.json()).error.code).toBe('UNWINNABLE');
@@ -525,6 +585,9 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
   // na větné a remixové cestě dalo tiše vyměnit za odvozená, a čip bez účinku
   // šel smazat.
   it('věta se semínkem volajícího: nevyhratelné rozvržení je 422 UNWINNABLE, ne jiné semínko', async () => {
+    // Žánrový návrh závodu (P32B T2) vyhraje na každém semínku, nevyhratelné rozvržení proto hlásí šev kompilátoru.
+    refused.seed = UNWINNABLE_RACE_SEED;
+    expect((await publish(SHORT_RACE)).status).toBe(201);
     const pinned = await createGame(
       post('/api/play/games', { sentence: SHORT_RACE, seed: UNWINNABLE_RACE_SEED }),
     );
@@ -534,7 +597,7 @@ describe('skutečný kompilátor, verifikátor a režisér (P23-D T1)', () => {
 
   it('remix se semínkem volajícího: nevyhratelné rozvržení je 422 UNWINNABLE, ne jiné semínko', async () => {
     const created = await publish('Collect five glowing mushrooms then open a portal.');
-    const spec = draftGameSpec(SHORT_RACE);
+    const spec = legacyDraft(SHORT_RACE);
     const remixed = await remixGame(
       post(`/api/play/games/${created.body.versionId}/remix`, { spec, seed: UNWINNABLE_RACE_SEED }),
       params(created.body.versionId),

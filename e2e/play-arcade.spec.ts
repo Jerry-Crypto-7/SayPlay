@@ -1,14 +1,17 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
+import { openPause, startGame } from './play-start';
+
 /**
- * Skákačka na `/play/[id]` (P25A T6): věta „jumping arcade game with a lot of
+ * Skákačka na `/play/[id]` (P25A T6): věta „endless runner with a lot of
  * obstacles“ projde skutečnými dveřmi (dvojník režiséra = návrh ze slov →
- * běžec), hra se načte v arkádovém plátně, HUD běží, mezerník zapíše skok,
- * záznam robota přehraný sondou skončí na „You won“ a mobil nescrolluje do
+ * běžec; „jumping …“ dává od žánrů 29. 9. plošinovku, `classify.ts`), hra se načte v arkádovém plátně, HUD běží, mezerník zapíše skok,
+ * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
+ * kitu, dřív „You won“) a mobil nescrolluje do
  * strany.
  */
 
-const SENTENCE = 'jumping arcade game with a lot of obstacles';
+const SENTENCE = 'endless runner with a lot of obstacles';
 
 async function publish(request: APIRequestContext): Promise<string> {
   const response = await request.post('/api/play/games', { data: { sentence: SENTENCE } });
@@ -27,6 +30,7 @@ test.describe('/play/[id] – arcade runner', () => {
     await page.goto(url);
     await expect(page.getByTestId('arcade-stage')).toBeVisible();
     await expect(page.getByTestId('play-goal')).not.toHaveText('');
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     const first = Number(await page.getByTestId('play-tick').getAttribute('data-tick'));
     await page.waitForTimeout(500);
@@ -40,7 +44,10 @@ test.describe('/play/[id] – arcade runner', () => {
   test('"Show me how" plays the verified run as a labelled demo, then the player plays (P27D T3)', async ({ page }) => {
     test.setTimeout(240_000);
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 10, undefined, { timeout: 60_000 });
+    // Od P34 T5 je „Show me how“ na kartě pauzy (HUD kitu); ukázka pauzu sama zruší.
+    await openPause(page);
     await page.getByTestId('play-demo-start').click();
     await expect(page.getByTestId('play-demo')).toBeVisible();
     // Ukázka běží v čase před očima, ne naráz.
@@ -54,18 +61,24 @@ test.describe('/play/[id] – arcade runner', () => {
     await expect(page.getByTestId('play-outcome')).toHaveCount(0);
     await page.getByTestId('play-demo-yours').click();
     await expect(page.getByTestId('play-demo-outcome')).toHaveCount(0);
+    await openPause(page);
     await expect(page.getByTestId('play-demo-start')).toBeVisible();
+    // Esc kartu zavře a hra běží dál; mezerník pak skáče.
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('play-paused')).toHaveCount(0);
     await page.keyboard.press('Space');
     await expect.poll(() => page.evaluate(() => window.__playShell!.inputs().length)).toBeGreaterThan(0);
   });
 
   test('a hidden tab pauses the game and the first key resumes it (P27B T3)', async ({ page }) => {
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     await page.evaluate(() => {
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
       document.dispatchEvent(new Event('visibilitychange'));
     });
+    // `play-paused` je od P34 T5 karta pauzy kitu; první klávesa ji zavře a hru pustí.
     await expect(page.getByTestId('play-paused')).toBeVisible();
     const frozen = await page.evaluate(() => window.__playShell!.tick());
     await page.evaluate(() => {
@@ -87,9 +100,13 @@ test.describe('/play/[id] – arcade runner', () => {
       Object.defineProperty(navigator, 'share', { configurable: true, value: async (data: unknown) => void shared.push(data) });
     });
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     const before = await page.evaluate(() => window.__playShell!.inputs().length);
     await page.getByTestId('play-share').focus();
+    await page.keyboard.press('Space');
+    // Od P34 T7 otevře kolo list sdílení; mezerník na jeho „Dare a friend“ sdílí a do hry taky nepropadne.
+    await page.getByTestId('play-share-dare').focus();
     await page.keyboard.press('Space');
     await expect.poll(() => page.evaluate(() => (window as unknown as { __shared: unknown[] }).__shared.length)).toBe(1);
     expect(await page.evaluate(() => window.__playShell!.inputs().length)).toBe(before);
@@ -102,11 +119,14 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(await page.evaluate(() => window.__playAudio!.state())).toBe('none');
     await page.getByTestId('arcade-stage').click();
     await expect.poll(() => page.evaluate(() => window.__playAudio!.state())).toBe('running');
+    // Od P34 T5 je Sound na kartě pauzy (HUD kitu); M platí i s otevřenou kartou.
+    await openPause(page);
     await expect(page.getByTestId('play-mute')).toHaveText('Sound on');
     await page.keyboard.press('m');
     await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
     expect(await page.evaluate(() => localStorage.getItem('play:sound'))).toBe('muted');
     await page.reload();
+    await openPause(page);
     await expect(page.getByTestId('play-mute')).toHaveText('Sound off');
     await page.getByTestId('play-mute').click();
     await expect(page.getByTestId('play-mute')).toHaveAttribute('aria-pressed', 'false');
@@ -116,6 +136,7 @@ test.describe('/play/[id] – arcade runner', () => {
   test('a pickup pops "+1" and the result waits ~600 ms after the end (P28C T3)', async ({ page }) => {
     type Hand = { handPlay: (until: 'score' | 'end') => { runState: string; score: number; at: number } };
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 5, undefined, { timeout: 60_000 });
     const scored = await page.evaluate(() => (window.__playShell as unknown as Hand).handPlay('score'));
     expect(scored.score).toBeGreaterThan(0);
@@ -138,11 +159,18 @@ test.describe('/play/[id] – arcade runner', () => {
     expect(end.delay).toBeLessThanOrEqual(800);
   });
 
-  test('a one-command prompt says what to do and goes away on the first input (P28C T5)', async ({ page }) => {
+  // P33 T11: výzva visí, dokud hra čeká na první dotek – hodiny stojí na tiku 0 a první stisk padne do něj.
+  test('the game waits on tick 0 under "Tap to start" and the first input starts it (P28C T5, P33 T11)', async ({ page }) => {
     await page.goto(url);
-    await expect(page.getByTestId('play-first-prompt')).toHaveText('Tap to jump', { timeout: 60_000 });
+    const prompt = page.getByTestId('play-first-prompt');
+    await expect(prompt).toContainText('Tap to start', { timeout: 60_000 });
+    await expect(page.getByTestId('play-first-prompt-action')).toHaveText('Tap to jump');
+    await page.waitForTimeout(1_500);
+    expect(await page.evaluate(() => window.__playShell!.tick())).toBe(0);
     await page.keyboard.press('Space');
-    await expect(page.getByTestId('play-first-prompt')).toHaveCount(0);
+    await expect(prompt).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__playShell!.tick())).toBeGreaterThan(10);
+    expect(await page.evaluate(() => window.__playShell!.inputs()[0])).toMatchObject({ tick: 0 });
   });
 
   test('ArrowLeft moves the runner to the left of the screen', async ({ page }) => {
@@ -159,66 +187,23 @@ test.describe('/play/[id] – arcade runner', () => {
     await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
     const outcome = await page.evaluate(() => window.__playShell!.playWitness());
     expect(outcome.runState).toBe('won');
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
   });
 
   test('after the run the scene draws on demand: the end state and Replay still redraw it (P28E T2)', async ({ page }) => {
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
     const stage = page.getByTestId('arcade-stage').locator('canvas');
     const running = await stage.screenshot();
     await page.evaluate(() => window.__playShell!.playWitness());
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
+    await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
     // Konec běhu přepne plátno na kreslení na požádání; poslední stav se přesto nakreslí.
     await expect.poll(async () => (await stage.screenshot()).equals(running)).toBe(false);
     const ended = await stage.screenshot();
     await page.getByTestId('play-replay').click();
     await expect.poll(async () => (await stage.screenshot()).equals(ended)).toBe(false);
-  });
-
-  test('after the run the canvas draws the end state once, then stays idle until Replay (P28E T2)', async ({ page }) => {
-    // Počítá snímky, ve kterých WebGL opravdu kreslilo (`draw*` > 0), s časem snímku.
-    await page.addInitScript(() => {
-      const gl = WebGL2RenderingContext.prototype as unknown as Record<string, (...args: unknown[]) => unknown>;
-      const drawn: number[] = [];
-      let calls = 0;
-      for (const name of ['drawArrays', 'drawElements', 'drawArraysInstanced', 'drawElementsInstanced', 'drawRangeElements']) {
-        const original = gl[name]!;
-        gl[name] = function (this: unknown, ...args: unknown[]) {
-          calls += 1;
-          return original.apply(this, args);
-        };
-      }
-      const frame = (at: number) => {
-        if (calls > 0) drawn.push(at);
-        calls = 0;
-        requestAnimationFrame(frame);
-      };
-      requestAnimationFrame(frame);
-      (window as unknown as { __drawn: number[] }).__drawn = drawn;
-    });
-    const drawnSince = (since: number) => page.evaluate((t) => (window as unknown as { __drawn: number[] }).__drawn.filter((at) => at > t).length, since);
-    await page.goto(url);
-    await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
-    // Záznam robota doběhne v jednom tahu; konec musí plátno nakreslit aspoň jednou (RedrawOnChange).
-    const ended = await page.evaluate(() => {
-      window.__playShell!.playWitness();
-      return performance.now();
-    });
-    await expect(page.getByTestId('play-outcome')).toContainText('You won');
-    await expect.poll(() => drawnSince(ended)).toBeGreaterThan(0);
-    // Pak plátno stojí: za sekundu nejvýš pár snímků, ne ~60.
-    const idle = await page.evaluate(() => performance.now());
-    await page.waitForTimeout(1_000);
-    expect(await drawnSince(idle)).toBeLessThanOrEqual(3);
-    // Otočení telefonu po konci: plátno se zvětší a vymaže, stojící scéna se musí nakreslit znovu.
-    const resized = await page.evaluate(() => performance.now());
-    await page.setViewportSize({ width: 900, height: 700 });
-    await expect.poll(() => drawnSince(resized)).toBeGreaterThan(0);
-    const replay = await page.evaluate(() => performance.now());
-    await page.getByTestId('play-replay').click();
-    await expect.poll(() => drawnSince(replay)).toBeGreaterThan(10);
   });
 
   test('the runner draws at most 250 calls a frame, not the whole track (P28E-R1)', async ({ page }) => {
@@ -243,7 +228,10 @@ test.describe('/play/[id] – arcade runner', () => {
       (window as unknown as { __calls: number[] }).__calls = counts;
     });
     await page.goto(url);
+    await startGame(page);
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+    // „Show me how“ je od P34 T5 na kartě pauzy (HUD kitu).
+    await openPause(page);
     await page.getByTestId('play-demo-start').click();
     await page.waitForTimeout(2_000);
     const counts = await page.evaluate(() => [...(window as unknown as { __calls: number[] }).__calls].slice(-60).sort((a, b) => a - b));

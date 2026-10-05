@@ -1,0 +1,418 @@
+{
+ "about": "P29C T3: setting vocabulary counted over evals/play/demand/corpus.json, evals/play/fidelity/corpus.json, evals/play/fidelity/judge-10.json (240 sentences); top 40 with at least one hit, ties by vocabulary order in ops/env/batch.py.",
+ "settings": [
+  {
+   "id": "race-track",
+   "count": 11,
+   "prompt": "car race track with grandstands",
+   "tags": [
+    "race track",
+    "racing",
+    "road",
+    "track"
+   ]
+  },
+  {
+   "id": "tower",
+   "count": 9,
+   "prompt": "tall stone tower rising into the clouds",
+   "tags": [
+    "tower",
+    "tall",
+    "height"
+   ]
+  },
+  {
+   "id": "candy-land",
+   "count": 4,
+   "prompt": "candy land with lollipop trees and chocolate hills",
+   "tags": [
+    "candy",
+    "sweets",
+    "chocolate"
+   ]
+  },
+  {
+   "id": "pond",
+   "count": 4,
+   "prompt": "calm pond with lily pads and reeds",
+   "tags": [
+    "pond",
+    "lily pads",
+    "lake",
+    "water"
+   ]
+  },
+  {
+   "id": "rooftops",
+   "count": 3,
+   "prompt": "city rooftops with chimneys and water tanks",
+   "tags": [
+    "rooftop",
+    "city",
+    "roof"
+   ]
+  },
+  {
+   "id": "spaceship",
+   "count": 3,
+   "prompt": "inside a spaceship with control panels and windows to space",
+   "tags": [
+    "spaceship",
+    "space station",
+    "space",
+    "sci-fi"
+   ]
+  },
+  {
+   "id": "temple",
+   "count": 3,
+   "prompt": "ancient jungle temple ruins",
+   "tags": [
+    "temple",
+    "ruins",
+    "ancient",
+    "jungle"
+   ]
+  },
+  {
+   "id": "village",
+   "count": 3,
+   "prompt": "medieval village with cottages",
+   "tags": [
+    "village",
+    "town",
+    "cottage",
+    "medieval"
+   ]
+  },
+  {
+   "id": "sky",
+   "count": 3,
+   "prompt": "above the clouds in a bright blue sky",
+   "tags": [
+    "sky",
+    "clouds",
+    "air"
+   ]
+  },
+  {
+   "id": "hills",
+   "count": 3,
+   "prompt": "green rolling hills with a winding path",
+   "tags": [
+    "hill",
+    "countryside",
+    "grass"
+   ]
+  },
+  {
+   "id": "school",
+   "count": 3,
+   "prompt": "school classroom with desks and a blackboard",
+   "tags": [
+    "school",
+    "classroom"
+   ]
+  },
+  {
+   "id": "hospital",
+   "count": 3,
+   "prompt": "bright hospital ward",
+   "tags": [
+    "hospital",
+    "ward",
+    "clinic"
+   ]
+  },
+  {
+   "id": "haunted-castle",
+   "count": 2,
+   "prompt": "haunted castle with ghosts at night",
+   "tags": [
+    "haunted",
+    "castle",
+    "spooky",
+    "night"
+   ]
+  },
+  {
+   "id": "mountain-road",
+   "count": 2,
+   "prompt": "mountain road with cliffs and pine trees",
+   "tags": [
+    "mountain",
+    "road",
+    "cliff"
+   ]
+  },
+  {
+   "id": "skyscraper",
+   "count": 2,
+   "prompt": "glass skyscraper office floor overlooking the city",
+   "tags": [
+    "skyscraper",
+    "office",
+    "tower",
+    "city"
+   ]
+  },
+  {
+   "id": "kitchen",
+   "count": 2,
+   "prompt": "busy restaurant kitchen with stoves and pans",
+   "tags": [
+    "kitchen",
+    "restaurant",
+    "cooking"
+   ]
+  },
+  {
+   "id": "mining-colony",
+   "count": 2,
+   "prompt": "sci-fi mining colony on an alien planet",
+   "tags": [
+    "colony",
+    "mine",
+    "mining",
+    "planet",
+    "space"
+   ]
+  },
+  {
+   "id": "asteroid-field",
+   "count": 2,
+   "prompt": "asteroid field in deep space",
+   "tags": [
+    "asteroid",
+    "space",
+    "rocks"
+   ]
+  },
+  {
+   "id": "pirate-ship",
+   "count": 2,
+   "prompt": "pirate ship deck on the open sea",
+   "tags": [
+    "pirate",
+    "ship",
+    "sea"
+   ]
+  },
+  {
+   "id": "arena",
+   "count": 2,
+   "prompt": "sports arena with crowd stands and lights",
+   "tags": [
+    "arena",
+    "stadium",
+    "crowd"
+   ]
+  },
+  {
+   "id": "parking-lot",
+   "count": 2,
+   "prompt": "jammed parking lot full of cars",
+   "tags": [
+    "parking",
+    "cars",
+    "lot"
+   ]
+  },
+  {
+   "id": "cafe",
+   "count": 2,
+   "prompt": "cozy rainy cafe interior with window view",
+   "tags": [
+    "cafe",
+    "café",
+    "coffee",
+    "rain"
+   ]
+  },
+  {
+   "id": "backyard",
+   "count": 1,
+   "prompt": "suburban backyard with fence, grass and a sprinkler",
+   "tags": [
+    "backyard",
+    "garden",
+    "yard",
+    "house"
+   ]
+  },
+  {
+   "id": "garden",
+   "count": 1,
+   "prompt": "flower garden with hedges",
+   "tags": [
+    "garden",
+    "flowers",
+    "hedge"
+   ]
+  },
+  {
+   "id": "lake",
+   "count": 1,
+   "prompt": "mountain lake with a wooden dock",
+   "tags": [
+    "lake",
+    "water",
+    "dock"
+   ]
+  },
+  {
+   "id": "sunset",
+   "count": 1,
+   "prompt": "golden sunset over hills",
+   "tags": [
+    "sunset",
+    "evening",
+    "sky"
+   ]
+  },
+  {
+   "id": "carnival",
+   "count": 1,
+   "prompt": "haunted carnival with rides and lights at night",
+   "tags": [
+    "carnival",
+    "circus",
+    "fair",
+    "night"
+   ]
+  },
+  {
+   "id": "disco",
+   "count": 1,
+   "prompt": "disco dance floor with colored lights",
+   "tags": [
+    "disco",
+    "dance",
+    "club",
+    "party"
+   ]
+  },
+  {
+   "id": "party",
+   "count": 1,
+   "prompt": "birthday party room with balloons and streamers",
+   "tags": [
+    "party",
+    "birthday",
+    "balloons"
+   ]
+  },
+  {
+   "id": "museum",
+   "count": 1,
+   "prompt": "museum hall with exhibits and paintings",
+   "tags": [
+    "museum",
+    "gallery",
+    "exhibit"
+   ]
+  },
+  {
+   "id": "dungeon",
+   "count": 1,
+   "prompt": "stone dungeon with torches and chains",
+   "tags": [
+    "dungeon",
+    "prison",
+    "stone"
+   ]
+  },
+  {
+   "id": "subway",
+   "count": 1,
+   "prompt": "subway station with train and tiles",
+   "tags": [
+    "subway",
+    "metro",
+    "train",
+    "station"
+   ]
+  },
+  {
+   "id": "restaurant",
+   "count": 1,
+   "prompt": "cozy restaurant dining room",
+   "tags": [
+    "restaurant",
+    "diner",
+    "tables"
+   ]
+  },
+  {
+   "id": "toy-room",
+   "count": 1,
+   "prompt": "giant toy room with blocks and toy cars",
+   "tags": [
+    "toy",
+    "playroom",
+    "kids"
+   ]
+  },
+  {
+   "id": "prison",
+   "count": 1,
+   "prompt": "prison yard with fences and watchtowers",
+   "tags": [
+    "prison",
+    "jail",
+    "yard"
+   ]
+  },
+  {
+   "id": "cabin",
+   "count": 1,
+   "prompt": "log cabin in the woods",
+   "tags": [
+    "cabin",
+    "woods",
+    "forest"
+   ]
+  },
+  {
+   "id": "alley",
+   "count": 1,
+   "prompt": "narrow city alley with trash cans",
+   "tags": [
+    "alley",
+    "city",
+    "street",
+    "night"
+   ]
+  },
+  {
+   "id": "bridge",
+   "count": 1,
+   "prompt": "long suspension bridge over a river",
+   "tags": [
+    "bridge",
+    "river"
+   ]
+  },
+  {
+   "id": "storm",
+   "count": 1,
+   "prompt": "stormy sky with lightning over plains",
+   "tags": [
+    "storm",
+    "lightning",
+    "rain"
+   ]
+  },
+  {
+   "id": "rainbow-road",
+   "count": 1,
+   "prompt": "rainbow road floating in space",
+   "tags": [
+    "rainbow",
+    "road",
+    "space"
+   ]
+  }
+ ]
+}

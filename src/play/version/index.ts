@@ -1,7 +1,19 @@
 export { sealVersion, type PlayTimings, type PublishedGame } from './version';
-export { decodeCursor, feedEligible, feedPage, hiddenFromEnv, type FeedCandidate, type FeedPage } from './feed';
+export { beatOf, decodeCursor, feedEligible, feedPage, hiddenFromEnv, type FeedCandidate, type FeedPage } from './feed';
 export {
+  DARE_ID_PATTERN,
+  DEFAULT_DARE_DAILY_CAP,
+  DEFAULT_GHOST_DAILY_CAP,
   DEFAULT_WRITE_LIMITS,
+  type DareRecord,
+  type DareReplay,
+  type BestDare,
+  BEST_KEPT,
+  bestRank,
+  type LoopHeat,
+  GHOST_DAILY_CAP_PER_CALLER,
+  GHOST_TTL_SECONDS,
+  MAX_GHOST_BYTES,
   MAX_LINEAGE,
   RECENT_CAP,
   VERSION_STORE_TIMEOUT_MS,

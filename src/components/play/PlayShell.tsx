@@ -17,12 +17,16 @@ import dynamic from 'next/dynamic';
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { GameVersion } from '@/play/contracts';
 import type { Honesty } from '@/play/draft/unsupported';
+import type { Par } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
 import type { WorldstreamBlueprint } from '@/worldstream/schema';
 
 import { ArcadePlay } from './arcade/ArcadePlay';
+import type { Dare } from './best';
+import { WithPlayEnv } from './arcade/look/play-env';
 import { HonestyStrip } from './HonestyStrip';
 import type { LabFacts, ReadFacts } from './lab';
+import { InfoSheetProvider } from './ui/InfoContext';
 
 const GridShell = dynamic(() => import('./GridShell'));
 
@@ -39,6 +43,10 @@ export interface PlayShellProps {
   readonly read: ReadFacts;
   /** Adresa `GET …/upgrade`, když je hra návrh z věty; `null` = není na co čekat. */
   readonly upgrade: string | null;
+  /** Vítězný běh robota arkádové hry (`report.par`, P36B T1) – měřítko hvězd; mřížka ho nečte. */
+  readonly par?: Par | null;
+  /** Výzva kamaráda z odkazu `?dare=` (P36B T7), ověřená serverem; jen arkáda. */
+  readonly challenge?: Dare | null;
 }
 
 /**
@@ -52,7 +60,13 @@ export function PlayShell({
   ...rest
 }: Omit<PlayShellProps, 'blueprint'> & { readonly blueprint: WorldstreamBlueprint | null; readonly arcade?: ArcadeWorld; readonly honesty?: Honesty | null }) {
   if (blueprint === null && arcade === undefined) throw new Error('PlayShell: a grid game needs its blueprint');
-  const shell = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+  const game = arcade !== undefined ? <ArcadePlay {...rest} arcade={arcade} /> : blueprint !== null && <GridShell {...rest} blueprint={blueprint} />;
+  // Info o hře je jeden list (P33 T7): shell dá sourozencům `SentenceRead`, `HowItWorks` a `Lineage` společný kontext.
+  const shell = (
+    <WithPlayEnv theme={rest.spec.theme} versionId={rest.versionId}>
+      <InfoSheetProvider>{game}</InfoSheetProvider>
+    </WithPlayEnv>
+  );
   if (honesty === null) return shell;
   // Proužek hru odsune, nepřekryje: HUD s cílem hry musí zůstat vidět.
   return (

@@ -1,0 +1,791 @@
+{
+  "about": "Čtvrté a páté kolo QA 28. 9. 2026 nad dávkami evals/gen3d/wide-nouns.txt, wide-retry-nouns.txt, wide-retry2-nouns.txt a wide2-nouns.txt (široký herní slovník: zvířata, postavy, vozidla, sběratelné předměty, nástroje): 186 modelů přidáno, všechny, které prošly bránou kvality (uživatel schválil celý přehled; hedgehog cartoon vynechán jako dvojník). Třetí kolo QA 28. 9. 2026 nad dávkou evals/gen3d/places-nouns.txt (stavby a předměty, které prozradí místo): 32 z 48 přidáno (6 neprošlo bránou kvality, zamítnuté nosítka = kočárek, marsovské vozítko = tank, stalagmit, rákos, náhrobek; nejisté kamenná věž, čepička, hradní brána, měsíční modul, satelitní anténa vynechány). Druhé kolo QA 27. 9. 2026 nad dávkou evals/gen3d/retry-nouns.txt: 39 z 52 přidáno (zamítnuté budovy, obálka, cela, rampa, spacák, pračka, pevnost, truhla, kropítko, mahjong; disco ball neprošel LOD1), původní slovo je tag. První kolo: QA 26. 9. 2026 nad evals/gen3d/batch-sheet.png: 76 z 232 modelů, které prošly bránou kvality ops/gen3d. Zamítnuté jsou hlavně slova, která nic nepojmenovávají (during, him, possible) – generátor z nich udělal krabici – a tvary, které slovo nepředstavují (ark = písmeno A, bank = ledová ruina). Klíč = slovo dávky, hodnota = další tagy.",
+  "approved": {
+    "acorn": [],
+    "alien bug": [
+      "alien"
+    ],
+    "balloon": [
+      "hot air balloon"
+    ],
+    "banana": [],
+    "battery": [],
+    "billiard": [
+      "billiards",
+      "pool table"
+    ],
+    "blender": [],
+    "bone": [],
+    "bowling": [
+      "bowling pin",
+      "skittle"
+    ],
+    "cardboard box": [
+      "box",
+      "crate"
+    ],
+    "coffee": [
+      "mug",
+      "cup"
+    ],
+    "container": [
+      "bin",
+      "bucket"
+    ],
+    "cooking": [
+      "pot",
+      "saucepan"
+    ],
+    "cop": [
+      "police",
+      "policeman",
+      "officer"
+    ],
+    "cowboy": [],
+    "crane": [],
+    "crocodile": [
+      "alligator",
+      "croc"
+    ],
+    "customer": [
+      "shopper"
+    ],
+    "dance": [
+      "dancer"
+    ],
+    "debris": [
+      "rubble"
+    ],
+    "doll": [],
+    "dress": [],
+    "drummer": [
+      "drums",
+      "drum kit"
+    ],
+    "dwarve": [
+      "dwarf"
+    ],
+    "factory": [],
+    "farm": [
+      "barn",
+      "farmhouse"
+    ],
+    "fishing": [
+      "fishing rod",
+      "rod"
+    ],
+    "fishmonger": [],
+    "food": [
+      "burger",
+      "sandwich"
+    ],
+    "fps": [
+      "gun",
+      "blaster"
+    ],
+    "gang": [
+      "gangster",
+      "thug"
+    ],
+    "garden": [
+      "bush",
+      "shrub"
+    ],
+    "goat": [],
+    "golf": [
+      "golf club"
+    ],
+    "grandma": [
+      "granny",
+      "grandmother"
+    ],
+    "guard": [
+      "soldier"
+    ],
+    "helix": [
+      "spiral",
+      "dna"
+    ],
+    "horse": [],
+    "hotel": [],
+    "king": [],
+    "kingdom": [
+      "castle"
+    ],
+    "launch": [
+      "rocket"
+    ],
+    "maze": [
+      "labyrinth"
+    ],
+    "mirror": [],
+    "mom": [
+      "mother",
+      "woman"
+    ],
+    "motorbike": [
+      "motorcycle",
+      "bike"
+    ],
+    "museum": [],
+    "office": [
+      "desk"
+    ],
+    "outfit": [
+      "clothes"
+    ],
+    "piano": [],
+    "pool": [
+      "swimming pool"
+    ],
+    "princess": [],
+    "raft": [],
+    "ragdoll": [],
+    "rainbow": [],
+    "ride": [
+      "jeep",
+      "buggy"
+    ],
+    "rider": [
+      "biker"
+    ],
+    "ruin": [
+      "ruins"
+    ],
+    "salon": [
+      "office chair",
+      "chair"
+    ],
+    "scooter": [],
+    "sister": [
+      "girl"
+    ],
+    "skateboard": [],
+    "ski": [
+      "skis"
+    ],
+    "skyscraper": [
+      "tower"
+    ],
+    "slingshot": [],
+    "snake": [
+      "serpent"
+    ],
+    "stair": [
+      "stairs",
+      "staircase"
+    ],
+    "suika": [
+      "watermelon",
+      "melon"
+    ],
+    "survivor": [],
+    "sushi": [],
+    "teacher": [],
+    "tennis": [
+      "tennis racket",
+      "racket"
+    ],
+    "tropical": [
+      "palm",
+      "palm tree"
+    ],
+    "tube": [
+      "pipe"
+    ],
+    "wand": [],
+    "windmill": [],
+    "billboard": [
+      "ads"
+    ],
+    "wooden ark boat": [
+      "ark",
+      "boat"
+    ],
+    "double bed": [
+      "bed",
+      "bedroom"
+    ],
+    "leather belt": [
+      "belt"
+    ],
+    "circus tent": [
+      "carnival",
+      "tent"
+    ],
+    "cash register": [
+      "checkout"
+    ],
+    "space colony dome": [
+      "colony",
+      "dome"
+    ],
+    "crafting table": [
+      "craft",
+      "workbench"
+    ],
+    "ice cream cone": [
+      "ice cream",
+      "cream"
+    ],
+    "knight shield": [
+      "shield",
+      "defending"
+    ],
+    "deer": [
+      "doe"
+    ],
+    "race car": [
+      "drift",
+      "car"
+    ],
+    "fencing sword": [
+      "duel"
+    ],
+    "roman temple": [
+      "empire",
+      "temple"
+    ],
+    "hard hat": [
+      "helmet"
+    ],
+    "first aid kit": [
+      "heal",
+      "medkit"
+    ],
+    "soccer ball": [
+      "kick",
+      "football"
+    ],
+    "gold trophy": [
+      "league",
+      "trophy"
+    ],
+    "armored knight": [
+      "medieval",
+      "knight"
+    ],
+    "pickaxe": [
+      "mining"
+    ],
+    "paint bucket": [
+      "paint"
+    ],
+    "soccer goal": [
+      "penalty",
+      "goal"
+    ],
+    "soda can": [
+      "pop",
+      "soda"
+    ],
+    "gemstone": [
+      "rare",
+      "gem"
+    ],
+    "restaurant table": [
+      "restaurant",
+      "table"
+    ],
+    "arcade cabinet": [
+      "retro",
+      "arcade"
+    ],
+    "money bag": [
+      "rob",
+      "loot"
+    ],
+    "laser sword": [
+      "saber"
+    ],
+    "computer monitor": [
+      "screen",
+      "monitor"
+    ],
+    "metal screw": [
+      "screw"
+    ],
+    "magnifying glass": [
+      "search"
+    ],
+    "sledgehammer": [
+      "smash",
+      "hammer"
+    ],
+    "space soldier": [
+      "space marine"
+    ],
+    "dumbbell": [
+      "stronger",
+      "weights"
+    ],
+    "checkered flag": [
+      "territory",
+      "flag"
+    ],
+    "teddy bear": [
+      "toy"
+    ],
+    "screwdriver": [
+      "unscrew"
+    ],
+    "alarm clock": [
+      "waking",
+      "clock"
+    ],
+    "wrecking ball": [
+      "wrecking"
+    ],
+    "market stall": [
+      "market",
+      "stall",
+      "bazaar"
+    ],
+    "fruit stand": [
+      "greengrocer"
+    ],
+    "awning": [],
+    "cave entrance": [
+      "cave",
+      "cavern"
+    ],
+    "hospital bed": [
+      "hospital",
+      "patient"
+    ],
+    "lighthouse": [
+      "coast"
+    ],
+    "moon rock": [
+      "moon",
+      "lunar"
+    ],
+    "cafe table": [
+      "cafe",
+      "café"
+    ],
+    "coffee cup": [],
+    "espresso machine": [
+      "espresso",
+      "barista"
+    ],
+    "birthday cake": [],
+    "party balloon": [
+      "party"
+    ],
+    "gift box": [],
+    "mine cart": [
+      "mine"
+    ],
+    "pirate ship": [
+      "galleon"
+    ],
+    "drawbridge": [
+      "moat"
+    ],
+    "bus stop": [],
+    "traffic light": [
+      "crossroads"
+    ],
+    "vending machine": [
+      "vending"
+    ],
+    "food truck": [
+      "street food"
+    ],
+    "hot dog": [],
+    "robot dog": [
+      "robodog"
+    ],
+    "cactus": [
+      "desert"
+    ],
+    "surfboard": [
+      "surf",
+      "surfer"
+    ],
+    "sandcastle": [
+      "beach",
+      "sand"
+    ],
+    "octopus": [],
+    "treasure map": [
+      "map"
+    ],
+    "wizard hat": [
+      "witch hat"
+    ],
+    "magic wand": [
+      "spell"
+    ],
+    "spider web": [
+      "cobweb",
+      "web"
+    ],
+    "throne": [
+      "queen"
+    ],
+    "crown": [
+      "royal"
+    ],
+    "karate fighter": [
+      "karate"
+    ],
+    "crane operator": [
+      "crane"
+    ],
+    "witch": [],
+    "hedgehog": [],
+    "sloth": [],
+    "grandpa": [],
+    "mermaid": [],
+    "jellyfish": [],
+    "pearl": [],
+    "bear": [],
+    "sumo wrestler": [],
+    "ice igloo": [
+      "igloo"
+    ],
+    "termite hill": [
+      "termite mound"
+    ],
+    "hay bale": [
+      "haystack"
+    ],
+    "medical stretcher": [
+      "stretcher"
+    ],
+    "moon lander": [
+      "lunar lander"
+    ],
+    "gravestone": [
+      "tombstone",
+      "grave"
+    ],
+    "gorilla": [],
+    "polar bear": [],
+    "parrot": [],
+    "flying bat": [
+      "bat"
+    ],
+    "spider": [],
+    "scorpion": [],
+    "butterfly": [],
+    "ladybug": [],
+    "whale": [],
+    "lobster": [],
+    "seahorse": [],
+    "koala": [],
+    "panda": [],
+    "camel": [],
+    "dinosaur": [
+      "dino"
+    ],
+    "unicorn": [],
+    "griffin": [],
+    "ogre": [],
+    "elf": [],
+    "fairy": [],
+    "werewolf": [],
+    "mummy": [],
+    "archer": [],
+    "viking": [],
+    "samurai": [],
+    "cyborg": [],
+    "superhero": [],
+    "villain": [],
+    "firefighter": [],
+    "doctor": [],
+    "nurse": [],
+    "farmer": [],
+    "detective": [],
+    "thief": [],
+    "clown": [],
+    "baby": [],
+    "student": [],
+    "bulldozer": [],
+    "helicopter": [],
+    "sailboat": [],
+    "tram": [],
+    "bicycle": [],
+    "motorboat": [],
+    "book": [],
+    "backpack": [],
+    "camera": [],
+    "smartphone": [
+      "phone"
+    ],
+    "television": [
+      "tv"
+    ],
+    "violin": [],
+    "trumpet": [],
+    "microphone": [],
+    "baseball bat": [],
+    "hockey stick": [],
+    "boxing glove": [],
+    "dice": [],
+    "cheese": [],
+    "lollipop": [],
+    "strawberry": [],
+    "pineapple": [],
+    "teapot": [],
+    "bookshelf": [],
+    "fountain": [],
+    "treehouse": [],
+    "volcano": [],
+    "iceberg": [],
+    "sunflower": [],
+    "rose": [],
+    "crystal cluster": [
+      "crystal"
+    ],
+    "planet": [],
+    "tornado": [],
+    "lightning bolt": [
+      "lightning"
+    ],
+    "trampoline": [],
+    "ladder": [],
+    "anchor": [],
+    "compass": [],
+    "telescope": [],
+    "microscope": [],
+    "magnet": [],
+    "battery pack": [
+      "battery"
+    ],
+    "cog gear": [
+      "gear",
+      "cog"
+    ],
+    "rake": [],
+    "wheelbarrow": [],
+    "ninja warrior": [
+      "ninja"
+    ],
+    "snow yeti": [
+      "yeti"
+    ],
+    "white snowball": [
+      "snowball"
+    ],
+    "soccer goalkeeper": [
+      "goalkeeper",
+      "goalie"
+    ],
+    "chocolate chip cookie": [
+      "cookie"
+    ],
+    "pirate captain": [
+      "pirate"
+    ],
+    "red ant": [
+      "ant"
+    ],
+    "garden snail": [
+      "snail"
+    ],
+    "wrapped candy": [
+      "candy",
+      "sweet"
+    ],
+    "snowman with hat": [
+      "snowman"
+    ],
+    "black hole portal": [
+      "black hole"
+    ],
+    "brown owl": [
+      "owl"
+    ],
+    "satellite radar dish": [
+      "radar dish",
+      "satellite dish",
+      "radar"
+    ],
+    "male lion": [
+      "lion"
+    ],
+    "dairy cow": [
+      "cow"
+    ],
+    "bald eagle": [
+      "eagle"
+    ],
+    "bottlenose dolphin": [
+      "dolphin"
+    ],
+    "red crab": [
+      "crab"
+    ],
+    "fire phoenix bird": [
+      "phoenix"
+    ],
+    "lab scientist": [
+      "scientist"
+    ],
+    "stage magician": [
+      "magician"
+    ],
+    "paper scroll": [
+      "scroll"
+    ],
+    "open umbrella": [
+      "umbrella"
+    ],
+    "diamond kite": [
+      "kite"
+    ],
+    "chess king piece": [
+      "chess piece",
+      "chess"
+    ],
+    "stone water well": [
+      "water well",
+      "well"
+    ],
+    "large boulder": [
+      "boulder"
+    ],
+    "street mailbox": [
+      "mailbox"
+    ],
+    "red heart pickup": [
+      "heart pickup",
+      "heart",
+      "extra life"
+    ],
+    "circular saw blade": [
+      "saw blade",
+      "saw"
+    ],
+    "iron cannonball": [
+      "cannonball"
+    ],
+    "brass bullet": [
+      "bullet"
+    ],
+    "iron cage": [
+      "cage"
+    ],
+    "iron chain": [
+      "chain"
+    ],
+    "coil spring": [
+      "spring"
+    ],
+    "jump pad": [
+      "launch pad"
+    ],
+    "fighter jet": [
+      "jet"
+    ],
+    "small songbird": [
+      "bird",
+      "songbird"
+    ],
+    "young prince": [
+      "prince"
+    ],
+    "market stall shop": [
+      "shop",
+      "store"
+    ],
+    "road sign": [],
+    "witch cauldron": [
+      "cauldron"
+    ],
+    "wooden magic staff": [
+      "staff",
+      "magic staff"
+    ],
+    "gold necklace": [
+      "necklace"
+    ],
+    "sealed letter": [
+      "letter"
+    ],
+    "paper envelope": [
+      "envelope"
+    ],
+    "red cherry": [
+      "cherry",
+      "cherries"
+    ],
+    "bunch of grape": [
+      "grape",
+      "grapes"
+    ],
+    "milk carton": [],
+    "tiger standing cartoon": [
+      "tiger"
+    ],
+    "tortoise": [
+      "turtle"
+    ],
+    "glowing light bulb": [
+      "lightbulb",
+      "light bulb",
+      "bulb"
+    ],
+    "donkey": [],
+    "giant squid": [
+      "squid"
+    ],
+    "stag beetle": [
+      "beetle"
+    ],
+    "mosquito": [],
+    "housefly": [
+      "fly"
+    ],
+    "dragonfly": [],
+    "pink flamingo": [
+      "flamingo"
+    ],
+    "white swan": [
+      "swan"
+    ],
+    "black crow": [
+      "crow",
+      "raven"
+    ],
+    "otter": [],
+    "skunk": [],
+    "gold star pickup": [
+      "star pickup"
+    ],
+    "toucan": [],
+    "chameleon": [],
+    "narwhal": [],
+    "manta ray": [
+      "stingray"
+    ],
+    "pufferfish": [
+      "blowfish"
+    ],
+    "axolotl": [],
+    "carousel": [],
+    "hot tub": [],
+    "jukebox": [],
+    "piggy bank": [],
+    "hourglass": [],
+    "globe": [],
+    "typewriter": [],
+    "harp": [],
+    "accordion": [],
+    "banjo": [],
+    "tuba": [],
+    "xylophone": [],
+    "bagpipe": [
+      "bagpipes"
+    ],
+    "saxophone": [],
+    "cello": [],
+    "tambourine": [],
+    "maraca": [
+      "maracas"
+    ]
+  }
+}

@@ -48,6 +48,8 @@ interface Fixture {
   readonly identityTokens?: readonly string[];
   /** Výjimky na řádek: identifikátor, ve kterém token sedí jen jako podřetězec. */
   readonly identityExceptions?: readonly { readonly literal: string; readonly reason?: string }[];
+  /** Výjimky kontroly 6: celý vymyšlený klíč s důvodem. */
+  readonly keyExceptions?: readonly { readonly literal: string; readonly reason?: string }[];
   /** Zakázaná jména organizátora v configu. Default je `PUBLIC_TOKENS`. */
   readonly publicTokens?: readonly string[];
   /** Config vznikne, ale klíč `publicTokens` v něm vůbec nebude. */
@@ -79,6 +81,7 @@ function makeRepo(fixture: Fixture = {}): string {
         ...(fixture.omitPublicTokens ? {} : { publicTokens: fixture.publicTokens ?? PUBLIC_TOKENS }),
         identityTokens: fixture.identityTokens ?? ['johndoe'],
         ...(fixture.identityExceptions ? { identityExceptions: fixture.identityExceptions } : {}),
+        ...(fixture.keyExceptions ? { keyExceptions: fixture.keyExceptions } : {}),
       }),
       'utf8',
     );
@@ -547,6 +550,46 @@ describe('a každou z šesti kontrol umí shodit zvlášť', () => {
     const result = blindCheck(makeRepo({ extraFile: { name: 'config.ts', body: `const key = '${shaped}';\n` } }));
     expect(result.code).toBe(1);
     expect(failedChecks(result.out)).toEqual([6]);
+  });
+
+  /**
+   * Naměřeno 1. 10. 2026: vymyšlený testovací klíč v historii (test P27D, v `main`
+   * přejmenovaný v #19) zastavil push zálohy; přepis ~400 commitů je nevratný.
+   * Výjimka je celý klíč + důvod; jiný klíč a kus klíče kontrolu nevypnou.
+   */
+  describe('[6] výjimka pro známý testovací klíč', () => {
+    const fake = `${'sk'}-test-d1-never-leaves-the-server`;
+    const other = `${'sk'}-abcdefghijklmnopqrstuvwxyz0123`;
+
+    it('celý klíč s důvodem projde', () => {
+      const result = blindCheck(
+        makeRepo({ keyExceptions: [{ literal: fake, reason: 'vymyšlený klíč testu' }], extraFile: { name: 'a.test.ts', body: `const KEY = '${fake}';\n` } }),
+      );
+      expect(result.code).toBe(0);
+      expect(failedChecks(result.out)).toEqual([]);
+    });
+
+    it('bez důvodu se nebere', () => {
+      const result = blindCheck(makeRepo({ keyExceptions: [{ literal: fake }], extraFile: { name: 'a.test.ts', body: `const KEY = '${fake}';\n` } }));
+      expect(failedChecks(result.out)).toEqual([6]);
+    });
+
+    it('kus klíče jako výjimka nic nevypne', () => {
+      const result = blindCheck(
+        makeRepo({ keyExceptions: [{ literal: `${'sk'}-`, reason: 'široká' }], extraFile: { name: 'a.test.ts', body: `const KEY = '${other}';\n` } }),
+      );
+      expect(failedChecks(result.out)).toEqual([6]);
+    });
+
+    it('jiný klíč v historii dál padá', () => {
+      const result = blindCheck(
+        makeRepo({
+          keyExceptions: [{ literal: fake, reason: 'vymyšlený klíč testu' }],
+          extraFile: { name: 'a.test.ts', body: `const KEY = '${fake}';\nconst REAL = '${other}';\n` },
+        }),
+      );
+      expect(failedChecks(result.out)).toEqual([6]);
+    });
   });
 });
 

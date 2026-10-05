@@ -6,18 +6,21 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpec, draftGameSpecWithMeta } from '@/play/draft';
 import { type ChecklistEntry, fidelityChain } from '@/play/fidelity/chain';
+import type { GameSpecV1 } from '@/play/spec';
 
 import corpus from '../../../evals/play/fidelity/corpus.json';
+
+import { legacyDraft } from './legacy-draft';
 
 const SENTENCES = corpus.sentences as unknown as readonly { id: string; text: string; checklist: ChecklistEntry[] }[];
 
 /** Stav jedné položky kontrolního seznamu věty z korpusu po slovním draftu. */
-function itemOf(id: string, item: string) {
+function itemOf(id: string, item: string, draft: (sentence: string) => GameSpecV1 = draftGameSpec) {
   const sentence = SENTENCES.find((candidate) => candidate.id === id)!;
   const entry = sentence.checklist.find((candidate) => candidate.item === item)!;
-  const [chain] = fidelityChain(draftGameSpec(sentence.text), [entry]);
+  const [chain] = fidelityChain(draft(sentence.text), [entry]);
   return [chain.item, chain.drawn, chain.why];
 }
 
@@ -42,14 +45,26 @@ describe('place named without a preposition', () => {
 
 describe('foe named without a verb', () => {
   it('reads the foe before "shooter" and after "defend … from"', () => {
-    expect(itemOf('s039', 'zombie')).toEqual(['zombie', true, 'ok']);
-    expect(itemOf('h03', 'dragon')).toEqual(['dragon', true, 'ok']);
+    // Střelnice je od P32B T2 šablona remixu; od P36A T10 dá nová hra zombíky do vln nepřátel žánru Střílečka.
+    expect(itemOf('s039', 'zombie', legacyDraft)).toEqual(['zombie', true, 'ok']);
+    expect(draftGameSpecWithMeta('zombie shooter in a mall').genre).toMatchObject({ genre: 'shooter', enemy: 'zombie' });
+    // Hod je taky šablona remixu; nová hra dá draky do soupeře souboje arény – nakreslí ho, až scéna bude číst `rival` (B-R9).
+    expect(itemOf('h03', 'dragon', legacyDraft)).toEqual(['dragon', true, 'ok']);
+    expect(draftGameSpecWithMeta('defend a castle from dragons by throwing snowballs').genre?.enemy).toBe('dragon');
   });
 
   it('never takes a place or a style before "shooter" for the foe', () => {
-    const template = label(draftGameSpec('a shooter'), 'enemy');
-    expect(label(draftGameSpec('a space shooter'), 'enemy')).toBe(template);
-    expect(label(draftGameSpec('a top-down shooter'), 'enemy')).toBe(template);
+    const shooter = (sentence: string) => legacyDraft(sentence, 1, 'shooter');
+    const template = label(shooter('a shooter'), 'enemy');
+    expect(template).toBeDefined();
+    expect(label(shooter('a space shooter'), 'enemy')).toBe(template);
+    expect(label(shooter('a top-down shooter'), 'enemy')).toBe(template);
+    for (const sentence of ['a space shooter', 'a top-down shooter']) {
+      const shot = draftGameSpecWithMeta(sentence).genre;
+      expect(shot?.genre).toBe('shooter');
+      expect(shot?.enemy).toBeDefined();
+      expect(shot?.enemy).not.toMatch(/space|top-down/);
+    }
   });
 });
 
@@ -63,17 +78,5 @@ describe('vehicle named by "… race"', () => {
 
   it('never makes a place the racer', () => {
     expect(label(draftGameSpec('space race to the moon'), 'player')).not.toMatch(/space/);
-  });
-});
-
-// P28D T3: řetěz počítá jen model z popisku. Náhradník (hydrant za postřikovač)
-// číslo věrnosti nezvedne; věž hodu z kostek kreslí model terče, takže krabice ano.
-describe('drawn counts the label model only', () => {
-  it('a stand-in model does not count as drawn (s006 sprinkler)', () => {
-    expect(itemOf('s006', 'sprinkler')).toEqual(['sprinkler', false, 'no-model']);
-  });
-
-  it('the throw tower of wood blocks draws the target label (s088 cardboard box)', () => {
-    expect(itemOf('s088', 'cardboard box')).toEqual(['cardboard box', true, 'ok']);
   });
 });

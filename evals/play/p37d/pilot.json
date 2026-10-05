@@ -1,0 +1,417 @@
+{
+ "about": "P37D T2 pilot 3. 10. 2026: the 20 most frequent nouns of missing.json (d7150a60) through ops/gen3d on the RTX 3090 (seeds 1,2,3, gpu-lock), quality_gate.py, then the blind judge scripts/p37d/judge-sheet.mjs (astra via subscription, dev measurement only, never training data) over a four-view sheet, then a human-style look at every sheet. seconds include failed seeds. Report: pilot.md.",
+ "records": [
+  {
+   "noun": "frog",
+   "seed": 1,
+   "seconds": 100.9,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 49,
+   "lod1KB": 21,
+   "judge": {
+    "name": "frog",
+    "alternatives": [
+     "toad"
+    ],
+    "intact": true,
+    "verdict": "top1",
+    "seconds": 22.7
+   },
+   "viewed": "accept"
+  },
+  {
+   "noun": "squirrel",
+   "seed": 2,
+   "seconds": 197.8,
+   "failedSeeds": 1,
+   "gate": "passed",
+   "lod0KB": 50,
+   "lod1KB": 20,
+   "judge": {
+    "name": "squirrel",
+    "alternatives": [
+     "chipmunk"
+    ],
+    "intact": true,
+    "verdict": "top1",
+    "seconds": 23.8
+   },
+   "viewed": "accept"
+  },
+  {
+   "noun": "rope",
+   "seed": 1,
+   "seconds": 72.3,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 94,
+   "lod1KB": 34,
+   "judge": {
+    "name": "wooden pole",
+    "alternatives": [
+     "wooden stick",
+     "staff",
+     "rod"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 20.8
+   },
+   "viewed": "reject flat-or-thin: straight rope reads as a pole"
+  },
+  {
+   "noun": "submarine",
+   "seed": 1,
+   "seconds": 72.1,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 93,
+   "lod1KB": 18,
+   "judge": {
+    "name": "submarine",
+    "alternatives": [
+     "submersible"
+    ],
+    "intact": true,
+    "verdict": "top1",
+    "seconds": 19.7
+   },
+   "viewed": "accept"
+  },
+  {
+   "noun": "bug",
+   "seed": 2,
+   "seconds": 149.4,
+   "failedSeeds": 1,
+   "gate": "passed",
+   "lod0KB": 94,
+   "lod1KB": 24,
+   "judge": {
+    "name": "beetle",
+    "alternatives": [
+     "firebug",
+     "insect",
+     "cockroach"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 20
+   },
+   "viewed": "accept: beetle is a bug, judge match too strict"
+  },
+  {
+   "noun": "monster truck",
+   "seed": 2,
+   "seconds": 255.8,
+   "failedSeeds": 1,
+   "gate": "passed",
+   "lod0KB": 54,
+   "lod1KB": 18,
+   "judge": {
+    "name": "off-road buggy",
+    "alternatives": [
+     "dune buggy",
+     "monster truck",
+     "RC car"
+    ],
+    "intact": true,
+    "verdict": "top3",
+    "seconds": 21.2
+   },
+   "viewed": "accept"
+  },
+  {
+   "noun": "paper",
+   "seed": 1,
+   "seconds": 190.9,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 55,
+   "lod1KB": 32,
+   "judge": {
+    "name": "Air conditioner",
+    "alternatives": [
+     "Ventilation unit",
+     "Metal crate",
+     "Scrap metal bale"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 20.8
+   },
+   "viewed": "reject flat-or-thin: came out as a cube"
+  },
+  {
+   "noun": "frisbee",
+   "seed": 1,
+   "seconds": 179.5,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 80,
+   "lod1KB": 15,
+   "judge": {
+    "name": "barrel",
+    "alternatives": [
+     "drum",
+     "canister",
+     "can"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 17.3
+   },
+   "viewed": "reject wrong-object: a barrel"
+  },
+  {
+   "noun": "water gun",
+   "seed": 2,
+   "seconds": 231.1,
+   "failedSeeds": 1,
+   "gate": "passed",
+   "lod0KB": 83,
+   "lod1KB": 20,
+   "judge": {
+    "name": "toy gun",
+    "alternatives": [
+     "dart blaster",
+     "water gun",
+     "blaster"
+    ],
+    "intact": true,
+    "verdict": "top1",
+    "seconds": 14.4
+   },
+   "viewed": "accept"
+  },
+  {
+   "noun": "washing machine",
+   "seed": 1,
+   "seconds": 133.2,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 67,
+   "lod1KB": 21,
+   "judge": {
+    "name": "washing machine",
+    "alternatives": [
+     "front-loading washer",
+     "tumble dryer"
+    ],
+    "intact": true,
+    "verdict": "top1",
+    "seconds": 14.4
+   },
+   "viewed": "accept: crumpled but whole"
+  },
+  {
+   "noun": "conveyor belt",
+   "seed": 1,
+   "seconds": 93.8,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 61,
+   "lod1KB": 13,
+   "judge": {
+    "name": "roller conveyor",
+    "alternatives": [
+     "conveyor belt",
+     "staircase",
+     "ladder"
+    ],
+    "intact": true,
+    "verdict": "top3",
+    "seconds": 23.5
+   },
+   "viewed": "accept"
+  },
+  {
+   "noun": "mahjong tile",
+   "seed": 1,
+   "seconds": 131.4,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 76,
+   "lod1KB": 18,
+   "judge": {
+    "name": "control panel",
+    "alternatives": [
+     "switch panel",
+     "electrical panel",
+     "button panel"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 14.9
+   },
+   "viewed": "reject flat-or-thin: reads as a panel"
+  },
+  {
+   "noun": "paper ball",
+   "seed": 1,
+   "seconds": 87.6,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 77,
+   "lod1KB": 17,
+   "judge": {
+    "name": "ice boulder",
+    "alternatives": [
+     "snowball",
+     "ice chunk",
+     "rock"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 13.2
+   },
+   "viewed": "reject wrong-object: an ice ball"
+  },
+  {
+   "noun": "sumo",
+   "seed": 1,
+   "seconds": 60.2,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 83,
+   "lod1KB": 21,
+   "judge": {
+    "name": "sumo wrestler",
+    "alternatives": [
+     "wrestler",
+     "sumo fighter",
+     "heavyset man"
+    ],
+    "intact": true,
+    "verdict": "top1",
+    "seconds": 12.2
+   },
+   "viewed": "accept"
+  },
+  {
+   "noun": "stickman",
+   "seed": 1,
+   "seconds": 57.2,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 92,
+   "lod1KB": 23,
+   "judge": {
+    "name": "man",
+    "alternatives": [
+     "person",
+     "human",
+     "male character"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 10.5
+   },
+   "viewed": "reject wrong-object: an ordinary man"
+  },
+  {
+   "noun": "vet",
+   "seed": 2,
+   "seconds": 146.9,
+   "failedSeeds": 1,
+   "gate": "passed",
+   "lod0KB": 77,
+   "lod1KB": 19,
+   "judge": {
+    "name": "construction worker",
+    "alternatives": [
+     "workman",
+     "mechanic",
+     "man"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 10.9
+   },
+   "viewed": "reject role-not-visual"
+  },
+  {
+   "noun": "owner",
+   "seed": 1,
+   "seconds": 52.7,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 67,
+   "lod1KB": 17,
+   "judge": {
+    "name": "man",
+    "alternatives": [
+     "person",
+     "male character"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 11.9
+   },
+   "viewed": "reject role-not-visual"
+  },
+  {
+   "noun": "investor",
+   "seed": 1,
+   "seconds": 54.9,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 81,
+   "lod1KB": 20,
+   "judge": {
+    "name": "businessman",
+    "alternatives": [
+     "man",
+     "office worker",
+     "suited man"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 10.5
+   },
+   "viewed": "accept: businessman is an investor"
+  },
+  {
+   "noun": "puddle",
+   "seed": 1,
+   "seconds": 54.8,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 89,
+   "lod1KB": 20,
+   "judge": {
+    "name": "lava crater",
+    "alternatives": [
+     "volcanic crater",
+     "lava pool",
+     "fire pit"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 11.2
+   },
+   "viewed": "reject flat-or-thin: a disc like a rug"
+  },
+  {
+   "noun": "ramp",
+   "seed": 1,
+   "seconds": 65.8,
+   "failedSeeds": 0,
+   "gate": "passed",
+   "lod0KB": 94,
+   "lod1KB": 20,
+   "judge": {
+    "name": "sandwich board",
+    "alternatives": [
+     "A-frame sign",
+     "folding sign",
+     "pavement sign"
+    ],
+    "intact": true,
+    "verdict": "no",
+    "seconds": 12.1
+   },
+   "viewed": "reject wrong-object: an A-frame sign"
+  }
+ ]
+}

@@ -4,7 +4,8 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
  * Střelba a hod na `/play/[id]` (P25G T6): věta projde skutečnými dveřmi
  * (návrh ze slov → `shooter` / `throw`), hra se načte v arkádovém plátně,
  * vstup se zapíše do záznamu (klik = výstřel, držení a puštění = hod),
- * záznam robota přehraný sondou skončí na „You won“ a mobil nescrolluje
+ * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
+ * kitu, dřív „You won“) a mobil nescrolluje
  * do strany.
  */
 
@@ -101,7 +102,7 @@ for (const game of GAMES) {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const outcome = await page.evaluate(() => window.__playShell!.playWitness());
       expect(outcome.runState).toBe('won');
-      await expect(page.getByTestId('play-outcome')).toContainText('You won');
+      await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
       await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
     });
 

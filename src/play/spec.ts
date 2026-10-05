@@ -29,16 +29,19 @@ import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
 
 import { ADDONS, type AddonId } from './arcade/contract';
-import { LOOK_IDS } from './arcade/look';
+import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
+import { ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
+import { ALL_GENRE_MODES, GENRES, GENRE_MODES, isGenreMode } from './genre/contract';
+import { heroActionSchema } from './hero-action';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
 import { PLATFORM_DIFFICULTIES, PLATFORM_LEVEL } from './arcade/pieces/platform';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SPEEDS, RUNNER_TRACK } from './arcade/pieces/runner';
-import { DUEL_DIFFICULTIES } from './arcade/pieces/duel';
+import { DUEL, DUEL_DIFFICULTIES } from './arcade/pieces/duel';
 import { RHYTHM, RHYTHM_DENSITIES } from './arcade/pieces/rhythm';
-import { SHOOTER_DIFFICULTIES } from './arcade/pieces/shooter';
+import { SHOOTER_DIFFICULTIES, SHOOTER_RISE_MAX, SHOOTER_WAVE_SIZE_MAX } from './arcade/pieces/shooter';
 import { STEER_DIFFICULTIES, STEER_TRACK } from './arcade/pieces/steer';
 import { THROW_DIFFICULTIES, THROW_GOALS } from './arcade/pieces/throw';
 import { TIMING, TIMING_MODES, TIMING_SPEEDS } from './arcade/pieces/timing';
@@ -203,6 +206,10 @@ export const budgetsSchema = z
   .strict();
 export type GameBudgets = z.infer<typeof budgetsSchema>;
 
+/** Jak se hrdina hýbe, když to není během (`theme.motion`): `ride` = jízda v předklonu. */
+export const THEME_MOTIONS = ['ride'] as const;
+export type ThemeMotion = (typeof THEME_MOTIONS)[number];
+
 export const themeSchema = z
   .object({
     /** Kde se to děje – vstup pro výběr assetů a palety (`"supermarket at night"`). */
@@ -212,6 +219,27 @@ export const themeSchema = z
     look: z.enum(LOOK_IDS).optional(),
   })
   .strict();
+
+/**
+ * `theme` uložené verze: navíc počasí a denní doba ze živých změn sdílené hry
+ * (P29D T10); bez nich jasno ve dne. Model je nepíše – jeho tvar
+ * (`director/prompt.ts`, `answer-schema.ts`) zůstává u `themeSchema`.
+ */
+export const storedThemeSchema = themeSchema
+  .extend({
+    weather: z.enum(WEATHERS).optional(),
+    timeOfDay: z.enum(TIMES_OF_DAY).optional(),
+    /**
+     * P32A T5-R1: hrdina věty nejede během, ale jízdou (klouže, lyžuje, surfuje) – scéna
+     * ho kreslí v předklonu. Píše modul žánru běžce (`genre/runner.ts`), model ne; stará hra
+     * pole nemá a běží jako dřív. Jen vzhled, jádro ho nečte.
+     */
+    motion: z.enum(THEME_MOTIONS).optional(),
+  })
+  .strict();
+
+/** Co hrdina viditelně dělá (P37-0) – seznam žije v `hero-action.ts` (P37A T3), tady se jen vystavuje. */
+export { HERO_ACTIONS, type HeroAction, heroActionSchema } from './hero-action';
 
 export const tutorialSchema = z
   .object({
@@ -244,6 +272,14 @@ export const runnerParamsSchema = z
     density: z.enum(RUNNER_DENSITIES).optional(),
     lengthM: z.int().min(RUNNER_TRACK.minLengthM).max(RUNNER_TRACK.maxLengthM).optional(),
     obstacles: z.array(z.enum(OBSTACLE_KINDS)).min(1).max(OBSTACLE_KINDS.length).optional(),
+    /**
+     * Odpuštění skoku jako skákačka (P36A T6); žánr Běžec ho píše vždy. Bez výchozí
+     * hodnoty: uložený spec bez něj má stejný hash i svět jako dřív. Ne přes `tuning` –
+     * ten hru označí za delegovanou a čipy remixu běžce by ztichly (`director/remix.ts`).
+     */
+    feel: z.literal(2).optional(),
+    /** Trať ze tří úseků s délkou podle obsahu (P36A T4); žánr Běžec ho píše vždy. Bez výchozí hodnoty – uložený spec bez něj staví tentýž svět. */
+    sections: z.literal(3).optional(),
   })
   .strict();
 export type RunnerParams = z.infer<typeof runnerParamsSchema>;
@@ -267,6 +303,10 @@ export const flapParamsSchema = z
     difficulty: z.enum(FLAP_DIFFICULTIES).optional(),
     lengthM: z.int().min(FLAP_TRACK.minLengthM).max(FLAP_TRACK.maxLengthM).optional(),
     coins: z.boolean().optional(),
+    /** Mezery se po třetinách zužují, náraz bere život s milostí – žánr Poletování (P36A T11); uložená hra bez něj jako dřív. */
+    rise: z.boolean().optional(),
+    /** Odpuštění pozdního vzletu ze země (P37A T7); žánr Poletování ho píše vždy. Bez výchozí hodnoty – uložený spec staví tentýž svět. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type FlapParams = z.infer<typeof flapParamsSchema>;
@@ -279,6 +319,9 @@ export const shooterParamsSchema = z
     reloadS: z.number().min(0.5).max(4).optional(),
     moving: z.boolean().optional(),
     waves: z.int().min(1).max(6).optional(),
+    /** Nepřátel ve vlně a zrychlení za vlnu – žánr Střílečka (P36A T10); uložená hra bez nich jako dřív. */
+    waveSize: z.int().min(1).max(SHOOTER_WAVE_SIZE_MAX).optional(),
+    rise: z.int().min(1).max(SHOOTER_RISE_MAX).optional(),
   })
   .strict();
 export type ShooterSpecParams = z.infer<typeof shooterParamsSchema>;
@@ -290,6 +333,8 @@ export const throwParamsSchema = z
     goal: z.enum(THROW_GOALS).optional(),
     bounce: z.boolean().optional(),
     spareThrows: z.int().min(0).max(10).optional(),
+    /** Rozpočet robota na celou hru v sekundách – pole naplánuje kola, která se do něj vejdou (P36A F5); bez něj jedno pole. */
+    budget: z.int().min(1).max(90).optional(),
   })
   .strict();
 export type ThrowSpecParams = z.infer<typeof throwParamsSchema>;
@@ -323,6 +368,10 @@ export const timingParamsSchema = z
     speed: z.enum(TIMING_SPEEDS).optional(),
     tolerance: z.int().min(TIMING.minSpecTolerance).max(TIMING.maxTolerance).optional(),
     rounds: z.int().min(TIMING.minRounds).max(TIMING.maxRounds).optional(),
+    /** Každé kolo rychlejší – žánr Načasování (P36A T11); uložená hra bez něj jako dřív. */
+    rise: z.boolean().optional(),
+    /** Odpuštění brzkého a pozdního ťuku (P37A T7); žánr Načasování ho píše vždy. Bez výchozí hodnoty – uložený spec staví tentýž svět. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type TimingParams = z.infer<typeof timingParamsSchema>;
@@ -333,12 +382,17 @@ export const rhythmParamsSchema = z
     bpm: z.int().min(RHYTHM.minBpm).max(RHYTHM.maxBpm).optional(),
     density: z.enum(RHYTHM_DENSITIES).optional(),
     beats: z.int().min(RHYTHM.minBeats).max(RHYTHM.maxBeats).optional(),
+    /** Písnička houstne po třetinách a ťuk míří do dráhy – žánr Rytmus (P36A T11); uložená hra bez nich jako dřív. */
+    ramp: z.boolean().optional(),
+    lanes: z.boolean().optional(),
+    /** Odpuštění brzkého a pozdního ťuku (P37A T7); žánr Rytmus ho píše vždy. Bez výchozí hodnoty – uložený spec staví tentýž svět. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type RhythmParams = z.infer<typeof rhythmParamsSchema>;
 
-/** Parametry souboje (P25H): obtížnost určí vzorec soupeře a jeho životy. */
-export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES).optional() }).strict();
+/** Parametry souboje (P25H): obtížnost určí vzorec soupeře a jeho životy; `rounds` soupeřů za sebou, každý rychlejší (žánr Souboj, P36A T11). */
+export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES).optional(), rounds: z.int().min(1).max(DUEL.maxRounds).optional() }).strict();
 export type DuelParams = z.infer<typeof duelParamsSchema>;
 
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
@@ -355,29 +409,63 @@ export const CONTROL_PARAMS = {
   duel: duelParamsSchema,
 } as const;
 
+/**
+ * Delegovaný výběr generátoru (P32-0 T4): překlad žánru smí k parametrům
+ * ovládání přidat `generator` (id z `MODE_GENERATORS`) a `tuning` (parametry
+ * režimu). `tuning` validuje zod schéma toho generátoru v `arcade/compile.ts`,
+ * ne tady; klíč, který soudí `CONTROL_PARAMS`, ale nést nesmí. Bez výchozích hodnot: spec bez nich má stejný hash jako dřív.
+ * Režisér je nepíše – `CONTROL_PARAMS` (jeho zadání) je nemá.
+ */
+const DELEGATION = {
+  generator: z.string().regex(/^[a-z][a-z0-9_]{0,39}$/, 'generator: a registered generator id').optional(),
+  tuning: z.record(z.string().regex(/^[a-zA-Z][a-zA-Z0-9]{0,31}$/), z.union([z.number(), z.boolean(), z.string().max(40)])).optional(),
+};
+const delegated = <S extends z.ZodObject>(schema: S) => schema.extend(DELEGATION);
+const SPEC_CONTROL_PARAMS = {
+  runner: delegated(runnerParamsSchema),
+  platform: delegated(platformParamsSchema),
+  flap: delegated(flapParamsSchema),
+  steer: delegated(steerParamsSchema),
+  move_free: delegated(arenaParamsSchema),
+  shooter: delegated(shooterParamsSchema),
+  throw: delegated(throwParamsSchema),
+  timing: delegated(timingParamsSchema),
+  rhythm: delegated(rhythmParamsSchema),
+  duel: delegated(duelParamsSchema),
+} as const;
+
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
     control: z.enum(CONTROLS).optional(),
     controlParams: z
       .union([
-        runnerParamsSchema,
-        platformParamsSchema,
-        flapParamsSchema,
-        steerParamsSchema,
-        arenaParamsSchema,
-        shooterParamsSchema,
-        throwParamsSchema,
-        timingParamsSchema,
-        rhythmParamsSchema,
-        duelParamsSchema,
+        SPEC_CONTROL_PARAMS.runner,
+        SPEC_CONTROL_PARAMS.platform,
+        SPEC_CONTROL_PARAMS.flap,
+        SPEC_CONTROL_PARAMS.steer,
+        SPEC_CONTROL_PARAMS.move_free,
+        SPEC_CONTROL_PARAMS.shooter,
+        SPEC_CONTROL_PARAMS.throw,
+        SPEC_CONTROL_PARAMS.timing,
+        SPEC_CONTROL_PARAMS.rhythm,
+        SPEC_CONTROL_PARAMS.duel,
       ])
       .optional(),
     addons: z.array(z.enum(ADDONS)).max(3).optional(),
+    /**
+     * Žánr, ze kterého spec vznikl (P32, `genre/contract.ts`). Bez výchozí
+     * hodnoty, jako `control`: spec bez něj má stejný `gameSpecHash` jako dřív.
+     * Režim musí patřit žánru – soudí `readGameSpec`.
+     */
+    genre: z
+      .object({ id: z.enum(GENRES), mode: z.enum(ALL_GENRE_MODES), compilerVersion: z.string().min(1).max(32) })
+      .strict()
+      .optional(),
     title: text.max(80),
     archetype: z.enum(Object.keys(ARCHETYPES) as [ArchetypeId, ...ArchetypeId[]]),
     targetDurationSec: z.int().min(30).max(180),
-    theme: themeSchema,
+    theme: storedThemeSchema,
     objective: objectiveSchema,
     /** Právě jedna nesmí chybět; nad pěti se hra přestává vysvětlit jednou větou. */
     // Arkáda (P26 T5) smí být bez mechanik; mřížce aspoň jednu vynutí povinné mechaniky archetypu.
@@ -386,6 +474,28 @@ export const gameSpecSchema = z
     tutorial: tutorialSchema,
     verification: z.array(verificationSchema).min(1).max(20),
     budgets: budgetsSchema,
+    /**
+     * Pravidla pro slovesa, která žádný dílek neumí (P29A, jazyk v
+     * `arcade/rules/schema.ts`). Jen arkáda; bez výchozí hodnoty, jako `control`.
+     */
+    rules: rulesSchema.optional(),
+    /** Doplňky rolí pro pravidla (skryté na startu). */
+    things: thingsSchema.optional(),
+    /**
+     * Skóre, které rozhoduje (P36A T5, `arcade/compile.ts` `withScoring`):
+     * kombo za sebrání v řadě a bonus na konci výhry; `target` = výhra až po
+     * dosažení cílového skóre. Jen arkáda; bez výchozí hodnoty, jako `control` –
+     * uložený spec bez pole staví tentýž svět.
+     */
+    scoring: z
+      .object({ target: z.int().min(10).max(9999).optional() })
+      .strict()
+      .optional(),
+    /**
+     * Viditelná činnost hrdiny (P37-0 T1). Bez výchozí hodnoty, jako `control`:
+     * uložená hra bez pole má tentýž `gameSpecHash`; render si doplní `none`.
+     */
+    heroAction: heroActionSchema.optional(),
   })
   .strict();
 
@@ -472,10 +582,23 @@ export function readGameSpec(input: unknown): GameSpecResult {
       };
     }
     // Sjednocení ve schématu pustí parametry kteréhokoli ovládání; tady musí sedět na to zvolené.
-    const own = CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);
+    const own = SPEC_CONTROL_PARAMS[spec.control].safeParse(spec.controlParams);
     if (!own.success) {
       return { ok: false, reason: 'MALFORMED_SPEC', issues: own.error.issues.map((issue) => `/controlParams/${issue.path.join('/')}: ${issue.message} (${spec.control})`) };
     }
+    // `tuning` přebije parametry až v kompilaci: klíč, který soudí tohle schéma (meze, cíl arény proti časovači), by obešel (revize T4).
+    const shape = CONTROL_PARAMS[spec.control].shape;
+    const shadowed = Object.keys(own.data.tuning ?? {}).filter((key) => Object.hasOwn(shape, key));
+    if (shadowed.length > 0) {
+      return {
+        ok: false,
+        reason: 'MALFORMED_SPEC',
+        issues: shadowed.map((key) => `/controlParams/tuning/${key}: ${spec.control} takes ${key} in controlParams itself – tuning carries only the generator's own keys`),
+      };
+    }
+  }
+  if (spec.genre !== undefined && !isGenreMode(spec.genre.id, spec.genre.mode)) {
+    return { ok: false, reason: 'MALFORMED_SPEC', issues: [`/genre/mode: ${spec.genre.id} has modes ${GENRE_MODES[spec.genre.id].join(', ')}, not ${spec.genre.mode}`] };
   }
   if (spec.addons !== undefined) {
     const allowed: readonly AddonId[] = CAPABILITIES[spec.control ?? 'tap_go'].addons;
@@ -504,6 +627,17 @@ export function readGameSpec(input: unknown): GameSpecResult {
     mechanicIds.add(mechanic.id);
   });
   if (issues.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues };
+
+  if (spec.rules !== undefined || spec.things !== undefined) {
+    if (spec.control === undefined || spec.control === 'tap_go') {
+      return { ok: false, reason: 'MALFORMED_SPEC', issues: ['/rules: only an arcade game (any control but tap_go) takes rules'] };
+    }
+    // Vyhrává-li pravidlo na volném pohybu, hraje robot pravidel na dvorku. Generátor se počítá,
+    // dokud ho spec nese: svět ho postaví. Zahodí ho jen `rulesYard` a ten běží před čtením (B-R10).
+    const yard = spec.control === 'move_free' && (spec.rules ?? []).some((rule) => rule.do.some((effect) => 'win' in effect));
+    const ruleProblems = ruleIssues(spec.rules ?? [], spec.things ?? [], roleIds, { addons: spec.addons, generator: spec.controlParams?.generator, yard });
+    if (ruleProblems.length > 0) return { ok: false, reason: 'DANGLING_REFERENCE', issues: ruleProblems };
+  }
 
   // Arkáda povinné mechaniky archetypu nečte (P26 T5, `capabilities.ts`) – vyžadovat
   // je by nutilo model psát, co hra nehraje.

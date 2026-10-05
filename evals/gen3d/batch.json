@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-24",
+  "measuredAt": "2026-09-28",
   "records": [
     {
       "noun": "dragon",
@@ -236,6 +236,4798 @@
       "glb": "D:\\claude\\_gen3d-cache\\trash\\trash-lod0.glb",
       "preview": "D:\\claude\\_gen3d-cache\\trash\\trash.png",
       "quarantine": "D:\\claude\\Hackaton-wt-p26c\\asset-quarantine\\gen3d-trash"
+    },
+    {
+      "noun": "acorn",
+      "seconds": 133.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\acorn\\acorn-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\acorn\\acorn.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-acorn"
+    },
+    {
+      "noun": "ads",
+      "seconds": 130.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ads\\ads-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ads\\ads.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ads"
+    },
+    {
+      "noun": "alien bug",
+      "seconds": 97.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\alien-bug\\alien-bug-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\alien-bug\\alien-bug.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-alien-bug"
+    },
+    {
+      "noun": "ant",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\ant\\ant.png",
+      "seconds": 123.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "ark",
+      "seconds": 100.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ark\\ark-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ark\\ark.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ark"
+    },
+    {
+      "noun": "backroom",
+      "seconds": 88.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\backroom\\backroom-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\backroom\\backroom.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-backroom"
+    },
+    {
+      "noun": "backyard",
+      "seconds": 86.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\backyard\\backyard-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\backyard\\backyard.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-backyard"
+    },
+    {
+      "noun": "balloon",
+      "seconds": 96.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\balloon\\balloon-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\balloon\\balloon.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-balloon"
+    },
+    {
+      "noun": "banana",
+      "seconds": 74.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\banana\\banana-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\banana\\banana.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-banana"
+    },
+    {
+      "noun": "bank",
+      "seconds": 130.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bank\\bank-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bank\\bank.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bank"
+    },
+    {
+      "noun": "barista",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\barista\\barista.png",
+      "seconds": 166.3,
+      "verdict": "failed"
+    },
+    {
+      "noun": "battery",
+      "seconds": 114.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\battery\\battery-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\battery\\battery.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-battery"
+    },
+    {
+      "noun": "bedroom",
+      "seconds": 102.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bedroom\\bedroom-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bedroom\\bedroom.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bedroom"
+    },
+    {
+      "noun": "belt",
+      "seconds": 97.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\belt\\belt-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\belt\\belt.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-belt"
+    },
+    {
+      "noun": "billiard",
+      "seconds": 90.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\billiard\\billiard-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\billiard\\billiard.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-billiard"
+    },
+    {
+      "noun": "black hole",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\black-hole\\black-hole.png",
+      "seconds": 328.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "blender",
+      "seconds": 92.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\blender\\blender-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\blender\\blender.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-blender"
+    },
+    {
+      "noun": "bone",
+      "seconds": 102.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bone\\bone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bone\\bone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bone"
+    },
+    {
+      "noun": "bowling",
+      "seconds": 116.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bowling\\bowling-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bowling\\bowling.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bowling"
+    },
+    {
+      "noun": "bug",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\bug\\bug.png",
+      "seconds": 134.3,
+      "verdict": "failed"
+    },
+    {
+      "noun": "cardboard box",
+      "seconds": 186.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cardboard-box\\cardboard-box-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cardboard-box\\cardboard-box.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cardboard-box"
+    },
+    {
+      "noun": "carnival",
+      "seconds": 191.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\carnival\\carnival-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\carnival\\carnival.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-carnival"
+    },
+    {
+      "noun": "charger",
+      "seconds": 109.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\charger\\charger-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\charger\\charger.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-charger"
+    },
+    {
+      "noun": "checkout",
+      "seconds": 137.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\checkout\\checkout-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\checkout\\checkout.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-checkout"
+    },
+    {
+      "noun": "clinic",
+      "seconds": 166.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\clinic\\clinic-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\clinic\\clinic.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-clinic"
+    },
+    {
+      "noun": "coffee",
+      "seconds": 214.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\coffee\\coffee-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\coffee\\coffee.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-coffee"
+    },
+    {
+      "noun": "colony",
+      "seconds": 144.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\colony\\colony-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\colony\\colony.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-colony"
+    },
+    {
+      "noun": "colorful",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\colorful\\colorful.png",
+      "seconds": 119.7,
+      "verdict": "failed"
+    },
+    {
+      "noun": "connect",
+      "seconds": 154.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\connect\\connect-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\connect\\connect.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-connect"
+    },
+    {
+      "noun": "container",
+      "seconds": 155.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\container\\container-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\container\\container.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-container"
+    },
+    {
+      "noun": "conveyor",
+      "reason": "RuntimeError: quality gate: 4.0% of vertex colours are purple (hue 250\u2013320\u00b0)",
+      "preview": "D:\\claude\\_gen3d-cache\\conveyor\\conveyor.png",
+      "seconds": 154.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "cooking",
+      "seconds": 142.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cooking\\cooking-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cooking\\cooking.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cooking"
+    },
+    {
+      "noun": "cop",
+      "seconds": 196.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cop\\cop-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cop\\cop.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cop"
+    },
+    {
+      "noun": "cowboy",
+      "seconds": 95.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cowboy\\cowboy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cowboy\\cowboy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cowboy"
+    },
+    {
+      "noun": "cozy",
+      "seconds": 102.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cozy\\cozy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cozy\\cozy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cozy"
+    },
+    {
+      "noun": "crack",
+      "seconds": 149.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crack\\crack-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crack\\crack.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crack"
+    },
+    {
+      "noun": "craft",
+      "seconds": 218.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\craft\\craft-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\craft\\craft.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-craft"
+    },
+    {
+      "noun": "crane",
+      "seconds": 94.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crane\\crane-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crane\\crane.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crane"
+    },
+    {
+      "noun": "cream",
+      "seconds": 171.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cream\\cream-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cream\\cream.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cream"
+    },
+    {
+      "noun": "creepy",
+      "seconds": 240.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\creepy\\creepy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\creepy\\creepy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-creepy"
+    },
+    {
+      "noun": "crocodile",
+      "seconds": 94.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crocodile\\crocodile-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crocodile\\crocodile.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crocodile"
+    },
+    {
+      "noun": "crossy",
+      "seconds": 164.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crossy\\crossy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crossy\\crossy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crossy"
+    },
+    {
+      "noun": "crush",
+      "seconds": 154.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crush\\crush-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crush\\crush.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crush"
+    },
+    {
+      "noun": "customer",
+      "seconds": 100.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\customer\\customer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\customer\\customer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-customer"
+    },
+    {
+      "noun": "cutting",
+      "seconds": 162.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cutting\\cutting-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cutting\\cutting.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cutting"
+    },
+    {
+      "noun": "dance",
+      "seconds": 103.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dance\\dance-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dance\\dance.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dance"
+    },
+    {
+      "noun": "dash",
+      "seconds": 166.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dash\\dash-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dash\\dash.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dash"
+    },
+    {
+      "noun": "date",
+      "seconds": 139.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\date\\date-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\date\\date.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-date"
+    },
+    {
+      "noun": "debris",
+      "seconds": 114.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\debris\\debris-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\debris\\debris.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-debris"
+    },
+    {
+      "noun": "decorate",
+      "seconds": 114.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\decorate\\decorate-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\decorate\\decorate.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-decorate"
+    },
+    {
+      "noun": "defending",
+      "seconds": 137.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\defending\\defending-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\defending\\defending.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-defending"
+    },
+    {
+      "noun": "design",
+      "seconds": 151.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\design\\design-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\design\\design.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-design"
+    },
+    {
+      "noun": "destroy",
+      "seconds": 209.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\destroy\\destroy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\destroy\\destroy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-destroy"
+    },
+    {
+      "noun": "disco",
+      "seconds": 122.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\disco\\disco-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\disco\\disco.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-disco"
+    },
+    {
+      "noun": "doe",
+      "seconds": 87.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\doe\\doe-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\doe\\doe.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-doe"
+    },
+    {
+      "noun": "doing",
+      "seconds": 88.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\doing\\doing-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\doing\\doing.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-doing"
+    },
+    {
+      "noun": "doll",
+      "seconds": 85.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\doll\\doll-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\doll\\doll.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-doll"
+    },
+    {
+      "noun": "dont",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\dont\\dont.png",
+      "seconds": 166.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "doodle",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\doodle\\doodle.png",
+      "seconds": 456.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "dress",
+      "seconds": 85.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dress\\dress-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dress\\dress.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dress"
+    },
+    {
+      "noun": "drift",
+      "seconds": 75.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\drift\\drift-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\drift\\drift.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-drift"
+    },
+    {
+      "noun": "drummer",
+      "seconds": 91.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\drummer\\drummer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\drummer\\drummer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-drummer"
+    },
+    {
+      "noun": "duel",
+      "seconds": 85.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\duel\\duel-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\duel\\duel.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-duel"
+    },
+    {
+      "noun": "during",
+      "seconds": 186.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\during\\during-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\during\\during.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-during"
+    },
+    {
+      "noun": "dwarve",
+      "seconds": 129.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dwarve\\dwarve-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dwarve\\dwarve.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dwarve"
+    },
+    {
+      "noun": "eating",
+      "seconds": 152.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\eating\\eating-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\eating\\eating.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-eating"
+    },
+    {
+      "noun": "empire",
+      "seconds": 134.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\empire\\empire-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\empire\\empire.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-empire"
+    },
+    {
+      "noun": "endle",
+      "seconds": 294.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\endle\\endle-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\endle\\endle.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-endle"
+    },
+    {
+      "noun": "everyone",
+      "seconds": 133.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\everyone\\everyone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\everyone\\everyone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-everyone"
+    },
+    {
+      "noun": "everywhere",
+      "seconds": 159.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\everywhere\\everywhere-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\everywhere\\everywhere.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-everywhere"
+    },
+    {
+      "noun": "factory",
+      "seconds": 217.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\factory\\factory-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\factory\\factory.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-factory"
+    },
+    {
+      "noun": "far",
+      "seconds": 129.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\far\\far-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\far\\far.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-far"
+    },
+    {
+      "noun": "farm",
+      "seconds": 117.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\farm\\farm-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\farm\\farm.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-farm"
+    },
+    {
+      "noun": "fashion",
+      "seconds": 94.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fashion\\fashion-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fashion\\fashion.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fashion"
+    },
+    {
+      "noun": "feed",
+      "seconds": 117.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\feed\\feed-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\feed\\feed.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-feed"
+    },
+    {
+      "noun": "fishing",
+      "seconds": 105.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fishing\\fishing-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fishing\\fishing.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fishing"
+    },
+    {
+      "noun": "fishmonger",
+      "seconds": 106.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fishmonger\\fishmonger-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fishmonger\\fishmonger.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fishmonger"
+    },
+    {
+      "noun": "five",
+      "seconds": 99.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\five\\five-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\five\\five.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-five"
+    },
+    {
+      "noun": "flattening",
+      "seconds": 137.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\flattening\\flattening-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\flattening\\flattening.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-flattening"
+    },
+    {
+      "noun": "flip",
+      "seconds": 93.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\flip\\flip-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\flip\\flip.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-flip"
+    },
+    {
+      "noun": "foggy",
+      "reason": "RuntimeError: quality gate: no vertex colours and no texture",
+      "preview": "D:\\claude\\_gen3d-cache\\foggy\\foggy.png",
+      "seconds": 98.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "follow",
+      "seconds": 102.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\follow\\follow-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\follow\\follow.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-follow"
+    },
+    {
+      "noun": "food",
+      "seconds": 106.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\food\\food-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\food\\food.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-food"
+    },
+    {
+      "noun": "formula",
+      "seconds": 109.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\formula\\formula-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\formula\\formula.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-formula"
+    },
+    {
+      "noun": "fort",
+      "seconds": 120.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fort\\fort-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fort\\fort.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fort"
+    },
+    {
+      "noun": "fps",
+      "seconds": 171.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fps\\fps-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fps\\fps.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fps"
+    },
+    {
+      "noun": "freddy",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\freddy\\freddy.png",
+      "seconds": 117.5,
+      "verdict": "failed"
+    },
+    {
+      "noun": "free",
+      "seconds": 92.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\free\\free-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\free\\free.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-free"
+    },
+    {
+      "noun": "full",
+      "seconds": 140.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\full\\full-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\full\\full.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-full"
+    },
+    {
+      "noun": "fun",
+      "seconds": 142.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fun\\fun-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fun\\fun.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fun"
+    },
+    {
+      "noun": "gallery",
+      "seconds": 92.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gallery\\gallery-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gallery\\gallery.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gallery"
+    },
+    {
+      "noun": "gang",
+      "seconds": 118.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gang\\gang-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gang\\gang.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gang"
+    },
+    {
+      "noun": "gap",
+      "seconds": 81.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gap\\gap-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gap\\gap.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gap"
+    },
+    {
+      "noun": "garden",
+      "seconds": 127.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\garden\\garden-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\garden\\garden.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-garden"
+    },
+    {
+      "noun": "geometry",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\geometry\\geometry.png",
+      "seconds": 185.5,
+      "verdict": "failed"
+    },
+    {
+      "noun": "getting",
+      "seconds": 149.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\getting\\getting-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\getting\\getting.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-getting"
+    },
+    {
+      "noun": "goalkeeper",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\goalkeeper\\goalkeeper.png",
+      "seconds": 97.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "goat",
+      "seconds": 83.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\goat\\goat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\goat\\goat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-goat"
+    },
+    {
+      "noun": "golf",
+      "seconds": 74.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\golf\\golf-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\golf\\golf.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-golf"
+    },
+    {
+      "noun": "grade",
+      "seconds": 327.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\grade\\grade-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\grade\\grade.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-grade"
+    },
+    {
+      "noun": "grandma",
+      "seconds": 121.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\grandma\\grandma-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\grandma\\grandma.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-grandma"
+    },
+    {
+      "noun": "grumpy",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\grumpy\\grumpy.png",
+      "seconds": 453.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "gta",
+      "seconds": 121.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gta\\gta-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gta\\gta.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gta"
+    },
+    {
+      "noun": "guard",
+      "seconds": 92.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\guard\\guard-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\guard\\guard.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-guard"
+    },
+    {
+      "noun": "guide",
+      "seconds": 198.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\guide\\guide-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\guide\\guide.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-guide"
+    },
+    {
+      "noun": "hard",
+      "seconds": 117.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hard\\hard-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hard\\hard.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hard"
+    },
+    {
+      "noun": "harvest",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\harvest\\harvest.png",
+      "seconds": 140.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "heal",
+      "seconds": 109.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\heal\\heal-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\heal\\heal.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-heal"
+    },
+    {
+      "noun": "helix",
+      "seconds": 105.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\helix\\helix-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\helix\\helix.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-helix"
+    },
+    {
+      "noun": "hidden",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\hidden\\hidden.png",
+      "seconds": 188.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "him",
+      "seconds": 115.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\him\\him-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\him\\him.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-him"
+    },
+    {
+      "noun": "hire",
+      "seconds": 112.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hire\\hire-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hire\\hire.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hire"
+    },
+    {
+      "noun": "hitting",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\hitting\\hitting.png",
+      "seconds": 134.7,
+      "verdict": "failed"
+    },
+    {
+      "noun": "hold",
+      "seconds": 136.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hold\\hold-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hold\\hold.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hold"
+    },
+    {
+      "noun": "hop",
+      "seconds": 110.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hop\\hop-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hop\\hop.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hop"
+    },
+    {
+      "noun": "horror",
+      "seconds": 178.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\horror\\horror-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\horror\\horror.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-horror"
+    },
+    {
+      "noun": "horse",
+      "seconds": 115.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\horse\\horse-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\horse\\horse.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-horse"
+    },
+    {
+      "noun": "hotel",
+      "seconds": 132.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hotel\\hotel-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hotel\\hotel.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hotel"
+    },
+    {
+      "noun": "hungry",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\hungry\\hungry.png",
+      "seconds": 143.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "isnt",
+      "seconds": 108.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\isnt\\isnt-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\isnt\\isnt.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-isnt"
+    },
+    {
+      "noun": "item",
+      "seconds": 120.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\item\\item-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\item\\item.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-item"
+    },
+    {
+      "noun": "jammed",
+      "seconds": 182.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\jammed\\jammed-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\jammed\\jammed.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-jammed"
+    },
+    {
+      "noun": "karate",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\karate\\karate.png",
+      "seconds": 129.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "kick",
+      "seconds": 93.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\kick\\kick-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\kick\\kick.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-kick"
+    },
+    {
+      "noun": "king",
+      "seconds": 117.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\king\\king-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\king\\king.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-king"
+    },
+    {
+      "noun": "kingdom",
+      "seconds": 216.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\kingdom\\kingdom-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\kingdom\\kingdom.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-kingdom"
+    },
+    {
+      "noun": "krunker",
+      "seconds": 113.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\krunker\\krunker-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\krunker\\krunker.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-krunker"
+    },
+    {
+      "noun": "launch",
+      "seconds": 110.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\launch\\launch-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\launch\\launch.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-launch"
+    },
+    {
+      "noun": "league",
+      "seconds": 138.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\league\\league-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\league\\league.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-league"
+    },
+    {
+      "noun": "let",
+      "seconds": 221.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\let\\let-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\let\\let.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-let"
+    },
+    {
+      "noun": "letter",
+      "seconds": 224.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\letter\\letter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\letter\\letter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-letter"
+    },
+    {
+      "noun": "look",
+      "seconds": 118.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\look\\look-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\look\\look.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-look"
+    },
+    {
+      "noun": "looking",
+      "seconds": 195.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\looking\\looking-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\looking\\looking.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-looking"
+    },
+    {
+      "noun": "lost",
+      "seconds": 88.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lost\\lost-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lost\\lost.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lost"
+    },
+    {
+      "noun": "mahjong",
+      "seconds": 96.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mahjong\\mahjong-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mahjong\\mahjong.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mahjong"
+    },
+    {
+      "noun": "makeover",
+      "seconds": 138.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\makeover\\makeover-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\makeover\\makeover.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-makeover"
+    },
+    {
+      "noun": "making",
+      "seconds": 231.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\making\\making-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\making\\making.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-making"
+    },
+    {
+      "noun": "manage",
+      "seconds": 147.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\manage\\manage-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\manage\\manage.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-manage"
+    },
+    {
+      "noun": "matching",
+      "seconds": 233.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\matching\\matching-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\matching\\matching.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-matching"
+    },
+    {
+      "noun": "maze",
+      "seconds": 81.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\maze\\maze-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\maze\\maze.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-maze"
+    },
+    {
+      "noun": "medieval",
+      "seconds": 125.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\medieval\\medieval-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\medieval\\medieval.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-medieval"
+    },
+    {
+      "noun": "mini",
+      "seconds": 83.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mini\\mini-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mini\\mini.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mini"
+    },
+    {
+      "noun": "mining",
+      "seconds": 72.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mining\\mining-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mining\\mining.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mining"
+    },
+    {
+      "noun": "mirror",
+      "seconds": 131.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mirror\\mirror-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mirror\\mirror.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mirror"
+    },
+    {
+      "noun": "mom",
+      "seconds": 58.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mom\\mom-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mom\\mom.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mom"
+    },
+    {
+      "noun": "moment",
+      "seconds": 116.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\moment\\moment-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\moment\\moment.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-moment"
+    },
+    {
+      "noun": "monaco",
+      "seconds": 120.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\monaco\\monaco-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\monaco\\monaco.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-monaco"
+    },
+    {
+      "noun": "morning",
+      "seconds": 79.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\morning\\morning-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\morning\\morning.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-morning"
+    },
+    {
+      "noun": "motorbike",
+      "seconds": 57.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\motorbike\\motorbike-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\motorbike\\motorbike.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-motorbike"
+    },
+    {
+      "noun": "multiplayer",
+      "seconds": 94.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\multiplayer\\multiplayer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\multiplayer\\multiplayer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-multiplayer"
+    },
+    {
+      "noun": "museum",
+      "seconds": 95.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\museum\\museum-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\museum\\museum.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-museum"
+    },
+    {
+      "noun": "nail",
+      "reason": "RuntimeError: quality gate: no vertex colours and no texture",
+      "preview": "D:\\claude\\_gen3d-cache\\nail\\nail.png",
+      "seconds": 53.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "noah",
+      "seconds": 67.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\noah\\noah-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\noah\\noah.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-noah"
+    },
+    {
+      "noun": "noon",
+      "seconds": 60.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\noon\\noon-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\noon\\noon.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-noon"
+    },
+    {
+      "noun": "object",
+      "seconds": 60.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\object\\object-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\object\\object.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-object"
+    },
+    {
+      "noun": "office",
+      "seconds": 64.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\office\\office-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\office\\office.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-office"
+    },
+    {
+      "noun": "olympic",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\olympic\\olympic.png",
+      "seconds": 125.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "operator",
+      "seconds": 59.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\operator\\operator-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\operator\\operator.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-operator"
+    },
+    {
+      "noun": "outfit",
+      "seconds": 56.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\outfit\\outfit-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\outfit\\outfit.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-outfit"
+    },
+    {
+      "noun": "outside",
+      "seconds": 94.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\outside\\outside-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\outside\\outside.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-outside"
+    },
+    {
+      "noun": "overcooked",
+      "seconds": 95.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\overcooked\\overcooked-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\overcooked\\overcooked.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-overcooked"
+    },
+    {
+      "noun": "own",
+      "seconds": 124.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\own\\own-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\own\\own.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-own"
+    },
+    {
+      "noun": "owner",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\owner\\owner.png",
+      "seconds": 55.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "paint",
+      "seconds": 133.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\paint\\paint-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\paint\\paint.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-paint"
+    },
+    {
+      "noun": "past",
+      "seconds": 66.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\past\\past-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\past\\past.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-past"
+    },
+    {
+      "noun": "penalty",
+      "seconds": 51.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\penalty\\penalty-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\penalty\\penalty.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-penalty"
+    },
+    {
+      "noun": "piano",
+      "seconds": 66.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\piano\\piano-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\piano\\piano.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-piano"
+    },
+    {
+      "noun": "pin",
+      "seconds": 87.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pin\\pin-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pin\\pin.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pin"
+    },
+    {
+      "noun": "place",
+      "seconds": 118.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\place\\place-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\place\\place.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-place"
+    },
+    {
+      "noun": "point",
+      "seconds": 85.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\point\\point-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\point\\point.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-point"
+    },
+    {
+      "noun": "pollen",
+      "seconds": 54.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pollen\\pollen-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pollen\\pollen.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pollen"
+    },
+    {
+      "noun": "pool",
+      "seconds": 61.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pool\\pool-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pool\\pool.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pool"
+    },
+    {
+      "noun": "pop",
+      "seconds": 63.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pop\\pop-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pop\\pop.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pop"
+    },
+    {
+      "noun": "possible",
+      "seconds": 66.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\possible\\possible-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\possible\\possible.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-possible"
+    },
+    {
+      "noun": "princess",
+      "seconds": 61.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\princess\\princess-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\princess\\princess.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-princess"
+    },
+    {
+      "noun": "prison",
+      "seconds": 94.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\prison\\prison-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\prison\\prison.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-prison"
+    },
+    {
+      "noun": "puddle",
+      "seconds": 58.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\puddle\\puddle-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\puddle\\puddle.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-puddle"
+    },
+    {
+      "noun": "pull",
+      "seconds": 56.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pull\\pull-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pull\\pull.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pull"
+    },
+    {
+      "noun": "punishing",
+      "seconds": 140.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\punishing\\punishing-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\punishing\\punishing.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-punishing"
+    },
+    {
+      "noun": "purple",
+      "seconds": 83.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\purple\\purple-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\purple\\purple.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-purple"
+    },
+    {
+      "noun": "raft",
+      "seconds": 85.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\raft\\raft-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\raft\\raft.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-raft"
+    },
+    {
+      "noun": "ragdoll",
+      "seconds": 54.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ragdoll\\ragdoll-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ragdoll\\ragdoll.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ragdoll"
+    },
+    {
+      "noun": "rage",
+      "seconds": 90.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rage\\rage-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rage\\rage.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rage"
+    },
+    {
+      "noun": "rainbow",
+      "seconds": 55.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rainbow\\rainbow-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rainbow\\rainbow.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rainbow"
+    },
+    {
+      "noun": "ramp",
+      "seconds": 56.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ramp\\ramp-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ramp\\ramp.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ramp"
+    },
+    {
+      "noun": "range",
+      "seconds": 83.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\range\\range-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\range\\range.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-range"
+    },
+    {
+      "noun": "rare",
+      "seconds": 65.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rare\\rare-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rare\\rare.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rare"
+    },
+    {
+      "noun": "relaxing",
+      "seconds": 59.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\relaxing\\relaxing-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\relaxing\\relaxing.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-relaxing"
+    },
+    {
+      "noun": "repair",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\repair\\repair.png",
+      "seconds": 96.6,
+      "verdict": "failed"
+    },
+    {
+      "noun": "restaurant",
+      "seconds": 67.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\restaurant\\restaurant-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\restaurant\\restaurant.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-restaurant"
+    },
+    {
+      "noun": "retro",
+      "seconds": 83.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\retro\\retro-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\retro\\retro.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-retro"
+    },
+    {
+      "noun": "ride",
+      "seconds": 70.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ride\\ride-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ride\\ride.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ride"
+    },
+    {
+      "noun": "rider",
+      "seconds": 61.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rider\\rider-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rider\\rider.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rider"
+    },
+    {
+      "noun": "rob",
+      "seconds": 86.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rob\\rob-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rob\\rob.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rob"
+    },
+    {
+      "noun": "romantic",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\romantic\\romantic.png",
+      "seconds": 88.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "royal",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\royal\\royal.png",
+      "seconds": 65.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "royale",
+      "seconds": 60.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\royale\\royale-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\royale\\royale.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-royale"
+    },
+    {
+      "noun": "ruin",
+      "seconds": 76.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ruin\\ruin-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ruin\\ruin.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ruin"
+    },
+    {
+      "noun": "rush",
+      "seconds": 132.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rush\\rush-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rush\\rush.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rush"
+    },
+    {
+      "noun": "saber",
+      "seconds": 157.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\saber\\saber-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\saber\\saber.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-saber"
+    },
+    {
+      "noun": "salon",
+      "seconds": 58.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\salon\\salon-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\salon\\salon.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-salon"
+    },
+    {
+      "noun": "satisfying",
+      "seconds": 122.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\satisfying\\satisfying-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\satisfying\\satisfying.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-satisfying"
+    },
+    {
+      "noun": "scan",
+      "seconds": 67.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\scan\\scan-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\scan\\scan.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-scan"
+    },
+    {
+      "noun": "scooter",
+      "seconds": 85.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\scooter\\scooter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\scooter\\scooter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-scooter"
+    },
+    {
+      "noun": "screen",
+      "seconds": 97.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\screen\\screen-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\screen\\screen.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-screen"
+    },
+    {
+      "noun": "screw",
+      "seconds": 54.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\screw\\screw-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\screw\\screw.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-screw"
+    },
+    {
+      "noun": "search",
+      "seconds": 67.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\search\\search-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\search\\search.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-search"
+    },
+    {
+      "noun": "seek",
+      "seconds": 155.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\seek\\seek-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\seek\\seek.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-seek"
+    },
+    {
+      "noun": "sell",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\sell\\sell.png",
+      "seconds": 81.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "shot",
+      "seconds": 55.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\shot\\shot-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\shot\\shot.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-shot"
+    },
+    {
+      "noun": "show",
+      "seconds": 65.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\show\\show-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\show\\show.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-show"
+    },
+    {
+      "noun": "sister",
+      "seconds": 58.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sister\\sister-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sister\\sister.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sister"
+    },
+    {
+      "noun": "skateboard",
+      "seconds": 55.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\skateboard\\skateboard-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\skateboard\\skateboard.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-skateboard"
+    },
+    {
+      "noun": "ski",
+      "seconds": 59.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ski\\ski-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ski\\ski.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ski"
+    },
+    {
+      "noun": "skyscraper",
+      "seconds": 69.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\skyscraper\\skyscraper-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\skyscraper\\skyscraper.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-skyscraper"
+    },
+    {
+      "noun": "sleepover",
+      "seconds": 59.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sleepover\\sleepover-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sleepover\\sleepover.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sleepover"
+    },
+    {
+      "noun": "slingshot",
+      "seconds": 51.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\slingshot\\slingshot-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\slingshot\\slingshot.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-slingshot"
+    },
+    {
+      "noun": "slither",
+      "seconds": 58.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\slither\\slither-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\slither\\slither.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-slither"
+    },
+    {
+      "noun": "smaller",
+      "seconds": 107.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\smaller\\smaller-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\smaller\\smaller.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-smaller"
+    },
+    {
+      "noun": "smash",
+      "seconds": 69.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\smash\\smash-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\smash\\smash.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-smash"
+    },
+    {
+      "noun": "snail",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\snail\\snail.png",
+      "seconds": 68.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "snake",
+      "seconds": 59.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\snake\\snake-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\snake\\snake.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-snake"
+    },
+    {
+      "noun": "snowy",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\snowy\\snowy.png",
+      "seconds": 79.8,
+      "verdict": "failed"
+    },
+    {
+      "noun": "space marine",
+      "seconds": 57.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\space-marine\\space-marine-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\space-marine\\space-marine.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-space-marine"
+    },
+    {
+      "noun": "spinning bar",
+      "seconds": 53.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\spinning-bar\\spinning-bar-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\spinning-bar\\spinning-bar.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-spinning-bar"
+    },
+    {
+      "noun": "sprinkler",
+      "seconds": 52.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sprinkler\\sprinkler-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sprinkler\\sprinkler.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sprinkler"
+    },
+    {
+      "noun": "squid",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\squid\\squid.png",
+      "seconds": 71.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "squirrel",
+      "seconds": 74.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\squirrel\\squirrel-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\squirrel\\squirrel.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-squirrel"
+    },
+    {
+      "noun": "stair",
+      "seconds": 67.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stair\\stair-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stair\\stair.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stair"
+    },
+    {
+      "noun": "stealth",
+      "seconds": 118.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stealth\\stealth-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stealth\\stealth.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stealth"
+    },
+    {
+      "noun": "stickman",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\stickman\\stickman.png",
+      "seconds": 55.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "stock",
+      "seconds": 114.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stock\\stock-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stock\\stock.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stock"
+    },
+    {
+      "noun": "storm",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\storm\\storm.png",
+      "seconds": 141.7,
+      "verdict": "failed"
+    },
+    {
+      "noun": "stronger",
+      "seconds": 104.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stronger\\stronger-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stronger\\stronger.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stronger"
+    },
+    {
+      "noun": "stuff",
+      "seconds": 59.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stuff\\stuff-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stuff\\stuff.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stuff"
+    },
+    {
+      "noun": "stunt",
+      "seconds": 58.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stunt\\stunt-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stunt\\stunt.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stunt"
+    },
+    {
+      "noun": "submarine",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\submarine\\submarine.png",
+      "seconds": 57.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "suika",
+      "seconds": 65.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\suika\\suika-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\suika\\suika.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-suika"
+    },
+    {
+      "noun": "sumo",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\sumo\\sumo.png",
+      "seconds": 70.5,
+      "verdict": "failed"
+    },
+    {
+      "noun": "sunset",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\sunset\\sunset.png",
+      "seconds": 212.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "survivor",
+      "seconds": 52.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\survivor\\survivor-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\survivor\\survivor.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-survivor"
+    },
+    {
+      "noun": "sushi",
+      "seconds": 68.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sushi\\sushi-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sushi\\sushi.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sushi"
+    },
+    {
+      "noun": "swallow",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\swallow\\swallow.png",
+      "seconds": 60.5,
+      "verdict": "failed"
+    },
+    {
+      "noun": "tallest",
+      "seconds": 52.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tallest\\tallest-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tallest\\tallest.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tallest"
+    },
+    {
+      "noun": "tax",
+      "seconds": 57.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tax\\tax-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tax\\tax.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tax"
+    },
+    {
+      "noun": "teacher",
+      "seconds": 51.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\teacher\\teacher-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\teacher\\teacher.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-teacher"
+    },
+    {
+      "noun": "tennis",
+      "seconds": 50.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tennis\\tennis-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tennis\\tennis.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tennis"
+    },
+    {
+      "noun": "territory",
+      "seconds": 54.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\territory\\territory-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\territory\\territory.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-territory"
+    },
+    {
+      "noun": "theme",
+      "seconds": 75.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\theme\\theme-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\theme\\theme.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-theme"
+    },
+    {
+      "noun": "toss",
+      "seconds": 87.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\toss\\toss-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\toss\\toss.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-toss"
+    },
+    {
+      "noun": "toy",
+      "seconds": 67.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\toy\\toy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\toy\\toy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-toy"
+    },
+    {
+      "noun": "tropical",
+      "seconds": 55.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tropical\\tropical-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tropical\\tropical.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tropical"
+    },
+    {
+      "noun": "trying",
+      "seconds": 119.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\trying\\trying-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\trying\\trying.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-trying"
+    },
+    {
+      "noun": "tube",
+      "seconds": 54.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tube\\tube-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tube\\tube.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tube"
+    },
+    {
+      "noun": "unscrew",
+      "seconds": 59.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\unscrew\\unscrew-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\unscrew\\unscrew.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-unscrew"
+    },
+    {
+      "noun": "untangle",
+      "seconds": 55.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\untangle\\untangle-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\untangle\\untangle.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-untangle"
+    },
+    {
+      "noun": "vegetable",
+      "seconds": 69.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\vegetable\\vegetable-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\vegetable\\vegetable.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-vegetable"
+    },
+    {
+      "noun": "vet",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\vet\\vet.png",
+      "seconds": 67.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "vibe",
+      "seconds": 111.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\vibe\\vibe-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\vibe\\vibe.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-vibe"
+    },
+    {
+      "noun": "waking",
+      "seconds": 73.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\waking\\waking-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\waking\\waking.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-waking"
+    },
+    {
+      "noun": "wand",
+      "seconds": 49.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wand\\wand-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wand\\wand.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wand"
+    },
+    {
+      "noun": "washing",
+      "seconds": 114.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\washing\\washing-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\washing\\washing.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-washing"
+    },
+    {
+      "noun": "watermelon",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\watermelon\\watermelon.png",
+      "seconds": 138.7,
+      "verdict": "failed"
+    },
+    {
+      "noun": "win",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\win\\win.png",
+      "seconds": 106.8,
+      "verdict": "failed"
+    },
+    {
+      "noun": "windmill",
+      "seconds": 56.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\windmill\\windmill-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\windmill\\windmill.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-windmill"
+    },
+    {
+      "noun": "winter",
+      "seconds": 58.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\winter\\winter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\winter\\winter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-winter"
+    },
+    {
+      "noun": "word",
+      "seconds": 51.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\word\\word-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\word\\word.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-word"
+    },
+    {
+      "noun": "wrecking",
+      "seconds": 74.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wrecking\\wrecking-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wrecking\\wrecking.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wrecking"
+    },
+    {
+      "noun": "yeti",
+      "seconds": 61.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\yeti\\yeti-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\yeti\\yeti.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-yeti"
+    },
+    {
+      "noun": "billboard",
+      "seconds": 86.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\billboard\\billboard-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\billboard\\billboard.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-billboard"
+    },
+    {
+      "noun": "wooden ark boat",
+      "seconds": 53.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wooden-ark-boat\\wooden-ark-boat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wooden-ark-boat\\wooden-ark-boat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wooden-ark-boat"
+    },
+    {
+      "noun": "bank building",
+      "seconds": 99.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bank-building\\bank-building-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bank-building\\bank-building.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bank-building"
+    },
+    {
+      "noun": "double bed",
+      "seconds": 82.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\double-bed\\double-bed-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\double-bed\\double-bed.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-double-bed"
+    },
+    {
+      "noun": "leather belt",
+      "seconds": 95.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\leather-belt\\leather-belt-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\leather-belt\\leather-belt.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-leather-belt"
+    },
+    {
+      "noun": "circus tent",
+      "seconds": 67.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\circus-tent\\circus-tent-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\circus-tent\\circus-tent.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-circus-tent"
+    },
+    {
+      "noun": "cash register",
+      "seconds": 65.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cash-register\\cash-register-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cash-register\\cash-register.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cash-register"
+    },
+    {
+      "noun": "hospital building",
+      "seconds": 91.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hospital-building\\hospital-building-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hospital-building\\hospital-building.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hospital-building"
+    },
+    {
+      "noun": "space colony dome",
+      "seconds": 75.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\space-colony-dome\\space-colony-dome-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\space-colony-dome\\space-colony-dome.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-space-colony-dome"
+    },
+    {
+      "noun": "crafting table",
+      "seconds": 116.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crafting-table\\crafting-table-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crafting-table\\crafting-table.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crafting-table"
+    },
+    {
+      "noun": "ice cream cone",
+      "seconds": 54.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ice-cream-cone\\ice-cream-cone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ice-cream-cone\\ice-cream-cone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ice-cream-cone"
+    },
+    {
+      "noun": "knight shield",
+      "seconds": 64.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\knight-shield\\knight-shield-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\knight-shield\\knight-shield.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-knight-shield"
+    },
+    {
+      "noun": "disco ball",
+      "seconds": 67.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\disco-ball\\disco-ball-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\disco-ball\\disco-ball.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-disco-ball"
+    },
+    {
+      "noun": "deer",
+      "seconds": 53.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\deer\\deer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\deer\\deer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-deer"
+    },
+    {
+      "noun": "race car",
+      "seconds": 67.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\race-car\\race-car-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\race-car\\race-car.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-race-car"
+    },
+    {
+      "noun": "fencing sword",
+      "seconds": 78.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fencing-sword\\fencing-sword-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fencing-sword\\fencing-sword.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fencing-sword"
+    },
+    {
+      "noun": "roman temple",
+      "seconds": 125.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\roman-temple\\roman-temple-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\roman-temple\\roman-temple.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-roman-temple"
+    },
+    {
+      "noun": "formula one car",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\formula-one-car\\formula-one-car.png",
+      "seconds": 68.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "wooden fort",
+      "seconds": 64.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wooden-fort\\wooden-fort-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wooden-fort\\wooden-fort.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wooden-fort"
+    },
+    {
+      "noun": "framed painting",
+      "seconds": 123.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\framed-painting\\framed-painting-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\framed-painting\\framed-painting.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-framed-painting"
+    },
+    {
+      "noun": "hard hat",
+      "seconds": 78.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hard-hat\\hard-hat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hard-hat\\hard-hat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hard-hat"
+    },
+    {
+      "noun": "first aid kit",
+      "seconds": 76.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\first-aid-kit\\first-aid-kit-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\first-aid-kit\\first-aid-kit.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-first-aid-kit"
+    },
+    {
+      "noun": "treasure chest",
+      "seconds": 158.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\treasure-chest\\treasure-chest-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\treasure-chest\\treasure-chest.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-treasure-chest"
+    },
+    {
+      "noun": "soccer ball",
+      "seconds": 110.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\soccer-ball\\soccer-ball-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\soccer-ball\\soccer-ball.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-soccer-ball"
+    },
+    {
+      "noun": "gold trophy",
+      "seconds": 87.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gold-trophy\\gold-trophy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gold-trophy\\gold-trophy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gold-trophy"
+    },
+    {
+      "noun": "envelope",
+      "seconds": 76.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\envelope\\envelope-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\envelope\\envelope.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-envelope"
+    },
+    {
+      "noun": "mahjong tile",
+      "seconds": 62.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mahjong-tile\\mahjong-tile-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mahjong-tile\\mahjong-tile.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mahjong-tile"
+    },
+    {
+      "noun": "armored knight",
+      "seconds": 55.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\armored-knight\\armored-knight-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\armored-knight\\armored-knight.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-armored-knight"
+    },
+    {
+      "noun": "pickaxe",
+      "seconds": 50.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pickaxe\\pickaxe-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pickaxe\\pickaxe.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pickaxe"
+    },
+    {
+      "noun": "paint bucket",
+      "seconds": 75.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\paint-bucket\\paint-bucket-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\paint-bucket\\paint-bucket.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-paint-bucket"
+    },
+    {
+      "noun": "soccer goal",
+      "seconds": 60.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\soccer-goal\\soccer-goal-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\soccer-goal\\soccer-goal.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-soccer-goal"
+    },
+    {
+      "noun": "soda can",
+      "seconds": 56.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\soda-can\\soda-can-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\soda-can\\soda-can.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-soda-can"
+    },
+    {
+      "noun": "jail cell",
+      "seconds": 88.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\jail-cell\\jail-cell-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\jail-cell\\jail-cell.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-jail-cell"
+    },
+    {
+      "noun": "skate ramp",
+      "seconds": 120.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\skate-ramp\\skate-ramp-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\skate-ramp\\skate-ramp.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-skate-ramp"
+    },
+    {
+      "noun": "gemstone",
+      "seconds": 87.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gemstone\\gemstone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gemstone\\gemstone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gemstone"
+    },
+    {
+      "noun": "hammock",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\hammock\\hammock.png",
+      "seconds": 73.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "restaurant table",
+      "seconds": 64.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\restaurant-table\\restaurant-table-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\restaurant-table\\restaurant-table.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-restaurant-table"
+    },
+    {
+      "noun": "arcade cabinet",
+      "seconds": 64.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\arcade-cabinet\\arcade-cabinet-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\arcade-cabinet\\arcade-cabinet.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-arcade-cabinet"
+    },
+    {
+      "noun": "money bag",
+      "seconds": 80.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\money-bag\\money-bag-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\money-bag\\money-bag.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-money-bag"
+    },
+    {
+      "noun": "laser sword",
+      "seconds": 49.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\laser-sword\\laser-sword-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\laser-sword\\laser-sword.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-laser-sword"
+    },
+    {
+      "noun": "computer monitor",
+      "seconds": 57.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\computer-monitor\\computer-monitor-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\computer-monitor\\computer-monitor.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-computer-monitor"
+    },
+    {
+      "noun": "metal screw",
+      "seconds": 52.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\metal-screw\\metal-screw-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\metal-screw\\metal-screw.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-metal-screw"
+    },
+    {
+      "noun": "magnifying glass",
+      "seconds": 55.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\magnifying-glass\\magnifying-glass-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\magnifying-glass\\magnifying-glass.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-magnifying-glass"
+    },
+    {
+      "noun": "sleeping bag",
+      "seconds": 58.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sleeping-bag\\sleeping-bag-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sleeping-bag\\sleeping-bag.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sleeping-bag"
+    },
+    {
+      "noun": "sledgehammer",
+      "seconds": 70.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sledgehammer\\sledgehammer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sledgehammer\\sledgehammer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sledgehammer"
+    },
+    {
+      "noun": "space soldier",
+      "seconds": 61.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\space-soldier\\space-soldier-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\space-soldier\\space-soldier.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-space-soldier"
+    },
+    {
+      "noun": "lawn sprinkler",
+      "seconds": 142.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lawn-sprinkler\\lawn-sprinkler-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lawn-sprinkler\\lawn-sprinkler.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lawn-sprinkler"
+    },
+    {
+      "noun": "red squirrel",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\red-squirrel\\red-squirrel.png",
+      "seconds": 168.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "dumbbell",
+      "seconds": 83.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dumbbell\\dumbbell-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dumbbell\\dumbbell.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dumbbell"
+    },
+    {
+      "noun": "checkered flag",
+      "seconds": 56.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\checkered-flag\\checkered-flag-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\checkered-flag\\checkered-flag.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-checkered-flag"
+    },
+    {
+      "noun": "teddy bear",
+      "seconds": 78.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\teddy-bear\\teddy-bear-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\teddy-bear\\teddy-bear.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-teddy-bear"
+    },
+    {
+      "noun": "screwdriver",
+      "seconds": 59.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\screwdriver\\screwdriver-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\screwdriver\\screwdriver.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-screwdriver"
+    },
+    {
+      "noun": "alarm clock",
+      "seconds": 69.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\alarm-clock\\alarm-clock-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\alarm-clock\\alarm-clock.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-alarm-clock"
+    },
+    {
+      "noun": "washing machine",
+      "seconds": 75.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\washing-machine\\washing-machine-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\washing-machine\\washing-machine.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-washing-machine"
+    },
+    {
+      "noun": "wrecking ball",
+      "seconds": 53.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wrecking-ball\\wrecking-ball-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wrecking-ball\\wrecking-ball.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wrecking-ball"
+    },
+    {
+      "noun": "yeti monster",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\yeti-monster\\yeti-monster.png",
+      "seconds": 67.6,
+      "verdict": "failed"
+    },
+    {
+      "noun": "market stall",
+      "seconds": 523.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\market-stall\\market-stall-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\market-stall\\market-stall.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-market-stall"
+    },
+    {
+      "noun": "fruit stand",
+      "seconds": 122.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fruit-stand\\fruit-stand-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fruit-stand\\fruit-stand.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fruit-stand"
+    },
+    {
+      "noun": "awning",
+      "seconds": 57.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\awning\\awning-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\awning\\awning.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-awning"
+    },
+    {
+      "noun": "igloo",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\igloo\\igloo.png",
+      "seconds": 96.5,
+      "verdict": "failed"
+    },
+    {
+      "noun": "cave entrance",
+      "seconds": 61.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cave-entrance\\cave-entrance-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cave-entrance\\cave-entrance.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cave-entrance"
+    },
+    {
+      "noun": "stalagmite",
+      "seconds": 55.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stalagmite\\stalagmite-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stalagmite\\stalagmite.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stalagmite"
+    },
+    {
+      "noun": "hospital bed",
+      "seconds": 81.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hospital-bed\\hospital-bed-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hospital-bed\\hospital-bed.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hospital-bed"
+    },
+    {
+      "noun": "stretcher",
+      "seconds": 54.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stretcher\\stretcher-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stretcher\\stretcher.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stretcher"
+    },
+    {
+      "noun": "lighthouse",
+      "seconds": 51.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lighthouse\\lighthouse-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lighthouse\\lighthouse.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lighthouse"
+    },
+    {
+      "noun": "stone tower",
+      "seconds": 59.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stone-tower\\stone-tower-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stone-tower\\stone-tower.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stone-tower"
+    },
+    {
+      "noun": "moon rock",
+      "seconds": 62.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\moon-rock\\moon-rock-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\moon-rock\\moon-rock.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-moon-rock"
+    },
+    {
+      "noun": "lunar lander",
+      "seconds": 82.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lunar-lander\\lunar-lander-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lunar-lander\\lunar-lander.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lunar-lander"
+    },
+    {
+      "noun": "mars rover",
+      "seconds": 93.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mars-rover\\mars-rover-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mars-rover\\mars-rover.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mars-rover"
+    },
+    {
+      "noun": "satellite dish",
+      "seconds": 66.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\satellite-dish\\satellite-dish-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\satellite-dish\\satellite-dish.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-satellite-dish"
+    },
+    {
+      "noun": "jungle tree",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\jungle-tree\\jungle-tree.png",
+      "seconds": 86.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "reed",
+      "seconds": 48.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\reed\\reed-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\reed\\reed.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-reed"
+    },
+    {
+      "noun": "cafe table",
+      "seconds": 53.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cafe-table\\cafe-table-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cafe-table\\cafe-table.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cafe-table"
+    },
+    {
+      "noun": "coffee cup",
+      "seconds": 81.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\coffee-cup\\coffee-cup-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\coffee-cup\\coffee-cup.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-coffee-cup"
+    },
+    {
+      "noun": "espresso machine",
+      "seconds": 68.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\espresso-machine\\espresso-machine-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\espresso-machine\\espresso-machine.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-espresso-machine"
+    },
+    {
+      "noun": "birthday cake",
+      "seconds": 65.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\birthday-cake\\birthday-cake-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\birthday-cake\\birthday-cake.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-birthday-cake"
+    },
+    {
+      "noun": "party balloon",
+      "seconds": 52.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\party-balloon\\party-balloon-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\party-balloon\\party-balloon.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-party-balloon"
+    },
+    {
+      "noun": "gift box",
+      "seconds": 121.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gift-box\\gift-box-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gift-box\\gift-box.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gift-box"
+    },
+    {
+      "noun": "party hat",
+      "seconds": 63.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\party-hat\\party-hat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\party-hat\\party-hat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-party-hat"
+    },
+    {
+      "noun": "termite mound",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\termite-mound\\termite-mound.png",
+      "seconds": 157.5,
+      "verdict": "failed"
+    },
+    {
+      "noun": "eucalyptus tree",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\eucalyptus-tree\\eucalyptus-tree.png",
+      "seconds": 85.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "campfire",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\campfire\\campfire.png",
+      "seconds": 83.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "mine cart",
+      "seconds": 63.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mine-cart\\mine-cart-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mine-cart\\mine-cart.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mine-cart"
+    },
+    {
+      "noun": "pirate ship",
+      "seconds": 67.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pirate-ship\\pirate-ship-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pirate-ship\\pirate-ship.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pirate-ship"
+    },
+    {
+      "noun": "castle gate",
+      "seconds": 79.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\castle-gate\\castle-gate-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\castle-gate\\castle-gate.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-castle-gate"
+    },
+    {
+      "noun": "drawbridge",
+      "seconds": 52.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\drawbridge\\drawbridge-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\drawbridge\\drawbridge.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-drawbridge"
+    },
+    {
+      "noun": "haystack",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\haystack\\haystack.png",
+      "seconds": 80.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "bus stop",
+      "seconds": 61.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bus-stop\\bus-stop-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bus-stop\\bus-stop.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bus-stop"
+    },
+    {
+      "noun": "traffic light",
+      "seconds": 57.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\traffic-light\\traffic-light-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\traffic-light\\traffic-light.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-traffic-light"
+    },
+    {
+      "noun": "vending machine",
+      "seconds": 56.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\vending-machine\\vending-machine-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\vending-machine\\vending-machine.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-vending-machine"
+    },
+    {
+      "noun": "food truck",
+      "seconds": 56.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\food-truck\\food-truck-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\food-truck\\food-truck.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-food-truck"
+    },
+    {
+      "noun": "hot dog",
+      "seconds": 64.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hot-dog\\hot-dog-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hot-dog\\hot-dog.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hot-dog"
+    },
+    {
+      "noun": "robot dog",
+      "seconds": 66.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\robot-dog\\robot-dog-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\robot-dog\\robot-dog.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-robot-dog"
+    },
+    {
+      "noun": "cactus",
+      "seconds": 73.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cactus\\cactus-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cactus\\cactus.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cactus"
+    },
+    {
+      "noun": "surfboard",
+      "seconds": 53.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\surfboard\\surfboard-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\surfboard\\surfboard.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-surfboard"
+    },
+    {
+      "noun": "sandcastle",
+      "seconds": 61.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sandcastle\\sandcastle-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sandcastle\\sandcastle.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sandcastle"
+    },
+    {
+      "noun": "octopus",
+      "seconds": 63.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\octopus\\octopus-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\octopus\\octopus.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-octopus"
+    },
+    {
+      "noun": "treasure map",
+      "seconds": 86.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\treasure-map\\treasure-map-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\treasure-map\\treasure-map.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-treasure-map"
+    },
+    {
+      "noun": "wizard hat",
+      "seconds": 77.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wizard-hat\\wizard-hat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wizard-hat\\wizard-hat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wizard-hat"
+    },
+    {
+      "noun": "magic wand",
+      "seconds": 49.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\magic-wand\\magic-wand-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\magic-wand\\magic-wand.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-magic-wand"
+    },
+    {
+      "noun": "tombstone",
+      "seconds": 89.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tombstone\\tombstone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tombstone\\tombstone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tombstone"
+    },
+    {
+      "noun": "spider web",
+      "seconds": 50.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\spider-web\\spider-web-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\spider-web\\spider-web.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-spider-web"
+    },
+    {
+      "noun": "throne",
+      "seconds": 63.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\throne\\throne-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\throne\\throne.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-throne"
+    },
+    {
+      "noun": "crown",
+      "seconds": 74.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crown\\crown-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crown\\crown.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crown"
+    },
+    {
+      "noun": "karate fighter",
+      "seconds": 107.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\karate-fighter\\karate-fighter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\karate-fighter\\karate-fighter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-karate-fighter"
+    },
+    {
+      "noun": "crane operator",
+      "seconds": 60.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crane-operator\\crane-operator-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crane-operator\\crane-operator.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crane-operator"
+    },
+    {
+      "noun": "witch",
+      "seconds": 59.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\witch\\witch-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\witch\\witch.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-witch"
+    },
+    {
+      "noun": "hedgehog",
+      "seconds": 65.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hedgehog\\hedgehog-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hedgehog\\hedgehog.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hedgehog"
+    },
+    {
+      "noun": "sloth",
+      "seconds": 58.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sloth\\sloth-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sloth\\sloth.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sloth"
+    },
+    {
+      "noun": "grandpa",
+      "seconds": 63.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\grandpa\\grandpa-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\grandpa\\grandpa.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-grandpa"
+    },
+    {
+      "noun": "mermaid",
+      "seconds": 81.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mermaid\\mermaid-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mermaid\\mermaid.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mermaid"
+    },
+    {
+      "noun": "jellyfish",
+      "seconds": 53.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\jellyfish\\jellyfish-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\jellyfish\\jellyfish.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-jellyfish"
+    },
+    {
+      "noun": "pearl",
+      "seconds": 66.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pearl\\pearl-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pearl\\pearl.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pearl"
+    },
+    {
+      "noun": "bear",
+      "seconds": 64.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bear\\bear-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bear\\bear.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bear"
+    },
+    {
+      "noun": "owl",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\owl\\owl.png",
+      "seconds": 85.6,
+      "verdict": "failed"
+    },
+    {
+      "noun": "sumo wrestler",
+      "seconds": 78.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sumo-wrestler\\sumo-wrestler-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sumo-wrestler\\sumo-wrestler.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sumo-wrestler"
+    },
+    {
+      "noun": "ice igloo",
+      "seconds": 71.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ice-igloo\\ice-igloo-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ice-igloo\\ice-igloo.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ice-igloo"
+    },
+    {
+      "noun": "termite hill",
+      "seconds": 77.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\termite-hill\\termite-hill-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\termite-hill\\termite-hill.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-termite-hill"
+    },
+    {
+      "noun": "camp fire log",
+      "seconds": 56.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\camp-fire-log\\camp-fire-log-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\camp-fire-log\\camp-fire-log.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-camp-fire-log"
+    },
+    {
+      "noun": "hay bale",
+      "seconds": 61.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hay-bale\\hay-bale-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hay-bale\\hay-bale.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hay-bale"
+    },
+    {
+      "noun": "medical stretcher",
+      "seconds": 53.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\medical-stretcher\\medical-stretcher-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\medical-stretcher\\medical-stretcher.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-medical-stretcher"
+    },
+    {
+      "noun": "moon lander",
+      "seconds": 79.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\moon-lander\\moon-lander-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\moon-lander\\moon-lander.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-moon-lander"
+    },
+    {
+      "noun": "radar dish",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\radar-dish\\radar-dish.png",
+      "seconds": 61.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "gravestone",
+      "seconds": 61.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gravestone\\gravestone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gravestone\\gravestone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gravestone"
+    },
+    {
+      "noun": "lion",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\lion\\lion.png",
+      "seconds": 58.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "tiger",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\tiger\\tiger.png",
+      "seconds": 62.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "gorilla",
+      "seconds": 57.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gorilla\\gorilla-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gorilla\\gorilla.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gorilla"
+    },
+    {
+      "noun": "polar bear",
+      "seconds": 66.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\polar-bear\\polar-bear-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\polar-bear\\polar-bear.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-polar-bear"
+    },
+    {
+      "noun": "wolf",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\wolf\\wolf.png",
+      "seconds": 61.3,
+      "verdict": "failed"
+    },
+    {
+      "noun": "rabbit",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\rabbit\\rabbit.png",
+      "seconds": 87.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "cow",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\cow\\cow.png",
+      "seconds": 58.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "parrot",
+      "seconds": 54.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\parrot\\parrot-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\parrot\\parrot.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-parrot"
+    },
+    {
+      "noun": "eagle",
+      "reason": "RuntimeError: quality gate: pivot not centred: x=0.001 z=0.029; inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\eagle\\eagle.png",
+      "seconds": 68.3,
+      "verdict": "failed"
+    },
+    {
+      "noun": "flying bat",
+      "seconds": 48.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\flying-bat\\flying-bat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\flying-bat\\flying-bat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-flying-bat"
+    },
+    {
+      "noun": "spider",
+      "seconds": 52.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\spider\\spider-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\spider\\spider.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-spider"
+    },
+    {
+      "noun": "scorpion",
+      "seconds": 52.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\scorpion\\scorpion-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\scorpion\\scorpion.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-scorpion"
+    },
+    {
+      "noun": "butterfly",
+      "seconds": 51.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\butterfly\\butterfly-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\butterfly\\butterfly.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-butterfly"
+    },
+    {
+      "noun": "ladybug",
+      "seconds": 60.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ladybug\\ladybug-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ladybug\\ladybug.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ladybug"
+    },
+    {
+      "noun": "turtle",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\turtle\\turtle.png",
+      "seconds": 78.6,
+      "verdict": "failed"
+    },
+    {
+      "noun": "whale",
+      "seconds": 51.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\whale\\whale-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\whale\\whale.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-whale"
+    },
+    {
+      "noun": "dolphin",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\dolphin\\dolphin.png",
+      "seconds": 72.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "crab",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\crab\\crab.png",
+      "seconds": 55.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "lobster",
+      "seconds": 52.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lobster\\lobster-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lobster\\lobster.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lobster"
+    },
+    {
+      "noun": "seahorse",
+      "seconds": 52.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\seahorse\\seahorse-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\seahorse\\seahorse.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-seahorse"
+    },
+    {
+      "noun": "koala",
+      "seconds": 57.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\koala\\koala-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\koala\\koala.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-koala"
+    },
+    {
+      "noun": "panda",
+      "seconds": 71.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\panda\\panda-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\panda\\panda.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-panda"
+    },
+    {
+      "noun": "camel",
+      "seconds": 54.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\camel\\camel-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\camel\\camel.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-camel"
+    },
+    {
+      "noun": "hippo",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\hippo\\hippo.png",
+      "seconds": 75.8,
+      "verdict": "failed"
+    },
+    {
+      "noun": "rhino",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\rhino\\rhino.png",
+      "seconds": 57.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "dinosaur",
+      "seconds": 51.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dinosaur\\dinosaur-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dinosaur\\dinosaur.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dinosaur"
+    },
+    {
+      "noun": "unicorn",
+      "seconds": 58.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\unicorn\\unicorn-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\unicorn\\unicorn.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-unicorn"
+    },
+    {
+      "noun": "phoenix",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\phoenix\\phoenix.png",
+      "seconds": 64.3,
+      "verdict": "failed"
+    },
+    {
+      "noun": "griffin",
+      "seconds": 62.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\griffin\\griffin-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\griffin\\griffin.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-griffin"
+    },
+    {
+      "noun": "ogre",
+      "seconds": 54.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ogre\\ogre-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ogre\\ogre.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ogre"
+    },
+    {
+      "noun": "elf",
+      "seconds": 51.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\elf\\elf-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\elf\\elf.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-elf"
+    },
+    {
+      "noun": "fairy",
+      "seconds": 54.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fairy\\fairy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fairy\\fairy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fairy"
+    },
+    {
+      "noun": "werewolf",
+      "seconds": 57.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\werewolf\\werewolf-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\werewolf\\werewolf.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-werewolf"
+    },
+    {
+      "noun": "mummy",
+      "seconds": 54.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mummy\\mummy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mummy\\mummy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mummy"
+    },
+    {
+      "noun": "archer",
+      "seconds": 51.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\archer\\archer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\archer\\archer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-archer"
+    },
+    {
+      "noun": "viking",
+      "seconds": 73.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\viking\\viking-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\viking\\viking.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-viking"
+    },
+    {
+      "noun": "samurai",
+      "seconds": 53.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\samurai\\samurai-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\samurai\\samurai.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-samurai"
+    },
+    {
+      "noun": "cyborg",
+      "seconds": 52.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cyborg\\cyborg-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cyborg\\cyborg.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cyborg"
+    },
+    {
+      "noun": "superhero",
+      "seconds": 52.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\superhero\\superhero-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\superhero\\superhero.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-superhero"
+    },
+    {
+      "noun": "villain",
+      "seconds": 54.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\villain\\villain-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\villain\\villain.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-villain"
+    },
+    {
+      "noun": "firefighter",
+      "seconds": 50.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\firefighter\\firefighter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\firefighter\\firefighter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-firefighter"
+    },
+    {
+      "noun": "doctor",
+      "seconds": 51.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\doctor\\doctor-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\doctor\\doctor.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-doctor"
+    },
+    {
+      "noun": "nurse",
+      "seconds": 50.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\nurse\\nurse-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\nurse\\nurse.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-nurse"
+    },
+    {
+      "noun": "farmer",
+      "seconds": 53.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\farmer\\farmer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\farmer\\farmer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-farmer"
+    },
+    {
+      "noun": "scientist",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\scientist\\scientist.png",
+      "seconds": 55.6,
+      "verdict": "failed"
+    },
+    {
+      "noun": "detective",
+      "seconds": 53.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\detective\\detective-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\detective\\detective.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-detective"
+    },
+    {
+      "noun": "thief",
+      "seconds": 54.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\thief\\thief-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\thief\\thief.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-thief"
+    },
+    {
+      "noun": "clown",
+      "seconds": 52.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\clown\\clown-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\clown\\clown.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-clown"
+    },
+    {
+      "noun": "magician",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\magician\\magician.png",
+      "seconds": 57.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "baby",
+      "seconds": 59.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\baby\\baby-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\baby\\baby.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-baby"
+    },
+    {
+      "noun": "student",
+      "seconds": 74.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\student\\student-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\student\\student.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-student"
+    },
+    {
+      "noun": "bulldozer",
+      "seconds": 97.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bulldozer\\bulldozer-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bulldozer\\bulldozer.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bulldozer"
+    },
+    {
+      "noun": "helicopter",
+      "seconds": 50.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\helicopter\\helicopter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\helicopter\\helicopter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-helicopter"
+    },
+    {
+      "noun": "sailboat",
+      "seconds": 53.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sailboat\\sailboat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sailboat\\sailboat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sailboat"
+    },
+    {
+      "noun": "tram",
+      "seconds": 60.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tram\\tram-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tram\\tram.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tram"
+    },
+    {
+      "noun": "bicycle",
+      "seconds": 50.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bicycle\\bicycle-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bicycle\\bicycle.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bicycle"
+    },
+    {
+      "noun": "motorboat",
+      "seconds": 64.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\motorboat\\motorboat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\motorboat\\motorboat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-motorboat"
+    },
+    {
+      "noun": "book",
+      "seconds": 57.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\book\\book-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\book\\book.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-book"
+    },
+    {
+      "noun": "scroll",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\scroll\\scroll.png",
+      "seconds": 121.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "backpack",
+      "seconds": 74.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\backpack\\backpack-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\backpack\\backpack.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-backpack"
+    },
+    {
+      "noun": "umbrella",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\umbrella\\umbrella.png",
+      "seconds": 58.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "camera",
+      "seconds": 56.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\camera\\camera-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\camera\\camera.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-camera"
+    },
+    {
+      "noun": "smartphone",
+      "seconds": 51.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\smartphone\\smartphone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\smartphone\\smartphone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-smartphone"
+    },
+    {
+      "noun": "television",
+      "seconds": 115.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\television\\television-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\television\\television.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-television"
+    },
+    {
+      "noun": "violin",
+      "seconds": 50.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\violin\\violin-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\violin\\violin.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-violin"
+    },
+    {
+      "noun": "trumpet",
+      "seconds": 50.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\trumpet\\trumpet-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\trumpet\\trumpet.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-trumpet"
+    },
+    {
+      "noun": "microphone",
+      "seconds": 53.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\microphone\\microphone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\microphone\\microphone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-microphone"
+    },
+    {
+      "noun": "baseball bat",
+      "seconds": 49.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\baseball-bat\\baseball-bat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\baseball-bat\\baseball-bat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-baseball-bat"
+    },
+    {
+      "noun": "hockey stick",
+      "seconds": 49.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hockey-stick\\hockey-stick-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hockey-stick\\hockey-stick.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hockey-stick"
+    },
+    {
+      "noun": "boxing glove",
+      "seconds": 65.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\boxing-glove\\boxing-glove-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\boxing-glove\\boxing-glove.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-boxing-glove"
+    },
+    {
+      "noun": "kite",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\kite\\kite.png",
+      "seconds": 81.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "dice",
+      "seconds": 78.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dice\\dice-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dice\\dice.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dice"
+    },
+    {
+      "noun": "chess piece",
+      "reason": "RuntimeError: quality gate: no vertex colours and no texture",
+      "preview": "D:\\claude\\_gen3d-cache\\chess-piece\\chess-piece.png",
+      "seconds": 51.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "cheese",
+      "seconds": 68.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cheese\\cheese-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cheese\\cheese.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cheese"
+    },
+    {
+      "noun": "lollipop",
+      "seconds": 50.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lollipop\\lollipop-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lollipop\\lollipop.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lollipop"
+    },
+    {
+      "noun": "strawberry",
+      "seconds": 57.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\strawberry\\strawberry-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\strawberry\\strawberry.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-strawberry"
+    },
+    {
+      "noun": "pineapple",
+      "seconds": 53.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pineapple\\pineapple-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pineapple\\pineapple.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pineapple"
+    },
+    {
+      "noun": "teapot",
+      "seconds": 60.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\teapot\\teapot-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\teapot\\teapot.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-teapot"
+    },
+    {
+      "noun": "bookshelf",
+      "seconds": 66.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bookshelf\\bookshelf-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bookshelf\\bookshelf.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bookshelf"
+    },
+    {
+      "noun": "fountain",
+      "seconds": 62.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fountain\\fountain-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fountain\\fountain.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fountain"
+    },
+    {
+      "noun": "water well",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\water-well\\water-well.png",
+      "seconds": 106.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "treehouse",
+      "seconds": 58.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\treehouse\\treehouse-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\treehouse\\treehouse.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-treehouse"
+    },
+    {
+      "noun": "pile of bone",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\pile-of-bone\\pile-of-bone.png",
+      "seconds": 64.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "volcano",
+      "seconds": 57.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\volcano\\volcano-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\volcano\\volcano.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-volcano"
+    },
+    {
+      "noun": "iceberg",
+      "seconds": 55.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\iceberg\\iceberg-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\iceberg\\iceberg.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-iceberg"
+    },
+    {
+      "noun": "sunflower",
+      "seconds": 51.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sunflower\\sunflower-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sunflower\\sunflower.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sunflower"
+    },
+    {
+      "noun": "rose",
+      "seconds": 51.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rose\\rose-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rose\\rose.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rose"
+    },
+    {
+      "noun": "boulder",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\boulder\\boulder.png",
+      "seconds": 107.8,
+      "verdict": "failed"
+    },
+    {
+      "noun": "crystal cluster",
+      "seconds": 52.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\crystal-cluster\\crystal-cluster-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\crystal-cluster\\crystal-cluster.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-crystal-cluster"
+    },
+    {
+      "noun": "planet",
+      "seconds": 70.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\planet\\planet-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\planet\\planet.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-planet"
+    },
+    {
+      "noun": "tornado",
+      "seconds": 55.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tornado\\tornado-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tornado\\tornado.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tornado"
+    },
+    {
+      "noun": "lightning bolt",
+      "seconds": 51.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lightning-bolt\\lightning-bolt-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lightning-bolt\\lightning-bolt.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lightning-bolt"
+    },
+    {
+      "noun": "mailbox",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\mailbox\\mailbox.png",
+      "seconds": 68.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "trampoline",
+      "seconds": 81.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\trampoline\\trampoline-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\trampoline\\trampoline.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-trampoline"
+    },
+    {
+      "noun": "ladder",
+      "seconds": 49.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ladder\\ladder-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ladder\\ladder.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ladder"
+    },
+    {
+      "noun": "anchor",
+      "seconds": 49.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\anchor\\anchor-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\anchor\\anchor.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-anchor"
+    },
+    {
+      "noun": "compass",
+      "seconds": 58.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\compass\\compass-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\compass\\compass.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-compass"
+    },
+    {
+      "noun": "telescope",
+      "seconds": 54.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\telescope\\telescope-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\telescope\\telescope.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-telescope"
+    },
+    {
+      "noun": "microscope",
+      "seconds": 51.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\microscope\\microscope-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\microscope\\microscope.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-microscope"
+    },
+    {
+      "noun": "magnet",
+      "seconds": 54.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\magnet\\magnet-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\magnet\\magnet.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-magnet"
+    },
+    {
+      "noun": "lightbulb",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\lightbulb\\lightbulb.png",
+      "seconds": 56.7,
+      "verdict": "failed"
+    },
+    {
+      "noun": "battery pack",
+      "seconds": 67.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\battery-pack\\battery-pack-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\battery-pack\\battery-pack.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-battery-pack"
+    },
+    {
+      "noun": "cog gear",
+      "seconds": 53.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cog-gear\\cog-gear-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cog-gear\\cog-gear.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cog-gear"
+    },
+    {
+      "noun": "rake",
+      "seconds": 48.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rake\\rake-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rake\\rake.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rake"
+    },
+    {
+      "noun": "wheelbarrow",
+      "seconds": 56.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wheelbarrow\\wheelbarrow-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wheelbarrow\\wheelbarrow.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wheelbarrow"
+    },
+    {
+      "noun": "green frog",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\green-frog\\green-frog.png",
+      "seconds": 73.3,
+      "verdict": "failed"
+    },
+    {
+      "noun": "ninja warrior",
+      "seconds": 55.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\ninja-warrior\\ninja-warrior-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\ninja-warrior\\ninja-warrior.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-ninja-warrior"
+    },
+    {
+      "noun": "snow yeti",
+      "seconds": 84.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\snow-yeti\\snow-yeti-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\snow-yeti\\snow-yeti.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-snow-yeti"
+    },
+    {
+      "noun": "white snowball",
+      "seconds": 77.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\white-snowball\\white-snowball-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\white-snowball\\white-snowball.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-white-snowball"
+    },
+    {
+      "noun": "soccer goalkeeper",
+      "seconds": 51.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\soccer-goalkeeper\\soccer-goalkeeper-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\soccer-goalkeeper\\soccer-goalkeeper.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-soccer-goalkeeper"
+    },
+    {
+      "noun": "chocolate chip cookie",
+      "seconds": 55.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\chocolate-chip-cookie\\chocolate-chip-cookie-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\chocolate-chip-cookie\\chocolate-chip-cookie.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-chocolate-chip-cookie"
+    },
+    {
+      "noun": "yellow submarine",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\yellow-submarine\\yellow-submarine.png",
+      "seconds": 53.8,
+      "verdict": "failed"
+    },
+    {
+      "noun": "pirate captain",
+      "seconds": 54.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pirate-captain\\pirate-captain-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pirate-captain\\pirate-captain.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pirate-captain"
+    },
+    {
+      "noun": "red ant",
+      "seconds": 53.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\red-ant\\red-ant-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\red-ant\\red-ant.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-red-ant"
+    },
+    {
+      "noun": "garden snail",
+      "seconds": 67.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\garden-snail\\garden-snail-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\garden-snail\\garden-snail.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-garden-snail"
+    },
+    {
+      "noun": "wrapped candy",
+      "seconds": 58.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wrapped-candy\\wrapped-candy-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wrapped-candy\\wrapped-candy.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wrapped-candy"
+    },
+    {
+      "noun": "snowman with hat",
+      "seconds": 62.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\snowman-with-hat\\snowman-with-hat-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\snowman-with-hat\\snowman-with-hat.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-snowman-with-hat"
+    },
+    {
+      "noun": "black hole portal",
+      "seconds": 216.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\black-hole-portal\\black-hole-portal-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\black-hole-portal\\black-hole-portal.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-black-hole-portal"
+    },
+    {
+      "noun": "brown owl",
+      "seconds": 74.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\brown-owl\\brown-owl-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\brown-owl\\brown-owl.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-brown-owl"
+    },
+    {
+      "noun": "satellite radar dish",
+      "seconds": 65.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\satellite-radar-dish\\satellite-radar-dish-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\satellite-radar-dish\\satellite-radar-dish.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-satellite-radar-dish"
+    },
+    {
+      "noun": "male lion",
+      "seconds": 63.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\male-lion\\male-lion-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\male-lion\\male-lion.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-male-lion"
+    },
+    {
+      "noun": "bengal tiger",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\bengal-tiger\\bengal-tiger.png",
+      "seconds": 64.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "grey wolf",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\grey-wolf\\grey-wolf.png",
+      "seconds": 61.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "white rabbit",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\white-rabbit\\white-rabbit.png",
+      "seconds": 71.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "dairy cow",
+      "seconds": 59.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dairy-cow\\dairy-cow-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dairy-cow\\dairy-cow.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dairy-cow"
+    },
+    {
+      "noun": "bald eagle",
+      "seconds": 60.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bald-eagle\\bald-eagle-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bald-eagle\\bald-eagle.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bald-eagle"
+    },
+    {
+      "noun": "sea turtle",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\sea-turtle\\sea-turtle.png",
+      "seconds": 75.1,
+      "verdict": "failed"
+    },
+    {
+      "noun": "bottlenose dolphin",
+      "seconds": 63.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bottlenose-dolphin\\bottlenose-dolphin-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bottlenose-dolphin\\bottlenose-dolphin.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bottlenose-dolphin"
+    },
+    {
+      "noun": "red crab",
+      "seconds": 54.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\red-crab\\red-crab-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\red-crab\\red-crab.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-red-crab"
+    },
+    {
+      "noun": "hippopotamus",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\hippopotamus\\hippopotamus.png",
+      "seconds": 69.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "rhinocero",
+      "seconds": 67.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\rhinocero\\rhinocero-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\rhinocero\\rhinocero.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-rhinocero"
+    },
+    {
+      "noun": "fire phoenix bird",
+      "seconds": 77.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fire-phoenix-bird\\fire-phoenix-bird-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fire-phoenix-bird\\fire-phoenix-bird.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fire-phoenix-bird"
+    },
+    {
+      "noun": "lab scientist",
+      "seconds": 54.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\lab-scientist\\lab-scientist-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\lab-scientist\\lab-scientist.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-lab-scientist"
+    },
+    {
+      "noun": "stage magician",
+      "seconds": 56.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stage-magician\\stage-magician-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stage-magician\\stage-magician.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stage-magician"
+    },
+    {
+      "noun": "paper scroll",
+      "seconds": 51.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\paper-scroll\\paper-scroll-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\paper-scroll\\paper-scroll.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-paper-scroll"
+    },
+    {
+      "noun": "open umbrella",
+      "seconds": 57.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\open-umbrella\\open-umbrella-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\open-umbrella\\open-umbrella.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-open-umbrella"
+    },
+    {
+      "noun": "diamond kite",
+      "seconds": 67.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\diamond-kite\\diamond-kite-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\diamond-kite\\diamond-kite.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-diamond-kite"
+    },
+    {
+      "noun": "chess king piece",
+      "seconds": 50.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\chess-king-piece\\chess-king-piece-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\chess-king-piece\\chess-king-piece.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-chess-king-piece"
+    },
+    {
+      "noun": "stone water well",
+      "seconds": 66.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stone-water-well\\stone-water-well-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stone-water-well\\stone-water-well.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stone-water-well"
+    },
+    {
+      "noun": "large boulder",
+      "seconds": 73.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\large-boulder\\large-boulder-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\large-boulder\\large-boulder.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-large-boulder"
+    },
+    {
+      "noun": "street mailbox",
+      "seconds": 54.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\street-mailbox\\street-mailbox-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\street-mailbox\\street-mailbox.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-street-mailbox"
+    },
+    {
+      "noun": "light bulb",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\light-bulb\\light-bulb.png",
+      "seconds": 58.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "red heart pickup",
+      "seconds": 71.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\red-heart-pickup\\red-heart-pickup-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\red-heart-pickup\\red-heart-pickup.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-red-heart-pickup"
+    },
+    {
+      "noun": "circular saw blade",
+      "seconds": 55.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\circular-saw-blade\\circular-saw-blade-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\circular-saw-blade\\circular-saw-blade.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-circular-saw-blade"
+    },
+    {
+      "noun": "metal padlock",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\metal-padlock\\metal-padlock.png",
+      "seconds": 78.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "iron cannonball",
+      "seconds": 62.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\iron-cannonball\\iron-cannonball-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\iron-cannonball\\iron-cannonball.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-iron-cannonball"
+    },
+    {
+      "noun": "brass bullet",
+      "seconds": 49.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\brass-bullet\\brass-bullet-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\brass-bullet\\brass-bullet.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-brass-bullet"
+    },
+    {
+      "noun": "landmine",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\landmine\\landmine.png",
+      "seconds": 63.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "iron cage",
+      "seconds": 57.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\iron-cage\\iron-cage-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\iron-cage\\iron-cage.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-iron-cage"
+    },
+    {
+      "noun": "iron chain",
+      "seconds": 50.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\iron-chain\\iron-chain-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\iron-chain\\iron-chain.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-iron-chain"
+    },
+    {
+      "noun": "coil spring",
+      "seconds": 58.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\coil-spring\\coil-spring-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\coil-spring\\coil-spring.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-coil-spring"
+    },
+    {
+      "noun": "jump pad",
+      "seconds": 61.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\jump-pad\\jump-pad-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\jump-pad\\jump-pad.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-jump-pad"
+    },
+    {
+      "noun": "fighter jet",
+      "seconds": 50.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\fighter-jet\\fighter-jet-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\fighter-jet\\fighter-jet.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-fighter-jet"
+    },
+    {
+      "noun": "small songbird",
+      "seconds": 58.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\small-songbird\\small-songbird-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\small-songbird\\small-songbird.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-small-songbird"
+    },
+    {
+      "noun": "young prince",
+      "seconds": 51.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\young-prince\\young-prince-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\young-prince\\young-prince.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-young-prince"
+    },
+    {
+      "noun": "market stall shop",
+      "seconds": 67.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\market-stall-shop\\market-stall-shop-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\market-stall-shop\\market-stall-shop.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-market-stall-shop"
+    },
+    {
+      "noun": "road sign",
+      "seconds": 60.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\road-sign\\road-sign-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\road-sign\\road-sign.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-road-sign"
+    },
+    {
+      "noun": "witch cauldron",
+      "seconds": 74.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\witch-cauldron\\witch-cauldron-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\witch-cauldron\\witch-cauldron.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-witch-cauldron"
+    },
+    {
+      "noun": "wooden magic staff",
+      "seconds": 49.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\wooden-magic-staff\\wooden-magic-staff-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\wooden-magic-staff\\wooden-magic-staff.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-wooden-magic-staff"
+    },
+    {
+      "noun": "gold necklace",
+      "seconds": 53.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gold-necklace\\gold-necklace-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gold-necklace\\gold-necklace.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gold-necklace"
+    },
+    {
+      "noun": "sealed letter",
+      "seconds": 81.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\sealed-letter\\sealed-letter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\sealed-letter\\sealed-letter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-sealed-letter"
+    },
+    {
+      "noun": "paper envelope",
+      "seconds": 79.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\paper-envelope\\paper-envelope-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\paper-envelope\\paper-envelope.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-paper-envelope"
+    },
+    {
+      "noun": "red cherry",
+      "seconds": 52.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\red-cherry\\red-cherry-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\red-cherry\\red-cherry.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-red-cherry"
+    },
+    {
+      "noun": "bunch of grape",
+      "seconds": 69.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bunch-of-grape\\bunch-of-grape-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bunch-of-grape\\bunch-of-grape.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bunch-of-grape"
+    },
+    {
+      "noun": "milk carton",
+      "seconds": 57.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\milk-carton\\milk-carton-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\milk-carton\\milk-carton.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-milk-carton"
+    },
+    {
+      "noun": "sitting green frog cartoon",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\sitting-green-frog-cartoon\\sitting-green-frog-cartoon.png",
+      "seconds": 73.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "squirrel with bushy tail",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\squirrel-with-bushy-tail\\squirrel-with-bushy-tail.png",
+      "seconds": 70.5,
+      "verdict": "failed"
+    },
+    {
+      "noun": "submarine with periscope",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\submarine-with-periscope\\submarine-with-periscope.png",
+      "seconds": 95.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "tiger standing cartoon",
+      "seconds": 62.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tiger-standing-cartoon\\tiger-standing-cartoon-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tiger-standing-cartoon\\tiger-standing-cartoon.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tiger-standing-cartoon"
+    },
+    {
+      "noun": "wolf standing cartoon",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\wolf-standing-cartoon\\wolf-standing-cartoon.png",
+      "seconds": 94.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "bunny rabbit sitting",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\bunny-rabbit-sitting\\bunny-rabbit-sitting.png",
+      "seconds": 71.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "tortoise",
+      "seconds": 65.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tortoise\\tortoise-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tortoise\\tortoise.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tortoise"
+    },
+    {
+      "noun": "glowing light bulb",
+      "seconds": 54.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\glowing-light-bulb\\glowing-light-bulb-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\glowing-light-bulb\\glowing-light-bulb.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-glowing-light-bulb"
+    },
+    {
+      "noun": "lizard",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\lizard\\lizard.png",
+      "seconds": 79.7,
+      "verdict": "failed"
+    },
+    {
+      "noun": "moose",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\moose\\moose.png",
+      "seconds": 62.9,
+      "verdict": "failed"
+    },
+    {
+      "noun": "donkey",
+      "seconds": 59.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\donkey\\donkey-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\donkey\\donkey.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-donkey"
+    },
+    {
+      "noun": "giant squid",
+      "seconds": 64.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\giant-squid\\giant-squid-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\giant-squid\\giant-squid.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-giant-squid"
+    },
+    {
+      "noun": "stag beetle",
+      "seconds": 51.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\stag-beetle\\stag-beetle-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\stag-beetle\\stag-beetle.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-stag-beetle"
+    },
+    {
+      "noun": "mosquito",
+      "seconds": 53.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\mosquito\\mosquito-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\mosquito\\mosquito.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-mosquito"
+    },
+    {
+      "noun": "housefly",
+      "seconds": 53.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\housefly\\housefly-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\housefly\\housefly.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-housefly"
+    },
+    {
+      "noun": "dragonfly",
+      "seconds": 51.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\dragonfly\\dragonfly-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\dragonfly\\dragonfly.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-dragonfly"
+    },
+    {
+      "noun": "pink flamingo",
+      "seconds": 50.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pink-flamingo\\pink-flamingo-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pink-flamingo\\pink-flamingo.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pink-flamingo"
+    },
+    {
+      "noun": "peacock",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\peacock\\peacock.png",
+      "seconds": 63.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "white swan",
+      "seconds": 58.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\white-swan\\white-swan-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\white-swan\\white-swan.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-white-swan"
+    },
+    {
+      "noun": "black crow",
+      "seconds": 53.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\black-crow\\black-crow-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\black-crow\\black-crow.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-black-crow"
+    },
+    {
+      "noun": "otter",
+      "seconds": 65.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\otter\\otter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\otter\\otter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-otter"
+    },
+    {
+      "noun": "skunk",
+      "seconds": 66.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\skunk\\skunk-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\skunk\\skunk.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-skunk"
+    },
+    {
+      "noun": "hedgehog cartoon",
+      "seconds": 61.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hedgehog-cartoon\\hedgehog-cartoon-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hedgehog-cartoon\\hedgehog-cartoon.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hedgehog-cartoon"
+    },
+    {
+      "noun": "gold star pickup",
+      "seconds": 56.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\gold-star-pickup\\gold-star-pickup-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\gold-star-pickup\\gold-star-pickup.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-gold-star-pickup"
+    },
+    {
+      "noun": "toucan",
+      "seconds": 67.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\toucan\\toucan-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\toucan\\toucan.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-toucan"
+    },
+    {
+      "noun": "bison",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\bison\\bison.png",
+      "seconds": 67.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "chameleon",
+      "seconds": 52.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\chameleon\\chameleon-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\chameleon\\chameleon.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-chameleon"
+    },
+    {
+      "noun": "jaguar",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\jaguar\\jaguar.png",
+      "seconds": 69.8,
+      "verdict": "failed"
+    },
+    {
+      "noun": "hyena",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\hyena\\hyena.png",
+      "seconds": 61.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "meerkat",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\meerkat\\meerkat.png",
+      "seconds": 64.0,
+      "verdict": "failed"
+    },
+    {
+      "noun": "armadillo",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\armadillo\\armadillo.png",
+      "seconds": 65.2,
+      "verdict": "failed"
+    },
+    {
+      "noun": "sloth bear",
+      "reason": "RuntimeError: quality gate: inconsistent face winding \u2013 shredded mesh (was it remeshed?)",
+      "preview": "D:\\claude\\_gen3d-cache\\sloth-bear\\sloth-bear.png",
+      "seconds": 66.4,
+      "verdict": "failed"
+    },
+    {
+      "noun": "narwhal",
+      "seconds": 76.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\narwhal\\narwhal-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\narwhal\\narwhal.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-narwhal"
+    },
+    {
+      "noun": "manta ray",
+      "seconds": 58.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\manta-ray\\manta-ray-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\manta-ray\\manta-ray.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-manta-ray"
+    },
+    {
+      "noun": "pufferfish",
+      "seconds": 55.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\pufferfish\\pufferfish-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\pufferfish\\pufferfish.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-pufferfish"
+    },
+    {
+      "noun": "axolotl",
+      "seconds": 75.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\axolotl\\axolotl-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\axolotl\\axolotl.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-axolotl"
+    },
+    {
+      "noun": "carousel",
+      "seconds": 81.1,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\carousel\\carousel-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\carousel\\carousel.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-carousel"
+    },
+    {
+      "noun": "hot tub",
+      "seconds": 70.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hot-tub\\hot-tub-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hot-tub\\hot-tub.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hot-tub"
+    },
+    {
+      "noun": "jukebox",
+      "seconds": 72.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\jukebox\\jukebox-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\jukebox\\jukebox.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-jukebox"
+    },
+    {
+      "noun": "piggy bank",
+      "seconds": 72.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\piggy-bank\\piggy-bank-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\piggy-bank\\piggy-bank.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-piggy-bank"
+    },
+    {
+      "noun": "hourglass",
+      "seconds": 61.0,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\hourglass\\hourglass-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\hourglass\\hourglass.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-hourglass"
+    },
+    {
+      "noun": "globe",
+      "seconds": 84.4,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\globe\\globe-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\globe\\globe.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-globe"
+    },
+    {
+      "noun": "typewriter",
+      "seconds": 76.3,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\typewriter\\typewriter-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\typewriter\\typewriter.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-typewriter"
+    },
+    {
+      "noun": "harp",
+      "seconds": 52.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\harp\\harp-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\harp\\harp.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-harp"
+    },
+    {
+      "noun": "accordion",
+      "seconds": 74.9,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\accordion\\accordion-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\accordion\\accordion.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-accordion"
+    },
+    {
+      "noun": "banjo",
+      "seconds": 75.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\banjo\\banjo-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\banjo\\banjo.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-banjo"
+    },
+    {
+      "noun": "tuba",
+      "seconds": 51.8,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tuba\\tuba-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tuba\\tuba.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tuba"
+    },
+    {
+      "noun": "xylophone",
+      "seconds": 54.6,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\xylophone\\xylophone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\xylophone\\xylophone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-xylophone"
+    },
+    {
+      "noun": "bagpipe",
+      "seconds": 49.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\bagpipe\\bagpipe-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\bagpipe\\bagpipe.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-bagpipe"
+    },
+    {
+      "noun": "saxophone",
+      "seconds": 51.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\saxophone\\saxophone-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\saxophone\\saxophone.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-saxophone"
+    },
+    {
+      "noun": "cello",
+      "seconds": 51.2,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\cello\\cello-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\cello\\cello.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-cello"
+    },
+    {
+      "noun": "tambourine",
+      "seconds": 72.5,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\tambourine\\tambourine-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\tambourine\\tambourine.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-tambourine"
+    },
+    {
+      "noun": "maraca",
+      "seconds": 51.7,
+      "verdict": "passed",
+      "glb": "D:\\claude\\_gen3d-cache\\maraca\\maraca-lod0.glb",
+      "preview": "D:\\claude\\_gen3d-cache\\maraca\\maraca.png",
+      "quarantine": "D:\\claude\\Hackaton\\asset-quarantine\\gen3d-maraca"
     }
   ]
 }

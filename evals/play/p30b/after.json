@@ -1,0 +1,2814 @@
+{
+ "about": "P30B T7: offline fidelity gain at HEAD over the T1 baseline. before = T1 code with the verb rule of T2, R1 and R2 on top (baseline.changed), so both sides count a verb as shown only when it changed the game; after = HEAD. Word draft and the frozen AI specs of live.json, corpus 30 + judge-10. See README.md.",
+ "measuredAt": "2026-09-27T14:21:48.557Z",
+ "commit": "6bc1d390",
+ "baseline": {
+  "commit": "f267f142",
+  "changed": [
+   "scripts/p30b-losses.mjs",
+   "src/play/__tests__/critic-rules.test.ts",
+   "src/play/__tests__/fidelity-rules.test.ts",
+   "src/play/arcade/__tests__/verify-verb-effect.test.ts",
+   "src/play/arcade/__tests__/verify-verbs.test.ts",
+   "src/play/arcade/kernel.ts",
+   "src/play/arcade/verify.ts",
+   "src/play/contracts.ts",
+   "src/play/director/critic.ts",
+   "src/play/fidelity/chain.ts"
+  ]
+ },
+ "totals": {
+  "corpus": {
+   "draft": {
+    "hero": {
+     "of": 18,
+     "before": 13,
+     "after": 14
+    },
+    "item": {
+     "of": 38,
+     "before": 19,
+     "after": 22
+    },
+    "setting": {
+     "of": 24,
+     "before": 22,
+     "after": 23
+    },
+    "verb": {
+     "of": 30,
+     "before": 25,
+     "after": 25
+    }
+   },
+   "ai": {
+    "hero": {
+     "of": 18,
+     "before": 13,
+     "after": 15
+    },
+    "item": {
+     "of": 38,
+     "before": 24,
+     "after": 31
+    },
+    "setting": {
+     "of": 24,
+     "before": 23,
+     "after": 24
+    },
+    "verb": {
+     "of": 30,
+     "before": 27,
+     "after": 27
+    }
+   }
+  },
+  "judge10": {
+   "draft": {
+    "hero": {
+     "of": 5,
+     "before": 5,
+     "after": 5
+    },
+    "item": {
+     "of": 13,
+     "before": 7,
+     "after": 7
+    },
+    "setting": {
+     "of": 9,
+     "before": 3,
+     "after": 4
+    },
+    "verb": {
+     "of": 10,
+     "before": 4,
+     "after": 4
+    }
+   },
+   "ai": {
+    "hero": {
+     "of": 5,
+     "before": 4,
+     "after": 5
+    },
+    "item": {
+     "of": 13,
+     "before": 7,
+     "after": 7
+    },
+    "setting": {
+     "of": 9,
+     "before": 7,
+     "after": 7
+    },
+    "verb": {
+     "of": 10,
+     "before": 5,
+     "after": 5
+    }
+   }
+  }
+ },
+ "sentences": [
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s039",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "zombie",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "mall",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "shoot",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s037",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "space marine",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "alien bug",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "mining colony",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "shoot",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s002",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "knight",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "key",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "ghost",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "haunted castle",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "collect",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s003",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "hamster",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "roomba",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "supermarket",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "escape",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s006",
+   "control": "runner",
+   "items": [
+    {
+     "item": "corgi",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "sausage",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "sprinkler",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "park",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "run",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s008",
+   "control": "runner",
+   "items": [
+    {
+     "item": "banana",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "monkey",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "run",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s022",
+   "control": "platform",
+   "items": [
+    {
+     "item": "robot",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "charger",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "tower",
+     "role": "setting",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "climb",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s021",
+   "control": "platform",
+   "items": [
+    {
+     "item": "lava",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "spinning bar",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "jump",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s035",
+   "control": "flap",
+   "items": [
+    {
+     "item": "bird",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "underwater",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "flap",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s050",
+   "control": "throw",
+   "items": [
+    {
+     "item": "snowball",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "kid",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "snow fort",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "throw",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s088",
+   "control": "throw",
+   "items": [
+    {
+     "item": "cat",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "cardboard box",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "launch",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s069",
+   "control": "runner",
+   "items": [
+    {
+     "item": "gem",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "cave",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "match",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s056",
+   "control": "steer",
+   "items": [
+    {
+     "item": "scooter",
+     "role": "hero",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "pizza",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "traffic",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "race",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s058",
+   "control": "steer",
+   "items": [
+    {
+     "item": "boat",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "crocodile",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "jungle river",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "race",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s111",
+   "control": "move_free",
+   "items": [
+    {
+     "item": "black hole",
+     "role": "hero",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "city",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "swallow",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s095",
+   "control": "throw",
+   "items": [
+    {
+     "item": "knife",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "log",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "throw",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s188",
+   "control": "duel",
+   "items": [
+    {
+     "item": "grandma",
+     "role": "hero",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "pigeon",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "park",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "fight",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s144",
+   "control": "rhythm",
+   "items": [
+    {
+     "item": "frog",
+     "role": "hero",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "lily pad",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "pond",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "drum to the beat",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s155",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "castle",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "goblin",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "defend",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "s099",
+   "control": "timing",
+   "items": [
+    {
+     "item": "pancake",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "tower",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "stack",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h01",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "cat",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "fish",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "fishmonger",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "market",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "steal",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h02",
+   "control": "steer",
+   "items": [
+    {
+     "item": "shopping cart",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "supermarket",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "race",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h03",
+   "control": "throw",
+   "items": [
+    {
+     "item": "castle",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "dragon",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "snowball",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "throw",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h04",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "robot",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "battery",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "Mars",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "collect",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h05",
+   "control": "duel",
+   "items": [
+    {
+     "item": "kangaroo",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "outback",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "box",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h06",
+   "control": "throw",
+   "items": [
+    {
+     "item": "astronaut",
+     "role": "hero",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "crystal",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "alien",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "icy moon",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "collect",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h07",
+   "control": "runner",
+   "items": [
+    {
+     "item": "elephant",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "volcano",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "do taxes",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h08",
+   "control": "runner",
+   "items": [
+    {
+     "item": "dinner",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "moon",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "date",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h09",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "hospital",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "flashlight",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "escape",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "draft",
+   "id": "h10",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "penguin",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "glacier",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "seal",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "fish",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "slide",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s039",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "zombie",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "mall",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "shoot",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s037",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "space marine",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "alien bug",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "mining colony",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "shoot",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s002",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "knight",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "key",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "ghost",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "haunted castle",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "collect",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s003",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "hamster",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "roomba",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "supermarket",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "escape",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s006",
+   "control": "runner",
+   "items": [
+    {
+     "item": "corgi",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "sausage",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "sprinkler",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "park",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "run",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s008",
+   "control": "runner",
+   "items": [
+    {
+     "item": "banana",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "monkey",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "run",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s022",
+   "control": "platform",
+   "items": [
+    {
+     "item": "robot",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "charger",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "tower",
+     "role": "setting",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "climb",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s021",
+   "control": "platform",
+   "items": [
+    {
+     "item": "lava",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "spinning bar",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "jump",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s035",
+   "control": "flap",
+   "items": [
+    {
+     "item": "bird",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "underwater",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "flap",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s050",
+   "control": "throw",
+   "items": [
+    {
+     "item": "snowball",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "kid",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "snow fort",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "throw",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s088",
+   "control": "throw",
+   "items": [
+    {
+     "item": "cat",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "cardboard box",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "launch",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s069",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "gem",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "cave",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "match",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s056",
+   "control": "steer",
+   "items": [
+    {
+     "item": "scooter",
+     "role": "hero",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "pizza",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "traffic",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "race",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s058",
+   "control": "steer",
+   "items": [
+    {
+     "item": "boat",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "crocodile",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "jungle river",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "race",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s111",
+   "control": "move_free",
+   "items": [
+    {
+     "item": "black hole",
+     "role": "hero",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "city",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "swallow",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s095",
+   "control": "throw",
+   "items": [
+    {
+     "item": "knife",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "log",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "throw",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s188",
+   "control": "duel",
+   "items": [
+    {
+     "item": "grandma",
+     "role": "hero",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "pigeon",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "park",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "fight",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s144",
+   "control": "rhythm",
+   "items": [
+    {
+     "item": "frog",
+     "role": "hero",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "lily pad",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "pond",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "drum to the beat",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s155",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "castle",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "goblin",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "defend",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "s099",
+   "control": "timing",
+   "items": [
+    {
+     "item": "pancake",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "tower",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "stack",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h01",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "cat",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "fish",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "fishmonger",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "market",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "steal",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h02",
+   "control": "steer",
+   "items": [
+    {
+     "item": "shopping cart",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "supermarket",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "race",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h03",
+   "control": "throw",
+   "items": [
+    {
+     "item": "castle",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "dragon",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "snowball",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "throw",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h04",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "robot",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "battery",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "Mars",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "collect",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h05",
+   "control": "duel",
+   "items": [
+    {
+     "item": "kangaroo",
+     "role": "item",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "outback",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "box",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h06",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "astronaut",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "crystal",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "alien",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "icy moon",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "collect",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h07",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "elephant",
+     "role": "hero",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "volcano",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "do taxes",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h08",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "dinner",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "moon",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "date",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h09",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "hospital",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "flashlight",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "escape",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "corpus",
+   "source": "ai",
+   "id": "h10",
+   "control": "runner",
+   "items": [
+    {
+     "item": "penguin",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "glacier",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "seal",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "fish",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "slide",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j01",
+   "control": "runner",
+   "items": [
+    {
+     "item": "grandma",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "quantum physics",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "explain",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j02",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "cat",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "café",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "nap",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j03",
+   "control": "runner",
+   "items": [
+    {
+     "item": "investor",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "skyscraper",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "pitch",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j04",
+   "control": "runner",
+   "items": [
+    {
+     "item": "dog",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "ice cream",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "beach",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "walk",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j05",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "balloon",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "birthday party",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "pop",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j06",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "chef",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "pancake",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "kitchen",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "flip",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j07",
+   "control": "runner",
+   "items": [
+    {
+     "item": "squirrel",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "acorn",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "winter",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "hoard",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j08",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "wizard",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "skeleton",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "tower",
+     "role": "setting",
+     "before": false,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "defend",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j09",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "dragon",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "knight",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "arrow",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "village",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "dodge",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "draft",
+   "id": "j10",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "elf princess",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "goblin",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "forest",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "escape",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j01",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "grandma",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "quantum physics",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "explain",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j02",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "cat",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "café",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "nap",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j03",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "investor",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "skyscraper",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "pitch",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j04",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "dog",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "ice cream",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "beach",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "walk",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j05",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "balloon",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "birthday party",
+     "role": "setting",
+     "before": false,
+     "after": false,
+     "why": "not-read-by-control"
+    },
+    {
+     "item": "pop",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j06",
+   "control": "throw",
+   "items": [
+    {
+     "item": "chef",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "pancake",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "kitchen",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "flip",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j07",
+   "control": "tap_go",
+   "items": [
+    {
+     "item": "squirrel",
+     "role": "hero",
+     "before": false,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "acorn",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "winter",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "hoard",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j08",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "wizard",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "skeleton",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "tower",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "defend",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j09",
+   "control": "shooter",
+   "items": [
+    {
+     "item": "dragon",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "knight",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "arrow",
+     "role": "item",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    },
+    {
+     "item": "village",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "dodge",
+     "role": "verb",
+     "before": false,
+     "after": false,
+     "why": "not-in-spec"
+    }
+   ]
+  },
+  {
+   "set": "judge10",
+   "source": "ai",
+   "id": "j10",
+   "control": "runner",
+   "items": [
+    {
+     "item": "elf princess",
+     "role": "hero",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    },
+    {
+     "item": "goblin",
+     "role": "item",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "forest",
+     "role": "setting",
+     "before": true,
+     "after": true,
+     "why": "ok"
+    },
+    {
+     "item": "escape",
+     "role": "verb",
+     "before": true,
+     "after": true,
+     "why": "not-recognized"
+    }
+   ]
+  }
+ ]
+}

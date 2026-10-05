@@ -13,6 +13,9 @@
  * Slib práce nikdy neodmítne – každá chyba je `draft-final` s důvodem, aby
  * neodchycená výjimka na pozadí neshodila proces.
  *
+ * AI verze se publikuje jen, když porazí návrh (P37A T8, `beatsDraft`): jinak
+ * zůstane návrh a hráč nic nečeká.
+ *
  * Podtržítko v názvu: Next.js soubor nebere jako route.
  */
 
@@ -21,7 +24,11 @@ import { join } from 'node:path';
 
 import { after } from 'next/server';
 
-import { gameSpecHash } from '@/play/spec';
+import { preloadPhysics } from '@/play/arcade/compile';
+import { loadRapier } from '@/play/arcade/physics/world';
+import { sentenceChecklist } from '@/play/fidelity/checklist';
+import { MIN_UPGRADE_GAIN, upgradeGain } from '@/play/fidelity/score';
+import { type GameSpecV1, gameSpecHash } from '@/play/spec';
 import { type PublishedGame, type VersionStore, VersionStoreUnavailable } from '@/play/version';
 
 import { DIRECTOR_BUDGET_MS, getDirector } from './_director';
@@ -31,6 +38,7 @@ export type DraftFinalReason =
   | 'MODEL_UNAVAILABLE'
   | 'MALFORMED'
   | 'UNREPAIRED'
+  | 'VERB_UNPROVED'
   | 'UNCHANGED'
   | 'NOT_PLAYABLE'
   | 'STORE_UNAVAILABLE'
@@ -126,7 +134,7 @@ export const DRAFT_FINAL_TTL_SECONDS = 3600;
  * nic – uložené by na hodinu zmrazily cizí návrh a útočník by to uměl
  * vyvolat zdarma (revize R10). Další dotaz pak dostane nový pokus.
  */
-const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'UNCHANGED', 'NOT_PLAYABLE']);
+const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'UNCHANGED', 'NOT_PLAYABLE']);
 
 export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
@@ -155,13 +163,31 @@ export interface UpgradeFailure {
 }
 
 /**
+ * Řádek konce neúspěšného pokusu. Srovnání modelů (`scripts/play-fidelity.mjs
+ * --models`) z něj čte příčinu: plné dveře, strop, nebo model.
+ */
+export function upgradeEndedLine(draftId: string, reason: DraftFinalReason, failure: Pick<UpgradeFailure, 'stage' | 'reason' | 'detail'>): string {
+  return `[play] upgrade of ${draftId} ended ${reason} at ${failure.stage}: ${failure.reason} – ${failure.detail.slice(0, 300)}`;
+}
+
+/**
+ * Začátek a konec každého pokusu (P30A T7b). Srovnání modelů podle nich čeká,
+ * až pokus věty doběhne, než pustí další větu – visící pokus by držel slot dveří
+ * a další věta by dostala návrh od dveří. Oba jdou přes `console.warn` jako
+ * řádek `ended`: v jednom proudu ho konec nikdy nepředběhne.
+ */
+export function upgradeAttemptLine(draftId: string, phase: 'started' | 'settled'): string {
+  return `[play] upgrade attempt ${phase} ${draftId}`;
+}
+
+/**
  * Záznam selhání (P26 T3): řádek logu vždy, soubor
  * `data/play/failures/<draftId>.json` jen mimo Vercel – tam je souborový
  * systém jen pro čtení. Bez záznamu se nedá říct, proč model za 40 s
  * nic nedodal, a tři nejčastější příčiny nejdou seřadit.
  */
 export function recordUpgradeFailure(draftId: string, sentence: string, reason: DraftFinalReason, failure: UpgradeFailure, env: Record<string, string | undefined> = process.env): void {
-  console.warn(`[play] upgrade of ${draftId} ended ${reason} at ${failure.stage}: ${failure.reason} – ${failure.detail.slice(0, 300)}`);
+  console.warn(upgradeEndedLine(draftId, reason, failure));
   // Testy zapisují jen do složky, kterou samy určí – jinak by jejich podvržená
   // selhání přimíchaly do záznamů, ze kterých sada věrnosti počítá příčiny.
   if (env.VERCEL !== undefined || (env.VITEST !== undefined && env.PLAY_FAILURES_DIR === undefined)) return;
@@ -172,6 +198,27 @@ export function recordUpgradeFailure(draftId: string, sentence: string, reason: 
   } catch (thrown) {
     console.warn(`[play] failure record for ${draftId} not written: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
   }
+}
+
+/**
+ * Důvod v záznamu selhání, když AI verze nese větu o méně než `MIN_UPGRADE_GAIN`
+ * víc než návrh (P37A T8). Hráč dostane `UNCHANGED` – „návrh už má všechno“,
+ * konečný a bez nového pokusu: vlastní důvod by klient (`UpgradeBanner.tsx`,
+ * `FINAL_REASON_TEXT`) bez vlastní věty nepřečetl a ukázal by „Try again“.
+ */
+const NOT_BETTER = 'NOT_BETTER';
+
+/**
+ * Brána upgradu (P37A T8): AI verze se publikuje, jen když na kontrolním
+ * seznamu věty (`sentenceChecklist`) zvedne věrnost o `MIN_UPGRADE_GAIN` proti
+ * návrhu, který hráč už hraje. Rapier napřed: sloveso pravidla ve fyzikálním
+ * světě se počítá, jen když ho robot dokázal (`fidelityChain`).
+ */
+async function beatsDraft(draft: GameSpecV1, ai: GameSpecV1, sentence: string): Promise<{ readonly ok: boolean; readonly detail: string }> {
+  await Promise.all([preloadPhysics(draft, loadRapier), preloadPhysics(ai, loadRapier)]);
+  const { checklist } = sentenceChecklist(sentence);
+  const gain = upgradeGain(draft, ai, checklist);
+  return { ok: gain.better, detail: `checklist fidelity ${String(gain.draft)} -> ${String(gain.ai)} over ${String(checklist.length)} items, gain ${String(gain.gain)} under ${String(MIN_UPGRADE_GAIN)}` };
 }
 
 async function directUpgrade(versions: VersionStore, draft: PublishedGame, request: UpgradeRequest): Promise<UpgradeOutcome> {
@@ -197,6 +244,8 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
   const directorMs = performance.now() - directorStarted;
   if (directed.source === 'draft') return final(directed.fallbackReason ?? 'MODEL_UNAVAILABLE', directed.failure);
   if (gameSpecHash(directed.spec) === gameSpecHash(draft.spec)) return final('UNCHANGED', { stage: 'upgrade', reason: 'UNCHANGED', detail: 'the model returned the draft', raw: directed.spec });
+  const better = await beatsDraft(draft.spec, directed.spec, request.sentence);
+  if (!better.ok) return final('UNCHANGED', { stage: 'upgrade', reason: NOT_BETTER, detail: better.detail, raw: directed.spec });
   // Ovládání smí AI vyměnit (P26 T4, ruší R1 z P25A): návrh ze slov žánr jen
   // odhaduje a nová hra projde tímtéž ověřením robotem jako každá jiná.
 
@@ -224,12 +273,14 @@ export function upgradeOf(versions: VersionStore, draft: PublishedGame, request:
   // divák by na `draft-final` přestal pollovat, ač jeho vlastní pokus by běžel.
   if (known !== undefined) return known.done.then((outcome) => (isTransient(outcome) ? pendingSince(known.startedAt) : outcome));
 
+  console.warn(upgradeAttemptLine(draftId, 'started'));
   const attempt = runUpgrade(versions, draft, request).catch((thrown: unknown): UpgradeOutcome => {
     console.error(`[play] upgrade of ${draftId} failed: ${thrown instanceof Error ? thrown.message : String(thrown)}`);
     return { status: 'draft-final', reason: 'FAILED' };
   });
   const job: Job = { done: attempt, startedAt: request.startedAt, outcome: null };
   const remembered = attempt.then((outcome) => {
+    console.warn(upgradeAttemptLine(draftId, 'settled'));
     if (isTransient(outcome)) {
       if (map.get(draftId) === job) map.delete(draftId);
       return;

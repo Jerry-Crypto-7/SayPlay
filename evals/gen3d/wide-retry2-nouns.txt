@@ -1,0 +1,26 @@
+# Čtvrtá dávka, třetí část: slova, jejichž síť 28. 9. neprošla kontrolou otočení ploch.
+# Nový název = nový pokus. Tvar: předmět  # původní slovo.
+brown owl  # owl
+satellite radar dish  # radar dish
+male lion  # lion
+bengal tiger  # tiger
+grey wolf  # wolf
+white rabbit  # rabbit
+dairy cow  # cow
+bald eagle  # eagle
+sea turtle  # turtle
+bottlenose dolphin  # dolphin
+red crab  # crab
+hippopotamus  # hippo
+rhinoceros  # rhino
+fire phoenix bird  # phoenix
+lab scientist  # scientist
+stage magician  # magician
+paper scroll  # scroll
+open umbrella  # umbrella
+diamond kite  # kite
+chess king piece  # chess piece
+stone water well  # water well
+large boulder  # boulder
+street mailbox  # mailbox
+light bulb  # lightbulb

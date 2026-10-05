@@ -1,0 +1,170 @@
+{
+  "$comment": "Animovaní hrdinové vět P32 (P32C T3), rozpočet 400 KB a textury 512 px. Generuje scripts/assets/rigged/build.mjs – needitovat ručně. clips: stav hry → jméno klipu v GLB; chybějící stav pohne kód.",
+  "version": 1,
+  "characters": [
+    {
+      "id": "pet-penguin",
+      "name": "Cube Penguin",
+      "tags": [
+        "penguin"
+      ],
+      "path": "/assets/worldstream/rigged/pet-penguin.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "run"
+      },
+      "triangles": 558,
+      "bytes": 86008,
+      "sha256": "4c159fcbc474342270c07e14e4535fb360b6b7affc3f36ede68d8a4b224c2d8c",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Cube Pets",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-penguin.glb",
+      "sourceSha256": "ff3d7ccae941ab06773a348b03446f97650043594ab1121a26514c3e2ea6cb29"
+    },
+    {
+      "id": "pet-cat",
+      "name": "Cube Cat",
+      "tags": [
+        "cat",
+        "kitten",
+        "kitty"
+      ],
+      "path": "/assets/worldstream/rigged/pet-cat.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "run"
+      },
+      "triangles": 684,
+      "bytes": 105652,
+      "sha256": "c20ff621911a88e859e9e3e07901407df3f566cdbb84bdc17bb3b349137ab6ff",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Cube Pets",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-cat.glb",
+      "sourceSha256": "1e73aaf7d497dd7d2946badf92d189d2333f163e66dced91feb446bc9bdee850"
+    },
+    {
+      "id": "pet-dog",
+      "name": "Cube Dog",
+      "tags": [
+        "dog",
+        "puppy",
+        "pup",
+        "hound"
+      ],
+      "path": "/assets/worldstream/rigged/pet-dog.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "run"
+      },
+      "triangles": 490,
+      "bytes": 78188,
+      "sha256": "357e2a256a98a57a9a42739dd3987cc57209c0463504a718b74749e6bbd71685",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Cube Pets",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-dog.glb",
+      "sourceSha256": "c127d71ac8794f9710313bbb44800ae33a79f1182cf5c523c4233cc10a93851f"
+    },
+    {
+      "id": "pet-polar-bear",
+      "name": "Cube Polar Bear",
+      "tags": [
+        "polar-bear"
+      ],
+      "path": "/assets/worldstream/rigged/pet-polar-bear.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "run"
+      },
+      "triangles": 522,
+      "bytes": 57592,
+      "sha256": "bc40c27f95b2b8605eefe69b5fab8d54b18a7e467b3834d3c873cb71a9518e29",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Cube Pets",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-polar.glb",
+      "sourceSha256": "8e94b6a8f44b38198f698f2262c3ed7aed34bd1cb3a016f7613fb5eea0897564"
+    },
+    {
+      "id": "pet-bunny",
+      "name": "Cube Bunny",
+      "tags": [
+        "rabbit",
+        "bunny",
+        "hare"
+      ],
+      "path": "/assets/worldstream/rigged/pet-bunny.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "run"
+      },
+      "triangles": 575,
+      "bytes": 90208,
+      "sha256": "7c2c672767da995783135152766c7981e15885c3e1e662a69b96757c0c5098ca",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Cube Pets",
+      "page": "https://kenney.nl/assets/cube-pets",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/cube-pets/44e58e945f-1774520254/kenney_cube-pets_1.0.zip#Models/GLB format/animal-bunny.glb",
+      "sourceSha256": "94b654915d9de70071bcf0bfa13de379a3ba4fdfeb231f0fec49335232cbc821"
+    },
+    {
+      "id": "graveyard-ghost",
+      "name": "Graveyard Ghost",
+      "tags": [
+        "ghost",
+        "spirit",
+        "phantom",
+        "spook"
+      ],
+      "path": "/assets/worldstream/rigged/graveyard-ghost.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "jump": "jump",
+        "die": "die"
+      },
+      "triangles": 413,
+      "bytes": 58068,
+      "sha256": "b9e7d2dc002eca11f40eb27d841143e378b707c96689fec5249333263d561d19",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Graveyard Kit",
+      "page": "https://kenney.nl/assets/graveyard-kit",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/graveyard-kit/ba8d4b4517-1760691807/kenney_graveyard-kit_5.0.zip#Models/GLB format/character-ghost.glb",
+      "sourceSha256": "d4334bc0c7c0ca27924e238b47fe5b0984f4f6bbaeaa55f7e75d0287e8935895"
+    },
+    {
+      "id": "blocky-robot",
+      "name": "Blocky Robot",
+      "tags": [
+        "robot",
+        "android",
+        "droid",
+        "bot"
+      ],
+      "path": "/assets/worldstream/rigged/blocky-robot.glb",
+      "clips": {
+        "idle": "idle",
+        "run": "sprint",
+        "die": "die"
+      },
+      "triangles": 72,
+      "bytes": 61652,
+      "sha256": "b2bc25f66887c3e86bfdb4652e059a65cf95c5f1cd8f805e30b989300624b15f",
+      "license": "CC0-1.0",
+      "author": "Kenney",
+      "pack": "Kenney Blocky Characters",
+      "page": "https://kenney.nl/assets/blocky-characters",
+      "sourceUrl": "https://kenney.nl/media/pages/assets/blocky-characters/8369c0cf30-1749547469/kenney_blocky-characters_20.zip#Models/GLB format/character-g.glb",
+      "sourceSha256": "e3249ffc0aaa55eba973696ba4b36a204b35a10574b373e9945b56d918e8c9fd"
+    }
+  ],
+  "excluded": []
+}

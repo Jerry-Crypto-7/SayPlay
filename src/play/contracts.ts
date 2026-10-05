@@ -22,7 +22,7 @@ import type { ArcadeWorld } from './arcade/contract';
 import type { GameSpecV1 } from './spec';
 
 /** Verze kompilátoru: zvednout, když stejný spec+seed dá jiný `WorldDoc`. */
-export const GAME_COMPILER_VERSION = 'play-compiler-v3';
+export const GAME_COMPILER_VERSION = 'play-compiler-v11';
 
 /** Které pravidlo a entita ve `WorldDoc` patří které mechanice a roli. Verifikátor a panel „Why“ to čtou. */
 export interface MechanicBinding {
@@ -94,6 +94,27 @@ export interface QualityReport {
   readonly replayEqual: boolean;
   readonly budgets: { readonly entities: number; readonly rules: number; readonly triangles: number | null };
   readonly publishEligible: boolean;
+  /** Slovesa pravidel arkády (P29A) a zda je robot během běhu viděl vystřelit; jen hra s pravidly. */
+  readonly verbs?: readonly VerbProof[];
+  /**
+   * Vítězný běh robota arkádové hry se skóre (P36B T1) – měřítko hvězd
+   * (`src/play/score/stars.ts`). Chybí u mřížkové hry a u her publikovaných dřív.
+   */
+  readonly par?: { readonly score: number; readonly ticks: number };
+}
+
+/**
+ * Jedno sloveso z pravidel: vystřelilo během robotova běhu, v kterém tiku
+ * poprvé, a zda se po výstřelu opravdu něco změnilo (P30B T2) – čítač, tělo,
+ * slot držení, poloha, výsledek. Dokázané je jen sloveso s `changed`.
+ */
+export interface VerbProof {
+  readonly verb: string;
+  readonly fired: boolean;
+  readonly firstTick: number | null;
+  readonly changed: boolean;
+  /** Co se změnilo („score 0→1 at tick 57“); `null`, když nic. */
+  readonly evidence: string | null;
 }
 
 /** Neměnná publikovaná verze. `versionId` je hash všeho, na čem hra stojí. */
@@ -124,8 +145,13 @@ export function gameVersionId(fields: Omit<GameVersion, 'versionId' | 'createdAt
 /** Jak režisér skončil. `draft` je okamžitá šablona ze slov, `authored` odpověď modelu. */
 export type DirectorSource = 'draft' | 'authored' | 'cached';
 
-/** Proč režisér vrátil návrh ze slov místo odpovědi modelu. */
-export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED';
+/**
+ * Proč režisér vrátil návrh ze slov místo odpovědi modelu. `VERB_UNPROVED`
+ * (P29A T8) je jediný důvod i u `source: 'authored'`: pravidlo, které se ani po
+ * opravě nedalo složit nebo které robot nevystřelil, ze hry vypadlo a hraje se
+ * bez něj; `source: 'draft'` jen když ani hra bez pravidel neprošla.
+ */
+export type FallbackReason = 'MODEL_UNAVAILABLE' | 'MALFORMED' | 'UNREPAIRED' | 'VERB_UNPROVED';
 
 /**
  * Režisér neselže: výpadek modelu, nečitelná odpověď i neopravitelný spec

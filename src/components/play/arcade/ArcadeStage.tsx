@@ -1,212 +1,49 @@
 'use client';
 
 /**
- * Plátno arkády (P25A T6, P25C T6, P25F T6). Smyčka `useFrame` posouvá hodiny relace
- * (pevný krok v `session.ts`) a kreslí těla interpolovaná mezi posledními
- * dvěma tiky. Scéna podle ovládání: běžec a závod (`steer/`) mají kameru za
- * a nad hráčem, plošinovka a poletování boční kameru (trať jde zleva
- * doprava), aréna (`arena/`) vlastní svět s kamerou shora, střelnice
- * a hřiště hodu vlastní scénu s kamerou a vstupem (`shooter/`, `throw/`,
- * P25G). Vstup se
- * jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
+ * Plátno arkády (P25A T6, P25C T6, P25F T6) – shell (P32-0 T5): plátno se
+ * sondami, výběr scény, vstup a odezva nad plátnem (`EventFeedback`). Scény
+ * kreslí jinde:
+ * - běžec `runner/RunnerWorld.tsx`, plošinovka `platform/PlatformWorld.tsx`;
+ * - poletování, závod, střelnice a hod sdílený `World.tsx`;
+ * - aréna `arena/`, načasování `timing/`, rytmus `rhythm/` a souboj `duel/`;
+ * - světlo, oblohu, mlhu a ladění barev všech `look/rig/StyleRig.tsx`;
+ * - efekty z událostí jádra `effects/Effects.tsx` (sběrnice `effects/bus.ts`).
  *
- * Modely: `/assets/worldstream/game/<id>-lod1.glb` podle id těla (`hurdle`,
- * `coin`, …); když katalog id nemá (404), kreslí se barevný kvádr. Tělesa,
- * pro která model v katalogu není (plošiny, hroty, trubky, ptáček), se
- * kreslí rovnou primitivem a nestahují se.
+ * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
  */
 
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { Box3, type Camera, type Group, type Mesh, type Object3D, type PerspectiveCamera, type SkinnedMesh, Vector3 } from 'three';
+import { Canvas, addAfterEffect, useThree } from '@react-three/fiber';
+import { type ReactNode, memo, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { Box3, type Camera, type Mesh, type Object3D, Quaternion, type SkinnedMesh, Vector3 } from 'three';
 
 import { baseControlOf } from '@/play/arcade/addons';
-import { AXIS_MAX, BODY, BUTTON, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { AXIS_MAX, BUTTON } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
-import { type PropRole, riggedCharacter } from '@/play/arcade/models';
-import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
-import { FLAP } from '@/play/arcade/pieces/flap';
-import { PLATFORM } from '@/play/arcade/pieces/platform';
-import { RUNNER } from '@/play/arcade/pieces/runner';
-import type { SteerCourse } from '@/play/arcade/pieces/steer';
+import { riggedCharacter } from '@/play/arcade/models';
 import { CAPABILITIES } from '@/play/capabilities';
-import type { ControlId } from '@/play/spec';
+import type { ControlId, HeroAction } from '@/play/spec';
 
+import { ActionButton, actionsOf, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
-import { type BodyView, bodiesOf, bodiesStale } from './bodies';
-import { applyIntro, introLeft, useIntroClock } from './look/intro';
-import { loadModel } from './look/load';
-import { Scenery } from './look/Scenery';
+import { Effects } from './effects/Effects';
+import type { ArcadeGhost } from './GhostSlot';
+import { comboOf } from './effects/feel';
+import { inkCount, isInk } from './look/rig/InkOutline';
+import { StyleRig } from './look/rig/StyleRig';
 import { DuelScene, type RivalModel, useDuelInput } from './duel/DuelScene';
 import { isTyping, runnerGesture } from './input';
+import { PlatformWorld } from './platform/PlatformWorld';
 import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
+import { RunnerWorld } from './runner/RunnerWorld';
 import type { ArcadeSession } from './session';
-import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
-import { ShooterRig } from './shooter/ShooterRig';
-import { SteerBackdrop, placeChase, useSteerInput } from './steer/SteerScene';
-import { ThrowRig } from './throw/ThrowRig';
-import { TimingScene, useTapInput } from './timing/TimingScene';
-
-/** Barva náhradního kvádru podle id těla; nic fialového. */
-const FALLBACK_COLOR: Readonly<Record<string, string>> = {
-  player: '#2563eb',
-  hurdle: '#f59e0b',
-  'slide-bar': '#ea580c',
-  cone: '#f97316',
-  crate: '#a16207',
-  coin: '#facc15',
-  finish: '#14b8a6',
-  checkpoint: '#0ea5e9',
-  turbo: '#22d3ee',
-  enemy: '#dc2626',
-  chaser: '#b91c1c',
-};
-
-/** Jména rolí podle čísla – scéna je zapíše do `data-drawn`, ať e2e vidí, co kreslí. */
-const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
-
-/** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
-const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', ...SHOT_PRIMITIVES]);
-
-/** Modely z popisků rolí (`@/play/arcade/models`): hrdina, nepřítel střelnice a rekvizity. */
-export interface Cast {
-  readonly player: string;
-  readonly enemy: string;
-  /** Pronásledovatel doplňku `+chaser`. */
-  readonly chaser: string;
-  readonly props: Partial<Record<PropRole, string>>;
-}
-
-/** Překážky běžce, které smí nést model z popisku; skluzová laťka tvarem říká „podlez“, tu ne. */
-const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'crate']);
-
-/** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
-function modelIdOf(view: BodyView, cast: Cast): string {
-  if (view.role === ROLE.player) return cast.player;
-  if (view.kind === 'finish') return 'finish-flag';
-  if (view.kind === 'enemy') return cast.enemy;
-  // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
-  if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
-  if (view.role === ROLE.chaser) return cast.chaser;
-  if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
-  if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
-  // P28D T3: kostky věže hodu jsou terč – „cardboard boxes“ postaví věž z krabic.
-  if (view.role === ROLE.target && (view.kind === 'target' || view.kind === 'wood-block')) return cast.props.target ?? view.kind;
-  return view.kind;
-}
-
-/** Model vepsaný do kvádru těla (metry), postavený na zem, střed v ose. */
-function FittedModel({ id, w, h, d, fallback }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly fallback: string }) {
-  const [model, setModel] = useState<Object3D | null | undefined>(undefined);
-  useEffect(() => {
-    let live = true;
-    void loadModel(id).then((loaded) => {
-      if (live) setModel(loaded);
-    });
-    return () => {
-      live = false;
-    };
-  }, [id]);
-  const fitted = useMemo(() => {
-    if (model === null || model === undefined) return null;
-    const copy = model.clone(true);
-    const box = new Box3().setFromObject(copy);
-    const size = box.getSize(new Vector3());
-    const scale = Math.min(w / Math.max(size.x, 1e-3), h / Math.max(size.y, 1e-3), d / Math.max(size.z, 1e-3)) || 1;
-    copy.scale.setScalar(scale);
-    const center = box.getCenter(new Vector3());
-    copy.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
-    return copy;
-  }, [model, w, h, d]);
-  if (fitted !== null) return <primitive object={fitted} />;
-  return (
-    <mesh position={[0, h / 2, 0]}>
-      <boxGeometry args={[w, h, d]} />
-      <meshStandardMaterial color={fallback} roughness={0.6} />
-    </mesh>
-  );
-}
-
-/** Tělesa bez modelu: plošina (hlína + tráva), řada hrotů, trubka, strop, ptáček. */
-function Primitive({ id, w, h, d }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number }) {
-  if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} />;
-  if (id === 'platform' || id === 'platform-moving') {
-    const top = Math.min(0.25, h / 3);
-    return (
-      <>
-        <mesh position={[0, (h - top) / 2, 0]}>
-          <boxGeometry args={[w, h - top, d]} />
-          <meshStandardMaterial color={id === 'platform' ? '#92400e' : '#475569'} roughness={0.9} />
-        </mesh>
-        <mesh position={[0, h - top / 2, 0]}>
-          <boxGeometry args={[w, top, d]} />
-          <meshStandardMaterial color={id === 'platform' ? '#16a34a' : '#f59e0b'} roughness={0.8} />
-        </mesh>
-      </>
-    );
-  }
-  if (id === 'spikes') {
-    const count = Math.max(1, Math.round(d / 0.45));
-    const radius = d / count / 2;
-    return (
-      <>
-        {Array.from({ length: count }, (_, i) => (
-          <mesh key={i} position={[0, h / 2, -d / 2 + radius * (2 * i + 1)]}>
-            <coneGeometry args={[radius, h, 8]} />
-            <meshStandardMaterial color="#dc2626" roughness={0.4} metalness={0.3} />
-          </mesh>
-        ))}
-      </>
-    );
-  }
-  if (id === 'bird') {
-    const r = Math.min(w, h, d) / 2;
-    return (
-      <>
-        <mesh position={[0, r, 0]}>
-          <sphereGeometry args={[r, 16, 12]} />
-          <meshStandardMaterial color="#facc15" roughness={0.5} />
-        </mesh>
-        <mesh position={[0, r, r * 1.1]} rotation={[Math.PI / 2, 0, 0]}>
-          <coneGeometry args={[r * 0.35, r * 0.7, 8]} />
-          <meshStandardMaterial color="#ea580c" />
-        </mesh>
-        <mesh position={[-r * 0.8, r * 1.3, r * 0.45]}>
-          <sphereGeometry args={[r * 0.18, 8, 6]} />
-          <meshBasicMaterial color="#0f172a" />
-        </mesh>
-      </>
-    );
-  }
-  return (
-    <mesh position={[0, h / 2, 0]}>
-      <boxGeometry args={[w, h, d]} />
-      <meshStandardMaterial color={id === 'pipe' ? '#16a34a' : '#334155'} roughness={0.6} />
-    </mesh>
-  );
-}
-
-function lerp(from: number, to: number, alpha: number): number {
-  return from + (to - from) * alpha;
-}
-
-const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(high, value));
-
-/**
- * Boční kamera: stojí na −x a kouká po +x, takže +z jádra jde na obrazovce
- * doprava. Vzdálenost se řídí poměrem stran – na výšku (mobil) ustoupí,
- * aby bylo vidět aspoň `ahead` metrů trati. `lead` = o kolik poloviny šířky
- * obrazu je hráč vlevo od středu (0,4 → levá třetina).
- */
-function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y: number, ahead: number, tall: number, far: number, lead: number): void {
-  const tan = Math.tan((camera.fov * Math.PI) / 360);
-  const dist = clamp(Math.max(ahead / (2 * tan * camera.aspect), tall / (2 * tan)), 10, far);
-  const shift = dist * tan * camera.aspect * lead;
-  camera.position.set(-dist, y, z + shift);
-  look.set(0, y, z + shift);
-  camera.lookAt(look);
-}
+import { useSteerInput } from './steer/SteerScene';
+import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
+import { TouchStick, TouchZones } from './TouchControls';
+import { DUEL_ZONES, PLATFORM_ZONES, zoneAt } from './touch-zones';
+import { Snowfall } from './Weather';
+import { type Cast, FittedModel, World } from './World';
 
 /**
  * Sonda záběru (P27A T6): `window.__playFrame()` promítne hrdinu a nejbližší
@@ -235,12 +72,27 @@ export interface FrameReport {
   readonly width: number;
   readonly height: number;
   readonly hero: FrameBox | null;
+  /**
+   * Úhel (°) mezi tím, kam hrdina kouká (jeho +z), a směrem od něj ke kameře, ve vodorovné
+   * rovině: 0 = hledí do kamery, 180 = je k ní zády (P35 T12).
+   */
+  readonly heroFacing: number | null;
+  /** Kolik inkoustových obalů (obrys, P36C T6) sítě hrdiny nesou; obrys nezávisí na úrovni kvality. */
+  readonly heroInk: number;
   readonly target: FrameBox | null;
   /** Kolik viditelných kandidátů na cíl scéna má. */
   readonly targets: number;
   /** Cíl minus hrdina ve světě (m) – podklad, když cíl vyjde mimo záběr. */
   readonly offset: { readonly x: number; readonly y: number; readonly z: number } | null;
+  /**
+   * Položky z věty (P30B T5) podle role, jejíž popisek tělo kreslí (`userData.item`):
+   * kolik jich je vidět a obdélník té, která je v záběru nejvíc.
+   */
+  readonly items: Readonly<Record<string, { readonly count: number; readonly box: FrameBox | null }>>;
 }
+
+/** Jak daleko od středu obrazu obdélník leží (NDC); za kamerou nekonečno. */
+const offCenter = (box: FrameBox): number => (box.behind ? Infinity : Math.max(Math.abs(box.x), Math.abs(box.y)));
 
 /** Sonda kreslení (P28B T2, T6): draw cally posledního snímku a živé zdroje GPU. */
 export interface RenderReport {
@@ -248,6 +100,19 @@ export interface RenderReport {
   readonly triangles: number;
   readonly geometries: number;
   readonly textures: number;
+  /** Rig vzhledu (P32A T1): stíny zapnuté, tónování (`THREE.ACESFilmicToneMapping` = 4) a expozice. */
+  readonly shadows: boolean;
+  readonly toneMapping: number;
+  readonly exposure: number;
+  /** Efekty postprocessingu v pořadí (P32A T2, `look/rig/Post.tsx`); se skládačem tónuje `aces` a `toneMapping` je 0. */
+  readonly post: readonly string[];
+  /** Rodina ladění barev, kterou efekt ve skládači opravdu nastavil (P37B T3, `Grading`); `null` = bez ladění. */
+  readonly grade: string | null;
+  /**
+   * Viditelné sítě scény (P35 T4) – co se kreslí, nezávisle na úrovni kvality, která
+   * mění stínový výřez i průchody a s nimi `calls`.
+   */
+  readonly meshes: number;
 }
 
 declare global {
@@ -259,13 +124,31 @@ declare global {
 
 function RenderProbe() {
   const gl = useThree((three) => three.gl);
+  const scene = useThree((three) => three.scene);
   useEffect(() => {
-    const probe = (): RenderReport => ({ calls: gl.info.render.calls, triangles: gl.info.render.triangles, geometries: gl.info.memory.geometries, textures: gl.info.memory.textures });
-    window.__playRender = probe;
-    return () => {
+    const meshes = (): number => {
+      let count = 0;
+      scene.traverseVisible((node) => {
+        if ((node as Mesh).isMesh === true) count += 1;
+      });
+      return count;
+    };
+    const probe = (): RenderReport => ({
+      calls: gl.info.render.calls,
+      triangles: gl.info.render.triangles,
+      geometries: gl.info.memory.geometries,
+      textures: gl.info.memory.textures,
+      shadows: gl.shadowMap.enabled,
+      toneMapping: gl.toneMapping,
+      exposure: gl.toneMappingExposure,
+      post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
+      grade: gl.domElement.dataset.grade ?? null,
+      meshes: meshes(),
+    });
+    window.__playRender = probe;    return () => {
       if (window.__playRender === probe) delete window.__playRender;
     };
-  }, [gl]);
+  }, [gl, scene]);
   return null;
 }
 
@@ -280,8 +163,11 @@ const shown = (object: Object3D): boolean => {
 const cornerOf = new Vector3();
 const inView = new Vector3();
 
-/** Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich. */
-function frameOf(object: Object3D, camera: Camera, width: number, height: number): FrameBox | null {
+/**
+ * Rohy kvádru každého viditelného meshe promítnuté kamerou; obdélník kolem nich.
+ * `posed = false` vezme riggované postavě klidový kvádr geometrie místo pózy kostí.
+ */
+export function frameOf(object: Object3D, camera: Camera, width: number, height: number, posed = true): FrameBox | null {
   let minX = Infinity;
   let maxX = -Infinity;
   let minY = Infinity;
@@ -289,9 +175,11 @@ function frameOf(object: Object3D, camera: Camera, width: number, height: number
   let behind = false;
   object.traverseVisible((node) => {
     const mesh = node as Mesh;
-    if (mesh.isMesh !== true) return;
+    // Obal obrysu (P36C T6) má kvádr svého těla. Riggovaný obal by navíc kostmi přepočítal
+    // každý vrchol (3× víc než tělo, `toCreasedNormals`) – `PromptSpot` to dělá každý snímek.
+    if (mesh.isMesh !== true || isInk(mesh)) return;
     let box: Box3;
-    if ((mesh as SkinnedMesh).isSkinnedMesh === true) {
+    if (posed && (mesh as SkinnedMesh).isSkinnedMesh === true) {
       // Riggovaná postava: kvádr s pózou kostí, ne klidová geometrie.
       (mesh as SkinnedMesh).computeBoundingBox();
       box = (mesh as SkinnedMesh).boundingBox!;
@@ -316,22 +204,11 @@ function frameOf(object: Object3D, camera: Camera, width: number, height: number
   return { x: (minX + maxX) / 2, y: (minY + maxY) / 2, minX, maxX, minY, maxY, widthPx, heightPx, sizePx: Math.max(widthPx, heightPx), behind };
 }
 
-/**
- * Kamera končí tam, kde mlha (P28E-R1). Za koncem mlhy má každý pixel barvu oblohy,
- * takže to, co ořízne vzdálená rovina, by vypadalo stejně – jen se to nekreslí.
- * Běžec tak nekreslí celou trať (Moto G Power emulace: 416 volání na snímek, 10 fps).
- * Mlha i vzdálená rovina měří hloubku v prostoru kamery, hranice sedí přesně.
- */
-/** Rezerva k vzdálené rovině: kamera se dorovná až po tělech a největší tělo je kolem 10 m. */
-const FAR_MARGIN_M = 12;
-
-function FarAtFog({ far }: { readonly far: number }) {
-  const camera = useThree((three) => three.camera) as PerspectiveCamera;
-  useEffect(() => {
-    camera.far = far;
-    camera.updateProjectionMatrix();
-  }, [camera, far]);
-  return null;
+/** `FrameReport.heroFacing`: úhel mezi pohledem hrdiny (+z) a směrem ke kameře ve vodorovné rovině (°). */
+function facingOf(hero: Object3D, at: Vector3, camera: Camera): number {
+  const gaze = new Vector3(0, 0, 1).applyQuaternion(hero.getWorldQuaternion(new Quaternion())).setY(0);
+  const toCamera = camera.getWorldPosition(new Vector3()).sub(at).setY(0);
+  return (gaze.angleTo(toCamera) * 180) / Math.PI;
 }
 
 /** Při kreslení na požádání překreslí scénu po každé změně relace – restart, konec běhu, pauza. */
@@ -350,7 +227,15 @@ function FrameProbe({ control }: { readonly control: string }) {
       camera.updateMatrixWorld();
       let hero: Object3D | null = null;
       const candidates: Object3D[] = [];
+      const items: Record<string, { count: number; box: FrameBox | null }> = {};
       scene.traverse((node) => {
+        const item = node.userData.item as string | undefined;
+        if (item !== undefined && shown(node)) {
+          const entry = (items[item] ??= { count: 0, box: null });
+          const box = frameOf(node, camera, size.width, size.height);
+          entry.count += 1;
+          if (box !== null && (entry.box === null || offCenter(box) < offCenter(entry.box))) entry.box = box;
+        }
         if (node.userData.frame === 'hero' && shown(node)) hero = node;
         else if (node.userData.frame === 'target' && shown(node)) candidates.push(node);
       });
@@ -367,9 +252,12 @@ function FrameProbe({ control }: { readonly control: string }) {
         width: size.width,
         height: size.height,
         hero: hero === null ? null : frameOf(hero, camera, size.width, size.height),
+        heroFacing: hero === null || heroAt === null ? null : facingOf(hero, heroAt, camera),
+        heroInk: hero === null ? 0 : inkCount(hero),
         target: target === null ? null : frameOf(target.node, camera, size.width, size.height),
         targets: candidates.length,
         offset: target === null || heroAt === null ? null : { x: target.pos.x - heroAt.x, y: target.pos.y - heroAt.y, z: target.pos.z - heroAt.z },
+        items,
       };
     };
     // Bez podmínky, stejně jako `__playShell`: e2e ji čte na každé arkádové hře.
@@ -381,250 +269,101 @@ function FrameProbe({ control }: { readonly control: string }) {
   return null;
 }
 
-/** Role, které sonda záběru bere jako cíl nebo hrozbu; mantinely závodu jsou kulisa, ne cíl. */
-const FRAME_TARGET_ROLES: ReadonlySet<number> = new Set([ROLE.obstacle, ROLE.collectible, ROLE.chaser, ROLE.hazard, ROLE.enemy, ROLE.target]);
-const frameTagOf = (view: BodyView): 'hero' | 'target' | undefined =>
-  view.role === ROLE.player ? 'hero' : FRAME_TARGET_ROLES.has(view.role) && view.kind !== 'tire-barrier' ? 'target' : undefined;
-
-interface WorldProps {
-  readonly session: ArcadeSession;
-  readonly control: string;
-  readonly cast: Cast;
-  readonly surface: React.RefObject<HTMLDivElement | null>;
-  readonly scene: Look;
-  readonly enabled: boolean;
-}
-
-const PICKUP_MS = 200;
-
-/** Role, jejichž model se hýbe podle stavu těla (P26B); plošiny, auta a překážky jedou bez pózy. */
-const POSED_ROLES: ReadonlySet<number> = new Set([ROLE.player, ROLE.enemy, ROLE.chaser]);
-
-/** Póza na vnitřní skupinu modelu: poskok, předklon, zmáčknutí (objem drží), bliknutí po zásahu. */
-function applyPose(group: Group, pose: Pose): void {
-  group.position.y = pose.bob;
-  group.rotation.x = pose.lean;
-  const wide = 1 + pose.squash / 2;
-  group.scale.set(wide, 1 - pose.squash, wide);
-  group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
-}
-
-function World({ session, control, cast, surface, scene, enabled }: WorldProps) {
-  // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
-  const [views, setViews] = useState(() => bodiesOf(session));
-  const groups = useRef<(Group | null)[]>([]);
-  const posed = useRef<(Group | null)[]>([]);
-  const poses = useRef<(Pose | null)[]>([]);
-  /** Riggovaná postava po indexu těla (P26B T5) a klip, který jí scéna v tomhle snímku volí. */
-  const rigged = useMemo(() => views.map((view) => riggedCharacter(modelIdOf(view, cast))), [views, cast]);
-  const clips = useRef<ClipState[]>([]);
-  const camera = useThree((three) => three.camera) as PerspectiveCamera;
-  const look = useMemo(() => new Vector3(), []);
-  const projected = useMemo(() => new Vector3(), []);
-  const followY = useRef<number | null>(null);
-  // Sebrané tělo (bod + zmizení v jednom tiku) → čas sebrání; ještě PICKUP_MS se nafoukne a splaskne (P28C T3).
-  const fading = useRef(new Map<number, number>());
-  useEffect(
-    () =>
-      session.onEvents((events) => {
-        if (!events.some((event) => event.kind === 'score')) return;
-        const now = performance.now();
-        for (const event of events) if (event.kind === 'despawn') fading.current.set(event.body, now);
-      }),
-    [session],
-  );
-  const introClock = useIntroClock();
-
-  // Role těl, pro která scéna postavila model – doplněk, který jádro hraje a scéna nekreslí, e2e takhle pozná.
+/**
+ * Místo výzvy „Tap to start“ (P35 T6): uprostřed obrazu v aréně a úkolu přesně
+ * zakryla hrdinu. Dokud hra stojí na tiku 0, promítne hrdinu kamerou a dá stage,
+ * kde v obraze je (`--_hero-top`, `--_hero-bottom` v % výšky) a na které straně
+ * od něj je víc místa (`data-prompt-at`); CSS výzvu postaví nad, nebo pod něj.
+ * Bez hrdiny v záběru zůstane výzva uprostřed.
+ *
+ * Měří se až nakreslený snímek (`addAfterEffect`), ne ve `useFrame`: kamera
+ * stanoviště úkolu se přihlásí až druhým průchodem (`StationScene.tsx`) a přestaví
+ * kameru po každém dřívějším `useFrame` – u kuchaře (P35 T11) se karta měřila
+ * kamerou arény a na telefonu sedla přesně přes hrdinu. Hra na tiku 0 navíc kreslí
+ * jen na požádání, takže snímek, kdy se dotáhne model, bývá poslední.
+ *
+ * Místo pro kartu je mezi hrdinou a lištami HUD (nahoře hodiny a cíl, dole akce).
+ * Kde se nevejde ani nad, ani pod hrdinu, zmenší se do většího z obou míst
+ * (`--_prompt-scale`) – přes hrdinu nejde nikdy.
+ */
+function PromptSpot({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
+  const get = useThree((three) => three.get);
   useEffect(() => {
-    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => view.kind !== 'gate').map((view) => ROLE_NAMES[view.role]))].join(' ');
-  }, [views, surface]);
-
-  useFrame((three, delta) => {
-    const alpha = session.advance(delta * 1000);
-    if (bodiesStale(views, session)) setViews(bodiesOf(session));
-    const state = session.state();
-    const prev = session.prev();
-    // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
-    const tick = (state[HEADER.tick] as number) + alpha;
-    posesOf(state, prev, poses.current, tick);
-    let shots = 0;
-    for (const view of views) {
-      const inner = posed.current[view.index];
-      const pose = poses.current[view.index];
-      if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) applyPose(inner, pose);
-      if (rigged[view.index] !== undefined && pose !== null && pose !== undefined) clips.current[view.index] = clipOf(viewOf(state, prev, view.index), pose, tick);
-      const group = groups.current[view.index];
-      if (group === null || group === undefined) continue;
-      const base = bodyBase(view.index);
-      const z = lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT;
-      // Tělo za koncem mlhy (`FarAtFog`) by kamera stejně ořízla; skryté vypadne i z přepočtu
-      // matic, který jinak prochází celou trať každý snímek (P28E-R1). Kamera je ze snímku předtím.
-      const inRange = Math.abs(z - camera.position.z) <= camera.far + FAR_MARGIN_M;
-      group.visible = inRange && ((state[base + BODY.flags] as number) & FLAG.alive) !== 0;
-      group.matrixWorldAutoUpdate = inRange;
-      if (!inRange) continue;
-      const fade = fading.current.get(view.index);
-      if (fade !== undefined) {
-        const t = (performance.now() - fade) / PICKUP_MS;
-        if (t >= 1 || group.visible) {
-          fading.current.delete(view.index);
-          group.scale.setScalar(1);
-        } else {
-          group.visible = true;
-          group.scale.setScalar((1 + 0.6 * Math.sin(t * Math.PI)) * (1 - t));
-        }
+    // Čekání na první vstup běží každý snímek (P37B T7, Pixel 7 CPU 4×): průchod scénou
+    // a zápis stylu, který prohlížeči každý snímek zneplatnil rozvržení pro další
+    // `getBoundingClientRect`, stály čaroději na úvodní kartě ~6 % CPU. Hrdina se proto
+    // hledá znovu, jen když zmizí, a styl se píše, jen když se změní.
+    let hero: Object3D | null = null;
+    return addAfterEffect(() => {
+      const host = surface.current;
+      if (host === null || session.snapshot().tick !== 0) return;
+      const { camera, scene, size } = get();
+      if (hero === null || !shownIn(hero, scene)) {
+        hero = null;
+        scene.traverseVisible((node) => {
+          if (node.userData.frame === 'hero') hero = node;
+        });
       }
-      // Kamera běžce kouká po +z, takže +x jádra by vyšlo na obrazovce vlevo a „LEFT“ (x − 1) by hráče poslal doprava.
-      group.position.set(
-        -lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
-        lerp(prev[base + BODY.y] as number, state[base + BODY.y] as number, alpha) / UNIT,
-        z,
-      );
-      // Skluz snižuje tělo – model se přikrčí stejně.
-      if (view.role === ROLE.player) group.scale.y = (state[base + BODY.h] as number) / UNIT / view.h;
-      if (view.role === ROLE.collectible) group.rotation.y += delta * 3;
-      if (view.role === ROLE.projectile && group.visible) shots += 1;
-    }
-    // Střely, které scéna opravdu kreslí (P28B T2) – e2e tak pozná střelu, kterou stav má a scéna ne.
-    if (surface.current !== null && surface.current.dataset.shotsDrawn !== String(shots)) surface.current.dataset.shotsDrawn = String(shots);
-    const player = groups.current[state[HEADER.player] as number];
-    if (player !== null && player !== undefined) {
-      const { x, y, z } = player.position;
-      if (control === 'platform') {
-        // Kamera za výškou hráče jen dojíždí, ať skok netřese obrazem.
-        followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 4));
-        // Na výšku je obraz úzký: kamera smí dál (hráč pořád nad 24 px) a hráč jde víc doleva,
-        // ať je vidět nejbližší mince či hrot ~9 m před startem (P27A T6, `e2e/play-frame`).
-        if (camera.aspect < 1) placeSide(camera, look, z, followY.current + 1.2, 16, 7, 22, 0.7);
-        else placeSide(camera, look, z, followY.current + 1.2, 16, 7, 18, 0.4);
-      } else if (control === 'flap') {
-        // Na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera
-        // o kus dál, ať je vidět první trubka; na výšku HUD kryje celou šířku, takže ptáček
-        // jde doleva – dál kamera nesmí, ptáček by byl pod 24 px (P27A T6).
-        if (camera.aspect < 1) placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 14, FLAP.ceiling / UNIT + 1, 26, 0.7);
-        else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 24, FLAP.ceiling / UNIT + 1, 26, 0.1);
-      } else if (control === 'steer') {
-        placeChase(camera, look, x, z);
-      } else if (control === 'shooter' || control === 'throw') {
-        // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
-      } else {
-        camera.position.set(x * 0.6, 3.4, z - 6.5);
-        look.set(x * 0.4, 1.1, z + 9);
-        camera.lookAt(look);
+      // Klidový kvádr (P36C T9): póza kostí přepočítá každý vrchol postavy a tohle běží každý
+      // snímek tiku 0 – u rytířů ~30 % CPU telefonu. Na místo pro kartu stačí postava v klidu.
+      const box = hero === null ? null : frameOf(hero, camera, size.width, size.height, false);
+      if (box === null || box.behind) {
+        delete host.dataset.promptAt;
+        return;
       }
-      if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock(three.clock.elapsedTime)));
-      camera.updateMatrixWorld();
-      // Kde je hráč na obrazovce (−1 vlevo … 1 vpravo) – e2e tím hlídá směr, z obrázku se to nepřečte.
-      if (surface.current !== null) surface.current.dataset.playerX = projected.copy(player.position).project(camera).x.toFixed(3);
-    }
-  });
-
-  return (
-    <>
-      {control === 'steer' ? (
-        <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
-      ) : (
-        <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
-      )}
-      {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} />}
-      {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} />}
-      {views.map((view) =>
-        // Branka poletování je neviditelná: jen počítá průlet mezerou.
-        view.kind === 'gate' ? null : (
-          <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view) }}>
-            {PRIMITIVE.has(modelIdOf(view, cast)) ? (
-              <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} />
-            ) : rigged[view.index] !== undefined ? (
-              // Riggovaná postava hraje klipy – poskok a zmáčknutí statických modelů by se s nimi praly.
-              <RiggedModel
-                character={rigged[view.index]!}
-                h={view.h}
-                clip={() => clips.current[view.index] ?? 'idle'}
-                fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
-                // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
-                onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
-              />
-            ) : (
-              <group ref={(group) => { posed.current[view.index] = POSED_ROLES.has(view.role) ? group : null; }}>
-                {/* Terč je tenký kotouč; model z popisku (kachna) by se vepsal do jeho tloušťky – kreslí se hloubkou jako šířkou, srážky se nemění. */}
-                <FittedModel id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.kind === 'target' ? Math.max(view.d, view.w) : view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
-              </group>
-            )}
-          </group>
-        ),
-      )}
-    </>
-  );
+      const top = (1 - box.maxY) / 2;
+      const bottom = (1 - box.minY) / 2;
+      const stage = host.getBoundingClientRect();
+      const bars = hudBars(host, stage);
+      const card = host.querySelector<HTMLElement>('.play-first-prompt')?.offsetHeight ?? 0;
+      const above = top * stage.height - bars.top - 2 * PROMPT_GAP_PX;
+      const below = bars.bottom - bottom * stage.height - 2 * PROMPT_GAP_PX;
+      const room = Math.max(above, below, 0);
+      setStyleVar(host, '--_hero-top', `${(top * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_hero-bottom', `${(bottom * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_prompt-scale', card > room ? (room / card).toFixed(3) : '1');
+      const side = above >= below ? 'above' : 'below';
+      if (host.dataset.promptAt !== side) host.dataset.promptAt = side;
+    });
+  }, [get, session, surface]);
+  return null;
 }
 
-/** Podklad scény v barvách sady prostředí (P26 T11): dráha běžce, hladina pod plošinami, zem pod trubkami, rekvizity. */
-function Backdrop({ control, length, look }: { readonly control: string; readonly length: number; readonly look: Look }) {
-  const span = length + 60;
-  if (control === 'platform') {
-    const water = PLATFORM.fallBelowY / UNIT - 0.4;
-    return (
-      <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, water, span / 2 - 30]}>
-          <planeGeometry args={[80, span]} />
-          <meshStandardMaterial color={look.water} roughness={0.3} />
-        </mesh>
-        <Scenery look={look} layout="behind" inner={11} from={-20} to={length + 20} y={water} size={1.6} />
-      </>
-    );
-  }
-  if (control === 'flap') {
-    // Úzký pás země: z boku je to proužek pod trubkami a za ním obloha. Široká
-    // plocha by z výšky kamery zabrala spodní půlku obrazu a spolkla dolní trubky.
-    return (
-      <>
-        <mesh position={[0, -0.4, span / 2 - 30]}>
-          <boxGeometry args={[3, 0.8, span]} />
-          <meshStandardMaterial color={look.ground} roughness={1} />
-        </mesh>
-        {/* Boční kamera vidí kulisy za tratí malé a v mlze: dvojnásobná velikost (P28D T6). */}
-        <Scenery look={look} layout="behind" inner={12} from={-20} to={length + 20} y={-0.4} size={2} />
-      </>
-    );
-  }
-  if (control === 'shooter' || control === 'throw') {
-    return (
-      <>
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 20]}>
-          <planeGeometry args={[120, 120]} />
-          <meshStandardMaterial color={look.ground} roughness={1} />
-        </mesh>
-        {control === 'shooter' ? <Scenery look={look} layout="sides" inner={14} from={-4} to={60} size={1.5} /> : <Scenery look={look} layout="behind" inner={13} from={-10} to={45} size={1.5} />}
-      </>
-    );
-  }
-  const trackLength = length + 20;
-  const trackWidth = (RUNNER.lanes * RUNNER.laneWidth) / UNIT;
-  const laneWidth = RUNNER.laneWidth / UNIT;
-  return (
-    <>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, trackLength / 2 - 10]}>
-        <planeGeometry args={[trackWidth + 0.6, trackLength]} />
-        <meshStandardMaterial color={look.track} roughness={0.9} />
-      </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, trackLength / 2 - 10]}>
-        <planeGeometry args={[80, trackLength + 80]} />
-        <meshStandardMaterial color={look.ground} roughness={1} />
-      </mesh>
-      <Scenery look={look} layout="sides" inner={trackWidth / 2 + 2.5} from={-10} to={trackLength - 10} />
-      {[-0.5, 0.5].map((edge) => (
-        <mesh key={edge} rotation={[-Math.PI / 2, 0, 0]} position={[edge * laneWidth, 0, trackLength / 2 - 10]}>
-          <planeGeometry args={[0.08, trackLength]} />
-          <meshBasicMaterial color="#e2e8f0" />
-        </mesh>
-      ))}
-    </>
-  );
+/** Uzel je ve scéně a viditelný i se všemi předky. */
+function shownIn(object: Object3D, root: Object3D): boolean {
+  let node: Object3D | null = object;
+  for (; node !== null && node !== root; node = node.parent) if (!node.visible) return false;
+  return node === root && root.visible;
 }
+
+/** Stejná hodnota se nepíše: i ta by zneplatnila styl a rozvržení stránky. */
+export function setStyleVar(host: HTMLElement, name: string, value: string): void {
+  if (host.style.getPropertyValue(name) !== value) host.style.setProperty(name, value);
+}
+
+/** Mezera mezi kartou a hrdinou i lištou HUD (`--sp-space-4` v `play.css`). */
+const PROMPT_GAP_PX = 16;
+
+/** Spodní hrana horní lišty HUD a horní hrana dolní, v px od horní hrany stage. */
+function hudBars(host: HTMLElement, stage: DOMRect): { readonly top: number; readonly bottom: number } {
+  const shell = host.parentElement;
+  let top = 0;
+  let bottom = stage.height;
+  for (const bar of shell?.querySelectorAll('.play-hud-progress, .play-hud-corner, .play-hud-goal') ?? []) {
+    const rect = bar.getBoundingClientRect();
+    if (rect.height > 0) top = Math.max(top, rect.bottom - stage.top);
+  }
+  const actions = shell?.querySelector('.play-hud-bottom')?.getBoundingClientRect();
+  if (actions !== undefined && actions.height > 0) bottom = Math.min(bottom, actions.top - stage.top);
+  return { top, bottom };
+}
+
+/** Jak dlouho po konci běhu plátno ještě kreslí naplno: klip pádu či oslavy a pauza výsledku (600 ms). */
+const END_CLIP_MS = 1500;
 
 const JUMP_KEYS = new Set([' ', 'arrowup', 'w']);
 
-/** Běžec: ťuk/klik/mezerník = skok (hned při stisku), šipky/A-D a swipe = pruh, šipka dolů / swipe dolů = skluz. */
+/** Běžec: mezerník/šipka nahoru = skok, šipky/A-D = pruh, šipka dolů = skluz; dotyk a myš: `runnerGesture`. */
 function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivElement | null>, active: boolean): void {
   useEffect(() => {
     if (!active) return;
@@ -651,16 +390,17 @@ function useRunnerInput(session: ArcadeSession, target: React.RefObject<HTMLDivE
     const gesture = runnerGesture(session);
     const onDown = (event: PointerEvent) => gesture.down(event);
     const onMove = (event: PointerEvent) => gesture.move(event);
-    const onEnd = () => gesture.end();
+    const onUp = (event: PointerEvent) => gesture.up(event);
+    const onCancel = () => gesture.cancel();
     element.addEventListener('pointerdown', onDown);
     element.addEventListener('pointermove', onMove);
-    element.addEventListener('pointerup', onEnd);
-    element.addEventListener('pointercancel', onEnd);
+    element.addEventListener('pointerup', onUp);
+    element.addEventListener('pointercancel', onCancel);
     return () => {
       element.removeEventListener('pointerdown', onDown);
       element.removeEventListener('pointermove', onMove);
-      element.removeEventListener('pointerup', onEnd);
-      element.removeEventListener('pointercancel', onEnd);
+      element.removeEventListener('pointerup', onUp);
+      element.removeEventListener('pointercancel', onCancel);
     };
   }, [session, target, active]);
 }
@@ -702,10 +442,10 @@ function usePlatformInput(session: ArcadeSession, target: React.RefObject<HTMLDi
     };
     const onDown = (event: PointerEvent) => {
       const box = element.getBoundingClientRect();
-      const at = (event.clientX - box.left) / Math.max(1, box.width);
-      if (at >= 0.5) session.press(BUTTON.TAP);
+      const zone = zoneAt(PLATFORM_ZONES, (event.clientX - box.left) / Math.max(1, box.width));
+      if (zone === 2) session.press(BUTTON.TAP);
       else {
-        pointers.set(event.pointerId, at < 0.25 ? 'left' : 'right');
+        pointers.set(event.pointerId, zone === 0 ? 'left' : 'right');
         sync();
       }
     };
@@ -796,21 +536,22 @@ function FireButton({ session }: { readonly session: ArcadeSession }) {
   );
 }
 
-/** Jak dlouho visí „+1“ nad hráčem a jak dlouho třese obraz po zásahu (P28C T3). */
+/** Jak dlouho visí „+1“ nad hráčem (P28C T3). */
 export const SCORE_POP_MS = 500;
-const SHAKE_MS = 150;
 
 interface ScorePop {
   readonly id: number;
-  readonly amount: number;
+  /** „+N“ za bod, „×N“ za kombo (P36C T7). */
+  readonly text: string;
+  readonly combo: boolean;
   /** Vodorovná poloha hráče na obrazovce v % (střed, když ji scéna nehlásí). */
   readonly left: number;
 }
 
 /**
  * Odezva nad plátnem (P28C T3), společná všem scénám: „+N“ nad hráčem při
- * bodu a otřes obrazu při zásahu. Je to DOM nad plátnem – žádný draw call
- * navíc, kamera scény ani stav relace se nemění. Poloha „+N“ je `data-player-x`,
+ * bodu. Je to DOM nad plátnem – žádný draw call navíc, stav relace se nemění.
+ * Otřes po zásahu dělá kamera (`effects/Effects.tsx`, P32A T4). Poloha „+N“ je `data-player-x`,
  * který píše scéna běžce, plošinovky, poletování a závodu; ostatní scény ho
  * nemají a „+N“ je uprostřed.
  */
@@ -828,19 +569,15 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
     };
     const off = session.onEvents((events) => {
       const amount = events.reduce((sum, event) => (event.kind === 'score' ? sum + event.amount : sum), 0);
-      if (amount > 0) {
-        const x = Number(surface.current?.dataset.playerX ?? 0);
-        const pop = { id: (next += 1), amount, left: 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50 };
+      const combo = comboOf(events);
+      const x = Number(surface.current?.dataset.playerX ?? 0);
+      const left = 50 + Math.max(-0.9, Math.min(0.9, Number.isFinite(x) ? x : 0)) * 50;
+      const fresh: ScorePop[] = [];
+      if (amount > 0) fresh.push({ id: (next += 1), text: `+${amount}`, combo: false, left });
+      if (combo !== null) fresh.push({ id: (next += 1), text: `×${combo}`, combo: true, left });
+      for (const pop of fresh) {
         setPops((current) => [...current, pop]);
         later(SCORE_POP_MS, () => setPops((current) => current.filter((entry) => entry.id !== pop.id)));
-      }
-      const element = surface.current;
-      if (element !== null && events.some((event) => event.kind === 'damage')) {
-        // Znovu spustit animaci i při zásahu v jejím průběhu: bez přepočtu stylu by třída jen zůstala.
-        element.classList.remove('play-stage-shake');
-        void element.offsetWidth;
-        element.classList.add('play-stage-shake');
-        later(SHAKE_MS, () => element.classList.remove('play-stage-shake'));
       }
     });
     return () => {
@@ -851,33 +588,44 @@ function EventFeedback({ session, surface }: { readonly session: ArcadeSession; 
   return (
     <>
       {pops.map((pop) => (
-        <span key={pop.id} className="play-score-pop" data-testid="score-pop" style={{ left: `${pop.left}%` }} aria-hidden="true">
-          +{pop.amount}
+        <span key={pop.id} className={pop.combo ? 'play-score-pop play-combo-pop' : 'play-score-pop'} data-testid={pop.combo ? 'combo-pop' : 'score-pop'} style={{ left: `${pop.left}%` }} aria-hidden="true">
+          {pop.text}
         </span>
       ))}
     </>
   );
 }
 
-export default function ArcadeStage({
+/**
+ * Plátno se scénou za vlastní hranicí `memo` (P32A T2-R1). `ArcadePlay` se překresluje
+ * s každým tikem (HUD čte snímek relace) a nový prvek `overlay` obejde `memo` celé
+ * stage – bez téhle hranice React každý tik prošel celý strom scény (běžec na Pixel 7
+ * se 4× CPU ~20 % času). Scény čtou stav relace ve `useFrame`, props se jim za běhu nemění.
+ */
+const StageCanvas = memo(function StageCanvas({
   session,
   cast,
-  lookId = 'meadow',
-  enabled = true,
+  look,
+  lookId,
+  enabled,
+  live,
+  surface,
+  heroAction,
+  ghost,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
-  readonly lookId?: LookId;
-  /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
-  readonly enabled?: boolean;
+  readonly look: Look;
+  /** Rodina ladění barev (P37B T3, `look/rig/grade.ts`). */
+  readonly lookId: LookId;
+  readonly enabled: boolean;
+  readonly live: boolean;
+  readonly surface: React.RefObject<HTMLDivElement | null>;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
 }) {
-  const surface = useRef<HTMLDivElement | null>(null);
-  // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
   const base = baseControlOf(session.world.control);
   const control = base.id;
-  const fires = session.world.rules.some((rule) => rule.id === 'blaster');
-  const look = LOOKS[lookId];
-  const draws = CAPABILITIES[control as ControlId]?.setting === true;
   // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
   const rival = cast.props.rival;
   const character = rival === undefined ? undefined : riggedCharacter(rival);
@@ -885,48 +633,115 @@ export default function ArcadeStage({
     rival === undefined
       ? undefined
       : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
+  // P30B T4: nota rytmu a díl věže z popisku („lily pads“, „pancakes“); díl vyplní kvádr, šířku mu mění jádro.
+  const { note, block } = cast.props;
+  const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
+  const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
+  const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
+  return (
+    // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
+    <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'} shadows="percentage">
+      <RedrawOnChange session={session} />
+      <FrameProbe control={control} />
+      <RenderProbe />
+      {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
+      {/* Rig svítí všem scénám: načasování a rytmus od P32A T10, souboj od P37B T3. */}
+      <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
+      {control === 'duel' ? (
+        <DuelScene session={session} look={look} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
+      ) : (
+        <>
+          {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
+          {control === 'timing' ? (
+            <TimingScene session={session} look={look} blockModel={blockModel} heroAction={heroAction} ghost={ghost} />
+          ) : control === 'rhythm' ? (
+            <RhythmScene session={session} look={look} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
+          ) : control === 'move_free' || control === 'fight' ? (
+            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} heroAction={heroAction} ghost={ghost} />
+          ) : control === 'runner' ? (
+            <RunnerWorld {...world} />
+          ) : control === 'platform' ? (
+            <PlatformWorld {...world} />
+          ) : (
+            <World {...world} control={control} />
+          )}
+        </>
+      )}
+      {/* Sněží jen v zasněžené sadě (čepička na kulisách), body kolem kamery (P32A T4). */}
+      {look.terrain?.cap !== undefined && <Snowfall />}
+      {/* Výzva na startu se měří až nakresleným snímkem – záběrem kamery, kterou scéna nakonec postavila. */}
+      <PromptSpot session={session} surface={surface} />
+      {/* Poslední dítě plátna: jeho snímek běží až po scéně, která kameru umístila. */}
+      <Effects session={session} look={look} surface={surface} />
+    </Canvas>
+  );
+});
+
+export default function ArcadeStage({
+  session,
+  cast,
+  lookId = 'meadow',
+  look: scene,
+  enabled = true,
+  heroAction = 'none',
+  ghost,
+  overlay,
+}: {
+  readonly session: ArcadeSession;
+  readonly cast: Cast;
+  readonly lookId?: LookId;
+  /** Sada upravená místem z věty (`sceneLook`, P30B T6); bez ní sada `lookId`. */
+  readonly look?: Look;
+  /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
+  readonly enabled?: boolean;
+  /** Viditelná činnost hrdiny ze specu (P37-0 T2); jde do každé scény, kreslí ji až stopa vzhledu. Jádro ji nečte. */
+  readonly heroAction?: HeroAction;
+  /** Duch dřívějšího běhu (P37B T8, `GhostSlot.tsx`); scéna ho kreslí ve svém slotu. */
+  readonly ghost?: ArcadeGhost;
+  /* P29D */
+  /** Vrstva nad plátnem (počasí a denní doba živé změny) – mimo scénu i hash. */
+  readonly overlay?: ReactNode;
+}) {
+  const surface = useRef<HTMLDivElement | null>(null);
+  // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
+  const control = baseControlOf(session.world.control).id;
+  const fires = session.world.rules.some((rule) => rule.id === 'blaster');
+  // Úder a použití (P32-0 T5) jen ve světě, který je čte.
+  const actions = useMemo(() => actionsOf(session.world), [session]);
+  const look = scene ?? LOOKS[lookId];
+  const draws = CAPABILITIES[control as ControlId]?.setting === true;
   useFireInput(session, fires && enabled);
+  useActionInput(session, actions, enabled);
   useRunnerInput(session, surface, enabled && control === 'runner');
   usePlatformInput(session, surface, enabled && control === 'platform');
   useFlapInput(session, surface, enabled && control === 'flap');
   useSteerInput(session, surface, enabled && control === 'steer');
-  useArenaInput(session, surface, enabled && control === 'move_free');
-  useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'));
+  useArenaInput(session, surface, enabled && (control === 'move_free' || control === 'fight'));
+  useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'), control === 'rhythm');
   useDuelInput(session, surface, enabled && control === 'duel');
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
-  const live = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
+  // Po konci ale ještě END_CLIP_MS naplno – klip pádu či oslavy (P28C T3) by jinak stál na prvním snímku.
+  const ticking = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);
+  const ended = useSyncExternalStore(session.subscribe, () => session.snapshot().runState !== 'running', () => false);
+  const [settling, setSettling] = useState(false);
+  useEffect(() => {
+    if (!ended) return;
+    setSettling(true);
+    const timer = window.setTimeout(() => setSettling(false), END_CLIP_MS);
+    return () => window.clearTimeout(timer);
+  }, [ended]);
+  const live = ticking || settling;
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'}>
-        <RedrawOnChange session={session} />
-        <FrameProbe control={control} />
-        <RenderProbe />
-        {/* Načasování, rytmus a souboj (P25H) mají vlastní scénu se světly i pozadím. */}
-        {control === 'timing' ? (
-          <TimingScene session={session} look={look} />
-        ) : control === 'rhythm' ? (
-          <RhythmScene session={session} look={look} />
-        ) : control === 'duel' ? (
-          <DuelScene session={session} look={look} rivalModel={rivalModel} />
-        ) : (
-          <>
-            <color attach="background" args={[look.sky]} />
-            <fog attach="fog" args={[look.sky, ...look.fog]} />
-            <FarAtFog far={look.fog[1]} />
-            <hemisphereLight args={[...look.light]} />
-            {/* Boční scény svítí ze strany kamery (−x). */}
-            <directionalLight position={[control === 'runner' || control === 'shooter' ? 6 : -6, 12, -4]} intensity={look.sun} />
-            {control === 'move_free' ? (
-              <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} />
-            ) : (
-              <World session={session} control={control} cast={cast} surface={surface} scene={look} enabled={enabled} />
-            )}
-          </>
-        )}
-      </Canvas>
+      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} />
+      {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
+      {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}
+      {enabled && control === 'duel' && <TouchZones session={session} zones={DUEL_ZONES} />}
+      {enabled && (control === 'move_free' || control === 'fight') && <TouchStick surface={surface} />}
       {fires && enabled && <FireButton session={session} />}
+      {enabled && actions.map((action) => <ActionButton key={action} session={session} action={action} />)}
     </div>
   );
 }

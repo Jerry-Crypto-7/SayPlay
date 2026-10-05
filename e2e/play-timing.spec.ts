@@ -5,13 +5,15 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
  * skutečnými dveřmi (dvojník režiséra = návrh ze slov → `timing` / `rhythm`
  * / `duel`), hra se načte ve vlastní scéně a čeká na první ťuk, který ji
  * jen spustí (do záznamu nejde), záznam robota přehraný sondou skončí na
- * „You won“ a mobil nescrolluje do strany.
+ * „You did it!“ (P34 T6: slovník kitu, dřív „You won“) a mobil nescrolluje
+ * do strany.
  */
 
 const GAMES = [
   { control: 'timing', sentence: 'stack blocks as high as you can', unit: 'rounds' },
   { control: 'rhythm', sentence: 'tap to the beat with glowing tiles', unit: 'notes' },
-  { control: 'duel', sentence: 'boxing match against a kangaroo', unit: 'hits' },
+  // „boxing“ je od P36A T11 rvačka v Aréně (`classify.ts`, sloveso `box`); Souboj hraje sloveso „duel“.
+  { control: 'duel', sentence: 'a fox duels a kangaroo in a boxing ring', unit: 'hits' },
 ] as const;
 
 async function publish(request: APIRequestContext, sentence: string): Promise<string> {
@@ -51,7 +53,7 @@ for (const game of GAMES) {
       await page.waitForFunction(() => window.__playShell !== undefined, undefined, { timeout: 60_000 });
       const outcome = await page.evaluate(() => window.__playShell!.playWitness());
       expect(outcome.runState).toBe('won');
-      await expect(page.getByTestId('play-outcome')).toContainText('You won');
+      await expect(page.getByTestId('play-outcome')).toContainText('You did it!');
       await expect(page.getByTestId('play-progress')).toHaveAttribute('data-progress', '100');
     });
 

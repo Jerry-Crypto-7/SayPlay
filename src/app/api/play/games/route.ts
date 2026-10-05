@@ -14,9 +14,10 @@
 
 import { z } from 'zod';
 
-import { draftGameSpec } from '@/play/draft';
+import { draftGameSpecWithMeta } from '@/play/draft';
 import { unsupportedGame } from '@/play/draft/unsupported';
-import { decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
+import { readBeforeDraft } from '@/play/read/client';
+import { beatOf, decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
@@ -44,11 +45,13 @@ const MAX_FEED = 48;
 
 /**
  * `GET /api/play/games?recent=N[&cursor=C]` – feed (P23-D T4, stránky P27B T2):
- * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes }],
- * next }` od nejnovější, v každé osmici nejvýš tři hry téhož archetypu
- * (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do feedu smí,
- * říká `feedEligible` – kontrakt v `docs/play/feed.md`. Stojí dva příkazy
- * úložiště (seznam a počty dětí), vlastní páku `feed` a strop jako každé čtení;
+ * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes, beat,
+ * goal, mood }], next }` podle smyčky (`beat` = „N% beat this“ nebo `null`, P37C T5) – dohrání, výzvy a remixy výš, každá třetí
+ * pozice nejnovější hra (P36B T9; bez čítačů od nejnovější); `goal`/`mood`
+ * z řádku seznamu, starší řádky `null`; v každé osmici nejvýš tři hry téhož
+ * archetypu (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do
+ * feedu smí, říká `feedEligible` – kontrakt v `docs/play/feed.md`. Stojí dva
+ * příkazy úložiště (seznam a čítače s počty dětí), vlastní páku `feed` a strop jako každé čtení;
  * hrana ho smí 15 s držet, a proto dotaz nesmí nést nic jiného než `recent`
  * a `cursor` – náhodný parametr navíc by cache obešel pokaždé.
  */
@@ -70,18 +73,23 @@ export async function GET(request: Request): Promise<Response> {
 
   const versions = store();
   // Celý seznam (jeden příkaz): stránka se počítá ze snímku, viz `feed.ts`.
-  const page = feedPage(await versions.recent(RECENT_CAP), limit, cursor, hiddenFromEnv(process.env));
-  const remixes = await versions.childCounts(page.games.map((row) => row.versionId));
+  const rows = await versions.recent(RECENT_CAP);
+  // Čítače smyčky a počty remixů všech řádků (druhý příkaz) řadí feed (P36B T9).
+  const heat = await versions.loopHeat(rows.map((row) => row.versionId));
+  const page = feedPage(rows, limit, cursor, hiddenFromEnv(process.env), heat);
   return markVolatileStore(
     Response.json(
       {
-        games: page.games.map((row, index) => ({
+        games: page.games.map((row) => ({
           versionId: row.versionId,
           title: row.title,
           archetype: row.archetype,
           createdAt: row.createdAt,
           parentId: row.parentId,
-          remixes: remixes[index] ?? 0,
+          remixes: heat.get(row.versionId)?.remixes ?? 0,
+          beat: beatOf(heat.get(row.versionId)),
+          goal: row.goal ?? null,
+          mood: row.mood ?? null,
         })),
         next: page.next,
       },
@@ -119,8 +127,11 @@ export async function POST(request: Request): Promise<Response> {
     const seeds = seed !== undefined ? [seed] : derivedSeeds(seedFrom(sentence.trim()));
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
-    const drafted = draftGameSpec(sentence);
-    const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin: { sentence, seed: seed ?? null } });
+    // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
+    const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) });
+    const drafted = meta.spec;
+    const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };
+    const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });
     if (draft.ok) {
       void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
       return publishedResponse(draft.value, true, unsupportedGame(sentence, drafted));

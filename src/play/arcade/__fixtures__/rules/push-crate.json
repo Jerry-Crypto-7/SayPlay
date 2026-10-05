@@ -1,0 +1,23 @@
+{
+  "schema": "gamespec.v1",
+  "control": "move_free",
+  "controlParams": {},
+  "title": "Warehouse Plate",
+  "archetype": "survival_timer",
+  "targetDurationSec": 60,
+  "theme": { "setting": "dusty warehouse floor", "mood": "calm" },
+  "objective": { "kind": "survive", "description": "Push the crate onto the pressure plate.", "seconds": 40 },
+  "mechanics": [],
+  "roles": [
+    { "id": "player", "kind": "player", "label": "worker" },
+    { "id": "crate", "kind": "prop", "label": "wooden crate" },
+    { "id": "plate", "kind": "switch", "label": "pressure plate" }
+  ],
+  "rules": [
+    { "id": "shove", "verb": "push", "when": { "contact": ["player", "crate"] }, "do": [{ "push": "other" }] },
+    { "id": "press_plate", "verb": "activate", "when": { "contact": ["crate", "plate"] }, "do": [{ "win": true }] }
+  ],
+  "tutorial": { "goalLine": "Push the crate onto the plate.", "controlsHint": "Drag or arrows to walk into the crate." },
+  "verification": [{ "id": "winnable", "kind": "reachability", "assert": { "runState": "won" } }],
+  "budgets": { "maxEntities": 40, "maxRules": 120, "maxTriangles": 200000 }
+}

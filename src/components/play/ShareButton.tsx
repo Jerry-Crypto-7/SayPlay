@@ -9,21 +9,180 @@
  * zkopíruje, a když ani schránka nejde (oprávnění, nezabezpečený původ),
  * ukáže se v poli k ručnímu výběru.
  *
+ * Po dohrání nese i klip běhu (P29D T2): kde nabídka sdílení bere soubory,
+ * jde klip s odkazem; jinak se klip stáhne a odkaz zkopíruje. Událost
+ * `share` říká `withClip`, jestli klip opravdu odešel.
+ *
+ * Po živých změnách (P29D T10) se sdílí verze, která je nese (`live`), a rodič
+ * zůstává v rodokmenu. Publikuje ji hra dopředu (R4): nabídka sdílení chce
+ * čerstvé gesto (iOS Safari, Chromium po ~5 s), takže stisk na síť nečeká,
+ * a dokud publikace běží, je tlačítko zablokované.
+ *
  * Stisk nesmí do hry: plocha scény i klávesy hry poslouchají nativně, takže
  * ťuk i klávesu musí zastavit nativní posluchač (stejně jako tlačítko Fire).
+ *
+ * Vzhled (P34 T6): mimo HUD je to `Button` kitu – na výsledku „Dare a friend
+ * to beat it“ (po výhře rajčatové, po prohře papírové) a odkaz „Copy link“
+ * (`copy`: jen schránka, bez nabídky a klipu). Výsledek stisku řekne toast
+ * kitu „Link copied. Go dare someone.“, který po 3 s zmizí.
+ *
+ * V HUD (P34 T7, kit `07-components.md` Screens map) kolo sdílení otevře list
+ * `.sp-sheet`: rajčatové „Dare a friend“ (nabídka sdílení s odkazem, jinak
+ * schránka), odkaz „Copy link“ a „Save video“ – během nahrávaného běhu
+ * zašedlé s větou, že video přijde po konci (hotové ho nese výsledek). Hra pod
+ * listem běží dál; klávesy z listu do ní nepropadnou, Tab a Esc patří listu.
+ * Odeslaný odkaz list zavře a toast ukáže bublina nad dolní řadou.
+ *
+ * Dare po výhře (P36B T6): vstupy běhu jdou na server hned po výhře
+ * (`publishDare`, ze stejného důvodu jako živé změny – stisk na síť nečeká),
+ * server je přehraje a vrátí id výzvy. Odkaz pak nese `&dare=<id>` a míří na
+ * hranou verzi – na ní server skóre ověřil, i s živými změnami běhu. Když
+ * výzva nevyjde, odejde obyčejný odkaz a toast to řekne.
+ *
+ * Výsledek jako Wordle (P37C T4): s `result` dostane nabídka sdílení i text –
+ * název hry, mřížku bez spoileru a cíl „Can you beat 2,450?“ (odkaz jde
+ * zvlášť jako `url`); do schránky jde týž text i s odkazem.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+
+import type { InputEvent } from '@/play/arcade/contract';
+import type { LiveEntry } from '@/play/arcade/live';
+import { packInputs } from '@/play/score/dare';
+import { gameName, type ShareRun, shareText } from '@/play/score/share-text';
 
 import { loopEvent, SHARE_MARK } from './loop-client';
+import { COPY_LINK, DARE_SHORT, LINK_COPIED, SAVE_VIDEO, SHARE_TITLE, VIDEO_AFTER_RUN } from './starters';
+import { Button, type ButtonVariant, Icon, Sheet } from './ui';
 
-type Share = 'idle' | 'copied' | 'manual';
+type Share = 'idle' | 'copied' | 'saved' | 'manual';
 
-export function ShareButton({ versionId, title, label = 'Share', className = '' }: { readonly versionId: string; readonly title?: string; readonly label?: string; readonly className?: string }) {
+/** Toast kitu (`07-components.md`, Toast) visí 3 s. */
+const TOAST_MS = 3_000;
+
+/**
+ * Klávesy z listu sdílení nesmí do běžící hry – ta poslouchá na okně nativně.
+ * Tab a Esc projdou, obsluhuje je list (`holdSheet` na dokumentu).
+ */
+function keepKeys(element: HTMLElement | null): (() => void) | undefined {
+  if (element === null) return undefined;
+  const stop = (event: KeyboardEvent) => {
+    if (event.key !== 'Tab' && event.key !== 'Escape') event.stopPropagation();
+  };
+  element.addEventListener('keydown', stop);
+  element.addEventListener('keyup', stop);
+  return () => {
+    element.removeEventListener('keydown', stop);
+    element.removeEventListener('keyup', stop);
+  };
+}
+
+/** Stažení souboru přes dočasný odkaz – prohlížeč bez sdílení souborů si klip uloží. */
+function download(file: File): void {
+  const url = URL.createObjectURL(file);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = file.name;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/** Verze, která nese živé změny běhu; `partial` = část z nich (životy, čas, těla, která hra na startu nepočítá) zůstala jen v běhu. */
+export interface LiveShare {
+  readonly versionId: string;
+  readonly partial: boolean;
+}
+
+/**
+ * Publikace živých změn běhu: `pending` = běží, `ready` = hotová (`share: null`
+ * = běh žádné nemá), `failed` = změny se nepodařilo uložit; sdílí se hraná
+ * verze a hráč se to dozví, stejně jako o změnách, které do odkazu nejdou.
+ */
+export type LivePublish =
+  | { readonly state: 'pending' }
+  | { readonly state: 'ready'; readonly share: LiveShare | null }
+  | { readonly state: 'failed' };
+
+/** Výzva Dare vítězného běhu: `pending` = server přehrává, `ready` = ověřená, `failed` = sdílí se obyčejný odkaz. */
+export type DarePublish = { readonly state: 'pending' } | { readonly state: 'ready'; readonly dareId: string } | { readonly state: 'failed' };
+
+/** Vstupy a živé změny vítězného běhu → id výzvy, kterou server ověřil přehráním (`POST …/dare`, P36B T5). */
+export async function publishDare(versionId: string, inputs: readonly InputEvent[], patches: readonly LiveEntry[]): Promise<string> {
+  const response = await fetch(`/api/play/games/${versionId}/dare`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ inputs: packInputs(inputs), patches }),
+  });
+  const body = (await response.json()) as { dareId?: unknown };
+  if (!response.ok || typeof body.dareId !== 'string') throw new Error(`dare refused: ${String(response.status)}`);
+  return body.dareId;
+}
+
+export function ShareButton({
+  versionId: playing,
+  title,
+  label = 'Share',
+  variant = 'secondary',
+  size = 'm',
+  copy = false,
+  className = '',
+  clip = null,
+  live,
+  dare,
+  result,
+  recording = false,
+}: {
+  readonly versionId: string;
+  readonly title?: string;
+  readonly label?: string;
+  /** Varianta `Button` kitu (P34 T6); `hud` = kolo v dolní řadě HUD (P34 T5), které otevře list sdílení (P34 T7). */
+  readonly variant?: ButtonVariant | 'hud';
+  readonly size?: 'l' | 'm' | 's';
+  /** „Copy link“: odkaz jen do schránky – bez nabídky sdílení a bez klipu. */
+  readonly copy?: boolean;
+  readonly className?: string;
+  readonly clip?: Blob | null;
+  /** Verze s živými změnami běhu (P29D T10), `undefined` = běh žádné nemá. */
+  readonly live?: LivePublish;
+  /** Výzva vítězného běhu (P36B T6), `undefined` = odkaz bez výzvy. */
+  readonly dare?: DarePublish;
+  /** Skončený běh (P37C T4): sdílí se s textem výsledku; `undefined` = jen odkaz. */
+  readonly result?: ShareRun;
+  /** Běh se nahrává (arkáda, P29D T1): list sdílení v HUD ukáže Save video, zatím zašedlé. */
+  readonly recording?: boolean;
+}) {
   const button = useRef<HTMLButtonElement | null>(null);
+  const noteId = useId();
+  const [open, setOpen] = useState(false);
   const [share, setShare] = useState<Share>('idle');
   const [href, setHref] = useState('');
   const [volatile, setVolatile] = useState(false);
+  const [lostLive, setLostLive] = useState<'none' | 'some' | 'all' | 'dare'>('none');
+  const [noScore, setNoScore] = useState(false);
+  const dareId = dare?.state === 'ready' ? dare.dareId : null;
+
+  const toast = [
+    share === 'copied' ? LINK_COPIED : share === 'saved' ? `Video saved. ${LINK_COPIED}` : '',
+    noScore ? "Couldn't attach your score, so the link opens just the game." : '',
+    volatile ? 'This server keeps games in memory only: the link stops working when it restarts.' : '',
+    lostLive === 'all' ? 'Your live changes could not be saved, so the link opens the game without them.' : '',
+    lostLive === 'some' ? 'Some live changes (lives, time, or what this game cannot start with) stay in your run only.' : '',
+    lostLive === 'dare' ? 'Your friend gets the game without your live changes.' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+  useEffect(() => {
+    if (toast === '') return;
+    const timer = window.setTimeout(() => {
+      setShare((now) => (now === 'manual' ? now : 'idle'));
+      setVolatile(false);
+      setLostLive('none');
+      setNoScore(false);
+    }, TOAST_MS);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     const element = button.current;
@@ -41,7 +200,7 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
    * a přizná to hlavičkou `x-play-store: memory`. Odkaz pak nesmí vypadat
    * trvale – hráč se to dozví hned u sdílení.
    */
-  async function checkLasting(): Promise<void> {
+  async function checkLasting(versionId: string): Promise<void> {
     try {
       const response = await fetch(`/api/play/games/${versionId}`, { cache: 'no-store' });
       setVolatile(response.headers.get('x-play-store') === 'memory');
@@ -50,41 +209,114 @@ export function ShareButton({ versionId, title, label = 'Share', className = '' 
     }
   }
 
-  async function run(): Promise<void> {
+  /** `onlyCopy` = „Copy link“: jen schránka, bez nabídky a klipu. Vrací `true`, když odkaz odešel. */
+  async function run(onlyCopy: boolean): Promise<boolean> {
+    // Žádné `await` před `navigator.share` – jinak vyprší gesto (R4).
+    // Výzva patří hrané verzi (tam ji server přehrál); verze se živými změnami jde jen bez výzvy.
+    const shared = dareId === null && live?.state === 'ready' ? live.share : null;
+    const versionId = shared?.versionId ?? playing;
+    setNoScore(dare?.state === 'failed');
+    setLostLive(dareId !== null ? (live === undefined ? 'none' : 'dare') : live?.state === 'failed' ? 'all' : shared?.partial === true ? 'some' : 'none');
     // `?via=share` je jediný doklad, že odkaz došel: jeho otevření je `shared_open` (P27D T4).
-    const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}`;
+    const url = `${window.location.origin}/play/${versionId}?${SHARE_MARK}${dareId === null ? '' : `&dare=${dareId}`}`;
     setHref(url);
-    void checkLasting();
-    if (typeof navigator.share === 'function') {
+    void checkLasting(versionId);
+    // Klip běhu (P29D T2) jde s odkazem, kde nabídka sdílení soubory bere; jinak se stáhne a odkaz zkopíruje.
+    const file = onlyCopy || clip === null ? null : new File([clip], `sayplay-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
+    const withFile = file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+    const name = title ?? gameName(document.title);
+    if (!onlyCopy && typeof navigator.share === 'function' && (file === null || withFile)) {
       try {
-        await navigator.share({ title: title ?? document.title, url });
-        loopEvent('share', versionId);
-        return;
+        const data: ShareData = { title: title ?? document.title, url, ...(result === undefined ? {} : { text: shareText(result, name, null) }) };
+        await navigator.share(withFile ? { ...data, files: [file] } : data);
+        // Sdílení patří hrané verzi – tam leží i zobrazení a výhra běhu (revize fáze 2 P29D).
+        loopEvent('share', playing, { withClip: withFile, dare: dareId !== null });
+        return true;
       } catch (error) {
         // Hráč nabídku zavřel – nic dalšího. Jiná chyba: zkusit schránku.
-        if (error instanceof DOMException && error.name === 'AbortError') return;
+        if (error instanceof DOMException && error.name === 'AbortError') return false;
       }
     }
+    if (file !== null) download(file);
     try {
-      await navigator.clipboard.writeText(url);
-      setShare('copied');
-      loopEvent('share', versionId);
+      await navigator.clipboard.writeText(onlyCopy || result === undefined ? url : shareText(result, name, url));
+      setShare(file === null ? 'copied' : 'saved');
+      loopEvent('share', playing, { withClip: file !== null, dare: dareId !== null });
+      return true;
     } catch {
+      // Odkaz nedošel (jen ruční pole) – `share` se nepočítá, s klipem ani bez něj.
       setShare('manual');
+      return false;
     }
   }
 
+  /** Stisk v listu sdílení: odeslaný odkaz list zavře, toast pak ukáže bublina nad dolní řadou. */
+  const send = (onlyCopy: boolean) => () => void run(onlyCopy).then((sent) => sent && setOpen(false));
+
+  const pending = dare?.state === 'pending' || (dareId === null && live?.state === 'pending');
+  const manualField = <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />;
   return (
     <>
-      <button ref={button} type="button" className={`play-button play-share ${className}`.trim()} data-testid="play-share" onClick={() => void run()}>
-        {label}
-      </button>
-      {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. */}
-      <span className="play-status" aria-live="polite">
-        {share === 'copied' ? 'Link copied' : ''}
-        {volatile ? `${share === 'copied' ? '. ' : ''}This server keeps games in memory only: the link stops working when it restarts.` : ''}
+      {variant === 'hud' ? (
+        <>
+          <button
+            ref={button}
+            type="button"
+            className={`sp-hud-btn play-hud-round play-share ${className}`.trim()}
+            data-testid="play-share"
+            data-variant="hud"
+            aria-label={label}
+            aria-haspopup="dialog"
+            disabled={pending}
+            aria-busy={pending}
+            onClick={() => setOpen(true)}
+          >
+            <Icon name="share" />
+          </button>
+          <Sheet open={open} title={SHARE_TITLE} className="play-share-sheet" onClose={() => setOpen(false)}>
+            <div ref={keepKeys} className="play-share-options">
+              <Button size="l" className="sp-btn--block" data-testid="play-share-dare" disabled={pending} aria-busy={pending} onClick={send(false)}>
+                {DARE_SHORT}
+              </Button>
+              <div className="play-share-links">
+                <Button variant="link" size="s" data-testid="play-copy-link" disabled={pending} onClick={send(true)}>
+                  {COPY_LINK}
+                </Button>
+                {recording && (
+                  <Button variant="link" size="s" disabled aria-describedby={noteId}>
+                    {SAVE_VIDEO}
+                  </Button>
+                )}
+              </div>
+              {recording && (
+                <p id={noteId} className="play-share-note">
+                  {VIDEO_AFTER_RUN}
+                </p>
+              )}
+              {share === 'manual' && manualField}
+            </div>
+          </Sheet>
+        </>
+      ) : (
+        <Button
+          ref={button}
+          variant={variant}
+          size={size}
+          className={`play-share ${className}`.trim()}
+          data-testid={copy ? 'play-copy-link' : 'play-share'}
+          disabled={pending}
+          aria-busy={pending}
+          onClick={() => void run(copy)}
+        >
+          {label}
+        </Button>
+      )}
+      {/* Oblast `aria-live` musí existovat dřív, než se do ní napíše – jinak ji čtečka nepřečte. V HUD sedí bublina nad dolní řadou, jinde toast kitu. */}
+      <span className={toast === '' || variant === 'hud' ? 'play-status' : 'play-status sp-toast'} aria-live="polite">
+        {toast}
       </span>
-      {share === 'manual' && <input className="play-share-url" readOnly value={href} aria-label="Game link" onFocus={(event) => event.target.select()} />}
+      {/* V HUD je ruční pole v listu sdílení. */}
+      {share === 'manual' && variant !== 'hud' && manualField}
     </>
   );
 }

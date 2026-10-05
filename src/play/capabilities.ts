@@ -4,9 +4,11 @@
  * nebo hrát, jinak to napsat nesmí.
  *
  * Z tabulky se vyrábí:
- * 1. řádek ovládání v zadání modelu (`controlPromptLine` v `director/prompt.ts`);
- * 2. kontrola kritika – položka, kterou ovládání nečte, je nález, ne tiché zahození;
- * 3. věrnost ve specifikaci v sadě `evals/play/fidelity` (`scripts/play-fidelity.mjs`).
+ * 1. kontrola kritika – položka, kterou ovládání nečte, je nález, ne tiché zahození;
+ * 2. věrnost ve specifikaci v sadě `evals/play/fidelity` (`scripts/play-fidelity.mjs`).
+ *
+ * Zadání modelu ovládání od P32B T4 nevyjmenovává: režisér vybírá žánr
+ * (`director/prompt.ts`) a ovládání určí modul žánru.
  *
  * Každou buňku „čte“ drží test `__tests__/capabilities.test.ts`: změna položky
  * změní svět (hash) nebo model, který vykreslení zvolí; buňka „nečte“ naopak nic.
@@ -26,8 +28,8 @@ export interface ControlCapability {
   readonly finish: boolean;
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
-  /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12). */
-  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival')[];
+  /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3). */
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'note' | 'block' | 'finish')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -60,10 +62,11 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [] },
   // P26D T9: počty od 2 čte generátor – běžec mince a řady překážek, plošinovka a poletování mince, střelnice terče a nepřátele.
   runner: arcade({ setting: true, counts: true, cues: 'endless runner, subway surfers', roles: ['obstacle', 'coin'], finish: true, labels: ['player', 'obstacle', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
-  platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
+  // P35 T3: cíl na konci úrovně kreslí model z popisku („moon“, „battery“), jinak vlajku.
+  platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin', 'finish'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
   flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin'], mechanics: LIVES_AND_TIMER, addons: ROAMING }),
   // P27A T3: závod a aréna kreslí kulisy sady prostředí mimo dráhu a za hranou arény.
-  steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player', 'rival'], mechanics: ['timer'] }),
+  steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player', 'rival', 'barrier'], mechanics: ['timer'] }),
   move_free: arcade({
     setting: true,
     cues: 'agar.io, eat smaller, grow',
@@ -77,8 +80,9 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
   throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player', 'target'], mechanics: ['timer'] }),
   // P27A T4: načasování, rytmus a souboj kreslí kulisy za hrací plochou; soupeř souboje a závodu nese model z popisku.
-  timing: arcade({ setting: true, cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
-  rhythm: arcade({ setting: true, cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: [], mechanics: LIVES_AND_TIMER }),
+  // P30B T4: díl věže („pancakes“), nota rytmu („lily pads“) a mantinel závodu („crocodiles“) taky.
+  timing: arcade({ setting: true, cues: 'stack, stop the bar', roles: ['block', 'miss'], finish: false, labels: ['block'], mechanics: LIVES_AND_TIMER }),
+  rhythm: arcade({ setting: true, cues: 'tap on the beat', roles: ['note', 'miss'], finish: false, labels: ['note'], mechanics: LIVES_AND_TIMER }),
   duel: arcade({ setting: true, cues: 'fight, boxing', roles: ['rival'], finish: false, labels: ['rival'], mechanics: LIVES_AND_TIMER }),
 };
 
@@ -92,11 +96,27 @@ export function readsLabel(control: ControlId, role: Pick<GameRole, 'id' | 'kind
   return (labels as readonly string[]).includes(role.id);
 }
 
-/** Čte kompilátor tuhle mechaniku? */
-export function readsMechanic(control: ControlId, id: string): boolean {
+/**
+ * Generátory režimů žánru, které čtou mechaniku navíc proti svému ovládání:
+ * plavba (`steer`) bere životy, závod `steer_track` ne (P36A T2).
+ */
+const GENERATOR_MECHANICS: Readonly<Record<string, readonly MechanicId[]>> = {
+  voyage_race: ['health'],
+  voyage_land: ['health'],
+};
+
+/** Čte kompilátor tuhle mechaniku? `generator` = `controlParams.generator` hry žánru. */
+export function readsMechanic(control: ControlId, id: string, generator?: string): boolean {
   const { mechanics } = CAPABILITIES[control];
-  return mechanics === 'all' || (mechanics as readonly string[]).includes(id);
+  if (mechanics === 'all' || (mechanics as readonly string[]).includes(id)) return true;
+  return generator !== undefined && Object.hasOwn(GENERATOR_MECHANICS, generator) && (GENERATOR_MECHANICS[generator] as readonly string[]).includes(id);
 }
+
+/** Generátor režimu, který spec deleguje (`controlParams.generator`), nebo `undefined`. */
+export const generatorOfSpec = (spec: Pick<GameSpecV1, 'controlParams'>): string | undefined => {
+  const generator = (spec.controlParams as { readonly generator?: unknown } | undefined)?.generator;
+  return typeof generator === 'string' ? generator : undefined;
+};
 
 /** Položka specu, kterou ovládání nepoužije. */
 export interface UnreadItem {
@@ -106,11 +126,12 @@ export interface UnreadItem {
 }
 
 /** Co spec nese a hra z toho nic neukáže – vstup kritika. */
-export function unreadItems(spec: Pick<GameSpecV1, 'control' | 'mechanics' | 'roles'>): UnreadItem[] {
+export function unreadItems(spec: Pick<GameSpecV1, 'control' | 'mechanics' | 'roles'> & Partial<Pick<GameSpecV1, 'controlParams'>>): UnreadItem[] {
   const control = controlOf(spec);
+  const generator = generatorOfSpec(spec);
   const items: UnreadItem[] = [];
   spec.mechanics.forEach((mechanic, index) => {
-    if (!readsMechanic(control, mechanic.id)) items.push({ path: `/mechanics/${String(index)}`, kind: 'mechanic', what: mechanic.id });
+    if (!readsMechanic(control, mechanic.id, generator)) items.push({ path: `/mechanics/${String(index)}`, kind: 'mechanic', what: mechanic.id });
   });
   spec.roles.forEach((role, index) => {
     if (!readsLabel(control, role)) items.push({ path: `/roles/${String(index)}/label`, kind: 'label', what: role.label });

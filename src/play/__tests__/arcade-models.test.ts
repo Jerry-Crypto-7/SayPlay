@@ -18,6 +18,8 @@ import { lookOf } from '../arcade/look';
 import { draftGameSpec } from '../draft';
 import type { GameSpecV1 } from '../spec';
 
+import { legacyDraft } from './legacy-draft';
+
 const withLabel = (fixture: unknown, id: string, label: string): GameSpecV1 => {
   const spec = structuredClone(fixture) as GameSpecV1;
   spec.roles = spec.roles.map((role) => (role.id === id ? { ...role, label } : role));
@@ -31,25 +33,30 @@ describe('arcade model choice from role labels', () => {
     ['brave little puppies', 'dog'], // synonymum v množném čísle
     ['kitten', 'cat'], // tag katalogu
     ['zombies', 'cc0-zombie'], // přesný model CC0 přebije náhradu
-    ['ogres', 'goblin'], // bez modelu náhradní příšera
+    ['ogres', 'gen3d-ogre'], // od 28. 9. vlastní model z gen3d
+    ['demons', 'goblin'], // bez modelu náhradní příšera
     ['a small bird', 'bird'], // tag `bird` nese hnízdo, věta myslí ptáka
-    ['space bunny', 'hamster'],
-    ['grizzly bear', 'fox'], // kategorie zvíře
-    ['mall security guard', 'explorer'], // kategorie člověk
-    ['angry bulldozer', 'robot'], // kategorie stroj
+    ['space bunny', 'rigged:pet-bunny'], // od P35 T1 králík z Cube Pets, ne křeček
+    ['grizzly bear', 'gen3d-bear'], // od 28. 9. vlastní model z gen3d
+    ['wild lizard', 'fox'], // kategorie zvíře
+    ['mall security guard', 'gen3d-guard'], // vlastní model z gen3d (e5b840b) přebije kategorii člověk
+    ['angry bulldozer', 'gen3d-bulldozer'], // od 28. 9. vlastní model z gen3d
+    ['angry forklift', 'gen3d-forklift'], // od P37D vlastní model z gen3d
+    ['angry mech', 'robot'], // kategorie stroj
     ['battle tank', 'cc0-tank'], // CC0 tank, ne plynová bomba `cc0-gas-tank` (P26A T11)
   ])('%s → %s', (label, model) => {
     expect(modelOf(label, true)).toBe(model);
   });
 
   it('a thing the catalog lacks gets no category and keeps the role default', () => {
-    expect(modelOf('balloon', true)).toBeUndefined();
-    expect(heroModel(withLabel(runner, 'player', 'balloon'))).toBe('explorer');
-    // P28D T3: věc bez modelu dostane zástupce (míč), ne robota; `modelOf` ho dál nevrací, řetěz věrnosti hlásí `no-model`.
-    expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('ball');
-    expect(enemyModel(withLabel(shooter, 'enemy', 'angry umbrellas'))).toBe('robot');
-    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'cc0-fire-hydrant' });
-    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'), false)).toEqual({});
+    // Balónek má od e5b840b model z gen3d, věc bez modelu je teď vzducholoď.
+    expect(modelOf('zeppelin', true)).toBeUndefined();
+    expect(heroModel(withLabel(runner, 'player', 'zeppelin'))).toBe('explorer');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry balloons'))).toBe('gen3d-balloon');
+    expect(enemyModel(withLabel(shooter, 'enemy', 'angry staplers'))).toBe('robot');
+    // Zástupci (hydrant za kropítko) skončili v P30B T4: kropítko má vlastní model, věc bez modelu zůstane tělem jádra.
+    expect(propModels(withLabel(runner, 'obstacle', 'sprinklers'))).toEqual({ obstacle: 'sprinkler' });
+    expect(propModels(withLabel(runner, 'obstacle', 'deadlines'))).toEqual({});
   });
 
   it('a flappy bird is the bird, not the nest', () => {
@@ -59,7 +66,7 @@ describe('arcade model choice from role labels', () => {
   it('props take only a direct catalog match, never a category or the core kind', () => {
     expect(propModels(withLabel(runner, 'coin', 'gems'))).toEqual({ coin: 'crystal' });
     expect(propModels(withLabel(runner, 'obstacle', 'traffic cones'))).toEqual({});
-    expect(propModels(withLabel(runner, 'obstacle', 'grizzly bears'))).toEqual({});
+    expect(propModels(withLabel(runner, 'obstacle', 'wild badgers'))).toEqual({});
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
     // Střelnice popisek terče nekreslí (tabulka schopností), takže ho nečte ani výběr.
     expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({});
@@ -68,21 +75,28 @@ describe('arcade model choice from role labels', () => {
   // P27A T4: soupeř souboje a závodu z popisku – jen model, který popisek jmenuje, žádná kategorie.
   it('names the duel and race rival from its label, honestly', () => {
     expect(propModels(withLabel(duel, 'rival', 'fox'))).toEqual({ rival: 'fox' });
-    // Klokana katalog nemá: kategorie „zvíře“ by nakreslila lišku, soupeř zůstane postavou z primitiv.
-    expect(propModels(withLabel(duel, 'rival', 'kangaroo'))).toEqual({});
+    // Klokan má od P30B T4 vlastní model; vombata katalog nemá – kategorie „zvíře“ by nakreslila lišku, soupeř zůstane postavou z primitiv.
+    expect(propModels(withLabel(duel, 'rival', 'kangaroo'))).toEqual({ rival: 'kangaroo' });
+    expect(propModels(withLabel(duel, 'rival', 'wombat'))).toEqual({});
     expect(propModels(withLabel(steer, 'rival', 'rival plane'))).toEqual({ rival: 'plane' });
     // Soupeř závodu je vozidlo; zvíře jako auto neřídí.
     expect(propModels(withLabel(steer, 'rival', 'fox'))).toEqual({});
     expect(propModels(withLabel(steer, 'rival', 'rival car'))).toEqual({});
   });
 
-  // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.
+  // Šablona střelnice a hodu (remix uložené hry, P32B T2) zapíše jméno z věty do role, kterou scéna kreslí.
   it.each([
     ['shoot the zombies in the mall', (spec: GameSpecV1) => enemyModel(spec), 'cc0-zombie'],
     ['space shooter against asteroids', (spec: GameSpecV1) => spec.roles.find((role) => role.id === 'enemy')?.label, 'asteroid'],
     ['throw balls at rubber ducks', (spec: GameSpecV1) => propModels(spec).target, 'rubber-duck'],
+  ])('template sentence %s reaches the scene', (sentence, read, expected) => {
+    expect(read(legacyDraft(sentence))).toBe(expected);
+  });
+
+  // Návrh ze slov musí jméno z věty do role zapsat, jinak scéna nemá co vybrat.
+  it.each([
     ['a runner dodging traffic cones and collecting gems', (spec: GameSpecV1) => propModels(spec).coin, 'crystal'],
-    ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'cat|dog'],
+    ['a cat running and dodging dogs', (spec: GameSpecV1) => `${heroModel(spec)}|${propModels(spec).obstacle}`, 'rigged:pet-cat|dog'],
   ])('sentence %s reaches the scene', (sentence, read, expected) => {
     expect(read(draftGameSpec(sentence))).toBe(expected);
   });
@@ -96,20 +110,21 @@ describe('arcade model choice from role labels', () => {
   });
 
   // P26B T6: lidská role s tagem riggované postavy dostane postavu s klipy, jinak se nic nemění.
+  // P32C T4: kočka a tučňák mají animovanou postavu z Kenney Cube Pets; corgi zůstává model katalogu.
   it.each([
     ['a knight running and jumping over hurdles', 'rigged:knight'],
     ['a wizard running through the forest', 'rigged:mage'],
-    ['a cat running and dodging dogs', 'cat'],
+    ['a cat running and dodging dogs', 'rigged:pet-cat'],
     // P26D T1: slovo žánru za postavou postavu nesmaže.
     ['A corgi runner collecting bones', 'cc0-corgi'],
-    ['a penguin runner', 'penguin'],
+    ['a penguin runner', 'rigged:pet-penguin'],
   ])('sentence %s casts %s as the hero', (sentence, model) => {
     expect(heroModel(draftGameSpec(sentence))).toBe(model);
   });
 
   // Návrh ze slov „a cat runner“ kočku do popisku nezapíše (dá výchozího rytíře), takže pravidlo hlavy fráze se měří na popisku.
   it.each([
-    ['cat runner', 'cat'],
+    ['cat runner', 'rigged:pet-cat'],
     ['knight', 'rigged:knight'],
     ['brave little girl', 'rigged:girl-a'],
     ['sock', 'cc0-sock'],

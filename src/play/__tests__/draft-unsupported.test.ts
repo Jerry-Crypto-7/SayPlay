@@ -51,20 +51,23 @@ describe('unsupportedGame over the demand corpus', () => {
   });
 });
 
-// P28D T4 (R-12): věta bez herního slovesa dostane běžce o svém tématu a řekne to.
+// P28D T4 (R-12): věta bez herního slovesa dostane hru o svém tématu a řekne to – od P36A T11 sběr v Aréně, běžec až poslední.
 describe('a sentence without a game verb', () => {
-  it('plays a runner about its longest noun and says so, with two example verbs', () => {
+  it('plays an arena collect about its longest noun and says so, with two example verbs', () => {
     const sentence = 'Explain quantum physics to my grandma.';
     const spec = draftGameSpec(sentence);
-    expect(spec.control).toBe('runner');
+    expect(spec.genre).toMatchObject({ id: 'arena', mode: 'collect' });
     expect(spec.roles.find((role) => role.kind === 'player')?.label).toBe('grandma');
-    expect(spec.title).toBe('Explain Quantum Physics Grandma');
     expect(unsupportedGame(sentence, spec)).toEqual({
       kind: 'no_verb',
-      reason: 'No game verb found – here is a runner about grandma. Try: ‘Dodge …’, ‘Collect …’',
-      closest: 'an endless runner',
+      reason: 'No game verb found – here is a collecting game about grandma. Try: ‘Dodge …’, ‘Collect …’',
+      closest: 'a collecting game',
     });
-    expect(unsupportedGame('a romantic dinner date on the moon', draftGameSpec('a romantic dinner date on the moon'))?.reason).toContain('runner about dinner');
+    expect(unsupportedGame('a romantic dinner date on the moon', draftGameSpec('a romantic dinner date on the moon'))?.reason).toContain('collecting game about dinner');
+    // Hra bez žánru (uložená před P32) je dál běžec a hláška to tak řekne.
+    expect(unsupportedGame(sentence, { archetype: 'hazard_crossing', control: 'runner' })?.reason).toContain('an endless runner about grandma');
+    // Běžec žánrového modulu uložený před P36A T11 hlášku neztratí.
+    expect(unsupportedGame(sentence, { archetype: 'hazard_crossing', control: 'runner', genre: { id: 'runner', mode: 'default', compilerVersion: 'play-compiler-v4' } })?.reason).toContain('an endless runner about grandma');
   });
 
   it('stays quiet for a sentence with a verb, a noun cue, or once the AI version is another game', () => {
@@ -78,10 +81,11 @@ describe('a sentence without a game verb', () => {
 describe('unsupportedGame', () => {
   it('names the game the draft built instead', () => {
     const sentence = 'a match 3 game with fruits';
+    // P32B T2: „match 3“ jde do Úkolu na místě, ne do běžce bez narážky.
     expect(unsupportedGame(sentence, draftGameSpec(sentence))).toEqual({
       kind: 'manipulate',
       reason: 'Swapping, sorting and sliding pieces around is not something we can build yet.',
-      closest: 'an endless runner',
+      closest: 'a quest',
     });
   });
 
@@ -90,8 +94,8 @@ describe('unsupportedGame', () => {
   });
 
   // Všechny arkádové šablony mají archetyp `hazard_crossing`, takže podle něj
-  // by hláška plošinovce i poletování slibovala přecházení silnice.
-  it('names the arcade game the player actually got, not the template archetype', () => {
+  // by hláška plošinovce i letu slibovala přecházení silnice. P32B T2: jméno dává žánr.
+  it('names the game the player actually got, not the template archetype', () => {
     for (const [sentence, closest] of [
       ['a tower defense platformer where you jump between ledges', 'a platformer'],
       ['an idle clicker where a bird flaps through pipes', 'a flappy game'],

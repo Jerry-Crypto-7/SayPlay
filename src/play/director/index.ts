@@ -3,33 +3,37 @@
  *
  * Pořadí je smysl celé vrstvy: **návrh ze slov jde ven synchronně** přes
  * `onDraft` ještě před prvním `await`, teprve pak cache, model, kritik a
- * opravy. Model píše jen GameSpec, odpověď čte `readDirectorAnswer`, blokující
+ * opravy. Model píše jen `GenreSpec` (P32B T4), odpověď čte `readGenreAnswer`
+ * a hru z ní složí modul žánru; blokující
  * nálezy kritika se nejdřív opravují z tabulky (`repairDeterministically`),
  * teprve pak nejvýš `maxRepairRounds` modelových kol RFC 6902. Přijatý spec se
  * uloží do cache; **cokoli jiného skončí návrhem** s `fallbackReason`, nikdy
  * výjimkou – návrh existuje vždy, takže větev `ok:false` kontraktu tady nemá
  * kdy nastat (zapsáno v `docs/play/CONTRACT-CHANGES.md`).
  *
- * `MALFORMED` = odpověď se nedala přečíst ani deterministicky opravit (model
- * odpověděl něčím jiným než GameSpec); modelová kola nad ní nemají z čeho
- * záplatovat. `UNREPAIRED` = spec se přečetl, ale blokující nálezy přežily i
- * poslední kolo. `MODEL_UNAVAILABLE` = větev nevrátila odpověď, v prvním
- * volání nebo v opravném kole.
+ * `MALFORMED` = odpověď se nedala přečíst (model odpověděl něčím jiným než
+ * `GenreSpec`, nebo ho modul nepřeložil); modelová kola nad ní nemají z čeho
+ * záplatovat. `MODEL_UNAVAILABLE` = větev nevrátila odpověď, v prvním volání
+ * nebo v opravném kole. `UNREPAIRED` režisér od P32B T5 nevrací: odpověď mimo
+ * větu přepne žánr (`switchGenre`) a co neprojde ničím, dohraje žánr draftu.
  */
 
 import type { GenerationBranch } from '@/server/pipeline';
 
 import type { DirectorResult, FallbackReason } from '../contracts';
-import { draftGameSpec } from '../draft';
+import { draftGameSpecWithMeta } from '../draft';
+import type { GenreModules } from '../genre/classify';
+import { readBeforeDraft, readerEnabled } from '../read/client';
 import type { GameSpecV1 } from '../spec';
 
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
-import { COMPACT_PROMPT_VERSION, buildCompactRequest, composeCompact } from './compact';
-import { type CriticIssue, blockingIssues, critique } from './critic';
+import { COMPACT_PROMPT_VERSION, buildCompactRequest } from './compact';
+import { type CriticIssue, blockingIssues, critique, fidelity, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
-import { readDirectorAnswer, unwrapAnswer } from './read';
-import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically } from './repair';
+import { answerRules, readGenreAnswer, withoutAnswerRules } from './read';
+import { EXAMPLES_VERSION } from './retrieval';
+import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically, switchGenre } from './repair';
 
 export type { FallbackReason } from '../contracts';
 
@@ -53,6 +57,8 @@ export type DirectedGame = DirectorResult & {
   readonly ms: number;
   /** Kolikrát se volal model. */
   readonly calls: number;
+  /** Modely, které spec napsaly, v pořadí (`a + b`, když opravu psal jiný); přežije cache (P29B T8, R2). */
+  readonly authoredBy?: string;
 };
 
 export interface DirectorDeps {
@@ -72,6 +78,10 @@ export interface DirectorDeps {
   readonly check?: (spec: GameSpecV1) => readonly RepairIssue[];
   /** Kompaktní první odpověď (P27D T2, `compact.ts`); opravná kola zůstávají stejná. */
   readonly compact?: boolean;
+  /** Ověřené příklady v kompaktní první odpovědi (P30A T8, `retrieval.ts`); plný prompt je nebere. */
+  readonly examples?: boolean;
+  /** Moduly žánrů pro draft, čtení odpovědi a kontrolu věrnosti; testy sem dávají dvojníky (`genre/__tests__/doubles.ts`). */
+  readonly modules?: GenreModules;
 }
 
 function warningsOf(spec: GameSpecV1): CriticIssue[] {
@@ -80,7 +90,11 @@ function warningsOf(spec: GameSpecV1): CriticIssue[] {
 
 export async function direct(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
   const started = deps.now();
-  const draft = draftGameSpec(sentence, deps.seed);
+  // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
+  const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
+  const genreOptions = { reading, ...(deps.modules === undefined ? {} : { modules: deps.modules }) };
+  const drafted = draftGameSpecWithMeta(sentence, deps.seed, genreOptions);
+  const draft = drafted.spec;
   deps.onDraft?.(draft);
   let calls = 0;
 
@@ -97,32 +111,85 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   });
 
   const compact = deps.compact === true;
-  const request = compact ? buildCompactRequest(sentence, draft) : buildDirectorRequest(sentence, draft);
-  const promptVersion = compact ? COMPACT_PROMPT_VERSION : DIRECTOR_PROMPT_VERSION;
+  const examples = compact && deps.examples === true;
+  const request = compact ? buildCompactRequest(sentence, drafted.genre, examples) : buildDirectorRequest(sentence, drafted.genre);
+  // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí.
+  const promptVersion = compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION;
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
-  if (cached !== null && blockingIssues(critique(cached)).length === 0) {
-    return { ok: true, spec: cached, source: 'cached', repairRounds: 0, fallbackReason: null, warnings: warningsOf(cached), ms: deps.now() - started, calls };
+  if (cached !== null && blockingIssues(critique(cached.spec)).length === 0) {
+    return {
+      ok: true,
+      spec: cached.spec,
+      source: 'cached',
+      repairRounds: 0,
+      fallbackReason: null,
+      warnings: warningsOf(cached.spec),
+      ms: deps.now() - started,
+      calls,
+      ...(cached.authoredBy === null ? {} : { authoredBy: cached.authoredBy }),
+    };
   }
+
+  // Kdo psal (P29B R2): primár, nebo lokální záloha – u každého volání, které spec pohnulo.
+  const authors: string[] = [];
+  // Psala-li lokální záloha, hra do cache nejde: klíč patří primáru a ten by se na větu už nikdy neptal.
+  let byFallback = false;
+  const credit = (provenance: Readonly<Record<string, string | boolean>>) => {
+    const model = provenance.model;
+    if (typeof model === 'string' && !authors.includes(model)) authors.push(model);
+    // Záloha se pozná podle role, kterou jí dá šev režiséra (`_director.ts`), ne podle
+    // transportu: od P30A může primár i záloha jet přes týž hostovaný `openai:`.
+    if (provenance.fallback === true) byFallback = true;
+  };
 
   calls += 1;
   const outcome = await deps.branch.generate({ prompt: sentence, request });
+  if (outcome.ok) credit(outcome.provenance);
   if (!outcome.ok)
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
 
-  let spec: GameSpecV1;
-  const body = compact ? outcome.body : unwrapAnswer(outcome.body);
-  const read = compact ? composeCompact(sentence, body, deps.seed) : readDirectorAnswer(body);
-  if (read.ok) {
-    spec = read.spec;
-  } else if (compact) {
-    // Složený spec vzniká ze šablony – co neprojde, oprava tabulkou nespraví.
-    return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
-  } else {
-    const repaired = repairDeterministically(body, read.reason);
-    if (repaired === null) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
-    spec = repaired.spec;
+  // Hru skládá modul žánru – co se nepřečte nebo nepřeloží, oprava tabulkou nespraví.
+  // Pravidla, která se nedala složit (P29A T8, v první odpovědi znovu od T5b): hra se složí bez nich a opravné kolo dostane důvod.
+  const written = answerRules(outcome.body);
+  let ruleBlocks: CriticIssue[] = [];
+  let read = readGenreAnswer(outcome.body, deps.modules, sentence, reading);
+  if (!read.ok && written !== null) {
+    const plain = readGenreAnswer(withoutAnswerRules(outcome.body), deps.modules, sentence, reading);
+    if (plain.ok) ruleBlocks = ruleInvalidIssues(read.detail, written);
+    if (plain.ok) read = plain;
+  }
+  if (!read.ok) return fallback('MALFORMED', { stage: 'read', reason: read.reason, detail: read.detail, raw: outcome.body });
+  let spec: GameSpecV1 = read.spec;
+  // Slovesa, která první odpověď slíbila pravidly (i nesloženými).
+  const promised = [...new Set((written ?? []).map((rule) => (typeof rule === 'object' && rule !== null ? (rule as { verb?: unknown }).verb : undefined)).filter((verb): verb is string => typeof verb === 'string'))];
+
+  /**
+   * Poslední záloha opravy žánrové odpovědi (T5): žánr draftu. Hláška „could
+   * not fix“ (`UNREPAIRED`) pro žánrový spec neexistuje – hra je rychlá verze a
+   * obálka ji ohlásí jako „the quick version is already its take“ (UNCHANGED).
+   * Do cache nejde: příští pokus dostane novou šanci.
+   */
+  const draftGenre = (failure: DirectorFailure, repairRounds: number): DirectedGame => ({
+    ok: true,
+    spec: draft,
+    source: 'authored',
+    repairRounds,
+    fallbackReason: null,
+    failure,
+    warnings: warningsOf(draft),
+    ms: deps.now() - started,
+    calls,
+  });
+
+  // Kontrola věrnosti (T5): hrdina, nepřítel a sloveso věty, režim `ready`; neprošlá odpověď přepne žánr podle klasifikátoru.
+  const unfaithful = fidelity(read.genre, sentence, genreOptions);
+  if (unfaithful.length > 0) {
+    const switched = switchGenre(read.genre, sentence, genreOptions);
+    const detail = unfaithful.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; ');
+    if (switched === null) return draftGenre({ stage: 'critic', reason: 'UNFAITHFUL', detail, raw: read.genre }, 0);
+    spec = switched.spec;
   }
 
   let blocks = blockingIssues(critique(spec));
@@ -133,9 +200,10 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
       blocks = blockingIssues(critique(spec));
     }
   }
+  blocks = [...blocks, ...ruleBlocks];
 
-  // Ověření robotem (P26 T10a) jen nad specem, který kritik pustil.
-  const checkOf = (candidate: GameSpecV1): readonly RepairIssue[] => (deps.check === undefined ? [] : deps.check(candidate));
+  // Ověření robotem (P26 T10a) jen nad specem, který kritik pustil; neprokázané sloveso jmenuje kritik (T8).
+  const checkOf = (candidate: GameSpecV1): readonly RepairIssue[] => (deps.check === undefined ? [] : verbIssues(deps.check(candidate), candidate));
   let checked = blocks.length === 0 ? checkOf(spec) : [];
   const maxRounds = deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS;
   let repairRounds = 0;
@@ -145,22 +213,67 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     const answer = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(spec, blocks.length > 0 ? blocks : checked) });
     if (!answer.ok) {
       // Spec, který kritik pustil, jde dál a odmítne ho až publikace (NOT_PLAYABLE) –
-      // výpadek opravného kola o větě nic neříká.
-      if (blocks.length === 0) break;
+      // výpadek opravného kola o větě nic neříká. Totéž hra, které chybí jen nesložená pravidla (T8).
+      if (blocks.every((issue) => issue.code === 'RULE_INVALID')) break;
       return fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: answer.reason, detail: `repair round ${repairRounds}: ${answer.detail}`, raw: answer.raw ?? null });
     }
     const applied = applyRepairAnswer(spec, answer.body);
     // Špatná záplata nechává spec i nálezy, jak byly – další kolo je dostane znovu.
     if (!applied.ok) continue;
+    credit(answer.provenance);
     spec = applied.spec;
     blocks = blockingIssues(critique(spec));
     checked = blocks.length === 0 ? checkOf(spec) : [];
   }
-  if (blocks.length > 0) return fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec });
 
+  // Oprava pravidlům nepomohla (T8): pravidlo ze hry vypadne a hraje se bez něj –
+  // nejdřív jen neprokázaná slovesa, pak všechna pravidla, nakonec návrh ze slov.
+  // Neprokázané sloveso se nikdy nepublikuje a hra se kvůli pravidlu nerozbije.
+  const ruleFailure = [...blocks, ...checked].filter((issue) => issue.code === 'RULE_INVALID' || issue.code === 'VERB_UNPROVED');
+  const ruleFailed = blocks.every((issue) => issue.code === 'RULE_INVALID') && (ruleBlocks.length > 0 || (spec.rules !== undefined && checked.length > 0));
+  if (ruleFailed && (blocks.length > 0 || checked.length > 0)) {
+    const failure: DirectorFailure = { stage: 'critic', reason: 'VERB_UNPROVED', detail: ruleFailure.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; ') || checked.map((issue) => issue.code).join('; '), raw: spec };
+    const unproved = new Set(unprovedVerbs(checked));
+    const candidates = [withoutRules(spec, (rule) => unproved.has(rule.verb)), withoutRules(spec, () => true)];
+    for (const candidate of candidates) {
+      if (candidate === null || blockingIssues(critique(candidate)).length > 0 || checkOf(candidate).length > 0) continue;
+      return { ok: true, spec: candidate, source: 'authored', repairRounds, fallbackReason: 'VERB_UNPROVED', failure, warnings: warningsOf(candidate), ms: deps.now() - started, calls };
+    }
+    return fallback('VERB_UNPROVED', failure);
+  }
+  if (blocks.length > 0) return draftGenre({ stage: 'critic', reason: 'UNREPAIRED', detail: blocks.map((issue) => `${issue.code} ${issue.path}: ${issue.evidence}`).join('; '), raw: spec }, repairRounds);
+
+  // Sloveso, které první odpověď slíbila pravidlem a hotová hra ho nenese (oprava ho
+  // smazala nebo pravidla vůbec nedoplnila), se nesmí tvářit jako plně autorská hra ani jít do cache.
+  const lost = promised.filter((verb) => !(spec.rules ?? []).some((rule) => rule.verb === verb));
+  if (lost.length > 0) {
+    const failure: DirectorFailure = { stage: 'critic', reason: 'VERB_UNPROVED', detail: `rule verbs dropped: ${lost.join(', ')}`, raw: spec };
+    return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: 'VERB_UNPROVED', failure, warnings: warningsOf(spec), ms: deps.now() - started, calls };
+  }
   // Hra, která neprošla ověřením, se do cache nedává – příští pokus dostane novou šanci.
-  if (checked.length === 0) await deps.cache?.write(key, spec);
-  return { ok: true, spec, source: 'authored', repairRounds, fallbackReason: null, warnings: warningsOf(spec), ms: deps.now() - started, calls };
+  const authoredBy = authors.length === 0 ? null : authors.join(' + ');
+  if (checked.length === 0 && !byFallback) await deps.cache?.write(key, spec, authoredBy);
+  return {
+    ok: true,
+    spec,
+    source: 'authored',
+    repairRounds,
+    fallbackReason: null,
+    warnings: warningsOf(spec),
+    ms: deps.now() - started,
+    calls,
+    ...(authoredBy === null ? {} : { authoredBy }),
+  };
+}
+
+/** Spec bez pravidel, která `drop` vybere; `things` jen když žádné pravidlo nezbylo. `null` = nebylo co odebrat. */
+function withoutRules(spec: GameSpecV1, drop: (rule: NonNullable<GameSpecV1['rules']>[number]) => boolean): GameSpecV1 | null {
+  const rules = spec.rules ?? [];
+  const kept = rules.filter((rule) => !drop(rule));
+  if (kept.length === rules.length && rules.length > 0) return null;
+  const { rules: _rules, things, ...rest } = spec;
+  if (kept.length > 0) return { ...rest, rules: kept, ...(things === undefined ? {} : { things }) };
+  return rest;
 }
 
 export { directorCache, directorCacheFromEnv, directorKey, type DirectorCache } from './cache';

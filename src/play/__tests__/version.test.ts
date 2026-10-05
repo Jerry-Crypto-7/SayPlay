@@ -295,6 +295,23 @@ describe('VersionStore http', () => {
     expect(lists.get(`${PREFIX}:play:recent`)).toHaveLength(RECENT_CAP);
   });
 
+  // R4 (c), nález revize T6-2 #3: hra uložená, zápis řádku feedu selhal – další běh seedu ho doplní, jednou.
+  it('feature after a failed feed write: the next run adds the missing row once', async () => {
+    const lists = new Map<string, string[]>();
+    const inner = fakeUpstash(new Map(), new Map(), lists);
+    let failures = 1;
+    const flaky: typeof fetch = (input, init) =>
+      String(init?.body).startsWith('["LPUSH"') && failures-- > 0 ? Promise.resolve(new Response('down', { status: 503 })) : inner(input, init);
+    const store = httpVersionStore({ url: 'https://x', token: 't', prefix: PREFIX, timeoutMs: 500 }, flaky);
+    const game = publish(3, null);
+    await expect(store.feature(game)).rejects.toBeInstanceOf(VersionStoreUnavailable);
+    expect(lists.get(`${PREFIX}:play:recent`) ?? []).toHaveLength(0);
+    expect(await store.feature(game)).toBe('exists');
+    expect(await store.feature(game)).toBe('exists');
+    const rows = (lists.get(`${PREFIX}:play:recent`) ?? []).map((text) => JSON.parse(text) as { versionId: string; curated?: boolean });
+    expect(rows).toEqual([expect.objectContaining({ versionId: game.version.versionId, curated: true })]);
+  });
+
   it('treats corrupted JSON as an unknown version', async () => {
     const kv = new Map<string, string>([[`${PREFIX}:play:v:bad`, '{not json']]);
     const store = httpVersionStore({ url: 'https://x', token: 't', prefix: PREFIX, timeoutMs: 500 }, fakeUpstash(kv));
@@ -391,7 +408,7 @@ describe('VersionStore http', () => {
 describe('writeLimitsFromEnv', () => {
   it('reads positive integers and falls back to the defaults on anything else', () => {
     expect(writeLimitsFromEnv({})).toEqual(DEFAULT_WRITE_LIMITS);
-    expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '86400', PLAY_PUBLISH_DAILY_CAP: '20' })).toEqual({ ttlSeconds: 86400, dailyCap: 20 });
+    expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '86400', PLAY_PUBLISH_DAILY_CAP: '20' })).toEqual({ ttlSeconds: 86400, dailyCap: 20, dareDailyCap: 2000, ghostDailyCap: 150 });
     expect(writeLimitsFromEnv({ PLAY_VERSION_TTL_SECONDS: '0', PLAY_PUBLISH_DAILY_CAP: 'unlimited' })).toEqual(DEFAULT_WRITE_LIMITS);
     expect(writeLimitsFromEnv({ PLAY_PUBLISH_DAILY_CAP: '-5' }).dailyCap).toBe(DEFAULT_WRITE_LIMITS.dailyCap);
   });

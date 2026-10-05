@@ -1,0 +1,524 @@
+{
+ "about": "P30B T5: hero and sentence items projected by the real scene camera on the first playable frame (e2e/p30b-camera-frame.spec.ts). Frozen AI specs from live.json; in frame = centre within 0.95 NDC and not behind the camera.",
+ "gate": {
+  "hero": 1,
+  "items": 0.9
+ },
+ "summary": {
+  "phone": {
+   "hero": "10/10",
+   "items": "14/14"
+  },
+  "desktop": {
+   "hero": "10/10",
+   "items": "14/14"
+  }
+ },
+ "offCamera": [],
+ "sentences": [
+  {
+   "id": "h10",
+   "viewport": "desktop",
+   "control": "runner",
+   "hero": {
+    "label": "penguin",
+    "why": "ok",
+    "x": 0,
+    "y": -0.4,
+    "heightShare": 0.21
+   },
+   "items": [
+    {
+     "role": "obstacle",
+     "label": "seals",
+     "bodies": 10,
+     "why": "ok",
+     "x": 0,
+     "y": 0.06
+    },
+    {
+     "role": "coin",
+     "label": "fish",
+     "bodies": 18,
+     "why": "ok",
+     "x": 0.09,
+     "y": 0.04
+    }
+   ]
+  },
+  {
+   "id": "s006",
+   "viewport": "desktop",
+   "control": "runner",
+   "hero": {
+    "label": "corgi",
+    "why": "ok",
+    "x": 0,
+    "y": -0.39,
+    "heightShare": 0.22
+   },
+   "items": [
+    {
+     "role": "obstacle",
+     "label": "sprinkler",
+     "bodies": 10,
+     "why": "ok",
+     "x": 0.08,
+     "y": 0.06
+    },
+    {
+     "role": "coin",
+     "label": "sausage",
+     "bodies": 21,
+     "why": "ok",
+     "x": -0.07,
+     "y": 0.09
+    }
+   ]
+  },
+  {
+   "id": "s022",
+   "viewport": "desktop",
+   "control": "platform",
+   "hero": {
+    "label": "tiny robot",
+    "why": "ok",
+    "x": -0.4,
+    "y": -0.07,
+    "heightShare": 0.14
+   },
+   "items": [
+    {
+     "role": "coin",
+     "label": "coin",
+     "bodies": 16,
+     "why": "ok",
+     "x": 0.73,
+     "y": -0.11
+    }
+   ]
+  },
+  {
+   "id": "s035",
+   "viewport": "desktop",
+   "control": "flap",
+   "hero": {
+    "label": "bird",
+    "why": "ok",
+    "x": -0.1,
+    "y": -0.22,
+    "heightShare": 0.05
+   },
+   "items": [
+    {
+     "role": "coin",
+     "label": "coin",
+     "bodies": 9,
+     "why": "ok",
+     "x": 0.86,
+     "y": -0.14
+    }
+   ]
+  },
+  {
+   "id": "s058",
+   "viewport": "desktop",
+   "control": "steer",
+   "hero": {
+    "label": "boat",
+    "why": "ok",
+    "x": 0,
+    "y": -0.49,
+    "heightShare": 0.04
+   },
+   "items": [
+    {
+     "role": "barrier",
+     "label": "crocodiles",
+     "bodies": 12,
+     "why": "ok",
+     "x": -0.09,
+     "y": 0.12
+    },
+    {
+     "role": "rival",
+     "label": "boat",
+     "bodies": 4,
+     "why": "ok",
+     "x": -0.03,
+     "y": 0.05
+    }
+   ]
+  },
+  {
+   "id": "s039",
+   "viewport": "desktop",
+   "control": "shooter",
+   "hero": {
+    "label": "knight",
+    "why": "ok",
+    "x": -0.02,
+    "y": -0.68,
+    "heightShare": 0.32
+   },
+   "items": [
+    {
+     "role": "target",
+     "label": "target",
+     "bodies": 4,
+     "why": "ok",
+     "x": 0.03,
+     "y": 0.04
+    },
+    {
+     "role": "enemy",
+     "label": "zombie",
+     "bodies": 9,
+     "why": "ok",
+     "x": 0,
+     "y": 0.1
+    }
+   ]
+  },
+  {
+   "id": "h03",
+   "viewport": "desktop",
+   "control": "throw",
+   "hero": {
+    "label": "knight",
+    "why": "ok",
+    "x": -0.81,
+    "y": -0.34,
+    "heightShare": 0.1
+   },
+   "items": [
+    {
+     "role": "target",
+     "label": "dragons",
+     "bodies": 3,
+     "why": "ok",
+     "x": 0.08,
+     "y": -0.28
+    }
+   ]
+  },
+  {
+   "id": "s099",
+   "viewport": "desktop",
+   "control": "timing",
+   "hero": {
+    "label": "crane",
+    "why": "ok",
+    "x": 0.11,
+    "y": 0.05,
+    "heightShare": 0.1
+   },
+   "items": [
+    {
+     "role": "block",
+     "label": "pancake",
+     "bodies": 1,
+     "why": "ok",
+     "x": 0.11,
+     "y": 0.05
+    }
+   ]
+  },
+  {
+   "id": "s144",
+   "viewport": "desktop",
+   "control": "rhythm",
+   "hero": {
+    "label": "drummer frog",
+    "why": "ok",
+    "x": 0,
+    "y": -0.68,
+    "heightShare": 0.09
+   },
+   "items": [
+    {
+     "role": "note",
+     "label": "lily pad",
+     "bodies": 7,
+     "why": "ok",
+     "x": 0.06,
+     "y": 0.2
+    }
+   ]
+  },
+  {
+   "id": "h05",
+   "viewport": "desktop",
+   "control": "duel",
+   "hero": {
+    "label": "fighter",
+    "why": "ok",
+    "x": -0.21,
+    "y": -0.1,
+    "heightShare": 0.3
+   },
+   "items": [
+    {
+     "role": "rival",
+     "label": "kangaroo",
+     "bodies": 1,
+     "why": "ok",
+     "x": 0.23,
+     "y": -0.21
+    }
+   ]
+  },
+  {
+   "id": "h10",
+   "viewport": "phone",
+   "control": "runner",
+   "hero": {
+    "label": "penguin",
+    "why": "ok",
+    "x": 0,
+    "y": -0.39,
+    "heightShare": 0.21
+   },
+   "items": [
+    {
+     "role": "obstacle",
+     "label": "seals",
+     "bodies": 10,
+     "why": "ok",
+     "x": 0,
+     "y": 0.05
+    },
+    {
+     "role": "coin",
+     "label": "fish",
+     "bodies": 18,
+     "why": "ok",
+     "x": -0.15,
+     "y": 0.15
+    }
+   ]
+  },
+  {
+   "id": "s006",
+   "viewport": "phone",
+   "control": "runner",
+   "hero": {
+    "label": "corgi",
+    "why": "ok",
+    "x": 0,
+    "y": -0.41,
+    "heightShare": 0.22
+   },
+   "items": [
+    {
+     "role": "obstacle",
+     "label": "sprinkler",
+     "bodies": 10,
+     "why": "ok",
+     "x": 0,
+     "y": -0.1
+    },
+    {
+     "role": "coin",
+     "label": "sausage",
+     "bodies": 21,
+     "why": "ok",
+     "x": 0.15,
+     "y": 0.15
+    }
+   ]
+  },
+  {
+   "id": "s022",
+   "viewport": "phone",
+   "control": "platform",
+   "hero": {
+    "label": "tiny robot",
+    "why": "ok",
+    "x": -0.69,
+    "y": -0.03,
+    "heightShare": 0.06
+   },
+   "items": [
+    {
+     "role": "coin",
+     "label": "coin",
+     "bodies": 16,
+     "why": "ok",
+     "x": 0.76,
+     "y": -0.04
+    }
+   ]
+  },
+  {
+   "id": "s035",
+   "viewport": "phone",
+   "control": "flap",
+   "hero": {
+    "label": "bird",
+    "why": "ok",
+    "x": -0.66,
+    "y": -0.44,
+    "heightShare": 0.05
+   },
+   "items": [
+    {
+     "role": "coin",
+     "label": "coin",
+     "bodies": 7,
+     "why": "ok",
+     "x": 0.71,
+     "y": -0.08
+    }
+   ]
+  },
+  {
+   "id": "s058",
+   "viewport": "phone",
+   "control": "steer",
+   "hero": {
+    "label": "boat",
+    "why": "ok",
+    "x": 0,
+    "y": -0.3,
+    "heightShare": 0.02
+   },
+   "items": [
+    {
+     "role": "barrier",
+     "label": "crocodiles",
+     "bodies": 10,
+     "why": "ok",
+     "x": -0.39,
+     "y": 0.34
+    },
+    {
+     "role": "rival",
+     "label": "boat",
+     "bodies": 4,
+     "why": "ok",
+     "x": -0.24,
+     "y": 0.1
+    }
+   ]
+  },
+  {
+   "id": "s039",
+   "viewport": "phone",
+   "control": "shooter",
+   "hero": {
+    "label": "knight",
+    "why": "ok",
+    "x": -0.01,
+    "y": -0.74,
+    "heightShare": 0.09
+   },
+   "items": [
+    {
+     "role": "target",
+     "label": "target",
+     "bodies": 4,
+     "why": "ok",
+     "x": 0.08,
+     "y": 0.27
+    },
+    {
+     "role": "enemy",
+     "label": "zombie",
+     "bodies": 9,
+     "why": "ok",
+     "x": 0,
+     "y": 0.52
+    }
+   ]
+  },
+  {
+   "id": "h03",
+   "viewport": "phone",
+   "control": "throw",
+   "hero": {
+    "label": "knight",
+    "why": "ok",
+    "x": -0.69,
+    "y": -0.66,
+    "heightShare": 0.18
+   },
+   "items": [
+    {
+     "role": "target",
+     "label": "dragons",
+     "bodies": 3,
+     "why": "ok",
+     "x": 0.04,
+     "y": -0.08
+    }
+   ]
+  },
+  {
+   "id": "s099",
+   "viewport": "phone",
+   "control": "timing",
+   "hero": {
+    "label": "crane",
+    "why": "ok",
+    "x": 0.2,
+    "y": 0.02,
+    "heightShare": 0.05
+   },
+   "items": [
+    {
+     "role": "block",
+     "label": "pancake",
+     "bodies": 1,
+     "why": "ok",
+     "x": 0.2,
+     "y": 0.02
+    }
+   ]
+  },
+  {
+   "id": "s144",
+   "viewport": "phone",
+   "control": "rhythm",
+   "hero": {
+    "label": "drummer frog",
+    "why": "ok",
+    "x": 0,
+    "y": -0.51,
+    "heightShare": 0.05
+   },
+   "items": [
+    {
+     "role": "note",
+     "label": "lily pad",
+     "bodies": 7,
+     "why": "ok",
+     "x": 0.19,
+     "y": 0.23
+    }
+   ]
+  },
+  {
+   "id": "h05",
+   "viewport": "phone",
+   "control": "duel",
+   "hero": {
+    "label": "fighter",
+    "why": "ok",
+    "x": -0.32,
+    "y": -0.04,
+    "heightShare": 0.13
+   },
+   "items": [
+    {
+     "role": "rival",
+     "label": "kangaroo",
+     "bodies": 1,
+     "why": "ok",
+     "x": 0.35,
+     "y": -0.09
+    }
+   ]
+  }
+ ]
+}

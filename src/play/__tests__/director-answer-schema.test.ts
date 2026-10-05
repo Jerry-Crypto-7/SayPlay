@@ -1,28 +1,26 @@
 /**
- * Schéma odpovědi režiséra (P26 T6).
+ * Schéma odpovědi režiséra (P26 T6; `GenreSpec` od P32B T4).
  *
  * Tři vlastnosti: (1) je přísné v každém uzlu, jinak ho API odmítne celé
  * (naměřeno 23. 9.: chybějící klíč v `required` = `invalid_json_schema`);
- * (2) přijme každou šablonu hry – schéma, které platnou hru nepustí, by model
- * donutilo psát jinou; (3) nepustí, co tabulka schopností zakazuje. Validátor
- * je malý a pokrývá jen podmnožinu, kterou `strictSchema` vyrábí.
+ * (2) přijme každý `GenreSpec`, který píše draft – schéma, které platnou hru
+ * nepustí, by model donutilo psát jinou; (3) nepustí režim, který nehraje,
+ * ani parametr mimo meze modulu. Validátor je malý a pokrývá jen podmnožinu,
+ * kterou `strictSchema` vyrábí, a odkazy `#/$defs/…` do kořene (P36A T7).
  */
 
 import { describe, expect, it } from 'vitest';
 
-import chaseEscape from '../__fixtures__/chase_escape.json';
-import collectExit from '../__fixtures__/collect_exit.json';
-import combatLite from '../__fixtures__/combat_lite.json';
-import switchPuzzle from '../__fixtures__/switch_puzzle.json';
-import arena from '../arcade/__fixtures__/arena.json';
-import duel from '../arcade/__fixtures__/duel.json';
-import runner from '../arcade/__fixtures__/runner.json';
-import shooter from '../arcade/__fixtures__/shooter.json';
+import { z } from 'zod';
+
 import steer from '../arcade/__fixtures__/steer.json';
-import throwGame from '../arcade/__fixtures__/throw.json';
-import { DIRECTOR_ANSWER_SCHEMA } from '../director/answer-schema';
-import { unwrapAnswer } from '../director/read';
-import { readGameSpec } from '../spec';
+import { modelRulesSchema } from '../arcade/rules/schema';
+import { goldenPrompts } from '../../../evals/play/golden';
+import { GENRE_ANSWER_SCHEMA, strictSchema } from '../director/answer-schema';
+import { readGenreAnswer } from '../director/read';
+import { draftGameSpecWithMeta } from '../draft';
+import { GENRE_MODULES } from '../genre/index';
+import { heroClass } from '../genre/roles';
 import { codexArgs } from '@/server/upstream';
 
 type Json = Record<string, unknown>;
@@ -35,8 +33,14 @@ function typeOf(value: unknown): string {
   return typeof value;
 }
 
+/** Sdílené definice kořene; `{$ref: '#/$defs/<jméno>'}` míří sem (P36A T7). */
+const DEFS = (GENRE_ANSWER_SCHEMA.$defs ?? {}) as Record<string, Json>;
+const DEF_REF = /^#\/\$defs\/([A-Za-z]+)$/;
+const deref = (schema: Json): Json => DEFS[DEF_REF.exec(schema.$ref as string)![1]!]!;
+
 /** Chyby hodnoty proti schématu; prázdné = platí. */
 function validate(schema: Json, value: unknown, path = ''): string[] {
+  if (typeof schema.$ref === 'string') return validate(deref(schema), value, path);
   if (Array.isArray(schema.anyOf)) {
     return (schema.anyOf as Json[]).some((branch) => validate(branch, value, path).length === 0) ? [] : [`${path}: no anyOf branch fits`];
   }
@@ -69,6 +73,7 @@ function validate(schema: Json, value: unknown, path = ''): string[] {
 
 /** Spec → tvar přísné odpovědi: chybějící pole jako `null`, slovníky jako dvojice. Větev unie volí validátor. */
 function encode(schema: Json, value: unknown): unknown {
+  if (typeof schema.$ref === 'string') return encode(deref(schema), value);
   if (Array.isArray(schema.anyOf)) {
     for (const branch of schema.anyOf as Json[]) {
       const candidate = encode(branch, value);
@@ -93,16 +98,24 @@ function walk(node: unknown, visit: (node: Json, path: string) => void, path = '
   }
 }
 
-const SPEC = (DIRECTOR_ANSWER_SCHEMA.properties as Record<string, Json>).spec;
+const GENRE_SPEC = (GENRE_ANSWER_SCHEMA.properties as Record<string, Json>).spec;
 
 describe('director answer schema (strict mode)', () => {
-  it('is strict in every node: all keys required, no extras, a type or anyOf, no const/default/$ref', () => {
+  it('is strict in every node: all keys required, no extras, a type, anyOf or a bare $ref, no const/default', () => {
     const problems: string[] = [];
-    walk(DIRECTOR_ANSWER_SCHEMA, (node, path) => {
-      // Uzel schématu, ne mapa `properties` – ta nese jména polí.
-      if (path.endsWith('/properties')) return;
+    walk(GENRE_ANSWER_SCHEMA, (node, path) => {
+      // Uzel schématu, ne mapa `properties` ani `$defs` – ty nesou jména.
+      if (path.endsWith('/properties') || path === '/$defs') return;
+      // Přísný režim OpenAI i Groq: `$defs` jen v kořeni, `$ref` jen do nich a bez sourozenců.
+      if ('$ref' in node) {
+        if (Object.keys(node).length !== 1) problems.push(`${path}: $ref with siblings`);
+        const name = DEF_REF.exec(String(node.$ref))?.[1];
+        if (name === undefined || !(name in DEFS)) problems.push(`${path}: $ref ${String(node.$ref)} is not a root definition`);
+        return;
+      }
+      if ('$defs' in node && path !== '') problems.push(`${path}: $defs below the root`);
       if (node.type === undefined && node.anyOf === undefined) problems.push(`${path}: no type`);
-      for (const key of ['const', 'default', '$ref', '$defs', 'propertyNames']) if (key in node) problems.push(`${path}: ${key}`);
+      for (const key of ['const', 'default', 'propertyNames']) if (key in node) problems.push(`${path}: ${key}`);
       if (node.type === 'object') {
         if (node.additionalProperties !== false) problems.push(`${path}: additionalProperties`);
         const keys = Object.keys((node.properties as Json | undefined) ?? {});
@@ -112,47 +125,123 @@ describe('director answer schema (strict mode)', () => {
     expect(problems).toEqual([]);
   });
 
-  it.each([
-    ['collect_exit', collectExit],
-    ['chase_escape', chaseEscape],
-    ['switch_puzzle', switchPuzzle],
-    ['combat_lite', combatLite],
-    ['runner', runner],
-    ['steer', steer],
-    ['arena', arena],
-    ['shooter', shooter],
-    ['throw', throwGame],
-    ['duel', duel],
-  ])('accepts the %s template and unwraps it back to the same spec', (_name, fixture) => {
-    const read = readGameSpec(fixture);
-    if (!read.ok) throw new Error(read.issues.join('; '));
-    const spec = read.value;
-    const arcade = spec.control !== undefined && spec.control !== 'tap_go';
-    // Arkáda `verification` nepíše, dostane ji zpátky z `unwrapAnswer`.
-    const { verification, ...rest } = spec;
-    const answer = { plan: 'keep the template', spec: encode(SPEC, arcade ? rest : { ...spec, control: 'tap_go' }) };
-    expect(validate(DIRECTOR_ANSWER_SCHEMA, answer)).toEqual([]);
-    const back = readGameSpec(unwrapAnswer(answer));
-    if (!back.ok) throw new Error(back.issues.join('; '));
-    expect(back.value).toEqual(arcade ? { ...spec, verification: [{ id: 'wins', kind: 'reachability', assert: { runState: 'won' } }] } : spec);
-    if (arcade) expect(verification).toHaveLength(1);
+  // P36A T7: pravidla, jejich role a doplňky jsou ve všech žánrech stejné – schéma je nese jednou, žánr na ně odkazuje.
+  it('defines the rule grammar once in $defs and every genre refers to it', () => {
+    const text = JSON.stringify(GENRE_ANSWER_SCHEMA);
+    const variants = GENRE_SPEC.anyOf as Json[];
+    // Uzel pravidla `{id, verb, when, if, do}` a efekt `throwHeld` zná jen gramatika pravidel: jednou = gramatika je ve schématu jednou.
+    expect(text.split('"required":["id","verb","when","if","do"]').length - 1).toBe(1);
+    expect(text.split('"required":["throwHeld"]').length - 1).toBe(1);
+    expect(Object.keys(DEFS).sort()).toEqual(['ruleRoles', 'rules', 'things']);
+    for (const key of Object.keys(DEFS)) {
+      for (const variant of variants) expect((variant.properties as Record<string, Json>)[key]).toEqual({ anyOf: [{ $ref: `#/$defs/${key}` }, { type: 'null' }] });
+      expect(text.split(`"#/$defs/${key}"`).length - 1).toBe(variants.length);
+    }
+    expect(DEFS.rules).toMatchObject({ type: 'array', maxItems: expect.any(Number), items: { type: 'object', required: ['id', 'verb', 'when', 'if', 'do'] } });
   });
 
-  it('rejects what the capability table forbids', () => {
-    const read = readGameSpec(runner);
-    if (!read.ok) throw new Error('fixture');
-    const { verification: _v, ...rest } = read.value;
-    const ok = encode(SPEC, rest) as Json;
-    expect(validate(SPEC, ok)).toEqual([]);
-    // Běžec nehraje hazard_zone, mřížka nezná `controlParams`, arkáda nepíše `verification`.
-    expect(validate(SPEC, { ...ok, mechanics: [{ id: 'hazard_zone', params: { role: 'obstacle', effect: 'lose', pulse: null } }] })).not.toEqual([]);
-    expect(validate(SPEC, { ...ok, controlParams: { speed: 'warp' } })).not.toEqual([]);
-    expect(validate(SPEC, { ...ok, verification: [] })).not.toEqual([]);
+  it('turns the contact pair of a rule into an array of exactly two roles (strict mode has no tuples)', () => {
+    const contacts: Json[] = [];
+    walk(strictSchema(z.toJSONSchema(modelRulesSchema, { io: 'input', unrepresentable: 'any' }) as Json), (node, path) => {
+      if (path.endsWith('/properties/contact')) contacts.push(node);
+    });
+    expect(contacts.length).toBeGreaterThan(0);
+    for (const node of contacts) {
+      const pair = (Array.isArray(node.anyOf) ? (node.anyOf as Json[]).find((branch) => branch.type === 'array') : node) as Json;
+      expect(pair).toMatchObject({ type: 'array', minItems: 2, maxItems: 2 });
+      expect('prefixItems' in pair).toBe(false);
+      expect(validate(pair, ['player', 'coin'])).toEqual([]);
+      expect(validate(pair, ['player'])).not.toEqual([]);
+      expect(validate(pair, ['player', 'coin', 'door'])).not.toEqual([]);
+    }
   });
 
   it('codex gets the schema file only when the request carries one', () => {
     // Za `exec`, ne před ním: `codex --output-schema … exec` končí „unexpected argument“.
     expect(codexArgs('m', 'high', 'C:/tmp/x', true).join(' ')).toMatch(/^exec .*--output-schema \S*answer-schema\.json/);
     expect(codexArgs('m', 'high', 'C:/tmp/x')).not.toContain('--output-schema');
+  });
+});
+
+// P32B T4: nová hra je `GenreSpec`; hru skládá modul žánru, ne model.
+describe('director answer schema for a GenreSpec', () => {
+  const READY = Object.values(GENRE_MODULES).flatMap((module) => module.modes.filter((mode) => (module.availability as (mode: string) => string)(mode) === 'ready').map((mode) => `${module.id}.${mode}`));
+
+  it('offers exactly the ready modes of every genre, with the module param bounds', () => {
+    const offered = (GENRE_SPEC.anyOf as Json[]).flatMap((variant) => {
+      const properties = variant.properties as Record<string, Json>;
+      return (properties.mode.enum as string[]).map((mode) => `${(properties.genre.enum as string[])[0]}.${mode}`);
+    });
+    expect(offered.sort()).toEqual([...READY].sort());
+    const voyage = (GENRE_SPEC.anyOf as Json[]).find((variant) => ((variant.properties as Record<string, Json>).genre.enum as string[])[0] === 'voyage')!;
+    const lengthM = JSON.stringify((voyage.properties as Record<string, Json>).params);
+    expect(lengthM).toContain(`"minimum":${String(GENRE_MODULES.voyage.paramBounds.lengthM!.min)}`);
+    expect(lengthM).toContain(`"maximum":${String(GENRE_MODULES.voyage.paramBounds.lengthM!.max)}`);
+  });
+
+  it('reads a voyage answer with a pirate ship all the way to a GameSpec whose hero is a boat', () => {
+    const answer = {
+      plan: 'a ship race',
+      // Přísný režim chce každý klíč: parametry skutečné plavby (T5b) a pravidla (B-R5) jako null; počty plavba nečte, v její variantě nejsou.
+      spec: {
+        genre: 'voyage',
+        mode: 'race',
+        hero: 'pirate ship',
+        enemy: 'reef',
+        // P36A T8: chování nepřítele a parametry hloubky má každý žánr.
+        enemyMoves: null,
+        // P37A T3: činnost hrdiny rodiny slovesa.
+        heroAction: null,
+        collectible: null,
+        target: null,
+        setting: 'stormy sea',
+        palette: 'ocean',
+        params: { lengthM: null, topSpeed: null, gravity: null, lives: null, targetScore: null, timeLimit: null },
+        ruleRoles: null,
+        things: null,
+        rules: null,
+      },
+    };
+    expect(validate(GENRE_ANSWER_SCHEMA, answer)).toEqual([]);
+    const read = readGenreAnswer(answer);
+    if (!read.ok) throw new Error(read.detail);
+    expect(read.genre).toEqual({ genre: 'voyage', mode: 'race', hero: 'pirate ship', enemy: 'reef', setting: 'stormy sea', palette: 'ocean', params: {} });
+    expect(read.spec.genre?.id).toBe('voyage');
+    const hero = read.spec.roles.find((role) => role.kind === 'player')!;
+    expect(hero.label).toBe('pirate ship');
+    expect(heroClass(hero.label)).toBe('boat');
+  });
+
+  it('accepts the GenreSpec the draft writes for every golden sentence in a ready mode', () => {
+    let checked = 0;
+    for (const { prompt } of goldenPrompts()) {
+      const draft = draftGameSpecWithMeta(prompt);
+      if (draft.genre === null || !READY.includes(`${draft.genre.genre}.${draft.genre.mode}`)) continue;
+      const answer = { plan: 'keep', spec: encode(GENRE_SPEC, draft.genre) };
+      expect(validate(GENRE_ANSWER_SCHEMA, answer), prompt).toEqual([]);
+      // S větou jako v `director/index.ts`: cíl přenosu věty mimo hry (P37A T5) z GenreSpec sám nevyjde.
+      const read = readGenreAnswer(answer, GENRE_MODULES, prompt);
+      if (!read.ok) throw new Error(`${prompt}: ${read.detail}`);
+      expect(read.spec, prompt).toEqual(draft.spec);
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThan(10);
+  });
+
+  it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
+    const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
+    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', enemyMoves: null, heroAction: null, collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
+    expect(validate(GENRE_SPEC, ok)).toEqual([]);
+    // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
+    expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null } })).toEqual([]);
+    expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null, target: 2 } })).not.toEqual([]);
+    expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 99, collectible: null } })).not.toEqual([]);
+    expect(validate(GENRE_SPEC, { ...ok, mode: 'race' })).not.toEqual([]);
+    expect(validate(GENRE_SPEC, { ...ok, params: { seconds: 200 } })).not.toEqual([]);
+    const out = readGenreAnswer({ plan: 'x', spec: { ...ok, params: { seconds: 200 } } });
+    expect(out.ok ? null : out.reason).toBe('MALFORMED_SPEC');
+    const legacy = readGenreAnswer(steer);
+    expect(legacy.ok ? null : legacy.reason).toBe('MALFORMED_SPEC');
+    expect(readGenreAnswer({ plan: 'x', spec: { sim: {}, world: {} } })).toMatchObject({ ok: false, reason: 'WRONG_DOCUMENT' });
   });
 });

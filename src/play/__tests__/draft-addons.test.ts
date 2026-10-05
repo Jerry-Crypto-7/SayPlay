@@ -10,7 +10,8 @@ import { describe, expect, it } from 'vitest';
 
 import { arcadeWorldOf } from '../arcade/compile';
 import { verifyArcade } from '../arcade/verify';
-import { draftGameSpec } from '../draft';
+// P32B T2: doplňky ovládání nese jen šablona remixu uložených legacy her – zkouší se přes ni.
+import { legacyDraft } from './legacy-draft';
 import { pickControl } from '../draft/controls';
 
 interface DemandEntry {
@@ -52,13 +53,13 @@ describe('two verbs in the word draft', () => {
 
   it('drafts a spec with both mechanics that the bot still wins', () => {
     for (const sentence of ['jump and shoot the zombies', 'a runner collecting coins chased by a bear']) {
-      const spec = draftGameSpec(sentence, 7);
+      const spec = legacyDraft(sentence, 7);
       expect(spec.addons, sentence).toBeDefined();
       const built = arcadeWorldOf(spec, 7);
       if (!built.ok) throw new Error(built.issues.join('; '));
       expect(verifyArcade(built.world).publishEligible, sentence).toBe(true);
     }
-    expect(draftGameSpec('jump and shoot the zombies', 7).tutorial.controlsHint).toMatch(/Fire to shoot/);
+    expect(legacyDraft('jump and shoot the zombies', 7).tutorial.controlsHint).toMatch(/Fire to shoot/);
   });
 
   // Naměřeno 24. 9. 2026: 5 z 5 (s006, s010, s012, s029 sbírají, s014 honí).

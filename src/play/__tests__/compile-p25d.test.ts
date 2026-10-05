@@ -14,7 +14,8 @@ import { type Runtime, createRuntime, entityActive, step } from '@/sim/interpret
 import { readSlot, writeSlot } from '@/sim/state';
 
 import { compileGame, compileSim, greenStart, type SimCompilation, type SurfaceSim } from '../compile';
-import { draftGameSpec } from '../draft';
+// P32B T2: mřížka archetypů staví jen remix uložených legacy her – mechaniky se zkouší přes ni.
+import { legacyDraft } from './legacy-draft';
 import { verifyGame } from '../verify';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
@@ -116,14 +117,14 @@ describe('timer.phases – red light, green light (P25D T1)', () => {
       'five nights at freddys but in a school',
       'horror game where a creepy doll moves when u dont look',
     ]) {
-      const drafted = draftGameSpec(sentence);
+      const drafted = legacyDraft(sentence);
       expect(drafted.archetype, sentence).toBe('collect_exit');
       expect(drafted.mechanics.find((mechanic) => mechanic.id === 'timer')?.params.phases, sentence).toBeDefined();
       expect(drafted.verification.map((assertion) => assertion.id), sentence).toContain('moving_on_red_loses');
       expect(publishFailures(drafted, 1), sentence).toEqual([]);
     }
-    expect(draftGameSpec('horror game where a creepy doll moves when u dont look').roles.find((role) => role.id === 'watcher')?.label).toBe('creepy doll');
-    expect(draftGameSpec('red light green light like squid game').roles.find((role) => role.id === 'portal')?.label).toBe('finish line');
+    expect(legacyDraft('horror game where a creepy doll moves when u dont look').roles.find((role) => role.id === 'watcher')?.label).toBe('creepy doll');
+    expect(legacyDraft('red light green light like squid game').roles.find((role) => role.id === 'portal')?.label).toBe('finish line');
   });
 });
 
@@ -180,7 +181,7 @@ describe('hazard_zone.pulse.alternate – moving walls (P25D T3)', () => {
   });
 
   it('drafts s076 with moving walls, and the drafted game publishes', () => {
-    const drafted = draftGameSpec('a maze game where the walls move');
+    const drafted = legacyDraft('a maze game where the walls move');
     expect(drafted.mechanics.find((mechanic) => mechanic.id === 'hazard_zone')?.params.pulse).toMatchObject({ alternate: true });
     expect(drafted.verification.map((assertion) => assertion.id)).toContain('standing_wall_loses');
     expect(publishFailures(drafted, 1)).toEqual([]);
@@ -193,7 +194,7 @@ describe('smash and pop – defeat without enemies (P25D T4)', () => {
       ['destroy everything in a house with a hammer, smash simulator', 'vase'],
       ['satisfying game where you pop stuff', 'bubble'],
     ] as const) {
-      const drafted = draftGameSpec(sentence);
+      const drafted = legacyDraft(sentence);
       expect(drafted.archetype, sentence).toBe('combat_lite');
       expect(drafted.roles.find((role) => role.id === 'slime')?.label, sentence).toBe(label);
       expect(drafted.mechanics.map((mechanic) => mechanic.id), sentence).toEqual(['defeat']);
@@ -206,14 +207,14 @@ describe('smash and pop – defeat without enemies (P25D T4)', () => {
 
 describe('crossings – lily pads and a busy road (P25D T6)', () => {
   it('drafts s034 with still water around lily pads and s036 with cars switching lanes; stepping into either loses and both publish', () => {
-    const pond = draftGameSpec('hop on lily pads across a pond without falling in');
+    const pond = legacyDraft('hop on lily pads across a pond without falling in');
     expect(pond.archetype).toBe('hazard_crossing');
     expect(pond.roles.map((role) => role.label)).toEqual(['frog', 'deep water', 'lily pad', 'far bank']);
     expect(pond.mechanics.find((mechanic) => mechanic.id === 'hazard_zone')?.params.pulse).toBeUndefined();
     expect(pond.verification.map((assertion) => assertion.id)).toContain('falling_in_loses');
     expect(publishFailures(pond, 1)).toEqual([]);
 
-    const road = draftGameSpec('a chicken crossing an endless road like crossy road');
+    const road = legacyDraft('a chicken crossing an endless road like crossy road');
     expect(road.archetype).toBe('hazard_crossing');
     expect(road.roles.find((role) => role.id === 'lava')?.label).toBe('car');
     expect(road.mechanics.find((mechanic) => mechanic.id === 'hazard_zone')?.params.pulse).toMatchObject({ alternate: true });
@@ -230,7 +231,7 @@ describe('vague gentle sentences – calm, colourful, no enemies (P25D T7)', () 
       ['a cozy game', 'warm cookie'],
       ['something fun and colorful for my little sister', 'rainbow star'],
     ] as const) {
-      const drafted = draftGameSpec(sentence);
+      const drafted = legacyDraft(sentence);
       expect(drafted.archetype, sentence).toBe('collect_exit');
       expect(drafted.mechanics.filter((mechanic) => hostile.test(mechanic.id)), sentence).toEqual([]);
       expect(drafted.roles.find((role) => role.id === 'mushroom')?.label, sentence).toBe(item);
@@ -242,7 +243,7 @@ describe('vague gentle sentences – calm, colourful, no enemies (P25D T7)', () 
 
 describe('treating patients – orders renamed (P25D T5)', () => {
   it('drafts s169 as a vet clinic where the right treatment scores and the wrong one does not, and it publishes', () => {
-    const drafted = draftGameSpec('a vet clinic where you heal cute pets');
+    const drafted = legacyDraft('a vet clinic where you heal cute pets');
     expect(drafted.archetype).toBe('delivery');
     expect(drafted.roles.map((role) => role.label)).toEqual(['vet', 'medicine', 'bandage', 'sick pet']);
     expect(drafted.mechanics.find((mechanic) => mechanic.id === 'carry')?.params.menu).toEqual(['burger', 'fries']);
@@ -290,7 +291,7 @@ describe('collectible.hiddenIn – search the room (P25D T2)', () => {
     // šestnáct je skutečné maximum téhle cesty, ne libovolně zvolené číslo.
     for (const count of [12, 16]) {
       const sentence = `find the ${count} hidden objects in a messy bedroom`;
-      const drafted = draftGameSpec(sentence);
+      const drafted = legacyDraft(sentence);
       expect(drafted.mechanics.find((mechanic) => mechanic.id === 'collectible')?.params.count, sentence).toBe(count);
       expect(publishFailures(drafted, 1), sentence).toEqual([]);
     }
@@ -299,7 +300,7 @@ describe('collectible.hiddenIn – search the room (P25D T2)', () => {
   // Runtime páruje pool podle `id.startsWith(name)`, takže `mushroom_1` by
   // spolkl `mushroom_10`; adaptér to řeší pořadím a od deseti předmětů to platí.
   it('gives every hidden item its own pool, also past nine items', () => {
-    const drafted = draftGameSpec('find the 12 hidden objects in a messy bedroom');
+    const drafted = legacyDraft('find the 12 hidden objects in a messy bedroom');
     const { sim } = compiled(drafted, 1);
     const pools = Object.keys(sim.state.pool);
     expect(pools).toHaveLength(12);
@@ -314,17 +315,17 @@ describe('collectible.hiddenIn – search the room (P25D T2)', () => {
       'find the hidden objects in a messy bedroom',
       'explore underwater ruins as a little submarine',
     ]) {
-      const drafted = draftGameSpec(sentence);
+      const drafted = legacyDraft(sentence);
       expect(drafted.archetype, sentence).toBe('collect_exit');
       expect(drafted.mechanics.find((mechanic) => mechanic.id === 'collectible')?.params.hiddenIn, sentence).toBe('spot');
       expect(drafted.verification.map((assertion) => assertion.id), sentence).toContain('hidden_item_does_not_count');
       expect(publishFailures(drafted, 1), sentence).toEqual([]);
     }
     // Hide and seek je plížení; se skrýšemi navíc se nepublikovalo.
-    const hideAndSeek = draftGameSpec('hide and seek in a big house');
+    const hideAndSeek = legacyDraft('hide and seek in a big house');
     expect(hideAndSeek.mechanics.find((mechanic) => mechanic.id === 'collectible')?.params.hiddenIn).toBeUndefined();
     expect(publishFailures(hideAndSeek, 1)).toEqual([]);
-    const sea = draftGameSpec('explore underwater ruins as a little submarine');
+    const sea = legacyDraft('explore underwater ruins as a little submarine');
     expect([sea.roles.find((role) => role.id === 'mushroom')?.label, sea.roles.find((role) => role.id === 'portal')?.label]).toEqual(['relic', 'surface']);
   });
 });

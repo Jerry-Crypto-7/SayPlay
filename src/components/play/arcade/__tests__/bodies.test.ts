@@ -9,9 +9,10 @@ import { describe, expect, it } from 'vitest';
 import shooterFixture from '@/play/arcade/__fixtures__/shooter.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { BODY, BUTTON, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import { draftGameSpec } from '@/play/draft/draft';
 import { readGameSpec } from '@/play/spec';
 
-import { bodiesOf, bodiesStale } from '../bodies';
+import { bodiesOf, bodiesStale, drawsNothing } from '../bodies';
 import { TICK_MS, createArcadeSession } from '../session';
 
 const range = (() => {
@@ -50,5 +51,17 @@ describe('drawn bodies', () => {
     session.restart();
     expect(bodiesStale(grown, session)).toBe(true);
     expect(bodiesOf(session)).toHaveLength(start);
+  });
+
+  // Počítadlo komba (P36A T5) nese druh hrdiny: kreslené by stahovalo `player-lod1.glb`, které neexistuje (404 v konzoli).
+  it('the combo counter of a scored game draws nothing, every real body is drawn', () => {
+    const spec = draftGameSpec('a knight running and jumping over hurdles');
+    expect(spec.scoring).toBeDefined();
+    const built = arcadeWorldOf(spec, 1);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    const views = bodiesOf(createArcadeSession(built.world));
+    const hidden = views.filter(drawsNothing);
+    expect(hidden).toEqual([expect.objectContaining({ role: ROLE.thing, kind: 'player' })]);
+    expect(views.filter((view) => !drawsNothing(view)).map((view) => view.role)).toContain(ROLE.player);
   });
 });

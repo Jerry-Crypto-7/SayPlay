@@ -51,6 +51,8 @@ export default defineConfig({
   retries: 0,
   workers: 1,
   reporter: [['list']],
+  // Referenční snímky `toHaveScreenshot` (P32-0 T5) pod `e2e/__screenshots__/<cesta ze jména>`.
+  expect: { toHaveScreenshot: { pathTemplate: '{testDir}/__screenshots__/{arg}{ext}' } },
   use: {
     baseURL: target ?? LOCAL_URL,
     trace: 'off',
@@ -66,8 +68,14 @@ export default defineConfig({
     // na lokální server a certifikoval by `localhost` místo nasazení.
     {
       name: 'chromium',
-      testIgnore: /(webgpu-detect|deployed-smoke)\.spec\.ts/,
+      testIgnore: /(webgpu-detect|deployed-smoke|play-touch)\.spec\.ts/,
       use: { ...devices['Desktop Chrome'] },
+    },
+    // Telefon s dotykem (P36C T4): hry jen gesty, žádná klávesnice. Mimo `chromium`, ať dotyk nehraje desktop.
+    {
+      name: 'pixel7-touch',
+      testMatch: /play-touch\.spec\.ts/,
+      use: { ...devices['Pixel 7'], hasTouch: true },
     },
     /**
      * Stroj bez akcelerace (P11 T4). Nedědí `launchOptions` z `use` výš — ty

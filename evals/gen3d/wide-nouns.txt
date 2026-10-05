@@ -1,0 +1,143 @@
+# Čtvrtá dávka 28. 9. 2026: slova bez přesného modelu – mezery z vět (demand, fidelity, P30 dev) + obecný slovník
+# her (zvířata, postavy, fantasy, doprava, předměty). test-200 se nečetl. Neúspěšná slova 3. kola přejmenovaná.
+black hole
+frog
+karate fighter
+squirrel
+ninja
+yeti
+crane operator
+snowball
+goalkeeper
+cookie
+submarine
+witch
+hedgehog
+sloth
+grandpa
+mermaid
+jellyfish
+pearl
+pirate
+bear
+owl
+sumo wrestler
+ice igloo
+termite hill
+camp fire logs
+hay bale
+medical stretcher
+moon lander
+radar dish
+gravestone
+lion
+tiger
+gorilla
+polar bear
+wolf
+rabbit
+cow
+parrot
+eagle
+flying bat
+spider
+scorpion
+ant
+butterfly
+ladybug
+snail
+turtle
+whale
+dolphin
+crab
+lobster
+seahorse
+koala
+panda
+camel
+hippo
+rhino
+dinosaur
+t-rex
+unicorn
+phoenix
+griffin
+ogre
+elf
+fairy
+werewolf
+mummy
+archer
+viking
+samurai
+cyborg
+superhero
+villain
+firefighter
+doctor
+nurse
+farmer
+scientist
+detective
+thief
+clown
+magician
+baby
+student
+bulldozer
+helicopter
+sailboat
+tram
+bicycle
+motorboat
+book
+scroll
+backpack
+umbrella
+camera
+smartphone
+television
+violin
+trumpet
+microphone
+baseball bat
+hockey stick
+boxing glove
+kite
+yo-yo
+dice
+chess piece
+cheese
+lollipop
+candy
+strawberry
+pineapple
+teapot
+bookshelf
+fountain
+water well
+treehouse
+pile of bones
+volcano
+iceberg
+snowman
+sunflower
+rose
+boulder
+crystal cluster
+planet
+tornado
+lightning bolt
+mailbox
+trampoline
+ladder
+anchor
+compass
+telescope
+microscope
+magnet
+lightbulb
+battery pack
+cog gear
+rake
+wheelbarrow

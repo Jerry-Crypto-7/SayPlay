@@ -92,6 +92,7 @@ describe('bez povelu běží všechno', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
   });
 
@@ -107,6 +108,7 @@ describe('bez povelu běží všechno', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
   });
 
@@ -124,6 +126,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
   });
 
@@ -135,6 +138,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
   });
 
@@ -146,6 +150,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
   });
 
@@ -157,6 +162,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
   });
 
@@ -168,11 +174,24 @@ describe('každá vrstva se vypíná zvlášť', () => {
       snapshots: true,
       feed: true,
       replay: true,
+      env: true,
     });
   });
 
-  it('žádné jiné jméno než tahle pět neexistuje', () => {
-    expect([...KILL_SWITCHES]).toEqual(['upstream', 'sessions', 'refine', 'feed', 'all']);
+  it('žádné jiné jméno než tahle šest neexistuje', () => {
+    expect([...KILL_SWITCHES]).toEqual(['upstream', 'sessions', 'refine', 'feed', 'env', 'all']);
+  });
+
+  it('env vypne jen generování panoramat, nic jiného', () => {
+    expect(killStateFrom({ off: ['env'] })).toEqual({
+      upstream: false,
+      sessions: false,
+      refine: false,
+      snapshots: false,
+      feed: false,
+      replay: false,
+      env: true,
+    });
   });
 
   it('feed vypne jen feed PLAY, čtení her i ostatní dveře zůstanou', () => {
@@ -183,6 +202,7 @@ describe('každá vrstva se vypíná zvlášť', () => {
       snapshots: false,
       feed: true,
       replay: false,
+      env: false,
     });
   });
 });
@@ -295,6 +315,7 @@ describe('ovládací soubor je jeden, ne dva', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
   });
 
@@ -318,6 +339,7 @@ describe('ovládací soubor je jeden, ne dva', () => {
       snapshots: false,
       feed: false,
       replay: false,
+      env: false,
     });
     const cap = spendCapFromEnv(variables);
     expect(cap.snapshot().capUsd, 'poznámka pohnula stropem').toBe(DEFAULT_CAP_USD);
@@ -421,6 +443,7 @@ describe('povel jde napsat i tam, kde není disk', () => {
       snapshots: true,
       feed: true,
       replay: true,
+      env: true,
     });
     // Klíč leží vedle knihy, pod toutéž předponou — operátor vidí rozpočet
     // i vypínače na jednom místě.

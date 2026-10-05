@@ -19,11 +19,14 @@ import { Vector3 } from 'three';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
+import type { HeroAction } from '@/play/spec';
 import { playTone } from '@/play/audio';
 
+import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
+import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
-import { initialBody } from '../timing/TimingScene';
+import { type BodyModel, initialBody } from '../timing/TimingScene';
 
 const lerp = (from: number, to: number, alpha: number): number => from + (to - from) * alpha;
 
@@ -33,16 +36,39 @@ const LANE_OF = (x: number): number => Math.round(x / RHYTHM.laneW + (RHYTHM.lan
 const FLASH_TICKS = 12;
 const TRACK_M = 60;
 
-export function RhythmScene({ session, look: scene }: { readonly session: ArcadeSession; readonly look: Look }) {
+/** Hranice mezi pruhy (0|1, 1|2, 2|3) v `x` noty, jednotky jádra; kreslí se zrcadlově (`-x`). */
+const LANE_EDGES = Array.from({ length: RHYTHM.lanes - 1 }, (_, i) => (i + 1 - RHYTHM.lanes / 2) * RHYTHM.laneW);
+
+/**
+ * `noteModel` (P30B T4): nota z popisku role `note` („lily pads“) na svítící desce v barvě pruhu.
+ * `surface` (P36A T11): plocha, které scéna zapíše hranice pruhů u lišty (`data-lane-edges`) – z nich ťuk pozná dráhu.
+ */
+export function RhythmScene({
+  session,
+  look: scene,
+  noteModel,
+  surface,
+  ghost,
+}: {
+  readonly session: ArcadeSession;
+  readonly look: Look;
+  readonly noteModel?: BodyModel;
+  readonly surface?: React.RefObject<HTMLDivElement | null>;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
+}) {
   const world = session.world;
   const count = world.initial[HEADER.bodyCount] as number;
   const notes = useMemo(() => Array.from({ length: count - 1 }, (_, i) => initialBody(world, i + 1)), [world, count]);
   const bar = initialBody(world, 0);
+  // Duch stojí vedle lišty (hráčovo `z` jsou noty, ne dráha).
+  const ghostSpot = useMemo(() => besideHero(0, 0, bar.w / 2, 'x'), [bar.w]);
   const groups = useRef<(Group | null)[]>([]);
   const barMaterial = useRef<MeshStandardMaterial | null>(null);
   const flash = useRef<{ tick: number; hit: boolean } | null>(null);
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const look = useMemo(() => new Vector3(0, 0, 9), []);
+  const edge = useMemo(() => new Vector3(), []);
   const hitWindow = (world.control.params as { window?: number }).window ?? RHYTHM.window;
   const reach = hitWindow * RHYTHM.noteSpeed;
 
@@ -83,19 +109,22 @@ export function RhythmScene({ session, look: scene }: { readonly session: Arcade
     const back = Math.max(4.5, (bar.w + 0.8) / (2 * tan * camera.aspect) - 1);
     camera.position.set(0, 3.2 * (back / 4.5), -back);
     camera.lookAt(look);
+    const host = surface?.current;
+    if (host != null) {
+      camera.updateMatrixWorld();
+      const edges = LANE_EDGES.map((x) => ((edge.set(-x / UNIT, 0, 0).project(camera).x + 1) / 2).toFixed(4)).join(',');
+      if (host.dataset.laneEdges !== edges) host.dataset.laneEdges = edges;
+    }
   });
 
   const laneW = RHYTHM.laneW / UNIT;
   return (
     <>
-      <color attach="background" args={['#0f172a']} />
-      <fog attach="fog" args={['#0f172a', 20, TRACK_M]} />
-      <hemisphereLight args={['#e0f2fe', '#1e293b', 1.1]} />
-      <directionalLight position={[2, 10, -6]} intensity={1.2} />
+      {/* Obloha, mlha, světla a stíny jsou rigu (`look/rig/StyleRig.tsx`, P32A T10); tma zůstává jen pod pruhy. */}
       {/* Prostředí (P27A T4): zem sady kolem pruhů a kulisy po stranách; pod pruhy zůstává tma, ať svítící noty čtou. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, TRACK_M / 2 - 2]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.06, TRACK_M / 2 - 2]} renderOrder={UNDER_PANORAMA}>
         <planeGeometry args={[60, TRACK_M + 10]} />
-        <meshStandardMaterial color={scene.ground} roughness={1} />
+        <meshStandardMaterial color={scene.ground} roughness={1} depthWrite={false} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.04, TRACK_M / 2 - 2]}>
         <planeGeometry args={[RHYTHM.lanes * laneW + 0.4, TRACK_M]} />
@@ -113,14 +142,26 @@ export function RhythmScene({ session, look: scene }: { readonly session: Arcade
         <boxGeometry args={[bar.w, bar.h, bar.d]} />
         <meshStandardMaterial ref={barMaterial} color="#e2e8f0" />
       </mesh>
+      {/* Slot ducha (P37-0 T3) vedle lišty. */}
+      <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
       {notes.map((note, i) => {
         const lane = LANE_OF(note.x * UNIT);
         return (
-          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]} userData={{ frame: 'target' }}>
-            <mesh position={[0, note.h / 2, 0]}>
-              <boxGeometry args={[note.w, note.h, note.d]} />
-              <meshStandardMaterial color={LANE_COLORS[lane] ?? '#f59e0b'} emissive={LANE_COLORS[lane] ?? '#f59e0b'} emissiveIntensity={0.35} />
-            </mesh>
+          <group key={i} ref={(group) => { groups.current[i] = group; }} position={[-note.x, 0, note.z]} userData={{ frame: 'target', item: 'note' }}>
+            {noteModel !== undefined ? (
+              <>
+                <mesh position={[0, 0.02, 0]}>
+                  <boxGeometry args={[note.w, 0.04, note.d]} />
+                  <meshStandardMaterial color={LANE_COLORS[lane] ?? '#f59e0b'} emissive={LANE_COLORS[lane] ?? '#f59e0b'} emissiveIntensity={0.35} />
+                </mesh>
+                <group position={[0, 0.04, 0]}>{noteModel(note.w, note.h, note.d)}</group>
+              </>
+            ) : (
+              <mesh position={[0, note.h / 2, 0]}>
+                <boxGeometry args={[note.w, note.h, note.d]} />
+                <meshStandardMaterial color={LANE_COLORS[lane] ?? '#f59e0b'} emissive={LANE_COLORS[lane] ?? '#f59e0b'} emissiveIntensity={0.35} />
+              </mesh>
+            )}
           </group>
         );
       })}

@@ -306,3 +306,20 @@ def test_generated_model_is_cached_and_second_request_skips_the_gpu(tmp_path):
     assert body["status"] == "done"
     assert tmp_path / "cache" / body["glb"] == glb
     assert comfy.calls == calls
+
+
+def test_seed_reaches_the_image_graph(tmp_path):
+    """Opakování dávky na jiném semínku (P37D) má smysl, jen když semínko změní obrázek."""
+    graphs: list = []
+
+    class Recording(FakeComfy):
+        def run(self, graph: dict) -> dict:
+            graphs.append(graph)
+            return super().run(graph)
+
+    with pytest.raises(ComfyError):
+        server.generate(
+            Recording(crash_on_mesh=True), "frog", tmp_path / "frog", seed=7
+        )
+    node, field = server.IMAGE_SEED[server.CONFIG["image_model"]]
+    assert graphs[0][node]["inputs"][field] == 7

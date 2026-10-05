@@ -205,31 +205,31 @@ describe('[4] písemný popis', () => {
 
   it('selže bez sémantického omezení i s úplnou legacy garancí', async () => {
     const dir = repo();
-    rewriteDescription(dir, description().replace('This acknowledgement does not certify semantic correctness.', GUARANTEE));
+    rewriteDescription(dir, description().replace('A robot win does not prove that the game matches the sentence.', GUARANTEE));
     const results = await check(dir);
     expect(failed(results)).toEqual([4]);
     expect(detailOf(results, 4)).toContain('semantic-limit');
   });
-  // Náhrada uvařeným světem je to, co porotce uvidí nejčastěji, a zároveň to,
-  // co se dá z popisu nejsnáz vynechat: popis bez té věty čte líp a tvrdí
-  // něco, co produkt neumí. Proto má vlastní případ, ne jen položku v seznamu.
-  it('selže, když popis zamlčí náhradu nejbližším uvařeným světem', async () => {
+  // Slovní draft bez AI verze je to, co porotce uvidí při výpadku modelu, a
+  // zároveň to, co se dá z popisu nejsnáz vynechat: popis bez té věty čte líp
+  // a tvrdí něco, co produkt neumí. Proto má vlastní případ.
+  it('selže, když popis zamlčí, že bez AI zůstane hra slovním draftem', async () => {
     const dir = repo();
     rewriteDescription(dir, description().replace(
-      'A sentence the store does not recognise is answered by the nearest authored world, and the product labels that substitution.',
-      'Every sentence is answered by a freshly generated world.',
+      'The first version is a word draft. When the AI director is unavailable the game stays the draft and the page says so.',
+      'Every game is designed by the AI.',
     ));
     const results = await check(dir);
     expect(failed(results)).toEqual([4]);
-    expect(detailOf(results, 4)).toContain('authored-fallback');
+    expect(detailOf(results, 4)).toContain('draft-fallback');
   });
 
-  it('selže, když popis zamlčí, že přetáčení času není na porotcově cestě', async () => {
+  it('selže, když popis zamlčí, jak často vizuální porota hru poznala', async () => {
     const dir = repo();
-    rewriteDescription(dir, description().replace('Time rewind and branching futures are not on the judge path.', ''));
+    rewriteDescription(dir, description().replace('A vision judge recognised the hero in some screenshots.', ''));
     const results = await check(dir);
     expect(failed(results)).toEqual([4]);
-    expect(detailOf(results, 4)).toContain('no-time-rewind');
+    expect(detailOf(results, 4)).toContain('recognisability');
   });
 
   it('současný popis nevyžaduje legacy DESIGN-BOOK', async () => {

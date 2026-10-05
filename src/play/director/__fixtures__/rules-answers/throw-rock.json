@@ -1,0 +1,23 @@
+{
+  "sentence": "pick up a round rock and throw it at the old bronze bell",
+  "answer": {
+    "plan": "Picking and throwing a held rock are verbs no control plays; rules add them on move_free.",
+    "control": "move_free",
+    "addons": [],
+    "look": null,
+    "setting": "mountain meadow with an old bell",
+    "title": "Bell Ringer",
+    "labels": [{ "role": "player", "label": "shepherd" }],
+    "goal": "Throw the rock at the bell.",
+    "ruleRoles": [
+      { "id": "rock", "kind": "item", "label": "round rock", "count": null },
+      { "id": "bell", "kind": "target", "label": "bronze bell", "count": null }
+    ],
+    "things": [],
+    "rules": [
+      { "id": "pick_rock", "verb": "pick", "when": { "contact": ["player", "rock"] }, "if": [{ "notHolding": true }], "do": [{ "grab": "other" }] },
+      { "id": "throw_rock", "verb": "throw", "when": { "press": "action" }, "if": [{ "holding": "rock" }], "do": [{ "throwHeld": true }] },
+      { "id": "ring", "verb": "ring", "when": { "contact": ["rock", "bell"] }, "if": null, "do": [{ "score": 1 }, { "win": true }] }
+    ]
+  }
+}

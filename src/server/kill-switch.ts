@@ -38,6 +38,12 @@
  * strop platí i tam; nedojde tam **povel stop**. Kdo za incidentu vypíná, musí
  * proto stará nasazení zrušit, ne se spolehnout na to, že je povel umlčí.
  *
+ * ⚠ **Nové jméno páky je pro starší build překlep** (P29C, páka `env`). Build
+ * z doby před jejím zavedením zná `env` jako neznámé jméno a podle tabulky níž
+ * vypne upstream, relace i refine. `off: ["env"]` tedy během rolloveru nebo na
+ * starém preview zastaví i placenou práci – kdo chce vypnout jen panoramata,
+ * ať nejdřív ověří, že starší nasazení neběží.
+ *
  * ⚠ **Přidat `off` do existujícího souboru není vždy no-op — od
  * `T30-capsilence`.** Soubor, který nese `enabled` nebo `callCap` a `capUsd` ne,
  * je pro strop rozbitý, takže `{"enabled":true}` + přidané `off` skončí
@@ -86,7 +92,7 @@ import { readControl } from './control-file';
  * Jména, která smí stát v `off`. `all` je zkratka za všechna ostatní **plus
  * snapshoty** — je to „vypni provoz", ne „vypni tři věci".
  */
-export const KILL_SWITCHES = ['upstream', 'sessions', 'refine', 'feed', 'all'] as const;
+export const KILL_SWITCHES = ['upstream', 'sessions', 'refine', 'feed', 'env', 'all'] as const;
 
 export type KillSwitch = (typeof KILL_SWITCHES)[number];
 
@@ -140,6 +146,13 @@ export interface KillState {
    * a kdo by mu příště měnil pravidlo, změnil by mlčky i tyhle dveře.
    */
   readonly replay: boolean;
+  /**
+   * Generování vlastních panoramat na lokální kartě (`/api/play/games/:id/env`
+   * a založení úlohy při publikaci, P29C). Vypnuté = každá hra má panorama
+   * z knihovny, služba se nevolá. Neplatí se penězi, jen sdílenou GPU, takže
+   * rozbitý vypínač ho nechá běžet jako čtení; vypne ho `env` nebo `all`.
+   */
+  readonly env: boolean;
 }
 
 const NOTHING_OFF: KillState = {
@@ -149,6 +162,7 @@ const NOTHING_OFF: KillState = {
   snapshots: false,
   feed: false,
   replay: false,
+  env: false,
 };
 
 /** Rozbitý vypínač: placené dveře stojí, čtení běží. Viz hlavička. */
@@ -159,6 +173,7 @@ const PAID_OFF: KillState = {
   snapshots: false,
   feed: false,
   replay: false,
+  env: false,
 };
 
 const EVERYTHING_OFF: KillState = {
@@ -168,6 +183,7 @@ const EVERYTHING_OFF: KillState = {
   snapshots: true,
   feed: true,
   replay: true,
+  env: true,
 };
 
 function isSwitch(name: unknown): name is KillSwitch {
@@ -193,6 +209,7 @@ export function killStateFrom(value: Record<string, unknown>): KillState {
     snapshots: false,
     feed: named.has('feed'),
     replay: false,
+    env: named.has('env'),
   };
 }
 

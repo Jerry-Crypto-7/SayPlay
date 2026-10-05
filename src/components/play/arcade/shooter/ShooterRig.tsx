@@ -16,15 +16,30 @@ import { type Group, type PerspectiveCamera, Plane, Raycaster, Vector2, Vector3 
 
 import { BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { SHOOTER, aimAt, aimVelocity } from '@/play/arcade/pieces/shooter';
+import type { HeroAction } from '@/play/spec';
 
+import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
 
 const MUZZLE_Y = SHOOTER.muzzleY / UNIT;
 const RETICLE_M = 20;
 const FIRE_KEYS = new Set([' ', 'arrowup', 'w']);
+/** Značka pro `ShadowFlags` rigu: síť stín nevrhá ani nepřijímá. */
+const AID = { rigShadow: 'none' } as const;
 
-export function ShooterRig({ session, surface, enabled }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly enabled: boolean }) {
+export function ShooterRig({
+  session,
+  surface,
+  enabled,
+  ghost,
+}: {
+  readonly session: ArcadeSession;
+  readonly surface: React.RefObject<HTMLDivElement | null>;
+  readonly enabled: boolean;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
+}) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const reticle = useRef<Group | null>(null);
   const look = useMemo(() => new Vector3(), []);
@@ -137,27 +152,32 @@ export function ShooterRig({ session, surface, enabled }: { readonly session: Ar
     };
   }, [session, surface, camera, enabled]);
 
-  // Zaměřovač: průsvitný paprsek z hlavně a kříž s kroužkem ve 20 m.
+  // Zaměřovač: průsvitný paprsek z hlavně a kříž s kroužkem ve 20 m. Je to pomůcka, ne věc
+  // ve scéně: mlha rigu ho nezakryje a stín nevrhá – kroužek na zemi by vypadal jako terč (P32A T10).
   return (
-    <group ref={reticle}>
-      <mesh position={[0, 0, RETICLE_M / 2]}>
-        <boxGeometry args={[0.03, 0.03, RETICLE_M]} />
-        <meshBasicMaterial color="#ef4444" transparent opacity={0.45} />
-      </mesh>
-      <group position={[0, 0, RETICLE_M]}>
-        <mesh>
-          <torusGeometry args={[0.6, 0.06, 8, 24]} />
-          <meshBasicMaterial color="#ef4444" />
+    <>
+      {/* Slot ducha (P37-0 T3) vedle zaměřovače, ne v něm – skupina zaměřovače se hýbe s mířením. */}
+      <GhostSlot ghost={ghost} session={session} />
+      <group ref={reticle}>
+        <mesh position={[0, 0, RETICLE_M / 2]} userData={AID}>
+          <boxGeometry args={[0.03, 0.03, RETICLE_M]} />
+          <meshBasicMaterial color="#ef4444" transparent opacity={0.45} fog={false} />
         </mesh>
-        <mesh>
-          <boxGeometry args={[1.6, 0.06, 0.06]} />
-          <meshBasicMaterial color="#ef4444" />
-        </mesh>
-        <mesh>
-          <boxGeometry args={[0.06, 1.6, 0.06]} />
-          <meshBasicMaterial color="#ef4444" />
-        </mesh>
+        <group position={[0, 0, RETICLE_M]}>
+          <mesh userData={AID}>
+            <torusGeometry args={[0.6, 0.06, 8, 24]} />
+            <meshBasicMaterial color="#ef4444" fog={false} />
+          </mesh>
+          <mesh userData={AID}>
+            <boxGeometry args={[1.6, 0.06, 0.06]} />
+            <meshBasicMaterial color="#ef4444" fog={false} />
+          </mesh>
+          <mesh userData={AID}>
+            <boxGeometry args={[0.06, 1.6, 0.06]} />
+            <meshBasicMaterial color="#ef4444" fog={false} />
+          </mesh>
+        </group>
       </group>
-    </group>
+    </>
   );
 }

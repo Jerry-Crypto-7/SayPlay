@@ -115,8 +115,8 @@ function writeRegistry(dir: string, registry: Registry): void {
  * `--sync` a pak doplnění toho, co odvodit nejde: `reviewNote` u copyleftu a
  * ruční `api` položka. Vrací zelený strom.
  */
-function makeGreenRepo(): string {
-  const dir = makeRepo();
+function makeGreenRepo(lockExtra: Record<string, unknown> = {}): string {
+  const dir = makeRepo(lockExtra);
   run(LICENSE_GATE, dir, ['--sync']);
 
   const registry = readRegistry(dir);
@@ -1268,6 +1268,39 @@ describe('license-gate: pokrytí (kontroly 3 a 5)', () => {
     expect(failedChecks(out)).toEqual([5]);
     expect(out).toContain('2606:4700::1111');
     expect(out).not.toContain('nedá se rozparsovat');
+  });
+});
+
+describe('license-gate: licence podle RULES.md §4 (kontrola 2)', () => {
+  it('Zlib projde bez posouzení a --sync mu dopíše povinné notices', () => {
+    // `postprocessing` (P32 T2) je Zlib; RULES.md §4 ho povoluje výslovně.
+    const dir = makeGreenRepo({
+      'node_modules/zlib-thing': { version: '6.39.5', license: 'Zlib', resolved: 'https://r.io/zlib-thing.tgz' },
+    });
+
+    const { code, out } = run(LICENSE_GATE, dir);
+    expect(failedChecks(out)).toEqual([]);
+    expect(code).toBe(0);
+    const entry = readRegistry(dir).entries.find((item) => item.name === 'zlib-thing@6.39.5');
+    expect(entry?.requiredNotices).toEqual(expect.arrayContaining([expect.stringMatching(/označení změn/)]));
+  });
+
+  it('nedeklarovanou licenci převezme jen u přesně prověřené verze balíčku', () => {
+    // `webgl-constants` licenci v package.json nemá, soubor LICENSE v balíčku je MIT.
+    const reviewed = makeGreenRepo({
+      'node_modules/webgl-constants': { version: '1.1.1', resolved: 'https://r.io/webgl-constants.tgz' },
+    });
+    expect(failedChecks(run(LICENSE_GATE, reviewed).out)).toEqual([]);
+    expect(readRegistry(reviewed).entries.find((item) => item.name === 'webgl-constants@1.1.1')?.license).toBe('MIT');
+
+    // Nová verze musí projít novým čtením LICENSE – záznam za ni nerozhoduje.
+    const bumped = makeGreenRepo({
+      'node_modules/webgl-constants': { version: '1.1.2', resolved: 'https://r.io/webgl-constants.tgz' },
+    });
+    const { code, out } = run(LICENSE_GATE, bumped);
+    expect(failedChecks(out)).toContain(2);
+    expect(out).toContain('webgl-constants@1.1.2: licence není deklarovaná');
+    expect(code).toBe(1);
   });
 });
 

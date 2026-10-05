@@ -9,7 +9,7 @@ import platformFixture from '@/play/arcade/__fixtures__/platform.json';
 import rhythmFixture from '@/play/arcade/__fixtures__/rhythm.json';
 import runnerFixture from '@/play/arcade/__fixtures__/runner.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { AXIS_MAX, type ArcadeWorld, BUTTON } from '@/play/arcade/contract';
+import { ARCADE_LIMITS, AXIS_MAX, type ArcadeWorld, BUTTON } from '@/play/arcade/contract';
 import { hashArcade } from '@/play/arcade/kernel';
 import { readGameSpec } from '@/play/spec';
 
@@ -61,6 +61,20 @@ function run(session: ArcadeSession, withPauses: boolean): void {
   }
 }
 
+/** Záznam robota tik po tiku cestou klávesnice, až do konce – jako `handPlay` sondy v `ArcadePlay.tsx`. */
+function byHand(session: ArcadeSession): void {
+  const inputs = session.botInputs();
+  let next = 0;
+  while (session.snapshot().runState === 'running' && session.snapshot().tick < ARCADE_LIMITS.maxTicks) {
+    const tick = session.snapshot().tick;
+    while (next < inputs.length && inputs[next]!.tick < tick) next += 1;
+    const event = inputs[next]?.tick === tick ? inputs[next] : undefined;
+    session.hold(event?.axis ?? 0);
+    session.press(event?.buttons ?? 0);
+    session.stepOnce();
+  }
+}
+
 describe('arcade session pause (P27B T3)', () => {
   it.each([
     ['runner', runnerFixture, {}],
@@ -104,5 +118,29 @@ describe('arcade session pause (P27B T3)', () => {
     session.restart();
     session.advance(TICK_MS * 5);
     expect(session.snapshot().tick).toBe(0);
+  });
+
+  // P37-0 R2: druhý `handPlay` sondy po restartu skončil jinak (e2e `p32-split`, `p37-seams`).
+  // Restart vrací stav celý; jinak hrál proto, že relace stála v pauze – od karty pauzy
+  // (P34) ji klávesa po skryté záložce neprobudí, stisky se zahodí a `stepOnce` tiká dál.
+  it('the bot played by hand after a restart ends on the same hash as the first run', () => {
+    const session = createArcadeSession(worldOf(runnerFixture));
+    byHand(session);
+    const first = { ...session.snapshot(), hash: hashArcade(session.state()), inputs: [...session.inputs()] };
+    expect(first.runState).toBe('won');
+    session.restart();
+    expect(session.snapshot()).toMatchObject({ tick: 0, runState: 'running' });
+    byHand(session);
+    expect({ ...session.snapshot(), hash: hashArcade(session.state()), inputs: [...session.inputs()] }).toEqual(first);
+  });
+
+  it('a paused session drops the hand-played presses while stepOnce still ticks', () => {
+    const session = createArcadeSession(worldOf(runnerFixture));
+    session.pause();
+    session.restart();
+    byHand(session);
+    expect(session.inputs()).toEqual([]);
+    expect(session.snapshot()).toMatchObject({ runState: 'lost', score: 0 });
+    expect(session.snapshot().tick).toBeGreaterThan(0);
   });
 });

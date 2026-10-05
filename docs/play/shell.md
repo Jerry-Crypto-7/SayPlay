@@ -45,10 +45,16 @@ podruhé **200** téhož tvaru (`versionId` je hash obsahu – čte se dřív, n
 Tytéž brány jako u zápisu (vypínač čte páku `snapshots`, kterou vypne jedině `all`;
 strop frekvence sdílí dveře `play`). `id` musí odpovídat `/^[a-f0-9]{8,64}$/`; jinak i pro neznámé id **404** `NOT_FOUND` –
 táž odpověď, ať se z rozdílu nedá nic vyčíst. **200**
-`{ version, spec, blueprint, report, children: string[], lineage: GameVersion[] }`
+`{ version, spec, blueprint, report, children: string[], lineage: GameVersion[], bestDare: { dareId, score, ticks } | null }`
 (`lineage` od kořene k listu, nejvýš 32 nejnovějších – uložený při publikaci, ne počítaný
-chůzí po rodičích; jeden `GET` = tři příkazy úložiště). `cache-control: public, max-age=0, s-maxage=60`
-– verze je neměnná, `children` může být na hraně o minutu pozadu.
+chůzí po rodičích; `bestDare` = „duch nejlepšího“, P37C T2: ověřená výzva s uloženým během, nejvyšší skóre, při shodě
+kratší čas – „schodiště“ v seřazené množině `play:best:<id>` (hodnocení) a `play:best:<id>:at` (čas zápisu běhu):
+nový běh vyhodí všechny horší, protože vyprší poslední, a běhy starší než 30 dní odejdou; nad stropem 8 odejde
+nejstarší. Zápis je jedna transakce `/multi-exec`, takže souběžné zápisy nechají lepší a žádná množina nezůstane bez
+expirace. Do schodiště vstoupí jen běh zapsaný právě teď – znovu poslaný starší ne. Čtení vezme nejvyššího, jehož běh
+ještě leží; hra tak nezůstane bez ducha, dokud nějaký leží; množina žije 30 dní od posledního zápisu; jeden `GET` =
+aspoň pět příkazů úložiště). `cache-control: public, max-age=0, s-maxage=60`
+– verze je neměnná, `children` a `bestDare` můžou být na hraně o minutu pozadu.
 
 Velikost odpovědi nad fixturovými světy: 5–8 kB blueprintu (změřeno nad
 `authored-worlds.json`, T1) – hluboko pod 500 kB, blueprint jde klientovi celý.
@@ -65,15 +71,55 @@ z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`.
 `twist` přidá mechaniku s rolí a keypointem, `swap_enemy` jiný nepřítel (bez něj `harder`),
 `reskin` jen `theme`, titul a `label`y.
 
+### `POST /api/play/games/:id/dare` – výzva Dare (P36B T5)
+
+Tělo: `{ inputs: number[], patches?: { tick, patch }[] }`. `inputs` jsou běhy vstupů zhuštěné po čtveřicích
+`[mezera, délka, tlačítka, osa]` (`packInputs` v `src/play/score/dare.ts` – držená osa je jedna čtveřice, nejhlučnější
+běh 90 s se vejde pod 64 kB), `patches` živé změny přijaté za běhu (`LiveEntry`, nejvýš 32). Server běh přehraje na uložené
+arkádové hře (`scoredReplay`, každá změna projde v tiku, kdy padne, `patchProblem`) a uloží `play:dare:<dareId>`
+`{ dareId, versionId, score, ticks, hash, liveChanges, createdAt, replay? }` s expirací hry (`liveChanges` = kolik živých změn běh
+použil; skóre pak patří změněné hře). `replay` (P37C T1) = `{ v: 1, inputs, patches }`: vstupy a změny, které přehrání
+opravdu spotřebovalo, pro ducha. Leží pod vlastním klíčem `play:ghost:<dareId>` s expirací 30 dní; běh nad 32 kB
+(`MAX_GHOST_BYTES`), nad 10 duchů za den od jednoho volajícího nebo nad denním stropem duchů (`PLAY_GHOST_DAILY_CAP`,
+výchozí 150) se neuloží – výzva platí, jen ducha nemá. Týž běh odeslaný znovu ducha doplní, když chybí. **Skóre, čas ani hash z těla se nečtou** – pole navíc se zahodí, neodmítnou.
+`dareId` = prvních 32 hex SHA-256 z (hra, výsledek přehrání – hash konce, tik, skóre – a změny před koncem běhu
+seřazené i uvnitř tiku), ne z poslaných vstupů: týž běh podruhé – i s no-op vstupem, se vstupem po konci nebo
+s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
+`{ dareId, score, ticks }`, `cache-control: no-store`.
+
+| Krok | Kód | Stav |
+|---|---|---|
+| vypínač, identita, strop frekvence (dveře `play`, jako publikace) | `DISABLED` / `OWNER_IDENTITY_*` / `TOO_MANY_REQUESTS` | 503 / 403 / 429 |
+| vlastní okno výzev `play/dare`: 1 za 10 s na volajícího (2 na skupinu /64; přehrání, které nevyhrálo, skupině utratí zbytek okna), 10 za 10 s na instanci a nejvýš 2 přehrání v každé klouzavé sekundě (pak `retry-after: 1`) – výzva přehraje celý běh, až ~250 ms CPU (`MAX_DARE_REQUESTS_PER_WINDOW`, `MAX_DARE_REPLAYS_PER_SECOND` v `src/server/rate-limit.ts`) | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
+| id bez tvaru nebo neznámá hra | `NOT_FOUND` | 404 |
+| tělo nad 64 kB / pozdě / souběh čtení | `BODY_TOO_LARGE` / `BODY_TIMEOUT` / `TOO_MANY_BODY_READS` | 413 / 408 / 429 |
+| tvar: vstupy nejsou čtveřice celých čísel, cizí tlačítka, osa mimo ±1000, běh delší než 5 400 tiků, změna mimo tvar nebo víc než 32 | `BAD_REQUEST` | 400 |
+| mřížková hra, změna, kterou hra nevezme, běh, který hru nevyhraje (i vstupy jiné hry) | `DARE_REJECTED` | 422 |
+| denní strop výzev napříč volajícími (`PLAY_DARE_DAILY_CAP`, výchozí 2 000) | `DARE_QUOTA` | 429 + `retry-after: 3600` |
+| úložiště neodpovídá | `STORE_UNAVAILABLE` | 503 |
+
+Bez Upstash žije výzva v paměti procesu jako hry (`x-play-store: memory` v produkci). Testy: `src/app/api/play/__tests__/dare.test.ts`.
+
+### `GET /api/play/games/:id/dare/:dareId` – výzva i s během pro ducha (P37C T1)
+
+`200 { dareId, versionId, score, ticks, hash, liveChanges, createdAt, replay }`, `cache-control: public, max-age=0, s-maxage=60`
+(záznam se zapisuje jednou). `replay: null` = výzva bez ducha (starší než P37C, nad stropem bajtů nebo duchů). Klient
+rozbalí `replay.inputs` (`unpackInputs`) a `replayLive(hra, vstupy, replay.patches)` dojde k `hash`. Brána jako čtení hry:
+páka `snapshots`, identita, strop frekvence dveří `play` (429 + `retry-after`); id bez tvaru, neznámá výzva nebo výzva
+jiné hry → 404 `NOT_FOUND`.
+
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
 Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |
 restart | next_game | share | shared_open` (`src/play/loop-events.ts`), `versionId` hex id verze, `session` náhodné id záložky
-(12–32 znaků `[a-z0-9]`). Klíč navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
+(12–32 znaků `[a-z0-9]`); jen `share` smí nést booleany `withClip` (šel klip) a `dare` (odkaz nesl výzvu, P36B T6). Klíč
+navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
 frekvence (`play/events`), takže statistika hráči neubere kvótu na tvorbu; páka `sessions` vypne i tyhle dveře. Zápis: řádek
 do `data/play/events/<den>.jsonl` pod `next start`, na Vercelu řádek `[play-loop] {…}` do logu funkce; souhrn s jmenovateli
 `scripts/play-loop-report.mjs`. Robot ověřovače (sonda `playWitness`) ani ukázka „Show me how“ události neposílají.
-Sdílený odkaz nese `?via=share` a jeho otevření je `shared_open` – samotné sdílení doručení nedokládá.
+Sdílený odkaz nese `?via=share` a jeho otevření je `shared_open` – samotné sdílení doručení nedokládá. Po výhře arkády
+pošle klient vstupy běhu na `…/dare` hned (nabídka sdílení chce čerstvé gesto) a „Dare a friend to beat it“ sdílí
+`/play/<hraná verze>?via=share&dare=<dareId>`; když výzva nevyjde, obyčejný odkaz a toast „Couldn't attach your score…“.
 
 ## Verze a úložiště
 
@@ -99,6 +145,7 @@ oba backendy), remix (`director-remix.test.ts`), routy s osmi poli Oracle a `NOT
 | `/play/<id>` | `src/app/play/[id]/page.tsx`, `src/components/play/PlayShell.tsx` | hra: plátno, HUD, karty cílů, konec, po dohrání, rodokmen, „How this game works“ |
 | `/play/<neznámé id>` | `src/app/play/[id]/not-found.tsx` | 404 s větou `This game does not exist or has expired.` a odkazem na `/play` |
 | `GET /api/play/games/:id/og` | `src/app/api/play/games/[id]/og/route.ts`, `_og.ts` | PNG 1200×630 podle `spec.theme.mood`, `s-maxage=3600`; neznámé id 404 JSON |
+| `GET /api/play/games/:id/voice` | `src/app/api/play/games/[id]/voice/route.ts`, `_voice.ts` | cíl hry přečtený hlasem (Ogg, `immutable`), nebo 204 `no-store`, dokud není hotový; neznámé id 404 JSON |
 
 Stránka hry čte úložiště verzí přímo (ne přes HTTP), bez přihlášení a bez kroku „create“.
 `generateMetadata` dává `<title>` `<titul> – WORLDSTREAM PLAY`, `og:description` = `tutorial.goalLine`
@@ -122,6 +169,36 @@ adresu; bez schránky ukáže pole s adresou. Měď čipů je opis `CHIP_LABELS`
 **„How this game works“:** věty skládá server (`lab.ts` – registr mechanik zůstává mimo
 klientský bundl): mechaniky s vysvětlením a parametry, `Rules checked: N/M`,
 `Winnable at tick T` / `Not proven`, `Replay: identical` / `stub`, zkrácené id a předci.
+
+**Mikrofon (P29D T6):** `MicButton.tsx` vedle pole v `CreateGame` (`play-mic`) a v `RemixBox`
+(`remix-mic`) diktuje větu přes Web Speech (`@/input/speech`, anglicky); přepis se k napsanému
+přidá. Prohlížeč bez Web Speech (Firefox) tlačítko nevidí vůbec. Výzva `FirstPrompt` pole nemá
+– je to jen překryv s povelem –, takže mikrofon pro změnu uprostřed hry nese pole živé změny.
+**Offline přepis Moonshine se nepřidal (rozhodnuto 26. 9. 2026):** model sám by pravidlo splnil
+(MIT, kvantovaný `moonshine-tiny-ONNX` = enkodér 7,9 MB + dekodér 20,2 MB ≈ 28 MB ≤ 60 MB),
+ale cesta do prohlížeče vede přes `@huggingface/transformers` (Apache-2.0), který tahá `sharp`
+a s ním binárky `@img/sharp-libvips-*` pod **LGPL-3.0-or-later** – mimo MIT/Apache/BSD
+(`RULES.md` §4). Vlastní dekodér nad holým `onnxruntime-web` (MIT) by byl nový kus práce,
+ne přidání; do té doby zůstává tlačítko bez Web Speech skryté.
+
+**Živá změna (P29D T9):** `LiveBox.tsx` – tlačítko `Change` (`live-open`) nebo Enter mimo pole
+otevře pole (`live-input`) s mikrofonem (`live-mic`). Hra běží dál a klávesy psané do pole si
+nevezme. Enter v souboji, načasování a hrách se střelbou (`blaster`) patří hře, tam jen tlačítko. Výsledek hlásí `live-status`
+(`data-kind`: `live`, `remix`, `unknown`, `refused`). Počasí a denní dobu kreslí `Weather.tsx`
+jako CSS překryv nad plátnem. Pravidla patchů: `ARCADE.md` → „Živé změny“.
+
+**Klip (P29D T1–T2):** `arcade/clip.ts` nahrává plátno nativním `MediaRecorder` přes
+`captureStream` (bez závislosti), nejvýš 16 s včetně 1,5 s dojezdu po konci; ukázka robota klip
+nemá. Po hře `Save clip` (`play-save-clip`) a Share: kde nabídka sdílení bere soubory, jde klip
+s odkazem, jinak se klip stáhne a odkaz zkopíruje. Prohlížeč bez `captureStream` tlačítko nevidí.
+
+**Zvuk (P29D T5, T11):** hudba a efekty jsou předgenerovaná knihovna podle `lookOf(theme)`
+a nálady (`src/play/audio/library.ts`, katalogy z `ops/audio`). Nic se nestáhne před prvním
+gestem, chybějící soubor zní syntetickým ZzFX, `M` / `play-mute` ztlumí všechno a
+`PLAY_MUSIC=off` při buildu vypne hudbu. **Hlas vypravěče** přečte cíl hry jednou po prvním
+gestu, jen když je nahrávka hotová (dveře `…/voice`), ztlumená hra ho nespustí a ztlumení ho
+utne. Nahrávky dělá lokální Kokoro-82M (`ops/audio/server.py`) – bez `PLAY_VOICE_ENDPOINT`
+a `PLAY_VOICE_KEY` hra mlčí a publikace je stejná.
 
 ## Sonda `window.__playShell`
 

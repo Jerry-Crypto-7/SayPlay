@@ -6,29 +6,29 @@
   },
   "mentions": {
     "mentions": 163,
-    "before": 69,
-    "now": 99
+    "before": 110,
+    "now": 143
   },
   "nouns": {
-    "distinct": 119,
-    "before": 42,
-    "now": 67
+    "distinct": 117,
+    "before": 75,
+    "now": 102
   },
   "byRole": {
     "hero": {
       "mentions": 54,
-      "before": 25,
-      "now": 32
+      "before": 45,
+      "now": 52
     },
     "enemy": {
       "mentions": 18,
-      "before": 5,
-      "now": 8
+      "before": 10,
+      "now": 15
     },
     "collectible": {
       "mentions": 17,
-      "before": 11,
-      "now": 12
+      "before": 12,
+      "now": 13
     },
     "obstacle": {
       "mentions": 14,
@@ -37,33 +37,33 @@
     },
     "target": {
       "mentions": 21,
-      "before": 4,
-      "now": 7
+      "before": 12,
+      "now": 15
     },
     "checklist": {
       "mentions": 39,
-      "before": 15,
-      "now": 28
+      "before": 22,
+      "now": 36
     }
   },
   "bySet": {
     "demand": {
       "mentions": 94,
-      "now": 55,
+      "now": 82,
       "nouns": 82,
-      "nounsNow": 43
+      "nounsNow": 72
     },
     "fidelity": {
       "mentions": 69,
-      "now": 44,
+      "now": 61,
       "nouns": 65,
-      "nounsNow": 41
+      "nounsNow": 58
     },
     "hostile": {
       "mentions": 24,
-      "now": 16,
+      "now": 19,
       "nouns": 23,
-      "nounsNow": 15
+      "nounsNow": 19
     }
   },
   "gained": [
@@ -80,6 +80,11 @@
     {
       "noun": "flashlight",
       "model": "cc0-flashlight",
+      "mentions": 2
+    },
+    {
+      "noun": "knife",
+      "model": "cc0-knife",
       "mentions": 2
     },
     {
@@ -128,8 +133,8 @@
       "mentions": 1
     },
     {
-      "noun": "knife",
-      "model": "cc0-knife",
+      "noun": "lily pad",
+      "model": "cc0-lily-pad",
       "mentions": 1
     },
     {
@@ -188,62 +193,54 @@
       "mentions": 1
     },
     {
+      "noun": "trash can",
+      "model": "cc0-trash-can",
+      "mentions": 1
+    },
+    {
       "noun": "zombie",
       "model": "cc0-zombie",
       "mentions": 1
     }
   ],
-  "aliasedAway": [
-    {
-      "noun": "lily pad",
-      "cc0": "cc0-lily-pad",
-      "drawn": "cc0-lily",
-      "mentions": 1
-    },
-    {
-      "noun": "trash can",
-      "cc0": "cc0-trash-can",
-      "drawn": "cc0-barrier-trash",
-      "mentions": 1
-    }
-  ],
+  "aliasedAway": [],
   "states": {
     "before-CC0 (7c411db)": {
       "models": 86,
       "nouns": {
-        "distinct": 119,
-        "now": 42
+        "distinct": 117,
+        "now": 43
       },
       "mentions": {
         "mentions": 163,
-        "now": 69
+        "now": 67
       },
       "bySet": {
         "demand": {
           "mentions": 94,
           "now": 40,
           "nouns": 82,
-          "nounsNow": 29
+          "nounsNow": 31
         },
         "fidelity": {
           "mentions": 69,
-          "now": 29,
+          "now": 27,
           "nouns": 65,
-          "nounsNow": 26
+          "nounsNow": 25
         },
         "hostile": {
           "mentions": 24,
-          "now": 11,
+          "now": 9,
           "nouns": 23,
-          "nounsNow": 10
+          "nounsNow": 9
         }
       }
     },
     "after-T7 (e0aa52c)": {
       "models": 102,
       "nouns": {
-        "distinct": 119,
-        "now": 57
+        "distinct": 117,
+        "now": 59
       },
       "mentions": {
         "mentions": 163,
@@ -252,52 +249,52 @@
       "bySet": {
         "demand": {
           "mentions": 94,
-          "now": 47,
+          "now": 49,
           "nouns": 82,
-          "nounsNow": 36
+          "nounsNow": 40
         },
         "fidelity": {
           "mentions": 69,
-          "now": 38,
+          "now": 36,
           "nouns": 65,
-          "nounsNow": 35
+          "nounsNow": 34
         },
         "hostile": {
           "mentions": 24,
-          "now": 14,
+          "now": 12,
           "nouns": 23,
-          "nounsNow": 13
+          "nounsNow": 12
         }
       }
     },
     "now": {
-      "models": 449,
+      "models": 912,
       "nouns": {
-        "distinct": 119,
-        "now": 67
+        "distinct": 117,
+        "now": 102
       },
       "mentions": {
         "mentions": 163,
-        "now": 99
+        "now": 143
       },
       "bySet": {
         "demand": {
           "mentions": 94,
-          "now": 55,
+          "now": 82,
           "nouns": 82,
-          "nounsNow": 43
+          "nounsNow": 72
         },
         "fidelity": {
           "mentions": 69,
-          "now": 44,
+          "now": 61,
           "nouns": 65,
-          "nounsNow": 41
+          "nounsNow": 58
         },
         "hostile": {
           "mentions": 24,
-          "now": 16,
+          "now": 19,
           "nouns": 23,
-          "nounsNow": 15
+          "nounsNow": 19
         }
       }
     }

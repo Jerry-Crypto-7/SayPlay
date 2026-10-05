@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 
 import collectExit from '@/play/__fixtures__/collect_exit.json';
-import { draftGameSpec } from '@/play/draft';
+import { legacyDraft } from '@/play/__tests__/legacy-draft';
 import { readGameSpec, type GameSpecV1 } from '@/play/spec';
 import type { RuntimeSnapshot } from '@/worldstream/runtime-controller';
 
@@ -22,7 +22,8 @@ function specOf(fixture: unknown): GameSpecV1 {
 }
 
 describe('phaseLine', () => {
-  const redLight = draftGameSpec('red light green light like squid game');
+  // Fáze světla nese mřížka archetypu – od P32B T2 jen remix uložené hry.
+  const redLight = legacyDraft('red light green light like squid game');
 
   it('names the timer flag the compiler writes and follows it', () => {
     const timer = redLight.mechanics.find((mechanic) => mechanic.id === 'timer');

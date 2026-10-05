@@ -256,14 +256,41 @@ describe('timing, rhythm and duel remix chips (P25H)', () => {
       for (let round = 0; round < 8; round += 1) {
         const ops = remixPatch('harder', spec);
         if (ops.length === 0) break;
-        expect(ops).toHaveLength(1);
-        paths.push(ops[0]!.path);
+        // Tempo rytmu nese počet dob s sebou, aby písnička neztratila délku (P36A).
+        const own = ops.filter((op) => !(op.path === '/controlParams/beats' && ops.some((other) => other.path === '/controlParams/bpm')));
+        expect(own).toHaveLength(1);
+        paths.push(own[0]!.path);
         spec = remix('harder', spec);
         expect(publishable(spec), `round ${round}`).toBe(true);
       }
       expect(paths[0]).toBe(firstPath);
     });
   }
+
+  // P36A review fáze 4: žánrový rytmus (`ramp`) hustotu nečte, žánrové poletování (`rise`) obtížnost – harder musí pohnout tím, co hra čte.
+  it('harder on a genre rhythm game speeds the song up and keeps its length', () => {
+    const base = read({ ...rhythmFixture, controlParams: { ...rhythmFixture.controlParams, bpm: 120, beats: 66, ramp: true, lanes: true } });
+    const ops = remixPatch('harder', base);
+    expect(ops.map((op) => op.path).sort()).toEqual(['/controlParams/beats', '/controlParams/bpm']);
+    let spec = base;
+    for (let round = 0; round < 4 && remixPatch('harder', spec).length > 0; round += 1) {
+      spec = remix('harder', spec);
+      const { bpm, beats } = spec.controlParams as { bpm: number; beats: number };
+      expect((beats * 60) / bpm, `round ${round}`).toBeGreaterThanOrEqual(33 - 0.5);
+      expect(publishable(spec), `round ${round}`).toBe(true);
+    }
+    expect(spec.controlParams).toMatchObject({ bpm: 160, density: (base.controlParams as { density: string }).density });
+  });
+
+  it('harder on a genre flap game lengthens the track instead of a difficulty it ignores', () => {
+    const base = read({ ...flapFixture, controlParams: { ...flapFixture.controlParams, lengthM: 220, rise: true } });
+    expect(remixPatch('harder', base).map((op) => op.path)).toEqual(['/controlParams/lengthM']);
+    const child = remix('harder', base);
+    expect(child.controlParams).toMatchObject({ lengthM: 250, rise: true });
+    expect((child.controlParams as { difficulty?: string }).difficulty).toBe((base.controlParams as { difficulty?: string }).difficulty);
+    expect(publishable(child)).toBe(true);
+    expect(remixPatch('harder', child)).toEqual([]);
+  });
 
   // Fixtury `health` nesou, takže twist bez něj jinak nikdo nevidí – dřív tu padal na větu běžce.
   it.each(['rhythm', 'duel'] as const)('%s twist without health tells its own goal and changes the game', (control) => {

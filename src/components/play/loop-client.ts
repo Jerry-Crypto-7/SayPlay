@@ -37,7 +37,7 @@ function session(): string {
   }
 }
 
-export function loopEvent(name: LoopEventName, versionId: string): void {
+export function loopEvent(name: LoopEventName, versionId: string, extra?: { readonly withClip: boolean; readonly dare: boolean }): void {
   if (typeof window === 'undefined') return;
   const id = session();
   if (ONCE.has(name)) {
@@ -45,7 +45,7 @@ export function loopEvent(name: LoopEventName, versionId: string): void {
     if (sent.has(key)) return;
     sent.add(key);
   }
-  const body = JSON.stringify({ name, versionId, session: id });
+  const body = JSON.stringify({ name, versionId, session: id, ...extra });
   try {
     if (typeof navigator.sendBeacon === 'function' && navigator.sendBeacon('/api/play/events', new Blob([body], { type: 'application/json' }))) return;
     void fetch('/api/play/events', { method: 'POST', headers: { 'content-type': 'application/json' }, body, keepalive: true }).catch(() => {});

@@ -13,6 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { ARCHETYPE_IDS, type ArchetypeId } from '../registry';
 import { REMIX_CHIPS, REMIX_CHIP_LABELS, applyRemix, buildRemixRequest, chipOf, classifyRemix, remixPatch } from '../director/remix';
 import { blockingIssues, critique } from '../director/critic';
+import { draftGameSpec } from '../draft';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const FIXTURES = fileURLToPath(new URL('../__fixtures__/', import.meta.url));
@@ -79,6 +80,42 @@ describe('remix chips', () => {
     const survive = applyRemix(base('survival_timer'), remixPatch('harder', base('survival_timer'), 1));
     expect(survive.ok && survive.spec.mechanics[0].params.seconds).toBe(48);
     expect(survive.ok && survive.spec.objective.seconds).toBe(48);
+  });
+
+  // P32B T5b: hra žánru nese parametry generátoru režimu – `harder` posune právě jeden a počet, který cíl slibuje, dorovná.
+  it('harder on a genre game moves one generator parameter and keeps the promised count in step', () => {
+    const own = (spec: GameSpecV1): Record<string, unknown> => {
+      const { generator: _generator, tuning, ...rest } = spec.controlParams as Record<string, unknown> & { tuning?: Record<string, unknown> };
+      return { ...rest, ...tuning };
+    };
+    const cases: [string, string, string, unknown][] = [
+      ['a cat runs from dogs in a park', 'arena_escape', 'chaserSpeed', 80],
+      ['Collect five glowing mushrooms in a moonlit forest', 'arena_collect', 'items', 7],
+      ['boxing a kangaroo in the australian outback', 'fight', 'enemyHp', 4],
+      ['A pizza delivery scooter races through traffic to deliver before the pizza gets cold', 'quest_spatial', 'rocks', 4],
+      ['a chef flips pancakes in a busy kitchen', 'quest_station', 'window', 45],
+      // Obtížnost plavby soudí schéma ovládání `steer` – posune se v `controlParams`, ne v `tuning`.
+      ['a pirate ship sails the sea', 'voyage_race', 'difficulty', 'hard'],
+    ];
+    for (const [sentence, generator, key, value] of cases) {
+      const parent = draftGameSpec(sentence);
+      expect(parent.controlParams, sentence).toMatchObject({ generator });
+      const result = applyRemix(parent, remixPatch('harder', parent));
+      if (!result.ok) throw new Error(`${sentence}: ${result.reason}`);
+      const before = own(parent);
+      const after = own(result.spec);
+      expect(Object.keys(after).filter((name) => after[name] !== before[name]), sentence).toEqual([key]);
+      expect(after[key], sentence).toBe(value);
+    }
+    const mushrooms = draftGameSpec('Collect five glowing mushrooms in a moonlit forest');
+    const harder = applyRemix(mushrooms, remixPatch('harder', mushrooms));
+    if (!harder.ok) throw new Error(harder.reason);
+    expect(harder.spec.roles.find((role) => role.kind === 'collectible')?.count).toBe(7);
+    expect(harder.spec.objective).toMatchObject({ count: 7, description: expect.stringMatching(/\b7\b/) });
+    expect(harder.spec.tutorial.goalLine).toMatch(/\b7\b/);
+    // Na stropu generátoru čip nemá co přitvrdit.
+    const top: GameSpecV1 = { ...mushrooms, controlParams: { generator: 'arena_collect', tuning: { items: 30 } } };
+    expect(remixPatch('harder', top)).toEqual([]);
   });
 
   it('reskin leaves mechanics, objective and verification byte-identical and changes theme, title and every label', () => {
