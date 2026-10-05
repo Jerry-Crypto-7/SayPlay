@@ -32,6 +32,7 @@ import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilit
 import { assetSource } from '../compile/assets';
 import type { VerbProof } from '../contracts';
 import { verbPlayedBy } from '../genre/classify';
+import type { CastRole } from '../genre/contract';
 import type { AddonId, ControlId, GameRole, GameSpecV1 } from '../spec';
 
 export type FidelitySlot = 'hero' | 'role' | 'any' | 'setting' | 'verb';
@@ -45,6 +46,8 @@ export interface ChecklistEntry {
   readonly controls?: readonly string[];
   /** Mechaniky, které sloveso splní, když je ovládání čte. */
   readonly mechanics?: readonly string[];
+  /** Co věc podle věty dělá (P39) – u slotů `role` a `any` sady měření; soudí ho stupeň `role`. */
+  readonly does?: CastRole;
 }
 
 export const FIDELITY_WHY = ['not-in-spec', 'not-read-by-control', 'no-model', 'off-camera', 'ok'] as const;

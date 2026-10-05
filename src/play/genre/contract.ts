@@ -103,6 +103,16 @@ export const ruleRoleSchema = z
 export const ENEMY_MOVES = ['chase', 'patrol', 'shoot', 'still'] as const;
 export type EnemyMove = (typeof ENEMY_MOVES)[number];
 
+/**
+ * Co věc z věty ve hře dělá (P39): uzavřený seznam odvozený ze slovesa, které
+ * k věci ve větě patří. `shoot_at` = hráč ji sestřelí, `chase_me` = honí hráče,
+ * `avoid` = překážka nebo hrozba, `collect` = sbírá se, `reach` = cíl cesty,
+ * `fight` = soupeř zblízka, `throw_at` = terč hodu, `scenery` = kulisa bez
+ * pravidla (i věc, kterou věta nese, ale seznam pro ni roli nemá – projektil).
+ */
+export const CAST_ROLES = ['hero', 'shoot_at', 'chase_me', 'avoid', 'collect', 'reach', 'fight', 'throw_at', 'scenery'] as const;
+export type CastRole = (typeof CAST_ROLES)[number];
+
 const variant = <G extends GenreId>(genre: G) =>
   z
     .object({
