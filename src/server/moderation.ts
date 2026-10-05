@@ -82,12 +82,14 @@ export const MAX_PROMPT_CHARS = 2000;
  * nepatří; vzory proto míří na tvar žádosti (sloveso plus předmět), ne na
  * jednotlivá slova.
  */
+const SEXUAL_MINORS: DeniedTopic = {
+  id: 'sexual-minors',
+  pattern: /\b(sexu\w*|erotic\w*|porn\w*)\b[\s\S]{0,40}\b(child|children|minor|kid|kids|dít\w*|dět\w*|nezletil\w*)\b|\b(child|children|minor|kid|kids|dít\w*|dět\w*|nezletil\w*)\b[\s\S]{0,40}\b(sexu\w*|erotic\w*|porn\w*)\b/i,
+  detail: 'the prompt asks for sexual content involving minors',
+};
+
 export const DEFAULT_DENIED_TOPICS: readonly DeniedTopic[] = [
-  {
-    id: 'sexual-minors',
-    pattern: /\b(sexu\w*|erotic\w*|porn\w*)\b[\s\S]{0,40}\b(child|children|minor|kid|kids|dít\w*|dět\w*|nezletil\w*)\b|\b(child|children|minor|kid|kids|dít\w*|dět\w*|nezletil\w*)\b[\s\S]{0,40}\b(sexu\w*|erotic\w*|porn\w*)\b/i,
-    detail: 'the prompt asks for sexual content involving minors',
-  },
+  SEXUAL_MINORS,
   {
     id: 'weapon-build',
     pattern: /\b(build|make|construct|synthesi[sz]e|vyrob\w*|sestroj\w*|nav[oó]d\w*)\b[\s\S]{0,40}\b(bomb|explosive|nerve agent|bomb\w*|výbušn\w*|nálož\w*)\b/i,
@@ -103,6 +105,42 @@ export const DEFAULT_DENIED_TOPICS: readonly DeniedTopic[] = [
 export const DEFAULT_MODERATION: ModerationRules = {
   maxChars: MAX_PROMPT_CHARS,
   denied: DEFAULT_DENIED_TOPICS,
+};
+
+/** Slova, která větu rozdělí: za nimi už zbraň není předmětem slovesa („build a tower with bomb launchers“). */
+const CLAUSE_BREAK = String.raw`(?:with|and|or|to|before|after|while|where|when|that|so|then|for|of|in|on|at|from|into|game|level)`;
+
+/**
+ * Zakázaná témata pro `/play` (P40 T1). Věta je tam vždycky popis hry, a „make
+ * a game where you dodge bombs“ je běžná věta, ne návod: výchozí `weapon-build`
+ * s mezerou 40 znaků mezi slovesem a předmětem ji bral jako žádost o bombu
+ * a `self-harm-method` četl „jak se dostat přes hrad a zabít draka“ jako
+ * sebevraždu (sonda 5. 10. 2026: 6 z 15 herních vět odmítnutých). Tady proto
+ * zbraň musí být přímým předmětem slovesa – nejvýš tři slova mezi nimi a žádné
+ * z `CLAUSE_BREAK` – a „zabít“ musí stát hned za „jak se“. Mez je stejná jako
+ * u výchozích pravidel: obstojí proti neopatrnému, ne proti záměrnému.
+ */
+export const PLAY_DENIED_TOPICS: readonly DeniedTopic[] = [
+  SEXUAL_MINORS,
+  {
+    id: 'weapon-build',
+    pattern: new RegExp(
+      String.raw`\b(?:build|make|construct|assemble|synthesi[sz]e|vyrob\w*|sestroj\w*)\s+(?:(?!${CLAUSE_BREAK}\b)[\p{L}\p{N}-]+\s+){0,3}(?:bomb(?:s|a|u|y|ou)?\b|explosives?\b|nerve\s+agents?\b|výbušn|nálož)`,
+      'iu',
+    ),
+    detail: 'the sentence asks how to build a weapon or an explosive',
+  },
+  {
+    id: 'self-harm-method',
+    pattern: /\b(?:how to|jak se|návod\w*)\b[\s\S]{0,40}\b(?:kill myself|commit suicide|sebevražd\w*)\b|\bjak se\s+zabít\b/i,
+    detail: 'the sentence asks for a method of self-harm',
+  },
+];
+
+/** Délku věty hlídají dveře `/play` samy (500 znaků, remix 140), tady jen obsah. */
+export const PLAY_MODERATION: ModerationRules = {
+  maxChars: Number.POSITIVE_INFINITY,
+  denied: PLAY_DENIED_TOPICS,
 };
 
 export function moderatePrompt(

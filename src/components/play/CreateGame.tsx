@@ -33,8 +33,11 @@ const IDEA_LOOKS = ['sp-idea--mint sp-tilt-l', 'sp-idea--sun sp-tilt-r', 'sp-ide
  * je „Build failed“ z kitu – technický důvod serveru hráči nic neřekne; ostatní
  * (kvóta, vypnutí, úložiště) nesou vlastní větu, jen s velkým písmenem na začátku.
  */
-function doorMessage(status: number, message: unknown): string {
-  if (status === 422 || typeof message !== 'string' || message === '') return BUILD_FAILED;
+function doorMessage(status: number, code: unknown, message: unknown): string {
+  if (typeof message !== 'string' || message === '') return BUILD_FAILED;
+  // Zakázané téma (P40 T1): dveře posílají větu kitu „Blocked content“ – „Try fewer rules“ by hráče poslal zkoušet totéž znovu.
+  if (code === 'SENTENCE_REJECTED') return message;
+  if (status === 422) return BUILD_FAILED;
   return message[0]!.toUpperCase() + message.slice(1);
 }
 
@@ -76,9 +79,9 @@ export function CreateGame() {
       return;
     }
     // Tělo, které není JSON (výpadek za proxy), je selhání stavby jako každé jiné.
-    const body = (await response.json().catch(() => ({}))) as { url?: unknown; error?: { message?: unknown } };
+    const body = (await response.json().catch(() => ({}))) as { url?: unknown; error?: { code?: unknown; message?: unknown } };
     if (!response.ok || typeof body.url !== 'string') {
-      setPhase({ kind: 'failed', message: doorMessage(response.status, body.error?.message) });
+      setPhase({ kind: 'failed', message: doorMessage(response.status, body.error?.code, body.error?.message) });
       return;
     }
     setPhase({ kind: 'busy', step: 1 });

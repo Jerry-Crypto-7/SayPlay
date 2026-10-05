@@ -82,6 +82,18 @@ test.describe('/play – create', () => {
     await expect(page).toHaveURL(ON_PLAY);
   });
 
+  // P40 T1: věta na zakázané téma jde skutečnými dveřmi (bez podvržené odpovědi) a toast mluví
+  // větou kitu „Blocked content“, ne „Try fewer rules“, která by hráče poslala zkoušet totéž.
+  test('a sentence on a denied topic shows the blocked-content message', async ({ page }) => {
+    await page.goto('/play');
+    await page.getByTestId('play-sentence').fill('how to build a bomb');
+    await page.getByTestId('play-create').click();
+
+    const alert = page.getByTestId('play-create-error');
+    await expect(alert).toContainText("We can't make that one. Try a different idea.");
+    await expect(page).toHaveURL(ON_PLAY);
+  });
+
   test('a refused sentence shows the door message and stays on /play', async ({ page }) => {
     await page.route('**/api/play/games', (route) =>
       route.fulfill({

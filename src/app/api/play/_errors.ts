@@ -7,9 +7,11 @@
  */
 
 import { type BodyFailure, bodyRefusal, readBody } from '@/http/body';
+import { moderatePrompt, PLAY_MODERATION } from '@/server/moderation';
 
 export type PlayErrorCode =
   | 'BAD_REQUEST'
+  | 'SENTENCE_REJECTED'
   | 'BODY_TOO_LARGE'
   | 'BODY_TIMEOUT'
   | 'TOO_MANY_BODY_READS'
@@ -43,6 +45,18 @@ export function fail(
 /** Hra, která není, a id, které nemůže být, dostávají tutéž odpověď – ať se z rozdílu nedá nic vyčíst. */
 export function notFound(): Response {
   return fail(404, 'NOT_FOUND', 'this game does not exist or has expired');
+}
+
+/** Znění z kitu (`docs/brand/docs/11-voice-copy.md`, Errors → Blocked content); UI ho ukazuje beze změny. */
+export const SENTENCE_BLOCKED = "We can't make that one. Try a different idea.";
+
+/**
+ * Věta na zakázané téma (P40 T1): 422 dřív, než se sáhne na úložiště, čtečku
+ * nebo režiséra – feed `/play` je veřejný. Pravidla `PLAY_MODERATION`
+ * (`src/server/moderation.ts`), lexikální, bez placeného API.
+ */
+export function refuseSentence(sentence: string): Response | null {
+  return moderatePrompt(sentence, PLAY_MODERATION).ok ? null : fail(422, 'SENTENCE_REJECTED', SENTENCE_BLOCKED);
 }
 
 /** Tvar id verze: hex z `canonicalHash`. Cokoli jiného je 404 dřív, než se sáhne na úložiště. */

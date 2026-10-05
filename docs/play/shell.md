@@ -27,6 +27,7 @@ Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt
 | tělo nedorazilo do 5 s | `BODY_TIMEOUT` | 408 |
 | příliš mnoho souběžně čtených těl (volající / instance) | `TOO_MANY_BODY_READS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
 | tělo není JSON, cizí pole, obojí / ani jedno, špatný `seed` | `BAD_REQUEST` | 400 |
+| věta na zakázané téma (`PLAY_MODERATION` v `src/server/moderation.ts`, lexikální; P40 T1) – před úložištěm, čtečkou i režisérem | `SENTENCE_REJECTED` | 422 |
 | `parentId` neexistuje nebo nemá tvar id | `UNKNOWN_PARENT` | 404 |
 | spec neprošel `readGameSpec` (i z režiséra) | `SPEC_REJECTED` | 422 |
 
@@ -65,7 +66,8 @@ Tělo: `{ chip: "harder" | "twist" | "swap_enemy" | "reskin" }` nebo `{ spec: Ga
 volitelně `seed`. Rodič z úložiště (404 `NOT_FOUND`), čip → `remixPatch` + `applyRemix` (`src/play/director/remix.ts`,
 RFC 6902 záplata bez modelu; čip, který na hře nemá co změnit, je 422), výsledek přes `readGameSpec` (422),
 publikace jako výše s `parentId = id`. **Rodič se nemění**; semínko dítěte se odvozuje
-z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`.
+z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`. Vlastní věta (`{ sentence }`)
+na zakázané téma je 422 `SENTENCE_REJECTED` dřív, než se přečte rodič nebo spustí úloha – i když je čipem.
 
 Čipy popisuje hlavička `src/play/director/remix.ts` (P23-B T8): `harder` mění právě jeden parametr,
 `twist` přidá mechaniku s rolí a keypointem, `swap_enemy` jiný nepřítel (bez něj `harder`),

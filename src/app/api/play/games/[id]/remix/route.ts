@@ -18,7 +18,7 @@ import { applyRemix, chipOf, REMIX_CHIPS, remixPatch } from '@/play/director/rem
 import type { GameSpecV1 } from '@/play/spec';
 
 import { getCompiler } from '../../../_compiler';
-import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
+import { fail, notFound, readJsonBody, refuseSentence, VERSION_ID_PATTERN } from '../../../_errors';
 import {
   admit,
   derivedSeeds,
@@ -76,6 +76,9 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   if (parsed.data.sentence !== undefined) {
     sentence = cleanRemixSentence(parsed.data.sentence);
     if (sentence.length === 0 || sentence.length > MAX_REMIX_SENTENCE_CHARS) return fail(400, 'BAD_REQUEST', `the change must be 1 to ${String(MAX_REMIX_SENTENCE_CHARS)} characters`);
+    // I věta, která je čipem: čip i placená úloha vydají dítě do veřejného feedu.
+    const blocked = refuseSentence(sentence);
+    if (blocked !== null) return blocked;
     // Věta, která je čipem, jde cestou čipu – bez modelu a hned.
     chip = chipOf(sentence) ?? undefined;
   }
