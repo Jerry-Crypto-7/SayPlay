@@ -11,7 +11,7 @@
 
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { type Camera, Color, Frustum, type InstancedMesh, Matrix4, type Mesh, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
+import { type Camera, Color, Frustum, type InstancedMesh, Matrix4, MeshBasicMaterial, MeshStandardMaterial, type Object3D, type PerspectiveCamera, Plane, PlaneGeometry, Raycaster, Vector2, Vector3 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 import { color } from '@/brand/tokens';
@@ -19,7 +19,9 @@ import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, AXIS_MAX, BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase, rampedSpeed } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { STEER, type SteerCourse } from '@/play/arcade/pieces/steer';
+import type { HeroAction } from '@/play/spec';
 
+import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import { type IslandSpot, buildIslands, islandPalette } from '../look/rig/terrain/islands';
 import { hash } from '../look/rig/terrain/valley';
@@ -162,10 +164,28 @@ const SCENERY_MARGIN = 2.5;
  * nebo ulice města – pozná se z těl světa, relaci si scéna najde přes plochu
  * hry. Obyčejný závod kreslí asfalt jako dřív.
  */
-export function SteerBackdrop({ course, length, look }: { readonly course: SteerCourse | undefined; readonly length: number; readonly look: Look }) {
+export function SteerBackdrop({
+  session,
+  course,
+  length,
+  look,
+  ghost,
+}: {
+  readonly session: ArcadeSession;
+  readonly course: SteerCourse | undefined;
+  readonly length: number;
+  readonly look: Look;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
+}) {
   const voyage = useVoyageSession();
-  if (voyage !== null) return <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} />;
-  return <RoadBackdrop course={course} length={length} look={look} />;
+  return (
+    <>
+      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} /> : <RoadBackdrop course={course} length={length} look={look} />}
+      {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
+      <GhostSlot ghost={ghost} session={session} />
+    </>
+  );
 }
 
 function useVoyageSession(): { readonly session: ArcadeSession; readonly layout: VoyageLayout } | null {
@@ -245,6 +265,9 @@ function segmentsOf(course: SteerCourse | undefined): Segment[] {
 
 /** Hladina moře (m): trup lodi (spodní stěna těla ve výšce 0) je o tolik ponořený. */
 const WATER_LEVEL = 0.3;
+const SEA_PLANE = new Plane(new Vector3(0, 1, 0), -WATER_LEVEL);
+/** Voda sahá od kamery tolik zpátky (m, `buildWater`). */
+const WATER_FROM = -40;
 /** Břeh kanálu: šířka desky a výška nad hladinou (m). U skal je deska vysoká jako mantinel. */
 const BANK_W = 8;
 const BANK_TOP = 1.1;
@@ -332,7 +355,7 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
   const sea = layout.terrain === 'islands';
   const islands = useMemo(() => buildIslands({ look, islands: shoreOf(layout, far), base: sea ? WATER_LEVEL : 0 }), [layout, look, far, sea]);
   const water = useMemo(
-    () => (sea ? buildWater({ look, half: layout.reach + 60, from: -40, to: far, level: WATER_LEVEL, shore: islands.shoreDistance }) : null),
+    () => (sea ? buildWater({ look, half: layout.reach + 60, from: WATER_FROM, to: far, level: WATER_LEVEL, shore: islands.shoreDistance }) : null),
     [sea, look, layout, far, islands],
   );
   const landMaterial = useMemo(() => new MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), []);
@@ -393,8 +416,6 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
   const scratch = useMemo(() => ({ matrix: new Matrix4(), ray: new Raycaster(), ndc: new Vector2(), frustum: new Frustum(), point: new Vector3(), frame: 0 }), []);
   const params = baseControlOf(session.world.control).params as { readonly topSpeed?: number; readonly ramp?: readonly number[] };
   const bodies = useRef<Object3D[]>([]);
-  const waterMesh = useRef<Mesh>(null);
-  const landMesh = useRef<Mesh>(null);
 
   useFrame(() => {
     const seconds = performance.now() / 1000;
@@ -467,13 +488,16 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
       });
       trail.current.instanceMatrix.needsUpdate = true;
     }
-    // Voda v záběru: paprsky pod hrdinou (střed a strany dolní třetiny) padnou na hladinu dřív než na ostrov.
-    // Jednou za 60 snímků: paprsek projde celou síť vody, na telefonu se 4× CPU to je znát.
-    if (water !== null && stage !== null && scratch.frame % 60 === 1 && waterMesh.current !== null && landMesh.current !== null) {
+    // Voda v záběru: paprsky pod hrdinou (střed a strany dolní třetiny) padnou na hladinu, ne na ostrov.
+    // Hladina je na CPU rovná (vlny kreslí shader): průsečík s rovinou a pata ostrova (`shoreDistance`
+    // na souši záporná). Paprsek přes sítě vody a ostrovů stál pirátovi ~10 % CPU (P37B T7, Pixel 7 4×).
+    if (water !== null && stage !== null && scratch.frame % 60 === 1) {
       let hits = 0;
+      const half = layout.reach + 60;
       for (const x of [-0.6, 0, 0.6]) {
         scratch.ray.setFromCamera(scratch.ndc.set(x, -0.6), camera);
-        if (scratch.ray.intersectObjects([waterMesh.current, landMesh.current], false)[0]?.object === waterMesh.current) hits += 1;
+        const at = scratch.ray.ray.intersectPlane(SEA_PLANE, scratch.point);
+        if (at !== null && Math.abs(at.x) <= half && at.z >= WATER_FROM && at.z <= far && islands.shoreDistance(at.x, at.z, 1) > 0) hits += 1;
       }
       stage.dataset.waterInView = String(hits);
     }
@@ -497,7 +521,7 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
       {layout.terrain === 'buildings' ? (
         <RoadBackdrop course={layout.course} length={length} look={look} sceneryFrom={STRAIGHT_M} />
       ) : water !== null ? (
-        <mesh ref={waterMesh} geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
+        <mesh geometry={water.geometry} material={water.material} receiveShadow userData={{ rigShadow: 'receive', terrain: 'water' }} />
       ) : (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, far / 2 - 20]} renderOrder={UNDER_PANORAMA}>
           <planeGeometry args={[layout.reach * 2 + 220, far + 120]} />
@@ -506,7 +530,7 @@ function VoyageBackdrop({ session, layout, length, look }: { readonly session: A
       )}
       {layout.terrain !== 'buildings' && (
         <>
-          <mesh ref={landMesh} geometry={islands.geometry} material={landMaterial} castShadow receiveShadow userData={{ terrain: 'islands' }} />
+          <mesh geometry={islands.geometry} material={landMaterial} castShadow receiveShadow userData={{ terrain: 'islands' }} />
           {segments.map((segment, i) =>
             segment.far - segment.near < STRAIGHT_M ? null : (
             <group key={i} position={[segment.center, 0, (segment.near + segment.far) / 2]}>

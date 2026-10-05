@@ -6,19 +6,19 @@
   },
   "mentions": {
     "mentions": 163,
-    "before": 104,
-    "now": 137
+    "before": 110,
+    "now": 143
   },
   "nouns": {
     "distinct": 117,
-    "before": 71,
-    "now": 98
+    "before": 75,
+    "now": 102
   },
   "byRole": {
     "hero": {
       "mentions": 54,
-      "before": 40,
-      "now": 47
+      "before": 45,
+      "now": 52
     },
     "enemy": {
       "mentions": 18,
@@ -42,22 +42,22 @@
     },
     "checklist": {
       "mentions": 39,
-      "before": 21,
-      "now": 35
+      "before": 22,
+      "now": 36
     }
   },
   "bySet": {
     "demand": {
       "mentions": 94,
-      "now": 78,
+      "now": 82,
       "nouns": 82,
-      "nounsNow": 68
+      "nounsNow": 72
     },
     "fidelity": {
       "mentions": 69,
-      "now": 59,
+      "now": 61,
       "nouns": 65,
-      "nounsNow": 56
+      "nounsNow": 58
     },
     "hostile": {
       "mentions": 24,
@@ -268,27 +268,27 @@
       }
     },
     "now": {
-      "models": 784,
+      "models": 912,
       "nouns": {
         "distinct": 117,
-        "now": 98
+        "now": 102
       },
       "mentions": {
         "mentions": 163,
-        "now": 137
+        "now": 143
       },
       "bySet": {
         "demand": {
           "mentions": 94,
-          "now": 78,
+          "now": 82,
           "nouns": 82,
-          "nounsNow": 68
+          "nounsNow": 72
         },
         "fidelity": {
           "mentions": 69,
-          "now": 59,
+          "now": 61,
           "nouns": 65,
-          "nounsNow": 56
+          "nounsNow": 58
         },
         "hostile": {
           "mentions": 24,

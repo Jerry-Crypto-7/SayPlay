@@ -18,6 +18,12 @@
  *   node --experimental-strip-types scripts/play-fidelity.mjs report [--run <id>]
  *   node --experimental-strip-types scripts/play-fidelity.mjs summary [--run <id>]   (souhrn do runs/<id>.json, report.json nechá)
  *
+ * Sloveso z klipu (P37A T2): `run --clip` k snímku přidá tři snímky plátna po
+ * 0,5 s hry, zatímco hru hraje robot; `judge --clip` je pošle soudci najednou a
+ * sloveso soudí podle toho, co se mezi nimi pohne. `run --draft-only` na AI
+ * verzi nečeká (baseline návrhu ze slov), `run --gpu` kreslí přes grafickou
+ * kartu místo swiftshaderu, `judge --only` dělí soudce na víc procesů.
+ *
  * Offline mapa ztrát (P27A T2) – slovní draft a kompilace bez sítě a bez
  * modelu, zapíše `evals/play/fidelity/draft-chain.json`:
  *   node --experimental-strip-types scripts/play-fidelity.mjs --offline
@@ -37,15 +43,17 @@
 
 import { spawn, spawnSync, execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Řetěz věrnosti (P27A T1) je modul aplikace: holý Node ho načte přes zavaděč
 // `ts-paths.mjs` (cesty `@/`, přípony, JSON), vitest sám.
 if (!process.env.VITEST) await import('./ts-paths.mjs');
 const { fidelityChain } = await import('../src/play/fidelity/chain.ts');
+const { specFidelity } = await import('../src/play/fidelity/score.ts');
 const { draftForControl, draftGameSpec } = await import('../src/play/draft/index.ts');
 const { compileGame } = await import('../src/play/compile/index.ts');
 const { readSentence } = await import('../src/play/read/client.ts');
@@ -83,15 +91,11 @@ export function checkCorpus(corpus) {
 }
 
 /**
- * Položky seznamu nad jedním specem (`src/play/fidelity/chain.ts`): `inSpec` =
- * spec ji nese, `read` = nese ji místem, které ovládání čte, `drawn` = scéna ji
- * nakreslí. `score` = podíl `read`, `drawnScore` = podíl `drawn`.
+ * Položky seznamu nad jedním specem: `score` = podíl `read`, `drawnScore` =
+ * podíl `drawn`. Jádro je od P37A T8 v `src/play/fidelity/score.ts` – volá ho
+ * i brána upgradu na serveru; skript ho jen vystavuje dál.
  */
-export function specFidelity(spec, checklist) {
-  const items = fidelityChain(spec, checklist);
-  const share = (pick) => (items.length === 0 ? 0 : Math.round((items.filter(pick).length / items.length) * 1000) / 1000);
-  return { control: spec.control ?? 'tap_go', items, score: share((item) => item.read), drawnScore: share((item) => item.drawn) };
-}
+export { specFidelity };
 
 const mean = (values) => (values.length === 0 ? null : Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 1000) / 1000);
 const quantile = (values, q) => {
@@ -413,30 +417,74 @@ async function envOf(base, id) {
   }
 }
 
+// Soudce vidí jen scénu: text stránky (název, věta, HUD) by mu napověděl.
+const SCENE_ONLY = { content: 'body * { visibility: hidden !important; } canvas { visibility: visible !important; }' };
+
 async function shoot(page, base, id, path) {
   const env = await envOf(base, id);
   await page.goto(`${base}/play/${id}`);
   await page.locator('canvas').first().waitFor({ timeout: 30_000 });
   await page.waitForTimeout(3500);
   await page.screenshot({ path: `${path}.png` });
-  // Soudce vidí jen scénu: text stránky (název, věta, HUD) by mu napověděl.
-  await page.addStyleTag({ content: 'body * { visibility: hidden !important; } canvas { visibility: visible !important; }' });
+  await page.addStyleTag(SCENE_ONLY);
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${path}-scene.png` });
   return env;
 }
 
-async function runOne(sentence, base, runDir, page) {
+/** Klip soudce slovesa (P37A T2): `frames` snímků po `gapTicks` tiků arkády (60 Hz), první `leadTicks` po startu robota. */
+export const CLIP = { frames: 3, gapTicks: 30, leadTicks: 90, hz: 60 };
+
+/**
+ * Robot („Show me how“, záznam, kterým verze prošla publikací) hraje a tři
+ * snímky jen plátna ukážou pohyb. Čas hry odtiká skript ručními hodinami sondy
+ * (`byHand`, P36C T4), takže odstup snímků je 0,5 s hry, i když swiftshader
+ * kreslí snímek 14 s. Hra bez sondy arkády (mřížka) se fotí po 0,5 s skutečného
+ * času a nese `robot: false`, ať ji souhrn nepočítá za odehranou.
+ */
+async function clip(page, base, id, path) {
+  await page.goto(`${base}/play/${id}`);
+  await page.locator('canvas').first().waitFor({ timeout: 30_000 });
+  const robot = await page.waitForFunction(() => typeof window.__playShell?.byHand === 'function', undefined, { timeout: 30_000 }).then(
+    () => true,
+    () => false,
+  );
+  if (robot) {
+    await page.evaluate(() => window.__playShell.byHand(true));
+    await page.getByTestId('play-pause').click();
+    await page.getByTestId('play-demo-start').click({ timeout: 30_000 });
+  }
+  await page.addStyleTag(SCENE_ONLY);
+  const frames = [];
+  for (let index = 0; index < CLIP.frames; index += 1) {
+    const ticks = index === 0 ? CLIP.leadTicks : CLIP.gapTicks;
+    if (robot) {
+      await page.evaluate(async (count) => {
+        for (let tick = 0; tick < count; tick += 1) if (window.__playShell.tickByHand().runState !== 'running') break;
+        // Dva snímky prohlížeče: scéna nakreslí stav po posledním tiku dřív, než ji screenshot vezme.
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+      }, ticks);
+    } else {
+      await page.waitForTimeout((ticks * 1000) / CLIP.hz);
+    }
+    const frame = `${path}-clip-${index + 1}.png`;
+    await page.screenshot({ path: frame });
+    frames.push(basename(frame));
+  }
+  return { robot, frames };
+}
+
+async function runOne(sentence, base, runDir, page, { clip: withClip = false, draftOnly = false } = {}) {
   const started = Date.now();
   const response = await fetch(`${base}/api/play/games`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sentence: sentence.text }) });
   const created = await response.json();
   const draftMs = Date.now() - started;
   if (!created.versionId) throw new Error(`${sentence.id}: POST ${response.status} ${JSON.stringify(created).slice(0, 200)}`);
-  let upgrade;
+  let upgrade = { status: 'skipped' };
   // Klient se po `deadlineAt` přestane ptát (P27C T1); měření se ptá dál, aby
   // pozdní výsledek zůstal ve jmenovateli a nesl značku `late`.
   let deadlineAt = null;
-  for (;;) {
+  while (!draftOnly) {
     await sleep(4000);
     upgrade = await (await fetch(`${base}/api/play/games/${created.versionId}/upgrade`, { cache: 'no-store' })).json();
     if (upgrade.status === 'pending' && deadlineAt === null && typeof upgrade.deadlineAt === 'string') deadlineAt = Date.parse(upgrade.deadlineAt);
@@ -462,7 +510,9 @@ async function runOne(sentence, base, runDir, page) {
     raw: existsSync(failure) ? readJson(failure) : null,
   };
   result.draft.env = await shoot(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
+  if (withClip) result.draft.clip = await clip(page, base, created.versionId, join(runDir, `${sentence.id}-draft`));
   if (ai) result.ai.env = await shoot(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
+  if (ai && withClip) result.ai.clip = await clip(page, base, upgrade.versionId, join(runDir, `${sentence.id}-ai`));
   return result;
 }
 
@@ -476,15 +526,18 @@ async function run(options) {
   mkdirSync(runDir, { recursive: true });
   const require = createRequire(import.meta.url);
   const { chromium } = require('@playwright/test');
-  const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+  // `--gpu` (P37A T2): screenshot za 0,2 s místo 14 s pod swiftshaderem; obsah snímku je týž.
+  const angle = options.gpu === true ? ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] : ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'];
+  const browser = await chromium.launch({ args: angle });
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
   try {
     for (const sentence of sentences) {
       const path = join(runDir, `${sentence.id}.json`);
       if (existsSync(path)) continue;
-      const result = await runOne(sentence, base, runDir, page);
+      const result = await runOne(sentence, base, runDir, page, { clip: options.clip === true, draftOnly: options['draft-only'] === true });
       writeJson(path, result);
-      console.log(`${sentence.id} ${result.ai ? 'ai' : `draft (${result.upgrade.reason ?? result.upgrade.status})`} ${Math.round(result.upgrade.ms / 1000)} s env ${result.ai?.env ?? result.draft.env}`);
+      const robot = result.draft.clip ? ` robot ${result.draft.clip.robot ? 'yes' : 'no'}` : '';
+      console.log(`${sentence.id} ${result.ai ? 'ai' : `draft (${result.upgrade.reason ?? result.upgrade.status})`} ${Math.round(result.upgrade.ms / 1000)} s env ${result.ai?.env ?? result.draft.env}${robot}`);
     }
   } finally {
     await browser.close();
@@ -916,18 +969,34 @@ const JUDGE_SCHEMA = {
   },
 };
 
-function contract(checklist) {
+/**
+ * Zadání soudce. Jeden snímek = dnešní znění beze změny (srovnatelnost se
+ * staršími běhy); klip (P37A T2) = snímky v pořadí po `CLIP.gapTicks` tiků a sloveso
+ * podle toho, co se mezi nimi pohne – na stojícím obraze ho vidět nejde
+ * (`evals/play/p30b/losses.md` #3, #7).
+ */
+export function contract(checklist, frames = 1) {
   const nouns = checklist.filter((entry) => entry.slot !== 'verb').map((entry) => `- "${entry.item}" (${entry.slot === 'setting' ? 'place / environment' : 'character or object'})`);
   const verbs = checklist.filter((entry) => entry.slot === 'verb').map((entry) => `- "${entry.item}" (action)`);
+  const opening =
+    frames === 1
+      ? ['You are judging one screenshot of a 3D game scene. You know nothing else about the game.', 'Do not use web search. Do not run any tool, command or skill. Look only at the attached image.']
+      : [
+          `You are judging ${frames} frames of a 3D game while it is being played, in order, taken ${CLIP.gapTicks / CLIP.hz} s apart. You know nothing else about the game.`,
+          'Do not use web search. Do not run any tool, command or skill. Look only at the attached images.',
+        ];
+  const action =
+    frames === 1
+      ? '- an action counts only if the picture shows that this is what the game is about (for "shoot": a gun, a crosshair or projectiles);'
+      : '- an action counts only if the frames show that this is what the game is about – judge it from what moves or changes between the frames (for "throw": a ball flying further in each frame; for "stir": a spoon at a different place in the pot), not from one frame alone;';
   return [
-    'You are judging one screenshot of a 3D game scene. You know nothing else about the game.',
-    'Do not use web search. Do not run any tool, command or skill. Look only at the attached image.',
+    ...opening,
     '',
     'For each item below decide `visible`:',
-    '- true only if a person who read no description would, from the picture alone, name that thing or clearly recognise it;',
+    `- true only if a person who read no description would, from the ${frames === 1 ? 'picture' : 'frames'} alone, name that thing or clearly recognise it;`,
     '- a generic figure, a cube, a capsule, a target board, a coloured blob or a plain field does NOT count as a specific character, object or place;',
     '- a place counts only if the environment itself looks like it (a mall interior, snow, Mars red rocks), not if it is a neutral ground plane;',
-    '- an action counts only if the picture shows that this is what the game is about (for "shoot": a gun, a crosshair or projectiles);',
+    action,
     '- when unsure, answer false.',
     '',
     'Items:',
@@ -942,12 +1011,42 @@ function codexScript() {
   return process.env.WORLDSMITH_CODEX_JS ?? (process.platform === 'win32' ? join(process.env.APPDATA ?? '', 'npm', 'node_modules', '@openai', 'codex', 'bin', 'codex.js') : 'codex');
 }
 
-function judgeShot(image, checklist, runDir, tag) {
-  const contractPath = join(runDir, `${tag}-judge.md`);
-  const schemaPath = join(runDir, 'judge-schema.json');
-  const outPath = join(runDir, `${tag}-judge.out`);
-  writeFileSync(contractPath, contract(checklist));
+/**
+ * Jeden hovor soudce nad snímkem nebo klipem (`images` v pořadí); `verdict` = položka → viděl ji.
+ *
+ * Soudce musí být slepý (nález P37D): `codex exec` čte jméno obrázku i soubory
+ * ve svém `cwd`, a ve složce běhu leží spec hry (`heroAction`, žánr, věta).
+ * Proto běží v prázdném dočasném adresáři, kde jsou jen snímky pod neutrálním
+ * jménem (`frame-1.png` …), zadání a schéma; zadání a odpověď se pak zkopírují
+ * do složky běhu jako záznam.
+ */
+export function judgeShot(images, checklist, runDir, tag) {
+  const blind = mkdtempSync(join(tmpdir(), 'judge-'));
+  const contractPath = join(blind, 'contract.md');
+  const schemaPath = join(blind, 'schema.json');
+  const outPath = join(blind, 'answer.json');
+  const shown = images.map((image, index) => {
+    const copy = join(blind, `frame-${index + 1}.png`);
+    copyFileSync(image, copy);
+    return copy;
+  });
+  writeFileSync(contractPath, contract(checklist, images.length));
   writeJson(schemaPath, JUDGE_SCHEMA);
+  copyFileSync(contractPath, join(runDir, `${tag}-judge.md`));
+  try {
+    const text = askJudge(shown, { contractPath, schemaPath, outPath, cwd: blind, tag });
+    writeFileSync(join(runDir, `${tag}-judge.out`), text);
+    const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    const verdict = {};
+    for (const entry of checklist) verdict[entry.item] = json.items.some((answer) => answer.item.toLowerCase() === entry.item.toLowerCase() && answer.visible === true);
+    return { verdict, answers: json.items };
+  } finally {
+    rmSync(blind, { recursive: true, force: true });
+  }
+}
+
+/** Pustí `codex exec` nad snímky a vrátí text odpovědi. */
+function askJudge(images, { contractPath, schemaPath, outPath, cwd, tag }) {
   const script = codexScript();
   const command = script.endsWith('.js') ? [process.execPath, script] : [script];
   const model = process.env.FIDELITY_JUDGE_MODEL;
@@ -959,34 +1058,38 @@ function judgeShot(image, checklist, runDir, tag) {
     '-c', 'tools.web_search=false',
     '-c', 'model_reasoning_effort="medium"',
     ...(model ? ['-m', model] : []),
-    `--image=${image}`,
+    ...images.map((image) => `--image=${image}`),
     '--output-schema', schemaPath,
     '-o', outPath,
     `Read the file ${contractPath} and do exactly what it says.`,
   ];
-  const done = spawnSync(command[0], cli, { cwd: runDir, stdio: ['ignore', 'pipe', 'pipe'], timeout: 240_000, encoding: 'utf8' });
+  const done = spawnSync(command[0], cli, { cwd, stdio: ['ignore', 'pipe', 'pipe'], timeout: 240_000, encoding: 'utf8' });
   if (!existsSync(outPath)) throw new Error(`${tag}: codex wrote no answer (exit ${done.status}): ${(done.stderr ?? '').slice(-400)}`);
-  const text = readFileSync(outPath, 'utf8');
-  const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-  const verdict = {};
-  for (const entry of checklist) verdict[entry.item] = json.items.some((answer) => answer.item.toLowerCase() === entry.item.toLowerCase() && answer.visible === true);
-  return { verdict, answers: json.items };
+  return readFileSync(outPath, 'utf8');
 }
 
-function judge(options) {
+export function judge(options) {
   const runDir = latestRun(options.run);
+  const withClip = options.clip === true;
+  const ids = typeof options.only === 'string' ? new Set(options.only.split(',')) : null;
   for (const file of readdirSync(runDir).filter((name) => /^[a-z]\d+\.json$/.test(name))) {
+    if (ids !== null && !ids.has(file.slice(0, -'.json'.length))) continue;
     const path = join(runDir, file);
     const result = readJson(path);
     result.judge ??= {};
     result.judgeWhy ??= {};
+    // Kolik snímků verdikt viděl: klip a jeden snímek se nesmí tiše zaměnit.
+    result.judgeFrames ??= {};
     for (const version of ['draft', 'ai']) {
       if (version === 'ai' && !result.ai) continue;
-      if (result.judge[version]) continue;
-      const image = join(runDir, `${result.id}-${version}-scene.png`);
-      const { verdict, answers } = judgeShot(image, result.checklist, runDir, `${result.id}-${version}`);
+      const frames = result[version].clip?.frames;
+      if (withClip && !frames) throw new Error(`${result.id} ${version}: no clip in this run – run it with --clip first`);
+      const images = withClip ? frames.map((frame) => join(runDir, frame)) : [join(runDir, `${result.id}-${version}-scene.png`)];
+      if (result.judge[version] && (result.judgeFrames[version] ?? 1) === images.length) continue;
+      const { verdict, answers } = judgeShot(images, result.checklist, runDir, `${result.id}-${version}${withClip ? '-clip' : ''}`);
       result.judge[version] = verdict;
       result.judgeWhy[version] = answers;
+      result.judgeFrames[version] = images.length;
       writeJson(path, result);
       console.log(`${result.id} ${version}: ${Object.values(verdict).filter(Boolean).length}/${result.checklist.length}`);
     }
@@ -995,7 +1098,8 @@ function judge(options) {
 
 function latestRun(run) {
   const runs = join(DIR, 'runs');
-  if (typeof run === 'string') return join(runs, run);
+  // Id běhu, nebo celá cesta ke složce běhu (test soudce).
+  if (typeof run === 'string') return resolve(runs, run);
   // Souhrn běhu (`<id>.json`, krok `summary`) leží vedle složek běhů a běh to není.
   const names = readdirSync(runs, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
   if (names.length === 0) throw new Error('no run yet – start with `run`');
@@ -1077,7 +1181,7 @@ if (isMain) {
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
   else {
-    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
+    console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
   }
 }

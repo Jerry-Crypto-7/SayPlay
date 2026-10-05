@@ -22,7 +22,7 @@ const SENTENCES = ['h10', 's006', 's022', 's035', 's058', 's039', 'h03', 's099',
 
 /** Stejná množina jako `TAP_TO_START` v ArcadePlay.tsx; mezerník je u všech pěti start a ukončí průlet. */
 const TAP_TO_START = new Set(['flap', 'shooter', 'timing', 'rhythm', 'duel']);
-/** Úvodní průlet kamery (`look/intro.ts` `INTRO_S` = 1,5 s) a rezerva na dotažení modelů. */
+/** Úvodní průlet kamery (`look/intro.ts` `INTRO_S`, od P37B T6 0,9 s) a rezerva na dotažení modelů. */
 const INTRO_MS = 1700;
 const AFTER_TAP_MS = 500;
 

@@ -46,7 +46,7 @@ async function publish(request: APIRequestContext, fixture: string): Promise<str
 /**
  * Robot do prvního bodu, pak pauza skrytou záložkou (klávesa ani ťuk ji neprobudí, dokud je „skrytá“).
  * Pozastavená relace stisky zahazuje, takže podruhé se nejdřív probudí: záložka zpět viditelná
- * a Shift, který žádná scéna nečte (`focus.ts` probudí hru každou klávesou).
+ * a Shift, který žádná scéna nečte (`focus.ts` probudí hru každou klávesou – po tiku 0 už ne, viz níž).
  */
 function freezeAtFirstScore(page: Page): Promise<{ readonly score: number; readonly tick: number }> {
   return page.evaluate(() => {
@@ -83,6 +83,8 @@ for (const viewport of VIEWPORTS) {
         // Modely a panorama se dotahují; úvodní průlet kamery (1,5 s) mezitím doběhne.
         await page.waitForLoadState('networkidle', { timeout: 15_000 }).catch(() => undefined);
         await page.waitForTimeout(2_000);
+        // Od karty pauzy (P34) tohle druhé zastavení neprojde: kartu Shift neprobudí, `handPlay` hraje
+        // v pauze se zahozenými stisky a skončí jinak (P37-0 R2, `session-pause.test.ts`). Test je vypnutý od `a0c4fde1`.
         const again = await freezeAtFirstScore(page);
         expect(again).toEqual(first);
         // Sebraná mince dofoukne (200 ms) a snímek se ustálí.

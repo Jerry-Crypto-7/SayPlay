@@ -16,7 +16,7 @@ import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 import type { GenreSpec } from '../genre/contract';
 
 import { GENRE_ANSWER_SCHEMA } from './answer-schema';
-import { genrePromptLines, rulesPromptLines, startingPoint } from './prompt';
+import { directorUser, genrePromptLines, rulesPromptLines } from './prompt';
 import { examplesBlock, nearestExamples } from './retrieval';
 
 /** Systémový text bez věty; stavěný při volání, aby změna modulu žánru prošla ven. */
@@ -29,7 +29,7 @@ export const COMPACT_PROMPT_VERSION = canonicalHash({ system: compactSystemPromp
 
 /** `examples` (P30A T8): za výchozí bod 3–5 ověřených her k podobným větám; bez nich je zpráva jako dřív. */
 export function buildCompactRequest(sentence: string, draft: GenreSpec | null, examples = false): UpstreamRequest {
-  const user = `${sentence.trim()}\n\n${startingPoint(draft)}`;
+  const user = directorUser(sentence, draft);
   return {
     model: EMISSION_MODEL,
     system: compactSystemPrompt(),

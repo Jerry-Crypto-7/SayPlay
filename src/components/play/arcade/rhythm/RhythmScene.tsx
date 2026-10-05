@@ -19,8 +19,10 @@ import { Vector3 } from 'three';
 import { BODY, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM } from '@/play/arcade/pieces/rhythm';
+import type { HeroAction } from '@/play/spec';
 import { playTone } from '@/play/audio';
 
+import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
@@ -46,16 +48,21 @@ export function RhythmScene({
   look: scene,
   noteModel,
   surface,
+  ghost,
 }: {
   readonly session: ArcadeSession;
   readonly look: Look;
   readonly noteModel?: BodyModel;
   readonly surface?: React.RefObject<HTMLDivElement | null>;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
 }) {
   const world = session.world;
   const count = world.initial[HEADER.bodyCount] as number;
   const notes = useMemo(() => Array.from({ length: count - 1 }, (_, i) => initialBody(world, i + 1)), [world, count]);
   const bar = initialBody(world, 0);
+  // Duch stojí vedle lišty (hráčovo `z` jsou noty, ne dráha).
+  const ghostSpot = useMemo(() => besideHero(0, 0, bar.w / 2, 'x'), [bar.w]);
   const groups = useRef<(Group | null)[]>([]);
   const barMaterial = useRef<MeshStandardMaterial | null>(null);
   const flash = useRef<{ tick: number; hit: boolean } | null>(null);
@@ -135,6 +142,8 @@ export function RhythmScene({
         <boxGeometry args={[bar.w, bar.h, bar.d]} />
         <meshStandardMaterial ref={barMaterial} color="#e2e8f0" />
       </mesh>
+      {/* Slot ducha (P37-0 T3) vedle lišty. */}
+      <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
       {notes.map((note, i) => {
         const lane = LANE_OF(note.x * UNIT);
         return (

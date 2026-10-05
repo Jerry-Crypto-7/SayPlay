@@ -12,7 +12,8 @@ import { openAbout, startGame } from './play-start';
  * – jako v `play-remix-sentence.spec.ts`; `ready` vrací doopravdy publikované dítě.
  */
 
-const SENTENCE = 'jumping arcade game with a lot of obstacles';
+// Od žánrů (P32B) je „jumping …“ sloveso skákačky, ne běžce – živá změna se tu měří na běžci, proto věta s „runner“.
+const SENTENCE = 'endless runner with a lot of obstacles';
 const JOB = 'b'.repeat(32);
 const HOSTILE = ['enemy', 'chaser', 'hazard', 'obstacle'] as const;
 
@@ -83,11 +84,11 @@ test.describe('/play/[id] – live change', () => {
 
   test('a sentence the game can carry only in part says so and closes, instead of claiming a refusal', async ({ page }) => {
     await open(page, url);
-    // Běžec nemá životy: déšť projde, život ne.
-    await change(page, 'make it rain and extra life');
+    // Běžec nemá náboje: déšť projde, náboje ne. (Životy má od P36A každý žánr, proto už ne „extra life“.)
+    await change(page, 'make it rain and more ammo');
     const status = page.getByTestId('live-status');
     await expect(status).toHaveAttribute('data-kind', 'live');
-    await expect(status).toContainText('Done in part. This game has no lives.');
+    await expect(status).toContainText('Done in part. This game has no ammo.');
     await expect(page.getByTestId('live-box')).toHaveCount(0);
     await expect(page.getByTestId('play-weather')).toHaveAttribute('data-weather', 'rain');
     expect(await patches(page)).toBe(1);

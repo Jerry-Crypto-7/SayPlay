@@ -41,7 +41,8 @@ describe('arcade model choice from role labels', () => {
     ['wild lizard', 'fox'], // kategorie zvíře
     ['mall security guard', 'gen3d-guard'], // vlastní model z gen3d (e5b840b) přebije kategorii člověk
     ['angry bulldozer', 'gen3d-bulldozer'], // od 28. 9. vlastní model z gen3d
-    ['angry forklift', 'robot'], // kategorie stroj
+    ['angry forklift', 'gen3d-forklift'], // od P37D vlastní model z gen3d
+    ['angry mech', 'robot'], // kategorie stroj
     ['battle tank', 'cc0-tank'], // CC0 tank, ne plynová bomba `cc0-gas-tank` (P26A T11)
   ])('%s → %s', (label, model) => {
     expect(modelOf(label, true)).toBe(model);
@@ -65,7 +66,7 @@ describe('arcade model choice from role labels', () => {
   it('props take only a direct catalog match, never a category or the core kind', () => {
     expect(propModels(withLabel(runner, 'coin', 'gems'))).toEqual({ coin: 'crystal' });
     expect(propModels(withLabel(runner, 'obstacle', 'traffic cones'))).toEqual({});
-    expect(propModels(withLabel(runner, 'obstacle', 'wild moose'))).toEqual({});
+    expect(propModels(withLabel(runner, 'obstacle', 'wild badgers'))).toEqual({});
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
     // Střelnice popisek terče nekreslí (tabulka schopností), takže ho nečte ani výběr.
     expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({});

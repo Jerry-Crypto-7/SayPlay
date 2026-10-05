@@ -162,7 +162,17 @@ export const timeLimit: RulePiece<z.infer<typeof timeLimitParams>> = {
   fire: ({ state }, params) => ((state[HEADER.tick] as number) >= params.seconds * ARCADE_HZ ? [{ kind: 'lose' }] : []),
 };
 
-const fallOutParams = z.object({ belowY: z.int(), effect: z.enum(['lose', 'respawn']) }).strict();
+const fallOutParams = z
+  .object({
+    belowY: z.int(),
+    effect: z.enum(['lose', 'respawn']),
+    /**
+     * Odpuštění (P37A T7, poletování s `feel: 2`): pád platí, až když ovládání
+     * napočítá v `aux0` hráče aspoň tolik tiků na zemi. Bez něj hned jako dřív.
+     */
+    afterTicks: z.int().min(1).max(ARCADE_HZ).optional(),
+  })
+  .strict();
 
 /** Pád pod úroveň (spodní stěna hráče pod `belowY`) → prohra, nebo návrat na checkpoint. */
 export const fallOut: RulePiece<z.infer<typeof fallOutParams>> = {
@@ -171,7 +181,11 @@ export const fallOut: RulePiece<z.infer<typeof fallOutParams>> = {
   roles: ['player'],
   trigger: 'tick',
   cost: () => ({ bodies: 0, rules: 1 }),
-  fire: ({ state, player }, params) => ((state[bodyBase(player) + BODY.y] as number) < params.belowY ? [{ kind: params.effect }] : []),
+  fire: ({ state, player }, params) => {
+    const base = bodyBase(player);
+    if ((state[base + BODY.y] as number) >= params.belowY) return [];
+    return params.afterTicks === undefined || (state[base + BODY.aux0] as number) >= params.afterTicks ? [{ kind: params.effect }] : [];
+  },
 };
 
 /** Dotek checkpointu → místo návratu je na něm. */

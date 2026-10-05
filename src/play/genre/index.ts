@@ -91,7 +91,9 @@ export function compileWith(module: GenreModule, spec: GenreSpec): GameSpecV1 {
   if (module.clockParam !== undefined && depth.timeLimit !== undefined && depth.timeLimit > 0) own[module.clockParam] = depth.timeLimit;
   const { params: _params, ...rest } = spec;
   const plain = (Object.keys(own).length === 0 ? rest : { ...rest, params: own }) as GenreSpec;
-  return withEnemyAddon(withDepth(module.compile(withCounts(plain) as never), depth), spec.enemyMoves);
+  const game = withEnemyAddon(withDepth(module.compile(withCounts(plain) as never), depth), spec.enemyMoves);
+  // Činnost hrdiny je jen vzhled (P37A T3): modul ji nečte, hra ji dostane hotová.
+  return spec.heroAction === undefined ? game : { ...game, heroAction: spec.heroAction };
 }
 
 /**

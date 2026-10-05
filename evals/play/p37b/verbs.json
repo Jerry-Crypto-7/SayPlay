@@ -1,0 +1,15 @@
+{
+  "about": "P37B T1: 10 vět z různých rodin sloves pro klipy před/po. `heroAction` je hodnota z HERO_ACTIONS (src/play/spec.ts), kterou klipovač vepíše do specu hry, dokud ji neplní věta sama (P37A). Sloveso z klipu soudí T9 (≥ 7/10).",
+  "sentences": [
+    { "id": "stir", "text": "A chef stirs a bubbling pot of soup before the guests arrive", "heroAction": "stir" },
+    { "id": "spray", "text": "A gardener sprays the bugs off the roses", "heroAction": "spray" },
+    { "id": "stack", "text": "A builder stacks crates into a tall tower", "heroAction": "stack" },
+    { "id": "carry", "text": "A waiter carries plates across a crowded restaurant", "heroAction": "carry" },
+    { "id": "sweep", "text": "A janitor sweeps the leaves off the school yard", "heroAction": "sweep" },
+    { "id": "dig", "text": "A dog digs up hidden bones in the backyard", "heroAction": "dig" },
+    { "id": "paint", "text": "A painter paints every fence in the village", "heroAction": "paint" },
+    { "id": "chop", "text": "A lumberjack chops trees in a snowy forest", "heroAction": "chop" },
+    { "id": "water", "text": "A gardener waters thirsty flowers before the sun dries them", "heroAction": "water" },
+    { "id": "fix", "text": "A mechanic fixes broken robots in a factory", "heroAction": "fix" }
+  ]
+}

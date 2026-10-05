@@ -18,7 +18,9 @@ import { type Mesh, type PerspectiveCamera, Vector3 } from 'three';
 import { AXIS_MAX, AXIS_MIN, BODY, BUTTON, HEADER, UNIT, bodyBase } from '@/play/arcade/contract';
 import { GRAVITY } from '@/play/arcade/kernel';
 import { THROW, launchVelocity } from '@/play/arcade/pieces/throw';
+import type { HeroAction } from '@/play/spec';
 
+import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import type { ArcadeSession } from '../session';
 
@@ -29,7 +31,18 @@ const AXIS_PER_PX = 12;
 /** Co musí být vidět: hřiště do ~26 m a výška ~9 m. */
 const VIEW = { from: -3, to: 27, tall: 10, y: 4 } as const;
 
-export function ThrowRig({ session, surface, enabled }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null>; readonly enabled: boolean }) {
+export function ThrowRig({
+  session,
+  surface,
+  enabled,
+  ghost,
+}: {
+  readonly session: ArcadeSession;
+  readonly surface: React.RefObject<HTMLDivElement | null>;
+  readonly enabled: boolean;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
+}) {
   const camera = useThree((three) => three.camera) as PerspectiveCamera;
   const dots = useRef<(Mesh | null)[]>([]);
   const look = useMemo(() => new Vector3(), []);
@@ -165,6 +178,8 @@ export function ThrowRig({ session, surface, enabled }: { readonly session: Arca
           <meshBasicMaterial color="#f8fafc" transparent opacity={0.9 - i * 0.05} fog={false} />
         </mesh>
       ))}
+      {/* Slot ducha (P37-0 T3). */}
+      <GhostSlot ghost={ghost} session={session} />
     </>
   );
 }

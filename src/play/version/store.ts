@@ -14,9 +14,13 @@
  * - `<prefix>:play:children:<parentId>` – JSON pole id dětí,
  * - `<prefix>:play:lineage:<versionId>` – JSON pole `GameVersion` od kořene k listu,
  * - `<prefix>:play:recent` – seznam `RecentGame` od nejnovější, nejvýš `RECENT_CAP` (feed, P23-D T4),
- * - `<prefix>:play:dare:<dareId>` – JSON `DareRecord` (P36B T5), denní strop `<prefix>:play:dare-quota:<den>`,
- * - `<prefix>:play:loop:<finish|dare|skip>:<versionId>` – čítače událostí smyčky pro řazení feedu (P36B T9),
- *   hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den.
+ * - `<prefix>:play:dare:<dareId>` – JSON `DareRecord` (P36B T5), denní strop `<prefix>:play:dare-quota:<den>`;
+ *   běh pro ducha (P37C T1) leží vedle v `<prefix>:play:ghost:<dareId>` s vlastní expirací a stropy
+ *   `<prefix>:play:ghost-quota:<den>` a `<prefix>:play:ghost-quota:<den>:<hash volajícího>`;
+ *   „duch nejlepšího“ hry (P37C T2) je schodiště v seřazené množině `<prefix>:play:best:<versionId>`
+ *   (nejvýš `BEST_KEPT`) s časy zápisu v `<prefix>:play:best:<versionId>:at`,
+ * - `<prefix>:play:loop:<finish|dare|skip|start|clear>:<versionId>` – čítače událostí smyčky pro řazení
+ *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den.
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -35,10 +39,12 @@
  */
 
 import { canonical } from '@/ir/worlddoc';
+import type { LiveEntry } from '@/play/arcade/live';
 import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
 import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
 import type { GameVersion } from '../contracts';
+import { BUILTIN_IDS, withBuiltinGames } from './builtin';
 import { feedEligible } from './feed';
 import type { PublishedGame } from './version';
 
@@ -82,30 +88,44 @@ export interface VersionStore {
    * nejnovější, bez vypršelých; nedostupné úložiště je `[]`.
    */
   recent(limit: number): Promise<RecentGame[]>;
+  /**
+   * Seed feedu (P37C T6, jen `scripts/p37c/seed-feed.mjs`, žádné dveře): uloží
+   * hru jako `put` a nově uloženou zařadí do feedu, i když není autorskou verzí –
+   * větu napsal provozovatel a robot hru ověřil. `exists` řádek nepřidá podruhé.
+   */
+  feature(game: PublishedGame): Promise<PutOutcome>;
   /** Počet dětí každé verze, jedním čtením; nedostupné úložiště jsou nuly. */
   childCounts(versionIds: readonly string[]): Promise<number[]>;
   /**
    * Výzva ověřená přehráním (P36B T5), zapsaná jednou (`SET NX`); `quota` =
    * denní strop výzev vyčerpán, nic se nezapsalo. Výpadek je `VersionStoreUnavailable`.
+   * Běh pro ducha (`dare.replay`, P37C T1) jde pod vlastní klíč a jen pod stropy
+   * duchů, i k výzvě, která už je (`exists`) a ducha nemá. `voter` = hash
+   * volajícího, kterému se běh počítá do stropu; bez něj se běh neuloží.
    */
-  putDare(dare: DareRecord): Promise<'stored' | 'exists' | 'quota'>;
+  putDare(dare: DareRecord, voter?: string): Promise<'stored' | 'exists' | 'quota'>;
   /** `null` = neznámá, prošlá nebo nečitelná výzva, i při výpadku úložiště. */
   getDare(dareId: string): Promise<DareRecord | null>;
   /**
-   * Započte událost smyčky (P36B T9), jen hře, která v úložišti je – jinak by
-   * kdokoli zakládal klíče na vymyšlená id – a nejvýš jednou za
-   * `LOOP_VOTE_TTL_SECONDS` na `voter` (hash volajícího), čítač a hru: falešné
-   * události z jedné adresy feed nepohnou (nález revize T9-1). Opakování zná
-   * proces sám a nestojí ani příkaz úložiště. Výpadek spolkne: čítač je statistika.
+   * „Duch nejlepšího“ hry (P37C T2): výzva s uloženým během, nejvyšší skóre, při
+   * shodě kratší čas. Píše ji `putDare`; `null` = žádná, i při výpadku úložiště.
    */
-  countLoop(versionId: string, counter: LoopCounter, voter: string): Promise<void>;
+  bestDare(versionId: string): Promise<BestDare | null>;
+  /**
+   * Započte událost smyčky do jejích čítačů (P36B T9, P37C T5), jen hře, která
+   * v úložišti je – jinak by kdokoli zakládal klíče na vymyšlená id – a nejvýš
+   * jednou za `LOOP_VOTE_TTL_SECONDS` na `voter` (hash volajícího), čítač a hru:
+   * falešné události z jedné adresy feed nepohnou (nález revize T9-1). Opakování
+   * zná proces sám a nestojí ani příkaz úložiště. Výpadek spolkne: čítač je statistika.
+   */
+  countLoop(versionId: string, counters: readonly LoopCounter[], voter: string): Promise<void>;
   /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
   loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
 }
 
 /**
  * Výzva Dare (P36B T5): výsledek, který server sám spočítal přehráním vstupů
- * běhu – nikdy číslo od klienta. Anonymní, bez jména a bez vstupů.
+ * běhu – nikdy číslo od klienta. Anonymní, bez jména.
  */
 export interface DareRecord {
   readonly dareId: string;
@@ -120,7 +140,48 @@ export interface DareRecord {
    */
   readonly liveChanges: number;
   readonly createdAt: string;
+  /**
+   * Běh pro přehrání ducha (P37C T1). Chybí u výzev zapsaných před ním, u běhu
+   * nad `MAX_GHOST_BYTES`, nad stropy duchů a po `GHOST_TTL_SECONDS` – taková
+   * výzva platí dál, jen ducha nemá.
+   */
+  readonly replay?: DareReplay;
 }
+
+/**
+ * Běh výzvy (P37C T1): vstupy zhuštěné `packInputs` a živé změny, které běh
+ * opravdu použil, v pořadí, v jakém je server přehrál. `v` je verze tvaru –
+ * jiná, než tenhle kód zná, se čte jako výzva bez ducha.
+ */
+export interface DareReplay {
+  readonly v: 1;
+  readonly inputs: readonly number[];
+  readonly patches: readonly LiveEntry[];
+}
+
+/**
+ * Strop bajtů záznamu běhu pro ducha (P37C T1). Běh z klávesnice má pár kB;
+ * analogové řízení, které mění osu každý tik, až ~60 kB – takový se neuloží
+ * a výzva je bez ducha.
+ */
+export const MAX_GHOST_BYTES = 32 * 1024;
+
+/**
+ * Běh pro ducha žije 30 dní, ne jako hra (180): obchod se dělí s knihou stropu
+ * a ta při plném obchodu selhává zavřeně. Nejhorší ustálený stav je denní strop
+ * × strop bajtů × 30 dní = 150 × 32 kB × 30 ≈ 150 MB (nález revize T1-1 #2;
+ * velikostní limit plánu Upstash repo nikde neuvádí). Výzva sama žije dál.
+ */
+export const GHOST_TTL_SECONDS = 30 * 24 * 3600;
+
+/** Kolik běhů pro ducha se za den zapíše napříč volajícími; nad ním je výzva bez ducha. */
+export const DEFAULT_GHOST_DAILY_CAP = 150;
+
+/**
+ * Kolik běhů pro ducha za den smí zapsat jeden volající (hash adresy): jedna
+ * adresa jinak denní strop vyčerpá všem (nález revize T1-1 #1).
+ */
+export const GHOST_DAILY_CAP_PER_CALLER = 10;
 
 /** Jeden volající započte hře každý čítač smyčky nejvýš jednou za den (P36B T9, nález revize T9-1). */
 export const LOOP_VOTE_TTL_SECONDS = 24 * 3600;
@@ -138,13 +199,19 @@ export interface LoopHeat {
   readonly finishes: number;
   readonly dares: number;
   readonly skips: number;
+  /** Pokusy a výhry pro „clear rate“ (P37C T5); feed podle nich neřadí. */
+  readonly starts: number;
+  readonly clears: number;
   readonly remixes: number;
 }
 
 /** Řádek feedu: verze plus to, co karta ukáže a co feed potřebuje k rozmanitosti. */
 export interface RecentGame extends GameVersion {
   readonly archetype: string;
-  readonly relation: 'upgrade';
+  /** Chybí jen u hry ze seedu feedu a z vestavěné sady (P37C T6), ta má místo toho `curated`. */
+  readonly relation?: 'upgrade';
+  /** Věta provozovatele, hra ověřená robotem (P37C T6, `feature` a vestavěná sada). */
+  readonly curated?: true;
   /** `spec.tutorial.goalLine` a `spec.theme.mood` pro kartu; řádky zapsané před D-R1 je nemají. */
   readonly goal?: string;
   readonly mood?: string;
@@ -152,6 +219,17 @@ export interface RecentGame extends GameVersion {
 
 /** Kolik publikací si feed pamatuje. */
 export const RECENT_CAP = 200;
+
+/** Řádek feedu z hry: verze, archetyp, cíl a nálada pro kartu. */
+export function feedRowOf(game: PublishedGame): RecentGame {
+  return {
+    ...game.version,
+    archetype: game.spec.archetype,
+    ...(game.relation === undefined ? {} : { relation: game.relation }),
+    goal: game.spec.tutorial.goalLine,
+    mood: game.spec.theme.mood,
+  };
+}
 
 export type PutOutcome = 'stored' | 'exists' | 'conflict' | 'quota';
 
@@ -175,12 +253,14 @@ export interface WriteLimits {
    * zápisy do obchodu, o který se dělí kniha stropu.
    */
   readonly dareDailyCap?: number;
+  /** Kolik výzev s během pro ducha za den (P37C T1); chybí = `DEFAULT_GHOST_DAILY_CAP`. */
+  readonly ghostDailyCap?: number;
 }
 
 /** Výzva je ~200 B; 2 000 denně je pod 0,5 MB za den i při plné expiraci. */
 export const DEFAULT_DARE_DAILY_CAP = 2_000;
 
-export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 180 * 24 * 3600, dailyCap: 500, dareDailyCap: DEFAULT_DARE_DAILY_CAP };
+export const DEFAULT_WRITE_LIMITS: WriteLimits = { ttlSeconds: 180 * 24 * 3600, dailyCap: 500, dareDailyCap: DEFAULT_DARE_DAILY_CAP, ghostDailyCap: DEFAULT_GHOST_DAILY_CAP };
 
 /** Tvar id výzvy: 32 hex znaků. */
 export const DARE_ID_PATTERN = /^[a-f0-9]{32}$/;
@@ -197,6 +277,29 @@ function isDare(value: unknown): value is DareRecord {
     Number.isInteger(liveChanges) &&
     typeof createdAt === 'string'
   );
+}
+
+/** Běh výzvy, jak ho zná tenhle kód; jiná verze nebo rozbitý tvar = `undefined` (výzva bez ducha). */
+function replayOf(value: unknown): DareReplay | undefined {
+  if (typeof value !== 'object' || value === null) return undefined;
+  const { v, inputs, patches } = value as Record<string, unknown>;
+  return v === 1 && Array.isArray(inputs) && Array.isArray(patches) ? { v, inputs: inputs as number[], patches: patches as LiveEntry[] } : undefined;
+}
+
+/** JSON z úložiště; chybějící nebo rozbitý záznam je `null`. */
+function parsedOrNull(text: string | null): unknown {
+  if (text === null) return null;
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+/** Výzva bez běhu – tak se zapisuje; běh leží pod vlastním klíčem. */
+function withoutReplay(dare: DareRecord): DareRecord {
+  const { dareId, versionId, score, ticks, hash, liveChanges, createdAt } = dare;
+  return { dareId, versionId, score, ticks, hash, liveChanges, createdAt };
 }
 
 /** Den v UTC pro klíč počítadla. */
@@ -229,6 +332,53 @@ interface RawStore {
   /** Hodnoty klíčů v témž pořadí, chybějící jako `null`. */
   getMany(keys: readonly string[]): Promise<(string | null)[]>;
   exists(key: string): Promise<boolean>;
+  /**
+   * „Schodiště“ nejlepších (P37C T2, rozhodnutí k nálezu revize T2-2), jedním
+   * atomickým krokem: přidá člena s hodnocením `rank` a časem zápisu `at` (ms),
+   * vyhodí každého člena hodnoceného níž nebo stejně – nový běh vyprší poslední,
+   * horší ani shodný starší už nebude potřeba nikdy (rozhodnutí k revizi T2-3) –
+   * a každého zapsaného nejpozději v `staleBefore` (jeho běh vypršel). Zbylé
+   * hodnocení klesá a čas zápisu roste, nový člen je nejníž. Nad `keep` členů
+   * odejdou ti těsně nad novým: nejlepší i nový zůstanou, hra ukazuje nejlepší
+   * a bez ducha nezůstane, dokud nějaký běh leží.
+   */
+  keepBest(key: string, member: string, rank: number, at: number, staleBefore: number, keep: number, ttlSeconds: number): Promise<void>;
+  /** Nejvýš `count` nejvýš hodnocených členů seřazené množiny, od nejvyššího. */
+  top(key: string, count: number): Promise<{ readonly member: string; readonly rank: number }[]>;
+  /** Zbývající život klíče v ms; chybějící klíč nebo klíč bez expirace ≤ 0. */
+  msLeft(key: string): Promise<number>;
+  /** Celé schodiště nejlepších s časem zápisu každého člena (chybí-li, 0). */
+  staircase(key: string): Promise<{ readonly member: string; readonly rank: number; readonly at: number }[]>;
+  /** Jedním atomickým krokem odebere `drop` z obou množin schodiště a přidá člena s hodnocením `rank` a časem zápisu `at`. */
+  reviseBest(key: string, drop: readonly string[], member: string, rank: number, at: number, ttlSeconds: number): Promise<void>;
+}
+
+/** Ve kterém řádu hodnocení nejlepší výzvy leží skóre; tiky (≤ 5 400) se vejdou pod něj. */
+const BEST_TICK_SPAN = 8192;
+
+/**
+ * Strop schodiště nejlepších výzev hry. Schodiště drží jen běhy z posledních 30
+ * dní, z nichž každý je horší než všechny před ním – při náhodném pořadí výsledků
+ * jich je v průměru ln(počet běhů) + 0,58, přes 8 až kolem 1 700 běhů jedné hry
+ * za měsíc. Nad stropem odejde člen těsně nad novým během: nejlepší zůstane
+ * a po expiraci starších přijde řada na nový. Čtení vezme
+ * nejvyšší, jehož běh ještě leží (nález revize T2-1), nejvýš 8 dotazů.
+ */
+export const BEST_KEPT = 8;
+
+/**
+ * Hodnocení výzvy pro „ducha nejlepšího“ (P37C T2): vyšší skóre, při shodě
+ * kratší čas. Skóre je Int32 – součin zůstane pod 2^53, číslo je přesné.
+ */
+export function bestRank(score: number, ticks: number): number {
+  return score * BEST_TICK_SPAN + (BEST_TICK_SPAN - 1 - ticks);
+}
+
+/** Nejlepší ověřená výzva hry s duchem (P37C T2). */
+export interface BestDare {
+  readonly dareId: string;
+  readonly score: number;
+  readonly ticks: number;
 }
 
 /** Jediná serializace pro zápis: seřazené klíče, bez `undefined`. */
@@ -255,6 +405,45 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const verdictKey = (draftId: string): string => `${prefix}:play:upgrade-final:${draftId}`;
   const dareKey = (dareId: string): string => `${prefix}:play:dare:${dareId}`;
   const dareQuotaKey = (): string => `${prefix}:play:dare-quota:${quotaDay(now())}`;
+  const ghostKey = (dareId: string): string => `${prefix}:play:ghost:${dareId}`;
+  const ghostQuotaKey = (voter?: string): string => `${prefix}:play:ghost-quota:${quotaDay(now())}${voter === undefined ? '' : `:${voter}`}`;
+  const bestKey = (versionId: string): string => `${prefix}:play:best:${versionId}`;
+  const ghostTtlSeconds = Math.min(limits.ttlSeconds, GHOST_TTL_SECONDS);
+  /**
+   * Běh pro ducha pod stropem bajtů, stropem volajícího a denním stropem; jinak nic – výzva platí i bez něj.
+   * `written` = běh se právě zapsal; `present` = ležel už dřív a jeho expirace běží od dřívějška.
+   */
+  const keepGhost = async (dareId: string, replay: DareReplay, voter: string): Promise<'written' | 'present' | 'refused'> => {
+    if (await raw.exists(ghostKey(dareId))) return 'present';
+    const text = JSON.stringify(replay);
+    if (new TextEncoder().encode(text).length > MAX_GHOST_BYTES) return 'refused';
+    // Volajícího soudit první: vyčerpaný volající pak denní strop neubírá ostatním.
+    if ((await raw.incr(ghostQuotaKey(voter), 2 * 24 * 3600)) > GHOST_DAILY_CAP_PER_CALLER) return 'refused';
+    if ((await raw.incr(ghostQuotaKey(), 2 * 24 * 3600)) > (limits.ghostDailyCap ?? DEFAULT_GHOST_DAILY_CAP)) return 'refused';
+    return (await raw.setNx(ghostKey(dareId), text, ghostTtlSeconds)) ? 'written' : 'present';
+  };
+  /**
+   * Doplní do schodiště běh, jehož duch leží, ale zápis schodiště selhal (nález revize T2-3 #3, R3).
+   * Čas zápisu se bere z expirace ducha, ne z teď: běh vyhodí jen horší nebo stejné členy, kteří
+   * vyprší dřív než on, a lepšímu nebo stejnému, který žije déle, ustoupí. Nad stropem odejde soused
+   * běhu – nejlepší ani nejnovější ne, jako u `keepBest`.
+   */
+  const healBest = async (dare: DareRecord): Promise<void> => {
+    const key = bestKey(dare.versionId);
+    const steps = await raw.staircase(key);
+    if (steps.some(({ member }) => member === dare.dareId)) return;
+    const left = await raw.msLeft(ghostKey(dare.dareId));
+    if (left <= 0) return;
+    const rank = bestRank(dare.score, dare.ticks);
+    const at = now() - (ghostTtlSeconds * 1000 - left);
+    if (steps.some((step) => step.rank >= rank && step.at >= at)) return;
+    const stale = now() - ghostTtlSeconds * 1000;
+    const drop = steps.filter((step) => step.at <= stale || (step.rank <= rank && step.at <= at));
+    const kept = [...steps.filter((step) => !drop.includes(step)), { member: dare.dareId, rank, at }].sort((a, b) => b.rank - a.rank);
+    const self = kept.findIndex(({ member }) => member === dare.dareId);
+    const neighbour = kept.length > BEST_KEPT ? kept[self >= 2 ? self - 1 : self + 1] : undefined;
+    await raw.reviseBest(key, [...drop, ...(neighbour === undefined ? [] : [neighbour])].map(({ member }) => member), dare.dareId, rank, at, ghostTtlSeconds);
+  };
   const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
   const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
 
@@ -280,8 +469,9 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       try {
         // Autorské dítě se do kvóty nepočítá (R11): stojí placené volání a drží
         // ho strop utrácení a denní počet volajícího. Jinak by věta zapsala dvě
-        // hry a strop by pustil jen polovinu vět.
-        if (game.relation !== 'upgrade' && (await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
+        // hry a strop by pustil jen polovinu vět. Vestavěná hra (P37C T6) není publikace
+        // návštěvníka: obal ji ukládá při první události, a ta by ubrala z jejich stropu.
+        if (game.relation !== 'upgrade' && !BUILTIN_IDS.has(game.version.versionId) && (await raw.incr(quotaKey(), 2 * 24 * 3600)) > limits.dailyCap) return 'quota';
         if (!(await raw.setNx(key, text, limits.ttlSeconds))) {
           const existing = await raw.get(key);
           if (existing === text) return 'exists';
@@ -311,14 +501,27 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
       // placené volání pod stropy a titul jí napsal model.
       if (feedEligible({ versionId: game.version.versionId, relation: game.relation, publishEligible: game.report.publishEligible }, NOTHING_HIDDEN)) {
-        const row: RecentGame = { ...game.version, archetype: game.spec.archetype, relation: 'upgrade', goal: game.spec.tutorial.goalLine, mood: game.spec.theme.mood };
         try {
-          await raw.pushCapped(recentKey, JSON.stringify(row), RECENT_CAP, limits.ttlSeconds);
+          await raw.pushCapped(recentKey, JSON.stringify(feedRowOf(game)), RECENT_CAP, limits.ttlSeconds);
         } catch {
           // Feed je navigace: hra je uložená a odkaz na ni platí, i když se do feedu nedostala.
         }
       }
       return 'stored';
+    },
+    async feature(game) {
+      const outcome = await store.put(game);
+      // Nově uloženou autorskou verzi do feedu zařadil už `put`. Hra, která v úložišti byla, řádek dostane,
+      // jen když ho nemá: zápis řádku mohl minule selhat až po uložení hry (nález revize T6-2 #3).
+      if ((outcome === 'stored' && game.relation === 'upgrade') || (outcome !== 'stored' && outcome !== 'exists')) return outcome;
+      try {
+        if (outcome === 'exists' && (await raw.head(recentKey, RECENT_CAP)).some((text) => (parsedOrNull(text) as { versionId?: unknown } | null)?.versionId === game.version.versionId))
+          return outcome;
+        await raw.pushCapped(recentKey, JSON.stringify({ ...feedRowOf(game), curated: true }), RECENT_CAP, limits.ttlSeconds);
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+      return outcome;
     },
     async canPublish() {
       let text: string | null;
@@ -409,38 +612,78 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         return versionIds.map(() => 0);
       }
     },
-    async putDare(dare) {
+    async putDare(dare, voter) {
+      let outcome: 'stored' | 'exists';
       try {
         // Týž běh podruhé denní strop neubírá: jinak jeden opakovaný požadavek zavře výzvy všem (nález revize T5).
-        if ((await raw.get(dareKey(dare.dareId))) !== null) return 'exists';
-        if ((await raw.incr(dareQuotaKey(), 2 * 24 * 3600)) > (limits.dareDailyCap ?? DEFAULT_DARE_DAILY_CAP)) return 'quota';
-        return (await raw.setNx(dareKey(dare.dareId), JSON.stringify(dare), limits.ttlSeconds)) ? 'stored' : 'exists';
+        if ((await raw.get(dareKey(dare.dareId))) !== null) outcome = 'exists';
+        else if ((await raw.incr(dareQuotaKey(), 2 * 24 * 3600)) > (limits.dareDailyCap ?? DEFAULT_DARE_DAILY_CAP)) return 'quota';
+        else outcome = (await raw.setNx(dareKey(dare.dareId), JSON.stringify(withoutReplay(dare)), limits.ttlSeconds)) ? 'stored' : 'exists';
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+      // Běh pro ducha i k výzvě, která už je: výzva zapsaná nad stropem duchů ho dostane
+      // opakovaným odesláním jindy (nález revize T1-1 #1). Duch je navíc – výpadek výzvu neshodí.
+      if (dare.replay === undefined || voter === undefined) return outcome;
+      try {
+        // Do schodiště nejlepších (P37C T2) běh zapsaný právě teď s časem teď: ten pak říká,
+        // kdy běh vyprší. Znovu poslaný starší běh jde přes `healBest` s časem svého zápisu –
+        // s časem teď by vyhodil horší, ale déle žijící členy.
+        // Množina žije 30 dní od posledního zápisu, jako běh nejnovějšího člena.
+        const ghost = await keepGhost(dare.dareId, dare.replay, voter);
+        if (ghost === 'written') {
+          const at = now();
+          await raw.keepBest(bestKey(dare.versionId), dare.dareId, bestRank(dare.score, dare.ticks), at, at - ghostTtlSeconds * 1000, BEST_KEPT, ghostTtlSeconds);
+        } else if (ghost === 'present') await healBest(dare);
+      } catch {
+        // Duch je navíc – výpadek výzvu neshodí.
+      }
+      return outcome;
+    },
+    async bestDare(versionId) {
+      try {
+        // Od nejvyššího první, jehož běh ještě leží: obvykle hned první, tedy jeden příkaz navíc.
+        for (const { member, rank } of await raw.top(bestKey(versionId), BEST_KEPT)) {
+          if (!DARE_ID_PATTERN.test(member) || !Number.isSafeInteger(rank) || !(await raw.exists(ghostKey(member)))) continue;
+          const score = Math.floor(rank / BEST_TICK_SPAN);
+          return { dareId: member, score, ticks: BEST_TICK_SPAN - 1 - (rank - score * BEST_TICK_SPAN) };
+        }
+      } catch {
+        // Nedostupné úložiště = žádný duch nejlepšího.
+      }
+      return null;
     },
     async getDare(dareId) {
+      let texts: (string | null)[];
       try {
-        const text = await raw.get(dareKey(dareId));
-        if (text === null) return null;
-        const parsed: unknown = JSON.parse(text);
-        return isDare(parsed) ? parsed : null;
+        texts = await raw.getMany([dareKey(dareId), ghostKey(dareId)]);
       } catch {
         return null;
       }
+      const [text, ghost] = texts;
+      const parsed = parsedOrNull(text ?? null);
+      if (!isDare(parsed)) return null;
+      const replay = replayOf(parsedOrNull(ghost ?? null));
+      return replay === undefined ? withoutReplay(parsed) : { ...withoutReplay(parsed), replay };
     },
-    async countLoop(versionId, counter, voter) {
-      const vote = `${counter}:${versionId}:${voter}`;
-      const seen = `${id}:${prefix}:${vote}`;
-      if ((voted.get(seen) ?? 0) > now()) return;
-      if (voted.size >= MAX_VOTE_MEMO) voted.clear();
-      voted.set(seen, now() + LOOP_VOTE_TTL_SECONDS * 1000);
+    async countLoop(versionId, counters, voter) {
+      const fresh = counters.filter((counter) => {
+        const seen = `${id}:${prefix}:${counter}:${versionId}:${voter}`;
+        if ((voted.get(seen) ?? 0) > now()) return false;
+        if (voted.size >= MAX_VOTE_MEMO) voted.clear();
+        voted.set(seen, now() + LOOP_VOTE_TTL_SECONDS * 1000);
+        return true;
+      });
+      if (fresh.length === 0) return;
       try {
+        // Existenci hry stačí ověřit jednou za událost, ne za každý čítač (nález revize T5-1 #3).
         if (!(await raw.exists(versionKey(versionId)))) return;
-        // Hlas v úložišti platí napříč instancemi; teprve nový hlas zvýší čítač.
-        if (!(await raw.setNx(voteKey(vote), '1', LOOP_VOTE_TTL_SECONDS))) return;
-        // Čítač žije nejvýš tak dlouho jako hra (expirace od prvního zvýšení).
-        await raw.incr(loopKey(counter, versionId), limits.ttlSeconds);
+        for (const counter of fresh) {
+          // Hlas v úložišti platí napříč instancemi; teprve nový hlas zvýší čítač.
+          if (!(await raw.setNx(voteKey(`${counter}:${versionId}:${voter}`), '1', LOOP_VOTE_TTL_SECONDS))) continue;
+          // Čítač žije nejvýš tak dlouho jako hra (expirace od prvního zvýšení).
+          await raw.incr(loopKey(counter, versionId), limits.ttlSeconds);
+        }
       } catch {
         // Nezapočtená událost jen trochu posune feed.
       }
@@ -463,8 +706,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         };
         return new Map(
           versionIds.map((versionId, index) => {
-            const [finishes, dares, skips, children] = texts.slice(index * per, index * per + per);
-            return [versionId, { finishes: count(finishes), dares: count(dares), skips: count(skips), remixes: remixes(children) }];
+            const [finishes, dares, skips, starts, clears, children] = texts.slice(index * per, index * per + per);
+            return [versionId, { finishes: count(finishes), dares: count(dares), skips: count(skips), starts: count(starts), clears: count(clears), remixes: remixes(children) }];
           }),
         );
       } catch {
@@ -496,6 +739,16 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
     entries.set(key, value);
     expiresAt.set(key, now() + ttlSeconds * 1000);
   };
+  /** Schodiště nejlepších (člen → hodnocení a čas zápisu) s expirací jako hodnoty. */
+  const sets = new Map<string, Map<string, { readonly rank: number; readonly at: number }>>();
+  const liveSet = (key: string): Map<string, { readonly rank: number; readonly at: number }> | undefined => {
+    const until = expiresAt.get(key);
+    if (until !== undefined && now() >= until) {
+      sets.delete(key);
+      expiresAt.delete(key);
+    }
+    return sets.get(key);
+  };
   const raw: RawStore = {
     get: (key) => Promise.resolve(live(key)),
     setNx: (key, value, ttlSeconds) => {
@@ -520,6 +773,29 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
     head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
     getMany: (keys) => Promise.resolve(keys.map(live)),
     exists: (key) => Promise.resolve(live(key) !== null),
+    keepBest: (key, member, rank, at, staleBefore, keep, ttlSeconds) => {
+      const kept = [...(liveSet(key) ?? [])].filter(([other, entry]) => other !== member && entry.rank > rank && entry.at > staleBefore);
+      kept.push([member, { rank, at }]);
+      // Pořadí Redisu: hodnocení, při shodě člen podle bajtů; vrchol je poslední. Nový běh leží na indexu 0,
+      // nad `keep` odejdou členové těsně nad ním – jako `ZREMRANGEBYRANK key 1 -keep`.
+      kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
+      sets.set(key, new Map(kept.filter((_, index) => index === 0 || index > kept.length - keep)));
+      expiresAt.set(key, now() + ttlSeconds * 1000);
+      return Promise.resolve();
+    },
+    top: (key, count) => {
+      return Promise.resolve([...(liveSet(key) ?? [])].slice(-count).reverse().map(([member, { rank }]) => ({ member, rank })));
+    },
+    msLeft: (key) => Promise.resolve(live(key) === null ? -2 : (expiresAt.get(key) ?? now()) - now()),
+    staircase: (key) => Promise.resolve([...(liveSet(key) ?? [])].map(([member, { rank, at }]) => ({ member, rank, at }))),
+    reviseBest: (key, drop, member, rank, at, ttlSeconds) => {
+      const kept = [...(liveSet(key) ?? [])].filter(([other]) => !drop.includes(other) && other !== member);
+      kept.push([member, { rank, at }]);
+      kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
+      sets.set(key, new Map(kept));
+      expiresAt.set(key, now() + ttlSeconds * 1000);
+      return Promise.resolve();
+    },
   };
   return versionStoreOver('memory', 'memory', raw, limits, now);
 }
@@ -549,6 +825,24 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
     // Bez těla odpovědi – chybová stránka úložiště nese adresu i klíč.
     if (!response.ok) throw new Error(`version store answered ${String(response.status)}`);
     return ((await response.json()) as { result?: unknown }).result;
+  };
+
+  /**
+   * Příkazy jedním požadavkem transakce (`/multi-exec`): úložiště je provede
+   * všechny bez proložení cizími, nebo žádný. Chyba jednoho další nezastaví
+   * (dokumentace Upstash REST, „Transactions“) – proto končí `EXPIRE`.
+   */
+  const transaction = async (commands: readonly (readonly string[])[]): Promise<void> => {
+    const response = await fetchImpl(`${config.url}/multi-exec`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(commands),
+      signal: AbortSignal.timeout(config.timeoutMs),
+    });
+    if (!response.ok) throw new Error(`version store answered ${String(response.status)}`);
+    const results = (await response.json()) as unknown;
+    if (!Array.isArray(results) || results.length !== commands.length || results.some((item) => typeof item !== 'object' || item === null || 'error' in item))
+      throw new Error('version store refused part of a transaction');
   };
 
   const raw: RawStore = {
@@ -591,7 +885,54 @@ export function httpVersionStore(config: HttpVersionStoreConfig, fetchImpl: type
       return result.map((item) => (typeof item === 'string' ? item : null));
     },
     exists: async (key) => (await command(['EXISTS', key])) === 1,
+    async keepBest(key, member, rank, at, staleBefore, keep, ttlSeconds) {
+      // Čas zápisu leží ve druhé množině; průnik s váhou 0 nechá v každé jen členy obou a její vlastní skóre.
+      const written = `${key}:at`;
+      await transaction([
+        ['ZREMRANGEBYSCORE', key, '-inf', String(rank)],
+        ['ZADD', key, String(rank), member],
+        ['ZADD', written, String(at), member],
+        ['ZREMRANGEBYSCORE', written, '-inf', String(staleBefore)],
+        ['ZINTERSTORE', key, '2', key, written, 'WEIGHTS', '1', '0'],
+        ['ZREMRANGEBYRANK', key, '1', String(-keep)],
+        ['ZINTERSTORE', written, '2', written, key, 'WEIGHTS', '1', '0'],
+        ['EXPIRE', key, String(ttlSeconds)],
+        ['EXPIRE', written, String(ttlSeconds)],
+      ]);
+    },
+    async top(key, count) {
+      return (await scored(key, -count)).reverse().map(([member, rank]) => ({ member, rank }));
+    },
+    async msLeft(key) {
+      const left = await command(['PTTL', key]);
+      if (typeof left !== 'number') throw new Error('version store answered a shape this server cannot read');
+      return left;
+    },
+    async staircase(key) {
+      const [ranks, times] = await Promise.all([scored(key, 0), scored(`${key}:at`, 0)]);
+      const written = new Map(times);
+      return ranks.map(([member, rank]) => ({ member, rank, at: written.get(member) ?? 0 }));
+    },
+    async reviseBest(key, drop, member, rank, at, ttlSeconds) {
+      const written = `${key}:at`;
+      await transaction([
+        ...(drop.length === 0 ? [] : [['ZREM', key, ...drop], ['ZREM', written, ...drop]]),
+        ['ZADD', key, String(rank), member],
+        ['ZADD', written, String(at), member],
+        ['EXPIRE', key, String(ttlSeconds)],
+        ['EXPIRE', written, String(ttlSeconds)],
+      ]);
+    },
   };
+  /** Členové seřazené množiny od indexu `from` do konce, od nejníž hodnoceného, se skóre. */
+  async function scored(key: string, from: number): Promise<[string, number][]> {
+    const result = await command(['ZRANGE', key, String(from), '-1', 'WITHSCORES']);
+    if (!Array.isArray(result) || result.length % 2 !== 0 || !result.every((item) => typeof item === 'string'))
+      throw new Error('version store answered a shape this server cannot read');
+    const pairs: [string, number][] = [];
+    for (let i = 0; i < result.length; i += 2) pairs.push([result[i] as string, Number(result[i + 1])]);
+    return pairs;
+  }
   return versionStoreOver('http', config.prefix, raw, config.limits ?? DEFAULT_WRITE_LIMITS, config.now ?? Date.now);
 }
 
@@ -606,6 +947,7 @@ export function writeLimitsFromEnv(env: Record<string, string | undefined>): Wri
     ttlSeconds: positiveInt(env.PLAY_VERSION_TTL_SECONDS, DEFAULT_WRITE_LIMITS.ttlSeconds),
     dailyCap: positiveInt(env.PLAY_PUBLISH_DAILY_CAP, DEFAULT_WRITE_LIMITS.dailyCap),
     dareDailyCap: positiveInt(env.PLAY_DARE_DAILY_CAP, DEFAULT_DARE_DAILY_CAP),
+    ghostDailyCap: positiveInt(env.PLAY_GHOST_DAILY_CAP, DEFAULT_GHOST_DAILY_CAP),
   };
 }
 
@@ -626,14 +968,17 @@ export function volatileVersionStore(env: Record<string, string | undefined>): b
   return env.NODE_ENV === 'production' && sharedStoreFromEnv(env) === null;
 }
 
-/** Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak paměť procesu. */
+/**
+ * Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak paměť procesu.
+ * Obojí s vestavěnou sadou her (P37C T6): feed ani odkaz na ni nezůstanou prázdné.
+ */
 export function versionStoreFromEnv(env: Record<string, string | undefined>, fetchImpl: typeof fetch = fetch): VersionStore {
   const shared = sharedStoreFromEnv(env);
   const limits = writeLimitsFromEnv(env);
   if (shared !== null)
-    return httpVersionStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: VERSION_STORE_TIMEOUT_MS, limits }, fetchImpl);
+    return withBuiltinGames(httpVersionStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: VERSION_STORE_TIMEOUT_MS, limits }, fetchImpl));
   if (processStore === null) {
-    processStore = memoryVersionStore(limits);
+    processStore = withBuiltinGames(memoryVersionStore(limits));
     if (volatileVersionStore(env)) console.warn('[play] no shared store configured: published games live only in this process and vanish with it');
   }
   return processStore;

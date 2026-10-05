@@ -31,16 +31,18 @@ import { instantiate } from '@/play/arcade/kernel';
 import type { Look } from '@/play/arcade/look';
 import { type CompiledInteract, interactRecord, readyWait } from '@/play/arcade/rules/interact';
 import type { VerbKind } from '@/play/genre/quest';
+import type { HeroAction } from '@/play/spec';
 
 import type { TargetBody } from '../arena/TargetsMount';
 import type { Burst } from '../effects/particles';
 import { applyIntro, introLeft, useIntroClock } from '../look/intro';
 import type { ArcadeSession } from '../session';
 
-/** Co stanoviště potřebuje od scény arény: relaci (stav, pult z úrovně) a sadu (barvy pultu). */
+/** Co stanoviště potřebuje od scény arény: relaci (stav, pult z úrovně), sadu (barvy pultu) a činnost hrdiny (P37-0 T2). */
 export interface Stage {
   readonly session: ArcadeSession;
   readonly look: Look;
+  readonly heroAction: HeroAction;
 }
 
 export interface StationSetup extends Stage {

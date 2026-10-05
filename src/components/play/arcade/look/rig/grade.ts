@@ -1,0 +1,128 @@
+/**
+ * Barevné ladění podle rodiny prostředí (P37B T3): poslední krok skládače za
+ * ACES. Snímky „před“ (T1) ukázaly dvě vady, které paleta sady sama nespraví:
+ * sníh v mlze arény vybledne do bílé a noční sady (hřbitov, jeskyně, vesmír)
+ * zapadnou do černé, takže hrdina v nich není vidět. Ladění proto zvedá stíny
+ * nočním sadám, sníh dostane hloubku ve středních tónech a každá rodina jemný
+ * odstín (teplá světla na poušti, tyrkysové stíny pod vodou) a vinětu.
+ *
+ * Operace běží ve vnímaném prostoru (gama 2,2), jako tónová křivka LUT:
+ * zisk·(c + zdvih·(1 − c)), pak gama, sytost a kontrast kolem středu.
+ * Efekt se slije do průchodu ACES, takže na telefonu nestojí průchod navíc;
+ * úroveň `low` skládač nemá a kreslí bez ladění.
+ *
+ * Nic fialového: zdvih i zisk jsou jen modré, tyrkysové nebo teplé a tmavé
+ * fialové směsi, které by zdvih vytáhl nad černou, shader stáhne k modré.
+ * Mimo hash: jádro obraz nečte.
+ */
+
+import { Effect } from 'postprocessing';
+import { Uniform, Vector3 } from 'three';
+
+import type { LookId } from '@/play/arcade/look';
+
+export const GRADE_FAMILIES = ['green', 'warm', 'cold', 'water', 'indoor', 'dark'] as const;
+export type GradeFamily = (typeof GRADE_FAMILIES)[number];
+
+export interface Grade {
+  /** Zdvih stínů po kanálech (0 = černá zůstane černou). */
+  readonly lift: readonly [number, number, number];
+  /** Zisk světel po kanálech (1 = beze změny). */
+  readonly gain: readonly [number, number, number];
+  /** Exponent středních tónů: > 1 ztmaví vybledlé, < 1 rozjasní tmavé. */
+  readonly gamma: number;
+  readonly saturation: number;
+  readonly contrast: number;
+  /** Ztmavení rohů (0 = bez viněty). */
+  readonly vignette: number;
+}
+
+export const LOOK_FAMILY: Readonly<Record<LookId, GradeFamily>> = {
+  meadow: 'green',
+  forest: 'green',
+  jungle: 'green',
+  castle: 'green',
+  desert: 'warm',
+  beach: 'warm',
+  volcano: 'warm',
+  snow: 'cold',
+  ocean: 'water',
+  underwater: 'water',
+  city: 'indoor',
+  mall: 'indoor',
+  supermarket: 'indoor',
+  living_room: 'indoor',
+  factory: 'indoor',
+  cave: 'dark',
+  graveyard: 'dark',
+  space: 'dark',
+};
+
+export const GRADES: Readonly<Record<GradeFamily, Grade>> = {
+  green: { lift: [0, 0.01, 0.02], gain: [1.03, 1.01, 0.97], gamma: 1.04, saturation: 1.14, contrast: 1.06, vignette: 0.22 },
+  warm: { lift: [0.02, 0.01, 0], gain: [1.04, 1, 0.93], gamma: 1.04, saturation: 1.1, contrast: 1.08, vignette: 0.22 },
+  // Mlha arény sníh vybělí: gama vrátí střední tóny, bílá zůstane bílou.
+  cold: { lift: [0, 0.01, 0.03], gain: [0.99, 1, 1.01], gamma: 1.22, saturation: 1.2, contrast: 1.1, vignette: 0.2 },
+  water: { lift: [0, 0.02, 0.03], gain: [0.98, 1.02, 1.03], gamma: 1.04, saturation: 1.12, contrast: 1.06, vignette: 0.26 },
+  indoor: { lift: [0.01, 0.01, 0], gain: [1.03, 1, 0.96], gamma: 1.03, saturation: 1.08, contrast: 1.06, vignette: 0.2 },
+  // Noc: černá se zvedne do modré, střední tóny se rozjasní – hrdina nezapadne.
+  dark: { lift: [0.03, 0.045, 0.07], gain: [1, 1.02, 1.04], gamma: 0.8, saturation: 1.1, contrast: 1, vignette: 0.3 },
+};
+
+export const gradeOf = (lookId: LookId): Grade => GRADES[LOOK_FAMILY[lookId]];
+
+const FRAGMENT = /* glsl */ `
+uniform vec3 lift;
+uniform vec3 gain;
+uniform float gamma;
+uniform float saturation;
+uniform float contrast;
+uniform float vignette;
+
+void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
+  vec3 c = pow(clamp(inputColor.rgb, 0.0, 1.0), vec3(1.0 / 2.2));
+  float shade = 1.0 - smoothstep(0.3, 0.5, max(c.r, max(c.g, c.b)));
+  c = gain * (c + lift * (1.0 - c));
+  c = pow(max(c, 0.0), vec3(gamma));
+  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+  c = mix(vec3(l), c, saturation);
+  c = (c - 0.5) * contrast + 0.5;
+  // Nic fialového (P37B T9): tmavá směs červené půdy a modré mlhy na obzoru vesmíru je fialová,
+  // jen dřív zapadla do černé – zvednutá nocí byla 4,5 % snímku. Odstín 250–320° se v tmavých
+  // tónech stáhne pod okraj pásma (fialová strana k modré ~245°, purpurová k červené ~330°,
+  // s rezervou na zaokrouhlení do 8 bitů); světlou fialovou, kterou si hráč řekl větou,
+  // ladění nepřebarví.
+  if (shade > 0.0 && min(c.r, c.b) > c.g) {
+    vec3 safe = c;
+    if (c.b >= c.r) safe.r = min(c.r, c.g + (c.b - c.g) * 0.08);
+    else safe.b = min(c.b, c.g + (c.r - c.g) * 0.5);
+    c = mix(c, safe, shade);
+  }
+  c *= 1.0 - vignette * smoothstep(0.45, 1.0, length(uv - 0.5) * 1.414);
+  outputColor = vec4(pow(clamp(c, 0.0, 1.0), vec3(2.2)), inputColor.a);
+}`;
+
+export class GradeEffect extends Effect {
+  constructor() {
+    super('GradeEffect', FRAGMENT, {
+      uniforms: new Map<string, Uniform>([
+        ['lift', new Uniform(new Vector3())],
+        ['gain', new Uniform(new Vector3(1, 1, 1))],
+        ['gamma', new Uniform(1)],
+        ['saturation', new Uniform(1)],
+        ['contrast', new Uniform(1)],
+        ['vignette', new Uniform(0)],
+      ]),
+    });
+  }
+
+  set grade(grade: Grade) {
+    const uniforms = this.uniforms;
+    (uniforms.get('lift')!.value as Vector3).set(...grade.lift);
+    (uniforms.get('gain')!.value as Vector3).set(...grade.gain);
+    uniforms.get('gamma')!.value = grade.gamma;
+    uniforms.get('saturation')!.value = grade.saturation;
+    uniforms.get('contrast')!.value = grade.contrast;
+    uniforms.get('vignette')!.value = grade.vignette;
+  }
+}

@@ -2,7 +2,8 @@
 
 /**
  * Spotřebitel sběrnice efektů na plátně (P32-0 T5, P32A T4): částice
- * three.quarks v místě události a otřes kamery po zásahu hráče.
+ * three.quarks v místě události, otřes kamery po zásahu hráče a od P37B T5
+ * zvuk každé události (`sound.ts`).
  *
  * Otřes jde na kameru až po tom, co ji scéna umístila: `Effects` je poslední
  * dítě plátna, takže jeho snímek (`useFrame` se stejnou prioritou) běží po
@@ -38,12 +39,14 @@ import {
 
 import { HEADER } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
+import { playSfx } from '@/play/audio';
 
 import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
 import type { ArcadeSession } from '../session';
 import { type EffectsBus, type VisualEventKind, createEffectsBus } from './bus';
 import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
+import { busPresets } from './sound';
 
 declare global {
   interface Window {
@@ -168,6 +171,8 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     window.__playFx = probe;
     const offBursts = created.subscribe((events) => {
       for (const event of events) heard[event.kind] = (heard[event.kind] ?? 0) + 1;
+      // Každá událost sběrnice zní (P37B T5, `sound.ts`); co zní i z efektů jádra, `playSfx` nezdvojí.
+      for (const preset of busPresets(events)) playSfx(preset);
       // Konec běhu (P36C T7): výhra zpomalí efekty a přiblíží kameru, prohra odbarví scénu (`play.css`).
       if (events.some((event) => event.kind === 'win')) wonAt.current = clock.current;
       if (surface.current !== null && events.some((event) => event.kind === 'lose')) surface.current.dataset.fx = 'lose';

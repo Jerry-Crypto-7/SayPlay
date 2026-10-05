@@ -18,6 +18,8 @@
  * pozici (uvidí ji při dalším načtení). Bez čítačů platí záruka výš beze změny.
  */
 
+import { clearRate } from '@/play/loop-events';
+
 import { diversify } from './diversify';
 import { type LoopHeat, RECENT_CAP, type RecentGame } from './store';
 
@@ -25,15 +27,18 @@ import { type LoopHeat, RECENT_CAP, type RecentGame } from './store';
 export interface FeedCandidate {
   readonly versionId: string;
   readonly relation?: 'upgrade';
+  /** Hra ze seedu feedu nebo z vestavěné sady (P37C T6); nese ji jen řádek seznamu. */
+  readonly curated?: true;
   readonly publishEligible: boolean;
 }
 
 /**
- * Do feedu jen autorská verze od režiséra (`relation: 'upgrade'`), která prošla
+ * Do feedu jen autorská verze od režiséra (`relation: 'upgrade'`) nebo hra ze
+ * seedu provozovatele (`curated`, věty napsal on, ne návštěvník), která prošla
  * branou publikace a kterou provozovatel neskryl (`PLAY_FEED_HIDE`).
  */
 export function feedEligible(game: FeedCandidate, hidden: ReadonlySet<string>): boolean {
-  return game.publishEligible && game.relation === 'upgrade' && !hidden.has(game.versionId);
+  return game.publishEligible && (game.relation === 'upgrade' || game.curated === true) && !hidden.has(game.versionId);
 }
 
 /** `PLAY_FEED_HIDE` – čárkami oddělená `versionId`; mezery a prázdné položky se ignorují. */
@@ -119,6 +124,11 @@ const HALF_LIFE_MS = 24 * 3600 * 1000;
 export function heatOf(heat: LoopHeat | undefined): number {
   if (heat === undefined) return 0;
   return Math.max(0, heat.finishes + 3 * heat.dares + 3 * heat.remixes - 0.5 * heat.skips);
+}
+
+/** „N% beat this“ hry (P37C T5) z jejích čítačů; `null` = málo pokusů nebo čítače nejsou. */
+export function beatOf(heat: LoopHeat | undefined): number | null {
+  return heat === undefined ? null : clearRate(heat.starts, heat.clears);
 }
 
 /**

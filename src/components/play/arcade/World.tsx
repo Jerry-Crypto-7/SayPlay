@@ -30,13 +30,16 @@ import { FLAP } from '@/play/arcade/pieces/flap';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 import { RUNNER } from '@/play/arcade/pieces/runner';
 import { type SteerCourse, centerAt } from '@/play/arcade/pieces/steer';
+import type { HeroAction } from '@/play/spec';
 
-import { type BodyView, bodiesOf, bodiesStale } from './bodies';
+import { type BodyView, bodiesOf, bodiesStale, drawsNothing } from './bodies';
 import { deadFor, fallOf, headingOf, squashPose, tiltPose, turnToward } from './characterMotion';
 import { blinkHidden, hitStopHeld } from './effects/feel';
+import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
 import { loadBodyModel } from './look/load';
+import { HeroActionBody } from './hero-action/HeroActionBody';
 import { type Ink, InkOutline } from './look/rig/InkOutline';
 import { Scenery } from './look/Scenery';
 import { RiggedModel } from './RiggedModel';
@@ -280,6 +283,10 @@ export interface WorldProps {
   readonly enabled: boolean;
   /** Podklad místo výchozího (`Backdrop`): údolí běžce kreslí `RunnerWorld` (P32A T3). */
   readonly backdrop?: React.ReactNode;
+  /** Viditelná činnost hrdiny (P37-0 T2); `none` = dnešní hra. Jen vzhled, jádro ji nečte. */
+  readonly heroAction: HeroAction;
+  /** Duch dřívějšího běhu (P37B T8) pro slot scény; `undefined` = bez ducha. */
+  readonly ghost?: ArcadeGhost;
 }
 
 const PICKUP_MS = 200;
@@ -303,7 +310,7 @@ function applyPose(group: Group, pose: Pose, dead: number): void {
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
-export function World({ session, control, cast, surface, scene, enabled, backdrop }: WorldProps) {
+export function World({ session, control, cast, surface, scene, enabled, backdrop, heroAction, ghost }: WorldProps) {
   // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -345,7 +352,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
 
   // Role těl, pro která scéna postavila model – doplněk, který jádro hraje a scéna nekreslí, e2e takhle pozná.
   useEffect(() => {
-    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => view.kind !== 'gate').map((view) => ROLE_NAMES[view.role]))].join(' ');
+    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => !drawsNothing(view)).map((view) => ROLE_NAMES[view.role]))].join(' ');
   }, [views, surface]);
 
   useFrame((_, delta) => {
@@ -457,16 +464,18 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     <>
       {backdrop ??
         (control === 'steer' ? (
-          <SteerBackdrop course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} />
+          <SteerBackdrop session={session} course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} />
         ) : (
           <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
         ))}
-      {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} />}
-      {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} />}
+      {control === 'shooter' && <ShooterRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
+      {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {views.map((view) =>
-        // Branka poletování je neviditelná: jen počítá průlet mezerou.
-        view.kind === 'gate' ? null : (
+        // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
+        drawsNothing(view) ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
+            {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
+            <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>
             {PRIMITIVE.has(modelIdOf(view, cast)) ? (
               <Primitive id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} block={scene.block} />
             ) : rigged[view.index] !== undefined ? (
@@ -495,11 +504,14 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
                 />
               </group>
             )}
+            </HeroActionBody>
             {/* Obrys až za modelem: běžec bere první dítě skupiny jako vnitřní pózu (`HeroPose`, poskok jízdy pryč). */}
             {inkOf(view) !== undefined && <InkOutline ink={inkOf(view)!} />}
           </group>
         ),
       )}
+      {/* Slot ducha (P37-0 T3): ostatní žánry tohohle světa ho drží ve své scéně, poletování vlastní nemá. */}
+      {control === 'flap' && <GhostSlot ghost={ghost} session={session} />}
     </>
   );
 }

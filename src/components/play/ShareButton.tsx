@@ -38,6 +38,10 @@
  * server je přehraje a vrátí id výzvy. Odkaz pak nese `&dare=<id>` a míří na
  * hranou verzi – na ní server skóre ověřil, i s živými změnami běhu. Když
  * výzva nevyjde, odejde obyčejný odkaz a toast to řekne.
+ *
+ * Výsledek jako Wordle (P37C T4): s `result` dostane nabídka sdílení i text –
+ * název hry, mřížku bez spoileru a cíl „Can you beat 2,450?“ (odkaz jde
+ * zvlášť jako `url`); do schránky jde týž text i s odkazem.
  */
 
 import { useEffect, useId, useRef, useState } from 'react';
@@ -45,6 +49,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { InputEvent } from '@/play/arcade/contract';
 import type { LiveEntry } from '@/play/arcade/live';
 import { packInputs } from '@/play/score/dare';
+import { gameName, type ShareRun, shareText } from '@/play/score/share-text';
 
 import { loopEvent, SHARE_MARK } from './loop-client';
 import { COPY_LINK, DARE_SHORT, LINK_COPIED, SAVE_VIDEO, SHARE_TITLE, VIDEO_AFTER_RUN } from './starters';
@@ -126,6 +131,7 @@ export function ShareButton({
   clip = null,
   live,
   dare,
+  result,
   recording = false,
 }: {
   readonly versionId: string;
@@ -142,6 +148,8 @@ export function ShareButton({
   readonly live?: LivePublish;
   /** Výzva vítězného běhu (P36B T6), `undefined` = odkaz bez výzvy. */
   readonly dare?: DarePublish;
+  /** Skončený běh (P37C T4): sdílí se s textem výsledku; `undefined` = jen odkaz. */
+  readonly result?: ShareRun;
   /** Běh se nahrává (arkáda, P29D T1): list sdílení v HUD ukáže Save video, zatím zašedlé. */
   readonly recording?: boolean;
 }) {
@@ -216,9 +224,11 @@ export function ShareButton({
     // Klip běhu (P29D T2) jde s odkazem, kde nabídka sdílení soubory bere; jinak se stáhne a odkaz zkopíruje.
     const file = onlyCopy || clip === null ? null : new File([clip], `sayplay-clip.${clip.type.includes('mp4') ? 'mp4' : 'webm'}`, { type: clip.type });
     const withFile = file !== null && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+    const name = title ?? gameName(document.title);
     if (!onlyCopy && typeof navigator.share === 'function' && (file === null || withFile)) {
       try {
-        await navigator.share(withFile ? { title: title ?? document.title, url, files: [file] } : { title: title ?? document.title, url });
+        const data: ShareData = { title: title ?? document.title, url, ...(result === undefined ? {} : { text: shareText(result, name, null) }) };
+        await navigator.share(withFile ? { ...data, files: [file] } : data);
         // Sdílení patří hrané verzi – tam leží i zobrazení a výhra běhu (revize fáze 2 P29D).
         loopEvent('share', playing, { withClip: withFile, dare: dareId !== null });
         return true;
@@ -229,7 +239,7 @@ export function ShareButton({
     }
     if (file !== null) download(file);
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(onlyCopy || result === undefined ? url : shareText(result, name, url));
       setShare(file === null ? 'copied' : 'saved');
       loopEvent('share', playing, { withClip: file !== null, dare: dareId !== null });
       return true;

@@ -19,7 +19,7 @@ import runnerFixture from '../arcade/__fixtures__/runner.json';
 import shooterFixture from '../arcade/__fixtures__/shooter.json';
 import { GENRE_ANSWER_SCHEMA, readyModes } from '../director/answer-schema';
 import { buildCompactRequest } from '../director/compact';
-import { DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
+import { DIRECTOR_PROMPT_VERSION, GENRE_RULES, GENRE_SHAPE_LINE, buildDirectorRequest, checklistLines, compactSchema, directorSystemPrompt, renderRegistry } from '../director/prompt';
 import { readDirectorAnswer } from '../director/read';
 import { repairDeterministically } from '../director/repair';
 import { draftGameSpecWithMeta } from '../draft';
@@ -39,7 +39,23 @@ describe('director prompt', () => {
     expect(request.system).toContain(GENRE_SHAPE_LINE);
     expect(request.outputSchema).toBe(GENRE_ANSWER_SCHEMA);
     expect(request.user).toContain('Starting point (keep or improve): {"genre":');
-    expect(buildDirectorRequest(sentence, null).user).toBe(`${sentence}\n\nStarting point: none – choose from the sentence.`);
+    // P37A T8: mezi větou a výchozím bodem stojí kontrolní seznam věty a hlavní sloveso – podle nich brána upgradu AI verzi pustí.
+    const checklist = 'Checklist: hero "wizard"; role "candle"; setting "haunted castle".\nMain verb: "light" – genre quest, mode spatial.';
+    expect(checklistLines(sentence)).toBe(checklist);
+    expect(buildDirectorRequest(sentence, null).user).toBe(`${sentence}\n\n${checklist}\n\nStarting point: none – choose from the sentence.`);
+  });
+
+  it('names the verb family and says when the sentence has no game verb (P37A T8)', () => {
+    expect(checklistLines('a grandma cat knits a giant scarf by the fireplace')).toBe('Checklist: hero "grandma cat".\nMain verb: "knit" (family craft) – genre rhythm.');
+    expect(checklistLines('a long queue at the pharmacy')).toContain('Main verb: none – the sentence names no game verb.');
+    // Kompaktní prompt (výchozí v produkci) nese tytéž řádky jako plný.
+    const sentence = 'a walrus chef stirs a big pot of soup on an iceberg';
+    const draft = draftGameSpecWithMeta(sentence).genre;
+    for (const request of [buildDirectorRequest(sentence, draft), buildCompactRequest(sentence, draft), buildCompactRequest(sentence, draft, true)]) {
+      expect(request.user).toContain(`${sentence}\n\n${checklistLines(sentence)}\n\nStarting point (keep or improve):`);
+      expect(request.user).toContain('Main verb: "stir" (family cook) – genre quest, mode station.');
+      expect(request.system).toContain('Checklist and main verb (in the request) are what the sentence names');
+    }
   });
 
   it('offers exactly the ready modes of each genre with its hero classes and param bounds', () => {
@@ -89,7 +105,8 @@ describe('director prompt', () => {
   // P36A T10: 7 989 B – dva žánry navíc (Střílečka, Hod) se svými režimy a parametry (`waves`, `enemies`, `targets`;
   // `goal`, `spareThrows`, `seconds`) a hloubkou.
   // P36A T11: 8 540 B – čtyři žánry navíc (Načasování se třemi režimy, Rytmus, Souboj, Poletování), řádek z modulu.
-  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 8 540 B)', () => {
+  // P37A T8: 8 908 B – kontrolní seznam věty a hlavní sloveso s rodinou v požadavku a řádek, podle kterého brána upgradu AI verzi pustí.
+  it('stays under 12 700 bytes for all forty golden sentences, with examples too (pin: 8 908 B)', () => {
     let max = 0;
     for (const entry of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(entry.prompt).genre;
@@ -98,7 +115,7 @@ describe('director prompt', () => {
       }
     }
     expect(max).toBeLessThanOrEqual(12_700);
-    expect(max).toBeLessThanOrEqual(8_540);
+    expect(max).toBeLessThanOrEqual(8_908);
   });
 
   it('rejects an addon the control does not take and the deterministic repair drops it', () => {

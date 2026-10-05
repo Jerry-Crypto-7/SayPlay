@@ -125,7 +125,7 @@ export function TerrainLab({ kit, lookId, islands }: { readonly kit: TerrainKit;
   return (
     <div ref={surface} data-testid="terrain-lab" data-kit={kit} data-look={lookId} style={{ position: 'fixed', inset: 0 }}>
       <Canvas camera={{ fov: 50, position: [...view.camera] }} dpr={[1, 2]} shadows="percentage">
-        <StyleRig look={look} control={view.control} surface={surface} />
+        <StyleRig look={look} lookId={lookId} control={view.control} surface={surface} />
         <Frame camera={view.camera} target={view.target} />
         {kit === 'islands' && <Islands look={look} spots={islands} base={PLATFORM_WATER} sea={{ half: 40, from: -30, to: 140 }} />}
         {kit === 'water' && <Islands look={look} spots={REEF} base={0} sea={{ half: 60, from: -20, to: 120 }} />}

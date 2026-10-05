@@ -17,7 +17,7 @@ import { z } from 'zod';
 import { draftGameSpecWithMeta } from '@/play/draft';
 import { unsupportedGame } from '@/play/draft/unsupported';
 import { readBeforeDraft } from '@/play/read/client';
-import { decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
+import { beatOf, decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
 
 import { getDirector } from '../_director';
 import { fail, readJsonBody } from '../_errors';
@@ -45,8 +45,8 @@ const MAX_FEED = 48;
 
 /**
  * `GET /api/play/games?recent=N[&cursor=C]` – feed (P23-D T4, stránky P27B T2):
- * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes, goal,
- * mood }], next }` podle smyčky – dohrání, výzvy a remixy výš, každá třetí
+ * `{ games: [{ versionId, title, archetype, createdAt, parentId, remixes, beat,
+ * goal, mood }], next }` podle smyčky (`beat` = „N% beat this“ nebo `null`, P37C T5) – dohrání, výzvy a remixy výš, každá třetí
  * pozice nejnovější hra (P36B T9; bez čítačů od nejnovější); `goal`/`mood`
  * z řádku seznamu, starší řádky `null`; v každé osmici nejvýš tři hry téhož
  * archetypu (`diversify`); `next` je kurzor další stránky nebo `null`. Kdo do
@@ -87,6 +87,7 @@ export async function GET(request: Request): Promise<Response> {
           createdAt: row.createdAt,
           parentId: row.parentId,
           remixes: heat.get(row.versionId)?.remixes ?? 0,
+          beat: beatOf(heat.get(row.versionId)),
           goal: row.goal ?? null,
           mood: row.mood ?? null,
         })),

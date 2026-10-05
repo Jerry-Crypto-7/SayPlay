@@ -9,7 +9,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { type LoopEvent, readLoopEvent, summarizeLoop } from '@/play/loop-events';
+import { CLEAR_RATE_MIN_STARTS, clearRate, type LoopEvent, loopCountersOf, readLoopEvent, summarizeLoop } from '@/play/loop-events';
 import { MAX_REQUESTS_PER_WINDOW, MAX_REQUESTS_PER_WINDOW_PER_INSTANCE, resetRateWindows, takeRateSlot } from '@/server/rate-limit';
 
 import { MAX_DAY_BYTES } from '../_events';
@@ -47,6 +47,25 @@ describe('readLoopEvent', () => {
   it('a share says whether the link carried a dare (P36B T6)', () => {
     expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: false, dare: true })).toStrictEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: false, dare: true });
     expect(readLoopEvent({ name: 'share', versionId: VERSION, session: SESSION, withClip: true, dare: false })).toStrictEqual({ name: 'share', versionId: VERSION, session: SESSION, withClip: true, dare: false });
+  });
+});
+
+describe('clear rate (P37C T5)', () => {
+  it('an attempt is first_input or a run end, a win counts as a finish and a clear, and nothing else counts', () => {
+    const of = (name: LoopEvent['name']) => loopCountersOf({ name, versionId: VERSION, session: SESSION });
+    expect(of('first_input')).toEqual(['start']);
+    expect(of('win')).toEqual(['start', 'finish', 'clear']);
+    expect(of('lose')).toEqual(['start', 'finish']);
+    expect(of('next_game')).toEqual(['skip']);
+    for (const name of ['impression', 'restart', 'share', 'shared_open'] as const) expect(of(name)).toEqual([]);
+  });
+
+  it(`says nothing below ${String(CLEAR_RATE_MIN_STARTS)} attempts, rounds to a whole percent and never goes above 100`, () => {
+    expect(clearRate(CLEAR_RATE_MIN_STARTS - 1, 5)).toBeNull();
+    expect(clearRate(CLEAR_RATE_MIN_STARTS, 0)).toBe(0);
+    expect(clearRate(CLEAR_RATE_MIN_STARTS, 3)).toBe(30);
+    expect(clearRate(12, 5)).toBe(42);
+    expect(clearRate(10, 40)).toBe(100);
   });
 });
 

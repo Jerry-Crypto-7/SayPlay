@@ -1,0 +1,3769 @@
+{
+ "header": {
+  "about": "P37A T8: does the AI version beat the draft? Local gpt-oss-20b as the compact director over dev-150; gate = derived checklist, truth = hand-written checklist. Latency is local RTX 3090, not production. See director.md.",
+  "measuredAt": "2026-10-04T02:51:11.603Z",
+  "commit": "d6bde059",
+  "model": "gpt-oss-20b",
+  "endpoint": "http://127.0.0.1:8792",
+  "only": null
+ },
+ "summary": {
+  "sentences": 150,
+  "threshold": 0.05,
+  "aiReachedGate": 144,
+  "noAiVersion": {
+   "MALFORMED": 2,
+   "UNCHANGED": 4
+  },
+  "truth": {
+   "aiWins": {
+    "count": 42,
+    "share": 0.28
+   },
+   "aiLoses": 27,
+   "meanGain": 0.01
+  },
+  "gate": {
+   "offered": {
+    "count": 20,
+    "share": 0.133
+   },
+   "meanGain": -0.067,
+   "agreement": {
+    "offeredAndWins": 13,
+    "offeredButNotBetter": 7,
+    "blockedButWins": 29,
+    "blockedAndNotBetter": 95
+   }
+  },
+  "handChecklistFinal": {
+   "draftOnly": 0.634,
+   "aiAlways": 0.644,
+   "withGate": 0.651
+  },
+  "latencyMs": {
+   "label": "local RTX 3090, llama.cpp gpt-oss-20b – not production",
+   "p50": 2084,
+   "p95": 5206,
+   "max": 27038
+  },
+  "byGroup": {
+   "unknown-verb": {
+    "n": 60,
+    "aiReachedGate": 58,
+    "offered": 9,
+    "aiWins": 18
+   },
+   "non-game": {
+    "n": 40,
+    "aiReachedGate": 39,
+    "offered": 6,
+    "aiWins": 5
+   },
+   "fantasy": {
+    "n": 30,
+    "aiReachedGate": 27,
+    "offered": 2,
+    "aiWins": 11
+   },
+   "mix": {
+    "n": 20,
+    "aiReachedGate": 20,
+    "offered": 3,
+    "aiWins": 8
+   }
+  }
+ },
+ "rows": [
+  {
+   "id": "u01",
+   "group": "unknown-verb",
+   "ms": 2945,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.75,
+    "gain": 0.5,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u02",
+   "group": "unknown-verb",
+   "ms": 1620,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.25,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u03",
+   "group": "unknown-verb",
+   "ms": 3008,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u04",
+   "group": "unknown-verb",
+   "ms": 1156,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u05",
+   "group": "unknown-verb",
+   "ms": 2398,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u06",
+   "group": "unknown-verb",
+   "ms": 2047,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u07",
+   "group": "unknown-verb",
+   "ms": 2273,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u08",
+   "group": "unknown-verb",
+   "ms": 1452,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u09",
+   "group": "unknown-verb",
+   "ms": 3017,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u10",
+   "group": "unknown-verb",
+   "ms": 2451,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u11",
+   "group": "unknown-verb",
+   "ms": 2890,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u12",
+   "group": "unknown-verb",
+   "ms": 3255,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.667,
+    "gain": 0.334,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u13",
+   "group": "unknown-verb",
+   "ms": 1704,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u14",
+   "group": "unknown-verb",
+   "ms": 1295,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u15",
+   "group": "unknown-verb",
+   "ms": 2504,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u16",
+   "group": "unknown-verb",
+   "ms": 1810,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.2,
+   "truth": {
+    "draft": 0.2,
+    "ai": 0.2,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u17",
+   "group": "unknown-verb",
+   "ms": 1415,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.5,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u18",
+   "group": "unknown-verb",
+   "ms": 2479,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u19",
+   "group": "unknown-verb",
+   "ms": 5675,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u20",
+   "group": "unknown-verb",
+   "ms": 27038,
+   "source": "draft",
+   "fallbackReason": "MALFORMED",
+   "ai": false,
+   "gate": null,
+   "draftScore": 1,
+   "truth": null,
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": null
+   }
+  },
+  {
+   "id": "u21",
+   "group": "unknown-verb",
+   "ms": 1968,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u22",
+   "group": "unknown-verb",
+   "ms": 1747,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u23",
+   "group": "unknown-verb",
+   "ms": 5303,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.25,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.25,
+    "gain": -0.5,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u24",
+   "group": "unknown-verb",
+   "ms": 1674,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u25",
+   "group": "unknown-verb",
+   "ms": 5206,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u26",
+   "group": "unknown-verb",
+   "ms": 2979,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u27",
+   "group": "unknown-verb",
+   "ms": 2241,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u28",
+   "group": "unknown-verb",
+   "ms": 2165,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u29",
+   "group": "unknown-verb",
+   "ms": 2385,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u30",
+   "group": "unknown-verb",
+   "ms": 2482,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u31",
+   "group": "unknown-verb",
+   "ms": 4732,
+   "source": "authored",
+   "fallbackReason": "VERB_UNPROVED",
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u32",
+   "group": "unknown-verb",
+   "ms": 1713,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u33",
+   "group": "unknown-verb",
+   "ms": 1592,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u34",
+   "group": "unknown-verb",
+   "ms": 2827,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u35",
+   "group": "unknown-verb",
+   "ms": 1511,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.333,
+    "ai": 0.667,
+    "gain": 0.334,
+    "better": true
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.5,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u36",
+   "group": "unknown-verb",
+   "ms": 2143,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u37",
+   "group": "unknown-verb",
+   "ms": 1281,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.75,
+    "gain": 0.5,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u38",
+   "group": "unknown-verb",
+   "ms": 2136,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.333,
+    "ai": 0.667,
+    "gain": 0.334,
+    "better": true
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.75,
+    "gain": 0.5,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u39",
+   "group": "unknown-verb",
+   "ms": 2412,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u40",
+   "group": "unknown-verb",
+   "ms": 1716,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u41",
+   "group": "unknown-verb",
+   "ms": 1460,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.5,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u42",
+   "group": "unknown-verb",
+   "ms": 1742,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u43",
+   "group": "unknown-verb",
+   "ms": 1716,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u44",
+   "group": "unknown-verb",
+   "ms": 3316,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.4,
+    "gain": -0.4,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u45",
+   "group": "unknown-verb",
+   "ms": 1440,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "shooter.default",
+    "ai": "shooter.default"
+   }
+  },
+  {
+   "id": "u46",
+   "group": "unknown-verb",
+   "ms": 1918,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u47",
+   "group": "unknown-verb",
+   "ms": 2132,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 1,
+    "gain": 0.2,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u48",
+   "group": "unknown-verb",
+   "ms": 5169,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u49",
+   "group": "unknown-verb",
+   "ms": 2429,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u50",
+   "group": "unknown-verb",
+   "ms": 2501,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "u51",
+   "group": "unknown-verb",
+   "ms": 2334,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "runner.default",
+    "ai": "runner.default"
+   }
+  },
+  {
+   "id": "u52",
+   "group": "unknown-verb",
+   "ms": 4176,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u53",
+   "group": "unknown-verb",
+   "ms": 2272,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "u54",
+   "group": "unknown-verb",
+   "ms": 1650,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "voyage.race",
+    "ai": "voyage.race"
+   }
+  },
+  {
+   "id": "u55",
+   "group": "unknown-verb",
+   "ms": 1905,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.6,
+   "truth": {
+    "draft": 0.6,
+    "ai": 0.6,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "voyage.race",
+    "ai": "voyage.race"
+   }
+  },
+  {
+   "id": "u56",
+   "group": "unknown-verb",
+   "ms": 2952,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "voyage.race",
+    "ai": "voyage.race"
+   }
+  },
+  {
+   "id": "u57",
+   "group": "unknown-verb",
+   "ms": 24949,
+   "source": "draft",
+   "fallbackReason": "MALFORMED",
+   "ai": false,
+   "gate": null,
+   "draftScore": 0.75,
+   "truth": null,
+   "genres": {
+    "draft": "throw.default",
+    "ai": null
+   }
+  },
+  {
+   "id": "u58",
+   "group": "unknown-verb",
+   "ms": 1975,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "u59",
+   "group": "unknown-verb",
+   "ms": 1742,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "u60",
+   "group": "unknown-verb",
+   "ms": 1806,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "n01",
+   "group": "non-game",
+   "ms": 1541,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "timing.stack",
+    "ai": "timing.stack"
+   }
+  },
+  {
+   "id": "n02",
+   "group": "non-game",
+   "ms": 1698,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.333,
+    "gain": -0.334,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.25,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "n03",
+   "group": "non-game",
+   "ms": 1801,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0,
+    "gain": -1,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n04",
+   "group": "non-game",
+   "ms": 4219,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "timing.stack",
+    "ai": "timing.stack"
+   }
+  },
+  {
+   "id": "n05",
+   "group": "non-game",
+   "ms": 1836,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.667,
+    "gain": 0.334,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "n06",
+   "group": "non-game",
+   "ms": 1346,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "timing.stack",
+    "ai": "timing.stack"
+   }
+  },
+  {
+   "id": "n07",
+   "group": "non-game",
+   "ms": 1772,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 1,
+    "gain": 0.5,
+    "better": true
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n08",
+   "group": "non-game",
+   "ms": 2389,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "n09",
+   "group": "non-game",
+   "ms": 1389,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.667,
+    "gain": -0.333,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "timing.stack",
+    "ai": "timing.stack"
+   }
+  },
+  {
+   "id": "n10",
+   "group": "non-game",
+   "ms": 1486,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0,
+    "gain": -1,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0,
+    "gain": -0.333,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n11",
+   "group": "non-game",
+   "ms": 1709,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "n12",
+   "group": "non-game",
+   "ms": 1938,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "n13",
+   "group": "non-game",
+   "ms": 1333,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "n14",
+   "group": "non-game",
+   "ms": 1572,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.667,
+    "gain": -0.333,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.25,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n15",
+   "group": "non-game",
+   "ms": 1761,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "voyage.land",
+    "ai": "voyage.land"
+   }
+  },
+  {
+   "id": "n16",
+   "group": "non-game",
+   "ms": 4407,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.25,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n17",
+   "group": "non-game",
+   "ms": 2738,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0,
+    "gain": -1,
+    "better": false
+   },
+   "draftScore": 0,
+   "truth": {
+    "draft": 0,
+    "ai": 0.333,
+    "gain": 0.333,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n18",
+   "group": "non-game",
+   "ms": 2234,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n19",
+   "group": "non-game",
+   "ms": 2629,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0,
+    "ai": 0.5,
+    "gain": 0.5,
+    "better": true
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.333,
+    "gain": -0.334,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n20",
+   "group": "non-game",
+   "ms": 1988,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "duel.default",
+    "ai": "duel.default"
+   }
+  },
+  {
+   "id": "n21",
+   "group": "non-game",
+   "ms": 1998,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0,
+    "gain": -1,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0,
+    "gain": -0.333,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n22",
+   "group": "non-game",
+   "ms": 9758,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n23",
+   "group": "non-game",
+   "ms": 1624,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0,
+   "truth": {
+    "draft": 0,
+    "ai": 0,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "duel.default",
+    "ai": "duel.default"
+   }
+  },
+  {
+   "id": "n24",
+   "group": "non-game",
+   "ms": 2851,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "timing.stack",
+    "ai": "timing.stack"
+   }
+  },
+  {
+   "id": "n25",
+   "group": "non-game",
+   "ms": 2290,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0,
+    "gain": -1,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0,
+    "gain": -0.667,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n26",
+   "group": "non-game",
+   "ms": 2748,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.333,
+    "gain": -0.667,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 0.333,
+    "gain": -0.667,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "n27",
+   "group": "non-game",
+   "ms": 1740,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0,
+   "truth": {
+    "draft": 0,
+    "ai": 0.333,
+    "gain": 0.333,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n28",
+   "group": "non-game",
+   "ms": 3088,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "duel.default",
+    "ai": "duel.default"
+   }
+  },
+  {
+   "id": "n29",
+   "group": "non-game",
+   "ms": 2738,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.667,
+    "gain": -0.333,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.333,
+    "gain": -0.334,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n30",
+   "group": "non-game",
+   "ms": 3073,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0,
+   "truth": {
+    "draft": 0,
+    "ai": 0.333,
+    "gain": 0.333,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n31",
+   "group": "non-game",
+   "ms": 1412,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.333,
+    "gain": -0.334,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "n32",
+   "group": "non-game",
+   "ms": 3773,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "duel.default",
+    "ai": "duel.default"
+   }
+  },
+  {
+   "id": "n33",
+   "group": "non-game",
+   "ms": 4923,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0,
+    "ai": 0.5,
+    "gain": 0.5,
+    "better": true
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0,
+    "gain": -0.667,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n34",
+   "group": "non-game",
+   "ms": 1933,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": false,
+   "gate": null,
+   "draftScore": 0.333,
+   "truth": null,
+   "genres": {
+    "draft": "timing.stack",
+    "ai": "timing.stack"
+   }
+  },
+  {
+   "id": "n35",
+   "group": "non-game",
+   "ms": 2869,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n36",
+   "group": "non-game",
+   "ms": 2212,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "n37",
+   "group": "non-game",
+   "ms": 5077,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "n38",
+   "group": "non-game",
+   "ms": 1873,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "n39",
+   "group": "non-game",
+   "ms": 2707,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "n40",
+   "group": "non-game",
+   "ms": 2166,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "duel.default",
+    "ai": "duel.default"
+   }
+  },
+  {
+   "id": "f01",
+   "group": "fantasy",
+   "ms": 1487,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.4,
+   "truth": {
+    "draft": 0.4,
+    "ai": 0.4,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.fight",
+    "ai": "arena.fight"
+   }
+  },
+  {
+   "id": "f02",
+   "group": "fantasy",
+   "ms": 1971,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.fight",
+    "ai": "arena.fight"
+   }
+  },
+  {
+   "id": "f03",
+   "group": "fantasy",
+   "ms": 1205,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "shooter.default",
+    "ai": "shooter.default"
+   }
+  },
+  {
+   "id": "f04",
+   "group": "fantasy",
+   "ms": 1931,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.6,
+   "truth": {
+    "draft": 0.6,
+    "ai": 0.8,
+    "gain": 0.2,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f05",
+   "group": "fantasy",
+   "ms": 1892,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "f06",
+   "group": "fantasy",
+   "ms": 1572,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.6,
+   "truth": {
+    "draft": 0.6,
+    "ai": 0.8,
+    "gain": 0.2,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f07",
+   "group": "fantasy",
+   "ms": 1351,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.fight",
+    "ai": "arena.fight"
+   }
+  },
+  {
+   "id": "f08",
+   "group": "fantasy",
+   "ms": 2991,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "voyage.race",
+    "ai": "voyage.race"
+   }
+  },
+  {
+   "id": "f09",
+   "group": "fantasy",
+   "ms": 3177,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.667,
+    "gain": -0.333,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f10",
+   "group": "fantasy",
+   "ms": 1806,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.fight",
+    "ai": "arena.fight"
+   }
+  },
+  {
+   "id": "f11",
+   "group": "fantasy",
+   "ms": 2695,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "f12",
+   "group": "fantasy",
+   "ms": 1522,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": false,
+   "gate": null,
+   "draftScore": 0.667,
+   "truth": null,
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f13",
+   "group": "fantasy",
+   "ms": 3509,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "f14",
+   "group": "fantasy",
+   "ms": 1708,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "f15",
+   "group": "fantasy",
+   "ms": 2024,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "f16",
+   "group": "fantasy",
+   "ms": 2698,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": false,
+   "gate": null,
+   "draftScore": 0.4,
+   "truth": null,
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f17",
+   "group": "fantasy",
+   "ms": 1373,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "flap.default",
+    "ai": "flap.default"
+   }
+  },
+  {
+   "id": "f18",
+   "group": "fantasy",
+   "ms": 1619,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "f19",
+   "group": "fantasy",
+   "ms": 2153,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "f20",
+   "group": "fantasy",
+   "ms": 1704,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f21",
+   "group": "fantasy",
+   "ms": 1794,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f22",
+   "group": "fantasy",
+   "ms": 1627,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.fight",
+    "ai": "arena.fight"
+   }
+  },
+  {
+   "id": "f23",
+   "group": "fantasy",
+   "ms": 5531,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.25,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.6,
+   "truth": {
+    "draft": 0.6,
+    "ai": 0.4,
+    "gain": -0.2,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "f24",
+   "group": "fantasy",
+   "ms": 1605,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.4,
+   "truth": {
+    "draft": 0.4,
+    "ai": 0.6,
+    "gain": 0.2,
+    "better": true
+   },
+   "genres": {
+    "draft": "throw.default",
+    "ai": "throw.default"
+   }
+  },
+  {
+   "id": "f25",
+   "group": "fantasy",
+   "ms": 3316,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "f26",
+   "group": "fantasy",
+   "ms": 1983,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": false,
+   "gate": null,
+   "draftScore": 0.5,
+   "truth": null,
+   "genres": {
+    "draft": "voyage.race",
+    "ai": "voyage.race"
+   }
+  },
+  {
+   "id": "f27",
+   "group": "fantasy",
+   "ms": 1685,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.25,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "duel.default",
+    "ai": "duel.default"
+   }
+  },
+  {
+   "id": "f28",
+   "group": "fantasy",
+   "ms": 3707,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 1,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "f29",
+   "group": "fantasy",
+   "ms": 1337,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "throw.default",
+    "ai": "throw.default"
+   }
+  },
+  {
+   "id": "f30",
+   "group": "fantasy",
+   "ms": 1743,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.75,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.6,
+   "truth": {
+    "draft": 0.6,
+    "ai": 0.8,
+    "gain": 0.2,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "m01",
+   "group": "mix",
+   "ms": 8587,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 0.667,
+    "gain": -0.333,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "m02",
+   "group": "mix",
+   "ms": 2318,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0,
+    "gain": -1,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0,
+    "gain": -0.667,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "m03",
+   "group": "mix",
+   "ms": 1566,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0,
+    "ai": 0,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "genres": {
+    "draft": "voyage.race",
+    "ai": "voyage.race"
+   }
+  },
+  {
+   "id": "m04",
+   "group": "mix",
+   "ms": 1680,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 1,
+   "truth": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "m05",
+   "group": "mix",
+   "ms": 2315,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "m06",
+   "group": "mix",
+   "ms": 2816,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.5,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 0.667,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "m07",
+   "group": "mix",
+   "ms": 1529,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.667,
+    "gain": 0.334,
+    "better": true
+   },
+   "genres": {
+    "draft": "voyage.race",
+    "ai": "voyage.race"
+   }
+  },
+  {
+   "id": "m08",
+   "group": "mix",
+   "ms": 4804,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0.333,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "runner.default",
+    "ai": "runner.default"
+   }
+  },
+  {
+   "id": "m09",
+   "group": "mix",
+   "ms": 1525,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "genres": {
+    "draft": "platformer.default",
+    "ai": "platformer.default"
+   }
+  },
+  {
+   "id": "m10",
+   "group": "mix",
+   "ms": 2771,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "m11",
+   "group": "mix",
+   "ms": 1304,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.escape",
+    "ai": "arena.escape"
+   }
+  },
+  {
+   "id": "m12",
+   "group": "mix",
+   "ms": 2084,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "draftScore": 0.5,
+   "truth": {
+    "draft": 0.5,
+    "ai": 0.75,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "m13",
+   "group": "mix",
+   "ms": 1944,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.667,
+   "truth": {
+    "draft": 0.667,
+    "ai": 1,
+    "gain": 0.333,
+    "better": true
+   },
+   "genres": {
+    "draft": "arena.collect",
+    "ai": "arena.collect"
+   }
+  },
+  {
+   "id": "m14",
+   "group": "mix",
+   "ms": 2739,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.5,
+    "ai": 0.5,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0,
+   "truth": {
+    "draft": 0,
+    "ai": 0,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "timing.stack",
+    "ai": "timing.stack"
+   }
+  },
+  {
+   "id": "m15",
+   "group": "mix",
+   "ms": 2828,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.75,
+    "ai": 0.25,
+    "gain": -0.5,
+    "better": false
+   },
+   "draftScore": 0.6,
+   "truth": {
+    "draft": 0.6,
+    "ai": 0.2,
+    "gain": -0.4,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "m16",
+   "group": "mix",
+   "ms": 1826,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.8,
+   "truth": {
+    "draft": 0.8,
+    "ai": 0.8,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "platformer.default",
+    "ai": "platformer.default"
+   }
+  },
+  {
+   "id": "m17",
+   "group": "mix",
+   "ms": 1281,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.25,
+   "truth": {
+    "draft": 0.25,
+    "ai": 0.5,
+    "gain": 0.25,
+    "better": true
+   },
+   "genres": {
+    "draft": "rhythm.default",
+    "ai": "rhythm.default"
+   }
+  },
+  {
+   "id": "m18",
+   "group": "mix",
+   "ms": 2514,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0.75,
+    "gain": -0.25,
+    "better": false
+   },
+   "draftScore": 0.75,
+   "truth": {
+    "draft": 0.75,
+    "ai": 0.5,
+    "gain": -0.25,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.spatial",
+    "ai": "quest.spatial"
+   }
+  },
+  {
+   "id": "m19",
+   "group": "mix",
+   "ms": 2852,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 0,
+    "gain": -1,
+    "better": false
+   },
+   "draftScore": 0.333,
+   "truth": {
+    "draft": 0.333,
+    "ai": 0,
+    "gain": -0.333,
+    "better": false
+   },
+   "genres": {
+    "draft": "quest.station",
+    "ai": "quest.station"
+   }
+  },
+  {
+   "id": "m20",
+   "group": "mix",
+   "ms": 4186,
+   "source": "authored",
+   "fallbackReason": null,
+   "ai": true,
+   "gate": {
+    "draft": 1,
+    "ai": 1,
+    "gain": 0,
+    "better": false
+   },
+   "draftScore": 0.6,
+   "truth": {
+    "draft": 0.6,
+    "ai": 0.6,
+    "gain": 0,
+    "better": false
+   },
+   "genres": {
+    "draft": "runner.default",
+    "ai": "runner.default"
+   }
+  }
+ ]
+}

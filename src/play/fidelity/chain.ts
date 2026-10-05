@@ -27,7 +27,7 @@ import { worldHasPhysics } from '../arcade/kernel';
 import { lookFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
-import { PROP_ROLES, chaserModel, enemyModel, heroModel, modelOf, namedProps, propModels, riggedModelOf, type PropRole } from '../arcade/models';
+import { PROP_ROLES, chaserModel, enemyModel, heroModel, namedProps, propModels, riggedModelOf, sceneModelOf, type PropRole } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
 import type { VerbProof } from '../contracts';
@@ -145,9 +145,9 @@ function styledReads(role: GameRole, scene: ArcadeScene): boolean {
  * (`rival`) a věci (`item`) žánru arény zatím nečtou (B-R9), cíl úkolu kreslí vrstva úkolu.
  */
 function styledDraws(spec: GameSpecV1, role: GameRole): boolean {
-  const character = riggedModelOf(role.label) ?? modelOf(role.label, true);
+  const character = riggedModelOf(role.label) ?? sceneModelOf(role.label, true);
   if (role.kind === 'hazard') return character === enemyModel(spec);
-  if (role.kind === 'collectible') return propModels(spec).coin !== undefined && modelOf(role.label, false) === propModels(spec).coin;
+  if (role.kind === 'collectible') return propModels(spec).coin !== undefined && sceneModelOf(role.label, false) === propModels(spec).coin;
   return false;
 }
 
@@ -161,11 +161,11 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   if (PLAYER(role)) {
     if (!bodies.has('player')) return false;
     // Výchozí hrdina (průzkumník, závodní auto, ptáček) popisek nekreslí – kromě popisku, který ho jmenuje.
-    const named = control === 'steer' ? modelOf(role.label, false) : (riggedModelOf(role.label) ?? modelOf(role.label, true));
+    const named = control === 'steer' ? sceneModelOf(role.label, false) : (riggedModelOf(role.label) ?? sceneModelOf(role.label, true));
     return named !== undefined && named === heroModel(spec);
   }
-  if (role.id === 'enemy') return bodies.has('enemy') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === enemyModel(spec);
-  if (role.kind === 'chaser') return bodies.has('chaser') && (riggedModelOf(role.label) ?? modelOf(role.label, true)) === chaserModel(spec);
+  if (role.id === 'enemy') return bodies.has('enemy') && (riggedModelOf(role.label) ?? sceneModelOf(role.label, true)) === enemyModel(spec);
+  if (role.kind === 'chaser') return bodies.has('chaser') && (riggedModelOf(role.label) ?? sceneModelOf(role.label, true)) === chaserModel(spec);
   // Popisek, který jmenuje tělo jádra („rival car“), se kreslí taky – jako u hrdiny, kterého popisek jmenuje.
   const prop = PROP_ROLES.find((id) => id === role.id);
   return prop !== undefined && bodies.has(prop) && namedProps(spec)[prop] !== undefined;

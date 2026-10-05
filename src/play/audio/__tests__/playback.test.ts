@@ -12,7 +12,7 @@ class FakeContext {
   static last: FakeContext | null = null;
   state: 'suspended' | 'running' = 'suspended';
   sources: Source[] = [];
-  gains: { gain: { value: number } }[] = [];
+  gains: { gain: { value: number; ramps: number[] } }[] = [];
   created = 0;
   readonly destination = {};
   private listeners: (() => void)[] = [];
@@ -49,8 +49,20 @@ class FakeContext {
     this.sources.push(source);
     return source;
   }
+  readonly currentTime = 0;
+  /** Rampa nastaví cílovou hodnotu hned (test čas nežene); naplánované kroky se zapisují do `ramps`. */
   createGain() {
-    const gain = { gain: { value: 1 }, connect: () => {}, disconnect: () => {} };
+    const param = {
+      value: 1,
+      ramps: [] as number[],
+      cancelScheduledValues: () => {},
+      setValueAtTime: () => {},
+      linearRampToValueAtTime: (value: number) => {
+        param.ramps.push(value);
+        param.value = value;
+      },
+    };
+    const gain = { gain: param, connect: () => {}, disconnect: () => {} };
     this.gains.push(gain);
     return gain;
   }
@@ -186,5 +198,76 @@ describe('the game’s own music', () => {
     playMusic('/music/beach-calm.ogg');
     await settle();
     expect(fetched).toEqual([]);
+  });
+});
+
+describe('music that follows the game (P37B T5)', () => {
+  it('tension crossfades to the tense loop and back; the tense file is fetched ahead', async () => {
+    const { playMusic, setMusicTension, unlockAudio } = await audio();
+    unlockAudio();
+    playMusic('/music/snow-calm.ogg', '/music/snow-tense.ogg');
+    await settle();
+    await settle();
+    expect(fetched).toContain('/music/snow-tense.ogg');
+    const context = FakeContext.last!;
+    const loops = () => context.sources.filter((source) => source.loop);
+    setMusicTension(true);
+    await settle();
+    expect(loops()).toHaveLength(2);
+    expect(loops()[0]!.stopped).toBe(1);
+    expect(loops()[1]!.buffer).toEqual({ decoded: '/music/snow-tense.ogg' });
+    // Stará smyčka se stáhne k nule, nová nabíhá na hlasitost hudby.
+    expect(context.gains[0]!.gain.value).toBe(0);
+    expect(context.gains[1]!.gain.value).toBeGreaterThan(0);
+    setMusicTension(false);
+    await settle();
+    expect(loops()).toHaveLength(3);
+    expect(loops()[2]!.buffer).toEqual({ decoded: '/music/snow-calm.ogg' });
+  });
+
+  it('tension without a tense loop keeps the base loop playing', async () => {
+    const { playMusic, setMusicTension, unlockAudio } = await audio();
+    unlockAudio();
+    playMusic('/music/cave-calm.ogg');
+    await settle();
+    setMusicTension(true);
+    await settle();
+    const loops = FakeContext.last!.sources.filter((source) => source.loop);
+    expect(loops).toHaveLength(1);
+    expect(loops[0]!.stopped).toBe(0);
+  });
+
+  it.each(['win', 'lose'] as const)('a %s ducks the music under its sound, then brings it back', async (preset) => {
+    const { MUSIC_DUCK, playMusic, playSfx, unlockAudio } = await audio();
+    unlockAudio();
+    playMusic('/music/beach-calm.ogg');
+    await settle();
+    const gain = FakeContext.last!.gains[0]!.gain;
+    const full = gain.value;
+    const ramps = gain.ramps.length;
+    playSfx('pickup');
+    expect(gain.ramps).toHaveLength(ramps);
+    playSfx(preset);
+    expect(gain.ramps.slice(-2)).toEqual([full * MUSIC_DUCK, full]);
+  });
+
+  it('the same sound twice in one tick plays once, the next tick plays again', async () => {
+    vi.useFakeTimers();
+    try {
+      const { SFX_REPEAT_MS, playSfx, unlockAudio } = await audio();
+      unlockAudio();
+      await vi.runAllTimersAsync();
+      const context = FakeContext.last!;
+      const played = () => context.sources.filter((source) => !source.loop && source.started > 0).length;
+      playSfx('pickup');
+      playSfx('pickup');
+      playSfx('chime');
+      expect(played()).toBe(2);
+      vi.advanceTimersByTime(SFX_REPEAT_MS);
+      playSfx('pickup');
+      expect(played()).toBe(3);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

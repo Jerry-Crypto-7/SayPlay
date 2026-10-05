@@ -79,7 +79,7 @@ describe('target layer mount (P32G G-R2)', () => {
 
   it('hands every target body of the arena scene to the layer and draws none of them as a block', () => {
     const { session, views } = quest();
-    const props = { session: session as ArcadeSession, half: 20_000, surface: { current: null }, look: LOOKS[LOOK_IDS[0]], cast: { player: '', enemy: '', chaser: '', props: {} } };
+    const props = { session: session as ArcadeSession, half: 20_000, surface: { current: null }, look: LOOKS[LOOK_IDS[0]], cast: { player: '', enemy: '', chaser: '', props: {} }, heroAction: 'none' as const };
     const scene = ArenaWorld(props) as ReactElement<typeof props>;
     const styled = scene.type as (world: typeof props) => ReactElement<{ readonly children: ReactNode }>;
     expect(styled.name).toBe('StyledWorld');

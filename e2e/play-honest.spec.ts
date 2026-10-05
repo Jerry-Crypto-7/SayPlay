@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
 import { startGame } from './play-start';
@@ -9,7 +12,19 @@ import { startGame } from './play-start';
  */
 
 async function publish(request: APIRequestContext, sentence: string): Promise<{ url: string; honesty?: unknown }> {
-  const response = await request.post('/api/play/games', { data: { sentence } });
+  return post(request, { sentence });
+}
+
+/**
+ * Stráž a objednávky kreslí jen mřížka (`GridShell.tsx`). Věta mřížku od žánrů (P32B) nedá –
+ * každá nová jde do arkády –, takže se mřížka publikuje jako uložená hra z fixtury téže věty.
+ */
+async function publishGrid(request: APIRequestContext, fixture: string): Promise<{ url: string }> {
+  return post(request, { spec: JSON.parse(readFileSync(join(process.cwd(), 'src/play/__fixtures__', fixture), 'utf8')) as unknown });
+}
+
+async function post(request: APIRequestContext, data: unknown): Promise<{ url: string; honesty?: unknown }> {
+  const response = await request.post('/api/play/games', { data });
   expect(response.status(), await response.text()).toBeLessThan(300);
   return (await response.json()) as { url: string; honesty?: unknown };
 }
@@ -59,7 +74,8 @@ test.describe('/play/[id] – honesty strip', () => {
  */
 test.describe('/play/[id] – what the scene shows', () => {
   test('a stealth game draws the guard beats, one of them watched', async ({ page, request }) => {
-    const game = await publish(request, 'sneak past guards in a museum and steal a diamond');
+    // Mřížka věty „sneak past guards in a museum and steal a diamond“.
+    const game = await publishGrid(request, 'collect_exit_stealth.json');
     await page.goto(game.url);
     await page.waitForFunction(() => window.__playSight !== undefined && window.__playSight().beats > 0, undefined, { timeout: 60_000 });
     const sight = await page.evaluate(() => window.__playSight!());
@@ -67,7 +83,8 @@ test.describe('/play/[id] – what the scene shows', () => {
   });
 
   test('a game without stealth draws no beats and no order bubbles', async ({ page, request }) => {
-    const game = await publish(request, 'Collect five glowing mushrooms then open a portal.');
+    // Mřížka věty „Collect five glowing mushrooms then open a portal.“
+    const game = await publishGrid(request, 'collect_exit.json');
     await page.goto(game.url);
     // Sondy musí existovat: vrstvy, které se nepřipojily vůbec, by „nula“ jen předstíraly.
     await page.waitForFunction(() => window.__playSight !== undefined && window.__playOrders !== undefined, undefined, { timeout: 60_000 });
@@ -76,7 +93,8 @@ test.describe('/play/[id] – what the scene shows', () => {
   });
 
   test('every customer shows a bubble until served', async ({ page, request }) => {
-    const game = await publish(request, 'cooking game where you make burgers fast for customers');
+    // Mřížka věty „cooking game where you make burgers fast for customers“.
+    const game = await publishGrid(request, 'delivery_orders.json');
     await page.goto(game.url);
     await page.waitForFunction(() => window.__playOrders !== undefined && window.__playOrders().orders > 0, undefined, { timeout: 60_000 });
     const before = await page.evaluate(() => window.__playOrders!());

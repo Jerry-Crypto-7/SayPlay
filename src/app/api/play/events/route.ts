@@ -8,7 +8,7 @@
  * zakládání, nechce ani zápis statistik.
  */
 
-import { loopCounterOf, readLoopEvent } from '@/play/loop-events';
+import { loopCountersOf, readLoopEvent } from '@/play/loop-events';
 import { killState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
 import { rateLimitCode, takeRateSlot } from '@/server/rate-limit';
@@ -32,8 +32,9 @@ export async function POST(request: Request): Promise<Response> {
   const event = readLoopEvent(body.value);
   if (event === null) return fail(400, 'BAD_REQUEST', 'an event is { name, versionId, session }, plus optional booleans withClip and dare on share, and nothing else');
   recordLoopEvent(event);
-  // Dohrání a přeskočení řadí feed (P36B T9): jen hra, která v úložišti je, a jeden hlas volajícího za den.
-  const counter = loopCounterOf(event);
-  if (counter !== null) await store().countLoop(event.versionId, counter, voterOf(request));
+  // Dohrání a přeskočení řadí feed (P36B T9), pokus a výhra dávají „clear rate“ (P37C T5):
+  // jen hra, která v úložišti je, a jeden hlas volajícího za den na čítač.
+  const counters = loopCountersOf(event);
+  if (counters.length > 0) await store().countLoop(event.versionId, counters, voterOf(request));
   return new Response(null, { status: 204 });
 }

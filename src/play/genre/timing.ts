@@ -65,7 +65,8 @@ export const timingGenre: GenreModule<'timing'> = {
     const goal = text.goal(rounds, piece);
     return legacySpec(spec, {
       control: 'timing',
-      controlParams: { mode: spec.mode, speed: 'slow', rounds, rise: true },
+      // Brzký a pozdní ťuk odpuštěný jako skok skákačky (P37A T7).
+      controlParams: { mode: spec.mode, speed: 'slow', rounds, rise: true, feel: 2 },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} ${text.title}`,
       objective: { kind: 'reach', description: goal, role: 'finish' },

@@ -42,3 +42,21 @@ forest jungle desert beach cave dungeon field lake river town
 # cizí značky a postavy – generovat je nesmíme (práva), i když je lidé do vět píšou
 mario luigi sonic pikachu pokemon minecraft fortnite roblox tetris pacman zelda subway
 surfer agar flappy kirby yoshi bowser spyro among amongus doom halo portal
+
+# P37D T1 (`scripts/p37d/missing-nouns.mjs`, přihrádka unclassified 3. 10. 2026)
+# slovesa
+come eat eating flip brew burn clean connect crush cutting decorate design destroy doing
+explain feed fixing flattening follow getting harvest hire hitting hoard hold hop let look
+looking manage making matching pull repair rescue scan seek sell sinking slither swallow
+teach toss try trying untangle walk win write guide stock nap place
+# přídavná jména, příslovce, číslovky, zájmena
+along busy cozy during snowy bouncy colorful creepy far five foggy free full grumpy hard
+hidden hungry lost mini olympic outside own past punishing purple rainy relaxing romantic
+satisfying sleepy smaller sunny tallest ten wobbly everyone everywhere him dont isnt
+thank-you fun jammed possible olympics
+# obecná „věc“ – model z ní nejde
+item object stuff
+# místa a události – prostředí, ne jeden model
+bank clinic gallery disco prison backroom backyard home sleepover show range
+# názvy her a míst – „nail“ je „nail salon“, „formula“ je „formula 1“
+freddy gta krunker monaco noah crossy doodle royale overcooked geometry formula mahjong nail dash

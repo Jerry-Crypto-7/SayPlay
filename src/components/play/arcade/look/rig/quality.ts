@@ -31,19 +31,28 @@ export interface TierSettings {
   readonly shadowHalf: number;
   /** Strop poměru pixelů plátna. */
   readonly dpr: number;
+  /** Hranování: SMAA průchodem skládače, nebo MSAA jeho cíle kreslení. */
+  readonly aa: 'smaa' | 'msaa';
 }
 
 /**
- * `low` postprocessing nemá vůbec: bez AO a bloomu by skládač jen hranoval
- * (SMAA), a to plátno umí samo (MSAA) levněji. ACES pak dělá renderer.
+ * Skládač (ACES a ladění barev) kreslí na každé úrovni, `low` jen bez AO a bloomu
+ * a hranuje levnějším MSAA (P37B T7). Dřív `low` skládač neměl a tónoval renderer:
+ * přepnutí úrovně tím změnilo cíl kreslení scény a tónování, three přeložil
+ * shadery všech materiálů a telefon (Pixel 7, CPU 4×) stál 1–2 s pod 10 FPS.
  */
 export const TIER_SETTINGS: Readonly<Record<QualityTier, TierSettings>> = {
-  high: { bloom: true, ao: 'full', shadowMapSize: 2048, shadowHalf: 18, dpr: 2 },
-  medium: { bloom: true, ao: 'half', shadowMapSize: 2048, shadowHalf: 12, dpr: 1.5 },
-  low: { bloom: false, ao: false, shadowMapSize: 1024, shadowHalf: 5, dpr: 1 },
+  high: { bloom: true, ao: 'full', shadowMapSize: 2048, shadowHalf: 18, dpr: 2, aa: 'smaa' },
+  medium: { bloom: true, ao: 'half', shadowMapSize: 2048, shadowHalf: 12, dpr: 1.5, aa: 'smaa' },
+  low: { bloom: false, ao: false, shadowMapSize: 1024, shadowHalf: 5, dpr: 1, aa: 'msaa' },
 };
 
-export const DOWN_FPS = 40;
+/**
+ * Rezerva nad cílem 40 FPS (P37B T7): na `medium` se telefon (Pixel 7, CPU 4×)
+ * držel 40–45 FPS a o snímky pod 40 se dělil s šumem. Sestup už nic nepřekládá
+ * (skládač kreslí na každé úrovni), takže dřívější sestup nic nestojí.
+ */
+export const DOWN_FPS = 45;
 export const DOWN_MS = 3000;
 export const UP_FPS = 55;
 export const UP_MS = 8000;

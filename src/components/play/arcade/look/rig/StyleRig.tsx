@@ -2,8 +2,8 @@
 
 /**
  * Rig vzhledu (P32A T1) scén, které si světla nestaví samy: běžec, plošinovka,
- * poletování, závod, střelnice, hod, aréna a od T10 načasování a rytmus. Souboj
- * má světla ve vlastní scéně.
+ * poletování, závod, střelnice, hod, aréna, od T10 načasování a rytmus a od
+ * P37B T3 i souboj (dřív plochá barva pozadí bez stínu a mlhy).
  *
  * Kreslí to, co ukázka B (`D:/caches/p32-style/page.html`, `renderVariant('B')`):
  * kreslenou oblohu s přechodem obzor → zenit a sluncem, mlhu v barvě obzoru,
@@ -19,8 +19,9 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { type RefObject, useEffect, useMemo, useRef } from 'react';
 import { ACESFilmicToneMapping, BackSide, Color, type DirectionalLight, type Mesh, type Object3D, type PerspectiveCamera, ShaderMaterial, SphereGeometry, Vector3 } from 'three';
 
-import type { Look } from '@/play/arcade/look';
+import type { Look, LookId } from '@/play/arcade/look';
 
+import { LOOK_FAMILY } from './grade';
 import { Post, useQualityTier } from './Post';
 import { TIER_SETTINGS } from './quality';
 
@@ -39,8 +40,8 @@ function FarAtFog({ far }: { readonly far: number }) {
   return null;
 }
 
-/** Plošinovka a poletování koukají z boku po +x, ostatní scény po +z. */
-const SIDE_VIEW: ReadonlySet<string> = new Set(['platform', 'flap']);
+/** Plošinovka, poletování a souboj koukají z boku po +x, ostatní scény po +z. */
+const SIDE_VIEW: ReadonlySet<string> = new Set(['platform', 'flap', 'duel']);
 
 /**
  * Směr z pohledu kamery (vlevo, nahoru, dopředu) do světa scény. Kamera po +z
@@ -258,7 +259,7 @@ function Exposure({ exposure }: { readonly exposure: number }) {
   return null;
 }
 
-export function StyleRig({ look, control, surface }: { readonly look: Look; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
+export function StyleRig({ look, lookId, control, surface }: { readonly look: Look; readonly lookId: LookId; readonly control: string; readonly surface: RefObject<HTMLDivElement | null> }) {
   const tier = useQualityTier(surface);
   return (
     <>
@@ -271,7 +272,7 @@ export function StyleRig({ look, control, surface }: { readonly look: Look; read
       <Sun look={look} control={control} mapSize={TIER_SETTINGS[tier].shadowMapSize} half={TIER_SETTINGS[tier].shadowHalf} />
       <ShadowFlags />
       <SceneryWindow />
-      <Post look={look} tier={tier} />
+      <Post look={look} family={LOOK_FAMILY[lookId]} tier={tier} />
     </>
   );
 }

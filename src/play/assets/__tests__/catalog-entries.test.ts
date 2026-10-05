@@ -20,8 +20,11 @@ import { BASE_ENTRIES } from '../entries/base';
 import { CATALOG_ENTRIES } from '../entries/catalog';
 import { assetEntrySchema } from '../manifest';
 
-/** Počet záznamů 29. 9. 2026 – mění se jen vědomě, s novým modelem v katalogu nebo novým slovem třídy. */
-const COUNT = 251;
+/**
+ * Počet záznamů 29. 9. 2026 – mění se jen vědomě, s novým modelem v katalogu nebo novým slovem třídy.
+ * 3. 10.: +3 z pilotu P37D (frog, submarine, monster truck – ostatní nová jména třídu nemají).
+ */
+const COUNT = 261;
 
 const LICENSES = new Map(disclosure.entries.map((entry) => [entry.name, entry.license]));
 const TAGS = new Map(catalog.assets.map((asset) => [asset.path, asset.tags]));
@@ -67,7 +70,9 @@ describe('manifest entries of the catalog (P32C T1)', () => {
     expect(classOf('gen3d-polar-bear')).toBe('animal');
     expect(classOf('cc0-shark')).toBe('animal');
     // Kulisa se slovem třídy hrdinou není.
-    for (const id of ['cc0-bear-trap', 'gen3d-wizard-hat', 'gen3d-bus-stop', 'bird-nest', 'gen3d-hot-dog']) expect(classOf(id), id).toBeUndefined();
+    for (const id of ['cc0-bear-trap', 'gen3d-wizard-hat', 'gen3d-bus-stop', 'bird-nest', 'gen3d-hot-dog', 'gen3d-cat-tree', 'gen3d-fish-tank', 'gen3d-hamster-wheel', 'gen3d-robot-arm']) {
+      expect(classOf(id), id).toBeUndefined();
+    }
   });
 
   it('keeps the entry count pinned', () => {

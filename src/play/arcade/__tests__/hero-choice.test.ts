@@ -88,9 +88,11 @@ describe('hero choice by identity, then class (P32C T2)', () => {
     expect(heroChoice('grey wolf', 'runner', 'runner')).toMatchObject({ model: 'dog', level: 'near' });
     // Blízká identita před třídou: „lizard“ má třídu (liška), „wolf“ blízkou identitu (pes) – vyhraje pes.
     expect(heroChoice('lizard wolf', 'runner', 'runner')).toMatchObject({ model: 'dog', level: 'near' });
-    expect(heroChoice('wild lizard', 'runner', 'runner')).toMatchObject({ model: 'fox', level: 'class' });
+    expect(heroChoice('wild badger', 'runner', 'runner')).toMatchObject({ model: 'fox', level: 'class' });
+    // P37A T6: nejbližší model katalogu nad prahem je před třídou – ještěrka je želva (0,65), ne liška.
+    expect(heroChoice('wild lizard', 'runner', 'runner')).toMatchObject({ model: 'turtle', level: 'near' });
     // Plavba zvíře připouští, stroj ne: vysokozdvižný vozík v závodě zůstane autem.
-    expect(heroChoice('wild lizard', 'voyage', 'steer')).toMatchObject({ model: 'fox', level: 'class' });
+    expect(heroChoice('wild badger', 'voyage', 'steer')).toMatchObject({ model: 'fox', level: 'class' });
     expect(heroChoice('angry forklift', 'voyage', 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });
     expect(heroChoice('stapler', 'runner', 'runner')).toMatchObject({ model: 'explorer', level: 'fallback' });
     expect(heroChoice('stapler', undefined, 'flap')).toMatchObject({ model: 'bird', level: 'fallback' });
@@ -100,7 +102,7 @@ describe('hero choice by identity, then class (P32C T2)', () => {
   it('identity beats the genre, the genre bounds only near and class', () => {
     // Věc z věty (ponožka) je hrdina i v běžci; kategorie „stroj“ běžec pustí, plavba ne.
     expect(heroChoice('sock', 'runner', 'runner')).toMatchObject({ model: 'cc0-sock', level: 'identity' });
-    expect(heroChoice('angry forklift', 'runner', 'runner')).toMatchObject({ model: 'robot', level: 'class' });
+    expect(heroChoice('angry mech', 'runner', 'runner')).toMatchObject({ model: 'robot', level: 'class' });
     // Závod bez žánru bere jen vozidlo, loď nebo letadlo – i z manifestu, nejen dřívější seznam aut.
     expect(heroChoice('sailboat', undefined, 'steer')).toMatchObject({ model: 'gen3d-sailboat', level: 'identity' });
     expect(heroChoice('dog', undefined, 'steer')).toMatchObject({ model: 'race-car', level: 'fallback' });

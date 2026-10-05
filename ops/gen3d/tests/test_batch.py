@@ -4,9 +4,9 @@ slovo (v cache i v záznamu) už nesmí generovat."""
 import json
 from pathlib import Path
 
-import batch
 import pytest
 
+import batch
 import cache
 
 
@@ -26,19 +26,28 @@ class Interrupted(BaseException):
     """Jako Ctrl+C nebo zabitý proces: dávka ho nesmí spolknout jako selhání slova."""
 
 
-def make_generate(calls: list, stop_after: int | None = None, fail: set = frozenset()):
-    def generate(noun: str, out_dir: Path) -> dict:
+def make_generate(
+    calls: list,
+    stop_after: int | None = None,
+    fail: set = frozenset(),
+    seeds: list | None = None,
+):
+    """`fail` = slova, která selžou; prvek `(slovo, semínko)` selže jen na tom semínku."""
+
+    def generate(noun: str, out_dir: Path, seed: int) -> dict:
         if stop_after is not None and len(calls) == stop_after:
             raise Interrupted
         calls.append(noun)
-        if noun in fail:
+        if seeds is not None:
+            seeds.append(seed)
+        if noun in fail or (noun, seed) in fail:
             raise RuntimeError("quality gate: 5% of vertex colours are purple")
         return fake_result(out_dir)
 
     return generate
 
 
-def run(tmp_path, nouns, generate, limit=10):
+def run(tmp_path, nouns, generate, limit=10, seeds=(0,)):
     return batch.run_batch(
         nouns,
         limit=limit,
@@ -46,6 +55,7 @@ def run(tmp_path, nouns, generate, limit=10):
         record_path=tmp_path / "batch.json",
         cache_root=tmp_path / "cache",
         quarantine=None,
+        seeds=seeds,
     )
 
 
@@ -80,6 +90,30 @@ def test_failed_noun_is_recorded_with_reason_and_not_retried(tmp_path):
     calls.clear()
     run(tmp_path, ["frog", "sock"], make_generate(calls))
     assert calls == []
+
+
+def test_failed_seed_tries_the_next_one_and_keeps_the_attempt(tmp_path):
+    calls: list = []
+    used: list = []
+    records = run(
+        tmp_path,
+        ["frog"],
+        make_generate(calls, fail={("frog", 1)}, seeds=used),
+        seeds=(1, 2, 3),
+    )
+    assert used == [1, 2]
+    assert records[0]["verdict"] == "passed" and records[0]["seed"] == 2
+    assert "reason" not in records[0]
+    assert [a["seed"] for a in records[0]["attempts"]] == [1]
+    assert "purple" in records[0]["attempts"][0]["reason"]
+
+
+def test_noun_failing_every_seed_is_failed_with_the_last_reason(tmp_path):
+    calls: list = []
+    records = run(tmp_path, ["frog"], make_generate(calls, fail={"frog"}), seeds=(1, 2))
+    assert calls == ["frog", "frog"]
+    assert records[0]["verdict"] == "failed" and "purple" in records[0]["reason"]
+    assert [a["seed"] for a in records[0]["attempts"]] == [1, 2]
 
 
 def test_limit_counts_nouns_not_new_generations(tmp_path):

@@ -40,7 +40,8 @@ export const rhythmGenre: GenreModule<'rhythm'> = {
     const note = spec.collectible ?? 'tile';
     return legacySpec(spec, {
       control: 'rhythm',
-      controlParams: { bpm, beats: rhythmBeats(bpm, seconds), ramp: true, lanes: true },
+      // Brzký a pozdní ťuk odpuštěný jako skok skákačky (P37A T7).
+      controlParams: { bpm, beats: rhythmBeats(bpm, seconds), ramp: true, lanes: true, feel: 2 },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Beat`,
       objective: { kind: 'reach', description: `Hit each ${note} in its lane on the beat and play the song to the end.`, role: 'finish' },

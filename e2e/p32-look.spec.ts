@@ -119,9 +119,11 @@ test.describe('desktop 1280×800', () => {
 
     const render = await page.evaluate(() => window.__playRender!());
     expect(render.shadows, 'renderer.shadowMap.enabled').toBe(true);
-    // Desktop drží high: AO, SMAA, bloom a ACES kreslí skládač (T2), renderer sám netónuje.
+    // Desktop drží high: AO, SMAA, bloom, ACES a ladění barev (P37B T3) kreslí skládač (T2), renderer sám netónuje.
     await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-quality', 'high');
     expect(render.post, 'efekty postprocessingu').toEqual(['ao', 'smaa', 'bloom', 'aces']);
+    // Louka patří do zelené rodiny; hlásí to efekt ladění sám, až když je ve skládači.
+    expect(render.grade, 'ladění barev ve skládači').toBe('green');
     expect(render.toneMapping, 'renderer.toneMapping pod skládačem').toBe(NO_TONE_MAPPING);
 
     const first = await freezeAtFirstScore(page);

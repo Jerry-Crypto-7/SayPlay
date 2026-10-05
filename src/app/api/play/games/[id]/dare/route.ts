@@ -8,6 +8,7 @@
  * Odpověď `201 { dareId, score, ticks }`; týž běh podruhé `200` s týmž
  * `dareId` – id je hash obsahu (hra, vstupy, změny), opakovaný požadavek
  * výzvu nezdvojí. Výzva žije stejně dlouho jako hra a nenese nic o hráči.
+ * Od P37C T1 nese i běh pro ducha; čte ho `GET …/dare/:dareId`.
  */
 
 import { createHash } from 'node:crypto';
@@ -18,9 +19,9 @@ import { ARCADE_LIMITS } from '@/play/arcade/contract';
 import { worldHasPhysics } from '@/play/arcade/kernel';
 import { type LiveEntry, TIMES_OF_DAY, WEATHERS } from '@/play/arcade/live';
 import { loadRapier } from '@/play/arcade/physics/world';
-import { unpackInputs } from '@/play/score/dare';
+import { packInputs, unpackInputs } from '@/play/score/dare';
 import { scoredReplay } from '@/play/score/replay';
-import { type DareRecord, VersionStoreUnavailable } from '@/play/version';
+import { type DareRecord, type DareReplay, VersionStoreUnavailable } from '@/play/version';
 
 import { fail, notFound, readJsonBody, VERSION_ID_PATTERN } from '../../../_errors';
 import { rateLimitCode, spendDareWindow, takeRateSlot } from '@/server/rate-limit';
@@ -91,17 +92,20 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     .update(JSON.stringify({ versionId: id, hash: run.hash, ticks: run.tick, score: run.score, changes }))
     .digest('hex')
     .slice(0, 32);
-  const dare: DareRecord = { dareId, versionId: id, score: run.score, ticks: run.tick, hash: run.hash, liveChanges: played.length, createdAt: new Date().toISOString() };
+  // Běh pro ducha (P37C T1): jen vstupy a změny, které přehrání opravdu spotřebovalo, znovu zhuštěné –
+  // přehraje se k týmž bajtům hashe a vstupy po konci neberou místo v úložišti.
+  const replay: DareReplay = { v: 1, inputs: packInputs(inputs.filter((event) => event.tick < run.tick)), patches: played };
+  const dare: DareRecord = { dareId, versionId: id, score: run.score, ticks: run.tick, hash: run.hash, liveChanges: played.length, createdAt: new Date().toISOString(), replay };
   let outcome;
   try {
-    outcome = await versions.putDare(dare);
+    outcome = await versions.putDare(dare, voterOf(request));
   } catch (thrown) {
     if (thrown instanceof VersionStoreUnavailable) return fail(503, 'STORE_UNAVAILABLE', 'the dare could not be saved right now');
     throw thrown;
   }
   if (outcome === 'quota') return fail(429, 'DARE_QUOTA', "today's dare quota is used up; try again tomorrow", { 'retry-after': '3600' });
   // Výzvu pro řazení feedu počítá server jen tady, u nové ověřené výzvy – ne podle slova klienta (P36B T9, revize T9-1).
-  if (outcome === 'stored') await versions.countLoop(id, 'dare', voterOf(request));
+  if (outcome === 'stored') await versions.countLoop(id, ['dare'], voterOf(request));
   return markVolatileStore(
     Response.json({ dareId, score: run.score, ticks: run.tick }, { status: outcome === 'stored' ? 201 : 200, headers: { 'cache-control': 'no-store' } }),
   );

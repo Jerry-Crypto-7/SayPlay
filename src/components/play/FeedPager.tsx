@@ -31,7 +31,7 @@ import { ArcadePlay } from './arcade/ArcadePlay';
 import { WithPlayEnv } from './arcade/look/play-env';
 import { isTyping as typing } from './arcade/input';
 import demo from './demo-game.json';
-import { Feed, type FeedGame, type KnownGame, moodTone } from './Feed';
+import { beatText, Feed, type FeedGame, type KnownGame, moodTone } from './Feed';
 import { loopEvent } from './loop-client';
 import { Icon } from './ui';
 
@@ -64,13 +64,31 @@ async function feedPage(cursor: string | null): Promise<{ games: FeedGame[]; nex
  * sama od sebe prohrála dřív, než hráč pochopil ovládání, a první, co na
  * `/play` viděl, bylo „You lost“. `key` podle verze vrátí plakát u každé hry.
  */
-export function TapToPlay({ title, goal, mood, children }: { readonly title: string; readonly goal: string; readonly mood: string; readonly children: ReactNode }) {
+export function TapToPlay({
+  title,
+  goal,
+  mood,
+  beat = null,
+  children,
+}: {
+  readonly title: string;
+  readonly goal: string;
+  readonly mood: string;
+  /** „N% beat this“ (P37C T5); `null` = málo pokusů, řádek chybí. */
+  readonly beat?: number | null;
+  readonly children: ReactNode;
+}) {
   const [started, setStarted] = useState(false);
   if (started) return children;
   return (
     <button type="button" className="play-poster" data-testid="feed-poster" data-tone={moodTone(mood)} onClick={() => setStarted(true)}>
       <span className="play-poster-title">{title}</span>
       <span className="play-poster-goal">{goal}</span>
+      {beat !== null && (
+        <span className="sp-label play-poster-beat" data-testid="feed-poster-beat">
+          {beatText(beat)}
+        </span>
+      )}
       <span className="play-poster-cta">
         <Icon name="play" />
         Tap to play
@@ -331,7 +349,7 @@ export function FeedPager() {
             {detail.spec.title} plays on its own page. <Link href={`/play/${current.versionId}`}>Open the game</Link>
           </p>
         ) : (
-          <TapToPlay key={current.versionId} title={detail.spec.title} goal={detail.spec.tutorial.goalLine} mood={detail.spec.theme.mood}>
+          <TapToPlay key={current.versionId} title={detail.spec.title} goal={detail.spec.tutorial.goalLine} mood={detail.spec.theme.mood} beat={current.beat ?? null}>
             <WithPlayEnv theme={detail.spec.theme} versionId={current.versionId}>
               <ArcadePlay
                 versionId={current.versionId}

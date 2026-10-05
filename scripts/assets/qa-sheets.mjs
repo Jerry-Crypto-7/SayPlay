@@ -7,6 +7,7 @@
  * node scripts/assets/qa-sheets.mjs                    všechny chybějící listy
  * node scripts/assets/qa-sheets.mjs --only a,b         jen vybrané assetId
  * node scripts/assets/qa-sheets.mjs --out <adresář>    jinam než D:/caches/p30d/sheets
+ * node scripts/assets/qa-sheets.mjs --glb-list <json>  modely mimo katalog: [{ "id", "glb" }] (P37D)
  * ```
  *
  * Rozvržení listu: vlevo nahoře zepředu, vpravo nahoře z boku, vlevo dole
@@ -33,7 +34,11 @@ const flag = (name) => {
 const outDir = flag('--out') ?? 'D:/caches/p30d/sheets';
 const only = flag('--only')?.split(',');
 
-const catalog = JSON.parse(readFileSync(join(root, 'src/assets/catalog.json'), 'utf8')).assets;
+// Modely z cache výroby (P37D) leží mimo `public/`; každý dostane vlastní adresu `/ext/<pořadí>.glb`.
+const external = flag('--glb-list') ? JSON.parse(readFileSync(flag('--glb-list'), 'utf8')) : null;
+const catalog = external
+  ? external.map((model, index) => ({ assetId: model.id, lods: [{ level: 0, path: `/ext/${index}.glb` }] }))
+  : JSON.parse(readFileSync(join(root, 'src/assets/catalog.json'), 'utf8')).assets;
 const todo = catalog.filter((asset) => (only ? only.includes(asset.assetId) : true))
   .filter((asset) => only || !existsSync(join(outDir, `${asset.assetId}.png`)));
 mkdirSync(outDir, { recursive: true });
@@ -111,6 +116,8 @@ window.ready = true;
 function resolveFile(url) {
   const path = decodeURIComponent(url.split('?')[0]);
   if (path === '/' || path === '/index.html') return null;
+  const ext = external && /^\/ext\/(\d+)\.glb$/.exec(path);
+  if (ext) return external[Number(ext[1])]?.glb;
   for (const [prefix, dir] of MOUNTS) {
     if (!path.startsWith(prefix)) continue;
     const file = normalize(join(dir, path.slice(prefix.length)));

@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_HZ, ARCADE_LIMITS, AXIS_MAX, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HEADER, UNIT, bodyBase } from '../contract';
+import { PLATFORM_FEEL } from './platform';
 import { judgeRules } from './timing';
 
 export const RHYTHM_DENSITIES = ['sparse', 'normal', 'dense'] as const;
@@ -66,6 +67,13 @@ const controlParams = z
     window: z.int().min(1).max(30),
     /** Ťuk s dráhou bere jen notu té dráhy (žánr Rytmus, P36A T11); bez toho nejbližší notu v kterékoli. */
     lanes: z.boolean().optional(),
+    /**
+     * Odpuštění (P37A T7) se stejnými okny jako skok skákačky (`PLATFORM_FEEL`):
+     * ťuk bez noty v okně ještě trefí notu, která do okna dojede nejvýš za
+     * `bufferTicks` tiků, nebo z něj vyjela nejvýš před `coyoteTicks` tiky
+     * (za 1 bod); přejetá nota je minutí až po nich. Nota v okně má přednost.
+     */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type RhythmControlParams = z.infer<typeof controlParams>;
@@ -88,6 +96,9 @@ export const rhythmControl: ControlPiece<RhythmControlParams> = {
     state[p + S.aux0] = 0;
     const count = state[HEADER.bodyCount] as number;
     const reach = params.window * RHYTHM.noteSpeed;
+    // Bez `feel` jsou obě meze `reach` a odpuštěná nota nikdy nevznikne – svět jako dřív.
+    const early = params.feel === 2 ? reach + PLATFORM_FEEL.bufferTicks * RHYTHM.noteSpeed : reach;
+    const late = params.feel === 2 ? reach + PLATFORM_FEEL.coyoteTicks * RHYTHM.noteSpeed : reach;
     const tapped = (input.buttons & BUTTON.TAP) !== 0;
     // Ťuk do dráhy (klávesy D/F/J/K, pozice prstu) hledá notu jen v ní; mezerník bez dráhy kteroukoli.
     const lane = params.lanes === true && input.axis !== 0 ? rhythmLaneOfAxis(input.axis) : -1;
@@ -100,12 +111,13 @@ export const rhythmControl: ControlPiece<RhythmControlParams> = {
       const base = bodyBase(i);
       if (((state[base + S.flags] as number) & FLAG.alive) === 0) continue;
       const z = state[base + S.z] as number;
-      if (z < -reach) {
+      if (z < -late) {
         // Přejela lištu bez ťuku.
         state[base + S.flags] = (state[base + S.flags] as number) & ~FLAG.alive;
         resolved += 1;
         missed = true;
-      } else if (tapped && z <= reach && (lane < 0 || rhythmLaneOfX(state[base + S.x] as number) === lane) && (nearest < 0 || Math.abs(z) < Math.abs(nearestZ))) {
+        // Nejbližší vyhrává: nota v okně (|z| ≤ reach) je vždy blíž než odpuštěná, takže má přednost sama.
+      } else if (tapped && z <= early && (lane < 0 || rhythmLaneOfX(state[base + S.x] as number) === lane) && (nearest < 0 || Math.abs(z) < Math.abs(nearestZ))) {
         nearest = i;
         nearestZ = z;
       }
@@ -139,6 +151,8 @@ const generatorParams = z
     ramp: z.boolean().optional(),
     /** Žánr Rytmus: ťuk míří do dráhy (`rhythmControl` `lanes`). */
     lanes: z.boolean().optional(),
+    /** Odpuštění ťuku (P37A T7, `rhythmControl` `feel`) – úroveň ho nečte. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type RhythmLevelParams = z.infer<typeof generatorParams>;
@@ -230,7 +244,7 @@ export function rhythmParts(seed: number, raw: Readonly<Record<string, unknown>>
   const lives = health === undefined ? undefined : Math.max(1, Math.min(health, Math.floor(notes / 4)));
   const lanes = params.lanes === true ? { lanes: true } : {};
   return {
-    control: { id: 'rhythm', params: { window: params.window, ...lanes } },
+    control: { id: 'rhythm', params: { window: params.window, ...lanes, ...(params.feel === undefined ? {} : { feel: params.feel }) } },
     bot: { id: 'rhythm_bot', params: lanes },
     level,
     rules: judgeRules(notes, lives),

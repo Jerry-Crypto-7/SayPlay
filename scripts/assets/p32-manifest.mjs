@@ -101,6 +101,11 @@ const CLASS_OF_MODEL = {
   'gen3d-tortoise': null,
   'gen3d-witch-cauldron': null,
   'gen3d-wizard-hat': null,
+  // P37D dávka 4: rekvizity pojmenované po zvířeti nebo robotovi.
+  'gen3d-cat-tree': null,
+  'gen3d-fish-tank': null,
+  'gen3d-hamster-wheel': null,
+  'gen3d-robot-arm': null,
 };
 
 /** Barva náhradního tvaru podle třídy, dokud se model nenačte. */

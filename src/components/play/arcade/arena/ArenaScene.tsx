@@ -42,9 +42,11 @@ import { riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
 import { DIRECTIONS, arenaAxis, graceLeft } from '@/play/arcade/pieces/arena';
 import { FIGHT_PHASE, facingOf, phaseOf, strikeDirectionOf } from '@/play/arcade/pieces/fight';
+import type { HeroAction } from '@/play/spec';
 
 import { type BodyView, bodiesOf, bodiesStale } from '../bodies';
 import { deadFor, fallOf, squashPose, tiltPose } from '../characterMotion';
+import { type ArcadeGhost, GhostSlot } from '../GhostSlot';
 import { isTyping } from '../input';
 import { glowingCopy } from '../look/load';
 import { UNDER_PANORAMA } from '../look/under-panorama';
@@ -53,6 +55,7 @@ import { Scenery } from '../look/Scenery';
 import { questTargets } from '../quest/TargetStates';
 import { RiggedModel } from '../RiggedModel';
 import type { ArcadeSession } from '../session';
+import { HeroActionBody } from '../hero-action/HeroActionBody';
 import { InkOutline } from '../look/rig/InkOutline';
 import { type Cast, FittedModel } from '../World';
 import { ArenaFloor } from './ArenaFloor';
@@ -105,6 +108,10 @@ interface ArenaWorldProps {
   readonly cast: Cast;
   /** Vrstva cílů (P32-0 T5, naplní P32G): živé cíle v metrech scény se stavem (`TargetsMount`); bez ní ve stylu B obrysy, agar jen přidá. */
   readonly targets?: TargetLayer;
+  /** Viditelná činnost hrdiny (P37-0 T2); stanoviště úkolu ji dostane přes `questTargets`. */
+  readonly heroAction: HeroAction;
+  /** Duch dřívějšího běhu (P37B T8); aréna kreslí hrdinu převodem `World`, slot tedy výchozím. */
+  readonly ghost?: ArcadeGhost;
 }
 
 /**
@@ -116,7 +123,7 @@ export function ArenaWorld(props: ArenaWorldProps) {
   return control.id === 'fight' || control.params.size !== undefined ? <StyledWorld {...props} /> : <AgarWorld {...props} />;
 }
 
-function AgarWorld({ session, half, surface, look: scene, targets }: ArenaWorldProps) {
+function AgarWorld({ session, half, surface, look: scene, targets, ghost }: ArenaWorldProps) {
   // Střely doplňku `+shoot` přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [discs, setDiscs] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -248,6 +255,8 @@ function AgarWorld({ session, half, surface, look: scene, targets }: ArenaWorldP
         );
       })}
       {targets !== undefined && <TargetsMount session={session} views={discs} layer={targets} />}
+      {/* Slot ducha (P37-0 T3). */}
+      <GhostSlot ghost={ghost} session={session} />
     </>
   );
 }
@@ -399,7 +408,7 @@ function Alert({ at, register }: { readonly at: number; readonly register: (grou
   );
 }
 
-function StyledWorld({ session, half, surface, look: scene, cast, targets }: ArenaWorldProps) {
+function StyledWorld({ session, half, surface, look: scene, cast, targets, heroAction, ghost }: ArenaWorldProps) {
   const [views, setViews] = useState(() => bodiesOf(session));
   const fight = useMemo(() => baseControlOf(session.world.control).id === 'fight', [session]);
   const parts = useMemo(() => views.map(partOf), [views]);
@@ -722,13 +731,16 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
                 <group ref={(group) => { leans.current[view.index] = group; }}>
                   {/* Obrys (P36C T6) jen na modelu – kruh, ukazatel zdraví a výstraha jsou mimo tuhle skupinu. */}
                   <InkOutline ink={part === 'hero' ? 'hero' : 'foe'} />
-                  {character !== undefined ? (
-                    <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
-                  ) : (
-                    <group ref={(group) => { posed.current[view.index] = group; }}>
-                      <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} />
-                    </group>
-                  )}
+                  {/* Činnost hrdiny (P37B T2): soupeři a `none` dostanou model beze změny stromu. */}
+                  <HeroActionBody action={part === 'hero' ? heroAction : 'none'} session={session} h={size.h}>
+                    {character !== undefined ? (
+                      <RiggedModel character={character} h={size.h} clip={() => clips.current[view.index] ?? 'idle'} fallback={FALLBACK[part]} onClip={onClip} />
+                    ) : (
+                      <group ref={(group) => { posed.current[view.index] = group; }}>
+                        <FittedModel id={model ?? ''} w={size.w} h={size.h} d={size.d} fallback={FALLBACK[part]} character={size.h >= Math.max(size.w, size.d)} />
+                      </group>
+                    )}
+                  </HeroActionBody>
                 </group>
               )}
               {fighter && part === 'hero' && <SwingArc register={(mesh) => { arc.current = mesh; }} />}
@@ -751,7 +763,9 @@ function StyledWorld({ session, half, surface, look: scene, cast, targets }: Are
           </group>
         );
       })}
-      <TargetsMount session={session} views={views} layer={targets ?? questTargets(session.world, { session, look: scene })} />
+      <TargetsMount session={session} views={views} layer={targets ?? questTargets(session.world, { session, look: scene, heroAction })} />
+      {/* Slot ducha (P37-0 T3) – i pro úkol: stanoviště hrdinu nekreslí, druhý slot by ducha zdvojil. */}
+      <GhostSlot ghost={ghost} session={session} />
     </>
   );
 }

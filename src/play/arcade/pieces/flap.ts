@@ -14,8 +14,9 @@ import { z } from 'zod';
 
 import { createCompileRng } from '@/play/compile/rng';
 
-import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
+import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, HIT_GRACE, type PieceRef, UNIT, bodyBase, rampMarks, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
+import { PLATFORM_FEEL } from './platform';
 
 export const FLAP_DIFFICULTIES = ['easy', 'normal', 'hard'] as const;
 export type FlapDifficulty = (typeof FLAP_DIFFICULTIES)[number];
@@ -52,16 +53,24 @@ export const FLAP_RISE = (() => {
 /** Značky rampy (`rampMarks`); bez nich stálá rychlost. Čte je ovládání i robot. */
 export const flapRampParams = z.object({ ramp: z.tuple([z.int(), z.int()]).optional() }).strict();
 
-/** Ovládání: let vpřed (za značkami rampy rychlejší), ťuk/nahoru = vzlet. */
-export const flapControl: ControlPiece<z.infer<typeof flapRampParams>> = {
+/**
+ * Ovládání: rampa a s `feel: 2` (P37A T7) odpuštění pozdního vzletu – dotek
+ * země prohraje až po `PLATFORM_FEEL.coyoteTicks` (100 ms) bez ťuku, ťuk do té
+ * doby ze země vzlétne. Bez něj prohrává hned první dotek, uložený svět beze změny.
+ */
+const flapControlParams = flapRampParams.extend({ feel: z.literal(2).optional() }).strict();
+
+/** Ovládání: let vpřed (za značkami rampy rychlejší), ťuk/nahoru = vzlet. S `feel: 2` je `aux0` hráče počet tiků na zemi. */
+export const flapControl: ControlPiece<z.infer<typeof flapControlParams>> = {
   id: 'flap',
-  params: flapRampParams,
+  params: flapControlParams,
   roles: ['player'],
   cost: () => ({ bodies: 1, rules: 0 }),
   step: (state, player, input, params) => {
     const base = bodyBase(player);
     state[base + BODY.vz] = rampedSpeed(FLAP.speed, state[base + BODY.z] as number, params.ramp);
     state[base + BODY.vx] = 0;
+    if (params.feel === 2) state[base + BODY.aux0] = ((state[base + BODY.flags] as number) & FLAG.grounded) === 0 ? 0 : (state[base + BODY.aux0] as number) + 1;
     if ((input.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0) state[base + BODY.vy] = FLAP.flapVy;
   },
 };
@@ -103,6 +112,8 @@ const generatorParams = z
      * s milostí (`flapRules`). Uložená trať bez něj jako dřív.
      */
     rise: z.boolean().optional(),
+    /** Odpuštění pozdního vzletu (P37A T7) – čte ho ovládání a pravidlo pádu, trať ne. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type FlapTrackParams = z.infer<typeof generatorParams>;
@@ -161,16 +172,17 @@ export const flapTrack: GeneratorPiece<FlapTrackParams> = {
 /**
  * Pravidla poletování: trubka, branka/mince, cíl, dotek země. `grace` (trať
  * s `rise`, P36A T11): náraz ubere jeden život a vteřinu další nebere – trubkou
- * se proletí za ~13 tiků, bez milosti by v ní padly všechny životy.
+ * se proletí za ~13 tiků, bez milosti by v ní padly všechny životy. `feel`
+ * (P37A T7): dotek země prohraje až po tikách odpuštění, které počítá ovládání.
  */
-export function flapRules(health?: number, grace = false): PieceRef[] {
+export function flapRules(health?: number, grace = false, feel = false): PieceRef[] {
   const damage = grace ? { effect: 'damage', grace: HIT_GRACE } : { effect: 'damage' };
   const rules: PieceRef[] = [
     { id: 'hit', params: { role: 'obstacle', ...(health === undefined ? { effect: 'lose' } : damage) } },
     { id: 'pickup', params: {} },
     { id: 'finish', params: {} },
     // Země drží hráče na y = 0: dotek země = spodní stěna pod 1.
-    { id: 'fall_out', params: { belowY: 1, effect: 'lose' } },
+    { id: 'fall_out', params: { belowY: 1, effect: 'lose', ...(feel ? { afterTicks: PLATFORM_FEEL.coyoteTicks } : {}) } },
   ];
   if (health !== undefined) rules.push({ id: 'out_of_health', params: {} });
   return rules;

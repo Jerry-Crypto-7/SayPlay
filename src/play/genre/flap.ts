@@ -30,7 +30,8 @@ export const flapGenre: GenreModule<'flap'> = {
     const { lengthM = FLAP_GENRE.lengthM } = spec.params ?? {};
     return legacySpec(spec, {
       control: 'flap',
-      controlParams: { lengthM, rise: true },
+      // Pozdní vzlet ze země odpuštěný jako skok skákačky (P37A T7).
+      controlParams: { lengthM, rise: true, feel: 2 },
       archetype: 'hazard_crossing',
       title: `${titleCase(spec.hero)} Flight`,
       objective: { kind: 'reach', description: 'Flap through the gaps between the pipes to the finish.', role: 'finish' },

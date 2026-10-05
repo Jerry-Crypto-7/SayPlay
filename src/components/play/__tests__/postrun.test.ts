@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { PostRun, type RunFacts, retryKey, runResult } from '../PostRun';
+import { PostRun, type RunFacts, retryKey, runResult, shareRunOf } from '../PostRun';
 import type { RemixJob } from '../RemixBox';
 
 /**
@@ -103,5 +103,14 @@ describe('retry keys on the result (P36B T3)', () => {
     expect(key('r', [], { repeat: true })).toBe(false);
     expect(key('r', [], { ctrlKey: true })).toBe(false);
     expect(key('r', [], { metaKey: true })).toBe(false);
+  });
+});
+
+describe('shareRunOf (P37C T4)', () => {
+  it('reads lives from the arcade stat and score from the run, stars only after a win', () => {
+    const arcade: RunFacts = { ...facts(true), extra: [{ value: '2', label: 'lives left' }, { value: '80%', label: 'of the way' }], score: { value: 2450, unit: 'pts' }, stars: 2 };
+    expect(shareRunOf(arcade)).toEqual({ won: true, survive: false, seconds: 12.3, stars: 2, score: 2450, lives: 2, goal: { count: 5, need: 5, label: 'collected' } });
+    expect(shareRunOf({ ...arcade, won: false })).toMatchObject({ won: false, stars: null, score: 2450 });
+    expect(shareRunOf(facts(false))).toMatchObject({ stars: null, score: null, lives: null });
   });
 });

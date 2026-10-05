@@ -190,6 +190,8 @@ describe('director answer schema for a GenreSpec', () => {
         enemy: 'reef',
         // P36A T8: chování nepřítele a parametry hloubky má každý žánr.
         enemyMoves: null,
+        // P37A T3: činnost hrdiny rodiny slovesa.
+        heroAction: null,
         collectible: null,
         target: null,
         setting: 'stormy sea',
@@ -217,7 +219,8 @@ describe('director answer schema for a GenreSpec', () => {
       if (draft.genre === null || !READY.includes(`${draft.genre.genre}.${draft.genre.mode}`)) continue;
       const answer = { plan: 'keep', spec: encode(GENRE_SPEC, draft.genre) };
       expect(validate(GENRE_ANSWER_SCHEMA, answer), prompt).toEqual([]);
-      const read = readGenreAnswer(answer);
+      // S větou jako v `director/index.ts`: cíl přenosu věty mimo hry (P37A T5) z GenreSpec sám nevyjde.
+      const read = readGenreAnswer(answer, GENRE_MODULES, prompt);
       if (!read.ok) throw new Error(`${prompt}: ${read.detail}`);
       expect(read.spec, prompt).toEqual(draft.spec);
       checked += 1;
@@ -227,7 +230,7 @@ describe('director answer schema for a GenreSpec', () => {
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
     const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
-    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', enemyMoves: null, collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
+    const ok = { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', enemyMoves: null, heroAction: null, collectible: null, target: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
     expect(validate(GENRE_SPEC, ok)).toEqual([]);
     // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
     expect(validate(GENRE_SPEC, { ...ok, counts: { enemy: 3, collectible: null } })).toEqual([]);

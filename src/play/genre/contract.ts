@@ -18,6 +18,7 @@ import { LOOK_IDS } from '../arcade/look';
 import { THINGS_MAX, type Rule, modelRulesSchema, thingsSchema } from '../arcade/rules/schema';
 import { readRoles } from '../draft/lexicon';
 import type { Reading } from '../read/schema';
+import { HERO_ACTIONS } from '../hero-action';
 import type { ControlId, GameRole, GameSpecV1 } from '../spec';
 
 /** Verze překladu `GenreSpec → GameSpecV1`; zapisuje se do `spec.genre`. */
@@ -111,6 +112,11 @@ const variant = <G extends GenreId>(genre: G) =>
       enemy: label.optional(),
       /** Chování nepřítele (P36A T8); bez něj žánr hraje své výchozí. */
       enemyMoves: z.enum(ENEMY_MOVES).optional(),
+      /**
+       * Co hrdina viditelně dělá (P37A T3, rodina slovesa); překlad ho propíše do hry beze změny, bez něj hra pole nemá.
+       * Vlastní instance výčtu: sdílenou by JSON Schema režiséra vypsalo jako odkaz `$ref`, který jeho validátor nečte.
+       */
+      heroAction: z.enum(HERO_ACTIONS).optional(),
       collectible: label.optional(),
       target: genreTargetSchema.optional(),
       setting: z.string().min(1).max(80),

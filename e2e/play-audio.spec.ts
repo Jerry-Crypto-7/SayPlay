@@ -1,7 +1,7 @@
 import { readdirSync } from 'node:fs';
 import path from 'node:path';
 
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import { devices, expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 import { openPause, startGame } from './play-start';
 
@@ -124,3 +124,43 @@ test.describe('/play/[id] – the game’s own music and sounds', () => {
     expect(await page.evaluate(() => window.__playAudio!.narrated())).toEqual([]);
   });
 });
+
+/*
+ * P37B T5: hudba podle napětí a zvuk každé události. Prohlížeč nesmí
+ * kontext zvuku dostat před gestem (jinak varuje „AudioContext was not allowed
+ * to start“), a to na telefonu i na desktopu. Aréna s pronásledovatelem:
+ * hráč stojí, medvěd přijde blízko a hudba přejde do napjaté smyčky.
+ */
+const { defaultBrowserType: _pixelBrowser, ...PIXEL_7 } = devices['Pixel 7'];
+const AREA = 'A cat collects glowing fish on a frozen lake while a polar bear chases it';
+
+for (const [name, device] of [
+  ['desktop', {}],
+  ['Pixel 7', PIXEL_7],
+] as const) {
+  test.describe(`${name} – sound starts only after the gesture (P37B T5)`, () => {
+    test.use(device);
+
+    test('no audio context before the gesture, then music that tenses and no console error', async ({ page, request }) => {
+      test.setTimeout(120_000);
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('console', (message) => {
+        // Síťové chyby (offline režisér bez klíčů) sem nepatří – jde o chyby skriptu a zvuku.
+        if (message.type() === 'error' && !message.text().startsWith('Failed to load resource')) errors.push(message.text());
+        if (message.type() === 'warning' && /AudioContext/i.test(message.text())) errors.push(message.text());
+      });
+      await page.goto(await publish(request, AREA));
+      await startGame(page);
+      await page.waitForFunction(() => window.__playAudio !== undefined && window.__playShell !== undefined && window.__playShell.tick() > 30, undefined, { timeout: 60_000 });
+      expect(await page.evaluate(() => window.__playAudio!.state())).toBe('none');
+
+      await gesture(page);
+      await expect.poll(() => page.evaluate(() => window.__playAudio!.music()), { timeout: 20_000 }).toMatch(/-(calm|tense)\.ogg$/);
+      // Hráč stojí, medvěd ho dožene: blízký soupeř nebo ztracený život hudbu napne.
+      await expect.poll(() => page.evaluate(() => window.__playAudio!.tension()), { timeout: 60_000 }).toBe(true);
+      await expect.poll(() => page.evaluate(() => window.__playAudio!.music()), { timeout: 20_000 }).toMatch(/-tense\.ogg$/);
+      expect(errors).toEqual([]);
+    });
+  });
+}

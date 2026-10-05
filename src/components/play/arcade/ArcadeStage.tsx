@@ -6,8 +6,8 @@
  * kreslí jinde:
  * - běžec `runner/RunnerWorld.tsx`, plošinovka `platform/PlatformWorld.tsx`;
  * - poletování, závod, střelnice a hod sdílený `World.tsx`;
- * - aréna `arena/`, načasování `timing/` a rytmus `rhythm/`, souboj vlastní scénu se světly;
- * - světlo, oblohu a mlhu všech kromě souboje `look/rig/StyleRig.tsx`;
+ * - aréna `arena/`, načasování `timing/`, rytmus `rhythm/` a souboj `duel/`;
+ * - světlo, oblohu, mlhu a ladění barev všech `look/rig/StyleRig.tsx`;
  * - efekty z událostí jádra `effects/Effects.tsx` (sběrnice `effects/bus.ts`).
  *
  * Vstup se jen zapíše do relace – padne do nejbližšího tiku, takže záznam jde přehrát.
@@ -22,11 +22,12 @@ import { AXIS_MAX, BUTTON } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { CAPABILITIES } from '@/play/capabilities';
-import type { ControlId } from '@/play/spec';
+import type { ControlId, HeroAction } from '@/play/spec';
 
 import { ActionButton, actionsOf, useActionInput } from './ActionButton';
 import { ArenaWorld, useArenaInput } from './arena/ArenaScene';
 import { Effects } from './effects/Effects';
+import type { ArcadeGhost } from './GhostSlot';
 import { comboOf } from './effects/feel';
 import { inkCount, isInk } from './look/rig/InkOutline';
 import { StyleRig } from './look/rig/StyleRig';
@@ -105,6 +106,8 @@ export interface RenderReport {
   readonly exposure: number;
   /** Efekty postprocessingu v pořadí (P32A T2, `look/rig/Post.tsx`); se skládačem tónuje `aces` a `toneMapping` je 0. */
   readonly post: readonly string[];
+  /** Rodina ladění barev, kterou efekt ve skládači opravdu nastavil (P37B T3, `Grading`); `null` = bez ladění. */
+  readonly grade: string | null;
   /**
    * Viditelné sítě scény (P35 T4) – co se kreslí, nezávisle na úrovni kvality, která
    * mění stínový výřez i průchody a s nimi `calls`.
@@ -139,6 +142,7 @@ function RenderProbe() {
       toneMapping: gl.toneMapping,
       exposure: gl.toneMappingExposure,
       post: (gl.domElement.dataset.post ?? '').split(' ').filter(Boolean),
+      grade: gl.domElement.dataset.grade ?? null,
       meshes: meshes(),
     });
     window.__playRender = probe;    return () => {
@@ -284,39 +288,57 @@ function FrameProbe({ control }: { readonly control: string }) {
  */
 function PromptSpot({ session, surface }: { readonly session: ArcadeSession; readonly surface: React.RefObject<HTMLDivElement | null> }) {
   const get = useThree((three) => three.get);
-  useEffect(
-    () =>
-      addAfterEffect(() => {
-        const host = surface.current;
-        if (host === null || session.snapshot().tick !== 0) return;
-        const { camera, scene, size } = get();
-        let hero: Object3D | null = null;
+  useEffect(() => {
+    // Čekání na první vstup běží každý snímek (P37B T7, Pixel 7 CPU 4×): průchod scénou
+    // a zápis stylu, který prohlížeči každý snímek zneplatnil rozvržení pro další
+    // `getBoundingClientRect`, stály čaroději na úvodní kartě ~6 % CPU. Hrdina se proto
+    // hledá znovu, jen když zmizí, a styl se píše, jen když se změní.
+    let hero: Object3D | null = null;
+    return addAfterEffect(() => {
+      const host = surface.current;
+      if (host === null || session.snapshot().tick !== 0) return;
+      const { camera, scene, size } = get();
+      if (hero === null || !shownIn(hero, scene)) {
+        hero = null;
         scene.traverseVisible((node) => {
           if (node.userData.frame === 'hero') hero = node;
         });
-        // Klidový kvádr (P36C T9): póza kostí přepočítá každý vrchol postavy a tohle běží každý
-        // snímek tiku 0 – u rytířů ~30 % CPU telefonu. Na místo pro kartu stačí postava v klidu.
-        const box = hero === null ? null : frameOf(hero, camera, size.width, size.height, false);
-        if (box === null || box.behind) {
-          delete host.dataset.promptAt;
-          return;
-        }
-        const top = (1 - box.maxY) / 2;
-        const bottom = (1 - box.minY) / 2;
-        const stage = host.getBoundingClientRect();
-        const bars = hudBars(host, stage);
-        const card = host.querySelector<HTMLElement>('.play-first-prompt')?.offsetHeight ?? 0;
-        const above = top * stage.height - bars.top - 2 * PROMPT_GAP_PX;
-        const below = bars.bottom - bottom * stage.height - 2 * PROMPT_GAP_PX;
-        const room = Math.max(above, below, 0);
-        host.style.setProperty('--_hero-top', `${(top * 100).toFixed(1)}%`);
-        host.style.setProperty('--_hero-bottom', `${(bottom * 100).toFixed(1)}%`);
-        host.style.setProperty('--_prompt-scale', card > room ? (room / card).toFixed(3) : '1');
-        host.dataset.promptAt = above >= below ? 'above' : 'below';
-      }),
-    [get, session, surface],
-  );
+      }
+      // Klidový kvádr (P36C T9): póza kostí přepočítá každý vrchol postavy a tohle běží každý
+      // snímek tiku 0 – u rytířů ~30 % CPU telefonu. Na místo pro kartu stačí postava v klidu.
+      const box = hero === null ? null : frameOf(hero, camera, size.width, size.height, false);
+      if (box === null || box.behind) {
+        delete host.dataset.promptAt;
+        return;
+      }
+      const top = (1 - box.maxY) / 2;
+      const bottom = (1 - box.minY) / 2;
+      const stage = host.getBoundingClientRect();
+      const bars = hudBars(host, stage);
+      const card = host.querySelector<HTMLElement>('.play-first-prompt')?.offsetHeight ?? 0;
+      const above = top * stage.height - bars.top - 2 * PROMPT_GAP_PX;
+      const below = bars.bottom - bottom * stage.height - 2 * PROMPT_GAP_PX;
+      const room = Math.max(above, below, 0);
+      setStyleVar(host, '--_hero-top', `${(top * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_hero-bottom', `${(bottom * 100).toFixed(1)}%`);
+      setStyleVar(host, '--_prompt-scale', card > room ? (room / card).toFixed(3) : '1');
+      const side = above >= below ? 'above' : 'below';
+      if (host.dataset.promptAt !== side) host.dataset.promptAt = side;
+    });
+  }, [get, session, surface]);
   return null;
+}
+
+/** Uzel je ve scéně a viditelný i se všemi předky. */
+function shownIn(object: Object3D, root: Object3D): boolean {
+  let node: Object3D | null = object;
+  for (; node !== null && node !== root; node = node.parent) if (!node.visible) return false;
+  return node === root && root.visible;
+}
+
+/** Stejná hodnota se nepíše: i ta by zneplatnila styl a rozvržení stránky. */
+export function setStyleVar(host: HTMLElement, name: string, value: string): void {
+  if (host.style.getPropertyValue(name) !== value) host.style.setProperty(name, value);
 }
 
 /** Mezera mezi kartou a hrdinou i lištou HUD (`--sp-space-4` v `play.css`). */
@@ -584,16 +606,23 @@ const StageCanvas = memo(function StageCanvas({
   session,
   cast,
   look,
+  lookId,
   enabled,
   live,
   surface,
+  heroAction,
+  ghost,
 }: {
   readonly session: ArcadeSession;
   readonly cast: Cast;
   readonly look: Look;
+  /** Rodina ladění barev (P37B T3, `look/rig/grade.ts`). */
+  readonly lookId: LookId;
   readonly enabled: boolean;
   readonly live: boolean;
   readonly surface: React.RefObject<HTMLDivElement | null>;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
 }) {
   const base = baseControlOf(session.world.control);
   const control = base.id;
@@ -608,7 +637,7 @@ const StageCanvas = memo(function StageCanvas({
   const { note, block } = cast.props;
   const noteModel: BodyModel | undefined = note === undefined ? undefined : (w, h, d) => <FittedModel id={note} w={w} h={h} d={d} fallback="#0ea5e9" />;
   const blockModel: BodyModel | undefined = block === undefined ? undefined : (w, h, d) => <FittedModel id={block} w={w} h={h} d={d} fallback="#0ea5e9" fill />;
-  const world = { session, cast, surface, scene: look, enabled };
+  const world = { session, cast, surface, scene: look, enabled, heroAction, ghost };
   return (
     // Stíny slunce rigu (P32A T1); PCF s poloměrem – měkký PCFSoft three 0.185 odmítá.
     <Canvas camera={{ position: [0, 3.4, -6.5], fov: 60 }} dpr={[1, 2]} frameloop={live ? 'always' : 'demand'} shadows="percentage">
@@ -616,19 +645,19 @@ const StageCanvas = memo(function StageCanvas({
       <FrameProbe control={control} />
       <RenderProbe />
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
-      {/* Souboj (P25H) má vlastní scénu se světly i pozadím; načasování a rytmus svítí rigem (P32A T10). */}
+      {/* Rig svítí všem scénám: načasování a rytmus od P32A T10, souboj od P37B T3. */}
+      <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
       {control === 'duel' ? (
-        <DuelScene session={session} look={look} rivalModel={rivalModel} />
+        <DuelScene session={session} look={look} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
       ) : (
         <>
-          <StyleRig look={look} control={control} surface={surface} />
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
           {control === 'timing' ? (
-            <TimingScene session={session} look={look} blockModel={blockModel} />
+            <TimingScene session={session} look={look} blockModel={blockModel} heroAction={heroAction} ghost={ghost} />
           ) : control === 'rhythm' ? (
-            <RhythmScene session={session} look={look} noteModel={noteModel} surface={surface} />
+            <RhythmScene session={session} look={look} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
           ) : control === 'move_free' || control === 'fight' ? (
-            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} />
+            <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} heroAction={heroAction} ghost={ghost} />
           ) : control === 'runner' ? (
             <RunnerWorld {...world} />
           ) : control === 'platform' ? (
@@ -654,6 +683,8 @@ export default function ArcadeStage({
   lookId = 'meadow',
   look: scene,
   enabled = true,
+  heroAction = 'none',
+  ghost,
   overlay,
 }: {
   readonly session: ArcadeSession;
@@ -663,6 +694,10 @@ export default function ArcadeStage({
   readonly look?: Look;
   /** Hra je na obrazovce a běží (P28B T3); jinak vstup neposlouchá – po konci patří šipky feedu a klávesy formuláři. */
   readonly enabled?: boolean;
+  /** Viditelná činnost hrdiny ze specu (P37-0 T2); jde do každé scény, kreslí ji až stopa vzhledu. Jádro ji nečte. */
+  readonly heroAction?: HeroAction;
+  /** Duch dřívějšího běhu (P37B T8, `GhostSlot.tsx`); scéna ho kreslí ve svém slotu. */
+  readonly ghost?: ArcadeGhost;
   /* P29D */
   /** Vrstva nad plátnem (počasí a denní doba živé změny) – mimo scénu i hash. */
   readonly overlay?: ReactNode;
@@ -699,7 +734,7 @@ export default function ArcadeStage({
   return (
     // `data-setting` = sada, jejíž kulisy scéna opravdu kreslí (P27A T3); scéna bez sad ho nemá.
     <div ref={surface} className="play-stage" data-testid="arcade-stage" data-control={control} data-look={lookId} data-setting={draws ? lookId : undefined} style={{ touchAction: 'none' }}>
-      <StageCanvas session={session} cast={cast} look={look} enabled={enabled} live={live} surface={surface} />
+      <StageCanvas session={session} cast={cast} look={look} lookId={lookId} enabled={enabled} live={live} surface={surface} heroAction={heroAction} ghost={ghost} />
       {overlay /* P29D */}
       <EventFeedback session={session} surface={surface} />
       {enabled && control === 'platform' && <TouchZones session={session} zones={PLATFORM_ZONES} />}

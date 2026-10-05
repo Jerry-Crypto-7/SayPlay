@@ -2,7 +2,8 @@
 
 /**
  * Postprocessing rigu (P32A T2): N8AO (kontaktní stíny v koutech), bloom jen
- * na emisi a slunci na obloze, SMAA a ACES. Kolik z toho se kreslí, určuje
+ * na emisi a slunci na obloze, SMAA, ACES a za ním ladění barev rodiny
+ * prostředí (P37B T3, `grade.ts`). Kolik z toho se kreslí, určuje
  * úroveň kvality (`quality.ts`), kterou tu řídí průběžné FPS.
  *
  * Mimo hash: jádro úroveň ani obraz nečte.
@@ -11,10 +12,11 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { Bloom, EffectComposer, N8AO, SMAA, ToneMapping } from '@react-three/postprocessing';
 import { ToneMappingMode } from 'postprocessing';
-import { type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { Look } from '@/play/arcade/look';
 
+import { GRADES, GradeEffect, type GradeFamily } from './grade';
 import { GAP_MS, type QualityState, type QualityTier, TIER_SETTINGS, bloomThreshold, sampleQuality, startQuality } from './quality';
 
 /** FPS se měří po půlsekundách. */
@@ -80,20 +82,57 @@ function PostProbe({ effects }: { readonly effects: string }) {
 }
 
 /**
- * `low` skládač nemá (`TIER_SETTINGS`): scénu kreslí renderer sám, s ACES
- * a MSAA plátna. SMAA jde první – čte vstup průchodu, efekty před ním by zahodil.
+ * Ladění rodiny prostředí (P37B T3, `grade.ts`) – za ACES, slije se s ním do
+ * jednoho průchodu. Rodinu, kterou efektu nastavil, zapíše plátnu (`data-grade`,
+ * sonda `__playRender`): bez ladění ve skládači sonda nic nehlásí.
  */
-export function Post({ look, tier }: { readonly look: Look; readonly tier: QualityTier }) {
-  const { bloom, ao } = TIER_SETTINGS[tier];
-  if (!bloom && ao === false) return null;
+export function Grading({ family }: { readonly family: GradeFamily }) {
+  const gl = useThree((three) => three.gl);
+  const effect = useMemo(() => new GradeEffect(), []);
+  useEffect(() => {
+    effect.grade = GRADES[family];
+    gl.domElement.dataset.grade = family;
+    return () => {
+      delete gl.domElement.dataset.grade;
+    };
+  }, [effect, family, gl]);
+  useEffect(() => () => effect.dispose(), [effect]);
+  return <primitive object={effect} dispose={null} />;
+}
+
+/** Vzorky MSAA cíle skládače na úrovni bez SMAA. */
+const MSAA_SAMPLES = 4;
+
+/**
+ * N8AO bez ohledu na průhledné sítě (P37B T7). Sám je hledá průchodem scény a pak
+ * každý snímek kreslí scénu ještě dvakrát, jen aby je z AO vyňal – průhledné jsou tu
+ * částice a záře, AO pod nimi není vidět. Telefon (Pixel 7, CPU 4×) na `medium` tím
+ * každý snímek dvakrát navíc procházel scénu a přepočítal její matice (pirát ~8 % CPU).
+ * Knihovna to propem nenabízí, nastavuje se na průchodu:
+ * hledání vypne `autoDetectTransparency`, setter konfigurace jen při změně hodnoty.
+ */
+export function opaqueAo(pass: { autoDetectTransparency: boolean; configuration: { transparencyAware: boolean } } | null): void {
+  if (pass === null) return;
+  pass.autoDetectTransparency = false;
+  pass.configuration.transparencyAware = false;
+}
+
+/**
+ * Skládač kreslí na každé úrovni (`TIER_SETTINGS`): scéna tak jde vždy do jeho
+ * cíle bez tónování a změna úrovně nepřekládá shadery materiálů. SMAA jde první –
+ * čte vstup průchodu, efekty před ním by zahodil.
+ */
+export function Post({ look, family, tier }: { readonly look: Look; readonly family: GradeFamily; readonly tier: QualityTier }) {
+  const { bloom, ao, aa } = TIER_SETTINGS[tier];
   return (
     <>
-      <PostProbe effects={[ao === false ? '' : 'ao', 'smaa', bloom ? 'bloom' : '', 'aces'].filter(Boolean).join(' ')} />
-      <EffectComposer multisampling={0} renderPriority={COMPOSER_PRIORITY}>
-        {ao === false ? <></> : <N8AO aoRadius={1.2} distanceFalloff={1} intensity={2} halfRes={ao === 'half'} quality={ao === 'half' ? 'performance' : 'medium'} />}
-        <SMAA />
+      <PostProbe effects={[ao === false ? '' : 'ao', aa === 'smaa' ? 'smaa' : '', bloom ? 'bloom' : '', 'aces'].filter(Boolean).join(' ')} />
+      <EffectComposer multisampling={aa === 'msaa' ? MSAA_SAMPLES : 0} renderPriority={COMPOSER_PRIORITY}>
+        {ao === false ? <></> : <N8AO ref={opaqueAo} aoRadius={1.2} distanceFalloff={1} intensity={2} halfRes={ao === 'half'} quality={ao === 'half' ? 'performance' : 'medium'} />}
+        {aa === 'smaa' ? <SMAA /> : <></>}
         {bloom ? <Bloom mipmapBlur luminanceThreshold={bloomThreshold(look)} luminanceSmoothing={0.1} intensity={0.8} /> : <></>}
         <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+        <Grading family={family} />
       </EffectComposer>
     </>
   );

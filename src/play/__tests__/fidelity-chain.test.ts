@@ -35,9 +35,9 @@ describe('fidelityChain', () => {
   });
 
   it('does not count a role label without a model as drawn', () => {
-    const spec = { ...shooterFixture, roles: shooterFixture.roles.map((role) => (role.id === 'enemy' ? { ...role, label: 'kettle' } : role)) } as GameSpecV1;
-    const [kettle] = fidelityChain(spec, [{ item: 'kettle', slot: 'role', match: ['kettle'] }]);
-    expect(kettle).toMatchObject({ inSpec: true, read: true, drawn: false, why: 'no-model' });
+    const spec = { ...shooterFixture, roles: shooterFixture.roles.map((role) => (role.id === 'enemy' ? { ...role, label: 'stapler' } : role)) } as GameSpecV1;
+    const [stapler] = fidelityChain(spec, [{ item: 'stapler', slot: 'role', match: ['stapler'] }]);
+    expect(stapler).toMatchObject({ inSpec: true, read: true, drawn: false, why: 'no-model' });
     const [robot] = fidelityChain(shooterFixture as GameSpecV1, [{ item: 'robot', slot: 'role', match: ['robot'] }]);
     expect(robot).toMatchObject({ drawn: true, why: 'ok' });
   });

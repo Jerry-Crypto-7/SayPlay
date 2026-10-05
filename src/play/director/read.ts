@@ -15,7 +15,7 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
-import { draftGenreFor } from '../draft/draft';
+import { draftGenreFor, twistGoalFor } from '../draft/draft';
 import { singular } from '../draft/lexicon';
 import type { GenreModules } from '../genre/classify';
 import type { GenreModule, GenreSpec } from '../genre/contract';
@@ -84,7 +84,10 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
   const genre = sentence === undefined ? singularRoles(read.value) : goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules);
   const game = compileGenreSpec(genre, modules);
-  return game.ok ? { ok: true, spec: game.spec, genre } : game;
+  if (!game.ok) return game;
+  // Věta mimo hry (P37A T5): AI verze řekne cíl slovy věty jako návrh („Dodge the long queues!“).
+  const goal = sentence === undefined ? null : twistGoalFor(sentence, genre, reading, modules);
+  return { ok: true, spec: goal === null ? game.spec : { ...game.spec, tutorial: { ...game.spec.tutorial, goalLine: goal } }, genre };
 }
 
 /**

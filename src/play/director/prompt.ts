@@ -16,6 +16,7 @@ import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import { LOOK_IDS } from '../arcade/look';
+import { sentenceChecklist } from '../fidelity/checklist';
 import { COUNT_PARAMS, COUNT_ROLES, type GenreModule, type GenreSpec } from '../genre/contract';
 import { DEPTH_PARAM_BOUNDS, GENRE_MODULES } from '../genre/index';
 import { ARCHETYPES, ARCHETYPE_IDS, MECHANICS, MECHANIC_IDS, type MechanicEntry } from '../registry';
@@ -125,7 +126,28 @@ export function genrePromptLines(): string {
     'enemyMoves, when the sentence says how the enemy acts, else null: chase = hunts the player, patrol = wanders until it sees the player ("guards patrol"), shoot = the player shoots them down, still = never moves.',
     "Keep the user's nouns, numbers and names. Role labels are singular (\"rock\", not \"rocks\"). The enemy is never what the player holds, sprays or throws.",
     'The starting point is the quick version the player already has. Keep what it got right and add one thing the sentence says and it misses: the chaser it names (params/counts), a count it says, the enemy or place it names. Never return it unchanged.',
+    // P37A T8: brána upgradu měří AI verzi proti návrhu na tomtéž seznamu (`fidelity/score.ts`).
+    'Checklist and main verb (in the request) are what the sentence names: carry each checklist thing in a role label or the setting, and play the main verb in its genre and mode. The player gets your version only if it carries more of the checklist than the starting point.',
   ].join('\n');
+}
+
+/**
+ * Kontrolní seznam věty a hlavní sloveso s rodinou (P37A T8, `fidelity/checklist.ts`)
+ * jako řádky požadavku – podle téhož seznamu brána upgradu AI verzi pustí, nebo ne.
+ */
+export function checklistLines(sentence: string): string {
+  const { checklist, verb } = sentenceChecklist(sentence);
+  const nouns = checklist.filter((entry) => entry.slot !== 'verb').map((entry) => `${entry.slot} "${entry.item}"`);
+  const played = verb === null ? '' : verb.mode === 'default' ? `genre ${verb.genre}` : `genre ${verb.genre}, mode ${verb.mode}`;
+  return [
+    `Checklist: ${nouns.length === 0 ? 'none' : nouns.join('; ')}.`,
+    verb === null ? 'Main verb: none – the sentence names no game verb.' : `Main verb: "${verb.word}"${verb.family === null ? '' : ` (family ${verb.family})`} – ${played}.`,
+  ].join('\n');
+}
+
+/** Zpráva požadavku: věta, její seznam a výchozí bod; plný i kompaktní prompt ji sdílejí. */
+export function directorUser(sentence: string, draft: GenreSpec | null): string {
+  return `${sentence.trim()}\n\n${checklistLines(sentence)}\n\n${startingPoint(draft)}`;
 }
 
 /**
@@ -162,7 +184,7 @@ export function buildDirectorRequest(sentence: string, draft: GenreSpec | null):
   return {
     model: EMISSION_MODEL,
     system: directorSystemPrompt(),
-    user: `${sentence.trim()}\n\n${startingPoint(draft)}`,
+    user: directorUser(sentence, draft),
     outputSchema: GENRE_ANSWER_SCHEMA,
   };
 }

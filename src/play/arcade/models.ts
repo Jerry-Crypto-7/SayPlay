@@ -31,6 +31,7 @@ import type { GenreId, ModelClass } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
 import type { GameSpecV1 } from '../spec';
 import type { ClipState } from './motion';
+import nearest from './nearest.json';
 import { OBSTACLE_KINDS } from './pieces/runner';
 
 const GAME_BASE = '/assets/worldstream/game/';
@@ -155,6 +156,65 @@ function categoryModel(label: string): string | undefined {
 }
 
 /**
+ * Lidé z vět mimo hry (P37A T6), které katalog nemá a vektory popisků nenajdou: model postavy
+ * jen pro scénu. Do `CATEGORY` nepatří – `modelOf` čte i návrh (`twist.ts`, `topicHero`).
+ */
+const PEOPLE: ReadonlyArray<readonly [model: string, words: readonly string[]]> = [
+  ['gen3d-investor', ['boss', 'manager', 'supervisor', 'landlord', 'banker', 'accountant', 'lawyer', 'auditor', 'recruiter', 'salesman', 'client', 'interviewer', 'examiner', 'inspector', 'advisor', 'adviser', 'clerk', 'principal', 'professor', 'judge', 'critic', 'coworker', 'co-worker', 'colleague', 'receptionist', 'cashier', 'operator', 'telemarketer']],
+  ['gen3d-mom', ['wife', 'girlfriend', 'sister', 'aunt', 'granny', 'grandmother', 'mum']],
+  ['kid', ['toddler', 'son', 'daughter', 'teenager']],
+  ['explorer', ['husband', 'boyfriend', 'dad', 'father', 'brother', 'uncle', 'cousin', 'friend', 'roommate', 'partner', 'neighbor', 'neighbour', 'stranger', 'coach', 'relative', 'bully', 'dentist', 'in-law', 'parent', 'ex']],
+];
+
+const PERSON_OF: ReadonlyMap<string, string> = new Map(PEOPLE.flatMap(([model, words]) => words.map((word) => [word, model] as const)));
+
+/** Člověk z `PEOPLE` pro první slovo odzadu, které tam je. */
+function personModel(label: string): string | undefined {
+  for (const word of wordsOf(label).reverse()) {
+    const found = lookup(word, (form) => PERSON_OF.get(form));
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/**
+ * Práh nejbližšího modelu: nad nejlepším skóre, které dá abstraktní slovo bez modelu
+ * (`abstractCeiling` v `nearest.json`, „fashion → dress“ 0,62); test hlídá, že nad ním zůstane.
+ */
+export const NEAREST_MIN = 0.63;
+
+const NEAREST: ReadonlyMap<string, readonly [id: string, score: number]> = new Map(Object.entries(nearest.words) as [string, [string, number]][]);
+
+/**
+ * Nejbližší model katalogu pro slovo, které katalog tagem nemá (P37A T6): tabulka
+ * `nearest.json` z vektorů popisků (`scripts/p37a/nearest.mjs`). Rozhoduje hlava fráze,
+ * dvojslovo napřed („fishing rod“); hlava pod prahem hledání ukončí, ať přívlastek
+ * („quantum physics“) nedostane model za ni.
+ */
+function nearestModel(label: string): string | undefined {
+  const words = wordsOf(label);
+  for (let index = words.length - 1; index >= 0; index -= 1) {
+    const word = words[index] as string;
+    const before = words[index - 1];
+    const found = (before === undefined ? undefined : lookup(word, (form) => NEAREST.get(`${before} ${form}`))) ?? lookup(word, (form) => NEAREST.get(form));
+    if (found === undefined) continue;
+    if (found[1] < NEAREST_MIN) return undefined;
+    const entry = ENTRY_OF_ID.get(found[0]);
+    return entry === undefined ? found[0] : sceneId(entry);
+  }
+  return undefined;
+}
+
+/**
+ * Model, který scéna pro popisek kreslí, v pořadí `choose` bez hranic tříd: `modelOf`,
+ * před kategorií nejbližší model katalogu a u postav i člověk z `PEOPLE`. Čtou ho rekvizity
+ * a řetěz věrnosti; návrh dál čte `modelOf`, ať se žánr a role věty nemění.
+ */
+export function sceneModelOf(label: string, character: boolean): string | undefined {
+  return tagModel(label, true) ?? nearestModel(label) ?? (character ? (categoryModel(label) ?? personModel(label) ?? riggedModelOf(label)) : undefined);
+}
+
+/**
  * Model katalogu (nebo primitiv `bird`), který popisek jmenuje; kategorie jen u postav.
  * Postava, kterou katalog nemá, ale manifest ano (králík, P35 T1), dá id scény
  * riggované postavy – mřížka ho v katalogu nenajde a nakreslí kus, draft ví, že ji scéna umí.
@@ -234,12 +294,12 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   for (const id of PROP_ROLES) {
     const role = spec.roles.find((candidate) => candidate.id === id);
     if (role === undefined || !readsLabel(control, role)) continue;
-    const found = id === 'rival' ? rivalModel(role.label, control) : modelOf(role.label, false);
+    const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, false);
     if (found !== undefined && found !== 'bird') out[id] = found;
   }
   // B-R9: žánr arény (spec s generátorem) sbírá roli druhu `collectible` (`item`) – scéna ji kreslí jako `coin`.
   const item = typeof spec.controlParams?.generator === 'string' && out.coin === undefined ? spec.roles.find((role) => role.kind === 'collectible') : undefined;
-  const itemModel = item === undefined ? undefined : modelOf(item.label, false);
+  const itemModel = item === undefined ? undefined : sceneModelOf(item.label, false);
   if (itemModel !== undefined && itemModel !== 'bird') out.coin = itemModel;
   return out;
 }
@@ -287,6 +347,9 @@ const BY_IDENTITY: ReadonlyMap<string, readonly AssetEntry[]> = (() => {
 })();
 
 const ENTRY_OF_MODEL: ReadonlyMap<string, AssetEntry> = new Map(MANIFEST.map((entry) => [sceneId(entry), entry]));
+
+/** Id katalogu z `nearest.json` → záznam manifestu (postava s klipy dostane id scény s předponou). */
+const ENTRY_OF_ID: ReadonlyMap<string, AssetEntry> = new Map(MANIFEST.map((entry) => [entry.id, entry]));
 
 /** Třída modelu scény; věc mimo manifest je rekvizita, primitiv `bird` pták. */
 const classOfModel = (model: string): ModelClass => ENTRY_OF_MODEL.get(model)?.class ?? (model === 'bird' ? 'bird' : 'prop');
@@ -356,8 +419,9 @@ function choose(label: string, bounds: Bounds, options: { readonly withClass: bo
     (named === undefined ? undefined : { model: sceneId(named), level: 'identity', entry: named }) ??
     tagged ??
     pick(nearModel(label), 'near', bounds.rest) ??
+    pick(nearestModel(label), 'near', bounds.rest) ??
     (ride === undefined ? undefined : { model: sceneId(ride), level: 'near', entry: ride }) ??
-    (options.withClass ? pick(categoryModel(label), 'class', bounds.rest) : undefined) ??
+    (options.withClass ? (pick(categoryModel(label), 'class', bounds.rest) ?? pick(personModel(label), 'class', bounds.rest)) : undefined) ??
     (options.fallback === undefined ? undefined : { model: options.fallback, level: 'fallback', entry: ENTRY_OF_MODEL.get(options.fallback) })
   );
 }

@@ -14,11 +14,13 @@ from __future__ import annotations
 
 import argparse
 import collections
+import contextlib
 import json
+import os
 import re
 import subprocess
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import date
 from pathlib import Path
 
@@ -30,6 +32,7 @@ NOUNS_FILE = ROOT / "evals/gen3d/batch-nouns.txt"
 RECORD_FILE = ROOT / "evals/gen3d/batch.json"
 SHEET_FILE = ROOT / "evals/gen3d/batch-sheet.png"
 QUARANTINE_DIR = ROOT / "asset-quarantine"
+COMFY_DIR = Path("D:/tools/comfyui")
 LICENSE = "LicenseRef-Worldsmith-Generated"
 OBJECT_SLOTS = {"role", "hero", "any"}  # „setting“ je prostředí, ne jeden model
 # Spojky, slovesa, přídavná jména, žánry, místa a cizí značky – seznam s důvody v souboru.
@@ -111,13 +114,18 @@ def _save(records: dict[str, dict], path: Path) -> None:
 def run_batch(
     nouns: list[str],
     limit: int,
-    generate: Callable[[str, Path], dict],
+    generate: Callable[[str, Path, int], dict],
     record_path: Path = RECORD_FILE,
     cache_root: Path | None = None,
     quarantine: Callable[[str, dict], str] | None = None,
     deadline: float | None = None,
+    seeds: Sequence[int] = (0,),
 ) -> list[dict]:
-    """Projde prvních `limit` slov; vrátí jejich záznamy v pořadí seznamu."""
+    """Projde prvních `limit` slov; vrátí jejich záznamy v pořadí seznamu.
+
+    Slovo, které na semínku selže, zkusí další semínko z `seeds` (P37D T2);
+    neúspěšné pokusy zůstanou v záznamu pod `attempts`.
+    """
     records: dict[str, dict] = {}
     if record_path.exists():
         saved = json.loads(record_path.read_text(encoding="utf-8"))
@@ -142,23 +150,40 @@ def run_batch(
         hit = cache.lookup(noun, cache_root)
         started = time.perf_counter()
         record: dict = {"noun": noun}
+        result = None
         if hit and Path(hit["lod0"]).exists():
             result, record["cached"] = hit, True
         else:
-            try:
-                out_dir = cache.entry_dir(noun, cache_root)
-                result = cache.store(noun, generate(noun, out_dir), cache_root)
-            except Exception as error:  # noqa: BLE001 – slovo se zapíše jako failed a dávka jede dál
-                result = None
-                record["reason"] = f"{type(error).__name__}: {error}"[:500]
-                preview = cache.entry_dir(noun, cache_root) / f"{cache.slug(noun)}.png"
+            out_dir = cache.entry_dir(noun, cache_root)
+            for seed in seeds:
+                tried = time.perf_counter()
+                try:
+                    result = cache.store(
+                        noun, generate(noun, out_dir, seed), cache_root
+                    )
+                    record["seed"] = seed
+                    break
+                except Exception as error:  # noqa: BLE001 – slovo se zapíše jako failed a dávka jede dál
+                    record["reason"] = f"{type(error).__name__}: {error}"[:500]
+                    record.setdefault("attempts", []).append(
+                        {
+                            "seed": seed,
+                            "seconds": round(time.perf_counter() - tried, 1),
+                            "reason": record["reason"],
+                        }
+                    )
+            if result is None:
+                preview = out_dir / f"{cache.slug(noun)}.png"
                 if preview.exists():
                     record["preview"] = str(preview)
+            else:
+                record.pop("reason", None)
         record["seconds"] = round(time.perf_counter() - started, 1)
         if result is not None:
             record.update(
                 verdict="passed" if result["gate"]["passed"] else "failed",
                 glb=result["lod0"],
+                lod1=result["lod1"],
                 preview=result["preview"],
             )
             if quarantine is not None and result["gate"]["passed"]:
@@ -241,12 +266,55 @@ def quarantine_package(noun: str, result: dict) -> str:
     return str(target)
 
 
+@contextlib.contextmanager
+def comfy_running(comfy, start: bool):
+    """ComfyUI po dobu dávky; když běží, nechá ho být, jinak ho spustí a na konci zabije podle PID."""
+    if comfy.alive():
+        yield
+        return
+    if not start:
+        raise SystemExit(
+            "ComfyUI is not running on 127.0.0.1:8188 – start it first (README) or pass --start-comfy"
+        )
+    process = subprocess.Popen(
+        [
+            str(COMFY_DIR / ".venv/Scripts/python.exe"),
+            "main.py",
+            "--listen",
+            "127.0.0.1",
+            "--port",
+            "8188",
+            "--disable-auto-launch",
+        ],
+        cwd=COMFY_DIR,
+        env={**os.environ, "HF_HOME": "D:/caches/huggingface"},
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        deadline = time.monotonic() + 240
+        while not comfy.alive():
+            if process.poll() is not None or time.monotonic() > deadline:
+                raise SystemExit("ComfyUI did not start in 240 s")
+            time.sleep(2)
+        yield
+    finally:
+        process.terminate()
+        process.wait(timeout=60)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--derive", action="store_true")
     parser.add_argument("--from", dest="source", type=Path, default=NOUNS_FILE)
     parser.add_argument("--limit", type=int, default=30)
     parser.add_argument("--max-minutes", type=float, default=None)
+    # P37D: záznam a list mimo repo, semínka na opakování, bez karantény, ComfyUI pod GPU zámkem.
+    parser.add_argument("--record", type=Path, default=RECORD_FILE)
+    parser.add_argument("--sheet", type=Path, default=SHEET_FILE)
+    parser.add_argument("--seeds", default="0", help="comma list, tried in order")
+    parser.add_argument("--no-quarantine", action="store_true")
+    parser.add_argument("--start-comfy", action="store_true")
     args = parser.parse_args()
 
     if args.derive:
@@ -267,30 +335,31 @@ def main() -> None:
     from server import generate
 
     comfy = ComfyClient()
-    if not comfy.alive():
-        raise SystemExit(
-            "ComfyUI is not running on 127.0.0.1:8188 – start it first (README)"
+    with comfy_running(comfy, args.start_comfy):
+        deadline = (
+            time.monotonic() + args.max_minutes * 60 if args.max_minutes else None
         )
-    deadline = time.monotonic() + args.max_minutes * 60 if args.max_minutes else None
-    records = run_batch(
-        load_nouns(args.source),
-        args.limit,
-        lambda noun, out_dir: generate(comfy, noun, out_dir),
-        quarantine=quarantine_package,
-        deadline=deadline,
-    )
+        records = run_batch(
+            load_nouns(args.source),
+            args.limit,
+            lambda noun, out_dir, seed: generate(comfy, noun, out_dir, seed),
+            record_path=args.record,
+            quarantine=None if args.no_quarantine else quarantine_package,
+            deadline=deadline,
+            seeds=[int(seed) for seed in args.seeds.split(",")],
+        )
     subprocess.run(
         [
             "node",
             str(ROOT / "scripts/gen3d/contact-sheet.mjs"),
-            str(RECORD_FILE),
-            str(SHEET_FILE),
+            str(args.record),
+            str(args.sheet),
         ],
         cwd=ROOT,
         check=True,
     )
     passed = sum(r["verdict"] == "passed" for r in records)
-    print(f"{len(records)}/{args.limit} done, {passed} passed -> {RECORD_FILE}")
+    print(f"{len(records)}/{args.limit} done, {passed} passed -> {args.record}")
 
 
 if __name__ == "__main__":

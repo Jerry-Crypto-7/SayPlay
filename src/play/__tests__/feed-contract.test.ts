@@ -10,6 +10,7 @@ import { POST as sendEvent } from '@/app/api/play/events/route';
 import { GET as listGames, POST as createGame } from '@/app/api/play/games/route';
 import { GET as readGame } from '@/app/api/play/games/[id]/route';
 import { __resetProcessVersionStore, decodeCursor, feedEligible, feedPage, type FeedPage, hiddenFromEnv, type LoopHeat, RECENT_CAP, type RecentGame, versionStoreFromEnv } from '@/play/version';
+import { BUILTIN_GAMES } from '@/play/version/builtin';
 import { encodeCursor, FRESH_EVERY } from '@/play/version/feed';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -64,6 +65,10 @@ describe('feedEligible', () => {
     expect(feedEligible({ versionId: id, publishEligible: true }, NONE)).toBe(false);
     expect(feedEligible({ versionId: id, relation: 'upgrade', publishEligible: false }, NONE)).toBe(false);
     expect(feedEligible({ versionId: id, relation: 'upgrade', publishEligible: true }, new Set([id]))).toBe(false);
+    // Hra ze seedu provozovatele (P37C T6) smí do feedu taky, pod stejnou branou a skrytím.
+    expect(feedEligible({ versionId: id, curated: true, publishEligible: true }, NONE)).toBe(true);
+    expect(feedEligible({ versionId: id, curated: true, publishEligible: false }, NONE)).toBe(false);
+    expect(feedEligible({ versionId: id, curated: true, publishEligible: true }, new Set([id]))).toBe(false);
   });
 
   it('reads the hide list from comma-separated ids and ignores blanks', () => {
@@ -169,7 +174,7 @@ describe('feedPage', () => {
 });
 
 describe('feed ranked by the loop (P36B T9)', () => {
-  const heat = (fields: Partial<LoopHeat>): LoopHeat => ({ finishes: 0, dares: 0, skips: 0, remixes: 0, ...fields });
+  const heat = (fields: Partial<LoopHeat>): LoopHeat => ({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, remixes: 0, ...fields });
   const ids = (page: FeedPage): string[] => page.games.map((game) => game.versionId);
 
   it('without counters the order stays newest first', () => {
@@ -219,6 +224,8 @@ describe('GET /api/play/games?recent&cursor', () => {
   beforeEach(() => {
     __resetProcessVersionStore();
     resetRateWindows();
+    // Kontrakt nad uloženými hrami: vestavěnou sadu (P37C T6, `builtin.test.ts`) provozovatel skryje.
+    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
   });
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -283,6 +290,42 @@ describe('GET /api/play/games?recent&cursor', () => {
 
     const unknown = 'e'.repeat(32);
     expect((await report({ name: 'win', versionId: unknown })).status).toBe(204);
-    expect(await heat(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, remixes: 0 });
+    expect(await heat(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, remixes: 0 });
+  });
+
+  // P37C T5: „clear rate“ – pokus (`first_input`) a výhra, každý jeden hlas volajícího za den; pod deseti pokusy nic.
+  it('shows the clear rate from ten attempts, counts one attempt per caller and nothing for an unknown game', async () => {
+    const game = await authored('Collect the coins', 1);
+    const heat = async (versionId: string): Promise<LoopHeat | undefined> => (await versionStoreFromEnv(process.env).loopHeat([versionId])).get(versionId);
+    const beat = async (): Promise<{ feed: unknown; game: unknown }> => {
+      const listed = (await feed('?recent=10')).body.games.find((g: { versionId: string }) => g.versionId === game) as { beat: unknown };
+      const detail = await readGame(new Request(`http://play.test/api/play/games/${game}`, { headers: CALLER }), { params: Promise.resolve({ id: game }) });
+      return { feed: listed.beat, game: ((await detail.json()) as { beat: unknown }).beat };
+    };
+    const report = (name: string, ip: string, session = 'abcdefghijkl', versionId = game): Promise<Response> =>
+      sendEvent(new Request('http://play.test/api/play/events', { method: 'POST', headers: { 'x-forwarded-for': ip }, body: JSON.stringify({ name, versionId, session }) }));
+
+    // Falešné pokusy a výhry od jednoho volajícího, každý s novou relací: jeden pokus, jedna výhra.
+    for (let n = 0; n < 12; n += 1) expect((await report('first_input', '203.0.113.50', `forged${String(n).padStart(6, '0')}`)).status).toBe(204);
+    for (let n = 0; n < 3; n += 1) expect((await report('win', '203.0.113.50', `forged${String(n).padStart(6, '0')}`)).status).toBe(204);
+    expect(await heat(game)).toMatchObject({ starts: 1, clears: 1, finishes: 1 });
+
+    // Osm dalších volajících: devět pokusů, tři výhry, prohra výhru nepočítá – pod prahem nic.
+    for (let n = 1; n <= 8; n += 1) await report('first_input', `198.51.100.${String(n)}`);
+    for (const n of [1, 2]) await report('win', `198.51.100.${String(n)}`);
+    await report('lose', '198.51.100.3');
+    expect(await heat(game)).toMatchObject({ starts: 9, clears: 3 });
+    expect(await beat()).toEqual({ feed: null, game: null });
+
+    // Desátý pokus: 3 výhry z 10 = 30 %.
+    await report('first_input', '198.51.100.9');
+    expect(await beat()).toEqual({ feed: 30, game: 30 });
+    // Nečinný hráč hry na přežití vyhraje bez vstupu: výhra je i pokus, 4 z 11 = 36 % (nález revize T5-1 #1).
+    await report('win', '198.51.100.11');
+    expect(await heat(game)).toMatchObject({ starts: 11, clears: 4 });
+
+    const unknown = 'e'.repeat(32);
+    for (const name of ['first_input', 'win']) expect((await report(name, '198.51.100.10', 'abcdefghijkl', unknown)).status).toBe(204);
+    expect(await heat(unknown)).toMatchObject({ starts: 0, clears: 0 });
   });
 });

@@ -2,8 +2,8 @@
 
 /**
  * Seznam feedu vedle hrající hry na široké obrazovce (P23-D T4, P27B T4).
- * Karta nese barevný pruh podle nálady scény, titul, cíl hry a počet remixů
- * (jen když nějaký je); klepnutí přepne hru ve feedu. Na úzkém displeji ho
+ * Karta nese barevný pruh podle nálady scény, titul, cíl hry, „N% beat this“
+ * (od deseti pokusů, P37C T5) a počet remixů (jen když nějaký je); klepnutí přepne hru ve feedu. Na úzkém displeji ho
  * CSS schová – listuje se tlačítky a okrajem.
  *
  * Cíl a náladu nese detail hry, který feed stahuje jen pro aktuální a další
@@ -16,6 +16,13 @@ export interface FeedGame {
   readonly title: string;
   readonly archetype: string;
   readonly remixes: number;
+  /** „Clear rate“ (P37C T5): celé procento výher z pokusů; `null` pod deseti pokusy. */
+  readonly beat?: number | null;
+}
+
+/** Řádek „clear rate“ na kartě, plakátu i výsledku (P37C T5). */
+export function beatText(percent: number): string {
+  return `${String(percent)}% beat this`;
 }
 
 /** Co feed ví o hře z jejího detailu (`spec.tutorial.goalLine`, `spec.theme.mood`). */
@@ -66,6 +73,11 @@ export function Feed({
               >
                 <span className="play-feed-title">{game.title}</span>
                 {facts !== undefined && <span className="play-feed-pitch">{facts.goal}</span>}
+                {typeof game.beat === 'number' && (
+                  <span className="sp-label sp-muted play-feed-beat" data-testid="play-feed-beat">
+                    {beatText(game.beat)}
+                  </span>
+                )}
                 {game.remixes > 0 && <span className="play-feed-remixes">{game.remixes === 1 ? '1 remix' : `${String(game.remixes)} remixes`}</span>}
               </button>
             </li>

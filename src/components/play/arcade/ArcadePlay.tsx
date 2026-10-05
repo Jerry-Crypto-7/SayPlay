@@ -18,8 +18,9 @@ import { instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
-import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setSoundLook, vibrateFor } from '@/play/audio';
-import { musicFor, narrationUrl } from '@/play/audio/library';
+import { actionPresets, installSoundControls, jumped, playMusic, playNarration, playSfx, presetsFor, setMusicTension, setSoundLook, vibrateFor } from '@/play/audio';
+import { musicFor, narrationUrl, tenseMusicFor } from '@/play/audio/library';
+import { createTension } from '@/play/audio/tension';
 import type { GameVersion } from '@/play/contracts';
 import { type Par, type RunResult, starsFor } from '@/play/score/stars';
 import type { GameSpecV1 } from '@/play/spec';
@@ -45,6 +46,7 @@ import { type BotHand, botHand } from './bot-hand';
 import { type Clip, startClip } from './clip';
 import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
+import { type LoadedGhost, loadGhost } from './GhostSlot';
 import { isTyping } from './input';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
@@ -604,6 +606,26 @@ function ArcadePlayGame({
         ? { label: goalLabel, count: snapshot.score, text: challenge === null ? NEW_BEST : AHEAD, fresh: true }
         : { label: goalLabel, count: goal.score ?? 0, text: goal.text };
 
+  // Duch (P37B T8, `GHOST.md`): kamarád z odkazu výzvy, jinak nejlepší běh hry – jednou na aktivní
+  // hru z úložiště. Id kamarádovy výzvy nese adresa `/play/[id]?dare=`, stránka ji ověřila (`challenge`).
+  const [ghost, setGhost] = useState<LoadedGhost | null>(null);
+  useEffect(() => {
+    if (offline || !active) return;
+    const friend = challenge === null ? null : new URLSearchParams(window.location.search).get('dare');
+    let live = true;
+    let loaded: LoadedGhost | null = null;
+    void loadGhost(versionId, friend, arcade).then((found) => {
+      loaded = found;
+      if (live) setGhost(found);
+      else found?.source.dispose();
+    });
+    return () => {
+      live = false;
+      setGhost(null);
+      loaded?.source.dispose();
+    };
+  }, [offline, active, versionId, challenge, arcade]);
+
   // Sonda času do ovladatelné hry (P32D T2): první tik, ve kterém jádro zpracovalo
   // skutečný vstup hráče, a čas té chvíle na `arcade-stage`. Harness
   // `scripts/p32/shots.mjs` měří od kliknutí právě k ní – první snímek plátna
@@ -629,12 +651,22 @@ function ArcadePlayGame({
   useEffect(() => {
     if (!active) return;
     setSoundLook(lookOf(spec.theme));
-    const stop = playMusic(musicFor(spec.theme));
+    const stop = playMusic(musicFor(spec.theme), tenseMusicFor(spec.theme));
     return () => {
       stop();
       setSoundLook(null);
     };
   }, [active, spec.theme]);
+  // Hudba podle napětí (P37B T5): poslední život, poslední sekundy, soupeř blízko – jen čte stav, jen za člověka.
+  useEffect(() => {
+    if (!active) return;
+    const tense = createTension(livesStart, limitOf(arcade));
+    const off = session.subscribe(() => setMusicTension(session.humanRun() && tense(session.state())));
+    return () => {
+      off();
+      setMusicTension(false);
+    };
+  }, [active, session, arcade, livesStart]);
   // Hlas vypravěče (P29D T11): cíl hry po prvním gestu, jen publikovaná verze a jen když je nahrávka hotová.
   useEffect(() => {
     if (!active || offline) return;
@@ -723,6 +755,9 @@ function ArcadePlayGame({
         hand = on ? botHand(session) : null;
       },
       botWants: () => hand?.decide() ?? null,
+      /** Vstup hráče do příštího tiku bez gesta (P37B T8): měření FPS s duchem tak hraje robot za hráče. */
+      hold: (axis: number) => session.hold(axis),
+      press: (buttons: number) => session.press(buttons),
       tickByHand: () => {
         hand?.step();
         const now = session.snapshot();
@@ -791,6 +826,9 @@ function ArcadePlayGame({
         lookId={lookOf(spec.theme)}
         look={scene}
         enabled={active && running}
+        heroAction={spec.heroAction ?? 'none'}
+        // Ukázka robota není závod: duch jen v běhu hráče.
+        ghost={demo === null && ghost !== null ? ghost : undefined}
         overlay={
           <>
             <Weather session={session} theme={spec.theme} />

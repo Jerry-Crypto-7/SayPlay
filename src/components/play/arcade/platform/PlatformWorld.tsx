@@ -18,6 +18,7 @@ import { type ArcadeWorld, UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 import { PLATFORM } from '@/play/arcade/pieces/platform';
 
+import { GhostSlot } from '../GhostSlot';
 import { buildIslands, platformIslands, platformSlabKeys, spotKey } from '../look/rig/terrain/islands';
 import { buildWater } from '../look/rig/terrain/water';
 import { Scenery } from '../look/Scenery';
@@ -132,6 +133,7 @@ export function PlatformWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
       <World {...props} control="platform" backdrop={<PlatformSea world={props.session.world} look={props.scene} terrain={terrain} />} />
       {/* Až po `World`: jeho snímek musí běžet dřív (viz `PlatformPose`). */}
       <PlatformPose session={props.session} terrain={terrain} />
+      <GhostSlot ghost={props.ghost} session={props.session} />
     </>
   );
 }

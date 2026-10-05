@@ -13,7 +13,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import chaseEscape from '@/play/__fixtures__/chase_escape.json';
 import collectExit from '@/play/__fixtures__/collect_exit.json';
@@ -25,6 +25,7 @@ import { STARTERS } from '@/components/play/starters';
 import { draftGameSpec } from '@/play/draft';
 import { legacyDraft } from '@/play/__tests__/legacy-draft';
 import { __resetProcessVersionStore, RECENT_CAP, VersionStoreUnavailable, versionStoreFromEnv } from '@/play/version';
+import { BUILTIN_GAMES } from '@/play/version/builtin';
 import { MAX_BODY_BYTES } from '@/http/body';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -427,8 +428,28 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
     expect(listed.headers.get('x-play-store')).toBeNull();
   });
 
-  it('prázdný feed je prázdné pole, ne vymyšlené hry', async () => {
-    expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [], next: null } });
+  // P37C T6: prázdné úložiště ukáže vestavěnou sadu ověřených her, nikdy prázdný feed.
+  it('prázdné úložiště vrací vestavěnou sadu a každá hra z ní jde otevřít', async () => {
+    const builtin = new Set(BUILTIN_GAMES.map((game) => game.version.versionId));
+    const first = await feed('?recent=24');
+    expect(first.status).toBe(200);
+    expect(first.body.games).toHaveLength(24);
+    expect(first.body.games.every((game: { versionId: string }) => builtin.has(game.versionId))).toBe(true);
+    const rest = await feed(`?recent=24&cursor=${first.body.next as string}`);
+    expect(new Set([...first.body.games, ...rest.body.games].map((game: { versionId: string }) => game.versionId))).toEqual(builtin);
+    expect(rest.body.next).toBeNull();
+    const opened = await read(first.body.games[0].versionId);
+    expect(opened.status).toBe(200);
+    expect(opened.body.lineage).toHaveLength(1);
+  });
+
+  it('skryté vestavěné hry nechají feed prázdný, ne vymyšlený', async () => {
+    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
+    try {
+      expect(await feed('?recent=24')).toEqual({ status: 200, body: { games: [], next: null } });
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   /** Autorská verze návrhu, jak by ji zapsal upgrade na pozadí – bez modelu v testu. */
@@ -442,6 +463,11 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
   }
 
   it('návrh, remix ani ruční spec do feedu nejdou; autorské verze s počtem remixů, remixovaná výš', async () => {
+    // Kontrakt nad uloženými hrami: vestavěnou sadu (P37C T6) provozovatel skryje.
+    vi.stubEnv('PLAY_FEED_HIDE', BUILTIN_GAMES.map((game) => game.version.versionId).join(','));
+    onTestFinished(() => {
+      vi.unstubAllEnvs();
+    });
     const first = await publish(MUSHROOMS);
     // Jiný titul než první hra: feed od P27B T2 stejný titul podruhé neukáže.
     const second = await publish(STARTERS[0].sentence);
@@ -472,6 +498,8 @@ describe('feed GET /api/play/games?recent (P23-D T4)', () => {
       createdAt: new Date(1_700_000_001_000).toISOString(),
       parentId: first.body.versionId,
       remixes: 1,
+      // Pod deseti pokusy „N% beat this“ není (P37C T5).
+      beat: null,
       goal: firstSpec.tutorial.goalLine,
       mood: firstSpec.theme.mood,
     });

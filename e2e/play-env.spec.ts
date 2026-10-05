@@ -17,15 +17,16 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
 
 const GRID_FIXTURE = join(process.cwd(), 'src/play/__fixtures__/collect_exit.json');
 
+// Věta mřížku nedá: od žánrů (P32B) jde každá nová věta do arkády. Mřížka žije jen v uložených hrách, proto fixtura.
 const GAMES: readonly { name: string; fixture?: string; sentence?: string; setting?: string; testId: string }[] = [
-  { name: 'grid', sentence: 'Collect five glowing mushrooms then open a portal.', testId: 'play-grid-stage' },
+  { name: 'grid', fixture: GRID_FIXTURE, testId: 'play-grid-stage' },
 ];
 
 async function publish(request: APIRequestContext, game: (typeof GAMES)[number]): Promise<string> {
   let data: unknown;
   if (game.fixture !== undefined) {
     const base = JSON.parse(readFileSync(game.fixture, 'utf8')) as { theme: Record<string, unknown> } & Record<string, unknown>;
-    data = { spec: { ...base, theme: { ...base.theme, setting: game.setting } } };
+    data = { spec: game.setting === undefined ? base : { ...base, theme: { ...base.theme, setting: game.setting } } };
   } else {
     data = { sentence: game.sentence };
   }

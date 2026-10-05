@@ -24,7 +24,8 @@ const SOURCE_DIR = path.join(ROOT, 'asset-quarantine/gen3d-source');
 const LICENSE = 'LicenseRef-Worldsmith-Generated';
 const PROVENANCE = `${PUBLIC_DIR}/PROVENANCE.md`;
 
-export const isGen3d = (asset) => asset.assetId.startsWith('gen3d-');
+/** Podle cesty, ne podle předpony id: modely P37D (`gen3d-p37d/`) jsou taky `gen3d-*` a tenhle skript je mazat nesmí. */
+export const isGen3d = (asset) => asset.lods[0].path.startsWith(`${URL_BASE}/`);
 
 /** Hranice zaokrouhlené ven na 10 µm, jako u CC0: LOD1 z LOD0 vyčnívá o miliontiny metru. */
 const outward = (bounds) => ({

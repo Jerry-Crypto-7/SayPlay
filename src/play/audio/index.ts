@@ -11,6 +11,7 @@
 
 import { type ArcadeEffect, BODY, BUTTON, HEADER, type InputEvent, bodyBase } from '@/play/arcade/contract';
 import type { LookId } from '@/play/arcade/look';
+import type { HeroAction } from '@/play/spec';
 
 import { type SoundEvent, musicEnabled, sfxFor } from './library';
 import { ZZFX_RATE, type ZzfxParams, zzfxSamples } from './zzfx';
@@ -18,8 +19,12 @@ import { ZZFX_RATE, type ZzfxParams, zzfxSamples } from './zzfx';
 /** Vypínač celé vrstvy (rollback plánu P28C): `false` = hry mlčí, tlačítko ztlumení zmizí. */
 export const PLAY_SFX = true;
 
-/** Pět událostí, které mohou mít vlastní soubor podle looku (`SoundEvent`), a zvuky akcí jen ze ZzFX (P36C T3). */
-export type SfxPreset = SoundEvent | 'lane' | 'slide' | 'shoot' | 'swing' | 'combo';
+/**
+ * Pět událostí, které mohou mít vlastní soubor podle looku (`SoundEvent`), zvuky akcí
+ * jen ze ZzFX (P36C T3) a zvuky událostí sběrnice efektů, které dřív bylo jen vidět (P37B T5):
+ * dopad, zánik nepřítele, zrod těla, změna stavu cíle a zásah jiného těla než hráče.
+ */
+export type SfxPreset = SoundEvent | 'lane' | 'slide' | 'shoot' | 'swing' | 'combo' | 'land' | 'pop' | 'spawn' | 'chime' | 'strike';
 
 const FILE_EVENTS: readonly SoundEvent[] = ['jump', 'pickup', 'hit', 'win', 'lose'];
 const hasFile = (preset: SfxPreset): preset is SoundEvent => (FILE_EVENTS as readonly SfxPreset[]).includes(preset);
@@ -38,7 +43,44 @@ export const SFX_PRESETS: Readonly<Record<SfxPreset, ZzfxParams>> = {
   shoot: [0.45, 0, 880, 0, 0.02, 0.08, 2, 1, -18],
   swing: [0.45, 0, 300, 0.01, 0.03, 0.1, 4, 1, 4, 0, 0, 0, 0, 0.6],
   combo: [0.5, 0, 784, 0, 0.04, 0.14, 1, 1, 0, 0, 392, 0.05],
+  // Události sběrnice (P37B T5): tišší než sebrání a zásah, dopad a zrod jen ťuknou.
+  land: [0.3, 0, 90, 0, 0.02, 0.08, 0, 1, -2, 0, 0, 0, 0, 0.3],
+  pop: [0.4, 0, 420, 0, 0.02, 0.1, 1, 1, -12, 0, 0, 0, 0, 0.2],
+  spawn: [0.25, 0, 300, 0.03, 0.05, 0.1, 0, 1, 8],
+  chime: [0.4, 0, 659, 0, 0.05, 0.25, 0, 1, 0, 0, 330, 0.06],
+  strike: [0.45, 0, 220, 0, 0.03, 0.1, 4, 1, -6, 0, 0, 0, 0, 0.5],
 };
+
+/**
+ * Zvuk činnosti hrdiny (P37B T5) – zní s nápřahem, který spustí efekt jádra
+ * (`HeroActionBody`), ne v klidové smyčce: pracovní takt by za hru zněl desítkykrát.
+ * Krátké a tiché pod zvukem sebrání, který zazní ve stejném tiku.
+ */
+export const HERO_ACTION_SFX: Readonly<Record<Exclude<HeroAction, 'none'>, ZzfxParams>> = {
+  // Míchání: bublavé zhoupnutí nízkého tónu.
+  stir: [0.3, 0, 180, 0.02, 0.08, 0.1, 0, 1, 0, 0, 0, 0, 0, 0, 12],
+  // Hadice: šum, který odezní.
+  spray: [0.25, 0, 900, 0.01, 0.12, 0.12, 4, 1, 0, 0, 0, 0, 0, 1],
+  // Skládání: dvě dřevěná klapnutí.
+  stack: [0.35, 0, 520, 0, 0.01, 0.05, 1, 1, 0, 0, 0, 0, 0.07],
+  carry: [0.3, 0, 140, 0.01, 0.03, 0.1, 0, 1, 3],
+  sweep: [0.22, 0, 1400, 0.03, 0.08, 0.1, 4, 1, -20, 0, 0, 0, 0, 1],
+  throw: [0.3, 0, 500, 0.02, 0.05, 0.08, 4, 1, 30, 0, 0, 0, 0, 0.6],
+  dig: [0.35, 0, 110, 0, 0.04, 0.1, 4, 1, -4, 0, 0, 0, 0, 0.8],
+  // Štětec: měkké mlasknutí.
+  paint: [0.3, 0, 260, 0, 0.03, 0.08, 0, 1, -18, 0, 0, 0, 0, 0.4],
+  // Sekera: ostré „tuk“ do dřeva.
+  chop: [0.45, 0, 330, 0, 0.01, 0.07, 2, 1, -20, 0, 0, 0, 0, 0.6],
+  water: [0.25, 0, 700, 0.02, 0.1, 0.15, 0, 1, -6, 0, 0, 0, 0, 0.3, 4],
+  knit: [0.25, 0, 1600, 0, 0.005, 0.03, 1, 1, 0, 0, 0, 0, 0.05],
+  // Klíč: kovové cinknutí.
+  fix: [0.35, 0, 1250, 0, 0.02, 0.15, 3, 1, 0, 0, 0, 0, 0, 0, 0.5],
+};
+
+export function playHeroActionSfx(action: HeroAction): void {
+  if (action === 'none') return;
+  play(`action:${action}`, HERO_ACTION_SFX[action]);
+}
 
 /**
  * Co zazní za efekty jednoho tiku. Konec hry přehluší zbytek tiku (poslední
@@ -147,7 +189,11 @@ export function setMuted(value: boolean): void {
   } catch {
     // Plné nebo zakázané úložiště: ztlumení platí do konce stránky.
   }
-  if (music !== null) music.gain.gain.value = value ? 0 : MUSIC_VOLUME;
+  // Naplánovaný náběh nebo ztišení by holé přiřazení přebily – nejdřív pryč, pak hned nová hodnota.
+  if (music !== null) {
+    music.gain.gain.cancelScheduledValues(context?.currentTime ?? 0);
+    music.gain.gain.value = value ? 0 : MUSIC_VOLUME;
+  }
   if (value) stopNarration();
   for (const listener of muteListeners) listener();
 }
@@ -217,7 +263,7 @@ function load(url: string): void {
     .then(
       (buffer) => {
         files.set(url, buffer);
-        if (url === wantedMusic) syncMusic();
+        if (url === musicUrl()) syncMusic();
         if (url === wantedNarration) syncNarration();
       },
       () => files.set(url, 'missing'),
@@ -238,48 +284,120 @@ export function setSoundLook(look: LookId | null): void {
   preloadLook();
 }
 
+/**
+ * Týž zvuk dřív než za tohle (ms) nezazní znovu. Události tiku slyší dvě cesty –
+ * efekty jádra (`presetsFor`) a sběrnice efektů (`busPresets`) – a sebrání,
+ * zásah, výhra i prohra by jinak zněly dvakrát přes sebe. Je to méně než dva
+ * tiky (33 ms), takže sebrání v příštím tiku zazní.
+ */
+export const SFX_REPEAT_MS = 30;
+const lastSfx = new Map<SfxPreset, number>();
+
 export function playSfx(preset: SfxPreset): void {
+  const now = typeof performance === 'undefined' ? Date.now() : performance.now();
+  const last = lastSfx.get(preset);
+  if (last !== undefined && now - last < SFX_REPEAT_MS) return;
+  lastSfx.set(preset, now);
+  if (preset === 'win' || preset === 'lose') duckMusic();
   const url = soundLook === null || !hasFile(preset) ? null : sfxFor(soundLook, preset);
   const file = url === null ? undefined : files.get(url);
   if (typeof file === 'object' && context?.state === 'running' && !isMuted()) playBuffer(file);
   else play(preset, SFX_PRESETS[preset]);
 }
 
+/*
+ * P37B T5: hudba sleduje napětí hry. Hra má klidnou (nebo podle nálady napjatou)
+ * smyčku a k ní napjatou smyčku téhož looku; `setMusicTension` mezi nimi
+ * prolne (`MUSIC_FADE_S`). Výhra a prohra hudbu na chvíli ztiší pod svůj zvuk.
+ */
+
+/** Prolnutí smyček (s). */
+export const MUSIC_FADE_S = 0.8;
+/** Ztišení pod výhrou a prohrou: na tuhle část hlasitosti, na `DUCK_HOLD_S`, pak zpět za `DUCK_BACK_S`. */
+export const MUSIC_DUCK = 0.25;
+const DUCK_HOLD_S = 1.4;
+const DUCK_BACK_S = 0.8;
+
+let wantedTense: string | null = null;
+let tension = false;
+
+/** Smyčka, která má hrát: napjatá, když hra je v napětí a look ji má. */
+const musicUrl = (): string | null => (tension && wantedTense !== null ? wantedTense : wantedMusic);
+
+/** Plynulá změna hlasitosti; naplánované kroky (ztišení) se zahodí. */
+function rampTo(param: AudioParam, value: number, seconds: number): void {
+  if (context === null) return;
+  const now = context.currentTime;
+  param.cancelScheduledValues(now);
+  param.setValueAtTime(param.value, now);
+  param.linearRampToValueAtTime(value, now + seconds);
+}
+
+function duckMusic(): void {
+  if (music === null || context === null || isMuted()) return;
+  const param = music.gain.gain;
+  const now = context.currentTime;
+  param.cancelScheduledValues(now);
+  param.setValueAtTime(param.value, now);
+  param.linearRampToValueAtTime(MUSIC_VOLUME * MUSIC_DUCK, now + 0.08);
+  param.setValueAtTime(MUSIC_VOLUME * MUSIC_DUCK, now + DUCK_HOLD_S);
+  param.linearRampToValueAtTime(MUSIC_VOLUME, now + DUCK_HOLD_S + DUCK_BACK_S);
+}
+
 function syncMusic(): void {
-  if (music !== null && music.url !== wantedMusic) {
-    music.source.stop();
-    music.source.disconnect();
-    music.gain.disconnect();
+  const url = musicUrl();
+  if (music !== null && music.url !== url) {
+    // Stará smyčka dozní, nová se náběhem prolne; bez nové (konec hry) hudba utichne hned.
+    const old = music;
+    const fade = url === null ? 0.05 : MUSIC_FADE_S;
+    rampTo(old.gain.gain, 0, fade);
+    old.source.stop((context?.currentTime ?? 0) + fade);
+    old.source.onended = () => old.gain.disconnect();
     music = null;
   }
-  if (wantedMusic === null || music !== null || context === null || context.state !== 'running') return;
-  const file = files.get(wantedMusic);
-  if (file === undefined) load(wantedMusic);
+  if (url === null || music !== null || context === null || context.state !== 'running') return;
+  const file = files.get(url);
+  if (file === undefined) load(url);
   if (typeof file !== 'object') return;
   const gain = context.createGain();
-  gain.gain.value = isMuted() ? 0 : MUSIC_VOLUME;
+  gain.gain.value = 0;
   gain.connect(context.destination);
+  rampTo(gain.gain, isMuted() ? 0 : MUSIC_VOLUME, MUSIC_FADE_S);
   const source = context.createBufferSource();
   source.buffer = file;
   source.loop = true;
   source.connect(gain);
   source.start();
-  music = { url: wantedMusic, source, gain };
+  music = { url, source, gain };
+  // Napjatá smyčka se stáhne dopředu, ať přechod nečeká na síť.
+  if (wantedTense !== null) load(wantedTense);
 }
 
 /**
  * Smyčka hry hraje, dokud nezavoláš vrácenou funkci. Bez gesta jen čeká –
  * stáhne a spustí se s prvním klepnutím. Poslední volající vyhrává (feed).
+ * `tense` = napjatá smyčka téhož looku pro `setMusicTension` (P37B T5).
  */
-export function playMusic(url: string | null): () => void {
+export function playMusic(url: string | null, tense: string | null = null): () => void {
   if (!PLAY_SFX || !musicEnabled() || url === null) return () => {};
   wantedMusic = url;
+  wantedTense = tense;
+  tension = false;
   syncMusic();
   return () => {
     if (wantedMusic !== url) return;
     wantedMusic = null;
+    wantedTense = null;
+    tension = false;
     syncMusic();
   };
+}
+
+/** Hra je v napětí (poslední život, poslední sekundy, soupeř blízko) – hudba přejde do napjaté smyčky. */
+export function setMusicTension(on: boolean): void {
+  if (tension === on) return;
+  tension = on;
+  syncMusic();
 }
 
 /*
@@ -361,6 +479,7 @@ export function installSoundControls(): () => void {
       muted: isMuted,
       music: () => music?.url ?? null,
       musicGain: () => music?.gain.gain.value ?? null,
+      tension: () => tension,
       narration: () => narration?.url ?? null,
       narrated: () => [...narrated],
       loaded: () => [...files].filter(([, file]) => typeof file === 'object').map(([url]) => url),
@@ -386,6 +505,6 @@ export function installSoundControls(): () => void {
 declare global {
   interface Window {
     /** Sonda e2e: stav `AudioContext` (`none`, dokud nevznikl) a ztlumení. */
-    __playAudio?: { state: () => string; muted: () => boolean; music: () => string | null; musicGain: () => number | null; narration: () => string | null; narrated: () => string[]; loaded: () => string[] };
+    __playAudio?: { state: () => string; muted: () => boolean; music: () => string | null; musicGain: () => number | null; tension: () => boolean; narration: () => string | null; narrated: () => string[]; loaded: () => string[] };
   }
 }

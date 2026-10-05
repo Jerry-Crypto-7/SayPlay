@@ -46,15 +46,37 @@ export function readLoopEvent(raw: unknown): LoopEvent | null {
  * Čítače, podle kterých feed řadí (P36B T9): dohrání (výhra i prohra), výzva
  * Dare a přeskočení (`next_game`). Výzvu započtou jen dveře výzvy, když server
  * uloží novou ověřenou výzvu – `share` s `dare: true` je slovo klienta a
- * nepočítá se (nález revize T9-1). Ostatní události řazení nemění.
+ * nepočítá se (nález revize T9-1). Pokus (`first_input`) a výhra dávají
+ * „clear rate“ (P37C T5). Ostatní události nic nepočítají.
  */
-export type LoopCounter = 'finish' | 'dare' | 'skip';
-export const LOOP_COUNTERS: readonly LoopCounter[] = ['finish', 'dare', 'skip'];
+export type LoopCounter = 'finish' | 'dare' | 'skip' | 'start' | 'clear';
+export const LOOP_COUNTERS: readonly LoopCounter[] = ['finish', 'dare', 'skip', 'start', 'clear'];
 
-export function loopCounterOf(event: LoopEvent): 'finish' | 'skip' | null {
-  if (event.name === 'win' || event.name === 'lose') return 'finish';
-  if (event.name === 'next_game') return 'skip';
-  return null;
+/**
+ * Čítače, které událost z dveří událostí zvýší; výzvu (`dare`) nikdy – tu počítají
+ * dveře výzvy. Konec běhu je i pokus: klient posílá `first_input` jen po vstupu,
+ * a nečinný hráč hry na přežití vyhraje bez něj (nález revize T5-1 #1). Hlas je
+ * týž klíč, takže pokus se tím za den nezapočte dvakrát.
+ */
+export function loopCountersOf(event: LoopEvent): readonly Exclude<LoopCounter, 'dare'>[] {
+  if (event.name === 'win') return ['start', 'finish', 'clear'];
+  if (event.name === 'lose') return ['start', 'finish'];
+  if (event.name === 'next_game') return ['skip'];
+  if (event.name === 'first_input') return ['start'];
+  return [];
+}
+
+/** Od kolika pokusů má „N% beat this“ smysl; pod tím feed ani výsledek nic neříkají. */
+export const CLEAR_RATE_MIN_STARTS = 10;
+
+/**
+ * „Clear rate“ (P37C T5): kolik procent pokusů skončilo výhrou, celé číslo, nebo
+ * `null` pod `CLEAR_RATE_MIN_STARTS` pokusů. Oba čítače mají jeden hlas volajícího
+ * za den; výhra bez pokusu (podvržená událost) procento přes 100 nezvedne.
+ */
+export function clearRate(starts: number, clears: number): number | null {
+  if (starts < CLEAR_RATE_MIN_STARTS) return null;
+  return Math.round((100 * Math.min(clears, starts)) / starts);
 }
 
 export interface LoopRate {

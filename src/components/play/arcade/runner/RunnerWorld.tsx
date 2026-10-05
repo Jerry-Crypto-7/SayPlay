@@ -16,6 +16,7 @@ import { color } from '@/brand/tokens';
 import { UNIT } from '@/play/arcade/contract';
 import type { Look } from '@/play/arcade/look';
 
+import { GhostSlot } from '../GhostSlot';
 import { buildValley, PLAYABLE_HALF } from '../look/rig/terrain/valley';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
@@ -247,6 +248,7 @@ export function RunnerWorld(props: Omit<WorldProps, 'control' | 'backdrop'>) {
       <GroundProbe terrain={terrain} />
       {/* Až po `World`: jeho snímek musí běžet dřív (viz `HeroPose`). */}
       <HeroPose session={props.session} hero={props.cast.player} rides={props.scene.ride === true} />
+      <GhostSlot ghost={props.ghost} session={props.session} />
     </>
   );
 }

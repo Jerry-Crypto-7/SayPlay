@@ -3,15 +3,15 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 import { openPause, startGame } from './play-start';
 
 /**
- * Skákačka na `/play/[id]` (P25A T6): věta „jumping arcade game with a lot of
+ * Skákačka na `/play/[id]` (P25A T6): věta „endless runner with a lot of
  * obstacles“ projde skutečnými dveřmi (dvojník režiséra = návrh ze slov →
- * běžec), hra se načte v arkádovém plátně, HUD běží, mezerník zapíše skok,
+ * běžec; „jumping …“ dává od žánrů 29. 9. plošinovku, `classify.ts`), hra se načte v arkádovém plátně, HUD běží, mezerník zapíše skok,
  * záznam robota přehraný sondou skončí na „You did it!“ (P34 T6: slovník
  * kitu, dřív „You won“) a mobil nescrolluje do
  * strany.
  */
 
-const SENTENCE = 'jumping arcade game with a lot of obstacles';
+const SENTENCE = 'endless runner with a lot of obstacles';
 
 async function publish(request: APIRequestContext): Promise<string> {
   const response = await request.post('/api/play/games', { data: { sentence: SENTENCE } });

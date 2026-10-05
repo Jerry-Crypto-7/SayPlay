@@ -33,6 +33,7 @@ import { LOOK_IDS, TIMES_OF_DAY, WEATHERS } from './arcade/look';
 import { ruleIssues, rulesSchema, thingsSchema } from './arcade/rules/schema';
 import { CAPABILITIES } from './capabilities';
 import { ALL_GENRE_MODES, GENRES, GENRE_MODES, isGenreMode } from './genre/contract';
+import { heroActionSchema } from './hero-action';
 
 import { ARENA_DENSITIES, ARENA_GOALS } from './arcade/pieces/arena';
 import { FLAP_DIFFICULTIES, FLAP_TRACK } from './arcade/pieces/flap';
@@ -237,6 +238,9 @@ export const storedThemeSchema = themeSchema
   })
   .strict();
 
+/** Co hrdina viditelně dělá (P37-0) – seznam žije v `hero-action.ts` (P37A T3), tady se jen vystavuje. */
+export { HERO_ACTIONS, type HeroAction, heroActionSchema } from './hero-action';
+
 export const tutorialSchema = z
   .object({
     /** Do 80 znaků, anglicky, zobrazí se před první akcí. */
@@ -301,6 +305,8 @@ export const flapParamsSchema = z
     coins: z.boolean().optional(),
     /** Mezery se po třetinách zužují, náraz bere život s milostí – žánr Poletování (P36A T11); uložená hra bez něj jako dřív. */
     rise: z.boolean().optional(),
+    /** Odpuštění pozdního vzletu ze země (P37A T7); žánr Poletování ho píše vždy. Bez výchozí hodnoty – uložený spec staví tentýž svět. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type FlapParams = z.infer<typeof flapParamsSchema>;
@@ -364,6 +370,8 @@ export const timingParamsSchema = z
     rounds: z.int().min(TIMING.minRounds).max(TIMING.maxRounds).optional(),
     /** Každé kolo rychlejší – žánr Načasování (P36A T11); uložená hra bez něj jako dřív. */
     rise: z.boolean().optional(),
+    /** Odpuštění brzkého a pozdního ťuku (P37A T7); žánr Načasování ho píše vždy. Bez výchozí hodnoty – uložený spec staví tentýž svět. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type TimingParams = z.infer<typeof timingParamsSchema>;
@@ -377,6 +385,8 @@ export const rhythmParamsSchema = z
     /** Písnička houstne po třetinách a ťuk míří do dráhy – žánr Rytmus (P36A T11); uložená hra bez nich jako dřív. */
     ramp: z.boolean().optional(),
     lanes: z.boolean().optional(),
+    /** Odpuštění brzkého a pozdního ťuku (P37A T7); žánr Rytmus ho píše vždy. Bez výchozí hodnoty – uložený spec staví tentýž svět. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type RhythmParams = z.infer<typeof rhythmParamsSchema>;
@@ -481,6 +491,11 @@ export const gameSpecSchema = z
       .object({ target: z.int().min(10).max(9999).optional() })
       .strict()
       .optional(),
+    /**
+     * Viditelná činnost hrdiny (P37-0 T1). Bez výchozí hodnoty, jako `control`:
+     * uložená hra bez pole má tentýž `gameSpecHash`; render si doplní `none`.
+     */
+    heroAction: heroActionSchema.optional(),
   })
   .strict();
 

@@ -111,7 +111,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = flapTrack.params.parse({ ...spec.controlParams, ...counts });
     const level = flapTrack.generate(seed, params);
     const ramp = rampMarks(level.length);
-    return { control: { id: 'flap', params: { ramp } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true) };
+    // Odpuštění pozdního vzletu (P37A T7) jen s `feel` ze specu – uložený spec bez něj staví tentýž svět.
+    const feel = params.feel === undefined ? {} : { feel: params.feel };
+    return { control: { id: 'flap', params: { ramp, ...feel } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true, params.feel === 2) };
   }
   if (spec.control === 'shooter') {
     const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });

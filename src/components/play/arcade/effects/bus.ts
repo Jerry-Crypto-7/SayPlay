@@ -22,7 +22,8 @@ import type { ArcadeSession } from '../session';
  * nové tělo z efektu `spawn`, `win` / `lose` = konec běhu. `land` (dopad hráče)
  * jádro jako efekt nehlásí – sběrnice ho pozná ze stavu (P32A T4).
  */
-export type VisualEventKind = 'pickup' | 'hit' | 'death' | 'win' | 'lose' | 'stateChange' | 'land' | 'spawn';
+export const VISUAL_EVENT_KINDS = ['pickup', 'hit', 'death', 'win', 'lose', 'stateChange', 'land', 'spawn'] as const;
+export type VisualEventKind = (typeof VISUAL_EVENT_KINDS)[number];
 
 export interface VisualEvent {
   readonly kind: VisualEventKind;

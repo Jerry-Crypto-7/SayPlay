@@ -83,6 +83,36 @@ const meshes = (root: Object3D): Mesh[] => {
   return out;
 };
 
+/** `PromptSpot` z vykresleného stromu: ArcadeStage → StageCanvas (memo) → Canvas → PromptSpot. */
+function promptSpot(): ReactElement<Record<string, unknown>> {
+  const built = buildWorld(
+    {
+      seed: 1,
+      control: { id: 'fight', params: {} },
+      rules: [],
+      bot: { id: 'fight_bot', params: {} },
+      level: { bodies: [{ role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: 1000, h: 1000, d: 1000, solid: false }], length: 0 },
+    },
+    ARCADE_LIBRARY,
+  );
+  if (!built.ok) throw new Error(built.issues.join('; '));
+  const state = instantiate(built.world);
+  const session = {
+    world: built.world,
+    state: () => state,
+    snapshot: () => ({ tick: 0, runState: 'running' }),
+    subscribe: () => () => undefined,
+    paused: () => false,
+  } as unknown as ArcadeSession;
+
+  const stage = ArcadeStage({ session, cast: { player: '', enemy: '', chaser: '', props: {} }, enabled: false }) as ReactElement<{ readonly children: ReactNode }>;
+  const children = (element: ReactElement<{ readonly children?: ReactNode }>): ReactElement<Record<string, unknown>>[] =>
+    [element.props.children].flat(3).filter(isValidElement) as ReactElement<Record<string, unknown>>[];
+  const canvasHost = children(stage).find((child) => (child.type as { type?: { name?: string } }).type?.name === 'StageCanvas')!;
+  const stageCanvas = (canvasHost.type as unknown as { type: (props: unknown) => ReactElement<{ readonly children: ReactNode }> }).type;
+  return children(stageCanvas(canvasHost.props)).find((child) => (child.type as { name?: string }).name === 'PromptSpot')!;
+}
+
 describe('arena perf wiring (P36C T9)', () => {
   it('merges a loaded rigged character into one skinned mesh before it is drawn', async () => {
     const material = new MeshStandardMaterial();
@@ -107,33 +137,7 @@ describe('arena perf wiring (P36C T9)', () => {
   });
 
   it('places the start prompt by the rest box and never skins the hero per frame', () => {
-    const built = buildWorld(
-      {
-        seed: 1,
-        control: { id: 'fight', params: {} },
-        rules: [],
-        bot: { id: 'fight_bot', params: {} },
-        level: { bodies: [{ role: 'player', kind: 'player', x: 0, y: 0, z: 0, w: 1000, h: 1000, d: 1000, solid: false }], length: 0 },
-      },
-      ARCADE_LIBRARY,
-    );
-    if (!built.ok) throw new Error(built.issues.join('; '));
-    const state = instantiate(built.world);
-    const session = {
-      world: built.world,
-      state: () => state,
-      snapshot: () => ({ tick: 0, runState: 'running' }),
-      subscribe: () => () => undefined,
-      paused: () => false,
-    } as unknown as ArcadeSession;
-
-    // ArcadeStage → StageCanvas (memo) → Canvas → PromptSpot.
-    const stage = ArcadeStage({ session, cast: { player: '', enemy: '', chaser: '', props: {} }, enabled: false }) as ReactElement<{ readonly children: ReactNode }>;
-    const children = (element: ReactElement<{ readonly children?: ReactNode }>): ReactElement<Record<string, unknown>>[] =>
-      [element.props.children].flat(3).filter(isValidElement) as ReactElement<Record<string, unknown>>[];
-    const canvasHost = children(stage).find((child) => (child.type as { type?: { name?: string } }).type?.name === 'StageCanvas')!;
-    const stageCanvas = (canvasHost.type as unknown as { type: (props: unknown) => ReactElement<{ readonly children: ReactNode }> }).type;
-    const spot = children(stageCanvas(canvasHost.props)).find((child) => (child.type as { name?: string }).name === 'PromptSpot')!;
+    const spot = promptSpot();
     expect(spot).toBeDefined();
 
     const bone = new Bone();
@@ -149,9 +153,10 @@ describe('arena perf wiring (P36C T9)', () => {
     camera.updateMatrixWorld();
     hooks.three = { camera, scene: world, size: { width: 400, height: 800 } };
     const properties = new Map<string, string>();
+    const setProperty = vi.fn((name: string, value: string) => properties.set(name, value));
     const host = {
       dataset: {} as Record<string, string>,
-      style: { setProperty: (name: string, value: string) => properties.set(name, value) },
+      style: { setProperty, getPropertyValue: (name: string) => properties.get(name) ?? '' },
       getBoundingClientRect: () => ({ top: 0, height: 800 }),
       querySelector: () => null,
       parentElement: null,
@@ -169,5 +174,42 @@ describe('arena perf wiring (P36C T9)', () => {
     expect(properties.has('--_hero-top')).toBe(true);
     // …a kosti tu nikdo nepřepočítal.
     expect(skin).not.toHaveBeenCalled();
+  });
+
+  it('writes the prompt style and searches for the hero only when something changed (P37B T7)', () => {
+    // Bez toho karta každý snímek tiku 0 zneplatní rozvržení a projde scénu – obraz je stejný, jen telefon pomalejší.
+    const spot = promptSpot();
+    const hero = new Mesh(new BoxGeometry(0.5, 1.8, 0.3), new MeshStandardMaterial());
+    hero.userData.frame = 'hero';
+    hero.position.z = 6;
+    const world = new Scene().add(hero);
+    const camera = new PerspectiveCamera(50, 1, 0.1, 100);
+    camera.lookAt(0, 0, 6);
+    world.updateMatrixWorld(true);
+    camera.updateMatrixWorld();
+    hooks.three = { camera, scene: world, size: { width: 400, height: 800 } };
+    const properties = new Map<string, string>();
+    const setProperty = vi.fn((name: string, value: string) => properties.set(name, value));
+    const host = {
+      dataset: {} as Record<string, string>,
+      style: { setProperty, getPropertyValue: (name: string) => properties.get(name) ?? '' },
+      getBoundingClientRect: () => ({ top: 0, height: 800 }),
+      querySelector: () => null,
+      parentElement: null,
+    };
+
+    hooks.effects.length = 0;
+    (spot.type as (props: unknown) => unknown)({ ...spot.props, surface: { current: host } });
+    for (const effect of hooks.effects) effect();
+    const search = vi.spyOn(world, 'traverseVisible');
+    for (let frame = 0; frame < 4; frame += 1) hooks.after[0]!();
+    expect(setProperty).toHaveBeenCalledTimes(3);
+    expect(search).toHaveBeenCalledTimes(1);
+
+    // Hrdina se schová (výměna modelu) → hledá se znovu, a když není, karta místo pustí.
+    hero.visible = false;
+    hooks.after[0]!();
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(host.dataset.promptAt).toBeUndefined();
   });
 });

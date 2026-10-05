@@ -22,6 +22,7 @@ import { direct } from '..';
 import { readyModes } from '../answer-schema';
 import { buildCompactRequest } from '../compact';
 import { blockingIssues, critique } from '../critic';
+import { checklistLines } from '../prompt';
 import { readGenreAnswer } from '../read';
 import { DIRECTOR_EXAMPLES, EXAMPLES_MAX, EXAMPLES_MAX_CHARS, EXAMPLES_MIN, exampleSpec, examplesBlock, nearestExamples } from '../retrieval';
 
@@ -112,7 +113,8 @@ describe('the director prompt', () => {
     const plain = recording();
     await direct(sentence, { branch: plain.branch, now: Date.now, compact: true });
     expect(draft).not.toBeNull();
-    expect(plain.seen).toEqual([`${sentence}\n\nStarting point (keep or improve): ${JSON.stringify(draft)}`]);
+    // P37A T8: zpráva nese mezi větou a výchozím bodem kontrolní seznam věty (`checklistLines`); příklady dál jen s přepínačem.
+    expect(plain.seen).toEqual([`${sentence}\n\n${checklistLines(sentence)}\n\nStarting point (keep or improve): ${JSON.stringify(draft)}`]);
     expect(buildCompactRequest(sentence, draft)).toEqual(buildCompactRequest(sentence, draft, false));
   });
 

@@ -8,6 +8,10 @@
  * přes `liveIntentOf`: živá změna se hned zapíše do relace (`session.live`),
  * co živě nejde, spustí dnešní remix na novou verzi a hotovou verzi ukáže
  * čip `remix-ready`. Nesmysl dostane poctivé „nerozumím“ s příklady.
+ *
+ * Viditelnost (P37C T7): po prvním dohraném běhu pozve čip „Change it while
+ * you play“ (otevře pole) a přijatá změna ukáže štítek, co se změnilo
+ * („+3 dogs · rain“) – věta říká přání, štítek, co hra opravdu dostala.
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -16,6 +20,7 @@ import { baseControlOf } from '@/play/arcade/addons';
 import type { ArcadeWorld } from '@/play/arcade/contract';
 import { REMIX_MESSAGE, liveIntentOf, resolveWish } from '@/play/director/live-intent';
 import type { GameSpecV1 } from '@/play/spec';
+import { liveLabel } from '@/play/version/remix-diff';
 
 import { MicButton, appendSpoken } from '../MicButton';
 import type { RemixJob } from '../RemixBox';
@@ -32,7 +37,10 @@ export function enterOpensLiveBox(world: ArcadeWorld): boolean {
   return !ENTER_ACTS.has(baseControlOf(world.control).id) && !world.rules.some((rule) => rule.id === 'blaster');
 }
 
-type Status = { readonly kind: 'live' | 'remix' | 'refused' | 'unknown'; readonly message: string };
+/** `changed` = štítek změn, které hra opravdu přijala (i při částečném přijetí). */
+type Status = { readonly kind: 'live' | 'remix' | 'refused' | 'unknown'; readonly message: string; readonly changed?: string };
+
+export const LIVE_INVITE = 'Change it while you play';
 
 /**
  * Tlačítko „Change“ je od P33 T12 kolo v bočním sloupci hry (`ArcadePlay`),
@@ -56,6 +64,9 @@ export function LiveBox({
   const [text, setText] = useState('');
   const [status, setStatus] = useState<Status | null>(null);
   const input = useRef<HTMLInputElement | null>(null);
+  // Pozvánka až po prvním konci běhu: napoprvé se hráč učí hru, ne její změnu. Shell pole
+  // mimo běh odpojí, takže to musí vědět relace – stav komponenty by restart nepřežil.
+  const played = session.playedOnce();
 
   useEffect(() => {
     if (!enterOpens || open) return;
@@ -86,18 +97,39 @@ export function LiveBox({
     for (const patch of patches) {
       const problem = session.live(patch!);
       // Robot může odmítnout až pozdější změnu – co už platí, se hlásí jako hotové, jinak by nové odeslání zdvojilo.
-      if (problem !== null) return applied === 0 ? { kind: 'refused', message: problem } : { kind: 'live', message: `Done in part. ${problem}` };
+      if (problem !== null) {
+        return applied === 0 ? { kind: 'refused', message: problem } : { kind: 'live', message: `Done in part. ${problem}`, changed: liveLabel(patches.slice(0, applied).map((done) => done!), spec) };
+      }
       applied += 1;
     }
-    return { kind: 'live', message: `Done: ${sentence}` };
+    return { kind: 'live', message: '', changed: liveLabel(patches.map((done) => done!), spec) };
   }
 
+  // Štítek jde do řádku stavu, ne do vlastního čipu: vyšší sloupec by na telefonu zajel pod kartu nad ním.
+  const message =
+    status === null ? null : status.changed === undefined || status.changed === '' ? (
+      status.message
+    ) : (
+      <>
+        {status.message === '' ? '' : `${status.message} `}Changed: <strong data-testid="live-changed">{status.changed}</strong>
+      </>
+    );
+
   if (!open) {
-    if (status === null) return null;
+    if (status === null) {
+      if (!played) return null;
+      return (
+        <div className="play-live">
+          <button type="button" className="sp-chip play-chip" data-testid="live-invite" onClick={() => setOpen(true)}>
+            {LIVE_INVITE}
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="play-live">
         <p className="play-live-status" data-testid="live-status" data-kind={status.kind} role="status">
-          {status.message}
+          {message}
         </p>
       </div>
     );
@@ -140,7 +172,7 @@ export function LiveBox({
       </div>
       {status !== null && (
         <p className="play-live-status" data-testid="live-status" data-kind={status.kind} role="status">
-          {status.message}
+          {message}
         </p>
       )}
     </form>

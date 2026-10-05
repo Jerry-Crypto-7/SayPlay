@@ -32,6 +32,11 @@ export function musicFor(theme: Theme, catalog: MusicCatalog = musicCatalog): st
   return catalog.loops[lookOf(theme)]?.[moodOf(theme)] ?? null;
 }
 
+/** Napjatá smyčka looku pro chvíle napětí (P37B T5), nebo `null` (look ji nemá – hraje dál základní). */
+export function tenseMusicFor(theme: Theme, catalog: MusicCatalog = musicCatalog): string | null {
+  return catalog.loops[lookOf(theme)]?.tense ?? null;
+}
+
 /** Zvuk události v daném looku, nebo `null` = syntetický ZzFX. */
 export function sfxFor(look: LookId, event: SoundEvent, catalog: SfxCatalog = sfxCatalog): string | null {
   return catalog.sounds[look]?.[event] ?? null;

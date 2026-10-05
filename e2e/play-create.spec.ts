@@ -12,11 +12,15 @@ import { expect, test } from '@playwright/test';
 // P34 T3: nadpis a tlačítko mluví kitem Sayplay („What do you want to play?“, „Make it!“).
 const HERO = 'What do you want to play?';
 
+// P37C T6: feed nikdy není prázdný (vestavěná sada her) a `FeedPager` doplní do adresy `?g=` hry,
+// která je zrovna na řadě. Stránka tvorby je pořád `/play`, ne hra `/play/<id>`.
+const ON_PLAY = /\/play(\?g=[a-f0-9]+)?$/;
+
 test.describe('/play – create', () => {
   // P25B T7: hlavní adresa vede na hry, stará aplikace je na /studio.
   test('the home address lands on /play', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveURL(/\/play$/);
+    await expect(page).toHaveURL(ON_PLAY);
     await expect(page.locator('.play-hero')).toHaveText(HERO);
   });
 
@@ -46,7 +50,7 @@ test.describe('/play – create', () => {
     await expect(sentence).toBeFocused();
     await page.waitForTimeout(300);
     expect(posted).toBe(0);
-    await expect(page).toHaveURL(/\/play$/);
+    await expect(page).toHaveURL(ON_PLAY);
 
     // Shift+Enter je nový řádek, Enter odešle.
     await sentence.press('Shift+Enter');
@@ -75,7 +79,7 @@ test.describe('/play – create', () => {
     await page.goto('/play');
     await page.getByTestId('play-surprise').click();
     await expect(page.getByTestId('play-sentence')).not.toHaveValue('');
-    await expect(page).toHaveURL(/\/play$/);
+    await expect(page).toHaveURL(ON_PLAY);
   });
 
   test('a refused sentence shows the door message and stays on /play', async ({ page }) => {
@@ -97,7 +101,7 @@ test.describe('/play – create', () => {
     await expect(alert).toBeVisible();
     await expect(alert).toContainText("Couldn't build that. Try fewer rules.");
     await expect(alert).toHaveClass(/sp-toast--error/);
-    await expect(page).toHaveURL(/\/play$/);
+    await expect(page).toHaveURL(ON_PLAY);
     await expect(page.getByTestId('play-sentence')).toHaveValue('A sentence the director refuses.');
 
     // P33 T9: chyba nese vlastní `Try again`, který pošle tutéž větu znovu.

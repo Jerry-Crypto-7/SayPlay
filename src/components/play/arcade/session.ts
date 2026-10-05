@@ -47,6 +47,8 @@ export interface ArcadeSession {
   holdButtons(buttons: number): void;
   /** Posune hodiny o `ms`; vrací podíl rozběhnutého tiku 0..1 pro interpolaci. */
   advance(ms: number): number;
+  /** Podíl rozběhnutého tiku z posledního `advance` – duch (P37C T3) interpoluje stejně jako hráč. */
+  alpha(): number;
   stepOnce(): void;
   inputs(): readonly InputEvent[];
   snapshot(): ArcadeSnapshot;
@@ -74,6 +76,8 @@ export interface ArcadeSession {
   demo(): DemoState | null;
   /** Hraje člověk: ne ukázka, ne záznam robota přehraný `playInputs` (P27D T4 – jen takový běh se počítá). */
   humanRun(): boolean;
+  /** Aspoň jeden běh relace skončil (výhra nebo prohra), i když ho restart už zahodil. */
+  playedOnce(): boolean;
   /**
    * Efekty pravidel z tiků, které hraje člověk (P28C T1) – pro zvuk a odezvu.
    * Ukázka ani přehrání `playInputs` posluchače nevolají; do stavu ani hashe
@@ -123,6 +127,7 @@ export function createArcadeSession(
   let heldButtons = 0;
   let started = !waitForInput;
   let accumulator = 0;
+  let fraction = 0;
   let halted = false;
   let cached: ArcadeSnapshot | null = null;
   // Ukázka: záznam robota, kurzor v něm a konec, proti kterému se ověří.
@@ -131,6 +136,8 @@ export function createArcadeSession(
   let demoView: DemoState | null = null;
   // Běh dohraný `playInputs` (záznam robota přes sondu) do restartu – nehrál ho člověk.
   let replayed = false;
+  // Některý běh relace už skončil (P37C T7) – restart ho nesmaže, pozvánka LiveBox na něm stojí.
+  let endedOnce = false;
   const listeners = new Set<() => void>();
   const eventListeners = new Set<ArcadeEventListener>();
 
@@ -185,6 +192,24 @@ export function createArcadeSession(
     pendingAxis = 0;
   };
 
+  /** Hodiny: odtiká celé kroky z akumulátoru; vrací podíl rozběhnutého tiku 0..1. */
+  const clockAdvance = (ms: number): number => {
+    if (outcomeOf(state) !== 'running') return 1;
+    if (!started) return 0;
+    // Pauza drží rozběhnutý podíl, ať stojící snímek necukne o tik zpět.
+    if (halted) return Math.min(1, accumulator / TICK_MS);
+    accumulator += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
+    let stepped = false;
+    // Epsilon: 30 × (1000/60) v plovoucí čárce je o chlup pod 500 a tik by se ztratil.
+    while (accumulator >= TICK_MS - 1e-6 && outcomeOf(state) === 'running') {
+      accumulator -= TICK_MS;
+      flush();
+      stepped = true;
+    }
+    if (stepped) notify();
+    return Math.min(1, accumulator / TICK_MS);
+  };
+
   const session: ArcadeSession = {
     world,
     state: () => state,
@@ -212,21 +237,10 @@ export function createArcadeSession(
       if (buttons !== 0 && !swallowFirst) started = true;
     },
     advance: (ms) => {
-      if (outcomeOf(state) !== 'running') return 1;
-      if (!started) return 0;
-      // Pauza drží rozběhnutý podíl, ať stojící snímek necukne o tik zpět.
-      if (halted) return Math.min(1, accumulator / TICK_MS);
-      accumulator += Math.min(Math.max(ms, 0), MAX_FRAME_MS);
-      let stepped = false;
-      // Epsilon: 30 × (1000/60) v plovoucí čárce je o chlup pod 500 a tik by se ztratil.
-      while (accumulator >= TICK_MS - 1e-6 && outcomeOf(state) === 'running') {
-        accumulator -= TICK_MS;
-        flush();
-        stepped = true;
-      }
-      if (stepped) notify();
-      return Math.min(1, accumulator / TICK_MS);
+      fraction = clockAdvance(ms);
+      return fraction;
     },
+    alpha: () => fraction,
     stepOnce: () => {
       flush();
       notify();
@@ -255,6 +269,7 @@ export function createArcadeSession(
       return () => listeners.delete(listener);
     },
     restart: () => {
+      if (outcomeOf(state) !== 'running') endedOnce = true;
       state = instantiate(world);
       prev = Int32Array.from(state);
       log = [];
@@ -266,6 +281,7 @@ export function createArcadeSession(
       heldButtons = 0;
       started = !waitForInput;
       accumulator = 0;
+      fraction = 0;
       script = null;
       cursor = 0;
       demoView = null;
@@ -314,6 +330,7 @@ export function createArcadeSession(
     },
     demo: () => demoView,
     humanRun: () => script === null && !replayed,
+    playedOnce: () => endedOnce || outcomeOf(state) !== 'running',
     live: (patch) => {
       if (script !== null || replayed || outcomeOf(state) !== 'running') return 'The game is not being played right now.';
       const entry: LiveEntry = { tick: state[HEADER.tick] as number, patch };

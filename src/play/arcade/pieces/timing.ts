@@ -28,6 +28,7 @@ import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
 
 import { ARCADE_LIMITS, type ArcadeLevel, BODY, BUTTON, type BodyInit, type ControlPiece, FLAG, type GeneratorPiece, type PieceRef, type RulePiece, UNIT, bodyBase } from '../contract';
+import { PLATFORM_FEEL } from './platform';
 
 export const TIMING_MODES = ['stack', 'precision', 'bridge'] as const;
 export type TimingMode = (typeof TIMING_MODES)[number];
@@ -74,10 +75,30 @@ export const timingWindowTicks = (speed: number, tolerance: number): number => 2
 // ---------------------------------------------------------------------------
 // Ovládání
 
-const controlParams = z.object({ mode: z.enum(TIMING_MODES), rounds: z.int().min(1).max(TIMING.maxRounds) }).strict();
+const controlParams = z
+  .object({
+    mode: z.enum(TIMING_MODES),
+    rounds: z.int().min(1).max(TIMING.maxRounds),
+    /** Odpuštění brzkého a pozdního ťuku (P37A T7, `forgivenX`); bez něj platí jen okno – uložený svět beze změny. */
+    feel: z.literal(2).optional(),
+  })
+  .strict();
 export type TimingControlParams = z.infer<typeof controlParams>;
 
 const S = BODY;
+
+/**
+ * Odpuštění `feel: 2` (P37A T7) se stejnými okny jako skok skákačky
+ * (`PLATFORM_FEEL`): ťuk mimo okno platí, když do něj jezdec dojede nejvýš za
+ * `bufferTicks` tiků (brzký stisk), nebo z něj vyjel nejvýš před `coyoteTicks`
+ * tiky (pozdní). Platí jako trefa na kraji okna (1 bod); vrací tu polohu, jinak `null`.
+ */
+export function forgivenX(x: number, vx: number, center: number, tolerance: number): number | null {
+  const side = Math.sign(x - center);
+  const coming = Math.sign(vx) === -side;
+  const ticks = coming ? PLATFORM_FEEL.bufferTicks : PLATFORM_FEEL.coyoteTicks;
+  return Math.abs(x - center) - tolerance <= ticks * Math.abs(vx) ? center + side * tolerance : null;
+}
 
 /**
  * Jezdec na start kola `round`: kraj, směr a rychlost z předlohy, nový kyv.
@@ -124,14 +145,19 @@ export const timingControl: ControlPiece<TimingControlParams> = {
       return;
     }
     state[p + S.aux1] = 0;
-    const x = state[slider + S.x] as number;
-    const offset = Math.abs(x - (state[target + S.x] as number));
+    const center = state[target + S.x] as number;
     const tolerance = Math.floor((state[target + S.w] as number) / 2);
-    if (offset > tolerance) {
-      state[p + S.aux0] = -1;
-      startRound(state, done);
-      return;
+    let x = state[slider + S.x] as number;
+    if (Math.abs(x - center) > tolerance) {
+      const forgiven = params.feel === 2 ? forgivenX(x, state[slider + S.vx] as number, center, tolerance) : null;
+      if (forgiven === null) {
+        state[p + S.aux0] = -1;
+        startRound(state, done);
+        return;
+      }
+      x = forgiven;
     }
+    const offset = Math.abs(x - center);
     state[p + S.aux0] = timingPoints(offset, tolerance);
     const mark = bodyBase(TIMING_SLOTS.marks + done);
     const width = state[slider + S.w] as number;
@@ -199,6 +225,8 @@ const generatorParams = z
     rounds: z.int().min(TIMING.minRounds).max(TIMING.maxRounds).default(8),
     /** Žánr Načasování (P36A T11): každé kolo rychlejší, v posledním o `TIMING.rise`; bez něj stálá rychlost. */
     rise: z.boolean().optional(),
+    /** Odpuštění ťuku (P37A T7) – čte ho ovládání, úroveň ne. */
+    feel: z.literal(2).optional(),
   })
   .strict();
 export type TimingLevelParams = z.infer<typeof generatorParams>;
@@ -280,7 +308,7 @@ export function timingParts(seed: number, raw: Readonly<Record<string, unknown>>
   const params = timingLevel.params.parse(raw);
   const level = timingLevel.generate(seed, params);
   return {
-    control: { id: 'timing', params: { mode: params.mode, rounds: params.rounds } },
+    control: { id: 'timing', params: { mode: params.mode, rounds: params.rounds, ...(params.feel === undefined ? {} : { feel: params.feel }) } },
     bot: { id: 'timing_bot', params: {} },
     level,
     rules: timingRules(params.rounds, health),

@@ -76,7 +76,11 @@ class Fingers {
   }
   async lift(id: number): Promise<void> {
     if (!this.down.delete(id)) return;
-    await this.cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: this.points() });
+    // `touchEnd` pustí v Chromu všechny prsty: po ťuku druhým palcem by běžící palec plošinovky „zvedl“ i ten
+    // držený a hra by stála (prohra na čas ve 39 %). Prst, který zbývá na skle, pošle CDP jako `touchMove`
+    // – chybějící bod pak pustí sám (rozdíl proti předchozí události).
+    const rest = this.points();
+    await this.cdp.send('Input.dispatchTouchEvent', rest.length === 0 ? { type: 'touchEnd', touchPoints: [] } : { type: 'touchMove', touchPoints: rest });
   }
   async tap(id: number, x: number, y: number): Promise<void> {
     await this.press(id, x, y);

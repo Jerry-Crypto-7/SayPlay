@@ -35,7 +35,7 @@ describe('quality tiers', () => {
     expect(startQuality(2.625).tier).toBe('medium');
   });
 
-  it('steps down only after 3 s under 40 FPS, one tier at a time', () => {
+  it('steps down only after 3 s under 45 FPS, one tier at a time', () => {
     const almost = run(measuring(), 30, DOWN_MS - STEP_MS, 0);
     expect(almost.state.tier).toBe('high');
     const down = run(almost.state, 30, STEP_MS, almost.at);
@@ -43,6 +43,12 @@ describe('quality tiers', () => {
     const lower = run(down.state, 30, DOWN_MS, down.at);
     expect(lower.state.tier).toBe('low');
     expect(run(lower.state, 5, 10_000, lower.at).state.tier).toBe('low');
+  });
+
+  // P37B T7: telefon na `medium` se držel 40–45 FPS a cíl 40 míjel o šum.
+  it('a phone holding just above the 40 FPS goal steps down for headroom', () => {
+    const phone = sampleQuality(startQuality(2.625), 42, 0);
+    expect(run(phone, 42, DOWN_MS, 0).state.tier).toBe('low');
   });
 
   it('a short dip or FPS inside the band changes nothing', () => {

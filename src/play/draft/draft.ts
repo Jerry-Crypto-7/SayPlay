@@ -43,6 +43,7 @@ import timingTemplate from '../arcade/__fixtures__/timing.json';
 import type { Reading } from '../read/schema';
 import { type GenreChoice, type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import { COUNT_PARAMS, COUNT_ROLES as GENRE_COUNT_ROLES, type CountRole, type GenreId, type GenreModule, type GenreSpec } from '../genre/contract';
+import { familyOf, heroActionOf } from '../genre/families';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
 import { defaultCollectible, defaultEnemy, defaultHero, defaultTarget, heroFits } from '../genre/roles';
 import { lookFor, lookWords } from '../arcade/look';
@@ -50,6 +51,7 @@ import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
 
 import { type ControlChoice, type ControlPick, nearestControl, pickControl } from './controls';
+import { type Twist, isPerson, isScenery, twistGoal, twistOf } from './twist';
 import {
   CARE,
   FOOD,
@@ -873,10 +875,23 @@ function withPlace(roles: SentenceRoles, sentence: string): SentenceRoles {
   return roles;
 }
 
+/**
+ * Míra a pořadí před předmětem (P37A T5) předmět nejsou: „a week of lunches“,
+ * „a pile of crumpled receipts“, „the fridge full of moldy leftovers“, „the
+ * last bus“, „more vegetables“. Nádoba, která je sama věcí („a pot of soup“), zůstává.
+ */
+const MEASURE =
+  /^(?:(?:a|an|the|some|my|your|his|her|their|our)\s+)?(?:(?:[a-z]+\s+)?full|week|month|day|pile|mountain|stack|heap|bunch|load|bag|basket|pair|couple|ton|handful|classroom|crowd)s?\s+of\s+/;
+const ORDINAL = /^(?:(?:a|an|the|some|my|your|his|her|their|our)\s+)?(?:last|first|next|more|less|few|several|extra|whole|entire)\s+/;
+const dropMeasure = (text: string): string => text.replace(MEASURE, '').replace(ORDINAL, '');
+
+/** Předmět hlavního slovesa ze zbytku věty za ním: nejvýš dvě slova, bez předložky, míry a pořadí. */
+const objectOf = (after: string): string | null => nounPhrase(dropMeasure(after.replace(/^(?:on|at|up|down|out|to|into|through)\s+/, '')), 2);
+
 /** Podstatné jméno na začátku zbytku věty: bez členu a číslovky, nejvýš dvě slova, jednotné číslo. */
 const nounAfter = (rest: string | undefined): string | null => {
   if (rest === undefined) return null;
-  const phrase = leadWords(rest.replace(/^(?:(?:a|an|the|some|all|my|your|lots of|a lot of|\d+|two|three|four|five|six|seven|eight|nine|ten)\s+)+/, ''));
+  const phrase = leadWords(dropMeasure(rest).replace(/^(?:(?:a|an|the|some|all|my|your|lots of|a lot of|\d+|two|three|four|five|six|seven|eight|nine|ten)\s+)+/, ''));
   // „swords cutting fruit“: sloveso na -ing frázi končí.
   const words = phrase?.split(' ') ?? [];
   const verb = words.findIndex((word) => ING_VERB.test(word));
@@ -1084,6 +1099,7 @@ function draftGenre(
   choice: GenreChoice,
   ranking: GenreRanking,
   modules: GenreModules,
+  twist: Twist | null = null,
 ): { readonly genre: GenreSpec; readonly spec: GameSpecV1; readonly heroSaid: boolean } | null {
   const module = modules[choice.genre] as GenreModule;
   const fill = module.draftFill(sentence, reading) as Partial<GenreSpec>;
@@ -1094,19 +1110,27 @@ function draftGenre(
   const pair = counted === undefined ? null : singular(counted);
   const topic = choice.score === 0 ? noVerbTopic(sentence) : null;
   const topicHero = topic !== null && modelOf(topic, true) !== undefined ? topic : null;
-  const heroSaid =
-    cleanLabel(fill.hero) ??
-    pair ??
-    cleanLabel(roles.player) ??
-    (choice.genre === 'voyage' ? raceHero(sentence) : null) ??
-    nouns.hero ??
-    FLAPPY.exec(text)?.[1] ??
-    topicHero;
-  const catcher = CATCH_BEFORE.exec(text)?.[1];
   // Souboj (P36A T11) bere soupeře z věty stejně jako rvačka v Aréně.
   const fight = (choice.genre === 'arena' && choice.mode === 'fight') || choice.genre === 'duel';
+  // Absurdní přenos (P37A T5): věta bez herního slovesa má hrdinu ze seznamů přenosu, nebo podmět se slovesem na -ing
+  // („purple elephants doing taxes“) – „long queue“ ani „hour“ hrdina není.
+  const noVerb = twist !== null && choice.score === 0;
+  const heroSaid = noVerb
+    ? (twist.hero ?? nouns.hero)
+    : (cleanLabel(fill.hero) ??
+      pair ??
+      cleanLabel(roles.player) ??
+      (choice.genre === 'voyage' ? raceHero(sentence) : null) ??
+      nouns.hero ??
+      FLAPPY.exec(text)?.[1] ??
+      topicHero ??
+      // Ve sporu je blízký soupeř („argue with my wife“), ne hrdina.
+      (fight ? null : (twist?.hero ?? null)));
+  const catcher = CATCH_BEFORE.exec(text)?.[1];
   const verb = ranking.verb ?? 'use';
-  const said = ranking.after === null ? null : nounPhrase(ranking.after.replace(/^(?:on|at|up|down|out|to|into)\s+/, ''), 2);
+  const family = familyOf(ranking.verb);
+  const heroAction = heroActionOf(ranking.verb);
+  const said = ranking.after === null ? null : objectOf(ranking.after);
   const object = thing(said);
   // Úkol: u hodu a střelby je předmětem terč („throw balls at rubber ducks“, „shooter against asteroids“), jinak předmět slovesa.
   const aimed = verb === 'hit' || verb === 'shoot' || verb === 'throw' || ranking.verb === null ? thing(roles.target) : null;
@@ -1127,9 +1151,13 @@ function draftGenre(
         : filledTarget === null
           ? null
           : singular(filledTarget.label);
+  const escape = choice.genre === 'arena' && choice.mode === 'escape';
+  // Přenos: spor má soupeřem člověka věty, útěk to, co děsí – a bez toho věc, které se hrdina brání („refusing to take her medicine“).
+  const twistFoe = twist === null ? null : fight ? (twist.person ?? twist.foe) : (twist.foe ?? (escape ? twist.thing : null));
   const foe = fight
-    ? (roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
-    : (foeIn(cleanLabel(fill.enemy)) ??
+    ? (twistFoe ?? roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
+    : (twistFoe ??
+      foeIn(cleanLabel(fill.enemy)) ??
       foeIn(roles.threat?.label) ??
       (catcher === undefined ? null : singular(catcher)) ??
       nouns.avoid ??
@@ -1139,9 +1167,15 @@ function draftGenre(
   // „zombie shooter“: co se střílí, je terč úkolu, ne ještě jednou nepřítel; co hráč hází, taky ne (T7). Popisek role je jeden kus („cones“ → „cone“).
   const enemy = foe === null || singular(foe) === target || toolsOf(sentence).includes(singular(foe)) ? null : singular(foe);
   const throwsAt = ranking.after !== null && /^(?:at|into|onto|on|to|toward|towards)\s/.test(ranking.after);
-  const found = thrown
-    ? (thing(THROWN_BEFORE.exec(text)?.[1]) ?? (throwsAt ? null : object) ?? thing(roles.collectible))
-    : thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
+  // Rodina úklidu (P37A T3) sbírá, co věta uklízí („rakes autumn leaves“), dřív než věc z prostředí.
+  const swept = family?.object === 'collectible' ? (thing(cleanLabel(fill.collectible) ?? roles.collectible) ?? object) : null;
+  const pickup = swept ?? thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
+  // Přenos nesbírá ani neskládá kulisu („help my kid with homework at the kitchen table“).
+  const heard = twist !== null && pickup !== null && isScenery(pickup) ? null : pickup;
+  // Přenos: věc věty, kterou hrdina nezahnal jako soupeře; kus, který se skládá nebo hraje („pay the electricity bill“, „fold towels“), je předmět slovesa.
+  const twistThing = twist === null || twist.thing === twistFoe ? null : twist.thing;
+  const piece = twist !== null && (choice.genre === 'timing' || choice.genre === 'rhythm') && object !== null && !isPerson(object) && !isScenery(object) ? object : null;
+  const found = thrown ? (thing(THROWN_BEFORE.exec(text)?.[1]) ?? (throwsAt ? null : object) ?? thing(roles.collectible)) : noVerb ? (twistThing ?? heard) : (heard ?? piece ?? twistThing);
   const collectible = found === null ? null : singular(found);
   // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.
   const named = new Set([target, enemy, collectible].flatMap((label) => (label === null ? [] : [singular(label)])));
@@ -1154,7 +1188,6 @@ function draftGenre(
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
   const foeLabel = enemy ?? spare(defaultEnemy(setting, choice.genre), [singular(hero)]);
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
-  const escape = choice.genre === 'arena' && choice.mode === 'escape';
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.
   // Načasování skládá, co řekne věta, jinak blok; rytmus hraje noty z věty, jinak dlaždice; souboj nesbírá nic (P36A T11).
@@ -1170,6 +1203,8 @@ function draftGenre(
     genre: choice.genre,
     mode: choice.mode,
     hero: cap(hero, 60),
+    // Činnost hrdiny rodiny slovesa (P37A T3) je jen vzhled; bez rodiny pole chybí jako dřív.
+    ...(heroAction === null ? {} : { heroAction }),
     ...(foeLabel === null ? {} : { enemy: cap(foeLabel, 60) }),
     ...(itemLabel === null ? {} : { collectible: cap(itemLabel, 60) }),
     ...(target === null ? {} : { target: { label: cap(target, 60), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }),
@@ -1180,7 +1215,10 @@ function draftGenre(
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });
   if (!read.ok) return null;
-  const game = readGameSpec(compileWith(module, read.value));
+  const compiled = compileWith(module, read.value);
+  // Přenos řekne cíl v HUD slovy věty („Dodge the long queues!“); uložené hry a hry s herním slovesem ho nemají.
+  const goal = twist === null ? null : twistGoal(read.value, sentence);
+  const game = readGameSpec(goal === null ? compiled : { ...compiled, tutorial: { ...compiled.tutorial, goalLine: goal } });
   return game.ok ? { genre: read.value, spec: game.value, heroSaid: heroSaid !== null } : null;
 }
 
@@ -1249,9 +1287,10 @@ export function draftGameSpecWithMeta(sentence: string, seed = 1, options: Draft
   // P32B T2: nová hra jde přes žánr – první režim z pořadí klasifikátoru, který se přeloží.
   // T5b: hrdina, kterého věta říká a žánr neumí (koloběžka v Úkolu), žánr přeskočí; neumí-li ho žádný, platí první.
   const ranking = classifyGenre(sentence, reading, modules);
+  const twist = reading === null ? twistFor(sentence, ranking) : null;
   let first: { readonly drafted: NonNullable<ReturnType<typeof draftGenre>>; readonly why: string } | null = null;
-  for (const choice of ranking.ranked) {
-    const drafted = draftGenre(sentence, reading, choice, ranking, modules);
+  for (const choice of twistFirst(ranking.ranked, twist)) {
+    const drafted = draftGenre(sentence, reading, choice, ranking, modules, twist);
     if (drafted === null) continue;
     first ??= { drafted, why: choice.why };
     if (drafted.heroSaid && !heroFits(drafted.genre.genre, drafted.genre.hero, modules)) continue;
@@ -1314,7 +1353,41 @@ export function draftGenreFor(sentence: string, genre: GenreId, mode: string, op
   const modules = options.modules ?? GENRE_MODULES;
   const ranking = classifyGenre(sentence, reading, modules);
   const choice = ranking.ranked.find((entry) => entry.genre === genre && entry.mode === mode);
-  return choice === undefined ? null : (draftGenre(sentence, reading, choice, ranking, modules)?.genre ?? null);
+  return choice === undefined ? null : (draftGenre(sentence, reading, choice, ranking, modules, reading === null ? twistFor(sentence, ranking) : null)?.genre ?? null);
+}
+
+/** Slovesa vět mimo hry (P37A T4): papíry, spor s protějškem, vyhnout se, čekat, domácí práce – role jim dá absurdní přenos. */
+const OFF_TOPIC_VERBS = new Set(['argue', 'negotiate', 'convince', 'say no', 'break up', 'hide', 'ignore', 'refuse', 'wait', 'fall asleep', 'present', 'fold', 'iron']);
+/** Věta, která o hru výslovně žádá („a cozy game“, „boss level“), přenos nedostane. */
+const GAME_ASK = /\b(?:games?|simulator|sim|levels?|rpg|vs)\b/;
+
+/**
+ * Absurdní přenos (P37A T5) pro větu mimo hry: žádné sloveso ani narážka, nebo
+ * sloveso vět mimo hry z T4 („pay the bill“, „argue with my wife“). `null` jinde a u věty,
+ * kterou přečetl model – jeho role mají přednost.
+ */
+function twistFor(sentence: string, ranking: GenreRanking): Twist | null {
+  if (GAME_ASK.test(sentence.toLowerCase())) return null;
+  const unheard = (ranking.ranked[0]?.score ?? 0) === 0;
+  const offTopic = ranking.verb !== null && (OFF_TOPIC_VERBS.has(ranking.verb) || familyOf(ranking.verb)?.id === 'paperwork');
+  return unheard || offTopic ? twistOf(sentence) : null;
+}
+
+/**
+ * Cíl přenosu (P37A T5) pro žánrový spec věty – i pro AI verzi (`readGenreAnswer`),
+ * ať v HUD říká totéž co návrh. `null` u věty bez přenosu a u věty přečtené modelem.
+ */
+export function twistGoalFor(sentence: string, genre: GenreSpec, reading: Reading | null = null, modules: GenreModules = GENRE_MODULES): string | null {
+  if (reading !== null || twistFor(sentence, classifyGenre(sentence, null, modules)) === null) return null;
+  return twistGoal(genre, sentence);
+}
+
+/** Věta bez slovesa hraje Arénu podle nálady: co děsí, hrdinu honí (útěk), jinak se věc věty sbírá. */
+function twistFirst(ranked: readonly GenreChoice[], twist: Twist | null): readonly GenreChoice[] {
+  if (twist === null || (ranked[0]?.score ?? 0) > 0) return ranked;
+  const mode = twist.foe === null ? 'collect' : 'escape';
+  const first = ranked.find((choice) => choice.genre === 'arena' && choice.mode === mode);
+  return first === undefined ? ranked : [{ ...first, why: `no game verb – ${mode === 'escape' ? 'dodge' : 'collect'} what the sentence names` }, ...ranked.filter((choice) => choice !== first)];
 }
 
 /**

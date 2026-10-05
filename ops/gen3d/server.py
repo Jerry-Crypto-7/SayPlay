@@ -78,11 +78,17 @@ class Job:
         return body
 
 
-def generate(comfy: ComfyClient, noun: str, out_dir: Path) -> dict:
+# Uzel a pole semínka obrázku v každém grafu; jiné semínko = jiný obrázek = jiná síť (P37D T2).
+IMAGE_SEED = {"klein": ("noise", "noise_seed"), "zimage": ("sampler", "seed")}
+
+
+def generate(comfy: ComfyClient, noun: str, out_dir: Path, seed: int = 0) -> dict:
     """Obrázek -> TRELLIS.2 -> dodělávka. Vyhazuje výjimku s důvodem, když cokoliv selže."""
     name = out_dir.name
     image_graph = copy.deepcopy(WORKFLOWS[f"image_{CONFIG['image_model']}"])
     image_graph["prompt"]["inputs"]["text"] = CONFIG["prompt"].format(noun=noun)
+    node, field = IMAGE_SEED[CONFIG["image_model"]]
+    image_graph[node]["inputs"][field] = seed
     image_graph["save_image"]["inputs"]["filename_prefix"] = f"gen3d/{name}"
     image = outputs_of(comfy.run(image_graph), "save_image")[0]
 

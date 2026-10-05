@@ -19,6 +19,7 @@
 import type { Reading, VerbClass } from '../read/schema';
 
 import { GENRES, GENRE_MODES, type GenreId, type GenreMode, type GenreModule } from './contract';
+import { FAMILIES } from './families';
 import { GENRE_MODULES } from './index';
 
 export interface GenreChoice {
@@ -83,19 +84,24 @@ const v = (verb: string, kind: Kind, pick: Pair | null, pattern: RegExp): Verb =
 
 const VERBS: readonly Verb[] = [
   // Úkol v prostoru: předměty rozeseté po scéně.
-  v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}`)),
+  v('light', 'goal', SPATIAL, new RegExp(String.raw`\b(?:light(?:s|ing)?(?: up)?|ignit(?:e|es|ing)|kindl(?:e|es|ing)) ${OBJECT}|\blight(?:s|ing)?(?: up)?(?= (?:[a-z]+ )?(?:lanterns?|candles?|torches?|lamps?|beacons?|fireworks?|bonfires?|campfires?)\b)`)),
   v('extinguish', 'goal', SPATIAL, /\bextinguish(?:es|ing)?\b|\bput(?:s|ting)? out (?:the )?(?:fires?|flames?|blaze)\b|\bdous(?:e|es|ing)\b|\bspray(?:s|ing)? water\b|\bhos(?:e|es|ing) down\b/),
-  v('free', 'goal', SPATIAL, new RegExp(String.raw`\brescu(?:e|es|ing)\b|\b(?:free|frees|freeing|releas(?:e|es|ing)) ${OBJECT}`)),
+  v('free', 'goal', SPATIAL, new RegExp(String.raw`\brescu(?:e|es|ing)\b|\b(?:free|frees|freeing|releas(?:e|es|ing)) ${OBJECT}|\bsav(?:e|es|ing)\b(?! (?:money|time|up|for|points?|the day)\b)`)),
+  // P37A T4: další slovesa „ke každé věci po scéně dojít“ – vybalit bedny, probudit les, zmrazit vodopád, vyvolat kostlivce.
+  v('unpack', 'goal', SPATIAL, /\bunpack(?:s|ing)?\b|\bunbox(?:es|ing)?\b/),
+  v('wake', 'goal', SPATIAL, /\bwak(?:e|es|ing) (?:up )?(?:the|a|an|all|every|each|some|his|her|their)\b/),
+  v('freeze', 'goal', SPATIAL, /\bfreez(?:e|es|ing) (?:the|a|an|all|every|each|some|\d+)\b/),
+  v('raise', 'goal', SPATIAL, /\brais(?:e|es|ing)(?= (?:a |an |the |his |her |their )?(?:[a-z]+ )?(?:army|dead|skeletons?|zombies?|undead)\b)|\bsummon(?:s|ing)?\b/),
   v('press', 'goal', SPATIAL, /\b(?:press(?:es|ing)?|toggl(?:e|es|ing)|flip(?:s|ping)?|pull(?:s|ing)?) (?:[a-z]+ ){0,3}?(?:switch(?:es)?|levers?|buttons?)\b|\bpress(?:es|ing)? (?:red|blue|green|yellow)\b/),
   v('deliver', 'goal', SPATIAL, /\b(?:carr(?:y|ies|ying)|deliver(?:s|ing)?|bring(?:s|ing)?)\b/),
   // Střelba a hod jsou zase vlastní žánry (P36A T10); praskání, rozbíjení a zásah předmětů po scéně zůstávají Úkolem.
   // „auto shooting wand“ (vampire survivors) střílí sám – hráč přežívá a uhýbá, takže rozhodne sloveso pohybu.
   v('shoot', 'goal', SHOOTER, /(?<!auto[ -])\bshoot(?:s|ing|er|ers)?\b(?! stars?)|\bfir(?:e|es|ing) at\b|\bblast(?:s|ing)? (?:the|a|an|all|every|some|\d+)\b|\baim(?:s|ing)? at\b/),
-  v('throw', 'goal', THROW, /\bthrow(?:s|ing)?\b(?! punch)|\btoss(?:es|ing)?\b|\bfling(?:s|ing)?\b|\bhurl(?:s|ing)?\b|\blaunch(?:es|ing)? (?:a|an|the|some)\b|\bbowl(?:s|ing)?\b/),
-  v('hit', 'goal', SPATIAL, /\b(?:pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b/),
-  // Úkol na místě: jedna stanice, předmět mění stav.
-  v('cook', 'goal', STATION, /\b(?:cook(?:s|ing)?|bak(?:e|es|ing)|grill(?:s|ing)?|brew(?:s|ing)?)\b|\bflip(?:s|ping)? (?:the |a |an |some )?(?:[a-z]+ )?(?:pancakes?|burgers?|patt(?:y|ies)|eggs?|crepes?)\b/),
-  v('repair', 'goal', STATION, /\b(?:repair(?:s|ing)?|fix(?:es|ing)?|mend(?:s|ing)?)\b/),
+  v('throw', 'goal', THROW, /\bthrow(?:s|ing)?\b(?! punch)|\btoss(?:es|ing)?\b|\bfling(?:s|ing)?\b|\bhurl(?:s|ing)?\b|\blaunch(?:es|ing)?(?= (?:a |an |the |some )?(?:[a-z]+ )?(?:rockets?|balls?|birds?|missiles?|fireworks?|pumpkins?|stones?|rocks?)\b)|\blaunch(?:es|ing)? (?:a|an|the|some)\b|\bbowl(?:s|ing)?\b/),
+  v('hit', 'goal', SPATIAL, /\b(?:pop(?:s|ping)?|hit(?:s|ting)?|smash(?:es|ing)?|zap(?:s|ping)?|destroy(?:s|ing)?)\b|\bknock(?:s|ing)? on\b/),
+  // Rodiny sloves (P37A T3, T4): úklid, vaření, sekání, řemeslo, zahrada, opravy (dřív sloveso `repair` tady), malování, péče,
+  // stříkání, pastevectví, vystoupení a papíry – `families.ts`.
+  ...FAMILIES.flatMap((family) => family.members.map((member) => v(member.verb, 'goal', family.pick, member.pattern))),
   // Načasování a rytmus (P36A T11): ťuk ve správnou chvíli. Před `make` – „build the tallest“ začíná na stejném místě jako „build“ a shodu rozhodne pořadí tabulky.
   v('stack', 'goal', STACK, /\bstack(?:s|ing)?\b|\bbuild(?:s|ing)? (?:the |a |an )?(?:tallest|highest|biggest)\b/),
   v('bridge', 'goal', BRIDGE, /\bgrow(?:s|ing)? (?:a |the )?bridge\b|\bstretch(?:es|ing)? (?:a |the )?(?:bridge|stick|pole)\b/),
@@ -103,33 +109,58 @@ const VERBS: readonly Verb[] = [
   v('dance', 'goal', RHYTHM, /\bdanc(?:e|es|ing)\b/),
   v('beat', 'goal', RHYTHM, /\b(?:to|with|on) the (?:beat|music|rhythm)\b|\bto music\b/),
   // Skládačky, stavění, péče a obsluha – sloveso na předmětu na jednom místě.
-  v('make', 'goal', STATION, /\b(?:merg(?:e|es|ing)|sort(?:s|ing)?|build(?:s|ing)?|connect(?:s|ing)?|unscrew(?:s|ing)?|untangl(?:e|es|ing)|decorat(?:e|es|ing)|design(?:s|ing)?|harvest(?:s|ing)?|heal(?:s|ing)?|serv(?:e|es|ing)|feed(?:s|ing)?|craft(?:s|ing)?|upgrad(?:e|es|ing)|manag(?:e|es|ing)|hir(?:e|es|ing)|dress(?:es|ing)? up)\b/),
+  v('make', 'goal', STATION, /\b(?:merg(?:e|es|ing)|sort(?:s|ing)?|build(?:s|ing)?|connect(?:s|ing)?|unscrew(?:s|ing)?|untangl(?:e|es|ing)|decorat(?:e|es|ing)|design(?:s|ing)?|harvest(?:s|ing)?|heal(?:s|ing)?|serv(?:e|es|ing)|feed(?:s|ing)?|craft(?:s|ing)?|upgrad(?:e|es|ing)|manag(?:e|es|ing)|hir(?:e|es|ing)|dress(?:es|ing)? up|inflat(?:e|es|ing))\b|\bblow(?:s|ing)? up (?:[a-z]+ )?balloons?\b/),
   // Souboj jeden na jednoho je Souboj (P36A T11); rvačka a box s víc soupeři po scéně zůstávají Arénou.
   v('duel', 'goal', DUEL, /\bduel(?:s|ing|led|ling)?\b/),
+  v('play', 'goal', DUEL, /\bplay(?:s|ing)? (?:a game of |a round of )?(?:chess|checkers|draughts|cards|poker|tic[- ]tac[- ]toe)\b/),
+  // Spor s protějškem (P37A T4, věty mimo hry): přetahovaná jeden na jednoho – „argue with my wife“, „negotiate a raise with my boss“.
+  // Rozhovor bez protivníka („explain quantum physics to my grandma“, „call grandma“) sloveso hry není – hraje ho absurdní přenos (T5).
+  v('argue', 'goal', DUEL, /\bargu(?:e|es|ing)\b/),
+  v('negotiate', 'goal', DUEL, /\bnegotiat(?:e|es|ing)\b/),
+  v('convince', 'goal', DUEL, /\bconvinc(?:e|es|ing)\b|\bpersuad(?:e|es|ing)\b/),
+  v('say no', 'goal', DUEL, /\bsay(?:s|ing)? no\b/),
+  v('break up', 'goal', DUEL, /\bbreak(?:s|ing)? up with\b|\bbreaking up\b/),
   v('fight', 'goal', FIGHT, /\bfight(?:s|ing)?\b(?! (?:the )?(?:fires?|flames?))|\bbattl(?:e|es|ing)\b|\bwrestl(?:e|es|ing)\b|\bspar(?:s|ring)?\b|\bbrawl(?:s|ing)?\b/),
   v('box', 'goal', FIGHT, /\bboxing\b|\bbox(?:es)? (?:against|with)\b|\bpunch(?:es|ing)?\b|\bkick(?:s|ing)?\b/),
-  v('defeat', 'goal', FIGHT, /\bdefeat(?:s|ing)?\b|\bknock(?:s|ing)? out\b|\bbeat(?:s|ing)? up\b|\battack(?:s|ing)?\b/),
-  v('defend', 'goal', FIGHT, /\bdefend(?:s|ing)?\b|\bprotect(?:s|ing)?\b/),
+  // „crushes grave robbers“, „stomps through a village“; „candy crush“ je hra, „a crush on“ zamilovanost.
+  v('defeat', 'goal', FIGHT, /\bdefeat(?:s|ing)?\b|\bknock(?:s|ing)? out\b|\bbeat(?:s|ing)? up\b|\battack(?:s|ing)?\b|(?<!candy )\bcrush(?:es|ing)?\b(?! on\b)|\bstomp(?:s|ing)?\b|\bsquash(?:es|ing|ed)\b/),
+  // „guards its gold hoard“; „the guards“ jsou stráže.
+  v('defend', 'goal', FIGHT, /\bdefend(?:s|ing)?\b|\bprotect(?:s|ing)?\b|\bguard(?:s|ing)? (?:its|the|his|her|their|our|my|a|an)\b/),
   v('land', 'goal', LAND, /\blands\b|\blanding\b|\bland (?:on|at|in|safely|softly|gently|the|a|an|it|its)\b|\bto land\b/),
+  // Zaparkovat je přistát přesně (P37A T4); „in a windy park“ je místo.
+  v('park', 'goal', LAND, /\bparallel park|\bpark(?:s|ing)? (?:my|his|her|their|your|our|the car|a car|the truck|the van|the bus)\b/),
   // Pohyb vpřed.
   v('slide', 'move', RUNNER, /\bslid(?:e|es|ing)\b/),
   v('ski', 'move', RUNNER, /\bski(?:s|ing)?\b|\bsled(?:s|ding)?\b|\bsledg(?:e|es|ing)\b|\bsnowboard(?:s|ing)?\b|\bsurf(?:s|ing)?\b/),
+  // „wearing ice skates“ jsou brusle.
+  v('skate', 'move', RUNNER, /\bskating\b|\bskat(?:e|es|ed) (?:across|on|down|through|over|around|along|to|past|away)\b|\bgrind(?:s|ing)? (?:the )?rails?\b/),
   v('run', 'move', RUNNER, /\b(?:run|runs|running)\b(?! (?:out|from|away))|\bdash(?:es|ing)?\b|\bsprint(?:s|ing)?\b|\brunner\b/),
-  v('jump', 'move', PLATFORMER, /\bjump(?:s|ing)?\b|\bhop(?:s|ping)?\b|\bleap(?:s|ing)?\b|\bbounc(?:e|es|ing)\b|\bplatform(?:er|s)?\b/),
+  v('jump', 'move', PLATFORMER, /\bjump(?:s|ing|in)?\b|\bhop(?:s|ping)?\b|\bleap(?:s|ing)?\b|\bbounc(?:e|es|ing)\b|\bplatform(?:er|s)?\b/),
   v('climb', 'move', PLATFORMER, /\bclimb(?:s|ing)?\b|\bcross(?:es|ing)? (?:the |a |an )?(?:[a-z]+ )?(?:islands?|platforms?|stones?|lava|river|gaps?|chasms?|pits?)\b/),
-  v('sail', 'move', RACE, /\bsail(?:s|ing)?\b|\brow(?:s|ing)? (?:a |the )?boat\b|\bcruis(?:e|es|ing)\b|\bnavigat(?:e|es|ing)\b/),
+  v('sail', 'move', RACE, /\bsail(?:s|ing)?\b|\brow(?:s|ing)? (?:a |the )?(?:[a-z]+ )?boats?\b|\bpaddl(?:e|es|ing)\b|\bcano(?:e|es|eing)\b|\bkayak(?:s|ing)?\b|\bcruis(?:e|es|ing)\b|\bnavigat(?:e|es|ing)\b/),
   v('flap', 'move', FLAP, /\bflap(?:s|ping)?\b|\bflutter(?:s|ing)?\b/),
+  // „a phoenix rises from the ashes“: vzlétnout; „rising prices“ pohyb není.
+  v('rise', 'move', FLAP, /\bris(?:e|es|ing) (?:from|up|out of|into|above)\b|\bascend(?:s|ing)?\b/),
   v('fly', 'move', RACE, /\bfl(?:y|ies|ying)\b|\bglid(?:e|es|ing)\b|\bsoar(?:s|ing)?\b|\bpilot(?:s|ing)?\b/),
-  v('drive', 'move', RACE, /\bdriv(?:e|es|ing)\b|\bsteer(?:s|ing)?\b|\brac(?:e|es|ing|er)\b|\bzoom(?:s|ing)?\b/),
-  v('ride', 'move', RACE, /\brid(?:e|es|ing)\b/),
+  // „a boring zoom meeting“ je hovor, ne jízda (P37A T5).
+  v('drive', 'move', RACE, /\bdriv(?:e|es|ing)\b|\bsteer(?:s|ing)?\b|\brac(?:e|es|ing|er)\b|\bzoom(?:s|ing)?\b(?! (?:meetings?|calls?)\b)/),
+  v('ride', 'move', RACE, /\brid(?:e|es|ing)\b|\bgallop(?:s|ing)?\b|\btrot(?:s|ting)?\b/),
   v('walk', 'move', RACE, /\bwalk(?:s|ing)?\b|\bstroll(?:s|ing)?\b|\bwander(?:s|ing)?\b|\btravel(?:s|ling|ing)?\b|\bswim(?:s|ming)?\b/),
   // Sběr – žánr dostane podle zbytku věty.
-  v('collect', 'pickup', null, new RegExp(String.raw`\bcollect(?:s|ing)?\b|\bgather(?:s|ing)?\b|\bfind(?:s|ing)?\b|\bpick(?:s|ing)? up\b|\bgrab(?:s|bing)?\b|\beat(?:s|ing)?\b|\bsteal(?:s|ing)?\b|\bcatch(?:es|ing)? (?!${PRONOUN})`)),
-  v('search', 'pickup', null, /\bsearch(?:es|ing)?\b|\bexplor(?:e|es|ing)\b/),
+  v('collect', 'pickup', null, new RegExp(String.raw`\bcollect(?:s|ing)?\b|\bgather(?:s|ing)?\b|\bfind(?:s|ing)?\b|\bpick(?:s|ing)? up\b|\bgrab(?:s|bing)?\b|\beat(?:s|ing)?\b|\bsteal(?:s|ing)?\b|\bcatch(?:es|ing)? (?!${PRONOUN})|\bhoard(?:s|ing)?\b|\bpick(?:s|ing)? (?:[a-z]+ ){0,2}(?:herbs?|flowers?|berries|apples?|fruits?|mushrooms?|cherries|grapes)\b|\bdrag(?:s|ging|ged)\b|\bdrag (?:the|a|an|his|her|their|it|them)\b`)),
+  v('search', 'pickup', null, /\bsearch(?:es|ing)?\b|\bexplor(?:e|es|ing)\b|\blook(?:s|ing)? for\b/),
   // Útěk a přežití.
   v('chase', 'chase', ESCAPE, new RegExp(String.raw`\bchas(?:e|es|ed|ing)\b|\bhunt(?:s|ed|ing)?\b|\bpursu(?:e|es|ed|ing)\b|\bstalk(?:s|ing)?\b|\b(?:catch(?:es)?|follow(?:s|ing)?) ${PRONOUN}`)),
   v('escape', 'chase', ESCAPE, /\bescap(?:e|es|ed|ing)\b|\bfle(?:e|es|eing)\b|\bfled\b|\b(?:runs?|running) (?:away )?from\b|\boutrun(?:s)?\b/),
   v('survive', 'chase', ESCAPE, /\bsurviv(?:e|es|ing|al)\b|\boutlast(?:s)?\b|\bstay alive\b/),
+  // Čekání a usínání (P37A T4, věty mimo hry) – vlastní slovesa, aby je absurdní přenos (T5) poznal od „survive“.
+  v('wait', 'chase', ESCAPE, /\bwait(?:s|ing)? (?:for|in|at|on)\b/),
+  v('fall asleep', 'chase', ESCAPE, /\bfall(?:s|ing)? asleep\b/),
+  // Vyhnout se (P37A T4): schovat se, proplížit, ignorovat, odmítnout – „hide from my in-laws“, „my cat refusing to take her medicine“.
+  v('hide', 'chase', ESCAPE, /\bhid(?:e|es|ing)\b(?! (?:and|&) seek)/),
+  v('sneak', 'chase', ESCAPE, /\bsneak(?:s|ing)?\b|\btipto(?:e|es|eing)\b/),
+  v('ignore', 'chase', ESCAPE, /\bignor(?:e|es|ing)\b/),
+  v('refuse', 'chase', ESCAPE, /\brefus(?:e|es|ing)\b/),
 ];
 
 /**

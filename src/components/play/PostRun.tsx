@@ -25,6 +25,9 @@
  * po prohře hry na přežití „N s off your best“. Odznak Speedy/Steady/Survived
  * zůstává podle kitu (čas + jedno slovo), hvězdy ho nenahrazují.
  *
+ * Hra s aspoň deseti pokusy ukáže i „N% beat this“ (P37C T5) – číslo si
+ * výsledek stáhne sám z detailu hry, shell ho nepředává.
+ *
  * Play again / Try again volá `onReplay`: obě hry začnou nový běh od tiku 0
  * s prázdným záznamem – arkáda `session.restart()`, mřížka (`GridShell`) novou
  * relací runtime (P36B T3; dřív přetočila na tik 0 týž prohraný záznam).
@@ -36,10 +39,12 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
+import type { ShareRun } from '@/play/score/share-text';
 import type { Stars as StarCount } from '@/play/score/stars';
 
 import { isTyping } from './arcade/input';
 import { type BestOutcome, type Dare, dareVerdict } from './best';
+import { beatText } from './Feed';
 import { RemixBox, type RemixJob } from './RemixBox';
 import { type DarePublish, type LivePublish, ShareButton } from './ShareButton';
 import { CHANGE_ONE_THING, COPY_LINK, DARE_A_FRIEND, DARE_BACK, DARE_SHORT, NEW_BEST, POST_RUN_CHIPS, REMIX_IT, SAVE_VIDEO, SO_CLOSE, YOU_BEAT_IT, YOU_DID_IT } from './starters';
@@ -159,6 +164,52 @@ export function runResult(facts: RunFacts, record: BestOutcome | null = null, ch
   };
 }
 
+/** „N% beat this“ podle verze (P37C T5): detail hry se stáhne jednou za načtení stránky, ne po každém běhu. */
+const beats = new Map<string, Promise<number | null>>();
+
+/**
+ * „Clear rate“ hry z `GET /api/play/games/:id`; chyba, neznámá hra i málo pokusů = `null`.
+ * Odpověď hry (i 404) se pamatuje, přechodná chyba (429, 5xx, síť) ne – další výsledek se zeptá znovu.
+ */
+export function beatFor(versionId: string, fetcher: typeof fetch = fetch): Promise<number | null> {
+  let pending = beats.get(versionId);
+  if (pending === undefined) {
+    pending = fetcher(`/api/play/games/${encodeURIComponent(versionId)}`).then(
+      async (response) => {
+        if (!response.ok) {
+          if (response.status === 429 || response.status >= 500) beats.delete(versionId);
+          return null;
+        }
+        const { beat } = (await response.json()) as { beat?: unknown };
+        return typeof beat === 'number' && Number.isInteger(beat) && beat >= 0 && beat <= 100 ? beat : null;
+      },
+      () => {
+        beats.delete(versionId);
+        return null;
+      },
+    );
+    beats.set(versionId, pending);
+  }
+  return pending;
+}
+
+/** Popisek statistiky zbylých životů, jak ji skládá arkáda (`arcadeFacts`). */
+const LIVES_LEFT = 'lives left';
+
+/** Fakta běhu → výsledek ke sdílení (P37C T4); hvězdy jen po výhře, jako na obrazovce. */
+export function shareRunOf(facts: RunFacts): ShareRun {
+  const lives = facts.extra.find((stat) => stat.label === LIVES_LEFT);
+  return {
+    won: facts.won,
+    survive: facts.survive,
+    seconds: facts.tick / facts.hz,
+    stars: facts.won ? (facts.stars ?? null) : null,
+    score: facts.score?.value ?? null,
+    lives: lives === undefined ? null : Number(lives.value),
+    goal: facts.goal,
+  };
+}
+
 /** Pěticípá hvězda na mřížce 24 × 24 (kit `10-icons.md`); výplň a obrys dává CSS jako vejcím HUD. */
 const STAR_POINTS = '12,2.6 14.8,8.7 21.4,9.4 16.4,13.9 17.8,20.4 12,17.1 6.2,20.4 7.6,13.9 2.6,9.4 9.2,8.7';
 
@@ -221,6 +272,17 @@ export function PostRun({
   readonly onReplay: (via: ReplayVia) => void;
 }) {
   const router = useRouter();
+  const [beat, setBeat] = useState<number | null>(null);
+  useEffect(() => {
+    if (offline) return;
+    let live = true;
+    void beatFor(versionId).then((value) => {
+      if (live) setBeat(value);
+    });
+    return () => {
+      live = false;
+    };
+  }, [versionId, offline]);
   const [changing, setChanging] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
@@ -305,6 +367,7 @@ export function PostRun({
       clip={clip}
       live={live}
       dare={won ? dare : undefined}
+      result={shareRunOf(facts)}
     />
   );
 
@@ -339,6 +402,11 @@ export function PostRun({
         {result.dare !== null && (
           <p className="play-result-best" data-testid="play-dare-result" data-beat={String(result.dare.beat)}>
             {result.dare.text}
+          </p>
+        )}
+        {beat !== null && (
+          <p className="play-result-best play-result-beat" data-testid="play-beat">
+            {beatText(beat)}
           </p>
         )}
         {/* Samotný čas řádek statistik nenese: říká ho už věta shrnutí (a po výhře odznak) – na desktopu 720 px by vytlačil akce pod okraj. */}

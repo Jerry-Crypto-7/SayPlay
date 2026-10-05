@@ -1,0 +1,14 @@
+{
+  "schema": "catalog-batch.v1",
+  "entries": [
+    {
+      "id": "acorn",
+      "nouns": ["acorn"],
+      "glb": "D:/caches/p37d/acorn/acorn-lod0.glb",
+      "bounds": [0.42, 0.61, 0.42],
+      "palette": ["#8a5a2b"],
+      "source": { "pipeline": "ops/gen3d", "imageModel": "FLUX.2-klein-4B", "shapeModel": "TRELLIS.2-4B", "seed": 1337 },
+      "checked": { "judge": "blind-sheet", "verdict": "pass" }
+    }
+  ]
+}

@@ -24,7 +24,7 @@ const SETTINGS = [
   { id: 's050', name: 'snow-fort' },
 ] as const;
 
-/** Úvodní průlet kamery (`look/intro.ts`, 1,5 s) a dotažení modelů. */
+/** Úvodní průlet kamery (`look/intro.ts`, od P37B T6 0,9 s) a dotažení modelů. */
 const SETTLE_MS = 3000;
 const OUT = join(process.cwd(), 'evals/play/p30b/settings');
 

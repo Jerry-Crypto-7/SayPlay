@@ -12,7 +12,8 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
 const GAMES = [
   { control: 'timing', sentence: 'stack blocks as high as you can', unit: 'rounds' },
   { control: 'rhythm', sentence: 'tap to the beat with glowing tiles', unit: 'notes' },
-  { control: 'duel', sentence: 'boxing match against a kangaroo', unit: 'hits' },
+  // „boxing“ je od P36A T11 rvačka v Aréně (`classify.ts`, sloveso `box`); Souboj hraje sloveso „duel“.
+  { control: 'duel', sentence: 'a fox duels a kangaroo in a boxing ring', unit: 'hits' },
 ] as const;
 
 async function publish(request: APIRequestContext, sentence: string): Promise<string> {

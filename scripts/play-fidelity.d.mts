@@ -112,6 +112,19 @@ export declare function compareSummary(
 
 export declare function compareVerdict(models: Record<string, ModelComparison>): { readonly valid: boolean; readonly reason: string | null; readonly exitCode: 0 | 1 };
 
+export declare const CLIP: { readonly frames: number; readonly gapTicks: number; readonly leadTicks: number; readonly hz: number };
+
+export declare function contract(checklist: readonly ChecklistEntry[], frames?: number): string;
+
+export declare function judgeShot(
+  images: readonly string[],
+  checklist: readonly ChecklistEntry[],
+  runDir: string,
+  tag: string,
+): { readonly verdict: Record<string, boolean>; readonly answers: readonly { readonly item: string; readonly visible: boolean; readonly why?: string }[] };
+
+export declare function judge(options: { readonly run?: string; readonly clip?: boolean; readonly only?: string }): void;
+
 export declare function loadSet(
   name: string | undefined,
   options?: { readonly only?: string; readonly openTestOnce?: boolean; readonly runId?: string | null; readonly sealDir?: string },

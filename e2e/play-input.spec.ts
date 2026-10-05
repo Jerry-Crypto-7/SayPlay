@@ -6,7 +6,8 @@ import { expect, test, type APIRequestContext } from '@playwright/test';
  * v poli remixu ztratila mezery a písmena a, d, s, w.
  */
 
-const SENTENCE = 'jumping arcade game with a lot of obstacles';
+// Od žánrů (P32B) je „jumping …“ sloveso skákačky, ne běžce – test potřebuje klávesy běžce, proto věta s „runner“.
+const SENTENCE = 'endless runner with a lot of obstacles';
 
 async function publish(request: APIRequestContext): Promise<string> {
   const response = await request.post('/api/play/games', { data: { sentence: SENTENCE } });

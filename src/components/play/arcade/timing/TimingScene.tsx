@@ -19,7 +19,9 @@ import { BODY, BUTTON, FLAG, HEADER, UNIT, bodyBase } from '@/play/arcade/contra
 import type { Look } from '@/play/arcade/look';
 import { RHYTHM, rhythmLaneAxis } from '@/play/arcade/pieces/rhythm';
 import { TIMING, TIMING_SLOTS } from '@/play/arcade/pieces/timing';
+import type { HeroAction } from '@/play/spec';
 
+import { type ArcadeGhost, GhostSlot, besideHero } from '../GhostSlot';
 import { isTyping } from '../input';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
@@ -93,9 +95,22 @@ const SCENERY_BEHIND = 7;
 export type BodyModel = (w: number, h: number, d: number) => React.ReactNode;
 
 /** `blockModel` (P30B T4): díl věže z popisku role `block` („pancakes“), vyplní kvádr dílu; jen u stavění věže. */
-export function TimingScene({ session, look: scene, blockModel }: { readonly session: ArcadeSession; readonly look: Look; readonly blockModel?: BodyModel }) {
+export function TimingScene({
+  session,
+  look: scene,
+  blockModel,
+  ghost,
+}: {
+  readonly session: ArcadeSession;
+  readonly look: Look;
+  readonly blockModel?: BodyModel;
+  readonly heroAction: HeroAction;
+  readonly ghost?: ArcadeGhost;
+}) {
   const world = session.world;
   const base = initialBody(world, 0);
+  // Duch stojí u paty věže, vedle podstavy (hráčovo `z` jsou kola, ne dráha).
+  const ghostSpot = useMemo(() => besideHero(0, 0, base.w / 2, 'x'), [base.w]);
   const sliderInit = initialBody(world, TIMING_SLOTS.slider);
   const target = initialBody(world, TIMING_SLOTS.target);
   const marks = (world.initial[HEADER.bodyCount] as number) - TIMING_SLOTS.marks;
@@ -190,6 +205,8 @@ export function TimingScene({ session, look: scene, blockModel }: { readonly ses
           </mesh>
         )}
       </group>
+      {/* Slot ducha (P37-0 T3) vedle jezdce, ne v jeho skupině. */}
+      <GhostSlot ghost={ghost} session={session} place={ghostSpot} />
     </>
   );
 }

@@ -45,10 +45,16 @@ podruhé **200** téhož tvaru (`versionId` je hash obsahu – čte se dřív, n
 Tytéž brány jako u zápisu (vypínač čte páku `snapshots`, kterou vypne jedině `all`;
 strop frekvence sdílí dveře `play`). `id` musí odpovídat `/^[a-f0-9]{8,64}$/`; jinak i pro neznámé id **404** `NOT_FOUND` –
 táž odpověď, ať se z rozdílu nedá nic vyčíst. **200**
-`{ version, spec, blueprint, report, children: string[], lineage: GameVersion[] }`
+`{ version, spec, blueprint, report, children: string[], lineage: GameVersion[], bestDare: { dareId, score, ticks } | null }`
 (`lineage` od kořene k listu, nejvýš 32 nejnovějších – uložený při publikaci, ne počítaný
-chůzí po rodičích; jeden `GET` = tři příkazy úložiště). `cache-control: public, max-age=0, s-maxage=60`
-– verze je neměnná, `children` může být na hraně o minutu pozadu.
+chůzí po rodičích; `bestDare` = „duch nejlepšího“, P37C T2: ověřená výzva s uloženým během, nejvyšší skóre, při shodě
+kratší čas – „schodiště“ v seřazené množině `play:best:<id>` (hodnocení) a `play:best:<id>:at` (čas zápisu běhu):
+nový běh vyhodí všechny horší, protože vyprší poslední, a běhy starší než 30 dní odejdou; nad stropem 8 odejde
+nejstarší. Zápis je jedna transakce `/multi-exec`, takže souběžné zápisy nechají lepší a žádná množina nezůstane bez
+expirace. Do schodiště vstoupí jen běh zapsaný právě teď – znovu poslaný starší ne. Čtení vezme nejvyššího, jehož běh
+ještě leží; hra tak nezůstane bez ducha, dokud nějaký leží; množina žije 30 dní od posledního zápisu; jeden `GET` =
+aspoň pět příkazů úložiště). `cache-control: public, max-age=0, s-maxage=60`
+– verze je neměnná, `children` a `bestDare` můžou být na hraně o minutu pozadu.
 
 Velikost odpovědi nad fixturovými světy: 5–8 kB blueprintu (změřeno nad
 `authored-worlds.json`, T1) – hluboko pod 500 kB, blueprint jde klientovi celý.
@@ -71,8 +77,11 @@ Tělo: `{ inputs: number[], patches?: { tick, patch }[] }`. `inputs` jsou běhy 
 `[mezera, délka, tlačítka, osa]` (`packInputs` v `src/play/score/dare.ts` – držená osa je jedna čtveřice, nejhlučnější
 běh 90 s se vejde pod 64 kB), `patches` živé změny přijaté za běhu (`LiveEntry`, nejvýš 32). Server běh přehraje na uložené
 arkádové hře (`scoredReplay`, každá změna projde v tiku, kdy padne, `patchProblem`) a uloží `play:dare:<dareId>`
-`{ dareId, versionId, score, ticks, hash, liveChanges, createdAt }` s expirací hry (`liveChanges` = kolik živých změn běh
-použil; skóre pak patří změněné hře). **Skóre, čas ani hash z těla se nečtou** – pole navíc se zahodí, neodmítnou.
+`{ dareId, versionId, score, ticks, hash, liveChanges, createdAt, replay? }` s expirací hry (`liveChanges` = kolik živých změn běh
+použil; skóre pak patří změněné hře). `replay` (P37C T1) = `{ v: 1, inputs, patches }`: vstupy a změny, které přehrání
+opravdu spotřebovalo, pro ducha. Leží pod vlastním klíčem `play:ghost:<dareId>` s expirací 30 dní; běh nad 32 kB
+(`MAX_GHOST_BYTES`), nad 10 duchů za den od jednoho volajícího nebo nad denním stropem duchů (`PLAY_GHOST_DAILY_CAP`,
+výchozí 150) se neuloží – výzva platí, jen ducha nemá. Týž běh odeslaný znovu ducha doplní, když chybí. **Skóre, čas ani hash z těla se nečtou** – pole navíc se zahodí, neodmítnou.
 `dareId` = prvních 32 hex SHA-256 z (hra, výsledek přehrání – hash konce, tik, skóre – a změny před koncem běhu
 seřazené i uvnitř tiku), ne z poslaných vstupů: týž běh podruhé – i s no-op vstupem, se vstupem po konci nebo
 s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
@@ -90,6 +99,14 @@ s přeházenými změnami – je **200** s týmž id a denní strop neubírá, n
 | úložiště neodpovídá | `STORE_UNAVAILABLE` | 503 |
 
 Bez Upstash žije výzva v paměti procesu jako hry (`x-play-store: memory` v produkci). Testy: `src/app/api/play/__tests__/dare.test.ts`.
+
+### `GET /api/play/games/:id/dare/:dareId` – výzva i s během pro ducha (P37C T1)
+
+`200 { dareId, versionId, score, ticks, hash, liveChanges, createdAt, replay }`, `cache-control: public, max-age=0, s-maxage=60`
+(záznam se zapisuje jednou). `replay: null` = výzva bez ducha (starší než P37C, nad stropem bajtů nebo duchů). Klient
+rozbalí `replay.inputs` (`unpackInputs`) a `replayLive(hra, vstupy, replay.patches)` dojde k `hash`. Brána jako čtení hry:
+páka `snapshots`, identita, strop frekvence dveří `play` (429 + `retry-after`); id bez tvaru, neznámá výzva nebo výzva
+jiné hry → 404 `NOT_FOUND`.
 
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
