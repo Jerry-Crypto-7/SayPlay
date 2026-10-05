@@ -126,7 +126,8 @@ const HALF_LIFE_MS = 24 * 3600 * 1000;
  * - opakování `+1`: hráč si hru dal znovu, váží jako další dohrání (čítač je
  *   jeden hlas volajícího za den, takže na hráče jednou);
  * - sdílení `+2`: hru někomu poslal, ale je to slovo klienta, proto méně než
- *   ověřená výzva nebo remix (`3`);
+ *   výzva (`3`, server ji započte jen za uloženou vítěznou jízdu, sdílení k ní
+ *   není potřeba) nebo remix (`3`, nová hra v úložišti);
  * - okamžitý odchod `−1`: hra nezaujala ani na první dotek. Odchod další hrou
  *   je zároveň přeskočení, takový dostane `−1,5` – víc než přeskočení po hraní.
  */

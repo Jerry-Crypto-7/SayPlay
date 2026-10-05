@@ -64,6 +64,18 @@ describe('bounce', () => {
     expect((await sent()).filter((line) => line.startsWith('bounce'))).toEqual([]);
   });
 
+  it('a finished run or Play again is not a bounce, even when the swallowed first tap sent no first_input', async () => {
+    const { loopEvent, loopImpression } = await import('../loop-client');
+    loopImpression(A);
+    loopEvent('lose', A);
+    loopEvent('restart', A);
+    loopEvent('next_game', A);
+    loopImpression(B);
+    loopEvent('win', B);
+    leave();
+    expect((await sent()).filter((line) => line.startsWith('bounce'))).toEqual([]);
+  });
+
   it('closing the page bounces only the last game shown, if untouched', async () => {
     const { loopEvent, loopImpression } = await import('../loop-client');
     loopImpression(A);

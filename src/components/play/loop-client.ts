@@ -17,6 +17,12 @@ const sent = new Set<string>();
 let memorySession: string | null = null;
 /** Naposledy zobrazená hra – zavřená stránka se počítá za ni. */
 let shown: string | null = null;
+/**
+ * Hry, na které hráč sáhl. Nestačí `first_input`: arkáda první stisk spolkne,
+ * takže jediný dotek skončí prohrou bez něj – a dohraná hra odchod není.
+ */
+const TOUCH: ReadonlySet<LoopEventName> = new Set(['first_input', 'win', 'lose', 'restart']);
+const touched = new Set<string>();
 
 function freshSession(): string {
   const bytes = new Uint8Array(12);
@@ -42,6 +48,7 @@ function session(): string {
 export function loopEvent(name: LoopEventName, versionId: string, extra?: { readonly withClip: boolean; readonly dare: boolean }): void {
   if (typeof window === 'undefined') return;
   const id = session();
+  if (TOUCH.has(name)) touched.add(versionId);
   if (name === 'next_game') bounceIfUntouched(versionId);
   if (ONCE.has(name)) {
     const key = `${name}|${versionId}`;
@@ -63,7 +70,7 @@ export function loopEvent(name: LoopEventName, versionId: string, extra?: { read
  * server konec relace nevidí.
  */
 function bounceIfUntouched(versionId: string): void {
-  if (sent.has(`impression|${versionId}`) && !sent.has(`first_input|${versionId}`)) loopEvent('bounce', versionId);
+  if (sent.has(`impression|${versionId}`) && !touched.has(versionId)) loopEvent('bounce', versionId);
 }
 
 /** Zobrazení hry; otevřená ze sdíleného odkazu navíc `shared_open`. */
