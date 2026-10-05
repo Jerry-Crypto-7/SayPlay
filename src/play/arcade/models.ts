@@ -30,7 +30,7 @@ import { controlOf, readsLabel } from '../capabilities';
 import type { GenreId, ModelClass } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
 import { CROSSING } from '../genre/voyage';
-import type { GameSpecV1 } from '../spec';
+import type { ControlId, GameSpecV1 } from '../spec';
 import type { ClipState } from './motion';
 import nearest from './nearest.json';
 import { OBSTACLE_KINDS } from './pieces/runner';
@@ -283,7 +283,18 @@ export type PropRole = (typeof PROP_ROLES)[number];
  */
 const HAZARD_ROLES: ReadonlySet<PropRole> = new Set(['spikes', 'pipe', 'hazard']);
 
-/** Popisek, kterým žánr nástrahu vyplní, když věta nic nejmenuje (`genre/platformer.ts`, `flap.ts`, `voyage.ts`). */
+/**
+ * Role, jejíž tělo kreslí věc z věty jménem i postavou a nejbližším modelem: nástrahy (P39 T9) a od P39 T14
+ * terč střelnice – volné místo terče bere další věc z věty (mince, duch), kotouč zůstane jen holému terči.
+ */
+function namesThing(control: ControlId, id: PropRole): boolean {
+  return HAZARD_ROLES.has(id) || (id === 'target' && control === 'shooter');
+}
+
+/**
+ * Popisek, kterým žánr nástrahu vyplní, když věta nic nejmenuje (`genre/platformer.ts`, `flap.ts`, `voyage.ts`).
+ * Holý terč střelnice („target“) sem nepatří: dá model `target`, a ten `OWN_KINDS` vrátí kotouči.
+ */
 const OWN_LABELS: Partial<Record<PropRole, readonly string[]>> = { spikes: ['spikes'], pipe: ['pipe'], hazard: Object.values(CROSSING) };
 
 /** Co jádro pro roli kreslí samo; popisek, který jmenuje právě tohle („obstacles“), nic nemění. */
@@ -319,8 +330,8 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   for (const id of PROP_ROLES) {
     const role = spec.roles.find((candidate) => candidate.id === id);
     if (role === undefined || !readsLabel(control, role)) continue;
-    // Nástraha z věty bývá zvíře („animals“) – smí i třídu postav.
-    const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, HAZARD_ROLES.has(id));
+    // Nástraha i terč střelnice z věty bývá zvíře („animals“) – smí i třídu postav.
+    const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, namesThing(control, id));
     if (found !== undefined && found !== 'bird') out[id] = found;
   }
   // B-R9: žánr arény (spec s generátorem) sbírá roli druhu `collectible` (`item`) – scéna ji kreslí jako `coin`.
@@ -332,19 +343,20 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
 
 /**
  * Modely rekvizit, které scéna kreslí místo těla jádra – jen přímá shoda s katalogem, bez kategorií.
- * Nástraha z věty (`HAZARD_ROLES`) bere i třídu a nejbližší model: primitiv jen tam, kde věta nic nejmenuje.
+ * Nástraha a terč střelnice z věty (`namesThing`) berou i třídu a nejbližší model: primitiv jen tam, kde věta nic nejmenuje.
  */
 export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> {
   const named = namedProps(spec);
+  const control = controlOf(spec);
   const out: Partial<Record<PropRole, string>> = {};
   for (const id of PROP_ROLES) {
-    const model = HAZARD_ROLES.has(id) ? hazardModel(spec, id) : named[id];
+    const model = namesThing(control, id) ? hazardModel(spec, id) : named[id];
     if (model !== undefined && !OWN_KINDS[id].includes(model)) out[id] = model;
   }
   return out;
 }
 
-/** Model nástrahy z popisku její role; výchozí popisek žánru (`OWN_LABELS`) žádný nedá. */
+/** Model nástrahy (nebo terče střelnice) z popisku její role; výchozí popisek žánru (`OWN_LABELS`) žádný nedá. */
 function hazardModel(spec: GameSpecV1, id: PropRole): string | undefined {
   const role = spec.roles.find((candidate) => candidate.id === id);
   if (role === undefined || OWN_LABELS[id]?.includes(role.label) === true) return undefined;

@@ -77,7 +77,8 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
     mechanics: LIVES_AND_TIMER,
     addons: ['shoot', 'chaser', 'lives'],
   }),
-  shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy'], mechanics: LIVES_AND_TIMER }),
+  // P39 T14: terč střelnice nese věc z věty (mince, duch) a kreslí se jejím modelem.
+  shooter: arcade({ setting: true, counts: true, cues: 'tap = shoot', roles: ['enemy'], finish: false, note: 'archetype combat_lite', labels: ['player', 'enemy', 'target'], mechanics: LIVES_AND_TIMER }),
   throw: arcade({ setting: true, cues: 'hold, release', roles: ['target'], finish: false, note: 'archetype combat_lite', labels: ['player', 'target'], mechanics: ['timer'] }),
   // P27A T4: načasování, rytmus a souboj kreslí kulisy za hrací plochou; soupeř souboje a závodu nese model z popisku.
   // P30B T4: díl věže („pancakes“), nota rytmu („lily pads“) a mantinel závodu („crocodiles“) taky.

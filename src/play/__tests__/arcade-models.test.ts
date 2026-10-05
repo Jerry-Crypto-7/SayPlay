@@ -96,8 +96,17 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(runner, 'obstacle', 'traffic cones'))).toEqual({});
     expect(propModels(withLabel(runner, 'obstacle', 'wild badgers'))).toEqual({});
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
-    // Střelnice popisek terče nekreslí (tabulka schopností), takže ho nečte ani výběr.
-    expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({});
+  });
+
+  // P39 T14: terč střelnice nese věc z věty („collect coins, dodge ghosts and shoot bats“ dá na střelnici mince),
+  // kreslí se jejím jménem jako nástrahy z T9 – i postavou a nejbližším modelem; holý terč žánru zůstane kotoučem.
+  it('the shooter range draws its target from the cast name, the bare target stays a bullseye', () => {
+    expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
+    expect(propModels(withLabel(shooter, 'target', 'coin')).target).toBe('coin');
+    expect(propModels(withLabel(shooter, 'target', 'ghosts')).target).toBe('ghost');
+    // Třída postav jako u nástrah T9: „angry mech“ katalog nemá, kreslí ho robot, ne kotouč.
+    expect(propModels(withLabel(shooter, 'target', 'angry mech')).target).toBe('robot');
+    expect(propModels(shooter as GameSpecV1).target).toBeUndefined();
   });
 
   // P27A T4: soupeř souboje a závodu z popisku – jen model, který popisek jmenuje, žádná kategorie.

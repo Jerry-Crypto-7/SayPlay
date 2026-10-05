@@ -34,6 +34,13 @@ describe('fidelityChain', () => {
     expect(fidelityChain({ ...named, addons: undefined }, [shoot, { item: 'zombie', slot: 'role', match: ['zombie'] }]).map((item) => item.why)).toEqual(['not-in-spec', 'not-read-by-control']);
   });
 
+  // P39 T14: terč střelnice nese věc z věty a kreslí ji jejím modelem – mince na střelnici je čtená i vidět.
+  it('counts the named thing on the shooter range as read and drawn', () => {
+    const mansion = draftGameSpec('collect coins, dodge ghosts and shoot bats in a haunted mansion');
+    expect(mansion.roles.find((role) => role.id === 'target')?.label).toBe('coin');
+    expect(stages(fidelityChain(mansion, [{ item: 'coin', slot: 'role', match: ['coin'] }]))).toEqual([['coin', true, true, true, 'ok']]);
+  });
+
   it('does not count a role label without a model as drawn', () => {
     const spec = { ...shooterFixture, roles: shooterFixture.roles.map((role) => (role.id === 'enemy' ? { ...role, label: 'stapler' } : role)) } as GameSpecV1;
     const [stapler] = fidelityChain(spec, [{ item: 'stapler', slot: 'role', match: ['stapler'] }]);
