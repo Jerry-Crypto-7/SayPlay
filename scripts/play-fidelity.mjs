@@ -355,6 +355,62 @@ async function offlineReaderRun(runId, endpoint) {
   console.log(`reader -> ${path}`);
 }
 
+/** Souhrn řádků `{ genre, items, checklist }`: podíly stupňů, `roleNamed` jen nad věcmi s očekávanou rolí, a po žánrech. */
+function stageSummary(rows) {
+  const items = rows.flatMap((row) => row.items);
+  const named = rows.flatMap((row) => row.items.filter((_, at) => row.checklist[at].does !== undefined));
+  const part = (list, stage) => share(list.filter((item) => item[stage]).length, list.length);
+  return {
+    summary: { sentences: rows.length, items: items.length, read: part(items, 'read'), drawn: part(items, 'drawn'), role: part(items, 'role'), roleNamed: part(named, 'role') },
+    byGenre: stagesByGenre(rows),
+  };
+}
+
+/**
+ * `roles --run <id> [--set dev] --out <path>` (P39 T3/T13): `read`, `drawn` a `role` po žánrech
+ * třikrát – rychlá verze offline, rychlá verze ze serveru a výsledná verze živého běhu
+ * (AI verze, když vyšla, jinak rychlá). Seznam se bere ze sady, ne z uloženého běhu.
+ */
+function roles(options) {
+  if (typeof options.run !== 'string' || typeof options.out !== 'string') throw new Error('roles needs --run <id> and --out <path>');
+  const sentences = loadSet(typeof options.set === 'string' ? options.set : 'dev');
+  const offlineBody = offlineChain(sentences);
+  const runDir = join(DIR, 'runs', options.run);
+  const results = sentences.filter((sentence) => existsSync(join(runDir, `${sentence.id}.json`))).map((sentence) => ({ sentence, result: readJson(join(runDir, `${sentence.id}.json`)) }));
+  const rowsOf = (pick) =>
+    results.map(({ sentence, result }) => {
+      const spec = pick(result);
+      return { id: sentence.id, genre: genreOfSpec(spec), checklist: sentence.checklist, items: specFidelity(spec, sentence.checklist).items };
+    });
+  const draftRows = rowsOf((result) => result.draft.spec);
+  const finalRows = rowsOf((result) => (result.ai ? result.ai.spec : result.draft.spec));
+  const header = {
+    about: 'P39 role fidelity: read, drawn and role (the thing plays the role the sentence gives it) per genre, offline quick version and a live run through the director. See README.md.',
+    set: typeof options.set === 'string' ? options.set : 'dev',
+    runId: options.run,
+    measuredAt: new Date().toISOString(),
+    commit: commit(),
+  };
+  const body = {
+    header,
+    offline: { summary: offlineBody.summary, byGenre: offlineBody.byGenre },
+    live: {
+      measured: results.length,
+      aiPublished: results.filter(({ result }) => result.ai !== null).length,
+      draft: stageSummary(draftRows),
+      final: stageSummary(finalRows),
+    },
+    sentences: finalRows.map((row, index) => ({
+      id: row.id,
+      genre: { draft: draftRows[index].genre, final: row.genre },
+      ai: results[index].result.ai !== null,
+      lost: row.items.filter((item) => !item.role).map((item) => `${item.item}: ${item.why === 'ok' ? 'wrong-role' : item.why}`),
+    })),
+  };
+  writeJson(resolve(ROOT, options.out), body);
+  console.log(JSON.stringify({ offline: body.offline.summary, live: { measured: body.live.measured, aiPublished: body.live.aiPublished, draft: body.live.draft.summary, final: body.live.final.summary } }, null, 1));
+}
+
 /** `--offline [--set dev] [--out <path>]`: mapa ztrát nad sadou (bez `--set` korpus do `draft-chain.json`). */
 function offline({ set, out } = {}) {
   const name = typeof set === 'string' ? set : undefined;
@@ -1214,6 +1270,7 @@ if (isMain) {
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
+  else if (step === 'roles') roles(options);
   else {
     console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);
