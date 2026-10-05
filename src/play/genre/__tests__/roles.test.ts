@@ -14,7 +14,8 @@ import sentenceSet from '../../../../evals/play/p32/sentences.json';
 import { draftForControl, draftGameSpecWithMeta } from '../../draft/draft';
 import { singular } from '../../draft/lexicon';
 import type { GameSpecV1 } from '../../spec';
-import { DEFAULT_LABELS, craftOf, defaultCollectible, defaultEnemy, defaultHero, heroClass, heroFits } from '../roles';
+import type { CastRole, GenreSpec } from '../contract';
+import { DEFAULT_LABELS, craftOf, defaultCollectible, defaultFoe, defaultHero, heroClass, heroFits } from '../roles';
 
 const demand = JSON.parse(readFileSync(new URL('../../../../evals/play/demand/corpus.json', import.meta.url), 'utf8')) as { readonly text: string }[];
 const corpus = [...sentenceSet.sentences.map((entry) => entry.text), ...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)];
@@ -22,6 +23,8 @@ const corpus = [...sentenceSet.sentences.map((entry) => entry.text), ...goldenPr
 const draft = (sentence: string) => draftGameSpecWithMeta(sentence, 1);
 /** Co hráč vidí: titulek, popisky rolí, cíl a nápověda. Id rolí drží fixtury kvůli hashům („roomba“), ta hráč nevidí. */
 const shown = (spec: GameSpecV1): string => JSON.stringify([spec.title, spec.roles.map((role) => role.label), spec.objective.description, spec.tutorial]);
+/** Popisek první položky obsazení s rolí z `does`. */
+const castLabel = (genre: GenreSpec, ...does: CastRole[]): string | undefined => genre.cast?.find((item) => does.includes(item.does))?.label;
 const sentence = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
 
 /** Slovo popisku ve větě i v jiném čísle („ghost“ ve „ghosts“, „puppy“ v „puppies“, „knife“ v „knives“). */
@@ -39,7 +42,7 @@ describe('roles of a new game', () => {
     const strays = corpus.flatMap((text) => {
       const genre = draft(text).genre;
       if (genre === null) return [];
-      const labels = [genre.hero, genre.enemy, genre.collectible, genre.target?.label].filter((label): label is string => label !== undefined);
+      const labels = [genre.hero, ...(genre.cast ?? []).map((item) => item.label)];
       return labels.filter((label) => !fromSentenceOrDefault(label, text)).map((label) => `${label} ← ${text}`);
     });
     expect(strays).toEqual([]);
@@ -61,15 +64,15 @@ describe('roles of a new game', () => {
 
   it('give the pirate a boat and the wizard ghosts', () => {
     expect(heroClass(draft(sentence('pirate')).genre!.hero)).toBe('boat');
-    expect(draft(sentence('wizard')).genre!.enemy).toBe('ghost');
+    expect(castLabel(draft(sentence('wizard')).genre!, 'chase_me', 'avoid')).toBe('ghost');
   });
 
   it('fill a foe the sentence leaves out from the place it is set in', () => {
     // Pes ve městě a raketa na Marsu nepřítele neříkají; hra ho má z prostředí.
-    expect(draft(sentence('dog')).genre!.enemy).toBe('car');
-    expect(draft(sentence('rocket')).genre!.enemy).toBe('asteroid');
+    expect(castLabel(draft(sentence('dog')).genre!, 'chase_me', 'avoid')).toBe('car');
+    expect(castLabel(draft(sentence('rocket')).genre!, 'chase_me', 'avoid')).toBe('asteroid');
     const mushrooms = draft('Collect five glowing mushrooms in a moonlit forest').genre!;
-    expect(mushrooms.collectible).toBe('glowing mushroom');
+    expect(castLabel(mushrooms, 'collect')).toBe('glowing mushroom');
     expect(mushrooms.hero).toBe(defaultHero('moonlit forest', mushrooms.genre, ''));
   });
 });
@@ -83,11 +86,19 @@ describe('setting defaults', () => {
     ['busy city', 'car'],
     ['outer space', 'asteroid'],
   ])('%s → %s', (setting, enemy) => {
-    expect(defaultEnemy(setting, 'arena')).toBe(enemy);
+    expect(defaultFoe(setting, 'arena')).toEqual({ label: enemy, does: 'chase_me' });
+  });
+
+  it('the foe of the place plays the role its genre gives an unnamed foe', () => {
+    // Výchozí obsazení: les dá vlka, žánr říká, co vlk dělá – plošinovka se mu vyhýbá, střílečka ho sestřelí.
+    expect(defaultFoe('dark forest', 'platformer')).toEqual({ label: 'wolf', does: 'avoid' });
+    expect(defaultFoe('dark forest', 'shooter')).toEqual({ label: 'wolf', does: 'shoot_at' });
+    expect(defaultFoe('dark forest', 'duel')).toEqual({ label: 'wolf', does: 'fight' });
+    expect(defaultFoe('village', 'timing')).toEqual({ label: 'wind', does: 'scenery' });
   });
 
   it('fall back per genre when the place is unknown', () => {
-    expect(defaultEnemy('village', 'runner')).toBe('rock');
+    expect(defaultFoe('village', 'runner')).toEqual({ label: 'rock', does: 'avoid' });
     expect(defaultCollectible('village')).toBe('coin');
     expect(defaultCollectible('snowy mountain')).toBe('snowflake');
   });

@@ -45,7 +45,7 @@ import { type GenreChoice, type GenreModules, type GenreRanking, classifyGenre }
 import { COUNT_PARAMS, COUNT_ROLES as GENRE_COUNT_ROLES, type CountRole, type GenreId, type GenreModule, type GenreSpec } from '../genre/contract';
 import { familyOf, heroActionOf } from '../genre/families';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
-import { defaultCollectible, defaultEnemy, defaultHero, defaultTarget, heroFits } from '../genre/roles';
+import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -548,7 +548,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     // Id `roomba` drží fixtura (hashe); popisek „giant Roomba“ nová hra nedědí – bez pronásledovatele ve větě ho dá místo (P32B T3).
     // „escapes a haunted castle“: místo, odkud se utíká, pronásledovatel není.
     const chaser = role(spec, 'roomba');
-    chaser.label = label(foeIn(read.roles.chaser), defaultEnemy(spec.theme.setting, 'arena'));
+    chaser.label = label(foeIn(read.roles.chaser), defaultFoe(spec.theme.setting, 'arena').label);
     const speed = /\b(fast|quick|speedy|twice as fast)\b/.test(read.text) ? 'fast' : /\b(slow|sluggish)\b/.test(read.text) ? 'slow' : 'normal';
     mechanic(spec, 'chaser').speed = speed;
     spec.objective.description = cap(`Reach the exit before the ${chaser.label} catches you.`, 120);
@@ -1186,7 +1186,7 @@ function draftGenre(
   const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence);
   // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
-  const foeLabel = enemy ?? spare(defaultEnemy(setting, choice.genre), [singular(hero)]);
+  const foeLabel = enemy ?? spare(defaultFoe(setting, choice.genre).label, [singular(hero)]);
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.

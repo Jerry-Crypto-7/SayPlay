@@ -19,7 +19,7 @@ import { NUMBER_WORDS, toolsOf } from '../draft/lexicon';
 import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import type { GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
-import { defaultEnemy, heroFits } from '../genre/roles';
+import { defaultFoe, heroFits } from '../genre/roles';
 import type { Reading } from '../read/schema';
 import { ARCHETYPES, type MechanicId, estimateCost } from '../registry';
 import type { GameSpecV1 } from '../spec';
@@ -408,7 +408,7 @@ export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOp
   if (saidEnemy !== null && (genre.enemy === undefined || !sameRole(genre.enemy, saidEnemy))) {
     issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `the sentence's enemy is "${saidEnemy}", the answer has ${genre.enemy === undefined ? 'none' : `"${genre.enemy}"`}` });
   }
-  const settingEnemies = [defaultEnemy(genre.setting, genre.genre), ...(words?.enemy === undefined ? [] : [words.enemy])];
+  const settingEnemies = [defaultFoe(genre.setting, genre.genre).label, ...(words?.enemy === undefined ? [] : [words.enemy])];
   // P38: větu, ve které tabulka sloves nic nenajde (česky), slova nečtou – nepřítele z ní přečetl režisér.
   if (ranking.pick !== null && saidEnemy === null && genre.enemy !== undefined && !settingEnemies.some((label) => sameRole(genre.enemy!, label))) {
     issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `"${genre.enemy}" is neither in the sentence nor the default of the setting (${settingEnemies.join(', ')})` });
