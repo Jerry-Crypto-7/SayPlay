@@ -1,3 +1,6 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { defineConfig, devices } from '@playwright/test';
 
 import { deployedTarget } from './e2e/smoke-target';
@@ -106,6 +109,10 @@ export default defineConfig({
         // next start`; tady se to vynucuje, ne jen popisuje.
         command: `npm run build && npx next start --port ${PORT} --hostname 127.0.0.1`,
         url: LOCAL_URL,
+        // Každý běh od prázdného úložiště her: bez Upstash by server četl hry
+        // minulého běhu z `data/play/store` (P40 T3) a specy, které počítají
+        // s čistou instancí (`p37c-feed`), by měřily cizí stav.
+        env: { PLAY_STORE_DIR: join(tmpdir(), `play-store-e2e-${String(process.pid)}-${String(Date.now())}`) },
         reuseExistingServer: false,
         // Build je teď uvnitř příkazu, takže strop musí pokrýt build i start.
         timeout: 240_000,

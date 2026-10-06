@@ -27,7 +27,9 @@ Pořadí bran (odmítnutí v kterémkoli kroku = do úložiště nešel ani bajt
 | tělo nedorazilo do 5 s | `BODY_TIMEOUT` | 408 |
 | příliš mnoho souběžně čtených těl (volající / instance) | `TOO_MANY_BODY_READS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
 | tělo není JSON, cizí pole, obojí / ani jedno, špatný `seed` | `BAD_REQUEST` | 400 |
+| věta na zakázané téma (`PLAY_MODERATION` v `src/server/moderation.ts`, lexikální; P40 T1) – před úložištěm, čtečkou i režisérem | `SENTENCE_REJECTED` | 422 |
 | `parentId` neexistuje nebo nemá tvar id | `UNKNOWN_PARENT` | 404 |
+| řetězec hry (titulek, popisek, prostředí, jakékoli pole) na zakázané téma – i od režiséra a v návrhu z věty; návrh pak na režiséra nečeká a AI verze končí `draft-final` `BLOCKED` (P40 T2) | `CONTENT_REJECTED` | 422 |
 | spec neprošel `readGameSpec` (i z režiséra) | `SPEC_REJECTED` | 422 |
 
 U věty se zdraví úložiště ověří **před** režisérem (`publishRefusal`: 503 `STORE_UNAVAILABLE`), aby se nezaplatil model za hru, kterou by úložiště odmítlo. Vyčerpaný denní strop publikací už publikovanou větu nezavře (200); novou hru odmítne úložiště (429 `PUBLISH_QUOTA`) a synchronní režie se pak nespustí. Autorská verze (`relation: 'upgrade'`) se do denního stropu nepočítá – drží ji strop utrácení a denní počet placených volání režiséra na volajícího (`PLAY_DIRECTOR_CALLS_PER_CALLER`, výchozí 12); volající se pro ten počet pozná jen z důvěryhodného konce (`x-vercel-forwarded-for` na Vercelu, ověřená proxy vlastníka), jinak všichni sdílejí jeden počet – `x-forwarded-for` píše volající. Režisér volá model jen s volným slotem vlastních dveří `play` (pod celkovým stropem souběžných placených volání s `/api/generate` a relacemi WORLDSTREAM); bez slotu je hra návrh ze slov nebo odpověď z cache. Režie má rozpočet 270 s od příchodu požadavku (`maxDuration` 300 s); timeout volání se zkrátí na zbytek a pod 75 s zbytku volání neodejde. Hra od modelu, která neprojde kompilací ani kontrolou (422), spadne na návrh ze slov.
@@ -65,7 +67,8 @@ Tělo: `{ chip: "harder" | "twist" | "swap_enemy" | "reskin" }` nebo `{ spec: Ga
 volitelně `seed`. Rodič z úložiště (404 `NOT_FOUND`), čip → `remixPatch` + `applyRemix` (`src/play/director/remix.ts`,
 RFC 6902 záplata bez modelu; čip, který na hře nemá co změnit, je 422), výsledek přes `readGameSpec` (422),
 publikace jako výše s `parentId = id`. **Rodič se nemění**; semínko dítěte se odvozuje
-z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`.
+z rodiče a čipu, takže týž čip podruhé je **200** s týmž `versionId`. Vlastní věta (`{ sentence }`)
+na zakázané téma je 422 `SENTENCE_REJECTED` dřív, než se přečte rodič nebo spustí úloha – i když je čipem.
 
 Čipy popisuje hlavička `src/play/director/remix.ts` (P23-B T8): `harder` mění právě jeden parametr,
 `twist` přidá mechaniku s rolí a keypointem, `swap_enemy` jiný nepřítel (bez něj `harder`),
@@ -111,7 +114,8 @@ jiné hry → 404 `NOT_FOUND`.
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
 Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |
-restart | next_game | share | shared_open` (`src/play/loop-events.ts`), `versionId` hex id verze, `session` náhodné id záložky
+restart | next_game | share | shared_open | bounce` (`src/play/loop-events.ts`; `bounce` = klient odešel od zobrazené hry
+další hrou nebo zavřením stránky bez jediného vstupu, P40 T4), `versionId` hex id verze, `session` náhodné id záložky
 (12–32 znaků `[a-z0-9]`); jen `share` smí nést booleany `withClip` (šel klip) a `dare` (odkaz nesl výzvu, P36B T6). Klíč
 navíc (věta, text) i cokoli mimo tvar je 400 `BAD_REQUEST`; úspěch `204`. Vlastní okno stropu
 frekvence (`play/events`), takže statistika hráči neubere kvótu na tvorbu; páka `sessions` vypne i tyhle dveře. Zápis: řádek

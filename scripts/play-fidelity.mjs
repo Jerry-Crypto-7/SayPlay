@@ -902,7 +902,10 @@ const reachable = async (url) => {
 async function startServer(port, overlay) {
   const base = `http://127.0.0.1:${port}`;
   if (await reachable(base)) throw new Error(`port ${port} already serves something – stop it, or the run would measure a foreign server`);
-  const child = spawn(process.execPath, [join(ROOT, 'node_modules', 'next', 'dist', 'bin', 'next'), 'start', '-p', String(port)], { cwd: ROOT, env: { ...process.env, ...overlay }, stdio: ['ignore', 'pipe', 'pipe'] });
+  // Bez Upstash by server četl hry a AI verze z `data/play/store` (P40 T3), tedy
+  // i ty, které napsal model před ním: každý server dostane prázdné úložiště.
+  const store = mkdtempSync(join(tmpdir(), 'play-store-'));
+  const child = spawn(process.execPath, [join(ROOT, 'node_modules', 'next', 'dist', 'bin', 'next'), 'start', '-p', String(port)], { cwd: ROOT, env: { ...process.env, ...overlay, PLAY_STORE_DIR: store }, stdio: ['ignore', 'pipe', 'pipe'] });
   let log = '';
   for (const stream of [child.stdout, child.stderr]) stream.setEncoding('utf8').on('data', (chunk) => (log += chunk));
   const exited = new Promise((done) => child.once('exit', done));

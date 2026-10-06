@@ -28,7 +28,7 @@ import type { GameSpecV1 } from '@/play/spec';
 import { type Best, type BestOutcome, bestGoal, type Dare, dareGoal, dareStart, readBest, settleBest } from '../best';
 import { AHEAD, NEW_BEST } from '../starters';
 import { HowItWorks } from '../HowItWorks';
-import { loopEvent, loopImpression } from '../loop-client';
+import { loopEvent, loopImpression, loopTouch } from '../loop-client';
 import { FirstPrompt } from '../FirstPrompt';
 import { MoreGames } from '../MoreGames';
 import { BuildingScreen, Button, CHANGE_LABEL, GameHud, type HudCounter, Icon, PauseCard, objectiveShown, useHudKeys } from '../ui';
@@ -518,11 +518,16 @@ function ArcadePlayGame({
   // takže tentýž stisk padne do tiku 0. Tlačítka mimo scénu (zvuk, info, Play again) ne.
   useEffect(() => {
     if (!active) return;
+    // Spouštěcí dotek je dotek hry, i když ho `swallowFirst` do vstupů nepustí (P40 T4) – odchod pak není okamžitý.
+    const start = () => {
+      session.begin();
+      loopTouch(versionId);
+    };
     const onPointer = (event: PointerEvent) => {
-      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) session.begin();
+      if (event.target instanceof Element && event.target.closest('[data-testid="arcade-stage"]') !== null) start();
     };
     const onKey = (event: KeyboardEvent) => {
-      if (wakesGame(event)) session.begin();
+      if (wakesGame(event)) start();
     };
     window.addEventListener('pointerdown', onPointer, true);
     window.addEventListener('keydown', onKey, true);
@@ -530,7 +535,7 @@ function ArcadePlayGame({
       window.removeEventListener('pointerdown', onPointer, true);
       window.removeEventListener('keydown', onKey, true);
     };
-  }, [active, session]);
+  }, [active, session, versionId]);
 
   // Události smyčky (P27D T4): zobrazení, první vstup a konec běhu – jen za člověka.
   // Na konci běhu se jednou vyřídí i osobní rekord (P36B T2); výsledek ho jen ukáže.

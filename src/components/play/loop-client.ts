@@ -12,9 +12,17 @@ import type { LoopEventName } from '@/play/loop-events';
 
 export const SHARE_MARK = 'via=share';
 
-const ONCE: ReadonlySet<LoopEventName> = new Set(['impression', 'first_input', 'shared_open']);
+const ONCE: ReadonlySet<LoopEventName> = new Set(['impression', 'first_input', 'shared_open', 'bounce']);
 const sent = new Set<string>();
 let memorySession: string | null = null;
+/** Naposledy zobrazená hra – zavřená stránka se počítá za ni. */
+let shown: string | null = null;
+/**
+ * Hry, na které hráč sáhl. Nestačí `first_input`: arkáda první stisk spolkne,
+ * takže jediný dotek skončí prohrou bez něj – a dohraná hra odchod není.
+ */
+const TOUCH: ReadonlySet<LoopEventName> = new Set(['first_input', 'win', 'lose', 'restart']);
+const touched = new Set<string>();
 
 function freshSession(): string {
   const bytes = new Uint8Array(12);
@@ -40,6 +48,8 @@ function session(): string {
 export function loopEvent(name: LoopEventName, versionId: string, extra?: { readonly withClip: boolean; readonly dare: boolean }): void {
   if (typeof window === 'undefined') return;
   const id = session();
+  if (TOUCH.has(name)) touched.add(versionId);
+  if (name === 'next_game') bounceIfUntouched(versionId);
   if (ONCE.has(name)) {
     const key = `${name}|${versionId}`;
     if (sent.has(key)) return;
@@ -54,8 +64,24 @@ export function loopEvent(name: LoopEventName, versionId: string, extra?: { read
   }
 }
 
+/**
+ * Okamžitý odchod (P40 T4): hra se zobrazila a hráč od ní odešel – další hrou
+ * nebo zavřenou stránkou – bez jediného vstupu. Rozhoduje jen tahle záložka;
+ * server konec relace nevidí.
+ */
+function bounceIfUntouched(versionId: string): void {
+  if (sent.has(`impression|${versionId}`) && !touched.has(versionId)) loopEvent('bounce', versionId);
+}
+
+/** Spouštěcí dotek hry: `swallowFirst` ho do vstupů nepustí, `first_input` tak nepřijde, a odchod pak není bez vstupu. */
+export function loopTouch(versionId: string): void {
+  touched.add(versionId);
+}
+
 /** Zobrazení hry; otevřená ze sdíleného odkazu navíc `shared_open`. */
 export function loopImpression(versionId: string): void {
+  if (shown === null) window.addEventListener('pagehide', () => shown !== null && bounceIfUntouched(shown));
+  shown = versionId;
   loopEvent('impression', versionId);
   if (window.location.search.includes(SHARE_MARK) && window.location.pathname.endsWith(`/play/${versionId}`)) loopEvent('shared_open', versionId);
 }

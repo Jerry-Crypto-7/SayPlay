@@ -127,6 +127,7 @@ describe('úložiště s vestavěnou sadou', () => {
     expect(await inner.get(first.version.versionId)).toBeNull();
     await store.countLoop(first.version.versionId, ['start'], 'voter-r4-2');
     expect(await inner.get(first.version.versionId)).not.toBeNull();
-    expect((await store.loopHeat([first.version.versionId])).get(first.version.versionId)?.starts).toBe(2);
+    // Starý čítač vypršel s hrou (TTL od prvního zvýšení jako v Upstash, P40 T3b); nová událost se započte.
+    expect((await store.loopHeat([first.version.versionId])).get(first.version.versionId)?.starts).toBe(1);
   });
 });

@@ -6,7 +6,7 @@
  * záznamu se vydá a že nikdy není delší než strop.
  */
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CLIP_MAX_MS, CLIP_TAIL_MS, clipType, startClip, type ClipDeps, type ClipRecorderLike } from '../clip';
 
@@ -105,6 +105,17 @@ describe('clip format', () => {
   it('a canvas without captureStream records nothing', () => {
     const { deps } = setup();
     expect(startClip({} as HTMLCanvasElement, deps)).toBeNull();
+  });
+
+  // Bez klipu PostRun „Save video“ neukáže (e2e `play-clip.spec.ts`), proto `null`, ne výjimka.
+  it('a browser without MediaRecorder records nothing', () => {
+    const { canvas } = setup();
+    vi.stubGlobal('MediaRecorder', undefined);
+    try {
+      expect(startClip(canvas)).toBeNull();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('records in the chosen type', async () => {

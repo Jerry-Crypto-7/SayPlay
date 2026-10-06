@@ -40,6 +40,8 @@ export type DraftFinalReason =
   | 'NOT_PLAYABLE'
   | 'STORE_UNAVAILABLE'
   | 'NOT_FROM_SENTENCE'
+  /** Text AI verze trefil zakázané téma (P40 T2) – do feedu nejde, rychlá verze zůstane. */
+  | 'BLOCKED'
   | 'FAILED';
 
 export type UpgradeOutcome =
@@ -131,7 +133,7 @@ export const DRAFT_FINAL_TTL_SECONDS = 3600;
  * nic – uložené by na hodinu zmrazily cizí návrh a útočník by to uměl
  * vyvolat zdarma (revize R10). Další dotaz pak dostane nový pokus.
  */
-const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'UNCHANGED', 'NOT_PLAYABLE']);
+const SENTENCE_VERDICTS: ReadonlySet<DraftFinalReason> = new Set(['MALFORMED', 'UNREPAIRED', 'VERB_UNPROVED', 'UNCHANGED', 'NOT_PLAYABLE', 'BLOCKED']);
 
 export function isTransient(outcome: UpgradeOutcome): boolean {
   return outcome.status === 'draft-final' && !SENTENCE_VERDICTS.has(outcome.reason);
@@ -228,7 +230,7 @@ async function directUpgrade(versions: VersionStore, draft: PublishedGame, reque
     timings: { ackMs: request.ackMs, draftReadyMs: request.draftReadyMs, directorMs, source: directed.source },
   });
   if (!published.ok) {
-    const reason = REFUSAL_REASON[published.response.status] ?? 'FAILED';
+    const reason = published.issues?.[0] === 'CONTENT_REJECTED' ? 'BLOCKED' : (REFUSAL_REASON[published.response.status] ?? 'FAILED');
     return final(reason, { stage: 'publish', reason: published.issues?.[0] ?? String(published.response.status), detail: (published.issues ?? []).slice(1).join('; '), raw: directed.spec });
   }
   return { status: 'ready', versionId: published.value.game.version.versionId };

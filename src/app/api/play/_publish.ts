@@ -25,10 +25,11 @@ import { type PlayTimings, type PublishedGame, type PutOutcome, type VersionStor
 import { callerKey, rateLimitCode, takeRateSlot, trustedCallerKey } from '@/server/rate-limit';
 import { killState, type KillState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
+import { sharedStoreFromEnv } from '@/server/spend-store';
 
 import { getCompiler } from './_compiler';
 import { startCustomEnv } from './_env';
-import { fail, VERSION_ID_PATTERN } from './_errors';
+import { blockedText, fail, SENTENCE_BLOCKED, VERSION_ID_PATTERN } from './_errors';
 import { reportFor } from './_report';
 import { scheduleVoice } from './_voice';
 
@@ -131,9 +132,10 @@ export function store(): VersionStore {
   return versionStoreFromEnv(process.env);
 }
 
-/** Čtení z úložiště, které zmizí s procesem, to řekne hlavičkou (P27B T1). */
+/** Čtení z úložiště, které zmizí s procesem, to řekne hlavičkou (P27B T1); souborové úložiště (P40 T3) taky. */
 export function markVolatileStore(response: Response): Response {
-  if (volatileVersionStore(process.env)) response.headers.set('x-play-store', 'memory');
+  if (sharedStoreFromEnv(process.env) === null && store().id === 'file') response.headers.set('x-play-store', 'file');
+  else if (volatileVersionStore(process.env)) response.headers.set('x-play-store', 'memory');
   return response;
 }
 
@@ -238,6 +240,10 @@ export async function publishReadSpec(
   parentId: string | null,
   extras: PublishExtras = {},
 ): Promise<PublishResult> {
+  // Feed je veřejný (P40 T2): text, který by dveře u věty odmítly, nesmí projít ani od režiséra, ani v hotovém specu.
+  const blocked = blockedText(spec);
+  if (blocked !== null) return { ok: false, response: fail(422, 'CONTENT_REJECTED', SENTENCE_BLOCKED), issues: ['CONTENT_REJECTED', blocked.slice(0, 120)] };
+
   await preloadPhysics(spec, loadRapier);
   const compileStarted = performance.now();
   const compiled = compileOnSeeds(spec, seeds);

@@ -21,6 +21,8 @@ export {
   __resetProcessVersionStore,
   httpVersionStore,
   memoryVersionStore,
+  fileStoreDirFromEnv,
+  fileVersionStore,
   versionStoreFromEnv,
   volatileVersionStore,
   writeLimitsFromEnv,

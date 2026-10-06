@@ -11,6 +11,7 @@ import { GET as listGames, POST as createGame } from '@/app/api/play/games/route
 import { GET as readGame } from '@/app/api/play/games/[id]/route';
 import { __resetProcessVersionStore, decodeCursor, feedEligible, feedPage, type FeedPage, hiddenFromEnv, type LoopHeat, RECENT_CAP, type RecentGame, versionStoreFromEnv } from '@/play/version';
 import { BUILTIN_GAMES } from '@/play/version/builtin';
+import { FEED_BLOCK, MAX_PER_ARCHETYPE } from '@/play/version/diversify';
 import { encodeCursor, FRESH_EVERY } from '@/play/version/feed';
 import { RUNTIME_VERSION } from '@/sim/interpreter';
 import { resetRateWindows } from '@/server/rate-limit';
@@ -174,7 +175,7 @@ describe('feedPage', () => {
 });
 
 describe('feed ranked by the loop (P36B T9)', () => {
-  const heat = (fields: Partial<LoopHeat>): LoopHeat => ({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, remixes: 0, ...fields });
+  const heat = (fields: Partial<LoopHeat>): LoopHeat => ({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, retries: 0, shares: 0, bounces: 0, remixes: 0, ...fields });
   const ids = (page: FeedPage): string[] => page.games.map((game) => game.versionId);
 
   it('without counters the order stays newest first', () => {
@@ -211,6 +212,49 @@ describe('feed ranked by the loop (P36B T9)', () => {
     const rows = Array.from({ length: 6 }, (_, n) => row(n + 1));
     const order = ids(feedPage(rows, 6, null, NONE, new Map([[rows[4].versionId, heat({ finishes: 3, skips: 4 })], [rows[1].versionId, heat({ finishes: 3 })]])));
     expect(order.slice(0, 2)).toEqual([rows[1].versionId, rows[4].versionId]);
+  });
+
+  // P40 T5: feed podle toho, k čemu se lidi vrací.
+  it('with equal finishes a game people replay and share goes ahead of one people bounce off', () => {
+    const rows = Array.from({ length: 6 }, (_, n) => row(n + 1));
+    const at = rows[0].createdAt;
+    const kept = row(0x30, { createdAt: at, archetype: 'collect_exit' });
+    const left = row(0x31, { createdAt: at, archetype: 'chase_escape' });
+    const order = ids(feedPage([...rows, kept, left], 8, null, NONE, new Map([[kept.versionId, heat({ finishes: 2, retries: 1, shares: 1 })], [left.versionId, heat({ finishes: 2, bounces: 2 })]])));
+    expect(order.indexOf(kept.versionId)).toBe(0);
+    expect(order.indexOf(kept.versionId)).toBeLessThan(order.indexOf(left.versionId));
+  });
+
+  it.each([
+    ['a replay', { retries: 1 }],
+    ['a share', { shares: 1 }],
+  ] as const)('%s lifts an older game over a newer one with the same finishes', (_why, extra) => {
+    const rows = Array.from({ length: 6 }, (_, n) => row(n + 1));
+    const order = ids(feedPage(rows, 6, null, NONE, new Map([[rows[1].versionId, heat({ finishes: 3, ...extra })], [rows[4].versionId, heat({ finishes: 3 })]])));
+    expect(order.slice(0, 2)).toEqual([rows[1].versionId, rows[4].versionId]);
+  });
+
+  it('a share outweighs a replay, and a dare outweighs a share', () => {
+    const rows = Array.from({ length: 6 }, (_, n) => row(n + 1));
+    const order = ids(feedPage(rows, 6, null, NONE, new Map([[rows[0].versionId, heat({ dares: 1 })], [rows[1].versionId, heat({ shares: 1 })], [rows[4].versionId, heat({ retries: 1 })]])));
+    expect([order.indexOf(rows[0].versionId), order.indexOf(rows[1].versionId)]).toEqual([0, 1]);
+    expect(order.indexOf(rows[4].versionId)).toBeGreaterThan(1);
+  });
+
+  it('bounces pull a game down: with equal finishes the older game nobody bounced goes first', () => {
+    const rows = Array.from({ length: 6 }, (_, n) => row(n + 1));
+    const order = ids(feedPage(rows, 6, null, NONE, new Map([[rows[4].versionId, heat({ finishes: 3, bounces: 1 })], [rows[1].versionId, heat({ finishes: 3 })]])));
+    expect(order.slice(0, 2)).toEqual([rows[1].versionId, rows[4].versionId]);
+  });
+
+  it('replays and shares keep the fresh slot and the three-per-archetype cap', () => {
+    const others = ['collect_exit', 'hazard_crossing', 'switch_puzzle'];
+    const rows = Array.from({ length: 16 }, (_, n) => row(n + 1, { archetype: n < 8 ? 'chase_escape' : others[n % 3] }));
+    const newest = rows[15];
+    const hot = new Map(rows.slice(0, 8).map((r) => [r.versionId, heat({ finishes: 5, retries: 3, shares: 3 })]));
+    const order = feedPage(rows, 16, null, NONE, hot).games;
+    expect(order.findIndex((game) => game.versionId === newest.versionId)).toBeLessThan(FRESH_EVERY);
+    expect(order.slice(0, FEED_BLOCK).filter((game) => game.archetype === 'chase_escape').length).toBeLessThanOrEqual(MAX_PER_ARCHETYPE);
   });
 });
 
@@ -290,7 +334,7 @@ describe('GET /api/play/games?recent&cursor', () => {
 
     const unknown = 'e'.repeat(32);
     expect((await report({ name: 'win', versionId: unknown })).status).toBe(204);
-    expect(await heat(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, remixes: 0 });
+    expect(await heat(unknown)).toEqual({ finishes: 0, dares: 0, skips: 0, starts: 0, clears: 0, retries: 0, shares: 0, bounces: 0, remixes: 0 });
   });
 
   // P37C T5: „clear rate“ – pokus (`first_input`) a výhra, každý jeden hlas volajícího za den; pod deseti pokusy nic.

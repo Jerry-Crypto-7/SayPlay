@@ -151,3 +151,6 @@ data/play/failures/
 
 # Události herní smyčky (P27D T4): provozní záznam, souhrn dělá scripts/play-loop-report.mjs.
 data/play/events/
+
+# Souborové úložiště her bez Upstash (P40 T3): hry návštěvníků, ne zdroják.
+data/play/store/

@@ -38,6 +38,8 @@
  * `stored`: publikace, o které se neví, jestli dorazila, není publikace.
  */
 
+import { join } from 'node:path';
+
 import { canonical } from '@/ir/worlddoc';
 import type { LiveEntry } from '@/play/arcade/live';
 import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
@@ -46,6 +48,7 @@ import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 import type { GameVersion } from '../contracts';
 import { BUILTIN_IDS, withBuiltinGames } from './builtin';
 import { feedEligible } from './feed';
+import { emptyMemoryState, loadMemoryState, type MemoryState, reloadMemoryKey, saveMemoryKey, writableDir } from './file-store';
 import type { PublishedGame } from './version';
 
 /** Skrytí platí až při čtení feedu (`PLAY_FEED_HIDE`); zápis do seznamu ho nezná. */
@@ -202,6 +205,10 @@ export interface LoopHeat {
   /** Pokusy a výhry pro „clear rate“ (P37C T5); feed podle nich neřadí. */
   readonly starts: number;
   readonly clears: number;
+  /** Opakování, sdílení a okamžité odchody (P40 T4), každé jeden hlas volajícího za den. */
+  readonly retries: number;
+  readonly shares: number;
+  readonly bounces: number;
   readonly remixes: number;
 }
 
@@ -706,8 +713,22 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         };
         return new Map(
           versionIds.map((versionId, index) => {
-            const [finishes, dares, skips, starts, clears, children] = texts.slice(index * per, index * per + per);
-            return [versionId, { finishes: count(finishes), dares: count(dares), skips: count(skips), starts: count(starts), clears: count(clears), remixes: remixes(children) }];
+            // Pořadí je `LOOP_COUNTERS`, za nimi děti verze.
+            const [finishes, dares, skips, starts, clears, retries, shares, bounces, children] = texts.slice(index * per, index * per + per);
+            return [
+              versionId,
+              {
+                finishes: count(finishes),
+                dares: count(dares),
+                skips: count(skips),
+                starts: count(starts),
+                clears: count(clears),
+                retries: count(retries),
+                shares: count(shares),
+                bounces: count(bounces),
+                remixes: remixes(children),
+              },
+            ];
           }),
         );
       } catch {
@@ -720,36 +741,93 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
 
 /**
  * Hodnoty (`set`/`setNx`) vyprší po svém TTL jako v Redisu – krátké záznamy
- * remixů by jinak rostly do restartu (P27C T4d). Seznamy a počítadla neexpirují,
- * drží je strop délky a denní klíč.
+ * remixů by jinak rostly do restartu (P27C T4d). Počítadla vyprší od prvního
+ * zvýšení (P40 T3b). Seznamy neexpirují, drží je strop délky.
  */
 export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
-  const entries = new Map<string, string>();
-  const expiresAt = new Map<string, number>();
-  const lists = new Map<string, string[]>();
+  return versionStoreOver('memory', 'memory', memoryRaw(emptyMemoryState(), now), limits, now);
+}
+
+/**
+ * Hry, remixy a čítače na disku (P40 T3), jinak totéž co `memoryVersionStore`:
+ * stav se načte z `dir` a každý změněný klíč se hned zapíše (`file-store.ts`).
+ * Přežije restart serveru. Každý klíč se před použitím dočte z disku, takže
+ * instance nad týmž adresářem si zápisy nepřepíšou (P40 T3c); zámek mezi nimi
+ * ale není – dva zápisy v téže chvíli umí jen Upstash.
+ */
+export function fileVersionStore(dir: string, limits: WriteLimits = DEFAULT_WRITE_LIMITS, now: () => number = Date.now): VersionStore {
+  const state = loadMemoryState(dir, now);
+  const raw = memoryRaw(
+    state,
+    now,
+    (key) => saveMemoryKey(dir, state, key),
+    (key) => reloadMemoryKey(dir, state, key),
+  );
+  return versionStoreOver('file', 'file', raw, limits, now);
+}
+
+function restore<T>(map: Map<string, T>, key: string, value: T | undefined): void {
+  if (value === undefined) map.delete(key);
+  else map.set(key, value);
+}
+
+/**
+ * Příkazy úložiště nad stavem v paměti; `changed` dostane každý klíč, který se změnil nebo vypršel,
+ * `reload` každý klíč před čtením a před „přečti, přidej, zapiš“.
+ */
+function memoryRaw(
+  state: MemoryState,
+  now: () => number,
+  changed: (key: string) => void = () => undefined,
+  reload: (key: string) => void = () => undefined,
+): RawStore {
+  const { entries, expiresAt, lists, sets } = state;
   const live = (key: string): string | null => {
+    reload(key);
     const until = expiresAt.get(key);
     if (until !== undefined && now() >= until) {
       entries.delete(key);
       expiresAt.delete(key);
+      changed(key);
     }
     return entries.get(key) ?? null;
   };
+  /**
+   * Změna klíče platí, jen když ji `changed` zapíše (P40 T3a): selhaný zápis na disk
+   * vrátí klíč v paměti, jak byl, a chybu pustí dál. Jinak by hra po 503 zůstala
+   * jen v paměti a další `put` by ji ohlásil jako uloženou, než ji restart smaže.
+   */
+  const commit = (key: string, apply: () => void): void => {
+    const before = { value: entries.get(key), until: expiresAt.get(key), list: lists.get(key), set: sets.get(key) };
+    apply();
+    try {
+      changed(key);
+    } catch (thrown) {
+      restore(entries, key, before.value);
+      restore(expiresAt, key, before.until);
+      restore(lists, key, before.list);
+      restore(sets, key, before.set);
+      throw thrown;
+    }
+  };
   const write = (key: string, value: string, ttlSeconds: number): void => {
-    entries.set(key, value);
-    expiresAt.set(key, now() + ttlSeconds * 1000);
+    commit(key, () => {
+      entries.set(key, value);
+      expiresAt.set(key, now() + ttlSeconds * 1000);
+    });
   };
   /** Schodiště nejlepších (člen → hodnocení a čas zápisu) s expirací jako hodnoty. */
-  const sets = new Map<string, Map<string, { readonly rank: number; readonly at: number }>>();
   const liveSet = (key: string): Map<string, { readonly rank: number; readonly at: number }> | undefined => {
+    reload(key);
     const until = expiresAt.get(key);
     if (until !== undefined && now() >= until) {
       sets.delete(key);
       expiresAt.delete(key);
+      changed(key);
     }
     return sets.get(key);
   };
-  const raw: RawStore = {
+  return {
     get: (key) => Promise.resolve(live(key)),
     setNx: (key, value, ttlSeconds) => {
       if (live(key) !== null) return Promise.resolve(false);
@@ -761,16 +839,26 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       return Promise.resolve();
     },
     // Počítadlo leží mezi hodnotami jako text, stejně jako v Redisu – `get` ho přečte.
-    incr: (key) => {
-      const next = Number(entries.get(key) ?? '0') + 1;
-      entries.set(key, String(next));
+    // Expirace při prvním zvýšení jako `INCR` + `EXPIRE` v `httpVersionStore` (P40 T3b): denní
+    // čítače by jinak na disku přibývaly a četly se při každém startu. Bez expirace = soubor z doby
+    // před T3b, dostane ji teď.
+    incr: (key, ttlSeconds) => {
+      const next = Number(live(key) ?? '0') + 1;
+      commit(key, () => {
+        entries.set(key, String(next));
+        if (!expiresAt.has(key)) expiresAt.set(key, now() + ttlSeconds * 1000);
+      });
       return Promise.resolve(next);
     },
     pushCapped: (key, value, cap) => {
-      lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap));
+      reload(key);
+      commit(key, () => lists.set(key, [value, ...(lists.get(key) ?? [])].slice(0, cap)));
       return Promise.resolve();
     },
-    head: (key, count) => Promise.resolve((lists.get(key) ?? []).slice(0, count)),
+    head: (key, count) => {
+      reload(key);
+      return Promise.resolve((lists.get(key) ?? []).slice(0, count));
+    },
     getMany: (keys) => Promise.resolve(keys.map(live)),
     exists: (key) => Promise.resolve(live(key) !== null),
     keepBest: (key, member, rank, at, staleBefore, keep, ttlSeconds) => {
@@ -779,8 +867,10 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       // Pořadí Redisu: hodnocení, při shodě člen podle bajtů; vrchol je poslední. Nový běh leží na indexu 0,
       // nad `keep` odejdou členové těsně nad ním – jako `ZREMRANGEBYRANK key 1 -keep`.
       kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
-      sets.set(key, new Map(kept.filter((_, index) => index === 0 || index > kept.length - keep)));
-      expiresAt.set(key, now() + ttlSeconds * 1000);
+      commit(key, () => {
+        sets.set(key, new Map(kept.filter((_, index) => index === 0 || index > kept.length - keep)));
+        expiresAt.set(key, now() + ttlSeconds * 1000);
+      });
       return Promise.resolve();
     },
     top: (key, count) => {
@@ -792,12 +882,13 @@ export function memoryVersionStore(limits: WriteLimits = DEFAULT_WRITE_LIMITS, n
       const kept = [...(liveSet(key) ?? [])].filter(([other]) => !drop.includes(other) && other !== member);
       kept.push([member, { rank, at }]);
       kept.sort(([am, a], [bm, b]) => a.rank - b.rank || (am < bm ? -1 : am > bm ? 1 : 0));
-      sets.set(key, new Map(kept));
-      expiresAt.set(key, now() + ttlSeconds * 1000);
+      commit(key, () => {
+        sets.set(key, new Map(kept));
+        expiresAt.set(key, now() + ttlSeconds * 1000);
+      });
       return Promise.resolve();
     },
   };
-  return versionStoreOver('memory', 'memory', raw, limits, now);
 }
 
 export interface HttpVersionStoreConfig {
@@ -965,12 +1056,25 @@ export function __resetProcessVersionStore(): void {
  * Dveře to přiznají hlavičkou `x-play-store: memory`, odkaz nesmí předstírat trvalost.
  */
 export function volatileVersionStore(env: Record<string, string | undefined>): boolean {
-  return env.NODE_ENV === 'production' && sharedStoreFromEnv(env) === null;
+  return env.NODE_ENV === 'production' && sharedStoreFromEnv(env) === null && versionStoreFromEnv(env).id !== 'file';
 }
 
 /**
- * Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak paměť procesu.
- * Obojí s vestavěnou sadou her (P37C T6): feed ani odkaz na ni nezůstanou prázdné.
+ * Adresář souborového úložiště (P40 T3): `PLAY_STORE_DIR`, jinak `data/play/store`.
+ * `null` na Vercelu (souborový systém jen pro čtení, produkce jde přes Upstash)
+ * a pod vitestem bez `PLAY_STORE_DIR` – testy by si jinak přes restart nesly hry
+ * z disku. Podle `NODE_ENV` se nevolí: lokální `next start` je taky produkce.
+ */
+export function fileStoreDirFromEnv(env: Record<string, string | undefined>): string | null {
+  if (env.VERCEL !== undefined) return null;
+  if (env.PLAY_STORE_DIR !== undefined) return env.PLAY_STORE_DIR;
+  return env.VITEST !== undefined ? null : join(process.cwd(), 'data', 'play', 'store');
+}
+
+/**
+ * Sdílené úložiště podle prostředí (týž obchod a předpona jako kniha stropu), jinak soubory
+ * v zapisovatelném `fileStoreDirFromEnv`, jinak paměť procesu. Vše s vestavěnou sadou her
+ * (P37C T6): feed ani odkaz na ni nezůstanou prázdné.
  */
 export function versionStoreFromEnv(env: Record<string, string | undefined>, fetchImpl: typeof fetch = fetch): VersionStore {
   const shared = sharedStoreFromEnv(env);
@@ -978,8 +1082,10 @@ export function versionStoreFromEnv(env: Record<string, string | undefined>, fet
   if (shared !== null)
     return withBuiltinGames(httpVersionStore({ url: shared.url, token: shared.token, prefix: storePrefix(env), timeoutMs: VERSION_STORE_TIMEOUT_MS, limits }, fetchImpl));
   if (processStore === null) {
-    processStore = withBuiltinGames(memoryVersionStore(limits));
-    if (volatileVersionStore(env)) console.warn('[play] no shared store configured: published games live only in this process and vanish with it');
+    const dir = fileStoreDirFromEnv(env);
+    const onDisk = dir !== null && writableDir(dir);
+    processStore = withBuiltinGames(onDisk ? fileVersionStore(dir, limits) : memoryVersionStore(limits));
+    if (!onDisk && env.NODE_ENV === 'production') console.warn('[play] no shared store configured: published games live only in this process and vanish with it');
   }
   return processStore;
 }

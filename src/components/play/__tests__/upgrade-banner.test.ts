@@ -31,9 +31,9 @@ describe('noticeOf', () => {
     expect(noticeOf({ kind: 'ready', versionId: 'a'.repeat(32) })).toEqual({ text: 'Full-detail version ready', action: { kind: 'open', label: 'Play it' } });
   });
 
-  it('všech 9 důvodů má vlastní větu', () => {
-    expect(REASONS).toHaveLength(9);
-    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(9);
+  it('všech 10 důvodů má vlastní větu', () => {
+    expect(REASONS).toHaveLength(10);
+    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(10);
     expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain("Couldn't make the full-detail version right now");
     expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The full-detail version wasn't playable in a test run. The quick one stays.");
   });

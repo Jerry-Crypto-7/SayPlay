@@ -111,7 +111,7 @@ describe('sentence to playable game through the whole API, live', () => {
     try {
       await fetch(`${base}/api/play/games?recent=1`);
     } catch {
-      console.warn(`[play] live.measure skipped: no server at ${base} (E2E_PORT=3121 npm run build && npx next start --port 3121)`);
+      console.warn(`[play] live.measure skipped: no server at ${base} (E2E_PORT=3121 npm run build && npx next start --port 3121, with PLAY_STORE_DIR set to an empty temp dir – otherwise the server answers with games and AI versions saved by an earlier run)`);
       return;
     }
 

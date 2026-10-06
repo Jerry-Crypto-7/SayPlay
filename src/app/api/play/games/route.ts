@@ -20,7 +20,7 @@ import { readBeforeDraft } from '@/play/read/client';
 import { beatOf, decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
 
 import { getDirector } from '../_director';
-import { fail, readJsonBody } from '../_errors';
+import { fail, readJsonBody, refuseSentence } from '../_errors';
 import { admit, derivedSeeds, directorCallerOf, isSeed, markVolatileStore, MAX_SENTENCE_CHARS, parentOf, publishReadSpec, publishRefusal, playabilityIssues, publishedResponse, readSpecOrFail, seedFrom, store } from '../_publish';
 import { upgradeOf } from '../_upgrade';
 
@@ -113,6 +113,8 @@ export async function POST(request: Request): Promise<Response> {
   if (sentence !== undefined && sentence.length > MAX_SENTENCE_CHARS) return fail(413, 'BODY_TOO_LARGE', `the sentence is longer than ${String(MAX_SENTENCE_CHARS)} characters`);
   // Prázdná věta by dala hru, kterou nikdo nepopsal – a pod jejím hashem jednu pro všechny.
   if (sentence !== undefined && sentence.trim() === '') return fail(400, 'BAD_REQUEST', 'the sentence is empty');
+  const blocked = sentence === undefined ? null : refuseSentence(sentence);
+  if (blocked !== null) return blocked;
   if (seed !== undefined && !isSeed(seed)) return fail(400, 'BAD_REQUEST', 'seed must be a whole number from 1 to 2^31 - 1');
 
   const versions = store();
@@ -136,7 +138,8 @@ export async function POST(request: Request): Promise<Response> {
       void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
       return publishedResponse(draft.value, true, unsupportedGame(sentence, drafted));
     }
-    if (draft.response.status !== 422) return draft.response;
+    // Návrh se zakázaným textem (P40 T2) nečeká na režiséra: rychlá verze se nevrátí a model se neplatí.
+    if (draft.response.status !== 422 || draft.issues?.[0] === 'CONTENT_REJECTED') return draft.response;
     if (refused !== null) return refused;
     // Návrh, který se nedá hrát, nemá co ukázat hned – věta čeká na režiséra jako před T2.
     const directed = await getDirector(startedAt, caller, (candidate) => playabilityIssues(candidate, seeds))(sentence);
