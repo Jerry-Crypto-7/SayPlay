@@ -1,53 +1,11 @@
-/**
- * Registr žánrů (P32-0 T3, od P36A T11 jedenáct): moduly a čtení `GenreSpec` včetně mezí
- * parametrů, které drží modul žánru.
- */
-
-import { ARCADE_HZ, ARCADE_LIMITS, type AddonId } from '../arcade/contract';
-import { CAPABILITIES } from '../capabilities';
+/** Legacy genre reader; named control genres compile through recipe assemblies. */
 import type { GameSpecV1 } from '../spec';
-
-import { arenaGenre } from './arena';
-import { type CastRole, FOE_DOES, type GenreId, type GenreModule, type GenreSpec, type ParamBounds, countIssues, genreSpecSchema, legacyCast, withCounts } from './contract';
-import { duelGenre } from './duel';
-import { flapGenre } from './flap';
-import { platformerGenre } from './platformer';
-import { questGenre } from './quest';
-import { rhythmGenre } from './rhythm';
-import { runnerGenre } from './runner';
-import { shooterGenre } from './shooter';
-import { throwGenre } from './throw';
-import { timingGenre } from './timing';
-import { voyageGenre } from './voyage';
-
-export const GENRE_MODULES: { readonly [G in GenreId]: GenreModule<G> } = {
-  runner: runnerGenre,
-  platformer: platformerGenre,
-  arena: arenaGenre,
-  voyage: voyageGenre,
-  quest: questGenre,
-  shooter: shooterGenre,
-  throw: throwGenre,
-  timing: timingGenre,
-  rhythm: rhythmGenre,
-  duel: duelGenre,
-  flap: flapGenre,
-};
-
-/**
- * Hloubka hry, kterou režisér nastaví v každém žánru (P36A T8): ploché
- * parametry vedle parametrů modulu. Modul je nečte – do hry je propíše
- * `compileWith` (životy, cílové skóre, časový limit). `targetScore` a
- * `timeLimit` 0 = bez cíle, bez limitu; limit nejvýš horizont jádra.
- */
-export const DEPTH_PARAM_BOUNDS = {
-  lives: { min: 1, max: 9 },
-  targetScore: { min: 0, max: 9999 },
-  timeLimit: { min: 0, max: ARCADE_LIMITS.maxTicks / ARCADE_HZ },
-} as const satisfies ParamBounds;
-type DepthParam = keyof typeof DEPTH_PARAM_BOUNDS;
-type Depth = Partial<Readonly<Record<DepthParam, number>>>;
-
+import { type GenreModule, type GenreSpec, type ParamBounds, countIssues, genreSpecSchema, legacyCast } from './contract';
+import { GENRE_MODULES } from './modules';
+import { compileRecipe, compileWith, DEPTH_PARAM_BOUNDS } from '../compose/compile';
+import { CONTROL_PRESETS, presetOf } from '../compose/presets';
+export { GENRE_MODULES } from './modules';
+export { compileWith, withDepth, DEPTH_PARAM_BOUNDS } from '../compose/compile';
 /** Meze všech parametrů, které `GenreSpec` žánru smí nést: modul + hloubka. */
 export const paramBoundsOf = (module: GenreModule): ParamBounds => ({ ...module.paramBounds, ...DEPTH_PARAM_BOUNDS });
 
@@ -67,81 +25,8 @@ export function readGenreSpec(input: unknown): GenreSpecResult {
   return issues.length > 0 ? { ok: false, issues } : { ok: true, value: parsed.data };
 }
 
-/** `GenreSpec` → `GameSpecV1` modulem jeho žánru; počty rolí jdou do parametrů, které modul čte (B-R4). */
 export function compileGenre(spec: GenreSpec): GameSpecV1 {
-  // Sjednocení `spec` se na modul jeho žánru nezúží samo – `genre` je obojímu společný klíč.
-  return compileWith(GENRE_MODULES[spec.genre] as GenreModule, spec);
-}
-
-/**
- * Překlad modulem `module` a pak hloubka (P36A T8): parametry hloubky modul
- * nevidí, hra je dostane až hotová – jen časový limit dostane modul s hodinami
- * (`clockParam`) i předem. Bez nich je výsledek přesně překlad modulu.
- * Jediná cesta pro rychlý návrh, odpověď režiséra i opravné kolo.
- */
-export function compileWith(module: GenreModule, spec: GenreSpec): GameSpecV1 {
-  const own = { ...(spec.params ?? {}) };
-  const depth: Record<string, number> = {};
-  for (const key of Object.keys(DEPTH_PARAM_BOUNDS)) {
-    if (own[key] === undefined) continue;
-    depth[key] = own[key];
-    delete own[key];
-  }
-  // Limit režiséra jsou hodiny, do kterých modul plánuje délku (úkol svá kola, F3); hodiny pak nastaví `withDepth` stejně.
-  if (module.clockParam !== undefined && depth.timeLimit !== undefined && depth.timeLimit > 0) own[module.clockParam] = depth.timeLimit;
-  const { params: _params, ...rest } = spec;
-  const plain = (Object.keys(own).length === 0 ? rest : { ...rest, params: own }) as GenreSpec;
-  const game = withEnemyAddon(withDepth(module.compile(withCounts(plain) as never), depth), spec);
-  // Činnost hrdiny je jen vzhled (P37A T3): modul ji nečte, hra ji dostane hotová.
-  return spec.heroAction === undefined ? game : { ...game, heroAction: spec.heroAction };
-}
-
-/**
- * Životy do mechaniky `health` (hra žánru ji nese, výchozí 3), cílové skóre do
- * `scoring.target` (kompilátor ho ořízne na dosažitelné, mez specu je 10),
- * časový limit do časovače, který končí prohrou: hodiny, které hra už má,
- * dostanou novou délku; přežití (časovač končící výhrou) délku nese v `seconds`
- * modulu a limit ho nemění. Exportované pro rychlý návrh (životy a skóre z věty).
- */
-export function withDepth(spec: GameSpecV1, depth: Depth): GameSpecV1 {
-  const { lives, targetScore, timeLimit } = depth;
-  let mechanics = spec.mechanics;
-  if (lives !== undefined) mechanics = mechanics.map((mechanic) => (mechanic.id === 'health' ? { id: 'health', params: { max: lives } } : mechanic));
-  if (timeLimit !== undefined && timeLimit > 0) {
-    const clock = mechanics.find((mechanic) => mechanic.id === 'timer');
-    if (clock === undefined) mechanics = [...mechanics, { id: 'timer', params: { id: 'clock', seconds: timeLimit, onEnd: 'lose' } }];
-    else if ((clock.params as { readonly onEnd?: string }).onEnd === 'lose') mechanics = mechanics.map((mechanic) => (mechanic === clock ? { id: 'timer', params: { ...mechanic.params, seconds: timeLimit } } : mechanic));
-  }
-  const target = targetScore !== undefined && targetScore > 0 && spec.scoring !== undefined ? Math.max(10, targetScore) : null;
-  return {
-    ...spec,
-    mechanics,
-    ...(target === null ? {} : { scoring: { ...spec.scoring, target } }),
-  };
-}
-
-/** Role obsazení jako doplněk ovládání (`chase_me` → pronásledovatel, `shoot_at` → střelba). */
-const ENEMY_ADDONS: Partial<Readonly<Record<CastRole, AddonId>>> = { chase_me: 'chaser', shoot_at: 'shoot' };
-
-/**
- * Doplněk jen hře, která staví trať ovládáním (běžec, skákačka) a ovládání ho
- * bere (`CAPABILITIES`). Hra s generátorem režimu (aréna, plavba, úkol) hraje
- * chování ve svém modulu podle `does` (lovec, hlídka). Role, kterou žánr hraje
- * sám (`FOE_DOES`: aréna honí, střílečka střílí), doplněk nedostane. Každá
- * role obsazení dostane svůj doplněk (P39 T7), v pořadí obsazení.
- */
-function withEnemyAddon(spec: GameSpecV1, genre: Pick<GenreSpec, 'genre' | 'cast'>): GameSpecV1 {
-  const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
-  if (generator !== undefined || spec.control === undefined) return spec;
-  const allowed = CAPABILITIES[spec.control].addons;
-  const wanted = new Set((genre.cast ?? []).map((item) => (item.does === FOE_DOES[genre.genre] ? undefined : ENEMY_ADDONS[item.does])));
-  // Pevné pořadí (pronásledovatel, střelba), ne pořadí obsazení: doplňky přidávají těla, takže pořadí obsazení by pohnulo hashem světa (T8).
-  const added = Object.values(ENEMY_ADDONS).filter((addon) => wanted.has(addon) && allowed.includes(addon));
-  if (added.length === 0) return spec;
-  const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
-  return {
-    ...spec,
-    addons: [...new Set([...(spec.addons ?? []), ...added])],
-    ...(added.includes('shoot') && fireHint.length <= 80 ? { tutorial: { ...spec.tutorial, controlsHint: fireHint } } : {}),
-  };
+  return CONTROL_PRESETS[`${spec.genre}.${spec.mode}`] === undefined
+    ? compileWith(GENRE_MODULES[spec.genre] as GenreModule, spec)
+    : compileRecipe(presetOf(spec));
 }
