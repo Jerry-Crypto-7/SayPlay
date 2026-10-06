@@ -9,8 +9,9 @@
  */
 
 import type { KeypointEvidence, QualityReport, VerbProof } from '@/play/contracts';
+import { createStreams, nextInt } from '@/sim/rng';
 
-import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, UNIT, bodyBase, bodyHp, targetStateOf } from './contract';
+import { ARCADE_LIMITS, type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, type InputEvent, NO_INPUT, UNIT, bodyBase, bodyHp, targetStateOf } from './contract';
 import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadProgram, outcomeOf, replay, step } from './kernel';
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
@@ -162,6 +163,12 @@ export function movedOf(motion: Motion, state: ArcadeState): string | null {
   return `body ${String(motion.body)} moved ${(Math.sqrt(squared) / UNIT).toFixed(1)} m after tick ${String(motion.tick)}`;
 }
 
+export const BOT_PROFILES = {
+  novice: { extraReactionTicks: 12, errorPerThousand: 350, errorTicks: 12, decisionWindowTicks: 60 },
+  intermediate: { extraReactionTicks: 4, errorPerThousand: 150, errorTicks: 4, decisionWindowTicks: 60 },
+} as const;
+export type BotProfile = keyof typeof BOT_PROFILES;
+
 /**
  * Odehraje hru robotem. Robot v tiku *t* vidí stav z tiku *t − reactionTicks*
  * (kruhový buffer kopií) a vlastní stisky z té doby, které ještě nevidí.
@@ -173,6 +180,8 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   readonly probeBody?: number;
   readonly runId?: string;
   readonly threatProofs?: readonly ActionWitness[];
+  /** Measurement only: never changes the world's program or its default bot. */
+  readonly profile?: BotProfile;
 } = {}): BotRun {
   const piece = library.bots[world.bot.id];
   if (piece === undefined) throw new Error(`arcade: unknown bot ${world.bot.id}`);
@@ -191,7 +200,13 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   const witness = options.roleBindings === undefined ? null : new WitnessRecorder(world, options.roleBindings, isProbe ? 'probe' : 'winner', options.runId ?? (isProbe ? 'probe' : 'winner'));
   const program = loadProgram(world, witness?.observe(library) ?? library);
   const state = instantiate(world);
-  const delay = bot.reactionTicks;
+  const profile = options.profile === undefined ? undefined : BOT_PROFILES[options.profile];
+  // Fresh private AI stream. Sampling errors cannot consume layout/spawn state,
+  // alter the world hash, or depend on the order that profiles are measured.
+  const errors = profile === undefined ? undefined : createStreams(world.seed).ai;
+  const delay = bot.reactionTicks + (profile?.extraReactionTicks ?? 0);
+  let errorFrom = -1;
+  let errorUntil = -1;
   const history = Array.from({ length: delay + 1 }, () => state.slice());
   const issued: ArcadeInput[] = [];
   const inputs: InputEvent[] = [];
@@ -225,7 +240,18 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
     const seenAt = Math.max(0, tick - delay);
     const seen = history[seenAt % (delay + 1)] as Int32Array;
     const observation = { state: seen, player, tick: seenAt, recent: issued.slice(issued.length - (tick - seenAt)) };
-    const normal = bot.decide(observation);
+    let normal = bot.decide(observation);
+    if (profile !== undefined && errors !== undefined) {
+      if (tick % profile.decisionWindowTicks === 0) {
+        // Fixed draws per window make novice/intermediate directly comparable.
+        const chance = nextInt(errors, 0, 999);
+        const offset = nextInt(errors, 0, profile.decisionWindowTicks - profile.errorTicks);
+        errorFrom = chance < profile.errorPerThousand ? tick + offset : -1;
+        errorUntil = errorFrom < 0 ? -1 : errorFrom + profile.errorTicks;
+      }
+      // A brief missed input, not a mutated world or a fabricated lost outcome.
+      if (tick >= errorFrom && tick < errorUntil) normal = NO_INPUT;
+    }
     const input = options.probeBody === undefined ? normal : threatProbeInput(world, options.probeBody, observation, normal);
     issued.push(input);
     if (input.buttons !== 0 || input.axis !== 0) inputs.push({ tick, ...input });
