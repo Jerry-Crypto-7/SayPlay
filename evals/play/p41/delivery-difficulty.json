@@ -1,0 +1,489 @@
+{
+  "wins": {
+    "novice": 13,
+    "intermediate": 20,
+    "expert": 20
+  },
+  "rows": [
+    {
+      "seed": 1,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "c3610e28",
+      "replayEqual": true
+    },
+    {
+      "seed": 1,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "c3610e28",
+      "replayEqual": true
+    },
+    {
+      "seed": 1,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "c3610e28",
+      "replayEqual": true
+    },
+    {
+      "seed": 2,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "e62e721d",
+      "replayEqual": true
+    },
+    {
+      "seed": 2,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "e62e721d",
+      "replayEqual": true
+    },
+    {
+      "seed": 2,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "e62e721d",
+      "replayEqual": true
+    },
+    {
+      "seed": 3,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "a3d1fde3",
+      "replayEqual": true
+    },
+    {
+      "seed": 3,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "a3d1fde3",
+      "replayEqual": true
+    },
+    {
+      "seed": 3,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "a3d1fde3",
+      "replayEqual": true
+    },
+    {
+      "seed": 4,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "fbb0590e",
+      "replayEqual": true
+    },
+    {
+      "seed": 4,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "fbb0590e",
+      "replayEqual": true
+    },
+    {
+      "seed": 4,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "fbb0590e",
+      "replayEqual": true
+    },
+    {
+      "seed": 5,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "7038e226",
+      "replayEqual": true
+    },
+    {
+      "seed": 5,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "7038e226",
+      "replayEqual": true
+    },
+    {
+      "seed": 5,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "7038e226",
+      "replayEqual": true
+    },
+    {
+      "seed": 6,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "cff7dec1",
+      "replayEqual": true
+    },
+    {
+      "seed": 6,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "cff7dec1",
+      "replayEqual": true
+    },
+    {
+      "seed": 6,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "cff7dec1",
+      "replayEqual": true
+    },
+    {
+      "seed": 7,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "aade12c1",
+      "replayEqual": true
+    },
+    {
+      "seed": 7,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "aade12c1",
+      "replayEqual": true
+    },
+    {
+      "seed": 7,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "aade12c1",
+      "replayEqual": true
+    },
+    {
+      "seed": 8,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "3eb2b847",
+      "replayEqual": true
+    },
+    {
+      "seed": 8,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "3eb2b847",
+      "replayEqual": true
+    },
+    {
+      "seed": 8,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "3eb2b847",
+      "replayEqual": true
+    },
+    {
+      "seed": 9,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "327c9910",
+      "replayEqual": true
+    },
+    {
+      "seed": 9,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "327c9910",
+      "replayEqual": true
+    },
+    {
+      "seed": 9,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "327c9910",
+      "replayEqual": true
+    },
+    {
+      "seed": 10,
+      "profile": "novice",
+      "won": false,
+      "delivered": false,
+      "hash": "3a5cd741",
+      "replayEqual": true
+    },
+    {
+      "seed": 10,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "9bd95a9f",
+      "replayEqual": true
+    },
+    {
+      "seed": 10,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "9bd95a9f",
+      "replayEqual": true
+    },
+    {
+      "seed": 11,
+      "profile": "novice",
+      "won": false,
+      "delivered": false,
+      "hash": "9b359643",
+      "replayEqual": true
+    },
+    {
+      "seed": 11,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "39a1d1c2",
+      "replayEqual": true
+    },
+    {
+      "seed": 11,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "39a1d1c2",
+      "replayEqual": true
+    },
+    {
+      "seed": 12,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "94877382",
+      "replayEqual": true
+    },
+    {
+      "seed": 12,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "94877382",
+      "replayEqual": true
+    },
+    {
+      "seed": 12,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "94877382",
+      "replayEqual": true
+    },
+    {
+      "seed": 13,
+      "profile": "novice",
+      "won": false,
+      "delivered": false,
+      "hash": "20c67924",
+      "replayEqual": true
+    },
+    {
+      "seed": 13,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "a74e2874",
+      "replayEqual": true
+    },
+    {
+      "seed": 13,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "a74e2874",
+      "replayEqual": true
+    },
+    {
+      "seed": 14,
+      "profile": "novice",
+      "won": false,
+      "delivered": false,
+      "hash": "7683d923",
+      "replayEqual": true
+    },
+    {
+      "seed": 14,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "4ec7446a",
+      "replayEqual": true
+    },
+    {
+      "seed": 14,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "4ec7446a",
+      "replayEqual": true
+    },
+    {
+      "seed": 15,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "1915712b",
+      "replayEqual": true
+    },
+    {
+      "seed": 15,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "1915712b",
+      "replayEqual": true
+    },
+    {
+      "seed": 15,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "1915712b",
+      "replayEqual": true
+    },
+    {
+      "seed": 16,
+      "profile": "novice",
+      "won": false,
+      "delivered": false,
+      "hash": "6c8fae73",
+      "replayEqual": true
+    },
+    {
+      "seed": 16,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "f510bfed",
+      "replayEqual": true
+    },
+    {
+      "seed": 16,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "f510bfed",
+      "replayEqual": true
+    },
+    {
+      "seed": 17,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "5107ec00",
+      "replayEqual": true
+    },
+    {
+      "seed": 17,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "5107ec00",
+      "replayEqual": true
+    },
+    {
+      "seed": 17,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "5107ec00",
+      "replayEqual": true
+    },
+    {
+      "seed": 18,
+      "profile": "novice",
+      "won": false,
+      "delivered": false,
+      "hash": "10c95dc4",
+      "replayEqual": true
+    },
+    {
+      "seed": 18,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "2612d341",
+      "replayEqual": true
+    },
+    {
+      "seed": 18,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "2612d341",
+      "replayEqual": true
+    },
+    {
+      "seed": 19,
+      "profile": "novice",
+      "won": false,
+      "delivered": false,
+      "hash": "a3110524",
+      "replayEqual": true
+    },
+    {
+      "seed": 19,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "fce53187",
+      "replayEqual": true
+    },
+    {
+      "seed": 19,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "fce53187",
+      "replayEqual": true
+    },
+    {
+      "seed": 20,
+      "profile": "novice",
+      "won": true,
+      "delivered": true,
+      "hash": "268a72c9",
+      "replayEqual": true
+    },
+    {
+      "seed": 20,
+      "profile": "intermediate",
+      "won": true,
+      "delivered": true,
+      "hash": "268a72c9",
+      "replayEqual": true
+    },
+    {
+      "seed": 20,
+      "profile": "expert",
+      "won": true,
+      "delivered": true,
+      "hash": "268a72c9",
+      "replayEqual": true
+    }
+  ]
+}
