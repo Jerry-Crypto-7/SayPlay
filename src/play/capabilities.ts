@@ -61,7 +61,7 @@ const arcade = (
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // Schema-only until their native runtimes and browser scenes are certified.
   glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish'], mechanics: ['timer'], addons: ['shoot'] }),
-  walker: arcade({ cues: 'walk through a maze', roles: [], finish: true, labels: [], mechanics: [], addons: [] }),
+  walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish'], mechanics: ['health', 'timer'], addons: [] }),
   ball: arcade({ cues: 'kick or throw a physical ball', roles: [], finish: false, labels: [], mechanics: [], addons: [] }),
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [] },
   // P26D T9: počty od 2 čte generátor – běžec mince a řady překážek, plošinovka a poletování mince, střelnice terče a nepřátele.

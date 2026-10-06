@@ -33,12 +33,22 @@ export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntrie
   ])),
 );
 
-export const NATIVE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntries(
+const GLIDE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntries(
   (['reach', 'collect', 'race', 'escape'] as const).flatMap(objective => [false, true].map(shoot => [
     `glide.${objective}${shoot ? '+shoot' : ''}`,
     { move: 'glide', actions: [...(objective === 'collect' ? ['collect' as const] : []), ...(shoot ? ['shoot' as const] : [])], objective, threats: objective === 'race' ? ['rival'] : objective === 'escape' ? ['chaser'] : [] },
   ])),
 );
+
+export const WALKER_PRESETS: Readonly<Record<string, Recipe>> = {
+  'walk.reach': { move: 'walk', actions: [], objective: 'reach', threats: [] },
+  'walk.collect': { move: 'walk', actions: ['collect'], objective: 'collect', threats: [] },
+  'walk.reach+guard': { move: 'walk', actions: [], objective: 'reach', threats: ['guard'] },
+  'walk.collect+guard': { move: 'walk', actions: ['collect'], objective: 'collect', threats: ['guard'] },
+  'walk.escape': { move: 'walk', actions: [], objective: 'escape', threats: ['chaser'] },
+  'walk.escape+collect': { move: 'walk', actions: ['collect'], objective: 'escape', threats: ['chaser'] },
+};
+export const NATIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...GLIDE_PRESETS, ...WALKER_PRESETS };
 
 export function nativePresetOf(preset: string, content: GenreSpec): RecipeAssembly {
   const recipe = NATIVE_PRESETS[preset];

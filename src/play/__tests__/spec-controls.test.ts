@@ -20,7 +20,7 @@ it.each([
   expect(read.value.control).toBe(control);
   expect(read.value.controlParams).toEqual(controlParams);
   const compiled = compileArcade(read.value, 1);
-  if (control === 'glide') {
+  if (control === 'glide' || control === 'walker') {
     expect(compiled.ok, JSON.stringify(compiled)).toBe(true);
     return;
   }

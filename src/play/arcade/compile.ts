@@ -35,6 +35,7 @@ import { buildWorld, instantiate, loadProgram, outcomeOf, replay, step, worldHas
 import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { glideCourse } from './pieces/glide';
+import { walkerLabyrinth } from './pieces/walker';
 import { rapierIfLoaded } from './physics/world';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
@@ -81,6 +82,7 @@ const limitSeconds = (seconds: number): number => Math.min(ARCADE_LIMITS.maxTick
 /** Ovládání, trať a pravidla, která se liší podle `control`. */
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
   const counts = countParams(spec);
+  if (spec.control === 'walker') return walkerLabyrinth.parts(seed, walkerLabyrinth.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'glide') return glideCourse.parts(seed, glideCourse.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
   if (spec.control === 'rhythm') return rhythmParts(seed, { ...spec.controlParams }, health);
@@ -149,6 +151,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
 /** Generátor, který ovládání staví bez `controlParams.generator`. */
 const CONTROL_GENERATORS: Readonly<Record<string, string>> = {
   glide: 'glide_course',
+  walker: 'walker_labyrinth',
   runner: 'runner_track',
   platform: 'platform_level',
   flap: 'flap_track',
@@ -181,7 +184,7 @@ function ownParams(spec: GameSpecV1): Record<string, unknown> | undefined {
 
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. `target` přebije cílové skóre specu (ořez na dosažitelné). */
 export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): ArcadeWorldResult {
-  if (spec.control === 'walker' || spec.control === 'ball') {
+  if (spec.control === 'ball') {
     return { ok: false, issues: [`/control: native ${spec.control} runtime is not registered yet`] };
   }
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);

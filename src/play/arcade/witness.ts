@@ -6,6 +6,7 @@ import type { GameRole, GameSpecV1 } from '@/play/spec';
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, BUTTON, FLAG, HEADER, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp } from './contract';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
+import { walkerVisible, type WalkerMap } from './pieces/walker';
 
 export interface RoleBinding {
   readonly body: number;
@@ -216,6 +217,14 @@ export class WitnessRecorder {
       if (origin.held >= 0 && other >= 0 && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
     }
     if (effect.kind === 'lose' || (effect.kind === 'damage' && effect.amount > 0)) {
+      if (ref.id === 'walker_caught' && typeof ref.params.body === 'number') {
+        const guard = ref.params.body;
+        const binding = this.binding(guard, state);
+        if (binding !== undefined && this.hasMoved(binding, state) && walkerVisible(state, player, guard, ref.params as unknown as WalkerMap, ref.params.range as number)) {
+          this.hurt.add(binding.roleId);
+          if (this.run === 'probe') this.add('guard', guard, player, tick, 'caught-in-patrol-sight', state);
+        }
+      }
       if (other >= 0) {
         if (effect.kind === 'lose') this.pendingLosses.push({ body: other, evidence: 'harmful-contact' });
         else this.harm(other, player, tick, 'harmful-contact', state);
@@ -287,7 +296,7 @@ export class WitnessRecorder {
       if (moved) this.add('throw', player, motion.body, tick, 'thrown-body-moved', state);
       if (!active || moved) this.thrown.splice(i, 1);
     }
-    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide' };
+    const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk' };
     const verb = movement[this.control];
     const hero = this.binding(player, state);
     if (verb !== undefined && hero !== undefined && this.hasMoved(hero, state) && (verb !== 'jump' || (state[p + BODY.y]! > before[p + BODY.y]! && (state[p + BODY.flags]! & FLAG.grounded) === 0))) this.add(verb, player, null, tick, 'player-moved', state);
@@ -312,7 +321,7 @@ export class WitnessRecorder {
       for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
         const own = this.binding(body, state);
         if (!live(state, body) || own?.roleId !== threat.actor.roleId) continue;
-        if (threat.verb === 'chaser' && this.hasMoved(own, state)) this.add('escape', state[HEADER.player]!, body, tick, `survived-threat:${threat.runId}`, state);
+        if ((threat.verb === 'chaser' || threat.verb === 'guard') && this.hasMoved(own, state)) this.add('escape', state[HEADER.player]!, body, tick, `survived-threat:${threat.runId}`, state);
         this.add('survive', state[HEADER.player]!, body, tick, `survived-threat:${threat.runId}`, state);
       }
     }

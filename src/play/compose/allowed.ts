@@ -38,7 +38,9 @@ export const ALLOWED: readonly AllowedCell[] = [
   // Missing runtime/scene must never become eligible just because the intent asks for it.
   ...Object.entries(NATIVE_PRESETS).map(([id, recipe]): AllowedCell => ({
     id, recipe, assembly: 'native', status: 'staged',
-    preset: { genre: 'voyage', mode: 'race', hero: 'fish', setting: 'coral reef', cast: [
+    preset: recipe.move === 'walk' ? { genre: 'quest', mode: 'spatial', hero: 'fox', setting: 'maze', cast: [
+      { label: recipe.threats.includes('guard') ? 'guard' : 'wolf', does: 'chase_me' }, { label: 'coin', does: 'collect' }, { label: 'exit', does: 'reach' },
+    ] } : { genre: 'voyage', mode: 'race', hero: 'fish', setting: 'coral reef', cast: [
       { label: 'ring', does: 'collect' }, { label: 'reef', does: 'avoid' },
       { label: 'dolphin', does: 'fight' }, { label: 'shark', does: 'chase_me' },
       ...(recipe.actions.includes('shoot') ? [{ label: 'eel', does: 'shoot_at' as const }] : []),

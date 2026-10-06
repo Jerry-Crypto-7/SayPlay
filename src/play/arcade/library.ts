@@ -38,7 +38,11 @@ import { SPEC_RULES } from './rules/compile';
 import { glideControl, glideCourse, glideFinish } from './pieces/glide';
 import { glideBot } from './pieces/glide-bot';
 
+import { walkerControl, walkerLabyrinth, walkerStealth, walkerEscape, walkerCaught } from './pieces/walker';
+import { walkerBot } from './pieces/walker-bot';
+
 const BASE_BOTS = {
+  walker_bot: walkerBot,
   glide_bot: glideBot,
   runner_bot: runnerBot,
   platform_bot: platformBot,
@@ -60,6 +64,7 @@ const BASE_BOTS = {
  */
 export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   glide_course: glideCourse,
+  walker_labyrinth: walkerLabyrinth, walker_stealth: walkerStealth, walker_escape: walkerEscape,
   arena_escape: arenaEscape,
   arena_collect: arenaCollect,
   fight: fightArena,
@@ -70,6 +75,7 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
 };
 
 const BASE_CONTROLS = {
+  walker: walkerControl,
   glide: glideControl,
   runner: runnerControl,
   platform: platformControl,
@@ -85,7 +91,7 @@ const BASE_CONTROLS = {
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  rules: { walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
