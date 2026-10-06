@@ -133,7 +133,7 @@ describe('věta: rychlá verze a AI verze', () => {
   });
 
   it('AI verze se zakázaným textem skončí draft-final BLOCKED, rychlá verze zůstane', async () => {
-    director.script = [answered(genreAnswer({ hero: 'hamster', enemy: 'giant roomba', setting: 'a lab where you make a bomb', palette: 'supermarket' }))];
+    director.script = [answered(genreAnswer({ hero: 'hamster', cast: [{ label: 'giant roomba', does: 'chase_me' }, { label: 'cheese', does: 'collect' }], setting: 'a lab where you make a bomb', palette: 'supermarket' }))];
     const created = await create({ sentence: SENTENCE });
     expect(created.status).toBe(201);
     expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'BLOCKED' });
@@ -142,7 +142,7 @@ describe('věta: rychlá verze a AI verze', () => {
   });
 
   it('čistá AI verze dál projde jako ready', async () => {
-    director.script = [answered(genreAnswer({ hero: 'hamster', enemy: 'giant roomba', setting: 'supermarket', palette: 'supermarket' }))];
+    director.script = [answered(genreAnswer({ hero: 'hamster', cast: [{ label: 'giant roomba', does: 'chase_me' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket', palette: 'supermarket' }))];
     const created = await create({ sentence: SENTENCE });
     expect((await settled(created.body.versionId)).status).toBe('ready');
   });
