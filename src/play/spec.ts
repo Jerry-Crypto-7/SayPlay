@@ -256,7 +256,7 @@ export const tutorialSchema = z
  * a **bez výchozí hodnoty**: default by ho vepsal do každého přečteného specu
  * a pohnul `specHash` všech dnešních her.
  */
-export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel'] as const;
+export const CONTROLS = ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel', 'glide', 'walker', 'ball'] as const;
 export type ControlId = (typeof CONTROLS)[number];
 
 /**
@@ -395,8 +395,30 @@ export type RhythmParams = z.infer<typeof rhythmParamsSchema>;
 export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES).optional(), rounds: z.int().min(1).max(DUEL.maxRounds).optional() }).strict();
 export type DuelParams = z.infer<typeof duelParamsSchema>;
 
+// Stored parameters have no defaults: old saved specs keep their exact hash.
+export const glideSpecParamsSchema = z.object({
+  mode: z.enum(['reach', 'collect', 'race', 'escape']).optional(),
+  difficulty: z.enum(['easy', 'normal', 'hard']).optional(),
+  lengthM: z.int().min(80).max(400).optional(),
+  topSpeed: z.int().min(120).max(240).optional(),
+}).strict();
+export const walkerSpecParamsSchema = z.object({
+  size: z.int().min(7).max(15).refine(value => value % 2 === 1, 'Maze size must be odd').optional(),
+  speed: z.int().min(80).max(160).optional(),
+  collect: z.boolean().optional(),
+}).strict();
+export const ballSpecParamsSchema = z.object({
+  goal: z.enum(['goal', 'hoop', 'hole']).optional(),
+  keeper: z.boolean().optional(),
+  difficulty: z.enum(['easy', 'normal', 'hard']).optional(),
+  targets: z.int().min(1).max(5).optional(),
+}).strict();
+
 /** Která ovládání berou parametry a jakým schématem; `readGameSpec` je přiřadí podle `control`. */
 export const CONTROL_PARAMS = {
+  glide: glideSpecParamsSchema,
+  walker: walkerSpecParamsSchema,
+  ball: ballSpecParamsSchema,
   runner: runnerParamsSchema,
   platform: platformParamsSchema,
   flap: flapParamsSchema,
@@ -422,6 +444,9 @@ const DELEGATION = {
 };
 const delegated = <S extends z.ZodObject>(schema: S) => schema.extend(DELEGATION);
 const SPEC_CONTROL_PARAMS = {
+  glide: delegated(glideSpecParamsSchema),
+  walker: delegated(walkerSpecParamsSchema),
+  ball: delegated(ballSpecParamsSchema),
   runner: delegated(runnerParamsSchema),
   platform: delegated(platformParamsSchema),
   flap: delegated(flapParamsSchema),
@@ -440,6 +465,9 @@ export const gameSpecSchema = z
     control: z.enum(CONTROLS).optional(),
     controlParams: z
       .union([
+        SPEC_CONTROL_PARAMS.glide,
+        SPEC_CONTROL_PARAMS.walker,
+        SPEC_CONTROL_PARAMS.ball,
         SPEC_CONTROL_PARAMS.runner,
         SPEC_CONTROL_PARAMS.platform,
         SPEC_CONTROL_PARAMS.flap,

@@ -107,6 +107,9 @@ const CLOSEST: Readonly<Record<ArchetypeId, string>> = {
 
 /** Arkádové hry sdílejí archetyp šablony, takže je pojmenuje ovládání. */
 const ARCADE_CLOSEST: Readonly<Record<Exclude<ControlId, 'tap_go'>, string>> = {
+  glide: 'a swimming or flying game',
+  walker: 'a maze game',
+  ball: 'a ball game',
   runner: 'an endless runner',
   platform: 'a platformer',
   flap: 'a flappy game',

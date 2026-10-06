@@ -178,6 +178,9 @@ function ownParams(spec: GameSpecV1): Record<string, unknown> | undefined {
 
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. `target` přebije cílové skóre specu (ořez na dosažitelné). */
 export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): ArcadeWorldResult {
+  if (spec.control === 'glide' || spec.control === 'walker' || spec.control === 'ball') {
+    return { ok: false, issues: [`/control: native ${spec.control} runtime is not registered yet`] };
+  }
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   const generator = generatorOf(spec);

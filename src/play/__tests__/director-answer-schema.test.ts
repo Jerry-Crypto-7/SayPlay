@@ -219,7 +219,10 @@ describe('director answer schema for a GenreSpec', () => {
       // S větou jako v `director/index.ts`: cíl přenosu věty mimo hry (P37A T5) z GenreSpec sám nevyjde.
       const read = readGenreAnswer(answer, GENRE_MODULES, prompt);
       if (!read.ok) throw new Error(`${prompt}: ${read.detail}`);
-      expect(read.spec, prompt).toEqual(draft.spec);
+      // Legacy parsing remains valid when today's quick draft selects a native cell.
+      expect(read.genre, prompt).toEqual(draft.genre);
+      expect(read.spec.genre?.id, prompt).toBe(draft.genre.genre);
+      expect(read.spec.roles.find(role => role.kind === 'player')?.label, prompt).toBe(draft.genre.hero);
       checked += 1;
     }
     expect(checked).toBeGreaterThan(10);

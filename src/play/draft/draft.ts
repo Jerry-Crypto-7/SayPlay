@@ -1483,6 +1483,8 @@ export function draftChoiceOrder(sentence: string, ranking: GenreRanking, readin
  */
 export function draftForControl(sentence: string, control: ControlId, seed = 1): GameSpecV1 | null {
   if (control === 'tap_go') return draftGrid(sentence, seed, scoreArchetypes(sentence)).spec;
+  // Native recipe controls do not have a legacy single-control template.
+  if (control === 'glide' || control === 'walker' || control === 'ball') return null;
   const pick = pickControl(sentence.toLowerCase());
   return draftArcade(sentence, seed, pick?.control === control ? pick : DEFAULT_CHOICE[control]);
 }
