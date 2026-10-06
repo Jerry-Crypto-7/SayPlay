@@ -76,6 +76,18 @@ describe('bounce', () => {
     expect((await sent()).filter((line) => line.startsWith('bounce'))).toEqual([]);
   });
 
+  // Spouštěcí ťuk (`swallowFirst`) do vstupů nepadne: hráč, který hru pustil a odešel, na ni sáhl.
+  it('the start tap alone is a touch, by next game or by closing the page', async () => {
+    const { loopEvent, loopImpression, loopTouch } = await import('../loop-client');
+    loopImpression(A);
+    loopTouch(A);
+    loopEvent('next_game', A);
+    loopImpression(B);
+    loopTouch(B);
+    leave();
+    expect((await sent()).filter((line) => line.startsWith('bounce'))).toEqual([]);
+  });
+
   it('closing the page bounces only the last game shown, if untouched', async () => {
     const { loopEvent, loopImpression } = await import('../loop-client');
     loopImpression(A);

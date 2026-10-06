@@ -73,6 +73,11 @@ function bounceIfUntouched(versionId: string): void {
   if (sent.has(`impression|${versionId}`) && !touched.has(versionId)) loopEvent('bounce', versionId);
 }
 
+/** Spouštěcí dotek hry: `swallowFirst` ho do vstupů nepustí, `first_input` tak nepřijde, a odchod pak není bez vstupu. */
+export function loopTouch(versionId: string): void {
+  touched.add(versionId);
+}
+
 /** Zobrazení hry; otevřená ze sdíleného odkazu navíc `shared_open`. */
 export function loopImpression(versionId: string): void {
   if (shown === null) window.addEventListener('pagehide', () => shown !== null && bounceIfUntouched(shown));
