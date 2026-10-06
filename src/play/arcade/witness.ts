@@ -245,6 +245,12 @@ export class WitnessRecorder {
         this.add('score', player, scored.target, tick, 'physical-ball-in-goal', state);
       }
     }
+    if (ref.id === 'objective_order' && effect.kind === 'stateChange' && effect.state === 1) {
+      const node = (ref.params.nodes as { body: number; action: string }[]).find(node => node.body === effect.body);
+      if (node?.action === 'collect') this.add('collect', player, effect.body, tick, 'ordered-pickup', state);
+      if (node?.action === 'open') { this.add('interact', player, effect.body, tick, 'ordered-gate-opened', state); this.add('open', player, effect.body, tick, 'ordered-gate-opened', state); }
+      if (node?.action === 'reach') this.add('reach', player, effect.body, tick, 'ordered-goal-contact', state);
+    }
     const other = origin.other;
     const code = other < 0 ? -1 : roleAt(state, other);
     if (effect.kind === 'despawn' && effect.body === other) {

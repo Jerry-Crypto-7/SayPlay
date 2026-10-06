@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod';
+import { pacedBotBase } from './pieces/phase-pieces';
 
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -69,7 +70,7 @@ export interface ArcadeParts {
  * poznat běžce a scéna podle něj volí kameru a vstup.
  */
 export const baseControlOf = (control: PieceRef): PieceRef =>
-  control.id === 'addon_control' ? (control.params as { base: PieceRef }).base : control;
+  control.id === 'addon_control' || control.id === 'phase_control' ? baseControlOf((control.params as { base: PieceRef }).base) : control;
 const baseControl = (parts: ArcadeParts): PieceRef => baseControlOf(parts.control);
 
 export interface AddonContext {
@@ -710,7 +711,7 @@ export function makeAddonBot(bases: Readonly<Record<string, BotPiece>>): BotPiec
       let input = base.decide(observation, paramsOf(base, params.base.params));
       for (const id of params.addons) {
         const step = ADDON_PIECES[id]?.bot;
-        if (step !== undefined) input = step(observation, input, params.base);
+        if (step !== undefined) input = step(observation, input, pacedBotBase(params.base, observation));
       }
       return input;
     },

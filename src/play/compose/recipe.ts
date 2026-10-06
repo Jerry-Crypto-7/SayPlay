@@ -1,9 +1,12 @@
 import { z } from 'zod';
+import { phasesSchema, dependsOnSchema } from './progression';
 import { ACTIONS, MOVES, OBJECTIVES, THREATS } from '../intent/contract';
 
 const unique = <T>(items: T[]) => new Set(items).size === items.length;
 /** Stationary controls (aim, throw, rhythm…) have actions but no travel. */
 export const recipeSchema = z.object({
+  phases: phasesSchema.optional(),
+  dependsOn: dependsOnSchema.optional(),
   move: z.enum(['stationary', ...MOVES]),
   actions: z.array(z.enum(ACTIONS)).max(ACTIONS.length).refine(unique, 'Duplicate action'),
   // Interaction courses finish the sequence of target states; they need no

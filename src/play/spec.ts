@@ -24,6 +24,7 @@
  */
 
 import { z } from 'zod';
+import { phasesSchema, dependsOnSchema } from './compose/progression';
 
 import { ID_PATTERN } from '@/ir/types';
 import { canonicalHash } from '@/ir/worlddoc';
@@ -479,6 +480,8 @@ const SPEC_CONTROL_PARAMS = {
 export const gameSpecSchema = z
   .object({
     schema: z.literal(GAME_SPEC_SCHEMA),
+    phases: phasesSchema.optional(),
+    dependsOn: dependsOnSchema.optional(),
     control: z.enum(CONTROLS).optional(),
     controlParams: z
       .union([

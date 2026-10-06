@@ -15,7 +15,26 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
   const base = compileRecipeBase(assembly);
   const time = timeOfDayFor(assembly.content.setting);
   const game = time === null ? base : { ...base, theme: { ...base.theme, timeOfDay: time } };
-  return game;
+  const roles = [...game.roles];
+  for (const node of assembly.dependsOn ?? []) if (!roles.some(role => role.id === node.goal)) {
+    if (node.action === undefined) throw new Error('New dependency goals require an explicit action: ' + node.goal);
+    roles.push({ ...game.roles[0]!, id: node.goal, label: node.label ?? node.goal, kind: node.action === 'open' ? 'door' : node.action === 'collect' ? 'key' : 'checkpoint' });
+  }
+  const ordered: NonNullable<RecipeAssembly['dependsOn']>[number][] = [];
+  const visit = (goal: string): void => {
+    if (ordered.some(node => node.goal === goal)) return;
+    const node = assembly.dependsOn!.find(node => node.goal === goal)!;
+    node.prerequisites.forEach(visit); ordered.push(node);
+  };
+  assembly.dependsOn?.forEach(node => visit(node.goal));
+  const steps = ordered.map(node => {
+    const role = roles.find(role => role.id === node.goal)!;
+    const action = node.action ?? (role.kind === 'door' ? 'open' : role.kind === 'key' || role.kind === 'collectible' ? 'collect' : 'reach');
+    return `${action} ${node.label ?? role.label}`;
+  });
+  const instruction = steps.join(', then ');
+  const goalLine = instruction.length > 79 ? 'Complete the linked goals in order, then reach the finish.' : `${instruction.charAt(0).toUpperCase()}${instruction.slice(1)}.`;
+  return { ...game, roles, ...(steps.length === 0 ? {} : { tutorial: { ...game.tutorial, goalLine } }), ...(assembly.phases === undefined ? {} : { phases: assembly.phases }), ...(assembly.dependsOn === undefined ? {} : { dependsOn: assembly.dependsOn }) };
 }
 function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
   assertPreset(assembly);

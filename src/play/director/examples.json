@@ -99,4 +99,6 @@
     "sentence": "a ninja runs across rooftops shooting drones and must score 300 points",
     "answer": { "plan": "Running is the main verb; the drones are shot down; 300 points to win.", "spec": { "genre": "runner", "mode": "default", "hero": "ninja", "cast": [{ "label": "drone", "does": "shoot_at" }], "setting": "city rooftops", "params": { "targetScore": 300 } } }
   }
+,
+  {"id":"p41-phases","sentence":"a car drives through the city in two stages, first slower then faster","answer":{"plan":"Drive the same city route through two actual speed sections.","spec":{"recipe":{"move":"drive","actions":[],"objective":"reach","threats":[],"phases":[{"start":0,"speedPercent":90},{"start":500,"speedPercent":110}]},"hero":"car","setting":"city","unmet":[]}}}
 ]

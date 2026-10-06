@@ -1,3 +1,5 @@
+import { makePacedControl, makePacedBot } from './pieces/phase-pieces';
+import { objectiveOrder, objectiveWalkerBot } from './pieces/objective-order';
 /**
  * Knihovna arkádových kusů (P25A): id → kus. Svět odkazuje na kusy jménem
  * (`PieceRef`), jádro i ověření je hledají tady. Co tu není, neexistuje.
@@ -97,9 +99,11 @@ const BASE_CONTROLS = {
   duel: duelControl,
 } as const;
 
+const PROGRESSION_CONTROLS = { ...BASE_CONTROLS, phase_control: makePacedControl(BASE_CONTROLS) };
+const PROGRESSION_BOTS = { ...BASE_BOTS, objective_walker_bot: objectiveWalkerBot, phase_bot: makePacedBot(BASE_BOTS) };
 export const ARCADE_LIBRARY: ArcadeLibrary = {
-  controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  controls: { ...PROGRESSION_CONTROLS, addon_control: makeAddonControl(PROGRESSION_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
+  rules: { arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, objective_order: objectiveOrder, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,
@@ -113,5 +117,5 @@ export const ARCADE_LIBRARY: ArcadeLibrary = {
     duel_arena: duelArena,
     ...MODE_GENERATORS,
   },
-  bots: { ...BASE_BOTS, addon_bot: makeAddonBot(BASE_BOTS) as BotPiece },
+  bots: { ...PROGRESSION_BOTS, addon_bot: makeAddonBot(PROGRESSION_BOTS) as BotPiece },
 };

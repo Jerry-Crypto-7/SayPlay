@@ -83,6 +83,7 @@ export interface Cast {
   readonly chaser: string;
   readonly props: Partial<Record<PropRole, string>>;
   readonly things?: Readonly<Record<string, string>>;
+  readonly objectives?: Readonly<Record<number, string>>;
 }
 
 /** Překážky běžce, které smí nést model z popisku; skluzová laťka tvarem říká „podlez“, tu ne. */
@@ -90,6 +91,7 @@ const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'cra
 
 /** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
 export function modelIdOf(view: BodyView, cast: Cast): string {
+  if (cast.objectives?.[view.index] !== undefined) return cast.objectives[view.index]!;
   if (view.kind.startsWith('thing:') && cast.things?.[view.kind.slice(6)] !== undefined) return cast.things[view.kind.slice(6)]!;
   if (view.role === ROLE.player) return cast.player;
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
@@ -322,7 +324,17 @@ function applyPose(group: Group, pose: Pose, dead: number): void {
   group.visible = pose.flash === 0 || Math.floor(pose.flash * 6) % 2 === 0;
 }
 
-export function World({ session, control, cast, surface, scene, enabled, backdrop, heroAction, ghost }: WorldProps) {
+export function World({ session, control, cast: baseCast, surface, scene, enabled, backdrop, heroAction, ghost }: WorldProps) {
+  const cast = useMemo(() => {
+    const objectives: Record<number, string> = {};
+    for (const rule of session.world.rules) if (rule.id === 'objective_order') {
+      for (const node of rule.params.nodes as { body: number; goal: string; action: string }[]) {
+        const kind = session.world.kinds[session.world.initial[bodyBase(node.body) + BODY.kind]!]!;
+        objectives[node.body] = node.goal.startsWith('__item') ? kind : node.action === 'collect' ? 'key' : node.action === 'open' ? 'exit-door' : 'finish-flag';
+      }
+    }
+    return { ...baseCast, objectives };
+  }, [baseCast, session]);
   // Střely a hody přidává jádro za běhu (`spawn`) – seznam se staví znovu, když se změní.
   const [views, setViews] = useState(() => bodiesOf(session));
   const groups = useRef<(Group | null)[]>([]);
@@ -364,8 +376,8 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
 
   // Role těl, pro která scéna postavila model – doplněk, který jádro hraje a scéna nekreslí, e2e takhle pozná.
   useEffect(() => {
-    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => !drawsNothing(view)).map((view) => ROLE_NAMES[view.role]))].join(' ');
-  }, [views, surface]);
+    if (surface.current !== null) surface.current.dataset.drawn = [...new Set(views.filter((view) => cast.objectives[view.index] !== undefined || !drawsNothing(view)).map((view) => ROLE_NAMES[view.role]))].join(' ');
+  }, [views, surface, cast]);
 
   useFrame((_, delta) => {
     drawClock.current += delta * 1000;
@@ -503,7 +515,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
-        drawsNothing(view) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) ? null : (
+        (drawsNothing(view) && cast.objectives[view.index] === undefined) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>
