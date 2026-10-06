@@ -39,6 +39,7 @@ import { RhythmScene } from './rhythm/RhythmScene';
 import { RiggedModel } from './RiggedModel';
 import { RunnerWorld } from './runner/RunnerWorld';
 import type { ArcadeSession } from './session';
+import { useGlideInput } from './glide/GlideScene';
 import { useSteerInput } from './steer/SteerScene';
 import { type BodyModel, TimingScene, useTapInput } from './timing/TimingScene';
 import { TouchStick, TouchZones } from './TouchControls';
@@ -720,6 +721,7 @@ export default function ArcadeStage({
   usePlatformInput(session, surface, enabled && input === 'platform');
   useFlapInput(session, surface, enabled && input === 'flap');
   useSteerInput(session, surface, enabled && input === 'steer');
+  useGlideInput(session, surface, enabled && input === 'glide');
   useArenaInput(session, surface, enabled && input === 'arena');
   useTapInput(session, surface, enabled && input === 'tap', control === 'rhythm');
   useDuelInput(session, surface, enabled && input === 'duel');

@@ -29,7 +29,7 @@ export interface ControlCapability {
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
   /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3; nástrahy `spikes`, `pipe`, `hazard` – P39 T9). */
-  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard')[];
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard' | 'glide_rival' | 'glide_pursuer' | 'guard' | 'chaser' | 'goalkeeper')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -59,8 +59,7 @@ const arcade = (
 });
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
-  // Schema-only until their native runtimes and browser scenes are certified.
-  glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish'], mechanics: ['timer'], addons: ['shoot'] }),
+  glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish', 'glide_rival', 'glide_pursuer'], mechanics: ['timer'], addons: ['shoot'] }),
   walker: arcade({ setting: true, cues: 'walk through a maze', roles: ['wall', 'coin', 'guard', 'chaser'], finish: true, labels: ['player', 'coin', 'finish'], mechanics: ['health', 'timer'], addons: [] }),
   ball: arcade({ setting: true, cues: 'aim and shoot a ball', roles: ['target', 'goalkeeper'], finish: true, labels: ['player', 'target'], mechanics: ['timer'], addons: [] }),
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [] },

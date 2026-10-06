@@ -329,7 +329,7 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   const out: Partial<Record<PropRole, string>> = {};
   const control = controlOf(spec);
   for (const id of PROP_ROLES) {
-    const role = spec.roles.find((candidate) => candidate.id === id);
+    const role = spec.roles.find((candidate) => candidate.id === id || (spec.control === 'glide' && id === 'rival' && candidate.id === 'glide_rival'));
     if (role === undefined || !readsLabel(control, role)) continue;
     // Nástraha i terč střelnice z věty bývá zvíře („animals“) – smí i třídu postav.
     const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, namesThing(control, id));
