@@ -47,11 +47,12 @@ import { throwBudgetIn, throwField, throwParts } from './pieces/throw';
 import { timingParts } from './pieces/timing';
 import { compileRules, rulesOwnGoal, yardParts } from './rules/compile';
 import { runBot } from './verify';
+import { bindRoles, type RoleBinding } from './witness';
 
 /** Verze kompilátoru arkádové hry: mřížkový kompilátor + verze jádra. */
 export const ARCADE_COMPILER_VERSION = `${GAME_COMPILER_VERSION}/${ARCADE_RUNTIME_VERSION}`;
 
-export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld } | { readonly ok: false; readonly issues: readonly string[] };
+export type ArcadeWorldResult = { readonly ok: true; readonly world: ArcadeWorld; readonly roleBindings: readonly RoleBinding[] } | { readonly ok: false; readonly issues: readonly string[] };
 
 /**
  * Počet role jako parametr generátoru (P26D T9). Schéma dává `count` výchozí 1,
@@ -218,7 +219,7 @@ export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): 
   }
 
   const built = buildWorld({ seed, control, rules: scored.rules, bot, level: scored.level, ...(lives === undefined ? {} : { health: lives }) }, ARCADE_LIBRARY);
-  return built.ok ? { ok: true, world: built.world } : built;
+  return built.ok ? { ok: true, world: built.world, roleBindings: bindRoles(spec, built.world) } : built;
 }
 
 /**

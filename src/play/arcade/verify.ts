@@ -15,8 +15,10 @@ import { type ArcadeLibrary, type ArcadeOutcome, hashArcade, instantiate, loadPr
 import { ARCADE_LIBRARY } from './library';
 import { releasePhysics } from './physics/step';
 import { avoidingLosses, lossPlanner, losingVerbs, rulesPlanner } from './rules/bot';
+import { type ActionWitness, type RoleBinding, WitnessRecorder, threatProbeInput } from './witness';
 
 export interface BotRun {
+  readonly witnesses: readonly ActionWitness[];
   readonly inputs: readonly InputEvent[];
   readonly outcome: ArcadeOutcome;
   readonly tick: number;
@@ -164,7 +166,14 @@ export function movedOf(motion: Motion, state: ArcadeState): string | null {
  * Odehraje hru robotem. Robot v tiku *t* vidí stav z tiku *t − reactionTicks*
  * (kruhový buffer kopií) a vlastní stisky z té doby, které ještě nevidí.
  */
-export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, options: { readonly planner?: boolean; readonly seek?: ReadonlySet<string> } = {}): BotRun {
+export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, options: {
+  readonly planner?: boolean;
+  readonly seek?: ReadonlySet<string>;
+  readonly roleBindings?: readonly RoleBinding[];
+  readonly probeBody?: number;
+  readonly runId?: string;
+  readonly threatProofs?: readonly ActionWitness[];
+} = {}): BotRun {
   const piece = library.bots[world.bot.id];
   if (piece === undefined) throw new Error(`arcade: unknown bot ${world.bot.id}`);
   const params = piece.params.parse(world.bot.params);
@@ -178,7 +187,9 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   // `interact` si rozdělanou práci píše do čítače každý tik držení: sloveso úkolu dokáže jen posun stavu cíle (P32G T3).
   const stateOnly = world.rules.map((ref) => ref.id === 'interact');
   const measuring = verbOf.some((verb) => verb !== null);
-  const program = loadProgram(world, library);
+  const isProbe = options.probeBody !== undefined || options.seek !== undefined;
+  const witness = options.roleBindings === undefined ? null : new WitnessRecorder(world, options.roleBindings, isProbe ? 'probe' : 'winner', options.runId ?? (isProbe ? 'probe' : 'winner'));
+  const program = loadProgram(world, witness?.observe(library) ?? library);
   const state = instantiate(world);
   const delay = bot.reactionTicks;
   const history = Array.from({ length: delay + 1 }, () => state.slice());
@@ -193,6 +204,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   const before = state.slice();
   let now = 0;
   const trace = (rule: number, effect: ArcadeEffect): void => {
+    witness?.effect(rule, effect, state, now);
     if (firstFired[rule] === -1) firstFired[rule] = now;
     const verb = verbOf[rule];
     if (verb === null || verb === undefined || changes.has(verb)) return;
@@ -212,11 +224,14 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
     (history[tick % (delay + 1)] as Int32Array).set(state);
     const seenAt = Math.max(0, tick - delay);
     const seen = history[seenAt % (delay + 1)] as Int32Array;
-    const input = bot.decide({ state: seen, player, tick: seenAt, recent: issued.slice(issued.length - (tick - seenAt)) });
+    const observation = { state: seen, player, tick: seenAt, recent: issued.slice(issued.length - (tick - seenAt)) };
+    const normal = bot.decide(observation);
+    const input = options.probeBody === undefined ? normal : threatProbeInput(world, options.probeBody, observation, normal);
     issued.push(input);
     if (input.buttons !== 0 || input.axis !== 0) inputs.push({ tick, ...input });
-    if (measuring) before.set(state);
+    if (measuring || witness !== null) before.set(state);
     step(state, input, program, trace);
+    witness?.afterTick(before, state, tick);
     if (!measuring) continue;
     // Výhra či prohra je změna jen tehdy, když ji tik opravdu vyhlásil (prohra má přednost).
     for (const [verb, outcome] of endings) if (!changes.has(verb) && outcomeOf(state) === outcome) changes.set(verb, `${outcome} at tick ${String(tick)}`);
@@ -232,6 +247,7 @@ export function runBot(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRA
   // Robot, který na horizontu nevyhrál, konec neohlásil: svět Rapieru uvolnit hned.
   releasePhysics(state);
   return {
+    witnesses: witness === null ? [] : outcomeOf(state) === 'won' && !isProbe ? witness.escaped(options.threatProofs ?? [], state, state[HEADER.tick] as number) : witness.finish(outcomeOf(state)),
     inputs,
     outcome: outcomeOf(state),
     tick: state[HEADER.tick] as number,
@@ -283,6 +299,7 @@ function withLossProofs(world: ArcadeWorld, library: ArcadeLibrary, verbs: VerbP
 }
 
 export interface ArcadeVerdict {
+  readonly witnesses: readonly ActionWitness[];
   readonly bot: BotRun;
   readonly idle: { readonly outcome: ArcadeOutcome; readonly tick: number; readonly hash: string };
   readonly replayEqual: boolean;
@@ -295,11 +312,21 @@ export interface ArcadeVerdict {
   readonly publishEligible: boolean;
 }
 
-export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY): ArcadeVerdict {
+/** S vazbami z `arcadeWorldOf` navíc změří trojice a samostatné sondy hrozeb; uložený svět ani publikační bránu nemění. */
+export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE_LIBRARY, roleBindings?: readonly RoleBinding[]): ArcadeVerdict {
   const initial = instantiate(world);
   const bodies = initial[HEADER.bodyCount] as number;
   const withinLimits = bodies <= ARCADE_LIMITS.maxBodies && world.rules.length <= ARCADE_LIMITS.maxRules;
-  const bot = runBot(world, library);
+  const probes: ActionWitness[] = [];
+  const probed = new Set<string>();
+  for (const binding of roleBindings ?? []) {
+    // Jedna sonda na roli; v neúspěchu se žádná hrozba nepředpokládá.
+    if (binding.player || !['hazard', 'chaser', 'patrol'].includes(binding.roleKind) || probed.has(binding.roleId)) continue;
+    probed.add(binding.roleId);
+    const probe = runBot(world, library, { roleBindings, probeBody: binding.body, runId: `probe:${binding.roleId}` });
+    probes.push(...probe.witnesses.filter(w => w.actor.roleId === binding.roleId));
+  }
+  const bot = runBot(world, library, { roleBindings, threatProofs: probes });
   const first = replay(world, bot.inputs, library);
   const second = replay(world, bot.inputs, library);
   const replayEqual = first.hash === second.hash && first.hash === bot.hash;
@@ -317,7 +344,7 @@ export function verifyArcade(world: ArcadeWorld, library: ArcadeLibrary = ARCADE
     else if (!proof.changed) failures.push(`verbs_proved: VERB_NO_EFFECT:${proof.verb} – a rule with the verb "${proof.verb}" fired, but the bot saw nothing change that its effects promise`);
   }
 
-  return { bot, idle, replayEqual, withinLimits, initialHash: hashArcade(initial), verbs, failures, publishEligible: failures.length === 0 };
+  return { bot, witnesses: [...bot.witnesses, ...probes], idle, replayEqual, withinLimits, initialHash: hashArcade(initial), verbs, failures, publishEligible: failures.length === 0 };
 }
 
 const CHECKS = ['bot_wins', 'idle_loses', 'replay_equal', 'within_limits'] as const;
