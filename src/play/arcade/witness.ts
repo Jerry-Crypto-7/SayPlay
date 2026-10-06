@@ -84,6 +84,7 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   const dx = state[t + BODY.x]! - state[p + BODY.x]!;
   const dz = state[t + BODY.z]! - state[p + BODY.z]!;
   if (control === 'move_free' || control === 'fight') return { buttons: 0, axis: axisOfDirection(directionToward(dx, dz)) };
+  if (control === 'steer' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.DOWN, axis: 0 };
   if (control === 'runner') {
     // Po zbytek trati normální robot; u cílové hrozby záměrně neuhne ani neskočí.
     // Settle a jump from the preceding obstacle before the encounter. Starting

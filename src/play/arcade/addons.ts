@@ -38,6 +38,7 @@ import {
 import { GRAVITY } from './kernel';
 import { ARENA } from './pieces/arena';
 import { FLAP } from './pieces/flap';
+import { centerAt, courseOf, courseSchema, type SteerCourse } from './pieces/steer';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
@@ -275,6 +276,12 @@ function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
  * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas.
  */
 function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
+  if (control === 'steer') {
+    const course = courseOf(level);
+    // A target on the opening straight gives the driver a clear forward shot;
+    // later targets use the actual track center, never an off-road decoration.
+    return [25 * UNIT, Math.floor(level.length * 0.55)].map(z => enemy(centerAt(course, z), 0, z));
+  }
   if (control === 'runner') {
     const rows = runnerRows(level);
     const zs = [...rows.keys()].sort((a, b) => a - b);
@@ -451,12 +458,17 @@ export const CHASE = {
 } as const;
 
 /** `oncoming`: běží jen proti hráči a pruh dorovnává, jen dokud je dál než `commit` – pak se rozběhne rovně. */
-type ChaseSpeed = { readonly along: number; readonly across: number; readonly oncoming?: boolean; readonly commit?: number };
+type ChaseSpeed = { readonly along: number; readonly across: number; readonly oncoming?: boolean; readonly commit?: number; readonly course?: SteerCourse };
 
 /** Kde pronásledovatel startuje: běžci naproti tak, aby se potkali v mezeře mezi řadami; plošinovce za zády; aréně v protějším rohu. */
 function chaserFor(control: PieceRef, level: ArcadeLevel): { body: BodyInit; speed: ChaseSpeed } | null {
   const player = level.bodies[0] as BodyInit;
   const at = (x: number, y: number, z: number): BodyInit => ({ role: 'chaser', kind: 'chaser', x, y, z, w: CHASE.w, h: CHASE.h, d: CHASE.d, solid: false, kinematic: true });
+  if (control.id === 'steer' && control.params.land === undefined) {
+    const course = courseOf(level);
+    const z = player.z - 18 * UNIT;
+    return { body: at(centerAt(course, z), player.y, z), speed: { along: Math.floor(((control.params.topSpeed as number | undefined) ?? 300) * 0.7), across: 160, course } };
+  }
   if (control.id === 'runner') {
     const zs = [...runnerRows(level).keys()].sort((a, b) => a - b);
     if (zs.length < 2) return null;
@@ -492,6 +504,14 @@ function chase(state: Int32Array, player: number, speed: ChaseSpeed): void {
       const aiming = (state[b + BODY.z] as number) - (state[p + BODY.z] as number) > (speed.commit ?? 0);
       state[b + BODY.vx] = aiming ? clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across) : 0;
       state[b + BODY.vz] = -speed.along;
+      continue;
+    }
+    if (speed.course !== undefined) {
+      const z = state[b + BODY.z] as number;
+      const playerZ = state[p + BODY.z] as number;
+      const offset = Math.max(-speed.course.halfWidth / 2, Math.min(speed.course.halfWidth / 2, (state[p + BODY.x] as number) - centerAt(speed.course, playerZ)));
+      state[b + BODY.vx] = clamp(centerAt(speed.course, z + 6000) + offset - (state[b + BODY.x] as number), speed.across);
+      state[b + BODY.vz] = clamp(playerZ - z, speed.along);
       continue;
     }
     state[b + BODY.vx] = clamp((state[p + BODY.x] as number) - (state[b + BODY.x] as number), speed.across);
@@ -576,7 +596,7 @@ export const ADDON_PIECES: Readonly<Record<AddonId, AddonPiece | undefined>> = {
 const wrappedControlParams = z
   .object({
     base: z.object({ id: z.string(), params: z.record(z.string(), z.unknown()) }).strict(),
-    chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional() }).strict().optional(),
+    chase: z.object({ along: z.int().min(1), across: z.int().min(0), oncoming: z.boolean().optional(), commit: z.int().min(0).optional(), course: courseSchema.optional() }).strict().optional(),
   })
   .strict();
 

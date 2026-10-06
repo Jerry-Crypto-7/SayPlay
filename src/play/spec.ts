@@ -601,7 +601,9 @@ export function readGameSpec(input: unknown): GameSpecResult {
     return { ok: false, reason: 'MALFORMED_SPEC', issues: [`/genre/mode: ${spec.genre.id} has modes ${GENRE_MODES[spec.genre.id].join(', ')}, not ${spec.genre.mode}`] };
   }
   if (spec.addons !== undefined) {
-    const allowed: readonly AddonId[] = CAPABILITIES[spec.control ?? 'tap_go'].addons;
+    // Frozen voyage generators do not implement the new driving addons.
+    const voyage = spec.control === 'steer' && typeof spec.controlParams?.generator === 'string' && spec.controlParams.generator.startsWith('voyage_');
+    const allowed: readonly AddonId[] = voyage ? [] : CAPABILITIES[spec.control ?? 'tap_go'].addons;
     const addonIssues = spec.addons.flatMap((addon, index) =>
       spec.addons!.indexOf(addon) !== index
         ? [`/addons/${index}: ${addon} is listed twice`]

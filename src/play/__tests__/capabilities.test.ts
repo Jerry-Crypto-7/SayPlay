@@ -176,9 +176,9 @@ describe('addons each control accepts (P26D T2)', () => {
         .filter(([, capability]) => (capability.addons as readonly string[]).includes(addon))
         .map(([control]) => control)
         .sort();
-    expect(accepting('shoot')).toEqual(['flap', 'move_free', 'platform', 'runner']);
+    expect(accepting('shoot')).toEqual(['flap', 'move_free', 'platform', 'runner', 'steer']);
     expect(accepting('collect')).toEqual(['flap', 'platform', 'runner']);
-    expect(accepting('chaser')).toEqual(['move_free', 'platform', 'runner']);
+    expect(accepting('chaser')).toEqual(['move_free', 'platform', 'runner', 'steer']);
     expect(accepting('lives')).toEqual(Object.keys(CAPABILITIES).filter((control) => control !== 'tap_go' && readsMechanic(control as ControlId, 'health')).sort());
   });
 });
