@@ -273,6 +273,8 @@ const controlParams = z
     topSpeed: z.int().min(150).max(360).default(STEER.topSpeed),
     drift: z.boolean().default(false),
     // Optional: old worlds keep their exact serialized parameters.
+    grip: z.int().min(4).max(20).optional(),
+    brakeDrift: z.int().min(4).max(20).optional(),
     course: courseSchema.optional(),
     /** Značky rampy (`rampMarks`): za každou vyšší strop rychlosti; bez nich stálý. */
     ramp: z.tuple([z.int(), z.int()]).optional(),
@@ -382,7 +384,7 @@ export const steerControl: ControlPiece<SteerControlParams> = {
     if ((input.buttons & BUTTON.LEFT) !== 0) target = -STEER.latMax;
     if ((input.buttons & BUTTON.RIGHT) !== 0) target = STEER.latMax;
     const vx = state[base + BODY.vx] as number;
-    state[base + BODY.vx] = target !== 0 ? toward(vx, target, STEER.steerRate) : toward(vx, 0, params.drift ? STEER.driftGrip : STEER.grip);
+    state[base + BODY.vx] = target !== 0 ? toward(vx, target, STEER.steerRate) : toward(vx, 0, (input.buttons & BUTTON.DOWN) !== 0 ? (params.brakeDrift ?? params.grip ?? (params.drift ? STEER.driftGrip : STEER.grip)) : (params.grip ?? (params.drift ? STEER.driftGrip : STEER.grip)));
 
     if (params.course !== undefined) steerRivals(state, player, params.course);
   },
@@ -441,6 +443,8 @@ const generatorParams = z
     topSpeed: z.int().min(150).max(360).default(STEER.topSpeed),
     drift: z.boolean().default(false),
     // Optional: old worlds keep their exact serialized parameters.
+    grip: z.int().min(4).max(20).optional(),
+    brakeDrift: z.int().min(4).max(20).optional(),
   })
   .strict();
 export type SteerTrackParams = z.infer<typeof generatorParams>;
@@ -590,13 +594,13 @@ export const rivalFinish: RulePiece<z.infer<typeof rivalFinishParams>> = {
 };
 
 /** Ovládání závodu i s osou trati pro soupeře. */
-export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'roadWidth'>): PieceRef {
-  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
+export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'grip' | 'brakeDrift' | 'roadWidth'>): PieceRef {
+  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
 }
 
 /** Robot řidiče (`steer-bot.ts`) s tou samou osou trati a rampou. */
-export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'roadWidth'>): PieceRef {
-  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
+export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'grip' | 'brakeDrift' | 'roadWidth'>): PieceRef {
+  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, ...(params.grip === undefined ? {} : { grip: params.grip }), ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }), course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
 }
 
 /** Pravidla závodu: turbo, cíl, soupeř v cíli. */

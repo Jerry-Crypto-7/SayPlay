@@ -1,3 +1,6 @@
+import { type ArcadeWorld, BODY, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
+import type { VisualEvent } from './bus';
+
 /**
  * Váha událostí (P36C T7): kolik trvá hit-stop, blikání po zásahu, zpomalení
  * a přiblížení výhry a ztmavnutí prohry. Čisté funkce času kresby (ms) – scény
@@ -64,3 +67,65 @@ export function comboOf(effects: readonly { readonly kind: string }[]): number |
 }
 
 export const reducedMotion = (): boolean => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Visual-only impact clock; accepts the bus's validated hit, never score/spawn. */
+export function createImpactClock() {
+  let at = -Infinity;
+  return {
+    observe(events: readonly Pick<VisualEvent, 'kind'>[], now: number): void {
+      if (events.some(event => event.kind === 'hit')) at = now;
+    },
+    held: (now: number): boolean => hitStopHeld(now - at),
+    flash: (now: number): number => Math.max(0, 1 - Math.max(0, now - at) / 120),
+    reset: (): void => { at = -Infinity; },
+  };
+}
+
+/** Actual lateral slip, not a steering-button animation. */
+export const skidStrength = (vx: number, vz: number, grounded: boolean): number =>
+  grounded && Math.abs(vz) >= 40 ? Math.min(1, Math.max(0, (Math.abs(vx) - 24) / 100)) : 0;
+
+export interface ThreatCue { readonly body: number; readonly x: number; readonly y: number; readonly z: number; readonly radius: number; readonly urgency: number }
+/** Closest approach within 0.8 s, in actual XYZ. Works for every movement/control. */
+export function threatTelegraphs(state: Int32Array, world: Pick<ArcadeWorld, 'rules'>): readonly ThreatCue[] {
+  let player = state[HEADER.player]!;
+  const ball = world.rules.some(rule => rule.id === 'ball_score');
+  if (ball) {
+    player = -1;
+    for(let i=0;i<state[HEADER.bodyCount]!;i++) if((state[bodyBase(i)+BODY.flags]! & (FLAG.alive|FLAG.physics|FLAG.ball)) === (FLAG.alive|FLAG.physics|FLAG.ball)) { player=i;break; }
+    if(player<0) return [];
+  }
+  const roles = new Set<number>();
+  for(const rule of world.rules) {
+    if(rule.id === 'hit' && (rule.params.effect === 'damage' || rule.params.effect === 'lose')) {
+      const code = ROLE[rule.params.role as keyof typeof ROLE];
+      if(code !== undefined) roles.add(code);
+    }
+  }
+  const arena = world.rules.some(rule => rule.id === 'arena_eat');
+  const p = bodyBase(player);
+  const result: ThreatCue[] = [];
+  for (let body = 0; body < state[HEADER.bodyCount]!; body += 1) {
+    if (body === player) continue;
+    const b = bodyBase(body), role = state[b + BODY.role]!;
+    if (!(state[b + BODY.flags]! & FLAG.alive)) continue;
+    const arenaThreat = arena && (role === ROLE.chaser || role === ROLE.enemy && state[b+BODY.w]! > state[p+BODY.w]!);
+    const keeper = ball && role === ROLE.enemy && (state[b+BODY.flags]! & (FLAG.kinematic|FLAG.solid)) === (FLAG.kinematic|FLAG.solid);
+    if(!roles.has(role) && !arenaThreat && !keeper) continue;
+    const dx = state[b + BODY.x]! - state[p + BODY.x]!;
+    const dy = state[b + BODY.y]! - state[p + BODY.y]!;
+    const dz = state[b + BODY.z]! - state[p + BODY.z]!;
+    const vx = state[b + BODY.vx]! - state[p + BODY.vx]!;
+    const vy = state[b + BODY.vy]! - state[p + BODY.vy]!;
+    const vz = state[b + BODY.vz]! - state[p + BODY.vz]!;
+    const speed2 = vx*vx + vy*vy + vz*vz;
+    const time = speed2 === 0 ? 0 : Math.max(0, Math.min(48, -(dx*vx + dy*vy + dz*vz) / speed2));
+    const radius = Math.max(state[b + BODY.w]!, state[b + BODY.d]!) / 2 + Math.max(state[p + BODY.w]!, state[p + BODY.d]!) / 2;
+    const miss = Math.hypot(dx + vx*time, dz + vz*time);
+    if (Math.abs(dy + vy*time) > (state[b + BODY.h]! + state[p + BODY.h]!) || miss > radius + 800 || Math.hypot(dx,dy,dz) > 18000) continue;
+    // Receding threats outside overlap need no warning.
+    if (dx*vx + dy*vy + dz*vz >= 0 && Math.hypot(dx,dz) > radius + 800) continue;
+    result.push({body, x:state[b+BODY.x]!, y:state[b+BODY.y]!, z:state[b+BODY.z]!, radius, urgency:1-time/60});
+  }
+  return result.sort((a,b) => b.urgency-a.urgency || a.body-b.body).slice(0,16);
+}

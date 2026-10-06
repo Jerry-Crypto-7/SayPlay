@@ -357,6 +357,8 @@ export const steerParamsSchema = z
     centerCollectibles: z.boolean().optional(),
     turbo: z.boolean().optional(),
     drift: z.boolean().optional(),
+    grip: z.int().min(4).max(20).optional(),
+    brakeDrift: z.int().min(4).max(20).optional(),
   })
   .strict();
 export type SteerParams = z.infer<typeof steerParamsSchema>;

@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Svět plošinovky (P32-0 T5, vlastní P32F). Obal nad sdíleným `World` s pevným
  * ovládáním `platform`: boční kamera a těla jsou společná, podklad je vlastní
@@ -74,6 +76,7 @@ function PlatformPose({ session, terrain }: { readonly session: ArcadeSession; r
   const found = useRef<{ boxes: Object3D[]; hero: Object3D | null; frame: number }>({ boxes: [], hero: null, frame: 0 });
 
   useFrame(() => {
+    if (renderHeld(session)) return;
     const cached = found.current;
     cached.frame += 1;
     // Skupiny těl `World` staví jednou za svět; znovu hledat po jejich výměně. Desce za koncem

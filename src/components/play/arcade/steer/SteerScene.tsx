@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Scéna závodu (P25F T6): kamera za vozidlem a nad ním, asfalt po úsecích
  * trati mezi mantinely, tráva okolo. Vstup: šipky/A-D a tah prstem do strany
@@ -427,6 +429,7 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }
   const bodies = useRef<Object3D[]>([]);
 
   useFrame(() => {
+    if (renderHeld(session)) return;
     const seconds = performance.now() / 1000;
     water?.setTime(seconds);
     const state = session.state();

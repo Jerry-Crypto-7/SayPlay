@@ -48,6 +48,8 @@ export function driveSpec(recipe: Recipe, content: GenreSpec): GameSpecV1 {
       rivals: race,
       turbo: collect || params.turbo !== 0,
       drift: params.drift === 1,
+      ...(params.grip === undefined ? {} : { grip: params.grip }),
+      ...(params.brakeDrift === undefined ? {} : { brakeDrift: params.brakeDrift }),
     },
     title: `${content.hero} ${race ? 'race' : chase ? 'escape' : 'drive'}`,
     archetype: 'hazard_crossing',

@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Scéna souboje zblízka (P25H T5): pohled z boku, hráč vlevo, soupeř
  * vpravo. Fáze soupeře (`aux0`) je vidět na barvě i póze – nápřah je
@@ -140,6 +142,7 @@ export function DuelScene({
 
   useFrame((_, delta) => {
     session.advance(delta * 1000);
+    if (renderHeld(session)) return;
     const state = session.state();
     const tick = state[HEADER.tick] as number;
     const p = bodyBase(state[HEADER.player] as number);

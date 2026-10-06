@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { BufferAttribute, BufferGeometry, DoubleSide, Matrix4, type InstancedMesh } from 'three';
@@ -22,6 +24,7 @@ function GuardCone({ session, body, range }: { readonly session: ArcadeSession; 
   const geometry = useMemo(() => new BufferGeometry(), []);
   useEffect(() => () => geometry.dispose(), [geometry]);
   useFrame(() => {
+    if (renderHeld(session)) return;
     const state = session.state();
     const vertices = (state[bodyBase(body) + BODY.flags]! & FLAG.alive) === 0 ? new Float32Array() : walkerCone(state, body, map, range);
     const current = geometry.getAttribute('position');

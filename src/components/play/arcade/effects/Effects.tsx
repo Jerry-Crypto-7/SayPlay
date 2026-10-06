@@ -44,6 +44,8 @@ import { playSfx } from '@/play/audio';
 import { type QualityTier, QUALITY_TIERS } from '../look/rig/quality';
 import type { ArcadeSession } from '../session';
 import { type EffectsBus, type VisualEventKind, createEffectsBus } from './bus';
+import { installRenderFeel, renderHeld } from './render-feel';
+import { FeelCues } from './FeelCues';
 import { reducedMotion, shakeAmount, winTimeScale, winZoom } from './feel';
 import { type Burst, type BurstLook, PARTICLE_CAP, burstsOf, createParticleDirector } from './particles';
 import { busPresets } from './sound';
@@ -105,6 +107,7 @@ const SHRINK = new PiecewiseBezier([[new Bezier(1, 0.95, 0.6, 0), 0]]);
 const GROW = new PiecewiseBezier([[new Bezier(0.5, 0.9, 1.1, 1.2), 0]]);
 
 export function Effects({ session, look, surface }: { readonly session: ArcadeSession; readonly look: Look; readonly surface: RefObject<HTMLDivElement | null> }) {
+  useEffect(() => installRenderFeel(session), [session]);
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
   const bus = useRef<EffectsBus | null>(null);
@@ -216,7 +219,8 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     clock.current += delta * 1000;
     const reduced = reducedMotion();
     const sinceWin = clock.current - wonAt.current;
-    batch.update(delta * winTimeScale(sinceWin, reduced));
+    batch.update((renderHeld(session) ? 0 : delta) * winTimeScale(sinceWin, reduced));
+    if (renderHeld(session)) return;
     // Přiblížení po výhře drží do restartu; jinak zoom 1 (i po restartu, který `wonAt` vrátí).
     const zoom = winZoom(sinceWin, reduced);
     if ('zoom' in camera && camera.zoom !== zoom) {
@@ -232,5 +236,5 @@ export function Effects({ session, look, surface }: { readonly session: ArcadeSe
     camera.updateMatrixWorld();
   });
 
-  return <primitive object={batch} />;
+  return <><primitive object={batch} /><FeelCues session={session} /></>;
 }

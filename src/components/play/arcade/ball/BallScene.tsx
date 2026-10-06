@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Group, Mesh } from 'three';
@@ -33,6 +35,7 @@ export function BallScene({ session, look }: { readonly session: ArcadeSession; 
     };
   }, [session]);
   useFrame(() => {
+    if (renderHeld(session)) return;
     const state = session.state(), previous = session.prev(), alpha = session.alpha();
     const at = (b: number, field: number) => (previous[b + field]! + (state[b + field]! - previous[b + field]!) * alpha) / UNIT;
     for (const body of props) {

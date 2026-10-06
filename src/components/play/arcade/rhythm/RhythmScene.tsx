@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 /**
  * Scéna rytmu (P25H T5): čtyři pruhy, noty jedou ke kameře a ťuká se, když
  * přejíždějí lištu. Rytmus jde přečíst i bez zvuku – lišta se rozsvítí,
@@ -74,6 +76,7 @@ export function RhythmScene({
 
   useFrame((_, delta) => {
     const alpha = session.advance(delta * 1000);
+    if (renderHeld(session)) return;
     const state = session.state();
     const prev = session.prev();
     const tick = state[HEADER.tick] as number;

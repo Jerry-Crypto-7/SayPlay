@@ -15,6 +15,8 @@ import { ARCADE_LIBRARY } from '../src/play/arcade/library';
 import { replayCheckpoints } from '../src/play/arcade/physics/replay-checkpoints';
 import { loadRapier } from '../src/play/arcade/physics/world';
 import { runBot } from '../src/play/arcade/verify';
+import { BUTTON } from '../src/play/arcade/contract';
+import { driveSpec } from '../src/play/compose/drive';
 import { nativeSpec } from '../src/play/compose/native';
 
 const fixture = JSON.parse(readFileSync(join(__dirname, '../src/play/arcade/physics/__fixtures__/determinism.json'), 'utf8')) as { hash: string };
@@ -64,5 +66,26 @@ for (const goal of ['goal', 'hoop', 'hole'] as const) {
     // Full quantized state equality catches differences hidden by rounded visuals.
     expect(chromium).toEqual(node);
     await test.info().attach(`physics-${goal}-checkpoints.json`, { body: JSON.stringify({ seed, versionId, inputs: bot.inputs, node, chromium }), contentType: 'application/json' });
+  });
+}
+
+for (const grip of [4, 20]) {
+  test(`bounded steer grip ${grip}: identical recorded braking input in Node and Chromium`, async ({page,request}) => {
+    const spec=driveSpec({move:'drive',actions:[],objective:'reach',threats:[]},{genre:'voyage',mode:'race',hero:'car',setting:'city',params:{grip,brakeDrift:4}});
+    const published=await request.post('/api/play/games',{data:{spec,seed:1}});
+    expect(published.ok(),await published.text()).toBe(true);
+    const {versionId}=await published.json() as {versionId:string};
+    const fetched=await request.get(`/api/play/games/${versionId}`);
+    expect(fetched.ok(),await fetched.text()).toBe(true);
+    const {arcade:world}=await fetched.json() as {arcade:ArcadeWorld};
+    expect(world.control.params).toMatchObject({grip,brakeDrift:4});
+    const inputs=Array.from({length:32},(_,tick)=>({tick,axis:tick<8?700:tick>=16&&tick<24?-700:0,buttons:tick>=8&&tick<16?BUTTON.DOWN:0}));
+    const recording={world,inputs,checkpoints:[0,1,8,16,32]};
+    const node=await replayCheckpoints(recording);
+    await page.goto('/play/lab/physics');
+    await expect(page.getByTestId('physics-lab')).toHaveAttribute('data-state','done',{timeout:30_000});
+    const chromium=await page.evaluate(async data=>{if(!window.__physicsReplay)throw new Error('Missing lab replay');return window.__physicsReplay(data);},recording);
+    expect(chromium).toEqual(node);
+    await test.info().attach(`steer-grip-${grip}.json`,{body:JSON.stringify({versionId,inputs,node,chromium}),contentType:'application/json'});
   });
 }

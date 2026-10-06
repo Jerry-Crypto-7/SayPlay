@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import fixture from '@/play/arcade/__fixtures__/runner.json';
 import { arcadeWorldOf } from '@/play/arcade/compile';
-import { type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { type ArcadeWorld, BODY, FLAG, HEADER, type InputEvent, ROLE, UNIT, bodyBase, setBodyHp } from '@/play/arcade/contract';
 import { hashArcade } from '@/play/arcade/kernel';
 import { readGameSpec } from '@/play/spec';
 
@@ -106,12 +106,15 @@ describe('effects bus (P32-0 T5)', () => {
     bus.dispose();
   });
 
-  it('flashes a hit only where the kernel applies it: a live body and a positive amount', () => {
+  it('flashes a hit only where the kernel applies it: real HP loss on a live body', () => {
     // Jádro zásah neživého těla a záporný zásah zahodí (revize P32-0 T4-R3); záblesk tam by ukázal něco, co se nestalo.
     const state = Int32Array.from(world.initial);
     const dead = 2;
     expect((state[bodyBase(1) + BODY.flags] as number) & FLAG.alive).toBe(FLAG.alive);
     state[bodyBase(dead) + BODY.flags] = (state[bodyBase(dead) + BODY.flags] as number) & ~FLAG.alive;
+    setBodyHp(state, 1, 3);
+    const before = state.slice();
+    setBodyHp(state, 1, 1);
     let emit: ArcadeEventListener = () => undefined;
     const source: EffectsSource = {
       onEvents: (listener) => {
@@ -120,7 +123,7 @@ describe('effects bus (P32-0 T5)', () => {
       },
       subscribe: () => () => undefined,
       state: () => state,
-      prev: () => state,
+      prev: () => before,
       humanRun: () => true,
     };
     const heard = heardFrom(source, () => {

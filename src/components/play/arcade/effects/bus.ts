@@ -14,6 +14,8 @@
 
 import { type ArcadeEffect, BODY, FLAG, HEADER, ROLE, RUN_STATE, UNIT, bodyBase, targetStateOf } from '@/play/arcade/contract';
 
+import { actualHitBodies } from './impact';
+import type { ArcadeWorld } from '@/play/arcade/contract';
 import type { ArcadeSession } from '../session';
 
 /**
@@ -50,7 +52,7 @@ export const LIVE_TICKS = 30;
 export const SHAKE_TICKS = 9;
 
 /** Co sběrnice z relace smí: číst stav a poslouchat. Stisknout, pozastavit ani restartovat nemůže. */
-export type EffectsSource = Pick<ArcadeSession, 'onEvents' | 'subscribe' | 'state' | 'prev' | 'humanRun'>;
+export type EffectsSource = Pick<ArcadeSession, 'onEvents' | 'subscribe' | 'state' | 'prev' | 'humanRun'> & { readonly world?: Pick<ArcadeWorld, 'rules'> };
 
 export interface EffectsBus {
   /** Nové události jednoho tiku, v pořadí efektů. */
@@ -75,7 +77,7 @@ function eventAt(kind: VisualEventKind, body: number, tick: number, state: Int32
 }
 
 /** Efekty jednoho tiku → vizuální události; `state` = stav po tiku, `prev` = před ním. */
-function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: Int32Array, prev: Int32Array): VisualEvent[] {
+function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: Int32Array, prev: Int32Array, world?: Pick<ArcadeWorld, 'rules'>): VisualEvent[] {
   const player = state[HEADER.player] as number;
   const events: VisualEvent[] = [];
   const seen = new Set<string>();
@@ -88,12 +90,11 @@ function visualEventsOf(effects: readonly ArcadeEffect[], tick: number, state: I
   };
   // Tělo mimo svět jádro zahodí (`apply` v `kernel.ts`), sběrnice taky.
   const inWorld = (body: number): boolean => body >= 0 && body < (state[HEADER.bodyCount] as number);
+  for (const body of actualHitBodies(effects, prev, state, world)) add('hit', body);
   let spawns = 0;
   for (const effect of effects) {
-    if (effect.kind === 'damage') add('hit', player);
-    else if (effect.kind === 'spawn') spawns += 1;
+    if (effect.kind === 'spawn') spawns += 1;
     // Jako jádro: zásah jen živého těla (před tikem – smrtící rána tělo zabije až po sobě) a jen kladný.
-    else if (effect.kind === 'hit' && inWorld(effect.body) && aliveIn(prev, effect.body) && effect.amount > 0) add('hit', effect.body);
     // Jen tělo, které tímhle tikem opravdu zmizelo – despawn mrtvého těla stav nemění.
     else if (effect.kind === 'despawn' && inWorld(effect.body) && aliveIn(prev, effect.body) && !aliveIn(state, effect.body)) {
       add(state[bodyBase(effect.body) + BODY.role] === ROLE.collectible ? 'pickup' : 'death', effect.body);
@@ -140,7 +141,7 @@ export function createEffectsBus(session: EffectsSource): EffectsBus {
   const offEvents = session.onEvents((effects, tick) => {
     const state = session.state();
     seenTick = tick + 1;
-    const events = visualEventsOf(effects, tick, state, session.prev());
+    const events = visualEventsOf(effects, tick, state, session.prev(), session.world);
     if (events.length === 0) return;
     // Stav už je po tiku zásahu (`tick + 1`): odtud otřes doznívá.
     if (events.some((event) => event.kind === 'hit' && event.body === state[HEADER.player])) shakeFrom = tick + 1;

@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from './effects/render-feel';
+
 /**
  * Sdílený svět tratí (P32-0 T5, přesunuto beze změny z `ArcadeStage.tsx`):
  * smyčka `useFrame` posouvá hodiny relace (pevný krok v `session.ts`) a kreslí
@@ -35,7 +37,7 @@ import type { HeroAction } from '@/play/spec';
 
 import { type BodyView, bodiesOf, bodiesStale, drawsNothing } from './bodies';
 import { deadFor, fallOf, headingOf, squashPose, tiltPose, turnToward } from './characterMotion';
-import { blinkHidden, hitStopHeld } from './effects/feel';
+import { blinkHidden } from './effects/feel';
 import { type ArcadeGhost, GhostSlot } from './GhostSlot';
 import { UNDER_PANORAMA } from './look/under-panorama';
 import { applyIntro, introLeft, useIntroClock } from './look/intro';
@@ -392,7 +394,7 @@ export function World({ session, control, cast: baseCast, surface, scene, enable
     lastTick.current = state[HEADER.tick] as number;
     // Hit-stop (P36C T7, jako `FightFx` v aréně): jádro odtikalo, kresba i kamera 60 ms stojí.
     const sinceHurt = drawClock.current - hurtAt.current;
-    if (hitStopHeld(sinceHurt)) return;
+    if (renderHeld(session)) return;
     // Póza jen čte stav; tik s podílem rozběhnutého kroku, ať poskok neskáče po 1/60 s.
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);

@@ -1,5 +1,7 @@
 'use client';
 
+import { renderHeld } from '../effects/render-feel';
+
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Group } from 'three';
@@ -27,6 +29,7 @@ export function GlideBackdrop({ session, look, collectibleModel }: { readonly se
     }).filter(body => GLIDE_SCENE_KINDS.has(body.kind));
   }, [session]);
   useFrame(() => {
+    if (renderHeld(session)) return;
     const state = session.state(), previous = session.prev(), alpha = session.alpha();
     for (const body of bodies) {
       const group = groups.current.get(body.body);
