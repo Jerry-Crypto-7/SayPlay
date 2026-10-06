@@ -13,7 +13,7 @@ export type LiveCell = Extract<AllowedCell, { status: 'live' }>;
 
 export const ALLOWED: readonly AllowedCell[] = [
   ...Object.entries(DRIVE_PRESETS).map(([id, recipe]): AllowedCell => ({
-    id, recipe, assembly: 'drive', status: 'staged',
+    id, recipe, assembly: 'drive', status: 'live',
     preset: { genre: 'voyage', mode: 'race', hero: 'car', setting: 'city', cast: [
       ...(recipe.actions.includes('shoot') ? [{ label: 'zombie', does: 'shoot_at' as const }] : []),
       ...(recipe.threats.includes('chaser') ? [{ label: 'police car', does: 'chase_me' as const }] : []),

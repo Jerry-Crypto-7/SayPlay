@@ -26,22 +26,26 @@ describe('compose a live recipe from the full intent', () => {
     }
   });
 
-  it('preserves single-action choices except the two explicit semantic corrections', () => {
+  it('records single-action selection changes explicitly', () => {
     const changed = groups.single.filter(row => selections.get(row.id) !== classifyGenre(row.sentence, null).ranked[0].genre);
-    // Raw retention is 28/30, below T9's 95% target; report that discrepancy.
+    // Raw retention is 27/30, below T9's 95% target; report that discrepancy.
     // Basketball throws a ball instead of firing a gun; a named argument is a
     // duel rather than a physical arena fight. Do not restore either old choice
-    // merely to raise the retention metric.
+    // merely to raise the retention metric. Escape now has an actual escape
+    // recipe, which ranks above the legacy arena survival objective.
     expect(changed.map(row => [row.id, selections.get(row.id)])).toEqual([
-      ['si-015', 'duel'], ['si-025', 'throw'],
+      ['si-015', 'duel'], ['si-017', 'voyage'], ['si-025', 'throw'],
     ]);
   });
 
-  it('prioritizes movement and admits unsupported racing instead of calling arrival a race', () => {
+  it('plays driving, shooting and racing together', () => {
     const made = compose(extractIntent('game in a car with shooting and racing'));
     expect(made.recipe.move).toBe('drive');
-    expect(made.unmet.some(item => item.verb === 'race')).toBe(true);
-    expect(made.unmet.some(item => item.verb === 'shoot')).toBe(true);
-    expect(made.unmet.some(item => item.verb === 'drive')).toBe(false);
+    expect(made.unmet).toEqual([]);
+    expect(made.witnesses).toEqual(expect.arrayContaining([
+      expect.objectContaining({ verb: 'drive' }),
+      expect.objectContaining({ verb: 'shoot', evidence: 'projectile-hit' }),
+      expect.objectContaining({ verb: 'race', evidence: 'overtake' }),
+    ]));
   });
 });

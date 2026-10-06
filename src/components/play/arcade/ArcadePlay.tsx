@@ -14,7 +14,7 @@ import { type CSSProperties, memo, type ReactNode, useCallback, useEffect, useMe
 
 import { baseControlOf } from '@/play/arcade/addons';
 import { ARCADE_HZ, ARCADE_LIMITS, type ArcadeRole, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
-import { instantiate, worldHasPhysics } from '@/play/arcade/kernel';
+import { hashArcade, instantiate, worldHasPhysics } from '@/play/arcade/kernel';
 import { lookOf, sceneLook } from '@/play/arcade/look';
 import { chaserModel, enemyModel, heroModel, propModels } from '@/play/arcade/models';
 import { holdUntilRapier, loadRapier, prefetchRapier, rapierIfLoaded } from '@/play/arcade/physics/world';
@@ -769,6 +769,8 @@ function ArcadePlayGame({
         return { runState: now.runState, tick: now.tick, progress: now.progress, score: now.score, items: now.items };
       },
       inputs: () => session.inputs(),
+      /** One synchronous sample: real input events and the exact state they reached. */
+      capture: () => ({ inputs: session.inputs(), tick: session.snapshot().tick, hash: hashArcade(session.state()) }),
       tick: () => session.snapshot().tick,
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
       bodies: (role: ArcadeRole) => aliveOf(session.state(), role),

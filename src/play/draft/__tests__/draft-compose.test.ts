@@ -4,10 +4,10 @@ import { sentenceChecklist } from '@/play/fidelity/checklist';
 import { specFidelity } from '@/play/fidelity/score';
 
 describe('quick draft follows the full intent', () => {
-  it('drives the car and explicitly records the missing shooting and racing', () => {
+  it('drives, shoots and races without missing actions', () => {
     const draft = draftGameSpecWithMeta('game in a car with shooting and racing');
     expect(draft.spec.control).toBe('steer');
-    expect(draft.composition?.unmet.map(item => item.verb)).toEqual(expect.arrayContaining(['shoot', 'race']));
+    expect(draft.composition?.unmet).toEqual([]);
     expect(draft.composition?.unmet.some(item => item.verb === 'drive')).toBe(false);
     expect(draft.intent?.hero).toBe('car');
   });
@@ -19,7 +19,8 @@ describe('quick draft follows the full intent', () => {
     expect(checklist.filter(item => item.slot === 'verb').map(item => item.triple?.verb)).toEqual(['drive', 'shoot', 'race']);
     const measured = specFidelity(draft.spec, checklist);
     expect(measured.items.find(item => item.item === 'drive')?.read).toBe(true);
-    expect(measured.items.find(item => item.item === 'race')?.read).toBe(false);
+    expect(measured.items.find(item => item.item === 'race')?.read).toBe(true);
+    expect(measured.items.find(item => item.item === 'shoot')?.read).toBe(true);
     expect(sentenceChecklist('a grandma knits a scarf').checklist.some(item => item.triple?.verb === 'knit')).toBe(true);
   });
 });

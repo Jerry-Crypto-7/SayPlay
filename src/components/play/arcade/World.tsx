@@ -23,6 +23,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Box3, type Group, type Object3D, type PerspectiveCamera, Vector3 } from 'three';
 
 import { ARCADE_HZ, BODY, FLAG, HEADER, ROLE, UNIT, bodyBase } from '@/play/arcade/contract';
+import { baseControlOf } from '@/play/arcade/addons';
 import type { Look } from '@/play/arcade/look';
 import { type PropRole, fitScale, riggedCharacter } from '@/play/arcade/models';
 import { type ClipState, type Pose, clipOf, posesOf, viewOf } from '@/play/arcade/motion';
@@ -92,6 +93,7 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.kind === 'enemy') return cast.enemy;
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
+  if (view.kind === 'turbo') return cast.props.turbo ?? view.kind;
   if (view.role === ROLE.chaser) return cast.chaser;
   if (view.role === ROLE.collectible && view.kind === 'coin') return cast.props.coin ?? view.kind;
   if (view.role === ROLE.obstacle && SWAPPABLE_OBSTACLES.has(view.kind)) return cast.props.obstacle ?? view.kind;
@@ -264,6 +266,7 @@ function itemTagOf(view: BodyView): 'enemy' | 'chaser' | PropRole | undefined {
   if (view.role === ROLE.player) return undefined;
   if (view.kind === 'enemy') return 'enemy';
   if (view.kind === 'rival-car') return 'rival';
+  if (view.kind === 'turbo') return 'turbo';
   if (view.kind === 'finish') return 'finish';
   if (view.role === ROLE.chaser) return 'chaser';
   if (view.role === ROLE.collectible && view.kind === 'coin') return 'coin';
@@ -455,7 +458,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
         else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 30, FLAP.ceiling / UNIT + 1, 26, 0.1);
       } else if (control === 'steer') {
         // Osa trati je v jednotkách jádra a scéna ji zrcadlí (x → −x), stejně jako těla.
-        const course = session.world.control.params.course as SteerCourse | undefined;
+        const course = baseControlOf(session.world.control).params.course as SteerCourse | undefined;
         placeChase(camera, look, x, z, course === undefined ? 0 : -centerAt(course, z * UNIT) / UNIT);
       } else if (control === 'shooter' || control === 'throw') {
         // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
@@ -473,7 +476,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     <>
       {backdrop ??
         (control === 'steer' ? (
-          <SteerBackdrop session={session} course={session.world.control.params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} />
+          <SteerBackdrop session={session} course={baseControlOf(session.world.control).params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} />
         ) : (
           <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
         ))}

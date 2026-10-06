@@ -29,7 +29,7 @@ export interface ControlCapability {
   /** Co model musí dodržet navíc (archetyp, cíl). */
   readonly note?: string;
   /** Popisky rolí, podle kterých vykreslení volí model: `'all'`, nebo role hráče a id rolí (`enemy`, `coin`, `obstacle`, `target` – P26 T12; `barrier`, `note`, `block` – P30B T4; `finish` – P35 T3; nástrahy `spikes`, `pipe`, `hazard` – P39 T9). */
-  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard')[];
+  readonly labels: 'all' | readonly ('player' | 'enemy' | 'coin' | 'obstacle' | 'target' | 'rival' | 'barrier' | 'turbo' | 'note' | 'block' | 'finish' | 'spikes' | 'pipe' | 'hazard')[];
   /** Mechaniky, které kompilátor čte – mění svět. */
   readonly mechanics: 'all' | readonly MechanicId[];
   /** Počty rolí (`count`) mění svět. */
@@ -66,7 +66,7 @@ export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   platform: arcade({ setting: true, counts: true, cues: 'platformer, mario, obby', roles: ['spikes', 'coin'], finish: true, labels: ['player', 'coin', 'finish', 'spikes'], mechanics: LIVES_AND_TIMER, addons: [...ROAMING, 'chaser'] }),
   flap: arcade({ setting: true, counts: true, cues: 'flappy bird, pipe gaps', roles: ['pipe', 'coin'], finish: true, labels: ['player', 'coin', 'pipe'], mechanics: LIVES_AND_TIMER, addons: ROAMING }),
   // P27A T3: závod a aréna kreslí kulisy sady prostředí mimo dráhu a za hranou arény.
-  steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player', 'rival', 'barrier', 'hazard', 'finish'], mechanics: ['timer'], addons: ['shoot', 'chaser'] }),
+  steer: arcade({ setting: true, cues: 'racing, fly a plane', roles: ['barrier', 'rival', 'turbo'], finish: true, labels: ['player', 'rival', 'barrier', 'hazard', 'finish', 'turbo'], mechanics: ['timer'], addons: ['shoot', 'chaser'] }),
   move_free: arcade({
     setting: true,
     cues: 'agar.io, eat smaller, grow',

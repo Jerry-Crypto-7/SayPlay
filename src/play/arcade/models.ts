@@ -274,7 +274,7 @@ export function chaserModel(spec: GameSpecV1): string {
  * a závodu (P27A T4); od P30B T4 i mantinel závodu, nota rytmu a díl věže načasování; od P35 T3 cíl skákačky;
  * od P39 T9 nástrahy `HAZARD_ROLES`.
  */
-export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'note', 'block', 'finish', 'spikes', 'pipe', 'hazard'] as const;
+export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'turbo', 'note', 'block', 'finish', 'spikes', 'pipe', 'hazard'] as const;
 export type PropRole = (typeof PROP_ROLES)[number];
 
 /**
@@ -306,6 +306,7 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   rival: ['rival-car', 'race-car'],
   // „barriers“ je v katalogu překážka běžce; obecný popisek mantinelu nechá pneumatiky.
   barrier: ['tire-barrier', 'hurdle'],
+  turbo: ['turbo'],
   // Nota a díl věže jsou v jádře barevné kvádry; „tiles“ a „blocks“ jmenují právě je.
   note: ['hazard-tile'],
   block: ['wood-block'],

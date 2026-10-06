@@ -31,17 +31,18 @@ async function post(request: APIRequestContext, data: unknown): Promise<{ url: s
 
 test.describe('/play/[id] – honesty strip', () => {
   test('missing actions agree between publication, repeated publication and page reload', async ({ page, request }) => {
-    const sentence = 'game in a car with shooting and racing';
+    const sentence = 'a grandma knits a scarf';
     const game = await publish(request, sentence);
     const honesty = game.honesty as { reason: string; unmet: { verb: string }[] };
-    expect(honesty.unmet.map(item => item.verb)).toEqual(expect.arrayContaining(['shoot', 'race']));
-    expect(honesty.unmet.map(item => item.verb)).not.toContain('drive');
+    expect(honesty.unmet.map(item => item.verb)).toContain('knit');
     expect((await publish(request, sentence)).honesty).toEqual(honesty);
     await page.goto(game.url);
     await expect(page.getByTestId('play-honest-reason')).toHaveText(honesty.reason);
     await page.reload();
     await expect(page.getByTestId('play-honest-reason')).toHaveText(honesty.reason);
-    await startGame(page);
+    // This fallback is rhythm: its renderer exposes lane edges, not player X.
+    await expect(page.getByTestId('arcade-stage')).toHaveAttribute('data-lane-edges', /.+/, { timeout: 60_000 });
+    await page.keyboard.press('Space');
     await page.waitForFunction(() => window.__playShell !== undefined && window.__playShell.tick() > 0, undefined, { timeout: 60_000 });
   });
   test('a match-3 sentence shows the strip and the game still runs', async ({ page, request }) => {
