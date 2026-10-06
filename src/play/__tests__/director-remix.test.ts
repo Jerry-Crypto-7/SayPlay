@@ -112,7 +112,7 @@ describe('remix chips', () => {
       expect(Object.keys(after).filter((name) => after[name] !== before[name]), sentence).toEqual([key]);
       expect(after[key], sentence).toBe(value);
     }
-    const mushrooms = draftGameSpec('Collect five glowing mushrooms in a moonlit forest');
+    const mushrooms = compileGenre(draftGenreFor('Collect five glowing mushrooms in a moonlit forest', 'arena', 'collect')!);
     const harder = applyRemix(mushrooms, remixPatch('harder', mushrooms));
     if (!harder.ok) throw new Error(harder.reason);
     expect(harder.spec.roles.find((role) => role.kind === 'collectible')?.count).toBe(7);
