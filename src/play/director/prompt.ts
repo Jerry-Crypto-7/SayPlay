@@ -16,6 +16,7 @@ import { z } from 'zod';
 import { canonicalHash } from '@/ir/worlddoc';
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
+import { liveCells } from '../compose/allowed';
 import { LOOK_IDS } from '../arcade/look';
 import { sentenceChecklist } from '../fidelity/checklist';
 import { CAST_MAX, CAST_ROLES, COUNT_PARAMS, COUNT_ROLES, type CastRole, type GenreModule, type GenreSpec } from '../genre/contract';
@@ -27,7 +28,7 @@ import { GENRE_ANSWER_SCHEMA, readyModes } from './answer-schema';
 
 /** Úvod plného promptu; kompaktní má vlastní kratší. */
 export const GENRE_RULES =
-  'Return ONLY a GenreSpec: pick the genre and mode the sentence plays and name its roles with the sentence\'s nouns; the game is built from it. Never output code. Answer {plan, spec}: plan = one short line of reasoning.';
+  "Return ONLY {plan, spec}: plan is one short line. Prefer a recipe selected from LIVE COMBINATIONS, with the sentence's actors and objects. Legacy GenreSpec remains accepted. Never output code. A requested action must be played with evidence or listed explicitly in unmet; naming a genre or a cast role is not evidence.";
 
 /** Co smí věc obsazení dělat – hrdina do obsazení nepatří, je v `hero`. */
 const CAST_DOES = CAST_ROLES.filter((does): does is Exclude<CastRole, 'hero'> => does !== 'hero');
@@ -44,7 +45,7 @@ const CAST_DOES_LINES: Readonly<Record<Exclude<CastRole, 'hero'>, string>> = {
   scenery: 'a thing of the place with no rule',
 };
 
-export const GENRE_SHAPE_LINE = `spec: {genre, mode, hero: string<=60, cast?: [{label: string<=60, does: ${CAST_DOES.join('|')}, verb?: string<=24, states?: 2|3, patrol?: bool}]<=${String(CAST_MAX)}, setting: string<=80, palette?, params?, counts?: {enemy?, collectible?, target?: int}, ruleRoles?, things?, rules?}; a missing optional field is null.`;
+export const GENRE_SHAPE_LINE = `spec: {recipe: {move, actions, objective, threats}, unmet: [{actor, verb, object: string|null}], hero: string<=60, cast?: [{label: string<=60, does: ${CAST_DOES.join('|')}, verb?: string<=24, states?: 2|3, patrol?: bool}]<=${String(CAST_MAX)}, setting: string<=80, palette?, params?, counts?: {enemy?, collectible?, target?: int}, ruleRoles?, things?, rules?}; a missing optional field is null.`;
 
 const ID_PATTERN_SOURCE = '^[A-Za-z][A-Za-z0-9_.]{0,63}$';
 
@@ -128,14 +129,16 @@ export function genrePromptLines(): string {
     ];
   });
   return [
-    'GENRES (cues; modes; what the hero can be; params):',
+    'LIVE COMBINATIONS (move | actions | objective | threats; - means empty array; select one; staged unavailable):',
+    ...new Set(liveCells().map(cell => `- ${cell.recipe.move} | ${cell.recipe.actions.join(',') || '-'} | ${cell.recipe.objective} | ${cell.recipe.threats.join(',') || '-'}`)),
+    'LEGACY GENRES (compatibility format; recipe answers omit genre/mode):',
     ...genres,
-    'genre and mode: the ones whose cues fit the main verb – the verb that carries the goal or the win. A task (light, fight, land) beats moving (run, sail, jump), moving beats collecting, collecting beats escaping.',
-    'hero: the 1–3 word English noun the player is ("pirate ship", "wizard"). It must be a kind the genre lists (a ship sails, a car drives); if it cannot be, pick the genre it can play.',
+    'Preserve all essential movement, actions, goals and threats together; driving + racing + shooting cannot become stationary shooting.',
+    'hero: 1-3 English words naming the player ("pirate ship", "wizard"); choose compatible movement.',
     // P39: obsazení místo jednoho `enemy` – každá věc věty a co s ní dělá její sloveso.
     'cast: every thing the sentence names except the hero and the place, each {label, does}; does = what the verb at that thing makes it:',
     ...CAST_DOES.map((does) => `- ${does}: ${CAST_DOES_LINES[does]}`),
-    'The genre plays each does it can and the nearest one for the rest. Null cast when the sentence names nothing – the game then picks from the setting. Never add a thing the sentence does not name.',
+    'Never claim a nearby mechanic plays a different action. List every unsupported actor-verb-object triple in unmet. Use unmet: [] only if nothing was omitted. Null cast when nothing is named; setting defaults then supply roles.',
     `setting: where it happens, <=80 chars. palette: the scene set that best shows it, or null: ${LOOK_IDS.join('|')}. params: only for a number the sentence says, else null.`,
     'counts: how many the sentence says ("grab 5 coins" = collectible 5): enemy for shoot_at|chase_me|avoid|fight, collectible for collect, target for reach|throw_at; only roles the genre counts, else null.',
     `Every genre takes params ${Object.entries(DEPTH_PARAM_BOUNDS)
@@ -143,10 +146,10 @@ export function genrePromptLines(): string {
       .join(', ')} when the sentence says them: lives ("3 lives"), points to win ("score 200 points"), seconds before the player loses.`,
     "Keep the user's nouns, numbers and names. Cast labels are singular (\"rock\", not \"rocks\"). A cast thing is never what the player holds, sprays or throws.",
     // P38: výchozí bod je odhad ze slov, ne kostra – „ponech a přidej jednu věc“ držel AI verzi u návrhu.
-    'The starting point is a rough keyword guess the player sees while you work, not a frame. Build the game the sentence asks for: change the genre, mode, hero, cast or anything else the guess got wrong; keep only what it got right.',
-    'Every action the player does in the sentence must be playable. When it names two (jump and shoot, run and collect), the genre plays one and the other rides on it: jump + shoot = platformer with the shot things shoot_at; run + shoot = runner with shoot_at.',
+    'The starting point is a keyword guess, not a constraint. Replace errors; preserve the sentence.',
+    'Multiple actions must coexist in the live recipe. Labels, generic wins and score do not certify verbs; actual runtime effects must witness every requested triple.',
     'A sentence in another language is read for its meaning; every label you write stays English.',
-    'Checklist and main verb (in the request) are what the keyword reader found – a sentence it could not read gives none, then read the sentence yourself. Carry each checklist thing in a cast label or the setting, and play the main verb in its genre and mode.',
+    'Checklist and main verb (in the request) are what the keyword reader found. FULL INTENT is authoritative; a suggested genre is not proof. Preserve its named roles and all essential triples.',
   ].join('\n');
 }
 

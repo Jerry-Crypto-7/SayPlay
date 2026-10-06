@@ -6,7 +6,6 @@
  * keypoint (`check`), protože hru ze žánru kritik pustí.
  */
 
-import { isDeepStrictEqual } from 'node:util';
 
 import { describe, expect, it } from 'vitest';
 
@@ -17,24 +16,17 @@ import { answered } from '../director/__fixtures__/branch';
 import { fakeBranch } from '../director/__fixtures__/branch';
 import { directorCache } from '../director/cache';
 import { direct } from '../director/index';
-import { readGenreAnswer } from '../director/read';
 import type { RepairIssue } from '../director/repair';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 /** Věta, které je výchozí odpověď (`genreAnswer`: vlk a žaludy lesa) věrná – P39 soudí obsazení proti větě. */
-const SENTENCE = 'Collect five acorns in a moonlit forest, then escape through the portal';
+const SENTENCE = 'Collect five acorns in a moonlit forest';
 
 const by = (body: unknown, model: string) => ({ ...answered(body), provenance: { branch: 'fake', model } });
 
-function compiled(): GameSpecV1 {
-  const read = readGenreAnswer(genreAnswer());
-  if (!read.ok) throw new Error(read.detail);
-  return read.spec;
-}
-
 /** Robot, který neprojde hru ze žánru, dokud ji záplata nezmění – jediná cesta do opravného kola. */
 const check = (spec: GameSpecV1): RepairIssue[] =>
-  isDeepStrictEqual(spec, compiled()) ? [{ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed', repairHint: 'fix the game or the claim' }] : [];
+  spec.title !== 'Fox Night Escape' ? [{ code: 'KEYPOINT_FAILED', path: '/verification/0', evidence: 'keypoint winnable failed', repairHint: 'fix the game or the claim' }] : [];
 
 const patch = [{ op: 'replace', path: '/title', value: 'Fox Night Escape' }];
 

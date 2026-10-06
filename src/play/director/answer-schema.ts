@@ -1,20 +1,7 @@
 /**
- * Schéma odpovědi režiséra pro `codex exec --output-schema` (P26 T6, na
- * žánrech od P32B T4).
- *
- * Odpověď je `{plan, spec}`: volné pole `plan` pro úvahu stojí před specem,
- * protože přísné schéma bez místa na úvahu zhoršuje přemýšlení („Let Me Speak
- * Freely“). `spec` je `GenreSpec` – unie, jedna varianta na žánr a v ní jen
- * režimy `ready` a parametry s mezemi modulu. Hru z něj složí modul žánru
- * (`readGenreAnswer` v `read.ts`).
- *
- * Přísný režim OpenAI chce u každého objektu všechna pole v `required`,
- * `additionalProperties: false`, u každého uzlu `type` a nezná volné slovníky.
- * `strictSchema` proto: volitelné pole → „nebo null“, konstantu → výčet,
- * slovník → seznam dvojic `{key, value}`. `readGenreAnswer` pole `null` zahodí.
- *
- * Gramatika pravidel je ve všech žánrech stejná, a tak ji schéma nese jednou
- * v `$defs` kořene a žánry na ni odkazují (P36A T7).
+ * Director answer schema: recipe + named content, with legacy GenreSpec variants.
+ * strictSchema turns optional fields into nullable required fields. All rule
+ * schemas are inline: providers receive neither $ref nor $defs.
  */
 
 import { z } from 'zod';
@@ -23,6 +10,12 @@ import { THINGS_MAX, modelRulesSchema, thingsSchema } from '../arcade/rules/sche
 import { COUNT_PARAMS, COUNT_ROLES, type CountRole, type GenreModule, genreSpecSchema, ruleRoleSchema } from '../genre/contract';
 import { GENRE_MODULES, paramBoundsOf } from '../genre/index';
 import { ROLE_KINDS } from '../spec';
+import { recipeSchema } from '../compose/recipe';
+import { glideCourseParams } from '../arcade/pieces/glide';
+import { walkerParamsSchema } from '../arcade/pieces/walker';
+import { ballParams } from '../arcade/pieces/ball';
+import { arenaCatchParams } from '../arcade/pieces/arena-catch';
+import { STEER_TRACK } from '../arcade/pieces/steer';
 
 type Json = Record<string, unknown>;
 
@@ -68,7 +61,7 @@ export function strictSchema(node: Json): Json {
   return out;
 }
 
-const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any' }) as Json;
+const toJson = (schema: z.ZodType): Json => z.toJSONSchema(schema, { io: 'input', unrepresentable: 'any', reused: 'inline', cycles: 'throw' }) as Json;
 
 /** Režimy žánru, které hrají, co slibují – jen ty režisér nabízí (P32B T4). */
 export const readyModes = (module: GenreModule): string[] => module.modes.filter((mode) => module.availability(mode) === 'ready');
@@ -90,21 +83,16 @@ function genreVariant(module: GenreModule): Json | null {
   const variant = bounds.length === 0 ? base.omit({ params: true }) : base.extend({ params: params.optional() });
   const counted = counts === null ? variant.omit({ counts: true }) : variant.extend({ counts: counts.optional() });
   const schema = strictSchema(toJson(counted.extend({ mode: z.enum(modes as [string, ...string[]]) })));
-  // Pole zůstane na svém místě (pořadí polí drží i gramatika llama.cpp), obsah je odkaz do `$defs`.
+  // Keep rule fields in place, but inline their provider-compatible schemas.
   const properties = schema.properties as Record<string, Json>;
-  for (const key of Object.keys(RULE_DEFS)) properties[key] = { anyOf: [{ $ref: `#/$defs/${key}` }, { type: 'null' }] };
+  for (const key of Object.keys(RULE_DEFS)) properties[key] = { anyOf: [RULE_DEFS[key as keyof typeof RULE_DEFS], { type: 'null' }] };
   return schema;
 }
 
 /** Druhy rolí, které smí nést jen pravidla – hráče staví modul. */
 const RULE_ROLE_KINDS = ROLE_KINDS.filter((kind) => kind !== 'player') as [string, ...string[]];
 
-/**
- * Pravidla P29A s jejich rolemi a doplňky (B-R5), jednou pro všechny žánry
- * (P36A T7): dřív je nesla každá varianta zvlášť, 5× po 6 KB. `$defs` v kořeni
- * a `$ref` bez sourozenců bere přísný režim OpenAI (i `codex --output-schema`)
- * a Groq; llama.cpp odkaz `#/$defs/…` rozbalí při převodu na gramatiku.
- */
+/** Shared construction source; emitted independently inside every variant. */
 const RULE_DEFS: Readonly<Record<'ruleRoles' | 'things' | 'rules', Json>> = {
   ruleRoles: strictSchema(toJson(z.array(ruleRoleSchema.extend({ kind: z.enum(RULE_ROLE_KINDS) })).max(THINGS_MAX))),
   things: strictSchema(toJson(thingsSchema)),
@@ -130,13 +118,47 @@ function countsOf(module: GenreModule, modes: readonly string[]): z.ZodObject | 
 }
 
 /** Odpověď režiséra na novou hru: `{plan, spec}` se `GenreSpec`; hru z něj složí modul žánru (`readGenreAnswer`). */
+/** Numeric parameter vocabulary and envelopes come from existing bounded modules. */
+/** Native factories read these content fields, not legacy genre parameters. */
+export const nativeRecipeParams = {
+  catch: arenaCatchParams.pick({ half: true, preySpeed: true }).partial().extend({ seconds: arenaCatchParams.shape.catchSeconds.optional() }),
+  drive: z.object({ roadWidth: z.int().min(3600).max(10000).optional(), roadEntryWidth: z.int().min(3600).max(10000).optional(), crashBudget: z.int().min(1).max(9).optional(), lengthM: z.int().min(STEER_TRACK.minLengthM).max(STEER_TRACK.maxLengthM).optional(), turbo: z.union([z.literal(0), z.literal(1)]).optional(), drift: z.union([z.literal(0), z.literal(1)]).optional(), grip: z.int().min(4).max(20).optional(), brakeDrift: z.int().min(4).max(20).optional() }).strict(),
+  glide: glideCourseParams.pick({ lengthM: true, topSpeed: true, clearancePermille: true, clearanceRisePermille: true }).partial(),
+  walk: walkerParamsSchema.pick({ size: true, speed: true, paceBudgetPct: true, corridorRisePermille: true }).partial().extend({ lives: z.int().min(1).max(9).optional() }),
+  ball: ballParams.pick({ targets: true, shotRecoveryTicks: true, shotRecoveryRiseTicks: true, paceSeconds: true }).partial(),
+} as const;
+const recipeParamBounds = Object.values(GENRE_MODULES).reduce<Record<string, { min: number; max: number }>>((all, module) => {
+  for (const [key, range] of Object.entries(paramBoundsOf(module as GenreModule))) {
+    const old = all[key];
+    all[key] = old === undefined ? range : { min: Math.min(old.min, range.min), max: Math.max(old.max, range.max) };
+  }
+  return all;
+}, {});
+// The model receives the union envelope; readRecipeContent enforces the exact
+// selected factory's keys and bounds before the factory can clamp anything.
+for (const schema of Object.values(nativeRecipeParams)) {
+  const properties = toJson(schema).properties as Record<string, Json>;
+  for (const [key, node] of Object.entries(properties)) {
+    const range = { min: typeof node.minimum === 'number' ? node.minimum : 0, max: typeof node.maximum === 'number' ? node.maximum : 1 };
+    const old = recipeParamBounds[key];
+    recipeParamBounds[key] = old === undefined ? range : { min: Math.min(old.min, range.min), max: Math.max(old.max, range.max) };
+  }
+}
+export const recipeParamsSchema = z.object(Object.fromEntries(Object.entries(recipeParamBounds).map(([key, range]) => [key, z.int().min(range.min).max(range.max).optional()]))).strict();
+const contentShape = genreSpecSchema.options[0].omit({ genre: true, mode: true, params: true });
+export const recipeAnswerSchema = contentShape.extend({
+  recipe: recipeSchema,
+  params: recipeParamsSchema.optional(),
+  unmet: z.array(z.object({ actor: z.string().min(1).max(60), verb: z.string().min(1).max(40), object: z.string().min(1).max(60).nullable() }).strict()).max(64),
+}).strict();
+export type RecipeAnswer = z.infer<typeof recipeAnswerSchema>;
+
 export const GENRE_ANSWER_SCHEMA: Json = {
   type: 'object',
   additionalProperties: false,
   required: ['plan', 'spec'],
   properties: {
     plan: { type: 'string' },
-    spec: { anyOf: (Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? []) },
+    spec: { anyOf: [strictSchema(toJson(recipeAnswerSchema)), ...(Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) => genreVariant(module) ?? [])] },
   },
-  $defs: RULE_DEFS,
 };

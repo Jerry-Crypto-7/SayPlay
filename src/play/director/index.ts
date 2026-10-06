@@ -20,6 +20,19 @@
 
 import type { GenerationBranch } from '@/server/pipeline';
 
+import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
+import { loadRapier } from '../arcade/physics/world';
+import { verifyArcade } from '../arcade/verify';
+import { matchesWitness } from '../arcade/witness';
+import { assemblyOfCell, liveCells } from '../compose/allowed';
+import { compileRecipe } from '../compose/compile';
+import { compose } from '../compose/compose';
+import { recipeKey } from '../compose/recipe';
+import { presetOf } from '../compose/presets';
+import { essentialTriples, type Intent, type IntentTriple } from '../intent/contract';
+import { extractIntent } from '../intent/extract';
+import type { Reading } from '../read/schema';
+
 import type { DirectorResult, FallbackReason } from '../contracts';
 import { draftGameSpecWithMeta } from '../draft';
 import type { GenreModules } from '../genre/classify';
@@ -29,11 +42,11 @@ import type { GameSpecV1 } from '../spec';
 import type { DirectorCache } from './cache';
 import { directorKey } from './cache';
 import { COMPACT_PROMPT_VERSION, buildCompactRequest } from './compact';
-import { type CriticIssue, blockingIssues, critique, fidelity, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
+import { type CriticIssue, blockingIssues, critique, fidelity, actionIssues, ruleInvalidIssues, unprovedVerbs, verbIssues } from './critic';
 import { DIRECTOR_PROMPT_VERSION, buildDirectorRequest } from './prompt';
-import { answerRules, readGenreAnswer, withoutAnswerRules } from './read';
+import { answerRules, readGenreAnswer, readRecipeAnswer, readRecipeContent, readLegacyRecipeContent, readModelSpec, withoutAnswerRules } from './read';
 import { EXAMPLES_VERSION } from './retrieval';
-import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically, switchGenre } from './repair';
+import { MAX_REPAIR_ROUNDS, type RepairIssue, applyRepairAnswer, buildRepairRequest, repairDeterministically, repairSentenceContent, switchGenre } from './repair';
 
 export type { FallbackReason } from '../contracts';
 
@@ -59,6 +72,8 @@ export type DirectedGame = DirectorResult & {
   readonly calls: number;
   /** Modely, které spec napsaly, v pořadí (`a + b`, když opravu psal jiný); přežije cache (P29B T8, R2). */
   readonly authoredBy?: string;
+  /** Computed from this final version, never accepted from a model declaration. */
+  readonly unmet?: readonly IntentTriple[];
 };
 
 export interface DirectorDeps {
@@ -88,8 +103,80 @@ function warningsOf(spec: GameSpecV1): CriticIssue[] {
   return critique(spec).filter((issue) => issue.severity === 'warn');
 }
 
+function isCompositionAnswer(body: unknown): boolean {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) return false;
+  const envelope = body as Record<string, unknown>;
+  const value = typeof envelope.spec === 'object' && envelope.spec !== null ? envelope.spec as Record<string, unknown> : envelope;
+  return 'recipe' in value || 'genre' in value;
+}
+
+function readComposedAnswer(body: unknown, intent: Intent, seed: number, reading: Reading | null): { ok: true; spec: GameSpecV1; declared: readonly IntentTriple[] } | { ok: false; reason: string; detail: string } {
+  const envelope = typeof body === 'object' && body !== null ? body as Record<string, unknown> : {};
+  const raw = typeof envelope.spec === 'object' && envelope.spec !== null ? envelope.spec as Record<string, unknown> : envelope;
+  try {
+    if ('recipe' in raw) {
+      const read = readRecipeAnswer(body);
+      if (!read.ok) return read;
+      const cell = liveCells().find(candidate => recipeKey(candidate.recipe) === recipeKey(read.value.recipe))!;
+      if ([cell.recipe.move, ...cell.recipe.actions, ...cell.recipe.threats].some(verb => intent.negated.includes(verb))) return { ok: false, reason: 'MALFORMED_SPEC', detail: 'recipe contains an explicitly forbidden action' };
+      const { recipe: _recipe, unmet, ...content } = read.value;
+      const checked = readRecipeContent(cell, content);
+      if (!checked.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: checked.issues.join('; ') };
+      const words = compose(intent, seed, reading).recipe.content;
+      const corrected = repairSentenceContent(checked.value, words, intent.sentence, { reading });
+      const game = readModelSpec(compileRecipe({ ...assemblyOfCell(cell, corrected), ...read.value.recipe }));
+      return game.ok ? { ...game, declared: unmet } : game;
+    }
+    const legacy = readGenreAnswer(body, undefined, intent.sentence, reading);
+    if (!legacy.ok) return legacy;
+    // Keep legacy content, but choose mechanics from every essential clause.
+    const assembled = compose(intent, seed, reading);
+    const repaired = repairSentenceContent(legacy.genre, assembled.recipe.content, intent.sentence, { reading });
+    // An authored rule program may require the original live control (carry,
+    // throwHeld, contact puzzle). Moving it into a labyrinth changes its legal
+    // paths and can make every rule unreachable. Keep that explicit live recipe
+    // when no requested movement conflicts; the full-intent/effect verifier below
+    // still repairs, admits missing actions and prevents incomplete caching.
+    if ((repaired.rules?.length ?? 0) > 0 || (repaired.ruleRoles?.length ?? 0) > 0) {
+      const authored = presetOf(repaired);
+      const live = liveCells().some(cell => recipeKey(cell.recipe) === recipeKey(authored));
+      const movementFits = intent.items.every(item => !item.essential || item.axis !== 'move' || item.verb === authored.move);
+      if (live && movementFits) {
+        const game = readModelSpec(compileRecipe(authored));
+        return game.ok ? { ...game, declared: [] } : game;
+      }
+    }
+    const { genre: _genre, mode: _mode, params, ...content } = repaired;
+    const cell = liveCells().find(candidate => candidate.id === assembled.cellId)!;
+    const checked = readLegacyRecipeContent({ ...cell, preset: assembled.recipe.content }, { ...assembled.recipe.content, ...content, ...(_genre === assembled.recipe.content.genre && _mode === assembled.recipe.content.mode ? { params } : {}) });
+    if (!checked.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: checked.issues.join('; ') };
+    // A legacy cast can add an existing addon (e.g. shooting to jumping).
+    // Resolve that actual assembly to a live cell; never bypass assertPreset.
+    const candidate = cell.assembly !== undefined ? { ...assembled.recipe, content: checked.value } : presetOf(checked.value);
+    const selectedCell = liveCells().find(live => recipeKey(live.recipe) === recipeKey(candidate));
+    if (selectedCell === undefined) return { ok: false, reason: 'MALFORMED_SPEC', detail: `content requires a non-live recipe: ${recipeKey(candidate)}` };
+    const game = readModelSpec(compileRecipe(assemblyOfCell(selectedCell, checked.value)));
+    return game.ok ? { ...game, declared: [] } : game;
+  } catch (error) {
+    return { ok: false, reason: 'MALFORMED_SPEC', detail: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+async function verifyDirectorSpec(spec: GameSpecV1, intent: Intent, seed: number) {
+  await preloadPhysics(spec, loadRapier);
+  const made = arcadeWorldOf(spec, seed);
+  const triples = essentialTriples(intent);
+  if (!made.ok) return { complete: false, unmet: triples, actions: actionIssues(spec, intent, seed, []), issues: [{ code: 'NOT_PLAYABLE', path: '/', evidence: made.issues.join('; '), repairHint: 'Choose a playable live recipe.' }] };
+  const verdict = verifyArcade(made.world, undefined, made.roleBindings);
+  const unmet = triples.filter(triple => !verdict.witnesses.some(witness => matchesWitness(triple, witness)));
+  const issues = verdict.publishEligible ? [] : verbIssues(verdict.failures.map(failure => ({ code: 'NOT_PLAYABLE', path: '/', evidence: failure, repairHint: 'The actual bot must win, idle must not win, and replay must match.' })), spec);
+  return { complete: verdict.publishEligible && unmet.length === 0, unmet, actions: actionIssues(spec, intent, seed, verdict.witnesses), issues };
+}
+
 export async function direct(sentence: string, deps: DirectorDeps): Promise<DirectedGame> {
   const started = deps.now();
+  const intent = extractIntent(sentence);
+  if (intent.items.some(item => item.essential && item.axis === 'move' && item.verb === 'ball')) await loadRapier();
   // P29B T5: zapnutá čtečka čte před draftem; vypnutá neodloží `onDraft` ani o jeden `await`.
   const reading = readerEnabled() ? await readBeforeDraft(sentence) : null;
   const genreOptions = { reading, ...(deps.modules === undefined ? {} : { modules: deps.modules }) };
@@ -108,17 +195,19 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     warnings: warningsOf(draft),
     ms: deps.now() - started,
     calls,
+    ...(drafted.composition === undefined ? {} : { unmet: drafted.composition.unmet }),
   });
 
   const compact = deps.compact === true;
   const examples = compact && deps.examples === true;
-  const request = compact ? buildCompactRequest(sentence, drafted.genre, examples) : buildDirectorRequest(sentence, drafted.genre);
+  const startingRequest = compact ? buildCompactRequest(sentence, drafted.genre, examples) : buildDirectorRequest(sentence, drafted.genre);
+  const request = deps.modules === undefined ? { ...startingRequest, user: `${startingRequest.user}\n\nFULL INTENT:\n${JSON.stringify({ sentence, essential: essentialTriples(intent), negated: intent.negated })}` } : startingRequest;
   // Hra psaná s příklady má vlastní klíč cache: měření s nimi a bez nich si hry nepůjčí.
   const promptVersion = compact ? (examples ? `${COMPACT_PROMPT_VERSION}+examples:${EXAMPLES_VERSION}` : COMPACT_PROMPT_VERSION) : DIRECTOR_PROMPT_VERSION;
   const key = directorKey({ sentence, promptVersion, model: request.model, endpoint: deps.branch.id });
   const cached = deps.cache === undefined ? null : await deps.cache.read(key);
   // Záznam přijal kritik tehdejšího buildu; co dnešní kritik blokuje, je miss.
-  if (cached !== null && blockingIssues(critique(cached.spec)).length === 0) {
+  if (cached !== null && blockingIssues(critique(cached.spec)).length === 0 && (deps.modules !== undefined || (await verifyDirectorSpec(cached.spec, intent, deps.seed ?? 1)).complete)) {
     return {
       ok: true,
       spec: cached.spec,
@@ -149,6 +238,76 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
   if (outcome.ok) credit(outcome.provenance);
   if (!outcome.ok)
     return fallback(outcome.reason === 'MALFORMED_RESPONSE' ? 'MALFORMED' : 'MODEL_UNAVAILABLE', { stage: 'model', reason: outcome.reason, detail: outcome.detail, raw: outcome.raw ?? null });
+
+  if (deps.modules === undefined) {
+    const written = answerRules(outcome.body);
+    const promised = new Set((written ?? []).flatMap(rule => typeof rule === 'object' && rule !== null && typeof (rule as { verb?: unknown }).verb === 'string' ? [(rule as { verb: string }).verb] : []));
+    let ruleBlocks: CriticIssue[] = [];
+    let selected = readComposedAnswer(outcome.body, intent, deps.seed ?? 1, reading);
+    if (!selected.ok && written !== null) {
+      const plain = readComposedAnswer(withoutAnswerRules(outcome.body), intent, deps.seed ?? 1, reading);
+      if (plain.ok) { ruleBlocks = ruleInvalidIssues(selected.detail, written); selected = plain; }
+    }
+    if (!selected.ok) return fallback('MALFORMED', { stage: 'read', reason: selected.reason, detail: selected.detail, raw: outcome.body });
+    const originalRuleIssues = [...ruleBlocks];
+    let nativeSpec = selected.spec;
+    const deterministic = repairDeterministically(nativeSpec, blockingIssues(critique(nativeSpec)));
+    if (deterministic !== null) nativeSpec = deterministic.spec;
+    let declared = selected.declared;
+    let rounds = 0;
+    let verified = await verifyDirectorSpec(nativeSpec, intent, deps.seed ?? 1);
+    const issuesOf = (): RepairIssue[] => [
+      ...blockingIssues(critique(nativeSpec)),
+      ...ruleBlocks,
+      ...(deps.check === undefined ? [] : verbIssues(deps.check(nativeSpec), nativeSpec)),
+      ...verified.issues,
+      ...verified.unmet.flatMap((triple, index) => declared.some(item => item.actor === triple.actor && item.verb === triple.verb && item.object === triple.object) ? [] : [verified.actions[index]!]),
+    ];
+    let issues = issuesOf();
+    while (issues.length > 0 && rounds < (deps.maxRepairRounds ?? MAX_REPAIR_ROUNDS)) {
+      rounds++; calls++;
+      const repaired = await deps.branch.generate({ prompt: sentence, request: buildRepairRequest(nativeSpec, issues, intent) });
+      if (!repaired.ok) {
+        if (blockingIssues(critique(nativeSpec)).some(issue => issue.code !== 'RULE_INVALID')) return { ...fallback('MODEL_UNAVAILABLE', { stage: 'model', reason: repaired.reason, detail: `repair round ${rounds}: ${repaired.detail}`, raw: repaired.raw ?? null }), repairRounds: rounds };
+        break;
+      }
+      if (isCompositionAnswer(repaired.body)) {
+        selected = readComposedAnswer(repaired.body, intent, deps.seed ?? 1, reading);
+        if (!selected.ok) continue;
+        nativeSpec = selected.spec; declared = selected.declared; ruleBlocks = [];
+      } else {
+        const patched = applyRepairAnswer(nativeSpec, repaired.body);
+        if (!patched.ok) continue;
+        nativeSpec = patched.spec; ruleBlocks = [];
+      }
+      credit(repaired.provenance);
+      verified = await verifyDirectorSpec(nativeSpec, intent, deps.seed ?? 1);
+      issues = issuesOf();
+    }
+    // Broken custom rules may be removed, but every resulting candidate is
+    // played again and its missing intent triples remain explicit.
+    const ruleFailures = issues.filter(issue => issue.code === 'RULE_INVALID' || issue.code === 'VERB_UNPROVED');
+    if (ruleFailures.length > 0) {
+      const unproved = new Set(unprovedVerbs(ruleFailures));
+      for (const candidate of [withoutRules(nativeSpec, rule => unproved.has(rule.verb)), withoutRules(nativeSpec, () => true)]) {
+        if (candidate === null || blockingIssues(critique(candidate)).length > 0) continue;
+        const checked = deps.check === undefined ? [] : verbIssues(deps.check(candidate), candidate);
+        const played = await verifyDirectorSpec(candidate, intent, deps.seed ?? 1);
+        if (checked.length > 0 || played.issues.length > 0) continue;
+        nativeSpec = candidate; verified = played; ruleBlocks = []; issues = issuesOf();
+        break;
+      }
+    }
+    // Final verification is for the exact version after every accepted repair.
+    if (verified.issues.length > 0 || blockingIssues(critique(nativeSpec)).length > 0) return { ...fallback('UNREPAIRED', { stage: 'critic', reason: 'UNREPAIRED', detail: issues.map(issue => `${issue.code}: ${issue.evidence}`).join('; '), raw: nativeSpec }), repairRounds: rounds };
+    const authoredBy = authors.length === 0 ? null : authors.join(' + ');
+    const dropped = [...promised].filter(verb => !(nativeSpec.rules ?? []).some(rule => rule.verb === verb));
+    const incomplete = issues.length > 0 || dropped.length > 0;
+    if (verified.complete && !incomplete && !byFallback) await deps.cache?.write(key, nativeSpec, authoredBy);
+    return { ok: true, spec: nativeSpec, source: 'authored', repairRounds: rounds, fallbackReason: incomplete ? 'VERB_UNPROVED' : null,
+      ...(!incomplete ? {} : { failure: { stage: 'critic' as const, reason: issues.some(issue => issue.code === 'ACTION_LOST') ? 'ACTION_LOST' : 'VERB_UNPROVED', detail: [...issues.map(issue => `${issue.code}: ${issue.evidence}`), ...(dropped.length === 0 ? [] : [...originalRuleIssues.map(issue => `${issue.code}: ${issue.evidence}`), `rule verbs dropped: ${dropped.join(', ')}`])].join('; '), raw: nativeSpec } }),
+      unmet: verified.unmet, warnings: warningsOf(nativeSpec), ms: deps.now() - started, calls, ...(authoredBy === null ? {} : { authoredBy }) };
+  }
 
   // Hru skládá modul žánru – co se nepřečte nebo nepřeloží, oprava tabulkou nespraví.
   // Pravidla, která se nedala složit (P29A T8, v první odpovědi znovu od T5b): hra se složí bez nich a opravné kolo dostane důvod.

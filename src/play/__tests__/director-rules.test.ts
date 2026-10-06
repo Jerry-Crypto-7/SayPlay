@@ -64,7 +64,7 @@ describe('the first answer carries rules', () => {
     expect(branch.calls[1]?.request.user).toContain('RULE_INVALID');
     expect(branch.calls[1]?.request.user).toContain('tower');
     // Oprava pravidla nedopsala: hra žánru se hraje bez nich a slíbená slovesa ji označí, do cache nejde.
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', failure: { detail: 'rule verbs dropped: carry, open, climb' } });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED', failure: { detail: expect.stringContaining('rule verbs dropped: carry, open, climb') } });
     expect(game.spec.rules).toBeUndefined();
   });
 });

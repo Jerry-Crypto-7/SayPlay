@@ -15,6 +15,8 @@
 
 import { applyPatch, type Operation } from 'rfc6902';
 
+import { essentialTriples, type Intent } from '../intent/contract';
+
 import { EMISSION_MODEL, type UpstreamRequest } from '@/model/prompt';
 
 import chaseEscape from '../__fixtures__/chase_escape.json';
@@ -34,7 +36,7 @@ import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId,
 import { gameSpecSchema, readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
 
 import { type CriticIssue, type FidelityIssue, type FidelityOptions, blockingIssues, critique, fidelity, saidIn, sameRole } from './critic';
-import { renderRegistry } from './prompt';
+import { renderRegistry, genrePromptLines } from './prompt';
 import { type DirectorReadReason, ammoOfSentence, compileGenreSpec, readModelSpec } from './read';
 
 export const MAX_REPAIR_ROUNDS = 2;
@@ -465,11 +467,11 @@ const REPAIR_ANSWER_LINE =
 /** Nález pro modelové kolo: od kritika, nebo z ověření hry robotem (`DirectorDeps.check`). */
 export type RepairIssue = Pick<CriticIssue, 'path' | 'evidence' | 'repairHint'> & { readonly code: string };
 
-export function buildRepairRequest(spec: GameSpecV1, issues: readonly RepairIssue[]): UpstreamRequest {
+export function buildRepairRequest(spec: GameSpecV1, issues: readonly RepairIssue[], intent?: Intent): UpstreamRequest {
   return {
     model: EMISSION_MODEL,
-    system: [REPAIR_RULES, REPAIR_ANSWER_LINE, renderRegistry()].join('\n\n'),
-    user: `SPEC:\n${JSON.stringify(spec)}\n\nISSUES:\n${JSON.stringify(issues.map(({ code, path, evidence, repairHint }) => ({ code, path, evidence, repairHint })))}`,
+    system: [REPAIR_RULES, REPAIR_ANSWER_LINE, renderRegistry(), ...(intent === undefined ? [] : [genrePromptLines(), 'You may instead return a complete {plan,spec} recipe answer from the live table. Preserve all original essential triples; unmet declarations do not prove actions.'])].join('\n\n'),
+    user: `${intent === undefined ? '' : `ORIGINAL INTENT:\n${JSON.stringify({ sentence: intent.sentence, essential: essentialTriples(intent), negated: intent.negated })}\n\n`}SPEC:\n${JSON.stringify(spec)}\n\nISSUES:\n${JSON.stringify(issues.map(({ code, path, evidence, repairHint }) => ({ code, path, evidence, repairHint })))}`,
   };
 }
 
@@ -607,6 +609,12 @@ function withSentenceRoles(candidate: GenreSpec, words: GenreSpec, issues: reado
  * svoje. Vrací první režim, který projde věrností, modulem i kritikem; `null` =
  * neprošel žádný a režisér vezme žánr draftu.
  */
+/** Repair identities and tools without changing the recipe's mechanics. */
+export function repairSentenceContent(answer: GenreSpec, words: GenreSpec, sentence: string, options: FidelityOptions = {}): GenreSpec {
+  const issues = fidelity(answer, sentence, options).filter(issue => issue.code !== 'VERB_OUTSIDE_MODE' && issue.code !== 'MODE_NOT_READY');
+  return ammoOfSentence(withSentenceRoles(answer, words, issues, sentence), sentence, options.reading ?? null, options.modules ?? GENRE_MODULES);
+}
+
 export function switchGenre(answer: GenreSpec, sentence: string, options: FidelityOptions = {}): { readonly genre: GenreSpec; readonly spec: GameSpecV1 } | null {
   const reading = options.reading ?? null;
   const modules = options.modules ?? GENRE_MODULES;

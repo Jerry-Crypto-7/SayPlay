@@ -1,3 +1,6 @@
+import { actionEvidence, missingActions } from '@/play/fidelity/action-evidence';
+import { extractIntent } from '@/play/intent/extract';
+import { loadRapier } from '@/play/arcade/physics/world';
 /**
  * Kritik (P23-B T5). Kritik, který nikdy nic nenajde, vypadá jako čistý spec –
  * proto se drží nula blokujících nálezů nad 16 dobrými spec a devět cílených
@@ -8,13 +11,13 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { goldenPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { GOOD_ANSWERS, answerFixture } from '../director/__fixtures__';
 import { CRITIC_CODES, UNISSUED_PACK_CODES, blockingIssues, critique, fidelity, saidIn, type CriticIssue, type FidelityIssue } from '../director/critic';
-import { DIRECTOR_EXAMPLES, exampleSpec } from '../director/retrieval';
+import { DIRECTOR_EXAMPLES, exampleGame, exampleSpec } from '../director/retrieval';
 import { draftGameSpecWithMeta } from '../draft';
 import { genreDoubles } from '../genre/__tests__/doubles';
 import type { CastRole, GenreSpec } from '../genre/contract';
@@ -228,12 +231,12 @@ describe('fidelity of a GenreSpec answer', () => {
 
   // P38: věta, ve které tabulka sloves nic nenajde (česky), žánr nedokazuje – režisér ho vybere sám,
   // jinak by ho kontrola vrátila k náhradní Aréně draftu.
-  it('lets the director pick the genre when the sentence has no verb the table knows', () => {
+  it('does not certify an unknown verb just because a genre was supplied', () => {
     const czech = 'skákací hra se střílením do zvířat v lese';
     const verbCodes = (genre: GenreSpec) => fidelity(genre, czech).filter((issue) => issue.code === 'VERB_OUTSIDE_MODE');
-    expect(verbCodes({ genre: 'platformer', mode: 'default', hero: 'fox', cast: [{ label: 'wolf', does: 'shoot_at' }], setting: 'forest' })).toEqual([]);
+    expect(verbCodes({ genre: 'platformer', mode: 'default', hero: 'fox', cast: [{ label: 'wolf', does: 'shoot_at' }], setting: 'forest' })).toHaveLength(1);
     // Zvíře z věty slova nepřečtou, takže ho kontrola nesmí shodit jako vymyšlené.
-    expect(fidelity({ genre: 'platformer', mode: 'default', hero: 'hunter', cast: [{ label: 'deer', does: 'shoot_at' }], setting: 'forest' }, czech)).toEqual([]);
+    expect(fidelity({ genre: 'platformer', mode: 'default', hero: 'hunter', cast: [{ label: 'deer', does: 'shoot_at' }], setting: 'forest' }, czech).map(issue => issue.code)).toEqual(['VERB_OUTSIDE_MODE']);
     // Věta se slovesem z tabulky dál dokazuje režim.
     expect(fidelity({ genre: 'arena', mode: 'fight', hero: 'fox', cast: [{ label: 'wolf', does: 'fight' }], setting: 'forest' }, 'a fox jumps over logs in the forest').map((issue) => issue.code)).toContain('VERB_OUTSIDE_MODE');
   });
@@ -251,8 +254,15 @@ describe('fidelity of a GenreSpec answer', () => {
   });
 
   // Příklady jdou do promptu jako vzor tvaru (`retrieval.ts`): obsazení, které by kritik shodil, by model učil chybu.
-  it('passes the cast of every director example', () => {
+  it('passes the cast and actions of every director example', async () => {
     for (const example of DIRECTOR_EXAMPLES) {
+      if ('recipe' in (example.answer.spec as Record<string, unknown>)) {
+        const game = exampleGame(example);
+        expect(game.ok, example.id).toBe(true);
+        if (!game.ok) continue;
+        expect(missingActions(extractIntent(example.sentence), await actionEvidence(game.spec, 1)), example.id).toEqual([]);
+        continue;
+      }
       const cast = fidelity(exampleSpec(example), example.sentence).filter((issue) => issue.code.startsWith('CAST_'));
       expect(cast, example.id).toEqual([]);
     }
@@ -267,3 +277,6 @@ describe('fidelity of a GenreSpec answer', () => {
     expect(codes(wizard, 'wizard', stand)).toEqual([]);
   });
 });
+
+// Composition now executes physical ball witnesses even in synchronous draft tests.
+beforeAll(async () => { await loadRapier(); });

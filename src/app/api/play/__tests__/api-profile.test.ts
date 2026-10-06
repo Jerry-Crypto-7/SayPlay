@@ -18,19 +18,17 @@ import { __resetUpgrades } from '../_upgrade';
 import { GET as readUpgrade } from '../games/[id]/upgrade/route';
 import { POST as createGame } from '../games/route';
 
-// Každý `GenreSpec` složí modul žánru hratelně; nehratelnou hru pro opravné kolo
-// podvrhne až tahle záměna přečtené odpovědi – jako by modul žánru hru rozbil.
-// Od P32B T5 skládá `readGenreAnswer` hru modulem přímo, `compileGenre` nevolá.
-const genre = vi.hoisted(() => ({ unplayable: null as unknown }));
-vi.mock('@/play/director/read', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/play/director/read')>();
-  const readGenreAnswer: typeof actual.readGenreAnswer = (body, modules, sentence) => {
-    const read = actual.readGenreAnswer(body, modules, sentence);
-    if (genre.unplayable === null || !read.ok) return read;
-    const game = actual.readModelSpec(genre.unplayable);
-    return game.ok ? { ...read, spec: game.spec } : game;
+// Inject one failed verifier keypoint on the author's golden-hamster candidate.
+// The same report seam is read during repair and final publication; quick is untouched.
+const genre = vi.hoisted(() => ({ unplayable: false }));
+vi.mock('../_report', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../_report')>();
+  const reportFor: typeof actual.reportFor = compiled => {
+    const report = actual.reportFor(compiled);
+    if (!genre.unplayable || compiled.spec.title !== 'Golden Hamster Run') return report;
+    return { ...report, publishEligible:false, keypoints:report.keypoints.map((point,index)=>index===0 ? {...point,passed:false,failures:['injected_claim requires reviewed title Repaired Hamster Run']} : point) };
   };
-  return { ...actual, readGenreAnswer };
+  return { ...actual, reportFor };
 });
 
 // Bez předpony `sk-`: tvar skutečného klíče by zastavil `blind-check` před pushem.
@@ -46,7 +44,7 @@ const API = {
   WORLDSMITH_SPEND_CAP_USD: '5',
 };
 
-const SENTENCE = 'A hamster escapes a supermarket while a giant Roomba hunts it.';
+const SENTENCE = 'a hamster runs through a supermarket';
 const CALLER = { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.21' };
 
 type Scripted = unknown | 'timeout';
@@ -61,7 +59,7 @@ beforeEach(() => {
   resetConcurrency();
   for (const [key, value] of Object.entries(API)) vi.stubEnv(key, value);
   resetProcessSpendCap();
-  genre.unplayable = null;
+  genre.unplayable = false;
   upstream.script = [];
   upstream.requests = [];
   vi.stubGlobal('fetch', async (url: string, init: RequestInit = {}) => {
@@ -112,7 +110,7 @@ function brokenSwitch(): unknown {
 describe('final API profile over a provider double (D1)', () => {
   it('create: one call in the Messages format, the key only in the provider header, the AI child stored', async () => {
     // Model vybírá žánr (P32B T4), hru skládá modul žánru.
-    upstream.script = [genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', cast: [{ label: 'robot vacuum', does: 'avoid' }, { label: 'acorn', does: 'collect' }], setting: 'supermarket aisles', palette: 'supermarket' })];
+    upstream.script = [genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', cast: [], setting: 'supermarket', palette: 'supermarket' })];
     const { versionId, outcome, seen } = await create();
     expect(outcome.status).toBe('ready');
     expect(upstream.requests).toHaveLength(1);
@@ -127,11 +125,11 @@ describe('final API profile over a provider double (D1)', () => {
   });
 
   it('repair: an unplayable answer gets one repair round and the repaired game is published', async () => {
-    genre.unplayable = brokenSwitch();
+    genre.unplayable = true;
     // Odpověď věrná větě (P32B T5) – nevěrnou by režisér přepnul na jiný žánr místo opravného kola.
     // P39: věc ke sběru je výchozí věc supermarketu, žalud by kontrola obsazení shodila jako vymyšlený.
-    const faithful = genreAnswer({ hero: 'hamster', cast: [{ label: 'giant roomba', does: 'chase_me' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket', palette: 'supermarket' });
-    upstream.script = [faithful, [{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }]];
+    const faithful = genreAnswer({ genre:'runner',mode:'default',hero: 'golden hamster', cast: [], setting: 'supermarket', palette: 'supermarket' });
+    upstream.script = [faithful, [{ op: 'replace', path: '/title', value: 'Repaired Hamster Run' }]];
     const { outcome } = await create();
     expect(outcome.status).toBe('ready');
     expect(upstream.requests).toHaveLength(2);

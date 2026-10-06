@@ -19,12 +19,14 @@ import { GENRE_MODULES } from '@/play/genre/index';
 import type { GenerationBranch } from '@/server/pipeline';
 
 import { direct } from '..';
+import { extractIntent } from '../../intent/extract';
+import { essentialTriples } from '../../intent/contract';
 import { readyModes } from '../answer-schema';
 import { buildCompactRequest } from '../compact';
 import { blockingIssues, critique } from '../critic';
 import { checklistLines } from '../prompt';
 import { readGenreAnswer } from '../read';
-import { DIRECTOR_EXAMPLES, EXAMPLES_MAX, EXAMPLES_MAX_CHARS, EXAMPLES_MIN, exampleSpec, examplesBlock, nearestExamples } from '../retrieval';
+import { DIRECTOR_EXAMPLES, EXAMPLES_MAX, EXAMPLES_MAX_CHARS, EXAMPLES_MIN, exampleReady, exampleGame, exampleSpec, examplesBlock, nearestExamples } from '../retrieval';
 
 const setOf = (file: string): { id: string; text: string }[] => JSON.parse(readFileSync(join(process.cwd(), 'evals', 'play', 'p30', file), 'utf8')).sentences;
 const normalize = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim();
@@ -39,7 +41,7 @@ describe('the example pool', () => {
   // P32B T4: odpověď je `GenreSpec`, hru z něj skládá modul žánru – stejná cesta jako odpověď modelu.
   it('holds only games the robot plays to a win', () => {
     for (const example of DIRECTOR_EXAMPLES) {
-      const read = readGenreAnswer(example.answer);
+      const read = exampleGame(example);
       expect(read, example.id).toMatchObject({ ok: true });
       if (!read.ok) continue;
       expect(blockingIssues(critique(read.spec)), example.id).toEqual([]);
@@ -67,7 +69,7 @@ describe('nearestExamples', () => {
   it('offers only examples in a mode that plays today', () => {
     const ready = (id: string) => {
       const spec = exampleSpec(DIRECTOR_EXAMPLES.find((example) => example.id === id)!);
-      return readyModes(GENRE_MODULES[spec.genre] as GenreModule).includes(spec.mode);
+      return exampleReady(DIRECTOR_EXAMPLES.find((example) => example.id === id)!);
     };
     const offered = DIRECTOR_EXAMPLES.flatMap((example) => nearestExamples(example.sentence, exampleSpec(example).genre)).map((example) => example.id);
     expect(offered.filter((id) => !ready(id))).toEqual([]);
@@ -107,12 +109,13 @@ describe('the director prompt', () => {
     return { seen, branch };
   };
 
-  it('is byte-for-byte the old prompt without the examples switch', async () => {
+  it('keeps the compact request and adds the complete intent without examples', async () => {
     const plain = recording();
     await direct(sentence, { branch: plain.branch, now: Date.now, compact: true });
     expect(draft).not.toBeNull();
     // P37A T8: zpráva nese mezi větou a výchozím bodem kontrolní seznam věty (`checklistLines`); příklady dál jen s přepínačem.
-    expect(plain.seen).toEqual([`${sentence}\n\n${checklistLines(sentence)}\n\nStarting point (a keyword guess, replace what it got wrong): ${JSON.stringify(draft)}`]);
+    const intent = extractIntent(sentence);
+    expect(plain.seen).toEqual([`${buildCompactRequest(sentence, draft).user}\n\nFULL INTENT:\n${JSON.stringify({ sentence, essential: essentialTriples(intent), negated: intent.negated })}`]);
     expect(buildCompactRequest(sentence, draft)).toEqual(buildCompactRequest(sentence, draft, false));
   });
 
@@ -122,8 +125,11 @@ describe('the director prompt', () => {
     await direct(sentence, { branch: plain.branch, now: Date.now, compact: true });
     await direct(sentence, { branch: withExamples.branch, now: Date.now, compact: true, examples: true });
     const [user] = withExamples.seen;
-    expect(user!.startsWith(`${plain.seen[0]!}\n\nVerified games for similar sentences`)).toBe(true);
-    const lines = user!.slice(plain.seen[0]!.length).trim().split('\n').slice(1);
+    const [plainBody, fullIntent] = plain.seen[0]!.split('\n\nFULL INTENT:\n');
+    const [exampleBody, exampleIntent] = user!.split('\n\nFULL INTENT:\n');
+    expect(exampleIntent).toBe(fullIntent);
+    expect(exampleBody!.startsWith(`${plainBody}\n\nVerified games for similar sentences`)).toBe(true);
+    const lines = exampleBody!.slice(plainBody!.length).trim().split('\n').slice(1);
     expect(lines.length).toBeGreaterThanOrEqual(EXAMPLES_MIN);
     expect(lines.length).toBeLessThanOrEqual(EXAMPLES_MAX);
     for (const line of lines) expect(DIRECTOR_EXAMPLES.map((example) => example.sentence)).toContain(JSON.parse(line).sentence);

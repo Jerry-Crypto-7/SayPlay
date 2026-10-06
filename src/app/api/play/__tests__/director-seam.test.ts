@@ -183,14 +183,15 @@ describe('getDirector – kvóty a cache (R8)', () => {
   });
 
   it('bez volného slotu se cache čte pod klíčem živé větve – táž věta, táž hra', async () => {
+    const cachedSentence = 'a penguin jumps';
     stubEnv(LIVE);
-    const request = buildDirectorRequest(SENTENCE, draftGameSpecWithMeta(SENTENCE).genre);
+    const request = buildDirectorRequest(cachedSentence, draftGameSpecWithMeta(cachedSentence).genre);
     const branchId = upstreamBranch(upstreamConfigFromEnv(process.env)).id;
-    const key = directorKey({ sentence: SENTENCE, promptVersion: DIRECTOR_PROMPT_VERSION, model: request.model, endpoint: branchId });
-    await directorCache(answers.store ?? memoryAnswerStore()).write(key, collectExit as GameSpecV1);
+    const key = directorKey({ sentence: cachedSentence, promptVersion: DIRECTOR_PROMPT_VERSION, model: request.model, endpoint: branchId });
+    await directorCache(answers.store ?? memoryAnswerStore()).write(key, draftGameSpecWithMeta(cachedSentence).spec);
     expect(acquireSlot('play')).toBe(true);
     expect(acquireSlot('play')).toBe(true);
-    const game = await getDirector(Date.now(), 'test-caller')(SENTENCE);
+    const game = await getDirector(Date.now(), 'test-caller')(cachedSentence);
     expect(game.source).toBe('cached');
     expect(fetchCalls).toBe(0);
   });

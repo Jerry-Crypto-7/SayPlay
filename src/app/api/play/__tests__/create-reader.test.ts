@@ -42,12 +42,12 @@ const silent = vi.fn(
     }),
 );
 
-const create = () =>
+const create = (sentence = SENTENCE) =>
   createGame(
     new Request('http://play.test/api/play/games', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.7' },
-      body: JSON.stringify({ sentence: SENTENCE }),
+      body: JSON.stringify({ sentence }),
     }),
   );
 
@@ -85,10 +85,27 @@ describe('create route reads the sentence before drafting', () => {
     expect(answering).toHaveBeenCalledOnce();
     expect(String(answering.mock.calls[0]?.[0])).toBe('http://reader.test/v1/chat/completions');
     expect(spec).toEqual(draftGameSpecWithMeta(SENTENCE, 1, { reading: READING }).spec);
-    // Od P32B T2 čtení nevybírá ovládání, ale jeho role jdou do žánru: draka klíčová slova neznají
-    // (bez čtení dá hrad ducha jako výchozího nepřítele, P32B T3).
-    expect(spec).not.toEqual(draftGameSpec(SENTENCE));
-    expect((spec as { roles: { label: string }[] }).roles.map((role) => role.label)).toContain('dragon');
+    // This malformed reading invents dragons and misclassifies collect as shooting.
+    // Reading is advisory: an unrequested threat cannot replace collecting keys.
+    expect(spec).toEqual(draftGameSpec(SENTENCE));
+    expect((spec as { roles: { label: string }[] }).roles.map(role => role.label)).toContain('key');
+    expect((spec as { roles: { label: string }[] }).roles.map(role => role.label)).not.toContain('dragon');
+  });
+
+  it('keeps the named collectible and its explicit count from a faithful reading', async () => {
+    const sentence = 'a knight collects six keys in a castle';
+    const reading: Reading = {
+      ...READING, control: 'tap_go', verbs: [{ word: 'collect', class: 'tap_go' }],
+      roles: [{ noun: 'keys', kind: 'collectible', count: 6 }],
+      numbers: { seconds: null, counts: [6] },
+    };
+    const reader = vi.fn(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reading) } }] }), { status: 200 }));
+    vi.stubEnv('PLAY_READER', 'on');
+    vi.stubGlobal('fetch', reader);
+    const spec = await publishedSpec(await create(sentence));
+    expect(reader).toHaveBeenCalledOnce();
+    expect(spec).toEqual(draftGameSpecWithMeta(sentence, 1, { reading }).spec);
+    expect((spec as { roles: unknown[] }).roles).toContainEqual(expect.objectContaining({ label: 'key', kind: 'collectible', count: 6 }));
   });
 
   it('a silent reader delays the game by the budget at most, then the keywords draft it', async () => {

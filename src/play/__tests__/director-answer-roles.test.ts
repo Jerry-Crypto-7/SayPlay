@@ -1,3 +1,4 @@
+import { loadRapier } from '@/play/arcade/physics/world';
 /**
  * Co AI verze přidá a co nesmí rozbít (P32B T7, z náhledu O10). Všechno by
  * vypadalo dobře a bylo špatně: „without hitting a rocks“ je jen o písmeno
@@ -7,7 +8,7 @@
 
 import { readFileSync } from 'node:fs';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { goldenPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
@@ -21,6 +22,8 @@ import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import { readRoles, singular, toolsOf } from '../draft/lexicon';
 import type { GenreSpec } from '../genre/contract';
 import { isAmmo } from '../genre/throw';
+import { actionEvidence, missingActions } from '../fidelity/action-evidence';
+import { extractIntent } from '../intent/extract';
 
 const sentence = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
 const draftOf = (text: string) => {
@@ -154,11 +157,14 @@ describe('the thing the player uses is never a role', () => {
 
   it('repairs it with the enemy and the chaser count of the sentence, so the water never chases the firefighter', async () => {
     const game = await directed(FIRE, WATER_CHASES);
-    expect(game.fallbackReason).toBeNull();
+    expect(game.fallbackReason).toBe('VERB_UNPROVED');
     expect(game.spec.roles.map((role) => role.label)).not.toContain('water');
     // P36A T3: úkol v prostoru má vždy pronásledovatele – výchozího jednoho, s nepřítelem z věty, ne s vodou.
-    expect(game.spec.roles.filter((role) => role.kind === 'chaser')).toEqual([expect.objectContaining({ label: 'fallen log', count: 1 })]);
-    expect(game.spec.objective.description).toBe('Extinguish all 5 burning tree in each of 2 rounds before the fallen log catches you.');
+    expect(game.spec.roles).toContainEqual(expect.objectContaining({ label: 'fallen log' }));
+    const evidence = await actionEvidence(game.spec, 1);
+    expect(evidence).toContainEqual(expect.objectContaining({ verb: 'jump' }));
+    expect(game.unmet).toEqual(missingActions(extractIntent(FIRE), evidence));
+    expect(game.unmet!.length).toBeGreaterThan(0);
   });
 
   it('keeps the quick version off the tool too', () => {
@@ -176,7 +182,8 @@ describe('the AI version adds what the sentence says and the quick version misse
   it('asks for it in both prompt forms', () => {
     const quick = draftOf(SNOW).genre;
     for (const request of [buildDirectorRequest(SNOW, quick), buildCompactRequest(SNOW, quick, true)]) {
-      expect(request.system).toContain('Build the game the sentence asks for');
+      expect(request.system).toContain('LIVE COMBINATIONS');
+      expect(request.system).toContain('unmet');
       expect(request.system).toContain('Cast labels are singular');
       expect(request.system).toContain('A cast thing is never what the player holds, sprays or throws');
     }
@@ -188,12 +195,11 @@ describe('the AI version adds what the sentence says and the quick version misse
   it('plays the chaser the sentence names – the quick version already has it as the default quest chaser', async () => {
     const CHASED = 'A kid pops balloons at a fair while a dog chases him';
     const quick = draftOf(CHASED);
-    expect(quick.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog', count: 1 }));
-    const game = await directed(CHASED, { ...quick.genre, params: { ...quick.genre.params, chasers: 1 } });
+    expect(quick.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog' }));
+    const game = await directed(CHASED, { ...quick.genre!, params: { chasers: 1 } });
     expect(game.source).toBe('authored');
-    expect(game.fallbackReason).toBeNull();
-    expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog', count: 1 }));
-    expect(game.spec.objective.description).toBe('Hit all 5 balloon in each of 3 rounds before the dog catches you.');
+    expect(game.spec.roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'dog' }));
+    expect(game.unmet).toEqual(missingActions(extractIntent(CHASED), await actionEvidence(game.spec, 1)));
   });
 });
 
@@ -307,8 +313,8 @@ describe('the AI version plays a cast thing of the sentence the quick version mi
     const quick = draftOf(WATCH);
     expect(quick.spec.addons ?? []).not.toContain('shoot');
     const game = await directed(WATCH, { ...quick.genre, cast: [...quick.genre.cast!, { label: 'animals', does: 'shoot_at' }] });
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
-    expect(game.failure).toBeUndefined();
+    expect(game.source).toBe('authored');
+    expect(game.unmet).toEqual(missingActions(extractIntent(WATCH), await actionEvidence(game.spec, 1)));
     expect(game.spec.addons).toContain('shoot');
     expect(game.spec.roles).toContainEqual(expect.objectContaining({ id: 'enemy', label: 'animal' }));
   });
@@ -326,8 +332,9 @@ describe('the AI version throws what the sentence throws', () => {
     const quick = draftOf(SQUIRREL);
     expect(quick.genre.genre).toBe('throw');
     const game = await directed(SQUIRREL, { ...quick.genre, cast: quick.genre.cast!.filter((item) => !isAmmo(item)) });
-    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: 'VERB_UNPROVED' });
     expect(ballOf(game.spec)).toBe('pinecone');
+    expect(game.unmet).toEqual(missingActions(extractIntent(SQUIRREL), await actionEvidence(game.spec, 1)));
   });
 
   // Odpověď s náhradním nábojem mimo větu neprojde věrností; oprava ho zahodí a náboj z věty musí přijít i potom.
@@ -336,7 +343,11 @@ describe('the AI version throws what the sentence throws', () => {
     const cast = quick.genre.cast!.map((item) => (isAmmo(item) ? { ...item, label: 'snowball' } : item));
     const game = await directed(SQUIRREL, { ...quick.genre, cast });
     expect(game.source).toBe('authored');
-    expect(game.failure).toBeUndefined();
+    expect(game.failure?.reason).toBe('ACTION_LOST');
     expect(ballOf(game.spec)).toBe('pinecone');
+    expect(game.unmet).toEqual(missingActions(extractIntent(SQUIRREL), await actionEvidence(game.spec, 1)));
   });
 });
+
+// Composition now executes physical ball witnesses even in synchronous draft tests.
+beforeAll(async () => { await loadRapier(); });

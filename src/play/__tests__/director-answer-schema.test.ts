@@ -17,7 +17,8 @@ import steer from '../arcade/__fixtures__/steer.json';
 import { modelRulesSchema } from '../arcade/rules/schema';
 import { goldenPrompts } from '../../../evals/play/golden';
 import { GENRE_ANSWER_SCHEMA, strictSchema } from '../director/answer-schema';
-import { readGenreAnswer } from '../director/read';
+import { readGenreAnswer, readLegacyRecipeContent, readRecipeAnswer, readRecipeContent } from '../director/read';
+import { liveCells } from '../compose/allowed';
 import { draftGameSpecWithMeta } from '../draft';
 import { GENRE_MODULES } from '../genre/index';
 import { heroClass } from '../genre/roles';
@@ -125,19 +126,15 @@ describe('director answer schema (strict mode)', () => {
     expect(problems).toEqual([]);
   });
 
-  // P36A T7: pravidla, jejich role a doplňky jsou ve všech žánrech stejné – schéma je nese jednou, žánr na ně odkazuje.
-  it('defines the rule grammar once in $defs and every genre refers to it', () => {
+  it('inlines the rule grammar in recipe and legacy alternatives without provider references', () => {
     const text = JSON.stringify(GENRE_ANSWER_SCHEMA);
+    expect(text).not.toMatch(/"\$(?:ref|defs)"/);
     const variants = GENRE_SPEC.anyOf as Json[];
-    // Uzel pravidla `{id, verb, when, if, do}` a efekt `throwHeld` zná jen gramatika pravidel: jednou = gramatika je ve schématu jednou.
-    expect(text.split('"required":["id","verb","when","if","do"]').length - 1).toBe(1);
-    expect(text.split('"required":["throwHeld"]').length - 1).toBe(1);
-    expect(Object.keys(DEFS).sort()).toEqual(['ruleRoles', 'rules', 'things']);
-    for (const key of Object.keys(DEFS)) {
-      for (const variant of variants) expect((variant.properties as Record<string, Json>)[key]).toEqual({ anyOf: [{ $ref: `#/$defs/${key}` }, { type: 'null' }] });
-      expect(text.split(`"#/$defs/${key}"`).length - 1).toBe(variants.length);
+    expect(variants.some(variant => 'recipe' in (variant.properties as Json))).toBe(true);
+    for (const variant of variants) {
+      const rules = (variant.properties as Record<string, Json>).rules;
+      expect(rules).toMatchObject({ anyOf: [expect.objectContaining({ type: 'array', items: expect.objectContaining({ required: ['id', 'verb', 'when', 'if', 'do'] }) }), { type: 'null' }] });
     }
-    expect(DEFS.rules).toMatchObject({ type: 'array', maxItems: expect.any(Number), items: { type: 'object', required: ['id', 'verb', 'when', 'if', 'do'] } });
   });
 
   it('turns the contact pair of a rule into an array of exactly two roles (strict mode has no tuples)', () => {
@@ -168,12 +165,13 @@ describe('director answer schema for a GenreSpec', () => {
   const READY = Object.values(GENRE_MODULES).flatMap((module) => module.modes.filter((mode) => (module.availability as (mode: string) => string)(mode) === 'ready').map((mode) => `${module.id}.${mode}`));
 
   it('offers exactly the ready modes of every genre, with the module param bounds', () => {
-    const offered = (GENRE_SPEC.anyOf as Json[]).flatMap((variant) => {
+    const legacyVariants = (GENRE_SPEC.anyOf as Json[]).filter(variant => 'genre' in (variant.properties as Json));
+    const offered = legacyVariants.flatMap((variant) => {
       const properties = variant.properties as Record<string, Json>;
       return (properties.mode.enum as string[]).map((mode) => `${(properties.genre.enum as string[])[0]}.${mode}`);
     });
     expect(offered.sort()).toEqual([...READY].sort());
-    const voyage = (GENRE_SPEC.anyOf as Json[]).find((variant) => ((variant.properties as Record<string, Json>).genre.enum as string[])[0] === 'voyage')!;
+    const voyage = legacyVariants.find((variant) => ((variant.properties as Record<string, Json>).genre.enum as string[])[0] === 'voyage')!;
     const lengthM = JSON.stringify((voyage.properties as Record<string, Json>).params);
     expect(lengthM).toContain(`"minimum":${String(GENRE_MODULES.voyage.paramBounds.lengthM!.min)}`);
     expect(lengthM).toContain(`"maximum":${String(GENRE_MODULES.voyage.paramBounds.lengthM!.max)}`);
@@ -193,7 +191,7 @@ describe('director answer schema for a GenreSpec', () => {
         heroAction: null,
         setting: 'stormy sea',
         palette: 'ocean',
-        params: { lengthM: null, topSpeed: null, gravity: null, lives: null, targetScore: null, timeLimit: null },
+          params: { hazards: null, turbo: null, roadWidth: null, roadEntryWidth: null, crashBudget: null, lengthM: null, topSpeed: null, gravity: null, namedLandingTarget: null, touchdownSpeed: null, gravityRisePct: null, lives: null, targetScore: null, timeLimit: null },
         ruleRoles: null,
         things: null,
         rules: null,
@@ -214,12 +212,28 @@ describe('director answer schema for a GenreSpec', () => {
     for (const { prompt } of goldenPrompts()) {
       const draft = draftGameSpecWithMeta(prompt);
       if (draft.genre === null || !READY.includes(`${draft.genre.genre}.${draft.genre.mode}`)) continue;
+      const cell = liveCells().find(cell => cell.id === draft.composition?.cellId);
+      if (cell?.assembly === 'native' || cell?.assembly === 'drive' || cell?.assembly === 'catch') {
+        // Native content is serialized as a recipe answer, not as a legacy
+        // genre whose numeric vocabulary deliberately remains unchanged.
+        const content = readLegacyRecipeContent(cell, draft.genre);
+        if (!content.ok) throw new Error(`${prompt}: ${content.issues.join('; ')}`);
+        const { genre: _genre, mode: _mode, ...fields } = content.value;
+        const answer = { plan: 'keep', spec: encode(GENRE_SPEC, { ...fields, recipe: cell.recipe, unmet: draft.composition?.unmet ?? [] }) };
+        expect(validate(GENRE_ANSWER_SCHEMA, answer), prompt).toEqual([]);
+        const read = readRecipeAnswer(answer);
+        if (!read.ok) throw new Error(`${prompt}: ${read.detail}`);
+        expect(read.value.params, prompt).toEqual(fields.params);
+        expect(read.value.hero, prompt).toBe(draft.genre.hero);
+        checked += 1;
+        continue;
+      }
       const answer = { plan: 'keep', spec: encode(GENRE_SPEC, draft.genre) };
       expect(validate(GENRE_ANSWER_SCHEMA, answer), prompt).toEqual([]);
       // S větou jako v `director/index.ts`: cíl přenosu věty mimo hry (P37A T5) z GenreSpec sám nevyjde.
       const read = readGenreAnswer(answer, GENRE_MODULES, prompt);
       if (!read.ok) throw new Error(`${prompt}: ${read.detail}`);
-      // Legacy parsing remains valid when today's quick draft selects a native cell.
+      // Legacy parsing remains valid even when full-intent composition selects a different native cell.
       expect(read.genre, prompt).toEqual(draft.genre);
       expect(read.spec.genre?.id, prompt).toBe(draft.genre.genre);
       expect(read.spec.roles.find(role => role.kind === 'player')?.label, prompt).toBe(draft.genre.hero);
@@ -229,7 +243,7 @@ describe('director answer schema for a GenreSpec', () => {
   });
 
   it('refuses a mode of another genre, a param out of bounds and a GameSpec in its place', () => {
-    const params = { seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
+    const params = { entryDistance: null, chaseLead: null, pursuitCeiling: null, itemSizePct: null, seconds: 30, items: null, chasers: null, chaserSpeed: null, enemies: null, enemyHp: null, enemySpeed: null, playerHp: null, lives: null, targetScore: null, timeLimit: null };
     const ok = { genre: 'arena', mode: 'escape', hero: 'fox', cast: [{ label: 'wolf', does: 'chase_me', verb: null, states: null, patrol: null }], heroAction: null, setting: 'forest', palette: null, params, counts: null, ruleRoles: null, things: null, rules: null };
     expect(validate(GENRE_SPEC, ok)).toEqual([]);
     // Počty (B-R4): jen role, které Aréna počítá, v mezích parametru, do kterého jdou.
@@ -244,4 +258,26 @@ describe('director answer schema for a GenreSpec', () => {
     expect(legacy.ok ? null : legacy.reason).toBe('MALFORMED_SPEC');
     expect(readGenreAnswer({ plan: 'x', spec: { sim: {}, world: {} } })).toMatchObject({ ok: false, reason: 'WRONG_DOCUMENT' });
   });
+});
+
+it('accepts bounded catch content without weakening legacy arena or explicit keys', () => {
+ const cell=liveCells().find(c=>c.id==='roam.catch')!;
+ const content={...cell.preset,params:{half:40000,preySpeed:250,seconds:11}};
+ expect(readRecipeContent(cell,content).ok).toBe(true);
+ expect(readRecipeContent(cell,{...content,params:{...content.params,preySpeed:301}}).ok).toBe(false);
+ expect(readRecipeContent(cell,{...content,params:{...content.params,unknown:1}}).ok).toBe(false);
+ expect(readGenreAnswer({plan:'legacy',spec:content}).ok).toBe(false);
+ const {genre:_genre,mode:_mode,...fields}=content;
+ const encoded={plan:'catch',spec:encode(GENRE_SPEC,{...fields,recipe:cell.recipe,unmet:[]})};
+ expect(validate(GENRE_ANSWER_SCHEMA,encoded)).toEqual([]);
+ expect(readRecipeAnswer(encoded).ok).toBe(true);
+});
+
+it('legacy landing keeps voyage bounds although its actual movement is glide', () => {
+ const cell=liveCells().find(c=>c.id==='voyage.land')!;
+ const content={...cell.preset,params:{gravity:1000,touchdownSpeed:30,gravityRisePct:20}};
+ expect(readRecipeContent(cell,content).ok).toBe(true);
+ expect(readLegacyRecipeContent(cell,content).ok).toBe(true);
+ expect(readRecipeContent(cell,{...content,params:{...content.params,touchdownSpeed:61}}).ok).toBe(false);
+ expect(readRecipeContent(cell,{...content,params:{clearancePermille:500}}).ok).toBe(false);
 });

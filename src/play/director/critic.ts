@@ -23,6 +23,11 @@ import { defaultCollectible, defaultFoe, heroFits, semanticRoleDefaults } from '
 import type { Reading } from '../read/schema';
 import { ARCHETYPES, type MechanicId, estimateCost } from '../registry';
 import type { GameSpecV1 } from '../spec';
+import type { Intent } from '../intent/contract';
+import { missingActions } from '../fidelity/action-evidence';
+import { arcadeWorldOf } from '../arcade/compile';
+import { verifyArcade } from '../arcade/verify';
+import type { ActionWitness } from '../arcade/witness';
 
 export const CRITIC_CODES = [
   'NO_AGENCY',
@@ -37,6 +42,7 @@ export const CRITIC_CODES = [
   'BUDGET',
   'RULE_INVALID',
   'VERB_UNPROVED',
+  'ACTION_LOST',
 ] as const;
 export type CriticCode = (typeof CRITIC_CODES)[number];
 
@@ -90,8 +96,8 @@ function unread(spec: GameSpecV1): CriticIssue[] {
   );
 }
 
-export function critique(spec: GameSpecV1): CriticIssue[] {
-  const issues: CriticIssue[] = unread(spec);
+export function critique(spec: GameSpecV1, intent?: Intent, seed = 1): CriticIssue[] {
+  const issues: CriticIssue[] = [...unread(spec), ...(intent === undefined ? [] : actionIssues(spec, intent, seed))];
   const ids = spec.mechanics.map((mechanic) => mechanic.id);
   const has = (id: MechanicId): boolean => ids.includes(id);
   // Kontroly hratelnosti mřížky; arkádu místo nich ověřuje robot nad tratí z generátoru.
@@ -465,7 +471,7 @@ function castIssues(genre: GenreSpec, sentence: string, words: GenreSpec | null,
 function verbFits(genre: GenreSpec, ranking: GenreRanking, modules: GenreModules): boolean {
   const is = (pair: { readonly genre: string; readonly mode: string } | undefined): boolean => pair !== undefined && pair.genre === genre.genre && pair.mode === genre.mode;
   const { pick } = ranking;
-  if (pick === null) return true;
+  if (pick === null) return false;
   return is(pick) || ((modules[pick.genre] as GenreModule).availability(pick.mode as never) === 'fallback' && is(ranking.ranked[0]));
 }
 
@@ -506,6 +512,16 @@ export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOp
 }
 
 /** Jen blokující nálezy – to, co opravné kolo musí odstranit. */
+export function actionIssues(spec: GameSpecV1, intent: Intent, seed = 1, observed?: readonly ActionWitness[]): CriticIssue[] {
+  const made = observed === undefined ? arcadeWorldOf(spec, seed) : null;
+  const witnesses = observed ?? (made?.ok ? verifyArcade(made.world, undefined, made.roleBindings).witnesses : []);
+  return missingActions(intent, witnesses).map(triple => ({
+    code: 'ACTION_LOST', severity: 'block', path: '/intent',
+    evidence: `${triple.actor} ${triple.verb}${triple.object === null ? '' : ` ${triple.object}`} has no action witness`,
+    repairHint: 'Compose a live recipe that plays this action; otherwise explicitly admit it in unmet.',
+  }));
+}
+
 export function blockingIssues(issues: readonly CriticIssue[]): CriticIssue[] {
   return issues.filter((issue) => issue.severity === 'block');
 }

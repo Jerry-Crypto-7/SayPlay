@@ -15,10 +15,14 @@
  *   Kontrola tady předbíhá schéma o jeden krok a `detail` nese ta jména.
  */
 
+import { liveCells } from '../compose/allowed';
+import { recipeKey } from '../compose/recipe';
+import { recipeAnswerSchema, nativeRecipeParams, type RecipeAnswer } from './answer-schema';
+
 import { draftGenreFor, twistGoalFor } from '../draft/draft';
 import { singular } from '../draft/lexicon';
 import type { GenreModules } from '../genre/classify';
-import { CAST_MAX, type GenreModule, type GenreSpec, castFor } from '../genre/contract';
+import { CAST_MAX, type GenreModule, type GenreSpec, genreSpecSchema, castFor } from '../genre/contract';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
 import { RIDE_WORDS } from '../genre/runner';
 import { isAmmo } from '../genre/throw';
@@ -63,6 +67,60 @@ export function readDirectorAnswer(body: unknown): DirectorRead {
   const unknown = unknownMechanicIds(body);
   if (unknown.length > 0) return { ok: false, reason: 'MECHANIC_REJECTED', detail: `unknown mechanic: ${unknown.join(', ')}` };
   return readModelSpec(body);
+}
+
+export interface RecipeContentCell {
+  readonly recipe: { readonly move: string };
+  readonly assembly?: string;
+  readonly preset: GenreSpec;
+}
+
+/** Validate native factory inputs before compilation; never validate them as a legacy genre. */
+export function readRecipeContent(cell: RecipeContentCell, content: unknown): { ok: true; value: GenreSpec } | { ok: false; issues: readonly string[] } {
+  if (!isRecord(content)) return { ok: false, issues: ['content must be an object'] };
+  const input = { ...cell.preset, ...content };
+  const native = cell.assembly === 'catch' ? 'catch' : cell.assembly === 'drive' ? 'drive' : cell.assembly === 'native' && ['glide', 'walk', 'ball'].includes(cell.recipe.move) ? cell.recipe.move as 'glide' | 'walk' | 'ball' : null;
+  if (native === null) return readGenreSpec(input);
+  const shape = genreSpecSchema.safeParse(input);
+  if (!shape.success) return { ok: false, issues: shape.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`) };
+  const params = nativeRecipeParams[native].safeParse(shape.data.params ?? {});
+  if (!params.success) return { ok: false, issues: params.error.issues.map(issue => `params.${issue.path.join('.')}: ${issue.message}`) };
+  // Ball alone currently reads a content count (target). Other native counts
+  // must not disappear into a legacy placeholder genre or a factory default.
+  for (const [key, value] of Object.entries(shape.data.counts ?? {})) {
+    if (native !== 'ball' || key !== 'target' || value === undefined || !nativeRecipeParams.ball.shape.targets.safeParse(value).success) return { ok: false, issues: [`counts.${key}: unsupported or out of bounds for ${native}`] };
+  }
+  if (native === 'ball' && shape.data.params?.targets !== undefined && shape.data.counts?.target !== undefined && shape.data.params.targets !== shape.data.counts.target) return { ok: false, issues: ['params.targets and counts.target conflict'] };
+  return { ok: true, value: shape.data };
+}
+
+/** Convert only an already validated legacy answer to the selected native vocabulary.
+ * Removed legacy-only numeric knobs are not claims of support; full-intent verification
+ * still decides which actions were played. Explicit recipe answers use the strict reader.
+ */
+export function readLegacyRecipeContent(cell: RecipeContentCell, content: GenreSpec): ReturnType<typeof readRecipeContent> {
+  const native = cell.assembly === 'catch' ? 'catch' : cell.assembly === 'drive' ? 'drive' : cell.assembly === 'native' && ['glide', 'walk', 'ball'].includes(cell.recipe.move) ? cell.recipe.move as 'glide' | 'walk' | 'ball' : null;
+  if (native === null) return readRecipeContent(cell, content);
+  const vocabulary = nativeRecipeParams[native].shape;
+  const params = Object.fromEntries(Object.entries(content.params ?? {}).filter(([key]) => Object.hasOwn(vocabulary, key)));
+  // Always override preset.params: the preset may itself carry old quest knobs.
+  // Shared keys are validated against the native bounds by readRecipeContent.
+  return readRecipeContent(cell, { ...content, params });
+}
+
+export type RecipeRead = { readonly ok: true; readonly value: RecipeAnswer } | Extract<DirectorRead, { ok: false }>;
+
+/** Recipe answers are selections, not proof. Composition must verify full Intent. */
+export function readRecipeAnswer(body: unknown): RecipeRead {
+  if (!isRecord(body)) return { ok: false, reason: 'NOT_AN_OBJECT', detail: `answer is ${Array.isArray(body) ? 'an array' : typeof body}` };
+  const raw = answerSpec(body);
+  const cleaned = withoutNulls(raw) as Record<string, unknown>;
+  // In a triple null means untargeted, not an omitted field.
+  if (Array.isArray(raw.unmet)) cleaned.unmet = raw.unmet.map(triple => isRecord(triple) ? { ...triple } : triple);
+  const parsed = recipeAnswerSchema.safeParse(cleaned);
+  if (!parsed.success) return { ok: false, reason: 'MALFORMED_SPEC', detail: parsed.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join('; ') };
+  if (!liveCells().some(cell => recipeKey(cell.recipe) === recipeKey(parsed.data.recipe))) return { ok: false, reason: 'MALFORMED_SPEC', detail: `recipe is not a live combination: ${recipeKey(parsed.data.recipe)}` };
+  return { ok: true, value: { ...parsed.data, hero: singular(parsed.data.hero), ...(parsed.data.cast === undefined ? {} : { cast: parsed.data.cast.map(item => ({ ...item, label: singular(item.label) })) }) } };
 }
 
 export type GenreRead = { readonly ok: true; readonly spec: GameSpecV1; readonly genre: GenreSpec } | Extract<DirectorRead, { ok: false }>;
