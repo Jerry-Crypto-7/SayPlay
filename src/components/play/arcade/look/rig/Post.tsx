@@ -29,7 +29,7 @@ const SAMPLE_MS = 500;
  */
 export function useQualityTier(surface: RefObject<HTMLDivElement | null>): QualityTier {
   const setDpr = useThree((three) => three.setDpr);
-  const [start] = useState(() => startQuality(window.devicePixelRatio));
+  const [start] = useState(() => startQuality(window.devicePixelRatio, window.matchMedia('(pointer: coarse)').matches));
   const governor = useRef<QualityState>(start);
   const [tier, setTier] = useState(start.tier);
   const meter = useRef({ from: -1, frames: 0 });

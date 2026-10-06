@@ -73,7 +73,7 @@ const FALLBACK_COLOR: Readonly<Record<string, string>> = {
 const ROLE_NAMES: Readonly<Record<number, string>> = Object.fromEntries(Object.entries(ROLE).map(([name, code]) => [code, name]));
 
 /** Id modelu, který katalog nemá – kreslí se primitivem (objednávka modelů pro P25F je ve Findings plánu). */
-const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', ...SHOT_PRIMITIVES]);
+const PRIMITIVE = new Set(['platform', 'platform-moving', 'spikes', 'pipe', 'ceiling', 'bird', 'turbo', ...SHOT_PRIMITIVES]);
 
 /** Modely z popisků rolí (`@/play/arcade/models`): hrdina, nepřítel střelnice a rekvizity. */
 export interface Cast {
@@ -184,6 +184,10 @@ export function FittedModel({ id, w, h, d, fallback, character = false, fill = f
  */
 function Primitive({ id, w, h, d, block }: { readonly id: string; readonly w: number; readonly h: number; readonly d: number; readonly block?: Look['block'] }) {
   if (SHOT_PRIMITIVES.has(id)) return <ShotPrimitive id={id} w={w} h={h} d={d} block={block?.[1]} />;
+  if (id === 'turbo') return <mesh position={[0, h / 2, 0]}>
+    <boxGeometry args={[w, h, d]} />
+    <meshStandardMaterial color={FALLBACK_COLOR.turbo} emissive={FALLBACK_COLOR.turbo} emissiveIntensity={0.35} roughness={0.4} />
+  </mesh>;
   if (id === 'platform' || id === 'platform-moving') {
     const top = Math.min(0.25, h / 3);
     const [side, surface] = id === 'platform' ? (block ?? ['#92400e', '#16a34a']) : ['#475569', '#f59e0b'];
