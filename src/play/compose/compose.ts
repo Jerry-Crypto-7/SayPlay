@@ -64,6 +64,7 @@ function contentOf(intent: Intent, cell: LiveCell, reading: Reading | null): Gen
       // Keep the setting's existing cast; unmatched identities stay unmet.
       if (!sentenceHeads.includes(head(item.actor))) continue;
       if (item.verb === 'chaser' || item.verb === 'guard') put(item.actor, 'chase_me');
+      else if (item.verb === 'rival' && cell.assembly === 'native') put(item.actor, 'fight');
       else put(item.actor, 'avoid');
     } else if (item.object !== null && (item.actor === intent.hero || item.actor === 'hero')) {
       // The cargo remains visible as a destination when this recipe cannot

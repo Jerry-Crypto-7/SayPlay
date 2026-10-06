@@ -8,9 +8,9 @@ import { compileRecipe } from '../compile';
 describe('native ball production assembly', () => {
   beforeAll(async () => { await loadRapier(); });
   const cells = ALLOWED.filter(cell => cell.recipe.move === 'ball');
-  it('registers both physical scoring combinations before scene activation', () => {
+  it('registers both physical scoring combinations with a verified scene', () => {
     expect(cells).toHaveLength(2);
-    expect(cells.every(cell => cell.status === 'staged')).toBe(true);
+    expect(cells.every(cell => cell.status === 'live')).toBe(true);
   });
   it.each(cells.flatMap(cell => ['football field', 'basketball court', 'golf course'].map(setting => ({ cell, setting }))))('$cell.id in $setting has a physical score witness on seeds1–20', ({ cell, setting }) => {
     const assembly = assemblyOfCell(cell);

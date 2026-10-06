@@ -771,6 +771,7 @@ function ArcadePlayGame({
       inputs: () => session.inputs(),
       /** One synchronous sample: real input events and the exact state they reached. */
       capture: () => ({ inputs: session.inputs(), tick: session.snapshot().tick, hash: hashArcade(session.state()) }),
+      physicsReady: () => !worldHasPhysics(arcade) || rapierIfLoaded() !== null,
       tick: () => session.snapshot().tick,
       /** Živá těla role (P29D T9) – e2e jimi měří „more enemies“. */
       bodies: (role: ArcadeRole) => aliveOf(session.state(), role),

@@ -2,6 +2,7 @@
 export const STAGES = {
   glide: { scene: 'world', input: 'glide' },
   walker: { scene: 'world', input: 'walker' },
+  ball: { scene: 'world', input: 'ball' },
   runner: { scene: 'runner', input: 'runner' },
   platform: { scene: 'platform', input: 'platform' },
   flap: { scene: 'world', input: 'flap' },

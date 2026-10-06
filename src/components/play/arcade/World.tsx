@@ -49,6 +49,7 @@ import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
 import { GlideBackdrop, GLIDE_SCENE_KINDS, placeGlide } from './glide/GlideScene';
 import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/WalkerScene';
+import { BallBackdrop, BALL_SCENE_KINDS, placeBall } from './ball/BallScene';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
@@ -92,7 +93,7 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
   if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
   if (view.kind === 'goal' && cast.props.finish !== undefined) return cast.props.finish;
-  if (view.kind === 'enemy' || view.kind === 'guard') return cast.enemy;
+  if (view.kind === 'enemy' || view.kind === 'guard' || view.kind === 'goalkeeper') return cast.enemy;
   if (view.kind === 'glide-rival') return cast.props.rival ?? cast.enemy;
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
@@ -463,6 +464,8 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
         placeGlide(camera, look, x, y, z);
       } else if (control === 'walker') {
         placeWalker(camera, look, x, z);
+      } else if (control === 'ball') {
+        placeBall(camera, look);
       } else if (control === 'steer') {
         // Osa trati je v jednotkách jádra a scéna ji zrcadlí (x → −x), stejně jako těla.
         const course = baseControlOf(session.world.control).params.course as SteerCourse | undefined;
@@ -484,6 +487,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       {backdrop ??
         (control === 'glide' ? <GlideBackdrop session={session} look={scene} />
         : control === 'walker' ? <WalkerBackdrop session={session} look={scene} />
+        : control === 'ball' ? <BallBackdrop session={session} look={scene} />
         : control === 'steer' ? (
           <SteerBackdrop session={session} course={baseControlOf(session.world.control).params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} />
         ) : (
@@ -493,7 +497,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
-        drawsNothing(view) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) ? null : (
+        drawsNothing(view) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) || (control === 'ball' && BALL_SCENE_KINDS.has(view.kind)) ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>

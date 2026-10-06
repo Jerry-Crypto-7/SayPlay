@@ -23,7 +23,6 @@ describe('allowed recipes', () => {
   });
 
   it('keeps staged cells out of selection', () => {
-    expect(ALLOWED.some(cell => cell.status === 'staged')).toBe(true);
     expect(liveCells().length).toBeGreaterThan(0);
     expect(liveCells().every(cell => cell.status === 'live')).toBe(true);
     expect(new Set(ALLOWED.map(cell => cell.id)).size).toBe(ALLOWED.length);

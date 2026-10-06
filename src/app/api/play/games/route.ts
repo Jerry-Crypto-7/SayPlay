@@ -15,6 +15,8 @@
 import { z } from 'zod';
 
 import { draftGameSpecWithMeta } from '@/play/draft';
+import { extractIntent } from '@/play/intent/extract';
+import { loadRapier } from '@/play/arcade/physics/world';
 import { honestyOf } from '@/play/draft/unsupported';
 import { readBeforeDraft } from '@/play/read/client';
 import { beatOf, decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
@@ -130,6 +132,9 @@ export async function POST(request: Request): Promise<Response> {
     const ackMs = performance.now() - received;
     // Návrh ze slov jde ven hned; autorská verze od režiséra doběhne na pozadí (T2).
     // P29B T5: zapnutá lokální čtečka větu nejdřív přečte, nejvýš za `PLAY_READER_BUDGET_MS`.
+    // Ball composition verifies a real physics run before returning a draft.
+    // Await the cold engine here; background preloading alone is a race.
+    if (extractIntent(sentence).items.some(item => item.essential && item.axis === 'move' && item.verb === 'ball')) await loadRapier();
     const meta = draftGameSpecWithMeta(sentence, 1, { reading: await readBeforeDraft(sentence) });
     const drafted = meta.spec;
     const origin = { sentence, seed: seed ?? null, ...(meta.readBy === 'model' ? { readBy: 'model' as const } : {}) };

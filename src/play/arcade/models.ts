@@ -260,7 +260,7 @@ export function heroModel(spec: GameSpecV1): string {
 export function enemyModel(spec: GameSpecV1): string {
   // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
   const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
-  const native = spec.control === 'walker' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
+  const native = spec.control === 'walker' || spec.control === 'ball' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
   const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? native?.label ?? rival?.label ?? '';
   return heroChoice(label, undefined, spec.control, 'enemy').model;
 }
