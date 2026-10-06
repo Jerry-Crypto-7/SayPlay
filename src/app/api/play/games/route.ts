@@ -15,7 +15,7 @@
 import { z } from 'zod';
 
 import { draftGameSpecWithMeta } from '@/play/draft';
-import { unsupportedGame } from '@/play/draft/unsupported';
+import { honestyOf } from '@/play/draft/unsupported';
 import { readBeforeDraft } from '@/play/read/client';
 import { beatOf, decodeCursor, feedPage, hiddenFromEnv, RECENT_CAP } from '@/play/version';
 
@@ -136,7 +136,7 @@ export async function POST(request: Request): Promise<Response> {
     const draft = await publishReadSpec(versions, drafted, seeds, parentId, { origin });
     if (draft.ok) {
       void upgradeOf(versions, draft.value.game, { sentence, seed: seed ?? null, ackMs, draftReadyMs: performance.now() - received, startedAt, caller });
-      return publishedResponse(draft.value, true, unsupportedGame(sentence, drafted));
+      return publishedResponse(draft.value, true, await honestyOf(versions, draft.value.game));
     }
     // Návrh se zakázaným textem (P40 T2) nečeká na režiséra: rychlá verze se nevrátí a model se neplatí.
     if (draft.response.status !== 422 || draft.issues?.[0] === 'CONTENT_REJECTED') return draft.response;
@@ -146,7 +146,7 @@ export async function POST(request: Request): Promise<Response> {
     if (directed.source === 'draft') return draft.response;
     // Věta jde k verzi, aby `/play/[id]` ukázal tutéž hlášku jako odpověď (R1).
     const published = await publishReadSpec(versions, directed.spec, seeds, parentId, { sentence });
-    return published.ok ? publishedResponse(published.value, false, unsupportedGame(sentence, directed.spec)) : published.response;
+    return published.ok ? publishedResponse(published.value, false, await honestyOf(versions, published.value.game)) : published.response;
   }
 
   const read = readSpecOrFail(spec);

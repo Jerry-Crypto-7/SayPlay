@@ -13,6 +13,9 @@ import { FINAL_REASON_TEXT, noticeOf } from '../UpgradeBanner';
 const REASONS = Object.keys(FINAL_REASON_TEXT) as DraftFinalReason[];
 
 describe('noticeOf', () => {
+  it('an unchanged upgrade never claims all requested actions are present', () => {
+    expect(noticeOf({ kind: 'final', reason: 'UNCHANGED' })?.text).toBe("The full-detail version didn't add more. Keep playing the quick one.");
+  });
   it('idle nic neukáže', () => {
     expect(noticeOf({ kind: 'idle' })).toBeNull();
   });

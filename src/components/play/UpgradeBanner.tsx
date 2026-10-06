@@ -147,7 +147,7 @@ export const FINAL_REASON_TEXT: Readonly<Record<DraftFinalReason, string>> = {
   MALFORMED: 'The full-detail version came back garbled. The quick one stays.',
   UNREPAIRED: "The full-detail version didn't pass our checks. The quick one stays.",
   VERB_UNPROVED: "The full-detail version's new move never worked in a test run. The quick one stays.",
-  UNCHANGED: 'Nothing to add. The quick version already has it all.',
+  UNCHANGED: "The full-detail version didn't add more. Keep playing the quick one.",
   NOT_PLAYABLE: "The full-detail version wasn't playable in a test run. The quick one stays.",
   STORE_UNAVAILABLE: "Couldn't save the full-detail version. The quick one stays.",
   NOT_FROM_SENTENCE: "This game wasn't made from an idea, so there's no full-detail version.",

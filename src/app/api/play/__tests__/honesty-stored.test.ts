@@ -5,12 +5,16 @@
  * Návrh ze slov je podvržený rozbitým specem, aby věta šla cestou režiséra.
  */
 
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import switchPuzzle from '@/play/__fixtures__/switch_puzzle.json';
 import { honestyOf } from '@/play/draft/unsupported';
 import { readGameSpec } from '@/play/spec';
-import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
+import { __resetProcessVersionStore, fileVersionStore, versionStoreFromEnv } from '@/play/version';
 import { resetRateWindows } from '@/server/rate-limit';
 
 import { derivedSeeds, publishReadSpec, seedFrom } from '../_publish';
@@ -45,6 +49,48 @@ beforeEach(() => {
 });
 
 describe('honestyOf – uložená hra', () => {
+  it('POST, repeated POST and a file-store restart retain the final game action admission', async () => {
+    const sentence = 'game in a car with shooting and racing';
+    const request = () => new Request('http://play.test/api/play/games', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': '203.0.113.11' },
+      body: JSON.stringify({ sentence, seed: 7 }),
+    });
+    const first = await createGame(request());
+    expect(first.status).toBe(201);
+    const initial = await first.json() as { versionId: string; honesty: { reason: string; closest: string; unmet: unknown[] } };
+    expect(initial.honesty.unmet).toEqual([
+      { actor: 'car', verb: 'drive', object: null },
+      { actor: 'car', verb: 'shoot', object: null },
+      { actor: 'car', verb: 'race', object: null },
+    ]);
+
+    const repeated = await createGame(request());
+    expect(repeated.status).toBe(200);
+    const again = await repeated.json() as typeof initial;
+    expect(again.versionId).toBe(initial.versionId);
+    expect(again.honesty).toEqual(initial.honesty);
+
+    const versions = versionStoreFromEnv(process.env);
+    const game = await versions.get(initial.versionId);
+    expect(game).not.toBeNull();
+    expect(await honestyOf(versions, game!)).toMatchObject(initial.honesty);
+    const dir = mkdtempSync(join(tmpdir(), 'p41-honesty-store-'));
+    try {
+      expect(await fileVersionStore(dir).put(game!)).toBe('stored');
+      __resetProcessVersionStore();
+      const restarted = fileVersionStore(dir);
+      const restored = await restarted.get(initial.versionId);
+      expect(restored).not.toBeNull();
+      expect(restored!.version.seed).toBe(game!.version.seed);
+      expect(await honestyOf(restarted, restored!)).toMatchObject(initial.honesty);
+    } finally {
+      // Only the exact temporary directory created by this test may be removed.
+      expect(dirname(resolve(dir))).toBe(resolve(tmpdir()));
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it('hra od režiséra bez návrhu nese větu a hlášku ukáže, upgrade ne', async () => {
     const response = await createGame(
       new Request('http://play.test/api/play/games', {
@@ -57,6 +103,7 @@ describe('honestyOf – uložená hra', () => {
     const body = (await response.json()) as { versionId: string; honesty?: unknown; upgrade?: unknown };
     expect(body.upgrade).toBeUndefined();
     expect(body.honesty).toEqual({
+      kind: 'manipulate',
       reason: 'Swapping, sorting and sliding pieces around is not something we can build yet.',
       closest: 'a switch puzzle',
     });

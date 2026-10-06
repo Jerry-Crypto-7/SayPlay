@@ -313,7 +313,7 @@ export function publishedResponse(published: Published, upgrade = false, honesty
       archetype: spec.archetype,
       url: `/play/${version.versionId}`,
       ...(upgrade ? { upgrade: `/api/play/games/${version.versionId}/upgrade` } : {}),
-      ...(honesty === null ? {} : { honesty: { reason: honesty.reason, closest: honesty.closest } }),
+      ...(honesty === null ? {} : { honesty }),
     },
     { status: published.status },
   );

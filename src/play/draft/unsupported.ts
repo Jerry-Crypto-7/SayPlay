@@ -15,11 +15,20 @@ import type { ArchetypeId } from '../registry';
 import type { ControlId, GameSpecV1 } from '../spec';
 import type { PublishedGame, VersionStore } from '../version';
 import { noVerbTopic } from './draft';
+import { arcadeWorldOf, preloadPhysics } from '../arcade/compile';
+import { loadRapier } from '../arcade/physics/world';
+import { verifyArcade } from '../arcade/verify';
+import { bindRoles, matchesWitness } from '../arcade/witness';
+import type { ArcadeWorld } from '../arcade/contract';
+import { essentialTriples, type IntentTriple } from '../intent/contract';
+import { extractIntent } from '../intent/extract';
+import { canonical } from '@/ir/worlddoc';
 
 /** `no_verb` (P28D T4): věta hru nechce vůbec („explain quantum physics“) – hraje se hra o jejím tématu (od P36A T11 sběr v Aréně, dřív běžec). */
-export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place' | 'no_verb';
+export type UnsupportedKind = 'sandbox' | 'manipulate' | 'idle' | 'build_place' | 'no_verb' | 'actions';
 
 export interface Honesty {
+  readonly unmet?: readonly IntentTriple[];
   readonly kind: UnsupportedKind;
   /** Jedna věta pro hráče, proč tahle hra hratelná není. */
   readonly reason: string;
@@ -152,7 +161,33 @@ export function unsupportedGame(sentence: string, draft: Pick<GameSpecV1, 'arche
  */
 export async function honestyOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<Honesty | null> {
   const sentence = await sentenceOf(versions, game);
-  return sentence === null ? null : unsupportedGame(sentence, game.spec);
+  return sentence === null ? null : honestyForSpec(sentence, game.spec, game.version.seed, game.arcade);
+}
+
+/** Read the final version afresh, including cold physics, never its draft's claims. */
+export async function honestyForSpec(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
+  const key = canonical({ sentence, spec, seed, world: publishedWorld ?? null });
+  if (honesties.has(key)) return structuredClone(honesties.get(key)!);
+  const answer = await measureHonesty(sentence, spec, seed, publishedWorld);
+  if (honesties.size >= 64) honesties.delete(honesties.keys().next().value!);
+  honesties.set(key, structuredClone(answer));
+  return answer;
+}
+
+const honesties = new Map<string, Honesty | null>();
+
+async function measureHonesty(sentence: string, spec: GameSpecV1, seed: number, publishedWorld?: ArcadeWorld): Promise<Honesty | null> {
+  const triples = essentialTriples(extractIntent(sentence));
+  await preloadPhysics(spec, loadRapier);
+  const made = publishedWorld === undefined ? arcadeWorldOf(spec, seed) : { ok: true as const, world: publishedWorld, roleBindings: bindRoles(spec, publishedWorld) };
+  const witnesses = made.ok ? verifyArcade(made.world, undefined, made.roleBindings).witnesses : [];
+  const unmet = triples.filter(triple => !witnesses.some(witness => matchesWitness(triple, witness)));
+  if (unmet.length === 0) return unsupportedGame(sentence, spec);
+  const labels: Record<string, string> = { drive: 'driving', run: 'running', jump: 'jumping', glide: 'gliding', roam: 'free movement', race: 'racing', shoot: 'shooting', collect: 'collecting', escape: 'escaping', fight: 'fighting', duel: 'duelling', reach: 'reaching the goal', deliver: 'delivery', interact: 'interaction', chaser: 'the chase', guard: 'the guards', hazard: 'the hazards', obstacle: 'the obstacles', rival: 'the rivals' };
+  const missing = [...new Set(unmet.map(item => labels[item.verb] ?? item.verb))];
+  const subject = missing.length === 1 ? missing[0] : `${missing.slice(0, -1).join(', ')} and ${missing.at(-1)}`;
+  const closest = spec.control === 'steer' && !witnesses.some(w => w.verb === 'race') ? 'a driving game' : closestOf(spec);
+  return { kind: 'actions', unmet, closest, reason: `${subject[0].toUpperCase()}${subject.slice(1)} ${missing.length === 1 ? "isn't" : "aren't"} here yet – here's ${closest}.` };
 }
 
 export async function sentenceOf(versions: Pick<VersionStore, 'get'>, game: PublishedGame): Promise<string | null> {
