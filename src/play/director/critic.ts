@@ -15,7 +15,7 @@
 
 import { controlOf, unreadItems } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
-import { NUMBER_WORDS, readRoles, toolsOf } from '../draft/lexicon';
+import { NUMBER_WORDS, readRoles, toolsOf, singular } from '../draft/lexicon';
 import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import type { CastItem, CastRole, GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
@@ -363,7 +363,7 @@ export interface FidelityOptions {
 }
 
 /** Slova popisku malými písmeny a v jednotném čísle („ghosts“ → „ghost“, „puppies“ → „puppy“). */
-const wordsOf = (text: string): string[] => (text.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).map((word) => word.replace(/ies$/, 'y').replace(/(?<!s)s$/, ''));
+const wordsOf = (text: string): string[] => (text.toLowerCase().match(/[a-z][a-z-]*/g) ?? []).map(singular);
 
 /** Stejná role, když se shoduje poslední slovo: „pirate ship“ = „ship“, „race car“ ≠ „pirate ship“. */
 export function sameRole(a: string, b: string): boolean {

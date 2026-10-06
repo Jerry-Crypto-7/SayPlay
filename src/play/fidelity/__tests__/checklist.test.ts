@@ -13,20 +13,19 @@ import { draftGameSpecWithMeta } from '../../draft';
 import { singular } from '../../draft/lexicon';
 import { CAST_ROLES } from '../../genre/contract';
 import type { ChecklistEntry } from '../chain';
+import { essentialTriples } from '../../intent/contract';
 import { MAX_NOUNS, sentenceChecklist } from '../checklist';
 
 describe('sentenceChecklist', () => {
-  it('lists the hero, roles and setting the sentence names, then the main verb with its family', () => {
-    expect(sentenceChecklist('a walrus chef stirs a big pot of soup on an iceberg')).toEqual({
-      checklist: [
+  it('lists named nouns and all intent relationships, retaining display metadata', () => {
+    const result = sentenceChecklist('a walrus chef stirs a big pot of soup on an iceberg');
+    expect(result.checklist.filter(entry => entry.slot !== 'verb')).toEqual([
         { item: 'walrus chef', slot: 'hero', match: ['chef'] },
         { item: 'big pot', slot: 'role', match: ['pot'] },
         { item: 'iceberg', slot: 'setting', match: ['iceberg'] },
-        // Úkol hraje sloveso režimem generátoru, ne ovládáním – `controls` zůstane prázdné.
-        { item: 'stir', slot: 'verb', controls: [] },
-      ],
-      verb: { word: 'stir', family: 'cook', genre: 'quest', mode: 'station' },
-    });
+    ]);
+    expect(result.verb).toEqual({ word: 'stir', family: 'cook', genre: 'quest', mode: 'station' });
+    expect(result.checklist.filter(entry => entry.slot === 'verb').map(entry => entry.triple)).toEqual(essentialTriples(result.intent));
   });
 
   it('leaves out the roles the draft took from the setting, not from the sentence', () => {
@@ -36,11 +35,11 @@ describe('sentenceChecklist', () => {
     expect(draft).toMatchObject({ genre: 'rhythm', setting: 'neon stage' });
     expect(draft?.cast?.length).toBeGreaterThan(0);
     const { checklist, verb } = sentenceChecklist(sentence);
-    expect(checklist).toEqual([
+    expect(checklist.filter(entry => entry.slot !== 'verb')).toEqual([
       { item: 'grandma cat', slot: 'hero', match: ['cat'] },
-      // Rytmus nese sloveso ovládáním.
-      { item: 'knit', slot: 'verb', controls: ['rhythm'] },
     ]);
+    // An unknown action stays explicit; rhythm cannot prove knitting.
+    expect(checklist).toContainEqual({ item: 'knit', slot: 'verb', triple: { actor: 'cat', verb: 'knit', object: 'scarf' } });
     expect(verb).toEqual({ word: 'knit', family: 'craft', genre: 'rhythm', mode: 'default' });
   });
 
@@ -58,15 +57,15 @@ describe('sentenceChecklist', () => {
   });
 
   // Invariant nad celou dev-150: každé slovo shody stojí ve větě, jména se neopakují a je jich nejvýš `MAX_NOUNS`.
-  it('on all of dev-150: match words come from the sentence, nouns are unique, at most four of them and one verb', () => {
+  it('on all of dev-150: named nouns stay unique and every essential relationship is present', () => {
     const set = JSON.parse(readFileSync('evals/play/p37a/dev-150.json', 'utf8')) as { sentences: { id: string; text: string }[] };
     for (const { id, text } of set.sentences) {
-      const { checklist, verb } = sentenceChecklist(text);
+      const { checklist, intent } = sentenceChecklist(text);
       const nouns = checklist.filter((entry) => entry.slot !== 'verb');
       expect(nouns.length, id).toBeLessThanOrEqual(MAX_NOUNS);
       // Sloveso smí znít jako jméno („park the car in a park“); jména se neopakují.
       expect(new Set(nouns.map((entry) => entry.match![0])).size, id).toBe(nouns.length);
-      expect(checklist.filter((entry) => entry.slot === 'verb').map((entry) => entry.item), id).toEqual(verb === null ? [] : [verb.word]);
+      expect(checklist.filter((entry) => entry.slot === 'verb').map((entry) => entry.triple), id).toEqual(essentialTriples(intent));
       const words = text.toLowerCase().split(/[^a-z0-9-]+/).map(singular);
       for (const entry of nouns) {
         expect(entry.match, id).toHaveLength(1);

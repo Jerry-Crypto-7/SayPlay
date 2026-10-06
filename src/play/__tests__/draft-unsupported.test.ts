@@ -24,30 +24,28 @@ const corpus = JSON.parse(readFileSync(new URL('../../../evals/play/demand/corpu
 const UNSUPPORTED = ['manipulate', 'build_place', 'idle', 'sandbox'];
 const PROTECTED = ['runner', 'platform', 'flap', 'tap_go'];
 
-function flagged(verbs: readonly string[]): { readonly hit: number; readonly total: number; readonly ids: string[] } {
-  const entries = corpus.filter((entry) => verbs.includes(entry.verb));
-  const ids = entries.filter((entry) => unsupportedGame(entry.text, draftGameSpec(entry.text)) !== null).map((entry) => entry.id);
-  return { hit: ids.length, total: entries.length, ids };
-}
-
 describe('unsupportedGame over the demand corpus', () => {
-  it('flags every sentence the control library cannot play', () => {
-    const result = flagged(UNSUPPORTED);
-    expect(result.total).toBe(38);
-    expect(result.hit).toBe(38);
-    expect(result.hit / result.total).toBeGreaterThanOrEqual(0.8);
+  const unsupported = corpus.filter((entry) => UNSUPPORTED.includes(entry.verb));
+  const protectedEntries = corpus.filter((entry) => PROTECTED.includes(entry.verb));
+  const others = corpus.filter((entry) => !UNSUPPORTED.includes(entry.verb) && !PROTECTED.includes(entry.verb));
+
+  it('keeps the corpus coverage counts', () => {
+    expect(unsupported).toHaveLength(38);
+    expect(protectedEntries).toHaveLength(74);
+    expect(others.filter((entry) => entry.text === 'merge watermelons like suika game')).toHaveLength(1);
   });
 
-  it('never flags a runner, platform, flap or tap-to-go sentence', () => {
-    const result = flagged(PROTECTED);
-    expect(result.total).toBe(74);
-    expect(result.ids).toEqual([]);
+  it.each(unsupported)('flags unsupported $id: $text', (entry) => {
+    expect(unsupportedGame(entry.text, draftGameSpec(entry.text))).not.toBeNull();
   });
 
-  it('flags nothing else but the merge game', () => {
-    const others = corpus.filter((entry) => !UNSUPPORTED.includes(entry.verb) && !PROTECTED.includes(entry.verb)).map((entry) => entry.verb);
-    const result = flagged([...new Set(others)]);
-    expect(result.ids.map((id) => corpus.find((entry) => entry.id === id)?.text)).toEqual(['merge watermelons like suika game']);
+  it.each(protectedEntries)('never flags protected $id: $text', (entry) => {
+    expect(unsupportedGame(entry.text, draftGameSpec(entry.text))).toBeNull();
+  });
+
+  it.each(others)('flags only the merge game among other controls, $id: $text', (entry) => {
+    const flagged = unsupportedGame(entry.text, draftGameSpec(entry.text)) !== null;
+    expect(flagged).toBe(entry.text === 'merge watermelons like suika game');
   });
 });
 

@@ -86,7 +86,10 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   if (control === 'move_free' || control === 'fight') return { buttons: 0, axis: axisOfDirection(directionToward(dx, dz)) };
   if (control === 'runner') {
     // Po zbytek trati normální robot; u cílové hrozby záměrně neuhne ani neskočí.
-    if (Math.abs(dz) > 12 * UNIT) return normal;
+    // Settle a jump from the preceding obstacle before the encounter. Starting
+    // only 12 m away can leave the probe airborne over an otherwise lethal chaser.
+    if (Math.abs(dz) > 24 * UNIT) return normal;
+    if (roleAt(state, target) === ROLE.chaser) return NO_INPUT;
     return { buttons: Math.abs(dx) < UNIT / 2 ? 0 : dx > 0 ? BUTTON.RIGHT : BUTTON.LEFT, axis: 0 };
   }
   return NO_INPUT;
@@ -96,6 +99,9 @@ type Origin = { readonly other: number; readonly source: number; readonly held: 
 
 /** Pozorovatel pravidel: kopie efektů nesou kontext kontaktu, jádro stále rozhoduje, co se skutečně provedlo. */
 export class WitnessRecorder {
+  private readonly world: ArcadeWorld;
+  private readonly run: 'winner' | 'probe';
+  private readonly runId: string;
   private readonly origins = new WeakMap<ArcadeEffect, Origin>();
   private readonly found = new Map<string, ActionWitness>();
   private readonly bindings: ReadonlyMap<number, RoleBinding>;
@@ -107,7 +113,10 @@ export class WitnessRecorder {
   private readonly thrown: { body: number; x: number; y: number; z: number; tick: number }[] = [];
   private readonly pendingLosses: { body: number; evidence: string }[] = [];
 
-  constructor(private readonly world: ArcadeWorld, bindings: readonly RoleBinding[], private readonly run: 'winner' | 'probe', private readonly runId: string) {
+  constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
+    this.world = world;
+    this.run = run;
+    this.runId = runId;
     this.bindings = new Map(bindings.map(b => [b.body, b]));
     this.control = world.control.id === 'addon_control' ? (world.control.params.base as { id: string }).id : world.control.id;
     this.start = world.initial;

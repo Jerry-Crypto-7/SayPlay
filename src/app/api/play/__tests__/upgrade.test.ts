@@ -277,11 +277,11 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // P32B T5: opravit smí jen na žánr hlavního slovesa. Úkol (celý `fallback`) je návrhem jen věty,
   // ve které žádný `ready` žánr nic neslyšel, a tu věrnost z úkolu nepustí – proto návrh z Arény:
   // útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „hunts“) než hlavní sloveso „jumps“.
-  it('vylepšení z útěku v Aréně na plošinovku se přijme, když je vyhratelné', async () => {
+  it('návrh zachová skákání a přijme hratelnou autorskou plošinovku', async () => {
     director.script = [answered(genreAnswer({ genre: 'platformer', mode: 'default', hero: 'frog', cast: [{ label: 'snake', does: 'avoid' }], setting: 'swamp', palette: 'forest' }))];
     const created = await publish({ sentence: 'A frog jumps across a scary swamp, escapes and survives while a snake hunts it.' });
-    expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
-    expect((await game(created.body.versionId)).spec.control).toBe('move_free');
+    expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'platformer', mode: 'default' });
+    expect((await game(created.body.versionId)).spec.control).toBe('platform');
     expect((await settled(created.body.versionId)).status).toBe('ready');
     const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
     expect((await game(childId as string)).spec.control).toBe('platform');
@@ -311,11 +311,11 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // P32B T5: běžce věrnost pustí, jen když ho hraje hlavní sloveso („runs“); návrh zůstane útěkem,
   // protože útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „chases“).
   // T5b: skutečný běžec má narážku „escape“, s „hunts“ by byla remíza a návrh by byl už běžec – „chases“ je i narážka Arény.
-  it('arénový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
+  it('návrh zachová běh i útěk a autorský běžec projde dosavadní bránou', async () => {
     director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', cast: [{ label: 'giant roomba', does: 'avoid' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket aisles', palette: 'supermarket' }))];
     const created = await publish({ sentence: 'A hamster runs through a scary supermarket, escapes and survives while a giant Roomba chases it.' });
-    expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
-    expect((await game(created.body.versionId)).spec.control).toBe('move_free');
+    expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'runner', mode: 'default' });
+    expect((await game(created.body.versionId)).spec.control).toBe('runner');
     expect((await settled(created.body.versionId)).status).toBe('ready');
     const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
     expect((await game(childId as string)).spec.control).toBe('runner');

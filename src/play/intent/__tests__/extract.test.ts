@@ -17,6 +17,11 @@ const verbsOn = (sentence: string, axis: IntentAxis): string[] =>
     .map((item) => item.verb);
 
 describe('extractIntent – acceptance (P41 T1)', () => {
+  it('a negated colour does not negate the purpose of opening a door', () => {
+    const intent = extractIntent('Press red and blue but not green to open the door.');
+    expect(intent.negated).not.toContain('interact');
+    expect(intent.items.some(item => item.essential && item.verb === 'interact' && item.object === 'door')).toBe(true);
+  });
   it('does not turn interacting with several things into a required collection action', () => {
     const intent = extractIntent('light up all the lanterns in the village');
     expect(intent.items.filter(item => item.essential).map(item => item.verb)).toEqual(['interact']);
@@ -75,7 +80,7 @@ describe('extractIntent – acceptance (P41 T1)', () => {
   });
 
   it.each([
-    ['a cat runs from a dog', 'cat', ['objective:escape cat→dog', 'threat:chaser dog→cat']],
+    ['a cat runs from a dog', 'cat', ['move:run cat→-', 'objective:escape cat→dog', 'threat:chaser dog→cat']],
     ['escape the zombies', null, [`objective:escape ${HERO}→zombie`, `threat:chaser zombie→${HERO}`]],
     ['a dog chases you', null, [`threat:chaser dog→${HERO}`, `objective:escape ${HERO}→dog`]],
     ['a mouse is chased by a cat', 'mouse', ['objective:escape mouse→cat', 'threat:chaser cat→mouse']],
@@ -167,7 +172,8 @@ describe('extractIntent – vocabulary', () => {
   });
 
   it('reads the partner of a duel and the target of a thrown tool', () => {
-    expect(triples(extractIntent('play chess with a dragon'))).toEqual([`action:duel ${HERO}→dragon`]);
+    // Chess remains an explicit unsupported requirement; a generic duel is only guidance.
+    expect(triples(extractIntent('play chess with a dragon'))).toEqual([`unknown:play ${HERO}→chess`, `action:duel ${HERO}→dragon`, `threat:rival dragon→${HERO}`]);
     expect(triples(extractIntent('a frog throws rocks at birds'))).toEqual(['action:throw frog→bird']);
   });
 
@@ -231,7 +237,8 @@ describe('extractIntent – vocabulary', () => {
 
   it('a sleeping guard and a second clause keep their own actors', () => {
     expect(triples(extractIntent('a mouse sneaks through a house without waking the cat'))).toEqual(['move:walk mouse→-', 'threat:guard cat→mouse']);
-    expect(triples(extractIntent('a farmer drives a tractor and harvests carrots'))).toEqual(['move:drive farmer→tractor', 'unknown:harvest farmer→carrot']);
+    // Movement's essential triple records the moving actor; the vehicle is not a target.
+    expect(triples(extractIntent('a farmer drives a tractor and harvests carrots'))).toEqual(['move:drive farmer→-', 'unknown:harvest farmer→carrot']);
     expect(triples(extractIntent('a wolf chases a fox who collects berries'))).toEqual(['objective:catch wolf→fox', 'action:collect fox→berry']);
   });
 

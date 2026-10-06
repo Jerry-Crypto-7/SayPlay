@@ -25,6 +25,16 @@ import { goldenPrompts } from '../golden';
 
 const ARTIFACT = fileURLToPath(new URL('./report.json', import.meta.url));
 const TABLE = fileURLToPath(new URL('./report.md', import.meta.url));
+// P41 changes the sentence selector, not the frozen genre/runtime assemblies.
+// Keep the original report as evidence. Only these reviewed sentence choices
+// may diverge; all other verdicts still have their exact original pins.
+const INTENT_CHOICES: Readonly<Record<string, { genre: string; reason: string }>> = {
+  'chase_escape-4': { genre: 'platformer.default', reason: 'Explicit reach goal wins over the old survival-only arena; escape is admitted when unproved.' },
+  'survival_timer-2': { genre: 'arena.escape', reason: 'Last 90 seconds requests survival, not collecting invented coins.' },
+  'checkpoint_race-3': { genre: 'runner.default', reason: 'Explicit running takes priority over a stationary checkpoint interaction.' },
+  'switch_puzzle-1': { genre: 'quest.spatial', reason: 'Opening the named door is explicit; the excluded colour does not negate that purpose.' },
+  'combat_lite-3': { genre: 'arena.fight', reason: 'Destroying invading robots requests defeat, not toggling their state.' },
+};
 const SEED = 1;
 
 /**
@@ -198,7 +208,15 @@ describe('regression harness – forty golden sentences, draft only', () => {
 
     // Pin první – posunutý verdikt nesmí dojít k zápisu.
     if (previous !== null) {
-      expect(rows.map(verdict), 'verdict drift: explain it, then delete report.json and re-run').toEqual(previous.rows.map(verdict));
+      for (const row of rows) {
+        const change = INTENT_CHOICES[row.id];
+        if (change === undefined) expect(verdict(row), row.id).toEqual(verdict(previous.rows.find(old => old.id === row.id)!));
+        else {
+          expect(row.genre, change.reason).toBe(change.genre);
+          expect(row.publishEligible, change.reason).toBe(true);
+          expect(row.keypointsPassed).toBe(row.keypointsTotal);
+        }
+      }
     }
     expect(rows).toHaveLength(40);
     expect(summary.specValid).toBe(PIN.specValid);
@@ -208,8 +226,8 @@ describe('regression harness – forty golden sentences, draft only', () => {
     expect(summary.p90CompileMs).toBeLessThanOrEqual(P90_COMPILE_MS_CAP);
 
     const report: Report = { schema: 'play-regression-report.v1', measuredAt: new Date().toISOString(), seed: SEED, rows, summary };
-    writeFileSync(ARTIFACT, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
-    writeFileSync(TABLE, table(report), 'utf8');
+    writeFileSync(ARTIFACT.replace('report.json', 'p41-report.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+    writeFileSync(TABLE.replace('report.md', 'p41-report.md'), table(report), 'utf8');
   }, 180_000);
 });
 

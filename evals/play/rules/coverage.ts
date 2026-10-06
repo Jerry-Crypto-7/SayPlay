@@ -101,8 +101,8 @@ export function measureVerbCoverage(): VerbCoverage {
   };
 }
 
-if (process.argv.includes('--write')) {
-  const out = fileURLToPath(new URL('./coverage.json', import.meta.url));
+if (process.argv.includes('--write') || process.argv.includes('--write-p41')) {
+  const out = fileURLToPath(new URL(process.argv.includes('--write-p41') ? './coverage-p41.json' : './coverage.json', import.meta.url));
   writeFileSync(out, `${JSON.stringify(measureVerbCoverage(), null, 1)}\n`);
   console.log(`wrote ${out}`);
 }

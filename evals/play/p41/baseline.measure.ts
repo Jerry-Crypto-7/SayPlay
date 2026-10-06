@@ -59,7 +59,7 @@ it('measures frozen quick drafts with current action witnesses, excluding held-o
     errors: selected.filter(row => row.error !== null).length,
   });
   const report = { version: 1, source: 'p41-base', commit: frozen.commit, lockSha256: frozen.lockSha256,
-    witnessCommit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+    witnessCommit: execFileSync('git', ['--no-replace-objects', 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     seeds: frozen.seeds, sentences: items.length,
     notes: ['Held-out excluded.', 'Preservation uses hand-labelled triples and actual action witnesses.', 'Legacy generic notices retained separately; no triple-level admission is inferred.', 'Draft timings exclude bundling and worktree setup.'],
     summary: summarize(rows), groups: Object.fromEntries([...new Set(items.map(item => item.group))].map(group => [group, summarize(rows.filter(row => row.group === group))])), rows };

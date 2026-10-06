@@ -95,13 +95,11 @@ describe('nearest arcade game for a sentence the draft does not know', () => {
     expect(propModels(legacyDraft('angry birds but with cats and cardboard boxes')).target).toBe('gen3d-cardboard-box');
   });
 
-  it('every draft of the 30 + 10 fidelity sentences publishes: the robot wins it', () => {
-    const all = [...sentences('corpus.json'), ...sentences('judge-10.json')];
-    expect(all).toHaveLength(40);
-    const unwinnable = all.filter(({ text }) => {
-      const compiled = compileGame(draftGameSpec(text), 1);
-      return !compiled.ok || !reportFor(compiled.value).publishEligible;
-    });
-    expect(unwinnable.map((entry) => entry.id)).toEqual([]);
+  const all = [...sentences('corpus.json'), ...sentences('judge-10.json')];
+  it('keeps all 30 + 10 fidelity publication cases', () => expect(all).toHaveLength(40));
+  it.each(all)('publishes $id: $text', ({ text }) => {
+    const compiled = compileGame(draftGameSpec(text), 1);
+    expect(compiled.ok).toBe(true);
+    if (compiled.ok) expect(reportFor(compiled.value).publishEligible).toBe(true);
   });
 });

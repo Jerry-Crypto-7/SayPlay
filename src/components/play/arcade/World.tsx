@@ -84,10 +84,11 @@ export interface Cast {
 const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'crate']);
 
 /** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
-function modelIdOf(view: BodyView, cast: Cast): string {
+export function modelIdOf(view: BodyView, cast: Cast): string {
   if (view.role === ROLE.player) return cast.player;
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
   if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
+  if (view.kind === 'goal' && cast.props.finish !== undefined) return cast.props.finish;
   if (view.kind === 'enemy') return cast.enemy;
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
@@ -508,7 +509,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
                   id={modelIdOf(view, cast)}
                   w={view.w}
                   h={view.h}
-                  d={view.kind === 'target' || (view.kind === 'finish' && cast.props.finish !== undefined) ? Math.max(view.d, view.w) : view.d}
+                  d={view.kind === 'target' || ((view.kind === 'finish' || view.kind === 'goal') && cast.props.finish !== undefined) ? Math.max(view.d, view.w) : view.d}
                   fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                   character={POSED_ROLES.has(view.role) && view.h >= Math.max(view.w, view.d)}
                 />

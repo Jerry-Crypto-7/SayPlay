@@ -1,6 +1,6 @@
 import type { GenreSpec } from '../genre/contract';
 import type { Recipe } from './recipe';
-import { PRESETS } from './presets';
+import { PRESETS, presetOf } from './presets';
 
 interface Cell {
   readonly id: string;
@@ -15,6 +15,18 @@ export const ALLOWED: readonly AllowedCell[] = [
     const [genre, mode] = id.split('.');
     return { id, status: 'live', recipe, preset: { genre, mode, hero: 'fox', setting: 'forest' } as GenreSpec };
   }),
+  // Already supported track addons also need explicit executable cells. Without
+  // these, routing the draft through ALLOWED would regress existing run + shoot.
+  ...(['runner', 'platformer'] as const).flatMap(genre => [
+    [{ label: 'robot', does: 'shoot_at' as const }],
+    [{ label: 'wolf', does: 'chase_me' as const }],
+    [{ label: 'wolf', does: 'chase_me' as const }, { label: 'robot', does: 'shoot_at' as const }],
+  ].map((cast): LiveCell => {
+    const preset: GenreSpec = { genre, mode: 'default', hero: 'fox', setting: 'forest', cast };
+    const { content: _content, preset: _preset, ...recipe } = presetOf(preset);
+    return { id: `${genre}.default+${cast.map(item => item.does).join('+')}`, status: 'live', recipe, preset };
+  })),
+  { id: 'arena.escape+collect', status: 'live', recipe: { move: 'roam', actions: ['collect'], objective: 'collect', threats: ['chaser'] }, preset: { genre: 'arena', mode: 'escape', hero: 'fox', setting: 'forest', cast: [{ label: 'wolf', does: 'chase_me' }, { label: 'coin', does: 'collect' }] } },
   // Missing runtime/scene must never become eligible just because the intent asks for it.
   { id: 'glide.reach', status: 'staged', recipe: { move: 'glide', actions: [], objective: 'reach', threats: [] }, preset: null },
 ];

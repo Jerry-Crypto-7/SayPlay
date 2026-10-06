@@ -13,7 +13,9 @@ import { describe, expect, it } from 'vitest';
 import { ARCHETYPE_IDS, type ArchetypeId } from '../registry';
 import { REMIX_CHIPS, REMIX_CHIP_LABELS, applyRemix, buildRemixRequest, chipOf, classifyRemix, remixPatch } from '../director/remix';
 import { blockingIssues, critique } from '../director/critic';
-import { draftGameSpec } from '../draft';
+import { draftGameSpec, draftGenreFor } from '../draft';
+import { compileGenre } from '../genre';
+import { classifyGenre } from '../genre/classify';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const FIXTURES = fileURLToPath(new URL('../__fixtures__/', import.meta.url));
@@ -97,8 +99,11 @@ describe('remix chips', () => {
       // Obtížnost plavby soudí schéma ovládání `steer` – posune se v `controlParams`, ne v `tuning`.
       ['a pirate ship sails the sea', 'voyage_race', 'difficulty', 'hard'],
     ];
-    for (const [sentence, generator, key, value] of cases) {
-      const parent = draftGameSpec(sentence);
+      for (const [sentence, generator, key, value] of cases) {
+        // Exercise each named legacy generator's remix contract; the new
+        // composer may correctly prioritize a different action in this sentence.
+        const pick = classifyGenre(sentence, null).ranked[0];
+        const parent = compileGenre(draftGenreFor(sentence, pick.genre, pick.mode)!);
       expect(parent.controlParams, sentence).toMatchObject({ generator });
       const result = applyRemix(parent, remixPatch('harder', parent));
       if (!result.ok) throw new Error(`${sentence}: ${result.reason}`);

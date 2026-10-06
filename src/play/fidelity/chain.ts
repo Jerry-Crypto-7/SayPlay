@@ -27,6 +27,8 @@ import { worldHasPhysics } from '../arcade/kernel';
 import { lookFor } from '../arcade/look';
 import { rapierIfLoaded } from '../arcade/physics/world';
 import { verifyArcade } from '../arcade/verify';
+import { matchesWitness, type ActionWitness } from '../arcade/witness';
+import type { IntentTriple } from '../intent/contract';
 import { PROP_ROLES, chaserModel, enemyModel, heroModel, namedProps, propModels, riggedModelOf, sceneModelOf, type PropRole } from '../arcade/models';
 import { CAPABILITIES, controlOf, readsLabel, readsMechanic } from '../capabilities';
 import { assetSource } from '../compile/assets';
@@ -38,6 +40,8 @@ import type { AddonId, ControlId, GameRole, GameSpecV1 } from '../spec';
 export type FidelitySlot = 'hero' | 'role' | 'any' | 'setting' | 'verb';
 
 export interface ChecklistEntry {
+  /** P41: the full requested relationship; only actual witnesses can satisfy it. */
+  readonly triple?: IntentTriple;
   readonly item: string;
   readonly slot: FidelitySlot;
   /** Slova, podle kterých se položka pozná v popisku role nebo v prostředí. */
@@ -146,7 +150,7 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     if (role === ROLE.player) bodies.add('player');
     else if (kind === 'enemy') bodies.add('enemy');
     else if (kind === 'rival-car' || kind === 'foe') bodies.add('rival');
-    else if (kind === 'finish') bodies.add('finish');
+    else if (kind === 'finish' || kind === 'goal') bodies.add('finish');
     else if (role === ROLE.chaser) bodies.add('chaser');
     else if (styled && role === ROLE.collectible) bodies.add('item');
     else if (role === ROLE.collectible && kind === 'coin') bodies.add('coin');
@@ -219,6 +223,15 @@ function robotVerbs(spec: GameSpecV1): readonly VerbProof[] {
  * (`QualityReport.verbs`); chybí-li, robot se pustí jen nad specem s pravidly.
  */
 export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEntry[], verbs?: readonly VerbProof[]): ChainItem[] {
+  let witnesses: readonly ActionWitness[] | undefined;
+  const playedTriple = (triple: IntentTriple): boolean => {
+    if (witnesses === undefined) {
+      const made = arcadeWorldOf(spec, 1);
+      witnesses = made.ok && (!worldHasPhysics(made.world) || rapierIfLoaded() !== null)
+        ? verifyArcade(made.world, undefined, made.roleBindings).witnesses : [];
+    }
+    return witnesses.some(witness => matchesWitness(triple, witness));
+  };
   const control = controlOf(spec);
   const addons = spec.addons ?? [];
   const roles = spec.roles ?? [];
@@ -248,6 +261,10 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   return checklist.map((entry) => nouns.get(entry) ?? verbStage(entry));
 
   function verbStage(entry: ChecklistEntry): ChainItem {
+    if (entry.triple !== undefined) {
+      const played = playedTriple(entry.triple);
+      return stage(entry, played, played, played, played);
+    }
     const controls = entry.controls ?? [];
     const mechanics = entry.mechanics ?? [];
     const byControl = controls.includes(control);

@@ -19,7 +19,8 @@ import { instantiate, loadProgram, replay, step } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { WAVE_PLAN, waveOf } from '@/play/arcade/pieces/waves';
 import { runBot } from '@/play/arcade/verify';
-import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
 import { compileGenre } from '@/play/genre/index';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -142,7 +143,9 @@ const STORED = [
 
 describe('stored quest games without rounds', () => {
   it.each(STORED)('$sentence: same seed, the robot wins on the same tick', ({ sentence, seed, tick }) => {
-    const spec = draftGameSpecWithMeta(sentence, 1).spec;
+    // Reconstruct the stored quest assembly, not today's intent-based choice.
+    const pick = classifyGenre(sentence, null).ranked[0];
+    const spec = compileGenre(draftGenreFor(sentence, pick.genre, pick.mode)!);
     const { rounds: _rounds, hold: _hold, ...tuning } = tuningOf(spec);
     const steps = (tuning.count as number) * ((tuning.states as number) - 1);
     const old = Math.min(80, Math.max(40, steps * ((tuning.chasers as number | undefined) ? 7 : 3)));

@@ -58,14 +58,14 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
     expect(draftGameSpecWithMeta('A knight fights three wolves in a castle', 1).genre?.counts?.enemy).toBe(3);
   });
 
-  it('drafts every corpus sentence through a genre module, never onto a legacy control', () => {
-    for (const sentence of [...corpus.map((entry) => entry.prompt), ...demand.map((entry) => entry.text)]) {
+  // P41 drafts execute witnesses; keep the per-game timeout rather than putting
+  // hundreds of simulations inside one 30-second test.
+  it.each([...corpus.map((entry) => entry.prompt), ...demand.map((entry) => entry.text)])('drafts through a recipe without legacy fallback: %s', (sentence) => {
       const meta = draftGameSpecWithMeta(sentence, 1);
       expect(meta.fellBack, sentence).toBe(false);
       expect(meta.genre, sentence).not.toBeNull();
       expect(meta.spec.genre?.id, sentence).toBe(meta.genre?.genre);
       expect(LEGACY_CONTROLS, sentence).not.toContain(meta.spec.control);
-    }
   });
 
   // Kreslení žánrové hry patří modulu (P32B T6); draft musí hrdinu a položku z věty aspoň zapsat.
@@ -321,18 +321,15 @@ describe('lexicon', () => {
     expect(readRoles(sentence).player).toBe(player);
   });
 
-  it('keeps verbs out of every label and setting over the 200-sentence demand corpus (pin: player in 40/200)', () => {
-    const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly id: string; readonly text: string }[];
+  it.each(demand)('keeps verbs out of every label and setting: $id', ({ id, text }) => {
     const verbTail = /\b(?!(?:king|ring|thing|wing|string|building|ceiling|swing|sling|spring|pudding|viking|painting|clearing)\b)\w{2,}ing$/;
     const leaks: string[] = [];
-    let players = 0;
-    for (const { id, text } of demand) {
-      if (readRoles(text).player !== null) players += 1;
       const spec = draftGameSpec(text);
       for (const label of [...spec.roles.map((role) => role.label), spec.theme.setting]) if (verbTail.test(label)) leaks.push(`${id}: ${label}`);
-    }
     expect(leaks).toEqual([]);
+  });
+  it('still reads a player in at least 40 of the 200 demand sentences', () => {
     // Ve zbylých 160 větách postava není („shooting game“, „tower defense in space“).
-    expect(players).toBeGreaterThanOrEqual(40);
+    expect(demand.filter(({ text }) => readRoles(text).player !== null).length).toBeGreaterThanOrEqual(40);
   });
 });

@@ -34,7 +34,8 @@ function recipeOf(content: GenreSpec): Recipe {
   const track = content.genre === 'runner' || content.genre === 'platformer';
   const shooting = track && content.cast?.some(item => item.does === 'shoot_at');
   const chasing = track && content.cast?.some(item => item.does === 'chase_me');
-  return { ...recipe, actions: [...recipe.actions, ...(shooting ? ['shoot' as const] : [])], threats: [...recipe.threats, ...(chasing ? ['chaser' as const] : [])] };
+  const escapeCollect = content.genre === 'arena' && content.mode === 'escape' && content.cast?.some(item => item.does === 'collect');
+  return { ...recipe, ...(escapeCollect ? { objective: 'collect' as const } : {}), actions: [...recipe.actions, ...(shooting ? ['shoot' as const] : []), ...(escapeCollect ? ['collect' as const] : [])], threats: [...recipe.threats, ...(chasing ? ['chaser' as const] : [])] };
 }
 
 export function presetOf(content: GenreSpec): RecipeAssembly {

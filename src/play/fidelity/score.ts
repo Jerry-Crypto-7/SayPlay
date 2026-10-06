@@ -15,6 +15,8 @@ import type { ControlId, GameSpecV1 } from '../spec';
 import { type ChainItem, type ChecklistEntry, fidelityChain } from './chain';
 
 export interface SpecFidelity {
+  /** Fraction of essential sentence relationships witnessed in the game. */
+  readonly actionScore: number;
   readonly control: ControlId;
   readonly items: ChainItem[];
   readonly score: number;
@@ -33,6 +35,7 @@ const share = (items: readonly ChainItem[], pick: (item: ChainItem) => boolean):
 export function specFidelity(spec: GameSpecV1, checklist: readonly ChecklistEntry[]): SpecFidelity {
   const items = fidelityChain(spec, checklist);
   return {
+    actionScore: share(items.filter((_, index) => checklist[index]?.triple !== undefined), item => item.read),
     control: spec.control ?? 'tap_go',
     items,
     score: share(items, (item) => item.read),

@@ -33,6 +33,17 @@ const chaseSpec = {
 };
 
 describe('P41 witnesses from actual play', () => {
+  it('probes an oncoming runner chaser after settling the previous jump', () => {
+    const spec = compileGenre({ genre: 'runner', mode: 'default', hero: 'fox', setting: 'forest', cast: [{ label: 'wolf', does: 'chase_me' }] });
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const made = arcadeWorldOf(spec, seed);
+      if (!made.ok) throw new Error(made.issues.join('; '));
+      const verdict = verifyArcade(made.world, undefined, made.roleBindings);
+      expect(verdict.bot.outcome).toBe('won');
+      expect(verdict.witnesses.some(w => w.verb === 'chaser' && w.run === 'probe'), `seed ${seed}`).toBe(true);
+      expect(verdict.replayEqual).toBe(true);
+    }
+  });
   it.each([
     ['throw', throwing], ['beat', rhythm], ['duel', duel], ['stack', timing],
     ['deliver', carry], ['interact', lever], ['throw', rock],

@@ -13,7 +13,7 @@ import { describe, expect, it } from 'vitest';
 import { goldenPrompts } from '../../../evals/play/golden';
 import sentenceSet from '../../../evals/play/p32/sentences.json';
 import { GOOD_ANSWERS, answerFixture } from '../director/__fixtures__';
-import { CRITIC_CODES, UNISSUED_PACK_CODES, blockingIssues, critique, fidelity, type CriticIssue, type FidelityIssue } from '../director/critic';
+import { CRITIC_CODES, UNISSUED_PACK_CODES, blockingIssues, critique, fidelity, saidIn, type CriticIssue, type FidelityIssue } from '../director/critic';
 import { DIRECTOR_EXAMPLES, exampleSpec } from '../director/retrieval';
 import { draftGameSpecWithMeta } from '../draft';
 import { genreDoubles } from '../genre/__tests__/doubles';
@@ -22,6 +22,11 @@ import { ARCHETYPE_IDS } from '../registry';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
 const fixturesDir = fileURLToPath(new URL('../__fixtures__/', import.meta.url));
+
+it('accepts a singular switch from the explicitly named switches', () => {
+  expect(saidIn('switch', 'Toggle the switches to open the gate')).toBe(true);
+  expect(saidIn('dragon', 'Toggle the switches to open the gate')).toBe(false);
+});
 
 function base(name: string): GameSpecV1 {
   const result = readGameSpec(JSON.parse(readFileSync(new URL(`${name}.json`, `file://${fixturesDir.replace(/\\/g, '/')}`), 'utf8')));
@@ -235,16 +240,14 @@ describe('fidelity of a GenreSpec answer', () => {
 
   // Rychlá verze je poslední záloha opravy (`switchGenre` bere její věci): kontrola, která by shodila
   // i ji, by AI verzi poslala zpátky na návrh. Nad skutečnými moduly, 300 vět zlaté, poptávkové a vývojové sady.
-  it('passes the cast of the quick version of every golden, demand and dev sentence', () => {
-    const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
-    const dev = JSON.parse(readFileSync('evals/play/p30/dev.json', 'utf8')) as { readonly sentences: { readonly text: string }[] };
-    const texts = [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text), ...dev.sentences.map((entry) => entry.text)];
-    expect(texts).toHaveLength(300);
-    for (const sentence of texts) {
-      const genre = draftGameSpecWithMeta(sentence).genre;
-      if (genre === null || genre === undefined) continue;
-      expect(fidelity(genre, sentence).filter((issue) => issue.code.startsWith('CAST_')), sentence).toEqual([]);
-    }
+  const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
+  const dev = JSON.parse(readFileSync('evals/play/p30/dev.json', 'utf8')) as { readonly sentences: { readonly text: string }[] };
+  const castSentences = [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text), ...dev.sentences.map((entry) => entry.text)];
+  it('keeps all 300 golden, demand and dev cast cases', () => expect(castSentences).toHaveLength(300));
+  it.each(castSentences)('passes the quick cast: %s', sentence => {
+    const genre = draftGameSpecWithMeta(sentence).genre;
+    if (genre === null || genre === undefined) return;
+    expect(fidelity(genre, sentence).filter((issue) => issue.code.startsWith('CAST_')), sentence).toEqual([]);
   });
 
   // Příklady jdou do promptu jako vzor tvaru (`retrieval.ts`): obsazení, které by kritik shodil, by model učil chybu.

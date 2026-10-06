@@ -10,35 +10,23 @@
  *   Výchozí role z prostředí („wolf“, „meadow“) věta neřekla, a do seznamu proto
  *   nejdou: návrh by za ně dostal body, které AI verze dohnat nemůže. Nejvýš
  *   `MAX_NOUNS`, jako ruční sady: hrdina, role, prostředí.
- * - **Sloveso** je hlavní sloveso klasifikátoru (`VERBS` v `genre/classify.ts`)
- *   s rodinou (`genre/families.ts`) a režimem, který ho hraje. Arénu, Úkol
- *   a Plavbu čte řetěz podle režimu generátoru (`verbPlayedBy`), ostatní žánry
- *   ovládáním – to dostane položka do `controls`.
+ * - **Akce** jsou všechny podstatné trojice z intentu; věrnost je potvrzuje
+ *   svědky skutečného hraní. Hlavní sloveso klasifikátoru zůstává pouze
+ *   metadatem pro starší čtenáře.
  *
  * Deterministické: táž věta dá týž seznam v promptu i v bráně. Čtení modelem se
  * nepoužívá, i když je zapnuté – seznam musí vyjít stejně bez sítě.
  */
 
-import { draftGameSpecWithMeta } from '../draft';
+import { draftGenreFor } from '../draft';
+import { extractIntent } from '../intent/extract';
+import { essentialTriples, type Intent } from '../intent/contract';
 import { readRoles, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { GenreId } from '../genre/contract';
 import { type FamilyId, familyOf } from '../genre/families';
-import type { ControlId } from '../spec';
 
 import type { ChecklistEntry, FidelitySlot } from './chain';
-
-/** Ovládání, kterým žánr hraje sloveso; Aréna, Úkol a Plavba ho nesou režimem generátoru, ne ovládáním. */
-const GENRE_CONTROL: Readonly<Partial<Record<GenreId, ControlId>>> = {
-  runner: 'runner',
-  platformer: 'platform',
-  shooter: 'shooter',
-  throw: 'throw',
-  timing: 'timing',
-  rhythm: 'rhythm',
-  duel: 'duel',
-  flap: 'flap',
-};
 
 /** Nejvýš tolik podstatných jmen, jako mají ruční sady (2–4). */
 export const MAX_NOUNS = 4;
@@ -52,6 +40,7 @@ export interface MainVerb {
 }
 
 export interface SentenceChecklist {
+  readonly intent: Intent;
   readonly checklist: readonly ChecklistEntry[];
   /** `null` = věta herní sloveso nemá („a long queue at the pharmacy“). */
   readonly verb: MainVerb | null;
@@ -74,7 +63,10 @@ const head = (label: string): string => singular(label.split(/\s+/).at(-1) ?? ''
 export function sentenceChecklist(sentence: string): SentenceChecklist {
   const text = sentence.toLowerCase();
   const words = new Set(text.replace(/['’]s\b/g, '').split(/[^a-z0-9-]+/).filter((word) => word !== '').map(singular));
-  const genre = draftGameSpecWithMeta(sentence).genre;
+  const intent = extractIntent(sentence);
+  const ranking = classifyGenre(sentence, null);
+  const choice = ranking.ranked[0];
+  const genre = draftGenreFor(sentence, choice.genre, choice.mode);
   const roles = readRoles(sentence);
   const taken = new Set<string>();
   const said = (labels: readonly (string | null | undefined)[], slot: FidelitySlot, max: number): ChecklistEntry[] => {
@@ -99,9 +91,9 @@ export function sentenceChecklist(sentence: string): SentenceChecklist {
   );
 
   // Bez čtení modelem má každé hlavní sloveso i režim (`GenreRanking.pick`).
-  const ranking = classifyGenre(sentence, null);
-  if (ranking.verb === null || ranking.pick === null) return { checklist: [...hero, ...others, ...setting], verb: null };
-  const verb: MainVerb = { word: ranking.verb, family: familyOf(ranking.verb)?.id ?? null, genre: ranking.pick.genre, mode: ranking.pick.mode };
-  const control = GENRE_CONTROL[verb.genre];
-  return { checklist: [...hero, ...others, ...setting, { item: verb.word, slot: 'verb', controls: control === undefined ? [] : [control] }], verb };
+  // Legacy display metadata remains available, but it no longer decides which
+  // sentence actions enter the checklist or whether they are actually played.
+  const verb: MainVerb | null = ranking.verb === null || ranking.pick === null ? null : { word: ranking.verb, family: familyOf(ranking.verb)?.id ?? null, genre: ranking.pick.genre, mode: ranking.pick.mode };
+  const actions: ChecklistEntry[] = essentialTriples(intent).map(triple => ({ item: triple.verb, slot: 'verb', triple }));
+  return { checklist: [...hero, ...others, ...setting, ...actions], verb, intent };
 }

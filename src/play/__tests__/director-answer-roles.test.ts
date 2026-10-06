@@ -78,12 +78,10 @@ describe('the director answer, read like the quick version', () => {
     expect(draftOf('A robot collects bonuses in a factory').spec.objective.description).not.toMatch(/bonuse\b/);
   });
 
-  it('every role label the draft writes for the golden and demand sentences is already singular', () => {
-    const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
-    for (const text of [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)]) {
-      const genre = draftGameSpecWithMeta(text).genre;
-      for (const { label } of genre?.cast ?? []) expect(singular(label), `${text}: ${label}`).toBe(label);
-    }
+  const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
+  it.each([...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)])('writes singular role labels: %s', (text) => {
+    const genre = draftGameSpecWithMeta(text).genre;
+    for (const { label } of genre?.cast ?? []) expect(singular(label), `${text}: ${label}`).toBe(label);
   });
 });
 

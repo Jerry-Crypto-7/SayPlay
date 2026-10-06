@@ -75,13 +75,11 @@ describe('nearestExamples', () => {
     expect(carry.includes('e17')).toBe(ready('e17'));
   });
 
-  it('gives 3–5 examples within the character budget for every measured sentence', () => {
-    for (const sentence of [...DEV, ...TEST]) {
+  it.each([...DEV, ...TEST])('gives 3–5 examples within the character budget: $id', sentence => {
       const picked = nearestExamples(sentence.text, draftGameSpecWithMeta(sentence.text).genre?.genre ?? null);
       expect(picked.length, sentence.id).toBeGreaterThanOrEqual(EXAMPLES_MIN);
       expect(picked.length, sentence.id).toBeLessThanOrEqual(EXAMPLES_MAX);
       expect(examplesBlock(picked).length, sentence.id).toBeLessThanOrEqual(EXAMPLES_MAX_CHARS);
-    }
   });
 
   it('drops examples from the end until the block fits, never below three', () => {
