@@ -17,6 +17,7 @@
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { loadRapier } from '@/play/arcade/physics/world';
 import { templateFor, type TemplateName } from '@/play/arcade/rules/templates';
 import { draftGameSpec } from '@/play/draft';
 import type { ControlId } from '@/play/spec';
@@ -75,7 +76,9 @@ export interface VerbCoverage {
   readonly sentences: readonly SentenceCoverage[];
 }
 
-export function measureVerbCoverage(): VerbCoverage {
+/** Legacy control taxonomy, not P41 action fidelity: native controls are not aliases. */
+export async function measureVerbCoverage(): Promise<VerbCoverage> {
+  await loadRapier();
   const sentences: SentenceCoverage[] = corpus.map((entry) => {
     const drafted = draftGameSpec(entry.text, 1).control ?? 'tap_go';
     const control = CLASS_CONTROL[entry.verb];
@@ -103,6 +106,11 @@ export function measureVerbCoverage(): VerbCoverage {
 
 if (process.argv.includes('--write') || process.argv.includes('--write-p41')) {
   const out = fileURLToPath(new URL(process.argv.includes('--write-p41') ? './coverage-p41.json' : './coverage.json', import.meta.url));
-  writeFileSync(out, `${JSON.stringify(measureVerbCoverage(), null, 1)}\n`);
-  console.log(`wrote ${out}`);
+  void measureVerbCoverage().then((measured) => {
+    writeFileSync(out, `${JSON.stringify(measured, null, 1)}\n`);
+    console.log(`wrote ${out}`);
+  }).catch((error: unknown) => {
+    console.error('verb coverage failed:', error);
+    process.exitCode = 1;
+  });
 }

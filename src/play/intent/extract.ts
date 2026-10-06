@@ -366,7 +366,8 @@ function actorIn(segment: string): string | null {
   if (PLAYER_WORDS.has(head)) return HERO;
   const name = /^(?:horde|pack|swarm|herd|flock)$/.test(head) && kept.length > 1 ? headOf(kept[kept.length - 2]) : headOf(head);
   // „a never-ending runner“, „a fast-paced shooter“: přídavné jméno se spojovníkem postava není.
-  return NOT_AN_ACTOR.has(name) || NOT_A_THING.has(name) || ING_ADJECTIVES.has(name) || isPlace(name) || /-[a-z]+(?:ing|ed|like|style|themed)$/.test(name) ? null : name;
+  const measure = new RegExp(`^${NUMBER}-(?:seconds?|minutes?|hours?|days?|metres?|meters?|miles?|laps?)$`).test(name);
+  return measure || NOT_AN_ACTOR.has(name) || NOT_A_THING.has(name) || ING_ADJECTIVES.has(name) || isPlace(name) || /-[a-z]+(?:ing|ed|like|style|themed)$/.test(name) ? null : name;
 }
 
 /** Jmenná fráze za slovesem (nebo před ním u `before: 'target'`): hlava v jednotném čísle, víc kusů, rozsah ve větě, předložka. */
@@ -553,7 +554,19 @@ export function extractIntent(sentence: string): Intent {
 
   const tableHits = hitsOf(text);
   const order = (a: Hit, b: Hit): number => a.at - b.at || ROWS.indexOf(a.row) - ROWS.indexOf(b.row);
-  const verbHits = [...tableHits.filter((hit) => !isNounRow(hit.row)), ...unknownHits(text, clauses, tableHits)].sort(order);
+  // A movement participle before an opponent noun describes that noun, not
+  // a second player command: 'fights flying skeletons', 'from swimming sharks'.
+  // Keep it covered for unknown-verb detection and inside the preceding object.
+  const nounModifier = (hit: Hit): boolean => {
+    if (!/ing$/.test(hit.said) || !hit.row.emits.some(emit => emit.axis === 'move')) return false;
+    const following = /^ ([a-z-]+)\b/.exec(text.slice(hit.end))?.[1];
+    if (following === undefined || /^(?:a|an|the|through|over|across|around|away|up|down|to|in|on|with|from|and|while)$/.test(following)) return false;
+    const prior = tableHits.filter(candidate => candidate.end <= hit.at && !isNounRow(candidate.row)).at(-1);
+    if (prior === undefined || boundaries.some(boundary => boundary.at >= prior.end && boundary.end <= hit.at)) return false;
+    return /\b(?:from|against|at|past)\s+(?:(?:a|an|the|some)\s+)?$/.test(text.slice(prior.end, hit.at))
+      || prior.row.emits.some(emit => emit.who === 'doer' && emit.axis !== 'move') && /^\s*(?:(?:a|an|the|some)\s+)?$/.test(text.slice(prior.end, hit.at));
+  };
+  const verbHits = [...tableHits.filter((hit) => !isNounRow(hit.row) && !nounModifier(hit)), ...unknownHits(text, clauses, tableHits)].sort(order);
   const nounHits = tableHits.filter((hit) => isNounRow(hit.row));
 
   // Kdo a komu: podmět je text od hranice klauze (nebo od předchozího slovesa a jeho předmětu) po sloveso,
@@ -594,6 +607,10 @@ export function extractIntent(sentence: string): Intent {
   const objectSpans = readings.filter((reading) => reading.thing !== null && !reading.hit.row.emits.some((emit) => emit.axis === 'move' || emit.id === 'race' || emit.id === 'land'));
   const vehicle = [...text.matchAll(VEHICLE)].find(
     (match) => !inScope(match.index)
+      // An imperative's subject remains the player; vehicles belonging to a
+      // later while/before clause cannot become an implicitly piloted hero.
+      // A vehicle driven by the same player in a coordinated clause still can.
+      && !(readings[0]?.actor === null && readings[0].hit.at === 0 && readings.some(reading => reading.actor === headOf(match[1]) && reading.hit.at > (boundaries[0]?.at ?? text.length)))
       && !readings.some(reading => reading.actor === match[1] && reading.thing !== null && PLAYER_WORDS.has(reading.thing.head) && reading.hit.row.emits.some(emit => emit.id === 'catch'))
       && !objectSpans.some(({ thing }) => thing !== null && match.index >= thing.at && match.index < thing.end),
   );

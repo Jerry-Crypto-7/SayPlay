@@ -66,6 +66,12 @@ export const liveCells = (): readonly LiveCell[] => ALLOWED.filter((cell): cell 
 export function assemblyOfCell(cell: AllowedCell, content = cell.preset): RecipeAssembly {
   if (content === null) throw new Error(`No assembly for staged cell ${cell.id}`);
   let defaults = cell.preset?.params;
+  if (cell.id === 'arena.escape' && content.params?.seconds !== undefined) {
+    // The reference pressure is calibrated for its default survival duration.
+    // A requested duration keeps the legacy balance; explicit pressure still wins.
+    const { entryDistance: _entry, chaseLead: _lead, chaserSpeed: _speed, lives: _lives, ...rest } = defaults ?? {};
+    defaults = rest;
+  }
   const requestedItems = content.params?.items ?? content.counts?.collectible;
   if (cell.id === 'arena.collect' && requestedItems !== undefined && requestedItems !== defaults?.items) {
     // The eight-pickup challenge is calibrated as a whole. An explicit different

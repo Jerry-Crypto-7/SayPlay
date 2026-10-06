@@ -14,6 +14,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import { draftGameSpecWithMeta } from '@/play/draft';
+import { matchesWitness } from '@/play/arcade/witness';
+import { extractIntent } from '@/play/intent/extract';
 import { fidelityChain, type ChecklistEntry } from '@/play/fidelity/chain';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -84,9 +86,13 @@ describe('P32B offline fidelity after the genre rewire', () => {
     const admitted = new Set<string>();
     for (const sentence of sentences) {
       const draft = draftGameSpecWithMeta(sentence.text);
+      const intent = extractIntent(sentence.text);
       for (const item of fidelityChain(draft.spec, sentence.checklist)) {
         const key = `draft|${sentence.id}|${item.item}`;
-        now.set(key, item.drawn);
+        // Native motion may be outside the frozen legacy control whitelist.
+        // Accept only a real witness for the sentence's exact action triple.
+        const played = item.slot === 'verb' && intent.items.some(triple => triple.verb === item.item && draft.composition?.witnesses.some(witness => matchesWitness(triple, witness)));
+        now.set(key, item.drawn || played);
         // Legacy control labels counted defence as shooting. P41 may honestly
         // admit an unsupported verb; it may never silently lose a noun or verb.
         if (item.slot === 'verb' && draft.composition?.unmet.some(triple => triple.verb === item.item)) admitted.add(key);

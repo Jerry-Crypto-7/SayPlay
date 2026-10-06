@@ -5,7 +5,7 @@
  * pravidla jazyka, jinak by pokrytí „po“ slibovalo pravidla, která hra nevezme.
  */
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { ruleIssues, rulesSchema } from '@/play/arcade/rules/schema';
 import { RULE_TEMPLATES, TEMPLATE_NAMES, expandTemplate, templateFor } from '@/play/arcade/rules/templates';
@@ -14,10 +14,13 @@ import corpus from '../demand/corpus.json';
 // Preserve the pre-composer coverage.json baseline; P41's current measurement
 // has a separate artifact because sentence selection intentionally changes.
 import committed from './coverage-p41.json';
-import { measureVerbCoverage } from './coverage';
+import { measureVerbCoverage, type VerbCoverage } from './coverage';
 
 describe('verb coverage on the demand set', () => {
-  const measured = measureVerbCoverage();
+  let measured: VerbCoverage;
+  beforeAll(async () => {
+    measured = await measureVerbCoverage();
+  }, 120_000); // 200 deterministic drafts, including native physics simulation.
 
   it('classifies every sentence once and the classes add up to the corpus', () => {
     expect(measured.total).toBe(corpus.length);
