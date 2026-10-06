@@ -1255,9 +1255,11 @@ function draftGenre(
   const doesOf = (label: string, own: CastRole): CastRole => spoken.find((item) => item.label === label)?.does ?? (fillFoe?.label === label ? fillFoe.does : own);
   // Sbírací sloveso, které doplněk modulu dal věci („gather 3 apples“ ve skákačce), zůstane u ní.
   const itemVerb = fill.cast?.find((item) => item.does === 'collect' && item.verb !== undefined && singular(item.label) === itemLabel)?.verb;
+  // „find its battery“: věc, která je i cílem a nemá sbírací sloveso, je cíl – jinak by ji `castOf` nechal jako bonus a cíl zahodil.
+  const goalItem = !thrown && itemLabel !== null && itemLabel === target && itemVerb === undefined;
   // Co hod hází, je náboj (projektil = `scenery` se slovesem hodu, P39 T14), ne věc ke sběru – ta zůstane, jak ji věta říká.
   const item: CastItem | null =
-    itemLabel === null ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
+    itemLabel === null || goalItem ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
   const cast = castOf([
     ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
     ...(item === null ? [] : [item]),

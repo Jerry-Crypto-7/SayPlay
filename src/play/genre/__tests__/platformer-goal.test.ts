@@ -104,6 +104,15 @@ describe('platformer goal from the sentence (P35 T3)', () => {
     expect(world.rules).toContainEqual({ id: 'finish', params: {} });
   });
 
+  it('find: the goal stays the goal through the offline draft, not a pickup of the same name', () => {
+    const spec = draftGenreFor('A robot jumps to find its battery', 'platformer', 'default');
+    expect(castFor(spec!, 'reach')).toMatchObject({ label: 'battery', verb: 'find' });
+    expect(spec!.cast?.filter((item) => item.label === 'battery')).toHaveLength(1);
+    const { game } = play(spec!);
+    expect(game.tutorial.goalLine).toBe('Find the battery.');
+    expect(roleOf(game, 'finish')?.label).toBe('battery');
+  });
+
   it('reach: the goal the sentence names, through the offline draft too', () => {
     const spec = draftGenreFor(REACH, 'platformer', 'default');
     expect(castFor(spec!, 'reach')).toMatchObject({ label: 'rocket', verb: 'reach' });
