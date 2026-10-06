@@ -48,6 +48,7 @@ import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
+import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
 
 /** Barva náhradního kvádru podle id těla; nic fialového. */
 const FALLBACK_COLOR: Readonly<Record<string, string>> = {
@@ -237,36 +238,6 @@ function lerp(from: number, to: number, alpha: number): number {
   return from + (to - from) * alpha;
 }
 
-const clamp = (value: number, low: number, high: number): number => Math.max(low, Math.min(high, value));
-
-/**
- * Boční kamera: stojí na −x a kouká po +x, takže +z jádra jde na obrazovce
- * doprava. Vzdálenost se řídí poměrem stran – na výšku (mobil) ustoupí,
- * aby bylo vidět aspoň `ahead` metrů trati. `lead` = o kolik poloviny šířky
- * obrazu je hráč vlevo od středu (0,4 → levá třetina).
- */
-function placeSide(camera: PerspectiveCamera, look: Vector3, z: number, y: number, ahead: number, tall: number, far: number, lead: number): void {
-  const tan = Math.tan((camera.fov * Math.PI) / 360);
-  const dist = clamp(Math.max(ahead / (2 * tan * camera.aspect), tall / (2 * tan)), 10, far);
-  const shift = dist * tan * camera.aspect * lead;
-  camera.position.set(-dist, y, z + shift);
-  look.set(0, y, z + shift);
-  camera.lookAt(look);
-}
-
-/**
- * Boční kamera na výšku (P30B T5): kolmý záběr je úzký – hrdina přes 4 % výšky
- * a zároveň ~11 m trati před ním se do něj nevejdou. Kamera se proto natočí
- * o `yaw` po trati: hrdina je jí blíž (větší), trať před ním se zkrátí
- * perspektivou. `dist` = vzdálenost k bodu pohledu, `lead` = o kolik metrů
- * před hrdinou kamera míří.
- */
-function placeAngled(camera: PerspectiveCamera, look: Vector3, z: number, y: number, dist: number, yaw: number, lead: number): void {
-  look.set(0, y, z + lead);
-  camera.position.set(-dist * Math.cos(yaw), y, z + lead - dist * Math.sin(yaw));
-  camera.lookAt(look);
-}
-
 const DEG = Math.PI / 180;
 
 /**
@@ -400,11 +371,24 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     const tick = (state[HEADER.tick] as number) + alpha;
     posesOf(state, prev, poses.current, tick);
     const turn = 1 - Math.exp(-delta * TURN_RATE);
+    // Poloha těla ve scéně (m), x zrcadlené jako níž u `group.position`.
+    const spotAt = (index: number): Spot => {
+      const base = bodyBase(index);
+      return {
+        x: -lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
+        y: lerp(prev[base + BODY.y] as number, state[base + BODY.y] as number, alpha) / UNIT,
+        z: lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT,
+      };
+    };
     let shots = 0;
     for (const view of views) {
       const inner = posed.current[view.index];
       const pose = poses.current[view.index];
       const moving = POSED_ROLES.has(view.role) ? viewOf(state, prev, view.index) : null;
+      // P39 T16: pronásledovatel z věty v záběru – běžci v patách, plošinovce na kraji obrazu (`track-camera.ts`).
+      // Útočí-li běžci zepředu, otočí se k hrdinovi čelem; jinak běží po trati jako on.
+      const drawn = view.role === ROLE.chaser ? chaserSpot(control, spotAt(state[HEADER.player] as number), spotAt(view.index), camera.far, camera.aspect) : null;
+      if (drawn !== null && control === 'runner') yaws.current[view.index] = turnToward(yaws.current[view.index], drawn.oncoming ? Math.PI : 0, turn);
       // Plošinovka chodí oběma směry: postava se otočí, kam jde (P36C T8). Jinde drží směr scéna – běžec a let míří po trati, plavbu točí `VoyageHero`.
       if (control === 'platform' && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
         yaws.current[view.index] = turnToward(yaws.current[view.index], headingOf(moving.vx, moving.vz), turn);
@@ -419,7 +403,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       const group = groups.current[view.index];
       if (group === null || group === undefined) continue;
       const base = bodyBase(view.index);
-      const z = lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT;
+      const z = drawn?.spot.z ?? lerp(prev[base + BODY.z] as number, state[base + BODY.z] as number, alpha) / UNIT;
       // Tělo za koncem mlhy (`FarAtFog`) by kamera stejně ořízla; skryté vypadne i z přepočtu
       // matic, který jinak prochází celou trať každý snímek (P28E-R1). Kamera je ze snímku předtím.
       // Hráč nikdy: po restartu stojí kamera ještě u cíle, a skrytý hrdina by se už nepohnul (P32A T8-R1).
@@ -438,12 +422,15 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
           group.scale.setScalar((1 + 0.6 * Math.sin(t * Math.PI)) * (1 - t));
         }
       }
-      // Kamera běžce kouká po +z, takže +x jádra by vyšlo na obrazovce vlevo a „LEFT“ (x − 1) by hráče poslal doprava.
-      group.position.set(
-        -lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
-        lerp(prev[base + BODY.y] as number, state[base + BODY.y] as number, alpha) / UNIT,
-        z,
-      );
+      if (drawn !== null) group.position.set(drawn.spot.x, drawn.spot.y, z);
+      else {
+        // Kamera běžce kouká po +z, takže +x jádra by vyšlo na obrazovce vlevo a „LEFT“ (x − 1) by hráče poslal doprava.
+        group.position.set(
+          -lerp(prev[base + BODY.x] as number, state[base + BODY.x] as number, alpha) / UNIT,
+          lerp(prev[base + BODY.y] as number, state[base + BODY.y] as number, alpha) / UNIT,
+          z,
+        );
+      }
       // Skluz snižuje tělo – model se přikrčí stejně.
       if (view.role === ROLE.player) group.scale.y = (state[base + BODY.h] as number) / UNIT / view.h;
       if (view.role === ROLE.collectible) group.rotation.y += delta * 3;
@@ -457,11 +444,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       if (control === 'platform') {
         // Kamera za výškou hráče jen dojíždí, ať skok netřese obrazem.
         followY.current = followY.current === null ? y : lerp(followY.current, y, Math.min(1, delta * 4));
-        // Na výšku natočená do tří čtvrtin, ať je vidět nejbližší mince či hrot ~11 m před startem
-        // i vedle širokého hrdiny (P27A T6, P30B T5, `e2e/play-frame`). Hrdina ~13 m od kamery má
-        // ~10 % výšky obrazu – z 22 m při bočním pohledu měl 6 % a minimum je 8 % (P36C T6, `e2e/play-hero-size`).
-        if (camera.aspect < 1) placeAngled(camera, look, z, followY.current + 1.2, 16, 55 * DEG, 3.5);
-        else placeSide(camera, look, z, followY.current + 1.2, 16, 7, 18, 0.4);
+        placePlatform(camera, look, z, followY.current);
       } else if (control === 'flap') {
         // Na počítači ptáček blíž středu (v levém horním rohu by ho zakryl HUD) a kamera
         // tak daleko, ať je vidět první trubka i mince za ní (P30B T5). Na výšku by kolmá
@@ -476,9 +459,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       } else if (control === 'shooter' || control === 'throw') {
         // Kameru střelnice a hřiště staví jejich scéna (`ShooterRig`, `ThrowRig`).
       } else {
-        camera.position.set(x * 0.6, 3.4, z - 6.5);
-        look.set(x * 0.4, 1.1, z + 9);
-        camera.lookAt(look);
+        placeRunner(camera, look, x, z);
       }
       if (control !== 'shooter' && control !== 'throw') applyIntro(camera, look, introLeft(introClock()));
       camera.updateMatrixWorld();
@@ -514,7 +495,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
                 fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                 // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
-                yaw={control === 'platform' ? () => yaws.current[view.index] ?? 0 : undefined}
+                yaw={control === 'platform' || view.role === ROLE.chaser ? () => yaws.current[view.index] ?? 0 : undefined}
               />
             ) : view.kind === 'pipe' ? (
               <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
