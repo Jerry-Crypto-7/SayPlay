@@ -1,7 +1,7 @@
 import type { GenreSpec } from '../genre/contract';
 import { recipeKey, type Recipe } from './recipe';
 
-export const CONTROL_PRESETS: Readonly<Record<string, Recipe>> = {
+export const PRESETS: Readonly<Record<string, Recipe>> = {
   'runner.default': { move: 'run', actions: [], objective: 'reach', threats: [] },
   'platformer.default': { move: 'jump', actions: [], objective: 'reach', threats: [] },
   'flap.default': { move: 'flap', actions: [], objective: 'reach', threats: [] },
@@ -12,6 +12,14 @@ export const CONTROL_PRESETS: Readonly<Record<string, Recipe>> = {
   'timing.bridge': { move: 'stationary', actions: ['time'], objective: 'score', threats: [] },
   'rhythm.default': { move: 'stationary', actions: ['beat'], objective: 'score', threats: [] },
   'duel.default': { move: 'stationary', actions: ['duel'], objective: 'score', threats: [] },
+  'arena.escape': { move: 'roam', actions: [], objective: 'survive', threats: ['chaser'] },
+  'arena.collect': { move: 'roam', actions: ['collect'], objective: 'collect', threats: [] },
+  'arena.fight': { move: 'roam', actions: ['fight'], objective: 'defeat', threats: [] },
+  // The frozen voyage.race has no competitors. Its honest recipe is reach.
+  'voyage.race': { move: 'drive', actions: [], objective: 'reach', threats: [] },
+  'voyage.land': { move: 'drive', actions: [], objective: 'land', threats: [] },
+  'quest.spatial': { move: 'roam', actions: ['interact'], objective: 'interact', threats: ['chaser'] },
+  'quest.station': { move: 'stationary', actions: ['interact'], objective: 'interact', threats: [] },
 };
 
 /** Content retains cast/parameter order, including the frozen legacy addon order. */
@@ -19,7 +27,7 @@ export type RecipeAssembly = Recipe & { readonly preset: string; readonly conten
 
 function recipeOf(content: GenreSpec): Recipe {
   const preset = `${content.genre}.${content.mode}`;
-  const recipe = CONTROL_PRESETS[preset];
+  const recipe = PRESETS[preset];
   if (recipe === undefined) throw new Error(`No recipe preset for ${preset}`);
   // These two legacy track assemblies play extra cast actions through addons.
   // Other genre casts may only decorate a body; do not claim their verbs here.

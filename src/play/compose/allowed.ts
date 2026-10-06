@@ -1,5 +1,6 @@
 import type { GenreSpec } from '../genre/contract';
 import type { Recipe } from './recipe';
+import { PRESETS } from './presets';
 
 interface Cell {
   readonly id: string;
@@ -10,9 +11,10 @@ export type AllowedCell = Cell & ({ readonly status: 'live'; readonly preset: Ge
 export type LiveCell = Extract<AllowedCell, { status: 'live' }>;
 
 export const ALLOWED: readonly AllowedCell[] = [
-  { id: 'runner.default', status: 'live', recipe: { move: 'run', actions: [], objective: 'reach', threats: [] }, preset: { genre: 'runner', mode: 'default', hero: 'fox', setting: 'forest' } },
-  { id: 'platformer.default', status: 'live', recipe: { move: 'jump', actions: [], objective: 'reach', threats: [] }, preset: { genre: 'platformer', mode: 'default', hero: 'fox', setting: 'forest' } },
-  { id: 'shooter.default', status: 'live', recipe: { move: 'stationary', actions: ['shoot'], objective: 'defeat', threats: [] }, preset: { genre: 'shooter', mode: 'default', hero: 'robot', setting: 'space' } },
+  ...Object.entries(PRESETS).map(([id, recipe]): LiveCell => {
+    const [genre, mode] = id.split('.');
+    return { id, status: 'live', recipe, preset: { genre, mode, hero: 'fox', setting: 'forest' } as GenreSpec };
+  }),
   // Missing runtime/scene must never become eligible just because the intent asks for it.
   { id: 'glide.reach', status: 'staged', recipe: { move: 'glide', actions: [], objective: 'reach', threats: [] }, preset: null },
 ];

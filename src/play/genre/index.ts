@@ -2,8 +2,8 @@
 import type { GameSpecV1 } from '../spec';
 import { type GenreModule, type GenreSpec, type ParamBounds, countIssues, genreSpecSchema, legacyCast } from './contract';
 import { GENRE_MODULES } from './modules';
-import { compileRecipe, compileWith, DEPTH_PARAM_BOUNDS } from '../compose/compile';
-import { CONTROL_PRESETS, presetOf } from '../compose/presets';
+import { compileRecipe, DEPTH_PARAM_BOUNDS } from '../compose/compile';
+import { presetOf } from '../compose/presets';
 export { GENRE_MODULES } from './modules';
 export { compileWith, withDepth, DEPTH_PARAM_BOUNDS } from '../compose/compile';
 /** Meze všech parametrů, které `GenreSpec` žánru smí nést: modul + hloubka. */
@@ -26,7 +26,5 @@ export function readGenreSpec(input: unknown): GenreSpecResult {
 }
 
 export function compileGenre(spec: GenreSpec): GameSpecV1 {
-  return CONTROL_PRESETS[`${spec.genre}.${spec.mode}`] === undefined
-    ? compileWith(GENRE_MODULES[spec.genre] as GenreModule, spec)
-    : compileRecipe(presetOf(spec));
+  return compileRecipe(presetOf(spec));
 }

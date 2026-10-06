@@ -3,11 +3,17 @@ import { arcadeWorldOf } from '@/play/arcade/compile';
 import { baseControlOf } from '@/play/arcade/addons';
 import { verifyArcade } from '@/play/arcade/verify';
 import { compileGenre } from '@/play/genre';
+import { GENRES, GENRE_MODES } from '@/play/genre/contract';
 import { ALLOWED, liveCells } from '../allowed';
 import { recipeSchema } from '../recipe';
 import { stageOf } from '../stage-registry';
 
 describe('allowed recipes', () => {
+  it('has a live assembly for every existing genre and mode', () => {
+    for (const genre of GENRES) for (const mode of GENRE_MODES[genre]) {
+      expect(liveCells().some(cell => cell.preset.genre === genre && cell.preset.mode === mode), `${genre}.${mode}`).toBe(true);
+    }
+  });
   it('rejects unknown pieces, duplicate actions and extra fields', () => {
     expect(recipeSchema.safeParse({ move: 'teleport', actions: [], objective: 'reach', threats: [] }).success).toBe(false);
     expect(recipeSchema.safeParse({ move: 'run', actions: ['shoot', 'shoot'], objective: 'reach', threats: [] }).success).toBe(false);

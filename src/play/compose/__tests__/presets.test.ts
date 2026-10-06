@@ -7,7 +7,6 @@ import { compileRecipe } from '../compile';
 import { presetOf } from '../presets';
 
 const frozen = new Map((JSON.parse(readFileSync('evals/play/p41/golden/genres.json', 'utf8')) as { variants: { id: string; spec?: GameSpecV1 }[] }).variants.map(row => [row.id, row.spec]));
-const controls = new Set(['runner', 'platformer', 'flap', 'shooter', 'throw', 'timing', 'rhythm', 'duel']);
 
 describe('genre presets compiled as recipes', () => {
   it('retains extra cast mechanics and rejects a recipe/content mismatch', () => {
@@ -17,7 +16,7 @@ describe('genre presets compiled as recipes', () => {
     expect(compileRecipe(assembly).addons).toEqual(['chaser', 'shoot']);
     expect(() => compileRecipe({ ...assembly, move: 'drive' })).toThrow('Recipe does not match');
   });
-  for (const variant of variants().filter(row => controls.has(row.genre))) it(variant.id, () => {
+  for (const variant of variants()) it(variant.id, () => {
     const read = readGenreSpec(variant.input);
     if (!read.ok) throw new Error(read.issues.join('; '));
     let spec = compileRecipe(presetOf(read.value));
