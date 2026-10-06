@@ -37,3 +37,51 @@ npx vitest run evals/play/p41/__tests__/set.test.ts
 ```
 
 Hlídá tvar a slovník, počty skupin, jedinečná id i věty, zápory, shodu rodin parafrází, větu majitele a varianty a nulový průnik se zapečetěnou sadou (vypisuje jen id našich vět).
+
+## Závěrečné měření T32
+
+Spouští se až nad zmrazenou implementací, bez souběžného sestavení nebo testovací
+zátěže. Výsledky held-out se nepoužívají k dalšímu ladění této revize.
+
+```powershell
+$env:P41_FINAL_OPEN_HELD_OUT = '1'
+$env:P41_FINAL_LIVE_DIRECTOR = '0'
+npx vitest run --config vitest.measure.mts evals/play/p41/final.measure.ts
+```
+
+Tato varianta změří baseline a rychlou verzi. Režisér a slepé hodnocení zůstanou
+výslovně nezměřené. `final.json` uchovává všechny řádky, otisk zdrojů, revizi,
+semínka a cíle; `final.md` uvádí každý neúspěch. Úspěšný běh měřicího skriptu
+neznamená splnění číselných cílů.
+
+Baseline používá vlastní vstup a `tsconfig` uvnitř checkoutu `p41-base`.
+Guard odmítne přibalení aktuálních zdrojů; `baselineProvenance` v reportu
+obsahuje jejich manifest a hashe. První pokus T32 tuto izolaci porušoval
+kvůli automatickému výběru kořenového `tsconfig`; byl označen jako neplatný
+a archivován v `.claude/scratchpads/p41-final-invalid-baseline`. Pro srovnání
+se používá pouze následné měření s ověřeným původem baseline.
+
+Po samostatném schválení odeslání konkrétních dat režisérovi lze nad stejnými
+zdroji doplnit jen chybějící odpovědi pomocí `P41_FINAL_RESUME_DIRECTOR=1` a
+`P41_FINAL_LIVE_DIRECTOR=1`. Vyžaduje platnou konfiguraci předplatného
+`codex-cli` s explicitním limitem volání. Každá dávka eviduje vlastní limit
+a spotřebu, report i kumulativní spotřebu. Denní rozpočet je nutné respektovat
+napříč dávkami; tato volba jej nezvyšuje. Placený API fallback se nepoužívá.
+Již pozorované neúspěchy se neopakují, baseline a rychlá verze se nepřepočítávají.
+Pokračování vyžaduje dokončený report; není obnovou přerušeného zápisu.
+
+`final-blind-pairs.json` obsahuje anonymní páry pro lidské hraní. Zachovejte
+oddělený klíč `.claude/scratchpads/p41-final-blind-key.json`; neukazujte jej
+hodnotiteli. Po dodání všech hodnocení lze bez generování her použít
+`P41_FINAL_REVIEW_ONLY=1` a `P41_BLIND_RATINGS=<cesta k JSON>`; režim resume
+musí být vypnutý. Formát hodnocení:
+
+```json
+{ "protocol": "human-blind-v1", "reviewer": "jméno",
+  "ratings": [{ "pairId": "id z anonymního páru", "winner": "A" }] }
+```
+
+`winner` je `A`, `B` nebo `tie`; remízy zůstávají ve jmenovateli. Review-only
+ověří stejné zdroje, dataset i původní A/B klíč. Commit pouze výsledků je
+přípustný. Chybějící klíč se nesmí nahradit novým náhodným pořadím.
+Samostatná přejímka majitelem je v `acceptance.md` a zůstává lidským krokem.
