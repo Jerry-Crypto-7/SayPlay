@@ -64,7 +64,11 @@ describe('draftGameSpecWithMeta through the genres (P32B T2)', () => {
       const meta = draftGameSpecWithMeta(sentence, 1);
       expect(meta.fellBack, sentence).toBe(false);
       expect(meta.genre, sentence).not.toBeNull();
-      expect(meta.spec.genre?.id, sentence).toBe(meta.genre?.genre);
+      if (meta.composition?.cellId.startsWith('drive.')) {
+        expect(meta.spec.control, sentence).toBe('steer');
+        expect(meta.spec.controlParams, sentence).not.toHaveProperty('generator');
+        expect(meta.spec.genre, sentence).toBeUndefined();
+      } else expect(meta.spec.genre?.id, sentence).toBe(meta.genre?.genre);
       expect(LEGACY_CONTROLS, sentence).not.toContain(meta.spec.control);
   });
 

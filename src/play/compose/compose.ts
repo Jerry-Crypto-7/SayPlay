@@ -11,7 +11,7 @@ import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
 import { assemblyOfCell, liveCells, type LiveCell } from './allowed';
 import { compileRecipe } from './compile';
-import { type RecipeAssembly } from './presets';
+import { PRESETS, type RecipeAssembly } from './presets';
 
 export interface Composition {
   readonly cellId: string;
@@ -27,14 +27,15 @@ export interface Composition {
 const compositions = new Map<string, Composition>();
 
 /** Lexicographic preference: movement, objective, action, threat, old tie order. */
-function distance(intent: Intent, cell: LiveCell): number[] {
-  const inferredDrive = !intent.items.some(item => item.essential && item.axis === 'move') &&
-    intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '');
+function distance(intent: Intent, cell: LiveCell, defaultMove: string | undefined): number[] {
+  const explicitMove = intent.items.some(item => item.essential && item.axis === 'move');
+  const implicitMove = !explicitMove && intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '') ? 'drive' : undefined;
+  const unaskedVehicle = !explicitMove && implicitMove === undefined && defaultMove !== 'drive' && !intent.items.some(item => item.essential && item.verb === 'race');
   const supported = {
     move: [cell.recipe.move], objective: [cell.recipe.objective],
     action: cell.recipe.actions, threat: cell.recipe.threats,
   };
-  return ['move', 'objective', 'action', 'threat'].map(axis => axis === 'move' && inferredDrive ? Number(cell.recipe.move !== 'drive') : intent.items.filter(item =>
+  return ['move', 'objective', 'action', 'threat'].map(axis => axis === 'move' && implicitMove !== undefined ? Number(cell.recipe.move !== implicitMove) : axis === 'move' && unaskedVehicle && cell.recipe.move === 'drive' ? 1 : intent.items.filter(item =>
     item.essential && item.axis === axis && !(supported[axis as keyof typeof supported] as readonly string[]).includes(item.verb)).length);
 }
 
@@ -123,10 +124,14 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   const hasKnownAction = intent.items.some(item => item.essential && item.axis !== 'unknown');
   const ranking = hasKnownAction ? classified.ranked : draftChoiceOrder(intent.sentence, classified, reading);
   const order = new Map(ranking.map((choice, index) => [`${choice.genre}.${choice.mode}`, index]));
+  // A newly available rival or escape goal must not silently put a pedestrian
+  // in a car. Other unrequested movement must not outrank an explicit action.
+  const first = ranking[0];
+  const defaultMove = first === undefined ? undefined : PRESETS[`${first.genre}.${first.mode}`]?.move;
   const cells = [...liveCells()].sort((a, b) => {
-    const da = distance(intent, a), db = distance(intent, b);
+    const da = distance(intent, a, defaultMove), db = distance(intent, b, defaultMove);
     for (let axis = 0; axis < da.length; axis++) if (da[axis] !== db[axis]) return da[axis] - db[axis];
-    return (order.get(`${a.preset.genre}.${a.preset.mode}`) ?? 999) - (order.get(`${b.preset.genre}.${b.preset.mode}`) ?? 999);
+    return (order.get(`${a.preset.genre}.${a.preset.mode}`) ?? 999) - (order.get(`${b.preset.genre}.${b.preset.mode}`) ?? 999) || Number(a.assembly !== undefined) - Number(b.assembly !== undefined);
   });
   const issues: string[] = [];
   for (const cell of cells) {

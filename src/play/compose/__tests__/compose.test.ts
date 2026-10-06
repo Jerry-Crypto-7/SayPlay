@@ -28,14 +28,20 @@ describe('compose a live recipe from the full intent', () => {
 
   it('records single-action selection changes explicitly', () => {
     const changed = groups.single.filter(row => selections.get(row.id) !== classifyGenre(row.sentence, null).ranked[0].genre);
-    // Raw retention is 27/30, below T9's 95% target; report that discrepancy.
+    // Raw retention is 28/30, below T9's 95% target; report that discrepancy.
     // Basketball throws a ball instead of firing a gun; a named argument is a
     // duel rather than a physical arena fight. Do not restore either old choice
-    // merely to raise the retention metric. Escape now has an actual escape
-    // recipe, which ranks above the legacy arena survival objective.
+    // merely to raise the retention metric.
     expect(changed.map(row => [row.id, selections.get(row.id)])).toEqual([
-      ['si-015', 'duel'], ['si-017', 'voyage'], ['si-025', 'throw'],
+      ['si-015', 'duel'], ['si-025', 'throw'],
     ]);
+  });
+
+  it('escaping without a vehicle preserves free movement and admits an unproved escape', () => {
+    const made = compose(extractIntent('escape from the prison'));
+    expect(made.cellId).toBe('arena.escape');
+    expect(made.recipe.move).toBe('roam');
+    expect(made.unmet).toContainEqual(expect.objectContaining({ verb: 'escape' }));
   });
 
   it('plays driving, shooting and racing together', () => {

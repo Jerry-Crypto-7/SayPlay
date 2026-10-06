@@ -16,6 +16,8 @@ import { ARCADE_HZ, type ArcadeWorld, BODY, HEADER, ROLE, bodyBase } from '@/pla
 import { instantiate, replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftGenreFor } from '@/play/draft/draft';
+import { compileGenre } from '@/play/genre';
 import type { GameSpecV1 } from '@/play/spec';
 
 function publish(spec: GameSpecV1, sentence: string): { world: ArcadeWorld; winSeconds: number; idle: string } {
@@ -70,7 +72,11 @@ const STORED = [
 
 describe('stored voyage races without sections', () => {
   it.each(STORED)('$sentence: same seed, the robot wins on the same tick', ({ sentence, seed, tick }) => {
-    const spec = draftGameSpecWithMeta(sentence, 1).spec;
+    // Stored voyage assembly remains frozen; today's quick draft may select
+    // native racing with an actual rival. Do not regenerate old saves via it.
+    const legacy = draftGenreFor(sentence, 'voyage', 'race');
+    if (legacy === null) throw new Error('Missing legacy voyage assembly');
+    const spec = compileGenre(legacy);
     const { lengthM: _length, tuning, ...rest } = spec.controlParams as { lengthM?: number; tuning: Record<string, unknown> };
     const { sections: _sections, ...oldTuning } = tuning;
     const compiled = compileArcade({ ...spec, controlParams: { ...rest, tuning: oldTuning } } as GameSpecV1, seed);
