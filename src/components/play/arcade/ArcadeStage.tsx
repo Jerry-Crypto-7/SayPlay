@@ -22,6 +22,7 @@ import { AXIS_MAX, BUTTON } from '@/play/arcade/contract';
 import { LOOKS, type Look, type LookId } from '@/play/arcade/look';
 import { riggedCharacter } from '@/play/arcade/models';
 import { CAPABILITIES } from '@/play/capabilities';
+import { stageOf } from '@/play/compose/stage-registry';
 import type { ControlId, HeroAction } from '@/play/spec';
 
 import { ActionButton, actionsOf, useActionInput } from './ActionButton';
@@ -626,6 +627,8 @@ const StageCanvas = memo(function StageCanvas({
 }) {
   const base = baseControlOf(session.world.control);
   const control = base.id;
+  const stage = stageOf(control);
+  if (stage === null) throw new Error(`No scene registered for ${control}`);
   // Soupeř souboje z popisku (P27A T4): riggovaná postava stojí, model katalogu se vepíše do těla.
   const rival = cast.props.rival;
   const character = rival === undefined ? undefined : riggedCharacter(rival);
@@ -647,20 +650,20 @@ const StageCanvas = memo(function StageCanvas({
       {/* Fotopanorama tu není (P32A T6): prostředí z věty vybírá paletu a kulisy, obloha je rigu. Zůstává mřížce (`GridScenery`). */}
       {/* Rig svítí všem scénám: načasování a rytmus od P32A T10, souboj od P37B T3. */}
       <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
-      {control === 'duel' ? (
+      {stage.scene === 'duel' ? (
         <DuelScene session={session} look={look} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
       ) : (
         <>
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
-          {control === 'timing' ? (
+          {stage.scene === 'timing' ? (
             <TimingScene session={session} look={look} blockModel={blockModel} heroAction={heroAction} ghost={ghost} />
-          ) : control === 'rhythm' ? (
+          ) : stage.scene === 'rhythm' ? (
             <RhythmScene session={session} look={look} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
-          ) : control === 'move_free' || control === 'fight' ? (
+          ) : stage.scene === 'arena' ? (
             <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} heroAction={heroAction} ghost={ghost} />
-          ) : control === 'runner' ? (
+          ) : stage.scene === 'runner' ? (
             <RunnerWorld {...world} />
-          ) : control === 'platform' ? (
+          ) : stage.scene === 'platform' ? (
             <PlatformWorld {...world} />
           ) : (
             <World {...world} control={control} />
@@ -705,6 +708,7 @@ export default function ArcadeStage({
   const surface = useRef<HTMLDivElement | null>(null);
   // Doplňky obalí ovládání (`addon_control`); kamera, scéna i vstup se řídí tím pod obalem.
   const control = baseControlOf(session.world.control).id;
+  const input = stageOf(control)?.input;
   const fires = session.world.rules.some((rule) => rule.id === 'blaster');
   // Úder a použití (P32-0 T5) jen ve světě, který je čte.
   const actions = useMemo(() => actionsOf(session.world), [session]);
@@ -712,13 +716,13 @@ export default function ArcadeStage({
   const draws = CAPABILITIES[control as ControlId]?.setting === true;
   useFireInput(session, fires && enabled);
   useActionInput(session, actions, enabled);
-  useRunnerInput(session, surface, enabled && control === 'runner');
-  usePlatformInput(session, surface, enabled && control === 'platform');
-  useFlapInput(session, surface, enabled && control === 'flap');
-  useSteerInput(session, surface, enabled && control === 'steer');
-  useArenaInput(session, surface, enabled && (control === 'move_free' || control === 'fight'));
-  useTapInput(session, surface, enabled && (control === 'timing' || control === 'rhythm'), control === 'rhythm');
-  useDuelInput(session, surface, enabled && control === 'duel');
+  useRunnerInput(session, surface, enabled && input === 'runner');
+  usePlatformInput(session, surface, enabled && input === 'platform');
+  useFlapInput(session, surface, enabled && input === 'flap');
+  useSteerInput(session, surface, enabled && input === 'steer');
+  useArenaInput(session, surface, enabled && input === 'arena');
+  useTapInput(session, surface, enabled && input === 'tap', control === 'rhythm');
+  useDuelInput(session, surface, enabled && input === 'duel');
   // Pauza a konec běhu kreslí jen na požádání (P28E T2, F-33): hodiny stojí, obraz se nemění.
   // Po konci ale ještě END_CLIP_MS naplno – klip pádu či oslavy (P28C T3) by jinak stál na prvním snímku.
   const ticking = useSyncExternalStore(session.subscribe, () => session.snapshot().runState === 'running' && !session.paused(), () => true);

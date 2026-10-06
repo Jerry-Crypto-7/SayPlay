@@ -1,0 +1,42 @@
+import { describe, expect, it } from 'vitest';
+import { arcadeWorldOf } from '@/play/arcade/compile';
+import { baseControlOf } from '@/play/arcade/addons';
+import { verifyArcade } from '@/play/arcade/verify';
+import { compileGenre } from '@/play/genre';
+import { ALLOWED, liveCells } from '../allowed';
+import { recipeSchema } from '../recipe';
+import { stageOf } from '../stage-registry';
+
+describe('allowed recipes', () => {
+  it('rejects unknown pieces, duplicate actions and extra fields', () => {
+    expect(recipeSchema.safeParse({ move: 'teleport', actions: [], objective: 'reach', threats: [] }).success).toBe(false);
+    expect(recipeSchema.safeParse({ move: 'run', actions: ['shoot', 'shoot'], objective: 'reach', threats: [] }).success).toBe(false);
+    expect(recipeSchema.safeParse({ move: 'run', actions: [], objective: 'reach', threats: [], code: 'anything' }).success).toBe(false);
+  });
+
+  it('keeps staged cells out of selection', () => {
+    expect(ALLOWED.some(cell => cell.status === 'staged')).toBe(true);
+    expect(liveCells().length).toBeGreaterThan(0);
+    expect(liveCells().every(cell => cell.status === 'live')).toBe(true);
+    expect(new Set(ALLOWED.map(cell => cell.id)).size).toBe(ALLOWED.length);
+    for (const cell of ALLOWED) expect(recipeSchema.safeParse(cell.recipe).success, cell.id).toBe(true);
+    expect(stageOf('unimplemented')).toBeNull();
+  });
+
+  for (const cell of liveCells()) it(`${cell.id} plays every declared piece on seeds 1–5`, () => {
+    for (const seed of [1, 2, 3, 4, 5]) {
+      const spec = compileGenre(cell.preset);
+      const made = arcadeWorldOf(spec, seed);
+      if (!made.ok) throw new Error(`${cell.id}: ${made.issues.join('; ')}`);
+      const stage = stageOf(baseControlOf(made.world.control).id);
+      expect(stage?.scene).toBeTruthy();
+      expect(stage?.input).toBeTruthy();
+      const verdict = verifyArcade(made.world, undefined, made.roleBindings);
+      expect(verdict.bot.outcome, `${cell.id}/${seed}`).toBe('won');
+      expect(verdict.replayEqual).toBe(true);
+      const verbs = new Set(verdict.witnesses.map(w => w.verb));
+      const pieces = [...cell.recipe.actions, cell.recipe.objective, ...cell.recipe.threats, ...(cell.recipe.move === 'stationary' ? [] : [cell.recipe.move])];
+      for (const piece of pieces) expect(verbs.has(piece), `${cell.id}/${seed}: missing ${piece}; witnessed ${[...verbs]}`).toBe(true);
+    }
+  });
+});
