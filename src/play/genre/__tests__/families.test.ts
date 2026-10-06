@@ -81,7 +81,7 @@ describe.each(Object.entries(FAMILY_SENTENCES))('family %s on dev-150', (_family
 // play the carrots; a quest stand-in must not claim to have dug tunnels.
 it('u08 collects the named carrots and admits the missing digging action', () => {
   const meta = draftGameSpecWithMeta(textOf('u08'), 1);
-  expect(meta.genre).toMatchObject({ genre: 'arena', mode: 'collect' });
+  expect(meta.composition?.recipe).toMatchObject({ move: 'walk', objective: 'collect' });
   expect(castFor(meta.genre!, 'collect')?.label).toBe('carrot');
   expect(meta.spec.heroAction).toBe('dig');
   expect(meta.composition?.unmet).toContainEqual({ actor: 'mole', verb: 'dig', object: 'tunnel' });

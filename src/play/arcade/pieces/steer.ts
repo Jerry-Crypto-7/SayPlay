@@ -52,6 +52,7 @@ import {
   type RulePiece,
   UNIT,
   bodyBase,
+  graceOf,
   rampMarks,
   rampedSpeed,
 } from '../contract';
@@ -203,6 +204,8 @@ export const courseSchema = z
     ends: z.array(z.int()).max(ARCADE_LIMITS.maxBodies),
     centers: z.array(z.int()).max(ARCADE_LIMITS.maxBodies),
     halfWidth: z.int().min(0),
+    rivalLane: z.int().min(400).max(600).optional(),
+    halfWidths: z.array(z.int().min(0)).max(ARCADE_LIMITS.maxBodies).optional(),
   })
   .strict();
 export type SteerCourse = z.infer<typeof courseSchema>;
@@ -215,7 +218,7 @@ export function centerAt(course: SteerCourse, at: number): number {
 }
 
 /** Soupeř jede střídavě vpravo a vlevo od středu – podle indexu těla, ať se nepřekrývají. */
-export const rivalOffset = (index: number, halfWidth: number): number => (index % 2 === 1 ? 1 : -1) * Math.floor(halfWidth / 2);
+export const rivalOffset = (index: number, halfWidth: number, permille = 500): number => (index % 2 === 1 ? 1 : -1) * Math.floor(halfWidth * permille / 1000);
 
 /** Úseky trati z mantinelů: dvojice se stejným `z` a `d`, seřazené po trati. */
 export interface SteerSegment {
@@ -256,12 +259,20 @@ export function courseOf(level: ArcadeLevel): SteerCourse {
 // ---------------------------------------------------------------------------
 // Ovládání
 
-const landParams = z.object({ gravity: z.int().min(LAND.gravity.min).max(LAND.gravity.max) }).strict();
+export const landParams = z.object({ gravity: z.int().min(LAND.gravity.min).max(LAND.gravity.max), entryHeight: z.int().positive().optional(), gravityRisePct: z.int().min(0).max(30).optional() }).strict();
+export type LandProgression = Pick<z.infer<typeof landParams>, 'entryHeight' | 'gravityRisePct'>;
+/** Actual three altitude bands; omitted fields preserve old gravity exactly. */
+export function landGravityAt(gravity: number, y: number, progression?: LandProgression): number {
+ if (progression?.entryHeight === undefined || progression.gravityRisePct === undefined) return gravity;
+ const stage = Math.min(2, Math.max(0, Math.floor(3 * (progression.entryHeight - y) / progression.entryHeight)));
+ return Math.floor(gravity * (100 + stage * progression.gravityRisePct) / 100);
+}
 
 const controlParams = z
   .object({
     topSpeed: z.int().min(150).max(360).default(STEER.topSpeed),
     drift: z.boolean().default(false),
+    // Optional: old worlds keep their exact serialized parameters.
     course: courseSchema.optional(),
     /** Značky rampy (`rampMarks`): za každou vyšší strop rychlosti; bez nich stálý. */
     ramp: z.tuple([z.int(), z.int()]).optional(),
@@ -301,7 +312,8 @@ const THRUST = BUTTON.UP | BUTTON.HOLD | BUTTON.TAP;
  * čistá gravitace je planety (jádro pak odečte svou `GRAVITY`); tah míří
  * podle náklonu. Tutéž funkci volá robot, takže svou jízdu předpoví přesně.
  */
-export function landControl(craft: LandCraft, input: ArcadeInput, gravity: number, tick: number): void {
+export function landControl(craft: LandCraft, input: ArcadeInput, gravity: number, tick: number, progression?: LandProgression): void {
+  gravity = landGravityAt(gravity, craft.y, progression);
   let target = Math.trunc((Math.max(-AXIS_MAX, Math.min(AXIS_MAX, input.axis)) * LAND.maxTilt) / AXIS_MAX);
   if ((input.buttons & BUTTON.LEFT) !== 0) target = -LAND.maxTilt;
   if ((input.buttons & BUTTON.RIGHT) !== 0) target = LAND.maxTilt;
@@ -315,10 +327,10 @@ export function landControl(craft: LandCraft, input: ArcadeInput, gravity: numbe
 }
 
 /** Tik přistávače ve stavu: `aux0` = náklon, `aux1` = `vy` po ovládání (soudce z ní pozná rychlost dopadu). */
-function stepLander(state: Int32Array, player: number, input: ArcadeInput, gravity: number): void {
+function stepLander(state: Int32Array, player: number, input: ArcadeInput, gravity: number, progression?: LandProgression): void {
   const base = bodyBase(player);
-  const craft: LandCraft = { x: 0, y: 0, vx: state[base + BODY.vx] as number, vy: state[base + BODY.vy] as number, tilt: state[base + BODY.aux0] as number };
-  landControl(craft, input, gravity, state[HEADER.tick] as number);
+  const craft: LandCraft = { x: 0, y: state[base + BODY.y] as number, vx: state[base + BODY.vx] as number, vy: state[base + BODY.vy] as number, tilt: state[base + BODY.aux0] as number };
+  landControl(craft, input, gravity, state[HEADER.tick] as number, progression);
   state[base + BODY.vx] = craft.vx;
   state[base + BODY.vy] = craft.vy;
   state[base + BODY.vz] = 0;
@@ -334,7 +346,7 @@ function steerRivals(state: Int32Array, player: number, course: SteerCourse): vo
     const base = bodyBase(i);
     const flags = state[base + BODY.flags] as number;
     if ((flags & (FLAG.alive | FLAG.kinematic)) !== (FLAG.alive | FLAG.kinematic) || state[base + BODY.role] !== ROLE.enemy) continue;
-    const target = centerAt(course, (state[base + BODY.z] as number) + STEER.rivalLook) + rivalOffset(i, course.halfWidth);
+    const target = centerAt(course, (state[base + BODY.z] as number) + STEER.rivalLook) + rivalOffset(i, halfWidthAt(course, (state[base + BODY.z] as number) + STEER.rivalLook), course.rivalLane);
     state[base + BODY.vx] = Math.max(-STEER.rivalLat, Math.min(STEER.rivalLat, target - (state[base + BODY.x] as number)));
   }
 }
@@ -350,7 +362,7 @@ export const steerControl: ControlPiece<SteerControlParams> = {
   cost: () => ({ bodies: 1, rules: 0 }),
   step: (state, player, input, params) => {
     if (params.land !== undefined) {
-      stepLander(state, player, input, params.land.gravity);
+      stepLander(state, player, input, params.land.gravity, params.land);
       return;
     }
     const base = bodyBase(player);
@@ -419,9 +431,16 @@ const generatorParams = z
     difficulty: z.enum(STEER_DIFFICULTIES).default('normal'),
     lengthM: z.int().min(STEER_TRACK.minLengthM).max(STEER_TRACK.maxLengthM).default(450),
     rivals: z.boolean().default(true),
+    roadWidth: z.int().min(3600).max(10000).optional(),
+    roadEntryWidth: z.int().min(3600).max(10000).optional(),
+    crashBudget: z.int().min(1).max(9).optional(),
+    /** The explicit carry rules own the finish in delivery recipes. */
+    delivery: z.boolean().optional(),
+    centerCollectibles: z.boolean().optional(),
     turbo: z.boolean().default(true),
     topSpeed: z.int().min(150).max(360).default(STEER.topSpeed),
     drift: z.boolean().default(false),
+    // Optional: old worlds keep their exact serialized parameters.
   })
   .strict();
 export type SteerTrackParams = z.infer<typeof generatorParams>;
@@ -440,14 +459,15 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
   cost: (params) => {
     const tier = TIERS[params.difficulty];
     const pieces = Math.ceil((params.lengthM * UNIT) / (tier.straight[0] + STEER_TRACK.segment)) + 2;
-    return { bodies: 2 + tier.rivals + pieces * 2 * 8 + STEER_TRACK.maxTurbos, rules: 3 };
+    return { bodies: 2 + tier.rivals + pieces * 2 * 8 + STEER_TRACK.maxTurbos, rules: 3 + (params.crashBudget === undefined ? 0 : 2) };
   },
   generate: (seed, params) => {
     const rng = createCompileRng(seed);
     const tier = TIERS[params.difficulty];
     const length = params.lengthM * UNIT;
     const { width } = tier;
-    const half = width / 2;
+    const startWidth = params.roadWidth === undefined ? width : Math.min(width, Math.max(params.roadWidth, params.roadEntryWidth ?? params.roadWidth + 400));
+    const half = startWidth / 2;
 
     const segments: { near: number; far: number; center: number }[] = [{ near: -STEER_TRACK.startBack, far: STEER_TRACK.runIn, center: 0 }];
     const straights: { near: number; far: number; center: number }[] = [];
@@ -455,7 +475,7 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
     let center = 0;
     // Posun úseku nesmí přerůst boční dosah při nejvyšší rychlosti (rychlejší
     // spec = mírnější zatáčky); počítá se s rychlostí za poslední značkou rampy.
-    const maxShift = Math.min(tier.shift[1], lateralReach(STEER_TRACK.segment, fastest(params.topSpeed, length, rampMarks(length))) - STEER.clearance);
+    const maxShift = Math.min(tier.shift[1], params.roadWidth === undefined ? Infinity : params.roadWidth - STEER.carW - 2 * STEER.clearance, lateralReach(STEER_TRACK.segment, fastest(params.topSpeed, length, rampMarks(length))) - STEER.clearance);
     for (;;) {
       // Zatáčka: posun úseků do jedné strany, celkem víc než šířka trati.
       const shift = rng.int(Math.min(tier.shift[0], maxShift), maxShift);
@@ -491,15 +511,19 @@ export const steerTrack: GeneratorPiece<SteerTrackParams> = {
         const index = bodies.length;
         const z0 = 6000 + 5000 * k;
         const speed = Math.min(Math.floor((params.topSpeed * tier.rivalPct) / 100), Math.floor((finishZ - z0 - STEER.carD / 2) / slowest));
-        bodies.push({ role: 'enemy', kind: 'rival-car', x: rivalOffset(index, Math.floor(half)), y: 0, z: z0, w: STEER.carW, h: STEER.carH, d: STEER.carD, solid: true, kinematic: true, vz: speed });
+        bodies.push({ role: 'enemy', kind: 'rival-car', x: rivalOffset(index, Math.floor(half), params.roadWidth === undefined ? 500 : 600), y: 0, z: z0, w: STEER.carW, h: STEER.carH, d: STEER.carD, solid: true, kinematic: true, vz: speed });
       }
     }
-    for (const segment of segments) bodies.push(...walls(segment.near, segment.far, segment.center, width));
+    for (const segment of segments) {
+      const section = Math.min(2, Math.floor(Math.max(0, segment.near) * 3 / finishZ));
+      const laneWidth = params.roadWidth === undefined ? width : section === 0 ? startWidth : Math.min(width, params.roadWidth + (section === 1 ? 200 : 0));
+      bodies.push(...walls(segment.near, segment.far, segment.center, laneWidth));
+    }
     if (params.turbo) {
       const budget = Math.min(STEER_TRACK.maxTurbos, ARCADE_LIMITS.maxBodies - bodies.length - 1);
       const spots = straights
         .filter((piece) => piece.far - piece.near >= 30 * UNIT && piece.near < finishZ - 20 * UNIT)
-        .map((piece) => ({ z: piece.near + rng.int(10 * UNIT, 20 * UNIT), x: piece.center + rng.int(-Math.floor(half / 2), Math.floor(half / 2)) }));
+        .map((piece) => ({ z: piece.near + rng.int(10 * UNIT, 20 * UNIT), x: piece.center + (params.centerCollectibles === true ? 0 : rng.int(-Math.floor(half / 2), Math.floor(half / 2))) }));
       for (const spot of spots.slice(0, Math.max(0, budget))) bodies.push({ role: 'collectible', kind: 'turbo', x: spot.x, y: 0, z: spot.z, w: 1500, h: 300, d: 1500, solid: false });
     }
     bodies.push({ role: 'goal', kind: 'finish', x: center, y: 0, z: finishZ, w: width, h: 3 * UNIT, d: 400, solid: false });
@@ -566,22 +590,23 @@ export const rivalFinish: RulePiece<z.infer<typeof rivalFinishParams>> = {
 };
 
 /** Ovládání závodu i s osou trati pro soupeře. */
-export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift'>): PieceRef {
-  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level), ramp: rampMarks(level.length) } };
+export function steerControlRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'roadWidth'>): PieceRef {
+  return { id: 'steer', params: { topSpeed: params.topSpeed, drift: params.drift, course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
 }
 
 /** Robot řidiče (`steer-bot.ts`) s tou samou osou trati a rampou. */
-export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift'>): PieceRef {
-  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, course: courseOf(level), ramp: rampMarks(level.length) } };
+export function steerBotRef(level: ArcadeLevel, params: Pick<SteerTrackParams, 'topSpeed' | 'drift' | 'roadWidth'>): PieceRef {
+  return { id: 'steer_bot', params: { topSpeed: params.topSpeed, drift: params.drift, course: { ...courseOf(level), ...(params.roadWidth === undefined ? {} : { rivalLane: 600, halfWidths: steerSegments(level).map(segment => Math.floor(segment.width / 2)) }) }, ramp: rampMarks(level.length) } };
 }
 
 /** Pravidla závodu: turbo, cíl, soupeř v cíli. */
-export function steerRules(level: ArcadeLevel): PieceRef[] {
+export function steerRules(level: ArcadeLevel, params?: Pick<SteerTrackParams, 'crashBudget' | 'delivery'>): PieceRef[] {
   const rules: PieceRef[] = [
     { id: 'pickup', params: {} },
-    { id: 'finish', params: {} },
+    ...(params?.delivery === true ? [] : [{ id: 'finish', params: {} }]),
   ];
   if (level.bodies.some((body) => body.role === 'enemy')) rules.push({ id: 'rival_finish', params: { atZ: level.length } });
+  if (params?.crashBudget !== undefined) rules.push({ id: 'steer_crash', params: {} }, { id: 'out_of_health', params: {} });
   return rules;
 }
 
@@ -643,6 +668,11 @@ export function checkSteerLevel(level: ArcadeLevel, topSpeed: number = STEER.top
 const voyageRaceParams = z
   .object({
     difficulty: z.enum(STEER_DIFFICULTIES).default('normal'),
+    hazards: z.boolean().optional(),
+    turbo: z.boolean().optional(),
+    roadWidth: z.int().min(3600).max(10000).optional(),
+    roadEntryWidth: z.int().min(3600).max(10000).optional(),
+    crashBudget: z.int().min(1).max(9).optional(),
     lengthM: z.int().min(VOYAGE.lengthM.min).max(VOYAGE.lengthM.max).default(VOYAGE.lengthM.default),
     topSpeed: z.int().min(VOYAGE.topSpeed.min).max(VOYAGE.topSpeed.max).default(VOYAGE.topSpeed.default),
     terrain: z.enum(VOYAGE_TERRAINS).default('islands'),
@@ -655,7 +685,7 @@ export type VoyageRaceParams = z.infer<typeof voyageRaceParams>;
 /** Třetina trati (0..2), ve které leží `z`. */
 const thirdOf = (z: number, length: number): number => Math.min(2, Math.floor((3 * z) / Math.max(1, length)));
 
-const raceTrack = (params: VoyageRaceParams): SteerTrackParams => ({ difficulty: params.difficulty, lengthM: params.lengthM, rivals: false, turbo: false, topSpeed: params.topSpeed, drift: false });
+const raceTrack = (params: VoyageRaceParams): SteerTrackParams => ({ difficulty: params.difficulty, lengthM: params.lengthM, rivals: false, turbo: params.turbo ?? false, topSpeed: params.topSpeed, drift: false, ...(params.roadWidth === undefined ? {} : { roadWidth: params.roadWidth }), ...(params.roadEntryWidth === undefined ? {} : { roadEntryWidth: params.roadEntryWidth }), ...(params.crashBudget === undefined ? {} : { crashBudget: params.crashBudget }) });
 
 /** Dělová koule kyvadlem od břehu k břehu: začne u jednoho, otočí se u druhého. */
 function shotAcross(lane: SteerSegment, z0: number, speed: number, side: number): BodyInit {
@@ -678,10 +708,10 @@ const voyageSeconds = (length: number, topSpeed: number): number =>
 export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
   id: 'voyage_race',
   params: voyageRaceParams,
-  roles: ['player', 'obstacle', 'checkpoint', 'hazard', 'goal'],
+  roles: ['player', 'obstacle', 'checkpoint', 'hazard', 'goal', 'collectible'],
   cost: (params) => ({
-    bodies: steerTrack.cost(raceTrack(params)).bodies + 2 * Math.ceil((params.lengthM * UNIT) / (params.sections === undefined ? VOYAGE.hazardGap : Math.min(...VOYAGE.sectionGaps))),
-    rules: 5,
+    bodies: steerTrack.cost(raceTrack(params)).bodies + (params.hazards === false ? Math.ceil(params.lengthM * UNIT / STEER_TRACK.segment) : 2 * Math.ceil((params.lengthM * UNIT) / (params.sections === undefined ? VOYAGE.hazardGap : Math.min(...VOYAGE.sectionGaps)))),
+    rules: 5 + (params.turbo === true ? 1 : 0) + (params.crashBudget === undefined ? 0 : 1),
   }),
   generate: (seed, params) => {
     const track = steerTrack.generate(seed, raceTrack(params));
@@ -694,6 +724,7 @@ export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
       if (body.role === 'player') bodies.unshift({ ...body, kind: 'player' });
       else if (body.role === 'obstacle') bodies.push({ ...body, kind: wall });
       else if (body.role === 'goal') goal = { ...body, kind: 'goal' };
+      else if (params.turbo === true && body.role === 'collectible') bodies.push(body);
     }
     const gates: BodyInit[] = [];
     const hazards: BodyInit[] = [];
@@ -703,7 +734,7 @@ export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
       const end = Math.min(lane.far, track.length) - VOYAGE.hazardBeforeEnd;
       // S úseky ke konci hustší překážky a rychlejší koule (P36A T4).
       const third = (z0: number): number => (params.sections === undefined ? 0 : thirdOf(z0, track.length));
-      for (let z0 = lane.near + VOYAGE.hazardFrom; z0 <= end; z0 += params.sections === undefined ? VOYAGE.hazardGap : VOYAGE.sectionGaps[third(z0)]!) {
+      for (let z0 = lane.near + VOYAGE.hazardFrom; params.hazards !== false && z0 <= end; z0 += params.sections === undefined ? VOYAGE.hazardGap : VOYAGE.sectionGaps[third(z0)]!) {
         const quarter = Math.floor(lane.width / 4);
         hazards.push(
           hazards.length % 2 === 0
@@ -719,19 +750,21 @@ export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
   parts: (seed, params, health) => {
     const level = voyageRace.generate(seed, params);
     return {
-      control: { id: 'steer', params: { topSpeed: params.topSpeed } },
-      bot: { id: 'steer_bot', params: { topSpeed: params.topSpeed, course: courseOf(level), dodge: true } },
+      control: params.roadWidth === undefined && params.turbo !== true ? { id: 'steer', params: { topSpeed: params.topSpeed } } : steerControlRef(level, raceTrack(params)),
+      bot: params.roadWidth === undefined && params.turbo !== true ? { id: 'steer_bot', params: { topSpeed: params.topSpeed, course: courseOf(level), dodge: true } } : { ...steerBotRef(level, raceTrack(params)), params: { ...steerBotRef(level, raceTrack(params)).params, dodge: true } },
       level,
       rules: [
+        ...(params.turbo === true ? [{ id: 'pickup', params: {} }] : []),
         // Koule nebo útes ubere život a zmizí; vteřinu milosti další nic nebere (P36A T2).
         { id: 'hit', params: { role: 'hazard', effect: 'damage', grace: HIT_GRACE } },
         { id: 'out_of_health', params: {} },
         { id: 'finish', params: {} },
         { id: 'checkpoint', params: {} },
+        ...(params.crashBudget === undefined ? [] : [{ id: 'steer_crash', params: {} }]),
         { id: 'time_limit', params: { seconds: voyageSeconds(level.length, params.topSpeed) } },
       ],
       issues: checkSteerLevel(level, params.topSpeed),
-      health: health ?? VOYAGE.lives,
+      health: params.crashBudget ?? health ?? VOYAGE.lives,
     };
   },
 };
@@ -739,6 +772,8 @@ export const voyageRace: ModeGeneratorPiece<VoyageRaceParams> = {
 const voyageLandParams = z
   .object({
     difficulty: z.enum(STEER_DIFFICULTIES).default('normal'),
+    touchdownSpeed: z.int().min(15).max(60).optional(),
+    gravityRisePct: z.int().min(0).max(30).optional(),
     gravity: z.int().min(LAND.gravity.min).max(LAND.gravity.max).default(LAND.gravity.default),
   })
   .strict();
@@ -770,7 +805,9 @@ export const voyageLand: ModeGeneratorPiece<VoyageLandParams> = {
   },
   parts: (seed, params, health) => {
     const tier = LAND.tiers[params.difficulty];
-    const land = { softVy: tier.softVy, softVx: tier.softVx, softTilt: tier.softTilt };
+    const level = voyageLand.generate(seed, params);
+    const progression = params.gravityRisePct === undefined ? {} : { gravityRisePct: params.gravityRisePct, entryHeight: level.bodies[0]!.y };
+    const land = { softVy: params.touchdownSpeed ?? tier.softVy, softVx: params.touchdownSpeed ?? tier.softVx, softTilt: tier.softTilt };
     // Se životy (P36A T2) tvrdý dotyk ubere život a loď začne znovu nahoře; bez nich jeden pokus jako dřív.
     const rules: PieceRef[] =
       health === undefined
@@ -780,11 +817,25 @@ export const voyageLand: ModeGeneratorPiece<VoyageLandParams> = {
             { id: 'out_of_health', params: {} },
           ];
     return {
-      control: { id: 'steer', params: { land: { gravity: params.gravity } } },
-      bot: { id: 'steer_bot', params: { land: { gravity: params.gravity } } },
-      level: voyageLand.generate(seed, params),
+      control: { id: 'steer', params: { land: { gravity: params.gravity, ...progression } } },
+      bot: { id: 'steer_bot', params: { land: { gravity: params.gravity, ...progression } } },
+      level,
       rules,
       health,
     };
   },
 };
+
+/** Opt-in damage from an actual barrier contact; walls remain solid and intact. */
+export const steerCrash: RulePiece<Record<string, never>> = {
+  id: 'steer_crash', params: z.object({}).strict(), roles: ['player', 'obstacle'],
+  trigger: 'contact', cost: () => ({ bodies: 0, rules: 1 }),
+  fire: ({ state, player, other }) => state[bodyBase(other) + BODY.role] !== ROLE.obstacle || graceOf(state, player) > 0
+    ? [] : [{ kind: 'damage', amount: 1, grace: 60 }],
+};
+
+/** Width of the real segment ahead, only populated for opt-in varying-width roads. */
+export function halfWidthAt(course: SteerCourse, z: number): number {
+  const at = course.ends.findIndex(end => end >= z);
+  return course.halfWidths?.[at < 0 ? course.ends.length - 1 : at] ?? course.halfWidth;
+}

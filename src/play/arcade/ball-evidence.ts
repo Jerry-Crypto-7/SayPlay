@@ -99,6 +99,21 @@ function nearSweep(before: State, after: State, ball: number, box: number): bool
   });
 }
 
+/** A launched sphere transferred horizontal momentum to a unique dynamic pin. */
+export function ballPinImpact(before: State, after: State, launch: BallLaunchEvidence, target: number): boolean {
+  const ball = launch.ball;
+  if (!alive(before, ball) || !alive(after, ball) || !physicsBall(before, ball) || before[HEADER.tick]! <= launch.tick) return false;
+  if (!alive(before, target) || at(before, target, BODY.role) !== ROLE.target || !(at(before, target, BODY.flags) & FLAG.physics)) return false;
+  if (!nearSweep(before, after, ball, target)) return false;
+  const impulse = Math.hypot(at(after, target, BODY.vx) - at(before, target, BODY.vx), at(after, target, BODY.vz) - at(before, target, BODY.vz));
+  if (impulse < 5) return false;
+  for (let other = 0; other < before[HEADER.bodyCount]!; other++) {
+    if (other === ball || other === target || other === launch.player || !alive(before, other)) continue;
+    if ((at(before, other, BODY.flags) & FLAG.solid) && nearSweep(before, after, ball, other)) return false;
+  }
+  return true;
+}
+
 /** No label-based opponent proof: a probe must observe a unique physical block. */
 export function keeperBlockEvidence(world: ArcadeWorld, before: State, after: State, launch: BallLaunchEvidence, keeper: number, run: 'winner' | 'probe'): KeeperBlockEvidence | null {
   if (run !== 'probe' || !world.rules.some(rule => rule.id === 'ball_launch') || !world.rules.some(rule => rule.id === 'ball_score')) return null;

@@ -11,7 +11,7 @@ export const glidePathSchema = z.array(glideNodeSchema).min(1).max(20);
 export type GlideNode = z.infer<typeof glideNodeSchema>;
 export const glideControlParams = z.object({ topSpeed: z.int().min(120).max(240).default(GLIDE.speed), path: glidePathSchema, rivalIndex: z.int().min(1).optional() }).strict();
 export type GlideControlParams = z.infer<typeof glideControlParams>;
-export const glideCourseParams = z.object({ mode: z.enum(GLIDE_MODES).default('reach'), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), lengthM: z.int().min(80).max(400).default(160), topSpeed: z.int().min(120).max(240).default(GLIDE.speed) }).strict();
+export const glideCourseParams = z.object({ mode: z.enum(GLIDE_MODES).default('reach'), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), clearancePermille: z.int().min(250).max(1000).optional(), clearanceRisePermille: z.int().min(0).max(250).optional(), lengthM: z.int().min(80).max(400).default(160), topSpeed: z.int().min(120).max(240).default(GLIDE.speed) }).strict();
 export type GlideCourseParams = z.infer<typeof glideCourseParams>;
 const clamp = (n: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, n));
 const toward = (n: number, goal: number, rate: number): number => n < goal ? Math.min(goal, n + rate) : Math.max(goal, n - rate);
@@ -65,7 +65,10 @@ function generate(seed: number, params: GlideCourseParams): ArcadeLevel {
   let y = 7500;
   const shift = params.difficulty === 'easy' ? 1600 : params.difficulty === 'hard' ? 2600 : 2100;
   for (let at = GLIDE.spacing; at <= length - 8000; at += GLIDE.spacing) {
-    const gap = GLIDE.halfGap;
+    const section = Math.min(2, Math.floor(at * 3 / length));
+    const baseClearance = params.clearancePermille ?? 1000;
+    const clearance = Math.min(1000, baseClearance + Math.round((params.clearanceRisePermille ?? 0) * (2 - section) / 2));
+    const gap = Math.round(GLIDE.halfGap * clearance / 1000);
     bodies.push({ role: 'collectible', kind: 'glide-ring', x, y: y - gap, z: at, w: gap * 2, h: gap * 2, d: 600, solid: false });
     // Four frames cover the cross-section: going around a ring cannot win.
     const frame = (bx: number, by: number, w: number, h: number): BodyInit => ({ role: 'obstacle', kind: 'glide-reef', x: Math.trunc(bx), y: by, z: at, w, h, d: 800, solid: false });
@@ -99,11 +102,14 @@ export const glideFinish: RulePiece<z.infer<typeof finishParams>> = {
 export function checkGlideLevel(level: ArcadeLevel, topSpeed: number = GLIDE.speed): string[] {
   const issues: string[] = [];
   let previous = { x: 0, y: 4000 + GLIDE.size / 2, z: 0 };
-  for (const node of glidePathOf(level)) {
+  const rings = level.bodies.filter(body => body.kind === 'glide-ring');
+  for (const [index, node] of glidePathOf(level).entries()) {
     const ticks = Math.floor((node.z - previous.z) / topSpeed) - GLIDE.reactionTicks - 2 * Math.ceil(GLIDE.lateral / GLIDE.acceleration);
     const reach = Math.max(0, ticks) * (GLIDE.lateral - GLIDE.current);
     if (Math.abs(node.x - previous.x) + 600 > reach || Math.abs(node.y - previous.y) + 600 > reach) issues.push(`ring at ${node.z} exceeds delayed steering reach`);
-    if (node.y - GLIDE.halfGap < 0 || node.y + GLIDE.halfGap > GLIDE.ceiling) issues.push(`ring at ${node.z} exceeds height bounds`);
+    const halfGap = rings[index]!.h / 2;
+    if (rings[index]!.w < GLIDE.size || rings[index]!.h < GLIDE.size) issues.push(`ring at ${node.z} cannot fit the player`);
+    if (node.y - halfGap < 0 || node.y + halfGap > GLIDE.ceiling) issues.push(`ring at ${node.z} exceeds height bounds`);
     previous = node;
   }
   if (level.bodies.length > 256) issues.push('body budget exceeded');

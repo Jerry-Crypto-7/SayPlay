@@ -149,6 +149,7 @@ const ROWS: readonly Row[] = [
   // Kdo nesmí být viděn, před někým se skrývá: plížení i stráž, i když ji věta nejmenuje.
   row(/\b(?:without (?:being |getting )?|(?:don'?t|do not|never|not) (?:be |get )?)(?:seen|spotted|caught|noticed|detected)\b|\bundetected\b|\bunseen\b/, [move('walk'), threat('guard', 'noun')], { noun: 'guard' }),
   // „without waking the cat“: hlídá ten, kdo spí.
+  row(/\bhid(?:e|es|ing) from\b/, [move('walk'), threat('guard', 'reverse')]),
   row(/\bwithout waking(?: up)?\b/, [move('walk'), threat('guard', 'reverse')]),
   // Červená–zelená (lexikon `RED_LIGHT`): hýbat se smíš, jen když se hlídač nedívá.
   row(RED_LIGHT, [move('walk'), threat('guard', 'noun')], { noun: 'watcher' }),
@@ -159,6 +160,8 @@ const ROWS: readonly Row[] = [
     /\b(?:football|soccer|basketball|golf|mini ?golf|hockey|table tennis|tennis|volleyball|baseball|rugby|handball|ping ?pong|penalt(?:y|ies))\b/,
     [move('ball'), goal('score', 'bare'), threat('rival', 'versus')],
   ),
+  // Scoring with an aimed ball does not implement a racket rally.
+  row(/\b(?:table tennis|tennis|ping[ -]?pong)\b/, [{ axis: 'unknown', id: 'rally', who: 'bare', fallback: false }]),
   row(/\broll(?:s|ing)? in (?:a|the) ball\b|\bkick(?:s|ing)? (?:a |the |his |her |their )?(?:[a-z]+ )?balls?\b|\bdribbl(?:e|es|ing)\b/, [move('ball'), goal('score', 'bare')]),
 
   // Akce. „shooting stars“ střelba nejsou, „auto shooting wand“ střílí sám.
@@ -604,7 +607,11 @@ export function extractIntent(sentence: string): Intent {
   const pluralArgument = /\bargument between (?:two|2) (.+?)(?:[,.]|$)/.exec(text);
   const versusArgument = /^(.+?) (?:vs|versus) (.+?) argument\b/.exec(text);
   const marriage = /^(.+?) and (.+?) (?:get |gets |are )?married\b/.exec(text);
-  const relation = between ?? versusArgument ?? marriage;
+  const coordinatedDuel = /^(.+?) and (.+?) (duel(?:s|ing|ling)?|argu(?:e|es|ing))\b/.exec(text);
+  // A reciprocal verb joins two noun subjects. Do not steal participants
+  // from an earlier action in "a cat runs and a dog duels a fox".
+  const pairedDuel = coordinatedDuel !== null && !verbHits.some(hit => hit.at < coordinatedDuel[0].length - coordinatedDuel[3].length) ? coordinatedDuel : null;
+  const relation = between ?? versusArgument ?? pairedDuel ?? marriage;
   const relationActor = relation === null ? null : actorIn(relation[1]);
   const relationObject = relation === null ? null : actorIn(relation[2]);
   const pluralPhrase = pluralArgument === null ? null : phraseIn(pluralArgument[1]);
@@ -700,6 +707,10 @@ export function extractIntent(sentence: string): Intent {
   }
   for (let i = 0; i < drafts.length; i++) {
     let item = drafts[i];
+    // A guard patrol is a patrol made of guards, not a second actor called
+    // patrol. Keep bare patrols and other explicitly named groups distinct.
+    if (item.axis === 'threat' && item.verb === 'guard' && item.actor === 'patrol' &&
+        readings.some(reading => reading.hit.at === item.at && reading.thing !== null && /\bguards? patrols?\b/.test(text.slice(reading.thing.at, reading.thing.end)))) item = { ...item, actor: 'guard' };
     if (item.verb === 'guard' && item.axis === 'unknown') item = { ...item, axis: 'threat', object: heroName };
     if (item.verb === 'throw') {
       const defendedFrom = /\b(?:defend|protect)(?:s|ing)? .+? from (?:a |an |the )?([a-z -]+?) by throw/.exec(text);
@@ -713,6 +724,13 @@ export function extractIntent(sentence: string): Intent {
       const landing = /\bland(?:s|ing)?\b(?:[^,.;]*?)\b(?:on|at) (?:a |an |the )?(?:moving |safe |small )?([a-z]+)/.exec(text);
       if (landing !== null) item = { ...item, object: headOf(landing[1]) };
     }
+    if (item.verb === 'fight' && /^fight(?:s|ing)?$/.test(item.said)) {
+      const reading = readings.find(reading => reading.hit.at === item.at);
+      // An explicit single opponent is a one-on-one duel. Plurals, hordes and
+      // quantifiers retain the crowd-fighting mechanic.
+      if (reading?.thing !== null && reading?.thing !== undefined && !reading.thing.many &&
+          /^\s+(?:against\s+)?(?:a|an|the)\s+/.test(text.slice(reading.hit.end, reading.thing.end))) item = { ...item, verb: 'duel' };
+    }
     if (item.verb === 'duel') {
       const multiple = /\b(?:two|2) [a-z]+(?: [a-z]+)?\b/.test(text);
       if (relationActor !== null && relationObject !== null) item = { ...item, actor: relationActor, object: relationObject };
@@ -722,6 +740,7 @@ export function extractIntent(sentence: string): Intent {
     if (item.verb === 'marry' && relationObject !== null) item = { ...item, actor: heroName, object: relationObject };
     if (described !== null && item.actor !== described && item.axis !== 'threat') item = { ...item, actor: described };
     if (described !== null && item.object === described) item = { ...item, object: null };
+    if (item.verb === 'land' && item.object !== null && /^(?:standing|upright|safely|softly)$/.test(item.object)) item = { ...item, object: null };
     if (fleeingObject !== null && item.verb !== 'catch' && item.axis !== 'threat') item = { ...item, actor: heroName };
     if (item.verb === 'score' && /\bscore as many goals\b/.test(text)) item = { ...item, object: 'goal' };
     if (item.verb === 'kick' && /\bkick(?:s|ing)? (?:a|the) can\b/.test(text)) item = { ...item, object: 'can' };

@@ -94,14 +94,15 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
   const title = titleCase(spec.hero);
   const params = spec.params ?? {};
   if (spec.mode === 'land') {
+    const target = params.namedLandingTarget === 1 ? castFor(spec, 'reach')?.label : undefined;
     return legacySpec(looked, {
       control: 'steer',
-      controlParams: { generator: 'voyage_land', difficulty: 'normal', tuning: { gravity: params.gravity ?? LAND.gravity.default } },
+      controlParams: { generator: 'voyage_land', difficulty: 'normal', tuning: { gravity: params.gravity ?? LAND.gravity.default, ...(params.touchdownSpeed === undefined ? {} : { touchdownSpeed: params.touchdownSpeed }), ...(params.gravityRisePct === undefined ? {} : { gravityRisePct: params.gravityRisePct }) } },
       archetype: 'hazard_crossing',
       title: `${title} Landing`,
-      objective: { kind: 'reach', description: 'Touch down slowly and level on the landing pad.', role: 'pad' },
-      roles: [{ id: 'pad', kind: 'exit', label: 'landing pad' }],
-      tutorial: { goalLine: 'Land softly and level on the pad.', controlsHint: 'Arrows or drag to tilt. Up, Space or a second finger fires the engine.' },
+      objective: { kind: 'reach', description: target === undefined ? 'Touch down slowly and level on the landing pad.' : `Touch down slowly and level on the ${target}.`, role: 'pad' },
+      roles: [{ id: 'pad', kind: 'exit', label: target ?? 'landing pad' }],
+      tutorial: { goalLine: target === undefined ? 'Land softly and level on the pad.' : `Land softly and level on the ${target}.`, controlsHint: 'Arrows or drag to tilt. Up, Space or a second finger fires the engine.' },
       // Tvrdý dotyk ubere život a loď začne znovu nahoře (P36A T2).
       mechanics: [livesMechanic()],
       mood: 'tense',
@@ -112,6 +113,8 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
   // Plavba neumí střelbu ani honičku: každý protivník věty je nástraha na trati, věc i cíl jsou místo, kam se pluje (P39).
   const hazard = castFor(spec, 'avoid', 'chase_me', 'shoot_at', 'fight', 'throw_at')?.label ?? CROSSING[terrain];
   const goal = castFor(spec, 'collect', 'reach')?.label ?? destinationOf(palette);
+  const hazards = params.hazards !== 0;
+  const turbo = params.turbo === 1;
   return legacySpec(looked, {
     control: 'steer',
     controlParams: {
@@ -119,19 +122,24 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
       difficulty: 'normal',
       // Delší trať ve třetinách, ke konci hustší překážky (P36A T4); uložená hra bez `sections` jede jako dřív.
       lengthM: params.lengthM ?? VOYAGE.sectionLengthM,
-      tuning: { terrain, sections: 3, ...(params.topSpeed === undefined ? {} : { topSpeed: params.topSpeed }) },
+      ...(params.turbo === undefined ? {} : { turbo }),
+      ...(params.roadWidth === undefined ? {} : { roadWidth: params.roadWidth }),
+      ...(params.roadEntryWidth === undefined ? {} : { roadEntryWidth: params.roadEntryWidth }),
+      ...(params.crashBudget === undefined ? {} : { crashBudget: params.crashBudget }),
+      tuning: { terrain, sections: 3, ...(params.topSpeed === undefined ? {} : { topSpeed: params.topSpeed }), ...(params.hazards === undefined ? {} : { hazards }) },
     },
     archetype: 'hazard_crossing',
     title: `${title} Voyage`,
-    objective: { kind: 'reach', description: `Pass every gate, dodge the ${hazard} and reach the ${goal}.`, role: 'finish' },
+    objective: { kind: 'reach', description: hazards ? `Pass every gate, dodge the ${hazard} and reach the ${goal}.` : `Pass every gate and reach the ${goal}.`, role: 'finish' },
     roles: [
       { id: 'gate', kind: 'checkpoint', label: 'gate' },
-      { id: 'hazard', kind: 'hazard', label: hazard },
+      ...(hazards ? [{ id: 'hazard', kind: 'hazard' as const, label: hazard }] : []),
+      ...(turbo ? [{ id: 'turbo', kind: 'collectible' as const, label: 'turbo' }] : []),
       { id: 'finish', kind: 'exit', label: goal },
     ],
-    tutorial: { goalLine: `Pass every gate and reach the ${goal}.`, controlsHint: 'Drag or arrows to steer. Down or a second finger brakes.' },
+    tutorial: { goalLine: `Pass every gate and reach the ${goal}.`, controlsHint: !turbo && params.crashBudget === undefined ? 'Drag or arrows to steer. Down or a second finger brakes.' : 'Drag/arrows steer; down/2nd finger brakes.' + (turbo ? ' Grab turbo.' : '') + (params.crashBudget === 1 ? ' Banks end run.' : params.crashBudget === undefined ? '' : ' Avoid banks.') },
     // Tři životy měla plavba vždy (`VOYAGE.lives`); ve specu je vidí i HUD a nese číslo z věty (P36A T2).
-    mechanics: [livesMechanic()],
+    mechanics: [params.crashBudget === undefined ? livesMechanic() : { id: 'health', params: { max: params.crashBudget } }],
     mood: 'adventurous',
   });
 }
@@ -142,6 +150,14 @@ export const voyageGenre: GenreModule<'voyage'> = {
   cues: ['sail', 'fly', 'ride', 'drive', 'pilot', 'walk through', 'cruise', 'land'],
   heroClasses: ['boat', 'aircraft', 'vehicle', 'animal', 'humanoid'],
   paramBounds: {
+    hazards: { min: 0, max: 1 },
+    turbo: { min: 0, max: 1 },
+    roadWidth: { min: 3600, max: 10000 },
+    roadEntryWidth: { min: 3600, max: 10000 },
+    crashBudget: { min: 1, max: 9 },
+    namedLandingTarget: { min: 0, max: 1 },
+    touchdownSpeed: { min: 15, max: 60 },
+    gravityRisePct: { min: 0, max: 30 },
     lengthM: { min: VOYAGE.lengthM.min, max: VOYAGE.lengthM.max },
     topSpeed: { min: VOYAGE.topSpeed.min, max: VOYAGE.topSpeed.max },
     /** Gravitace přistání v tisícinách jednotky za tik² (1000 ≈ Mars). */

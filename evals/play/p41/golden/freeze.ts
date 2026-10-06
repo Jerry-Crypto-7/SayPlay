@@ -27,8 +27,9 @@ import { worldHasPhysics } from '@/play/arcade/kernel';
 import { loadRapier } from '@/play/arcade/physics/world';
 import { runBot } from '@/play/arcade/verify';
 import { readDirectorAnswer } from '@/play/director/read';
-import { CAST_ROLES, GENRES, GENRE_MODES, type GenreId, type GenreModule, type GenreSpec } from '@/play/genre/contract';
-import { GENRE_MODULES, compileGenre, readGenreSpec } from '@/play/genre/index';
+import { CAST_ROLES, GENRES, GENRE_MODES, type GenreId, type GenreSpec } from '@/play/genre/contract';
+import { compileGenre, readGenreSpec } from '@/play/genre/index';
+import frozenParameterBounds from './parameter-bounds.json';
 import { scoredReplay } from '@/play/score/replay';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { DEFAULT_WRITE_LIMITS, fileVersionStore } from '@/play/version/store';
@@ -79,7 +80,9 @@ export function variants(): Variant[] {
       for (const does of CAST_ROLES) add(`cast:${does}`, { ...base, cast: [{ label: THING, does }] });
       for (const addon of ADDONS) add(`addon:${addon}`, base, addon);
       for (const [key, value] of Object.entries(DEPTH_VALUES)) add(`depth:${key}`, { ...base, params: { [key]: value } });
-      const bounds = (GENRE_MODULES[genre] as GenreModule).paramBounds;
+      // Inputs are frozen too. New optional parameters must not silently enter
+      // the old min/max fixtures; worlds and expected replay hashes stay intact.
+      const bounds = frozenParameterBounds[genre];
       if (Object.keys(bounds).length > 0) {
         add('params:min', { ...base, params: Object.fromEntries(Object.entries(bounds).map(([key, range]) => [key, range.min])) });
         add('params:max', { ...base, params: Object.fromEntries(Object.entries(bounds).map(([key, range]) => [key, range.max])) });

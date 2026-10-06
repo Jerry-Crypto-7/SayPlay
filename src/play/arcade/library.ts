@@ -7,6 +7,7 @@ import { ADDON_RULES, makeAddonBot, makeAddonControl } from './addons';
 import type { BotPiece, ControlPiece, ModeGeneratorPiece } from './contract';
 import type { ArcadeLibrary } from './kernel';
 import { arenaCollect, arenaEat, arenaEscape, arenaLevel, growTo, moveFreeControl, surviveTime } from './pieces/arena';
+import { arenaCatch, arenaCatchContact } from './pieces/arena-catch';
 import { arenaBot } from './pieces/arena-bot';
 import { FIGHT_RULES, fightArena, fightControl } from './pieces/fight';
 import { fightBot } from './pieces/fight-bot';
@@ -26,7 +27,7 @@ import { rhythmBot } from './pieces/rhythm-bot';
 import { gun, shooterControl, shooterRange } from './pieces/shooter';
 import { shooterBot } from './pieces/shooter-bot';
 import { SHOT_RULES } from './pieces/shots';
-import { rivalFinish, steerControl, steerTrack, voyageLand, voyageRace } from './pieces/steer';
+import { rivalFinish, steerCrash, steerControl, steerTrack, voyageLand, voyageRace } from './pieces/steer';
 import { steerBot } from './pieces/steer-bot';
 import { launch, throwControl, throwField, throwRounds } from './pieces/throw';
 import { throwBot } from './pieces/throw-bot';
@@ -41,7 +42,7 @@ import { glideBot } from './pieces/glide-bot';
 import { walkerControl, walkerLabyrinth, walkerStealth, walkerEscape, walkerCaught } from './pieces/walker';
 import { walkerBot } from './pieces/walker-bot';
 
-import { ballControl, ballPitch, ballLaunch, ballScore } from './pieces/ball';
+import { ballControl, ballPitch, ballLaunch, ballScore, ballKnockdown } from './pieces/ball';
 import { ballBot } from './pieces/ball-bot';
 
 const BASE_BOTS = {
@@ -70,6 +71,7 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   glide_course: glideCourse,
   ball_pitch: ballPitch,
   walker_labyrinth: walkerLabyrinth, walker_stealth: walkerStealth, walker_escape: walkerEscape,
+  arena_catch: arenaCatch,
   arena_escape: arenaEscape,
   arena_collect: arenaCollect,
   fight: fightArena,
@@ -97,7 +99,7 @@ const BASE_CONTROLS = {
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { ball_launch: ballLaunch, ball_score: ballScore, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  rules: { arena_catch_contact: arenaCatchContact, steer_crash: steerCrash, ball_launch: ballLaunch, ball_score: ballScore, ball_knockdown: ballKnockdown, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

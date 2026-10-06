@@ -270,6 +270,7 @@ export const runnerParamsSchema = z
   .object({
     speed: z.enum(RUNNER_SPEEDS).optional(),
     density: z.enum(RUNNER_DENSITIES).optional(),
+    fullRowPct: z.int().min(0).max(100).optional(),
     lengthM: z.int().min(RUNNER_TRACK.minLengthM).max(RUNNER_TRACK.maxLengthM).optional(),
     obstacles: z.array(z.enum(OBSTACLE_KINDS)).min(1).max(OBSTACLE_KINDS.length).optional(),
     /**
@@ -303,6 +304,7 @@ export const flapParamsSchema = z
     difficulty: z.enum(FLAP_DIFFICULTIES).optional(),
     lengthM: z.int().min(FLAP_TRACK.minLengthM).max(FLAP_TRACK.maxLengthM).optional(),
     coins: z.boolean().optional(),
+    collectAll: z.boolean().optional(),
     /** Mezery se po třetinách zužují, náraz bere život s milostí – žánr Poletování (P36A T11); uložená hra bez něj jako dřív. */
     rise: z.boolean().optional(),
     /** Odpuštění pozdního vzletu ze země (P37A T7); žánr Poletování ho píše vždy. Bez výchozí hodnoty – uložený spec staví tentýž svět. */
@@ -314,6 +316,7 @@ export type FlapParams = z.infer<typeof flapParamsSchema>;
 /** Parametry střelby (P25G); výchozí doplní generátor střelnice podle obtížnosti. */
 export const shooterParamsSchema = z
   .object({
+    targetWidthPct: z.int().min(25).max(100).optional(),
     difficulty: z.enum(SHOOTER_DIFFICULTIES).optional(),
     magazine: z.int().min(2).max(30).optional(),
     reloadS: z.number().min(0.5).max(4).optional(),
@@ -329,6 +332,7 @@ export type ShooterSpecParams = z.infer<typeof shooterParamsSchema>;
 /** Parametry hodu (P25G); výchozí doplní generátor hřiště. */
 export const throwParamsSchema = z
   .object({
+    paceBudgetPct: z.int().min(50).max(100).optional(),
     difficulty: z.enum(THROW_DIFFICULTIES).optional(),
     goal: z.enum(THROW_GOALS).optional(),
     bounce: z.boolean().optional(),
@@ -345,6 +349,11 @@ export const steerParamsSchema = z
     difficulty: z.enum(STEER_DIFFICULTIES).optional(),
     lengthM: z.int().min(STEER_TRACK.minLengthM).max(STEER_TRACK.maxLengthM).optional(),
     rivals: z.boolean().optional(),
+    roadWidth: z.int().min(3600).max(10000).optional(),
+    roadEntryWidth: z.int().min(3600).max(10000).optional(),
+    crashBudget: z.int().min(1).max(9).optional(),
+    delivery: z.boolean().optional(),
+    centerCollectibles: z.boolean().optional(),
     turbo: z.boolean().optional(),
     drift: z.boolean().optional(),
   })
@@ -392,23 +401,31 @@ export const rhythmParamsSchema = z
 export type RhythmParams = z.infer<typeof rhythmParamsSchema>;
 
 /** Parametry souboje (P25H): obtížnost určí vzorec soupeře a jeho životy; `rounds` soupeřů za sebou, každý rychlejší (žánr Souboj, P36A T11). */
-export const duelParamsSchema = z.object({ difficulty: z.enum(DUEL_DIFFICULTIES).optional(), rounds: z.int().min(1).max(DUEL.maxRounds).optional() }).strict();
+export const duelParamsSchema = z.object({ roundRise: z.int().min(1).max(3).optional(), difficulty: z.enum(DUEL_DIFFICULTIES).optional(), rounds: z.int().min(1).max(DUEL.maxRounds).optional() }).strict();
 export type DuelParams = z.infer<typeof duelParamsSchema>;
 
 // Stored parameters have no defaults: old saved specs keep their exact hash.
 export const glideSpecParamsSchema = z.object({
+  clearancePermille: z.int().min(250).max(1000).optional(),
+  clearanceRisePermille: z.int().min(0).max(250).optional(),
   mode: z.enum(['reach', 'collect', 'race', 'escape']).optional(),
   difficulty: z.enum(['easy', 'normal', 'hard']).optional(),
   lengthM: z.int().min(80).max(400).optional(),
   topSpeed: z.int().min(120).max(240).optional(),
 }).strict();
 export const walkerSpecParamsSchema = z.object({
+  paceBudgetPct: z.int().min(100).max(180).optional(),
+  corridorRisePermille: z.int().min(0).max(200).optional(),
   size: z.int().min(7).max(15).refine(value => value % 2 === 1, 'Maze size must be odd').optional(),
   speed: z.int().min(80).max(160).optional(),
   collect: z.boolean().optional(),
 }).strict();
 export const ballSpecParamsSchema = z.object({
   goal: z.enum(['goal', 'hoop', 'hole']).optional(),
+  knockdown: z.boolean().optional(),
+  shotRecoveryTicks: z.int().min(120).max(240).optional(),
+  shotRecoveryRiseTicks: z.int().min(0).max(12).optional(),
+  paceSeconds: z.int().min(10).max(90).optional(),
   keeper: z.boolean().optional(),
   difficulty: z.enum(['easy', 'normal', 'hard']).optional(),
   targets: z.int().min(1).max(5).optional(),

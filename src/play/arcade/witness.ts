@@ -1,14 +1,17 @@
+import { baseControlOf } from './addons';
 /** P41: důkazy měřené při hraní, nikdy odvozené jen z názvu slovesa či výhry. */
 import { singular } from '@/play/draft/lexicon';
 import type { IntentTriple } from '@/play/intent/contract';
 import type { GameRole, GameSpecV1 } from '@/play/spec';
 
-import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, BUTTON, FLAG, HEADER, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp } from './contract';
+import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp } from './contract';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
 import { ballKeeperProbeInput } from './pieces/ball-probe';
 import { walkerVisible, type WalkerMap } from './pieces/walker';
-import { ballLaunchEvidence, ballScoreEvidence, keeperBlockEvidence, type BallLaunchEvidence } from './ball-evidence';
+import { ballLaunchEvidence, ballScoreEvidence, ballPinImpact, keeperBlockEvidence, type BallLaunchEvidence } from './ball-evidence';
+import { pinFallen } from './pieces/ball';
+import { TIMING_SLOTS } from './pieces/timing';
 
 export interface RoleBinding {
   readonly body: number;
@@ -56,7 +59,11 @@ export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBi
 
 /** Stejná normalizace hlavy podstatného jména jako extraktor záměru. */
 const noun = (label: string): string => singular(label.toLowerCase().trim()).split(' ').at(-1) ?? label;
-const names = (name: string, binding: RoleBinding): boolean => name === 'hero' ? binding.player : noun(name) === noun(binding.label);
+const names = (name: string, binding: RoleBinding): boolean => name === 'hero' ? binding.player : noun(name) === noun(binding.label) ||
+  // Generic ball denotes the actual bound sports ammunition, never an arbitrary
+  // target/actor renamed basketball. Specific ball identities remain distinct.
+  noun(name) === 'ball' && binding.roleKind === 'item' && ['ball', 'physics_ball'].includes(binding.roleId) &&
+  /^(?:basketball|football|soccer ball|golf ball)$/.test(binding.label.toLowerCase());
 export function matchesWitness(triple: IntentTriple, witness: ActionWitness): boolean {
   // Zachycení v sondě nesmí potvrdit cíl catch/escape/survive.
   if (witness.run === 'probe' && !['chaser', 'guard', 'hazard', 'obstacle', 'rival'].includes(triple.verb)) return false;
@@ -66,7 +73,7 @@ export function matchesWitness(triple: IntentTriple, witness: ActionWitness): bo
 /** Sonda mění jen vstup hráče; svět, rychlosti i pravidla zůstávají stejné. */
 export function threatProbeInput(world: ArcadeWorld, target: number, observation: ArcadeObservation, normal: ArcadeInput): ArcadeInput {
   const { state, player } = observation;
-  const baseControl = world.control.id === 'addon_control' ? world.control.params.base as ArcadeWorld['control'] : world.control;
+  const baseControl = baseControlOf(world.control);
   const control = baseControl.id;
   // Nestoupnout na spící předlohu: sonda má změřit pohyb i chycení hlídkou po probuzení.
   if (baseControl.params.chase !== undefined && graceLeft(state) > 0) return normal;
@@ -93,6 +100,39 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   if (control === 'glide' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.HOLD, axis: 0 };
   if (control === 'glide' && roleAt(state, target) === ROLE.enemy) return { ...normal, buttons: normal.buttons | BUTTON.HOLD };
   if (control === 'ball' && roleAt(state, target) === ROLE.enemy) return ballKeeperProbeInput(world, state, target, observation.recent);
+  if (control === 'steer' && roleAt(state, target) === ROLE.enemy && world.rules.some(rule => rule.id === 'rival_finish' && !('land' in rule.params))) {
+    // Brake at the safe start: coasting into a wall would only prove a crash.
+    // The opponent must still traverse the real course and finish first.
+    return { buttons: BUTTON.DOWN, axis: 0 };
+  }
+  if (control === 'platform' && roleAt(state, target) === ROLE.hazard) {
+    // Traverse prior gaps with the native bot. Once grounded on the target's
+    // actual supporting slab, walk into it rather than jumping over it.
+    // Coordinates are read-only; the normal collision rule must cause harm.
+    if ((state[p + BODY.flags]! & FLAG.grounded) !== 0) {
+      const py = state[p + BODY.y]!, pz = state[p + BODY.z]!;
+      for (let body = 0; body < state[HEADER.bodyCount]!; body++) {
+        const slab = bodyBase(body);
+        if (!live(state, body) || roleAt(state, body) !== ROLE.platform) continue;
+        const top = state[slab + BODY.y]! + state[slab + BODY.h]!;
+        const near = state[slab + BODY.z]! - state[slab + BODY.d]! / 2;
+        const far = state[slab + BODY.z]! + state[slab + BODY.d]! / 2;
+        if (py === top && state[t + BODY.y] === top && pz >= near && pz <= far && state[t + BODY.z]! - state[t + BODY.d]! / 2 >= near && state[t + BODY.z]! + state[t + BODY.d]! / 2 <= far) {
+          return { buttons: 0, axis: dz < 0 ? -AXIS_MAX : AXIS_MAX };
+        }
+      }
+    }
+    return normal;
+  }
+
+  if (control === 'flap' && roleAt(state, target) === ROLE.obstacle) {
+    // Reach the pipe with the ordinary bot first. Idle from spawn hits the
+    // floor before any pipe and cannot establish that the pipe is harmful.
+    if (dz > 8 * UNIT || dz < -state[t + BODY.d]!) return normal;
+    const targetY = Math.max(600, state[t + BODY.y]! + state[t + BODY.h]! / 2 - state[p + BODY.h]! / 2);
+    return { buttons: state[p + BODY.y]! + state[p + BODY.vy]! * 4 < targetY ? BUTTON.TAP : 0, axis: 0 };
+  }
+
   if (control === 'runner') {
     // Po zbytek trati normální robot; u cílové hrozby záměrně neuhne ani neskočí.
     // Settle a jump from the preceding obstacle before the encounter. Starting
@@ -122,13 +162,14 @@ export class WitnessRecorder {
   private readonly thrown: { body: number; x: number; y: number; z: number; tick: number }[] = [];
   private readonly pendingLosses: { body: number; evidence: string }[] = [];
   private readonly ballLaunches = new Map<number, BallLaunchEvidence>();
+  private readonly struckPins = new Set<number>();
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
     this.world = world;
     this.run = run;
     this.runId = runId;
     this.bindings = new Map(bindings.map(b => [b.body, b]));
-    this.control = world.control.id === 'addon_control' ? (world.control.params.base as { id: string }).id : world.control.id;
+    this.control = baseControlOf(world.control).id;
     this.start = world.initial;
     for (const binding of bindings) {
       const base = bodyBase(binding.body);
@@ -140,7 +181,7 @@ export class WitnessRecorder {
     return { ...library, rules: Object.fromEntries(Object.entries(library.rules).map(([id, piece]) => [id, {
       ...piece,
       fire: (ctx: Parameters<typeof piece.fire>[0], params: unknown) => {
-        const ballBefore = id === 'ball_launch' || id === 'ball_score' ? ctx.state.slice() : undefined;
+        const ballBefore = id === 'ball_launch' || id === 'ball_score' || id === 'launch' ? ctx.state.slice() : undefined;
         const effects = piece.fire(ctx, params);
         return effects.map(effect => {
           const copy = { ...effect };
@@ -177,9 +218,28 @@ export class WitnessRecorder {
     const origin = this.origins.get(effect);
     if (ref === undefined || origin === undefined) return;
     const player = state[HEADER.player]!;
+    if (ref.id === 'ball_knockdown' && effect.kind === 'despawn' && this.struckPins.has(effect.body) && pinFallen(state, effect.body)) {
+      this.add('ball', player, null, tick, 'physical-ball-knockdown', state);
+      this.add('defeat', player, effect.body, tick, 'physical-pin-knocked-down', state);
+    }
     if (origin.ballBefore !== undefined && origin.ballEffects !== undefined) {
       const observation = { world: this.world, rule, before: origin.ballBefore, after: state, effects: origin.ballEffects };
-      for (const launch of ballLaunchEvidence(observation)) this.ballLaunches.set(launch.ball, launch);
+      for (const launch of ballLaunchEvidence(observation)) {
+        this.ballLaunches.set(launch.ball, launch);
+        // A hoop shot launches a real sphere upward. Require its subsequent
+        // travel before certifying throw; score or the word basketball is insufficient.
+        if (ref.params.goal === 'hoop' && launch.velocity.y > 0 && !this.thrown.some(item => item.body === launch.ball)) this.thrown.push({ body: launch.ball, ...launch.from, tick });
+      }
+      if (ref.id === 'launch' && effect.kind === 'spawn' && effect.template === ref.params.template &&
+          kindAt(this.world, origin.ballBefore, effect.template) === 'ball' && roleAt(origin.ballBefore, effect.template) === ROLE.projectile &&
+          state[HEADER.counters + COUNTER.ammo]! < origin.ballBefore[HEADER.counters + COUNTER.ammo]! && effect.vy > 0 && effect.vz !== 0) {
+        for (let body = 0; body < state[HEADER.bodyCount]!; body++) {
+          const b = bodyBase(body);
+          if (!live(origin.ballBefore, body) && live(state, body) && roleAt(state, body) === ROLE.projectile &&
+              kindAt(this.world, state, body) === 'ball' && state[b + BODY.x] === effect.x && state[b + BODY.y] === effect.y && state[b + BODY.z] === effect.z &&
+              state[b + BODY.vx] === effect.vx && state[b + BODY.vy] === effect.vy && state[b + BODY.vz] === effect.vz) this.thrown.push({ body, x: effect.x, y: effect.y, z: effect.z, tick });
+        }
+      }
       for (const scored of ballScoreEvidence(observation, [...this.ballLaunches.values()])) {
         this.add('ball', player, null, tick, 'physical-ball-scored', state);
         this.add('score', player, scored.target, tick, 'physical-ball-in-goal', state);
@@ -196,6 +256,7 @@ export class WitnessRecorder {
         }
       }
       if ((ref.id === 'pickup' || ref.id === 'arena_eat' || ref.id === 'rule_contact') && (code === ROLE.collectible || this.binding(other, state)?.roleKind === 'collectible')) this.add('collect', player, other, tick, 'pickup', state);
+      if (ref.id === 'arena_catch_contact' && code === ROLE.enemy && this.binding(other, state) !== undefined && this.binding(player, state) !== undefined && this.hasMoved(this.binding(other, state)!, state) && this.hasMoved(this.binding(player, state)!, state)) this.add('catch', player, other, tick, 'moving-prey-contact', state);
       if (ref.id === 'arena_eat' && code === ROLE.enemy) this.add('catch', player, other, tick, 'contact-consumed', state);
     }
     if (effect.kind === 'despawn' && effect.body === origin.held && other >= 0 && other !== origin.held && ref.id === 'rule_contact') this.add('deliver', player, origin.held, tick, 'carried-to-destination', state);
@@ -267,8 +328,18 @@ export class WitnessRecorder {
     this.hurt.add(binding.roleId);
     if (threat === null || this.run !== 'probe' || threat === 'chaser' && !this.hasMoved(binding, state)) return;
     this.add(threat, body, player, tick, evidence, state);
+    // Native reef frames are authored hazards as well as passage obstacles.
+    // This runs only after their own contact causes actual damage/loss; a
+    // decorative frame or a renamed role without a hit rule proves nothing.
+    if (this.control === 'glide' && code === ROLE.obstacle && binding.roleKind === 'hazard' &&
+        kindAt(this.world, state, body) === 'glide-reef' && evidence === 'harmful-contact') this.add('hazard', body, player, tick, evidence, state);
+    // A stationary platform spike is also a jumpable obstacle, but only after
+    // this probe's real contact has caused harm. A label alone proves nothing.
+    const spike = bodyBase(body);
+    if (this.control === 'platform' && code === ROLE.hazard && kindAt(this.world, state, body) === 'spikes' &&
+        (state[spike + BODY.flags]! & FLAG.kinematic) === 0 && state[spike + BODY.vx] === 0 && state[spike + BODY.vy] === 0 && state[spike + BODY.vz] === 0) this.add('obstacle', body, player, tick, evidence, state);
     // Hlídka arény používá skutečný dohled; pouhý popisek „guard“ nestačí.
-    const control = this.world.control.id === 'addon_control' ? this.world.control.params.base as ArcadeWorld['control'] : this.world.control;
+    const control = baseControlOf(this.world.control);
     const sight = (control.params.chase as { patrol?: number } | undefined)?.patrol;
     const b = bodyBase(body);
     const p = bodyBase(player);
@@ -286,8 +357,19 @@ export class WitnessRecorder {
 
   afterTick(before: ArcadeState, state: ArcadeState, tick: number): void {
     const player = state[HEADER.player]!;
+    if (this.control === 'timing' && baseControlOf(this.world.control).params.mode === 'stack' &&
+        state[bodyBase(player) + BODY.z]! > before[bodyBase(player) + BODY.z]!) {
+      // The control actually activates a placed block; bind that object, not
+      // the abstract timing target or an arbitrary collectible role.
+      for (let body = TIMING_SLOTS.marks; body < state[HEADER.bodyCount]!; body++) {
+        const b = bodyBase(body);
+        if (!live(before, body) && live(state, body) && roleAt(state, body) === ROLE.platform &&
+            state[b + BODY.vx] === 0 && state[b + BODY.w]! > 0) this.add('stack', player, body, tick, 'block-placed', state);
+      }
+    }
     for (const launch of this.ballLaunches.values()) {
       for (const binding of this.bindings.values()) {
+        if (this.world.rules.some(rule => rule.id === 'ball_knockdown') && ballPinImpact(before, state, launch, binding.body)) this.struckPins.add(binding.body);
         const blocked = keeperBlockEvidence(this.world, before, state, launch, binding.body, this.run);
         if (blocked !== null) this.add('rival', blocked.keeper, player, tick, 'keeper-deflected-physical-ball', state);
       }
@@ -320,8 +402,12 @@ export class WitnessRecorder {
       if (moved) this.add('throw', player, motion.body, tick, 'thrown-body-moved', state);
       if (!active || moved) this.thrown.splice(i, 1);
     }
+    if (this.control === 'runner' && (before[p + BODY.flags]! & FLAG.grounded) !== 0 &&
+        (state[p + BODY.flags]! & FLAG.grounded) === 0 && state[p + BODY.y]! > before[p + BODY.y]! && state[p + BODY.vy]! > 0) this.add('jump', player, null, tick, 'runner-takeoff', state);
     const movement: Record<string, string> = { runner: 'run', platform: 'jump', flap: 'flap', steer: 'drive', move_free: 'roam', fight: 'roam', glide: 'glide', walker: 'walk' };
-    const verb = movement[this.control];
+    // The legacy lander shares the steer control id, but actually flies under
+    // gravity and thrust. Its airborne translation is not driving on a road.
+    const verb = this.control === 'steer' && this.world.control.params.land !== undefined ? 'glide' : movement[this.control];
     const hero = this.binding(player, state);
     if (verb !== undefined && hero !== undefined && this.hasMoved(hero, state) && (verb !== 'jump' || (state[p + BODY.y]! > before[p + BODY.y]! && (state[p + BODY.flags]! & FLAG.grounded) === 0))) this.add(verb, player, null, tick, 'player-moved', state);
     if (this.control === 'steer' && this.world.rules.some(r => r.id === 'rival_finish' && !('land' in r.params)) || this.control === 'glide' && this.world.rules.some(r => r.id === 'glide_finish' && r.params.race === true)) {

@@ -64,18 +64,21 @@ export const throwGenre: GenreModule<'throw'> = {
     /** Hodů navíc nad počet cílů – kolikrát smí hráč minout. */
     spareThrows: { min: 0, max: 10 },
     seconds: { min: THROW_GENRE.minSeconds, max: THROW_GENRE.maxSeconds },
+    paceBudgetPct: { min: 50, max: 100 },
   },
   clockParam: 'seconds',
   availability: () => 'ready',
   compile: (spec) => {
     const { goal: goalIndex, spareThrows } = spec.params ?? {};
-    const { budget, seconds } = throwClock(spec.params?.seconds);
+    const { budget, seconds: plannedSeconds } = throwClock(spec.params?.seconds);
+    const paceBudgetPct = spec.params?.paceBudgetPct;
+    const seconds = paceBudgetPct === undefined ? plannedSeconds : Math.floor(plannedSeconds * paceBudgetPct / 100);
     const goal = goalIndex === undefined ? undefined : THROW_GOALS[goalIndex];
     // Terč je věc, na kterou se hází; bez ní nejbližší protivník nebo cíl (P39).
     const label = castFor(spec, 'throw_at', 'shoot_at', 'fight', 'chase_me', 'avoid', 'reach')?.label ?? (goal === undefined ? 'target' : THROW_GOAL_LABELS[goal]);
     return legacySpec(spec, {
       control: 'throw',
-      controlParams: { ...(goal === undefined ? {} : { goal }), ...(spareThrows === undefined ? {} : { spareThrows }), budget },
+      controlParams: { ...(goal === undefined ? {} : { goal }), ...(spareThrows === undefined ? {} : { spareThrows }), budget, ...(paceBudgetPct === undefined ? {} : { paceBudgetPct }) },
       archetype: 'combat_lite',
       title: `${titleCase(spec.hero)} Throw`,
       objective: { kind: 'defeat_targets', description: `Hit every ${label} in ${String(seconds)} seconds before you run out of throws.`, count: 3, role: 'target' },

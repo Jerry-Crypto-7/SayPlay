@@ -30,6 +30,8 @@ export const shooterGenre: GenreModule<'shooter'> = {
   // Hrdina stojí a střílí, takže jím může být i loď („a spaceship shooting asteroids“).
   heroClasses: ['animal', 'bird', 'robot', 'vehicle', 'boat', 'aircraft', 'humanoid', 'monster'],
   paramBounds: {
+    targetWidthPct: { min: 25, max: 100 },
+    movingTargets: { min: 0, max: 1 },
     waves: { min: SHOOTER_GENRE.minWaves, max: SHOOTER_GENRE.maxWaves },
     /** Nepřátel v jedné vlně (`counts.enemy`). */
     enemies: { min: 1, max: SHOOTER_WAVE_SIZE_MAX },
@@ -50,7 +52,7 @@ export const shooterGenre: GenreModule<'shooter'> = {
     const foes = plural(singular(enemy), 2);
     return legacySpec(spec, {
       control: 'shooter',
-      controlParams: { waves, rise: SHOOTER_GENRE.rise, ...(enemies === undefined ? {} : { waveSize: enemies }) },
+      controlParams: { waves, rise: SHOOTER_GENRE.rise, ...(spec.params?.targetWidthPct === undefined ? {} : { targetWidthPct: spec.params.targetWidthPct }), ...(spec.params?.movingTargets === undefined ? {} : { moving: spec.params.movingTargets === 1 }), ...(enemies === undefined ? {} : { waveSize: enemies }) },
       archetype: 'combat_lite',
       title: `${titleCase(spec.hero)} Shootout`,
       objective: { kind: 'defeat_targets', description: `Stop ${String(waves)} waves of ${foes} before they reach you.`, count: waves, role: 'enemy' },

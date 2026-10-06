@@ -94,7 +94,11 @@ describe('the absurd twist', () => {
   });
 
   it('dodges the people the sentence hides from, in their own plural (n38)', () => {
-    expect(play('hide from my in-laws at the family reunion')).toMatchObject({ game: 'arena.escape', enemy: 'in-law', goal: 'Dodge the in-laws!' });
+    const sentence = 'hide from my in-laws at the family reunion';
+    expect(play(sentence)).toMatchObject({ game: 'quest.spatial', enemy: 'in-law' });
+    const meta = draftGameSpecWithMeta(sentence);
+    expect(meta.composition?.recipe).toMatchObject({ move: 'walk', threats: ['guard'] });
+    expect(meta.composition?.witnesses).toContainEqual(expect.objectContaining({ verb: 'guard', actor: expect.objectContaining({ label: 'in-law' }) }));
   });
 
   it('stacks the paper the sentence pays (n09)', () => {

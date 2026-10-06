@@ -3,20 +3,53 @@ import { CAPABILITIES } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
-import { DRIVE_PRESETS, NATIVE_PRESETS, assertPreset, type RecipeAssembly } from './presets';
+import { DRIVE_PRESETS, NATIVE_PRESETS, TRACK_GOAL_PRESETS, assertPreset, type RecipeAssembly } from './presets';
+import { catchSpec } from './catch';
 import { driveSpec } from './drive';
 import { nativeSpec } from './native';
+import { timeOfDayFor } from '../arcade/look';
+import { BALL_DIFFICULTY } from './ball-difficulty';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
+  const base = compileRecipeBase(assembly);
+  const time = timeOfDayFor(assembly.content.setting);
+  const game = time === null ? base : { ...base, theme: { ...base.theme, timeOfDay: time } };
+  return game;
+}
+function compileRecipeBase(assembly: RecipeAssembly): GameSpecV1 {
   assertPreset(assembly);
+  if (assembly.preset === 'roam.catch') return catchSpec(assembly, assembly.content);
   if (DRIVE_PRESETS[assembly.preset] !== undefined) {
     const { move, actions, objective, threats } = assembly;
     return driveSpec({ move, actions, objective, threats }, assembly.content);
   }
   if (NATIVE_PRESETS[assembly.preset] !== undefined) {
     const { move, actions, objective, threats } = assembly;
-    return nativeSpec({ move, actions, objective, threats }, assembly.content);
+    // Resolve the sport before applying course-specific defaults. A remix of
+    // football into golf must not inherit football's shorter shot deadline.
+    const differentBallGoal = move === 'ball' && /\b(?:basketball|hoops?|golf|holes?|putt(?:ing)?)\b/i.test([assembly.content.setting, ...(assembly.content.cast ?? []).map(role => role.label)].join(' '));
+    const defaults = differentBallGoal ? undefined : BALL_DIFFICULTY[assembly.preset];
+    const content = defaults === undefined ? assembly.content : { ...assembly.content, params: { ...defaults, ...assembly.content.params } };
+    return nativeSpec({ move, actions, objective, threats }, content);
+  }
+  if (TRACK_GOAL_PRESETS[assembly.preset] !== undefined) {
+    const escape = assembly.objective === 'escape';
+    const cast = assembly.content.cast ?? [];
+    const content: GenreSpec = escape && !cast.some(item => item.does === 'chase_me')
+      ? { ...assembly.content, cast: [...cast, { label: 'wolf', does: 'chase_me' }] } : assembly.content;
+    const compiled = compileWith(GENRE_MODULES[content.genre] as GenreModule, content);
+    if (escape) {
+      // Getting caught ends this new course. Existing reach+chaser still retains its legacy health.
+      const chaser = compiled.roles.find(role => role.kind === 'chaser')?.label ?? 'pursuer';
+      return { ...compiled, mechanics: compiled.mechanics.map(mechanic => mechanic.id === 'health' ? { id: 'health', params: { max: 1 } } : mechanic),
+        tutorial: { ...compiled.tutorial, goalLine: `Reach the finish without being caught by the ${chaser}.` },
+        objective: { ...compiled.objective, description: `Escape the ${chaser} and reach the finish without being caught.` } };
+    }
+    const item = compiled.roles.find(role => role.kind === 'collectible')?.label ?? 'coin';
+    return { ...compiled, controlParams: { ...compiled.controlParams, coins: false, collectAll: true },
+      objective: { ...compiled.objective, description: `Collect every ${item} and reach the finish.` },
+      tutorial: { ...compiled.tutorial, goalLine: `Collect every ${item}, then reach the finish.` } };
   }
   return compileWith(GENRE_MODULES[assembly.content.genre] as GenreModule, assembly.content);
 }
@@ -71,6 +104,12 @@ export function withDepth(spec: GameSpecV1, depth: Depth): GameSpecV1 {
   return {
     ...spec,
     mechanics,
+    ...(lives !== undefined && spec.controlParams?.crashBudget !== undefined ? {
+      controlParams: { ...spec.controlParams, crashBudget: lives },
+      ...(spec.tutorial === undefined || lives <= 1 ? {} : {
+        tutorial: { ...spec.tutorial, controlsHint: spec.tutorial.controlsHint.replace('Banks end run.', 'Avoid banks.') },
+      }),
+    } : {}),
     ...(target === null ? {} : { scoring: { ...spec.scoring, target } }),
   };
 }

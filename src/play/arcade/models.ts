@@ -261,7 +261,8 @@ export function enemyModel(spec: GameSpecV1): string {
   // B-R9: soupeř souboje žánru arény je role druhu `hazard` (`rival`), ne role `enemy`.
   const rival = spec.controlParams?.generator === 'fight' ? spec.roles.find((role) => role.kind === 'hazard') : undefined;
   const native = spec.control === 'walker' || spec.control === 'ball' ? spec.roles.find(role => role.kind === 'patrol') : undefined;
-  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? native?.label ?? rival?.label ?? '';
+  const prey = spec.controlParams?.generator === 'arena_catch' ? spec.roles.find(role => role.id === 'prey') : undefined;
+  const label = spec.roles.find((role) => role.id === 'enemy')?.label ?? prey?.label ?? native?.label ?? rival?.label ?? '';
   return heroChoice(label, undefined, spec.control, 'enemy').model;
 }
 
@@ -353,7 +354,9 @@ export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   const out: Partial<Record<PropRole, string>> = {};
   for (const id of PROP_ROLES) {
     const model = namesThing(control, id) ? hazardModel(spec, id) : named[id];
-    if (model !== undefined && !OWN_KINDS[id].includes(model)) out[id] = model;
+    // Native glide draws a navigation ring, so even the standard coin needs
+    // its named model at the pickup body rather than the legacy coin primitive.
+    if (model !== undefined && (control === 'glide' && id === 'coin' || !OWN_KINDS[id].includes(model))) out[id] = model;
   }
   return out;
 }

@@ -17,7 +17,7 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'arena.fight': { move: 'roam', actions: ['fight'], objective: 'defeat', threats: [] },
   // The frozen voyage.race has no competitors. Its honest recipe is reach.
   'voyage.race': { move: 'drive', actions: [], objective: 'reach', threats: [] },
-  'voyage.land': { move: 'drive', actions: [], objective: 'land', threats: [] },
+  'voyage.land': { move: 'glide', actions: [], objective: 'land', threats: [] },
   'quest.spatial': { move: 'roam', actions: ['interact'], objective: 'interact', threats: ['chaser'] },
   'quest.station': { move: 'stationary', actions: ['interact'], objective: 'interact', threats: [] },
 };
@@ -26,12 +26,15 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
 export type RecipeAssembly = Recipe & { readonly preset: string; readonly content: GenreSpec };
 
 /** Native tracks have distinct names; the legacy voyage recipes stay frozen. */
-export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntries(
+export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...Object.fromEntries(
   (['race', 'reach', 'escape'] as const).flatMap(objective => [false, true].map(shoot => [
     `drive.${objective}${shoot ? '+shoot' : ''}`,
     { move: 'drive', actions: shoot ? ['shoot'] : [], objective, threats: objective === 'race' ? ['rival'] : objective === 'escape' ? ['chaser'] : [] },
   ])),
-);
+  ),
+  'drive.reach+deliver': { move: 'drive', actions: ['deliver'], objective: 'reach', threats: [] },
+  'drive.reach+shoot+collect': { move: 'drive', actions: ['shoot', 'collect'], objective: 'reach', threats: [] },
+};
 
 const GLIDE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntries(
   (['reach', 'collect', 'race', 'escape'] as const).flatMap(objective => [false, true].map(shoot => [
@@ -46,12 +49,33 @@ export const WALKER_PRESETS: Readonly<Record<string, Recipe>> = {
   'walk.reach+guard': { move: 'walk', actions: [], objective: 'reach', threats: ['guard'] },
   'walk.collect+guard': { move: 'walk', actions: ['collect'], objective: 'collect', threats: ['guard'] },
   'walk.escape': { move: 'walk', actions: [], objective: 'escape', threats: ['chaser'] },
-  'walk.escape+collect': { move: 'walk', actions: ['collect'], objective: 'escape', threats: ['chaser'] },
+    'walk.escape+collect': { move: 'walk', actions: ['collect'], objective: 'escape', threats: ['chaser'] },
+    'walk.escape+collect+guard': { move: 'walk', actions: ['collect'], objective: 'escape', threats: ['guard'] },
 };
+/** Opt-in track objectives; no legacy preset or default assembly changes. */
+export const TRACK_GOAL_PRESETS: Readonly<Record<string, Recipe>> = {
+  'run.escape': { move: 'run', actions: [], objective: 'escape', threats: ['chaser'] },
+  'jump.escape': { move: 'jump', actions: [], objective: 'escape', threats: ['chaser'] },
+  'flap.collect': { move: 'flap', actions: ['collect'], objective: 'collect', threats: [] },
+};
+export function trackGoalPresetOf(preset: string, content: GenreSpec): RecipeAssembly {
+  const recipe = TRACK_GOAL_PRESETS[preset];
+  if (recipe === undefined) throw new Error(`No track objective ${preset}`);
+  return { ...recipe, preset, content };
+}
+
 export const BALL_PRESETS: Readonly<Record<string, Recipe>> = {
+  'ball.defeat': { move: 'ball', actions: [], objective: 'defeat', threats: [] },
   'ball.score': { move: 'ball', actions: [], objective: 'score', threats: [] },
   'ball.score+rival': { move: 'ball', actions: [], objective: 'score', threats: ['rival'] },
 };
+export const CATCH_PRESETS: Readonly<Record<string, Recipe>> = { 'roam.catch': { move: 'roam', actions: [], objective: 'catch', threats: [] } };
+export function catchPresetOf(preset: string, content: GenreSpec): RecipeAssembly {
+  const recipe = CATCH_PRESETS[preset];
+  if (recipe === undefined) throw new Error('Unknown catch recipe');
+  return { ...recipe, preset, content };
+}
+
 export const NATIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...GLIDE_PRESETS, ...WALKER_PRESETS, ...BALL_PRESETS };
 
 export function nativePresetOf(preset: string, content: GenreSpec): RecipeAssembly {
@@ -85,7 +109,7 @@ export function presetOf(content: GenreSpec): RecipeAssembly {
 }
 
 export function assertPreset(assembly: RecipeAssembly): void {
-  const native = DRIVE_PRESETS[assembly.preset] ?? NATIVE_PRESETS[assembly.preset];
+  const native = CATCH_PRESETS[assembly.preset] ?? DRIVE_PRESETS[assembly.preset] ?? NATIVE_PRESETS[assembly.preset] ?? TRACK_GOAL_PRESETS[assembly.preset];
   if (native !== undefined) {
     if (recipeKey(native) !== recipeKey(assembly)) throw new Error(`Recipe does not match preset ${assembly.preset}`);
     return;

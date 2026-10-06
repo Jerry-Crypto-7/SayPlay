@@ -19,6 +19,12 @@ export type Weather = (typeof WEATHERS)[number];
 export const TIMES_OF_DAY = ['day', 'dusk', 'night'] as const;
 export type TimeOfDay = (typeof TIMES_OF_DAY)[number];
 
+export function timeOfDayFor(setting: string): TimeOfDay | null {
+  if (/\b(?:at night|nighttime|night-time|midnight)\b/i.test(setting)) return 'night';
+  if (/\b(?:dusk|sunset|evening)\b/i.test(setting)) return 'dusk';
+  return null;
+}
+
 export const LOOK_IDS = [
   'meadow',
   'city',
@@ -296,11 +302,15 @@ const PLACE_GROUNDS: readonly (readonly [RegExp, string | null])[] = [
 const WATERWAY = /\brivers?\b|canal|\blake\b|rapids|\bsea\b|ocean/;
 
 /** Sada, jak ji scéna kreslí: `lookOf` plus místo z věty (zem, hladina pod závodem) a jízda hrdiny. */
-export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string }): Look {
+export function sceneLook(theme: { readonly setting: string; readonly mood: string; readonly look?: LookId; readonly motion?: string; readonly timeOfDay?: TimeOfDay }): Look {
   const look = LOOKS[lookOf(theme)];
   const setting = theme.setting.toLowerCase();
   const ground = PLACE_GROUNDS.find(([pattern]) => pattern.test(setting))?.[1] ?? look.ground;
   const afloat = WATERWAY.test(setting);
   const ride = theme.motion === 'ride';
-  return ground === look.ground && !afloat && !ride ? look : { ...look, ground, afloat, ...(ride ? { ride } : {}) };
+  const placed = ground === look.ground && !afloat && !ride ? look : { ...look, ground, afloat, ...(ride ? { ride } : {}) };
+  const time = theme.timeOfDay ?? timeOfDayFor(theme.setting);
+  if (time === 'night') return { ...placed, sky: '#101d32', skyTop: '#050d1b', horizon: '#172c45', light: ['#92b9df', '#283747', 0.8], sun: 0.35, sunColor: '#bcdcff', glow: 0.12, exposure: Math.min(placed.exposure, 1) };
+  if (time === 'dusk') return { ...placed, sky: '#785944', skyTop: '#233a51', horizon: '#d59461', light: ['#e3b28b', '#4c4137', 0.95], sun: 0.75, sunColor: '#ffd1a0', glow: 0.55 };
+  return placed;
 }

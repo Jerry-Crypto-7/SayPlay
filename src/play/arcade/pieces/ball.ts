@@ -1,13 +1,13 @@
 /** P41: a kicked/thrown sphere simulated by PhysicsSession, never a projectile shortcut. */
 import { z } from 'zod';
 import { createCompileRng } from '@/play/compile/rng';
-import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, PHYSICS_SUBSTEPS, ROLE, bodyBase, type ArcadeEffect, type ArcadeLevel, type BodyInit, type ControlPiece, type ModeGeneratorPiece, type RulePiece } from '../contract';
+import { AXIS_MAX, BODY, BUTTON, COUNTER, FLAG, HEADER, PHYSICS_SUBSTEPS, ROLE, bodyBase, unpackRotation, type ArcadeEffect, type ArcadeLevel, type BodyInit, type ControlPiece, type ModeGeneratorPiece, type RulePiece } from '../contract';
 import { GRAVITY } from '../kernel';
 
 export const BALL_GOALS = ['goal', 'hoop', 'hole'] as const;
 export type BallGoal = typeof BALL_GOALS[number];
 export const BALL = { size: 400, launchY: 1000, launchZ: 500, maxCharge: 60, minSpeed: 100, chargeSpeed: 4, timeout: 3600, flightTicks: 160, keeperSpeed: 60, keeperPeriod: 80 } as const;
-export const ballParams = z.object({ goal: z.enum(BALL_GOALS).default('goal'), keeper: z.boolean().default(false), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), targets: z.int().min(1).max(5).default(1) }).strict();
+export const ballParams = z.object({ goal: z.enum(BALL_GOALS).default('goal'), keeper: z.boolean().default(false), knockdown: z.boolean().optional(), difficulty: z.enum(['easy', 'normal', 'hard']).default('normal'), targets: z.int().min(1).max(5).default(1), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional(), paceSeconds: z.int().min(10).max(90).optional() }).strict();
 export type BallPitchParams = z.infer<typeof ballParams>;
 export const ballControlParams = z.object({}).strict();
 export const ballLoft = (goal: BallGoal): number => goal === 'hoop' ? 300 : goal === 'hole' ? 150 : 80;
@@ -32,7 +32,7 @@ export const ballControl: ControlPiece<z.infer<typeof ballControlParams>> = {
     state[p + BODY.aux1] = input.buttons & BUTTON.TAP ? -Math.max(1, charge) : charge;
   },
 };
-const launchParams = z.object({ template: z.int().min(1), goal: z.enum(BALL_GOALS) }).strict();
+const launchParams = z.object({ template: z.int().min(1), goal: z.enum(BALL_GOALS), shotRecoveryTicks: z.int().min(120).max(240).optional(), shotRecoveryRiseTicks: z.int().min(0).max(12).optional() }).strict();
 export const ballLaunch: RulePiece<z.infer<typeof launchParams>> = {
   id: 'ball_launch', params: launchParams, roles: ['player', 'thing'], trigger: 'tick', cost: () => ({ bodies: 0, rules: 1 }),
   fire({ state, player }, params) {
@@ -44,7 +44,8 @@ export const ballLaunch: RulePiece<z.infer<typeof launchParams>> = {
       const b = bodyBase(i);
       if ((state[b + BODY.flags]! & (FLAG.alive | FLAG.physics | FLAG.ball)) === (FLAG.alive | FLAG.physics | FLAG.ball)) return [];
     }
-    return [{ kind: 'count', counter: 'ammo', amount: -1 }, { kind: 'count', counter: 'cooldown', amount: BALL.flightTicks }, { kind: 'spawn', template: params.template, x: 0, y: BALL.launchY, z: BALL.launchZ, ...ballVelocity(params.goal, state[p + BODY.aux0]!, charge) }];
+    const recovery = (params.shotRecoveryTicks ?? BALL.flightTicks) + Math.min(4, state[HEADER.counters + COUNTER.score]!) * (params.shotRecoveryRiseTicks ?? 0);
+    return [{ kind: 'count', counter: 'ammo', amount: -1 }, { kind: 'count', counter: 'cooldown', amount: recovery }, { kind: 'spawn', template: params.template, x: 0, y: BALL.launchY, z: BALL.launchZ, ...ballVelocity(params.goal, state[p + BODY.aux0]!, charge) }];
   },
 };
 
@@ -76,6 +77,30 @@ export const ballScore: RulePiece<z.infer<typeof scoreParams>> = {
   },
 };
 
+/** A pin must physically tip: a score counter or the sphere entering a sensor is insufficient. */
+export const pinFallen = (state: ArrayLike<number>, body: number): boolean => {
+  const b = bodyBase(body), q = unpackRotation(state[b + BODY.aux0]!, state[b + BODY.aux1]!);
+  return Math.abs(1 - 2 * (q[0]! * q[0]! + q[2]! * q[2]!)) < 0.65;
+};
+export const ballKnockdown: RulePiece<z.infer<typeof scoreParams>> = {
+  id: 'ball_knockdown', params: scoreParams, roles: ['thing', 'target'], trigger: 'tick', cost: () => ({ bodies: 0, rules: 1 }),
+  fire({ state }, params) {
+    const targets: number[] = [], balls: number[] = [];
+    for (let i = 0; i < state[HEADER.bodyCount]!; i++) {
+      const b = bodyBase(i), flags = state[b + BODY.flags]!;
+      if (!(flags & FLAG.alive)) continue;
+      if (state[b + BODY.role] === ROLE.target && (flags & FLAG.physics)) targets.push(i);
+      if ((flags & (FLAG.physics | FLAG.ball)) === (FLAG.physics | FLAG.ball)) balls.push(i);
+    }
+    for (const target of targets) if (pinFallen(state, target)) {
+      return [{ kind: 'score', amount: 1 }, { kind: 'despawn', body: target }, ...(targets.length === 1 ? [{ kind: 'win' as const }] : [])];
+    }
+    if (balls.length > 0 && state[HEADER.counters + COUNTER.cooldown]! <= 1) return balls.map(body => ({ kind: 'despawn', body }));
+    if (state[HEADER.tick]! >= params.timeout || (state[HEADER.counters + COUNTER.ammo]! <= 0 && balls.length === 0)) return [{ kind: 'lose' }];
+    return [];
+  },
+};
+
 function generate(seed: number, params: BallPitchParams): ArcadeLevel {
   const rng = createCompileRng(seed);
   const bodies: BodyInit[] = [
@@ -89,6 +114,7 @@ function generate(seed: number, params: BallPitchParams): ArcadeLevel {
     const flight = ballFlight(params.goal, charge, tick);
     const x = (index - (params.targets - 1) / 2) * 1400 + rng.int(-300, 300);
     const centerY = Math.max(BALL.size / 2, Math.round(flight.y + BALL.size / 2));
+    if (params.knockdown) { bodies.push({ role: 'target', kind: 'pin', x, y: 0, z: 5000, w: 350, h: 2000, d: 350, solid: true, physics: true }); continue; }
     bodies.push({ role: 'target', kind: params.goal, x, y: params.goal === 'hole' ? 0 : Math.max(0, centerY - 500), z: flight.z, w: aperture, h: params.goal === 'hole' ? 600 : 1000, d: aperture, solid: false });
   }
   if (params.keeper) {
@@ -100,6 +126,7 @@ function generate(seed: number, params: BallPitchParams): ArcadeLevel {
 export const ballPitch: ModeGeneratorPiece<BallPitchParams> = {
   id: 'ball_pitch', params: ballParams, roles: ['player', 'thing', 'target', 'enemy'], cost: params => ({ bodies: 3 + params.targets + Number(params.keeper), rules: 2 }), generate,
   parts(seed, params, health) {
-    return { level: generate(seed, params), control: { id: 'ball', params: {} }, bot: { id: 'ball_bot', params: { goal: params.goal } }, rules: [{ id: 'ball_launch', params: { template: 1, goal: params.goal } }, { id: 'ball_score', params: { goal: params.goal, timeout: BALL.timeout } }], health };
+    const recovery = { ...(params.shotRecoveryTicks === undefined ? {} : { shotRecoveryTicks: params.shotRecoveryTicks }), ...(params.shotRecoveryRiseTicks === undefined ? {} : { shotRecoveryRiseTicks: params.shotRecoveryRiseTicks }) };
+    return { level: generate(seed, params), control: { id: 'ball', params: {} }, bot: { id: 'ball_bot', params: { goal: params.goal } }, rules: [{ id: 'ball_launch', params: { template: 1, goal: params.goal, ...recovery } }, { id: params.knockdown ? 'ball_knockdown' : 'ball_score', params: { goal: params.goal, timeout: BALL.timeout } }, ...(params.paceSeconds === undefined ? [] : [{ id: 'time_limit', params: { seconds: params.paceSeconds } }])], health };
   },
 };

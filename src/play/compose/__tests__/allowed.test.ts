@@ -4,6 +4,7 @@ import { arcadeWorldOf } from '@/play/arcade/compile';
 import { baseControlOf } from '@/play/arcade/addons';
 import { verifyArcade } from '@/play/arcade/verify';
 import { GENRES, GENRE_MODES } from '@/play/genre/contract';
+import { MOVES } from '@/play/intent/contract';
 import { ALLOWED, assemblyOfCell, liveCells } from '../allowed';
 import { compileRecipe } from '../compile';
 import { recipeSchema } from '../recipe';
@@ -11,6 +12,14 @@ import { stageOf } from '../stage-registry';
 
 describe('allowed recipes', () => {
   beforeAll(async () => { await loadRapier(); });
+  it('has thirty live combinations with two goals and an extra action or threat per movement', () => {
+    expect(liveCells().length).toBeGreaterThanOrEqual(30);
+    for (const move of MOVES) {
+      const cells = liveCells().filter(cell => cell.recipe.move === move);
+      expect(new Set(cells.map(cell => cell.recipe.objective)).size, move).toBeGreaterThanOrEqual(2);
+      expect(cells.some(cell => cell.recipe.actions.length + cell.recipe.threats.length > 0), move).toBe(true);
+    }
+  });
   it('has a live assembly for every existing genre and mode', () => {
     for (const genre of GENRES) for (const mode of GENRE_MODES[genre]) {
       expect(liveCells().some(cell => cell.preset.genre === genre && cell.preset.mode === mode), `${genre}.${mode}`).toBe(true);
@@ -20,6 +29,15 @@ describe('allowed recipes', () => {
     expect(recipeSchema.safeParse({ move: 'teleport', actions: [], objective: 'reach', threats: [] }).success).toBe(false);
     expect(recipeSchema.safeParse({ move: 'run', actions: ['shoot', 'shoot'], objective: 'reach', threats: [] }).success).toBe(false);
     expect(recipeSchema.safeParse({ move: 'run', actions: [], objective: 'reach', threats: [], code: 'anything' }).success).toBe(false);
+  });
+
+  it('explicit counts override tuned recipe defaults while explicit params keep precedence', () => {
+    const cell = ALLOWED.find(cell => cell.id === 'arena.escape+collect')!;
+    const content = { ...cell.preset!, params: undefined, counts: { enemy: 3, collectible: 12 } };
+    const counted = compileRecipe(assemblyOfCell(cell, content));
+    expect(counted.controlParams?.tuning).toMatchObject({ chasers: 3, items: 12 });
+    const explicit = compileRecipe(assemblyOfCell(cell, { ...content, params: { items: 5 } }));
+    expect(explicit.controlParams?.tuning).toMatchObject({ chasers: 3, items: 5 });
   });
 
   it('keeps staged cells out of selection', () => {

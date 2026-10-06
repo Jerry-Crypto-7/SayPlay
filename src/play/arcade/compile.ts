@@ -105,7 +105,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = steerTrack.params.parse({ ...spec.controlParams });
     const level = steerTrack.generate(seed, params);
     // Závod životy nebere (P26 T5): bez `health: undefined` by svět nesl počet, který nic neubere.
-    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level), health: undefined };
+    return { control: steerControlRef(level, params), bot: steerBotRef(level, params), level, rules: steerRules(level, params), health: params.crashBudget };
   }
   if (spec.control === 'move_free') {
     // `readGameSpec` už odmítl spec, kde by cíl a časovač nesouhlasily.
@@ -120,7 +120,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const ramp = rampMarks(level.length);
     // Odpuštění pozdního vzletu (P37A T7) jen s `feel` ze specu – uložený spec bez něj staví tentýž svět.
     const feel = params.feel === undefined ? {} : { feel: params.feel };
-    return { control: { id: 'flap', params: { ramp, ...feel } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true, params.feel === 2) };
+    return { control: { id: 'flap', params: { ramp, ...feel } }, bot: { id: 'flap_bot', params: { ramp } }, level, rules: flapRules(health, params.rise === true, params.feel === 2, params.collectAll === true) };
   }
   if (spec.control === 'shooter') {
     const params = shooterRange.params.parse({ ...spec.controlParams, ...counts });
@@ -131,7 +131,9 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
     const params = throwField.params.parse({ ...spec.controlParams });
     // Rozpočet kol a hodiny jsou dvě pole specu: remix, který zkrátí jen hodiny, by nechal kola na delší hru (review P36A F5).
     const clock = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
-    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(limitSeconds(clock.seconds))) };
+    // The opt-in pace ratio keeps the authored work budget, but the actual timer
+    // and HUD use the shorter deadline. Without it the legacy remix clamp is unchanged.
+    const fitted = params.budget === undefined || clock?.onEnd !== 'lose' ? params : { ...params, budget: Math.min(params.budget, throwBudgetIn(limitSeconds(params.paceBudgetPct === undefined ? clock.seconds : Math.ceil(clock.seconds * 100 / params.paceBudgetPct)))) };
     return { control: { id: 'throw', params: {} }, bot: { id: 'throw_bot', params: {} }, ...throwParts(seed, fitted), health: undefined };
   }
   const params = runnerTrack.params.parse({ ...spec.controlParams, ...counts });

@@ -21,6 +21,7 @@
  */
 
 import { baseControlOf } from '../arcade/addons';
+import { singular } from '../draft/lexicon';
 import { arcadeWorldOf } from '../arcade/compile';
 import { BODY, HEADER, ROLE, bodyBase } from '../arcade/contract';
 import { worldHasPhysics } from '../arcade/kernel';
@@ -126,6 +127,8 @@ interface ArcadeScene {
   readonly bodies: ReadonlySet<DrawnBody>;
   /** Stylizovaná aréna (P32E T5, `StyledWorld` v `ArenaScene.tsx`): souboj, útěk, sběr a úkol žánru, ne agar. */
   readonly styled: boolean;
+  /** IDs actually bound to generated native bodies, not merely declared roles. */
+  readonly nativeRoles: ReadonlySet<string>;
 }
 
 /**
@@ -138,7 +141,7 @@ const STYLED_PART: Partial<Record<GameRole['kind'], DrawnBody>> = { player: 'pla
 function arcadeScene(spec: GameSpecV1): ArcadeScene {
   const bodies = new Set<DrawnBody>();
   const made = arcadeWorldOf(spec, 1);
-  if (!made.ok) return { bodies, styled: false };
+  if (!made.ok) return { bodies, styled: false, nativeRoles: new Set() };
   const control = baseControlOf(made.world.control);
   const styled = control.id === 'fight' || (control.id === 'move_free' && (control.params as { readonly size?: unknown }).size !== undefined);
   const state = made.world.initial;
@@ -165,7 +168,7 @@ function arcadeScene(spec: GameSpecV1): ArcadeScene {
     else if (kind === 'spikes' || kind === 'pipe') bodies.add(kind);
     else if (role === ROLE.hazard && (kind === 'snag' || kind === 'shot')) bodies.add('hazard');
   }
-  return { bodies, styled };
+  return { bodies, styled, nativeRoles: ['glide', 'walker', 'ball'].includes(control.id) ? new Set(made.roleBindings.map(binding => binding.roleId)) : new Set() };
 }
 
 /** Čte stylizovaná aréna popisek role? Ano, když z role postavila tělo, které kreslí modelem z popisku. */
@@ -199,6 +202,11 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
     const named = control === 'steer' ? sceneModelOf(role.label, false) : (riggedModelOf(role.label) ?? sceneModelOf(role.label, true));
     return named !== undefined && named === heroModel(spec);
   }
+  // Native scenery has its own body-driven scene layer. Only the slots which
+  // actually render a named model may claim drawn (reef/current remain shapes).
+  if (control === 'glide' && role.id === 'glide_ring') return built.nativeRoles.has(role.id) && namedProps(spec).coin !== undefined && propModels(spec).coin === namedProps(spec).coin;
+  if (control === 'glide' && role.id === 'glide_rival') return built.nativeRoles.has(role.id) && namedProps(spec).rival !== undefined;
+  if ((control === 'walker' && role.id === 'guard' || control === 'ball' && role.id === 'goalkeeper') && built.nativeRoles.has(role.id)) return (riggedModelOf(role.label) ?? sceneModelOf(role.label, true)) === enemyModel(spec);
   if (role.id === 'enemy') return bodies.has('enemy') && (riggedModelOf(role.label) ?? sceneModelOf(role.label, true)) === enemyModel(spec);
   if (role.kind === 'chaser') return bodies.has('chaser') && (riggedModelOf(role.label) ?? sceneModelOf(role.label, true)) === chaserModel(spec);
   // Popisek, který jmenuje tělo jádra („rival car“), se kreslí taky – jako u hrdiny, kterého popisek jmenuje.
@@ -240,7 +248,7 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
   let built: ArcadeScene | undefined;
   const scene = (): ArcadeScene => (built ??= arcadeScene(spec));
   // Generátor stylizované arény čte roli, ze které postavil tělo – `move_free` sám popisky nečte (agar).
-  const readsRole = (role: GameRole): boolean => readsLabel(control, role) || addonRole(role, addons) || (control === 'move_free' && scene().styled && styledReads(role, scene()));
+  const readsRole = (role: GameRole): boolean => ['glide', 'walker', 'ball'].includes(control) ? scene().nativeRoles.has(role.id) : readsLabel(control, role) || addonRole(role, addons) || (control === 'move_free' && scene().styled && styledReads(role, scene()));
   let proofs = verbs;
   // Dokázané je sloveso, po kterém se hra změnila (`VerbProof.changed`, P30B R2), ne jen vystřelené pravidlo.
   const proved = (verb: string): boolean => (proofs ??= robotVerbs(spec)).some((proof) => proof.verb === verb && proof.changed);
@@ -300,7 +308,7 @@ export function fidelityChain(spec: GameSpecV1, checklist: readonly ChecklistEnt
       return stage(entry, inSpec, read, read);
     }
     const candidates = roles.filter((role) => (entry.slot === 'hero' ? PLAYER(role) : entry.slot === 'role' ? !PLAYER(role) : true));
-    const hits = candidates.filter((role) => mentions(role.label, match));
+    const hits = candidates.filter((role) => mentions(role.label, match) || singular(role.label.toLowerCase()) === singular(entry.item.toLowerCase()));
     const drawnHits = hits.filter(readsRole).filter((role) => drawsRole(spec, control, role, scene));
     const does = entry.does;
     const role = does === undefined || does === 'scenery' ? drawnHits.length > 0 : drawnHits.some((hit) => playsAs(hit, control, addons, generator) === does);

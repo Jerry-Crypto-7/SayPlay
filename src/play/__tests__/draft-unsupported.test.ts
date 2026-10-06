@@ -1,3 +1,4 @@
+import { loadRapier } from '@/play/arcade/physics/world';
 /**
  * Poctivá hláška (P25E T1) – pin nad korpusem poptávky
  * (`evals/play/demand/corpus.json`, 200 vět se štítkem ovládání `verb`).
@@ -8,7 +9,7 @@
 
 import { readFileSync } from 'node:fs';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { draftGameSpec } from '../draft';
 import { unsupportedGame } from '../draft/unsupported';
@@ -123,3 +124,6 @@ describe('unsupportedGame', () => {
     expect(unsupportedGame(sentence, draftGameSpec(sentence))?.kind).toBe('sandbox');
   });
 });
+
+// Composition now executes physical ball witnesses even in synchronous draft tests.
+beforeAll(async () => { await loadRapier(); });

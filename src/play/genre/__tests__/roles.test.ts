@@ -1,3 +1,4 @@
+import { loadRapier } from '@/play/arcade/physics/world';
 /**
  * Smlouva rolí (P32B T3). Vzorový popisek („giant Roomba“, „race car“, hrdina
  * losovaný ze seznamu) vypadá na snímku jako legitimní role – proto pin: role
@@ -7,7 +8,7 @@
 
 import { readFileSync } from 'node:fs';
 
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { goldenPrompts } from '../../../../evals/play/golden';
 import sentenceSet from '../../../../evals/play/p32/sentences.json';
@@ -15,7 +16,7 @@ import { draftForControl, draftGameSpecWithMeta } from '../../draft/draft';
 import { singular } from '../../draft/lexicon';
 import type { GameSpecV1 } from '../../spec';
 import type { CastRole, GenreSpec } from '../contract';
-import { DEFAULT_LABELS, craftOf, defaultCollectible, defaultFoe, defaultHero, heroClass, heroFits } from '../roles';
+import { DEFAULT_LABELS, craftOf, defaultCollectible, defaultFoe, defaultHero, heroClass, heroFits, semanticRoleDefaults } from '../roles';
 
 const demand = JSON.parse(readFileSync(new URL('../../../../evals/play/demand/corpus.json', import.meta.url), 'utf8')) as { readonly text: string }[];
 const corpus = [...sentenceSet.sentences.map((entry) => entry.text), ...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)];
@@ -36,7 +37,7 @@ function said(word: string, text: string): boolean {
 
 /** Popisek je z věty, když tam je každé jeho slovo, jinak musí být výchozí ze smlouvy rolí. */
 const fromSentenceOrDefault = (label: string, text: string): boolean =>
-  DEFAULT_LABELS.has(label.toLowerCase()) || label.toLowerCase().split(/[^a-z0-9']+/).filter(Boolean).every((word) => said(word, text.toLowerCase()));
+  DEFAULT_LABELS.has(label.toLowerCase()) || semanticRoleDefaults(text).includes(label.toLowerCase()) || label.toLowerCase().split(/[^a-z0-9']+/).filter(Boolean).every((word) => said(word, text.toLowerCase()));
 
 describe('roles of a new game', () => {
   it.each(corpus)('come only from the sentence or setting defaults: %s', (text) => {
@@ -62,8 +63,20 @@ describe('roles of a new game', () => {
     }
     const expected = entry.id === 'firefighter' ? 'platformer.default' : entry.id === 'wizard' ? 'voyage.race' : entry.genre;
     const [id, mode] = expected.split('.');
-    expect(genre.genre).toBe(id);
-    if (mode !== undefined) expect(genre.mode).toBe(mode);
+    const nativeMove = entry.id === 'cat' || entry.id === 'dog' ? 'walk' : null;
+    if (entry.id === 'rocket') {
+      expect(meta.composition?.cellId).toBe('voyage.land');
+      expect(meta.composition?.recipe.move).toBe('glide');
+      expect(meta.spec.control).toBe('steer');
+      expect(meta.composition?.witnesses).toContainEqual(expect.objectContaining({ verb: 'land', object: expect.objectContaining({ label: 'mars' }) }));
+    } else if (nativeMove !== null) {
+      expect(meta.composition?.recipe.move).toBe(nativeMove);
+      expect(meta.spec.control).toBe(nativeMove === 'walk' ? 'walker' : 'glide');
+      expect(meta.spec.genre).toBeUndefined();
+    } else {
+      expect(genre.genre).toBe(id);
+      if (mode !== undefined) expect(genre.mode).toBe(mode);
+    }
     expect(genre.hero).toContain(entry.hero.split(' ').at(-1));
     expect(heroFits(genre.genre, genre.hero)).toBe(true);
   });
@@ -157,3 +170,6 @@ describe('the grid chase keeps no fixture chaser', () => {
     expect(shown(chase)).not.toMatch(/roomba/i);
   });
 });
+
+// Composition now executes physical ball witnesses even in synchronous draft tests.
+beforeAll(async () => { await loadRapier(); });

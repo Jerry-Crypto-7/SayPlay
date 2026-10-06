@@ -19,7 +19,9 @@ import { replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { PLATFORM_DIFFICULTIES, checkPlatformLevel, platformLevel } from '@/play/arcade/pieces/platform';
 import { RUNNER_DENSITIES, RUNNER_SPEEDS, SPEED, checkRunnerLevel, runnerTrack } from '@/play/arcade/pieces/runner';
-import { draftGameSpecWithMeta } from '@/play/draft';
+import { draftGameSpecWithMeta, draftGenreFor } from '@/play/draft';
+import { classifyGenre } from '@/play/genre/classify';
+import { compileGenre } from '@/play/genre';
 import type { GameSpecV1 } from '@/play/spec';
 
 interface Published {
@@ -31,7 +33,7 @@ interface Published {
 
 /** Jako dveře publikace: první semínko, na kterém robot vyhraje a nečinný hráč ne. */
 function publish(sentence: string): Published {
-  const { spec } = draftGameSpecWithMeta(sentence, 1);
+  const spec = legacySpec(sentence);
   for (const seed of derivedSeeds(seedFrom(sentence))) {
     const compiled = compileArcade(spec, seed);
     if (!compiled.ok) continue;
@@ -135,7 +137,7 @@ describe('sectioned tracks stay playable by construction', () => {
 describe('a game stored before T4 (no `sections`) builds the world it had', () => {
   /** Spec, jak ho žánr zapsal před T4: bez `sections` v parametrech ovládání ani v `tuning` a bez `scoring` (to přišlo až s T5). */
   function storedBefore(sentence: string): GameSpecV1 {
-    const { spec } = draftGameSpecWithMeta(sentence, 1);
+    const spec = legacySpec(sentence);
     const { scoring: _scoring, ...unscored } = spec;
     const { sections: _sections, tuning, ...own } = spec.controlParams as Record<string, unknown> & { readonly sections?: number; readonly tuning?: Record<string, unknown> };
     const { sections: _inTuning, ...rest } = tuning ?? {};
@@ -196,3 +198,11 @@ describe('platformer sections (P36A T4)', () => {
     expect(spikes(2) / platforms(2)).toBeGreaterThan(spikes(0) / platforms(0));
   });
 });
+
+/** Frozen pre-P41 mechanics: routing to new movement families is tested separately. */
+function legacySpec(sentence: string): GameSpecV1 {
+  const pick = classifyGenre(sentence, null).ranked[0];
+  const genre = draftGenreFor(sentence, pick.genre, pick.mode);
+  if (genre === null) throw new Error(`missing legacy fixture: ${sentence}`);
+  return compileGenre(genre);
+}

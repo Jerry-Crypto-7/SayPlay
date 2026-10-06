@@ -29,6 +29,7 @@ import { buildWater } from '../look/rig/terrain/water';
 import { UNDER_PANORAMA } from '../look/under-panorama';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { FittedModel } from '../World';
 import { keySteer } from './key-steer';
 import { driveInput } from './drive-input';
 import { VoyageHero } from './VoyageHero';
@@ -174,6 +175,7 @@ export function SteerBackdrop({
   look,
   ghost,
   namedHazard = false,
+  namedPad,
 }: {
   readonly session: ArcadeSession;
   readonly course: SteerCourse | undefined;
@@ -183,11 +185,12 @@ export function SteerBackdrop({
   readonly ghost?: ArcadeGhost;
   /** Nástraha plavby z věty (P39 T9): kreslí ji `World` modelem jejího jména, útesy a koule scény se schovají. */
   readonly namedHazard?: boolean;
+  readonly namedPad?: string;
 }) {
   const voyage = useVoyageSession();
   return (
     <>
-      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} /> : <RoadBackdrop course={course} length={length} look={look} />}
+      {voyage !== null ? <VoyageBackdrop session={voyage.session} layout={voyage.layout} length={length} look={look} namedHazard={namedHazard} namedPad={namedPad} /> : <RoadBackdrop course={course} length={length} look={look} />}
       {/* Slot ducha (P37-0 T3) pro silnici i plavbu. */}
       <GhostSlot ghost={ghost} session={session} />
     </>
@@ -353,7 +356,7 @@ function shoreOf(layout: VoyageLayout, far: number): IslandSpot[] {
  * těl kreslí (model nemá), se schovají – běží po `World`, protože se připojí
  * až s rozvržením.
  */
-function VoyageBackdrop({ session, layout, length, look, namedHazard }: { readonly session: ArcadeSession; readonly layout: VoyageLayout; readonly length: number; readonly look: Look; readonly namedHazard: boolean }) {
+function VoyageBackdrop({ session, layout, length, look, namedHazard, namedPad }: { readonly session: ArcadeSession; readonly layout: VoyageLayout; readonly length: number; readonly look: Look; readonly namedHazard: boolean; readonly namedPad?: string }) {
   const camera = useThree((three) => three.camera);
   const scene = useThree((three) => three.scene);
   const gl = useThree((three) => three.gl);
@@ -591,10 +594,10 @@ function VoyageBackdrop({ session, layout, length, look, namedHazard }: { readon
       )}
       {layout.pad !== null && (
         <group position={[layout.pad.x, layout.pad.y, layout.pad.z]}>
-          <mesh position={[0, layout.pad.h / 2, 0]} castShadow receiveShadow>
+          {namedPad !== undefined ? <FittedModel id={namedPad} w={layout.pad.w} h={layout.pad.h} d={layout.pad.d} fallback={look.track} /> : <mesh position={[0, layout.pad.h / 2, 0]} castShadow receiveShadow>
             <boxGeometry args={[layout.pad.w, layout.pad.h, layout.pad.d]} />
             <meshStandardMaterial color={look.track} roughness={0.8} />
-          </mesh>
+          </mesh>}
           {/* Svítící lem plochy: kam dosednout, je vidět i z výšky. */}
           {[-1, 1].map((side) => (
             <mesh key={`x${side}`} material={glow.pad} position={[(side * layout.pad!.w) / 2, layout.pad!.h + 0.05, 0]} userData={{ rigShadow: 'none' }}>

@@ -171,6 +171,8 @@ const body = z.int().min(0).max(ARCADE_LIMITS.maxBodies - 1);
 
 const waveParams = z
   .object({
+    /** Physical entry distance; the first reinforcement starts two metres farther away. */
+    entryDistance: z.int().min(6000).max(20000).optional(),
     /**
      * Kdy přijde další vlna: `items` = hráč sebral všechny věci vlny, `ticks` =
      * nastal tik vlny (`at`), `enemies` = všichni soupeři leží a doběhla přestávka,
@@ -233,11 +235,22 @@ export function spotsAway(state: Int32Array, player: number, spots: readonly num
 }
 
 /** Kopie předlohy `template` na místech vstupu nejdál od hráče (víc kopií = další místa v pořadí). */
-function enter(state: Int32Array, player: number, spots: readonly number[], template: number, count: number): ArcadeEffect[] {
+function enter(state: Int32Array, player: number, spots: readonly number[], template: number, count: number, entryDistance?: number): ArcadeEffect[] {
   const order = spotsAway(state, player, spots);
   return Array.from({ length: count }, (_, k): ArcadeEffect => {
     const at = order[k % order.length]!;
-    return { kind: 'spawn', template, x: spots[2 * at]!, y: 0, z: spots[2 * at + 1]!, vx: 0, vy: 0, vz: 0 };
+    let x = spots[2 * at]!, z = spots[2 * at + 1]!;
+    if (entryDistance !== undefined) {
+      const p = bodyBase(player), px = state[p + BODY.x]!, pz = state[p + BODY.z]!;
+      const dx = x - px, dz = z - pz;
+      const distance = Math.max(Math.abs(dx), Math.abs(dz));
+      // Stay on the segment to the seeded entry point, inside the convex arena.
+      if (distance > entryDistance) {
+        x = px + Math.trunc(dx * entryDistance / distance);
+        z = pz + Math.trunc(dz * entryDistance / distance);
+      }
+    }
+    return { kind: 'spawn', template, x, y: 0, z, vx: 0, vy: 0, vz: 0 };
   });
 }
 
@@ -282,7 +295,7 @@ export const arenaWaves: RulePiece<WaveParams> = {
     if (params.item !== undefined) {
       for (let k = 0; k + 1 < items.length; k += 2) effects.push({ kind: 'spawn', template: params.item, x: items[k]!, y: 0, z: items[k + 1]!, vx: 0, vy: 0, vz: 0 });
     }
-    if (params.chaser !== undefined) effects.push(...enter(state, player, params.spots, params.chaser, next.chasers ?? 0));
+    if (params.chaser !== undefined) effects.push(...enter(state, player, params.spots, params.chaser, next.chasers ?? 0, params.entryDistance === undefined ? undefined : params.entryDistance + Math.max(0, 1 - waveOf(state)) * 2000));
     effects.push({ kind: 'count', counter: WAVE_COUNTER, amount: 1 });
     return effects;
   },

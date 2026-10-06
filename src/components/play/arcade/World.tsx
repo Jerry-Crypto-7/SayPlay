@@ -82,6 +82,7 @@ export interface Cast {
   /** Pronásledovatel doplňku `+chaser`. */
   readonly chaser: string;
   readonly props: Partial<Record<PropRole, string>>;
+  readonly things?: Readonly<Record<string, string>>;
 }
 
 /** Překážky běžce, které smí nést model z popisku; skluzová laťka tvarem říká „podlez“, tu ne. */
@@ -89,6 +90,7 @@ const SWAPPABLE_OBSTACLES: ReadonlySet<string> = new Set(['hurdle', 'cone', 'cra
 
 /** Id těla → id modelu v katalogu. Hráč, nepřítel, mince, překážka a terč berou model z popisku role, když ho katalog má. */
 export function modelIdOf(view: BodyView, cast: Cast): string {
+  if (view.kind.startsWith('thing:') && cast.things?.[view.kind.slice(6)] !== undefined) return cast.things[view.kind.slice(6)]!;
   if (view.role === ROLE.player) return cast.player;
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
   if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
@@ -489,11 +491,11 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
   return (
     <>
       {backdrop ??
-        (control === 'glide' ? <GlideBackdrop session={session} look={scene} />
+        (control === 'glide' ? <GlideBackdrop session={session} look={scene} collectibleModel={cast.props.coin} />
         : control === 'walker' ? <WalkerBackdrop session={session} look={scene} />
         : control === 'ball' ? <BallBackdrop session={session} look={scene} />
         : control === 'steer' ? (
-          <SteerBackdrop session={session} course={baseControlOf(session.world.control).params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} />
+          <SteerBackdrop session={session} course={baseControlOf(session.world.control).params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} namedPad={cast.things?.pad} />
         ) : (
           <Backdrop control={control} length={session.world.length / UNIT} look={scene} />
         ))}

@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { loadRapier } from '@/play/arcade/physics/world';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { draftGameSpecWithMeta } from '../../draft';
 import { extractIntent } from '../../intent/extract';
@@ -141,3 +142,6 @@ it('keeps a defensive throwing opponent and its ammunition while admitting defen
  expect(draft.genre?.cast).toContainEqual(expect.objectContaining({label:'snowball',does:'scenery',verb:'throw'}));
  expect(draft.composition?.unmet).toContainEqual(expect.objectContaining({verb:'defend'}));
 });
+
+// Composition now executes physical ball witnesses even in synchronous draft tests.
+beforeAll(async () => { await loadRapier(); });

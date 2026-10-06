@@ -7,6 +7,8 @@ export const walkerParamsSchema = z.object({
   size: z.int().min(7).max(15).refine(value => value % 2 === 1, 'Maze size must be odd').default(11),
   speed: z.int().min(80).max(160).default(110),
   collect: z.boolean().optional(),
+  paceBudgetPct: z.int().min(100).max(180).optional(),
+  corridorRisePermille: z.int().min(0).max(200).optional(),
 }).strict();
 export type WalkerParams = z.infer<typeof walkerParamsSchema>;
 export const walkerMapSchema = z.object({ size: z.int().min(7).max(15), open: z.array(z.int().min(0).max(224)).max(225) }).strict();
@@ -132,8 +134,16 @@ export const walkerCaught: RulePiece<z.infer<typeof caughtParams>> = {
 type Mode = 'labyrinth' | 'stealth' | 'escape';
 function levelOf(seed: number, params: WalkerParams, mode: Mode): ArcadeLevel {
   const map = walkerMaze(seed, params.size), open = new Set(map.open);
+  const route = params.corridorRisePermille === undefined ? [] : walkerPath(map, params.size + 1, (params.size - 2) * params.size + params.size - 2);
+  const wallSize = (cell: number): number => {
+    if (route.length === 0) return WALKER_CELL;
+    let nearest = 0, distance = Infinity;
+    route.forEach((step, index) => { const d = Math.abs(step % params.size - cell % params.size) + Math.abs(Math.floor(step / params.size) - Math.floor(cell / params.size)); if (d < distance) { nearest = index; distance = d; } });
+    const section = Math.min(2, Math.floor(nearest * 3 / route.length));
+    return WALKER_CELL + Math.round(WALKER_CELL * (params.corridorRisePermille ?? 0) * section / 2000);
+  };
   const bodies: BodyInit[] = [{ role: 'player', kind: 'player', x: WALKER_CELL, y: 0, z: WALKER_CELL, w: 800, h: 1200, d: 800, solid: false }];
-  for (let cell = 0; cell < params.size * params.size; cell++) if (!open.has(cell)) bodies.push({ role: 'obstacle', kind: 'wall', x: cell % params.size * WALKER_CELL, y: 0, z: Math.floor(cell / params.size) * WALKER_CELL, w: WALKER_CELL, h: 3 * UNIT, d: WALKER_CELL, solid: true });
+  for (let cell = 0; cell < params.size * params.size; cell++) if (!open.has(cell)) bodies.push({ role: 'obstacle', kind: 'wall', x: cell % params.size * WALKER_CELL, y: 0, z: Math.floor(cell / params.size) * WALKER_CELL, w: wallSize(cell), h: 3 * UNIT, d: wallSize(cell), solid: true });
   bodies.push({ role: 'goal', kind: 'finish', x: (params.size - 2) * WALKER_CELL, y: 0, z: (params.size - 2) * WALKER_CELL, w: 1600, h: 1800, d: 1600, solid: false });
   if (params.collect) {
     const path = walkerPath(map, params.size + 1, (params.size - 2) * params.size + params.size - 2);
@@ -157,7 +167,7 @@ function generator(mode: Mode): ModeGeneratorPiece<WalkerParams> {
       const rules: PieceRef[] = [
         ...(params.collect ? [{ id: 'pickup', params: {} }] : []),
         { id: 'finish', params: params.collect ? { allItems: true } : {} },
-        { id: 'time_limit', params: { seconds: 80 } }, { id: 'out_of_health', params: {} },
+        { id: 'time_limit', params: { seconds: params.paceBudgetPct === undefined ? 80 : Math.max(10, Math.min(90, Math.ceil((path.length - 1) * WALKER_CELL / params.speed * params.paceBudgetPct / 100 / 60))) } }, { id: 'out_of_health', params: {} },
       ];
       if (mode === 'stealth') rules.push({ id: 'walker_caught', params: { ...map, body: level.bodies.length - 1, range: 5 * UNIT } });
       if (mode === 'escape') rules.push({ id: 'hit', params: { role: 'chaser', effect: 'damage', grace: 60, after: 'respawn' } });

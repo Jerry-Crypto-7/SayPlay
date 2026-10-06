@@ -6,8 +6,8 @@ import { compileRecipe } from '../compile';
 
 describe('native walker production assembly', () => {
   const cells = ALLOWED.filter(cell => cell.recipe.move === 'walk');
-  it('registers all six combinations with a verified scene', () => {
-    expect(cells).toHaveLength(6);
+  it('registers all seven combinations with a verified scene', () => {
+    expect(cells).toHaveLength(7);
     expect(cells.every(cell => cell.status === 'live')).toBe(true);
   });
   it.each(cells)('$id proves every declared action on seeds 1–20', cell => {

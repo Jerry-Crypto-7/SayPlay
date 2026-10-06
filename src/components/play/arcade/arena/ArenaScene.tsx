@@ -328,7 +328,7 @@ type Part = 'hero' | 'chaser' | 'enemy' | 'item' | 'block';
 function partOf(view: BodyView): Part {
   if (view.role === ROLE.player) return 'hero';
   if (view.role === ROLE.chaser) return 'chaser';
-  if (view.kind === 'enemy') return 'enemy';
+  if (view.kind === 'enemy' || (view.kind === 'prey' && view.role === ROLE.enemy)) return 'enemy';
   if (view.role === ROLE.collectible) return 'item';
   return 'block';
 }

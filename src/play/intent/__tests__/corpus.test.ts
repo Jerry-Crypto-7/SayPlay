@@ -19,15 +19,7 @@ describe('P41 hand-labeled development intent coverage', () => {
   it.each(development)('$id: $sentence', ({ id, sentence, essential }) => {
     const actual = extractIntent(sentence).items.filter(item => item.essential);
     const missing = essential.filter(wanted => !actual.some(item => item.actor === wanted.actor && item.verb === wanted.verb && item.object === wanted.object));
-    if (id === 'ma-031') {
-      // Visible label disagreement, NOT a successful extraction measurement.
-      // "fights a dragon" uses the same fight semantics as all other fights;
-      // the label alone requests duel. Preserve the discrepancy for T32/acceptance.
-      expect(missing).toEqual([{ actor: 'knight', verb: 'duel', object: 'dragon' }]);
-      expect(actual).toContainEqual(expect.objectContaining({ actor: 'knight', verb: 'fight', object: 'dragon' }));
-    } else {
-      expect(missing).toEqual([]);
-    }
+    expect(missing, id).toEqual([]);
   });
 
   it.each([

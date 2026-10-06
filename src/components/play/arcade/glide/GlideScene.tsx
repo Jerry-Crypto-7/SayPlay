@@ -9,6 +9,7 @@ import type { Look } from '@/play/arcade/look';
 import { GLIDE } from '@/play/arcade/pieces/glide';
 import { Scenery } from '../look/Scenery';
 import type { ArcadeSession } from '../session';
+import { FittedModel } from '../World';
 
 export { placeGlide } from './camera';
 export { useGlideInput } from './glide-input';
@@ -16,7 +17,7 @@ export { useGlideInput } from './glide-input';
 /** These native course bodies are drawn here; named actors remain in World. */
 export const GLIDE_SCENE_KINDS: ReadonlySet<string> = new Set(['glide-ring', 'glide-current', 'glide-reef']);
 
-export function GlideBackdrop({ session, look }: { readonly session: ArcadeSession; readonly look: Look }) {
+export function GlideBackdrop({ session, look, collectibleModel }: { readonly session: ArcadeSession; readonly look: Look; readonly collectibleModel?: string }) {
   const groups = useRef(new Map<number, Group>());
   const bodies = useMemo(() => {
     const initial = session.world.initial;
@@ -43,10 +44,15 @@ export function GlideBackdrop({ session, look }: { readonly session: ArcadeSessi
       <meshStandardMaterial color={look.ground} roughness={1} />
     </mesh>
     {bodies.map(body => <group key={body.body} ref={group => { if (group === null) groups.current.delete(body.body); else groups.current.set(body.body, group); }}>
-      {body.kind === 'glide-ring' ? <mesh>
+      {body.kind === 'glide-ring' ? <group>
+        {collectibleModel !== undefined && <group position={[0, -0.3, 0]}>
+          <FittedModel id={collectibleModel} w={0.6} h={0.6} d={0.6} fallback={color.sun} />
+        </group>}
+        <mesh>
         <torusGeometry args={[Math.min(body.w, body.h) / 2, 0.12, 8, 24]} />
         <meshBasicMaterial color={color.sun} />
-      </mesh> : body.kind === 'glide-current' ? <group>
+        </mesh>
+      </group> : body.kind === 'glide-current' ? <group>
         {[-0.6, 0, 0.6].map(offset => <mesh key={offset} position={[offset, 0, 0]}>
           <boxGeometry args={[0.04, 0.04, body.d * 0.7]} />
           <meshBasicMaterial color={color.cream} transparent opacity={0.35} depthWrite={false} />

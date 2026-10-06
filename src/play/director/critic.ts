@@ -19,7 +19,7 @@ import { NUMBER_WORDS, readRoles, toolsOf, singular } from '../draft/lexicon';
 import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
 import type { CastItem, CastRole, GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
-import { defaultCollectible, defaultFoe, heroFits } from '../genre/roles';
+import { defaultCollectible, defaultFoe, heroFits, semanticRoleDefaults } from '../genre/roles';
 import type { Reading } from '../read/schema';
 import { ARCHETYPES, type MechanicId, estimateCost } from '../registry';
 import type { GameSpecV1 } from '../spec';
@@ -420,7 +420,7 @@ function castIssues(genre: GenreSpec, sentence: string, words: GenreSpec | null,
   const named = readRoles(sentence).named.filter((thing): thing is CastItem => thing.does !== null);
   const tools = toolsOf(sentence);
   const drafted = words?.cast ?? [];
-  const defaults = [defaultFoe(genre.setting, genre.genre).label, defaultCollectible(genre.setting), ...drafted.map((item) => item.label)];
+  const defaults = [defaultFoe(genre.setting, genre.genre).label, defaultCollectible(genre.setting), ...semanticRoleDefaults(sentence), ...drafted.map((item) => item.label)];
   const cast = genre.cast ?? [];
   const issues: FidelityIssue[] = [];
   cast.forEach((item, index) => {

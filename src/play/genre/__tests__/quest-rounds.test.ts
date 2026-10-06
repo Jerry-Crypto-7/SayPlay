@@ -35,7 +35,7 @@ interface Published {
 
 /** Jako dveře publikace: první semínko, na kterém robot vyhraje a nečinný hráč ne. */
 function publish(sentence: string, edit: (spec: GameSpecV1) => GameSpecV1 = (spec) => spec): Published {
-  const spec = edit(draftGameSpecWithMeta(sentence, 1).spec);
+  const spec = edit(legacySpec(sentence));
   for (const seed of derivedSeeds(seedFrom(sentence))) {
     const compiled = compileArcade(spec, seed);
     if (!compiled.ok) continue;
@@ -204,9 +204,17 @@ describe('quest with seconds from the sentence – only as many rounds as fit th
   });
 
   it('a quest without seconds builds the same world as before', () => {
-    const spec = draftGameSpecWithMeta('light five candles before the ghost catches you', 1).spec;
+    const spec = legacySpec('light five candles before the ghost catches you');
     const compiled = compileArcade(spec, 624372740);
     if (!compiled.ok) throw new Error(compiled.issues.join('; '));
     expect(compiled.value.worldHash).toBe('8ea05655');
   });
 });
+
+/** Frozen pre-P41 mechanics: routing to new movement families is tested separately. */
+function legacySpec(sentence: string): GameSpecV1 {
+  const pick = classifyGenre(sentence, null).ranked[0];
+  const genre = draftGenreFor(sentence, pick.genre, pick.mode);
+  if (genre === null) throw new Error(`missing legacy fixture: ${sentence}`);
+  return compileGenre(genre);
+}

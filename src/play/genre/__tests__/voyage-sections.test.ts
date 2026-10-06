@@ -15,7 +15,6 @@ import { compileArcade } from '@/play/arcade/compile';
 import { ARCADE_HZ, type ArcadeWorld, BODY, HEADER, ROLE, bodyBase } from '@/play/arcade/contract';
 import { instantiate, replay } from '@/play/arcade/kernel';
 import { ARCADE_LIBRARY } from '@/play/arcade/library';
-import { draftGameSpecWithMeta } from '@/play/draft';
 import { draftGenreFor } from '@/play/draft/draft';
 import { compileGenre } from '@/play/genre';
 import type { GameSpecV1 } from '@/play/spec';
@@ -35,7 +34,10 @@ describe('voyage race in thirds', () => {
   // Houstnutí je vidět jen na rovince, kam se vejdou dvě překážky: na trati „boat race through a jungle river…“
   // má poslední třetina jen krátké rovinky s jednou překážkou, takže tam se rozestup změřit nedá.
   it.each(['fly a paper plane through a house'])('%s: 30–90 s for the robot, an idle player loses, the last third is denser and faster', (sentence) => {
-    const spec = draftGameSpecWithMeta(sentence, 1).spec;
+    // P36A voyage thirds are a frozen legacy contract, independent of P41 routing.
+    const legacy = draftGenreFor(sentence, 'voyage', 'race');
+    if (legacy === null) throw new Error('missing legacy voyage fixture');
+    const spec = compileGenre(legacy);
     expect(spec.genre?.id).toBe('voyage');
     const { world, winSeconds, idle } = publish(spec, sentence);
     expect(winSeconds).toBeGreaterThanOrEqual(30);

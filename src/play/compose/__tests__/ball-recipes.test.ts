@@ -7,7 +7,7 @@ import { compileRecipe } from '../compile';
 
 describe('native ball production assembly', () => {
   beforeAll(async () => { await loadRapier(); });
-  const cells = ALLOWED.filter(cell => cell.recipe.move === 'ball');
+  const cells = ALLOWED.filter(cell => cell.recipe.move === 'ball' && cell.recipe.objective === 'score');
   it('registers both physical scoring combinations with a verified scene', () => {
     expect(cells).toHaveLength(2);
     expect(cells.every(cell => cell.status === 'live')).toBe(true);

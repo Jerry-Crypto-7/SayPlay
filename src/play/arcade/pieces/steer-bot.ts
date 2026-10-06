@@ -18,7 +18,7 @@ import { z } from 'zod';
 
 import { AXIS_MAX, type ArcadeInput, BODY, BUTTON, type BotPiece, FLAG, HEADER, NO_INPUT, ROLE, UNIT, bodyBase, rampedSpeed } from '../contract';
 import { GRAVITY } from '../kernel';
-import { LAND, type LandCraft, STEER, type SteerCourse, centerAt, courseSchema, landControl } from './steer';
+import { LAND, type LandCraft, STEER, type SteerCourse, centerAt, halfWidthAt, courseSchema, landControl, landParams, landGravityAt, type LandProgression } from './steer';
 
 const REACTION = 8;
 /** Kolik tiků jízdy dopředu míří na střed trati (+ délka vozidla). */
@@ -56,7 +56,7 @@ function predict(state: Int32Array, player: number, recent: readonly ArcadeInput
 /** Kam mířit do strany: střed trati před sebou, nebo vedle soupeře, který je v cestě. */
 function aimX(state: Int32Array, player: number, course: SteerCourse, x: number, z: number, look: number): number {
   const center = centerAt(course, z + look);
-  const room = course.halfWidth - STEER.carW / 2 - STEER.clearance;
+  const room = halfWidthAt(course, z + look) - STEER.carW / 2 - STEER.clearance;
   let aim = center;
   const count = state[HEADER.bodyCount] as number;
   let nearest = Number.POSITIVE_INFINITY;
@@ -162,15 +162,16 @@ const LAND_BOT = {
   padMargin: 1500,
 } as const;
 
-function landDecide(state: Int32Array, player: number, tick: number, recent: readonly ArcadeInput[], gravity: number): ArcadeInput {
+function landDecide(state: Int32Array, player: number, tick: number, recent: readonly ArcadeInput[], gravity: number, progression?: LandProgression): ArcadeInput {
   const p = bodyBase(player);
   const craft: LandCraft = { x: state[p + BODY.x] as number, y: state[p + BODY.y] as number, vx: state[p + BODY.vx] as number, vy: state[p + BODY.vy] as number, tilt: state[p + BODY.aux0] as number };
   recent.forEach((input, i) => {
-    landControl(craft, input, gravity, tick + i);
+    landControl(craft, input, gravity, tick + i, progression);
     craft.vy -= GRAVITY;
     craft.x += craft.vx;
     craft.y += craft.vy;
   });
+  gravity = landGravityAt(gravity, craft.y, progression);
   const count = state[HEADER.bodyCount] as number;
   let pad = -1;
   for (let i = 0; i < count && pad < 0; i += 1) if (i !== player && state[bodyBase(i) + BODY.role] === ROLE.goal) pad = bodyBase(i);
@@ -207,7 +208,7 @@ const botParams = z
     /** Plavba (P32F): uhýbat překážkám role `hazard`. */
     dodge: z.boolean().optional(),
     /** Přistání (P32F): gravitace planety jako v ovládání. */
-    land: z.object({ gravity: z.int().min(LAND.gravity.min).max(LAND.gravity.max) }).strict().optional(),
+    land: landParams.optional(),
   })
   .strict();
 
@@ -218,7 +219,7 @@ export const steerBot: BotPiece<z.infer<typeof botParams>> = {
   reactionTicks: REACTION,
   cost: () => ({ bodies: 0, rules: 0 }),
   decide: ({ state, player, tick, recent }, params): ArcadeInput => {
-    if (params.land !== undefined) return landDecide(state, player, tick, recent, params.land.gravity);
+    if (params.land !== undefined) return landDecide(state, player, tick, recent, params.land.gravity, params.land);
     if (params.course === undefined) return NO_INPUT;
     const now = predict(state, player, recent, params.topSpeed, params.drift ? STEER.driftGrip : STEER.grip, params.ramp);
     const look = Math.max(STEER.carD * 2, now.vz * LOOK_TICKS) + STEER.carD;
