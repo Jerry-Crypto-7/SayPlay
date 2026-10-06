@@ -17,6 +17,11 @@ const verbsOn = (sentence: string, axis: IntentAxis): string[] =>
     .map((item) => item.verb);
 
 describe('extractIntent – acceptance (P41 T1)', () => {
+  it('does not turn interacting with several things into a required collection action', () => {
+    const intent = extractIntent('light up all the lanterns in the village');
+    expect(intent.items.filter(item => item.essential).map(item => item.verb)).toEqual(['interact']);
+    expect(extractIntent('deliver mail to every house').items.filter(item => item.essential).map(item => item.verb)).toEqual(['deliver']);
+  });
   it('reads every action of the owner sentence, each played by the car', () => {
     const intent = extractIntent('game in a car with shooting and racing');
     expect(intent.hero).toBe('car');

@@ -6,7 +6,7 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
   'platformer.default': { move: 'jump', actions: [], objective: 'reach', threats: [] },
   'flap.default': { move: 'flap', actions: [], objective: 'reach', threats: [] },
   'shooter.default': { move: 'stationary', actions: ['shoot'], objective: 'defeat', threats: [] },
-  'throw.default': { move: 'stationary', actions: ['throw'], objective: 'defeat', threats: [] },
+  'throw.default': { move: 'stationary', actions: ['throw'], objective: 'score', threats: [] },
   'timing.stack': { move: 'stationary', actions: ['stack'], objective: 'build', threats: [] },
   'timing.precision': { move: 'stationary', actions: ['time'], objective: 'score', threats: [] },
   'timing.bridge': { move: 'stationary', actions: ['time'], objective: 'score', threats: [] },

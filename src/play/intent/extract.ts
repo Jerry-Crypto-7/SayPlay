@@ -575,7 +575,9 @@ export function extractIntent(sentence: string): Intent {
     const negated = inScope(hit.at);
     for (const emit of hit.row.emits) {
       const verb = emit.id === 'each' ? (thing?.many === true ? 'collect' : 'reach') : emit.id === 'avoid' ? threatOf(object) : emit.id;
-      const base = { axis: emit.axis, verb, essential: !emit.fallback, said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat' };
+      // "Light all lanterns" requests interaction, not picking the lanterns up.
+      // The inferred route/quantity goal is guidance, never another essential verb.
+      const base = { axis: emit.axis, verb, essential: !emit.fallback && emit.id !== 'each', said: hit.said, at: hit.at, fallback: emit.fallback, negated: negated && emit.axis !== 'threat' };
       if (emit.who === 'noun') drafts.push({ ...base, actor: hit.row.noun ?? headOf(hit.said), object: heroName });
       else if (emit.who === 'reverse' || emit.who === 'versus') {
         const opposed = emit.who === 'reverse' || /^(?:against|vs|versus)$/.test(thing?.via ?? '');
