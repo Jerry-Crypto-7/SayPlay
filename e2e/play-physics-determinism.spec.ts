@@ -10,6 +10,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { expect, test } from '@playwright/test';
+import type { ArcadeWorld } from '../src/play/arcade/contract';
+import { ARCADE_LIBRARY } from '../src/play/arcade/library';
+import { replayCheckpoints } from '../src/play/arcade/physics/replay-checkpoints';
+import { loadRapier } from '../src/play/arcade/physics/world';
+import { runBot } from '../src/play/arcade/verify';
+import { nativeSpec } from '../src/play/compose/native';
 
 const fixture = JSON.parse(readFileSync(join(__dirname, '../src/play/arcade/physics/__fixtures__/determinism.json'), 'utf8')) as { hash: string };
 
@@ -22,3 +28,41 @@ test('Chromium computes the Rapier scene hash Node pinned', async ({ page }) => 
   test.info().annotations.push({ type: 'rapier-init-ms', description: String(initMs) });
   console.log(`rapier init in Chromium: ${initMs} ms`);
 });
+
+for (const goal of ['goal', 'hoop', 'hole'] as const) {
+  test(`published native ${goal}: Node and Chromium replay every checkpoint exactly`, async ({ page, request }) => {
+    const seed = 17;
+    const spec = nativeSpec({ move: 'ball', actions: ['throw'], objective: 'score', threats: ['rival'] }, {
+      genre: 'throw', mode: 'default', hero: 'robot', setting: goal === 'hoop' ? 'basketball court' : goal === 'hole' ? 'golf course' : 'football field',
+      cast: [{ label: goal, does: 'throw_at' }], params: { targets: 1 },
+    });
+    expect(spec.controlParams).toMatchObject({ goal, keeper: true });
+    const published = await request.post('/api/play/games', { data: { spec, seed } });
+    expect(published.ok(), await published.text()).toBe(true);
+    const { versionId } = await published.json() as { versionId: string };
+    const fetched = await request.get(`/api/play/games/${versionId}`);
+    expect(fetched.ok(), await fetched.text()).toBe(true);
+    const game = await fetched.json() as { arcade: ArcadeWorld };
+    expect(game.arcade).toBeDefined();
+    expect(game.arcade.control.id).toBe('ball');
+    expect(game.arcade.seed).toBe(seed);
+
+    await loadRapier();
+    const bot = runBot(game.arcade, ARCADE_LIBRARY, { planner: false });
+    expect(bot.outcome).toBe('won');
+    expect(bot.tick).toBeGreaterThan(32);
+    const recording = { world: game.arcade, inputs: bot.inputs, checkpoints: [0, 1, 8, 32, bot.tick] };
+    const node = await replayCheckpoints(recording);
+    expect(node.at(-1)?.hash).toBe(bot.hash);
+    expect(node.at(-1)?.outcome).toBe('won');
+    await page.goto('/play/lab/physics');
+    await expect(page.getByTestId('physics-lab')).toHaveAttribute('data-state', 'done', { timeout: 30_000 });
+    const chromium = await page.evaluate(async data => {
+      if (!window.__physicsReplay) throw new Error('Physics lab replay probe unavailable');
+      return window.__physicsReplay(data);
+    }, recording);
+    // Full quantized state equality catches differences hidden by rounded visuals.
+    expect(chromium).toEqual(node);
+    await test.info().attach(`physics-${goal}-checkpoints.json`, { body: JSON.stringify({ seed, versionId, inputs: bot.inputs, node, chromium }), contentType: 'application/json' });
+  });
+}

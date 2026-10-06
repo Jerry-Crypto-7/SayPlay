@@ -36,6 +36,7 @@ import { releasePhysics } from './physics/step';
 import { ARCADE_LIBRARY, MODE_GENERATORS } from './library';
 import { glideCourse } from './pieces/glide';
 import { walkerLabyrinth } from './pieces/walker';
+import { ballPitch } from './pieces/ball';
 import { rapierIfLoaded } from './physics/world';
 import { arenaBotRef, arenaControlRef, arenaLevel, arenaRules } from './pieces/arena';
 import { flapRules, flapTrack } from './pieces/flap';
@@ -82,6 +83,7 @@ const limitSeconds = (seconds: number): number => Math.min(ARCADE_LIMITS.maxTick
 /** Ovládání, trať a pravidla, která se liší podle `control`. */
 function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): ArcadeParts {
   const counts = countParams(spec);
+  if (spec.control === 'ball') return ballPitch.parts(seed, ballPitch.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'walker') return walkerLabyrinth.parts(seed, walkerLabyrinth.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'glide') return glideCourse.parts(seed, glideCourse.params.parse(ownParams(spec) ?? {}), health);
   if (spec.control === 'timing') return timingParts(seed, { ...spec.controlParams }, health);
@@ -152,6 +154,7 @@ function partsOf(spec: GameSpecV1, seed: number, health: number | undefined): Ar
 const CONTROL_GENERATORS: Readonly<Record<string, string>> = {
   glide: 'glide_course',
   walker: 'walker_labyrinth',
+  ball: 'ball_pitch',
   runner: 'runner_track',
   platform: 'platform_level',
   flap: 'flap_track',
@@ -184,9 +187,6 @@ function ownParams(spec: GameSpecV1): Record<string, unknown> | undefined {
 
 /** Spec + seed → svět. Bez ověření robotem – to dělá `compileArcade`. `target` přebije cílové skóre specu (ořez na dosažitelné). */
 export function arcadeWorldOf(spec: GameSpecV1, seed: number, target?: number): ArcadeWorldResult {
-  if (spec.control === 'ball') {
-    return { ok: false, issues: [`/control: native ${spec.control} runtime is not registered yet`] };
-  }
   const health = (spec.mechanics.find((mechanic) => mechanic.id === 'health')?.params as { readonly max: number } | undefined)?.max ?? addonLives(spec);
   const timer = spec.mechanics.find((mechanic) => mechanic.id === 'timer')?.params as { readonly seconds: number; readonly onEnd: string } | undefined;
   const generator = generatorOf(spec);
@@ -285,7 +285,7 @@ function reachableTarget(spec: GameSpecV1, seed: number, target: number): number
 }
 
 /** Chce spec fyzikální tělesa (P29A T13)? Jen pak se smí stahovat Rapier. */
-export const specNeedsPhysics = (spec: GameSpecV1): boolean => (spec.things ?? []).some((thing) => thing.physics === true);
+export const specNeedsPhysics = (spec: GameSpecV1): boolean => spec.control === 'ball' || (spec.things ?? []).some((thing) => thing.physics === true);
 
 /**
  * Načte Rapier, když ho hra potřebuje; hra bez fyziky modul nestáhne. Jádro je

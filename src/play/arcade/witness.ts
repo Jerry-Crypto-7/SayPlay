@@ -6,7 +6,9 @@ import type { GameRole, GameSpecV1 } from '@/play/spec';
 import { type ArcadeEffect, type ArcadeInput, type ArcadeObservation, type ArcadeState, type ArcadeWorld, BODY, BUTTON, FLAG, HEADER, NO_INPUT, ROLE, RUN_STATE, UNIT, bodyBase, bodyHp } from './contract';
 import type { ArcadeLibrary, ArcadeOutcome } from './kernel';
 import { axisOfDirection, directionToward, graceLeft } from './pieces/arena';
+import { ballKeeperProbeInput } from './pieces/ball-probe';
 import { walkerVisible, type WalkerMap } from './pieces/walker';
+import { ballLaunchEvidence, ballScoreEvidence, keeperBlockEvidence, type BallLaunchEvidence } from './ball-evidence';
 
 export interface RoleBinding {
   readonly body: number;
@@ -42,7 +44,7 @@ export function bindRoles(spec: GameSpecV1, world: ArcadeWorld): readonly RoleBi
     const named = kind.startsWith('thing:') ? kind.slice(6) : kind === 'rival-car' || kind === 'foe' ? 'rival' : kind === 'tire-barrier' ? 'barrier' : kind;
     let role = player ? unique(spec.roles.filter(r => r.kind === 'player')) : spec.roles.find(r => r.id === named && r.kind !== 'player');
     // Native body kinds are kebab-case; stored role IDs are schema-safe names.
-    if (role === undefined && kind.startsWith('glide-')) role = spec.roles.find(r => r.id === kind.replaceAll('-', '_') && r.kind !== 'player');
+    if (role === undefined && /^(?:glide-|physics-ball$)/.test(kind)) role = spec.roles.find(r => r.id === kind.replaceAll('-', '_') && r.kind !== 'player');
     if (role === undefined && !kind.startsWith('thing:')) {
       const kinds = code === ROLE.collectible ? ['collectible'] : code === ROLE.goal ? ['exit', 'destination'] : code === ROLE.chaser ? ['chaser'] : code === ROLE.target ? ['target'] : code === ROLE.enemy ? ['patrol', 'hazard'] : code === ROLE.obstacle || code === ROLE.hazard ? ['hazard'] : code === ROLE.checkpoint ? ['checkpoint'] : [];
       role = unique(spec.roles.filter(r => kinds.includes(r.kind)));
@@ -90,6 +92,7 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   if (control === 'steer' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.DOWN, axis: 0 };
   if (control === 'glide' && roleAt(state, target) === ROLE.chaser) return { buttons: BUTTON.HOLD, axis: 0 };
   if (control === 'glide' && roleAt(state, target) === ROLE.enemy) return { ...normal, buttons: normal.buttons | BUTTON.HOLD };
+  if (control === 'ball' && roleAt(state, target) === ROLE.enemy) return ballKeeperProbeInput(world, state, target, observation.recent);
   if (control === 'runner') {
     // Po zbytek trati normální robot; u cílové hrozby záměrně neuhne ani neskočí.
     // Settle a jump from the preceding obstacle before the encounter. Starting
@@ -101,7 +104,7 @@ export function threatProbeInput(world: ArcadeWorld, target: number, observation
   return NO_INPUT;
 }
 
-type Origin = { readonly other: number; readonly source: number; readonly held: number };
+type Origin = { readonly other: number; readonly source: number; readonly held: number; readonly ballBefore?: ArcadeState; readonly ballEffects?: readonly ArcadeEffect[] };
 
 /** Pozorovatel pravidel: kopie efektů nesou kontext kontaktu, jádro stále rozhoduje, co se skutečně provedlo. */
 export class WitnessRecorder {
@@ -118,6 +121,7 @@ export class WitnessRecorder {
   private readonly start: readonly number[];
   private readonly thrown: { body: number; x: number; y: number; z: number; tick: number }[] = [];
   private readonly pendingLosses: { body: number; evidence: string }[] = [];
+  private readonly ballLaunches = new Map<number, BallLaunchEvidence>();
 
   constructor(world: ArcadeWorld, bindings: readonly RoleBinding[], run: 'winner' | 'probe', runId: string) {
     this.world = world;
@@ -135,11 +139,16 @@ export class WitnessRecorder {
   observe(library: ArcadeLibrary): ArcadeLibrary {
     return { ...library, rules: Object.fromEntries(Object.entries(library.rules).map(([id, piece]) => [id, {
       ...piece,
-      fire: (ctx: Parameters<typeof piece.fire>[0], params: unknown) => piece.fire(ctx, params).map(effect => {
-        const copy = { ...effect };
-        this.origins.set(copy, { other: ctx.other, source: ctx.source, held: ctx.state[HEADER.held]! - 1 });
-        return copy;
-      }),
+      fire: (ctx: Parameters<typeof piece.fire>[0], params: unknown) => {
+        const ballBefore = id === 'ball_launch' || id === 'ball_score' ? ctx.state.slice() : undefined;
+        const effects = piece.fire(ctx, params);
+        return effects.map(effect => {
+          const copy = { ...effect };
+          this.origins.set(copy, { other: ctx.other, source: ctx.source, held: ctx.state[HEADER.held]! - 1,
+            ...(ballBefore === undefined ? {} : { ballBefore, ballEffects: effects }) });
+          return copy;
+        });
+      },
     }])) };
   }
 
@@ -168,6 +177,14 @@ export class WitnessRecorder {
     const origin = this.origins.get(effect);
     if (ref === undefined || origin === undefined) return;
     const player = state[HEADER.player]!;
+    if (origin.ballBefore !== undefined && origin.ballEffects !== undefined) {
+      const observation = { world: this.world, rule, before: origin.ballBefore, after: state, effects: origin.ballEffects };
+      for (const launch of ballLaunchEvidence(observation)) this.ballLaunches.set(launch.ball, launch);
+      for (const scored of ballScoreEvidence(observation, [...this.ballLaunches.values()])) {
+        this.add('ball', player, null, tick, 'physical-ball-scored', state);
+        this.add('score', player, scored.target, tick, 'physical-ball-in-goal', state);
+      }
+    }
     const other = origin.other;
     const code = other < 0 ? -1 : roleAt(state, other);
     if (effect.kind === 'despawn' && effect.body === other) {
@@ -269,6 +286,13 @@ export class WitnessRecorder {
 
   afterTick(before: ArcadeState, state: ArcadeState, tick: number): void {
     const player = state[HEADER.player]!;
+    for (const launch of this.ballLaunches.values()) {
+      for (const binding of this.bindings.values()) {
+        const blocked = keeperBlockEvidence(this.world, before, state, launch, binding.body, this.run);
+        if (blocked !== null) this.add('rival', blocked.keeper, player, tick, 'keeper-deflected-physical-ball', state);
+      }
+      if (!live(state, launch.ball)) this.ballLaunches.delete(launch.ball);
+    }
     if (state[HEADER.runState] === RUN_STATE.lost) for (const loss of this.pendingLosses) this.harm(loss.body, player, tick, loss.evidence, state);
     this.pendingLosses.length = 0;
     const p = bodyBase(player);

@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import runner from '../arcade/__fixtures__/runner.json';
 import { CONTROLS, readGameSpec } from '../spec';
 import { compileArcade } from '../arcade/compile';
+import { loadRapier } from '../arcade/physics/world';
 
 it('retains every control used by pre-P41 saved games', () => {
   for (const control of ['tap_go', 'runner', 'platform', 'flap', 'steer', 'move_free', 'shooter', 'throw', 'timing', 'rhythm', 'duel']) {
@@ -13,19 +14,15 @@ it.each([
   ['glide', { mode: 'race', lengthM: 160, topSpeed: 180 }],
   ['walker', { size: 11, speed: 110 }],
   ['ball', { goal: 'hoop', keeper: true, targets: 2 }],
-] as const)('reads %s without silently compiling a runner', (control, controlParams) => {
+] as const)('reads %s without silently compiling a runner', async (control, controlParams) => {
   const read = readGameSpec({ ...runner, control, controlParams, mechanics: [] });
   expect(read.ok, JSON.stringify(read)).toBe(true);
   if (!read.ok) return;
   expect(read.value.control).toBe(control);
   expect(read.value.controlParams).toEqual(controlParams);
+  if (control === 'ball') await loadRapier();
   const compiled = compileArcade(read.value, 1);
-  if (control === 'glide' || control === 'walker') {
-    expect(compiled.ok, JSON.stringify(compiled)).toBe(true);
-    return;
-  }
-  expect(compiled.ok).toBe(false);
-  if (!compiled.ok) expect(compiled.issues.join(' ')).toContain(`native ${control} runtime is not registered`);
+  expect(compiled.ok, JSON.stringify(compiled)).toBe(true);
 });
 
 it.each([

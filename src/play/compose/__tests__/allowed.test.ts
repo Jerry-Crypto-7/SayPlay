@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadRapier } from '@/play/arcade/physics/world';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { baseControlOf } from '@/play/arcade/addons';
 import { verifyArcade } from '@/play/arcade/verify';
@@ -9,6 +10,7 @@ import { recipeSchema } from '../recipe';
 import { stageOf } from '../stage-registry';
 
 describe('allowed recipes', () => {
+  beforeAll(async () => { await loadRapier(); });
   it('has a live assembly for every existing genre and mode', () => {
     for (const genre of GENRES) for (const mode of GENRE_MODES[genre]) {
       expect(liveCells().some(cell => cell.preset.genre === genre && cell.preset.mode === mode), `${genre}.${mode}`).toBe(true);

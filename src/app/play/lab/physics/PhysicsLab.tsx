@@ -4,6 +4,11 @@ import { useEffect, useState } from 'react';
 
 import { runScene } from '@/play/arcade/physics/scene';
 import { loadRapier } from '@/play/arcade/physics/world';
+import { replayCheckpoints } from '@/play/arcade/physics/replay-checkpoints';
+
+declare global {
+  interface Window { __physicsReplay?: typeof replayCheckpoints }
+}
 
 type LabState = { readonly state: 'running' } | { readonly state: 'done'; readonly hash: string; readonly initMs: number } | { readonly state: 'failed'; readonly error: string };
 
@@ -11,6 +16,7 @@ type LabState = { readonly state: 'running' } | { readonly state: 'done'; readon
 export function PhysicsLab() {
   const [lab, setLab] = useState<LabState>({ state: 'running' });
   useEffect(() => {
+    window.__physicsReplay = replayCheckpoints;
     const started = performance.now();
     loadRapier()
       .then((rapier) => {
@@ -18,6 +24,7 @@ export function PhysicsLab() {
         setLab({ state: 'done', hash: runScene(rapier).hash, initMs });
       })
       .catch((error: unknown) => setLab({ state: 'failed', error: String(error) }));
+    return () => { delete window.__physicsReplay; };
   }, []);
   return (
     <main data-testid="physics-lab" data-state={lab.state} data-hash={lab.state === 'done' ? lab.hash : undefined} data-init-ms={lab.state === 'done' ? lab.initMs : undefined}>

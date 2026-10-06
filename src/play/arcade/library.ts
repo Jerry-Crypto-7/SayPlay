@@ -41,7 +41,11 @@ import { glideBot } from './pieces/glide-bot';
 import { walkerControl, walkerLabyrinth, walkerStealth, walkerEscape, walkerCaught } from './pieces/walker';
 import { walkerBot } from './pieces/walker-bot';
 
+import { ballControl, ballPitch, ballLaunch, ballScore } from './pieces/ball';
+import { ballBot } from './pieces/ball-bot';
+
 const BASE_BOTS = {
+  ball_bot: ballBot,
   walker_bot: walkerBot,
   glide_bot: glideBot,
   runner_bot: runnerBot,
@@ -64,6 +68,7 @@ const BASE_BOTS = {
  */
 export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
   glide_course: glideCourse,
+  ball_pitch: ballPitch,
   walker_labyrinth: walkerLabyrinth, walker_stealth: walkerStealth, walker_escape: walkerEscape,
   arena_escape: arenaEscape,
   arena_collect: arenaCollect,
@@ -75,6 +80,7 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
 };
 
 const BASE_CONTROLS = {
+  ball: ballControl,
   walker: walkerControl,
   glide: glideControl,
   runner: runnerControl,
@@ -91,7 +97,7 @@ const BASE_CONTROLS = {
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  rules: { ball_launch: ballLaunch, ball_score: ballScore, walker_caught: walkerCaught, glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

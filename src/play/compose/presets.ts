@@ -48,7 +48,11 @@ export const WALKER_PRESETS: Readonly<Record<string, Recipe>> = {
   'walk.escape': { move: 'walk', actions: [], objective: 'escape', threats: ['chaser'] },
   'walk.escape+collect': { move: 'walk', actions: ['collect'], objective: 'escape', threats: ['chaser'] },
 };
-export const NATIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...GLIDE_PRESETS, ...WALKER_PRESETS };
+export const BALL_PRESETS: Readonly<Record<string, Recipe>> = {
+  'ball.score': { move: 'ball', actions: [], objective: 'score', threats: [] },
+  'ball.score+rival': { move: 'ball', actions: [], objective: 'score', threats: ['rival'] },
+};
+export const NATIVE_PRESETS: Readonly<Record<string, Recipe>> = { ...GLIDE_PRESETS, ...WALKER_PRESETS, ...BALL_PRESETS };
 
 export function nativePresetOf(preset: string, content: GenreSpec): RecipeAssembly {
   const recipe = NATIVE_PRESETS[preset];
