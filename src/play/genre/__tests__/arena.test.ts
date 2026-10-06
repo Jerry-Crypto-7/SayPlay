@@ -17,7 +17,7 @@ import { type GameSpecV1, readGameSpec } from '@/play/spec';
 import { type GenreSpec, MODEL_CLASSES } from '../contract';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
 
-const CAT: GenreSpec = { genre: 'arena', mode: 'escape', hero: 'cat', enemy: 'polar bear', collectible: 'fish', setting: 'frozen lake' };
+const CAT: GenreSpec = { genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'fish', does: 'collect' }], setting: 'frozen lake' };
 const KNIGHTS: GenreSpec = { genre: 'arena', mode: 'fight', hero: 'knight', setting: 'castle' };
 
 function read(spec: GenreSpec): GameSpecV1 {
@@ -66,7 +66,7 @@ describe('arena genre – the cat and the polar bear', () => {
   });
 
   it('without a collectible the escape is won by surviving the timer', () => {
-    const spec = read({ ...CAT, collectible: undefined, params: { seconds: 30 } } as GenreSpec);
+    const spec = read({ ...CAT, cast: [{ label: 'polar bear', does: 'chase_me' }], params: { seconds: 30 } });
     expect(generatorOf(spec)).toBe('arena_escape');
     expect(spec.objective).toMatchObject({ kind: 'survive', seconds: 30 });
     const compiled = compileArcade(spec, 1);
@@ -74,7 +74,7 @@ describe('arena genre – the cat and the polar bear', () => {
   });
 
   it('collect starts with nobody chasing and wins after N items', () => {
-    const spec = read({ genre: 'arena', mode: 'collect', hero: 'little fish', collectible: 'plankton', setting: 'coral reef', params: { items: 6 } });
+    const spec = read({ genre: 'arena', mode: 'collect', hero: 'little fish', cast: [{ label: 'plankton', does: 'collect' }], setting: 'coral reef', params: { items: 6 } });
     expect(generatorOf(spec)).toBe('arena_collect');
     // Od P36A T4 leží v úrovni mrtvá předloha pronásledovatele dalších vln; na startu nehoní nikdo.
     const { roles, alive } = bodiesOf(spec);
@@ -99,11 +99,36 @@ describe('arena genre – two knights duel', () => {
   });
 
   it('spec params reach the fight generator through tuning', () => {
-    const spec = read({ ...KNIGHTS, enemy: 'black knight', params: { enemies: 3, enemyHp: 2, playerHp: 7 } });
+    const spec = read({ ...KNIGHTS, cast: [{ label: 'black knight', does: 'fight' }], params: { enemies: 3, enemyHp: 2, playerHp: 7 } });
     const { roles, hp } = bodiesOf(spec);
     expect(roles.filter((role) => role === ROLE.enemy).length).toBe(3);
     expect(hp).toEqual([7, 2, 2, 2]);
     expect(compileArcade(spec, 1).ok).toBe(true);
+  });
+});
+
+// P39 T7: lovec je věc, která hráče honí; bez ní ta, které se hráč vyhýbá – nikdy výchozí „hunter“, když věta něco jmenuje.
+describe('arena genre reads the cast', () => {
+  const roleOf = (spec: GameSpecV1, id: string) => spec.roles.find((role) => role.id === id)?.label;
+
+  it('escape takes the thing that chases as the hunter, not the first thing named', () => {
+    const spec = read({ ...CAT, cast: [{ label: 'shark', does: 'avoid' }, { label: 'fish', does: 'collect' }, { label: 'polar bear', does: 'chase_me' }] });
+    expect(roleOf(spec, 'hunter')).toBe('polar bear');
+    expect(roleOf(spec, 'item')).toBe('fish');
+  });
+
+  it('escape takes a thing to dodge as the hunter when nothing chases', () => {
+    expect(roleOf(read({ ...CAT, cast: [{ label: 'fish', does: 'collect' }, { label: 'dog', does: 'avoid' }] }), 'hunter')).toBe('dog');
+  });
+
+  it('a hunter that patrols reaches the generator', () => {
+    const spec = read({ ...CAT, cast: [{ label: 'guard', does: 'chase_me', patrol: true }, { label: 'fish', does: 'collect' }] });
+    expect((spec.controlParams as { readonly tuning: { readonly patrol?: number } }).tuning.patrol).toBe(ESCAPE.patrolSight);
+  });
+
+  it('fight takes the thing it fights, collect the thing it collects', () => {
+    expect(roleOf(read({ ...KNIGHTS, cast: [{ label: 'coin', does: 'collect' }, { label: 'troll', does: 'fight' }] }), 'rival')).toBe('troll');
+    expect(roleOf(read({ genre: 'arena', mode: 'collect', hero: 'crab', cast: [{ label: 'gull', does: 'avoid' }, { label: 'shell', does: 'collect' }], setting: 'beach' }), 'item')).toBe('shell');
   });
 });
 

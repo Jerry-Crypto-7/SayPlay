@@ -44,13 +44,13 @@ import type { GenreSpec } from '../contract';
 import { compileGenre } from '../index';
 
 const SPECS = {
-  runner: { genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain' },
+  runner: { genre: 'runner', mode: 'default', hero: 'penguin', cast: [{ label: 'rock', does: 'avoid' }, { label: 'snowflake', does: 'collect' }], setting: 'icy mountain' },
   platformer: { genre: 'platformer', mode: 'default', hero: 'frog', setting: 'pond' },
-  'arena.escape': { genre: 'arena', mode: 'escape', hero: 'cat', enemy: 'polar bear', collectible: 'fish', setting: 'frozen lake' },
-  'arena.collect': { genre: 'arena', mode: 'collect', hero: 'cat', collectible: 'fish', setting: 'beach' },
+  'arena.escape': { genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'fish', does: 'collect' }], setting: 'frozen lake' },
+  'arena.collect': { genre: 'arena', mode: 'collect', hero: 'cat', cast: [{ label: 'fish', does: 'collect' }], setting: 'beach' },
   'arena.fight': { genre: 'arena', mode: 'fight', hero: 'knight', setting: 'castle' },
-  'quest.spatial': { genre: 'quest', mode: 'spatial', hero: 'wizard', enemy: 'ghost', target: { label: 'candle', verb: 'light', states: 2 }, setting: 'castle', params: { chasers: 2 } },
-  'quest.station': { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'cook', states: 3 }, setting: 'kitchen' },
+  'quest.spatial': { genre: 'quest', mode: 'spatial', hero: 'wizard', cast: [{ label: 'ghost', does: 'chase_me' }, { label: 'candle', does: 'reach', verb: 'light', states: 2 }], setting: 'castle', params: { chasers: 2 } },
+  'quest.station': { genre: 'quest', mode: 'station', hero: 'chef', cast: [{ label: 'pancake', does: 'reach', verb: 'cook', states: 3 }], setting: 'kitchen' },
   'voyage.race': { genre: 'voyage', mode: 'race', hero: 'pirate ship', setting: 'ocean' },
   'voyage.land': { genre: 'voyage', mode: 'land', hero: 'rocket', setting: 'mars' },
 } as const satisfies Readonly<Record<string, GenreSpec>>;

@@ -243,7 +243,7 @@ const KEYWORDS: readonly (readonly [LookId, RegExp])[] = [
   ['jungle', /jungle|rainforest|swamp|amazon/],
   ['snow', /snow|\bice\b|\bicy\b|glacier|arctic|frozen|winter|polar|igloo|tundra/],
   ['desert', /desert|dune|sahara|outback|canyon|oasis|pyramid/],
-  ['beach', /beach|coast|shore|island|tropic/],
+  ['beach', /beach|coast|shore|island|tropic|vacation|holiday/],
   ['ocean', /ocean|\bsea\b|harbou?r|pirate|\blake\b|river|\bboat/],
   ['castle', /castle|kingdom|medieval|dungeon|fortress|\bfort\b|throne/],
   ['graveyard', /haunted|graveyard|cemetery|ghost|spooky|crypt|hospital|horror|zombie/],

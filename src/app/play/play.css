@@ -1643,6 +1643,13 @@ button.play-version-switch__item:not(:disabled) {
   color: var(--sp-text-secondary);
 }
 
+/* Další povely hry (P39 T10): skok, střelba – menší než první povel, ať karta zůstane karta. */
+.play-first-prompt-more {
+  font-size: var(--sp-text-body-l-size);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
 /* Telefon: výzva s užším okrajem, ať se povel vejde na řádek. */
 @media (max-width: 480px) {
   .play-first-prompt {

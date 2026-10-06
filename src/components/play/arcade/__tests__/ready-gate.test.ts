@@ -12,7 +12,7 @@ import { arcadeWorldOf } from '@/play/arcade/compile';
 import { BUTTON } from '@/play/arcade/contract';
 import { readGameSpec } from '@/play/spec';
 
-import { FirstPrompt, desktopKeys } from '../../FirstPrompt';
+import { FirstPrompt, controlLines, desktopKeys } from '../../FirstPrompt';
 import { holdUntilTouch, wakesGame } from '../ready-gate';
 import { TICK_MS, createArcadeSession } from '../session';
 
@@ -104,6 +104,22 @@ describe('ready prompt', () => {
     expect(html).toContain('Tap to start');
     expect(html).toContain('Tap to jump');
     expect(html).toContain('Space');
+  });
+
+  // P39 T10: plošinovka se střelbou ukáže skok i střelbu, ne jen „Arrows to move“.
+  it('lists every control of the hint under the first command', () => {
+    const platformShoot = 'Arrows or A/D to move, Space or tap to jump. F or Fire to shoot.';
+    expect(controlLines(platformShoot)).toEqual(['Space to jump', 'F to shoot']);
+    const html = renderToStaticMarkup(createElement(FirstPrompt, { controlsHint: platformShoot }));
+    expect(html).toContain('Arrows to move');
+    expect(html).toContain('Space to jump');
+    expect(html).toContain('F to shoot');
+    // Rada, která nic neovládá, na kartu nepatří; směr tahu „up or down“ zůstane celý.
+    expect(controlLines('Drag or arrows to move, Attack or J to strike. Step aside when it winds up.')).toEqual(['Attack or J to strike']);
+    expect(controlLines('Hold to power up, drag up or down to aim, let go to throw.')).toEqual(['Drag up or down to aim', 'Let go to throw']);
+    expect(controlLines('Tap the lane, or D F J K, on the beat. M toggles sound.')).toEqual([]);
+    // Prst: zóny plošinovky říkají běh a skok, střelbu doplní nápověda hry bez klávesy.
+    expect(controlLines('Hold left to run, tap right to jump.', platformShoot)).toEqual(['Tap right to jump', 'Fire to shoot']);
   });
 
   it('names the key the hint offers next to touch', () => {

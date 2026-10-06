@@ -17,7 +17,10 @@ import shooter from '../__fixtures__/shooter.json';
 import steer from '../__fixtures__/steer.json';
 import { arcadeWorldOf } from '../compile';
 import { ARCADE_LIMITS, type ArcadeWorld, BODY, COUNTER, FLAG, HEADER, NO_INPUT, ROLE, bodyBase } from '../contract';
-import { instantiate, loadProgram, outcomeOf, step } from '../kernel';
+import type { GenreSpec } from '@/play/genre/contract';
+import { compileGenre } from '@/play/genre/index';
+
+import { hashArcade, instantiate, loadProgram, outcomeOf, step } from '../kernel';
 import { ARCADE_LIBRARY } from '../library';
 import { runBot, verifyArcade } from '../verify';
 
@@ -239,5 +242,59 @@ describe('+collect (P26D T4)', () => {
 
   it('move_free, steer and shooter do not take +collect', () => {
     for (const fixture of [arena, steer, shooter]) expect(readGameSpec({ ...(fixture as object), addons: ['collect'] }).ok).toBe(false);
+  });
+});
+
+/**
+ * P39 T8: tělo doplňku nese jméno z obsazení. `kind` těla je id role specu
+ * (`enemy`, `chaser`, z `addonRoles`) a popisek té role je věc z věty – scéna
+ * i měření ho čtou odtud, takže „shoot animals“ nekreslí robota. Hashovaný
+ * stav se tím nemění: jméno žije ve specu, ne v jádře.
+ */
+describe('addon bodies carry the cast name (P39 T8)', () => {
+  const game = (genre: 'platformer' | 'runner', cast: GenreSpec['cast']): GameSpecV1 => {
+    const read = readGameSpec(compileGenre({ genre, mode: 'default', hero: 'fox', setting: 'forest', cast } as GenreSpec));
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    return read.value;
+  };
+  const world = (spec: GameSpecV1): ArcadeWorld => {
+    const built = arcadeWorldOf(spec, 7);
+    if (!built.ok) throw new Error(built.issues.join('; '));
+    return built.world;
+  };
+  /** Popisky rolí specu, na které ukazují těla s rolí jádra `role`. */
+  const namesOf = (spec: GameSpecV1, role: number): string[] => {
+    const built = world(spec);
+    const state = instantiate(built);
+    const names: string[] = [];
+    for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
+      if (state[bodyBase(i) + BODY.role] !== role) continue;
+      const kind = built.kinds[state[bodyBase(i) + BODY.kind] as number] as string;
+      names.push(spec.roles.find((entry) => entry.id === kind)?.label ?? `no role ${kind}`);
+    }
+    return names;
+  };
+
+  it('+shoot in a platformer: every enemy body points to the thing the sentence shoots', () => {
+    const spec = game('platformer', [{ label: 'animal', does: 'shoot_at' }, { label: 'acorn', does: 'collect' }]);
+    expect(spec.addons).toContain('shoot');
+    const names = namesOf(spec, ROLE.enemy);
+    expect(names.length).toBeGreaterThan(0);
+    expect(new Set(names)).toEqual(new Set(['animal']));
+  });
+
+  it('+chaser in a runner: the chaser body points to the thing that chases', () => {
+    const spec = game('runner', [{ label: 'wolf', does: 'chase_me' }]);
+    expect(spec.addons).toContain('chaser');
+    expect(namesOf(spec, ROLE.chaser)).toEqual(['wolf']);
+  });
+
+  it('the same input builds the same state twice, whatever order the cast lists its things in', () => {
+    const cast = [{ label: 'bat', does: 'shoot_at' as const }, { label: 'wolf', does: 'chase_me' as const }, { label: 'acorn', does: 'collect' as const }];
+    const hash = (list: GenreSpec['cast']) => hashArcade(instantiate(world(game('runner', list))));
+    const first = hash(cast);
+    expect(hash(cast)).toBe(first);
+    expect(hash([cast[2]!, cast[0]!, cast[1]!])).toBe(first);
+    expect(hash([cast[1]!, cast[2]!, cast[0]!])).toBe(first);
   });
 });

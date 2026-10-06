@@ -9,6 +9,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 import duel from '../arcade/__fixtures__/duel.json';
+import flap from '../arcade/__fixtures__/flap.json';
+import platform from '../arcade/__fixtures__/platform.json';
 import runner from '../arcade/__fixtures__/runner.json';
 import shooter from '../arcade/__fixtures__/shooter.json';
 import steer from '../arcade/__fixtures__/steer.json';
@@ -16,6 +18,8 @@ import throwGame from '../arcade/__fixtures__/throw.json';
 import { enemyModel, heroModel, modelOf, modelPath, propModels, riggedCharacter } from '../arcade/models';
 import { lookOf } from '../arcade/look';
 import { draftGameSpec } from '../draft';
+import { compileGenre } from '../genre';
+import type { GenreSpec } from '../genre/contract';
 import type { GameSpecV1 } from '../spec';
 
 import { legacyDraft } from './legacy-draft';
@@ -59,6 +63,30 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(runner, 'obstacle', 'deadlines'))).toEqual({});
   });
 
+  // P39 T9: věc z věty se kreslí svým jménem v každé roli; primitiv (bodák, trubka, útes) jen bez jména z věty.
+  it('draws every hazard from its cast name and keeps the primitive only when the sentence names nothing', () => {
+    expect(propModels(withLabel(platform, 'spikes', 'animals')).spikes).toBe('dog');
+    expect(propModels(withLabel(flap, 'pipe', 'trees')).pipe).toBe('oak-tree');
+    const voyage = (cast: GenreSpec['cast']): GameSpecV1 => compileGenre({ genre: 'voyage', mode: 'race', hero: 'boat', setting: 'river', ...(cast === undefined ? {} : { cast }) } as GenreSpec);
+    expect(propModels(voyage([{ label: 'crocodiles', does: 'avoid' }])).hazard).toBe('gen3d-crocodile');
+    // Výchozí nástraha žánru zůstane primitivem jádra.
+    expect(propModels(platform as GameSpecV1).spikes).toBeUndefined();
+    expect(propModels(flap as GameSpecV1).pipe).toBeUndefined();
+    expect(propModels(voyage(undefined)).hazard).toBeUndefined();
+  });
+
+  it('a named thing without its own model takes the nearest model, never the robot or the spike', () => {
+    expect(enemyModel(withLabel(shooter, 'enemy', 'animals'))).toBe('dog');
+    // Vlk katalog nemá; „wolves“ → „wolf“ → blízký pes, ne robot ani bodák.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'wolves'))).toBe('dog');
+    expect(propModels(withLabel(platform, 'spikes', 'wolves')).spikes).toBe('dog');
+    // Nejbližší model pod prahem čtení (aligátor → krokodýl 0,55) jen jako poslední možnost před robotem.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'alligators'))).toBe('gen3d-crocodile');
+    expect(propModels(withLabel(flap, 'pipe', 'alligators')).pipe).toBe('gen3d-crocodile');
+    // Jméno, které tabulka nejbližších vůbec nezná, nechá výchozí model role.
+    expect(enemyModel(withLabel(shooter, 'enemy', 'zorbles'))).toBe('robot');
+  });
+
   it('a flappy bird is the bird, not the nest', () => {
     expect(modelOf('little bird', true)).toBe('bird');
   });
@@ -68,8 +96,17 @@ describe('arcade model choice from role labels', () => {
     expect(propModels(withLabel(runner, 'obstacle', 'traffic cones'))).toEqual({});
     expect(propModels(withLabel(runner, 'obstacle', 'wild badgers'))).toEqual({});
     expect(propModels(withLabel(throwGame, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
-    // Střelnice popisek terče nekreslí (tabulka schopností), takže ho nečte ani výběr.
-    expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({});
+  });
+
+  // P39 T14: terč střelnice nese věc z věty („collect coins, dodge ghosts and shoot bats“ dá na střelnici mince),
+  // kreslí se jejím jménem jako nástrahy z T9 – i postavou a nejbližším modelem; holý terč žánru zůstane kotoučem.
+  it('the shooter range draws its target from the cast name, the bare target stays a bullseye', () => {
+    expect(propModels(withLabel(shooter, 'target', 'rubber ducks'))).toEqual({ target: 'rubber-duck' });
+    expect(propModels(withLabel(shooter, 'target', 'coin')).target).toBe('coin');
+    expect(propModels(withLabel(shooter, 'target', 'ghosts')).target).toBe('ghost');
+    // Třída postav jako u nástrah T9: „angry mech“ katalog nemá, kreslí ho robot, ne kotouč.
+    expect(propModels(withLabel(shooter, 'target', 'angry mech')).target).toBe('robot');
+    expect(propModels(shooter as GameSpecV1).target).toBeUndefined();
   });
 
   // P27A T4: soupeř souboje a závodu z popisku – jen model, který popisek jmenuje, žádná kategorie.

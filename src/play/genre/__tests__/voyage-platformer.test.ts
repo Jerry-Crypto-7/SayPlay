@@ -100,8 +100,31 @@ describe('voyage and platformer genre modules (P32F T3)', () => {
     const game = draftGameSpec(PIRATE);
     expect(roleOf(game, 'exit')?.label).toMatch(/\btreasure$/);
     expect(game.tutorial.goalLine).toMatch(/reach the (?:buried )?treasure\.$/);
-    const ai = compileGenre({ genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city', target: { label: 'dog park', verb: 'reach', states: 2 } });
+    const ai = compileGenre({ genre: 'voyage', mode: 'race', hero: 'dog', setting: 'city', cast: [{ label: 'dog park', does: 'reach', verb: 'reach', states: 2 }] });
     expect(roleOf(ai, 'exit')?.label).toBe('dog park');
+  });
+
+  // P39 T6: každá věc obsazení dostane roli, kterou žánr umí – nikdy nezmizí.
+  it('a platformer shoots the thing it shoots at and jumps the thing it avoids', () => {
+    const game = compileGenre({
+      genre: 'platformer',
+      mode: 'default',
+      hero: 'fox',
+      setting: 'forest',
+      cast: [
+        { label: 'animal', does: 'shoot_at' },
+        { label: 'log', does: 'avoid' },
+      ],
+    });
+    expect(game.roles.find((role) => role.id === 'enemy')?.label).toBe('animal');
+    expect(game.roles.find((role) => role.id === 'spikes')?.label).toBe('log');
+    expect(game.addons).toContain('shoot');
+  });
+
+  it('a voyage dodges whatever chases or is shot at, and sails to what it collects', () => {
+    const game = compileGenre({ genre: 'voyage', mode: 'race', hero: 'boat', setting: 'ocean', cast: [{ label: 'shark', does: 'chase_me' }, { label: 'pearl', does: 'collect' }] });
+    expect(roleOf(game, 'hazard')?.label).toBe('shark');
+    expect(roleOf(game, 'exit')?.label).toBe('pearl');
   });
 
   it('every place a voyage heads for by default has a model in the catalog (P35 T8)', () => {

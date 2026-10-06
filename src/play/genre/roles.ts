@@ -7,7 +7,7 @@
 import { type LookId, lookFor } from '../arcade/look';
 
 import type { GenreModules } from './classify';
-import type { GenreId, ModelClass } from './contract';
+import { type CastItem, FOE_DOES, type GenreId, type ModelClass } from './contract';
 import { GENRE_MODULES } from './index';
 
 /**
@@ -91,7 +91,7 @@ const PLACE_ROLES: Readonly<Record<LookId, PlaceRoles>> = {
 
 /** Místo, které sady neznají („village“): nástraha podle žánru, hrdina liška, mince. */
 const UNKNOWN_PLACE: PlaceRoles = { hero: 'fox', craft: 'car', enemy: 'rock', collectible: 'coin' };
-const GENRE_ENEMY: Readonly<Record<GenreId, string>> = {
+const GENRE_FOE: Readonly<Record<GenreId, string>> = {
   runner: 'rock',
   platformer: 'spike',
   arena: 'wolf',
@@ -116,9 +116,14 @@ export function defaultHero(setting: string, genre: GenreId, sentence: string): 
   return genre === 'voyage' ? (craftOf(sentence) ?? place.craft) : place.hero;
 }
 
-/** Nepřítel, když ho věta neříká: hrad → duch, moře → žralok, sníh → lední medvěd, les → vlk, město → auto, vesmír → asteroid. */
-export function defaultEnemy(setting: string, genre: GenreId): string {
-  return placeRoles(setting)?.enemy ?? GENRE_ENEMY[genre];
+/**
+ * Nepřítel, když ho věta neříká (P39: položka obsazení). Jméno dává prostředí –
+ * hrad → duch, moře → žralok, sníh → lední medvěd, les → vlk, město → auto,
+ * vesmír → asteroid – a co dělá, žánr (`FOE_DOES`): plošinovka se vlkovi
+ * vyhýbá, střílečka ho sestřelí, načasování ho má jen jako kulisu.
+ */
+export function defaultFoe(setting: string, genre: GenreId): CastItem {
+  return { label: placeRoles(setting)?.enemy ?? GENRE_FOE[genre], does: FOE_DOES[genre] };
 }
 
 /** Sbíraná věc, když ji věta neříká. */
@@ -136,7 +141,7 @@ export function defaultTarget(verb: string): string {
 /** Každý popisek, který smlouva rolí dává místo věty – pin „žádná role mimo větu a výchozí“. */
 export const DEFAULT_LABELS: ReadonlySet<string> = new Set([
   ...[...Object.values(PLACE_ROLES), UNKNOWN_PLACE].flatMap((roles) => [roles.hero, roles.craft, roles.enemy, roles.collectible]),
-  ...Object.values(GENRE_ENEMY),
+  ...Object.values(GENRE_FOE),
   ...Object.values(TARGET_DEFAULT),
   'star',
 ]);

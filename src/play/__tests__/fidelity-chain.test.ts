@@ -34,6 +34,13 @@ describe('fidelityChain', () => {
     expect(fidelityChain({ ...named, addons: undefined }, [shoot, { item: 'zombie', slot: 'role', match: ['zombie'] }]).map((item) => item.why)).toEqual(['not-in-spec', 'not-read-by-control']);
   });
 
+  // P39 T14: terč střelnice nese věc z věty a kreslí ji jejím modelem – mince na střelnici je čtená i vidět.
+  it('counts the named thing on the shooter range as read and drawn', () => {
+    const mansion = draftGameSpec('collect coins, dodge ghosts and shoot bats in a haunted mansion');
+    expect(mansion.roles.find((role) => role.id === 'target')?.label).toBe('coin');
+    expect(stages(fidelityChain(mansion, [{ item: 'coin', slot: 'role', match: ['coin'] }]))).toEqual([['coin', true, true, true, 'ok']]);
+  });
+
   it('does not count a role label without a model as drawn', () => {
     const spec = { ...shooterFixture, roles: shooterFixture.roles.map((role) => (role.id === 'enemy' ? { ...role, label: 'stapler' } : role)) } as GameSpecV1;
     const [stapler] = fidelityChain(spec, [{ item: 'stapler', slot: 'role', match: ['stapler'] }]);
@@ -94,6 +101,49 @@ describe('fidelityChain', () => {
     expect(verb(fight, 'collect', [])).toBe('not-in-spec');
     // Sloveso mimo tabulku klasifikátoru žádný režim nehraje.
     expect(verb(quest, 'launch', ['throw'])).toBe('not-in-spec');
+  });
+
+  // P39 T2: stupeň `role` – věc z věty dělá ve hře to, co o ní věta říká, a tělo, které to dělá, nese její model.
+  describe('role stage', () => {
+    const base = legacyDraft('jump and shoot the zombies');
+    const player = base.roles.find((role) => role.kind === 'player')!;
+    const finish = base.roles.find((role) => role.id === 'finish')!;
+    // Spouštěč P39: vlk jako bodák plošinovky, střílí se do robotů (doplněk `shoot` bez role `enemy`).
+    const wolfAsSpikes = { ...base, control: 'platform', addons: ['shoot'], roles: [player, { id: 'spikes', kind: 'hazard', label: 'wolf', count: 5 }, finish] } as GameSpecV1;
+    const animal: ChecklistEntry = { item: 'animal', slot: 'role', match: ['animal', 'wolf'], does: 'shoot_at' };
+    const shoot: ChecklistEntry = { item: 'shoot', slot: 'verb', controls: ['shooter'] };
+    const roleStage = (spec: GameSpecV1, list: ChecklistEntry[]) => fidelityChain(spec, list).map((item) => [item.item, item.read, item.role]);
+
+    it('fails a shoot-at noun that the platformer plays as spikes, and the shoot verb the addon alone plays', () => {
+      expect(roleStage(wolfAsSpikes, [animal, shoot])).toEqual([
+        // Od P39 T9 bodák kreslí vlka z věty – věc je vidět, ale role (uhýbat místo střílet) dál nesedí.
+        ['animal', true, false],
+        // Doplněk sloveso hraje (`read`), ale střílí se do robotů, ne do zvířat z věty.
+        ['shoot', true, false],
+      ]);
+    });
+
+    it('passes both when the shot enemy carries the named thing', () => {
+      const wolfShot = { ...wolfAsSpikes, roles: [player, { id: 'enemy', kind: 'hazard', label: 'wolf', count: 5 }, finish] } as GameSpecV1;
+      expect(roleStage(wolfShot, [animal, shoot])).toEqual([
+        ['animal', true, true],
+        ['shoot', true, true],
+      ]);
+      // Táž věc s jinou rolí ve větě („avoid“) střílenému nepříteli neodpovídá.
+      expect(roleStage(wolfShot, [{ ...animal, does: 'avoid' }])).toEqual([['animal', true, false]]);
+      // Sloveso bez jmenovaného terče doplněk splní sám – není čí model chtít.
+      expect(roleStage(wolfAsSpikes, [shoot])).toEqual([['shoot', true, true]]);
+    });
+
+    it('reads chasers, collectibles and duel rivals as what they do', () => {
+      const escape = draftGameSpec('a cat runs from dogs in a park');
+      expect(roleStage(escape, [{ item: 'dog', slot: 'role', match: ['dog'], does: 'chase_me' }])).toEqual([['dog', true, true]]);
+      expect(roleStage(escape, [{ item: 'dog', slot: 'role', match: ['dog'], does: 'collect' }])).toEqual([['dog', true, false]]);
+      const fight = draftGameSpec('boxing a kangaroo in the australian outback');
+      expect(roleStage(fight, [{ item: 'kangaroo', slot: 'role', match: ['kangaroo'], does: 'fight' }])).toEqual([['kangaroo', true, true]]);
+      const collect = draftGameSpec('a mouse collects cheese in a kitchen');
+      expect(roleStage(collect, [{ item: 'cheese', slot: 'role', match: ['cheese'], does: 'collect' }])).toEqual([['cheese', true, true]]);
+    });
   });
 
   it('names the first stage where an item is lost', () => {

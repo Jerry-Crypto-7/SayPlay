@@ -8,6 +8,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { loadRapier } from '@/play/arcade/physics/world';
 import { draftGameSpecWithMeta } from '@/play/draft';
+import { castFor } from '@/play/genre/contract';
 import type { HeroAction } from '@/play/spec';
 
 import dev from '../../../../evals/play/p37a/dev-150.json';
@@ -49,7 +50,7 @@ describe.each(Object.entries(FAMILY_SENTENCES))('family %s on dev-150', (_family
     const text = textOf(id);
     const meta = draftGameSpecWithMeta(text, 1);
     const genre = meta.genre;
-    const label = want.object === 'collectible' ? genre?.collectible : genre?.target?.label;
+    const label = genre == null ? undefined : want.object === 'collectible' ? castFor(genre, 'collect')?.label : castFor(genre, 'reach', 'throw_at')?.label;
     return {
       id,
       genre: `${genre?.genre}.${genre?.mode}`,

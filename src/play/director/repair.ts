@@ -28,14 +28,14 @@ import switchPuzzle from '../__fixtures__/switch_puzzle.json';
 import { CAPABILITIES, controlOf, generatorOfSpec, readsMechanic } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
 import { classifyGenre } from '../genre/classify';
-import { COUNT_PARAMS, type CountRole, type GenreSpec, rulesYard } from '../genre/contract';
+import { CAST_MAX, COUNT_PARAMS, type CastItem, type CastRole, type CountRole, type GenreSpec, castFor, rulesYard } from '../genre/contract';
 import { GENRE_MODULES, readGenreSpec } from '../genre/index';
 import { ARCHETYPES, MECHANICS, MECHANIC_IDS, REGISTRY_LIMITS, type ArchetypeId, type MechanicEntry, type MechanicId, estimateCost } from '../registry';
 import { gameSpecSchema, readGameSpec, type ControlId, type GameSpecV1, type VerificationAssertion } from '../spec';
 
-import { type CriticIssue, type FidelityOptions, blockingIssues, critique, fidelity } from './critic';
+import { type CriticIssue, type FidelityIssue, type FidelityOptions, blockingIssues, critique, fidelity, saidIn, sameRole } from './critic';
 import { renderRegistry } from './prompt';
-import { type DirectorReadReason, compileGenreSpec, readModelSpec } from './read';
+import { type DirectorReadReason, ammoOfSentence, compileGenreSpec, readModelSpec } from './read';
 
 export const MAX_REPAIR_ROUNDS = 2;
 
@@ -502,54 +502,130 @@ export function applyRepairAnswer(spec: GameSpecV1, body: unknown): { ok: true; 
 // ---------------------------------------------------------------------------
 // Přepnutí žánru (P32B T5)
 
+/** Počet, který věc dané role nese (`counts`, B-R4): protivník, věc ke sběru, cíl; kulisa a hrdina žádný. */
+const COUNT_ROLE_OF: Readonly<Record<CastRole, CountRole | null>> = {
+  shoot_at: 'enemy',
+  chase_me: 'enemy',
+  avoid: 'enemy',
+  fight: 'enemy',
+  collect: 'collectible',
+  reach: 'target',
+  throw_at: 'target',
+  scenery: null,
+  hero: null,
+};
+
 /**
- * Kandidát s rolí z draftu téhož režimu místo té, kterou kontrola věrnosti jmenuje.
- * Vyměněný nepřítel bere z draftu i svůj počet (T7): „water“ se dvěma
- * pronásledovateli by jinak předal oba „fallen log“, který ve větě nehoní.
+ * Kandidát opravený podle nálezů věrnosti (P39): hrdina z draftu téhož režimu,
+ * když ho kontrola jmenuje. Z obsazení odpovědi zůstane každá věc, kterou
+ * kontrola nejmenuje – i věc z věty, kterou rychlá verze nemá nebo má jinak
+ * (AI smí role přestavět). Věc mimo větu nebo nástroj hráče nahradí věc téže
+ * role z draftu, která v obsazení ještě není (jinak vypadne); věc se špatnou
+ * rolí dostane roli z draftu, nebo ze slovesa věty; chybějící věc věty se
+ * přidá před výchozí věc své role, jinak na konec – věci věty, které odpověď
+ * napsala, zůstanou první. Role, jejíž hraná věc se vyměnila, bere z draftu
+ * i svůj počet (T7): „water“ se dvěma pronásledovateli by jinak předal oba
+ * „fallen log“, který ve větě nehoní.
  */
-function withSentenceRoles(candidate: GenreSpec, words: GenreSpec, wrong: ReadonlySet<string>): GenreSpec {
-  const hero = wrong.has('/hero') ? words.hero : candidate.hero;
-  if (!wrong.has('/enemy')) return { ...candidate, hero };
-  const { enemy: _enemy, params, counts, ...rest } = candidate;
-  const key = (COUNT_PARAMS[candidate.genre] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>)[candidate.mode]?.enemy;
-  const said = key === undefined ? undefined : words.params?.[key];
-  const kept = { ...Object.fromEntries(Object.entries(params ?? {}).filter(([name]) => name !== key)), ...(said === undefined ? {} : { [key!]: said }) };
-  const { enemy: _count, ...otherCounts } = counts ?? {};
-  const keptCounts = { ...otherCounts, ...(words.counts?.enemy === undefined ? {} : { enemy: words.counts.enemy }) };
+function withSentenceRoles(candidate: GenreSpec, words: GenreSpec, issues: readonly FidelityIssue[], sentence: string): GenreSpec {
+  const hero = issues.some((issue) => issue.path === '/hero') ? words.hero : candidate.hero;
+  const flagged = new Map(issues.flatMap((issue) => {
+    const at = /^\/cast\/(\d+)$/.exec(issue.path);
+    return at === null ? [] : [[Number(at[1]), issue] as const];
+  }));
+  const missing = issues.filter((issue) => issue.code === 'CAST_MISSING');
+  if (flagged.size === 0 && missing.length === 0) return { ...candidate, hero };
+
+  const cast = candidate.cast ?? [];
+  const drafted = words.cast ?? [];
+  const kept: CastItem[] = [];
+  const swapped = new Set<CountRole>();
+  const touch = (does: CastRole): void => {
+    const role = COUNT_ROLE_OF[does];
+    if (role !== null) swapped.add(role);
+  };
+  const taken = (label: string): boolean => [...kept, ...cast.filter((_, index) => !flagged.has(index))].some((item) => sameRole(item.label, label));
+  cast.forEach((item, index) => {
+    const issue = flagged.get(index);
+    if (issue === undefined) {
+      kept.push(item);
+      return;
+    }
+    if (issue.code === 'CAST_ROLE_WRONG') {
+      const said = drafted.find((other) => sameRole(other.label, item.label)) ?? issue.thing ?? item;
+      const fixed = { ...said, label: item.label };
+      if (COUNT_ROLE_OF[fixed.does] !== COUNT_ROLE_OF[item.does]) [item.does, fixed.does].forEach(touch);
+      kept.push(fixed);
+      return;
+    }
+    touch(item.does);
+    const role = COUNT_ROLE_OF[item.does];
+    const stand = role === null ? undefined : drafted.find((other) => COUNT_ROLE_OF[other.does] === role && !taken(other.label));
+    if (stand !== undefined) kept.push(stand);
+  });
+  // Chybějící věc věty jde před první věc své role, kterou věta neřekla (výchozí věc prostředí) – žánr hraje první
+  // věc každé role a žalud z lesa by jinak dál stínil „glowing mushrooms“ z věty. Bez takové věci jde na konec.
+  for (const { thing } of missing) {
+    if (thing === undefined || kept.some((item) => sameRole(item.label, thing.label))) continue;
+    const role = COUNT_ROLE_OF[thing.does];
+    const before = kept.findIndex((item) => role !== null && COUNT_ROLE_OF[item.does] === role && !saidIn(item.label, sentence));
+    if (before < 0) {
+      kept.push(thing);
+      continue;
+    }
+    kept.splice(before, 0, thing);
+    touch(thing.does);
+  }
+
+  const table = (COUNT_PARAMS[candidate.genre] as Readonly<Record<string, Readonly<Partial<Record<CountRole, string>>> | undefined>>)[candidate.mode] ?? {};
+  const params: Record<string, number> = { ...candidate.params };
+  const counts: Partial<Record<CountRole, number>> = { ...candidate.counts };
+  for (const role of swapped) {
+    const key = table[role];
+    delete counts[role];
+    if (words.counts?.[role] !== undefined) counts[role] = words.counts[role];
+    if (key === undefined) continue;
+    delete params[key];
+    if (words.params?.[key] !== undefined) params[key] = words.params[key];
+  }
+  const { cast: _cast, params: _params, counts: _counts, ...rest } = candidate;
   return {
     ...rest,
     hero,
-    ...(words.enemy === undefined ? {} : { enemy: words.enemy }),
-    ...(Object.keys(kept).length === 0 ? {} : { params: kept }),
-    ...(Object.keys(keptCounts).length === 0 ? {} : { counts: keptCounts }),
+    ...(kept.length === 0 ? {} : { cast: kept.slice(0, CAST_MAX) }),
+    ...(Object.keys(params).length === 0 ? {} : { params }),
+    ...(Object.keys(counts).length === 0 ? {} : { counts }),
   } as GenreSpec;
 }
 
 /**
  * Oprava žánrové odpovědi, která neprošla kontrolou věrnosti: režimy v pořadí
- * klasifikátoru (`classifyGenre().ranked`) s rolemi z odpovědi. Hrdinu nebo
- * nepřítele, které kontrola jmenuje, vezme z draftu téhož režimu, úkol bez
- * předmětu dostane předmět z věty; parametry jdou dál jen v žánru odpovědi,
- * meze má každý žánr svoje. Vrací první režim, který projde věrností, modulem
- * i kritikem; `null` = neprošel žádný a režisér vezme žánr draftu.
+ * klasifikátoru (`classifyGenre().ranked`) s obsazením z odpovědi. Hrdinu nebo
+ * věci obsazení, které kontrola jmenuje, opraví z draftu téhož režimu
+ * (`withSentenceRoles`), úkol bez předmětu dostane předmět z věty – cíl
+ * s jeho slovesem; parametry jdou dál jen v žánru odpovědi, meze má každý žánr
+ * svoje. Vrací první režim, který projde věrností, modulem i kritikem; `null` =
+ * neprošel žádný a režisér vezme žánr draftu.
  */
 export function switchGenre(answer: GenreSpec, sentence: string, options: FidelityOptions = {}): { readonly genre: GenreSpec; readonly spec: GameSpecV1 } | null {
   const reading = options.reading ?? null;
   const modules = options.modules ?? GENRE_MODULES;
-  const { params, target, ...roles } = answer;
+  const { params, ...roles } = answer;
+  const written = answer.cast ?? [];
   for (const choice of classifyGenre(sentence, reading, modules).ranked) {
     const words = draftGenreFor(sentence, choice.genre, choice.mode, { reading, modules });
     if (words === null) continue;
-    const task = target ?? words.target;
+    const task = castFor(answer, 'reach', 'throw_at') === undefined ? castFor(words, 'reach', 'throw_at') : undefined;
+    const cast = task === undefined ? written : [...written, task].slice(0, CAST_MAX);
     const moved = {
       ...roles,
       genre: choice.genre,
       mode: choice.mode,
-      ...(task === undefined ? {} : { target: task }),
+      ...(cast.length === 0 ? {} : { cast }),
       ...(params === undefined || choice.genre !== answer.genre ? {} : { params }),
     } as GenreSpec;
-    const wrong = new Set(fidelity(moved, sentence, { reading, modules }).map((issue) => issue.path));
-    const candidate = withSentenceRoles(moved, words, wrong);
+    // Hod bere náboj z věty i po přepnutí a opravě (P39 T14) – oprava náboj mimo větu zahodí a hod by vzal první sbíranou věc.
+    const candidate = ammoOfSentence(withSentenceRoles(moved, words, fidelity(moved, sentence, { reading, modules }), sentence), sentence, reading, modules);
     if (fidelity(candidate, sentence, { reading, modules }).length > 0) continue;
     const read = readGenreSpec(candidate);
     if (!read.ok) continue;

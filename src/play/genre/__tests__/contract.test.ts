@@ -14,27 +14,28 @@ import { compileArcade } from '@/play/arcade/compile';
 import { readGameSpec } from '@/play/spec';
 
 import { GENRES, GENRE_COMPILER_VERSION, GENRE_MODES, type GenreSpec, genreSpecSchema } from '../contract';
+import penguin from '../__fixtures__/penguin.json';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
 
 /** Vzorový `GenreSpec` pro každý žánr a režim – tvar, jaký napíše AI. */
 const SAMPLES: readonly GenreSpec[] = [
-  { genre: 'runner', mode: 'default', hero: 'penguin', enemy: 'rock', collectible: 'snowflake', setting: 'icy mountain slope', palette: 'snow' },
-  { genre: 'platformer', mode: 'default', hero: 'firefighter robot', enemy: 'fallen log', collectible: 'water drop', setting: 'burning forest' },
-  { genre: 'arena', mode: 'escape', hero: 'cat', enemy: 'polar bear', collectible: 'glowing fish', setting: 'frozen lake' },
-  { genre: 'arena', mode: 'collect', hero: 'little fish', enemy: 'shark', collectible: 'plankton', setting: 'coral reef' },
-  { genre: 'arena', mode: 'fight', hero: 'knight', enemy: 'black knight', setting: 'castle courtyard', palette: 'castle' },
-  { genre: 'voyage', mode: 'race', hero: 'pirate ship', enemy: 'cannonball', collectible: 'treasure', setting: 'sea between islands' },
-  { genre: 'voyage', mode: 'land', hero: 'rocket', enemy: 'meteor', setting: 'surface of Mars', palette: 'space' },
-  { genre: 'quest', mode: 'spatial', hero: 'tiny wizard', enemy: 'ghost', target: { label: 'candle', verb: 'light', states: 2 }, setting: 'haunted castle' },
-  { genre: 'quest', mode: 'station', hero: 'chef', target: { label: 'pancake', verb: 'flip', states: 3 }, setting: 'restaurant kitchen' },
-  { genre: 'shooter', mode: 'default', hero: 'space marine', enemy: 'alien bug', setting: 'mining colony', palette: 'space' },
-  { genre: 'throw', mode: 'default', hero: 'kid', target: { label: 'snowman', verb: 'hit', states: 2 }, collectible: 'snowball', setting: 'snowy backyard', palette: 'snow' },
-  { genre: 'timing', mode: 'stack', hero: 'crane operator', collectible: 'container', setting: 'harbour in a storm' },
+  { genre: 'runner', mode: 'default', hero: 'penguin', cast: [{ label: 'rock', does: 'avoid' }, { label: 'snowflake', does: 'collect' }], setting: 'icy mountain slope', palette: 'snow' },
+  { genre: 'platformer', mode: 'default', hero: 'firefighter robot', cast: [{ label: 'fallen log', does: 'avoid' }, { label: 'water drop', does: 'collect' }], setting: 'burning forest' },
+  { genre: 'arena', mode: 'escape', hero: 'cat', cast: [{ label: 'polar bear', does: 'chase_me' }, { label: 'glowing fish', does: 'collect' }], setting: 'frozen lake' },
+  { genre: 'arena', mode: 'collect', hero: 'little fish', cast: [{ label: 'shark', does: 'chase_me' }, { label: 'plankton', does: 'collect' }], setting: 'coral reef' },
+  { genre: 'arena', mode: 'fight', hero: 'knight', cast: [{ label: 'black knight', does: 'fight' }], setting: 'castle courtyard', palette: 'castle' },
+  { genre: 'voyage', mode: 'race', hero: 'pirate ship', cast: [{ label: 'cannonball', does: 'avoid' }, { label: 'treasure', does: 'collect' }], setting: 'sea between islands' },
+  { genre: 'voyage', mode: 'land', hero: 'rocket', cast: [{ label: 'meteor', does: 'avoid' }], setting: 'surface of Mars', palette: 'space' },
+  { genre: 'quest', mode: 'spatial', hero: 'tiny wizard', cast: [{ label: 'ghost', does: 'chase_me' }, { label: 'candle', does: 'reach', verb: 'light', states: 2 }], setting: 'haunted castle' },
+  { genre: 'quest', mode: 'station', hero: 'chef', cast: [{ label: 'pancake', does: 'reach', verb: 'flip', states: 3 }], setting: 'restaurant kitchen' },
+  { genre: 'shooter', mode: 'default', hero: 'space marine', cast: [{ label: 'alien bug', does: 'shoot_at' }], setting: 'mining colony', palette: 'space' },
+  { genre: 'throw', mode: 'default', hero: 'kid', cast: [{ label: 'snowman', does: 'throw_at', verb: 'hit', states: 2 }, { label: 'snowball', does: 'collect' }], setting: 'snowy backyard', palette: 'snow' },
+  { genre: 'timing', mode: 'stack', hero: 'crane operator', cast: [{ label: 'container', does: 'collect' }], setting: 'harbour in a storm' },
   { genre: 'timing', mode: 'precision', hero: 'monkey', setting: 'jungle temple' },
   { genre: 'timing', mode: 'bridge', hero: 'ninja', setting: 'mountain gorge' },
-  { genre: 'rhythm', mode: 'default', hero: 'drummer frog', collectible: 'lily pad', setting: 'pond at night' },
-  { genre: 'duel', mode: 'default', hero: 'cowboy', enemy: 'outlaw', setting: 'dusty town' },
-  { genre: 'flap', mode: 'default', hero: 'fish', collectible: 'pearl', setting: 'underwater reef' },
+  { genre: 'rhythm', mode: 'default', hero: 'drummer frog', cast: [{ label: 'lily pad', does: 'collect' }], setting: 'pond at night' },
+  { genre: 'duel', mode: 'default', hero: 'cowboy', cast: [{ label: 'outlaw', does: 'fight' }], setting: 'dusty town' },
+  { genre: 'flap', mode: 'default', hero: 'fish', cast: [{ label: 'pearl', does: 'collect' }], setting: 'underwater reef' },
 ];
 
 /** První semínko, na kterém se hra zkompiluje – dveře publikace dělají totéž. */
@@ -116,6 +117,50 @@ describe('genre contract (P32-0 T3)', () => {
     const fill = GENRE_MODULES.arena.draftFill('A cat collects glowing fish on a frozen lake while a polar bear chases it', null);
     expect(fill.genre).toBe('arena');
     expect(fill.hero).toBe('cat');
+  });
+});
+
+describe('cast list (P39 T4)', () => {
+  it('the schema has no single enemy, collectible, target or enemyMoves slot', () => {
+    const base = { genre: 'runner', mode: 'default', hero: 'penguin', setting: 'icy mountain slope' };
+    expect(genreSpecSchema.safeParse({ ...base, cast: [{ label: 'rock', does: 'avoid' }] }).success).toBe(true);
+    for (const old of [{ enemy: 'rock' }, { collectible: 'snowflake' }, { target: { label: 'flag', verb: 'reach', states: 2 } }, { enemyMoves: 'chase' }]) {
+      expect(genreSpecSchema.safeParse({ ...base, ...old }).success, Object.keys(old)[0]).toBe(false);
+    }
+    expect(genreSpecSchema.safeParse({ ...base, cast: [{ label: 'rock', does: 'dance' }] }).success).toBe(false);
+  });
+
+  it('reads an old-shape spec into the cast – the penguin fixture keeps its rock and snowflake', () => {
+    const read = readGenreSpec(penguin);
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    expect(read.value.cast).toEqual([
+      { label: 'rock', does: 'avoid' },
+      { label: 'snowflake', does: 'collect' },
+    ]);
+    expect(Object.keys(read.value)).not.toEqual(expect.arrayContaining(['enemy']));
+  });
+
+  it.each([
+    ['runner', 'default', { enemy: 'wolf', enemyMoves: 'shoot' }, [{ label: 'wolf', does: 'shoot_at' }]],
+    ['runner', 'default', { enemy: 'wolf', enemyMoves: 'chase' }, [{ label: 'wolf', does: 'chase_me' }]],
+    ['arena', 'escape', { enemy: 'guard', enemyMoves: 'patrol' }, [{ label: 'guard', does: 'chase_me', patrol: true }]],
+    ['quest', 'spatial', { enemy: 'ghost', enemyMoves: 'still' }, [{ label: 'ghost', does: 'avoid' }]],
+    ['arena', 'escape', { enemy: 'polar bear' }, [{ label: 'polar bear', does: 'chase_me' }]],
+    ['arena', 'fight', { enemy: 'black knight' }, [{ label: 'black knight', does: 'fight' }]],
+    ['shooter', 'default', { enemy: 'alien bug' }, [{ label: 'alien bug', does: 'shoot_at' }]],
+    ['platformer', 'default', { enemy: 'fallen log' }, [{ label: 'fallen log', does: 'avoid' }]],
+    ['quest', 'spatial', { target: { label: 'candle', verb: 'light', states: 2 } }, [{ label: 'candle', verb: 'light', states: 2, does: 'reach' }]],
+    ['throw', 'default', { target: { label: 'snowman', verb: 'hit', states: 2 }, collectible: 'snowball' }, [{ label: 'snowball', does: 'collect' }, { label: 'snowman', verb: 'hit', states: 2, does: 'throw_at' }]],
+  ] as const)('old %s.%s %j becomes the cast %j', (genre, mode, old, cast) => {
+    const read = readGenreSpec({ genre, mode, hero: 'fox', setting: 'forest', ...old });
+    if (!read.ok) throw new Error(read.issues.join('; '));
+    expect(read.value.cast).toEqual(cast);
+  });
+
+  it('a malformed old slot is refused, not dropped', () => {
+    expect(readGenreSpec({ genre: 'runner', mode: 'default', hero: 'fox', setting: 'forest', enemy: '' }).ok).toBe(false);
+    expect(readGenreSpec({ genre: 'quest', mode: 'spatial', hero: 'fox', setting: 'forest', target: 42 }).ok).toBe(false);
+    expect(readGenreSpec({ genre: 'quest', mode: 'spatial', hero: 'fox', setting: 'forest', target: { label: 'candle', states: 7 } }).ok).toBe(false);
   });
 });
 

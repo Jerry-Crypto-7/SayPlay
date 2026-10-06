@@ -13,7 +13,7 @@
 import { RHYTHM } from '../arcade/pieces/rhythm';
 import { singular } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Tempo výchozí, délka písničky v sekundách výchozí a v mezích (doby = délka × tempo, nejvýš `RHYTHM.maxBeats`). */
 export const RHYTHM_GENRE = { bpm: 120, seconds: 33, minSeconds: 30, maxSeconds: 48 } as const;
@@ -37,7 +37,8 @@ export const rhythmGenre: GenreModule<'rhythm'> = {
   availability: () => 'ready',
   compile: (spec) => {
     const { bpm = RHYTHM_GENRE.bpm, seconds = RHYTHM_GENRE.seconds } = spec.params ?? {};
-    const note = spec.collectible ?? 'tile';
+    // Nota je věc, kterou věta sbírá; bez ní věc, do které se střílí nebo hází – ťuk do ní na dobu (P39).
+    const note = castFor(spec, 'collect', 'shoot_at', 'throw_at')?.label ?? 'tile';
     return legacySpec(spec, {
       control: 'rhythm',
       // Brzký a pozdní ťuk odpuštěný jako skok skákačky (P37A T7).
@@ -65,7 +66,7 @@ export const rhythmGenre: GenreModule<'rhythm'> = {
       mode: 'default',
       ...(hero === undefined ? {} : { hero }),
       ...(setting === undefined ? {} : { setting }),
-      ...(note === undefined ? {} : { collectible: note }),
+      ...(note === undefined ? {} : { cast: [{ label: note, does: 'collect' as const }] }),
     };
   },
 };

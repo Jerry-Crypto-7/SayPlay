@@ -12,7 +12,7 @@
 
 import { FLAP_TRACK } from '../arcade/pieces/flap';
 
-import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Délka trati výchozí a v mezích: pod 180 m robot doletí pod 30 s. */
 export const FLAP_GENRE = { lengthM: 220, minLengthM: 180 } as const;
@@ -37,8 +37,9 @@ export const flapGenre: GenreModule<'flap'> = {
       objective: { kind: 'reach', description: 'Flap through the gaps between the pipes to the finish.', role: 'finish' },
       mechanics: [livesMechanic()],
       roles: [
-        { id: 'pipe', kind: 'hazard', label: 'pipe' },
-        { id: 'coin', kind: 'collectible', label: spec.collectible ?? 'coin' },
+        // Poletování umí jen překážku: čemu se uhýbá, co se střílí, honí nebo bije, je trubka s jeho jménem (P39).
+        { id: 'pipe', kind: 'hazard', label: castFor(spec, 'avoid', 'shoot_at', 'chase_me', 'fight', 'throw_at')?.label ?? 'pipe' },
+        { id: 'coin', kind: 'collectible', label: castFor(spec, 'collect', 'reach')?.label ?? 'coin' },
         { id: 'finish', kind: 'exit', label: 'finish line' },
       ],
       tutorial: { goalLine: 'Fly through the gaps to the finish. They get tighter.', controlsHint: 'Tap or Space to flap.' },
@@ -46,13 +47,14 @@ export const flapGenre: GenreModule<'flap'> = {
     });
   },
   draftFill: (sentence, reading) => {
-    const { hero, setting, collectible } = draftRoles(sentence, reading);
+    const { hero, setting, cast } = draftRoles(sentence, reading);
+    const items = cast?.filter((item) => item.does === 'collect') ?? [];
     return {
       genre: 'flap',
       mode: 'default',
       ...(hero === undefined ? {} : { hero }),
       ...(setting === undefined ? {} : { setting }),
-      ...(collectible === undefined ? {} : { collectible }),
+      ...(items.length === 0 ? {} : { cast: items }),
     };
   },
 };

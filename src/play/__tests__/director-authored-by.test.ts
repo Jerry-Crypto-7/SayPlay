@@ -21,7 +21,8 @@ import { readGenreAnswer } from '../director/read';
 import type { RepairIssue } from '../director/repair';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
-const SENTENCE = 'Collect five glowing mushrooms in a moonlit forest, then escape through the portal';
+/** Věta, které je výchozí odpověď (`genreAnswer`: vlk a žaludy lesa) věrná – P39 soudí obsazení proti větě. */
+const SENTENCE = 'Collect five acorns in a moonlit forest, then escape through the portal';
 
 const by = (body: unknown, model: string) => ({ ...answered(body), provenance: { branch: 'fake', model } });
 

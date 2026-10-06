@@ -13,7 +13,7 @@ import { lookFor } from '../arcade/look';
 import { OBSTACLE_KINDS, RUNNER_DENSITIES, RUNNER_SECTIONS, RUNNER_SPEEDS, RUNNER_TRACK } from '../arcade/pieces/runner';
 import { nounPhrase, singular } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, addonRoles, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Překážka z věty: čemu se hrdina vyhýbá, co přeskakuje nebo podbíhá. */
 const OBSTACLE_CUE =
@@ -63,7 +63,9 @@ export const runnerGenre: GenreModule<'runner'> = {
   },
   availability: () => 'ready',
   compile: (spec) => {
-    const obstacle = spec.enemy ?? 'rock';
+    // Čemu se uhýbá, je překážka; soupeř zblízka a terč hodu taky – běžec je jinak zahrát neumí (P39).
+    const obstacle = castFor(spec, 'avoid', 'fight', 'throw_at')?.label ?? 'rock';
+    const finish = castFor(spec, 'reach')?.label ?? 'finish line';
     const palette = spec.palette ?? lookFor(spec.setting) ?? undefined;
     const { lengthM, speed, density, ride, items, obstacles: rows } = spec.params ?? {};
     const game = legacySpec(palette === undefined ? spec : { ...spec, palette }, {
@@ -86,10 +88,12 @@ export const runnerGenre: GenreModule<'runner'> = {
       // Počet role čte generátor (`COUNTED_ROLES`): řady překážek a mince na trati.
       roles: [
         { id: 'obstacle', kind: 'hazard', label: obstacle, ...(rows === undefined ? {} : { count: rows }) },
-        { id: 'coin', kind: 'collectible', label: spec.collectible ?? 'coin', ...(items === undefined ? {} : { count: items }) },
-        { id: 'finish', kind: 'exit', label: 'finish line' },
+        { id: 'coin', kind: 'collectible', label: castFor(spec, 'collect')?.label ?? 'coin', ...(items === undefined ? {} : { count: items }) },
+        { id: 'finish', kind: 'exit', label: finish },
+        // Co se střílí a co honí, hraje doplněk (`withEnemyAddon`).
+        ...addonRoles(spec),
       ],
-      tutorial: { goalLine: 'Reach the finish line. Jump, slide and switch lanes.', controlsHint: 'Tap or Space to jump, swipe or arrows to change lane.' },
+      tutorial: { goalLine: `Reach the ${finish}. Jump, slide and switch lanes.`, controlsHint: 'Tap or Space to jump, swipe or arrows to change lane.' },
       mood: 'energetic',
     });
     // Bez jízdy `theme` bez pole – tvar hry je stejný jako před T5-R1.
@@ -100,14 +104,15 @@ export const runnerGenre: GenreModule<'runner'> = {
     // Čtení modelem má přednost; bez něj překážka z věty běžce („avoids rocks“) před nepřítelem ze slovníku.
     const readEnemy = reading?.roles.some((role) => ENEMY_KINDS.includes(role.kind)) === true;
     const dodged = phraseAfter(OBSTACLE_CUE, sentence);
-    const enemy = readEnemy || dodged === null ? roles.enemy : singular(dodged);
+    // Draft bere z obsazení první věc každé role: překážka z věty jde před protivníka ze slovníku.
+    const cast = readEnemy || dodged === null ? (roles.cast ?? []) : [{ label: singular(dodged), does: 'avoid' as const }, ...(roles.cast ?? [])];
     const setting = roles.setting ?? phraseAfter(COURSE_CUE, sentence) ?? undefined;
     const palette = setting === undefined ? null : lookFor(setting);
     return {
       genre: 'runner',
       mode: 'default',
       ...roles,
-      ...(enemy === undefined ? {} : { enemy }),
+      ...(cast.length === 0 ? {} : { cast }),
       ...(setting === undefined ? {} : { setting }),
       ...(palette === null ? {} : { palette }),
       ...(RIDE_WORDS.test(sentence.toLowerCase()) ? { params: { ride: 1 } } : {}),

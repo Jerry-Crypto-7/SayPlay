@@ -140,6 +140,17 @@ describe('classifyGenre', () => {
     expect(result.ranked[0].why).toContain('reading');
   });
 
+  // P39 T5: hlavní sloveso říká, co jeho předmět ve hře dělá; pohyb a načasování předmět obsazení nemají.
+  it('says what the main verb does to its object', () => {
+    const does = (sentence: string) => classifyGenre(sentence, null, GENRE_MODULES).does;
+    expect(does('shoot the aliens in space')).toBe('shoot_at');
+    expect(does('throw balls at rubber ducks')).toBe('throw_at');
+    expect(does('A knight fights three wolves')).toBe('fight');
+    expect(does('A tiny wizard must light five candles in a haunted castle')).toBe('reach');
+    expect(does('a cat collects fish in a kitchen')).toBe('collect');
+    expect(does('run through a city')).toBeNull();
+  });
+
   it('explains the pick in words the reading panel can show', () => {
     expect(top('Two knights duel in a castle').why).toMatch(/duel/);
   });

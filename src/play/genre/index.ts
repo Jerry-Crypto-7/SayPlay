@@ -8,7 +8,7 @@ import { CAPABILITIES } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 
 import { arenaGenre } from './arena';
-import { type EnemyMove, type GenreId, type GenreModule, type GenreSpec, type ParamBounds, countIssues, genreSpecSchema, withCounts } from './contract';
+import { type CastRole, FOE_DOES, type GenreId, type GenreModule, type GenreSpec, type ParamBounds, countIssues, genreSpecSchema, legacyCast, withCounts } from './contract';
 import { duelGenre } from './duel';
 import { flapGenre } from './flap';
 import { platformerGenre } from './platformer';
@@ -55,7 +55,7 @@ export type GenreSpecResult = { readonly ok: true; readonly value: GenreSpec } |
 
 /** Tvar podle `genreSpecSchema`, pak parametry proti mezím modulu žánru. */
 export function readGenreSpec(input: unknown): GenreSpecResult {
-  const parsed = genreSpecSchema.safeParse(input);
+  const parsed = genreSpecSchema.safeParse(legacyCast(input));
   if (!parsed.success) return { ok: false, issues: parsed.error.issues.map((issue) => `/${issue.path.join('/')}: ${issue.message}`) };
   const bounds = paramBoundsOf(GENRE_MODULES[parsed.data.genre] as GenreModule);
   const issues = Object.entries(parsed.data.params ?? {}).flatMap(([key, value]) => {
@@ -91,7 +91,7 @@ export function compileWith(module: GenreModule, spec: GenreSpec): GameSpecV1 {
   if (module.clockParam !== undefined && depth.timeLimit !== undefined && depth.timeLimit > 0) own[module.clockParam] = depth.timeLimit;
   const { params: _params, ...rest } = spec;
   const plain = (Object.keys(own).length === 0 ? rest : { ...rest, params: own }) as GenreSpec;
-  const game = withEnemyAddon(withDepth(module.compile(withCounts(plain) as never), depth), spec.enemyMoves);
+  const game = withEnemyAddon(withDepth(module.compile(withCounts(plain) as never), depth), spec);
   // Činnost hrdiny je jen vzhled (P37A T3): modul ji nečte, hra ji dostane hotová.
   return spec.heroAction === undefined ? game : { ...game, heroAction: spec.heroAction };
 }
@@ -120,22 +120,28 @@ export function withDepth(spec: GameSpecV1, depth: Depth): GameSpecV1 {
   };
 }
 
-/** Chování nepřítele jako doplněk ovládání (`chase` → pronásledovatel, `shoot` → střelba). */
-const ENEMY_ADDONS: Partial<Readonly<Record<EnemyMove, AddonId>>> = { chase: 'chaser', shoot: 'shoot' };
+/** Role obsazení jako doplněk ovládání (`chase_me` → pronásledovatel, `shoot_at` → střelba). */
+const ENEMY_ADDONS: Partial<Readonly<Record<CastRole, AddonId>>> = { chase_me: 'chaser', shoot_at: 'shoot' };
 
 /**
  * Doplněk jen hře, která staví trať ovládáním (běžec, skákačka) a ovládání ho
  * bere (`CAPABILITIES`). Hra s generátorem režimu (aréna, plavba, úkol) hraje
- * chování ve svém modulu, nebo ho nemá čím zahrát.
+ * chování ve svém modulu podle `does` (lovec, hlídka). Role, kterou žánr hraje
+ * sám (`FOE_DOES`: aréna honí, střílečka střílí), doplněk nedostane. Každá
+ * role obsazení dostane svůj doplněk (P39 T7), v pořadí obsazení.
  */
-function withEnemyAddon(spec: GameSpecV1, move: EnemyMove | undefined): GameSpecV1 {
-  const addon = move === undefined ? undefined : ENEMY_ADDONS[move];
+function withEnemyAddon(spec: GameSpecV1, genre: Pick<GenreSpec, 'genre' | 'cast'>): GameSpecV1 {
   const generator = (spec.controlParams as { readonly generator?: string } | undefined)?.generator;
-  if (addon === undefined || generator !== undefined || spec.control === undefined || !CAPABILITIES[spec.control].addons.includes(addon)) return spec;
+  if (generator !== undefined || spec.control === undefined) return spec;
+  const allowed = CAPABILITIES[spec.control].addons;
+  const wanted = new Set((genre.cast ?? []).map((item) => (item.does === FOE_DOES[genre.genre] ? undefined : ENEMY_ADDONS[item.does])));
+  // Pevné pořadí (pronásledovatel, střelba), ne pořadí obsazení: doplňky přidávají těla, takže pořadí obsazení by pohnulo hashem světa (T8).
+  const added = Object.values(ENEMY_ADDONS).filter((addon) => wanted.has(addon) && allowed.includes(addon));
+  if (added.length === 0) return spec;
   const fireHint = `${spec.tutorial.controlsHint} F or Fire to shoot.`;
   return {
     ...spec,
-    addons: [...new Set([...(spec.addons ?? []), addon])],
-    ...(addon === 'shoot' && fireHint.length <= 80 ? { tutorial: { ...spec.tutorial, controlsHint: fireHint } } : {}),
+    addons: [...new Set([...(spec.addons ?? []), ...added])],
+    ...(added.includes('shoot') && fireHint.length <= 80 ? { tutorial: { ...spec.tutorial, controlsHint: fireHint } } : {}),
   };
 }

@@ -63,15 +63,6 @@ export type ModelClass = (typeof MODEL_CLASSES)[number];
 /** Popisek role: anglické podstatné jméno z věty („polar bear“). */
 const label = z.string().min(1).max(60);
 
-/** Předmět úkolu: co hráč dělá (`verb`) a kolik viditelných stavů předmět projde. */
-export const genreTargetSchema = z
-  .object({
-    label,
-    verb: z.string().min(1).max(24),
-    states: z.union([z.literal(2), z.literal(3)]),
-  })
-  .strict();
-
 /** Role, jejichž počet věta říká („grab 5 coins“, „two ghosts“). */
 export const COUNT_ROLES = ['enemy', 'collectible', 'target'] as const;
 export type CountRole = (typeof COUNT_ROLES)[number];
@@ -94,14 +85,34 @@ export const ruleRoleSchema = z
   .strict();
 
 /**
- * Jak se nepřítel chová (P36A T8), namapované na existující kusy: `chase` =
- * pronásledovatel (doplněk `chaser`, honiči arény a úkolu), `patrol` = honič
- * bloudí, dokud hráče nezahlédne, `shoot` = nepřátelé, které hráč sestřelí
- * (doplněk `shoot`), `still` = nepřítel stojí (úkol bez honiče). Žánr, který
- * chování nemá čím zahrát, ho přejde – dnešní hra.
+ * Co věc z věty ve hře dělá (P39): uzavřený seznam odvozený ze slovesa, které
+ * k věci ve větě patří. `shoot_at` = hráč ji sestřelí, `chase_me` = honí hráče,
+ * `avoid` = překážka nebo hrozba, `collect` = sbírá se, `reach` = cíl cesty,
+ * `fight` = soupeř zblízka, `throw_at` = terč hodu, `scenery` = kulisa bez
+ * pravidla (i věc, kterou věta nese, ale seznam pro ni roli nemá – projektil).
  */
-export const ENEMY_MOVES = ['chase', 'patrol', 'shoot', 'still'] as const;
-export type EnemyMove = (typeof ENEMY_MOVES)[number];
+export const CAST_ROLES = ['hero', 'shoot_at', 'chase_me', 'avoid', 'collect', 'reach', 'fight', 'throw_at', 'scenery'] as const;
+export type CastRole = (typeof CAST_ROLES)[number];
+
+/** Nejvíc položek obsazení – víc věcí, než kolik jich věta unese. */
+export const CAST_MAX = 8;
+
+/**
+ * Položka obsazení (P39): věc z věty a co ve hře dělá. Předmět úkolu nese i
+ * sloveso a počet viditelných stavů (`verb`, `states`), honič, který bloudí,
+ * dokud hráče nezahlédne, `patrol`. Vlastní instance pro každou variantu ze
+ * stejného důvodu jako `heroAction`.
+ */
+const castItem = () =>
+  z
+    .object({
+      label,
+      does: z.enum(CAST_ROLES),
+      verb: z.string().min(1).max(24).optional(),
+      states: z.union([z.literal(2), z.literal(3)]).optional(),
+      patrol: z.boolean().optional(),
+    })
+    .strict();
 
 const variant = <G extends GenreId>(genre: G) =>
   z
@@ -109,16 +120,13 @@ const variant = <G extends GenreId>(genre: G) =>
       genre: z.literal(genre),
       mode: z.enum(GENRE_MODES[genre]),
       hero: label,
-      enemy: label.optional(),
-      /** Chování nepřítele (P36A T8); bez něj žánr hraje své výchozí. */
-      enemyMoves: z.enum(ENEMY_MOVES).optional(),
+      /** Každá věc z věty kromě hrdiny a co dělá (P39); žánr ji mapuje na své role podle `does`. */
+      cast: z.array(castItem()).max(CAST_MAX).optional(),
       /**
        * Co hrdina viditelně dělá (P37A T3, rodina slovesa); překlad ho propíše do hry beze změny, bez něj hra pole nemá.
        * Vlastní instance výčtu: sdílenou by JSON Schema režiséra vypsalo jako odkaz `$ref`, který jeho validátor nečte.
        */
       heroAction: z.enum(HERO_ACTIONS).optional(),
-      collectible: label.optional(),
-      target: genreTargetSchema.optional(),
       setting: z.string().min(1).max(80),
       /** Sada vzhledu a její paleta (`arcade/look`); bez ní se hádá ze `setting`. */
       palette: z.enum(LOOK_IDS).optional(),
@@ -156,6 +164,84 @@ export const genreSpecSchema = z.discriminatedUnion('genre', [
 ]);
 export type GenreSpec = z.infer<typeof genreSpecSchema>;
 export type GenreSpecOf<G extends GenreId> = Extract<GenreSpec, { readonly genre: G }>;
+export type CastItem = NonNullable<GenreSpec['cast']>[number];
+
+/**
+ * Co dělá věc z věty, o které věta neříká co: role, kterou žánr hraje sám –
+ * běžci a plošinovce se vyhýbá, v aréně a úkolu honí, ve střílečce se
+ * sestřelí, v souboji se bije. Načasování, rytmus a hod nepřítele nemají.
+ * Čte ji výchozí obsazení prostředí (`roles.ts`) i převod starého tvaru.
+ */
+export const FOE_DOES: Readonly<Record<GenreId, CastRole>> = {
+  runner: 'avoid',
+  platformer: 'avoid',
+  arena: 'chase_me',
+  voyage: 'avoid',
+  quest: 'chase_me',
+  shooter: 'shoot_at',
+  throw: 'scenery',
+  timing: 'scenery',
+  rhythm: 'scenery',
+  duel: 'fight',
+  flap: 'avoid',
+};
+
+/**
+ * Věc obsazení pro roli žánru (P39): první položka s rolí `does[0]`, jinak
+ * `does[1]`… Žánr, který roli věty neumí, ji takhle čte jako nejbližší, kterou
+ * umí (střílená věc je v poletování překážka) – nikdy ji nezahodí.
+ */
+export function castFor(spec: Pick<GenreSpec, 'cast'>, ...does: readonly CastRole[]): CastItem | undefined {
+  for (const role of does) {
+    const found = spec.cast?.find((item) => item.does === role);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
+/**
+ * Role hry pro věci, které hraje doplněk ovládání (P39): střelba míří na roli
+ * `enemy`, pronásledovatel je role druhu `chaser`. Model a měření je čtou
+ * podle popisku (`enemyModel`, `chaserModel`), jinak by kreslily robota.
+ */
+export function addonRoles(spec: Pick<GenreSpec, 'cast'>): { readonly id: string; readonly kind: 'hazard' | 'chaser'; readonly label: string }[] {
+  const shot = castFor(spec, 'shoot_at');
+  const chaser = castFor(spec, 'chase_me');
+  return [
+    ...(shot === undefined ? [] : [{ id: 'enemy', kind: 'hazard' as const, label: shot.label }]),
+    ...(chaser === undefined ? [] : [{ id: 'chaser', kind: 'chaser' as const, label: chaser.label }]),
+  ];
+}
+
+/** Chování nepřítele ve starém tvaru (`enemyMoves`, P36A T8) → co dělá. */
+const MOVE_DOES: Readonly<Record<string, CastRole>> = { chase: 'chase_me', patrol: 'chase_me', shoot: 'shoot_at', still: 'avoid' };
+
+/** Předmět úkolu ve starém tvaru (`target`): hod na něj míří, střílečka ho sestřelí, jinde je to cíl. */
+const TARGET_DOES: Readonly<Partial<Record<GenreId, CastRole>>> = { throw: 'throw_at', shooter: 'shoot_at' };
+
+/**
+ * Starý tvar `GenreSpec` (do P39: `enemy`, `enemyMoves`, `collectible`,
+ * `target`) → obsazení. Nese ho fixtura a odpověď, kterou model napíše
+ * postaru; uložené hry nesou přeložený `GameSpecV1` a převod nepotřebují.
+ * Vadný starý slot se převede taky, ať ho schéma odmítne – nezahodí se.
+ * Vstup bez starých slotů vrací beze změny.
+ */
+export function legacyCast(input: unknown): unknown {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) return input;
+  const { enemy, enemyMoves, collectible, target, ...rest } = input as Record<string, unknown>;
+  if (enemy === undefined && enemyMoves === undefined && collectible === undefined && target === undefined) return input;
+  const genre = rest.genre as GenreId;
+  // Neznámé chování („fly“) zůstane, jak je, ať ho schéma odmítne.
+  const foe = (typeof enemyMoves === 'string' ? (MOVE_DOES[enemyMoves] ?? enemyMoves) : undefined) ?? (genre === 'arena' && rest.mode === 'fight' ? 'fight' : (FOE_DOES[genre] ?? 'avoid'));
+  const goal = TARGET_DOES[genre] ?? 'reach';
+  const cast = [
+    ...(Array.isArray(rest.cast) ? (rest.cast as unknown[]) : []),
+    ...(enemy === undefined ? [] : [{ label: enemy, does: foe, ...(enemyMoves === 'patrol' ? { patrol: true } : {}) }]),
+    ...(collectible === undefined ? [] : [{ label: collectible, does: 'collect' }]),
+    ...(target === undefined ? [] : [typeof target === 'object' && target !== null ? { ...target, does: goal } : { label: target, does: goal }]),
+  ];
+  return cast.length === 0 ? rest : { ...rest, cast };
+}
 
 export type ParamBounds = Readonly<Record<string, { readonly min: number; readonly max: number }>>;
 
@@ -317,18 +403,30 @@ export function rulesYard(spec: GameSpecV1): GameSpecV1 {
 /** „polar bear“ → „Polar Bear“ pro titulek hry. */
 export const titleCase = (text: string): string => text.replace(/\b\p{L}/gu, (letter) => letter.toUpperCase());
 
+/** Druh role ve čtení modelem → co věc dělá. */
+const READ_DOES: Readonly<Record<string, CastRole>> = { chaser: 'chase_me', threat: 'avoid', hazard: 'avoid', obstacle: 'avoid' };
+
 /** Hrdina, nepřítel, sbíraná věc a prostředí z věty; čtení modelem má přednost před slovníkem. */
-export function draftRoles(sentence: string, reading: Reading | null): Pick<Partial<GenreSpec>, 'hero' | 'enemy' | 'collectible' | 'setting'> {
+export function draftRoles(sentence: string, reading: Reading | null): Pick<Partial<GenreSpec>, 'hero' | 'cast' | 'setting'> {
   const words = readRoles(sentence);
-  const read = (kinds: readonly string[]): string | null => reading?.roles.find((role) => kinds.includes(role.kind))?.noun ?? null;
   const hero = reading?.hero ?? words.player;
-  const enemy = read(['chaser', 'threat', 'hazard', 'obstacle']) ?? words.threat?.label ?? words.chaser ?? words.hazard;
-  const collectible = read(['collectible', 'item']) ?? words.collectible;
+  const readFoe = reading?.roles.find((role) => role.kind in READ_DOES);
+  const foe: CastItem | null =
+    readFoe !== undefined
+      ? { label: readFoe.noun, does: READ_DOES[readFoe.kind] as CastRole }
+      : words.threat !== null
+        ? { label: words.threat.label, does: words.threat.mover === 'chaser' ? 'chase_me' : 'avoid' }
+        : words.chaser !== null
+          ? { label: words.chaser, does: 'chase_me' }
+          : words.hazard === null
+            ? null
+            : { label: words.hazard, does: 'avoid' };
+  const collectible = reading?.roles.find((role) => role.kind === 'collectible' || role.kind === 'item')?.noun ?? words.collectible;
+  const cast = [...(foe === null ? [] : [foe]), ...(collectible === null ? [] : [{ label: collectible, does: 'collect' as const }])];
   const setting = reading?.setting ?? words.setting;
   return {
     ...(hero === null ? {} : { hero }),
-    ...(enemy === null ? {} : { enemy }),
-    ...(collectible === null ? {} : { collectible }),
+    ...(cast.length === 0 ? {} : { cast }),
     ...(setting === null ? {} : { setting }),
   };
 }

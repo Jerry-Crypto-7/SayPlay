@@ -207,7 +207,7 @@ describe('rhythm feel: 2 – early and late taps', () => {
 
 const GENRES: Readonly<Record<string, GenreSpec>> = {
   flap: { genre: 'flap', mode: 'default', hero: 'parrot', setting: 'jungle canyon' },
-  'timing.stack': { genre: 'timing', mode: 'stack', hero: 'chef', collectible: 'pancake', setting: 'diner kitchen' },
+  'timing.stack': { genre: 'timing', mode: 'stack', hero: 'chef', cast: [{ label: 'pancake', does: 'collect' }], setting: 'diner kitchen' },
   'timing.precision': { genre: 'timing', mode: 'precision', hero: 'robot', setting: 'factory' },
   'timing.bridge': { genre: 'timing', mode: 'bridge', hero: 'goat', setting: 'canyon' },
   rhythm: { genre: 'rhythm', mode: 'default', hero: 'frog', setting: 'pond' },

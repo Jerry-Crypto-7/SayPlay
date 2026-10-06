@@ -5,12 +5,12 @@
     "fidelity": 30
   },
   "mentions": {
-    "mentions": 163,
+    "mentions": 160,
     "before": 110,
     "now": 143
   },
   "nouns": {
-    "distinct": 117,
+    "distinct": 114,
     "before": 75,
     "now": 102
   },
@@ -36,7 +36,7 @@
       "now": 12
     },
     "target": {
-      "mentions": 21,
+      "mentions": 18,
       "before": 12,
       "now": 15
     },
@@ -48,21 +48,21 @@
   },
   "bySet": {
     "demand": {
-      "mentions": 94,
+      "mentions": 92,
       "now": 82,
-      "nouns": 82,
+      "nouns": 80,
       "nounsNow": 72
     },
     "fidelity": {
-      "mentions": 69,
+      "mentions": 68,
       "now": 61,
-      "nouns": 65,
+      "nouns": 64,
       "nounsNow": 58
     },
     "hostile": {
-      "mentions": 24,
+      "mentions": 23,
       "now": 19,
-      "nouns": 23,
+      "nouns": 22,
       "nounsNow": 19
     }
   },
@@ -208,30 +208,30 @@
     "before-CC0 (7c411db)": {
       "models": 86,
       "nouns": {
-        "distinct": 117,
+        "distinct": 114,
         "now": 43
       },
       "mentions": {
-        "mentions": 163,
+        "mentions": 160,
         "now": 67
       },
       "bySet": {
         "demand": {
-          "mentions": 94,
+          "mentions": 92,
           "now": 40,
-          "nouns": 82,
+          "nouns": 80,
           "nounsNow": 31
         },
         "fidelity": {
-          "mentions": 69,
+          "mentions": 68,
           "now": 27,
-          "nouns": 65,
+          "nouns": 64,
           "nounsNow": 25
         },
         "hostile": {
-          "mentions": 24,
+          "mentions": 23,
           "now": 9,
-          "nouns": 23,
+          "nouns": 22,
           "nounsNow": 9
         }
       }
@@ -239,30 +239,30 @@
     "after-T7 (e0aa52c)": {
       "models": 102,
       "nouns": {
-        "distinct": 117,
+        "distinct": 114,
         "now": 59
       },
       "mentions": {
-        "mentions": 163,
+        "mentions": 160,
         "now": 85
       },
       "bySet": {
         "demand": {
-          "mentions": 94,
+          "mentions": 92,
           "now": 49,
-          "nouns": 82,
+          "nouns": 80,
           "nounsNow": 40
         },
         "fidelity": {
-          "mentions": 69,
+          "mentions": 68,
           "now": 36,
-          "nouns": 65,
+          "nouns": 64,
           "nounsNow": 34
         },
         "hostile": {
-          "mentions": 24,
+          "mentions": 23,
           "now": 12,
-          "nouns": 23,
+          "nouns": 22,
           "nounsNow": 12
         }
       }
@@ -270,30 +270,30 @@
     "now": {
       "models": 912,
       "nouns": {
-        "distinct": 117,
+        "distinct": 114,
         "now": 102
       },
       "mentions": {
-        "mentions": 163,
+        "mentions": 160,
         "now": 143
       },
       "bySet": {
         "demand": {
-          "mentions": 94,
+          "mentions": 92,
           "now": 82,
-          "nouns": 82,
+          "nouns": 80,
           "nounsNow": 72
         },
         "fidelity": {
-          "mentions": 69,
+          "mentions": 68,
           "now": 61,
-          "nouns": 65,
+          "nouns": 64,
           "nounsNow": 58
         },
         "hostile": {
-          "mentions": 24,
+          "mentions": 23,
           "now": 19,
-          "nouns": 23,
+          "nouns": 22,
           "nounsNow": 19
         }
       }

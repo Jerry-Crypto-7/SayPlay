@@ -42,10 +42,22 @@ import throwTemplate from '../arcade/__fixtures__/throw.json';
 import timingTemplate from '../arcade/__fixtures__/timing.json';
 import type { Reading } from '../read/schema';
 import { type GenreChoice, type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
-import { COUNT_PARAMS, COUNT_ROLES as GENRE_COUNT_ROLES, type CountRole, type GenreId, type GenreModule, type GenreSpec } from '../genre/contract';
+import {
+  CAST_MAX,
+  COUNT_PARAMS,
+  COUNT_ROLES as GENRE_COUNT_ROLES,
+  FOE_DOES,
+  type CastItem,
+  type CastRole,
+  type CountRole,
+  type GenreId,
+  type GenreModule,
+  type GenreSpec,
+} from '../genre/contract';
 import { familyOf, heroActionOf } from '../genre/families';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
-import { defaultCollectible, defaultEnemy, defaultHero, defaultTarget, heroFits } from '../genre/roles';
+import { defaultCollectible, defaultFoe, defaultHero, defaultTarget, heroFits } from '../genre/roles';
+import { AMMO_VERB } from '../genre/throw';
 import { lookFor, lookWords } from '../arcade/look';
 import { modelOf } from '../arcade/models';
 import { THROW_GOAL_LABELS } from '../arcade/pieces/throw';
@@ -69,6 +81,7 @@ import {
   SMASH,
   UNDERWATER,
   WATCHER,
+  NUMBER_WORDS,
   nounPhrase,
   plural,
   readCountedNouns,
@@ -548,7 +561,7 @@ const FILLERS: Record<ArchetypeId, (spec: GameSpecV1, read: Read) => void> = {
     // Id `roomba` drží fixtura (hashe); popisek „giant Roomba“ nová hra nedědí – bez pronásledovatele ve větě ho dá místo (P32B T3).
     // „escapes a haunted castle“: místo, odkud se utíká, pronásledovatel není.
     const chaser = role(spec, 'roomba');
-    chaser.label = label(foeIn(read.roles.chaser), defaultEnemy(spec.theme.setting, 'arena'));
+    chaser.label = label(foeIn(read.roles.chaser), defaultFoe(spec.theme.setting, 'arena').label);
     const speed = /\b(fast|quick|speedy|twice as fast)\b/.test(read.text) ? 'fast' : /\b(slow|sluggish)\b/.test(read.text) ? 'slow' : 'normal';
     mechanic(spec, 'chaser').speed = speed;
     spec.objective.description = cap(`Reach the exit before the ${chaser.label} catches you.`, 120);
@@ -1087,6 +1100,29 @@ const thing = (label: string | null | undefined): string | null => (label === nu
 /** „escape from a haunted hospital“: místo, odkud se utíká, není pronásledovatel; „a goblin castle“ ale jmenuje goblina. */
 const foeIn = (label: string | null | undefined): string | null => (label === null || label === undefined ? null : isPlace(label) ? otherCreature(label, '') : label);
 
+/** Role, ve kterých věc hráče ohrožuje, nebo se do ní střílí či bije: protivník obsazení. */
+const FOE_ROLES: ReadonlySet<CastRole> = new Set<CastRole>(['shoot_at', 'chase_me', 'avoid', 'fight']);
+/** „three wolves“: číslovka říká počet, ne jméno věci. */
+const COUNT_WORD = new RegExp(`^(?:\\d+|${Object.keys(NUMBER_WORDS).join('|')}) `);
+
+/**
+ * Obsazení bez dvojic (P39): číslovka jméno nedělá, roli drží první výskyt.
+ * Role žánru (`core`) se liší jménem; věc jmenovaná větou (`spoken`), jejíž
+ * jméno končí jménem věci už obsazené nebo naopak („drone“ po „security
+ * drone“), tam už je. Nejvýš `CAST_MAX` položek.
+ */
+function castOf(core: readonly CastItem[], spoken: readonly CastItem[] = []): CastItem[] {
+  const cast: CastItem[] = [];
+  const add = (item: CastItem, loose: boolean): void => {
+    const label = cap(item.label.replace(COUNT_WORD, ''), 60);
+    const same = (other: string): boolean => other === label || (loose && (other.endsWith(` ${label}`) || label.endsWith(` ${other}`)));
+    if (!cast.some((known) => same(known.label))) cast.push({ ...item, label });
+  };
+  for (const item of core) add(item, false);
+  for (const item of spoken) add(item, true);
+  return cast.slice(0, CAST_MAX);
+}
+
 /**
  * Věta → `GenreSpec` žánru a režimu `choice` (P32B T2): role dá `draftFill`
  * modulu, mezery doplní čtečky věty z tohohle souboru, co chybí úplně, dá
@@ -1103,6 +1139,10 @@ function draftGenre(
 ): { readonly genre: GenreSpec; readonly spec: GameSpecV1; readonly heroSaid: boolean } | null {
   const module = modules[choice.genre] as GenreModule;
   const fill = module.draftFill(sentence, reading) as Partial<GenreSpec>;
+  // Doplněk modulu dává obsazení; draft z něj bere první věc každé role (modul řadí, co má přednost).
+  const fillFoe = fill.cast?.find((item) => FOE_ROLES.has(item.does));
+  const fillItem = fill.cast?.find((item) => item.does === 'collect');
+  const fillGoal = fill.cast?.find((item) => item.does === 'reach');
   const text = sentence.toLowerCase().replace(/\s+/g, ' ').trim();
   const roles = withPlace(rolesFrom(sentence, reading), sentence);
   const nouns = sentenceNouns(sentence);
@@ -1135,7 +1175,7 @@ function draftGenre(
   // Úkol: u hodu a střelby je předmětem terč („throw balls at rubber ducks“, „shooter against asteroids“), jinak předmět slovesa.
   const aimed = verb === 'hit' || verb === 'shoot' || verb === 'throw' || ranking.verb === null ? thing(roles.target) : null;
   // Skákačka: cíl úrovně a jeho sloveso vyčte `draftFill` modulu („to find its battery“, P35 T3).
-  const filledTarget = choice.genre === 'platformer' ? (fill.target ?? null) : null;
+  const filledTarget = choice.genre === 'platformer' ? (fillGoal ?? null) : null;
   // Hod (P36A T10): terč je to, na co se hází („at kids“, „into a hoop“, převlek „angry birds but with cats and cardboard boxes“);
   // předmět slovesa je, co se hází, jen když nestojí za předložkou („throwing at a spinning log“) – „knife throwing“ hází nůž.
   // Bez terče z věty rozhodne druh cíle modulu.
@@ -1155,9 +1195,9 @@ function draftGenre(
   // Přenos: spor má soupeřem člověka věty, útěk to, co děsí – a bez toho věc, které se hrdina brání („refusing to take her medicine“).
   const twistFoe = twist === null ? null : fight ? (twist.person ?? twist.foe) : (twist.foe ?? (escape ? twist.thing : null));
   const foe = fight
-    ? (twistFoe ?? roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fill.enemy))
+    ? (twistFoe ?? roles.target ?? duelFoe(sentence) ?? namedFoe(sentence) ?? pair ?? cleanLabel(fillFoe?.label))
     : (twistFoe ??
-      foeIn(cleanLabel(fill.enemy)) ??
+      foeIn(cleanLabel(fillFoe?.label)) ??
       foeIn(roles.threat?.label) ??
       (catcher === undefined ? null : singular(catcher)) ??
       nouns.avoid ??
@@ -1168,8 +1208,8 @@ function draftGenre(
   const enemy = foe === null || singular(foe) === target || toolsOf(sentence).includes(singular(foe)) ? null : singular(foe);
   const throwsAt = ranking.after !== null && /^(?:at|into|onto|on|to|toward|towards)\s/.test(ranking.after);
   // Rodina úklidu (P37A T3) sbírá, co věta uklízí („rakes autumn leaves“), dřív než věc z prostředí.
-  const swept = family?.object === 'collectible' ? (thing(cleanLabel(fill.collectible) ?? roles.collectible) ?? object) : null;
-  const pickup = swept ?? thing(cleanLabel(fill.collectible) ?? roles.collectible ?? nouns.pickup);
+  const swept = family?.object === 'collectible' ? (thing(cleanLabel(fillItem?.label) ?? roles.collectible) ?? object) : null;
+  const pickup = swept ?? thing(cleanLabel(fillItem?.label) ?? roles.collectible ?? nouns.pickup);
   // Přenos nesbírá ani neskládá kulisu („help my kid with homework at the kitchen table“).
   const heard = twist !== null && pickup !== null && isScenery(pickup) ? null : pickup;
   // Přenos: věc věty, kterou hrdina nezahnal jako soupeře; kus, který se skládá nebo hraje („pay the electricity bill“, „fold towels“), je předmět slovesa.
@@ -1177,8 +1217,14 @@ function draftGenre(
   const piece = twist !== null && (choice.genre === 'timing' || choice.genre === 'rhythm') && object !== null && !isPerson(object) && !isScenery(object) ? object : null;
   const found = thrown ? (thing(THROWN_BEFORE.exec(text)?.[1]) ?? (throwsAt ? null : object) ?? thing(roles.collectible)) : noVerb ? (twistThing ?? heard) : (heard ?? piece ?? twistThing);
   const collectible = found === null ? null : singular(found);
+  // P39: každá věc, kterou věta jmenuje se slovesem, i předmět hlavního slovesa – kromě místa, hrdiny a nástroje
+  // („shoots arrows at goblins“: šíp letí, terčem je goblin – T7).
+  const heroLabel = heroSaid === null ? null : singular(heroSaid);
+  const verbThing = object === null || ranking.does === null || toolsOf(sentence).includes(singular(object)) ? [] : [{ label: singular(object), does: ranking.does }];
+  const spoken = [...roles.named, ...verbThing].filter(({ label }) => !isPlace(label) && label !== heroLabel);
+  const saidFoe = spoken.find((item) => item.does === null || FOE_ROLES.has(item.does))?.label ?? null;
   // „at kids“, „at rubber ducks“: fráze, která jmenuje roli, není místo; přednost má místo, které sada zná.
-  const named = new Set([target, enemy, collectible].flatMap((label) => (label === null ? [] : [singular(label)])));
+  const named = new Set([target, enemy, collectible, ...spoken.map((item) => item.label)].flatMap((label) => (label === null ? [] : [singular(label)])));
   const placeOf = (phrase: string | null, known: boolean): string | null => (phrase === null || named.has(singular(phrase)) || (known && lookFor(phrase) === null) ? null : phrase);
   const filled = cleanLabel(fill.setting);
   const setting = placeOf(filled, true) ?? placeOf(roles.setting, true) ?? placeOf(filled, false) ?? placeOf(roles.setting, false) ?? VERB_SETTING[verb] ?? GENRE_SETTING[choice.genre];
@@ -1186,7 +1232,10 @@ function draftGenre(
   const hero = heroSaid ?? defaultHero(setting, choice.genre, sentence);
   // Nepřítel a sbíraná věc, které věta neříká, jsou z prostředí (P32B T3) – jen když nezdvojí roli, kterou hra už má.
   const spare = (label: string, taken: readonly (string | null)[]): string | null => (named.has(label) || taken.includes(label) ? null : label);
-  const foeLabel = enemy ?? spare(defaultEnemy(setting, choice.genre), [singular(hero)]);
+  // Les dá vlka, jen když věta žádného protivníka nejmenuje. Skákačka a poletování mají vlastní překážku
+  // (bodák, trubka), kterou protivník z prostředí nepřejmenuje – primitiv zůstává, kde věta nic neřekla.
+  const ownHazard = choice.genre === 'platformer' || choice.genre === 'flap';
+  const foeLabel = enemy ?? saidFoe ?? (ownHazard ? null : spare(defaultFoe(setting, choice.genre).label, [singular(hero)]));
   // Útěk s věcí ke sběru je sběr (T5b, skutečná Aréna): věc, kterou věta neříká, by z „survive the storm“ udělala sbírání.
   // Plavba věc nesbírá – její věc je cíl cesty; bez věci ve větě jede k místu z prostředí (P35 T8), ne pro minci.
   // Střílečka nic nesbírá a hod hází, co řekne věta, jinak míč – věc z prostředí by z mince udělala náboj.
@@ -1199,20 +1248,35 @@ function draftGenre(
   const params = Object.keys(depth).length === 0 ? own : { ...own, ...depth };
   // „Two knights duel“: počítaný podmět je hrdina i soupeř – číslovka říká, kolik jich je v souboji, ne kolik soupeřů.
   const counts = countsOf(sentence, reading, { enemy: foeLabel === pair ? null : foeLabel, collectible: itemLabel, target });
+  // P38: střelba na skoku nebo běhu – protivník bez slovesa se sestřelí a `compileWith` z toho udělá doplněk `shoot`.
+  const rideShot = ranking.ride === 'shoot' && (choice.genre === 'platformer' || choice.genre === 'runner');
+  const ownFoe: CastRole = rideShot ? 'shoot_at' : fight ? 'fight' : FOE_DOES[choice.genre];
+  // Co věc dělá: sloveso u ní ve větě, pak doplněk modulu (čtení modelem), pak role, kterou žánr hraje sám.
+  const doesOf = (label: string, own: CastRole): CastRole => spoken.find((item) => item.label === label)?.does ?? (fillFoe?.label === label ? fillFoe.does : own);
+  // Sbírací sloveso, které doplněk modulu dal věci („gather 3 apples“ ve skákačce), zůstane u ní.
+  const itemVerb = fill.cast?.find((item) => item.does === 'collect' && item.verb !== undefined && singular(item.label) === itemLabel)?.verb;
+  // „find its battery“: věc, která je i cílem a nemá sbírací sloveso, je cíl – jinak by ji `castOf` nechal jako bonus a cíl zahodil.
+  const goalItem = !thrown && itemLabel !== null && itemLabel === target && itemVerb === undefined;
+  // Co hod hází, je náboj (projektil = `scenery` se slovesem hodu, P39 T14), ne věc ke sběru – ta zůstane, jak ji věta říká.
+  const item: CastItem | null =
+    itemLabel === null || goalItem ? null : thrown ? { label: itemLabel, does: 'scenery', verb: AMMO_VERB } : { label: itemLabel, does: 'collect', ...(itemVerb === undefined ? {} : { verb: itemVerb }) };
+  const cast = castOf([
+    ...(foeLabel === null ? [] : [{ label: foeLabel, does: doesOf(foeLabel, ownFoe) }]),
+    ...(item === null ? [] : [item]),
+    ...(target === null ? [] : [{ label: target, does: thrown ? ('throw_at' as const) : ('reach' as const), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? (3 as const) : (2 as const) }]),
+  ], spoken.map((item) => ({ label: item.label, does: item.does ?? ownFoe })));
+  // Střelba bez terče ve větě střílí do protivníka z prostředí.
+  const fallbackShot = rideShot && !cast.some((item) => item.does === 'shoot_at') ? spare(defaultFoe(setting, choice.genre).label, [singular(hero)]) : null;
   const candidate = {
     genre: choice.genre,
     mode: choice.mode,
     hero: cap(hero, 60),
     // Činnost hrdiny rodiny slovesa (P37A T3) je jen vzhled; bez rodiny pole chybí jako dřív.
     ...(heroAction === null ? {} : { heroAction }),
-    ...(foeLabel === null ? {} : { enemy: cap(foeLabel, 60) }),
-    ...(itemLabel === null ? {} : { collectible: cap(itemLabel, 60) }),
-    ...(target === null ? {} : { target: { label: cap(target, 60), verb: (filledTarget?.verb ?? verb).slice(0, 24), states: choice.mode === 'station' ? 3 : 2 } }),
+    cast: fallbackShot === null ? cast : castOf([...cast, { label: fallbackShot, does: 'shoot_at' }]),
     setting: cap(setting, 80),
     ...(place === null ? {} : { palette: place }),
     ...(params === null ? {} : { params }),
-    // P38: střelba na skoku nebo běhu – `compileWith` z ní udělá doplněk `shoot`.
-    ...(ranking.ride === 'shoot' && (choice.genre === 'platformer' || choice.genre === 'runner') ? { enemyMoves: 'shoot' } : {}),
   };
   const bounded = boundedCounts(candidate as GenreSpec, counts, module);
   const read = readGenreSpec(bounded === null ? candidate : { ...candidate, counts: bounded });

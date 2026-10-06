@@ -58,7 +58,7 @@ function robot(spec: GameSpecV1): RepairIssue[] {
 const answer = (rules: readonly unknown[] = throwRock.answer.rules) => ({
   plan: throwRock.answer.plan,
   spec: {
-    ...genreAnswer({ genre: 'quest', mode: 'spatial', hero: 'shepherd', enemy: undefined, collectible: undefined, setting: throwRock.answer.setting, palette: undefined }).spec,
+    ...genreAnswer({ genre: 'quest', mode: 'spatial', hero: 'shepherd', cast: undefined, setting: throwRock.answer.setting, palette: undefined }).spec,
     ruleRoles: throwRock.answer.ruleRoles,
     things: null,
     rules,

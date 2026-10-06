@@ -26,7 +26,7 @@
  *
  * Offline mapa ztrát (P27A T2) – slovní draft a kompilace bez sítě a bez
  * modelu, zapíše `evals/play/fidelity/draft-chain.json`:
- *   node --experimental-strip-types scripts/play-fidelity.mjs --offline
+ *   node --experimental-strip-types scripts/play-fidelity.mjs --offline [--set dev] [--out evals/play/p39/offline.json]   (P39: `read`, `drawn`, `role` i po žánrech)
  * S `--run <id>` zapíše korpus i zamčenou sadu `judge-10.json` zvlášť do
  * `runs/<id>.json` a `draft-chain.json` nechá (P28D).
  *
@@ -156,6 +156,9 @@ export function summarize(results) {
       // P27A T1: podíl položek, které scéna nakreslí – vedle `inSpec` a `read`, nenahrazuje je.
       drawnFinal: mean(results.map((result) => specFidelity(result[finalOf(result)].spec, result.checklist).drawnScore)),
       drawnDraft: mean(results.map((result) => specFidelity(result.draft.spec, result.checklist).drawnScore)),
+      // P39 T2: podíl položek ve správné roli (`ChecklistEntry.does`).
+      roleFinal: mean(results.map((result) => specFidelity(result[finalOf(result)].spec, result.checklist).roleScore)),
+      roleDraft: mean(results.map((result) => specFidelity(result.draft.spec, result.checklist).roleScore)),
     },
     recognizable: {
       final: recognition(results, finalOf),
@@ -176,6 +179,28 @@ const CAUSES = 5;
 
 const share = (hit, of) => (of === 0 ? 0 : Math.round((hit / of) * 1000) / 1000);
 
+/** Ovládání → žánr (P39): hra žánru s generátorem nese žánr v jeho jménu, ostatní ovládáním. */
+const CONTROL_GENRE = { runner: 'runner', platform: 'platformer', shooter: 'shooter', throw: 'throw', timing: 'timing', rhythm: 'rhythm', duel: 'duel', flap: 'flap', steer: 'voyage', move_free: 'arena', tap_go: 'grid' };
+const GENERATOR_GENRE = { arena_escape: 'arena', arena_collect: 'arena', fight: 'arena', voyage_race: 'voyage', voyage_land: 'voyage', quest_spatial: 'quest', quest_station: 'quest' };
+
+export function genreOfSpec(spec) {
+  const generator = spec.controlParams?.generator;
+  return GENERATOR_GENRE[generator] ?? CONTROL_GENRE[spec.control ?? 'tap_go'] ?? spec.control;
+}
+
+/** `read`, `drawn` a `role` po žánrech (P39 T3): průměr podílů položek přes věty žánru. */
+export function stagesByGenre(rows) {
+  const groups = new Map();
+  for (const row of rows) groups.set(row.genre, [...(groups.get(row.genre) ?? []), row]);
+  const mean = (values) => Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 1000) / 1000;
+  const part = (row, stage) => (row.items.length === 0 ? 0 : row.items.filter((item) => item[stage]).length / row.items.length);
+  return Object.fromEntries(
+    [...groups.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([genre, list]) => [genre, { sentences: list.length, read: mean(list.map((row) => part(row, 'read'))), drawn: mean(list.map((row) => part(row, 'drawn'))), role: mean(list.map((row) => part(row, 'role'))) }]),
+  );
+}
+
 /**
  * Korpus přes slovní draft a kompilaci, bez sítě: každá položka se všemi
  * stupni řetězu, souhrn a nejčetnější příčiny ztráty (`why` × ovládání × slot)
@@ -187,6 +212,7 @@ export function offlineChain(sentences, draftOf = (sentence) => draftGameSpec(se
     return {
       id: sentence.id,
       text: sentence.text,
+      genre: genreOfSpec(spec),
       control: spec.control ?? 'tap_go',
       addons: spec.addons ?? [],
       compiled: compileGame(spec, 1).ok,
@@ -194,6 +220,7 @@ export function offlineChain(sentences, draftOf = (sentence) => draftGameSpec(se
     };
   });
   const items = rows.flatMap((row) => row.items);
+  const named = sentences.flatMap((sentence, index) => rows[index].items.filter((_, at) => sentence.checklist[at].does !== undefined));
   const count = (pick) => items.filter(pick).length;
   const groups = new Map();
   for (const row of rows) {
@@ -217,7 +244,11 @@ export function offlineChain(sentences, draftOf = (sentence) => draftGameSpec(se
       inSpec: share(count((item) => item.inSpec), items.length),
       read: share(count((item) => item.read), items.length),
       drawn: share(count((item) => item.drawn), items.length),
+      role: share(count((item) => item.role), items.length),
+      // Jen věci, kterým sada dala očekávanou roli (`does`) – tam, kde se role může minout.
+      roleNamed: share(named.filter((item) => item.role).length, named.length),
     },
+    byGenre: stagesByGenre(rows),
     causes,
     sentences: rows,
   };
@@ -324,14 +355,72 @@ async function offlineReaderRun(runId, endpoint) {
   console.log(`reader -> ${path}`);
 }
 
-function offline() {
-  const body = offlineChain(loadSet());
+/** Souhrn řádků `{ genre, items, checklist }`: podíly stupňů, `roleNamed` jen nad věcmi s očekávanou rolí, a po žánrech. */
+function stageSummary(rows) {
+  const items = rows.flatMap((row) => row.items);
+  const named = rows.flatMap((row) => row.items.filter((_, at) => row.checklist[at].does !== undefined));
+  const part = (list, stage) => share(list.filter((item) => item[stage]).length, list.length);
+  return {
+    summary: { sentences: rows.length, items: items.length, read: part(items, 'read'), drawn: part(items, 'drawn'), role: part(items, 'role'), roleNamed: part(named, 'role') },
+    byGenre: stagesByGenre(rows),
+  };
+}
+
+/**
+ * `roles --run <id> [--set dev] --out <path>` (P39 T3/T13): `read`, `drawn` a `role` po žánrech
+ * třikrát – rychlá verze offline, rychlá verze ze serveru a výsledná verze živého běhu
+ * (AI verze, když vyšla, jinak rychlá). Seznam se bere ze sady, ne z uloženého běhu.
+ */
+function roles(options) {
+  if (typeof options.run !== 'string' || typeof options.out !== 'string') throw new Error('roles needs --run <id> and --out <path>');
+  const sentences = loadSet(typeof options.set === 'string' ? options.set : 'dev');
+  const offlineBody = offlineChain(sentences);
+  const runDir = join(DIR, 'runs', options.run);
+  const results = sentences.filter((sentence) => existsSync(join(runDir, `${sentence.id}.json`))).map((sentence) => ({ sentence, result: readJson(join(runDir, `${sentence.id}.json`)) }));
+  const rowsOf = (pick) =>
+    results.map(({ sentence, result }) => {
+      const spec = pick(result);
+      return { id: sentence.id, genre: genreOfSpec(spec), checklist: sentence.checklist, items: specFidelity(spec, sentence.checklist).items };
+    });
+  const draftRows = rowsOf((result) => result.draft.spec);
+  const finalRows = rowsOf((result) => (result.ai ? result.ai.spec : result.draft.spec));
   const header = {
-    about: 'P27A T2 offline loss map: the fidelity corpus through the word draft and the compiler, no network, no model. See README.md.',
+    about: 'P39 role fidelity: read, drawn and role (the thing plays the role the sentence gives it) per genre, offline quick version and a live run through the director. See README.md.',
+    set: typeof options.set === 'string' ? options.set : 'dev',
+    runId: options.run,
     measuredAt: new Date().toISOString(),
     commit: commit(),
   };
-  writeJson(join(DIR, 'draft-chain.json'), { header, ...body });
+  const body = {
+    header,
+    offline: { summary: offlineBody.summary, byGenre: offlineBody.byGenre },
+    live: {
+      measured: results.length,
+      aiPublished: results.filter(({ result }) => result.ai !== null).length,
+      draft: stageSummary(draftRows),
+      final: stageSummary(finalRows),
+    },
+    sentences: finalRows.map((row, index) => ({
+      id: row.id,
+      genre: { draft: draftRows[index].genre, final: row.genre },
+      ai: results[index].result.ai !== null,
+      lost: row.items.filter((item) => !item.role).map((item) => `${item.item}: ${item.why === 'ok' ? 'wrong-role' : item.why}`),
+    })),
+  };
+  writeJson(resolve(ROOT, options.out), body);
+  console.log(JSON.stringify({ offline: body.offline.summary, live: { measured: body.live.measured, aiPublished: body.live.aiPublished, draft: body.live.draft.summary, final: body.live.final.summary } }, null, 1));
+}
+
+/** `--offline [--set dev] [--out <path>]`: mapa ztrát nad sadou (bez `--set` korpus do `draft-chain.json`). */
+function offline({ set, out } = {}) {
+  const name = typeof set === 'string' ? set : undefined;
+  const body = offlineChain(loadSet(name));
+  const header = {
+    about: `P27A T2 offline loss map: ${name ?? 'the fidelity corpus'} through the word draft and the compiler, no network, no model. See README.md.`,
+    measuredAt: new Date().toISOString(),
+    commit: commit(),
+  };
+  writeJson(typeof out === 'string' ? resolve(ROOT, out) : join(DIR, 'draft-chain.json'), { header, ...body });
   console.log(JSON.stringify({ summary: body.summary, causes: body.causes.map((cause) => `${cause.sentences}× ${cause.why} ${cause.control}/${cause.slot}`) }, null, 1));
 }
 
@@ -750,7 +839,7 @@ function modelSummary(name, { results, billed, concurrency }) {
     refused,
     published: { ok: published.length, of: scored.length, share: share(published.length, scored.length), failures },
     sources: { authored, cached: published.filter((result) => result.ai.source === 'cached').length },
-    fidelity: { inSpec: mean(finals.map(inSpec)), read: mean(finals.map((final) => final.score)), drawn: mean(finals.map((final) => final.drawnScore)) },
+    fidelity: { inSpec: mean(finals.map(inSpec)), read: mean(finals.map((final) => final.score)), drawn: mean(finals.map((final) => final.drawnScore)), role: mean(finals.map((final) => final.roleScore)) },
     firstPlayableFrameMs: {
       aiP50: quantile(frames((result) => (result.ai?.published === true ? result.ai.frameMs : null)), 0.5),
       aiP95: quantile(frames((result) => (result.ai?.published === true ? result.ai.frameMs : null)), 0.95),
@@ -944,7 +1033,7 @@ async function compare(options) {
         const result = runs[name].results.find((row) => row.id === sentence.id);
         if (result.error !== undefined) return [name, { error: result.error }];
         const final = specFidelity(result.ai?.published === true ? result.ai.spec : result.draft.spec, result.checklist);
-        return [name, { outcome: result.ai?.published === true ? result.ai.source : (result.upgrade.reason ?? result.upgrade.status), cause: result.cause, aiFrameMs: result.ai?.frameMs ?? null, draftFrameMs: result.draft.frameMs, read: final.score, drawn: final.drawnScore }];
+        return [name, { outcome: result.ai?.published === true ? result.ai.source : (result.upgrade.reason ?? result.upgrade.status), cause: result.cause, aiFrameMs: result.ai?.frameMs ?? null, draftFrameMs: result.draft.frameMs, read: final.score, drawn: final.drawnScore, role: final.roleScore }];
       }),
     ),
   }));
@@ -1158,6 +1247,7 @@ function summary(options) {
         inSpec: Math.round((final.items.filter((item) => item.inSpec).length / final.items.length) * 1000) / 1000,
         read: final.score,
         drawn: final.drawnScore,
+        role: final.roleScore,
       },
       lost: final.items.filter((item) => item.why !== 'ok').map((item) => `${item.item}: ${item.why}`),
     };
@@ -1174,12 +1264,13 @@ if (isMain) {
   const step = options._[0];
   if (options.offline && typeof options.reader === 'string') await offlineReaderRun(typeof options.run === 'string' ? options.run : 'p29b-reader', options.reader);
   else if (options.offline && typeof options.run === 'string') offlineRun(options.run);
-  else if (options.offline) offline();
+  else if (options.offline) offline(options);
   else if (typeof options.models === 'string') process.exitCode = await compare(options);
   else if (step === 'run') await run(options);
   else if (step === 'judge') judge(options);
   else if (step === 'report') report(options);
   else if (step === 'summary') summary(options);
+  else if (step === 'roles') roles(options);
   else {
     console.error('usage: node scripts/play-fidelity.mjs run|judge|report|summary [--run <id>] [--base <url>] [--only <ids>] [--set dev|test|judge-10.json] [--open-test-once] [--clip] [--draft-only] [--gpu] [--note <text>] | --offline | --models astra,oss20b --set dev [--concurrency 2] [--cap-usd 3] [--port 3331]');
     process.exit(2);

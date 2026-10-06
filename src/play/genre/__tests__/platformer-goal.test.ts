@@ -18,7 +18,7 @@ import { runBot } from '@/play/arcade/verify';
 import { draftGenreFor } from '@/play/draft/draft';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
-import type { GenreSpec } from '../contract';
+import { type GenreSpec, castFor } from '../contract';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '../index';
 
 const COLLECT = 'A squirrel leaps across branches to collect acorns and reach the cave';
@@ -58,7 +58,7 @@ function coinsIn(world: ArcadeWorld): number {
 describe('platformer goal from the sentence (P35 T3)', () => {
   it('collect: carry every item to the goal the sentence names', () => {
     const spec = fill(COLLECT);
-    expect(spec.target).toMatchObject({ label: 'cave', verb: 'collect' });
+    expect(castFor(spec, 'reach')).toMatchObject({ label: 'cave', verb: 'collect' });
     const { game, world } = play(spec);
     expect(game.tutorial.goalLine).toBe('Collect 5 acorns and reach the cave.');
     expect(game.objective.description).toBe('Collect 5 acorns and reach the cave.');
@@ -81,7 +81,10 @@ describe('platformer goal from the sentence (P35 T3)', () => {
 
   it('collect: the count from the sentence, and the flag when it names no goal', () => {
     const spec = draftGenreFor(GATHER, 'platformer', 'default');
-    expect(spec).toMatchObject({ collectible: 'apple', counts: { collectible: 3 }, target: { verb: 'gather' } });
+    expect(spec).toMatchObject({ counts: { collectible: 3 } });
+    // Bez cíle ve větě nese sbírací sloveso sama věc (P39 T7).
+    expect(castFor(spec!, 'collect')).toMatchObject({ label: 'apple', verb: 'gather' });
+    expect(castFor(spec!, 'reach')).toBeUndefined();
     const { game, world } = play(spec!);
     expect(game.tutorial.goalLine).toBe('Collect 3 apples and reach the flag.');
     expect(roleOf(game, 'finish')?.label).toBe('flag');
@@ -92,7 +95,7 @@ describe('platformer goal from the sentence (P35 T3)', () => {
 
   it('find: reaching the goal wins, items are a bonus', () => {
     const spec = fill(FIND);
-    expect(spec.target).toMatchObject({ label: 'crown', verb: 'find' });
+    expect(castFor(spec, 'reach')).toMatchObject({ label: 'crown', verb: 'find' });
     const { game, world } = play(spec);
     expect(game.tutorial.goalLine).toBe('Find the crown.');
     expect(game.objective.description).toBe('Find the crown.');
@@ -101,9 +104,18 @@ describe('platformer goal from the sentence (P35 T3)', () => {
     expect(world.rules).toContainEqual({ id: 'finish', params: {} });
   });
 
+  it('find: the goal stays the goal through the offline draft, not a pickup of the same name', () => {
+    const spec = draftGenreFor('A robot jumps to find its battery', 'platformer', 'default');
+    expect(castFor(spec!, 'reach')).toMatchObject({ label: 'battery', verb: 'find' });
+    expect(spec!.cast?.filter((item) => item.label === 'battery')).toHaveLength(1);
+    const { game } = play(spec!);
+    expect(game.tutorial.goalLine).toBe('Find the battery.');
+    expect(roleOf(game, 'finish')?.label).toBe('battery');
+  });
+
   it('reach: the goal the sentence names, through the offline draft too', () => {
     const spec = draftGenreFor(REACH, 'platformer', 'default');
-    expect(spec?.target).toMatchObject({ label: 'rocket', verb: 'reach' });
+    expect(castFor(spec!, 'reach')).toMatchObject({ label: 'rocket', verb: 'reach' });
     const { game } = play(spec!);
     expect(game.tutorial.goalLine).toBe('Reach the rocket.');
     expect(roleOf(game, 'finish')?.label).toBe('rocket');
@@ -112,7 +124,7 @@ describe('platformer goal from the sentence (P35 T3)', () => {
 
   it('no goal in the sentence: the flag and the old goal line stay', () => {
     const spec = fill(PLAIN);
-    expect(spec.target).toBeUndefined();
+    expect(castFor(spec, 'reach')).toBeUndefined();
     const { game, world } = play(spec);
     expect(game.tutorial.goalLine).toBe('Reach the flag. Jump over gaps and hazards.');
     expect(roleOf(game, 'finish')?.label).toBe('flag');

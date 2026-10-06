@@ -20,7 +20,7 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { avoidingLosses } from '@/play/arcade/rules/bot';
 import { runBot, verifyArcade } from '@/play/arcade/verify';
 import { applyRemix, remixPatch } from '@/play/director/remix';
-import { type GenreModule, type GenreSpec, withCounts } from '@/play/genre/contract';
+import { type GenreModule, type GenreSpec, legacyCast, withCounts } from '@/play/genre/contract';
 import { GENRE_MODULES, compileGenre, readGenreSpec } from '@/play/genre/index';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
@@ -70,8 +70,11 @@ describe('depth fields in the director answer (P36A T8)', () => {
     expect(idlePatrolled.tick).toBeGreaterThan(idleChased.tick);
   });
 
-  it('a still enemy in a quest means no hunter at the start (later rounds still bring pressure, T4)', () => {
-    const spec = game({ ...guards, params: { chasers: 2 }, enemyMoves: 'still' });
+  // P39 T7: stojící nepřítel je v obsazení věc, které se hráč vyhýbá – ve hře zůstane vidět jako lovec.
+  // Úkol bez lovce na startu říká `chasers: 0` (later rounds still bring pressure, T4).
+  it('a still enemy in a quest stays a visible hunter; zero chasers means no hunter at the start', () => {
+    expect(game({ ...guards, params: { chasers: 2 }, enemyMoves: 'still' }).roles).toContainEqual(expect.objectContaining({ kind: 'chaser', label: 'guard' }));
+    const spec = game({ ...guards, params: { chasers: 0 }, enemyMoves: 'still' });
     expect(spec.roles.some((role) => role.kind === 'chaser')).toBe(false);
     expect((spec.controlParams as { readonly tuning: { readonly chasers: number } }).tuning.chasers).toBe(0);
     world(spec);
@@ -84,6 +87,14 @@ describe('depth fields in the director answer (P36A T8)', () => {
     expect(shooting.addons).toEqual(['shoot']);
     world(chased);
     world(shooting);
+  });
+
+  // P39 T7: každá role obsazení dostane svůj doplněk, ne jen první.
+  it('a runner with a thing that chases and a thing to shoot gets both, and the robot still wins', () => {
+    const both = game({ genre: 'runner', mode: 'default', hero: 'fox', setting: 'forest trail', cast: [{ label: 'wolf', does: 'chase_me' }, { label: 'bat', does: 'shoot_at' }] });
+    expect(both.addons).toEqual(['chaser', 'shoot']);
+    expect(both.tutorial.controlsHint).toMatch(/Fire to shoot/);
+    world(both);
   });
 
   it('target score and time limit reach the scoring and a losing clock', () => {
@@ -102,13 +113,14 @@ describe('depth fields in the director answer (P36A T8)', () => {
   });
 
   it('an answer without the new fields builds the same game as before', () => {
-    const answers: GenreSpec[] = [
+    // Odpovědi starého tvaru jdou přes převod na obsazení jako ve `readGenreSpec` (P39).
+    const answers = [
       runner,
       { genre: 'platformer', mode: 'default', hero: 'frog', setting: 'swamp' },
-      { genre: 'arena', mode: 'escape', hero: 'mouse', enemy: 'cat', setting: 'kitchen', params: { chasers: 2 } },
+      { genre: 'arena', mode: 'escape', hero: 'mouse', cast: [{ label: 'cat', does: 'chase_me' }], setting: 'kitchen', params: { chasers: 2 } },
       { genre: 'voyage', mode: 'race', hero: 'sailboat', setting: 'bay' },
       guards,
-    ];
+    ].map((answer) => legacyCast(answer) as GenreSpec);
     for (const answer of answers) expect(compileGenre(answer)).toEqual((GENRE_MODULES[answer.genre] as GenreModule).compile(withCounts(answer) as never));
   });
 

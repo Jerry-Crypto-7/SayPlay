@@ -83,7 +83,9 @@ describe('off-topic sentences on dev-150 (n01–n40)', () => {
 describe('the absurd twist', () => {
   const play = (text: string) => {
     const meta = draftGameSpecWithMeta(text, 1);
-    return { game: `${meta.genre?.genre}.${meta.genre?.mode}`, hero: meta.genre?.hero, enemy: meta.genre?.enemy, collectible: meta.genre?.collectible, target: meta.genre?.target?.label, goal: meta.spec.tutorial?.goalLine };
+    // Obsazení (P39): protivník, věc ke sběru a cíl jsou první položky s tou rolí.
+    const of = (...does: string[]) => meta.genre?.cast?.find((item) => does.includes(item.does))?.label;
+    return { game: `${meta.genre?.genre}.${meta.genre?.mode}`, hero: meta.genre?.hero, enemy: of('chase_me', 'avoid', 'fight', 'shoot_at'), collectible: of('collect'), target: of('reach', 'throw_at'), goal: meta.spec.tutorial?.goalLine };
   };
 
   it('chases the pet with what it refuses (n13)', () => {

@@ -17,7 +17,7 @@ import { ESCAPE } from '../arcade/pieces/arena';
 import { FIGHT, fightWaveCount } from '../arcade/pieces/fight';
 import { WAVE_PLAN, itemWaveCount, survivalSeconds } from '../arcade/pieces/waves';
 import { plural, singular } from '../draft/lexicon';
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Klíče `spec.params`, které režim předá generátoru v `tuning`. */
 const TUNING = {
@@ -36,7 +36,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
   const title = titleCase(spec.hero);
   if (spec.mode === 'fight') {
     // „Two knights duel“: bez jmenovaného soupeře bojuje hrdina se sobě rovným.
-    const rival = spec.enemy ?? spec.hero;
+    const rival = castFor(spec, 'fight', 'chase_me', 'shoot_at', 'avoid', 'throw_at')?.label ?? spec.hero;
     const enemies = spec.params?.enemies ?? FIGHT.enemies.default;
     // Vlny: ležící soupeři vstanou silnější a přidají se noví; víc soupeřů z věty = delší zápas.
     const waves = fightWaveCount({ enemies, enemyHp: spec.params?.enemyHp ?? FIGHT.enemyHp.default });
@@ -57,7 +57,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
   }
   if (spec.mode === 'collect') {
     const items = spec.params?.items ?? ESCAPE.items.collectDefault;
-    const thing = spec.collectible ?? 'coin';
+    const thing = castFor(spec, 'collect', 'reach')?.label ?? 'coin';
     // Vlny: `items` věcí v každé, od druhé vbíhají pronásledovatelé, hodiny ukáže HUD.
     const waves = itemWaveCount(items, 0);
     const things = plural(singular(thing), items);
@@ -73,16 +73,19 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
       mood: 'playful',
     });
   }
-  const hunter = spec.enemy ?? 'hunter';
+  // Lovec je věc, která honí; bez ní ta, které se hráč vyhýbá („dodging dogs“), pak ostatní protivníci (P39).
+  const foe = castFor(spec, 'chase_me', 'avoid', 'fight', 'shoot_at', 'throw_at');
+  const hunter = foe?.label ?? 'hunter';
   const chasers = spec.params?.chasers ?? ESCAPE.chasers.default;
   const roles = [{ id: 'hunter', kind: 'chaser' as const, label: hunter, count: chasers }];
-  if (spec.collectible !== undefined) {
+  const collectible = castFor(spec, 'collect', 'reach')?.label;
+  if (collectible !== undefined) {
     // Uteč a sbírej ve vlnách: `items` věcí v každé, každá vlna přivede pronásledovatele navíc a zrychlí.
     const items = spec.params?.items ?? ESCAPE.items.collectDefault;
     const waves = itemWaveCount(items, chasers);
-    const things = plural(singular(spec.collectible), items);
+    const things = plural(singular(collectible), items);
     // Hlídka (P36A T8) jen při sběru: v přežití by nečinný hráč stráže přečkal a vyhrál.
-    const patrol: Record<string, number> = spec.enemyMoves === 'patrol' ? { patrol: ESCAPE.patrolSight } : {};
+    const patrol: Record<string, number> = foe?.patrol === true ? { patrol: ESCAPE.patrolSight } : {};
     return legacySpec(spec, {
       control: 'move_free',
       controlParams: { generator: 'arena_escape', tuning: tuningOf(spec, { items, waves, ...patrol }) },
@@ -90,7 +93,7 @@ function compileArena(spec: GenreSpecOf<'arena'>) {
       archetype: 'collect_exit',
       title: `${title} Escape`,
       objective: { kind: 'collect', description: `Collect ${String(items)} ${things} in each of ${String(waves)} waves before the ${hunter} catches you.`, count: items, role: 'item' },
-      roles: [...roles, { id: 'item', kind: 'collectible', label: spec.collectible, count: items }],
+      roles: [...roles, { id: 'item', kind: 'collectible', label: collectible, count: items }],
       tutorial: { goalLine: `Grab ${String(items)} ${things} per wave, ${String(waves)} waves. Don't get caught.`, controlsHint: 'Drag or arrows to move.' },
       mechanics: [livesMechanic()],
       mood: 'tense',
@@ -132,7 +135,8 @@ export const arenaGenre: GenreModule<'arena'> = {
   compile: compileArena,
   draftFill: (sentence, reading) => {
     const roles = draftRoles(sentence, reading);
-    const mode = FIGHT_WORDS.test(sentence) ? 'fight' : roles.enemy === undefined && roles.collectible !== undefined ? 'collect' : 'escape';
+    const cast = roles.cast ?? [];
+    const mode = FIGHT_WORDS.test(sentence) ? 'fight' : cast.length > 0 && cast.every((item) => item.does === 'collect') ? 'collect' : 'escape';
     return { genre: 'arena', mode, ...roles };
   },
 };

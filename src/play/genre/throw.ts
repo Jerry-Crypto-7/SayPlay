@@ -16,7 +16,7 @@
 import { HOOP_CUES, THROW_GOALS, THROW_GOAL_LABELS, TOWER_CUES, throwBudgetIn } from '../arcade/pieces/throw';
 import { WAVE_PLAN } from '../arcade/pieces/waves';
 
-import { type GenreModule, draftRoles, legacySpec, titleCase } from './contract';
+import { type CastItem, type GenreModule, type GenreSpec, castFor, draftRoles, legacySpec, titleCase } from './contract';
 
 /** Rozpočet robota na celou hru bez času z věty (sonda F5: 40–47 s ve všech druzích cíle) a meze hodin. */
 export const THROW_GENRE = { budget: 48, minSeconds: 20, maxSeconds: 90 } as const;
@@ -27,6 +27,23 @@ export function throwClock(seconds: number | undefined): { readonly budget: numb
     return { budget: THROW_GENRE.budget, seconds: Math.min(WAVE_PLAN.clockMax, Math.round(THROW_GENRE.budget * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin)) };
   }
   return { budget: throwBudgetIn(seconds), seconds };
+}
+
+/** Sloveso, kterým obsazení značí náboj hodu: věc `scenery` (projektil, `CAST_ROLES`), kterou hrdina hází. */
+export const AMMO_VERB = 'throw';
+
+/** Položka obsazení, kterou hrdina hází (`AMMO_VERB`). */
+export function isAmmo(item: CastItem): boolean {
+  return item.does === 'scenery' && item.verb === AMMO_VERB;
+}
+
+/**
+ * Co hrdina hází (P39 T14): náboj není věc ke sběru – „grabs acorns … throws
+ * pinecones“ hází šišky, i když žalud stojí v obsazení dřív. Obsazení bez
+ * náboje (starý tvar `collectible`, odpověď režiséra) hází první sbíranou věc.
+ */
+export function ammoOf(spec: Pick<GenreSpec, 'cast'>): CastItem | undefined {
+  return spec.cast?.find(isAmmo) ?? castFor(spec, 'collect');
 }
 
 /** Cíl hodu z věty: koš, věž (kuželky, krabice), jinak terč, když věta jmenuje, na co se hází. */
@@ -54,7 +71,8 @@ export const throwGenre: GenreModule<'throw'> = {
     const { goal: goalIndex, spareThrows } = spec.params ?? {};
     const { budget, seconds } = throwClock(spec.params?.seconds);
     const goal = goalIndex === undefined ? undefined : THROW_GOALS[goalIndex];
-    const label = spec.target?.label ?? (goal === undefined ? 'target' : THROW_GOAL_LABELS[goal]);
+    // Terč je věc, na kterou se hází; bez ní nejbližší protivník nebo cíl (P39).
+    const label = castFor(spec, 'throw_at', 'shoot_at', 'fight', 'chase_me', 'avoid', 'reach')?.label ?? (goal === undefined ? 'target' : THROW_GOAL_LABELS[goal]);
     return legacySpec(spec, {
       control: 'throw',
       controlParams: { ...(goal === undefined ? {} : { goal }), ...(spareThrows === undefined ? {} : { spareThrows }), budget },
@@ -64,7 +82,7 @@ export const throwGenre: GenreModule<'throw'> = {
       mechanics: [{ id: 'timer', params: { id: 'clock', seconds, onEnd: 'lose' } }],
       roles: [
         { id: 'target', kind: 'target', label, count: 3 },
-        { id: 'ball', kind: 'item', label: spec.collectible ?? 'ball' },
+        { id: 'ball', kind: 'item', label: ammoOf(spec)?.label ?? 'ball' },
       ],
       tutorial: { goalLine: `Hit every ${label} in ${String(seconds)} seconds.`, controlsHint: 'Hold to power up, drag up or down to aim, let go to throw.' },
       mood: 'playful',

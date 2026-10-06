@@ -1,0 +1,888 @@
+{
+ "header": {
+  "about": "P39 role fidelity: read, drawn and role (the thing plays the role the sentence gives it) per genre, offline quick version and a live run through the director. See README.md.",
+  "set": "dev",
+  "runId": "p39-after",
+  "measuredAt": "2026-10-05T21:59:36.629Z",
+  "commit": "911f6f25"
+ },
+ "offline": {
+  "summary": {
+   "sentences": 60,
+   "compiled": 60,
+   "items": 220,
+   "inSpec": 0.814,
+   "read": 0.773,
+   "drawn": 0.741,
+   "role": 0.709,
+   "roleNamed": 0.493
+  },
+  "byGenre": {
+   "arena": {
+    "sentences": 24,
+    "read": 0.754,
+    "drawn": 0.744,
+    "role": 0.698
+   },
+   "duel": {
+    "sentences": 2,
+    "read": 0.375,
+    "drawn": 0.375,
+    "role": 0.375
+   },
+   "flap": {
+    "sentences": 1,
+    "read": 1,
+    "drawn": 1,
+    "role": 1
+   },
+   "platformer": {
+    "sentences": 2,
+    "read": 0.833,
+    "drawn": 0.708,
+    "role": 0.708
+   },
+   "quest": {
+    "sentences": 9,
+    "read": 0.704,
+    "drawn": 0.561,
+    "role": 0.496
+   },
+   "rhythm": {
+    "sentences": 2,
+    "read": 0.708,
+    "drawn": 0.708,
+    "role": 0.708
+   },
+   "runner": {
+    "sentences": 5,
+    "read": 1,
+    "drawn": 1,
+    "role": 1
+   },
+   "shooter": {
+    "sentences": 3,
+    "read": 1,
+    "drawn": 1,
+    "role": 1
+   },
+   "throw": {
+    "sentences": 4,
+    "read": 0.729,
+    "drawn": 0.729,
+    "role": 0.729
+   },
+   "timing": {
+    "sentences": 3,
+    "read": 0.556,
+    "drawn": 0.556,
+    "role": 0.556
+   },
+   "voyage": {
+    "sentences": 5,
+    "read": 0.85,
+    "drawn": 0.85,
+    "role": 0.85
+   }
+  }
+ },
+ "live": {
+  "measured": 60,
+  "aiPublished": 55,
+  "draft": {
+   "summary": {
+    "sentences": 60,
+    "items": 220,
+    "read": 0.768,
+    "drawn": 0.736,
+    "role": 0.705,
+    "roleNamed": 0.493
+   },
+   "byGenre": {
+    "arena": {
+     "sentences": 24,
+     "read": 0.74,
+     "drawn": 0.73,
+     "role": 0.684
+    },
+    "duel": {
+     "sentences": 2,
+     "read": 0.375,
+     "drawn": 0.375,
+     "role": 0.375
+    },
+    "flap": {
+     "sentences": 1,
+     "read": 1,
+     "drawn": 1,
+     "role": 1
+    },
+    "platformer": {
+     "sentences": 2,
+     "read": 0.833,
+     "drawn": 0.708,
+     "role": 0.708
+    },
+    "quest": {
+     "sentences": 9,
+     "read": 0.704,
+     "drawn": 0.561,
+     "role": 0.496
+    },
+    "rhythm": {
+     "sentences": 2,
+     "read": 0.708,
+     "drawn": 0.708,
+     "role": 0.708
+    },
+    "runner": {
+     "sentences": 5,
+     "read": 1,
+     "drawn": 1,
+     "role": 1
+    },
+    "shooter": {
+     "sentences": 3,
+     "read": 1,
+     "drawn": 1,
+     "role": 1
+    },
+    "throw": {
+     "sentences": 4,
+     "read": 0.729,
+     "drawn": 0.729,
+     "role": 0.729
+    },
+    "timing": {
+     "sentences": 3,
+     "read": 0.556,
+     "drawn": 0.556,
+     "role": 0.556
+    },
+    "voyage": {
+     "sentences": 5,
+     "read": 0.85,
+     "drawn": 0.85,
+     "role": 0.85
+    }
+   }
+  },
+  "final": {
+   "summary": {
+    "sentences": 60,
+    "items": 220,
+    "read": 0.791,
+    "drawn": 0.75,
+    "role": 0.727,
+    "roleNamed": 0.44
+   },
+   "byGenre": {
+    "arena": {
+     "sentences": 24,
+     "read": 0.781,
+     "drawn": 0.771,
+     "role": 0.733
+    },
+    "duel": {
+     "sentences": 2,
+     "read": 0.375,
+     "drawn": 0.375,
+     "role": 0.375
+    },
+    "flap": {
+     "sentences": 1,
+     "read": 1,
+     "drawn": 1,
+     "role": 1
+    },
+    "platformer": {
+     "sentences": 2,
+     "read": 0.833,
+     "drawn": 0.708,
+     "role": 0.708
+    },
+    "quest": {
+     "sentences": 9,
+     "read": 0.741,
+     "drawn": 0.561,
+     "role": 0.539
+    },
+    "rhythm": {
+     "sentences": 2,
+     "read": 0.583,
+     "drawn": 0.583,
+     "role": 0.583
+    },
+    "runner": {
+     "sentences": 4,
+     "read": 1,
+     "drawn": 1,
+     "role": 1
+    },
+    "shooter": {
+     "sentences": 3,
+     "read": 1,
+     "drawn": 1,
+     "role": 1
+    },
+    "throw": {
+     "sentences": 4,
+     "read": 0.875,
+     "drawn": 0.875,
+     "role": 0.875
+    },
+    "timing": {
+     "sentences": 3,
+     "read": 0.333,
+     "drawn": 0.333,
+     "role": 0.333
+    },
+    "voyage": {
+     "sentences": 6,
+     "read": 0.903,
+     "drawn": 0.861,
+     "role": 0.861
+    }
+   }
+  }
+ },
+ "sentences": [
+  {
+   "id": "s039",
+   "genre": {
+    "draft": "shooter",
+    "final": "shooter"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s037",
+   "genre": {
+    "draft": "shooter",
+    "final": "shooter"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s002",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "ghost: wrong-role"
+   ]
+  },
+  {
+   "id": "s003",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s006",
+   "genre": {
+    "draft": "runner",
+    "final": "runner"
+   },
+   "ai": false,
+   "lost": []
+  },
+  {
+   "id": "s008",
+   "genre": {
+    "draft": "runner",
+    "final": "runner"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s022",
+   "genre": {
+    "draft": "platformer",
+    "final": "platformer"
+   },
+   "ai": true,
+   "lost": [
+    "charger: no-model"
+   ]
+  },
+  {
+   "id": "s021",
+   "genre": {
+    "draft": "platformer",
+    "final": "platformer"
+   },
+   "ai": true,
+   "lost": [
+    "spinning bar: not-in-spec"
+   ]
+  },
+  {
+   "id": "s035",
+   "genre": {
+    "draft": "flap",
+    "final": "flap"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s050",
+   "genre": {
+    "draft": "throw",
+    "final": "throw"
+   },
+   "ai": true,
+   "lost": [
+    "snowball: not-in-spec"
+   ]
+  },
+  {
+   "id": "s088",
+   "genre": {
+    "draft": "throw",
+    "final": "throw"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s069",
+   "genre": {
+    "draft": "quest",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "gem: not-read-by-control"
+   ]
+  },
+  {
+   "id": "s056",
+   "genre": {
+    "draft": "quest",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "pizza: not-in-spec",
+    "traffic: not-in-spec",
+    "race: not-in-spec"
+   ]
+  },
+  {
+   "id": "s058",
+   "genre": {
+    "draft": "voyage",
+    "final": "voyage"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s111",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s095",
+   "genre": {
+    "draft": "throw",
+    "final": "throw"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s188",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s144",
+   "genre": {
+    "draft": "rhythm",
+    "final": "rhythm"
+   },
+   "ai": true,
+   "lost": [
+    "frog: not-read-by-control",
+    "lily pad: not-in-spec"
+   ]
+  },
+  {
+   "id": "s155",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "s099",
+   "genre": {
+    "draft": "timing",
+    "final": "timing"
+   },
+   "ai": true,
+   "lost": [
+    "pancake: not-in-spec",
+    "tower: not-read-by-control"
+   ]
+  },
+  {
+   "id": "h01",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "fishmonger: wrong-role"
+   ]
+  },
+  {
+   "id": "h02",
+   "genre": {
+    "draft": "voyage",
+    "final": "voyage"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "h03",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "dragon: wrong-role",
+    "snowball: not-in-spec",
+    "throw: not-in-spec"
+   ]
+  },
+  {
+   "id": "h04",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "h05",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "h06",
+   "genre": {
+    "draft": "quest",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "crystal: not-in-spec",
+    "alien: not-in-spec",
+    "collect: not-in-spec"
+   ]
+  },
+  {
+   "id": "h07",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "elephant: not-read-by-control",
+    "do taxes: not-in-spec"
+   ]
+  },
+  {
+   "id": "h08",
+   "genre": {
+    "draft": "arena",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "dinner: no-model",
+    "date: not-in-spec"
+   ]
+  },
+  {
+   "id": "h09",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "flashlight: not-in-spec"
+   ]
+  },
+  {
+   "id": "h10",
+   "genre": {
+    "draft": "runner",
+    "final": "runner"
+   },
+   "ai": false,
+   "lost": []
+  },
+  {
+   "id": "j01",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "grandma: not-read-by-control",
+    "quantum physics: not-read-by-control"
+   ]
+  },
+  {
+   "id": "j02",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "café: not-in-spec",
+    "nap: not-in-spec"
+   ]
+  },
+  {
+   "id": "j03",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "investor: not-read-by-control"
+   ]
+  },
+  {
+   "id": "j04",
+   "genre": {
+    "draft": "voyage",
+    "final": "voyage"
+   },
+   "ai": true,
+   "lost": [
+    "dog: no-model",
+    "ice cream: not-read-by-control"
+   ]
+  },
+  {
+   "id": "j05",
+   "genre": {
+    "draft": "quest",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "balloon: no-model"
+   ]
+  },
+  {
+   "id": "j06",
+   "genre": {
+    "draft": "quest",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "pancake: no-model",
+    "flip: not-in-spec"
+   ]
+  },
+  {
+   "id": "j07",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "j08",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "j09",
+   "genre": {
+    "draft": "arena",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "knight: not-in-spec",
+    "arrow: wrong-role"
+   ]
+  },
+  {
+   "id": "j10",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "d01",
+   "genre": {
+    "draft": "runner",
+    "final": "runner"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "d02",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "brother: not-read-by-control",
+    "multiplication table: not-read-by-control"
+   ]
+  },
+  {
+   "id": "d03",
+   "genre": {
+    "draft": "quest",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "potion: no-model"
+   ]
+  },
+  {
+   "id": "d04",
+   "genre": {
+    "draft": "shooter",
+    "final": "shooter"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "d05",
+   "genre": {
+    "draft": "runner",
+    "final": "voyage"
+   },
+   "ai": true,
+   "lost": [
+    "cross: not-in-spec"
+   ]
+  },
+  {
+   "id": "d06",
+   "genre": {
+    "draft": "voyage",
+    "final": "voyage"
+   },
+   "ai": true,
+   "lost": []
+  },
+  {
+   "id": "d07",
+   "genre": {
+    "draft": "quest",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "car: no-model"
+   ]
+  },
+  {
+   "id": "d08",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "jellyfish: wrong-role"
+   ]
+  },
+  {
+   "id": "d09",
+   "genre": {
+    "draft": "timing",
+    "final": "timing"
+   },
+   "ai": true,
+   "lost": [
+    "cheese wheel: not-in-spec"
+   ]
+  },
+  {
+   "id": "d10",
+   "genre": {
+    "draft": "duel",
+    "final": "duel"
+   },
+   "ai": false,
+   "lost": [
+    "pirate: not-read-by-control"
+   ]
+  },
+  {
+   "id": "d11",
+   "genre": {
+    "draft": "rhythm",
+    "final": "rhythm"
+   },
+   "ai": true,
+   "lost": [
+    "drums: not-in-spec"
+   ]
+  },
+  {
+   "id": "d12",
+   "genre": {
+    "draft": "voyage",
+    "final": "voyage"
+   },
+   "ai": false,
+   "lost": []
+  },
+  {
+   "id": "d13",
+   "genre": {
+    "draft": "timing",
+    "final": "timing"
+   },
+   "ai": true,
+   "lost": [
+    "letter: not-read-by-control",
+    "teacher: not-in-spec",
+    "write: not-in-spec"
+   ]
+  },
+  {
+   "id": "d14",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "honey: no-model"
+   ]
+  },
+  {
+   "id": "d15",
+   "genre": {
+    "draft": "throw",
+    "final": "throw"
+   },
+   "ai": true,
+   "lost": [
+    "frisbee: not-in-spec"
+   ]
+  },
+  {
+   "id": "d16",
+   "genre": {
+    "draft": "quest",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "owl: not-read-by-control",
+    "letter: not-read-by-control"
+   ]
+  },
+  {
+   "id": "d17",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "family: not-in-spec"
+   ]
+  },
+  {
+   "id": "d18",
+   "genre": {
+    "draft": "duel",
+    "final": "duel"
+   },
+   "ai": false,
+   "lost": [
+    "sumo wrestler: not-read-by-control",
+    "rival: not-in-spec",
+    "ring: not-in-spec",
+    "push: not-in-spec"
+   ]
+  },
+  {
+   "id": "d19",
+   "genre": {
+    "draft": "arena",
+    "final": "arena"
+   },
+   "ai": true,
+   "lost": [
+    "budget: not-read-by-control"
+   ]
+  },
+  {
+   "id": "d20",
+   "genre": {
+    "draft": "quest",
+    "final": "quest"
+   },
+   "ai": true,
+   "lost": [
+    "prince: no-model",
+    "ride: not-in-spec"
+   ]
+  }
+ ]
+}

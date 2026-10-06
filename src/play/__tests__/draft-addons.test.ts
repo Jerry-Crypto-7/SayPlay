@@ -66,7 +66,8 @@ describe('two verbs in the word draft', () => {
   // P38: živý návrh jde přes žánr – skok nese skákačku, střelba jede jako doplněk, a robot hru pořád vyhraje.
   it.each(['a jumping game where you shoot animals in the forest', 'jump and shoot the zombies'])('genre draft: %s → platformer with +shoot', (sentence) => {
     const drafted = draftGameSpecWithMeta(sentence);
-    expect(drafted.genre).toMatchObject({ genre: 'platformer', enemyMoves: 'shoot' });
+    expect(drafted.genre?.genre).toBe('platformer');
+    expect(drafted.genre?.cast).toContainEqual(expect.objectContaining({ does: 'shoot_at' }));
     expect(drafted.spec.control).toBe('platform');
     expect(drafted.spec.addons).toContain('shoot');
     const built = arcadeWorldOf(drafted.spec, 7);

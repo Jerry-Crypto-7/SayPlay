@@ -118,7 +118,7 @@ describe('karty nápadů (P34 T3)', () => {
       // Arény – přežít, nebo sbírat s pronásledovatelem. Donáška („carry … to“) je Úkol se slovesem
       // „deliver“ (`switch_puzzle`). Archetyp karty je tu jen klíč a testid.
       if (idea.archetype === 'chase_escape') expect(meta.genre, idea.sentence).toMatchObject({ genre: 'arena', mode: 'escape' });
-      else if (idea.archetype === 'delivery') expect(meta.genre, idea.sentence).toMatchObject({ genre: 'quest', target: { verb: 'deliver' } });
+      else if (idea.archetype === 'delivery') expect(meta.genre, idea.sentence).toMatchObject({ genre: 'quest', cast: expect.arrayContaining([expect.objectContaining({ verb: 'deliver' })]) });
       else expect(draftGameSpec(idea.sentence).archetype, idea.sentence).toBe(idea.archetype);
     }
   });

@@ -20,6 +20,7 @@ import { readGenreAnswer } from '../director/read';
 import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import { readRoles, singular, toolsOf } from '../draft/lexicon';
 import type { GenreSpec } from '../genre/contract';
+import { isAmmo } from '../genre/throw';
 
 const sentence = (id: string): string => sentenceSet.sentences.find((entry) => entry.id === id)!.text;
 const draftOf = (text: string) => {
@@ -35,8 +36,8 @@ describe('the director answer, read like the quick version', () => {
     const penguin = draftOf(sentence('penguin'));
     const chef = draftOf(sentence('chef'));
     const plural = [
-      { quick: penguin.spec, written: { ...penguin.genre, enemy: 'rocks', collectible: 'snowflakes' } },
-      { quick: chef.spec, written: { ...chef.genre, target: { ...chef.genre.target!, label: 'pancakes' } } },
+      { quick: penguin.spec, written: { ...penguin.genre, cast: [{ label: 'rocks', does: 'avoid' as const }, { label: 'snowflakes', does: 'collect' as const }] } },
+      { quick: chef.spec, written: { ...chef.genre, cast: chef.genre.cast!.map((item) => (item.does === 'reach' ? { ...item, label: 'pancakes' } : item)) } },
     ];
     for (const { quick, written } of plural) {
       const read = readGenreAnswer(answer(written));
@@ -56,7 +57,7 @@ describe('the director answer, read like the quick version', () => {
     const words = ['horses', 'wild horses', 'houses', 'burning houses', 'roses', 'glasses', 'boxes', 'torches', 'bushes', 'buses', 'viruses', 'cactuses', 'cyclops', 'lens', 'gas', 'species', 'news'];
     expect(words.map(singular)).toEqual(['horse', 'wild horse', 'house', 'burning house', 'rose', 'glass', 'box', 'torch', 'bush', 'bus', 'virus', 'cactus', 'cyclops', 'lens', 'gas', 'species', 'news']);
     for (const word of words) expect(singular(singular(word)), word).toBe(singular(word));
-    expect(draftOf('A farmer escapes from wild horses on a ranch').genre.enemy).toBe('wild horse');
+    expect(draftOf('A farmer escapes from wild horses on a ranch').genre.cast?.[0]?.label).toBe('wild horse');
   });
 
   // Revize fáze 3, kolo 2, nález 3: zúžené pravidlo -se zkazilo -us a -s slova („bonuses“ → „bonuse“).
@@ -81,7 +82,7 @@ describe('the director answer, read like the quick version', () => {
     const demand = JSON.parse(readFileSync('evals/play/demand/corpus.json', 'utf8')) as { readonly text: string }[];
     for (const text of [...goldenPrompts().map((entry) => entry.prompt), ...demand.map((entry) => entry.text)]) {
       const genre = draftGameSpecWithMeta(text).genre;
-      for (const label of [genre?.enemy, genre?.collectible, genre?.target?.label]) if (label !== undefined) expect(singular(label), `${text}: ${label}`).toBe(label);
+      for (const { label } of genre?.cast ?? []) expect(singular(label), `${text}: ${label}`).toBe(label);
     }
   });
 });
@@ -92,11 +93,15 @@ describe('the thing the player uses is never a role', () => {
     genre: 'quest',
     mode: 'spatial',
     hero: 'firefighter robot',
-    enemy: 'water',
-    target: { label: 'burning trees', verb: 'extinguish', states: 2 },
+    cast: [
+      { label: 'water', does: 'chase_me' },
+      { label: 'burning trees', does: 'reach', verb: 'extinguish', states: 2 },
+    ],
     setting: 'burning forest',
     params: { chasers: 2 },
   };
+  /** Protivníci obsazení – role, ve kterých by nástroj hráče honil nebo překážel. */
+  const foes = (genre: GenreSpec): string[] => (genre.cast ?? []).filter((item) => ['shoot_at', 'chase_me', 'avoid', 'fight'].includes(item.does)).map((item) => item.label);
 
   it('reads the tools out of the sentence', () => {
     const texts = [FIRE, 'A kid throws water balloons at bullies', 'An elf shoots arrows at goblins', 'Shoot the zombies in a mall', 'A cat swings from vines'];
@@ -107,7 +112,8 @@ describe('the thing the player uses is never a role', () => {
   // B-R12, třetí přístup: dvě opravy čtení podmětu padly („She's spraying“, „Firefighters spray“ bez hrdiny).
   // Pravidlo teď podmět nečte vůbec – předmět slovesa nástroje nikdy nehoní, ať ho vrhá kdokoli.
   it('never lets the object of a tool verb chase, whoever does the verb', () => {
-    const toolIssue = expect.objectContaining({ code: 'ENEMY_IS_TOOL' });
+    const toolIssue = expect.objectContaining({ code: 'CAST_IS_TOOL' });
+    const chasing = (label: string) => ({ label, does: 'chase_me' as const });
     const WATER = [
       'A firefighter robot runs into the forest and she sprays water at burning trees',
       'The player sprays water at burning trees in a forest',
@@ -120,17 +126,18 @@ describe('the thing the player uses is never a role', () => {
     ];
     for (const text of WATER) {
       expect(toolsOf(text), text).toEqual(['water']);
-      expect(draftOf(text).genre.enemy, text).not.toBe('water');
+      expect(foes(draftOf(text).genre), text).not.toContain('water');
       expect(readRoles(text).hazard, text).not.toBe('water');
-      expect(fidelity({ ...draftOf(text).genre, enemy: 'water' }, text), text).toContainEqual(toolIssue);
+      const quick = draftOf(text).genre;
+      expect(fidelity({ ...quick, cast: [chasing('water'), ...(quick.cast ?? [])] }, text), text).toContainEqual(toolIssue);
     }
     expect(readRoles('A firefighter runs inside and she sprays water at the fire').hazard).toBe('fire');
     // Obr kámen hází, kámen proto nikoho nehoní – obr sám honit smí (revize T7, nález 6).
     for (const giantText of ['An angry giant throws rocks at the village', 'An angry giant who hates the hero throws rocks at the village', 'An angry giant roars and throws rocks at the village']) {
       const giant = draftOf(giantText).genre;
-      expect(giant.enemy, giantText).not.toBe('rock');
-      expect(fidelity({ ...giant, hero: 'villager', enemy: 'rock' }, giantText), giantText).toContainEqual(toolIssue);
-      expect(fidelity({ ...giant, hero: 'villager', enemy: 'angry giant' }, giantText), giantText).not.toContainEqual(toolIssue);
+      expect(foes(giant), giantText).not.toContain('rock');
+      expect(fidelity({ ...giant, hero: 'villager', cast: [chasing('rock')] }, giantText), giantText).toContainEqual(toolIssue);
+      expect(fidelity({ ...giant, hero: 'villager', cast: [chasing('angry giant')] }, giantText), giantText).not.toContainEqual(toolIssue);
     }
     expect(toolsOf('Goblins that chase the player throw spears in a cave')).toEqual(['spear']);
     expect(toolsOf('A knight fights a dragon that throws fireballs')).toEqual(['fireball']);
@@ -144,7 +151,7 @@ describe('the thing the player uses is never a role', () => {
     const read = readGenreAnswer(answer(WATER_CHASES));
     if (!read.ok) throw new Error(read.detail);
     expect(read.spec.objective.description).toContain('before the water catch');
-    expect(fidelity(read.genre, FIRE)).toContainEqual(expect.objectContaining({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: expect.stringContaining('"water"') }));
+    expect(fidelity(read.genre, FIRE)).toContainEqual(expect.objectContaining({ code: 'CAST_IS_TOOL', path: '/cast/0', evidence: expect.stringContaining('"water"') }));
   });
 
   it('repairs it with the enemy and the chaser count of the sentence, so the water never chases the firefighter', async () => {
@@ -160,7 +167,7 @@ describe('the thing the player uses is never a role', () => {
     expect(draftOf(FIRE).spec.roles.map((role) => role.label)).not.toContain('water');
     // Od P36A T10 Střílečka: goblini jdou ve vlnách jako nepřítel, šíp není role.
     const elf = draftOf('An elf shoots arrows at goblins in a forest');
-    expect(elf.genre).toMatchObject({ genre: 'shooter', enemy: 'goblin' });
+    expect(elf.genre).toMatchObject({ genre: 'shooter', cast: expect.arrayContaining([{ label: 'goblin', does: 'shoot_at' }]) });
     expect(elf.spec.roles.map((role) => role.label)).not.toContain('arrow');
   });
 });
@@ -172,8 +179,8 @@ describe('the AI version adds what the sentence says and the quick version misse
     const quick = draftOf(SNOW).genre;
     for (const request of [buildDirectorRequest(SNOW, quick), buildCompactRequest(SNOW, quick, true)]) {
       expect(request.system).toContain('Build the game the sentence asks for');
-      expect(request.system).toContain('Role labels are singular');
-      expect(request.system).toContain('The enemy is never what the player holds, sprays or throws');
+      expect(request.system).toContain('Cast labels are singular');
+      expect(request.system).toContain('A cast thing is never what the player holds, sprays or throws');
     }
   });
 
@@ -239,9 +246,13 @@ describe('the platformer keeps the sentence’s item and goal when the model lea
     return result;
   };
 
+  /** Obsazení bez věci ke sběru a bez cíle – co model u skákačky vynechává. */
+  const withoutGoal = (genre: GenreSpec): GenreSpec['cast'] => genre.cast?.filter((item) => item.does !== 'collect' && item.does !== 'reach');
+
   it('reads the item, the goal and the count in the quick version', () => {
     const quick = draftOf(GRAB);
-    expect(quick.genre).toMatchObject({ genre: 'platformer', collectible: 'shiny apple', target: { label: 'shiny apple', verb: 'grab' } });
+    // Sbírací sloveso nese sama věc (P39 T7): cíl se jménem věci by obsazení bez dvojic zahodilo.
+    expect(quick.genre).toMatchObject({ genre: 'platformer', cast: expect.arrayContaining([{ label: 'shiny apple', does: 'collect', verb: 'grab' }]) });
     expect(quick.spec.tutorial.goalLine).toBe('Collect 3 shiny apples and reach the flag.');
     expect(draftOf(REACH).spec.tutorial.goalLine).toBe('Reach the old lighthouse.');
   });
@@ -249,8 +260,8 @@ describe('the platformer keeps the sentence’s item and goal when the model lea
   it('plays the quick version’s goal when the model wrote neither item, goal nor count', () => {
     for (const text of [GRAB, REACH]) {
       const quick = draftOf(text);
-      const { collectible: _item, target: _goal, counts: _counts, params: _params, ...written } = quick.genre;
-      const { spec } = read(text, written as GenreSpec);
+      const { counts: _counts, params: _params, ...written } = quick.genre;
+      const { spec } = read(text, { ...written, cast: withoutGoal(quick.genre) } as GenreSpec);
       expect(spec.tutorial.goalLine, text).toBe(quick.spec.tutorial.goalLine);
       expect(spec.objective.description, text).toBe(quick.spec.objective.description);
       expect(spec.roles.find((role) => role.id === 'finish')?.label, text).toBe(quick.spec.roles.find((role) => role.id === 'finish')?.label);
@@ -258,30 +269,76 @@ describe('the platformer keeps the sentence’s item and goal when the model lea
     }
   });
 
+  // Model napsal vlastní věc bez slovesa: sbírací sloveso rychlé verze přejde na ni, věc se cílem úrovně nestane.
   it('collects the model’s own item when only the goal is missing, without making the item the goal', () => {
-    const { target: _goal, ...written } = draftOf(GRAB).genre;
-    const { spec } = read(GRAB, { ...written, collectible: 'apple' } as GenreSpec);
+    const written = draftOf(GRAB).genre;
+    const { spec } = read(GRAB, { ...written, cast: [...withoutGoal(written)!, { label: 'apple', does: 'collect' }] } as GenreSpec);
     expect(spec.tutorial.goalLine).toBe('Collect 3 apples and reach the flag.');
   });
 
   // Bez věci: s věcí by `goalOfSentence` skončila dřív a test by přepis cíle nechytil.
   it('keeps a goal the model wrote itself', () => {
-    const { collectible: _item, ...written } = draftOf(REACH).genre;
-    const { spec } = read(REACH, { ...written, target: { label: 'chimney', verb: 'reach', states: 2 } } as GenreSpec);
+    const written = draftOf(REACH).genre;
+    const { spec } = read(REACH, { ...written, cast: [...(withoutGoal(written) ?? []), { label: 'chimney', does: 'reach', verb: 'reach', states: 2 }] } as GenreSpec);
     expect(spec.tutorial.goalLine).toBe('Reach the chimney.');
   });
 
   it('keeps a count the model wrote itself', () => {
-    const { target: _goal, params: _params, ...written } = draftOf(GRAB).genre;
+    const { params: _params, ...written } = draftOf(GRAB).genre;
     const { spec } = read(GRAB, { ...written, counts: { ...written.counts, collectible: 4 } } as GenreSpec);
     expect(spec.tutorial.goalLine).toBe('Collect 4 shiny apples and reach the flag.');
   });
 
   it('hands the sentence to the read, so the directed game has the goal too', async () => {
     const quick = draftOf(GRAB);
-    const { target: _goal, ...written } = quick.genre;
-    const game = await directed(GRAB, written as GenreSpec);
+    const cast = quick.genre.cast!.map(({ verb: _verb, ...item }) => item);
+    const game = await directed(GRAB, { ...quick.genre, cast } as GenreSpec);
     expect(game.source).toBe('authored');
     expect(game.spec.tutorial.goalLine).toBe(quick.spec.tutorial.goalLine);
+  });
+});
+
+/**
+ * P39: AI verze smí obsadit věc věty, kterou rychlá verze nemá, a hraje ji –
+ * kritik ji do rychlé verze nevrátí (dřív `critic.ts:413` soudil podle ní).
+ */
+describe('the AI version plays a cast thing of the sentence the quick version missed', () => {
+  const WATCH = 'a fox jumps over logs while animals watch in the forest';
+
+  it('shoots the animals the sentence names, where the quick version only jumps logs', async () => {
+    const quick = draftOf(WATCH);
+    expect(quick.spec.addons ?? []).not.toContain('shoot');
+    const game = await directed(WATCH, { ...quick.genre, cast: [...quick.genre.cast!, { label: 'animals', does: 'shoot_at' }] });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    expect(game.failure).toBeUndefined();
+    expect(game.spec.addons).toContain('shoot');
+    expect(game.spec.roles).toContainEqual(expect.objectContaining({ id: 'enemy', label: 'animal' }));
+  });
+});
+
+/**
+ * P39 T14: prompt zakazuje obsadit, co hráč hází, takže odpověď náboj nemá – a hod
+ * pak vzal první sbíranou věc (žaludy místo šišek). Náboj doplní rychlá verze.
+ */
+describe('the AI version throws what the sentence throws', () => {
+  const SQUIRREL = 'a squirrel grabs acorns, dodges owls and throws pinecones at a fox';
+  const ballOf = (spec: { readonly roles: readonly { readonly id: string; readonly label: string }[] }) => spec.roles.find((role) => role.id === 'ball')?.label;
+
+  it('throws the pinecones the answer left out, not the acorns it collects', async () => {
+    const quick = draftOf(SQUIRREL);
+    expect(quick.genre.genre).toBe('throw');
+    const game = await directed(SQUIRREL, { ...quick.genre, cast: quick.genre.cast!.filter((item) => !isAmmo(item)) });
+    expect(game).toMatchObject({ source: 'authored', fallbackReason: null });
+    expect(ballOf(game.spec)).toBe('pinecone');
+  });
+
+  // Odpověď s náhradním nábojem mimo větu neprojde věrností; oprava ho zahodí a náboj z věty musí přijít i potom.
+  it('throws the pinecones after the repair drops an ammo the sentence never said', async () => {
+    const quick = draftOf(SQUIRREL);
+    const cast = quick.genre.cast!.map((item) => (isAmmo(item) ? { ...item, label: 'snowball' } : item));
+    const game = await directed(SQUIRREL, { ...quick.genre, cast });
+    expect(game.source).toBe('authored');
+    expect(game.failure).toBeUndefined();
+    expect(ballOf(game.spec)).toBe('pinecone');
   });
 });

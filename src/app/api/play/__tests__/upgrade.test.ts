@@ -78,10 +78,11 @@ const CALLER = { 'content-type': 'application/json', 'x-forwarded-for': '203.0.1
 /**
  * Odpověď věrná `SENTENCE` (P32B T5): hrdina a nepřítel z věty, útěk v Aréně,
  * který hlavní sloveso „escapes“ hraje. Nevěrnou odpověď by režisér přepnul
- * (`switchGenre`) a test by měřil přepnutí místo svého předmětu.
+ * (`switchGenre`) a test by měřil přepnutí místo svého předmětu. Věc ke sběru
+ * je výchozí věc supermarketu (P39: obsazení se soudí proti větě a prostředí).
  */
 function faithful(spec: Parameters<typeof genreAnswer>[0] = {}): ReturnType<typeof genreAnswer> {
-  return genreAnswer({ hero: 'hamster', enemy: 'giant roomba', setting: 'supermarket', palette: 'supermarket', ...spec });
+  return genreAnswer({ hero: 'hamster', cast: [{ label: 'giant roomba', does: 'chase_me' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket', palette: 'supermarket', ...spec });
 }
 
 function params(id: string): { params: Promise<{ id: string }> } {
@@ -277,7 +278,7 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // ve které žádný `ready` žánr nic neslyšel, a tu věrnost z úkolu nepustí – proto návrh z Arény:
   // útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „hunts“) než hlavní sloveso „jumps“.
   it('vylepšení z útěku v Aréně na plošinovku se přijme, když je vyhratelné', async () => {
-    director.script = [answered(genreAnswer({ genre: 'platformer', mode: 'default', hero: 'frog', enemy: 'snake', setting: 'swamp', palette: 'forest' }))];
+    director.script = [answered(genreAnswer({ genre: 'platformer', mode: 'default', hero: 'frog', cast: [{ label: 'snake', does: 'avoid' }], setting: 'swamp', palette: 'forest' }))];
     const created = await publish({ sentence: 'A frog jumps across a scary swamp, escapes and survives while a snake hunts it.' });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
     expect((await game(created.body.versionId)).spec.control).toBe('move_free');
@@ -295,7 +296,7 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   });
 
   it('běžec vylepšený běžcem je ready a dítě zůstane běžcem', async () => {
-    director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'cyber cat', enemy: 'drone', setting: 'neon rooftops', palette: 'city' }))];
+    director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'cyber cat', cast: [{ label: 'drone', does: 'avoid' }, { label: 'acorn', does: 'collect' }], setting: 'neon rooftops', palette: 'city' }))];
     const created = await publish({ sentence: 'endless runner in a neon city' });
     expect((await game(created.body.versionId)).spec.control).toBe('runner');
     expect((await settled(created.body.versionId)).status).toBe('ready');
@@ -311,7 +312,7 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // protože útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „chases“).
   // T5b: skutečný běžec má narážku „escape“, s „hunts“ by byla remíza a návrh by byl už běžec – „chases“ je i narážka Arény.
   it('arénový návrh vylepšený běžcem je ready a dítě je běžec', async () => {
-    director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', enemy: 'giant roomba', setting: 'supermarket aisles', palette: 'supermarket' }))];
+    director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', cast: [{ label: 'giant roomba', does: 'avoid' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket aisles', palette: 'supermarket' }))];
     const created = await publish({ sentence: 'A hamster runs through a scary supermarket, escapes and survives while a giant Roomba chases it.' });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'arena', mode: 'escape' });
     expect((await game(created.body.versionId)).spec.control).toBe('move_free');

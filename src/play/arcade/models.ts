@@ -29,7 +29,8 @@ import type { AssetEntry } from '../assets/manifest';
 import { controlOf, readsLabel } from '../capabilities';
 import type { GenreId, ModelClass } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
-import type { GameSpecV1 } from '../spec';
+import { CROSSING } from '../genre/voyage';
+import type { ControlId, GameSpecV1 } from '../spec';
 import type { ClipState } from './motion';
 import nearest from './nearest.json';
 import { OBSTACLE_KINDS } from './pieces/runner';
@@ -107,6 +108,8 @@ function singulars(word: string): readonly string[] {
   if (word.endsWith('es')) out.push(word.slice(0, -2));
   if (word.endsWith('s')) out.push(word.slice(0, -1));
   if (word.endsWith('men')) out.push(`${word.slice(0, -3)}man`);
+  // P39 T9: „wolves“ → „wolf“, „knives“ → „knife“.
+  if (word.endsWith('ves')) out.push(`${word.slice(0, -3)}f`, `${word.slice(0, -3)}fe`);
   return out;
 }
 
@@ -183,22 +186,31 @@ function personModel(label: string): string | undefined {
  */
 export const NEAREST_MIN = 0.63;
 
+/**
+ * Práh nejbližšího modelu pro věc z věty, která jinak dostane robota nebo bodák (P39 T9):
+ * od 0,5 páry souvisí (aligátor → krokodýl 0,55, úl → včela 0,51), pod ním je šum (keř → kočka 0,47).
+ */
+const LOOSE_MIN = 0.5;
+
 const NEAREST: ReadonlyMap<string, readonly [id: string, score: number]> = new Map(Object.entries(nearest.words) as [string, [string, number]][]);
 
 /**
  * Nejbližší model katalogu pro slovo, které katalog tagem nemá (P37A T6): tabulka
  * `nearest.json` z vektorů popisků (`scripts/p37a/nearest.mjs`). Rozhoduje hlava fráze,
  * dvojslovo napřed („fishing rod“); hlava pod prahem hledání ukončí, ať přívlastek
- * („quantum physics“) nedostane model za ni.
+ * („quantum physics“) nedostane model za ni. `loose` = poslední možnost těla z věty (P39 T9):
+ * nižší práh `LOOSE_MIN` a jen hlava fráze – přívlastek pod prahem čtení dává šum.
  */
-function nearestModel(label: string): string | undefined {
+function nearestModel(label: string, loose = false): string | undefined {
   const words = wordsOf(label);
   for (let index = words.length - 1; index >= 0; index -= 1) {
     const word = words[index] as string;
     const before = words[index - 1];
     const found = (before === undefined ? undefined : lookup(word, (form) => NEAREST.get(`${before} ${form}`))) ?? lookup(word, (form) => NEAREST.get(form));
+    if (found === undefined && loose) return undefined;
     if (found === undefined) continue;
-    if (found[1] < NEAREST_MIN) return undefined;
+    const min = loose ? LOOSE_MIN : NEAREST_MIN;
+    if (found[1] < min) return undefined;
     const entry = ENTRY_OF_ID.get(found[0]);
     return entry === undefined ? found[0] : sceneId(entry);
   }
@@ -254,15 +266,36 @@ export function enemyModel(spec: GameSpecV1): string {
 
 /** Pronásledovatel doplňku `+chaser` (P26D): model z popisku role druhu `chaser` („bear“), jinak jako nepřítel. */
 export function chaserModel(spec: GameSpecV1): string {
-  return choose(spec.roles.find((role) => role.kind === 'chaser')?.label ?? '', ANY, { withClass: true })?.model ?? enemyModel(spec);
+  return choose(spec.roles.find((role) => role.kind === 'chaser')?.label ?? '', ANY, { withClass: true, loose: true })?.model ?? enemyModel(spec);
 }
 
 /**
  * Role arkády, jejichž těla smí nést model z popisku: sbíraná mince, překážka běžce, terč hodu, soupeř souboje
- * a závodu (P27A T4); od P30B T4 i mantinel závodu, nota rytmu a díl věže načasování; od P35 T3 cíl skákačky.
+ * a závodu (P27A T4); od P30B T4 i mantinel závodu, nota rytmu a díl věže načasování; od P35 T3 cíl skákačky;
+ * od P39 T9 nástrahy `HAZARD_ROLES`.
  */
-export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'note', 'block', 'finish'] as const;
+export const PROP_ROLES = ['coin', 'obstacle', 'target', 'rival', 'barrier', 'note', 'block', 'finish', 'spikes', 'pipe', 'hazard'] as const;
 export type PropRole = (typeof PROP_ROLES)[number];
+
+/**
+ * Nástrahy, které jádro kreslí primitivem (P39 T9): bodák skákačky, trubka poletování, útes a koule plavby.
+ * Věc z věty („wolves“) je kreslí svým jménem i jako postava; výchozí popisek žánru zůstane primitivem.
+ */
+const HAZARD_ROLES: ReadonlySet<PropRole> = new Set(['spikes', 'pipe', 'hazard']);
+
+/**
+ * Role, jejíž tělo kreslí věc z věty jménem i postavou a nejbližším modelem: nástrahy (P39 T9) a od P39 T14
+ * terč střelnice – volné místo terče bere další věc z věty (mince, duch), kotouč zůstane jen holému terči.
+ */
+function namesThing(control: ControlId, id: PropRole): boolean {
+  return HAZARD_ROLES.has(id) || (id === 'target' && control === 'shooter');
+}
+
+/**
+ * Popisek, kterým žánr nástrahu vyplní, když věta nic nejmenuje (`genre/platformer.ts`, `flap.ts`, `voyage.ts`).
+ * Holý terč střelnice („target“) sem nepatří: dá model `target`, a ten `OWN_KINDS` vrátí kotouči.
+ */
+const OWN_LABELS: Partial<Record<PropRole, readonly string[]>> = { spikes: ['spikes'], pipe: ['pipe'], hazard: Object.values(CROSSING) };
 
 /** Co jádro pro roli kreslí samo; popisek, který jmenuje právě tohle („obstacles“), nic nemění. */
 const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
@@ -277,6 +310,9 @@ const OWN_KINDS: Readonly<Record<PropRole, readonly string[]>> = {
   note: ['hazard-tile'],
   block: ['wood-block'],
   finish: ['finish-flag'],
+  spikes: ['cc0-spike'],
+  pipe: ['cc0-pipe'],
+  hazard: [],
 };
 
 /** Model soupeře: přesná nebo blízká identita, žádná třída; v závodě jen vozidlo, loď nebo letadlo. */
@@ -294,7 +330,8 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   for (const id of PROP_ROLES) {
     const role = spec.roles.find((candidate) => candidate.id === id);
     if (role === undefined || !readsLabel(control, role)) continue;
-    const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, false);
+    // Nástraha i terč střelnice z věty bývá zvíře („animals“) – smí i třídu postav.
+    const found = id === 'rival' ? rivalModel(role.label, control) : sceneModelOf(role.label, namesThing(control, id));
     if (found !== undefined && found !== 'bird') out[id] = found;
   }
   // B-R9: žánr arény (spec s generátorem) sbírá roli druhu `collectible` (`item`) – scéna ji kreslí jako `coin`.
@@ -304,10 +341,26 @@ export function namedProps(spec: GameSpecV1): Partial<Record<PropRole, string>> 
   return out;
 }
 
-/** Modely rekvizit, které scéna kreslí místo těla jádra – jen přímá shoda s katalogem, bez kategorií. */
+/**
+ * Modely rekvizit, které scéna kreslí místo těla jádra – jen přímá shoda s katalogem, bez kategorií.
+ * Nástraha a terč střelnice z věty (`namesThing`) berou i třídu a nejbližší model: primitiv jen tam, kde věta nic nejmenuje.
+ */
 export function propModels(spec: GameSpecV1): Partial<Record<PropRole, string>> {
   const named = namedProps(spec);
-  return Object.fromEntries(PROP_ROLES.flatMap((id) => (named[id] === undefined || OWN_KINDS[id].includes(named[id]) ? [] : [[id, named[id]]])));
+  const control = controlOf(spec);
+  const out: Partial<Record<PropRole, string>> = {};
+  for (const id of PROP_ROLES) {
+    const model = namesThing(control, id) ? hazardModel(spec, id) : named[id];
+    if (model !== undefined && !OWN_KINDS[id].includes(model)) out[id] = model;
+  }
+  return out;
+}
+
+/** Model nástrahy (nebo terče střelnice) z popisku její role; výchozí popisek žánru (`OWN_LABELS`) žádný nedá. */
+function hazardModel(spec: GameSpecV1, id: PropRole): string | undefined {
+  const role = spec.roles.find((candidate) => candidate.id === id);
+  if (role === undefined || OWN_LABELS[id]?.includes(role.label) === true) return undefined;
+  return choose(role.label, ANY, { withClass: true, loose: true })?.model;
 }
 
 /** Id modelu riggované postavy s klipy (`src/assets/rigged.json`, P26B) nese tuhle předponu, ať se nesrazí s katalogem. */
@@ -408,7 +461,7 @@ function rideOf(label: string, fits: (kind: ModelClass) => boolean): AssetEntry 
  * katalogu před manifestem jako před P32C: „race car“ je vůz `gen3d-race-car`,
  * ne nižší tělo jádra `race-car`, které na telefonu nedá 4 % výšky obrazu (`play-frame`).
  */
-function choose(label: string, bounds: Bounds, options: { readonly withClass: boolean; readonly ride?: boolean; readonly fallback?: string }): ModelChoice | undefined {
+function choose(label: string, bounds: Bounds, options: { readonly withClass: boolean; readonly ride?: boolean; readonly loose?: boolean; readonly fallback?: string }): ModelChoice | undefined {
   const pick = (model: string | undefined, level: ChoiceLevel, fits: (kind: ModelClass) => boolean): ModelChoice | undefined =>
     model !== undefined && fits(classOfModel(model)) ? { model, level, entry: ENTRY_OF_MODEL.get(model) } : undefined;
   const named = identityEntry(label, bounds.identity);
@@ -422,6 +475,8 @@ function choose(label: string, bounds: Bounds, options: { readonly withClass: bo
     pick(nearestModel(label), 'near', bounds.rest) ??
     (ride === undefined ? undefined : { model: sceneId(ride), level: 'near', entry: ride }) ??
     (options.withClass ? (pick(categoryModel(label), 'class', bounds.rest) ?? pick(personModel(label), 'class', bounds.rest)) : undefined) ??
+    // P39 T9: věc z věty bez modelu dostane nejbližší model i pod prahem čtení – vlkodlak za vlka, ne robot.
+    (options.loose === true ? pick(nearestModel(label, true), 'near', bounds.rest) : undefined) ??
     (options.fallback === undefined ? undefined : { model: options.fallback, level: 'fallback', entry: ENTRY_OF_MODEL.get(options.fallback) })
   );
 }
@@ -433,7 +488,7 @@ function choose(label: string, bounds: Bounds, options: { readonly withClass: bo
  * hrdinu pustí, a bez žánru jen vozidlo, loď nebo letadlo – pirát nejede autem.
  */
 export function heroChoice(label: string, genre: GenreId | undefined, control: string | undefined, role: 'player' | 'enemy' = 'player'): ModelChoice {
-  if (role === 'enemy') return choose(label, ANY, { withClass: true, fallback: 'robot' }) as ModelChoice;
+  if (role === 'enemy') return choose(label, ANY, { withClass: true, loose: true, fallback: 'robot' }) as ModelChoice;
   const classes: ReadonlySet<ModelClass> | undefined = genre === undefined ? undefined : new Set(GENRE_MODULES[genre].heroClasses);
   const allowed = (kind: ModelClass): boolean => classes === undefined || classes.has(kind);
   const steer = control === 'steer';

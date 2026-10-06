@@ -31,7 +31,7 @@ const RULE_ROLES = carryKey.roles.filter((role) => role.kind !== 'player');
 /** Úkol (sloveso „carry“ hraje `quest.spatial`) s pravidly klíče a dveří, jak by ho napsal model (B-R5). */
 const withRules = (rules: readonly unknown[] = carryKey.rules) => ({
   plan: 'carry the key',
-  spec: { ...genreAnswer({ genre: 'quest', mode: 'spatial', hero: 'knight', enemy: undefined, collectible: undefined, setting: 'castle courtyard at dusk' }).spec, ruleRoles: RULE_ROLES, rules },
+  spec: { ...genreAnswer({ genre: 'quest', mode: 'spatial', hero: 'knight', cast: undefined, setting: 'castle courtyard at dusk' }).spec, ruleRoles: RULE_ROLES, rules },
 });
 
 // T5b (rozhodnutí B-R5): první odpověď zas nese pravidla – sloveso mimo žánr se neztratí jen proto, že věta dostala žánr.

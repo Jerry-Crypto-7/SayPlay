@@ -18,9 +18,10 @@
 import { draftGenreFor, twistGoalFor } from '../draft/draft';
 import { singular } from '../draft/lexicon';
 import type { GenreModules } from '../genre/classify';
-import type { GenreModule, GenreSpec } from '../genre/contract';
+import { CAST_MAX, type GenreModule, type GenreSpec, castFor } from '../genre/contract';
 import { GENRE_MODULES, compileWith, readGenreSpec } from '../genre/index';
 import { RIDE_WORDS } from '../genre/runner';
+import { isAmmo } from '../genre/throw';
 import type { Reading } from '../read/schema';
 import { MECHANIC_IDS } from '../registry';
 import { readGameSpec, type GameSpecReason, type GameSpecV1 } from '../spec';
@@ -82,7 +83,7 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
   if (foreign.length > 0) return { ok: false, reason: 'WRONG_DOCUMENT', detail: `answer looks like a WorldDoc: has ${foreign.join(', ')}` };
   const read = readGenreSpec(withoutNulls(raw));
   if (!read.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: read.issues.join('; ') };
-  const genre = sentence === undefined ? singularRoles(read.value) : goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules);
+  const genre = sentence === undefined ? singularRoles(read.value) : ammoOfSentence(goalOfSentence(rideOfSentence(singularRoles(read.value), sentence), sentence, reading, modules), sentence, reading, modules);
   const game = compileGenreSpec(genre, modules);
   if (!game.ok) return game;
   // Věta mimo hry (P37A T5): AI verze řekne cíl slovy věty jako návrh („Dodge the long queues!“).
@@ -93,38 +94,56 @@ export function readGenreAnswer(body: unknown, modules: GenreModules = GENRE_MOD
 /**
  * Věc a cíl skákačky podle věty (P35 T9): model je u skákačky vynechává a AI
  * verze sbírací věty pak ukázala „Reach the flag“, i když rychlá verze téže
- * věty sbírala mrkve. Co odpověď nenapsala – věc, cíl, počet věcí – doplní
- * rychlá verze (`draftGenreFor`); co napsala, platí. Cíl, který v rychlé verzi
- * jen opakuje věc („grab apples“), dostane věc odpovědi, ať se z ní nestane cíl úrovně.
+ * věty sbírala mrkve. Co odpověď nenapsala – věc (`collect`), cíl (`reach`),
+ * počet věcí – doplní rychlá verze (`draftGenreFor`); co napsala, platí.
+ * Sbírací sloveso, které v rychlé verzi nese sama věc („grab 3 apples“, P39 T7),
+ * přejde na věc odpovědi; cíl, který v rychlé verzi jen opakuje věc, dostane
+ * věc odpovědi – ani jedno z věci odpovědi neudělá cíl úrovně.
  */
 function goalOfSentence(genre: GenreSpec, sentence: string, reading: Reading | null, modules: GenreModules): GenreSpec {
-  if (genre.genre !== 'platformer' || (genre.collectible !== undefined && genre.target !== undefined)) return genre;
+  const item = castFor(genre, 'collect');
+  const goal = castFor(genre, 'reach');
+  if (genre.genre !== 'platformer' || (item !== undefined && goal !== undefined)) return genre;
   const words = draftGenreFor(sentence, genre.genre, genre.mode, { reading, modules });
   if (words === null) return genre;
-  const collectible = genre.collectible ?? words.collectible;
-  const echo = words.target !== undefined && words.collectible !== undefined && singular(words.target.label) === singular(words.collectible);
-  const target = genre.target ?? (words.target !== undefined && echo && collectible !== undefined ? { ...words.target, label: collectible } : words.target);
+  const wordItem = castFor(words, 'collect');
+  const wordGoal = castFor(words, 'reach');
+  const carried = item !== undefined && item.verb === undefined && goal === undefined && wordGoal === undefined && wordItem?.verb !== undefined ? { ...item, verb: wordItem.verb } : item;
+  const nextItem = carried ?? wordItem;
+  const echo = wordGoal !== undefined && wordItem !== undefined && singular(wordGoal.label) === singular(wordItem.label);
+  const nextGoal = goal ?? (wordGoal !== undefined && echo && nextItem !== undefined ? { ...wordGoal, label: nextItem.label } : wordGoal);
+  const cast = [
+    ...(genre.cast ?? []).map((written) => (written === item && nextItem !== undefined ? nextItem : written)),
+    ...(item === undefined && nextItem !== undefined ? [nextItem] : []),
+    ...(goal === undefined && nextGoal !== undefined ? [nextGoal] : []),
+  ].slice(0, CAST_MAX);
   const counted = genre.params?.items !== undefined || genre.counts?.collectible !== undefined || words.counts?.collectible === undefined;
   return {
     ...genre,
-    ...(collectible === undefined ? {} : { collectible }),
-    ...(target === undefined ? {} : { target }),
+    ...(cast.length === 0 ? {} : { cast }),
     ...(counted ? {} : { counts: { ...genre.counts, collectible: words.counts!.collectible } }),
   };
 }
 
 /**
- * Popisky rolí v jednotném čísle, stejnou funkcí jako rychlá verze (P32B T7):
+ * Náboj hodu podle věty (P39 T14): prompt zakazuje obsadit, co hráč hází, takže
+ * odpověď náboj nemá a hod by vzal první sbíranou věc („grabs acorns … throws
+ * pinecones“ házel žaludy). Náboj, který odpověď nenapsala, doplní rychlá verze
+ * téhož režimu; co napsala, platí – i ořez na `CAST_MAX`.
+ */
+export function ammoOfSentence(genre: GenreSpec, sentence: string, reading: Reading | null, modules: GenreModules): GenreSpec {
+  if (genre.genre !== 'throw' || genre.cast?.some(isAmmo) === true) return genre;
+  const ammo = draftGenreFor(sentence, genre.genre, genre.mode, { reading, modules })?.cast?.find(isAmmo);
+  return ammo === undefined ? genre : { ...genre, cast: [...(genre.cast ?? []), ammo].slice(0, CAST_MAX) };
+}
+
+/**
+ * Popisky obsazení v jednotném čísle, stejnou funkcí jako rychlá verze (P32B T7):
  * šablony modulů mluví o jednom kusu, takže „rocks“ by dalo „without hitting a rocks“.
  * Hrdina zůstane – do šablon počtů nejde a nese titulek hry („Dinosaurs Run“).
  */
 function singularRoles(genre: GenreSpec): GenreSpec {
-  return {
-    ...genre,
-    ...(genre.enemy === undefined ? {} : { enemy: singular(genre.enemy) }),
-    ...(genre.collectible === undefined ? {} : { collectible: singular(genre.collectible) }),
-    ...(genre.target === undefined ? {} : { target: { ...genre.target, label: singular(genre.target.label) } }),
-  };
+  return genre.cast === undefined ? genre : { ...genre, cast: genre.cast.map((item) => ({ ...item, label: singular(item.label) })) };
 }
 
 /**

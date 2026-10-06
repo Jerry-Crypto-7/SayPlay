@@ -19,6 +19,8 @@ export interface SpecFidelity {
   readonly items: ChainItem[];
   readonly score: number;
   readonly drawnScore: number;
+  /** Podíl položek ve správné roli (P39, stupeň `role`). */
+  readonly roleScore: number;
 }
 
 const share = (items: readonly ChainItem[], pick: (item: ChainItem) => boolean): number =>
@@ -30,7 +32,13 @@ const share = (items: readonly ChainItem[], pick: (item: ChainItem) => boolean):
  */
 export function specFidelity(spec: GameSpecV1, checklist: readonly ChecklistEntry[]): SpecFidelity {
   const items = fidelityChain(spec, checklist);
-  return { control: spec.control ?? 'tap_go', items, score: share(items, (item) => item.read), drawnScore: share(items, (item) => item.drawn) };
+  return {
+    control: spec.control ?? 'tap_go',
+    items,
+    score: share(items, (item) => item.read),
+    drawnScore: share(items, (item) => item.drawn),
+    roleScore: share(items, (item) => item.role),
+  };
 }
 
 /**

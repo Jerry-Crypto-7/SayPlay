@@ -15,11 +15,11 @@
 
 import { controlOf, unreadItems } from '../capabilities';
 import { draftGenreFor } from '../draft/draft';
-import { NUMBER_WORDS, toolsOf } from '../draft/lexicon';
+import { NUMBER_WORDS, readRoles, toolsOf } from '../draft/lexicon';
 import { type GenreModules, type GenreRanking, classifyGenre } from '../genre/classify';
-import type { GenreModule, GenreSpec } from '../genre/contract';
+import type { CastItem, CastRole, GenreModule, GenreSpec } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/index';
-import { defaultEnemy, heroFits } from '../genre/roles';
+import { defaultCollectible, defaultFoe, heroFits } from '../genre/roles';
 import type { Reading } from '../read/schema';
 import { ARCHETYPES, type MechanicId, estimateCost } from '../registry';
 import type { GameSpecV1 } from '../spec';
@@ -334,19 +334,26 @@ export function unprovedVerbs(issues: readonly { readonly code: string; readonly
 /**
  * Odpověď na novou hru je `GenreSpec` a kombinaci ovládání × mechanika za ni
  * volí modul žánru – co může být špatně, je výběr: jiný hrdina, než věta říká,
- * hrdina, kterého žánr neumí, nepřítel mimo větu i prostředí nebo nepřítel, kterého
- * hráč ve větě drží (T7), žánr, který hlavní
- * sloveso nehraje, režim, který hraje jen náhradu. Kódy nejsou kódy balíčku
- * (`CRITIC_CODES`): nález nejde modelu, řeší ho přepnutí žánru (`switchGenre`).
+ * hrdina, kterého žánr neumí, věc obsazení mimo větu i prostředí (`CAST_NOT_SAID`),
+ * věc s rolí, kterou jí sloveso věty nedává (`CAST_ROLE_WRONG`, P39), věc věty,
+ * která v obsazení chybí (`CAST_MISSING`), protivník, kterého hráč ve větě drží
+ * nebo vrhá (`CAST_IS_TOOL`, T7), žánr, který hlavní sloveso nehraje, režim,
+ * který hraje jen náhradu. Kódy nejsou kódy balíčku (`CRITIC_CODES`): nález
+ * nejde modelu, řeší ho přepnutí žánru (`switchGenre`).
  */
-export const FIDELITY_CODES = ['HERO_NOT_SAID', 'HERO_UNFIT', 'ENEMY_NOT_SAID', 'ENEMY_IS_TOOL', 'VERB_OUTSIDE_MODE', 'MODE_NOT_READY'] as const;
+export const FIDELITY_CODES = ['HERO_NOT_SAID', 'HERO_UNFIT', 'CAST_NOT_SAID', 'CAST_ROLE_WRONG', 'CAST_MISSING', 'CAST_IS_TOOL', 'VERB_OUTSIDE_MODE', 'MODE_NOT_READY'] as const;
 export type FidelityCode = (typeof FIDELITY_CODES)[number];
 
 export interface FidelityIssue {
   readonly code: FidelityCode;
-  /** Pole `GenreSpec`, které nesedí (`/hero`, `/enemy`, `/mode`). */
+  /** Pole `GenreSpec`, které nesedí (`/hero`, `/cast/1`, `/cast`, `/mode`). */
   readonly path: string;
   readonly evidence: string;
+  /**
+   * Věc věty, o kterou jde: u `CAST_ROLE_WRONG` s rolí, kterou jí dává sloveso věty,
+   * u `CAST_MISSING` tak, jak ji obsadí rychlá verze téhož režimu – oprava ji tak doplní.
+   */
+  readonly thing?: CastItem;
 }
 
 export interface FidelityOptions {
@@ -365,10 +372,87 @@ export function sameRole(a: string, b: string): boolean {
 }
 
 /** Popisek je z věty, když v ní je každé jeho slovo – jinak ho dala výchozí role prostředí. */
-function saidIn(label: string, sentence: string): boolean {
+export function saidIn(label: string, sentence: string): boolean {
   const said = new Set(wordsOf(sentence));
   const words = wordsOf(label);
   return words.length > 0 && words.every((word) => said.has(word));
+}
+
+/** Role, ve kterých věc hráče ohrožuje, nebo se do ní střílí či bije – co hráč drží nebo vrhá, to nikdy není (T7). */
+const HOSTILE: ReadonlySet<CastRole> = new Set<CastRole>(['shoot_at', 'chase_me', 'avoid', 'fight']);
+
+/** Co s věcí hráč dělá: útočí na ni, uhýbá jí, sbírá ji, dojde k ní. */
+const PLAYER_DOES: Readonly<Record<CastRole, string>> = {
+  shoot_at: 'attack',
+  fight: 'attack',
+  throw_at: 'attack',
+  chase_me: 'escape',
+  avoid: 'escape',
+  collect: 'gather',
+  reach: 'goal',
+  hero: 'hero',
+  scenery: 'scenery',
+};
+
+/**
+ * Sedí role odpovědi ke slovesu věty (P39)? Rozhoduje, co s věcí hráč dělá:
+ * střílet, bít i házet je útok, honič i překážka se obchází – žánr pak hraje
+ * nejbližší roli, kterou umí (`castFor`). Cíl úkolu (`reach`) je předmět hlavního
+ * slovesa („hit the snowman“, „find the battery“) a sedí k útoku i ke sběru.
+ * Střílená věc jako překážka nebo sbíraná věc jako honič nesedí.
+ */
+function fits(written: CastRole, said: CastRole): boolean {
+  if (PLAYER_DOES[written] === PLAYER_DOES[said]) return true;
+  return written === 'reach' && (PLAYER_DOES[said] === 'attack' || said === 'collect');
+}
+
+/**
+ * Obsazení odpovědi proti větě (P39, třídou místo `critic.ts:413`): soudí se
+ * věta, ne rychlá verze. Položka musí být ve větě, nebo výchozí věc prostředí
+ * (odpovědi i rychlé verze téhož režimu), nebo kulisa z místa odpovědi; protivník
+ * nesmí být nástroj hráče; role musí sedět ke slovesu, které k věci ve větě patří.
+ * Věc, kterou věta jmenuje se slovesem hry a rychlá verze ji obsadí (místo ani
+ * hrdina to tedy není), v obsazení – ani v rolích pravidel – chybět nesmí.
+ * `heard` = věta má sloveso z tabulky; bez něj (česky, P38) slova větu nečtou a
+ * věc mimo ni nesoudí – přečetl ji režisér.
+ */
+function castIssues(genre: GenreSpec, sentence: string, words: GenreSpec | null, heard: boolean): FidelityIssue[] {
+  const named = readRoles(sentence).named.filter((thing): thing is CastItem => thing.does !== null);
+  const tools = toolsOf(sentence);
+  const drafted = words?.cast ?? [];
+  const defaults = [defaultFoe(genre.setting, genre.genre).label, defaultCollectible(genre.setting), ...drafted.map((item) => item.label)];
+  const cast = genre.cast ?? [];
+  const issues: FidelityIssue[] = [];
+  cast.forEach((item, index) => {
+    if (item.does === 'hero') return;
+    const path = `/cast/${String(index)}`;
+    // T7: co hráč stříká nebo hází, ho nehoní („sprays water“ → „before the water catch you“).
+    // B-R12: kdo věc vrhá, se nesoudí – kámen, který hází obr, taky nikoho nehoní (honit smí obr).
+    const tool = HOSTILE.has(item.does) ? tools.find((phrase) => sameRole(item.label, phrase)) : undefined;
+    if (tool !== undefined) {
+      issues.push({ code: 'CAST_IS_TOOL', path, evidence: `the sentence throws or uses the "${tool}", so it cannot be ${item.does}` });
+      return;
+    }
+    const scenery = item.does === 'scenery' && saidIn(item.label, genre.setting);
+    if (heard && !saidIn(item.label, sentence) && !scenery && !defaults.some((label) => sameRole(item.label, label))) {
+      issues.push({ code: 'CAST_NOT_SAID', path, evidence: `"${item.label}" is neither in the sentence nor a default of the setting (${[...new Set(defaults)].join(', ')})` });
+      return;
+    }
+    const said = named.find((thing) => sameRole(thing.label, item.label));
+    if (said !== undefined && !fits(item.does, said.does)) {
+      issues.push({ code: 'CAST_ROLE_WRONG', path, evidence: `the sentence makes "${said.label}" ${said.does}, the answer plays it as ${item.does}`, thing: said });
+    }
+  });
+  // Co věta jmenuje se slovesem hry, je ve hře vidět: v obsazení, v rolích pravidel, nebo je to hrdina.
+  const present = [genre.hero, ...cast.map((item) => item.label), ...(genre.ruleRoles ?? []).map((role) => role.label)];
+  for (const thing of named) {
+    if (thing.does === 'hero' || thing.does === 'scenery') continue;
+    const drafts = drafted.find((item) => sameRole(item.label, thing.label));
+    if (drafts === undefined || present.some((label) => sameRole(label, thing.label))) continue;
+    if (issues.some((issue) => issue.code === 'CAST_MISSING' && issue.thing !== undefined && sameRole(issue.thing.label, thing.label))) continue;
+    issues.push({ code: 'CAST_MISSING', path: '/cast', evidence: `the sentence names "${thing.label}" (${thing.does}), the answer has no such thing`, thing: drafts });
+  }
+  return issues;
 }
 
 /**
@@ -386,9 +470,10 @@ function verbFits(genre: GenreSpec, ranking: GenreRanking, modules: GenreModules
 }
 
 /**
- * Kontrola věrnosti `GenreSpec` odpovědi proti větě. Hrdinu a nepřítele věty
- * čte draft téhož režimu (`draftGenreFor`): popisek, který v něm je a zazní ve
- * větě, je role věty; jinak je nepřítel výchozí z prostředí odpovědi nebo draftu.
+ * Kontrola věrnosti `GenreSpec` odpovědi proti větě. Hrdinu věty čte draft
+ * téhož režimu (`draftGenreFor`): popisek, který v něm je a zazní ve větě, je
+ * hrdina věty. Obsazení soudí věta sama (`castIssues`); draft dodá jen výchozí
+ * věci svého prostředí a řekne, co z věty je věc (ne místo ani hrdina).
  */
 export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOptions = {}): FidelityIssue[] {
   const reading = options.reading ?? null;
@@ -403,22 +488,8 @@ export function fidelity(genre: GenreSpec, sentence: string, options: FidelityOp
   if (!heroFits(genre.genre, genre.hero, modules)) {
     issues.push({ code: 'HERO_UNFIT', path: '/hero', evidence: `"${genre.hero}" cannot play the hero of ${genre.genre}` });
   }
-
-  const saidEnemy = words?.enemy !== undefined && saidIn(words.enemy, sentence) ? words.enemy : null;
-  if (saidEnemy !== null && (genre.enemy === undefined || !sameRole(genre.enemy, saidEnemy))) {
-    issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `the sentence's enemy is "${saidEnemy}", the answer has ${genre.enemy === undefined ? 'none' : `"${genre.enemy}"`}` });
-  }
-  const settingEnemies = [defaultEnemy(genre.setting, genre.genre), ...(words?.enemy === undefined ? [] : [words.enemy])];
-  // P38: větu, ve které tabulka sloves nic nenajde (česky), slova nečtou – nepřítele z ní přečetl režisér.
-  if (ranking.pick !== null && saidEnemy === null && genre.enemy !== undefined && !settingEnemies.some((label) => sameRole(genre.enemy!, label))) {
-    issues.push({ code: 'ENEMY_NOT_SAID', path: '/enemy', evidence: `"${genre.enemy}" is neither in the sentence nor the default of the setting (${settingEnemies.join(', ')})` });
-  }
-  // T7: co hráč stříká nebo hází, ho nehoní („sprays water“ → „before the water catch you“).
-  // B-R12: kdo věc vrhá, se nesoudí – kámen, který hází obr, taky nikoho nehoní (honit smí obr).
-  const tool = genre.enemy === undefined ? undefined : toolsOf(sentence).find((phrase) => sameRole(genre.enemy!, phrase));
-  if (tool !== undefined) {
-    issues.push({ code: 'ENEMY_IS_TOOL', path: '/enemy', evidence: `the sentence throws or uses the "${tool}", so it cannot be the enemy` });
-  }
+  // P38: větu, ve které tabulka sloves nic nenajde (česky), slova nečtou – věci z ní přečetl režisér.
+  issues.push(...castIssues(genre, sentence, words, ranking.pick !== null));
 
   if (!verbFits(genre, ranking, modules)) {
     const first = ranking.ranked[0];

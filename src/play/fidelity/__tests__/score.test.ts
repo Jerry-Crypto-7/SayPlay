@@ -21,6 +21,22 @@ const ICEBERG: ChecklistEntry = { item: 'iceberg', slot: 'setting', match: ['ice
 /** `n` položek, které nečte žádná verze – jmenovatel bez vlivu na čitatel. */
 const unread = (n: number): ChecklistEntry[] => Array.from({ length: n }, (_, index) => ({ item: `thing ${String(index)}`, slot: 'role', match: [`zzz${String(index)}`] }));
 
+describe('specFidelity role score', () => {
+  // P39 T2: podíl položek ve správné roli; položka bez `does` (seznam za běhu) soudí jen to, že je nakreslená.
+  it('shares the items that play the role the sentence gives them', () => {
+    const cheese: ChecklistEntry = { item: 'cheese', slot: 'role', match: ['cheese'] };
+    const fidelity = specFidelity(draftGameSpec('a mouse collects cheese in a kitchen'), [cheese, { ...cheese, does: 'collect' }, { ...cheese, does: 'shoot_at' }, ...unread(1)]);
+    expect(fidelity.items.map((item) => [item.drawn, item.role])).toEqual([
+      [true, true],
+      [true, true],
+      // Sýr je nakreslený, ale ve hře se do něj nestřílí.
+      [true, false],
+      [false, false],
+    ]);
+    expect(fidelity.roleScore).toBe(0.5);
+  });
+});
+
 describe('upgradeGain', () => {
   it('the snow set makes the iceberg read: one item more of four is +0.25', () => {
     expect(specFidelity(draft, [ICEBERG]).score).toBe(0);

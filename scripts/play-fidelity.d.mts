@@ -15,7 +15,7 @@ export declare function checkCorpus(corpus: unknown): string[];
 export declare function specFidelity(
   spec: unknown,
   checklist: readonly ChecklistEntry[],
-): { readonly control: string; readonly items: FidelityItem[]; readonly score: number; readonly drawnScore: number };
+): { readonly control: string; readonly items: FidelityItem[]; readonly score: number; readonly drawnScore: number; readonly roleScore: number };
 
 export declare interface LossCause {
   readonly why: string;
@@ -27,10 +27,30 @@ export declare interface LossCause {
 
 type CorpusSentence = { readonly id: string; readonly text: string; readonly checklist: readonly ChecklistEntry[] };
 
+/** `read`, `drawn` a `role` jednoho žánru (P39 T2). */
+export declare interface GenreStages {
+  readonly sentences: number;
+  readonly read: number;
+  readonly drawn: number;
+  readonly role: number;
+}
+
+export declare function genreOfSpec(spec: Pick<GameSpecV1, 'control' | 'controlParams'>): string;
+
 export declare function offlineChain(sentences: readonly CorpusSentence[], draftOf?: (sentence: CorpusSentence) => GameSpecV1): {
-  readonly summary: { readonly sentences: number; readonly compiled: number; readonly items: number; readonly inSpec: number; readonly read: number; readonly drawn: number };
+  readonly summary: {
+    readonly sentences: number;
+    readonly compiled: number;
+    readonly items: number;
+    readonly inSpec: number;
+    readonly read: number;
+    readonly drawn: number;
+    readonly role: number;
+    readonly roleNamed: number;
+  };
+  readonly byGenre: Readonly<Record<string, GenreStages>>;
   readonly causes: readonly LossCause[];
-  readonly sentences: readonly { readonly id: string; readonly control: string; readonly addons: readonly string[]; readonly compiled: boolean; readonly items: readonly FidelityItem[] }[];
+  readonly sentences: readonly { readonly id: string; readonly genre: string; readonly control: string; readonly addons: readonly string[]; readonly compiled: boolean; readonly items: readonly FidelityItem[] }[];
 };
 
 export declare const READER_GATE: { readonly minGain: number; readonly maxP95Ms: number };
@@ -100,7 +120,7 @@ export interface ModelComparison {
   readonly refused: { readonly door: number; readonly cap: number };
   readonly published: { readonly ok: number; readonly of: number; readonly share: number; readonly failures: Record<string, number> };
   readonly sources: { readonly authored: number; readonly cached: number };
-  readonly fidelity: { readonly inSpec: number | null; readonly read: number | null; readonly drawn: number | null };
+  readonly fidelity: { readonly inSpec: number | null; readonly read: number | null; readonly drawn: number | null; readonly role: number | null };
   readonly firstPlayableFrameMs: { readonly aiP50: number | null; readonly aiP95: number | null; readonly draftP50: number | null; readonly draftP95: number | null };
   readonly cost: { readonly calls: number; readonly usd: number; readonly perSentence: number | null; readonly perPublished: number | null };
 }
@@ -138,7 +158,7 @@ interface Tally {
 export declare function summarize(results: readonly unknown[]): {
   readonly n: number;
   readonly upgradeSuccess: { readonly ok: number; readonly of: number; readonly failures: Record<string, number> };
-  readonly specFidelity: { readonly final: number | null; readonly draft: number | null; readonly ai: number | null; readonly inSpecFinal: number | null; readonly drawnFinal: number | null };
+  readonly specFidelity: { readonly final: number | null; readonly draft: number | null; readonly ai: number | null; readonly inSpecFinal: number | null; readonly drawnFinal: number | null; readonly roleFinal: number | null; readonly roleDraft: number | null };
   readonly recognizable: Record<'final' | 'draft', { readonly items: Tally; readonly hero: Tally; readonly setting: Tally; readonly judged: number }>;
   readonly timing: { readonly draftMsP50: number | null; readonly upgradeSecondsP50: number | null; readonly upgradeSecondsP90: number | null };
 };

@@ -183,7 +183,7 @@ export async function direct(sentence: string, deps: DirectorDeps): Promise<Dire
     calls,
   });
 
-  // Kontrola věrnosti (T5): hrdina, nepřítel a sloveso věty, režim `ready`; neprošlá odpověď přepne žánr podle klasifikátoru.
+  // Kontrola věrnosti (T5): hrdina, obsazení proti větě (P39) a sloveso věty, režim `ready`; neprošlá odpověď přepne žánr podle klasifikátoru.
   const unfaithful = fidelity(read.genre, sentence, genreOptions);
   if (unfaithful.length > 0) {
     const switched = switchGenre(read.genre, sentence, genreOptions);

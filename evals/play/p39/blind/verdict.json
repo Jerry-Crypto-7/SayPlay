@@ -1,0 +1,600 @@
+{
+ "about": "P39 T14 blind judgement: the same sentence as a game before P39 (main 88245889) and after (HEAD), judged side by side by Codex over the subscription. See README.md.",
+ "judgedAt": "2026-10-05T23:56:11.506Z",
+ "runId": "p39-blind-r2",
+ "builds": {
+  "before": {
+   "commit": "88245889",
+   "server": "http://127.0.0.1:3150"
+  },
+  "after": {
+   "commit": "0f8a2178",
+   "server": "http://127.0.0.1:3151"
+  }
+ },
+ "judge": {
+  "how": "codex exec -i sheet.png in an empty mkdtemp dir, --output-schema {winner, why}; page text hidden, canvas only",
+  "question": "The attached image shows two small 3D video games, both made from the same request: \"<sentence>\". Game A is the left column, game B the right column. The top row is each game's first frame, the bottom row the same game after 3 seconds of play. Page text is hidden, so judge only what the 3D scenes show. Which game better shows what the request asks for: the things the request names are visible and each plays the role the request gives it (something to shoot, to dodge, to collect, to run from, to fight, to reach, to throw at), the place looks like the place named, and it is the kind of game asked for (jumping, running, shooting, swimming ...)? Answer \"tie\" only when neither is better. Reply only with the JSON the schema asks for: winner = \"A\", \"B\" or \"tie\"; why = one or two sentences naming what you see in each game."
+ },
+ "order": {
+  "prng": "pure-rand xoroshiro128plus + uniformInt(0, 1) per pair in list order; 0 = before is A (left)",
+  "seed": 39015
+ },
+ "pool": [
+  {
+   "id": "trigger",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "drones",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "mansion",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "squirrel",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "zombies",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "dino",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "d12",
+   "played": true,
+   "differs": false,
+   "judged": false
+  },
+  {
+   "id": "d10",
+   "played": true,
+   "differs": false,
+   "judged": false
+  },
+  {
+   "id": "dogcity",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "skeletons",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "zombierun",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "desert",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "s008",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "alien",
+   "played": true,
+   "differs": true,
+   "judged": true
+  },
+  {
+   "id": "batcave",
+   "played": false,
+   "differs": null,
+   "judged": false
+  },
+  {
+   "id": "storm",
+   "played": false,
+   "differs": null,
+   "judged": false
+  },
+  {
+   "id": "ufo",
+   "played": false,
+   "differs": null,
+   "judged": false
+  },
+  {
+   "id": "robots",
+   "played": false,
+   "differs": null,
+   "judged": false
+  },
+  {
+   "id": "dragon",
+   "played": false,
+   "differs": null,
+   "judged": false
+  },
+  {
+   "id": "s022",
+   "played": false,
+   "differs": null,
+   "judged": false
+  }
+ ],
+ "score": {
+  "newWins": 9,
+  "ties": 2,
+  "oldWins": 1,
+  "of": 12,
+  "pass": true,
+  "sameGame": 0
+ },
+ "verdicts": [
+  {
+   "id": "trigger",
+   "sentence": "jumping and shooting game in the forest against animals",
+   "covers": [
+    "trigger sentence",
+    "platformer",
+    "shoot in a platformer"
+   ],
+   "left": "before",
+   "winner": "B",
+   "winnerSide": "after",
+   "why": "Both games show a fox jumping between grassy platforms with trees, but B also shows a dark animal outlined in red as an apparent enemy. A instead shows a boxy robot-like target, so B better matches fighting animals in a forest.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:fox",
+     "hazard:wolf",
+     "collectible:acorn",
+     "exit:flag"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:fox",
+     "hazard:spikes",
+     "collectible:acorn",
+     "exit:flag",
+     "hazard:animal"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "drones",
+   "sentence": "run and shoot drones on a highway",
+   "covers": [
+    "runner",
+    "shoot in a runner"
+   ],
+   "left": "before",
+   "winner": "B",
+   "winnerSide": "after",
+   "why": "Both show a character running down a road with cars and a trail of collectibles, but B has a clearer hovering drone with outstretched rotors ahead. A’s distant red target is less recognizable as a drone, and its foreground obstacle looks like a small car.",
+   "sameSpec": false,
+   "before": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "runner",
+    "roles": [
+     "player:kid",
+     "hazard:car",
+     "collectible:coin",
+     "exit:finish line"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "runner",
+    "roles": [
+     "player:kid",
+     "hazard:rock",
+     "collectible:coin",
+     "exit:finish line",
+     "hazard:drone"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "mansion",
+   "sentence": "collect coins, dodge ghosts and shoot bats in a haunted mansion",
+   "covers": [
+    "shooter",
+    "three roles"
+   ],
+   "left": "before",
+   "winner": "B",
+   "winnerSide": "after",
+   "why": "Game B shows recognizable yellow coins to collect, while Game A’s corresponding objects look like red bullseye targets. Both show red bats and an aiming beam in a grassy castle courtyard, but neither clearly depicts ghosts or a haunted mansion.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:kid",
+     "target:target",
+     "hazard:bat",
+     "hazard:ghost"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:kid",
+     "target:coin",
+     "hazard:bat"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "squirrel",
+   "sentence": "a squirrel grabs acorns, dodges owls and throws pinecones at a fox",
+   "covers": [
+    "throw",
+    "three roles"
+   ],
+   "left": "before",
+   "winner": "B",
+   "winnerSide": "after",
+   "why": "Both show a squirrel-like character facing rows of small orange fox-like animals in a wooded clearing. B more clearly shows throwing: after three seconds, a projectile has moved away from the character along the dotted arc, while A’s remains beside it; collecting acorns and dodging owls are unclear in both.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "throw",
+    "roles": [
+     "player:squirrel",
+     "target:fox",
+     "item:acorn",
+     "item:pinecone"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "throw",
+    "roles": [
+     "player:squirrel",
+     "target:fox",
+     "item:pinecone"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "zombies",
+   "sentence": "jump and shoot zombies in a graveyard",
+   "covers": [
+    "platformer",
+    "shoot in a platformer"
+   ],
+   "left": "after",
+   "winner": "A",
+   "winnerSide": "after",
+   "why": "Both show a moonlit graveyard with gravestones, platform gaps, and a character airborne after three seconds. A shows a more recognizable zombie target at the right edge, while B’s enemy is mostly clipped offscreen; neither clearly shows shooting.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:kid",
+     "hazard:ghost",
+     "collectible:candle",
+     "exit:flag"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:kid",
+     "hazard:spikes",
+     "collectible:candle",
+     "exit:flag",
+     "hazard:zombie"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "dino",
+   "sentence": "a dinosaur stomps cars and dodges helicopters in a city",
+   "covers": [
+    "arena",
+    "two roles"
+   ],
+   "left": "before",
+   "winner": "B",
+   "winnerSide": "after",
+   "why": "Game B shows the dinosaur approaching a recognizable car, making the requested car-stomping interaction clearer. Game A shows the dinosaur approaching a helicopter-like rotor instead; both scenes look like enclosed stone courtyards rather than cities, and neither clearly shows helicopter dodging.",
+   "sameSpec": false,
+   "before": {
+    "version": "quick",
+    "upgrade": "UNCHANGED",
+    "genre": "arena",
+    "roles": [
+     "player:dinosaur",
+     "hazard:helicopter"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "arena",
+    "roles": [
+     "player:dinosaur",
+     "hazard:car"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "dogcity",
+   "sentence": "a dog runs through a city chased by a dogcatcher grabbing bones",
+   "covers": [
+    "runner",
+    "three roles",
+    "no model in the library (dogcatcher)"
+   ],
+   "left": "before",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both show a dog running down a city street toward small bone-like collectibles, but neither clearly shows a dogcatcher chasing it. A has a traffic cone in the foreground and B has a bowl-like object; neither difference better fulfills the request.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "runner",
+    "roles": [
+     "player:dog",
+     "hazard:dogcatcher",
+     "collectible:bone",
+     "exit:finish line"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "runner",
+    "roles": [
+     "player:dog",
+     "hazard:rock",
+     "collectible:bone",
+     "exit:finish line",
+     "chaser:dogcatcher"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "skeletons",
+   "sentence": "shoot skeletons and collect potions in a dungeon",
+   "covers": [
+    "shooter",
+    "two roles"
+   ],
+   "left": "after",
+   "winner": "A",
+   "winnerSide": "after",
+   "why": "Game A shows recognizable potion bottles to collect alongside distant enemies and a shooting aim line; Game B replaces the foreground potions with bullseye targets. Both show the same outdoor grassy castle setting rather than a dungeon, but A better includes the requested collectibles.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:knight",
+     "target:target",
+     "hazard:skeleton"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:knight",
+     "target:potion",
+     "hazard:skeleton"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "zombierun",
+   "sentence": "run from zombies and jump over cars in a city",
+   "covers": [
+    "platformer",
+    "chase"
+   ],
+   "left": "after",
+   "winner": "tie",
+   "winnerSide": "tie",
+   "why": "Both games show the same character jumping between rocky platforms with coins, sparse buildings, and blue structures. Neither clearly shows zombies to run from or recognizable cars to jump over, and both look more like floating-platform games than city chases.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:kid",
+     "hazard:zombie",
+     "collectible:coin",
+     "exit:flag",
+     "hazard:car"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:kid",
+     "hazard:car",
+     "collectible:coin",
+     "exit:flag",
+     "chaser:zombie"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "desert",
+   "sentence": "jump over cactus and shoot scorpions in a desert",
+   "covers": [
+    "platformer",
+    "shoot in a platformer"
+   ],
+   "left": "after",
+   "winner": "A",
+   "winnerSide": "after",
+   "why": "Game A shows a clearly recognizable scorpion target, cacti, and a character jumping between sandy platforms. Game B shows similar jumping and cacti, but its prominent target is a blocky humanoid rather than a scorpion, so A better matches the request.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:fox",
+     "hazard:cactus",
+     "collectible:gem",
+     "exit:flag",
+     "hazard:cactus"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "platformer",
+    "roles": [
+     "player:fox",
+     "hazard:cactus",
+     "collectible:gem",
+     "exit:flag",
+     "hazard:scorpion"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "s008",
+   "sentence": "temple run but you're a banana running from a monkey",
+   "covers": [
+    "runner",
+    "chase"
+   ],
+   "left": "before",
+   "winner": "A",
+   "winnerSide": "before",
+   "why": "Game A shows a banana running along a jungle path with a visible monkey chasing behind it. Game B shows the banana and a similar running path, but the foreground object looks like a stump or rock rather than a pursuing monkey.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "runner",
+    "roles": [
+     "player:banana",
+     "hazard:monkey",
+     "collectible:coin",
+     "exit:finish line"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "runner",
+    "roles": [
+     "player:banana",
+     "hazard:rock",
+     "collectible:coin",
+     "exit:finish line",
+     "chaser:monkey"
+    ],
+    "robot": true
+   }
+  },
+  {
+   "id": "alien",
+   "sentence": "an astronaut shoots aliens and collects crystals on the moon",
+   "covers": [
+    "shooter",
+    "two roles"
+   ],
+   "left": "before",
+   "winner": "B",
+   "winnerSide": "after",
+   "why": "Game B shows an astronaut aiming a red beam at an alien-like target, with clearly visible pale blue crystals scattered across the rocky lunar scene. Game A has the same astronaut and shooting setup, but its scattered objects look like red bullseyes rather than collectible crystals.",
+   "sameSpec": false,
+   "before": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:astronaut",
+     "target:target",
+     "hazard:asteroid"
+    ],
+    "robot": true
+   },
+   "after": {
+    "version": "ai",
+    "upgrade": "ready",
+    "genre": "shooter",
+    "roles": [
+     "player:astronaut",
+     "target:crystal",
+     "hazard:alien"
+    ],
+    "robot": true
+   }
+  }
+ ]
+}

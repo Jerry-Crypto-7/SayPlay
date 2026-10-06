@@ -85,6 +85,45 @@ export function desktopKeys(controlsHint: string): string | null {
   return key.toLowerCase() === 'arrows' ? 'or use the arrow keys' : `or press ${key.length === 1 ? key : key[0]!.toUpperCase() + key.slice(1)}`;
 }
 
+/** Náhradní vstup za „nebo“ v dalších povelech („F or Fire“ → „F“); „drag up or down“ je směr tahu, ne náhrada. */
+const MORE_ALTERNATIVE = new RegExp(`(?<!\\bup)\\s+or\\s+(?:${KEY_WORD}|tap|swipe|click|drag|fire)\\b`, 'gi');
+/** Povel je „<vstup> to <sloveso>“ nebo souvětí, které začíná gestem; rada („Step aside when …“) povel není. */
+const COMMAND = /\bto\s+[a-z]+/i;
+const GESTURE_FIRST = /^(?:tap|swipe|drag|hold|let go|press|click)\b/i;
+/** Písmeno klávesy před náhradou („F or Fire“) – prst ho nezmáčkne. */
+const LETTER_BEFORE = /^[A-Z]\s+or\s+/;
+
+const clauses = (hint: string): string[] =>
+  hint
+    .trim()
+    .split(/(?<=[.!?])\s+/)
+    .flatMap((sentence) => sentence.split(/[,;]\s*/))
+    .map((clause) => clause.replace(/[.!?]+$/, '').trim())
+    .filter((clause) => clause !== '');
+
+const commands = (list: readonly string[]): string[] =>
+  list
+    .filter((clause) => !/^or\b/i.test(clause) && (COMMAND.test(clause) || GESTURE_FIRST.test(clause)))
+    .map((clause) => clause.replace(MORE_ALTERNATIVE, '').trim())
+    .map((clause) => clause.charAt(0).toUpperCase() + clause.slice(1));
+
+const verbOf = (command: string): string => /\bto\s+([a-z]+)/i.exec(command)?.[1]?.toLowerCase() ?? command.toLowerCase();
+
+/**
+ * Další povely nápovědy pod prvním (P39 T10): plošinovka se střelbou řekne skok
+ * i střelbu, ne jen „Arrows to move“. `primary` je text, ze kterého karta bere
+ * první povel; `extra` (dotyk se zónami) doplní povely nápovědy hry, které zóny
+ * neříkají – bez klávesy písmenem.
+ */
+export function controlLines(primary: string, extra?: string): string[] {
+  const all = clauses(primary);
+  const lines = commands(all.slice(1));
+  if (extra === undefined) return lines;
+  const said = new Set(commands(all).map(verbOf));
+  const more = commands(clauses(touchHint(extra)).map((clause) => clause.replace(LETTER_BEFORE, ''))).filter((line) => !said.has(verbOf(line)));
+  return [...lines, ...more];
+}
+
 /**
  * Velká výzva uprostřed, dokud hra čeká na první dotek: „Tap to start“,
  * jeden povel a na desktopu klávesa. Na dotyku povel z nápovědy bez kláves
@@ -107,6 +146,7 @@ export function FirstPrompt({
   const coarse = useCoarsePointer();
   const action = callToAction(coarse ? (touch ?? touchHint(controlsHint)) : controlsHint);
   const keyLine = coarse ? null : (keys ?? desktopKeys(controlsHint));
+  const more = coarse ? controlLines(touch ?? touchHint(controlsHint), touch === undefined ? undefined : controlsHint) : controlLines(controlsHint);
   return (
     <div className="play-first-prompt" data-testid="play-first-prompt" aria-hidden="true">
       {dare !== null && (
@@ -118,6 +158,11 @@ export function FirstPrompt({
       <p className="play-first-prompt-start">Tap to start</p>
       {action !== '' && <p className="play-first-prompt-action" data-testid="play-first-prompt-action">{action}</p>}
       {keyLine !== null && <p className="play-first-prompt-keys">{keyLine}</p>}
+      {more.map((line) => (
+        <p key={line} className="play-first-prompt-more" data-testid="play-first-prompt-more">
+          {line}
+        </p>
+      ))}
     </div>
   );
 }

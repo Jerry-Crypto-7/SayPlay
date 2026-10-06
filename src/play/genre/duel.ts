@@ -13,7 +13,7 @@
 import { DUEL } from '../arcade/pieces/duel';
 import { plural, singular } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Soupeřů výchozí a v mezích: 7 soupeřů robot porazí za ~28 s („cowboy duel at high noon“), pod 8 je souboj pod 30 s. */
 export const DUEL_GENRE = { rounds: 9, minRounds: 8 } as const;
@@ -30,7 +30,7 @@ export const duelGenre: GenreModule<'duel'> = {
   availability: () => 'ready',
   compile: (spec) => {
     const { rounds = DUEL_GENRE.rounds } = spec.params ?? {};
-    const rival = spec.enemy ?? 'rival';
+    const rival = castFor(spec, 'fight', 'chase_me', 'shoot_at', 'avoid', 'throw_at')?.label ?? 'rival';
     const rivals = plural(singular(rival), 2);
     return legacySpec(spec, {
       control: 'duel',

@@ -23,9 +23,10 @@ import { ARCADE_LIBRARY } from '@/play/arcade/library';
 import { shooterRules } from '@/play/arcade/pieces/shooter';
 import { runBot } from '@/play/arcade/verify';
 import { draftGameSpecWithMeta } from '@/play/draft';
-import type { GenreModule, GenreSpec } from '@/play/genre/contract';
+import { type GenreModule, type GenreSpec, castFor } from '@/play/genre/contract';
 import { compileWith } from '@/play/genre/index';
-import { throwClock, throwGenre } from '@/play/genre/throw';
+import { shooterGenre } from '@/play/genre/shooter';
+import { ammoOf, throwClock, throwGenre } from '@/play/genre/throw';
 import { type GameSpecV1, readGameSpec } from '@/play/spec';
 
 /** Věty poptávky (`evals/play/demand/corpus.json`), kde hráč střílí. */
@@ -111,10 +112,12 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     ['throw a basketball into a hoop from crazy angles', 'basketball', 'hoop'],
     ['angry birds but with cats and cardboard boxes', undefined, 'cardboard box'],
   ])('"%s" throws %s at the %s', (sentence, thrown, target) => {
-    const genre = draftGameSpecWithMeta(sentence, 1).genre;
-    expect(genre?.collectible).toBe(thrown);
-    expect(genre?.target?.label).toBe(target);
-    expect(genre?.setting).not.toBe(target);
+    const genre = draftGameSpecWithMeta(sentence, 1).genre!;
+    // P39 T14: co se hází, je náboj (`ammoOf`), ne věc ke sběru.
+    expect(ammoOf(genre)?.label).toBe(thrown);
+    expect(castFor(genre, 'collect')).toBeUndefined();
+    expect(castFor(genre, 'throw_at')?.label).toBe(target);
+    expect(genre.setting).not.toBe(target);
   });
 
   // Věta bez věci před „at/into“: předmět za předložkou je terč, ne ještě jednou to, co se hází.
@@ -122,9 +125,62 @@ describe('shooter and throw sentences pick their genre (P36A T10)', () => {
     ['throwing at a spinning log', 'spinning log'],
     ['toss into the bucket', 'bucket'],
   ])('"%s" does not throw the %s at itself', (sentence, target) => {
-    const genre = draftGameSpecWithMeta(sentence, 1).genre;
-    expect(genre?.target?.label).toBe(target);
-    expect(genre?.collectible).not.toBe(target);
+    const genre = draftGameSpecWithMeta(sentence, 1).genre!;
+    expect(castFor(genre, 'throw_at')?.label).toBe(target);
+    expect(ammoOf(genre)?.label).not.toBe(target);
+  });
+});
+
+// P39 T7: co věta střílí, je nepřítel vln; druhá střílená věc stojí na střelnici. Hod míří na terč, hází, co se sbírá.
+describe('shooter and throw read the cast', () => {
+  const roleOf = (game: GameSpecV1, id: string) => game.roles.find((role) => role.id === id)?.label;
+
+  it('the shooter takes the thing it shoots as the enemy, not the first thing named', () => {
+    const game = shooterGenre.compile({ genre: 'shooter', mode: 'default', hero: 'ranger', setting: 'forest', cast: [{ label: 'wolf', does: 'avoid' }, { label: 'bat', does: 'shoot_at' }] });
+    expect(roleOf(game, 'enemy')).toBe('bat');
+  });
+
+  it('a second thing to shoot stands on the range', () => {
+    const game = shooterGenre.compile({ genre: 'shooter', mode: 'default', hero: 'ranger', setting: 'fair', cast: [{ label: 'zombie', does: 'shoot_at' }, { label: 'bottle', does: 'shoot_at' }] });
+    expect(roleOf(game, 'enemy')).toBe('zombie');
+    expect(roleOf(game, 'target')).toBe('bottle');
+  });
+
+  // P39 T14: „collect coins, dodge ghosts and shoot bats in a haunted mansion“ střílelo netopýry a na střelnici
+  // stály holé terče – mince ani duchové ve hře nebyli. Volné místo terče bere další věc z věty, nejbližší role první.
+  it('a thing to collect or dodge stands on the range instead of a bare bullseye', () => {
+    const shooter = (cast: GenreSpec['cast']) => shooterGenre.compile({ genre: 'shooter', mode: 'default', hero: 'kid', setting: 'haunted mansion', cast });
+    const mansion = shooter([{ label: 'bat', does: 'shoot_at' }, { label: 'ghost', does: 'avoid' }, { label: 'coin', does: 'collect' }]);
+    expect(roleOf(mansion, 'enemy')).toBe('bat');
+    expect(roleOf(mansion, 'target')).toBe('coin');
+    expect(roleOf(shooter([{ label: 'bat', does: 'shoot_at' }, { label: 'ghost', does: 'avoid' }]), 'target')).toBe('ghost');
+    // Nepřítel vln na střelnici podruhé nestojí.
+    expect(roleOf(shooter([{ label: 'wolf', does: 'chase_me' }]), 'target')).toBe('target');
+    const drafted = draftGameSpecWithMeta('collect coins, dodge ghosts and shoot bats in a haunted mansion', 1).spec;
+    expect(drafted.roles.map((role) => role.label)).toEqual(expect.arrayContaining(['bat', 'coin']));
+  });
+
+  it('the throw hits the thing it is thrown at with the thing it collects', () => {
+    const game = throwGenre.compile({ genre: 'throw', mode: 'default', hero: 'kid', setting: 'park', cast: [{ label: 'snowball', does: 'collect' }, { label: 'snowman', does: 'throw_at' }] });
+    expect(roleOf(game, 'target')).toBe('snowman');
+    expect(roleOf(game, 'ball')).toBe('snowball');
+  });
+
+  // P39 T14: co hrdina hází, je náboj, ne věc ke sběru. „grabs acorns … throws pinecones“ házelo v AI verzi žaludy,
+  // protože náboj i žalud byly v obsazení `collect` a hod vzal první.
+  it('casts what the hero throws as its ammo, not as a thing to collect', () => {
+    const drafted = draftGameSpecWithMeta('a squirrel grabs acorns, dodges owls and throws pinecones at a fox', 1);
+    expect(drafted.genre?.genre).toBe('throw');
+    expect(drafted.genre?.cast).toContainEqual({ label: 'pinecone', does: 'scenery', verb: 'throw' });
+    expect(drafted.genre?.cast?.filter((item) => item.does === 'collect').map((item) => item.label)).toEqual(['acorn']);
+    expect(roleOf(drafted.spec, 'ball')).toBe('pinecone');
+  });
+
+  it('the throw throws its ammo even when a thing to collect comes first', () => {
+    const cast = [{ label: 'acorn', does: 'collect' as const }, { label: 'pinecone', does: 'scenery' as const, verb: 'throw' }, { label: 'fox', does: 'throw_at' as const }];
+    const game = throwGenre.compile({ genre: 'throw', mode: 'default', hero: 'squirrel', setting: 'forest', cast });
+    expect(roleOf(game, 'ball')).toBe('pinecone');
+    expect(roleOf(game, 'target')).toBe('fox');
   });
 });
 

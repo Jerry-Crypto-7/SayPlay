@@ -28,6 +28,8 @@ describe('lookFor', () => {
     ['on a volcano', 'volcano'],
     ['a cozy living room', 'living_room'],
     ['a sunny beach', 'beach'],
+    ['family vacation', 'beach'],
+    ['a winter holiday', 'snow'],
     ['the open ocean', 'ocean'],
     ['a pine forest', 'forest'],
     ['the park', 'meadow'],

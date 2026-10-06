@@ -13,7 +13,7 @@
 import { SHOOTER_WAVE_SIZE_MAX } from '../arcade/pieces/shooter';
 import { nounPhrase, plural, singular } from '../draft/lexicon';
 
-import { type GenreModule, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Vln výchozí a v mezích (méně než 5 vln robot dohraje pod 30 s, víc než 6 spec nebere), zrychlení za vlnu (jednotek za tik). */
 export const SHOOTER_GENRE = { waves: 6, minWaves: 5, maxWaves: 6, rise: 4 } as const;
@@ -38,7 +38,14 @@ export const shooterGenre: GenreModule<'shooter'> = {
   },
   availability: () => 'ready',
   compile: (spec) => {
-    const enemy = spec.enemy ?? 'invader';
+    // Nepřítel vln je první věc, do které věta střílí, pak nejbližší protivník; druhá střílená věc stojí na střelnici (P39).
+    const shots = (spec.cast ?? []).filter((item) => item.does === 'shoot_at');
+    const foe = shots[0] ?? castFor(spec, 'chase_me', 'fight', 'avoid');
+    const enemy = foe?.label ?? 'invader';
+    // Volné místo terče bere další věc z věty – sbíraná dřív než protivník (T14): „collect coins, dodge ghosts and shoot bats“
+    // by jinak mince i duchy zahodilo a na střelnici stál holý terč.
+    const rest = { cast: (spec.cast ?? []).filter((item) => item !== foe) };
+    const target = (castFor(spec, 'throw_at', 'reach') ?? shots[1] ?? castFor(rest, 'collect', 'avoid', 'chase_me', 'fight'))?.label ?? 'target';
     const { waves = SHOOTER_GENRE.waves, enemies, targets } = spec.params ?? {};
     const foes = plural(singular(enemy), 2);
     return legacySpec(spec, {
@@ -51,7 +58,7 @@ export const shooterGenre: GenreModule<'shooter'> = {
       mechanics: [livesMechanic()],
       // Počet terčů čte generátor (`COUNTED_ROLES`); nepřítel počet nenese – celkový počet by přebil vlny.
       roles: [
-        { id: 'target', kind: 'target', label: spec.target?.label ?? 'target', ...(targets === undefined ? {} : { count: targets }) },
+        { id: 'target', kind: 'target', label: target, ...(targets === undefined ? {} : { count: targets }) },
         { id: 'enemy', kind: 'hazard', label: enemy },
       ],
       tutorial: { goalLine: `Stop ${String(waves)} waves of ${foes}. Each wave is faster.`, controlsHint: 'Tap where you aim to shoot. Arrows aim, Space fires.' },
@@ -63,6 +70,8 @@ export const shooterGenre: GenreModule<'shooter'> = {
     const text = sentence.toLowerCase();
     const match = AIMED_AT.exec(text) ?? AIM_CUE.exec(text);
     const shot = match === null ? null : nounPhrase(match[1]!, 2);
-    return { genre: 'shooter', mode: 'default', ...roles, ...(shot === null ? {} : { enemy: singular(shot) }) };
+    // Na co věta míří, je terč dřív než protivník ze čtení: draft bere z obsazení první věc každé role.
+    const cast = [...(shot === null ? [] : [{ label: singular(shot), does: 'shoot_at' as const }]), ...(roles.cast ?? [])];
+    return { genre: 'shooter', mode: 'default', ...roles, ...(cast.length === 0 ? {} : { cast }) };
   },
 };

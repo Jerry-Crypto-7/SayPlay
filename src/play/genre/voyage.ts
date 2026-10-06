@@ -16,7 +16,7 @@ import { type LookId, lookFor } from '../arcade/look';
 import { LAND, VOYAGE, VOYAGE_TERRAINS } from '../arcade/pieces/steer';
 import { nounPhrase } from '../draft/lexicon';
 
-import { type GenreModule, type GenreSpecOf, type ModelClass, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, type ModelClass, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 type Terrain = (typeof VOYAGE_TERRAINS)[number];
 
@@ -26,8 +26,11 @@ const STREETS: readonly LookId[] = ['city', 'mall', 'supermarket', 'factory', 'l
 
 const terrainOf = (look: LookId | undefined): Terrain => (look === undefined || WATER.includes(look) ? 'islands' : STREETS.includes(look) ? 'buildings' : 'rocks');
 
-/** Co letí přes trať, když věta nejmenuje nepřítele: koule mezi ostrovy, balvan mezi skálami, auto přes ulici. */
-const CROSSING: Readonly<Record<Terrain, string>> = { islands: 'cannonball', rocks: 'boulder', buildings: 'car' };
+/**
+ * Co letí přes trať, když věta nejmenuje nepřítele: koule mezi ostrovy, balvan mezi skálami, auto přes ulici.
+ * Scéna je kreslí primitivem jádra (`arcade/models.ts`), model z popisku dostane jen nástraha z věty (P39 T9).
+ */
+export const CROSSING:Readonly<Record<Terrain, string>> = { islands: 'cannonball', rocks: 'boulder', buildings: 'car' };
 
 /**
  * Kam se jede, když věta cíl neříká (P35 T8): místo, které k prostředí patří
@@ -106,8 +109,9 @@ function compileVoyage(spec: GenreSpecOf<'voyage'>) {
     });
   }
   const terrain = terrainOf(palette);
-  const hazard = spec.enemy ?? CROSSING[terrain];
-  const goal = spec.collectible ?? spec.target?.label ?? destinationOf(palette);
+  // Plavba neumí střelbu ani honičku: každý protivník věty je nástraha na trati, věc i cíl jsou místo, kam se pluje (P39).
+  const hazard = castFor(spec, 'avoid', 'chase_me', 'shoot_at', 'fight', 'throw_at')?.label ?? CROSSING[terrain];
+  const goal = castFor(spec, 'collect', 'reach')?.label ?? destinationOf(palette);
   return legacySpec(looked, {
     control: 'steer',
     controlParams: {

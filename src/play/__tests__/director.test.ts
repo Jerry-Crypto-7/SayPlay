@@ -28,11 +28,12 @@ import type { RepairIssue } from '../director/repair';
 import { draftGameSpec, draftGameSpecWithMeta } from '../draft';
 import { readGameSpec, type GameSpecV1 } from '../spec';
 
-const SENTENCE = 'Collect five glowing mushrooms in a moonlit forest, then escape through the portal';
+/** Věta, které je výchozí odpověď (`genreAnswer`: vlk a žaludy lesa) věrná – P39 soudí obsazení proti větě. */
+const SENTENCE = 'Collect five acorns in a moonlit forest, then escape through the portal';
 
-/** Hra, kterou z odpovědi složí modul žánru – to, co režisér vrátí bez oprav. */
-function compiled(answer = genreAnswer()): GameSpecV1 {
-  const read = readGenreAnswer(answer);
+/** Hra, kterou z odpovědi (čtené proti větě, je-li dána) složí modul žánru – to, co režisér vrátí bez oprav. */
+function compiled(answer = genreAnswer(), sentence?: string): GameSpecV1 {
+  const read = readGenreAnswer(answer, undefined, sentence);
   if (!read.ok) throw new Error(`${read.reason}: ${read.detail}`);
   return read.spec;
 }
@@ -48,9 +49,11 @@ const check = checkFor();
 
 /**
  * Útěk bez věci ke sběru: přežít 40 s. Skutečná Aréna (T5b) dává útěku se sběrem
- * cíl bez času, takže záplata `CONTRADICT` má co rozporovat jen tady.
+ * cíl bez času, takže záplata `CONTRADICT` má co rozporovat jen tady. Věrná je
+ * jen větě bez věci ke sběru (`ESCAPE`) – větě se žaludy by kontrola obsazení žaludy doplnila.
  */
-const SURVIVE = genreAnswer({ collectible: undefined });
+const SURVIVE = genreAnswer({ cast: [{ label: 'wolf', does: 'chase_me' }] });
+const ESCAPE = 'A fox escapes a wolf in a dark forest';
 
 const RETITLE = [{ op: 'replace', path: '/title', value: 'Fox Night Escape' }];
 /** Záplata, která hře přežití (`SURVIVE`) přinese blokující nález: cíl 30 s proti časovači 40 s (CONTRADICTION). */
@@ -136,7 +139,8 @@ describe('direct – the model answers', () => {
       const game = await run(fakeBranch([answered(answer)]), {}, SENTENCE_OF_MODE[name]);
       expect(game, name).toMatchObject({ source: 'authored', fallbackReason: null, calls: 1 });
       // Věrná odpověď se nepřepíná: hra je přesně ta, kterou z odpovědi složí modul žánru.
-      expect(game.spec, name).toEqual(compiled(answer));
+      // Čtení proti větě doplní, co odpověď nenapsala – hod „throws stones“ hází kameny (P39 T14).
+      expect(game.spec, name).toEqual(compiled(answer, SENTENCE_OF_MODE[name]));
       expect(game.spec.control, name).toBe(CONTROL_OF_MODE[name]);
       expect(game.spec.roles.find((role) => role.kind === 'player')?.label, name).toBe('fox');
     }
@@ -223,10 +227,10 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
       // Čtvrté volání by spec spravilo – nesmí k němu dojít.
       answered(UNCONTRADICT),
     ]);
-    const game = await run(branch, { check: checkFor(SURVIVE) });
+    const game = await run(branch, { check: checkFor(SURVIVE) }, ESCAPE);
     // Hláška „could not fix“ pro žánrový spec neexistuje (P32B T5): hraje se žánr draftu, bez důvodu zálohy.
     expect(game).toMatchObject({ source: 'authored', fallbackReason: null, repairRounds: 2, calls: 3, failure: { stage: 'critic', reason: 'UNREPAIRED' } });
-    expect(game.spec).toEqual(draftGameSpec(SENTENCE));
+    expect(game.spec).toEqual(draftGameSpec(ESCAPE));
     expect(game.failure?.detail).toContain('CONTRADICTION');
     expect(branch.calls).toHaveLength(3);
   });
@@ -251,7 +255,7 @@ describe('direct – failure paths fall back to the draft, never throw', () => {
   });
 
   it('a branch that dies during a repair round over a blocking issue → draft + MODEL_UNAVAILABLE', async () => {
-    const game = await run(fakeBranch([answered(SURVIVE), answered(CONTRADICT), failed('UPSTREAM_UNAVAILABLE')]), { check: checkFor(SURVIVE) });
+    const game = await run(fakeBranch([answered(SURVIVE), answered(CONTRADICT), failed('UPSTREAM_UNAVAILABLE')]), { check: checkFor(SURVIVE) }, ESCAPE);
     expect(game).toMatchObject({ source: 'draft', fallbackReason: 'MODEL_UNAVAILABLE', calls: 3, failure: { stage: 'model' } });
     // Nad hrou, kterou kritik pustil, výpadek o větě nic neříká: hra jde dál.
     const passed = await run(fakeBranch([answered(genreAnswer()), failed('UPSTREAM_UNAVAILABLE')]), { check });
@@ -296,11 +300,11 @@ describe('direct – cache', () => {
 
   it('an unrepaired game played as the draft genre is never written – the next direct calls the model again', async () => {
     const cache = directorCache(memoryAnswerStore(), () => undefined);
-    const first = await run(fakeBranch([answered(SURVIVE), answered(CONTRADICT), answered({})]), { cache, check: checkFor(SURVIVE) });
+    const first = await run(fakeBranch([answered(SURVIVE), answered(CONTRADICT), answered({})]), { cache, check: checkFor(SURVIVE) }, ESCAPE);
     expect(first).toMatchObject({ source: 'authored', fallbackReason: null, failure: { reason: 'UNREPAIRED' } });
-    expect(first.spec).toEqual(draftGameSpec(SENTENCE));
-    const branch = fakeBranch([answered(genreAnswer())]);
-    const second = await run(branch, { cache });
+    expect(first.spec).toEqual(draftGameSpec(ESCAPE));
+    const branch = fakeBranch([answered(SURVIVE)]);
+    const second = await run(branch, { cache }, ESCAPE);
     expect(second).toMatchObject({ source: 'authored', calls: 1 });
     expect(branch.calls).toHaveLength(1);
   });

@@ -11,6 +11,8 @@ import { describe, expect, it } from 'vitest';
 
 import { draftGameSpecWithMeta } from '../../draft';
 import { singular } from '../../draft/lexicon';
+import { CAST_ROLES } from '../../genre/contract';
+import type { ChecklistEntry } from '../chain';
 import { MAX_NOUNS, sentenceChecklist } from '../checklist';
 
 describe('sentenceChecklist', () => {
@@ -32,7 +34,7 @@ describe('sentenceChecklist', () => {
     const draft = draftGameSpecWithMeta(sentence).genre;
     // Návrh má nepřítele a prostředí, které věta neříká.
     expect(draft).toMatchObject({ genre: 'rhythm', setting: 'neon stage' });
-    expect(draft?.enemy).toBeDefined();
+    expect(draft?.cast?.length).toBeGreaterThan(0);
     const { checklist, verb } = sentenceChecklist(sentence);
     expect(checklist).toEqual([
       { item: 'grandma cat', slot: 'hero', match: ['cat'] },
@@ -71,5 +73,16 @@ describe('sentenceChecklist', () => {
         expect(words, `${id}: ${entry.item}`).toContain(entry.match![0]);
       }
     }
+  });
+});
+
+// P39 T1: dev sada nese u každé věci očekávanou roli – bez ní by stupeň `role` uznal jakoukoli nehráčskou roli.
+describe('dev set expected roles', () => {
+  it('every role and any item of evals/play/p30/dev.json says what it does, from the closed list', () => {
+    const set = JSON.parse(readFileSync('evals/play/p30/dev.json', 'utf8')) as { sentences: { id: string; checklist: ChecklistEntry[] }[] };
+    const items = set.sentences.flatMap(({ id, checklist }) => checklist.filter((entry) => entry.slot === 'role' || entry.slot === 'any').map((entry) => ({ id, entry })));
+    expect(items.length).toBeGreaterThan(70);
+    const missing = items.filter(({ entry }) => !(CAST_ROLES as readonly string[]).includes(entry.does ?? '')).map(({ id, entry }) => `${id}: ${entry.item}`);
+    expect(missing).toEqual([]);
   });
 });

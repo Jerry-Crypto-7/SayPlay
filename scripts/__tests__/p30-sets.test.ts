@@ -20,7 +20,7 @@ const P30 = join(ROOT, 'evals', 'play', 'p30');
 const FIDELITY = join(ROOT, 'evals', 'play', 'fidelity');
 const readLf = (path: string) => readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
 
-type Sentence = { id: string; source: string; text: string; tags?: string[]; checklist: { item: string; slot: string; controls?: string[] }[] };
+type Sentence = { id: string; source: string; text: string; tags?: string[]; checklist: { item: string; slot: string; controls?: string[]; does?: string }[] };
 const sentencesOf = (path: string): Sentence[] => JSON.parse(readLf(path)).sentences;
 
 const CORPUS = sentencesOf(join(FIDELITY, 'corpus.json'));
@@ -47,7 +47,9 @@ describe('P30 dev set', () => {
     expect(checkCorpus({ sentences: DEV })).toEqual([]);
     expect(DEV).toHaveLength(60);
     const byId = new Map(DEV.map((sentence) => [sentence.id, sentence]));
-    for (const source of [...CORPUS, ...JUDGE]) expect(byId.get(source.id)).toEqual(source);
+    // P39 T1 dopsal dev sadě očekávanou roli (`does`); věta a zbytek seznamu zůstaly beze změny.
+    const withoutDoes = (sentence: Sentence | undefined) => sentence && { ...sentence, checklist: sentence.checklist.map(({ does: _does, ...entry }) => entry) };
+    for (const source of [...CORPUS, ...JUDGE]) expect(withoutDoes(byId.get(source.id))).toEqual(source);
     const fresh = DEV.filter((sentence) => sentence.source === 'dev');
     expect(fresh).toHaveLength(20);
     const known = new Set([...CORPUS, ...JUDGE, ...DEMAND].map((sentence) => normalizeSentence(sentence.text)));

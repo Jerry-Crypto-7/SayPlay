@@ -13,7 +13,7 @@
 import { TIMING } from '../arcade/pieces/timing';
 import { plural, singular } from '../draft/lexicon';
 
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type GenreModule, type GenreSpecOf, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Kol výchozí a v mezích: pod 34 kol robot dohraje pod 30 s. */
 export const TIMING_GENRE = { rounds: 36, minRounds: 34 } as const;
@@ -61,7 +61,7 @@ export const timingGenre: GenreModule<'timing'> = {
   compile: (spec) => {
     const { rounds = TIMING_GENRE.rounds } = spec.params ?? {};
     const text = TEXT[spec.mode];
-    const piece = spec.mode === 'stack' ? (spec.collectible ?? text.piece) : text.piece;
+    const piece = spec.mode === 'stack' ? (castFor(spec, 'collect')?.label ?? text.piece) : text.piece;
     const goal = text.goal(rounds, piece);
     return legacySpec(spec, {
       control: 'timing',
@@ -89,7 +89,7 @@ export const timingGenre: GenreModule<'timing'> = {
       genre: 'timing',
       ...(hero === undefined ? {} : { hero }),
       ...(setting === undefined ? {} : { setting }),
-      ...(piece === undefined ? {} : { collectible: piece }),
+      ...(piece === undefined ? {} : { cast: [{ label: piece, does: 'collect' as const }] }),
     };
   },
 };

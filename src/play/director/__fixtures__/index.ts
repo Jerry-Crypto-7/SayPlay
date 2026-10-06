@@ -8,23 +8,38 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import type { GenreModule, GenreSpec } from '../../genre/contract';
+import { type CastRole, FOE_DOES, type GenreId, type GenreModule, type GenreSpec } from '../../genre/contract';
 import { GENRE_MODULES } from '../../genre/index';
 import { ARCHETYPE_IDS } from '../../registry';
 import { readyModes } from '../answer-schema';
 
 /**
  * Dobrá odpověď režiséra na novou hru (P32B T4): `{plan, spec}` se
- * `GenreSpec`, tak jak ji čte `readGenreAnswer`. Výchozí je útěk v Aréně;
- * `spec` přepíše, co test potřebuje.
+ * `GenreSpec`, tak jak ji čte `readGenreAnswer`. Výchozí je útěk v Aréně
+ * s vlkem a žaludy lesa (P39: obsazení); `spec` přepíše, co test potřebuje –
+ * `cast` celé.
  */
 export function genreAnswer(spec: Partial<GenreSpec> = {}): { readonly plan: string; readonly spec: GenreSpec } {
-  return { plan: 'play the sentence', spec: { genre: 'arena', mode: 'escape', hero: 'fox', enemy: 'wolf', collectible: 'acorn', setting: 'dark forest', palette: 'forest', ...spec } as GenreSpec };
+  const cast = [
+    { label: 'wolf', does: 'chase_me' as const },
+    { label: 'acorn', does: 'collect' as const },
+  ];
+  return { plan: 'play the sentence', spec: { genre: 'arena', mode: 'escape', hero: 'fox', cast, setting: 'dark forest', palette: 'forest', ...spec } as GenreSpec };
 }
+
+/**
+ * Co vlk dělá v odpovědi režimu (P39): roli, kterou žánr hraje sám (`FOE_DOES`) –
+ * v souboji Arény se s ním bojuje, v hodu je terčem. Věta režimu ji vlkovi dává
+ * taky („fights a wolf“, „throws stones at a wolf“), jinak by kritik roli shodil.
+ */
+const wolfDoes = (genre: GenreId, mode: string): CastRole => (genre === 'arena' && mode === 'fight' ? 'fight' : genre === 'throw' ? 'throw_at' : FOE_DOES[genre]);
 
 /** Jedna dobrá odpověď na každý režim `ready` – náhrada `GOOD_ANSWERS` pro testy, které projdou všechny tvary hry. */
 export const GENRE_ANSWERS: readonly { readonly name: string; readonly answer: ReturnType<typeof genreAnswer> }[] = (Object.values(GENRE_MODULES) as GenreModule[]).flatMap((module) =>
-  readyModes(module).map((mode) => ({ name: `${module.id}.${mode}`, answer: genreAnswer({ genre: module.id, mode } as Partial<GenreSpec>) })),
+  readyModes(module).map((mode) => ({
+    name: `${module.id}.${mode}`,
+    answer: genreAnswer({ genre: module.id, mode, cast: [{ label: 'wolf', does: wolfDoes(module.id, mode) }, { label: 'acorn', does: 'collect' }] } as Partial<GenreSpec>),
+  })),
 );
 
 const answersDir = fileURLToPath(new URL('./answers/', import.meta.url));

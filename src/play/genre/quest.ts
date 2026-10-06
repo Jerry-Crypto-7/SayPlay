@@ -10,7 +10,7 @@ import { readCountedNouns, nounPhrase } from '../draft/lexicon';
 import { ESCAPE } from '../arcade/pieces/arena';
 import { QUEST, questRounds, questSpatial, questStation, spatialRoundSeconds, stationRoundSeconds } from '../arcade/pieces/quest';
 import { WAVE_PLAN, wavesChasers } from '../arcade/pieces/waves';
-import { type GenreModule, type GenreSpecOf, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
+import { type CastItem, type GenreModule, type GenreSpecOf, castFor, draftRoles, legacySpec, livesMechanic, titleCase } from './contract';
 
 /** Výchozí počty generátorů: bez `count` ve specu hraje, co by postavil generátor sám. */
 const SPATIAL = questSpatial.params.parse({});
@@ -124,17 +124,20 @@ const capital = (text: string): string => text.charAt(0).toUpperCase() + text.sl
 
 function compileQuest(spec: GenreSpecOf<'quest'>) {
   const station = spec.mode === 'station';
-  const verb = spec.target?.verb ?? 'use';
-  const label = spec.target?.label ?? spec.collectible ?? 'star';
+  // Cíl je věc, ke které se jde; bez ní věc ke sběru nebo terč (P39).
+  const goal = castFor(spec, 'reach', 'collect', 'throw_at');
+  const verb = goal?.verb ?? 'use';
+  const label = goal?.label ?? 'star';
   const kind = verbKindOf(verb);
   // Scéna umí nakreslit jen stavy svého druhu; počet ze specu platí jen pro sloveso bez druhu.
-  const states = kind === null ? (spec.target?.states ?? 2) : KIND_STATES[kind];
+  const states = kind === null ? (goal?.states ?? 2) : KIND_STATES[kind];
   const count = spec.params?.count ?? (station ? STATION.count : SPATIAL.count);
-  const said = spec.params?.chasers ?? (spec.enemy === undefined ? DEFAULT_CHASERS : ESCAPE.chasers.default);
-  // Chování nepřítele (P36A T8): stojící nepřítel = úkol bez honiče, honič i hlídka aspoň jeden.
-  const moves = spec.enemyMoves;
-  const chasers = station || moves === 'still' ? 0 : moves === 'chase' || moves === 'patrol' ? Math.max(1, said) : said;
-  const patrol = moves === 'patrol' && chasers > 0 ? { patrol: ESCAPE.patrolSight } : {};
+  // Lovec je věc, která honí; i ta, které se hráč vyhýbá, honí – jmenovaná věc nezmizí. Úkol bez lovce = `chasers: 0`.
+  const foe = castFor(spec, 'chase_me', 'avoid', 'fight', 'shoot_at');
+  const said = spec.params?.chasers ?? (foe === undefined ? DEFAULT_CHASERS : ESCAPE.chasers.default);
+  // Hlídka (P36A T8) aspoň jedna.
+  const chasers = station ? 0 : foe?.patrol === true ? Math.max(1, said) : said;
+  const patrol = foe?.patrol === true && chasers > 0 ? { patrol: ESCAPE.patrolSight } : {};
   // Kolo roste s prací: kroky stavu × čas na krok, s honičkou robot hodně uhýbá. Měřeno (T4, p95 robota):
   // 8 stromů × 3 stavy bez honičky 23 s, se třemi pronásledovateli 75 s; 5 svíček + 2 duchové 29 s.
   const steps = count * (states - 1);
@@ -148,7 +151,7 @@ function compileQuest(spec: GenreSpecOf<'quest'>) {
     : questRounds(steps, (k) => spatialRoundSeconds(count, states, wavesChasers(chasers, k)), clock);
   // Hodiny jako u sběru ve vlnách: robot je stihne s rezervou, pod horizontem ověření.
   const seconds = clock ?? Math.min(WAVE_PLAN.clockMax, Math.round(plan.seconds * WAVE_PLAN.clockFactor + WAVE_PLAN.clockMargin));
-  const hunter = spec.enemy ?? 'hunter';
+  const hunter = foe?.label ?? 'hunter';
   const verbText = capital(verb);
   const each = plan.rounds > 1 ? ` in each of ${String(plan.rounds)} rounds` : '';
   return legacySpec(spec, {
@@ -217,12 +220,17 @@ export const questGenre: GenreModule<'quest'> = {
       // Počet honičů říká jen ten, kdo „chytí“; jinak jeden výchozí (P36A T3) – nese popisek nepřítele ze slovníku, když ho věta má.
       ...(station ? {} : { chasers: chase === null ? DEFAULT_CHASERS : clamp(chase.count ?? ESCAPE.chasers.default, 1, CHASERS_MAX) }),
     };
+    // Kdo „chytí“, je pronásledovatel dřív než protivník ze čtení: draft bere z obsazení první věc každé role.
+    const cast: CastItem[] = [
+      ...(chase === null ? [] : [{ label: chase.label, does: 'chase_me' as const }]),
+      ...(roles.cast ?? []),
+      ...(found === null || target === null ? [] : [{ label: target.label, does: 'reach' as const, verb: found.verb, states: kind === null ? 2 : KIND_STATES[kind] }]),
+    ];
     return {
       genre: 'quest',
       mode: station ? 'station' : 'spatial',
       ...roles,
-      ...(chase === null ? {} : { enemy: chase.label }),
-      ...(found === null || target === null ? {} : { target: { label: target.label, verb: found.verb, states: kind === null ? 2 : KIND_STATES[kind] } }),
+      ...(cast.length === 0 ? {} : { cast }),
       ...(Object.keys(params).length > 0 ? { params } : {}),
     };
   },

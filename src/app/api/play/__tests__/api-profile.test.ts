@@ -112,7 +112,7 @@ function brokenSwitch(): unknown {
 describe('final API profile over a provider double (D1)', () => {
   it('create: one call in the Messages format, the key only in the provider header, the AI child stored', async () => {
     // Model vybírá žánr (P32B T4), hru skládá modul žánru.
-    upstream.script = [genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', enemy: 'robot vacuum', setting: 'supermarket aisles', palette: 'supermarket' })];
+    upstream.script = [genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', cast: [{ label: 'robot vacuum', does: 'avoid' }, { label: 'acorn', does: 'collect' }], setting: 'supermarket aisles', palette: 'supermarket' })];
     const { versionId, outcome, seen } = await create();
     expect(outcome.status).toBe('ready');
     expect(upstream.requests).toHaveLength(1);
@@ -129,7 +129,8 @@ describe('final API profile over a provider double (D1)', () => {
   it('repair: an unplayable answer gets one repair round and the repaired game is published', async () => {
     genre.unplayable = brokenSwitch();
     // Odpověď věrná větě (P32B T5) – nevěrnou by režisér přepnul na jiný žánr místo opravného kola.
-    const faithful = genreAnswer({ hero: 'hamster', enemy: 'giant roomba', setting: 'supermarket', palette: 'supermarket' });
+    // P39: věc ke sběru je výchozí věc supermarketu, žalud by kontrola obsazení shodila jako vymyšlený.
+    const faithful = genreAnswer({ hero: 'hamster', cast: [{ label: 'giant roomba', does: 'chase_me' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket', palette: 'supermarket' });
     upstream.script = [faithful, [{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }]];
     const { outcome } = await create();
     expect(outcome.status).toBe('ready');
