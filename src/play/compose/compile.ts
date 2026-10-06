@@ -3,8 +3,9 @@ import { CAPABILITIES } from '../capabilities';
 import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
-import { DRIVE_PRESETS, assertPreset, type RecipeAssembly } from './presets';
+import { DRIVE_PRESETS, NATIVE_PRESETS, assertPreset, type RecipeAssembly } from './presets';
 import { driveSpec } from './drive';
+import { nativeSpec } from './native';
 
 /** Recipes select an assembly; existing piece builders retain their frozen output. */
 export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
@@ -12,6 +13,10 @@ export function compileRecipe(assembly: RecipeAssembly): GameSpecV1 {
   if (DRIVE_PRESETS[assembly.preset] !== undefined) {
     const { move, actions, objective, threats } = assembly;
     return driveSpec({ move, actions, objective, threats }, assembly.content);
+  }
+  if (NATIVE_PRESETS[assembly.preset] !== undefined) {
+    const { move, actions, objective, threats } = assembly;
+    return nativeSpec({ move, actions, objective, threats }, assembly.content);
   }
   return compileWith(GENRE_MODULES[assembly.content.genre] as GenreModule, assembly.content);
 }

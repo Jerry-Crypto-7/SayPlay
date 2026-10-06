@@ -60,7 +60,7 @@ const arcade = (
 
 export const CAPABILITIES: Readonly<Record<ControlId, ControlCapability>> = {
   // Schema-only until their native runtimes and browser scenes are certified.
-  glide: arcade({ cues: 'swim or fly in three dimensions', roles: [], finish: true, labels: [], mechanics: [], addons: [] }),
+  glide: arcade({ setting: true, cues: 'swim or fly in three dimensions', roles: ['glide_ring', 'glide_reef'], finish: true, labels: ['player', 'enemy', 'finish'], mechanics: ['timer'], addons: ['shoot'] }),
   walker: arcade({ cues: 'walk through a maze', roles: [], finish: true, labels: [], mechanics: [], addons: [] }),
   ball: arcade({ cues: 'kick or throw a physical ball', roles: [], finish: false, labels: [], mechanics: [], addons: [] }),
   tap_go: { cues: 'tap-to-move grid', roles: [], finish: false, labels: 'all', mechanics: 'all', counts: true, setting: true, maxRoles: 12, addons: [] },

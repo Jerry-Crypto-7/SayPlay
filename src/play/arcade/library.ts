@@ -35,7 +35,11 @@ import { timingBot } from './pieces/timing-bot';
 import { arenaWaves } from './pieces/waves';
 import { SPEC_RULES } from './rules/compile';
 
+import { glideControl, glideCourse, glideFinish } from './pieces/glide';
+import { glideBot } from './pieces/glide-bot';
+
 const BASE_BOTS = {
+  glide_bot: glideBot,
   runner_bot: runnerBot,
   platform_bot: platformBot,
   flap_bot: flapBot,
@@ -55,6 +59,7 @@ const BASE_BOTS = {
  * (`arcade/compile.ts`). Stopy P32E–G plní jen jejich těla, registrace je tady.
  */
 export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
+  glide_course: glideCourse,
   arena_escape: arenaEscape,
   arena_collect: arenaCollect,
   fight: fightArena,
@@ -65,6 +70,7 @@ export const MODE_GENERATORS: Readonly<Record<string, ModeGeneratorPiece>> = {
 };
 
 const BASE_CONTROLS = {
+  glide: glideControl,
   runner: runnerControl,
   platform: platformControl,
   flap: flapControl,
@@ -79,7 +85,7 @@ const BASE_CONTROLS = {
 
 export const ARCADE_LIBRARY: ArcadeLibrary = {
   controls: { ...BASE_CONTROLS, addon_control: makeAddonControl(BASE_CONTROLS) as ControlPiece, fight: fightControl as ControlPiece },
-  rules: { ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
+  rules: { glide_finish: glideFinish, ...RULES, ...SHOT_RULES, ...ADDON_RULES, gun, launch, rival_finish: rivalFinish, arena_eat: arenaEat, grow_to: growTo, survive_time: surviveTime, arena_waves: arenaWaves, throw_rounds: throwRounds, boil_over: boilOver, judge: judgeRule, ...SPEC_RULES, ...FIGHT_RULES },
   generators: {
     runner_track: runnerTrack,
     platform_level: platformLevel,

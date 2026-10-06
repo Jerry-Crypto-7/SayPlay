@@ -38,11 +38,12 @@ import {
 import { GRAVITY } from './kernel';
 import { ARENA } from './pieces/arena';
 import { FLAP } from './pieces/flap';
+import { GLIDE, glideControlParams, glidePathOf, glideVelocity } from './pieces/glide';
 import { centerAt, courseOf, courseSchema, type SteerCourse } from './pieces/steer';
 import { RUNNER, type RunnerSpeed, SPEED } from './pieces/runner';
 import { type Row, nextRow } from './pieces/runner-bot';
 import { BULLET_LIFETIME, SHOOTER } from './pieces/shooter';
-import { census } from './pieces/shots';
+import { census, shotHit } from './pieces/shots';
 
 /** Parametry kusu pod obalem, přečtené jednou: obal běží každý tik a zod parse by ho zpomalil. */
 const parsedParams = new WeakMap<object, unknown>();
@@ -230,7 +231,20 @@ export const finishCollected: RulePiece<z.infer<typeof needParams>> = {
   },
 };
 
-export const ADDON_RULES = { collect_count: collectCount, finish_collected: finishCollected } as const;
+/** Rivals remain physical race opponents even when a stray shot touches them. */
+export const glideShotHit: RulePiece = {
+  ...shotHit,
+  id: 'glide_shot_hit',
+  params: noParams,
+  fire(ctx) {
+    if (ctx.other < 0) return [];
+    const at = bodyBase(ctx.other);
+    if (ctx.state[at + BODY.role] === ROLE.enemy && (ctx.state[at + BODY.flags]! & FLAG.kinematic)) return [];
+    return shotHit.fire(ctx, {});
+  },
+};
+
+export const ADDON_RULES = { collect_count: collectCount, finish_collected: finishCollected, glide_shot_hit: glideShotHit } as const;
 
 // ---------------------------------------------------------------------------
 // +shoot
@@ -276,6 +290,13 @@ function runnerRows(level: ArcadeLevel): Map<number, Set<number>> {
  * mezery trubky. Každý druhý úsek, ať mezi nimi zbude čas.
  */
 function enemiesFor(control: string, level: ArcadeLevel): BodyInit[] {
+  if (control === 'glide') {
+    // Actual XYZ ring apertures, not a floor-level track: there is enough time
+    // to settle into the next ring's lane and fire before reaching its target.
+    const size = 2 * GLIDE.size;
+    return glidePathOf(level).filter((_node, index) => index % 2 === 0)
+      .map(node => enemy(node.x, node.y - size / 2, node.z, size));
+  }
   if (control === 'steer') {
     const course = courseOf(level);
     // A target on the opening straight gives the driver a clear forward shot;
@@ -354,9 +375,19 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   if (recent.some((seen) => (seen.buttons & BUTTON.FIRE) !== 0)) return input;
   if (base.id === 'arena_bot' && census(state).projectiles > 0) return input;
   const p = bodyBase(player);
-  const px = state[p + BODY.x] as number;
-  const pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
+  let px = state[p + BODY.x] as number;
+  let pz = (state[p + BODY.z] as number) + (state[p + BODY.vz] as number) * recent.length;
   let py = state[p + BODY.y] as number;
+  if (base.id === 'glide_bot') {
+    const params = paramsOf({ params: glideControlParams }, base.params) as ReturnType<typeof glideControlParams.parse>;
+    let now = { x: px, y: py, z: state[p + BODY.z]!, vx: state[p + BODY.vx]!, vy: state[p + BODY.vy]!, vz: state[p + BODY.vz]! };
+    // Blaster fires after control and movement, not at the stale observation.
+    for (const seen of [...recent, input]) {
+      const velocity = glideVelocity(now, seen, params);
+      now = { ...velocity, x: now.x + velocity.vx, y: now.y + velocity.vy, z: now.z + velocity.vz };
+    }
+    px = now.x; py = now.y; pz = now.z;
+  }
   const grounded = ((state[p + BODY.flags] as number) & FLAG.grounded) !== 0;
   if (base.id === 'runner_bot' && (px % RUNNER.laneWidth !== 0 || recent.some((seen) => (seen.buttons & (BUTTON.LEFT | BUTTON.RIGHT)) !== 0))) return input;
   if (base.id === 'platform_bot' && (!grounded || recent.some((seen) => (seen.buttons & (BUTTON.TAP | BUTTON.UP)) !== 0))) return input;
@@ -375,6 +406,8 @@ const shootStep: AddonBotStep = ({ state, player, recent }, input, base) => {
   for (let i = 0; i < (state[HEADER.bodyCount] as number); i += 1) {
     const b = bodyBase(i);
     if (i === player || state[b + BODY.role] !== ROLE.enemy || ((state[b + BODY.flags] as number) & FLAG.alive) === 0) continue;
+    // The moving race opponent is not a shooting target.
+    if (base.id === 'glide_bot' && (state[b + BODY.flags]! & FLAG.kinematic)) continue;
     const ex = (state[b + BODY.x] as number) - from.x;
     const ez = (state[b + BODY.z] as number) - from.z;
     const w = state[b + BODY.w] as number;
@@ -412,7 +445,7 @@ export const shootAddon: AddonPiece<z.infer<typeof noParams>> = {
     const rules: PieceRef[] = [
       ...parts.rules,
       { id: 'blaster', params: { template, aim: control === 'move_free' ? 'heading' : 'forward' } },
-      { id: 'shot_hit', params: {} },
+      { id: control === 'glide' ? 'glide_shot_hit' : 'shot_hit', params: {} },
     ];
     // Aréna náraz do buňky řeší sama (`arena_eat`).
     if (control !== 'move_free') rules.push({ id: 'hit', params: hitParamsFor('enemy', health) });

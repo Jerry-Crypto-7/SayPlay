@@ -1,11 +1,11 @@
 import type { GenreSpec } from '../genre/contract';
 import type { Recipe } from './recipe';
-import { DRIVE_PRESETS, PRESETS, drivePresetOf, presetOf, type RecipeAssembly } from './presets';
+import { DRIVE_PRESETS, NATIVE_PRESETS, PRESETS, drivePresetOf, nativePresetOf, presetOf, type RecipeAssembly } from './presets';
 
 interface Cell {
   readonly id: string;
   readonly recipe: Recipe;
-  readonly assembly?: 'drive';
+  readonly assembly?: 'drive' | 'native';
   /** Reference assembly used by the executable five-seed capability check. */
 }
 export type AllowedCell = Cell & ({ readonly status: 'live'; readonly preset: GenreSpec } | { readonly status: 'staged'; readonly preset: GenreSpec | null });
@@ -36,12 +36,19 @@ export const ALLOWED: readonly AllowedCell[] = [
   })),
   { id: 'arena.escape+collect', status: 'live', recipe: { move: 'roam', actions: ['collect'], objective: 'collect', threats: ['chaser'] }, preset: { genre: 'arena', mode: 'escape', hero: 'fox', setting: 'forest', cast: [{ label: 'wolf', does: 'chase_me' }, { label: 'coin', does: 'collect' }] } },
   // Missing runtime/scene must never become eligible just because the intent asks for it.
-  { id: 'glide.reach', status: 'staged', recipe: { move: 'glide', actions: [], objective: 'reach', threats: [] }, preset: null },
+  ...Object.entries(NATIVE_PRESETS).map(([id, recipe]): AllowedCell => ({
+    id, recipe, assembly: 'native', status: 'staged',
+    preset: { genre: 'voyage', mode: 'race', hero: 'fish', setting: 'coral reef', cast: [
+      { label: 'ring', does: 'collect' }, { label: 'reef', does: 'avoid' },
+      { label: 'dolphin', does: 'fight' }, { label: 'shark', does: 'chase_me' },
+      ...(recipe.actions.includes('shoot') ? [{ label: 'eel', does: 'shoot_at' as const }] : []),
+    ] },
+  })),
 ];
 
 export const liveCells = (): readonly LiveCell[] => ALLOWED.filter((cell): cell is LiveCell => cell.status === 'live');
 
 export function assemblyOfCell(cell: AllowedCell, content = cell.preset): RecipeAssembly {
   if (content === null) throw new Error(`No assembly for staged cell ${cell.id}`);
-  return cell.assembly === 'drive' ? drivePresetOf(cell.id, content) : presetOf(content);
+  return cell.assembly === 'native' ? nativePresetOf(cell.id, content) : cell.assembly === 'drive' ? drivePresetOf(cell.id, content) : presetOf(content);
 }

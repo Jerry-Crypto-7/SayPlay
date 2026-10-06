@@ -33,6 +33,19 @@ export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntrie
   ])),
 );
 
+export const NATIVE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntries(
+  (['reach', 'collect', 'race', 'escape'] as const).flatMap(objective => [false, true].map(shoot => [
+    `glide.${objective}${shoot ? '+shoot' : ''}`,
+    { move: 'glide', actions: [...(objective === 'collect' ? ['collect' as const] : []), ...(shoot ? ['shoot' as const] : [])], objective, threats: objective === 'race' ? ['rival'] : objective === 'escape' ? ['chaser'] : [] },
+  ])),
+);
+
+export function nativePresetOf(preset: string, content: GenreSpec): RecipeAssembly {
+  const recipe = NATIVE_PRESETS[preset];
+  if (recipe === undefined) throw new Error(`No native recipe ${preset}`);
+  return { ...recipe, preset, content };
+}
+
 export function drivePresetOf(preset: string, content: GenreSpec): RecipeAssembly {
   const recipe = DRIVE_PRESETS[preset];
   if (recipe === undefined) throw new Error(`No native driving recipe ${preset}`);
@@ -58,7 +71,7 @@ export function presetOf(content: GenreSpec): RecipeAssembly {
 }
 
 export function assertPreset(assembly: RecipeAssembly): void {
-  const native = DRIVE_PRESETS[assembly.preset];
+  const native = DRIVE_PRESETS[assembly.preset] ?? NATIVE_PRESETS[assembly.preset];
   if (native !== undefined) {
     if (recipeKey(native) !== recipeKey(assembly)) throw new Error(`Recipe does not match preset ${assembly.preset}`);
     return;

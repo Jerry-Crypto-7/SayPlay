@@ -20,6 +20,10 @@ it.each([
   expect(read.value.control).toBe(control);
   expect(read.value.controlParams).toEqual(controlParams);
   const compiled = compileArcade(read.value, 1);
+  if (control === 'glide') {
+    expect(compiled.ok, JSON.stringify(compiled)).toBe(true);
+    return;
+  }
   expect(compiled.ok).toBe(false);
   if (!compiled.ok) expect(compiled.issues.join(' ')).toContain(`native ${control} runtime is not registered`);
 });
