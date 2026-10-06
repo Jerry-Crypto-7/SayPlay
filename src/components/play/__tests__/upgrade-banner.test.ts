@@ -35,8 +35,9 @@ describe('noticeOf', () => {
   });
 
   it('všech 10 důvodů má vlastní větu', () => {
-    expect(REASONS).toHaveLength(10);
-    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(10);
+    expect(REASONS).toHaveLength(11);
+    expect(REASONS).toContain('ACTION_LOST');
+    expect(new Set(REASONS.map((reason) => FINAL_REASON_TEXT[reason])).size).toBe(11);
     expect(noticeOf({ kind: 'final', reason: 'MODEL_UNAVAILABLE' })?.text).toContain("Couldn't make the full-detail version right now");
     expect(noticeOf({ kind: 'final', reason: 'NOT_PLAYABLE' })?.text).toBe("The full-detail version wasn't playable in a test run. The quick one stays.");
   });

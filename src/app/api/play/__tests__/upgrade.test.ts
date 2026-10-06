@@ -47,20 +47,17 @@ vi.mock('../_director', async (importOriginal) => {
   };
 });
 
-// Každý `GenreSpec` složí modul žánru hratelně; nehratelnou hru pro opravné kolo
-// podvrhne až tahle záměna přečtené odpovědi – jako by modul žánru hru rozbil.
-// Od P32B T5 skládá `readGenreAnswer` hru modulem přímo, `compileGenre` nevolá;
-// návrh ze slov a přepnutí žánru jdou skutečnými moduly.
-const genre = vi.hoisted(() => ({ unplayable: null as unknown }));
-vi.mock('@/play/director/read', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/play/director/read')>();
-  const readGenreAnswer: typeof actual.readGenreAnswer = (body, modules, sentence) => {
-    const read = actual.readGenreAnswer(body, modules, sentence);
-    if (genre.unplayable === null || !read.ok) return read;
-    const game = actual.readModelSpec(genre.unplayable);
-    return game.ok ? { ...read, spec: game.spec } : game;
+// Inject one failed verifier keypoint on the author's golden-hamster candidate.
+// The same report seam is read during repair and final publication; quick is untouched.
+const genre = vi.hoisted(() => ({ unplayable: false }));
+vi.mock('../_report', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../_report')>();
+  const reportFor: typeof actual.reportFor = compiled => {
+    const report = actual.reportFor(compiled);
+    if (!genre.unplayable || compiled.spec.title !== 'Golden Hamster Run') return report;
+    return { ...report, publishEligible:false, keypoints:report.keypoints.map((point,index)=>index===0 ? {...point,passed:false,failures:['injected_claim requires reviewed title Repaired Hamster Run']} : point) };
   };
-  return { ...actual, readGenreAnswer };
+  return { ...actual, reportFor };
 });
 
 const { POST: createGame } = await import('../games/route');
@@ -123,7 +120,7 @@ beforeEach(() => {
   director.callerLimited = false;
   director.script = [answered(genreAnswer())];
   director.gate = Promise.resolve();
-  genre.unplayable = null;
+  genre.unplayable = false;
 });
 
 afterEach(() => {
@@ -179,7 +176,8 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(child.relation).toBe('upgrade');
     expect(child.version.parentId).toBe(draftId);
     // Modul žánru složil hru z odpovědi (zlatý křeček), ne z věty (křeček) – věrnost chce jen stejné hlavní slovo.
-    expect(child.spec.title).toBe('Golden Hamster Escape');
+    expect(child.spec.title.toLowerCase()).toMatch(/^golden hamster\b/);
+    expect(child.spec.roles).toContainEqual(expect.objectContaining({ id: 'player', label: 'golden hamster' }));
     expect(child.origin).toBeUndefined();
     expect(child.timings.source).toBe('authored');
     for (const field of ['ackMs', 'draftReadyMs', 'directorMs', 'compileMs', 'verifyMs']) expect(child.timings[field]).toBeTypeOf('number');
@@ -234,41 +232,30 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
     expect(existsSync(join(process.cwd(), 'data', 'play', 'failures', `${id}.json`))).toBe(false);
   });
 
-  it('autorská hra, která neprojde kontrolou, zůstane návrhem bez dítěte', async () => {
-    // Táž mutace jako v `authored-fallback.test.ts`: tři barvy spínače, verifikátor ji chytí.
-    const broken = structuredClone(answerFixture('good-switch_puzzle')) as { mechanics: { id: string; params: Record<string, unknown> }[] };
-    const toggle = broken.mechanics.find((mechanic) => mechanic.id === 'switch');
-    if (toggle === undefined) throw new Error('fixture');
-    toggle.params.required = ['red', 'blue', 'green'];
-    genre.unplayable = broken;
-    director.script = [answered(faithful())];
-    const created = await publish({ sentence: SENTENCE });
-    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
+  const checkSentence = 'a hamster runs through a supermarket';
+  const checkAnswer = () => genreAnswer({genre:'runner',mode:'default',hero:'golden hamster',cast:[],setting:'supermarket',palette:'supermarket'});
+
+  it('autorská hra s neprošlým caller keypointem zůstane návrhem bez dítěte', async () => {
+    genre.unplayable = true;
+    director.script = [answered(checkAnswer())];
+    const created = await publish({sentence:checkSentence});
+    expect(await settled(created.body.versionId)).toEqual({status:'draft-final',reason:'NOT_PLAYABLE'});
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
-
-  // P26 T10a: neprošlý keypoint jde modelu k opravě, nerozhoduje tichá výměna.
-  function brokenSwitch(): unknown {
-    const broken = structuredClone(answerFixture('good-switch_puzzle')) as { mechanics: { id: string; params: Record<string, unknown> }[] };
-    broken.mechanics[0].params.required = ['red', 'blue', 'green'];
-    return broken;
-  }
-
   it('neprošlý keypoint dostane opravné kolo a opravená hra se publikuje', async () => {
-    genre.unplayable = brokenSwitch();
-    director.script = [answered(faithful()), answered([{ op: 'replace', path: '/mechanics/0/params/required', value: ['lever_b', 'lever_d'] }])];
-    const created = await publish({ sentence: SENTENCE });
+    genre.unplayable = true;
+    director.script = [answered(checkAnswer()),answered([{op:'replace',path:'/title',value:'Repaired Hamster Run'}])];
+    const created = await publish({sentence:checkSentence});
     expect((await settled(created.body.versionId)).status).toBe('ready');
-    const repair = director.branch?.calls[1]?.request.user ?? '';
-    expect(repair).toContain('KEYPOINT_FAILED');
-    expect(repair).toContain('right_pair_opens');
+    expect(director.branch?.calls).toHaveLength(2);
+    expect(director.branch?.calls[1]?.request.user).toContain('KEYPOINT_FAILED');
+    expect(director.branch?.calls[1]?.request.user).toContain('injected_claim');
   });
-
   it('neopravený keypoint zůstane NOT_PLAYABLE i po opravných kolech', async () => {
-    genre.unplayable = brokenSwitch();
-    director.script = [answered(faithful()), answered([]), answered([])];
-    const created = await publish({ sentence: SENTENCE });
-    expect(await settled(created.body.versionId)).toEqual({ status: 'draft-final', reason: 'NOT_PLAYABLE' });
+    genre.unplayable = true;
+    director.script = [answered(checkAnswer()),answered([]),answered([])];
+    const created = await publish({sentence:checkSentence});
+    expect(await settled(created.body.versionId)).toEqual({status:'draft-final',reason:'NOT_PLAYABLE'});
     expect(director.branch?.calls).toHaveLength(3);
     expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
   });
@@ -277,14 +264,14 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // P32B T5: opravit smí jen na žánr hlavního slovesa. Úkol (celý `fallback`) je návrhem jen věty,
   // ve které žádný `ready` žánr nic neslyšel, a tu věrnost z úkolu nepustí – proto návrh z Arény:
   // útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „hunts“) než hlavní sloveso „jumps“.
-  it('návrh zachová skákání a přijme hratelnou autorskou plošinovku', async () => {
+  it('návrh zachová skákání a odmítne plošinovku, která ztratila pronásledovatele', async () => {
     director.script = [answered(genreAnswer({ genre: 'platformer', mode: 'default', hero: 'frog', cast: [{ label: 'snake', does: 'avoid' }], setting: 'swamp', palette: 'forest' }))];
     const created = await publish({ sentence: 'A frog jumps across a scary swamp, escapes and survives while a snake hunts it.' });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'platformer', mode: 'default' });
     expect((await game(created.body.versionId)).spec.control).toBe('platform');
-    expect((await settled(created.body.versionId)).status).toBe('ready');
-    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
-    expect((await game(childId as string)).spec.control).toBe('platform');
+    expect(await settled(created.body.versionId)).toEqual({status:'draft-final',reason:'ACTION_LOST'});
+    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+    expect(director.branch?.calls[1]?.request.user).toContain('chaser');
   });
 
   // P32B T4: model píše jen žánr – celý GameSpec (tady mřížka) se nepřečte a hra zůstane návrhem.
@@ -311,15 +298,17 @@ describe('POST s větou: návrh hned, režisér na pozadí', () => {
   // P32B T5: běžce věrnost pustí, jen když ho hraje hlavní sloveso („runs“); návrh zůstane útěkem,
   // protože útěk nasbírá víc bodů („scary“, „escapes“, „survives“, „chases“).
   // T5b: skutečný běžec má narážku „escape“, s „hunts“ by byla remíza a návrh by byl už běžec – „chases“ je i narážka Arény.
-  it('návrh zachová běh i útěk a autorský běžec projde dosavadní bránou', async () => {
+  it('návrh zachová běh i útěk a odmítne běžce, který ztratil pronásledovatele', async () => {
     director.script = [answered(genreAnswer({ genre: 'runner', mode: 'default', hero: 'hamster', cast: [{ label: 'giant roomba', does: 'avoid' }, { label: 'cheese', does: 'collect' }], setting: 'supermarket aisles', palette: 'supermarket' }))];
     const created = await publish({ sentence: 'A hamster runs through a scary supermarket, escapes and survives while a giant Roomba chases it.' });
     expect((await game(created.body.versionId)).spec.genre).toMatchObject({ id: 'runner', mode: 'default' });
     expect((await game(created.body.versionId)).spec.control).toBe('runner');
-    expect((await settled(created.body.versionId)).status).toBe('ready');
-    const [childId] = await versionStoreFromEnv(process.env).childrenOf(created.body.versionId);
-    expect((await game(childId as string)).spec.control).toBe('runner');
+    expect(await settled(created.body.versionId)).toEqual({status:'draft-final',reason:'ACTION_LOST'});
+    expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+    expect(director.branch?.calls[1]?.request.user).toContain('chaser');
   });
+
+
 });
 
 describe('GET …/upgrade', () => {
@@ -478,14 +467,19 @@ describe('AI verze se nabídne i bez zisku věrnosti (P38)', () => {
   });
 
   it.each([
-    ['věrnější (ledovec dostane sadu sněhu)', { palette: 'snow' }],
-    ['stejně věrná (jen jiný nepřítel)', { enemy: 'seal' }],
-    ['méně věrná (hrnec zmizel z cíle)', { target: { label: 'ladle', verb: 'stir', states: 3 } }],
-  ])('%s verze je hotová jako dítě návrhu', async (_name, change) => {
+    ['věrnější (ledovec dostane sadu sněhu)', { palette: 'snow' }, 'ready'],
+    ['opravený nepřítel zachová původní obsah', { enemy: 'seal' }, 'UNCHANGED'],
+    ['opravený cíl zachová původní hrnec', { target: { label: 'ladle', verb: 'stir', states: 3 } }, 'UNCHANGED'],
+  ])('%s verze je hotová jako dítě návrhu', async (_name, change, expected) => {
     director.script = [answered(station(change))];
     const created = await publish({ sentence: WALRUS });
     const ready = await settled(created.body.versionId);
-    expect(ready.status).toBe('ready');
-    expect((await game(ready.versionId)).version.parentId).toBe(created.body.versionId);
+    if(expected === 'ready') {
+      expect(ready.status).toBe('ready');
+      expect((await game(ready.versionId)).version.parentId).toBe(created.body.versionId);
+    } else {
+      expect(ready).toEqual({status:'draft-final',reason:'UNCHANGED'});
+      expect(await versionStoreFromEnv(process.env).childrenOf(created.body.versionId)).toEqual([]);
+    }
   });
 });
