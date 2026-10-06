@@ -25,6 +25,20 @@ export const PRESETS: Readonly<Record<string, Recipe>> = {
 /** Content retains cast/parameter order, including the frozen legacy addon order. */
 export type RecipeAssembly = Recipe & { readonly preset: string; readonly content: GenreSpec };
 
+/** Native tracks have distinct names; the legacy voyage recipes stay frozen. */
+export const DRIVE_PRESETS: Readonly<Record<string, Recipe>> = Object.fromEntries(
+  (['race', 'reach', 'escape'] as const).flatMap(objective => [false, true].map(shoot => [
+    `drive.${objective}${shoot ? '+shoot' : ''}`,
+    { move: 'drive', actions: shoot ? ['shoot'] : [], objective, threats: objective === 'race' ? ['rival'] : objective === 'escape' ? ['chaser'] : [] },
+  ])),
+);
+
+export function drivePresetOf(preset: string, content: GenreSpec): RecipeAssembly {
+  const recipe = DRIVE_PRESETS[preset];
+  if (recipe === undefined) throw new Error(`No native driving recipe ${preset}`);
+  return { ...recipe, preset, content };
+}
+
 function recipeOf(content: GenreSpec): Recipe {
   const preset = `${content.genre}.${content.mode}`;
   const recipe = PRESETS[preset];
@@ -44,6 +58,11 @@ export function presetOf(content: GenreSpec): RecipeAssembly {
 }
 
 export function assertPreset(assembly: RecipeAssembly): void {
+  const native = DRIVE_PRESETS[assembly.preset];
+  if (native !== undefined) {
+    if (recipeKey(native) !== recipeKey(assembly)) throw new Error(`Recipe does not match preset ${assembly.preset}`);
+    return;
+  }
   const expected = recipeOf(assembly.content);
   if (recipeKey(expected) !== recipeKey(assembly) || assembly.preset !== `${assembly.content.genre}.${assembly.content.mode}`) {
     throw new Error(`Recipe does not match preset ${assembly.preset}`);

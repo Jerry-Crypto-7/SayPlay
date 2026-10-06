@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { arcadeWorldOf } from '@/play/arcade/compile';
 import { baseControlOf } from '@/play/arcade/addons';
 import { verifyArcade } from '@/play/arcade/verify';
-import { compileGenre } from '@/play/genre';
 import { GENRES, GENRE_MODES } from '@/play/genre/contract';
-import { ALLOWED, liveCells } from '../allowed';
+import { ALLOWED, assemblyOfCell, liveCells } from '../allowed';
+import { compileRecipe } from '../compile';
 import { recipeSchema } from '../recipe';
 import { stageOf } from '../stage-registry';
 
@@ -29,14 +29,16 @@ describe('allowed recipes', () => {
     expect(stageOf('unimplemented')).toBeNull();
   });
 
-  for (const cell of liveCells()) it(`${cell.id} plays every declared piece on seeds 1–5`, () => {
+  for (const cell of ALLOWED.filter(cell => cell.preset !== null)) it(`${cell.id} plays every declared piece on seeds 1–5`, () => {
     for (const seed of [1, 2, 3, 4, 5]) {
-      const spec = compileGenre(cell.preset);
+      const spec = compileRecipe(assemblyOfCell(cell));
       const made = arcadeWorldOf(spec, seed);
       if (!made.ok) throw new Error(`${cell.id}: ${made.issues.join('; ')}`);
       const stage = stageOf(baseControlOf(made.world.control).id);
-      expect(stage?.scene).toBeTruthy();
-      expect(stage?.input).toBeTruthy();
+      if (cell.status === 'live') {
+        expect(stage?.scene).toBeTruthy();
+        expect(stage?.input).toBeTruthy();
+      }
       const verdict = verifyArcade(made.world, undefined, made.roleBindings);
       expect(verdict.bot.outcome, `${cell.id}/${seed}`).toBe('won');
       expect(verdict.replayEqual).toBe(true);

@@ -5,13 +5,13 @@ import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { CastItem, GenreSpec } from '../genre/contract';
-import { defaultCollectible, defaultFoe } from '../genre/roles';
+import { defaultCollectible, defaultFoe, heroClass } from '../genre/roles';
 import { essentialTriples, type Intent, type IntentTriple } from '../intent/contract';
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
-import { liveCells, type LiveCell } from './allowed';
+import { assemblyOfCell, liveCells, type LiveCell } from './allowed';
 import { compileRecipe } from './compile';
-import { presetOf, type RecipeAssembly } from './presets';
+import { type RecipeAssembly } from './presets';
 
 export interface Composition {
   readonly cellId: string;
@@ -28,11 +28,13 @@ const compositions = new Map<string, Composition>();
 
 /** Lexicographic preference: movement, objective, action, threat, old tie order. */
 function distance(intent: Intent, cell: LiveCell): number[] {
+  const inferredDrive = !intent.items.some(item => item.essential && item.axis === 'move') &&
+    intent.hero !== null && ['vehicle', 'boat'].includes(heroClass(intent.hero) ?? '');
   const supported = {
     move: [cell.recipe.move], objective: [cell.recipe.objective],
     action: cell.recipe.actions, threat: cell.recipe.threats,
   };
-  return ['move', 'objective', 'action', 'threat'].map(axis => intent.items.filter(item =>
+  return ['move', 'objective', 'action', 'threat'].map(axis => axis === 'move' && inferredDrive ? Number(cell.recipe.move !== 'drive') : intent.items.filter(item =>
     item.essential && item.axis === axis && !(supported[axis as keyof typeof supported] as readonly string[]).includes(item.verb)).length);
 }
 
@@ -130,7 +132,7 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   for (const cell of cells) {
     // Explicitly forbidden mechanics must not be selected as the main action.
     if ([...cell.recipe.actions, ...cell.recipe.threats, cell.recipe.move].some(verb => intent.negated.includes(verb))) continue;
-    const recipe = presetOf(contentOf(intent, cell, reading));
+    const recipe = assemblyOfCell(cell, contentOf(intent, cell, reading));
     const spec = compileRecipe(recipe);
     const made = arcadeWorldOf(spec, seed);
     if (!made.ok) { issues.push(`${cell.id}: ${made.issues.join('; ')}`); continue; }
