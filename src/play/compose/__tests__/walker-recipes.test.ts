@@ -6,9 +6,9 @@ import { compileRecipe } from '../compile';
 
 describe('native walker production assembly', () => {
   const cells = ALLOWED.filter(cell => cell.recipe.move === 'walk');
-  it('registers all six combinations before scene activation', () => {
+  it('registers all six combinations with a verified scene', () => {
     expect(cells).toHaveLength(6);
-    expect(cells.every(cell => cell.status === 'staged')).toBe(true);
+    expect(cells.every(cell => cell.status === 'live')).toBe(true);
   });
   it.each(cells)('$id proves every declared action on seeds 1–20', cell => {
     for (let seed = 1; seed <= 20; seed++) {

@@ -1,6 +1,7 @@
 /** Browser-independent routing contract. ArcadeStage consumes these same keys. */
 export const STAGES = {
   glide: { scene: 'world', input: 'glide' },
+  walker: { scene: 'world', input: 'walker' },
   runner: { scene: 'runner', input: 'runner' },
   platform: { scene: 'platform', input: 'platform' },
   flap: { scene: 'world', input: 'flap' },

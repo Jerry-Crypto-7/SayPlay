@@ -48,6 +48,7 @@ import type { ArcadeSession } from './session';
 import { SHOT_PRIMITIVES, ShotPrimitive } from './shooter/primitives';
 import { ShooterRig } from './shooter/ShooterRig';
 import { GlideBackdrop, GLIDE_SCENE_KINDS, placeGlide } from './glide/GlideScene';
+import { WalkerBackdrop, WALKER_SCENE_KINDS, placeWalker } from './walker/WalkerScene';
 import { SteerBackdrop, placeChase } from './steer/SteerScene';
 import { ThrowRig } from './throw/ThrowRig';
 import { type Spot, chaserSpot, placeAngled, placePlatform, placeRunner, placeSide } from './track-camera';
@@ -91,7 +92,7 @@ export function modelIdOf(view: BodyView, cast: Cast): string {
   // P35 T3: cíl skákačky z věty („moon“, „battery“); bez modelu v katalogu vlajka.
   if (view.kind === 'finish') return cast.props.finish ?? 'finish-flag';
   if (view.kind === 'goal' && cast.props.finish !== undefined) return cast.props.finish;
-  if (view.kind === 'enemy') return cast.enemy;
+  if (view.kind === 'enemy' || view.kind === 'guard') return cast.enemy;
   if (view.kind === 'glide-rival') return cast.props.rival ?? cast.enemy;
   // Soupeř závodu (P27A T4): vozidlo z popisku role `rival`, jinak auto soupeře.
   if (view.kind === 'rival-car') return cast.props.rival ?? view.kind;
@@ -396,7 +397,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       const drawn = view.role === ROLE.chaser ? chaserSpot(control, spotAt(state[HEADER.player] as number), spotAt(view.index), camera.far, camera.aspect) : null;
       if (drawn !== null && control === 'runner') yaws.current[view.index] = turnToward(yaws.current[view.index], drawn.oncoming ? Math.PI : 0, turn);
       // Plošinovka chodí oběma směry: postava se otočí, kam jde (P36C T8). Jinde drží směr scéna – běžec a let míří po trati, plavbu točí `VoyageHero`.
-      if (control === 'platform' && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
+      if ((control === 'platform' || control === 'walker') && moving !== null && (Math.hypot(moving.vx, moving.vz) * ARCADE_HZ) / UNIT > TURN_MIN_MPS) {
         yaws.current[view.index] = turnToward(yaws.current[view.index], headingOf(moving.vx, moving.vz), turn);
       }
       if (inner !== null && inner !== undefined && pose !== null && pose !== undefined) {
@@ -460,6 +461,8 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
         else placeSide(camera, look, z, FLAP.ceiling / UNIT / 2, 30, FLAP.ceiling / UNIT + 1, 26, 0.1);
       } else if (control === 'glide') {
         placeGlide(camera, look, x, y, z);
+      } else if (control === 'walker') {
+        placeWalker(camera, look, x, z);
       } else if (control === 'steer') {
         // Osa trati je v jednotkách jádra a scéna ji zrcadlí (x → −x), stejně jako těla.
         const course = baseControlOf(session.world.control).params.course as SteerCourse | undefined;
@@ -480,6 +483,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
     <>
       {backdrop ??
         (control === 'glide' ? <GlideBackdrop session={session} look={scene} />
+        : control === 'walker' ? <WalkerBackdrop session={session} look={scene} />
         : control === 'steer' ? (
           <SteerBackdrop session={session} course={baseControlOf(session.world.control).params.course as SteerCourse | undefined} length={session.world.length / UNIT} look={scene} heroAction={heroAction} ghost={ghost} namedHazard={cast.props.hazard !== undefined} />
         ) : (
@@ -489,7 +493,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
       {control === 'throw' && <ThrowRig session={session} surface={surface} enabled={enabled} heroAction={heroAction} ghost={ghost} />}
       {views.map((view) =>
         // Branka poletování je neviditelná: jen počítá průlet mezerou; počítadlo komba scéna nekreslí taky.
-        drawsNothing(view) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) ? null : (
+        drawsNothing(view) || (control === 'glide' && GLIDE_SCENE_KINDS.has(view.kind)) || (control === 'walker' && WALKER_SCENE_KINDS.has(view.kind)) ? null : (
           <group key={view.index} ref={(group) => { groups.current[view.index] = group; }} userData={{ frame: frameTagOf(view), item: itemTagOf(view) }}>
             {/* Činnost hrdiny (P37B T2): ostatní těla a `none` dostanou model beze změny stromu. */}
             <HeroActionBody action={view.role === ROLE.player ? heroAction : 'none'} session={session} h={view.h}>
@@ -504,7 +508,7 @@ export function World({ session, control, cast, surface, scene, enabled, backdro
                 fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'}
                 // Klip hráče čte e2e z DOM – z obrázku se nepřečte.
                 onClip={view.role === ROLE.player ? (state) => { if (surface.current !== null) surface.current.dataset.animClip = state; } : undefined}
-                yaw={control === 'platform' || view.role === ROLE.chaser ? () => yaws.current[view.index] ?? 0 : undefined}
+                yaw={control === 'platform' || control === 'walker' || view.role === ROLE.chaser ? () => yaws.current[view.index] ?? 0 : undefined}
               />
             ) : view.kind === 'pipe' ? (
               <ModelColumn id={modelIdOf(view, cast)} w={view.w} h={view.h} d={view.d} fallback={FALLBACK_COLOR[view.kind] ?? '#94a3b8'} />
