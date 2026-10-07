@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { TICK_DT, TICK_HZ, TICK_MS, createClock, pump, runTicks } from '../clock';
 import { hashHex, hashWords } from '../hash';
 import { SUBSYSTEMS, createStreams, nextInt } from '../rng';
 import { createState, defineLayout, readSlot, writeSlot } from '../state';
@@ -14,60 +13,26 @@ const LAYOUT = defineLayout([
 ]);
 
 /**
- * Hračkový svět. Skutečný interpret staví až T9 — tady jde jen o to, aby hodiny,
- * PRNG a zabalený stav byly zapojené do jedné smyčky, jejímž jediným výstupem je
+ * Hračkový svět. Skutečný interpret staví až T9 — tady jde jen o to, aby PRNG
+ * a zabalený stav byly zapojené do jedné smyčky, jejímž jediným výstupem je
  * hash. Každý ze čtyř streamů se spotřebovává, takže záměna streamů se na hashi
- * projeví.
+ * projeví. (Tikové hodiny `sim/clock.ts` odešly se starým studiem, P44D T7;
+ * smyčku tu nahrazuje prostý `for` přes tiky 0…n−1, který `runTicks` dělal.)
  */
 function runWorld(seed: number, ticks: number): Uint32Array {
-  const clock = createClock();
   const streams = createStreams(seed);
   const state = createState(LAYOUT);
 
-  runTicks(clock, ticks, (tick) => {
+  for (let tick = 0; tick < ticks; tick += 1) {
     writeSlot(LAYOUT, state, 'collected', readSlot(LAYOUT, state, 'collected') + nextInt(streams.spawn, 0, 3));
     writeSlot(LAYOUT, state, 'charge', readSlot(LAYOUT, state, 'charge') + nextInt(streams.ai, -2, 2));
     writeSlot(LAYOUT, state, 'alarm', nextInt(streams.effect, 0, 1));
     writeSlot(LAYOUT, state, 'door', nextInt(streams.layout, 0, 2));
     writeSlot(LAYOUT, state, 'fuse', tick % 401);
-  });
+  }
 
   return state;
 }
-
-describe('tikové hodiny', () => {
-  it('mají jedinou frekvenci a odvozený krok', () => {
-    expect(TICK_HZ).toBe(20);
-    expect(TICK_DT).toBe(0.05);
-    expect(TICK_MS).toBe(50);
-  });
-
-  it('převedou nástěnný čas na celé tiky a zbytek si nechají', () => {
-    const clock = createClock();
-
-    expect(pump(clock, 1000)).toBe(20);
-    expect(clock.accumulatorMs).toBe(0);
-
-    expect(pump(clock, 30)).toBe(0);
-    expect(clock.accumulatorMs).toBe(30);
-
-    // Zbytek se nesmí zahodit — jinak by hustota pumpování měnila počet tiků.
-    expect(pump(clock, 30)).toBe(1);
-    expect(clock.accumulatorMs).toBe(10);
-  });
-
-  it('zvyšují `tick` výhradně v `runTicks`', () => {
-    const clock = createClock();
-    const seen: number[] = [];
-
-    pump(clock, 5000);
-    expect(clock.tick).toBe(0);
-
-    runTicks(clock, 3, (tick) => seen.push(tick));
-    expect(seen).toEqual([0, 1, 2]);
-    expect(clock.tick).toBe(3);
-  });
-});
 
 describe('seedovaná PRNG', () => {
   it('dá pro stejný seed stejnou posloupnost', () => {

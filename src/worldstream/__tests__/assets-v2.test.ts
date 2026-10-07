@@ -7,10 +7,7 @@ import { EXAMPLE_PLAN } from '@/model/worldstream-examples';
 import { EXAMPLE_BLUEPRINT_ANSWER } from '@/model/worldstream-prompt';
 import { blueprintSchema, type WorldstreamBlueprint } from '../schema';
 import { findBlueprintReferenceIssues } from '../references';
-import { createSession, restoreSession } from '../session';
 import { buildProxyWorldFrom } from '../proxy';
-import { slotFromAsset, toWorld } from '../slots';
-import { bindRuntime } from '../runtime-controller';
 
 const first = asset();
 const second = { ...asset(), version: 2, hash: 'b'.repeat(64),
@@ -55,53 +52,6 @@ describe('versioned object / representation contract', () => {
       const b = blueprint(); mutate(b);
       expect(findBlueprintReferenceIssues(b, manifest).length).toBeGreaterThan(0);
     }
-  });
-
-  it('replaces an asset revision without changing simHash, state, collider, entity or socket', () => {
-    const b = blueprint(); const before = structuredClone(b);
-    const runtime = bindRuntime(null, 'assets', b.world);
-    runtime.controller.advanceTicks(10);
-    const runningState = runtime.controller.getSnapshot();
-    const session = createSession({ sessionId: 'assets', sessionSeed: b.sessionSeed });
-    session.registerBlueprint(b, manifest);
-    const next = { ...b.objects[0], source: reference(2) };
-    const slot = slotFromAsset(b.objects[0], first);
-    expect(session.replaceAsset(next.stableId, 0, next, manifest)).toEqual({ ok: true, revision: 1 });
-    expect(b).toEqual(before);
-    expect(b.world.simHash).toEqual(before.world.simHash);
-    const rebound = bindRuntime(runtime, 'assets', { ...b.world });
-    expect(rebound).toBe(runtime);
-    expect(rebound.controller.getSnapshot()).toBe(runningState);
-    expect(session.representations[0].object?.binding).toEqual(before.objects[0].binding);
-    expect(slotFromAsset(next, second)).toEqual({ ...slot, source: reference(2) });
-    expect(toWorld(slot.transform, slot.anchors[0].at)).toEqual([0, 0.7, 0]);
-    expect(session.replaceAsset(next.stableId, 0, next, manifest)).toEqual({ ok: false, reason: 'STALE_REVISION' });
-    expect(session.apply({ sessionId: 'assets', stableId: next.stableId, representationRevision: 0,
-      next: { kind: 'validating' } })).toMatchObject({ ok: false, reason: 'STALE_REVISION' });
-    const restored = restoreSession(JSON.parse(JSON.stringify(session.snapshot())));
-    expect(restored.representations).toEqual(session.representations);
-    const exposed = restored.representations[0].object!; exposed.binding!.sockets[0].at[0] = 99;
-    expect(restored.representations[0].object?.binding).toEqual(next.binding);
-  });
-
-  it('refuses appearance deliveries that alter collision, binding, placement or part contracts', () => {
-    const b = blueprint();
-    const session = createSession({ sessionId: 'assets', sessionSeed: 4021 });
-    session.registerBlueprint(b, manifest);
-    for (const change of [
-      { ...b.objects[0].binding!, entityId: 'keeper' },
-      { ...b.objects[0].binding!, collider: { min: [-1, 0, -1] as [number, number, number], max: [2, 2, 2] as [number, number, number] } },
-      { ...b.objects[0].binding!, parts: [] },
-    ]) {
-      expect(session.replaceAsset('hiveVisual', 0, { ...b.objects[0], source: reference(2), binding: change }, manifest))
-        .toEqual({ ok: false, reason: 'BINDING_MISMATCH' });
-    }
-    expect(session.revisionOf('hiveVisual')).toBe(0);
-    const incompatible = { ...second, sockets: [{ ...second.sockets[0], at: [0, 1, 0] as [number, number, number] }] };
-    const badManifest = createAssetManifest({ version: 'worldstream-assets-v1', assets: [incompatible] });
-    expect(session.replaceAsset('hiveVisual', 0, { ...b.objects[0], source: reference(2) }, badManifest))
-      .toMatchObject({ ok: false, reason: expect.stringContaining('world binding') });
-    expect(session.revisionOf('hiveVisual')).toBe(0);
   });
 
   it('builds a proportion-preserving asset slot and labels unfinished rendering explicitly', async () => {

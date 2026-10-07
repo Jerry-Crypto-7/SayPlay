@@ -430,18 +430,14 @@ describe('co se z prostředka větvit nedá', () => {
  * proto lexikální zeď, ne behaviorální test: chytá **zápis**, ne jeho následek,
  * protože následek je vidět až na stroji s jinou rychlostí.
  *
- * Rozsah je celý `src/sim` plus osa, která ho ovládá. Panel v Inspectu
- * (`src/components/pipeline/Timeline.tsx`) sem schválně nepatří — `T38` ho
- * teprve přestavuje a přibrat ho by znamenalo zeď, která zčervená kvůli cizí
- * úloze.
+ * Rozsah je celý `src/sim`. Osa, která ho ovládala (`TimeAxis.tsx`), odešla
+ * se starým studiem (P44D T5), stejně jako hodiny, větve a vstup (P44D T7) –
+ * proto spodní mez osm modulů.
  */
 describe('replay cesta nesmí sáhnout na nástěnný čas', () => {
-  const GUARDED = [
-    ...readdirSync(resolve(import.meta.dirname, '..'))
-      .filter((name) => name.endsWith('.ts'))
-      .map((name) => resolve(import.meta.dirname, '..', name)),
-    resolve(import.meta.dirname, '../../components/worldstream/TimeAxis.tsx'),
-  ];
+  const GUARDED = readdirSync(resolve(import.meta.dirname, '..'))
+    .filter((name) => name.endsWith('.ts'))
+    .map((name) => resolve(import.meta.dirname, '..', name));
 
   /** Zdroj bez komentářů — jinak by zeď spadla na větě, která ji vysvětluje. */
   function code(path: string): string {
@@ -451,7 +447,7 @@ describe('replay cesta nesmí sáhnout na nástěnný čas', () => {
   }
 
   it('nemá kde vzít wall-clock', () => {
-    expect(GUARDED.length).toBeGreaterThan(8);
+    expect(GUARDED.length).toBeGreaterThanOrEqual(8);
     const guilty = GUARDED.filter((path) =>
       /\bDate\.now\b|\bperformance\.now\b|\brequestAnimationFrame\b/.test(code(path)),
     ).map((path) => basename(path));

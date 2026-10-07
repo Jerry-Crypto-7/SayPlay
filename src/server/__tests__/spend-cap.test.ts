@@ -5,8 +5,6 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { killState } from '../kill-switch';
-import { mockBranch } from '../mock';
-import type { GenerationCall } from '../pipeline';
 
 import { readdirSync, readFileSync } from 'node:fs';
 
@@ -598,19 +596,11 @@ describe('strop na počet volání drží i tehdy, když je ceník opsaný špat
  * nulové. Offline větev je přitom výchozí, takže nasazené demo umřelo po dvou
  * stech větách při útratě 0 USD.
  *
- * Nulu si sada nepíše sama — bere ji z **opravdové** offline větve. Kdyby jí
- * někdo cenu dal, tahle sada se ozve, místo aby dál měřila konstantu.
+ * Offline větev odešla se starým studiem (P44D T7), takže nulu tu nese
+ * konstanta: volání, jehož nejhorší cena je 0 USD.
  */
 describe('strop na počet volání počítá jen placená volání', () => {
-  const FREE_CALL: GenerationCall = {
-    prompt: 'a spiral library where the stairs are the shelves',
-    request: { model: 'mock', system: 'system', user: 'user' },
-  };
-  const freeWorstCase = mockBranch().worstCaseUsd(FREE_CALL);
-
-  it('offline větev doopravdy nic nestojí — jinak tenhle popis neplatí', () => {
-    expect(freeWorstCase).toBe(0);
-  });
+  const freeWorstCase = 0;
 
   it('dvě stě vět do offline dema strop nevyčerpá', async () => {
     const cap = new SpendCap({ enabled: true, capUsd: DEFAULT_CAP_USD, callCap: DEFAULT_CALL_CAP });

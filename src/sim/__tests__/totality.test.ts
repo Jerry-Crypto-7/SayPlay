@@ -374,11 +374,6 @@ const OFF_TICK_PATH: Readonly<Record<string, number>> = {
   // Třetí replay driver, vedle `run` a `replayTo`. Mez je počet tiků od
   // volajícího; je to pozorování běhu, ne krok přechodu.
   'sim/agents.ts:visitedZones': 4,
-  // Úložiště větví (`T38`). Tři smyčky, všechny nad **seznamem větví**, ne nad
-  // stavem: výpis, vyhledání podle id a přepnutí. Mez je počet odbočení, které
-  // udělal člověk, a na tikovou cestu se nedostane — interpret o větvích neví.
-  'sim/branches.ts:createBranchStore': 3,
-  'sim/clock.ts:runTicks': 1, // pumpa tiků, mez je `MAX_CATCHUP_TICKS` v `pump`
   'sim/hash.ts:hashWords': 1, // hash je pozorování stavu, ne krok přechodu
   'sim/interpreter.ts:createRuntime': 4, // stavba layoutu, entit, predikátů a pořadí pravidel
   'sim/interpreter.ts:enumTable': 1, // tabulka symbolů, staví se jednou při konstrukci
