@@ -29,13 +29,13 @@ node --experimental-strip-types scripts/play-fidelity.mjs judge --clip --run <id
 P43_RUN=<id> P43_OUT=<soubor>.json npx vitest run --config vitest.measure.mts evals/play/p43/visible.measure.ts
 ```
 
-| | `baseline.json` | `after-a.json` |
-|---|---|---|
-| sloveso poznané v klipu | 8/30 | 9/30 |
-| sloveso poznané u vět se svědkem | 7/20 | 8/20 |
-| hrdina modelem | 17/23 | 17/23 |
-| hrdina poznaný | 7/23 | 6/23 |
-| položka modelem | 13/38 | 13/38 |
+| | `baseline.json` | `after-a.json` | `after-b.json` |
+|---|---|---|---|
+| sloveso poznané v klipu | 8/30 | 9/30 | 10/30 |
+| sloveso poznané u vět se svědkem | 7/20 | 8/20 | 9/20 |
+| hrdina modelem | 17/23 | 17/23 | 20/23 |
+| hrdina poznaný | 7/23 | 6/23 | 12/23 |
+| položka modelem | 13/38 | 13/38 | 13/38 |
 
 Baseline 7. 10. 2026: klip z buildu `118f26da` (před změnami vykreslení P43), návrh bez režiséra, běh `p43-baseline`.
 
@@ -46,6 +46,18 @@ Po proudu A 7. 10. 2026: klip z buildu `47602c61` (podněty akce, střela a hod,
 - Řádek se slovesem („Shoot the goblins!“) do čísla nevstupuje – klip skrývá všechno HTML a soudí jen scénu.
 - Snímky klipu leží na pevných ticích (30, 90, 120); robot ukázky mezi tiky 51 a 126 nestřílí, takže snímky 1 a 2 akci často nezachytí. Posun snímků by změnil měřidlo T2, proto zůstává.
 - „Hrdina poznaný“ 7 → 6 je jedna věta, v šumu; hrdinu ani modely proud A neměnil (to dělá proud B).
+
+Po proudu B 7. 10. 2026: klip z buildu `a11e657c` (jména z Codexova soudu knihovny, souboj a rytmus kreslí hrdinu z věty, 17 nových modelů), běh `p43-after-b`.
+
+| Práh | Výsledek | |
+|---|---|---|
+| hrdina modelem ≥ 85 % | 20/23 = 87 % | splněn |
+| hrdina poznaný ≥ 65 % | 12/23 = 52 % | **nesplněn** |
+| položka modelem ≥ 60 % | 13/38 = 34 % | **nesplněn** |
+
+- Hrdina poznaný 6 → 12: posun dělá souboj a rytmus (rytíř, pirát, babička dřív kvádr nebo nic) a opravená jména knihovny.
+- Hrdina bez modelu zůstal u tří vět: cyclops (f24, model neprošel generátorem), ninja cat (m09), mole (u08; generovaný model soudce viděl jako medvěda).
+- Položka modelem se nepohnula: 20 z 38 věcí návrh do hry vůbec nedá (`not-in-spec`), a věci v questu (lucerny, lektvar) se modelem nekreslí, i když model existuje. Páka je v návrhu a ve scéně questu (soubory P42), ne v knihovně – výběr modelu ani nové modely tu číslo nezvednou.
 
 ## `missing.json` – podstatná jména bez modelu
 
