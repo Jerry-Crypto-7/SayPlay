@@ -1,0 +1,217 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-16",
+    "sentence": "A mouse sneaks through a kitchen, collecting crumbs while knives fall toward it.",
+    "seed": 2,
+    "milliseconds": 749.0497000000032,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "hazard",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "collect": true,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "mouse reach",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "kitchen",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect the crumb and reach the exit.",
+        "count": 1,
+        "role": "coin"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "mouse",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "exit",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "crumb",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "hazard",
+          "label": "knife",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Dodge the knife.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "73b79a05",
+    "worldHash": "590b1854f968d1d414bd5db68f5dfa6cf4f2a3e0356446becfea2b9d982bd582",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 537,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 73,
+          "roleId": "coin",
+          "label": "crumb",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 537,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "knife",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 572,
+        "evidence": "survived-threat:probe:part_0",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "knife",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 64,
+        "evidence": "moving-threat-contact",
+        "run": "probe",
+        "runId": "probe:part_0"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 572,
+      "hash": "f6ac9f07",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

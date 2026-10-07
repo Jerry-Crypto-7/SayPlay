@@ -1,0 +1,9 @@
+
+ RUN  v4.1.10 D:/claude/Hackaton
+
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  16:55:19
+   Duration  69.21s (transform 10.89s, setup 0ms, import 14.17s, tests 54.08s, environment 0ms)
+

@@ -1,0 +1,153 @@
+{
+  "rowIndex": 189,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-038",
+    "sentence": "A cat plays soccer in the stadium without rival teams.",
+    "seed": 4,
+    "milliseconds": 429.8176999999996,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "ball",
+      "controlParams": {
+        "goal": "goal",
+        "shotRecoveryTicks": 168,
+        "shotRecoveryRiseTicks": 4,
+        "paceSeconds": 15,
+        "keeper": false,
+        "difficulty": "normal",
+        "targets": 5,
+        "generator": "ball_pitch"
+      },
+      "addons": [],
+      "title": "cat score",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "stadium",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Score in every goal.",
+        "count": 5,
+        "role": "goal"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "cat",
+          "count": 1
+        },
+        {
+          "id": "physics_ball",
+          "kind": "item",
+          "label": "football",
+          "count": 1
+        },
+        {
+          "id": "goal",
+          "kind": "target",
+          "label": "goal",
+          "count": 5
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Score in every goal.",
+        "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "facb4096",
+    "worldHash": "e6273b43402ee0d77e26cbaa09f59e96c21e720135c0ab9dc667da3aaa633004",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 58,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "ball",
+        "object": null,
+        "tick": 58,
+        "evidence": "physical-ball-scored",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": {
+          "body": 2,
+          "roleId": "goal",
+          "label": "goal",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 58,
+        "evidence": "physical-ball-in-goal",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 881,
+      "hash": "1182a553",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "dataset": "evals/play/p42/round6/sentences.json",
+  "sha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "bytes": 33194,
+  "sealedAtUtc": "2026-10-07T15:13:01.996304+00:00",
+  "count": 64,
+  "groups": [
+    "held-out"
+  ],
+  "kindCounts": {
+    "multi-action": 22,
+    "paraphrase": 8,
+    "negation": 10,
+    "unsupported": 8,
+    "single": 16
+  },
+  "paraphraseFamilies": [
+    {
+      "ids": [
+        "r6-ho-023",
+        "r6-ho-024",
+        "r6-ho-025",
+        "r6-ho-026"
+      ],
+      "variants": 4
+    },
+    {
+      "ids": [
+        "r6-ho-027",
+        "r6-ho-028",
+        "r6-ho-029",
+        "r6-ho-030"
+      ],
+      "variants": 4
+    }
+  ],
+  "internalNormalizedDuplicateCount": 0,
+  "normalizedOverlapCount": 0,
+  "normalization": "Unicode NFKC, casefold, punctuation to spaces, whitespace collapse; compared against all string leaves of every source group without displaying their contents.",
+  "overlapSources": [
+    {
+      "path": "evals/play/p30/test-200.json",
+      "sha256": "7222b9b9d9020af2294f84ca0187f3f33c6ad79806f11b0381e4064e72c629a8",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p41/sentences.json",
+      "sha256": "41a7aaf402aecfacf9ed9d81b4b1b40a9b282b88ceb681d79cddb0b10359537c",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/sentences.json",
+      "sha256": "248e96600222a792f41f2f84118558f41fd9ff3ed2bd8a5124c8881aca65c13a",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round2/sentences.json",
+      "sha256": "83498413a57911aa4df658c060776cf1a92a38b11c290520a9bfca995a69cf8a",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round3/sentences.json",
+      "sha256": "b07e5d08d0259dd149a6f7b8cceae3990151a90c92d94e36a93799203851aecb",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round4/sentences.json",
+      "sha256": "2694b9c0355a00db18cd7300e8b1e06cef3d8ad5be31c0ce0503f6b39b827bd9",
+      "normalizedOverlapCount": 0
+    },
+    {
+      "path": "evals/play/p42/round5/sentences.json",
+      "sha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+      "normalizedOverlapCount": 0
+    }
+  ],
+  "manualReview": {
+    "grammar": true,
+    "semanticLabels": true,
+    "threatActorDirection": true,
+    "singularNounHeads": true,
+    "projectileTargetVersusAmmunition": true,
+    "negationsAndDontStop": true
+  },
+  "independence": {
+    "readSemanticSources": [
+      "docs/specs/2026-10-07-p42-skladani-z-dilu.md",
+      "src/play/intent/contract.ts"
+    ],
+    "priorDatasetContentDisplayed": false,
+    "implementationRead": false,
+    "parserRun": false,
+    "composerRun": false,
+    "draftRun": false,
+    "evaluationOutputSeen": false
+  }
+}

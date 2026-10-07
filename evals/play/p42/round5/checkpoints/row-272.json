@@ -1,0 +1,138 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-55",
+    "sentence": "Let a detective walk through a museum.",
+    "seed": 2,
+    "milliseconds": 581.5608999999822,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "detective reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "museum",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Find a path through the maze to the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "detective",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "museum",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Find a path through the maze to the exit.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "3cd15e0f",
+    "worldHash": "c909c9bf7fb7a7f60b3c68477101842e9c54f79225d4f0bbd879e27a105e918f",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "detective",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "detective",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 72,
+          "roleId": "finish",
+          "label": "museum",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 571,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 572,
+      "hash": "476ce33d",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

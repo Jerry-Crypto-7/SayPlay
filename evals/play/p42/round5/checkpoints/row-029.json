@@ -1,0 +1,281 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-06",
+    "sentence": "A badger jumps through a garden, throws acorns and catches butterflies.",
+    "seed": 4,
+    "milliseconds": 557.175900000002,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "catch",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "platform",
+      "controlParams": {
+        "checkpoints": true,
+        "tuning": {
+          "feel": 2,
+          "sections": 3
+        }
+      },
+      "genre": {
+        "id": "platformer",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Badger Jump",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "garden",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Jump across the platforms to the flag without touching a acorn.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "badger",
+          "count": 1
+        },
+        {
+          "id": "spikes",
+          "kind": "hazard",
+          "label": "acorn",
+          "count": 5
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "flag",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "butterfly",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Catch the butterfly.",
+        "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "81b4a610",
+    "worldHash": "f773b7764c50bcbb0a73e60817a56ccb34c5b467e1430f4366862ebf422fc57d",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 56,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 118,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 37,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 118,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "catch",
+        "object": {
+          "body": 81,
+          "roleId": "part_0",
+          "label": "butterfly",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 714,
+        "evidence": "moving-prey-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "acorn",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 3109,
+        "evidence": "survived-threat:probe:spikes",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "acorn",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 538,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "acorn",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "badger",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 538,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "badger",
+          "verb": "throw",
+          "object": "acorn"
+        }
+      ],
+      "closest": "a platformer",
+      "reason": "Throw isn't here yet – here's a platformer."
+    },
+    "score": {
+      "preserved": false,
+      "total": 3,
+      "proved": 2,
+      "missing": [
+        {
+          "actor": "badger",
+          "verb": "throw",
+          "object": "acorn"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 3109,
+      "hash": "84c080f8",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

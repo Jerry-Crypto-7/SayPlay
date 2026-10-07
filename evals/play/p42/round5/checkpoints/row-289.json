@@ -1,0 +1,186 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-58",
+    "sentence": "A troll throws turnips in a cave.",
+    "seed": 4,
+    "milliseconds": 210.91740000003483,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "throw",
+      "controlParams": {
+        "budget": 48
+      },
+      "genre": {
+        "id": "throw",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Troll Throw",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "cave",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Hit every turnip in 87 seconds before you run out of throws.",
+        "count": 3,
+        "role": "target"
+      },
+      "mechanics": [
+        {
+          "id": "timer",
+          "params": {
+            "id": "clock",
+            "seconds": 87,
+            "onEnd": "lose"
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "troll",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "turnip",
+          "count": 3
+        },
+        {
+          "id": "ball",
+          "kind": "item",
+          "label": "ball",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Hit every turnip in 87 seconds.",
+        "controlsHint": "Hold to power up, drag up or down to aim, let go to throw."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "d8a570cb",
+    "worldHash": "e8eda1b801126880f050d300a017c3f64ce47440e815795455d439868bb88803",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "troll",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "throw",
+        "object": {
+          "body": 13,
+          "roleId": "ball",
+          "label": "ball",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 48,
+        "evidence": "thrown-body-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "troll",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 67,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "troll",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "throw",
+        "object": {
+          "body": 10,
+          "roleId": "target",
+          "label": "turnip",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 67,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "troll",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 10,
+          "roleId": "target",
+          "label": "turnip",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 67,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2819,
+      "hash": "02ab2c4e",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

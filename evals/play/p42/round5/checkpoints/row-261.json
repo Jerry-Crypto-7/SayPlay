@@ -1,0 +1,159 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-53",
+    "sentence": "A tortoise roams freely in a park.",
+    "seed": 1,
+    "milliseconds": 413.173700000043,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "arena_collect",
+        "tuning": {
+          "items": 10,
+          "waves": 3
+        }
+      },
+      "genre": {
+        "id": "arena",
+        "mode": "collect",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Tortoise Hunt",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "park",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect 10 flowers in each of 3 waves before time runs out.",
+        "count": 10,
+        "role": "item"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "tortoise",
+          "count": 1
+        },
+        {
+          "id": "item",
+          "kind": "collectible",
+          "label": "flower",
+          "count": 10
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Collect 10 flowers per wave, 3 waves.",
+        "controlsHint": "Drag or arrows to move."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "a3e63a6f",
+    "worldHash": "298b86581602610363966ee134620201805c64b4299dabf32a5a40a8e0929790",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tortoise",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tortoise",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 43,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "tortoise",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 2,
+          "roleId": "item",
+          "label": "flower",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 43,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "no_verb",
+      "reason": "No game verb found – here is a collecting game about tortoise. Try: ‘Dodge …’, ‘Collect …’",
+      "closest": "a collecting game"
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 3787,
+      "hash": "fddb0dbe",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

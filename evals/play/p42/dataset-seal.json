@@ -1,0 +1,9 @@
+{
+  "createdAt": "2026-10-07T09:30:49.335898+00:00",
+  "sha256": "248e96600222a792f41f2f84118558f41fd9ff3ed2bd8a5124c8881aca65c13a",
+  "heldOutCount": 64,
+  "developmentCount": 239,
+  "overlapP30": 0,
+  "overlapP41": 0,
+  "state": "sealed; no extractor, draft or scoring execution"
+}

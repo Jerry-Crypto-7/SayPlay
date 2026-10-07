@@ -1,0 +1,192 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-62",
+    "sentence": "A raccoon stacks boxes in a depot.",
+    "seed": 3,
+    "milliseconds": 61.70360000000801,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "timing",
+      "controlParams": {
+        "mode": "stack",
+        "speed": "slow",
+        "rounds": 36,
+        "rise": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "timing",
+        "mode": "stack",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Raccoon Stack",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "depot",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Stack 36 boxes. Each one swings faster.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "raccoon",
+          "count": 1
+        },
+        {
+          "id": "block",
+          "kind": "collectible",
+          "label": "box",
+          "count": 36
+        },
+        {
+          "id": "miss",
+          "kind": "hazard",
+          "label": "missed drop",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "of the tower",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Stack 36 boxes. Each one swings faster.",
+        "controlsHint": "Tap or Space to drop the block."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "4e4ec90a",
+    "worldHash": "e81eed7b1e3bfdd9730c9200629eb4710ac0505ea550db6b0e6976b70ec347ae",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "raccoon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 75,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "raccoon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "stack",
+        "object": null,
+        "tick": 75,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "raccoon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "stack",
+        "object": {
+          "body": 3,
+          "roleId": "block",
+          "label": "box",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 75,
+        "evidence": "block-placed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "raccoon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "build",
+        "object": null,
+        "tick": 1891,
+        "evidence": "stack-completed",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "raccoon",
+          "verb": "build",
+          "object": "box"
+        }
+      ],
+      "closest": "a timing game",
+      "reason": "Build isn't here yet – here's a timing game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 1892,
+      "hash": "7aafb236",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

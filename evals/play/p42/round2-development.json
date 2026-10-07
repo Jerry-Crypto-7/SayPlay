@@ -1,0 +1,5808 @@
+{
+  "summary": {
+    "measured": 303,
+    "built": 303,
+    "preserved": 261,
+    "silent": 0
+  },
+  "rows": [
+    {
+      "group": "multi-action",
+      "id": "ma-001",
+      "sentence": "game in a car with shooting and racing",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-002",
+      "sentence": "a car race where you can shoot the other cars",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 4,
+        "proved": 4,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-003",
+      "sentence": "racing and shooting in a car",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-004",
+      "sentence": "race cars with guns",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-005",
+      "sentence": "shoot your rivals while you race your car to the finish line",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 4,
+        "proved": 4,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-006",
+      "sentence": "combat racing with cars and rockets",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-007",
+      "sentence": "drive a car through the city and shoot zombies",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-008",
+      "sentence": "a police car chasing robbers and shooting at their tires",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-009",
+      "sentence": "my car has a machine gun, blast the robots on the highway",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-010",
+      "sentence": "racing game with shooting, i drive a car",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-011",
+      "sentence": "shoot n race cars in the desert",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-012",
+      "sentence": "a boat race on the ocean, dodge the rocks",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-013",
+      "sentence": "motorbike jumping over cars in the desert",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "motorbike",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "motorbike",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Jumping isn't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-014",
+      "sentence": "a plane that shoots down enemy planes over the jungle",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-015",
+      "sentence": "fly a dragon over the castle and burn the knights with fire",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-016",
+      "sentence": "a dragon flying through the clouds collecting gems while dodging arrows",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-017",
+      "sentence": "a fish swimming in the ocean eating smaller fish and avoiding sharks",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "fish",
+            "verb": "roam",
+            "object": null
+          }
+        ],
+        "closest": "a swimming or flying game",
+        "reason": "Free movement isn't here yet – here's a swimming or flying game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-018",
+      "sentence": "a ninja who sneaks past the guards and throws stars at them",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "ninja",
+            "verb": "throw",
+            "object": "guard"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "ninja",
+            "verb": "throw",
+            "object": "guard"
+          }
+        ],
+        "closest": "a maze game",
+        "reason": "Throw isn't here yet – here's a maze game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-019",
+      "sentence": "sneak through a maze at night, grab the key and escape before the guards see you",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 4,
+        "proved": 4,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-020",
+      "sentence": "a mouse running thru a maze collecting cheese while a cat chases it",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "mouse",
+            "verb": "walk",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "mouse",
+            "verb": "walk",
+            "object": null
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "Walk isn't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-021",
+      "sentence": "jump across rooftops in the city and collect coins",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-022",
+      "sentence": "a monkey jumping from vine to vine in the jungle, grabbing bananas and avoiding snakes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-023",
+      "sentence": "an endless runner in the desert where you dodge cactuses and collect water",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-024",
+      "sentence": "run through the forest, jump over logs and outrun a bear",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 5,
+        "proved": 5,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-025",
+      "sentence": "basketball game where you dribble past defenders and dunk",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-026",
+      "sentence": "golf on the moon with craters as obstacles",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "crater",
+            "verb": "obstacle",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "crater",
+            "verb": "obstacle",
+            "object": "hero"
+          }
+        ],
+        "closest": "a ball game",
+        "reason": "The obstacles isn't here yet – here's a ball game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-027",
+      "sentence": "a penguin waddles around the ice collecting fish while a seal hunts it",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "penguin",
+            "verb": "escape",
+            "object": "seal"
+          }
+        ],
+        "closest": "a chase game",
+        "reason": "Escaping isn't here yet – here's a chase game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-028",
+      "sentence": "throw snowballs at snowmen and dodge the icicles falling from the roof",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "icicle",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "icicle",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "closest": "a throwing game",
+        "reason": "The hazards isn't here yet – here's a throwing game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-029",
+      "sentence": "stack boxes as high as you can while the wind tries to knock them over",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "wind",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "box"
+          },
+          {
+            "actor": "wind",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "closest": "a timing game",
+        "reason": "Build and the hazards aren't here yet – here's a timing game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-030",
+      "sentence": "a robot dancing to the music and dodging lasers",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "laser",
+            "verb": "hazard",
+            "object": "robot"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "laser",
+            "verb": "hazard",
+            "object": "robot"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "The hazards isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-031",
+      "sentence": "a knight fights a dragon to save the princess",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-032",
+      "sentence": "a pirate ship sailing the ocean, firing cannons at other ships and collecting treasure",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-033",
+      "sentence": "a submarine diving deep to collect pearls while avoiding mines",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-034",
+      "sentence": "a snowmobile racing through the snow and dodging trees",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-035",
+      "sentence": "a bird flapping through a forest at night eating fireflies",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-036",
+      "sentence": "an astronaut walking on the moon collecting rocks and escaping aliens",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-037",
+      "sentence": "a cat chases mice through the castle while the dog guards the kitchen",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "dog",
+            "verb": "guard",
+            "object": "cat"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "dog",
+            "verb": "guard",
+            "object": "cat"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "The guards isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-038",
+      "sentence": "time your jumps over spinning saws and reach the exit",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 4,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "time",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "reach",
+            "object": "exit"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "time",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "reach",
+            "object": "exit"
+          }
+        ],
+        "closest": "a platformer",
+        "reason": "Time and reaching the goal aren't here yet – here's a platformer."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-039",
+      "sentence": "a robot that walks around a factory pressing buttons and avoiding sparks",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-040",
+      "sentence": "fly a sleigh at night delivering presents and avoiding chimneys",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-041",
+      "sentence": "a fire truck driving through the city to put out fires",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-042",
+      "sentence": "kick the ball past the goalkeeper and score",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "kick",
+            "object": "ball"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "kick",
+            "object": "ball"
+          }
+        ],
+        "closest": "a ball game",
+        "reason": "Kick isn't here yet – here's a ball game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-043",
+      "sentence": "a football match in the snow where you also have to dodge snowballs",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-044",
+      "sentence": "swim as a dolphin, jump through hoops and collect stars",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "dolphin",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "dolphin",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "closest": "a swimming or flying game",
+        "reason": "Jumping isn't here yet – here's a swimming or flying game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-045",
+      "sentence": "a dragon that breathes fire at castles and dodges catapults",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "catapult",
+            "verb": "hazard",
+            "object": "dragon"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "catapult",
+            "verb": "hazard",
+            "object": "dragon"
+          }
+        ],
+        "closest": "a shooting game",
+        "reason": "The hazards isn't here yet – here's a shooting game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-046",
+      "sentence": "fly a plane through a storm and land it safely on the runway",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "plane",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "storm",
+            "verb": "hazard",
+            "object": "plane"
+          },
+          {
+            "actor": "plane",
+            "verb": "land",
+            "object": "runway"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "plane",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "storm",
+            "verb": "hazard",
+            "object": "plane"
+          },
+          {
+            "actor": "plane",
+            "verb": "land",
+            "object": "runway"
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Gliding, the hazards and land aren't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-047",
+      "sentence": "a rocket that flies into space, collects fuel and lands on mars",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "rocket",
+            "verb": "collect",
+            "object": "fuel"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "rocket",
+            "verb": "collect",
+            "object": "fuel"
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Collecting isn't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-048",
+      "sentence": "zombie survival: shoot zombies, collect ammo, survive 5 waves",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "ammo"
+          },
+          {
+            "actor": "hero",
+            "verb": "survive",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "survive",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "ammo"
+          }
+        ],
+        "closest": "a shooting game",
+        "reason": "Survive and collecting aren't here yet – here's a shooting game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-049",
+      "sentence": "a hamster rolling in a ball through a maze to reach the cheese",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "hamster",
+            "verb": "reach",
+            "object": "cheese"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hamster",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "hamster",
+            "verb": "reach",
+            "object": "cheese"
+          }
+        ],
+        "closest": "a ball game",
+        "reason": "Walk and reaching the goal aren't here yet – here's a ball game."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-050",
+      "sentence": "two knights duel with swords on a bridge and the loser falls into lava",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "lava",
+            "verb": "hazard",
+            "object": "knight"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "loser",
+            "verb": "fall",
+            "object": "lava"
+          },
+          {
+            "actor": "lava",
+            "verb": "hazard",
+            "object": "knight"
+          }
+        ],
+        "closest": "a duel",
+        "reason": "Fall and the hazards aren't here yet – here's a duel."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-051",
+      "sentence": "a thief jumping between rooftops at night, stealing jewels and dodging searchlights",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "searchlight",
+            "verb": "guard",
+            "object": "thief"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "searchlight",
+            "verb": "guard",
+            "object": "thief"
+          }
+        ],
+        "closest": "a platformer",
+        "reason": "The guards isn't here yet – here's a platformer."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-052",
+      "sentence": "build a sandcastle on the beach before the tide washes it away",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "sandcastle"
+          },
+          {
+            "actor": "tide",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "sandcastle"
+          },
+          {
+            "actor": "tide",
+            "verb": "hazard",
+            "object": "hero"
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Build and the hazards aren't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "multi-action",
+      "id": "ma-053",
+      "sentence": "i want a game where a tiny robot drives a buggy across mars, collects crystals and shoots at space bugs",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-001",
+      "sentence": "car game with racing and shooting",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-002",
+      "sentence": "a racing game where my car can shoot",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-003",
+      "sentence": "shoot and race in a car",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-004",
+      "sentence": "race your car and shoot while you drive",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-005",
+      "sentence": "a frog hopping across lily pads eating flies",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-006",
+      "sentence": "frog that jumps on lily pads and eats flies",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-007",
+      "sentence": "jump between lily pads as a frog and eat all the flies",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-008",
+      "sentence": "froggy platformer: hop from pad to pad and munch the flys",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-009",
+      "sentence": "a ninja sneaks past guards to steal the treasure",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-010",
+      "sentence": "sneak by the guards as a ninja and grab the treasure",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-011",
+      "sentence": "ninja stealth game, steal the treasure without the guards spotting you",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-012",
+      "sentence": "be a ninja, slip past the guard patrol and take the treasure",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "patrol",
+            "verb": "guard",
+            "object": "ninja"
+          }
+        ],
+        "closest": "a maze game",
+        "reason": "The guards isn't here yet – here's a maze game."
+      }
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-013",
+      "sentence": "a bird flapping between pipes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-014",
+      "sentence": "tap to make a bird flap through gaps in the pipes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-015",
+      "sentence": "bird must flap past the pipes without hitting them",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-016",
+      "sentence": "little bird flaps thru a row of pipes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-017",
+      "sentence": "a spaceship shooting asteroids to survive",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-018",
+      "sentence": "survive in space by blasting asteroids with your spaceship",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-019",
+      "sentence": "blast asteroids from a spaceship and stay alive",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-020",
+      "sentence": "spaceship vs asteroids - shoot them and survive as long as you can",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-021",
+      "sentence": "a fish swims away from a shark that is chasing it",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-022",
+      "sentence": "a shark chases a little fish, swim away and escape",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-023",
+      "sentence": "swim as a fish and escape the shark chasing you",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-024",
+      "sentence": "little fish swims for its life to escape a hunting shark",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-025",
+      "sentence": "play football and score goals",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-026",
+      "sentence": "a soccer game, dribble and score as many goals as you can",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-027",
+      "sentence": "score goals in a football match",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-028",
+      "sentence": "footbal game where you try to score goals",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-029",
+      "sentence": "two wizards arguing",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-030",
+      "sentence": "a wizard argues with another wizard",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-031",
+      "sentence": "wizard vs wizard argument",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-032",
+      "sentence": "a heated argument between two old wizards",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-033",
+      "sentence": "deliver pizzas on a bike",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-034",
+      "sentence": "ride a bike around the city delivering pizza",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-035",
+      "sentence": "pizza delivery by bike",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-036",
+      "sentence": "use a bike to bring pizzas to hungry people",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-037",
+      "sentence": "run from the zombies chasing you and survive",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "catch",
+            "object": "hero"
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "Catch isn't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-038",
+      "sentence": "zombies are chasing you, keep running to stay alive",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-039",
+      "sentence": "survive a zombie chase by running",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "paraphrase",
+      "id": "pa-040",
+      "sentence": "a zombie horde chases you, run and survive till morning",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-001",
+      "sentence": "a car racing game without guns",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-002",
+      "sentence": "drive around the city without racing, just deliver pizzas",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-003",
+      "sentence": "a dragon game with no fighting, just flying and collecting gold",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-004",
+      "sentence": "space shooter without shooting, you only dodge asteroids",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "asteroid",
+            "verb": "obstacle",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "asteroid",
+            "verb": "obstacle",
+            "object": "hero"
+          }
+        ],
+        "closest": "a shooting game",
+        "reason": "The obstacles isn't here yet – here's a shooting game."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-005",
+      "sentence": "a ninja that never fights, only sneaks past the guards",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-006",
+      "sentence": "basketball but you can't dribble, only throw",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-007",
+      "sentence": "a bird game without flapping, the bird just glides",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-008",
+      "sentence": "an endless runner with no jumping, you just switch lanes to dodge cars",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-009",
+      "sentence": "no shooting! a cat collects socks around the house",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "cat",
+            "verb": "collect",
+            "object": "sock"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "cat",
+            "verb": "collect",
+            "object": "sock"
+          }
+        ],
+        "closest": "a shooting game",
+        "reason": "Collecting isn't here yet – here's a shooting game."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-010",
+      "sentence": "a pirate ship that doesn't shoot cannons, it races other ships",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-011",
+      "sentence": "fly a plane but don't land, keep flying as long as possible",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-012",
+      "sentence": "escape the castle without fighting the guards",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "guard",
+            "verb": "guard",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "guard",
+            "verb": "guard",
+            "object": "hero"
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "The guards isn't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-013",
+      "sentence": "a knight who collects coins but never fights dragons",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-014",
+      "sentence": "a monkey jumping around the jungle without collecting anything",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-015",
+      "sentence": "dont shoot the hostages, only the robbers",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-016",
+      "sentence": "never stop running from the dinosaur",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-017",
+      "sentence": "a snowball fight but no throwing, you build snowmen instead",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "snowman"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "snowman"
+          }
+        ],
+        "closest": "a duel",
+        "reason": "Build isn't here yet – here's a duel."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-018",
+      "sentence": "skip the racing, i just want to ride a bike around the forest",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-019",
+      "sentence": "a sword game without duels, you fight waves of skeletons",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-020",
+      "sentence": "a dog fetching sticks, no chasing cats",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-021",
+      "sentence": "a fish that swims around but isn't chased by anything",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-022",
+      "sentence": "a racing game with no obstacles on the road",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "Racing isn't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-023",
+      "sentence": "plane game, no shooting, just fly through the rings",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "negation",
+      "id": "ne-024",
+      "sentence": "a robot that stacks crates but doesn't throw them",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "robot",
+            "verb": "build",
+            "object": "crate"
+          }
+        ],
+        "closest": "a timing game",
+        "reason": "Build isn't here yet – here's a timing game."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-025",
+      "sentence": "dont kick the ball, just dribble it around the cones",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "cone",
+            "verb": "obstacle",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "cone",
+            "verb": "obstacle",
+            "object": "hero"
+          }
+        ],
+        "closest": "a ball game",
+        "reason": "The obstacles isn't here yet – here's a ball game."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-026",
+      "sentence": "cars racing at night but nobody shoots",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "nobody",
+            "verb": "shoot",
+            "object": null
+          }
+        ],
+        "closest": "a racing game",
+        "reason": "Shooting isn't here yet – here's a racing game."
+      }
+    },
+    {
+      "group": "negation",
+      "id": "ne-027",
+      "sentence": "a wizard that collects potions and never fights",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "unsupported",
+      "id": "un-001",
+      "sentence": "play chess with a dragon",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "play",
+            "object": "chess"
+          },
+          {
+            "actor": "dragon",
+            "verb": "rival",
+            "object": "hero"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "play",
+            "object": "chess"
+          },
+          {
+            "actor": "dragon",
+            "verb": "rival",
+            "object": "hero"
+          }
+        ],
+        "closest": "a duel",
+        "reason": "Play and the rivals aren't here yet – here's a duel."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-002",
+      "sentence": "knit a scarf for grandma",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "knit",
+            "object": "scarf"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "knit",
+            "object": "scarf"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Knit isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-003",
+      "sentence": "write a poem about the sea",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "write",
+            "object": "poem"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "write",
+            "object": "poem"
+          }
+        ],
+        "closest": "a timing game",
+        "reason": "Write isn't here yet – here's a timing game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-004",
+      "sentence": "a cat that cooks spaghetti in the kitchen",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "cat",
+            "verb": "cook",
+            "object": "spaghetti"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "cat",
+            "verb": "cook",
+            "object": "spaghetti"
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Cook isn't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-005",
+      "sentence": "paint a portrait of my dog",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "paint",
+            "object": "portrait"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "paint",
+            "object": "portrait"
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Paint isn't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-006",
+      "sentence": "teach a parrot to talk",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "teach",
+            "object": "parrot"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "teach",
+            "object": "parrot"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Teach isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-007",
+      "sentence": "sing karaoke with a bear",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "sing",
+            "object": "karaoke"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "sing",
+            "object": "karaoke"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Sing isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-008",
+      "sentence": "grow tomatoes in a greenhouse",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "grow",
+            "object": "tomato"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "grow",
+            "object": "tomato"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Grow isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-009",
+      "sentence": "a dragon that plays the piano",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "dragon",
+            "verb": "play",
+            "object": "piano"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "dragon",
+            "verb": "play",
+            "object": "piano"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Play isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-010",
+      "sentence": "meditate on a mountain at sunrise",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "meditate",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "meditate",
+            "object": null
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Meditate isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-011",
+      "sentence": "sew a dress for a princess",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "sew",
+            "object": "dress"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "sew",
+            "object": "dress"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Sew isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-012",
+      "sentence": "solve a sudoku while riding a train",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "solve",
+            "object": "sudoku"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "solve",
+            "object": "sudoku"
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Solve isn't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-013",
+      "sentence": "read bedtime stories to a ghost",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "read",
+            "object": "story"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "read",
+            "object": "story"
+          }
+        ],
+        "closest": "a chase game",
+        "reason": "Read isn't here yet – here's a chase game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-014",
+      "sentence": "a car that sings opera",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "car",
+            "verb": "sing",
+            "object": "opera"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "car",
+            "verb": "sing",
+            "object": "opera"
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Sing isn't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-015",
+      "sentence": "shoot a movie about pirates",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "film",
+            "object": "movie"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "film",
+            "object": "movie"
+          }
+        ],
+        "closest": "a shooting game",
+        "reason": "Film isn't here yet – here's a shooting game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-016",
+      "sentence": "race to finish my homework",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "finish",
+            "object": "homework"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "finish",
+            "object": "homework"
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Finish isn't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-017",
+      "sentence": "draw a map of a jungle",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "draw",
+            "object": "map"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "draw",
+            "object": "map"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Draw isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-018",
+      "sentence": "a dog and a cat get married",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "dog",
+            "verb": "marry",
+            "object": "cat"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "dog",
+            "verb": "marry",
+            "object": "cat"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Marry isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-019",
+      "sentence": "play chess with physics where the pieces fall over",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "play",
+            "object": "chess"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "play",
+            "object": "chess"
+          }
+        ],
+        "closest": "a duel",
+        "reason": "Play isn't here yet – here's a duel."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-020",
+      "sentence": "fold paper cranes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "fold",
+            "object": "crane"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "fold",
+            "object": "crane"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Fold isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-021",
+      "sentence": "drive a car and knit a sweater at the same time",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "car",
+            "verb": "knit",
+            "object": "sweater"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "car",
+            "verb": "knit",
+            "object": "sweater"
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Knit isn't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "unsupported",
+      "id": "un-022",
+      "sentence": "a fish that paints with its fins",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "fish",
+            "verb": "paint",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "fish",
+            "verb": "paint",
+            "object": null
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Paint isn't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "single",
+      "id": "si-001",
+      "sentence": "a car racing game in the city",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-002",
+      "sentence": "race a red sports car around a track",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-003",
+      "sentence": "street racing at night with my car",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-004",
+      "sentence": "a parrot flapping its wings to stay in the air",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-005",
+      "sentence": "a frog jumping on platforms",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-006",
+      "sentence": "a dog chases a cat",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-007",
+      "sentence": "a cat chases a dog",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-008",
+      "sentence": "shoot the aliens",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-009",
+      "sentence": "a cowboy shooting bottles",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-010",
+      "sentence": "throw paper balls into the bin",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-011",
+      "sentence": "stack pancakes as high as possible",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "pancake"
+          }
+        ],
+        "closest": "a timing game",
+        "reason": "Build isn't here yet – here's a timing game."
+      }
+    },
+    {
+      "group": "single",
+      "id": "si-012",
+      "sentence": "a dancing cat that taps to the beat",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-013",
+      "sentence": "rhythm game in a disco",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-014",
+      "sentence": "two pirates having a sword duel",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-015",
+      "sentence": "an argument between a cat and a dog",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-016",
+      "sentence": "collect all the mushrooms in the forest",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-017",
+      "sentence": "escape from the prison",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-018",
+      "sentence": "survive in the desert for 3 minutes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-019",
+      "sentence": "a fox running endlessly through the forest",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "no_verb",
+        "reason": "No game verb found – here is an endless runner about forest. Try: ‘Dodge …’, ‘Collect …’",
+        "closest": "an endless runner"
+      }
+    },
+    {
+      "group": "single",
+      "id": "si-020",
+      "sentence": "a boat sailing down a river",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-021",
+      "sentence": "a plane flying over the ocean",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-022",
+      "sentence": "a whale swimming in the deep sea",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-023",
+      "sentence": "light up all the lanterns in the village",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-024",
+      "sentence": "deliver mail to every house",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-025",
+      "sentence": "a basketball shooting game",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-026",
+      "sentence": "golf mini game",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-027",
+      "sentence": "kick a can down the street",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "kick",
+            "object": "can"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "kick",
+            "object": "can"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Kick isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "single",
+      "id": "si-028",
+      "sentence": "land a helicopter on a moving ship",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-029",
+      "sentence": "catch falling apples with a basket",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-030",
+      "sentence": "tap at the right moment to cross the bridge",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-031",
+      "sentence": "a karate kid fighting ninjas in the city",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-032",
+      "sentence": "drive a tractor across the farm",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "single",
+      "id": "si-033",
+      "sentence": "a rabbit hopping through the snow",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-001",
+      "sentence": "a jeep racing through the jungle while shooting at poachers",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-002",
+      "sentence": "a monster truck racing other trucks and firing missiles",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 4,
+        "proved": 4,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-003",
+      "sentence": "a police helicopter chasing a getaway car through the city",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-004",
+      "sentence": "a seal swimming under the ice, catching fish and avoiding orcas",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-005",
+      "sentence": "an owl flying through the forest at night hunting mice",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-006",
+      "sentence": "sneak into the castle, avoid the guards and rescue the prince",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-007",
+      "sentence": "a spy sneaking through a laser maze to steal a diamond",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "laser",
+            "verb": "hazard",
+            "object": "spy"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "laser",
+            "verb": "hazard",
+            "object": "spy"
+          }
+        ],
+        "closest": "a maze game",
+        "reason": "The hazards isn't here yet – here's a maze game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-008",
+      "sentence": "a goat jumping up a mountain while rocks fall",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-009",
+      "sentence": "a kangaroo hopping across the desert collecting water bottles and dodging snakes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-010",
+      "sentence": "a basketball game against a robot team, dribble and shoot hoops",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-011",
+      "sentence": "hockey on a frozen lake against a team of penguins",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-012",
+      "sentence": "an archer in the forest shooting apples off goblins heads while dodging their arrows",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "arrow",
+            "verb": "hazard",
+            "object": "archer"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "arrow",
+            "verb": "hazard",
+            "object": "archer"
+          }
+        ],
+        "closest": "a shooting game",
+        "reason": "The hazards isn't here yet – here's a shooting game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-013",
+      "sentence": "fight off pirates on a ship and steal their gold",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-014",
+      "sentence": "a samurai duels a bear and then escapes the burning village",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-015",
+      "sentence": "a ghost floats through a haunted house collecting candles while ghost hunters chase it",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 2,
+        "missing": [
+          {
+            "actor": "ghost",
+            "verb": "collect",
+            "object": "candle"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "ghost",
+            "verb": "collect",
+            "object": "candle"
+          },
+          {
+            "actor": "ghost",
+            "verb": "catch",
+            "object": "candle"
+          }
+        ],
+        "closest": "a swimming or flying game",
+        "reason": "Collecting and catch aren't here yet – here's a swimming or flying game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-016",
+      "sentence": "deliver medicine by drone across a stormy city",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-017",
+      "sentence": "bike race where you throw bananas at rival riders",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 4,
+        "proved": 3,
+        "missing": [
+          {
+            "actor": "bike",
+            "verb": "throw",
+            "object": "rider"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "bike",
+            "verb": "throw",
+            "object": "rider"
+          }
+        ],
+        "closest": "a racing game",
+        "reason": "Throw isn't here yet – here's a racing game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-018",
+      "sentence": "collect coins and dodge bombs as a bunny up in the sky",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-019",
+      "sentence": "a train racing a plane across the desert",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-020",
+      "sentence": "a soldier sneaks behind enemy lines at night and plants a flag",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-021",
+      "sentence": "punch to the beat and knock out the boxer",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "beat",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "defeat",
+            "object": "boxer"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "beat",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "defeat",
+            "object": "boxer"
+          }
+        ],
+        "closest": "a duel",
+        "reason": "Beat and defeat aren't here yet – here's a duel."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-022",
+      "sentence": "a turtle swimming to the beach while dodging plastic bags and fishing nets",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 4,
+        "proved": 3,
+        "missing": [
+          {
+            "actor": "net",
+            "verb": "obstacle",
+            "object": "turtle"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "net",
+            "verb": "obstacle",
+            "object": "turtle"
+          }
+        ],
+        "closest": "a swimming or flying game",
+        "reason": "The obstacles isn't here yet – here's a swimming or flying game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-023",
+      "sentence": "a shooting and racing game with a car",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-024",
+      "sentence": "my car races and fires at things",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-025",
+      "sentence": "car combat race: drive fast, shoot, win",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-026",
+      "sentence": "race a car with a gun on top",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-027",
+      "sentence": "a dragon soaring over the mountains collecting gems",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-028",
+      "sentence": "fly as a dragon and gather gems",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-029",
+      "sentence": "dragon flight, grab every gem in the sky",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-030",
+      "sentence": "be a dragon that flies around picking up gems",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-031",
+      "sentence": "a boat race with no shooting",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-032",
+      "sentence": "a dinosaur game without jumping, it just runs",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-033",
+      "sentence": "explore the jungle as a monkey but dont collect anything",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-034",
+      "sentence": "a plane that flies but never shoots",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-035",
+      "sentence": "fight robots, no guns allowed",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-036",
+      "sentence": "a cat that sneaks around the house without getting chased",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-037",
+      "sentence": "a horse race without any obstacles",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "horse",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "horse",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "Racing isn't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-038",
+      "sentence": "deliver letters but dont race anyone",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-039",
+      "sentence": "never stop flapping or the bird falls",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "bird",
+            "verb": "fall",
+            "object": null
+          }
+        ],
+        "closest": "a flappy game",
+        "reason": "Fall isn't here yet – here's a flappy game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-040",
+      "sentence": "dont stop shooting until every alien is gone",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-041",
+      "sentence": "bake a birthday cake for a unicorn",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "bake",
+            "object": "cake"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "bake",
+            "object": "cake"
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Bake isn't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-042",
+      "sentence": "a penguin that writes letters to santa",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "penguin",
+            "verb": "write",
+            "object": "letter"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "penguin",
+            "verb": "write",
+            "object": "letter"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Write isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-043",
+      "sentence": "compose a song with a robot band",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "compose",
+            "object": "song"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "compose",
+            "object": "song"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Compose isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-044",
+      "sentence": "a dragon solving a jigsaw puzzle",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "dragon",
+            "verb": "solve",
+            "object": "puzzle"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "dragon",
+            "verb": "solve",
+            "object": "puzzle"
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Solve isn't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-045",
+      "sentence": "translate a letter into french",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "translate",
+            "object": "letter"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "translate",
+            "object": "letter"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Translate isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-046",
+      "sentence": "brush a horses mane before the show",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "brush",
+            "object": "mane"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "brush",
+            "object": "mane"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Brush isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-047",
+      "sentence": "a boat that sings to whales",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "boat",
+            "verb": "sing",
+            "object": "whale"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "boat",
+            "verb": "sing",
+            "object": "whale"
+          }
+        ],
+        "closest": "a driving game",
+        "reason": "Sing isn't here yet – here's a driving game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-048",
+      "sentence": "race to knit the longest scarf",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "knit",
+            "object": "scarf"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "hero",
+            "verb": "knit",
+            "object": "scarf"
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "Racing and knit aren't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-049",
+      "sentence": "a racing game with motorbikes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-050",
+      "sentence": "a hedgehog rolling down a hill",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-051",
+      "sentence": "shoot balloons with a bow",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-052",
+      "sentence": "throw darts at a board",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-053",
+      "sentence": "stack cups into a pyramid",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "pyramid"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "pyramid"
+          }
+        ],
+        "closest": "a timing game",
+        "reason": "Build isn't here yet – here's a timing game."
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-054",
+      "sentence": "a guitar rhythm game",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-055",
+      "sentence": "a bat flapping through a cave",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-056",
+      "sentence": "a lizard running across the desert",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "no_verb",
+        "reason": "No game verb found – here is an endless runner about lizard. Try: ‘Dodge …’, ‘Collect …’",
+        "closest": "an endless runner"
+      }
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-057",
+      "sentence": "collect seashells on the beach",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-058",
+      "sentence": "escape the haunted mansion",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-059",
+      "sentence": "a fox catches rabbits in the snow",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-060",
+      "sentence": "a rabbit chased by a fox",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-061",
+      "sentence": "two cowboys in a standoff duel",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-062",
+      "sentence": "free the trapped birds from their cages",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-063",
+      "sentence": "golf on a tiny island",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "p41-former-held-out",
+      "id": "ho-064",
+      "sentence": "survive the storm on a raft",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-001",
+      "sentence": "a helicopter flying over a city catching balloons",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-002",
+      "sentence": "a truck racing buses and shooting through the desert",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 4,
+        "proved": 4,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-003",
+      "sentence": "a dolphin swimming through the ocean catching squid and dodging sharks",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-004",
+      "sentence": "a hawk flying over mountains hunting rabbits",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-005",
+      "sentence": "a ninja sneaking through a castle and rescuing a princess",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-006",
+      "sentence": "a rabbit jumping up a mountain while bombs fall",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-007",
+      "sentence": "a frog hopping through a jungle collecting coins and avoiding snakes",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-008",
+      "sentence": "play basketball against a team of bears and shoot the ball",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-009",
+      "sentence": "hockey on a frozen lake against robots",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-010",
+      "sentence": "an archer shooting balloons in a forest while arrows fly",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "arrow",
+            "verb": "glide",
+            "object": null
+          }
+        ],
+        "closest": "a swimming or flying game",
+        "reason": "Gliding isn't here yet – here's a swimming or flying game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-011",
+      "sentence": "fight skeletons in a cave and collect gems",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "gem"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "gem"
+          }
+        ],
+        "closest": "a duel",
+        "reason": "Collecting isn't here yet – here's a duel."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-012",
+      "sentence": "a knight duels a troll and then escapes the castle",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-013",
+      "sentence": "a fairy flies through a forest collecting stars while bats chase her",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-014",
+      "sentence": "a drone flying across a city delivering letters",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-015",
+      "sentence": "a boat racing ships across the ocean",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-016",
+      "sentence": "a penguin collects fish and avoids rocks in the snow",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "rock",
+            "verb": "obstacle",
+            "object": "penguin"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "rock",
+            "verb": "obstacle",
+            "object": "penguin"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "The obstacles isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-017",
+      "sentence": "a motorbike racing trucks through a city",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-018",
+      "sentence": "a spy sneaks through a village and plants a flag",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-019",
+      "sentence": "a boxer punches to the beat and defeats a robot",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 3,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "boxer",
+            "verb": "beat",
+            "object": null
+          },
+          {
+            "actor": "boxer",
+            "verb": "defeat",
+            "object": "robot"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "boxer",
+            "verb": "beat",
+            "object": null
+          },
+          {
+            "actor": "boxer",
+            "verb": "defeat",
+            "object": "robot"
+          }
+        ],
+        "closest": "a duel",
+        "reason": "Beat and defeat aren't here yet – here's a duel."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-020",
+      "sentence": "a fish swims to an island avoiding nets",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-021",
+      "sentence": "a fox runs through a forest catching mice",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "no_verb",
+        "reason": "No game verb found – here is an endless runner about forest. Try: ‘Dodge …’, ‘Collect …’",
+        "closest": "an endless runner"
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-022",
+      "sentence": "a pirate fights a guard and then escapes the ship",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "pirate",
+            "verb": "escape",
+            "object": "ship"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "pirate",
+            "verb": "escape",
+            "object": "ship"
+          },
+          {
+            "actor": "ship",
+            "verb": "chaser",
+            "object": "pirate"
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "Escaping and the chase aren't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-023",
+      "sentence": "a boat racing game with shooting",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-024",
+      "sentence": "my boat races and shoots",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-025",
+      "sentence": "drive a boat, race and fire",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-026",
+      "sentence": "a boat race with a cannon",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 3,
+        "proved": 3,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-027",
+      "sentence": "a bird soaring through the forest collecting stars",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-028",
+      "sentence": "fly as a bird and gather stars",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-029",
+      "sentence": "bird flight, collect stars in the sky",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-030",
+      "sentence": "be a bird flying around and picking up stars",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-031",
+      "sentence": "a truck race without shooting",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-032",
+      "sentence": "a wolf runs without jumping",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-033",
+      "sentence": "a fox explores the forest but dont collect anything",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-034",
+      "sentence": "a helicopter flies but never shoots",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-035",
+      "sentence": "fight goblins without guns",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-036",
+      "sentence": "a mouse sneaks through a house without being chased",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-037",
+      "sentence": "race a camel with no obstacles",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "camel",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "camel",
+            "verb": "race",
+            "object": null
+          }
+        ],
+        "closest": "an endless runner",
+        "reason": "Racing isn't here yet – here's an endless runner."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-038",
+      "sentence": "deliver medicine but dont race",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-039",
+      "sentence": "a bat must never stop flapping",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-040",
+      "sentence": "dont stop shooting until all the robots are defeated",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-041",
+      "sentence": "bake a pie for a dragon",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "bake",
+            "object": "pie"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "bake",
+            "object": "pie"
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Bake isn't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-042",
+      "sentence": "a robot writes a poem",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "robot",
+            "verb": "write",
+            "object": "poem"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "robot",
+            "verb": "write",
+            "object": "poem"
+          }
+        ],
+        "closest": "a timing game",
+        "reason": "Write isn't here yet – here's a timing game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-043",
+      "sentence": "compose a melody for a pirate",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "compose",
+            "object": "melody"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "compose",
+            "object": "melody"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Compose isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-044",
+      "sentence": "a fox solves a crossword puzzle",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "fox",
+            "verb": "solve",
+            "object": "puzzle"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "fox",
+            "verb": "solve",
+            "object": "puzzle"
+          }
+        ],
+        "closest": "a quest",
+        "reason": "Solve isn't here yet – here's a quest."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-045",
+      "sentence": "translate a book into spanish",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "translate",
+            "object": "book"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "translate",
+            "object": "book"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Translate isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-046",
+      "sentence": "brush a pony before a parade",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "brush",
+            "object": "pony"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "brush",
+            "object": "pony"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Brush isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-047",
+      "sentence": "a dolphin sings to fish",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "dolphin",
+            "verb": "sing",
+            "object": "fish"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "dolphin",
+            "verb": "sing",
+            "object": "fish"
+          }
+        ],
+        "closest": "a collecting game",
+        "reason": "Sing isn't here yet – here's a collecting game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-048",
+      "sentence": "knit a warm hat for a bear",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 0,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "knit",
+            "object": "hat"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "knit",
+            "object": "hat"
+          }
+        ],
+        "closest": "a rhythm game",
+        "reason": "Knit isn't here yet – here's a rhythm game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-049",
+      "sentence": "a racing game with tractors",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-050",
+      "sentence": "a panda rolling down a slope",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-051",
+      "sentence": "shoot bottles with a bow",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-052",
+      "sentence": "throw stones at a target",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-053",
+      "sentence": "stack boxes into a tower",
+      "built": true,
+      "score": {
+        "preserved": false,
+        "total": 2,
+        "proved": 1,
+        "missing": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "tower"
+          }
+        ],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "actions",
+        "unmet": [
+          {
+            "actor": "hero",
+            "verb": "build",
+            "object": "tower"
+          }
+        ],
+        "closest": "a timing game",
+        "reason": "Build isn't here yet – here's a timing game."
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-054",
+      "sentence": "a piano rhythm game",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-055",
+      "sentence": "a parrot flapping through a jungle",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-056",
+      "sentence": "a zebra running across the desert",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": {
+        "kind": "no_verb",
+        "reason": "No game verb found – here is an endless runner about desert. Try: ‘Dodge …’, ‘Collect …’",
+        "closest": "an endless runner"
+      }
+    },
+    {
+      "group": "held-out",
+      "id": "ho-057",
+      "sentence": "collect pearls on the beach",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-058",
+      "sentence": "escape from the dark castle",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-059",
+      "sentence": "a cat catches mice in a village",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-060",
+      "sentence": "a deer chased by wolves",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-061",
+      "sentence": "a samurai in a duel against a knight",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-062",
+      "sentence": "rescue kittens from cages",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-063",
+      "sentence": "golf in the desert",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 1,
+        "proved": 1,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    },
+    {
+      "group": "held-out",
+      "id": "ho-064",
+      "sentence": "a boat survives falling bombs",
+      "built": true,
+      "score": {
+        "preserved": true,
+        "total": 2,
+        "proved": 2,
+        "missing": [],
+        "silent": []
+      },
+      "honesty": null
+    }
+  ]
+}

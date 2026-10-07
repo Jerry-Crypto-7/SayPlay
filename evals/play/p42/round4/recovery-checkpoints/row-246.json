@@ -1,0 +1,252 @@
+{
+  "rowIndex": 246,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-050",
+    "sentence": "I want to be a deer running through a misty forest.",
+    "seed": 1,
+    "milliseconds": 380.34679999999935,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "runner",
+      "controlParams": {
+        "obstacles": [
+          "hurdle",
+          "cone",
+          "crate"
+        ],
+        "feel": 2,
+        "sections": 3
+      },
+      "genre": {
+        "id": "runner",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Deer Run",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "misty forest",
+        "mood": "energetic",
+        "look": "forest"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Run to the finish without hitting a wolf.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "deer",
+          "count": 1
+        },
+        {
+          "id": "obstacle",
+          "kind": "hazard",
+          "label": "wolf",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "acorn",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+        "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "414a5651",
+    "worldHash": "d021e04a14f57959050c6712566921c5131920c4b5f90f3a0247adb398c023b7",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "deer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "run",
+        "object": null,
+        "tick": 3,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "deer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 465,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "deer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 53,
+          "roleId": "coin",
+          "label": "acorn",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 465,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "deer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 2225,
+        "evidence": "runner-takeoff",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "deer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 110,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2896,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "deer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "wolf",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2897,
+        "evidence": "survived-threat:probe:obstacle",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "wolf",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "deer",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 164,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:obstacle"
+      }
+    ],
+    "honesty": {
+      "kind": "no_verb",
+      "reason": "No game verb found – here is an endless runner about forest. Try: ‘Dodge …’, ‘Collect …’",
+      "closest": "an endless runner"
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2897,
+      "hash": "e3fc8e4f",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

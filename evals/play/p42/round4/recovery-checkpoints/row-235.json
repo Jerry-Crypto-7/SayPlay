@@ -1,0 +1,170 @@
+{
+  "rowIndex": 235,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-047",
+    "sentence": "A cat sews curtains in a house.",
+    "seed": 5,
+    "milliseconds": 198.4951000000001,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "rhythm",
+      "controlParams": {
+        "bpm": 120,
+        "beats": 66,
+        "ramp": true,
+        "lanes": true,
+        "feel": 2
+      },
+      "genre": {
+        "id": "rhythm",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Cat Beat",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "house",
+        "mood": "energetic"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Hit each tile in its lane on the beat and play the song to the end.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "cat",
+          "count": 1
+        },
+        {
+          "id": "note",
+          "kind": "collectible",
+          "label": "tile",
+          "count": 12
+        },
+        {
+          "id": "miss",
+          "kind": "hazard",
+          "label": "missed beat",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "last beat",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Tap each lane as its note hits the line. The song gets busier.",
+        "controlsHint": "Tap the lane, or D F J K, on the beat. M toggles sound."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {},
+      "heroAction": "knit"
+    },
+    "specHash": "023852cc",
+    "worldHash": "2078b6349ab127824215a29a09d3cca7eacd1a19f4ebaf888dc94139c4bc08d1",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 180,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "cat",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "beat",
+        "object": {
+          "body": 1,
+          "roleId": "note",
+          "label": "tile",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 180,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "cat",
+          "verb": "sew",
+          "object": "curtain"
+        }
+      ],
+      "closest": "a rhythm game",
+      "reason": "Sew isn't here yet – here's a rhythm game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "cat",
+          "verb": "sew",
+          "object": "curtain"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2131,
+      "hash": "df4993f9",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

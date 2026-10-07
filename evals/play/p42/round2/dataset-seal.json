@@ -1,0 +1,20 @@
+{
+  "createdAt": "2026-10-07T10:37:43.090764+00:00",
+  "sha256": "83498413a57911aa4df658c060776cf1a92a38b11c290520a9bfca995a69cf8a",
+  "heldOutCount": 64,
+  "developmentCount": 303,
+  "heldOutKinds": {
+    "multi-action": 22,
+    "paraphrase": 8,
+    "negation": 10,
+    "unsupported": 8,
+    "single": 16
+  },
+  "overlapNormalized": {
+    "p30/test-200.json": 0,
+    "p41/sentences.json": 0,
+    "p42/sentences.json": 0
+  },
+  "normalization": "NFKC + lowercase + remove non-letter/number/whitespace + collapse whitespace",
+  "state": "sealed; no extractor, draft, scoring, or model execution"
+}

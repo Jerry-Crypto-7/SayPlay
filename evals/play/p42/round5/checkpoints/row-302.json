@@ -1,0 +1,190 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-61",
+    "sentence": "A falcon catches locusts above a plain.",
+    "seed": 2,
+    "milliseconds": 736.5696999999927,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "catch",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "move_free",
+      "controlParams": {
+        "generator": "arena_collect",
+        "tuning": {
+          "items": 10,
+          "waves": 3
+        }
+      },
+      "genre": {
+        "id": "arena",
+        "mode": "collect",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Falcon Hunt",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "plain",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect 10 locusts aboves in each of 3 waves before time runs out.",
+        "count": 10,
+        "role": "item"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "falcon",
+          "count": 1
+        },
+        {
+          "id": "item",
+          "kind": "collectible",
+          "label": "locusts above",
+          "count": 10
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "locust",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Catch the locust.",
+        "controlsHint": "Drag or arrows to move."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "9e9d849f",
+    "worldHash": "4b2276f69972c63e1a303b172dff1b32792ca90bc6bd14793e078d53d76a1636",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "falcon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "falcon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "catch",
+        "object": {
+          "body": 12,
+          "roleId": "part_0",
+          "label": "locust",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 22,
+        "evidence": "moving-prey-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "falcon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 48,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "falcon",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 5,
+          "roleId": "item",
+          "label": "locusts above",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 48,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2690,
+      "hash": "3d3cef03",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

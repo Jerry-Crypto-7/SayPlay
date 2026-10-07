@@ -1,0 +1,320 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-18",
+    "sentence": "A gazelle runs through a forest, racing wolves and throwing pebbles.",
+    "seed": 5,
+    "milliseconds": 866.0860000000102,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "rival",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "runner",
+      "controlParams": {
+        "obstacles": [
+          "hurdle",
+          "cone",
+          "crate"
+        ],
+        "feel": 2,
+        "sections": 3
+      },
+      "genre": {
+        "id": "runner",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Gazelle Run",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "forest",
+        "mood": "energetic",
+        "look": "forest"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Run to the finish without hitting a pebble.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "gazelle",
+          "count": 1
+        },
+        {
+          "id": "obstacle",
+          "kind": "hazard",
+          "label": "pebble",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "acorn",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "wolf",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Beat the wolf.",
+        "controlsHint": "Tap or Space to jump, swipe or arrows to change lane."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "fb1774cb",
+    "worldHash": "f25d9f4aaa2bd1867023352f46cf0deec240a10feaa5ecfcda6b1bec48dffafb",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "run",
+        "object": null,
+        "tick": 3,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 1289,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 71,
+          "roleId": "coin",
+          "label": "acorn",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 1289,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 1844,
+        "evidence": "runner-takeoff",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "race",
+        "object": {
+          "body": 111,
+          "roleId": "part_0",
+          "label": "wolf",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 2611,
+        "evidence": "finished-before-moving-rival",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "pebble",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2612,
+        "evidence": "survived-threat:probe:obstacle",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 111,
+          "roleId": "part_0",
+          "label": "wolf",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 2612,
+        "evidence": "survived-threat:probe:part_0",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 1,
+          "roleId": "obstacle",
+          "label": "pebble",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 164,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:obstacle"
+      },
+      {
+        "actor": {
+          "body": 111,
+          "roleId": "part_0",
+          "label": "wolf",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "gazelle",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 4488,
+        "evidence": "rival-finished-first",
+        "run": "probe",
+        "runId": "probe:part_0"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "gazelle",
+          "verb": "throw",
+          "object": "pebble"
+        }
+      ],
+      "closest": "an endless runner",
+      "reason": "Throw isn't here yet – here's an endless runner."
+    },
+    "score": {
+      "preserved": false,
+      "total": 4,
+      "proved": 3,
+      "missing": [
+        {
+          "actor": "gazelle",
+          "verb": "throw",
+          "object": "pebble"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2612,
+      "hash": "a98d487c",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

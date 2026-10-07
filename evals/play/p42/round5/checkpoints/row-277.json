@@ -1,0 +1,184 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-56",
+    "sentence": "A panda plays tennis in a stadium.",
+    "seed": 2,
+    "milliseconds": 290.90559999999823,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "ball",
+      "controlParams": {
+        "goal": "goal",
+        "shotRecoveryTicks": 168,
+        "shotRecoveryRiseTicks": 4,
+        "paceSeconds": 15,
+        "keeper": false,
+        "difficulty": "normal",
+        "targets": 5,
+        "generator": "ball_pitch"
+      },
+      "addons": [],
+      "title": "panda score",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "stadium",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Score in every goal.",
+        "count": 5,
+        "role": "goal"
+      },
+      "mechanics": [],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "panda",
+          "count": 1
+        },
+        {
+          "id": "physics_ball",
+          "kind": "item",
+          "label": "ball",
+          "count": 1
+        },
+        {
+          "id": "goal",
+          "kind": "target",
+          "label": "target",
+          "count": 5
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Score in every goal.",
+        "controlsHint": "Drag to aim. Hold and release to shoot; the yellow dial shows when you can fire."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "4b70d510",
+    "worldHash": "b63ec0b6b22d77301b4b2199ae473176cc64c1e0dc79631c70f3e5e698aa9980",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "panda",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 46,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "panda",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "ball",
+        "object": null,
+        "tick": 46,
+        "evidence": "physical-ball-scored",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "panda",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": {
+          "body": 2,
+          "roleId": "goal",
+          "label": "target",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 46,
+        "evidence": "physical-ball-in-goal",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "panda",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "kick",
+        "object": {
+          "body": 7,
+          "roleId": "physics_ball",
+          "label": "ball",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 46,
+        "evidence": "physical-ball-kicked-into-goal",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "panda",
+          "verb": "rally",
+          "object": null
+        }
+      ],
+      "closest": "a ball game",
+      "reason": "Rally isn't here yet – here's a ball game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 877,
+      "hash": "d06d7172",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

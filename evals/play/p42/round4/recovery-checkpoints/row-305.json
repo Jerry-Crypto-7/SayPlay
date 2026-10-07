@@ -1,0 +1,139 @@
+{
+  "rowIndex": 305,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-061",
+    "sentence": "A wizard walks around a peaceful village.",
+    "seed": 5,
+    "milliseconds": 1107.6186999999918,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "wizard reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "peaceful village",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Find a path through the maze to the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "wizard",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "star",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Find a path through the maze to the exit.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "876f0e72",
+    "worldHash": "9c10a7b032485710efc2d37dae16cc5f5702ead540ad5272c7dd3ae1839c37cb",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 72,
+          "roleId": "finish",
+          "label": "star",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 570,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 571,
+      "hash": "7e9379f5",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

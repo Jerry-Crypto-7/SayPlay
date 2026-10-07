@@ -1,0 +1,217 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-03",
+    "sentence": "A mole walks through a tunnel, collects crystals and delivers parcels.",
+    "seed": 5,
+    "milliseconds": 1276.7690999999977,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "deliver",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "collect": true,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "mole reach",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "tunnel",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect the crystal and reach the exit.",
+        "count": 1,
+        "role": "coin"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "mole",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "exit",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "crystal",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "item",
+          "label": "parcel",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Deliver the parcel.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "03d063d3",
+    "worldHash": "42ab81f4298fe7d0001b1c50e2fc57063a6f94e062874cd2de5e57936fc06e1a",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mole",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mole",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "parcel",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 61,
+        "evidence": "grabbed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mole",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 536,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mole",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 73,
+          "roleId": "coin",
+          "label": "crystal",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 536,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mole",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "deliver",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "parcel",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 565,
+        "evidence": "carried-to-destination",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 571,
+      "hash": "5731e092",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

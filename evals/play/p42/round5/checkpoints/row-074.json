@@ -1,0 +1,211 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-15",
+    "sentence": "A lizard explores a ruin freely, lights torches and collects rubies.",
+    "seed": 4,
+    "milliseconds": 281.2836000000243,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "interact",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "move_free",
+      "controlParams": {
+        "generator": "arena_collect",
+        "tuning": {
+          "items": 10,
+          "waves": 3
+        }
+      },
+      "genre": {
+        "id": "arena",
+        "mode": "collect",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Lizard Hunt",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "freely",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect 10 rubies in each of 3 waves before time runs out.",
+        "count": 10,
+        "role": "item"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "lizard",
+          "count": 1
+        },
+        {
+          "id": "item",
+          "kind": "collectible",
+          "label": "ruby",
+          "count": 10
+        },
+        {
+          "id": "part_0",
+          "kind": "item",
+          "label": "torch",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Rescue the torch.",
+        "controlsHint": "Drag or arrows to move."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "d18d348d",
+    "worldHash": "6d9ed0b28fa2a3abed27f7612c8d1931a793968fe10ee6bdc39ffeb12c7340db",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 12,
+          "roleId": "part_0",
+          "label": "torch",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 9,
+        "evidence": "grabbed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 12,
+          "roleId": "part_0",
+          "label": "torch",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 48,
+        "evidence": "carried-to-destination",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 80,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "lizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 6,
+          "roleId": "item",
+          "label": "ruby",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 80,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": false,
+    "verification": {
+      "outcome": "won",
+      "tick": 2432,
+      "hash": "095556fa",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,1288 @@
+{
+  "version": 1,
+  "about": "P42 round 6 independently authored blind held-out semantic labels; sealed before execution.",
+  "groups": {
+    "held-out": [
+      {
+        "id": "r6-ho-001",
+        "kind": "multi-action",
+        "sentence": "A raccoon runs through the orchard, gathering apples as wasps chase it.",
+        "hero": "raccoon",
+        "setting": "orchard",
+        "essential": [
+          {
+            "actor": "raccoon",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "raccoon",
+            "verb": "collect",
+            "object": "apple"
+          },
+          {
+            "actor": "wasp",
+            "verb": "chaser",
+            "object": "raccoon"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-002",
+        "kind": "multi-action",
+        "sentence": "Let a crane fly over the marsh and catch frogs.",
+        "hero": "crane",
+        "setting": "marsh",
+        "essential": [
+          {
+            "actor": "crane",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "crane",
+            "verb": "catch",
+            "object": "frog"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-003",
+        "kind": "multi-action",
+        "sentence": "In the quarry, a bulldozer drives around collecting crystals while boulders fall.",
+        "hero": "bulldozer",
+        "setting": "quarry",
+        "essential": [
+          {
+            "actor": "bulldozer",
+            "verb": "drive",
+            "object": null
+          },
+          {
+            "actor": "bulldozer",
+            "verb": "collect",
+            "object": "crystal"
+          },
+          {
+            "actor": "boulder",
+            "verb": "hazard",
+            "object": "bulldozer"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-004",
+        "kind": "multi-action",
+        "sentence": "A hare hops across the meadow and races against badgers.",
+        "hero": "hare",
+        "setting": "meadow",
+        "essential": [
+          {
+            "actor": "hare",
+            "verb": "jump",
+            "object": null
+          },
+          {
+            "actor": "hare",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "badger",
+            "verb": "rival",
+            "object": "hare"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-005",
+        "kind": "multi-action",
+        "sentence": "A diver swims through the reef, catches crabs, and delivers pearls.",
+        "hero": "diver",
+        "setting": "reef",
+        "essential": [
+          {
+            "actor": "diver",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "diver",
+            "verb": "catch",
+            "object": "crab"
+          },
+          {
+            "actor": "diver",
+            "verb": "deliver",
+            "object": "pearl"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-006",
+        "kind": "multi-action",
+        "sentence": "Have a knight fight skeletons in the courtyard, then escape.",
+        "hero": "knight",
+        "setting": "courtyard",
+        "essential": [
+          {
+            "actor": "knight",
+            "verb": "fight",
+            "object": "skeleton"
+          },
+          {
+            "actor": "knight",
+            "verb": "escape",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-007",
+        "kind": "multi-action",
+        "sentence": "A parrot flaps through the greenhouse and collects seeds.",
+        "hero": "parrot",
+        "setting": "greenhouse",
+        "essential": [
+          {
+            "actor": "parrot",
+            "verb": "flap",
+            "object": null
+          },
+          {
+            "actor": "parrot",
+            "verb": "collect",
+            "object": "seed"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-008",
+        "kind": "multi-action",
+        "sentence": "A courier rides a scooter through the town, delivering letters and racing taxis.",
+        "hero": "courier",
+        "setting": "town",
+        "essential": [
+          {
+            "actor": "courier",
+            "verb": "drive",
+            "object": null
+          },
+          {
+            "actor": "courier",
+            "verb": "deliver",
+            "object": "letter"
+          },
+          {
+            "actor": "courier",
+            "verb": "race",
+            "object": null
+          },
+          {
+            "actor": "taxi",
+            "verb": "rival",
+            "object": "courier"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-009",
+        "kind": "multi-action",
+        "sentence": "A fox sneaks through the museum and frees trapped birds.",
+        "hero": "fox",
+        "setting": "museum",
+        "essential": [
+          {
+            "actor": "fox",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "fox",
+            "verb": "interact",
+            "object": "bird"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-010",
+        "kind": "multi-action",
+        "sentence": "An archer runs across the bridge and fires arrows at trolls.",
+        "hero": "archer",
+        "setting": "bridge",
+        "essential": [
+          {
+            "actor": "archer",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "archer",
+            "verb": "shoot",
+            "object": "troll"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-011",
+        "kind": "multi-action",
+        "sentence": "In the hangar, a robot explores freely and stacks crates.",
+        "hero": "robot",
+        "setting": "hangar",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "roam",
+            "object": null
+          },
+          {
+            "actor": "robot",
+            "verb": "stack",
+            "object": "crate"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-012",
+        "kind": "multi-action",
+        "sentence": "A penguin swims in the bay, picking up shells while sharks pursue it.",
+        "hero": "penguin",
+        "setting": "bay",
+        "essential": [
+          {
+            "actor": "penguin",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "penguin",
+            "verb": "collect",
+            "object": "shell"
+          },
+          {
+            "actor": "shark",
+            "verb": "chaser",
+            "object": "penguin"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-013",
+        "kind": "multi-action",
+        "sentence": "Make a pirate duel a ghost on the ship and then catch a rat.",
+        "hero": "pirate",
+        "setting": "ship",
+        "essential": [
+          {
+            "actor": "pirate",
+            "verb": "duel",
+            "object": "ghost"
+          },
+          {
+            "actor": "pirate",
+            "verb": "catch",
+            "object": "rat"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-014",
+        "kind": "multi-action",
+        "sentence": "A squirrel jumps through the garden and throws acorns.",
+        "hero": "squirrel",
+        "setting": "garden",
+        "essential": [
+          {
+            "actor": "squirrel",
+            "verb": "jump",
+            "object": null
+          },
+          {
+            "actor": "squirrel",
+            "verb": "throw",
+            "object": "acorn"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-015",
+        "kind": "multi-action",
+        "sentence": "A firefighter walks around the station collecting helmets and rescuing kittens.",
+        "hero": "firefighter",
+        "setting": "station",
+        "essential": [
+          {
+            "actor": "firefighter",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "firefighter",
+            "verb": "collect",
+            "object": "helmet"
+          },
+          {
+            "actor": "firefighter",
+            "verb": "interact",
+            "object": "kitten"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-016",
+        "kind": "multi-action",
+        "sentence": "A dragon glides above the canyon, shooting fireballs while meteors rain down.",
+        "hero": "dragon",
+        "setting": "canyon",
+        "essential": [
+          {
+            "actor": "dragon",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "dragon",
+            "verb": "shoot",
+            "object": "fireball"
+          },
+          {
+            "actor": "meteor",
+            "verb": "hazard",
+            "object": "dragon"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-017",
+        "kind": "multi-action",
+        "sentence": "A robot plays soccer against aliens on the field and scores goals.",
+        "hero": "robot",
+        "setting": "field",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "ball",
+            "object": null
+          },
+          {
+            "actor": "alien",
+            "verb": "rival",
+            "object": "robot"
+          },
+          {
+            "actor": "robot",
+            "verb": "score",
+            "object": "goal"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-018",
+        "kind": "multi-action",
+        "sentence": "A turtle roams freely around the island, collects coins, and reaches the lighthouse.",
+        "hero": "turtle",
+        "setting": "island",
+        "essential": [
+          {
+            "actor": "turtle",
+            "verb": "roam",
+            "object": null
+          },
+          {
+            "actor": "turtle",
+            "verb": "collect",
+            "object": "coin"
+          },
+          {
+            "actor": "turtle",
+            "verb": "reach",
+            "object": "lighthouse"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-019",
+        "kind": "multi-action",
+        "sentence": "A bear runs through the valley, dodging logs and catching rabbits.",
+        "hero": "bear",
+        "setting": "valley",
+        "essential": [
+          {
+            "actor": "bear",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "log",
+            "verb": "obstacle",
+            "object": "bear"
+          },
+          {
+            "actor": "bear",
+            "verb": "catch",
+            "object": "rabbit"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-020",
+        "kind": "multi-action",
+        "sentence": "A submarine cruises through the ocean, fires torpedoes at robots, and collects gems.",
+        "hero": "submarine",
+        "setting": "ocean",
+        "essential": [
+          {
+            "actor": "submarine",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "submarine",
+            "verb": "shoot",
+            "object": "robot"
+          },
+          {
+            "actor": "submarine",
+            "verb": "collect",
+            "object": "gem"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-021",
+        "kind": "multi-action",
+        "sentence": "A mouse walks through the kitchen while cats patrol and knives fall from above.",
+        "hero": "mouse",
+        "setting": "kitchen",
+        "essential": [
+          {
+            "actor": "mouse",
+            "verb": "walk",
+            "object": null
+          },
+          {
+            "actor": "cat",
+            "verb": "guard",
+            "object": "mouse"
+          },
+          {
+            "actor": "knife",
+            "verb": "hazard",
+            "object": "mouse"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-022",
+        "kind": "multi-action",
+        "sentence": "A pilot flies through space, catches drones, and then lands.",
+        "hero": "pilot",
+        "setting": "space",
+        "essential": [
+          {
+            "actor": "pilot",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "pilot",
+            "verb": "catch",
+            "object": "drone"
+          },
+          {
+            "actor": "pilot",
+            "verb": "land",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-023",
+        "kind": "paraphrase",
+        "sentence": "A hedgehog runs through the park collecting berries.",
+        "hero": "hedgehog",
+        "setting": "park",
+        "essential": [
+          {
+            "actor": "hedgehog",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "hedgehog",
+            "verb": "collect",
+            "object": "berry"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-024",
+        "kind": "paraphrase",
+        "sentence": "Make a running game in the park where a hedgehog gathers berries.",
+        "hero": "hedgehog",
+        "setting": "park",
+        "essential": [
+          {
+            "actor": "hedgehog",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "hedgehog",
+            "verb": "collect",
+            "object": "berry"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-025",
+        "kind": "paraphrase",
+        "sentence": "I want to be a hedgehog in the park: run around and pick up berries.",
+        "hero": "hedgehog",
+        "setting": "park",
+        "essential": [
+          {
+            "actor": "hedgehog",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "hedgehog",
+            "verb": "collect",
+            "object": "berry"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-026",
+        "kind": "paraphrase",
+        "sentence": "Let the hedgehog gather berries while it runs around the park.",
+        "hero": "hedgehog",
+        "setting": "park",
+        "essential": [
+          {
+            "actor": "hedgehog",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "hedgehog",
+            "verb": "collect",
+            "object": "berry"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-027",
+        "kind": "paraphrase",
+        "sentence": "An owl flies through the forest and catches moths.",
+        "hero": "owl",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "owl",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "owl",
+            "verb": "catch",
+            "object": "moth"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-028",
+        "kind": "paraphrase",
+        "sentence": "Make an owl flight through the forest with moths to catch.",
+        "hero": "owl",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "owl",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "owl",
+            "verb": "catch",
+            "object": "moth"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-029",
+        "kind": "paraphrase",
+        "sentence": "I want to catch moths as an owl flying through the forest.",
+        "hero": "owl",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "owl",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "owl",
+            "verb": "catch",
+            "object": "moth"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-030",
+        "kind": "paraphrase",
+        "sentence": "Let an owl catch moths while flying between the trees in the forest.",
+        "hero": "owl",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "owl",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "owl",
+            "verb": "catch",
+            "object": "moth"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-031",
+        "kind": "negation",
+        "sentence": "A rabbit runs across the farm, but do not collect carrots.",
+        "hero": "rabbit",
+        "setting": "farm",
+        "essential": [
+          {
+            "actor": "rabbit",
+            "verb": "run",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "collect"
+        ]
+      },
+      {
+        "id": "r6-ho-032",
+        "kind": "negation",
+        "sentence": "Let a robot explore the laboratory without shooting anything.",
+        "hero": "robot",
+        "setting": "laboratory",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "roam",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "shoot"
+        ]
+      },
+      {
+        "id": "r6-ho-033",
+        "kind": "negation",
+        "sentence": "A wolf walks through the cemetery; it must not fight the ghosts.",
+        "hero": "wolf",
+        "setting": "cemetery",
+        "essential": [
+          {
+            "actor": "wolf",
+            "verb": "walk",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "fight"
+        ]
+      },
+      {
+        "id": "r6-ho-034",
+        "kind": "negation",
+        "sentence": "A spaceship flies over the moon, and don't stop shooting rockets.",
+        "hero": "spaceship",
+        "setting": "moon",
+        "essential": [
+          {
+            "actor": "spaceship",
+            "verb": "glide",
+            "object": null
+          },
+          {
+            "actor": "spaceship",
+            "verb": "shoot",
+            "object": "rocket"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-035",
+        "kind": "negation",
+        "sentence": "A kangaroo collects stars in the desert but never jumps.",
+        "hero": "kangaroo",
+        "setting": "desert",
+        "essential": [
+          {
+            "actor": "kangaroo",
+            "verb": "collect",
+            "object": "star"
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "jump"
+        ]
+      },
+      {
+        "id": "r6-ho-036",
+        "kind": "negation",
+        "sentence": "A taxi drives through the city without racing other cars.",
+        "hero": "taxi",
+        "setting": "city",
+        "essential": [
+          {
+            "actor": "taxi",
+            "verb": "drive",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "race"
+        ]
+      },
+      {
+        "id": "r6-ho-037",
+        "kind": "negation",
+        "sentence": "In the tunnel, a mole runs and collects gems; don't stop collecting them.",
+        "hero": "mole",
+        "setting": "tunnel",
+        "essential": [
+          {
+            "actor": "mole",
+            "verb": "run",
+            "object": null
+          },
+          {
+            "actor": "mole",
+            "verb": "collect",
+            "object": "gem"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-038",
+        "kind": "negation",
+        "sentence": "A duck swims across the pond but does not catch fish.",
+        "hero": "duck",
+        "setting": "pond",
+        "essential": [
+          {
+            "actor": "duck",
+            "verb": "glide",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "catch"
+        ]
+      },
+      {
+        "id": "r6-ho-039",
+        "kind": "negation",
+        "sentence": "Make a knight walk through the castle without throwing stones.",
+        "hero": "knight",
+        "setting": "castle",
+        "essential": [
+          {
+            "actor": "knight",
+            "verb": "walk",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "throw"
+        ]
+      },
+      {
+        "id": "r6-ho-040",
+        "kind": "negation",
+        "sentence": "A panda roams the bamboo forest, collecting coins but not delivering parcels.",
+        "hero": "panda",
+        "setting": "forest",
+        "essential": [
+          {
+            "actor": "panda",
+            "verb": "roam",
+            "object": null
+          },
+          {
+            "actor": "panda",
+            "verb": "collect",
+            "object": "coin"
+          }
+        ],
+        "unsupported": false,
+        "negated": [
+          "deliver"
+        ]
+      },
+      {
+        "id": "r6-ho-041",
+        "kind": "unsupported",
+        "sentence": "A baker kneads dough in the bakery.",
+        "hero": "baker",
+        "setting": "bakery",
+        "essential": [
+          {
+            "actor": "baker",
+            "verb": "knead",
+            "object": "dough"
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-042",
+        "kind": "unsupported",
+        "sentence": "A painter mixes pigments in the studio.",
+        "hero": "painter",
+        "setting": "studio",
+        "essential": [
+          {
+            "actor": "painter",
+            "verb": "mix",
+            "object": "pigment"
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-043",
+        "kind": "unsupported",
+        "sentence": "Let a badger knit scarves in a cottage.",
+        "hero": "badger",
+        "setting": "cottage",
+        "essential": [
+          {
+            "actor": "badger",
+            "verb": "knit",
+            "object": "scarf"
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-044",
+        "kind": "unsupported",
+        "sentence": "A mechanic repairs bicycles in the garage.",
+        "hero": "mechanic",
+        "setting": "garage",
+        "essential": [
+          {
+            "actor": "mechanic",
+            "verb": "repair",
+            "object": "bicycle"
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-045",
+        "kind": "unsupported",
+        "sentence": "An astronomer studies planets in the observatory.",
+        "hero": "astronomer",
+        "setting": "observatory",
+        "essential": [
+          {
+            "actor": "astronomer",
+            "verb": "study",
+            "object": "planet"
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-046",
+        "kind": "unsupported",
+        "sentence": "A gardener waters roses in the greenhouse.",
+        "hero": "gardener",
+        "setting": "greenhouse",
+        "essential": [
+          {
+            "actor": "gardener",
+            "verb": "water",
+            "object": "rose"
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-047",
+        "kind": "unsupported",
+        "sentence": "A sloth meditates in the temple.",
+        "hero": "sloth",
+        "setting": "temple",
+        "essential": [
+          {
+            "actor": "sloth",
+            "verb": "meditate",
+            "object": null
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-048",
+        "kind": "unsupported",
+        "sentence": "A tailor sews jackets in the workshop.",
+        "hero": "tailor",
+        "setting": "workshop",
+        "essential": [
+          {
+            "actor": "tailor",
+            "verb": "sew",
+            "object": "jacket"
+          }
+        ],
+        "unsupported": true,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-049",
+        "kind": "single",
+        "sentence": "A leopard sprints across the savanna.",
+        "hero": "leopard",
+        "setting": "savanna",
+        "essential": [
+          {
+            "actor": "leopard",
+            "verb": "run",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-050",
+        "kind": "single",
+        "sentence": "Let a toad hop around the swamp.",
+        "hero": "toad",
+        "setting": "swamp",
+        "essential": [
+          {
+            "actor": "toad",
+            "verb": "jump",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-051",
+        "kind": "single",
+        "sentence": "A hummingbird flaps its wings inside the aviary.",
+        "hero": "hummingbird",
+        "setting": "aviary",
+        "essential": [
+          {
+            "actor": "hummingbird",
+            "verb": "flap",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-052",
+        "kind": "single",
+        "sentence": "Drive a tractor across the field.",
+        "hero": "tractor",
+        "setting": "field",
+        "essential": [
+          {
+            "actor": "tractor",
+            "verb": "drive",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-053",
+        "kind": "single",
+        "sentence": "A lizard explores the ruins.",
+        "hero": "lizard",
+        "setting": "ruin",
+        "essential": [
+          {
+            "actor": "lizard",
+            "verb": "roam",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-054",
+        "kind": "single",
+        "sentence": "A stingray swims through the lagoon.",
+        "hero": "stingray",
+        "setting": "lagoon",
+        "essential": [
+          {
+            "actor": "stingray",
+            "verb": "glide",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-055",
+        "kind": "single",
+        "sentence": "A detective sneaks through the mansion.",
+        "hero": "detective",
+        "setting": "mansion",
+        "essential": [
+          {
+            "actor": "detective",
+            "verb": "walk",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-056",
+        "kind": "single",
+        "sentence": "A giraffe plays basketball on the court.",
+        "hero": "giraffe",
+        "setting": "court",
+        "essential": [
+          {
+            "actor": "giraffe",
+            "verb": "ball",
+            "object": null
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-057",
+        "kind": "single",
+        "sentence": "A wizard shoots sparks in the tower.",
+        "hero": "wizard",
+        "setting": "tower",
+        "essential": [
+          {
+            "actor": "wizard",
+            "verb": "shoot",
+            "object": "spark"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-058",
+        "kind": "single",
+        "sentence": "An otter collects pebbles along the river.",
+        "hero": "otter",
+        "setting": "river",
+        "essential": [
+          {
+            "actor": "otter",
+            "verb": "collect",
+            "object": "pebble"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-059",
+        "kind": "single",
+        "sentence": "A postman delivers packages in the village.",
+        "hero": "postman",
+        "setting": "village",
+        "essential": [
+          {
+            "actor": "postman",
+            "verb": "deliver",
+            "object": "package"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-060",
+        "kind": "single",
+        "sentence": "A princess frees prisoners in the dungeon.",
+        "hero": "princess",
+        "setting": "dungeon",
+        "essential": [
+          {
+            "actor": "princess",
+            "verb": "interact",
+            "object": "prisoner"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-061",
+        "kind": "single",
+        "sentence": "Let a robot stack barrels in the warehouse.",
+        "hero": "robot",
+        "setting": "warehouse",
+        "essential": [
+          {
+            "actor": "robot",
+            "verb": "stack",
+            "object": "barrel"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-062",
+        "kind": "single",
+        "sentence": "A falcon catches butterflies above the meadow.",
+        "hero": "falcon",
+        "setting": "meadow",
+        "essential": [
+          {
+            "actor": "falcon",
+            "verb": "catch",
+            "object": "butterfly"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-063",
+        "kind": "single",
+        "sentence": "Give me a game about collecting seashells on the beach.",
+        "hero": null,
+        "setting": "beach",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "collect",
+            "object": "seashell"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      },
+      {
+        "id": "r6-ho-064",
+        "kind": "single",
+        "sentence": "I want a game with shooting at balloons in a carnival.",
+        "hero": null,
+        "setting": "carnival",
+        "essential": [
+          {
+            "actor": "hero",
+            "verb": "shoot",
+            "object": "balloon"
+          }
+        ],
+        "unsupported": false,
+        "negated": []
+      }
+    ]
+  }
+}

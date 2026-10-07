@@ -1,0 +1,250 @@
+{
+  "sourceFingerprint": "4d1a503346942447611de02c93711181df3893e87b03ae332a781110fbb19659",
+  "datasetSha256": "521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24",
+  "row": {
+    "id": "ho-r5-50",
+    "sentence": "A grasshopper jumps in a courtyard.",
+    "seed": 1,
+    "milliseconds": 390.85920000000624,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "platform",
+      "controlParams": {
+        "checkpoints": true,
+        "tuning": {
+          "feel": 2,
+          "sections": 3
+        }
+      },
+      "genre": {
+        "id": "platformer",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Grasshopper Jump",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "courtyard",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Jump across the platforms to the flag without touching a spike.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "grasshopper",
+          "count": 1
+        },
+        {
+          "id": "spikes",
+          "kind": "hazard",
+          "label": "spikes",
+          "count": 5
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "flag",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the flag. Jump over gaps and hazards.",
+        "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "93ceeafa",
+    "worldHash": "d00f482b2412c2839116ec2b84c52999c8dd02b1a8f3945096b342a02f815e36",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grasshopper",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 56,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grasshopper",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 120,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grasshopper",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 32,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 120,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grasshopper",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 70,
+          "roleId": "finish",
+          "label": "flag",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2429,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grasshopper",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 21,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2430,
+        "evidence": "survived-threat:probe:spikes",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 21,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grasshopper",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 535,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 21,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "grasshopper",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 535,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2430,
+      "hash": "5839e1bd",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

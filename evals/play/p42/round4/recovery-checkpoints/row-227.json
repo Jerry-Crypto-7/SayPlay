@@ -1,0 +1,173 @@
+{
+  "rowIndex": 227,
+  "originalResultSha256": "05d5750aef0857d4ffc233dafb43d2c023c638411f73d899fb058343f684e8ca",
+  "sourceFingerprint": "c195c99605853bf3c5d66917f667065699223176a93908fa77e6b01e07000a48",
+  "row": {
+    "id": "p42-r4-ho-046",
+    "sentence": "A penguin sings lullabies in a theater.",
+    "seed": 2,
+    "milliseconds": 440.9835999999923,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "move_free",
+      "controlParams": {
+        "generator": "arena_collect",
+        "tuning": {
+          "items": 10,
+          "waves": 3
+        }
+      },
+      "genre": {
+        "id": "arena",
+        "mode": "collect",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Penguin Hunt",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "theater",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect 10 coins in each of 3 waves before time runs out.",
+        "count": 10,
+        "role": "item"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "penguin",
+          "count": 1
+        },
+        {
+          "id": "item",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 10
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Collect 10 coins per wave, 3 waves.",
+        "controlsHint": "Drag or arrows to move."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "29a2c132",
+    "worldHash": "873197ec21c45be9d81c438a4a38906adc39260ea5ccd1e89d5dfda045d76ba2",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 8,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 16,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "penguin",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 5,
+          "roleId": "item",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 16,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "penguin",
+          "verb": "sing",
+          "object": "lullaby"
+        }
+      ],
+      "closest": "a collecting game",
+      "reason": "Sing isn't here yet – here's a collecting game."
+    },
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 0,
+      "missing": [
+        {
+          "actor": "penguin",
+          "verb": "sing",
+          "object": "lullaby"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2680,
+      "hash": "623931a8",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}
