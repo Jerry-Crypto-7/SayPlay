@@ -500,7 +500,10 @@
         "elevator",
         "lift",
         "elevator-car",
-        "hoist"
+        "hoist",
+        "seen:server rack",
+        "seen:server cabinet",
+        "seen:network cabinet"
       ],
       "path": "/assets/worldstream/elevator-car-lod1.glb",
       "bounds": {
@@ -1239,7 +1242,9 @@
       "tags": [
         "pizza",
         "pizzas",
-        "slice"
+        "slice",
+        "seen:birthday cake",
+        "seen:cake"
       ],
       "path": "/assets/worldstream/game/pizza-lod1.glb",
       "bounds": {
@@ -1476,7 +1481,10 @@
         "vent",
         "vents",
         "molten",
-        "fire-pit"
+        "fire-pit",
+        "seen:frying pan",
+        "seen:skillet",
+        "seen:pan of soup"
       ],
       "path": "/assets/worldstream/game/lava-pool-lod1.glb",
       "bounds": {
@@ -1592,7 +1600,10 @@
         "explorer",
         "explorers",
         "adventurer",
-        "hiker"
+        "hiker",
+        "seen:farmer",
+        "seen:gardener",
+        "seen:scarecrow"
       ],
       "path": "/assets/worldstream/game/explorer-lod1.glb",
       "bounds": {
@@ -1616,7 +1627,11 @@
         "child",
         "children",
         "boy",
-        "girl"
+        "girl",
+        "seen:delivery worker",
+        "seen:mail carrier",
+        "seen:courier",
+        "seen:worker"
       ],
       "path": "/assets/worldstream/game/kid-lod1.glb",
       "bounds": {
@@ -1732,7 +1747,10 @@
         "beam",
         "beams",
         "limbo",
-        "slide"
+        "slide",
+        "seen:safety barrier",
+        "seen:road barrier",
+        "seen:barricade"
       ],
       "path": "/assets/worldstream/game/slide-bar-lod1.glb",
       "bounds": {
@@ -1803,7 +1821,10 @@
         "lane",
         "lanes",
         "runway",
-        "course"
+        "course",
+        "seen:gymnastics mat",
+        "seen:exercise mat",
+        "seen:landing mat"
       ],
       "path": "/assets/worldstream/game/track-tile-lod1.glb",
       "bounds": {
@@ -1927,7 +1948,10 @@
         "tyres",
         "wall",
         "guardrail",
-        "bumper"
+        "bumper",
+        "seen:sushi",
+        "seen:maki rolls",
+        "seen:sushi platter"
       ],
       "path": "/assets/worldstream/game/tire-barrier-lod1.glb",
       "bounds": {
@@ -1953,7 +1977,10 @@
         "amoeba",
         "germ",
         "germs",
-        "microbe"
+        "microbe",
+        "seen:flying saucer",
+        "seen:ufo",
+        "seen:spaceship"
       ],
       "path": "/assets/worldstream/game/cell-lod1.glb",
       "bounds": {
@@ -2046,7 +2073,10 @@
     {
       "assetId": "cc0-corgi",
       "tags": [
-        "corgi"
+        "corgi",
+        "seen:dog",
+        "seen:puppy",
+        "seen:bear cub"
       ],
       "path": "/assets/worldstream/cc0/cc0-corgi-lod1.glb",
       "bounds": {
@@ -2084,7 +2114,10 @@
     {
       "assetId": "cc0-flashlight",
       "tags": [
-        "flashlight"
+        "flashlight",
+        "seen:pipe fitting",
+        "seen:pipe connector",
+        "seen:machine housing"
       ],
       "path": "/assets/worldstream/cc0/cc0-flashlight-lod1.glb",
       "bounds": {
@@ -2122,7 +2155,10 @@
     {
       "assetId": "cc0-shark",
       "tags": [
-        "shark"
+        "shark",
+        "seen:gas mask",
+        "seen:helmet",
+        "seen:diving mask"
       ],
       "path": "/assets/worldstream/cc0/cc0-shark-lod1.glb",
       "bounds": {
@@ -2160,7 +2196,10 @@
     {
       "assetId": "cc0-alien",
       "tags": [
-        "alien"
+        "alien",
+        "seen:robot",
+        "seen:toy robot",
+        "seen:android"
       ],
       "path": "/assets/worldstream/cc0/cc0-alien-lod1.glb",
       "bounds": {
@@ -2180,7 +2219,10 @@
       "assetId": "cc0-asteroid",
       "tags": [
         "asteroid",
-        "meteor"
+        "meteor",
+        "seen:rock formation",
+        "seen:boulders",
+        "seen:rock cluster"
       ],
       "path": "/assets/worldstream/cc0/cc0-asteroid-lod1.glb",
       "bounds": {
@@ -2335,7 +2377,10 @@
     {
       "assetId": "cc0-pigeon",
       "tags": [
-        "pigeon"
+        "pigeon",
+        "seen:bird",
+        "seen:bird head",
+        "seen:crow"
       ],
       "path": "/assets/worldstream/cc0/cc0-pigeon-lod1.glb",
       "bounds": {
@@ -2393,7 +2438,10 @@
     {
       "assetId": "cc0-sausage",
       "tags": [
-        "sausage"
+        "sausage",
+        "seen:wrapped candy",
+        "seen:toffee",
+        "seen:bonbon"
       ],
       "path": "/assets/worldstream/cc0/cc0-sausage-lod1.glb",
       "bounds": {
@@ -2547,7 +2595,10 @@
     {
       "assetId": "cc0-beaver",
       "tags": [
-        "beaver"
+        "beaver",
+        "seen:toy bear",
+        "seen:bear figurine",
+        "seen:teddy bear"
       ],
       "path": "/assets/worldstream/cc0/cc0-beaver-lod1.glb",
       "bounds": {
@@ -2566,7 +2617,10 @@
     {
       "assetId": "cc0-betta",
       "tags": [
-        "betta"
+        "betta",
+        "seen:fish",
+        "seen:goldfish",
+        "seen:anglerfish"
       ],
       "path": "/assets/worldstream/cc0/cc0-betta-lod1.glb",
       "bounds": {
@@ -2585,7 +2639,10 @@
     {
       "assetId": "cc0-blobfish",
       "tags": [
-        "blobfish"
+        "blobfish",
+        "seen:pufferfish",
+        "seen:blowfish",
+        "seen:porcupinefish"
       ],
       "path": "/assets/worldstream/cc0/cc0-blobfish-lod1.glb",
       "bounds": {
@@ -2604,7 +2661,10 @@
     {
       "assetId": "cc0-caterpillar",
       "tags": [
-        "caterpillar"
+        "caterpillar",
+        "seen:alien",
+        "seen:monster",
+        "seen:alien toy"
       ],
       "path": "/assets/worldstream/cc0/cc0-caterpillar-lod1.glb",
       "bounds": {
@@ -2642,7 +2702,11 @@
     {
       "assetId": "cc0-cowfish",
       "tags": [
-        "cowfish"
+        "cowfish",
+        "seen:insect head",
+        "seen:fly head",
+        "seen:alien head",
+        "seen:fish head"
       ],
       "path": "/assets/worldstream/cc0/cc0-cowfish-lod1.glb",
       "bounds": {
@@ -2661,7 +2725,10 @@
     {
       "assetId": "cc0-flatfish",
       "tags": [
-        "flatfish"
+        "flatfish",
+        "seen:anglerfish",
+        "seen:piranha",
+        "seen:monster fish"
       ],
       "path": "/assets/worldstream/cc0/cc0-flatfish-lod1.glb",
       "bounds": {
@@ -2699,7 +2766,10 @@
     {
       "assetId": "cc0-goldfish",
       "tags": [
-        "goldfish"
+        "goldfish",
+        "seen:fish",
+        "seen:wooden fish",
+        "seen:mechanical fish"
       ],
       "path": "/assets/worldstream/cc0/cc0-goldfish-lod1.glb",
       "bounds": {
@@ -2718,7 +2788,10 @@
     {
       "assetId": "cc0-humphead",
       "tags": [
-        "humphead"
+        "humphead",
+        "seen:fish",
+        "seen:robot fish",
+        "seen:fish submarine"
       ],
       "path": "/assets/worldstream/cc0/cc0-humphead-lod1.glb",
       "bounds": {
@@ -2737,7 +2810,11 @@
     {
       "assetId": "cc0-koi",
       "tags": [
-        "koi"
+        "koi",
+        "seen:robot head",
+        "seen:robot helmet",
+        "seen:mechanical head",
+        "seen:diving helmet"
       ],
       "path": "/assets/worldstream/cc0/cc0-koi-lod1.glb",
       "bounds": {
@@ -2775,7 +2852,9 @@
     {
       "assetId": "cc0-llama",
       "tags": [
-        "llama"
+        "llama",
+        "seen:horse",
+        "seen:pony"
       ],
       "path": "/assets/worldstream/cc0/cc0-llama-lod1.glb",
       "bounds": {
@@ -2871,7 +2950,10 @@
     {
       "assetId": "cc0-puffer",
       "tags": [
-        "puffer"
+        "puffer",
+        "seen:pufferfish",
+        "seen:porcupinefish",
+        "seen:blowfish"
       ],
       "path": "/assets/worldstream/cc0/cc0-puffer-lod1.glb",
       "bounds": {
@@ -2928,7 +3010,10 @@
     {
       "assetId": "cc0-snapper",
       "tags": [
-        "snapper"
+        "snapper",
+        "seen:fish",
+        "seen:goldfish",
+        "seen:pufferfish"
       ],
       "path": "/assets/worldstream/cc0/cc0-snapper-lod1.glb",
       "bounds": {
@@ -2947,7 +3032,10 @@
     {
       "assetId": "cc0-sunfish",
       "tags": [
-        "sunfish"
+        "sunfish",
+        "seen:squid",
+        "seen:cuttlefish",
+        "seen:alien head"
       ],
       "path": "/assets/worldstream/cc0/cc0-sunfish-lod1.glb",
       "bounds": {
@@ -2985,7 +3073,10 @@
     {
       "assetId": "cc0-tang",
       "tags": [
-        "tang"
+        "tang",
+        "seen:pufferfish",
+        "seen:tropical fish",
+        "seen:robot fish"
       ],
       "path": "/assets/worldstream/cc0/cc0-tang-lod1.glb",
       "bounds": {
@@ -3004,7 +3095,10 @@
     {
       "assetId": "cc0-tetra",
       "tags": [
-        "tetra"
+        "tetra",
+        "seen:fish",
+        "seen:catfish",
+        "seen:tadpole"
       ],
       "path": "/assets/worldstream/cc0/cc0-tetra-lod1.glb",
       "bounds": {
@@ -3023,7 +3117,10 @@
     {
       "assetId": "cc0-trex",
       "tags": [
-        "trex"
+        "trex",
+        "seen:tyrannosaurus rex",
+        "seen:theropod",
+        "seen:dinosaur"
       ],
       "path": "/assets/worldstream/cc0/cc0-trex-lod1.glb",
       "bounds": {
@@ -3061,7 +3158,10 @@
     {
       "assetId": "cc0-tuna",
       "tags": [
-        "tuna"
+        "tuna",
+        "seen:pufferfish",
+        "seen:boxfish",
+        "seen:fish"
       ],
       "path": "/assets/worldstream/cc0/cc0-tuna-lod1.glb",
       "bounds": {
@@ -3080,7 +3180,10 @@
     {
       "assetId": "cc0-turbot",
       "tags": [
-        "turbot"
+        "turbot",
+        "seen:piranha",
+        "seen:anglerfish",
+        "seen:predatory fish"
       ],
       "path": "/assets/worldstream/cc0/cc0-turbot-lod1.glb",
       "bounds": {
@@ -3118,7 +3221,9 @@
     {
       "assetId": "cc0-worm",
       "tags": [
-        "worm"
+        "worm",
+        "seen:snake",
+        "seen:cobra"
       ],
       "path": "/assets/worldstream/cc0/cc0-worm-lod1.glb",
       "bounds": {
@@ -3631,7 +3736,10 @@
       "assetId": "cc0-obstacle-diamond",
       "tags": [
         "obstacle diamond",
-        "obstacle-diamond"
+        "obstacle-diamond",
+        "seen:cutting board",
+        "seen:food tray",
+        "seen:sandwich"
       ],
       "path": "/assets/worldstream/cc0/cc0-obstacle-diamond-lod1.glb",
       "bounds": {
@@ -3673,7 +3781,10 @@
       "tags": [
         "pickup health",
         "pickup-health",
-        "health"
+        "health",
+        "seen:first aid kit",
+        "seen:medical kit",
+        "seen:medical case"
       ],
       "path": "/assets/worldstream/cc0/cc0-pickup-health-lod1.glb",
       "bounds": {
@@ -3694,7 +3805,10 @@
       "tags": [
         "pickup jar",
         "pickup-jar",
-        "jar"
+        "jar",
+        "seen:battery",
+        "seen:power cell",
+        "seen:energy canister"
       ],
       "path": "/assets/worldstream/cc0/cc0-pickup-jar-lod1.glb",
       "bounds": {
@@ -3715,7 +3829,10 @@
       "tags": [
         "pickup sphere",
         "pickup-sphere",
-        "sphere"
+        "sphere",
+        "seen:grenade",
+        "seen:spherical bomb",
+        "seen:explosive mine"
       ],
       "path": "/assets/worldstream/cc0/cc0-pickup-sphere-lod1.glb",
       "bounds": {
@@ -3736,7 +3853,10 @@
       "tags": [
         "pickup thunder",
         "pickup-thunder",
-        "thunder"
+        "thunder",
+        "seen:lightning bolt",
+        "seen:energy symbol",
+        "seen:power icon"
       ],
       "path": "/assets/worldstream/cc0/cc0-pickup-thunder-lod1.glb",
       "bounds": {
@@ -4170,7 +4290,10 @@
     {
       "assetId": "cc0-burger",
       "tags": [
-        "burger"
+        "burger",
+        "seen:hamburger",
+        "seen:cheeseburger",
+        "seen:sandwich"
       ],
       "path": "/assets/worldstream/cc0/cc0-burger-lod1.glb",
       "bounds": {
@@ -4189,7 +4312,10 @@
     {
       "assetId": "cc0-carpet",
       "tags": [
-        "carpet"
+        "carpet",
+        "seen:roof panel",
+        "seen:metal roofing",
+        "seen:roof tile"
       ],
       "path": "/assets/worldstream/cc0/cc0-carpet-lod1.glb",
       "bounds": {
@@ -4208,7 +4334,10 @@
     {
       "assetId": "cc0-carrot",
       "tags": [
-        "carrot"
+        "carrot",
+        "seen:feather quill",
+        "seen:feather pen",
+        "seen:feather decoration"
       ],
       "path": "/assets/worldstream/cc0/cc0-carrot-lod1.glb",
       "bounds": {
@@ -4265,7 +4394,10 @@
     {
       "assetId": "cc0-corndog",
       "tags": [
-        "corndog"
+        "corndog",
+        "seen:cattail",
+        "seen:corn dog",
+        "seen:ice pop"
       ],
       "path": "/assets/worldstream/cc0/cc0-corndog-lod1.glb",
       "bounds": {
@@ -4284,7 +4416,11 @@
     {
       "assetId": "cc0-croissant",
       "tags": [
-        "croissant"
+        "croissant",
+        "seen:seashell",
+        "seen:conch shell",
+        "seen:rock",
+        "seen:log"
       ],
       "path": "/assets/worldstream/cc0/cc0-croissant-lod1.glb",
       "bounds": {
@@ -4322,7 +4458,10 @@
     {
       "assetId": "cc0-cuttingboard",
       "tags": [
-        "cuttingboard"
+        "cuttingboard",
+        "seen:bread slice",
+        "seen:toast",
+        "seen:wooden board"
       ],
       "path": "/assets/worldstream/cc0/cc0-cuttingboard-lod1.glb",
       "bounds": {
@@ -4342,7 +4481,10 @@
       "assetId": "cc0-donut",
       "tags": [
         "donut",
-        "donut1"
+        "donut1",
+        "seen:stone fire pit",
+        "seen:fire ring",
+        "seen:stone well"
       ],
       "path": "/assets/worldstream/cc0/cc0-donut-lod1.glb",
       "bounds": {
@@ -4399,7 +4541,10 @@
     {
       "assetId": "cc0-fries",
       "tags": [
-        "fries"
+        "fries",
+        "seen:sandwich",
+        "seen:sandwich wedges",
+        "seen:stacked lumber"
       ],
       "path": "/assets/worldstream/cc0/cc0-fries-lod1.glb",
       "bounds": {
@@ -4418,7 +4563,10 @@
     {
       "assetId": "cc0-fruit",
       "tags": [
-        "fruit"
+        "fruit",
+        "seen:coconut",
+        "seen:orange",
+        "seen:peach"
       ],
       "path": "/assets/worldstream/cc0/cc0-fruit-lod1.glb",
       "bounds": {
@@ -4437,7 +4585,9 @@
     {
       "assetId": "cc0-hotdog",
       "tags": [
-        "hotdog"
+        "hotdog",
+        "seen:hot dog",
+        "seen:sausage sandwich"
       ],
       "path": "/assets/worldstream/cc0/cc0-hotdog-lod1.glb",
       "bounds": {
@@ -4494,7 +4644,10 @@
     {
       "assetId": "cc0-icecream",
       "tags": [
-        "icecream"
+        "icecream",
+        "seen:ice cream cone",
+        "seen:icicle",
+        "seen:crystal cone"
       ],
       "path": "/assets/worldstream/cc0/cc0-icecream-lod1.glb",
       "bounds": {
@@ -4513,7 +4666,10 @@
     {
       "assetId": "cc0-kitchencabinet",
       "tags": [
-        "kitchencabinet"
+        "kitchencabinet",
+        "seen:wall cabinet",
+        "seen:kitchen cabinet",
+        "seen:cupboard"
       ],
       "path": "/assets/worldstream/cc0/cc0-kitchencabinet-lod1.glb",
       "bounds": {
@@ -4532,7 +4688,10 @@
     {
       "assetId": "cc0-kitchentable",
       "tags": [
-        "kitchentable"
+        "kitchentable",
+        "seen:work table",
+        "seen:prep table",
+        "seen:workbench"
       ],
       "path": "/assets/worldstream/cc0/cc0-kitchentable-lod1.glb",
       "bounds": {
@@ -4551,7 +4710,11 @@
     {
       "assetId": "cc0-lettuce",
       "tags": [
-        "lettuce"
+        "lettuce",
+        "seen:grass patch",
+        "seen:grass ring",
+        "seen:wreath",
+        "seen:reed mat"
       ],
       "path": "/assets/worldstream/cc0/cc0-lettuce-lod1.glb",
       "bounds": {
@@ -4570,7 +4733,10 @@
     {
       "assetId": "cc0-menu",
       "tags": [
-        "menu"
+        "menu",
+        "seen:mirror",
+        "seen:signboard",
+        "seen:display stand"
       ],
       "path": "/assets/worldstream/cc0/cc0-menu-lod1.glb",
       "bounds": {
@@ -4627,7 +4793,10 @@
     {
       "assetId": "cc0-painting",
       "tags": [
-        "painting"
+        "painting",
+        "seen:road barrier",
+        "seen:decorative panel",
+        "seen:partition"
       ],
       "path": "/assets/worldstream/cc0/cc0-painting-lod1.glb",
       "bounds": {
@@ -4665,7 +4834,10 @@
     {
       "assetId": "cc0-papertowel",
       "tags": [
-        "papertowel"
+        "papertowel",
+        "seen:paper towel holder",
+        "seen:paper towel roll",
+        "seen:kitchen roll"
       ],
       "path": "/assets/worldstream/cc0/cc0-papertowel-lod1.glb",
       "bounds": {
@@ -4798,7 +4970,10 @@
     {
       "assetId": "cc0-tomato",
       "tags": [
-        "tomato"
+        "tomato",
+        "seen:coconut",
+        "seen:bomb",
+        "seen:brown fruit"
       ],
       "path": "/assets/worldstream/cc0/cc0-tomato-lod1.glb",
       "bounds": {
@@ -4817,7 +4992,10 @@
     {
       "assetId": "cc0-towelrail",
       "tags": [
-        "towelrail"
+        "towelrail",
+        "seen:toilet paper holder",
+        "seen:paper roll holder",
+        "seen:towel rail"
       ],
       "path": "/assets/worldstream/cc0/cc0-towelrail-lod1.glb",
       "bounds": {
@@ -4836,7 +5014,11 @@
     {
       "assetId": "cc0-turnip",
       "tags": [
-        "turnip"
+        "turnip",
+        "seen:trumpet flower",
+        "seen:alien plant",
+        "seen:bulb plant",
+        "seen:calla lily"
       ],
       "path": "/assets/worldstream/cc0/cc0-turnip-lod1.glb",
       "bounds": {
@@ -4855,7 +5037,10 @@
     {
       "assetId": "cc0-waffle",
       "tags": [
-        "waffle"
+        "waffle",
+        "seen:air mattress",
+        "seen:mattress",
+        "seen:sleeping pad"
       ],
       "path": "/assets/worldstream/cc0/cc0-waffle-lod1.glb",
       "bounds": {
@@ -4933,7 +5118,10 @@
     {
       "assetId": "cc0-bed",
       "tags": [
-        "bed"
+        "bed",
+        "seen:stretcher",
+        "seen:medical cot",
+        "seen:massage table"
       ],
       "path": "/assets/worldstream/cc0/cc0-bed-lod1.glb",
       "bounds": {
@@ -5033,7 +5221,10 @@
       "assetId": "cc0-bench-decorated",
       "tags": [
         "bench decorated",
-        "bench-decorated"
+        "bench-decorated",
+        "seen:skull candle holder",
+        "seen:halloween decoration",
+        "seen:skull ornament"
       ],
       "path": "/assets/worldstream/cc0/cc0-bench-decorated-lod1.glb",
       "bounds": {
@@ -5072,7 +5263,10 @@
       "assetId": "cc0-cabinet-decorated",
       "tags": [
         "cabinet decorated",
-        "cabinet-decorated"
+        "cabinet-decorated",
+        "seen:dresser",
+        "seen:chest of drawers",
+        "seen:console table"
       ],
       "path": "/assets/worldstream/cc0/cc0-cabinet-decorated-lod1.glb",
       "bounds": {
@@ -5113,7 +5307,11 @@
       "tags": [
         "cabinet shelves",
         "cabinet-shelves",
-        "shelves"
+        "shelves",
+        "seen:shelving unit",
+        "seen:tv stand",
+        "seen:bookcase",
+        "seen:console table"
       ],
       "path": "/assets/worldstream/cc0/cc0-cabinet-shelves-lod1.glb",
       "bounds": {
@@ -5134,7 +5332,10 @@
       "tags": [
         "can fridge",
         "can-fridge",
-        "fridge"
+        "fridge",
+        "seen:locker",
+        "seen:storage cabinet",
+        "seen:equipment cabinet"
       ],
       "path": "/assets/worldstream/cc0/cc0-can-fridge-lod1.glb",
       "bounds": {
@@ -5253,7 +5454,10 @@
     {
       "assetId": "cc0-dryer",
       "tags": [
-        "dryer"
+        "dryer",
+        "seen:dishwasher",
+        "seen:refrigerator",
+        "seen:sterilizer"
       ],
       "path": "/assets/worldstream/cc0/cc0-dryer-lod1.glb",
       "bounds": {
@@ -5451,7 +5655,10 @@
     {
       "assetId": "cc0-pictureframe",
       "tags": [
-        "pictureframe"
+        "pictureframe",
+        "seen:mirror",
+        "seen:picture frame",
+        "seen:framed glass"
       ],
       "path": "/assets/worldstream/cc0/cc0-pictureframe-lod1.glb",
       "bounds": {
@@ -5471,7 +5678,10 @@
       "assetId": "cc0-pictureframe-standing",
       "tags": [
         "pictureframe standing",
-        "pictureframe-standing"
+        "pictureframe-standing",
+        "seen:picture frame",
+        "seen:photo frame",
+        "seen:small mirror"
       ],
       "path": "/assets/worldstream/cc0/cc0-pictureframe-standing-lod1.glb",
       "bounds": {
@@ -5490,7 +5700,10 @@
     {
       "assetId": "cc0-pillow",
       "tags": [
-        "pillow"
+        "pillow",
+        "seen:gold bar",
+        "seen:butter block",
+        "seen:gold nugget"
       ],
       "path": "/assets/worldstream/cc0/cc0-pillow-lod1.glb",
       "bounds": {
@@ -5644,7 +5857,9 @@
     {
       "assetId": "cc0-washer",
       "tags": [
-        "washer"
+        "washer",
+        "seen:washing machine",
+        "seen:clothes dryer"
       ],
       "path": "/assets/worldstream/cc0/cc0-washer-lod1.glb",
       "bounds": {
@@ -5663,7 +5878,10 @@
     {
       "assetId": "cc0-employee",
       "tags": [
-        "employee"
+        "employee",
+        "seen:cheerleader",
+        "seen:girl",
+        "seen:doll"
       ],
       "path": "/assets/worldstream/cc0/cc0-employee-lod1.glb",
       "bounds": {
@@ -5682,7 +5900,10 @@
     {
       "assetId": "cc0-oobi",
       "tags": [
-        "oobi"
+        "oobi",
+        "seen:astronaut",
+        "seen:space character",
+        "seen:astronaut toy"
       ],
       "path": "/assets/worldstream/cc0/cc0-oobi-lod1.glb",
       "bounds": {
@@ -5701,7 +5922,10 @@
     {
       "assetId": "cc0-oodi",
       "tags": [
-        "oodi"
+        "oodi",
+        "seen:astronaut",
+        "seen:alien astronaut",
+        "seen:astronaut toy"
       ],
       "path": "/assets/worldstream/cc0/cc0-oodi-lod1.glb",
       "bounds": {
@@ -5720,7 +5944,10 @@
     {
       "assetId": "cc0-ooli",
       "tags": [
-        "ooli"
+        "ooli",
+        "seen:astronaut",
+        "seen:space character",
+        "seen:astronaut toy"
       ],
       "path": "/assets/worldstream/cc0/cc0-ooli-lod1.glb",
       "bounds": {
@@ -5739,7 +5966,10 @@
     {
       "assetId": "cc0-oopi",
       "tags": [
-        "oopi"
+        "oopi",
+        "seen:astronaut",
+        "seen:alien astronaut",
+        "seen:astronaut toy"
       ],
       "path": "/assets/worldstream/cc0/cc0-oopi-lod1.glb",
       "bounds": {
@@ -5758,7 +5988,10 @@
     {
       "assetId": "cc0-oozi",
       "tags": [
-        "oozi"
+        "oozi",
+        "seen:astronaut",
+        "seen:space character",
+        "seen:astronaut toy"
       ],
       "path": "/assets/worldstream/cc0/cc0-oozi-lod1.glb",
       "bounds": {
@@ -5796,7 +6029,10 @@
     {
       "assetId": "cc0-alpaking",
       "tags": [
-        "alpaking"
+        "alpaking",
+        "seen:flying monster",
+        "seen:winged eyeball",
+        "seen:helmeted cyclops"
       ],
       "path": "/assets/worldstream/cc0/cc0-alpaking-lod1.glb",
       "bounds": {
@@ -5817,7 +6053,10 @@
       "tags": [
         "alpaking evolved",
         "alpaking-evolved",
-        "evolved"
+        "evolved",
+        "seen:three-headed monster",
+        "seen:flying monster",
+        "seen:winged cyclops"
       ],
       "path": "/assets/worldstream/cc0/cc0-alpaking-evolved-lod1.glb",
       "bounds": {
@@ -5836,7 +6075,10 @@
     {
       "assetId": "cc0-armabee",
       "tags": [
-        "armabee"
+        "armabee",
+        "seen:bee",
+        "seen:bumblebee",
+        "seen:wasp"
       ],
       "path": "/assets/worldstream/cc0/cc0-armabee-lod1.glb",
       "bounds": {
@@ -5856,7 +6098,10 @@
       "assetId": "cc0-armabee-evolved",
       "tags": [
         "armabee evolved",
-        "armabee-evolved"
+        "armabee-evolved",
+        "seen:bee",
+        "seen:bumblebee",
+        "seen:wasp"
       ],
       "path": "/assets/worldstream/cc0/cc0-armabee-evolved-lod1.glb",
       "bounds": {
@@ -5875,7 +6120,10 @@
     {
       "assetId": "cc0-enemy",
       "tags": [
-        "enemy"
+        "enemy",
+        "seen:monster",
+        "seen:goblin",
+        "seen:orc"
       ],
       "path": "/assets/worldstream/cc0/cc0-enemy-lod1.glb",
       "bounds": {
@@ -5896,7 +6144,10 @@
       "tags": [
         "enemy extra",
         "enemy-extra",
-        "extra"
+        "extra",
+        "seen:alien",
+        "seen:plant monster",
+        "seen:eyestalk creature"
       ],
       "path": "/assets/worldstream/cc0/cc0-enemy-extra-lod1.glb",
       "bounds": {
@@ -5917,7 +6168,10 @@
       "tags": [
         "enemy flying",
         "enemy-flying",
-        "flying"
+        "flying",
+        "seen:alien",
+        "seen:plant monster",
+        "seen:tentacle monster"
       ],
       "path": "/assets/worldstream/cc0/cc0-enemy-flying-lod1.glb",
       "bounds": {
@@ -5938,7 +6192,9 @@
       "tags": [
         "ghost skull",
         "ghost-skull",
-        "skull"
+        "skull",
+        "seen:bat",
+        "seen:flying fox"
       ],
       "path": "/assets/worldstream/cc0/cc0-ghost-skull-lod1.glb",
       "bounds": {
@@ -5957,7 +6213,9 @@
     {
       "assetId": "cc0-glub",
       "tags": [
-        "glub"
+        "glub",
+        "seen:bat",
+        "seen:bat monster"
       ],
       "path": "/assets/worldstream/cc0/cc0-glub-lod1.glb",
       "bounds": {
@@ -5977,7 +6235,10 @@
       "assetId": "cc0-glub-evolved",
       "tags": [
         "glub evolved",
-        "glub-evolved"
+        "glub-evolved",
+        "seen:two-headed bat",
+        "seen:bat monster",
+        "seen:bat"
       ],
       "path": "/assets/worldstream/cc0/cc0-glub-evolved-lod1.glb",
       "bounds": {
@@ -5996,7 +6257,10 @@
     {
       "assetId": "cc0-goleling",
       "tags": [
-        "goleling"
+        "goleling",
+        "seen:bat",
+        "seen:goblin",
+        "seen:bat monster"
       ],
       "path": "/assets/worldstream/cc0/cc0-goleling-lod1.glb",
       "bounds": {
@@ -6016,7 +6280,10 @@
       "assetId": "cc0-goleling-evolved",
       "tags": [
         "goleling evolved",
-        "goleling-evolved"
+        "goleling-evolved",
+        "seen:bat king",
+        "seen:crowned bat",
+        "seen:goblin king"
       ],
       "path": "/assets/worldstream/cc0/cc0-goleling-evolved-lod1.glb",
       "bounds": {
@@ -6035,7 +6302,10 @@
     {
       "assetId": "cc0-hywirl",
       "tags": [
-        "hywirl"
+        "hywirl",
+        "seen:ghost",
+        "seen:ghost monster",
+        "seen:floating creature"
       ],
       "path": "/assets/worldstream/cc0/cc0-hywirl-lod1.glb",
       "bounds": {
@@ -6054,7 +6324,10 @@
     {
       "assetId": "cc0-mushnub",
       "tags": [
-        "mushnub"
+        "mushnub",
+        "seen:mushroom",
+        "seen:toadstool",
+        "seen:mushroom character"
       ],
       "path": "/assets/worldstream/cc0/cc0-mushnub-lod1.glb",
       "bounds": {
@@ -6074,7 +6347,10 @@
       "assetId": "cc0-mushnub-evolved",
       "tags": [
         "mushnub evolved",
-        "mushnub-evolved"
+        "mushnub-evolved",
+        "seen:mushroom monster",
+        "seen:spiked mushroom",
+        "seen:toadstool monster"
       ],
       "path": "/assets/worldstream/cc0/cc0-mushnub-evolved-lod1.glb",
       "bounds": {
@@ -6213,7 +6489,10 @@
       "assetId": "cc0-altar-stone",
       "tags": [
         "altar stone",
-        "altar-stone"
+        "altar-stone",
+        "seen:wooden crate",
+        "seen:storage bin",
+        "seen:barrier"
       ],
       "path": "/assets/worldstream/cc0/cc0-altar-stone-lod1.glb",
       "bounds": {
@@ -6271,7 +6550,10 @@
     {
       "assetId": "cc0-bush",
       "tags": [
-        "bush"
+        "bush",
+        "seen:boulder",
+        "seen:rock",
+        "seen:stone"
       ],
       "path": "/assets/worldstream/cc0/cc0-bush-lod1.glb",
       "bounds": {
@@ -6292,7 +6574,10 @@
       "tags": [
         "bush berries",
         "bush-berries",
-        "berries"
+        "berries",
+        "seen:ore rock",
+        "seen:crystal rock",
+        "seen:boulder"
       ],
       "path": "/assets/worldstream/cc0/cc0-bush-berries-lod1.glb",
       "bounds": {
@@ -6415,7 +6700,10 @@
       "tags": [
         "coral grouper",
         "coral-grouper",
-        "grouper"
+        "grouper",
+        "seen:catfish",
+        "seen:fish",
+        "seen:pufferfish"
       ],
       "path": "/assets/worldstream/cc0/cc0-coral-grouper-lod1.glb",
       "bounds": {
@@ -6436,7 +6724,11 @@
       "tags": [
         "crop melon",
         "crop-melon",
-        "melon"
+        "melon",
+        "seen:pouf",
+        "seen:ottoman",
+        "seen:cushion",
+        "seen:blue pumpkin"
       ],
       "path": "/assets/worldstream/cc0/cc0-crop-melon-lod1.glb",
       "bounds": {
@@ -6456,7 +6748,10 @@
       "assetId": "cc0-crop-turnip",
       "tags": [
         "crop turnip",
-        "crop-turnip"
+        "crop-turnip",
+        "seen:icicle",
+        "seen:ice crystal",
+        "seen:crystal ornament"
       ],
       "path": "/assets/worldstream/cc0/cc0-crop-turnip-lod1.glb",
       "bounds": {
@@ -6496,7 +6791,10 @@
       "tags": [
         "flower horn",
         "flower-horn",
-        "horn"
+        "horn",
+        "seen:pufferfish",
+        "seen:fish",
+        "seen:piranha"
       ],
       "path": "/assets/worldstream/cc0/cc0-flower-horn-lod1.glb",
       "bounds": {
@@ -6536,7 +6834,10 @@
       "tags": [
         "grass leafs",
         "grass-leafs",
-        "leafs"
+        "leafs",
+        "seen:ice crystals",
+        "seen:crystal cluster",
+        "seen:ice shards"
       ],
       "path": "/assets/worldstream/cc0/cc0-grass-leafs-lod1.glb",
       "bounds": {
@@ -6577,7 +6878,10 @@
       "assetId": "cc0-grass-plant",
       "tags": [
         "grass plant",
-        "grass-plant"
+        "grass-plant",
+        "seen:crystal cluster",
+        "seen:emerald crystals",
+        "seen:green rocks"
       ],
       "path": "/assets/worldstream/cc0/cc0-grass-plant-lod1.glb",
       "bounds": {
@@ -6598,7 +6902,10 @@
       "tags": [
         "hanging moss",
         "hanging-moss",
-        "moss"
+        "moss",
+        "seen:icicle",
+        "seen:ice shard",
+        "seen:glass shard"
       ],
       "path": "/assets/worldstream/cc0/cc0-hanging-moss-lod1.glb",
       "bounds": {
@@ -6617,7 +6924,11 @@
     {
       "assetId": "cc0-hedge",
       "tags": [
-        "hedge"
+        "hedge",
+        "seen:sponge",
+        "seen:scrub sponge",
+        "seen:eraser",
+        "seen:scrub brush"
       ],
       "path": "/assets/worldstream/cc0/cc0-hedge-lod1.glb",
       "bounds": {
@@ -6775,7 +7086,10 @@
       "assetId": "cc0-stump",
       "tags": [
         "stump",
-        "old"
+        "old",
+        "seen:armchair",
+        "seen:throne",
+        "seen:chair"
       ],
       "path": "/assets/worldstream/cc0/cc0-stump-lod1.glb",
       "bounds": {
@@ -6899,7 +7213,10 @@
       "tags": [
         "tree swirl",
         "tree-swirl",
-        "swirl"
+        "swirl",
+        "seen:fiddlehead fern",
+        "seen:spiral plant",
+        "seen:curled fern"
       ],
       "path": "/assets/worldstream/cc0/cc0-tree-swirl-lod1.glb",
       "bounds": {
@@ -7119,7 +7436,10 @@
       "assetId": "cc0-box-decorated",
       "tags": [
         "box decorated",
-        "box-decorated"
+        "box-decorated",
+        "seen:treasure chest",
+        "seen:treasure crate",
+        "seen:coin chest"
       ],
       "path": "/assets/worldstream/cc0/cc0-box-decorated-lod1.glb",
       "bounds": {
@@ -7139,7 +7459,10 @@
       "assetId": "cc0-box-long",
       "tags": [
         "box long",
-        "box-long"
+        "box-long",
+        "seen:bread slices",
+        "seen:toast",
+        "seen:sliced loaf"
       ],
       "path": "/assets/worldstream/cc0/cc0-box-long-lod1.glb",
       "bounds": {
@@ -7301,7 +7624,10 @@
       "tags": [
         "hay bale",
         "hay-bale",
-        "bale"
+        "bale",
+        "seen:boxing glove",
+        "seen:fist",
+        "seen:gauntlet"
       ],
       "path": "/assets/worldstream/cc0/cc0-hay-bale-lod1.glb",
       "bounds": {
@@ -7362,7 +7688,10 @@
       "assetId": "cc0-machine-barrel",
       "tags": [
         "machine barrel",
-        "machine-barrel"
+        "machine-barrel",
+        "seen:backpack",
+        "seen:jetpack",
+        "seen:tank backpack"
       ],
       "path": "/assets/worldstream/cc0/cc0-machine-barrel-lod1.glb",
       "bounds": {
@@ -7383,7 +7712,10 @@
       "tags": [
         "obstacle triangle",
         "obstacle-triangle",
-        "triangle"
+        "triangle",
+        "seen:cutting board",
+        "seen:food tray",
+        "seen:sandwich halves"
       ],
       "path": "/assets/worldstream/cc0/cc0-obstacle-triangle-lod1.glb",
       "bounds": {
@@ -7605,7 +7937,10 @@
       "assetId": "cc0-pizza-box",
       "tags": [
         "pizza box",
-        "pizza-box"
+        "pizza-box",
+        "seen:laptop",
+        "seen:compact mirror",
+        "seen:scanner"
       ],
       "path": "/assets/worldstream/cc0/cc0-pizza-box-lod1.glb",
       "bounds": {
@@ -7646,7 +7981,10 @@
       "tags": [
         "sack trench",
         "sack-trench",
-        "trench"
+        "trench",
+        "seen:stone wall",
+        "seen:brick wall",
+        "seen:masonry wall"
       ],
       "path": "/assets/worldstream/cc0/cc0-sack-trench-lod1.glb",
       "bounds": {
@@ -7686,7 +8024,10 @@
       "assetId": "cc0-trap-spikes",
       "tags": [
         "trap spikes",
-        "trap-spikes"
+        "trap-spikes",
+        "seen:traffic cones",
+        "seen:bollards",
+        "seen:concrete barriers"
       ],
       "path": "/assets/worldstream/cc0/cc0-trap-spikes-lod1.glb",
       "bounds": {
@@ -7726,7 +8067,10 @@
       "assetId": "cc0-tree-spikes",
       "tags": [
         "tree spikes",
-        "tree-spikes"
+        "tree-spikes",
+        "seen:alien plant",
+        "seen:tentacle plant",
+        "seen:carnivorous plant"
       ],
       "path": "/assets/worldstream/cc0/cc0-tree-spikes-lod1.glb",
       "bounds": {
@@ -7847,7 +8191,10 @@
     {
       "assetId": "cc0-ambulance",
       "tags": [
-        "ambulance"
+        "ambulance",
+        "seen:box truck",
+        "seen:delivery truck",
+        "seen:moving truck"
       ],
       "path": "/assets/worldstream/cc0/cc0-ambulance-lod1.glb",
       "bounds": {
@@ -8051,7 +8398,10 @@
       "assetId": "cc0-craft-racer",
       "tags": [
         "craft racer",
-        "craft-racer"
+        "craft-racer",
+        "seen:spaceship",
+        "seen:space fighter",
+        "seen:toy spacecraft"
       ],
       "path": "/assets/worldstream/cc0/cc0-craft-racer-lod1.glb",
       "bounds": {
@@ -8110,7 +8460,9 @@
     {
       "assetId": "cc0-firetruck",
       "tags": [
-        "firetruck"
+        "firetruck",
+        "seen:fire engine",
+        "seen:fire truck"
       ],
       "path": "/assets/worldstream/cc0/cc0-firetruck-lod1.glb",
       "bounds": {
@@ -8251,7 +8603,10 @@
       "assetId": "cc0-school-bus",
       "tags": [
         "school bus",
-        "school-bus"
+        "school-bus",
+        "seen:covered wagon",
+        "seen:box truck",
+        "seen:caravan"
       ],
       "path": "/assets/worldstream/cc0/cc0-school-bus-lod1.glb",
       "bounds": {
@@ -8327,7 +8682,11 @@
     {
       "assetId": "cc0-train",
       "tags": [
-        "train"
+        "train",
+        "seen:shipping container",
+        "seen:storage container",
+        "seen:dumpster",
+        "seen:cargo crate"
       ],
       "path": "/assets/worldstream/cc0/cc0-train-lod1.glb",
       "bounds": {
@@ -8384,7 +8743,10 @@
     {
       "assetId": "cc0-ak",
       "tags": [
-        "ak"
+        "ak",
+        "seen:assault rifle",
+        "seen:rifle",
+        "seen:machine gun"
       ],
       "path": "/assets/worldstream/cc0/cc0-ak-lod1.glb",
       "bounds": {
@@ -8485,7 +8847,10 @@
     {
       "assetId": "cc0-axe",
       "tags": [
-        "axe"
+        "axe",
+        "seen:katana",
+        "seen:sword",
+        "seen:samurai sword"
       ],
       "path": "/assets/worldstream/cc0/cc0-axe-lod1.glb",
       "bounds": {
@@ -8605,7 +8970,10 @@
     {
       "assetId": "cc0-claymore",
       "tags": [
-        "claymore"
+        "claymore",
+        "seen:sword",
+        "seen:flaming sword",
+        "seen:magic sword"
       ],
       "path": "/assets/worldstream/cc0/cc0-claymore-lod1.glb",
       "bounds": {
@@ -8644,7 +9012,9 @@
     {
       "assetId": "cc0-dagger",
       "tags": [
-        "dagger"
+        "dagger",
+        "seen:sword",
+        "seen:serrated sword"
       ],
       "path": "/assets/worldstream/cc0/cc0-dagger-lod1.glb",
       "bounds": {
@@ -8960,7 +9330,10 @@
     {
       "assetId": "cc0-smg",
       "tags": [
-        "smg"
+        "smg",
+        "seen:submachine gun",
+        "seen:machine pistol",
+        "seen:assault rifle"
       ],
       "path": "/assets/worldstream/cc0/cc0-smg-lod1.glb",
       "bounds": {
@@ -8979,7 +9352,11 @@
     {
       "assetId": "cc0-smoke",
       "tags": [
-        "smoke"
+        "smoke",
+        "seen:snowball pile",
+        "seen:snowballs",
+        "seen:snow clump",
+        "seen:cotton boll"
       ],
       "path": "/assets/worldstream/cc0/cc0-smoke-lod1.glb",
       "bounds": {
@@ -8998,7 +9375,10 @@
     {
       "assetId": "cc0-sniper",
       "tags": [
-        "sniper"
+        "sniper",
+        "seen:assault rifle",
+        "seen:carbine",
+        "seen:scoped rifle"
       ],
       "path": "/assets/worldstream/cc0/cc0-sniper-lod1.glb",
       "bounds": {
@@ -9158,7 +9538,10 @@
       "assetId": "cc0-utensil-knife",
       "tags": [
         "utensil knife",
-        "utensil-knife"
+        "utensil-knife",
+        "seen:propeller",
+        "seen:rotor blade",
+        "seen:metal strip"
       ],
       "path": "/assets/worldstream/cc0/cc0-utensil-knife-lod1.glb",
       "bounds": {
@@ -9200,7 +9583,10 @@
       "tags": [
         "weapon catapult",
         "weapon-catapult",
-        "catapult"
+        "catapult",
+        "seen:flamethrower turret",
+        "seen:water cannon",
+        "seen:cannon turret"
       ],
       "path": "/assets/worldstream/cc0/cc0-weapon-catapult-lod1.glb",
       "bounds": {
@@ -9238,7 +9624,9 @@
     {
       "assetId": "gen3d-alien-bug",
       "tags": [
-        "alien bug"
+        "alien bug",
+        "seen:beetle",
+        "seen:green beetle"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-alien-bug-lod1.glb",
       "bounds": {
@@ -9336,7 +9724,10 @@
     {
       "assetId": "gen3d-blender",
       "tags": [
-        "blender"
+        "blender",
+        "seen:bollard light",
+        "seen:tube lamp",
+        "seen:outdoor lamp"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-blender-lod1.glb",
       "bounds": {
@@ -9557,7 +9948,9 @@
       "assetId": "gen3d-customer",
       "tags": [
         "customer",
-        "shopper"
+        "shopper",
+        "seen:man",
+        "seen:person"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-customer-lod1.glb",
       "bounds": {
@@ -9695,7 +10088,11 @@
     {
       "assetId": "gen3d-factory",
       "tags": [
-        "factory"
+        "factory",
+        "seen:furnace",
+        "seen:forge",
+        "seen:industrial oven",
+        "seen:boiler"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-factory-lod1.glb",
       "bounds": {
@@ -9776,7 +10173,10 @@
       "assetId": "gen3d-food",
       "tags": [
         "food",
-        "sandwich"
+        "sandwich",
+        "seen:hamburger",
+        "seen:cheeseburger",
+        "seen:burger"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-food-lod1.glb",
       "bounds": {
@@ -9795,7 +10195,10 @@
     {
       "assetId": "gen3d-fps",
       "tags": [
-        "fps"
+        "fps",
+        "seen:rocket launcher",
+        "seen:grenade launcher",
+        "seen:science fiction gun"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-fps-lod1.glb",
       "bounds": {
@@ -9816,7 +10219,10 @@
       "tags": [
         "gang",
         "gangster",
-        "thug"
+        "thug",
+        "seen:man",
+        "seen:villager",
+        "seen:zombie"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-gang-lod1.glb",
       "bounds": {
@@ -9836,7 +10242,10 @@
       "assetId": "gen3d-garden",
       "tags": [
         "garden",
-        "shrub"
+        "shrub",
+        "seen:grove",
+        "seen:forest",
+        "seen:tree cluster"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-garden-lod1.glb",
       "bounds": {
@@ -9875,7 +10284,10 @@
       "assetId": "gen3d-golf",
       "tags": [
         "golf",
-        "golf club"
+        "golf club",
+        "seen:plunger",
+        "seen:sink plunger",
+        "seen:toilet plunger"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-golf-lod1.glb",
       "bounds": {
@@ -9974,7 +10386,10 @@
     {
       "assetId": "gen3d-hotel",
       "tags": [
-        "hotel"
+        "hotel",
+        "seen:house",
+        "seen:building",
+        "seen:cottage"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-hotel-lod1.glb",
       "bounds": {
@@ -10032,7 +10447,10 @@
     {
       "assetId": "gen3d-launch",
       "tags": [
-        "launch"
+        "launch",
+        "seen:crystal",
+        "seen:crystal cluster",
+        "seen:mineral specimen"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-launch-lod1.glb",
       "bounds": {
@@ -10132,7 +10550,11 @@
     {
       "assetId": "gen3d-museum",
       "tags": [
-        "museum"
+        "museum",
+        "seen:sarcophagus",
+        "seen:stone coffin",
+        "seen:tomb",
+        "seen:chest"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-museum-lod1.glb",
       "bounds": {
@@ -10248,7 +10670,10 @@
     {
       "assetId": "gen3d-raft",
       "tags": [
-        "raft"
+        "raft",
+        "seen:sandbox",
+        "seen:sandpit",
+        "seen:raised garden bed"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-raft-lod1.glb",
       "bounds": {
@@ -10267,7 +10692,9 @@
     {
       "assetId": "gen3d-ragdoll",
       "tags": [
-        "ragdoll"
+        "ragdoll",
+        "seen:boy",
+        "seen:child"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-ragdoll-lod1.glb",
       "bounds": {
@@ -10405,7 +10832,10 @@
     {
       "assetId": "gen3d-sister",
       "tags": [
-        "sister"
+        "sister",
+        "seen:girl",
+        "seen:woman",
+        "seen:schoolgirl"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-sister-lod1.glb",
       "bounds": {
@@ -10543,7 +10973,10 @@
       "assetId": "gen3d-suika",
       "tags": [
         "suika",
-        "watermelon"
+        "watermelon",
+        "seen:lime",
+        "seen:green orange",
+        "seen:green apple"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-suika-lod1.glb",
       "bounds": {
@@ -10562,7 +10995,10 @@
     {
       "assetId": "gen3d-survivor",
       "tags": [
-        "survivor"
+        "survivor",
+        "seen:man",
+        "seen:civilian",
+        "seen:young man"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-survivor-lod1.glb",
       "bounds": {
@@ -10600,7 +11036,9 @@
     {
       "assetId": "gen3d-teacher",
       "tags": [
-        "teacher"
+        "teacher",
+        "seen:man",
+        "seen:boy"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-teacher-lod1.glb",
       "bounds": {
@@ -10679,7 +11117,9 @@
     {
       "assetId": "gen3d-wand",
       "tags": [
-        "wand"
+        "wand",
+        "seen:paintbrush",
+        "seen:pencil"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-wand-lod1.glb",
       "bounds": {
@@ -10718,7 +11158,10 @@
       "assetId": "gen3d-billboard",
       "tags": [
         "billboard",
-        "ads"
+        "ads",
+        "seen:chalkboard",
+        "seen:signboard",
+        "seen:noticeboard"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-billboard-lod1.glb",
       "bounds": {
@@ -10778,7 +11221,10 @@
       "assetId": "gen3d-leather-belt",
       "tags": [
         "leather belt",
-        "belt"
+        "belt",
+        "seen:hot tub",
+        "seen:circular pool",
+        "seen:water trough"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-leather-belt-lod1.glb",
       "bounds": {
@@ -11103,7 +11549,9 @@
       "assetId": "gen3d-pickaxe",
       "tags": [
         "pickaxe",
-        "mining"
+        "mining",
+        "seen:hammer",
+        "seen:claw hammer"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-pickaxe-lod1.glb",
       "bounds": {
@@ -11486,7 +11934,10 @@
       "assetId": "gen3d-wrecking-ball",
       "tags": [
         "wrecking ball",
-        "wrecking"
+        "wrecking",
+        "seen:bomb",
+        "seen:hanging weight",
+        "seen:pendulum"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-wrecking-ball-lod1.glb",
       "bounds": {
@@ -11630,7 +12081,9 @@
       "tags": [
         "moon rock",
         "moon",
-        "lunar"
+        "lunar",
+        "seen:egg",
+        "seen:stone"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-moon-rock-lod1.glb",
       "bounds": {
@@ -11809,7 +12262,10 @@
       "assetId": "gen3d-drawbridge",
       "tags": [
         "drawbridge",
-        "moat"
+        "moat",
+        "seen:footbridge",
+        "seen:wooden bridge",
+        "seen:arched bridge"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-drawbridge-lod1.glb",
       "bounds": {
@@ -11888,7 +12344,10 @@
       "assetId": "gen3d-food-truck",
       "tags": [
         "food truck",
-        "street food"
+        "street food",
+        "seen:camper van",
+        "seen:motorhome",
+        "seen:rv"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-food-truck-lod1.glb",
       "bounds": {
@@ -12028,7 +12487,9 @@
       "assetId": "gen3d-treasure-map",
       "tags": [
         "treasure map",
-        "map"
+        "map",
+        "seen:sandbox",
+        "seen:sandpit"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-treasure-map-lod1.glb",
       "bounds": {
@@ -12068,7 +12529,9 @@
       "assetId": "gen3d-magic-wand",
       "tags": [
         "magic wand",
-        "spell"
+        "spell",
+        "seen:sword",
+        "seen:dagger"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-magic-wand-lod1.glb",
       "bounds": {
@@ -12244,7 +12707,9 @@
     {
       "assetId": "gen3d-grandpa",
       "tags": [
-        "grandpa"
+        "grandpa",
+        "seen:elderly man",
+        "seen:grandfather"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-grandpa-lod1.glb",
       "bounds": {
@@ -12301,7 +12766,8 @@
     {
       "assetId": "gen3d-pearl",
       "tags": [
-        "pearl"
+        "pearl",
+        "seen:egg"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-pearl-lod1.glb",
       "bounds": {
@@ -12379,7 +12845,10 @@
       "assetId": "gen3d-termite-hill",
       "tags": [
         "termite hill",
-        "termite mound"
+        "termite mound",
+        "seen:cape",
+        "seen:cloak",
+        "seen:poncho"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-termite-hill-lod1.glb",
       "bounds": {
@@ -12399,7 +12868,10 @@
       "assetId": "gen3d-medical-stretcher",
       "tags": [
         "medical stretcher",
-        "stretcher"
+        "stretcher",
+        "seen:sun lounger",
+        "seen:deck chair",
+        "seen:reclining chair"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-medical-stretcher-lod1.glb",
       "bounds": {
@@ -12419,7 +12891,11 @@
       "assetId": "gen3d-moon-lander",
       "tags": [
         "moon lander",
-        "lunar lander"
+        "lunar lander",
+        "seen:furnace",
+        "seen:smelter",
+        "seen:forge",
+        "seen:boiler"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-moon-lander-lod1.glb",
       "bounds": {
@@ -12765,7 +13241,9 @@
     {
       "assetId": "gen3d-griffin",
       "tags": [
-        "griffin"
+        "griffin",
+        "seen:owl",
+        "seen:horned owl"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-griffin-lod1.glb",
       "bounds": {
@@ -12860,7 +13338,10 @@
     {
       "assetId": "gen3d-mummy",
       "tags": [
-        "mummy"
+        "mummy",
+        "seen:astronaut",
+        "seen:armored soldier",
+        "seen:robot"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-mummy-lod1.glb",
       "bounds": {
@@ -12917,7 +13398,10 @@
     {
       "assetId": "gen3d-samurai",
       "tags": [
-        "samurai"
+        "samurai",
+        "seen:pirate",
+        "seen:sailor",
+        "seen:adventurer"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-samurai-lod1.glb",
       "bounds": {
@@ -12936,7 +13420,10 @@
     {
       "assetId": "gen3d-cyborg",
       "tags": [
-        "cyborg"
+        "cyborg",
+        "seen:armored soldier",
+        "seen:robot",
+        "seen:knight"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-cyborg-lod1.glb",
       "bounds": {
@@ -12974,7 +13461,10 @@
     {
       "assetId": "gen3d-villain",
       "tags": [
-        "villain"
+        "villain",
+        "seen:werewolf",
+        "seen:wolf man",
+        "seen:wolf warrior"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-villain-lod1.glb",
       "bounds": {
@@ -13050,7 +13540,11 @@
     {
       "assetId": "gen3d-farmer",
       "tags": [
-        "farmer"
+        "farmer",
+        "seen:adventurer",
+        "seen:explorer",
+        "seen:archaeologist",
+        "seen:cowboy"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-farmer-lod1.glb",
       "bounds": {
@@ -13088,7 +13582,10 @@
     {
       "assetId": "gen3d-thief",
       "tags": [
-        "thief"
+        "thief",
+        "seen:soldier",
+        "seen:police officer",
+        "seen:security guard"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-thief-lod1.glb",
       "bounds": {
@@ -13145,7 +13642,10 @@
     {
       "assetId": "gen3d-student",
       "tags": [
-        "student"
+        "student",
+        "seen:person",
+        "seen:man",
+        "seen:mannequin"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-student-lod1.glb",
       "bounds": {
@@ -13489,7 +13989,9 @@
     {
       "assetId": "gen3d-dice",
       "tags": [
-        "dice"
+        "dice",
+        "seen:ice cube",
+        "seen:ice block"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-dice-lod1.glb",
       "bounds": {
@@ -13679,7 +14181,10 @@
     {
       "assetId": "gen3d-iceberg",
       "tags": [
-        "iceberg"
+        "iceberg",
+        "seen:icicle",
+        "seen:ice crystal",
+        "seen:crystal"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-iceberg-lod1.glb",
       "bounds": {
@@ -13755,7 +14260,10 @@
     {
       "assetId": "gen3d-planet",
       "tags": [
-        "planet"
+        "planet",
+        "seen:ball",
+        "seen:sphere",
+        "seen:marble"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-planet-lod1.glb",
       "bounds": {
@@ -13889,7 +14397,8 @@
     {
       "assetId": "gen3d-telescope",
       "tags": [
-        "telescope"
+        "telescope",
+        "seen:microscope"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-telescope-lod1.glb",
       "bounds": {
@@ -13927,7 +14436,10 @@
     {
       "assetId": "gen3d-magnet",
       "tags": [
-        "magnet"
+        "magnet",
+        "seen:nail polish bottle",
+        "seen:glue bottle",
+        "seen:potion bottle"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-magnet-lod1.glb",
       "bounds": {
@@ -13986,7 +14498,10 @@
     {
       "assetId": "gen3d-rake",
       "tags": [
-        "rake"
+        "rake",
+        "seen:arrow",
+        "seen:dart",
+        "seen:crossbow bolt"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-rake-lod1.glb",
       "bounds": {
@@ -14227,7 +14742,9 @@
       "assetId": "gen3d-black-hole-portal",
       "tags": [
         "black hole portal",
-        "black hole"
+        "black hole",
+        "seen:witch hat",
+        "seen:wizard hat"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-black-hole-portal-lod1.glb",
       "bounds": {
@@ -14247,7 +14764,10 @@
       "assetId": "gen3d-brown-owl",
       "tags": [
         "brown owl",
-        "owl"
+        "owl",
+        "seen:paper bag",
+        "seen:crumpled sack",
+        "seen:paper wrapper"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-brown-owl-lod1.glb",
       "bounds": {
@@ -14409,7 +14929,10 @@
       "assetId": "gen3d-lab-scientist",
       "tags": [
         "lab scientist",
-        "scientist"
+        "scientist",
+        "seen:potion bottle",
+        "seen:elixir bottle",
+        "seen:flask"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-lab-scientist-lod1.glb",
       "bounds": {
@@ -14429,7 +14952,8 @@
       "assetId": "gen3d-stage-magician",
       "tags": [
         "stage magician",
-        "magician"
+        "magician",
+        "qa:unrecognisable"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-stage-magician-lod1.glb",
       "bounds": {
@@ -14551,7 +15075,10 @@
       "assetId": "gen3d-large-boulder",
       "tags": [
         "large boulder",
-        "boulder"
+        "boulder",
+        "seen:snowball",
+        "seen:white rock",
+        "seen:ball"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-large-boulder-lod1.glb",
       "bounds": {
@@ -14632,7 +15159,10 @@
       "assetId": "gen3d-iron-cannonball",
       "tags": [
         "iron cannonball",
-        "cannonball"
+        "cannonball",
+        "seen:bottle",
+        "seen:flask",
+        "seen:jar"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-iron-cannonball-lod1.glb",
       "bounds": {
@@ -14732,7 +15262,9 @@
       "assetId": "gen3d-jump-pad",
       "tags": [
         "jump pad",
-        "launch pad"
+        "launch pad",
+        "seen:graduation cap",
+        "seen:mortarboard"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-jump-pad-lod1.glb",
       "bounds": {
@@ -14772,7 +15304,10 @@
       "assetId": "gen3d-small-songbird",
       "tags": [
         "small songbird",
-        "songbird"
+        "songbird",
+        "seen:chick",
+        "seen:bird",
+        "seen:canary"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-small-songbird-lod1.glb",
       "bounds": {
@@ -14832,7 +15367,10 @@
     {
       "assetId": "gen3d-road-sign",
       "tags": [
-        "road sign"
+        "road sign",
+        "seen:block hammer",
+        "seen:mallet",
+        "seen:toy hammer"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-road-sign-lod1.glb",
       "bounds": {
@@ -14893,7 +15431,9 @@
       "assetId": "gen3d-gold-necklace",
       "tags": [
         "gold necklace",
-        "necklace"
+        "necklace",
+        "seen:slingshot",
+        "seen:catapult"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-gold-necklace-lod1.glb",
       "bounds": {
@@ -14913,7 +15453,10 @@
       "assetId": "gen3d-sealed-letter",
       "tags": [
         "sealed letter",
-        "letter"
+        "letter",
+        "seen:cardboard box",
+        "seen:carton",
+        "seen:storage box"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-sealed-letter-lod1.glb",
       "bounds": {
@@ -14933,7 +15476,10 @@
       "assetId": "gen3d-paper-envelope",
       "tags": [
         "paper envelope",
-        "envelope"
+        "envelope",
+        "seen:cheese block",
+        "seen:swiss cheese",
+        "seen:cheese"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-paper-envelope-lod1.glb",
       "bounds": {
@@ -15134,7 +15680,10 @@
     {
       "assetId": "gen3d-mosquito",
       "tags": [
-        "mosquito"
+        "mosquito",
+        "seen:fly",
+        "seen:beetle",
+        "seen:bee"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-mosquito-lod1.glb",
       "bounds": {
@@ -15253,7 +15802,10 @@
     {
       "assetId": "gen3d-otter",
       "tags": [
-        "otter"
+        "otter",
+        "seen:beaver",
+        "seen:groundhog",
+        "seen:marmot"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-otter-lod1.glb",
       "bounds": {
@@ -15272,7 +15824,9 @@
     {
       "assetId": "gen3d-skunk",
       "tags": [
-        "skunk"
+        "skunk",
+        "seen:turtle",
+        "seen:tortoise"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-skunk-lod1.glb",
       "bounds": {
@@ -15389,7 +15943,10 @@
       "assetId": "gen3d-pufferfish",
       "tags": [
         "pufferfish",
-        "blowfish"
+        "blowfish",
+        "seen:wrapped candy",
+        "seen:chocolate candy",
+        "seen:bonbon"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-pufferfish-lod1.glb",
       "bounds": {
@@ -15408,7 +15965,9 @@
     {
       "assetId": "gen3d-axolotl",
       "tags": [
-        "axolotl"
+        "axolotl",
+        "seen:elephant",
+        "seen:mammoth"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-axolotl-lod1.glb",
       "bounds": {
@@ -15465,7 +16024,11 @@
     {
       "assetId": "gen3d-jukebox",
       "tags": [
-        "jukebox"
+        "jukebox",
+        "seen:trash bin",
+        "seen:furnace",
+        "seen:metal cabinet",
+        "seen:mailbox"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-jukebox-lod1.glb",
       "bounds": {
@@ -15579,7 +16142,10 @@
     {
       "assetId": "gen3d-accordion",
       "tags": [
-        "accordion"
+        "accordion",
+        "seen:books",
+        "seen:book collection",
+        "seen:row of books"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-accordion-lod1.glb",
       "bounds": {
@@ -15636,7 +16202,11 @@
     {
       "assetId": "gen3d-xylophone",
       "tags": [
-        "xylophone"
+        "xylophone",
+        "seen:wooden torch",
+        "seen:basket torch",
+        "seen:wooden lantern",
+        "seen:wicker cage"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-xylophone-lod1.glb",
       "bounds": {
@@ -15656,7 +16226,11 @@
       "assetId": "gen3d-bagpipe",
       "tags": [
         "bagpipe",
-        "bagpipes"
+        "bagpipes",
+        "seen:magic wand",
+        "seen:baton",
+        "seen:scepter",
+        "seen:club"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-bagpipe-lod1.glb",
       "bounds": {
@@ -15713,7 +16287,9 @@
     {
       "assetId": "gen3d-tambourine",
       "tags": [
-        "tambourine"
+        "tambourine",
+        "seen:drum",
+        "seen:snare drum"
       ],
       "path": "/assets/worldstream/gen3d/gen3d-tambourine-lod1.glb",
       "bounds": {
@@ -15793,7 +16369,11 @@
     {
       "assetId": "gen3d-squirrel",
       "tags": [
-        "squirrel"
+        "squirrel",
+        "seen:copper ore",
+        "seen:crystal cluster",
+        "seen:copper nugget",
+        "seen:rock formation"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-squirrel-lod1.glb",
       "bounds": {
@@ -15831,7 +16411,10 @@
     {
       "assetId": "gen3d-bug",
       "tags": [
-        "bug"
+        "bug",
+        "seen:beetle",
+        "seen:firebug",
+        "seen:insect"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-bug-lod1.glb",
       "bounds": {
@@ -15945,7 +16528,10 @@
     {
       "assetId": "gen3d-investor",
       "tags": [
-        "investor"
+        "investor",
+        "seen:businessman",
+        "seen:man",
+        "seen:office worker"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-investor-lod1.glb",
       "bounds": {
@@ -16118,7 +16704,10 @@
     {
       "assetId": "gen3d-kraken",
       "tags": [
-        "kraken"
+        "kraken",
+        "seen:octopus",
+        "seen:squid",
+        "seen:tentacle monster"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-kraken-lod1.glb",
       "bounds": {
@@ -16176,7 +16765,10 @@
       "assetId": "gen3d-cashier",
       "tags": [
         "cashier",
-        "clerk"
+        "clerk",
+        "seen:receptionist desk",
+        "seen:office desk",
+        "seen:reception counter"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-cashier-lod1.glb",
       "bounds": {
@@ -16913,7 +17505,10 @@
     {
       "assetId": "gen3d-slot-machine",
       "tags": [
-        "slot machine"
+        "slot machine",
+        "seen:treasure chest",
+        "seen:storage chest",
+        "seen:jewelry box"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-slot-machine-lod1.glb",
       "bounds": {
@@ -17410,7 +18005,10 @@
     {
       "assetId": "gen3d-soap",
       "tags": [
-        "soap"
+        "soap",
+        "seen:sponge",
+        "seen:foam block",
+        "seen:rectangular block"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-soap-lod1.glb",
       "bounds": {
@@ -17525,7 +18123,11 @@
     {
       "assetId": "gen3d-cassette",
       "tags": [
-        "cassette"
+        "cassette",
+        "seen:metal panel",
+        "seen:metal crate",
+        "seen:wall panel",
+        "seen:vent cover"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-cassette-lod1.glb",
       "bounds": {
@@ -17639,7 +18241,10 @@
     {
       "assetId": "gen3d-ribbon",
       "tags": [
-        "ribbon"
+        "ribbon",
+        "seen:banner",
+        "seen:pennant",
+        "seen:hanging flag"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-ribbon-lod1.glb",
       "bounds": {
@@ -17813,7 +18418,10 @@
     {
       "assetId": "gen3d-easel",
       "tags": [
-        "easel"
+        "easel",
+        "seen:prayer wheel",
+        "seen:rotating sign",
+        "seen:display stand"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-easel-lod1.glb",
       "bounds": {
@@ -18139,7 +18747,11 @@
     {
       "assetId": "gen3d-fish-tank",
       "tags": [
-        "fish tank"
+        "fish tank",
+        "seen:dumpster",
+        "seen:storage container",
+        "seen:cooler",
+        "seen:storage box"
       ],
       "path": "/assets/worldstream/gen3d-p37d/gen3d-fish-tank-lod1.glb",
       "bounds": {

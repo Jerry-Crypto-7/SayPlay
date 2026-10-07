@@ -2716,7 +2716,10 @@
         "elevator",
         "lift",
         "elevator-car",
-        "hoist"
+        "hoist",
+        "seen:server rack",
+        "seen:server cabinet",
+        "seen:network cabinet"
       ],
       "style": "original stylized PBR",
       "thumbnail": "/assets/worldstream/elevator-car.png",
@@ -6393,7 +6396,9 @@
       "tags": [
         "pizza",
         "pizzas",
-        "slice"
+        "slice",
+        "seen:birthday cake",
+        "seen:cake"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/pizza.png",
@@ -7514,7 +7519,10 @@
         "vent",
         "vents",
         "molten",
-        "fire-pit"
+        "fire-pit",
+        "seen:frying pan",
+        "seen:skillet",
+        "seen:pan of soup"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/lava-pool.png",
@@ -8033,7 +8041,10 @@
         "explorer",
         "explorers",
         "adventurer",
-        "hiker"
+        "hiker",
+        "seen:farmer",
+        "seen:gardener",
+        "seen:scarecrow"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/explorer.png",
@@ -8158,7 +8169,11 @@
         "child",
         "children",
         "boy",
-        "girl"
+        "girl",
+        "seen:delivery worker",
+        "seen:mail carrier",
+        "seen:courier",
+        "seen:worker"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/kid.png",
@@ -8749,7 +8764,10 @@
         "beam",
         "beams",
         "limbo",
-        "slide"
+        "slide",
+        "seen:safety barrier",
+        "seen:road barrier",
+        "seen:barricade"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/slide-bar.png",
@@ -9081,7 +9099,10 @@
         "lane",
         "lanes",
         "runway",
-        "course"
+        "course",
+        "seen:gymnastics mat",
+        "seen:exercise mat",
+        "seen:landing mat"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/track-tile.png",
@@ -9704,7 +9725,10 @@
         "tyres",
         "wall",
         "guardrail",
-        "bumper"
+        "bumper",
+        "seen:sushi",
+        "seen:maki rolls",
+        "seen:sushi platter"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/tire-barrier.png",
@@ -9819,7 +9843,10 @@
         "amoeba",
         "germ",
         "germs",
-        "microbe"
+        "microbe",
+        "seen:flying saucer",
+        "seen:ufo",
+        "seen:spaceship"
       ],
       "style": "original low-poly stylized",
       "thumbnail": "/assets/worldstream/game/cell.png",
@@ -10250,7 +10277,10 @@
       "hash": "c19df2471695a4576e29493355c6c2209621cef95c75b5f8b0269a0ba3cb80de",
       "label": "Corgi (CC0, Kenney)",
       "tags": [
-        "corgi"
+        "corgi",
+        "seen:dog",
+        "seen:puppy",
+        "seen:bear cub"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-corgi.png",
@@ -10492,7 +10522,10 @@
       "hash": "6044767be20616fb56173bf803775a44eec7d68264e30009b6fa75fde94bd611",
       "label": "Flashlight (CC0, Quaternius)",
       "tags": [
-        "flashlight"
+        "flashlight",
+        "seen:pipe fitting",
+        "seen:pipe connector",
+        "seen:machine housing"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-flashlight.png",
@@ -10694,7 +10727,10 @@
       "hash": "0a3adae601eaa62bdf9d2e58bed9409ff9e3df0917a709cdb827d3df3f6fc09f",
       "label": "Shark (CC0, Quaternius)",
       "tags": [
-        "shark"
+        "shark",
+        "seen:gas mask",
+        "seen:helmet",
+        "seen:diving mask"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-shark.png",
@@ -10896,7 +10932,10 @@
       "hash": "4969201e9b5907b0a98dab7f31e4600b506e8a668360169c0f22a83f455e893c",
       "label": "Alien (CC0, Kenney)",
       "tags": [
-        "alien"
+        "alien",
+        "seen:robot",
+        "seen:toy robot",
+        "seen:android"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-alien.png",
@@ -10998,7 +11037,10 @@
       "label": "Asteroid (CC0, Kenney)",
       "tags": [
         "asteroid",
-        "meteor"
+        "meteor",
+        "seen:rock formation",
+        "seen:boulders",
+        "seen:rock cluster"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-asteroid.png",
@@ -11969,7 +12011,10 @@
       "hash": "8a65007e821d8c01b094815cd9708dd5a31672464db553a0c3bb0ac14642099d",
       "label": "Pigeon (CC0, Quaternius)",
       "tags": [
-        "pigeon"
+        "pigeon",
+        "seen:bird",
+        "seen:bird head",
+        "seen:crow"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pigeon.png",
@@ -12273,7 +12318,10 @@
       "hash": "f6b689e8dc92b03e2294cb024f5277e5c7e838e2be20f142f82e4edf32b35b31",
       "label": "Sausage (CC0, Kenney)",
       "tags": [
-        "sausage"
+        "sausage",
+        "seen:wrapped candy",
+        "seen:toffee",
+        "seen:bonbon"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-sausage.png",
@@ -13133,7 +13181,10 @@
       "hash": "6ffc44dc9c7cc60c5d6efaa370a24b5e02651a6ea19f11c00503e6d459477520",
       "label": "Beaver (CC0, Kenney)",
       "tags": [
-        "beaver"
+        "beaver",
+        "seen:toy bear",
+        "seen:bear figurine",
+        "seen:teddy bear"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-beaver.png",
@@ -13284,7 +13335,10 @@
       "hash": "97ac931009dcfe5227677e43d6e06e90e8160231b0b60e64df9e1c5a6c6bf9db",
       "label": "Betta (CC0, Quaternius)",
       "tags": [
-        "betta"
+        "betta",
+        "seen:fish",
+        "seen:goldfish",
+        "seen:anglerfish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-betta.png",
@@ -13385,7 +13439,10 @@
       "hash": "7f836d738988300d6a27005826c668eed882a901066aa710711590f992f708a5",
       "label": "Blobfish (CC0, Quaternius)",
       "tags": [
-        "blobfish"
+        "blobfish",
+        "seen:pufferfish",
+        "seen:blowfish",
+        "seen:porcupinefish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-blobfish.png",
@@ -13486,7 +13543,10 @@
       "hash": "8cdf72bc31b0108455cbb2ca317d5296777cb24c59d08bfb47cf1d2b4efbceec",
       "label": "Caterpillar (CC0, Kenney)",
       "tags": [
-        "caterpillar"
+        "caterpillar",
+        "seen:alien",
+        "seen:monster",
+        "seen:alien toy"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-caterpillar.png",
@@ -13728,7 +13788,11 @@
       "hash": "08e4a32a4d93a142a617d6eb667f85c43d3d4a59b00cb75db6fcdc6603fd6727",
       "label": "Cowfish (CC0, Quaternius)",
       "tags": [
-        "cowfish"
+        "cowfish",
+        "seen:insect head",
+        "seen:fly head",
+        "seen:alien head",
+        "seen:fish head"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-cowfish.png",
@@ -13829,7 +13893,10 @@
       "hash": "b92e8bf35aeebef5b6a3103134dbfd85eb37cdd5069aa208b9f7039dfff51c62",
       "label": "Flatfish (CC0, Quaternius)",
       "tags": [
-        "flatfish"
+        "flatfish",
+        "seen:anglerfish",
+        "seen:piranha",
+        "seen:monster fish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-flatfish.png",
@@ -14071,7 +14138,10 @@
       "hash": "e71e26603dff8ca862447fde608aaa13818982a1b07a915258dc19e2914bc2b9",
       "label": "Goldfish (CC0, Quaternius)",
       "tags": [
-        "goldfish"
+        "goldfish",
+        "seen:fish",
+        "seen:wooden fish",
+        "seen:mechanical fish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-goldfish.png",
@@ -14172,7 +14242,10 @@
       "hash": "eda76eb8e292e461bc00a268e0ab04fa9a0f552800c2d4a4b002d55aae438d7a",
       "label": "Humphead (CC0, Quaternius)",
       "tags": [
-        "humphead"
+        "humphead",
+        "seen:fish",
+        "seen:robot fish",
+        "seen:fish submarine"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-humphead.png",
@@ -14273,7 +14346,11 @@
       "hash": "c2614e3312650b59ec0852fc07784adfe7629236922aae74e074a7470243e177",
       "label": "Koi (CC0, Quaternius)",
       "tags": [
-        "koi"
+        "koi",
+        "seen:robot head",
+        "seen:robot helmet",
+        "seen:mechanical head",
+        "seen:diving helmet"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-koi.png",
@@ -14475,7 +14552,9 @@
       "hash": "1c3122679c8f686b4c6e90f713e268febcc54b29c48b244e30d1b798c0a1039e",
       "label": "Llama (CC0, Quaternius)",
       "tags": [
-        "llama"
+        "llama",
+        "seen:horse",
+        "seen:pony"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-llama.png",
@@ -14981,7 +15060,10 @@
       "hash": "b5992fea6783fdf5bc2bd67d9f85cb77934de368b2a52b640dd1f5c48b7e6d93",
       "label": "Puffer (CC0, Quaternius)",
       "tags": [
-        "puffer"
+        "puffer",
+        "seen:pufferfish",
+        "seen:porcupinefish",
+        "seen:blowfish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-puffer.png",
@@ -15284,7 +15366,10 @@
       "hash": "751983a4f695638f43e6b1eca4ef1b17243e081c9d69f70e3c37a6ddcdddf78d",
       "label": "Snapper (CC0, Quaternius)",
       "tags": [
-        "snapper"
+        "snapper",
+        "seen:fish",
+        "seen:goldfish",
+        "seen:pufferfish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-snapper.png",
@@ -15385,7 +15470,10 @@
       "hash": "7003035d6c52aff939eb1d183c207d1673b9417f1c38536d121dc7afeee4a90b",
       "label": "Sunfish (CC0, Quaternius)",
       "tags": [
-        "sunfish"
+        "sunfish",
+        "seen:squid",
+        "seen:cuttlefish",
+        "seen:alien head"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-sunfish.png",
@@ -15587,7 +15675,10 @@
       "hash": "7e63a8e6d5aa98e6e3f2a1a480832492cd3a369c0a88de83878b94b64ea1117a",
       "label": "Tang (CC0, Quaternius)",
       "tags": [
-        "tang"
+        "tang",
+        "seen:pufferfish",
+        "seen:tropical fish",
+        "seen:robot fish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-tang.png",
@@ -15688,7 +15779,10 @@
       "hash": "188816c5c5e6ebf0d5d6101c9ffa5e0c7009652d5d03451dbce5c36a6187d8bc",
       "label": "Tetra (CC0, Quaternius)",
       "tags": [
-        "tetra"
+        "tetra",
+        "seen:fish",
+        "seen:catfish",
+        "seen:tadpole"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-tetra.png",
@@ -15789,7 +15883,10 @@
       "hash": "61e5836e11223df54fa8dfc1b53260cd7ac484e23125c1faaddd276841985679",
       "label": "Trex (CC0, Quaternius)",
       "tags": [
-        "trex"
+        "trex",
+        "seen:tyrannosaurus rex",
+        "seen:theropod",
+        "seen:dinosaur"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-trex.png",
@@ -15991,7 +16088,10 @@
       "hash": "2c8ce61d80b65c451df1d82fbc53ad435ed6028eb68d6229796681b2580addb7",
       "label": "Tuna (CC0, Quaternius)",
       "tags": [
-        "tuna"
+        "tuna",
+        "seen:pufferfish",
+        "seen:boxfish",
+        "seen:fish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-tuna.png",
@@ -16092,7 +16192,10 @@
       "hash": "cb83695d050594a505a2a43a2ecf6fb6881b7e4302dbd933668bfb23ab3b092b",
       "label": "Turbot (CC0, Quaternius)",
       "tags": [
-        "turbot"
+        "turbot",
+        "seen:piranha",
+        "seen:anglerfish",
+        "seen:predatory fish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-turbot.png",
@@ -16294,7 +16397,9 @@
       "hash": "ebd4df3f6caf72153a7e93132c8fd35dd640ed8f86e235cc7fe71ab184f707a5",
       "label": "Worm (CC0, Quaternius)",
       "tags": [
-        "worm"
+        "worm",
+        "seen:snake",
+        "seen:cobra"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-worm.png",
@@ -18857,7 +18962,10 @@
       "label": "Obstacle diamond (CC0, Kenney)",
       "tags": [
         "obstacle diamond",
-        "obstacle-diamond"
+        "obstacle-diamond",
+        "seen:cutting board",
+        "seen:food tray",
+        "seen:sandwich"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-obstacle-diamond.png",
@@ -19063,7 +19171,10 @@
       "tags": [
         "pickup health",
         "pickup-health",
-        "health"
+        "health",
+        "seen:first aid kit",
+        "seen:medical kit",
+        "seen:medical case"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pickup-health.png",
@@ -19166,7 +19277,10 @@
       "tags": [
         "pickup jar",
         "pickup-jar",
-        "jar"
+        "jar",
+        "seen:battery",
+        "seen:power cell",
+        "seen:energy canister"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pickup-jar.png",
@@ -19269,7 +19383,10 @@
       "tags": [
         "pickup sphere",
         "pickup-sphere",
-        "sphere"
+        "sphere",
+        "seen:grenade",
+        "seen:spherical bomb",
+        "seen:explosive mine"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pickup-sphere.png",
@@ -19372,7 +19489,10 @@
       "tags": [
         "pickup thunder",
         "pickup-thunder",
-        "thunder"
+        "thunder",
+        "seen:lightning bolt",
+        "seen:energy symbol",
+        "seen:power icon"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pickup-thunder.png",
@@ -21610,7 +21730,10 @@
       "hash": "9da21074887b92996a2043d330a4f37e9214be1dfb09edeb1f06a1762b983a9d",
       "label": "Burger (CC0, Quaternius)",
       "tags": [
-        "burger"
+        "burger",
+        "seen:hamburger",
+        "seen:cheeseburger",
+        "seen:sandwich"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-burger.png",
@@ -21711,7 +21834,10 @@
       "hash": "53a30f13f9cdc19559f52746ed7a8aa232b54529fecc766ee4f8dba6de5a163d",
       "label": "Carpet (CC0, Quaternius)",
       "tags": [
-        "carpet"
+        "carpet",
+        "seen:roof panel",
+        "seen:metal roofing",
+        "seen:roof tile"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-carpet.png",
@@ -21812,7 +21938,10 @@
       "hash": "732ad0d30b2fd3f0ef27223d33a576cb84738255caed8133b742b25425f9ff3c",
       "label": "Carrot (CC0, Quaternius)",
       "tags": [
-        "carrot"
+        "carrot",
+        "seen:feather quill",
+        "seen:feather pen",
+        "seen:feather decoration"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-carrot.png",
@@ -22115,7 +22244,10 @@
       "hash": "a01d8687a3c7aa4ec6ead9f31cc1eccdbd71a5f09c9bc72264f2933223be110d",
       "label": "Corndog (CC0, Quaternius)",
       "tags": [
-        "corndog"
+        "corndog",
+        "seen:cattail",
+        "seen:corn dog",
+        "seen:ice pop"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-corndog.png",
@@ -22216,7 +22348,11 @@
       "hash": "60f65002a82953818eaf78cf7d58df805434ef256212b2af196800703d86b292",
       "label": "Croissant (CC0, Quaternius)",
       "tags": [
-        "croissant"
+        "croissant",
+        "seen:seashell",
+        "seen:conch shell",
+        "seen:rock",
+        "seen:log"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-croissant.png",
@@ -22418,7 +22554,10 @@
       "hash": "d96b3db92008caa915263c0dee7c3aa27c15e3118fcdcc34bbd1bf9a7ba1893f",
       "label": "Cuttingboard (CC0, Kay Lousberg)",
       "tags": [
-        "cuttingboard"
+        "cuttingboard",
+        "seen:bread slice",
+        "seen:toast",
+        "seen:wooden board"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-cuttingboard.png",
@@ -22520,7 +22659,10 @@
       "label": "Donut (CC0, Quaternius)",
       "tags": [
         "donut",
-        "donut1"
+        "donut1",
+        "seen:stone fire pit",
+        "seen:fire ring",
+        "seen:stone well"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-donut.png",
@@ -22823,7 +22965,10 @@
       "hash": "49ea11c9785e7b6d9fde856ae36a5de7b4734d33af333abc6fd5b1b010919ba7",
       "label": "Fries (CC0, Quaternius)",
       "tags": [
-        "fries"
+        "fries",
+        "seen:sandwich",
+        "seen:sandwich wedges",
+        "seen:stacked lumber"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-fries.png",
@@ -22924,7 +23069,10 @@
       "hash": "062f3cd0e31296d7214bd35adedf6e2b47d786a3fff51850d45e66c28694d5a9",
       "label": "Fruit (CC0, Quaternius)",
       "tags": [
-        "fruit"
+        "fruit",
+        "seen:coconut",
+        "seen:orange",
+        "seen:peach"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-fruit.png",
@@ -23025,7 +23173,9 @@
       "hash": "e268f67a0ffa035b3837f131b5434f309606edf37e138380309e2922e2d0d567",
       "label": "Hotdog (CC0, Quaternius)",
       "tags": [
-        "hotdog"
+        "hotdog",
+        "seen:hot dog",
+        "seen:sausage sandwich"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-hotdog.png",
@@ -23328,7 +23478,10 @@
       "hash": "aec0126a1758d9ca60149ca685335edba84bae5f7e0c575ccfb74a64210fb0d5",
       "label": "Icecream (CC0, Quaternius)",
       "tags": [
-        "icecream"
+        "icecream",
+        "seen:ice cream cone",
+        "seen:icicle",
+        "seen:crystal cone"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-icecream.png",
@@ -23429,7 +23582,10 @@
       "hash": "b5ed6c4062e4fd87fbc65f6e1a5447c7f094f8accc477f410edf273e766e9d45",
       "label": "Kitchencabinet (CC0, Kay Lousberg)",
       "tags": [
-        "kitchencabinet"
+        "kitchencabinet",
+        "seen:wall cabinet",
+        "seen:kitchen cabinet",
+        "seen:cupboard"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-kitchencabinet.png",
@@ -23530,7 +23686,10 @@
       "hash": "1e32fa09124d4d02ee57f9ead1e78f7adc3c55841985b755b4060ca9a17308d6",
       "label": "Kitchentable (CC0, Kay Lousberg)",
       "tags": [
-        "kitchentable"
+        "kitchentable",
+        "seen:work table",
+        "seen:prep table",
+        "seen:workbench"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-kitchentable.png",
@@ -23631,7 +23790,11 @@
       "hash": "320b8f8d7fefce3aba445224637e36344ee5251ec6a40081e4845eb9dada56fd",
       "label": "Lettuce (CC0, Quaternius)",
       "tags": [
-        "lettuce"
+        "lettuce",
+        "seen:grass patch",
+        "seen:grass ring",
+        "seen:wreath",
+        "seen:reed mat"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-lettuce.png",
@@ -23732,7 +23895,10 @@
       "hash": "d7cf603204cf09aa3da8e31a36991bf5f831bf42bd9567fe97b23fd43d0d8cf4",
       "label": "Menu (CC0, Kay Lousberg)",
       "tags": [
-        "menu"
+        "menu",
+        "seen:mirror",
+        "seen:signboard",
+        "seen:display stand"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-menu.png",
@@ -24035,7 +24201,10 @@
       "hash": "e2da390494edb98ae93fe41ba463c07274bf6b75ac1e1d24dfc8fb884bc8c2e3",
       "label": "Painting (CC0, Quaternius)",
       "tags": [
-        "painting"
+        "painting",
+        "seen:road barrier",
+        "seen:decorative panel",
+        "seen:partition"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-painting.png",
@@ -24237,7 +24406,10 @@
       "hash": "095bfa4a650770650e35d8a45170e4790e61adde423d2f28fe231458fca5d15d",
       "label": "Papertowel (CC0, Kay Lousberg)",
       "tags": [
-        "papertowel"
+        "papertowel",
+        "seen:paper towel holder",
+        "seen:paper towel roll",
+        "seen:kitchen roll"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-papertowel.png",
@@ -24944,7 +25116,10 @@
       "hash": "9c3dd15e336aaad956077d89abaca7bb7898c193660170e54f65854ab6e1ade4",
       "label": "Tomato (CC0, Quaternius)",
       "tags": [
-        "tomato"
+        "tomato",
+        "seen:coconut",
+        "seen:bomb",
+        "seen:brown fruit"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-tomato.png",
@@ -25045,7 +25220,10 @@
       "hash": "d323db79ae96c65886ea37879a7658f0b169d0cd9ab7bba2eb3b920e0bd6844e",
       "label": "Towelrail (CC0, Kay Lousberg)",
       "tags": [
-        "towelrail"
+        "towelrail",
+        "seen:toilet paper holder",
+        "seen:paper roll holder",
+        "seen:towel rail"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-towelrail.png",
@@ -25146,7 +25324,11 @@
       "hash": "9d707d4c24463f453f7eb406bdf422f93fe2294a4e193ff1cc15305b980d7493",
       "label": "Turnip (CC0, Quaternius)",
       "tags": [
-        "turnip"
+        "turnip",
+        "seen:trumpet flower",
+        "seen:alien plant",
+        "seen:bulb plant",
+        "seen:calla lily"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-turnip.png",
@@ -25247,7 +25429,10 @@
       "hash": "ff13a725b7b826aadd9ffa64992cc118b9dee3759d1171494c3ae9d3ed19fb84",
       "label": "Waffle (CC0, Quaternius)",
       "tags": [
-        "waffle"
+        "waffle",
+        "seen:air mattress",
+        "seen:mattress",
+        "seen:sleeping pad"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-waffle.png",
@@ -25653,7 +25838,10 @@
       "hash": "d31460026e4b5d1561cbac17720968a2e53240f1d27248be1f92fe868f6d1b34",
       "label": "Bed (CC0, Kenney)",
       "tags": [
-        "bed"
+        "bed",
+        "seen:stretcher",
+        "seen:medical cot",
+        "seen:massage table"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-bed.png",
@@ -26163,7 +26351,10 @@
       "label": "Bench decorated (CC0, Kay Lousberg)",
       "tags": [
         "bench decorated",
-        "bench-decorated"
+        "bench-decorated",
+        "seen:skull candle holder",
+        "seen:halloween decoration",
+        "seen:skull ornament"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-bench-decorated.png",
@@ -26366,7 +26557,10 @@
       "label": "Cabinet decorated (CC0, Kay Lousberg)",
       "tags": [
         "cabinet decorated",
-        "cabinet-decorated"
+        "cabinet-decorated",
+        "seen:dresser",
+        "seen:chest of drawers",
+        "seen:console table"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-cabinet-decorated.png",
@@ -26571,7 +26765,11 @@
       "tags": [
         "cabinet shelves",
         "cabinet-shelves",
-        "shelves"
+        "shelves",
+        "seen:shelving unit",
+        "seen:tv stand",
+        "seen:bookcase",
+        "seen:console table"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-cabinet-shelves.png",
@@ -26674,7 +26872,10 @@
       "tags": [
         "can fridge",
         "can-fridge",
-        "fridge"
+        "fridge",
+        "seen:locker",
+        "seen:storage cabinet",
+        "seen:equipment cabinet"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-can-fridge.png",
@@ -27301,7 +27502,10 @@
       "hash": "534c896814e9177f815b0269e2510dea71c756d40b1d8e72d1900b807bf5e481",
       "label": "Dryer (CC0, Kenney)",
       "tags": [
-        "dryer"
+        "dryer",
+        "seen:dishwasher",
+        "seen:refrigerator",
+        "seen:sterilizer"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-dryer.png",
@@ -28319,7 +28523,10 @@
       "hash": "10c9575fed3d63f7ed35c813f98c6f1503c32ab9ca66a3de1dbca30f3c7082de",
       "label": "Pictureframe (CC0, Kay Lousberg)",
       "tags": [
-        "pictureframe"
+        "pictureframe",
+        "seen:mirror",
+        "seen:picture frame",
+        "seen:framed glass"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pictureframe.png",
@@ -28421,7 +28628,10 @@
       "label": "Pictureframe standing (CC0, Kay Lousberg)",
       "tags": [
         "pictureframe standing",
-        "pictureframe-standing"
+        "pictureframe-standing",
+        "seen:picture frame",
+        "seen:photo frame",
+        "seen:small mirror"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pictureframe-standing.png",
@@ -28522,7 +28732,10 @@
       "hash": "8a73a4358806a85687e2ccb09b742a6f3b47ba5485b052df60e4d77932349262",
       "label": "Pillow (CC0, Kay Lousberg)",
       "tags": [
-        "pillow"
+        "pillow",
+        "seen:gold bar",
+        "seen:butter block",
+        "seen:gold nugget"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pillow.png",
@@ -29338,7 +29551,9 @@
       "hash": "95502ddc9d929e710decc03c652e90837541733c6a0fa6d6752516a482afde4e",
       "label": "Washer (CC0, Kenney)",
       "tags": [
-        "washer"
+        "washer",
+        "seen:washing machine",
+        "seen:clothes dryer"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-washer.png",
@@ -29455,7 +29670,10 @@
       "hash": "1fd4b6f2228a50c66edcd4223611695ce5e7e1a91b7d0c55458cc4093613efa4",
       "label": "Employee (CC0, Kenney)",
       "tags": [
-        "employee"
+        "employee",
+        "seen:cheerleader",
+        "seen:girl",
+        "seen:doll"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-employee.png",
@@ -29556,7 +29774,10 @@
       "hash": "1575830876d7a34064fa1c1077c50edecf1d0c6948e045a4b513d6ca5850405b",
       "label": "Oobi (CC0, Kenney)",
       "tags": [
-        "oobi"
+        "oobi",
+        "seen:astronaut",
+        "seen:space character",
+        "seen:astronaut toy"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-oobi.png",
@@ -29657,7 +29878,10 @@
       "hash": "0a0fd828d63e585c5b5d2c7dc012b07d3a85b2682b3269899d4da820d2b2064f",
       "label": "Oodi (CC0, Kenney)",
       "tags": [
-        "oodi"
+        "oodi",
+        "seen:astronaut",
+        "seen:alien astronaut",
+        "seen:astronaut toy"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-oodi.png",
@@ -29758,7 +29982,10 @@
       "hash": "ad93ccbcb3c609f257ab529d9236c71dbdea75f7dc07564d2ea4c1e53665741b",
       "label": "Ooli (CC0, Kenney)",
       "tags": [
-        "ooli"
+        "ooli",
+        "seen:astronaut",
+        "seen:space character",
+        "seen:astronaut toy"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-ooli.png",
@@ -29859,7 +30086,10 @@
       "hash": "faced4427e93f4b533dc29a19d59d8f44a7d20964e23c8f1714c95e7e5241052",
       "label": "Oopi (CC0, Kenney)",
       "tags": [
-        "oopi"
+        "oopi",
+        "seen:astronaut",
+        "seen:alien astronaut",
+        "seen:astronaut toy"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-oopi.png",
@@ -29960,7 +30190,10 @@
       "hash": "894d52daf0d5460d1b7b663d7e438abd6718a08f30fbf675c8a06c51d30928ba",
       "label": "Oozi (CC0, Kenney)",
       "tags": [
-        "oozi"
+        "oozi",
+        "seen:astronaut",
+        "seen:space character",
+        "seen:astronaut toy"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-oozi.png",
@@ -30162,7 +30395,10 @@
       "hash": "5886c39c4a588087bf4f2b5173530fea0d157f52f1b32e886f92260028f1caa7",
       "label": "Alpaking (CC0, Quaternius)",
       "tags": [
-        "alpaking"
+        "alpaking",
+        "seen:flying monster",
+        "seen:winged eyeball",
+        "seen:helmeted cyclops"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-alpaking.png",
@@ -30265,7 +30501,10 @@
       "tags": [
         "alpaking evolved",
         "alpaking-evolved",
-        "evolved"
+        "evolved",
+        "seen:three-headed monster",
+        "seen:flying monster",
+        "seen:winged cyclops"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-alpaking-evolved.png",
@@ -30366,7 +30605,10 @@
       "hash": "2ce7433c2ffb8efce8aa549104f5f8e53822a4b9188236a035044bfc1b2e473c",
       "label": "Armabee (CC0, Quaternius)",
       "tags": [
-        "armabee"
+        "armabee",
+        "seen:bee",
+        "seen:bumblebee",
+        "seen:wasp"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-armabee.png",
@@ -30468,7 +30710,10 @@
       "label": "Armabee evolved (CC0, Quaternius)",
       "tags": [
         "armabee evolved",
-        "armabee-evolved"
+        "armabee-evolved",
+        "seen:bee",
+        "seen:bumblebee",
+        "seen:wasp"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-armabee-evolved.png",
@@ -30569,7 +30814,10 @@
       "hash": "540fa20c4dbe93fa158ac4799fa7ca51044c4932610beb7e41bf2cbf24bd3fc7",
       "label": "Enemy (CC0, Quaternius)",
       "tags": [
-        "enemy"
+        "enemy",
+        "seen:monster",
+        "seen:goblin",
+        "seen:orc"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-enemy.png",
@@ -30672,7 +30920,10 @@
       "tags": [
         "enemy extra",
         "enemy-extra",
-        "extra"
+        "extra",
+        "seen:alien",
+        "seen:plant monster",
+        "seen:eyestalk creature"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-enemy-extra.png",
@@ -30775,7 +31026,10 @@
       "tags": [
         "enemy flying",
         "enemy-flying",
-        "flying"
+        "flying",
+        "seen:alien",
+        "seen:plant monster",
+        "seen:tentacle monster"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-enemy-flying.png",
@@ -30878,7 +31132,9 @@
       "tags": [
         "ghost skull",
         "ghost-skull",
-        "skull"
+        "skull",
+        "seen:bat",
+        "seen:flying fox"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-ghost-skull.png",
@@ -30979,7 +31235,9 @@
       "hash": "a692f5cc44fe39f7c3956b93dfc508504e38989f710f25f9cc46e3240ad846e1",
       "label": "Glub (CC0, Quaternius)",
       "tags": [
-        "glub"
+        "glub",
+        "seen:bat",
+        "seen:bat monster"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-glub.png",
@@ -31081,7 +31339,10 @@
       "label": "Glub evolved (CC0, Quaternius)",
       "tags": [
         "glub evolved",
-        "glub-evolved"
+        "glub-evolved",
+        "seen:two-headed bat",
+        "seen:bat monster",
+        "seen:bat"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-glub-evolved.png",
@@ -31182,7 +31443,10 @@
       "hash": "f4baa3cd0b5fa2efa9bd2e6b1ccf9662e92c2991968f4a78ff49f96ec3f81a42",
       "label": "Goleling (CC0, Quaternius)",
       "tags": [
-        "goleling"
+        "goleling",
+        "seen:bat",
+        "seen:goblin",
+        "seen:bat monster"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-goleling.png",
@@ -31284,7 +31548,10 @@
       "label": "Goleling evolved (CC0, Quaternius)",
       "tags": [
         "goleling evolved",
-        "goleling-evolved"
+        "goleling-evolved",
+        "seen:bat king",
+        "seen:crowned bat",
+        "seen:goblin king"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-goleling-evolved.png",
@@ -31385,7 +31652,10 @@
       "hash": "e345da33604a3334a43d5e579fdfd4e734c0fdaed40344c3a4636bd9498e61ae",
       "label": "Hywirl (CC0, Quaternius)",
       "tags": [
-        "hywirl"
+        "hywirl",
+        "seen:ghost",
+        "seen:ghost monster",
+        "seen:floating creature"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-hywirl.png",
@@ -31486,7 +31756,10 @@
       "hash": "2574e35e1237bf3e9af98650d6178853997a4433288a9e583e2768ab52e43f75",
       "label": "Mushnub (CC0, Quaternius)",
       "tags": [
-        "mushnub"
+        "mushnub",
+        "seen:mushroom",
+        "seen:toadstool",
+        "seen:mushroom character"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-mushnub.png",
@@ -31588,7 +31861,10 @@
       "label": "Mushnub evolved (CC0, Quaternius)",
       "tags": [
         "mushnub evolved",
-        "mushnub-evolved"
+        "mushnub-evolved",
+        "seen:mushroom monster",
+        "seen:spiked mushroom",
+        "seen:toadstool monster"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-mushnub-evolved.png",
@@ -32401,7 +32677,10 @@
       "label": "Altar stone (CC0, Kenney)",
       "tags": [
         "altar stone",
-        "altar-stone"
+        "altar-stone",
+        "seen:wooden crate",
+        "seen:storage bin",
+        "seen:barrier"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-altar-stone.png",
@@ -32705,7 +32984,10 @@
       "hash": "d83430ef806bf8e35edfbd5ff47d0dfc2bc3aee139ef14f1cc896218f520669d",
       "label": "Bush (CC0, Quaternius)",
       "tags": [
-        "bush"
+        "bush",
+        "seen:boulder",
+        "seen:rock",
+        "seen:stone"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-bush.png",
@@ -32808,7 +33090,10 @@
       "tags": [
         "bush berries",
         "bush-berries",
-        "berries"
+        "berries",
+        "seen:ore rock",
+        "seen:crystal rock",
+        "seen:boulder"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-bush-berries.png",
@@ -33423,7 +33708,10 @@
       "tags": [
         "coral grouper",
         "coral-grouper",
-        "grouper"
+        "grouper",
+        "seen:catfish",
+        "seen:fish",
+        "seen:pufferfish"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-coral-grouper.png",
@@ -33526,7 +33814,11 @@
       "tags": [
         "crop melon",
         "crop-melon",
-        "melon"
+        "melon",
+        "seen:pouf",
+        "seen:ottoman",
+        "seen:cushion",
+        "seen:blue pumpkin"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-crop-melon.png",
@@ -33628,7 +33920,10 @@
       "label": "Crop turnip (CC0, Kenney)",
       "tags": [
         "crop turnip",
-        "crop-turnip"
+        "crop-turnip",
+        "seen:icicle",
+        "seen:ice crystal",
+        "seen:crystal ornament"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-crop-turnip.png",
@@ -33832,7 +34127,10 @@
       "tags": [
         "flower horn",
         "flower-horn",
-        "horn"
+        "horn",
+        "seen:pufferfish",
+        "seen:fish",
+        "seen:piranha"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-flower-horn.png",
@@ -34036,7 +34334,10 @@
       "tags": [
         "grass leafs",
         "grass-leafs",
-        "leafs"
+        "leafs",
+        "seen:ice crystals",
+        "seen:crystal cluster",
+        "seen:ice shards"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-grass-leafs.png",
@@ -34241,7 +34542,10 @@
       "label": "Grass plant (CC0, Kenney)",
       "tags": [
         "grass plant",
-        "grass-plant"
+        "grass-plant",
+        "seen:crystal cluster",
+        "seen:emerald crystals",
+        "seen:green rocks"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-grass-plant.png",
@@ -34344,7 +34648,10 @@
       "tags": [
         "hanging moss",
         "hanging-moss",
-        "moss"
+        "moss",
+        "seen:icicle",
+        "seen:ice shard",
+        "seen:glass shard"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-hanging-moss.png",
@@ -34445,7 +34752,11 @@
       "hash": "75dd0a54498b6f87e6b5154ba5bfde88eb8ecd422c4ce6224f25c48ed1118da2",
       "label": "Hedge (CC0, Kenney)",
       "tags": [
-        "hedge"
+        "hedge",
+        "seen:sponge",
+        "seen:scrub sponge",
+        "seen:eraser",
+        "seen:scrub brush"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-hedge.png",
@@ -35259,7 +35570,10 @@
       "label": "Stump (CC0, Kenney)",
       "tags": [
         "stump",
-        "old"
+        "old",
+        "seen:armchair",
+        "seen:throne",
+        "seen:chair"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-stump.png",
@@ -35875,7 +36189,10 @@
       "tags": [
         "tree swirl",
         "tree-swirl",
-        "swirl"
+        "swirl",
+        "seen:fiddlehead fern",
+        "seen:spiral plant",
+        "seen:curled fern"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-tree-swirl.png",
@@ -37003,7 +37320,10 @@
       "label": "Box decorated (CC0, Kay Lousberg)",
       "tags": [
         "box decorated",
-        "box-decorated"
+        "box-decorated",
+        "seen:treasure chest",
+        "seen:treasure crate",
+        "seen:coin chest"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-box-decorated.png",
@@ -37105,7 +37425,10 @@
       "label": "Box long (CC0, Kenney)",
       "tags": [
         "box long",
-        "box-long"
+        "box-long",
+        "seen:bread slices",
+        "seen:toast",
+        "seen:sliced loaf"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-box-long.png",
@@ -37923,7 +38246,10 @@
       "tags": [
         "hay bale",
         "hay-bale",
-        "bale"
+        "bale",
+        "seen:boxing glove",
+        "seen:fist",
+        "seen:gauntlet"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-hay-bale.png",
@@ -38230,7 +38556,10 @@
       "label": "Machine barrel (CC0, Kenney)",
       "tags": [
         "machine barrel",
-        "machine-barrel"
+        "machine-barrel",
+        "seen:backpack",
+        "seen:jetpack",
+        "seen:tank backpack"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-machine-barrel.png",
@@ -38333,7 +38662,10 @@
       "tags": [
         "obstacle triangle",
         "obstacle-triangle",
-        "triangle"
+        "triangle",
+        "seen:cutting board",
+        "seen:food tray",
+        "seen:sandwich halves"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-obstacle-triangle.png",
@@ -39463,7 +39795,10 @@
       "label": "Pizza box (CC0, Kenney)",
       "tags": [
         "pizza box",
-        "pizza-box"
+        "pizza-box",
+        "seen:laptop",
+        "seen:compact mirror",
+        "seen:scanner"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-pizza-box.png",
@@ -39668,7 +40003,10 @@
       "tags": [
         "sack trench",
         "sack-trench",
-        "trench"
+        "trench",
+        "seen:stone wall",
+        "seen:brick wall",
+        "seen:masonry wall"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-sack-trench.png",
@@ -39872,7 +40210,10 @@
       "label": "Trap spikes (CC0, Kenney)",
       "tags": [
         "trap spikes",
-        "trap-spikes"
+        "trap-spikes",
+        "seen:traffic cones",
+        "seen:bollards",
+        "seen:concrete barriers"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-trap-spikes.png",
@@ -40086,7 +40427,10 @@
       "label": "Tree spikes (CC0, Quaternius)",
       "tags": [
         "tree spikes",
-        "tree-spikes"
+        "tree-spikes",
+        "seen:alien plant",
+        "seen:tentacle plant",
+        "seen:carnivorous plant"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-tree-spikes.png",
@@ -40699,7 +41043,10 @@
       "hash": "676a7615e38f620cae03cfbaf31a6cc7e7016d7f55a86b4db2ca8b1e18b20c44",
       "label": "Ambulance (CC0, Quaternius)",
       "tags": [
-        "ambulance"
+        "ambulance",
+        "seen:box truck",
+        "seen:delivery truck",
+        "seen:moving truck"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-ambulance.png",
@@ -41723,7 +42070,10 @@
       "label": "Craft racer (CC0, Kenney)",
       "tags": [
         "craft racer",
-        "craft-racer"
+        "craft-racer",
+        "seen:spaceship",
+        "seen:space fighter",
+        "seen:toy spacecraft"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-craft-racer.png",
@@ -42028,7 +42378,9 @@
       "hash": "42e0089010717501ff2688356940aae6cc7c3930f758e86e48069f2c59bb8f1c",
       "label": "Firetruck (CC0, Kenney)",
       "tags": [
-        "firetruck"
+        "firetruck",
+        "seen:fire engine",
+        "seen:fire truck"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-firetruck.png",
@@ -42743,7 +43095,10 @@
       "label": "School bus (CC0, Quaternius)",
       "tags": [
         "school bus",
-        "school-bus"
+        "school-bus",
+        "seen:covered wagon",
+        "seen:box truck",
+        "seen:caravan"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-school-bus.png",
@@ -43147,7 +43502,11 @@
       "hash": "cd27a479bedad3e62f3564e0f938403c079a05adeb80f484fcf837152b0b79fa",
       "label": "Train (CC0, Quaternius)",
       "tags": [
-        "train"
+        "train",
+        "seen:shipping container",
+        "seen:storage container",
+        "seen:dumpster",
+        "seen:cargo crate"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-train.png",
@@ -43450,7 +43809,10 @@
       "hash": "e269ee79221b3c30ff868a06565f6a027a296a1bf0e9483298cec272a71ade2e",
       "label": "Ak (CC0, Quaternius)",
       "tags": [
-        "ak"
+        "ak",
+        "seen:assault rifle",
+        "seen:rifle",
+        "seen:machine gun"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-ak.png",
@@ -43961,7 +44323,10 @@
       "hash": "93bfff5ace9d536791a61f85c8b515b370d0ee89f543c12f36ce544fddc3fdef",
       "label": "Axe (CC0, Quaternius)",
       "tags": [
-        "axe"
+        "axe",
+        "seen:katana",
+        "seen:sword",
+        "seen:samurai sword"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-axe.png",
@@ -44573,7 +44938,10 @@
       "hash": "c582bf71960bfc34b623421da77cd0c7876d0541cc79aeeafd79da22a625aefa",
       "label": "Claymore (CC0, Quaternius)",
       "tags": [
-        "claymore"
+        "claymore",
+        "seen:sword",
+        "seen:flaming sword",
+        "seen:magic sword"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-claymore.png",
@@ -44776,7 +45144,9 @@
       "hash": "dde2e8fbd1422374c5952b164fd86af819c28e56355cfc7b92ae8a977167cec1",
       "label": "Dagger (CC0, Quaternius)",
       "tags": [
-        "dagger"
+        "dagger",
+        "seen:sword",
+        "seen:serrated sword"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-dagger.png",
@@ -46404,7 +46774,10 @@
       "hash": "7a8a800625f0b381f897cc8937560687cb99d04261387997e5bd78454bdbcb73",
       "label": "Smg (CC0, Quaternius)",
       "tags": [
-        "smg"
+        "smg",
+        "seen:submachine gun",
+        "seen:machine pistol",
+        "seen:assault rifle"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-smg.png",
@@ -46505,7 +46878,11 @@
       "hash": "dc154ae191ec545456048fe68b84bbb78e1f399f0b330c00fe0dbe64ab106452",
       "label": "Smoke (CC0, Kenney)",
       "tags": [
-        "smoke"
+        "smoke",
+        "seen:snowball pile",
+        "seen:snowballs",
+        "seen:snow clump",
+        "seen:cotton boll"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-smoke.png",
@@ -46606,7 +46983,10 @@
       "hash": "d974535b25999c360949491e52c8cc8c1b43349bd8082586d5c6ccfb54c409c1",
       "label": "Sniper (CC0, Quaternius)",
       "tags": [
-        "sniper"
+        "sniper",
+        "seen:assault rifle",
+        "seen:carbine",
+        "seen:scoped rifle"
       ],
       "style": "CC0 low-poly, colours baked into vertices",
       "thumbnail": "/assets/worldstream/cc0/cc0-sniper.png",
@@ -47422,7 +47802,10 @@
       "label": "Utensil knife (CC0, Kenney)",
       "tags": [
         "utensil knife",
-        "utensil-knife"
+        "utensil-knife",
+        "seen:propeller",
+        "seen:rotor blade",
+        "seen:metal strip"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-utensil-knife.png",
@@ -47628,7 +48011,10 @@
       "tags": [
         "weapon catapult",
         "weapon-catapult",
-        "catapult"
+        "catapult",
+        "seen:flamethrower turret",
+        "seen:water cannon",
+        "seen:cannon turret"
       ],
       "style": "CC0 low-poly, texture at most 512 px",
       "thumbnail": "/assets/worldstream/cc0/cc0-weapon-catapult.png",
@@ -47830,7 +48216,9 @@
       "hash": "ebffb50e0c6bf28fc256fa07e93f02dc23d1adc4a34ade33b927488ad6db0f01",
       "label": "alien bug (generated)",
       "tags": [
-        "alien bug"
+        "alien bug",
+        "seen:beetle",
+        "seen:green beetle"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-alien-bug.png",
@@ -48338,7 +48726,10 @@
       "hash": "40dc99c6d0a4116169d43544330768bef1a8f987dae532476a01e1c8e23f3045",
       "label": "blender (generated)",
       "tags": [
-        "blender"
+        "blender",
+        "seen:bollard light",
+        "seen:tube lamp",
+        "seen:outdoor lamp"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-blender.png",
@@ -49461,7 +49852,9 @@
       "label": "customer (generated)",
       "tags": [
         "customer",
-        "shopper"
+        "shopper",
+        "seen:man",
+        "seen:person"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-customer.png",
@@ -50173,7 +50566,11 @@
       "hash": "766724e722b909f5c8296650013ae19e2bc5e05419fde7d95665afd88abb85a0",
       "label": "factory (generated)",
       "tags": [
-        "factory"
+        "factory",
+        "seen:furnace",
+        "seen:forge",
+        "seen:industrial oven",
+        "seen:boiler"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-factory.png",
@@ -50582,7 +50979,10 @@
       "label": "food (generated)",
       "tags": [
         "food",
-        "sandwich"
+        "sandwich",
+        "seen:hamburger",
+        "seen:cheeseburger",
+        "seen:burger"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-food.png",
@@ -50683,7 +51083,10 @@
       "hash": "20087f0a6d94d6dca78ab53709e667b150d93cb6fb9884f09e09f5c861e71336",
       "label": "fps (generated)",
       "tags": [
-        "fps"
+        "fps",
+        "seen:rocket launcher",
+        "seen:grenade launcher",
+        "seen:science fiction gun"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-fps.png",
@@ -50786,7 +51189,10 @@
       "tags": [
         "gang",
         "gangster",
-        "thug"
+        "thug",
+        "seen:man",
+        "seen:villager",
+        "seen:zombie"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-gang.png",
@@ -50888,7 +51294,10 @@
       "label": "garden (generated)",
       "tags": [
         "garden",
-        "shrub"
+        "shrub",
+        "seen:grove",
+        "seen:forest",
+        "seen:tree cluster"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-garden.png",
@@ -51091,7 +51500,10 @@
       "label": "golf (generated)",
       "tags": [
         "golf",
-        "golf club"
+        "golf club",
+        "seen:plunger",
+        "seen:sink plunger",
+        "seen:toilet plunger"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-golf.png",
@@ -51600,7 +52012,10 @@
       "hash": "c2cad37de0a8918af1d69ac99e28cfebdd1424cccae08daedd42a06f7dcfbe5b",
       "label": "hotel (generated)",
       "tags": [
-        "hotel"
+        "hotel",
+        "seen:house",
+        "seen:building",
+        "seen:cottage"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-hotel.png",
@@ -51904,7 +52319,10 @@
       "hash": "2c257d96d700b309f9aa573d894bb3e8521dd3a2d42c7f04656559234f62e649",
       "label": "launch (generated)",
       "tags": [
-        "launch"
+        "launch",
+        "seen:crystal",
+        "seen:crystal cluster",
+        "seen:mineral specimen"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-launch.png",
@@ -52414,7 +52832,11 @@
       "hash": "7dc0ee2d0ad890f87a641743e62edc8085d8539ae1b89636897367c8b5e8a5ec",
       "label": "museum (generated)",
       "tags": [
-        "museum"
+        "museum",
+        "seen:sarcophagus",
+        "seen:stone coffin",
+        "seen:tomb",
+        "seen:chest"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-museum.png",
@@ -53022,7 +53444,10 @@
       "hash": "b8be64c9034cd95ed9668247fbf41cc8067699a85cca7c7940d253e0067227b7",
       "label": "raft (generated)",
       "tags": [
-        "raft"
+        "raft",
+        "seen:sandbox",
+        "seen:sandpit",
+        "seen:raised garden bed"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-raft.png",
@@ -53123,7 +53548,9 @@
       "hash": "8432926352cdce316a68088345c69addabeeddb38de11921dca4f211ee4aee89",
       "label": "ragdoll (generated)",
       "tags": [
-        "ragdoll"
+        "ragdoll",
+        "seen:boy",
+        "seen:child"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-ragdoll.png",
@@ -53835,7 +54262,10 @@
       "hash": "3bf7d2c769751b20733eb9c68b6d3ad27a534b735e1694960e931c93782cd55a",
       "label": "sister (generated)",
       "tags": [
-        "sister"
+        "sister",
+        "seen:girl",
+        "seen:woman",
+        "seen:schoolgirl"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-sister.png",
@@ -54547,7 +54977,10 @@
       "label": "suika (generated)",
       "tags": [
         "suika",
-        "watermelon"
+        "watermelon",
+        "seen:lime",
+        "seen:green orange",
+        "seen:green apple"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-suika.png",
@@ -54648,7 +55081,10 @@
       "hash": "cce26abf329c931a0d4045c6cc95941e9e082e9f1c2bacd9e492c0f04d4c4e4d",
       "label": "survivor (generated)",
       "tags": [
-        "survivor"
+        "survivor",
+        "seen:man",
+        "seen:civilian",
+        "seen:young man"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-survivor.png",
@@ -54850,7 +55286,9 @@
       "hash": "2b787cc88469c4e27becc7456a922cb3ede948eb2c3d4ecb1ff648ca5da80069",
       "label": "teacher (generated)",
       "tags": [
-        "teacher"
+        "teacher",
+        "seen:man",
+        "seen:boy"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-teacher.png",
@@ -55257,7 +55695,9 @@
       "hash": "e29cfed1641cf66d22fb2a86a5c8b01af90204c5fa09e946e4028554d4bc330c",
       "label": "wand (generated)",
       "tags": [
-        "wand"
+        "wand",
+        "seen:paintbrush",
+        "seen:pencil"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-wand.png",
@@ -55460,7 +55900,10 @@
       "label": "billboard (generated)",
       "tags": [
         "billboard",
-        "ads"
+        "ads",
+        "seen:chalkboard",
+        "seen:signboard",
+        "seen:noticeboard"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-billboard.png",
@@ -55766,7 +56209,10 @@
       "label": "leather belt (generated)",
       "tags": [
         "leather belt",
-        "belt"
+        "belt",
+        "seen:hot tub",
+        "seen:circular pool",
+        "seen:water trough"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-leather-belt.png",
@@ -57403,7 +57849,9 @@
       "label": "pickaxe (generated)",
       "tags": [
         "pickaxe",
-        "mining"
+        "mining",
+        "seen:hammer",
+        "seen:claw hammer"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-pickaxe.png",
@@ -59344,7 +59792,10 @@
       "label": "wrecking ball (generated)",
       "tags": [
         "wrecking ball",
-        "wrecking"
+        "wrecking",
+        "seen:bomb",
+        "seen:hanging weight",
+        "seen:pendulum"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-wrecking-ball.png",
@@ -60062,7 +60513,9 @@
       "tags": [
         "moon rock",
         "moon",
-        "lunar"
+        "lunar",
+        "seen:egg",
+        "seen:stone"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-moon-rock.png",
@@ -60979,7 +61432,10 @@
       "label": "drawbridge (generated)",
       "tags": [
         "drawbridge",
-        "moat"
+        "moat",
+        "seen:footbridge",
+        "seen:wooden bridge",
+        "seen:arched bridge"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-drawbridge.png",
@@ -61386,7 +61842,10 @@
       "label": "food truck (generated)",
       "tags": [
         "food truck",
-        "street food"
+        "street food",
+        "seen:camper van",
+        "seen:motorhome",
+        "seen:rv"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-food-truck.png",
@@ -62100,7 +62559,9 @@
       "label": "treasure map (generated)",
       "tags": [
         "treasure map",
-        "map"
+        "map",
+        "seen:sandbox",
+        "seen:sandpit"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-treasure-map.png",
@@ -62304,7 +62765,9 @@
       "label": "magic wand (generated)",
       "tags": [
         "magic wand",
-        "spell"
+        "spell",
+        "seen:sword",
+        "seen:dagger"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-magic-wand.png",
@@ -63218,7 +63681,9 @@
       "hash": "3daf0584d5e9395ed616344754312f94cbc15aa84a885c4e98670cfad99ca88e",
       "label": "grandpa (generated)",
       "tags": [
-        "grandpa"
+        "grandpa",
+        "seen:elderly man",
+        "seen:grandfather"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-grandpa.png",
@@ -63521,7 +63986,8 @@
       "hash": "8adcc1bc8ce1bc93ad0bfd91efb71925fd78c1ed3789c7220b0eca46a1eb4a81",
       "label": "pearl (generated)",
       "tags": [
-        "pearl"
+        "pearl",
+        "seen:egg"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-pearl.png",
@@ -63927,7 +64393,10 @@
       "label": "termite hill (generated)",
       "tags": [
         "termite hill",
-        "termite mound"
+        "termite mound",
+        "seen:cape",
+        "seen:cloak",
+        "seen:poncho"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-termite-hill.png",
@@ -64029,7 +64498,10 @@
       "label": "medical stretcher (generated)",
       "tags": [
         "medical stretcher",
-        "stretcher"
+        "stretcher",
+        "seen:sun lounger",
+        "seen:deck chair",
+        "seen:reclining chair"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-medical-stretcher.png",
@@ -64131,7 +64603,11 @@
       "label": "moon lander (generated)",
       "tags": [
         "moon lander",
-        "lunar lander"
+        "lunar lander",
+        "seen:furnace",
+        "seen:smelter",
+        "seen:forge",
+        "seen:boiler"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-moon-lander.png",
@@ -65953,7 +66429,9 @@
       "hash": "0b4d849ef4d17cb804c10cabd93cdccf1206cc4f54c63a6693d1fc355fff0e94",
       "label": "griffin (generated)",
       "tags": [
-        "griffin"
+        "griffin",
+        "seen:owl",
+        "seen:horned owl"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-griffin.png",
@@ -66458,7 +66936,10 @@
       "hash": "34aac846759e50e53132ecf223c1d8481d095d02219db11b49c9f58f85ae26ec",
       "label": "mummy (generated)",
       "tags": [
-        "mummy"
+        "mummy",
+        "seen:astronaut",
+        "seen:armored soldier",
+        "seen:robot"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-mummy.png",
@@ -66761,7 +67242,10 @@
       "hash": "1f01abff03710b08c59fcb4531e4dd54669d19d51a0d8f95adb4be30c1973d0b",
       "label": "samurai (generated)",
       "tags": [
-        "samurai"
+        "samurai",
+        "seen:pirate",
+        "seen:sailor",
+        "seen:adventurer"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-samurai.png",
@@ -66862,7 +67346,10 @@
       "hash": "d2c317fc4c4682c20e10621a942f0ae590d70f2f98deb1eff9612fadb5befa59",
       "label": "cyborg (generated)",
       "tags": [
-        "cyborg"
+        "cyborg",
+        "seen:armored soldier",
+        "seen:robot",
+        "seen:knight"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-cyborg.png",
@@ -67064,7 +67551,10 @@
       "hash": "fc41b231dddad48ec34af70507ff6e9bb1749047b6b903ab4579806f9f05b6a7",
       "label": "villain (generated)",
       "tags": [
-        "villain"
+        "villain",
+        "seen:werewolf",
+        "seen:wolf man",
+        "seen:wolf warrior"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-villain.png",
@@ -67468,7 +67958,11 @@
       "hash": "341950b19a01a51b7a9e5463e2ce9ca6599f2ef2debbccfe55180c2dd3b15d8a",
       "label": "farmer (generated)",
       "tags": [
-        "farmer"
+        "farmer",
+        "seen:adventurer",
+        "seen:explorer",
+        "seen:archaeologist",
+        "seen:cowboy"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-farmer.png",
@@ -67670,7 +68164,10 @@
       "hash": "1aa1cb2e65a4449d814e35a388c0a59b322b7cf129952984051c8633f7cdab93",
       "label": "thief (generated)",
       "tags": [
-        "thief"
+        "thief",
+        "seen:soldier",
+        "seen:police officer",
+        "seen:security guard"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-thief.png",
@@ -67973,7 +68470,10 @@
       "hash": "267feedcba53310d252996f7b0e091270d3e637e857addb1ba1b1ac40ce57061",
       "label": "student (generated)",
       "tags": [
-        "student"
+        "student",
+        "seen:person",
+        "seen:man",
+        "seen:mannequin"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-student.png",
@@ -69793,7 +70293,9 @@
       "hash": "b64939efd8e2dd07def4ec1ecf0d1ca2527162b2af19762e3eca639e442d242c",
       "label": "dice (generated)",
       "tags": [
-        "dice"
+        "dice",
+        "seen:ice cube",
+        "seen:ice block"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-dice.png",
@@ -70803,7 +71305,10 @@
       "hash": "d0e698b010dde22d1d08d821d3002fdda15d0ec1df3ff9861697689455610e92",
       "label": "iceberg (generated)",
       "tags": [
-        "iceberg"
+        "iceberg",
+        "seen:icicle",
+        "seen:ice crystal",
+        "seen:crystal"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-iceberg.png",
@@ -71207,7 +71712,10 @@
       "hash": "19af9df918b95528df3b853a4b5aee43ac4d055f2c2d180f814ce6b797ba1a1e",
       "label": "planet (generated)",
       "tags": [
-        "planet"
+        "planet",
+        "seen:ball",
+        "seen:sphere",
+        "seen:marble"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-planet.png",
@@ -71915,7 +72423,8 @@
       "hash": "27738229ce5fe71a4f23a6c60154ca6a60404cc09b56905f1976c107e8b99b75",
       "label": "telescope (generated)",
       "tags": [
-        "telescope"
+        "telescope",
+        "seen:microscope"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-telescope.png",
@@ -72117,7 +72626,10 @@
       "hash": "542513fbbe2881a5cbeccd5518db5a8c60deb99bcefea73aeb679217b6b4347e",
       "label": "magnet (generated)",
       "tags": [
-        "magnet"
+        "magnet",
+        "seen:nail polish bottle",
+        "seen:glue bottle",
+        "seen:potion bottle"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-magnet.png",
@@ -72422,7 +72934,10 @@
       "hash": "08f3fcf1d004e0e3e30c8b1445a32b4d224a5cea3c1dc8e0d24d1ced38b12933",
       "label": "rake (generated)",
       "tags": [
-        "rake"
+        "rake",
+        "seen:arrow",
+        "seen:dart",
+        "seen:crossbow bolt"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-rake.png",
@@ -73647,7 +74162,9 @@
       "label": "black hole portal (generated)",
       "tags": [
         "black hole portal",
-        "black hole"
+        "black hole",
+        "seen:witch hat",
+        "seen:wizard hat"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-black-hole-portal.png",
@@ -73749,7 +74266,10 @@
       "label": "brown owl (generated)",
       "tags": [
         "brown owl",
-        "owl"
+        "owl",
+        "seen:paper bag",
+        "seen:crumpled sack",
+        "seen:paper wrapper"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-brown-owl.png",
@@ -74567,7 +75087,10 @@
       "label": "lab scientist (generated)",
       "tags": [
         "lab scientist",
-        "scientist"
+        "scientist",
+        "seen:potion bottle",
+        "seen:elixir bottle",
+        "seen:flask"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-lab-scientist.png",
@@ -74669,7 +75192,8 @@
       "label": "stage magician (generated)",
       "tags": [
         "stage magician",
-        "magician"
+        "magician",
+        "qa:unrecognisable"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-stage-magician.png",
@@ -75283,7 +75807,10 @@
       "label": "large boulder (generated)",
       "tags": [
         "large boulder",
-        "boulder"
+        "boulder",
+        "seen:snowball",
+        "seen:white rock",
+        "seen:ball"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-large-boulder.png",
@@ -75692,7 +76219,10 @@
       "label": "iron cannonball (generated)",
       "tags": [
         "iron cannonball",
-        "cannonball"
+        "cannonball",
+        "seen:bottle",
+        "seen:flask",
+        "seen:jar"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-iron-cannonball.png",
@@ -76202,7 +76732,9 @@
       "label": "jump pad (generated)",
       "tags": [
         "jump pad",
-        "launch pad"
+        "launch pad",
+        "seen:graduation cap",
+        "seen:mortarboard"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-jump-pad.png",
@@ -76406,7 +76938,10 @@
       "label": "small songbird (generated)",
       "tags": [
         "small songbird",
-        "songbird"
+        "songbird",
+        "seen:chick",
+        "seen:bird",
+        "seen:canary"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-small-songbird.png",
@@ -76712,7 +77247,10 @@
       "hash": "32defc261a43c6dc9880b2b1bfbcd82e58602de24c4ea216ab993d5d39c24234",
       "label": "road sign (generated)",
       "tags": [
-        "road sign"
+        "road sign",
+        "seen:block hammer",
+        "seen:mallet",
+        "seen:toy hammer"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-road-sign.png",
@@ -77019,7 +77557,9 @@
       "label": "gold necklace (generated)",
       "tags": [
         "gold necklace",
-        "necklace"
+        "necklace",
+        "seen:slingshot",
+        "seen:catapult"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-gold-necklace.png",
@@ -77121,7 +77661,10 @@
       "label": "sealed letter (generated)",
       "tags": [
         "sealed letter",
-        "letter"
+        "letter",
+        "seen:cardboard box",
+        "seen:carton",
+        "seen:storage box"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-sealed-letter.png",
@@ -77223,7 +77766,10 @@
       "label": "paper envelope (generated)",
       "tags": [
         "paper envelope",
-        "envelope"
+        "envelope",
+        "seen:cheese block",
+        "seen:swiss cheese",
+        "seen:cheese"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-paper-envelope.png",
@@ -78244,7 +78790,10 @@
       "hash": "e00ba1a2b69a441be1e6cbe29047011414f73bc0b1be6e74d55511faa43c02dc",
       "label": "mosquito (generated)",
       "tags": [
-        "mosquito"
+        "mosquito",
+        "seen:fly",
+        "seen:beetle",
+        "seen:bee"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-mosquito.png",
@@ -78855,7 +79404,10 @@
       "hash": "32b518c321b84b6919ebe8fccdbcc3fe2a48f1e6c9daa8bd2ae110ec9945d889",
       "label": "otter (generated)",
       "tags": [
-        "otter"
+        "otter",
+        "seen:beaver",
+        "seen:groundhog",
+        "seen:marmot"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-otter.png",
@@ -78956,7 +79508,9 @@
       "hash": "73a7c537609b91221e247d1b89e510a524182b5b7d8b65a85f0446b66472bf8a",
       "label": "skunk (generated)",
       "tags": [
-        "skunk"
+        "skunk",
+        "seen:turtle",
+        "seen:tortoise"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-skunk.png",
@@ -79565,7 +80119,10 @@
       "label": "pufferfish (generated)",
       "tags": [
         "pufferfish",
-        "blowfish"
+        "blowfish",
+        "seen:wrapped candy",
+        "seen:chocolate candy",
+        "seen:bonbon"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-pufferfish.png",
@@ -79666,7 +80223,9 @@
       "hash": "e9a62b49d1884cc1257298bfcb8aba50f98a3c8a3f7bf47e4de025c50ee776b0",
       "label": "axolotl (generated)",
       "tags": [
-        "axolotl"
+        "axolotl",
+        "seen:elephant",
+        "seen:mammoth"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-axolotl.png",
@@ -79969,7 +80528,11 @@
       "hash": "117a7ede357156361b4b9d56658914eb32228cd1628d698c96674e545166aa04",
       "label": "jukebox (generated)",
       "tags": [
-        "jukebox"
+        "jukebox",
+        "seen:trash bin",
+        "seen:furnace",
+        "seen:metal cabinet",
+        "seen:mailbox"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-jukebox.png",
@@ -80575,7 +81138,10 @@
       "hash": "ff6dd5c383989555b21410dd3eead808e3fd1a72948e529453f4909fb020d622",
       "label": "accordion (generated)",
       "tags": [
-        "accordion"
+        "accordion",
+        "seen:books",
+        "seen:book collection",
+        "seen:row of books"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-accordion.png",
@@ -80878,7 +81444,11 @@
       "hash": "4316a5cb144197e5f032ad922f9b1c190405f3159b1913747f52c234cfc221ac",
       "label": "xylophone (generated)",
       "tags": [
-        "xylophone"
+        "xylophone",
+        "seen:wooden torch",
+        "seen:basket torch",
+        "seen:wooden lantern",
+        "seen:wicker cage"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-xylophone.png",
@@ -80980,7 +81550,11 @@
       "label": "bagpipe (generated)",
       "tags": [
         "bagpipe",
-        "bagpipes"
+        "bagpipes",
+        "seen:magic wand",
+        "seen:baton",
+        "seen:scepter",
+        "seen:club"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-bagpipe.png",
@@ -81283,7 +81857,9 @@
       "hash": "990a3838c4b5ca90f872747e1714fb32e229bc322c038902544b2ffe4fc81b44",
       "label": "tambourine (generated)",
       "tags": [
-        "tambourine"
+        "tambourine",
+        "seen:drum",
+        "seen:snare drum"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d/gen3d-tambourine.png",
@@ -81710,7 +82286,11 @@
       "hash": "6f950ee1dba0aa322923a43941661bba1be41b420a00688630a0513cbb0b9794",
       "label": "squirrel (generated)",
       "tags": [
-        "squirrel"
+        "squirrel",
+        "seen:copper ore",
+        "seen:crystal cluster",
+        "seen:copper nugget",
+        "seen:rock formation"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-squirrel.png",
@@ -81912,7 +82492,10 @@
       "hash": "9cfef62549fea82bd75de10d2a3aff68ae22d7d93b72fd13d1c440c641ddbc16",
       "label": "bug (generated)",
       "tags": [
-        "bug"
+        "bug",
+        "seen:beetle",
+        "seen:firebug",
+        "seen:insect"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-bug.png",
@@ -82518,7 +83101,10 @@
       "hash": "f202f2906ca40402635f4485fdc9854459f1bb485634bb266eba49ed43fbb815",
       "label": "investor (generated)",
       "tags": [
-        "investor"
+        "investor",
+        "seen:businessman",
+        "seen:man",
+        "seen:office worker"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-investor.png",
@@ -83429,7 +84015,10 @@
       "hash": "a0fd7446b3b51818bcf958417678ae3c018ad06c976afd2e2a79b4d66eabf412",
       "label": "kraken (generated)",
       "tags": [
-        "kraken"
+        "kraken",
+        "seen:octopus",
+        "seen:squid",
+        "seen:tentacle monster"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-kraken.png",
@@ -83733,7 +84322,10 @@
       "label": "cashier (generated)",
       "tags": [
         "cashier",
-        "clerk"
+        "clerk",
+        "seen:receptionist desk",
+        "seen:office desk",
+        "seen:reception counter"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-cashier.png",
@@ -87586,7 +88178,10 @@
       "hash": "5b83488511e55165f9370402f42ba07c12000e58aedebd11a1deb0aff3753227",
       "label": "slot machine (generated)",
       "tags": [
-        "slot machine"
+        "slot machine",
+        "seen:treasure chest",
+        "seen:storage chest",
+        "seen:jewelry box"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-slot-machine.png",
@@ -90215,7 +90810,10 @@
       "hash": "0d83aaa097fa6c0cc0859f90783b24ad26f4a20d81a78d61803797a209e07f26",
       "label": "soap (generated)",
       "tags": [
-        "soap"
+        "soap",
+        "seen:sponge",
+        "seen:foam block",
+        "seen:rectangular block"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-soap.png",
@@ -90822,7 +91420,11 @@
       "hash": "6cf18fb8f0cf8908dd89b0061e2278017bb99e362ab3123bab37bc5bb3cf2302",
       "label": "cassette (generated)",
       "tags": [
-        "cassette"
+        "cassette",
+        "seen:metal panel",
+        "seen:metal crate",
+        "seen:wall panel",
+        "seen:vent cover"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-cassette.png",
@@ -91428,7 +92030,10 @@
       "hash": "2da64a92022a669892f24acc292a15d7f91db2d435d9f0b49729403304fd72bd",
       "label": "ribbon (generated)",
       "tags": [
-        "ribbon"
+        "ribbon",
+        "seen:banner",
+        "seen:pennant",
+        "seen:hanging flag"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-ribbon.png",
@@ -92340,7 +92945,10 @@
       "hash": "5dfab36b87b0e86d5efe554de5aab1233b2c54b7110e7b06f6affae5e01fc463",
       "label": "easel (generated)",
       "tags": [
-        "easel"
+        "easel",
+        "seen:prayer wheel",
+        "seen:rotating sign",
+        "seen:display stand"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-easel.png",
@@ -94060,7 +94668,11 @@
       "hash": "8317ba8dc5a1d45d597bf28f61ede24faacb65e23bb890db52487e4a975aa260",
       "label": "fish tank (generated)",
       "tags": [
-        "fish tank"
+        "fish tank",
+        "seen:dumpster",
+        "seen:storage container",
+        "seen:cooler",
+        "seen:storage box"
       ],
       "style": "generated low-poly vertex colour",
       "thumbnail": "/assets/worldstream/gen3d-p37d/gen3d-fish-tank.png",

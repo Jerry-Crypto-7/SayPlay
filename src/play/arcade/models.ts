@@ -42,16 +42,36 @@ const PATHS: ReadonlyMap<string, string> = new Map(
   catalog.assets.map((asset) => [asset.assetId, asset.path]),
 );
 
-/** Tag → model. Tag, který nese víc modelů (`robot`), patří tomu, který se tak jmenuje. */
-const BY_TAG: ReadonlyMap<string, string> = (() => {
+/** Štítek slepého soudu P43: model, který porotce nepozná, jméno z věty nedostane. */
+export const UNRECOGNISABLE = 'qa:unrecognisable';
+
+/** Jméno, které slepý soud P43 modelu dal místo jeho vlastního (`scripts/p43/apply-verdicts.mjs`). */
+const SEEN = 'seen:';
+
+/**
+ * Tag → model. Tag, který nese víc modelů (`robot`), patří tomu, který se tak jmenuje.
+ * Jméno ze slepého soudu (`seen:cake` u pizzy, která vypadá jako dort) dostane slovo
+ * jen tehdy, když ho žádný model nenese vlastním tagem.
+ */
+export function tagIndex(assets: ReadonlyArray<{ readonly assetId: string; readonly tags: readonly string[] }>): ReadonlyMap<string, string> {
   const index = new Map<string, string>();
-  for (const asset of catalog.assets) {
+  const known = assets.filter((asset) => !asset.tags.includes(UNRECOGNISABLE));
+  for (const asset of known) {
     for (const tag of [asset.assetId, ...asset.tags]) {
+      if (tag.startsWith(SEEN)) continue;
       if (!index.has(tag) || tag === asset.assetId) index.set(tag, asset.assetId);
     }
   }
+  for (const asset of known) {
+    for (const tag of asset.tags) {
+      const word = tag.startsWith(SEEN) ? tag.slice(SEEN.length) : undefined;
+      if (word !== undefined && !index.has(word)) index.set(word, asset.assetId);
+    }
+  }
   return index;
-})();
+}
+
+const BY_TAG = tagIndex(catalog.assets);
 
 /** Slova, která tag katalogu nese jinak, než je myslí věta: pták je postava (primitiv `bird`), ne hnízdo. */
 const WORD_SENSE: Readonly<Record<string, string>> = {
