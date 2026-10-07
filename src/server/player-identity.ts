@@ -104,6 +104,11 @@ function cookieValues(request: Request): string[] {
   });
 }
 
+/** Poslal klient nějakou cookie `sp_player`? Platnou, padělanou i zdvojenou – dveře pak novou identitu nevydají (P44B T5). */
+export function hasPlayerCookie(request: Request): boolean {
+  return cookieValues(request).length > 0;
+}
+
 /** Id hráče z platně podepsané cookie, jinak `null` – i při dvou cookie, kdy nejde říct, která platí. */
 export function playerOf(request: Request, env: Record<string, string | undefined> = process.env): string | null {
   const values = cookieValues(request);

@@ -88,7 +88,18 @@ výchozí 150) se neuloží – výzva platí, jen ducha nemá. Týž běh odesl
 `dareId` = prvních 32 hex SHA-256 z (hra, výsledek přehrání – hash konce, tik, skóre – a změny před koncem běhu
 seřazené i uvnitř tiku), ne z poslaných vstupů: týž běh podruhé – i s no-op vstupem, se vstupem po konci nebo
 s přeházenými změnami – je **200** s týmž id a denní strop neubírá, nová výzva **201**; obě
-`{ dareId, score, ticks }`, `cache-control: no-store`.
+`{ dareId, score, ticks, board, beat }`, `cache-control: no-store`.
+
+**Žebříček (P44B T5)** píšou jen tyhle dveře. Hráč je z podepsané cookie `sp_player`; bez cookie se vydá nová
+(`set-cookie`, strop nových identit z `GET /api/play/me`), padělaná nebo zdvojená cookie novou nevydá a vypnutá identita
+(Vercel bez `PLAY_IDENTITY_SECRET`) taky ne – výzva pak platí bez autora jako dřív. Uložená výzva nese `by` = hráč, který ji
+zapsal první; ven ji nepustí žádná odpověď. Do žebříčku (`putBoardEntry`, skóre a tiky z přehrání) jde jen výhra bez
+živých změn a jen když běh patří tomuto hráči: výzva je nová (`201`), nebo už ležela s `by` = on. Duch je veřejný, takže
+kopie cizího běhu je táž výzva (`200`) a žebříčkem nepohne. `board: { place, of }` = místo hráče a kolik hráčů žebříček
+drží; `null` = běh se nezapsal (bez hráče, se změnami, cizí, nad denním stropem 30 zápisů hráče, mimo 50 nejlepších,
+nebo výpadek úložiště – ten výzvu neshodí). Nepovinné `against` (id výzvy) → `beat: true`, když `bestRank` běhu přebije
+uloženou výzvu téže hry, `false`, když ne; `null`, když není s čím srovnat (chybí, vadné id, cizí hra, neznámá výzva,
+nebo jeden z běhů měnil hru živými změnami). Testy: `src/app/api/play/__tests__/dare-board.test.ts`.
 
 | Krok | Kód | Stav |
 |---|---|---|

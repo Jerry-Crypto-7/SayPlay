@@ -197,6 +197,11 @@ export interface DareRecord {
   readonly liveChanges: number;
   readonly createdAt: string;
   /**
+   * Hráč, který výzvu zapsal první (P44B T5, debata T1) – jen jemu patří běh v žebříčku. Chybí u výzev
+   * bez identity. Je to id z cookie: ven ho nesmí pustit žádná odpověď.
+   */
+  readonly by?: string;
+  /**
    * Běh pro přehrání ducha (P37C T1). Chybí u výzev zapsaných před ním, u běhu
    * nad `MAX_GHOST_BYTES`, nad stropy duchů a po `GHOST_TTL_SECONDS` – taková
    * výzva platí dál, jen ducha nemá.
@@ -358,8 +363,8 @@ function parsedOrNull(text: string | null): unknown {
 
 /** Výzva bez běhu – tak se zapisuje; běh leží pod vlastním klíčem. */
 function withoutReplay(dare: DareRecord): DareRecord {
-  const { dareId, versionId, score, ticks, hash, liveChanges, createdAt } = dare;
-  return { dareId, versionId, score, ticks, hash, liveChanges, createdAt };
+  const { dareId, versionId, score, ticks, hash, liveChanges, createdAt, by } = dare;
+  return { dareId, versionId, score, ticks, hash, liveChanges, createdAt, ...(typeof by === 'string' ? { by } : {}) };
 }
 
 /** Den v UTC pro klíč počítadla. */

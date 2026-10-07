@@ -115,7 +115,8 @@ describe('POST /api/play/games/:id/dare (P36B T5)', () => {
     expect(first.status).toBe(201);
     expect(first.headers.get('cache-control')).toBe('no-store');
     const body = (await first.json()) as { dareId: string; score: number; ticks: number };
-    expect(body).toEqual({ dareId: expect.stringMatching(/^[a-f0-9]{32}$/), score: expected.score, ticks: expected.tick });
+    // `board` a `beat` přidal P44B T5 (žebříček); zbytek těla beze změny.
+    expect(body).toEqual({ dareId: expect.stringMatching(/^[a-f0-9]{32}$/), score: expected.score, ticks: expected.tick, board: { place: 1, of: 1 }, beat: null });
     expect(await stored(body.dareId)).toMatchObject({ versionId: game.id, score: expected.score, ticks: expected.tick, hash: expected.hash, liveChanges: 0 });
 
     // Týž běh podruhé – i se vstupem po konci a s živou změnou, která už nepadla – je táž výzva.

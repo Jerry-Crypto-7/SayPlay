@@ -94,7 +94,8 @@ test.describe('/play/[id] – send a dare (P36B T6)', () => {
     // Server výzvu drží: týž běh podruhé je táž výzva (200), ne nová.
     const again = await request.post(`/api/play/games/${id}/dare`, { data: JSON.parse(response.request().postData()!) as unknown, headers: person(2).extraHTTPHeaders });
     expect(again.status()).toBe(200);
-    expect(await again.json()).toEqual({ dareId: dare.dareId, score: end.score, ticks: end.tick });
+    // Cizí kopie běhu žebříčkem nepohne (P44B T5: běh patří prvnímu zapisovateli) a `against` nepřišlo.
+    expect(await again.json()).toEqual({ dareId: dare.dareId, score: end.score, ticks: end.tick, board: null, beat: null });
     await context.close();
   });
 
