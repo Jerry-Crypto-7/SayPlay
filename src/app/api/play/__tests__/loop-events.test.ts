@@ -141,6 +141,16 @@ describe('POST /api/play/events', () => {
     __resetProcessVersionStore();
   });
 
+  // P44B T12: trychtýř – stupeň jednou za den na relaci a hru, události mimo trychtýř nic.
+  it('feeds the loop funnel once per session and game a day', async () => {
+    __resetProcessVersionStore();
+    for (const name of ['first_input', 'first_input', 'win', 'lose', 'share', 'shared_open', 'restart', 'impression'])
+      expect((await post({ name, versionId: VERSION, session: SESSION })).status).toBe(204);
+    expect((await post({ name: 'first_input', versionId: VERSION, session: 'other0session000' })).status).toBe(204);
+    expect((await versionStoreFromEnv(process.env).funnel(1))[0]?.counts).toEqual({ say: 0, play: 2, finish: 1, share: 1, open: 1, beat: 0, remix: 0 });
+    __resetProcessVersionStore();
+  });
+
   it('stores the event with a server time and nothing else', async () => {
     expect((await post({ name: 'first_input', versionId: VERSION, session: SESSION })).status).toBe(204);
     const [line] = lines();

@@ -162,6 +162,8 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     }
   }
   const beat = await beatOf(versions, parsed.data.against, id, bestRank(run.score, run.tick), played.length);
+  // Trychtýř (P44B T12): porážku výzvy počítá jen server, jednou za den na hráče (bez identity na volajícího) a hru.
+  if (beat === true) await versions.countFunnel('beat', id, playerId ?? voterOf(request));
   return markVolatileStore(
     Response.json(
       { dareId, score: run.score, ticks: run.tick, board, beat },

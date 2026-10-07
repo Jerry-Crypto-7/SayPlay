@@ -136,6 +136,9 @@ describe.each(['memory', 'file'])('POST …/dare feeds the leaderboard over the 
     const weaker = await send(id, { inputs: packInputs(runs.worse.inputs) }, ada.cookie);
     const beaten = await send(id, { inputs: packInputs(runs.better.inputs), against: weaker.body.dareId }, bo.cookie);
     expect(beaten.body.beat).toBe(true);
+    // Trychtýř (P44B T12): porážka výzvy jednou za den na hráče a hru.
+    expect((await send(id, { inputs: packInputs(runs.better.inputs), against: weaker.body.dareId }, bo.cookie)).body.beat).toBe(true);
+    expect((await versions().funnel(1))[0]?.counts.beat).toBe(1);
     expect((await versions().board(id, 10)).map(({ playerId, place }) => [playerId, place])).toEqual([
       [bo.id, 1],
       [ada.id, 2],

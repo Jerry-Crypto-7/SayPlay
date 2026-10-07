@@ -23,6 +23,8 @@
  *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den,
  * - `<prefix>:play:player:<id hráče>` – JSON `PlayerRecord` (P44B T3), nově vydané identity
  *   `<prefix>:play:new-player:<hodina UTC>:<hash volajícího>`.
+ * - `<prefix>:play:funnel:<den UTC>:<stupeň>` – denní čítač trychtýře (P44B T12), započtené
+ *   `<prefix>:play:funnel-seen:<den>:<stupeň>:<hra>:<relace>` (`SET NX`, dva dny).
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -44,6 +46,7 @@ import { join } from 'node:path';
 
 import { canonical } from '@/ir/worlddoc';
 import type { LiveEntry } from '@/play/arcade/live';
+import { FUNNEL_MAX_DAYS, FUNNEL_STAGES, funnelDayOf, type FunnelDay, type FunnelStage, publishStageOf } from '@/play/funnel';
 import { LOOP_COUNTERS, type LoopCounter } from '@/play/loop-events';
 import { sharedStoreFromEnv, storePrefix } from '@/server/spend-store';
 
@@ -143,7 +146,17 @@ export interface VersionStore {
   putBoardEntry(versionId: string, entry: BoardEntry): Promise<BoardWrite>;
   /** Nejvýš `min(limit, BOARD_READ_MAX)` nejlepších hráčů hry od prvního místa. Výpadek je `VersionStoreUnavailable` – prázdný žebříček by lhal. */
   board(versionId: string, limit: number): Promise<BoardRow[]>;
+  /**
+   * Stupeň trychtýře (P44B T12) pro relaci a hru, nejvýš jednou za den (UTC); `session` je relace klienta,
+   * u výzvy hráč nebo hash volajícího. Výpadek spolkne – trychtýř hru ani událost nezdrží.
+   */
+  countFunnel(stage: FunnelStage, versionId: string, session: string): Promise<void>;
+  /** Trychtýř za posledních `min(days, FUNNEL_MAX_DAYS)` dní od nejstaršího po dnešek. Výpadek je `VersionStoreUnavailable`. */
+  funnel(days: number): Promise<FunnelDay[]>;
 }
+
+/** Jak dlouho žije denní čítač trychtýře: celé okno `funnel` a den rezervy. */
+const FUNNEL_TTL_SECONDS = (FUNNEL_MAX_DAYS + 1) * 24 * 3600;
 
 /** Hráč žebříčku (P44B T3): jen přezdívka, kterou si sám zvolil. Id je klíč, do záznamu nejde. */
 export interface PlayerRecord {
@@ -528,6 +541,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   const boardKey = (versionId: string): string => `${prefix}:play:board:${versionId}`;
   const boardRunKey = (versionId: string, playerId: string): string => `${prefix}:play:board-run:${versionId}:${playerId}`;
   const boardQuotaKey = (playerId: string): string => `${prefix}:play:board-quota:${quotaDay(now())}:${playerId}`;
+  const funnelKey = (day: string, stage: FunnelStage): string => `${prefix}:play:funnel:${day}:${stage}`;
+  const funnelSeenKey = (day: string, stage: FunnelStage, versionId: string, session: string): string => `${prefix}:play:funnel-seen:${day}:${stage}:${versionId}:${session}`;
 
   const store: VersionStore = {
     id,
@@ -578,6 +593,9 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+      // Trychtýř (P44B T12): hra je nová právě jednou (`SET NX` výš); výpadek čítače publikaci neshodí.
+      const stage = BUILTIN_IDS.has(game.version.versionId) ? null : publishStageOf({ parentId: game.version.parentId, relation: game.relation });
+      if (stage !== null) await raw.incr(funnelKey(funnelDayOf(now()), stage), FUNNEL_TTL_SECONDS).catch(() => undefined);
       // Do feedu jen autorská verze od režiséra (nález revize T4-1): titul
       // ručního specu, remixu i návrhu ze slov píše volající, a feed by ho
       // zdarma ukázal každému návštěvníkovi `/play`. Autorská verze stojí
@@ -863,6 +881,34 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }
+    },
+    async countFunnel(stage, versionId, session) {
+      const day = funnelDayOf(now());
+      try {
+        // simplified: id hry se neověřuje (o příkaz méně na událost); vymyšlená id nafouknou čísla jen v okně frekvence volajícího.
+        if (await raw.setNx(funnelSeenKey(day, stage, versionId, session), '1', 2 * 24 * 3600)) await raw.incr(funnelKey(day, stage), FUNNEL_TTL_SECONDS);
+      } catch {
+        // Trychtýř je statistika: nezapočtená událost hru nezdrží.
+      }
+    },
+    async funnel(days) {
+      const count = Math.max(0, Math.min(Math.trunc(days), FUNNEL_MAX_DAYS));
+      const dayList = Array.from({ length: count }, (_, back) => funnelDayOf(now() - (count - 1 - back) * 24 * 3600 * 1000));
+      let texts: (string | null)[];
+      try {
+        texts = count === 0 ? [] : await raw.getMany(dayList.flatMap((day) => FUNNEL_STAGES.map((stage) => funnelKey(day, stage))));
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+      return dayList.map((day, index) => ({
+        day,
+        counts: Object.fromEntries(
+          FUNNEL_STAGES.map((stage, at) => {
+            const value = Number(texts[index * FUNNEL_STAGES.length + at] ?? 0);
+            return [stage, Number.isSafeInteger(value) && value > 0 ? value : 0];
+          }),
+        ) as Record<FunnelStage, number>,
+      }));
     },
   };
   return store;

@@ -8,6 +8,7 @@
  * zakládání, nechce ani zápis statistik.
  */
 
+import { funnelStageOf } from '@/play/funnel';
 import { loopCountersOf, readLoopEvent } from '@/play/loop-events';
 import { killState } from '@/server/kill-switch';
 import { ownerIdentityRejection } from '@/server/owner-identity';
@@ -37,5 +38,8 @@ export async function POST(request: Request): Promise<Response> {
   // a jeden hlas volajícího za den na čítač.
   const counters = loopCountersOf(event);
   if (counters.length > 0) await store().countLoop(event.versionId, counters, voterOf(request));
+  // Trychtýř smyčky (P44B T12): stupeň jednou za den na relaci a hru.
+  const stage = funnelStageOf(event.name);
+  if (stage !== null) await store().countFunnel(stage, event.versionId, event.session);
   return new Response(null, { status: 204 });
 }
