@@ -36,7 +36,12 @@ beforeEach(() => {
   put('src/app/play/[id]/share/page.tsx', "import { deep } from '@/nested/deep';\nexport default deep;");
   put('src/nested/deep.ts', 'export const deep = 4;');
   put('src/a.ts', "/**\n * Dřív to dělal `src/g.ts`, viz import from '@/g'.\n */\n// require('./f')\nexport default 1;");
-  put('src/b.ts', "import './nested/b2';\nexport const y = 2;");
+  put('src/b.ts', "import './nested/b2';\nexport const y = 2;\nconst DIR = join(process.cwd(), 'evals', 'frozen');\ncpSync('evals/copied', DIR);");
+  // Soubory, které kód čte za běhu po cestě, ne importem.
+  put('evals/frozen/responses/index.jsonl', '');
+  put('evals/frozen/MANIFEST.json', '{}');
+  put('evals/copied/x.json', '{}');
+  put('evals/other/y.json', '{}');
   put('src/nested/b2.ts', 'export {};');
   put('src/c.tsx', 'export default function C() { return null; }');
   put('src/d.json', '{}');
@@ -61,6 +66,13 @@ describe('analyze', () => {
     const result = analyze(root);
     for (const file of ['src/a.ts', 'src/b.ts', 'src/nested/b2.ts', 'src/c.tsx', 'src/d.json', 'src/nested/deep.ts'])
       expect(result.reachable.has(file), file).toBe(true);
+  });
+
+  it('keeps whole directories read by path, segment by segment or as one literal', () => {
+    const result = analyze(root);
+    for (const file of ['evals/frozen/responses/index.jsonl', 'evals/frozen/MANIFEST.json', 'evals/copied/x.json'])
+      expect(result.reachable.has(file), file).toBe(true);
+    expect(result.reachable.has('evals/other/y.json')).toBe(false);
   });
 
   it('never counts a test as an entry point or as a reason to keep a file', () => {

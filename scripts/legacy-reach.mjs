@@ -117,6 +117,8 @@ const SPEC_PATTERNS = [
 ];
 const TEMPLATE_IMPORT = /\b(?:import|require)\s*\(\s*`([^`$]*)\$\{/g;
 const REPO_PATH = /['"`](?:\.\/)?((?:src|scripts|evals|e2e|ops|data)\/[^'"`\s$*{}]+)['"`]/g;
+/** `join(cwd, 'evals', 'frozen', 'x.json')` – cesta po segmentech; `/api/health` tak čte zmrazený korpus. */
+const PATH_SEGMENTS = /['"]((?:src|scripts|evals|e2e|ops|data))['"]((?:\s*,\s*['"][^'"\n/]+['"])+)/g;
 
 function resolve(from, spec, has) {
   const clean = spec.replace(/[?#].*$/, '');
@@ -155,7 +157,15 @@ function edgesOf(file, source, has, files) {
     const norm = posix.normalize(dir);
     for (const candidate of files) if (candidate.startsWith(norm) && candidate !== file) targets.add(candidate);
   }
-  for (const match of text.matchAll(REPO_PATH)) if (has(match[1])) targets.add(match[1]);
+  // Doslovná cesta do repa: soubor, nebo adresář, který se čte celý (`cpSync('evals/frozen', …)`).
+  const repoPath = (path) => {
+    const clean = path.replace(/\/$/, '');
+    if (has(clean)) targets.add(clean);
+    else for (const candidate of files) if (candidate.startsWith(`${clean}/`)) targets.add(candidate);
+  };
+  for (const match of text.matchAll(REPO_PATH)) repoPath(match[1]);
+  for (const match of text.matchAll(PATH_SEGMENTS))
+    repoPath([match[1], ...[...match[2].matchAll(/['"]([^'"]+)['"]/g)].map((segment) => segment[1])].join('/'));
   const companion = file.replace(/\.mjs$/, '.d.mts');
   if (companion !== file && has(companion)) targets.add(companion);
   return targets;
