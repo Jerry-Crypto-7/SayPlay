@@ -155,6 +155,15 @@ kniha stropu (`sharedStoreFromEnv`, klíče `<prefix>:play:v:<id>`, `<prefix>:pl
 `<prefix>:play:lineage:<id>`),
 `SET … NX` = zapiš jednou; čtení nikdy nevyhazuje, zápis při výpadku `VersionStoreUnavailable`.
 
+**Žebříček hry (P44B T4).** `putBoardEntry(versionId, { playerId, dareId, score, ticks })` píše do seřazené množiny
+`<prefix>:play:board:<versionId>` (člen = id hráče, hodnocení = `bestRank`) jednou transakcí `ZADD GT CH` →
+`ZREMRANGEBYRANK 0 -51` → `EXPIRE` → `ZREVRANK` → `ZCARD`: na hráče jen nejlepší běh, nejvýš 50 hráčů, žije jako hra od
+posledního zápisu. Běh k hodnocení leží vedle (`…:board-run:<versionId>:<playerId>` = `{ dareId, rank }`) a `board`
+ho přizná, jen když hodnocení sedí. Nejvýš 30 zápisů hráče za den (`…:board-quota:<den>:<playerId>`, nad ním `quota`).
+`board(versionId, limit ≤ 20)` vrátí `{ playerId, dareId, score, ticks, place }` od prvního místa; výpadek při zápisu
+i čtení je `VersionStoreUnavailable` – prázdný žebříček by lhal. Paměťové a souborové úložiště dělají totéž nad
+`sets` (`raiseRank` v `memoryRaw`). Jeden zápis = 3–4 požadavky (`INCR`, transakce, `SET` běhu, poprvé za den `EXPIRE`).
+
 ## Testy
 
 `npx vitest run src/play src/app/api/play` – švy nad skutečnými vrstvami (`stubs.test.ts`),
