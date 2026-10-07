@@ -138,12 +138,16 @@ export function defaultTarget(verb: string): string {
   return TARGET_DEFAULT[verb] ?? 'star';
 }
 
+/** Hrdina míčové hry, kterou věta nikomu nedává (P42): hráč, ne zvíře z prostředí. */
+export const BALL_PLAYER = 'player';
+
 /** Každý popisek, který smlouva rolí dává místo věty – pin „žádná role mimo větu a výchozí“. */
 export const DEFAULT_LABELS: ReadonlySet<string> = new Set([
   ...[...Object.values(PLACE_ROLES), UNKNOWN_PLACE].flatMap((roles) => [roles.hero, roles.craft, roles.enemy, roles.collectible]),
   ...Object.values(GENRE_FOE),
   ...Object.values(TARGET_DEFAULT),
   'star',
+  BALL_PLAYER,
 ]);
 
 /** Equipment implied by a named sport, not a global permission to invent cast. */

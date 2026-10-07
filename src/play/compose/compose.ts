@@ -6,7 +6,7 @@ import { draftChoiceOrder, draftGenreFor } from '../draft/draft';
 import { nounPhrase, singular } from '../draft/lexicon';
 import { classifyGenre } from '../genre/classify';
 import type { CastItem, GenreSpec } from '../genre/contract';
-import { DEFAULT_LABELS, defaultCollectible, defaultFoe } from '../genre/roles';
+import { BALL_PLAYER, DEFAULT_LABELS, defaultCollectible, defaultFoe } from '../genre/roles';
 import { essentialTriples, type Intent, type IntentTriple } from '../intent/contract';
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
@@ -164,7 +164,7 @@ function contentOf(intent: Intent, cell: AssemblySource, reading: Reading | null
   const explicitPlayer = /\b(?:as|you are|you're|i am|i'm|you control) (?:a |an |the )?/.test(intent.sentence.toLowerCase());
   const keepNamedHero = !explicitPlayer && draftedAt >= 0 && intendedAt > draftedAt &&
     intent.items.some(item => item.essential && item.axis !== 'threat' && item.actor === head(draft.hero));
-  const hero = cell.recipe.move === 'ball' && intent.hero === null ? 'player' : intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
+  const hero = cell.recipe.move === 'ball' && intent.hero === null ? BALL_PLAYER : intent.hero !== null && head(draft.hero) !== intent.hero && !keepNamedHero ? intent.hero : draft.hero;
   const landingTarget = cell.recipe.objective === 'land' && intent.items.some(item => item.essential && item.verb === 'land' && item.object !== null);
   return { ...draft, hero, setting, cast: allowedCast.slice(0, 8), ...(landingTarget ? { params: { ...draft.params, namedLandingTarget: 1 } } : {}) };
 }
