@@ -221,7 +221,9 @@ export type RateLimitedDoor =
   // Události smyčky PLAY (P27D T4) mají vlastní okno: statistika nesmí ubrat hráči kvótu na tvorbu her.
   | 'play/events'
   // Výzva Dare (P36B T5) navíc ke slotu `play`: jedna stojí řádově víc CPU (`MAX_DARE_REQUESTS_PER_WINDOW`).
-  | 'play/dare';
+  | 'play/dare'
+  // Změna přezdívky (P44B T3) navíc ke slotu `play`: zápis do úložiště nemá ubírat z kvóty tvorby her.
+  | 'play/me';
 
 export interface RateVerdict {
   readonly allowed: boolean;

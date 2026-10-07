@@ -20,7 +20,9 @@
  *   „duch nejlepšího“ hry (P37C T2) je schodiště v seřazené množině `<prefix>:play:best:<versionId>`
  *   (nejvýš `BEST_KEPT`) s časy zápisu v `<prefix>:play:best:<versionId>:at`,
  * - `<prefix>:play:loop:<finish|dare|skip|start|clear>:<versionId>` – čítače událostí smyčky pro řazení
- *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den.
+ *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den,
+ * - `<prefix>:play:player:<id hráče>` – JSON `PlayerRecord` (P44B T3), nově vydané identity
+ *   `<prefix>:play:new-player:<den>:<hash volajícího>`.
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -124,6 +126,20 @@ export interface VersionStore {
   countLoop(versionId: string, counters: readonly LoopCounter[], voter: string): Promise<void>;
   /** Čítače smyčky a počty remixů her jedním čtením; nedostupné úložiště = prázdná mapa (feed od nejnovější). */
   loopHeat(versionIds: readonly string[]): Promise<Map<string, LoopHeat>>;
+  /** Hráč (P44B T3) podle id z podepsané cookie; `null` = bez uložené přezdívky, i při výpadku úložiště. */
+  getPlayer(playerId: string): Promise<PlayerRecord | null>;
+  /** Uloží hráče na dobu života hry. Výpadek je `VersionStoreUnavailable`. */
+  putPlayer(playerId: string, player: PlayerRecord): Promise<void>;
+  /**
+   * Započte volajícímu (`voter`) jednu nově vydanou identitu na dnešek; `false` = byla by nad
+   * `limit` (sybil, debata P44B T1). Výpadek úložiště je `VersionStoreUnavailable`.
+   */
+  countNewPlayer(voter: string, limit: number): Promise<boolean>;
+}
+
+/** Hráč žebříčku (P44B T3): jen přezdívka, kterou si sám zvolil. Id je klíč, do záznamu nejde. */
+export interface PlayerRecord {
+  readonly nickname: string;
 }
 
 /**
@@ -453,6 +469,7 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
   };
   const loopKey = (counter: LoopCounter, versionId: string): string => `${prefix}:play:loop:${counter}:${versionId}`;
   const voteKey = (vote: string): string => `${prefix}:play:loop-vote:${vote}`;
+  const playerKey = (playerId: string): string => `${prefix}:play:player:${playerId}`;
 
   const store: VersionStore = {
     id,
@@ -733,6 +750,30 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
         );
       } catch {
         return new Map();
+      }
+    },
+    async getPlayer(playerId) {
+      let parsed: unknown;
+      try {
+        parsed = parsedOrNull(await raw.get(playerKey(playerId)));
+      } catch {
+        return null;
+      }
+      const nickname = (parsed as { nickname?: unknown } | null)?.nickname;
+      return typeof nickname === 'string' ? { nickname } : null;
+    },
+    async putPlayer(playerId, player) {
+      try {
+        await raw.set(playerKey(playerId), JSON.stringify({ nickname: player.nickname }), limits.ttlSeconds);
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
+      }
+    },
+    async countNewPlayer(voter, limit) {
+      try {
+        return (await raw.incr(`${prefix}:play:new-player:${quotaDay(now())}:${voter}`, 2 * 24 * 3600)) <= limit;
+      } catch (thrown) {
+        throw new VersionStoreUnavailable(thrown);
       }
     },
   };

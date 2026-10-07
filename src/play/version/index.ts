@@ -27,6 +27,7 @@ export {
   volatileVersionStore,
   writeLimitsFromEnv,
   type HttpVersionStoreConfig,
+  type PlayerRecord,
   type PutOutcome,
   type RecentGame,
   type VersionStore,

@@ -111,6 +111,27 @@ rozbalí `replay.inputs` (`unpackInputs`) a `replayLive(hra, vstupy, replay.patc
 páka `snapshots`, identita, strop frekvence dveří `play` (429 + `retry-after`); id bez tvaru, neznámá výzva nebo výzva
 jiné hry → 404 `NOT_FOUND`.
 
+### `GET|PUT /api/play/me` – hráč a jeho přezdívka (P44B T3)
+
+Anonymní identita zařízení: cookie `sp_player=<id>.<HMAC-SHA256>` (`HttpOnly; SameSite=Lax; Path=/`, 400 dní, `Secure`
+na https), tajemství `PLAY_IDENTITY_SECRET` (`src/server/player-identity.ts`, rozhodnutí `.claude/debate/2026-10-07-p44b-device-identity.md`).
+`GET` → `200 { nickname }` (`no-store`); bez platné cookie vydá novou v `set-cookie` a výchozí jméno z `sha256(id)`
+(„Swift Otter“). `PUT { nickname }` s `content-type: application/json` → `200 { nickname }`. **Tělo nikdy nenese id hráče
+ani cookie.** Obojí za `admit` (páka `sessions`, identita, okno `play`).
+
+| Krok | Kód | Stav |
+|---|---|---|
+| identita vypnutá (Vercel nebo sdílené úložiště bez `PLAY_IDENTITY_SECRET`, tajemství kratší než 32 znaků) | `IDENTITY_UNAVAILABLE` | 503 |
+| `GET`: 21. nová identita za den z jednoho volajícího (`NEW_PLAYERS_PER_DAY`) | `NEW_PLAYER_QUOTA` | 429 + `retry-after: 3600` |
+| `PUT` bez platné cookie (cookie nevydá) | `PLAYER_REQUIRED` | 403 |
+| `PUT` jiný `content-type` než JSON | `BAD_REQUEST` | 415 |
+| `PUT` vlastní okno `play/me` | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |
+| jméno po ořezu mimo 2–20 znaků `[\p{L}\p{N} ._-]` | `BAD_REQUEST` „Use 2–20 letters or numbers.“ | 400 |
+| jméno neprošlo `PLAY_MODERATION` | `CONTENT_REJECTED` „We can't use that name. Try another one.“ | 422 |
+| úložiště neodpovídá | `STORE_UNAVAILABLE` | 503 |
+
+Testy: `src/app/api/play/__tests__/me.test.ts`, `src/play/player/__tests__/nickname.test.ts`.
+
 ### `POST /api/play/events` – událost smyčky (P27D T4)
 
 Tělo: `{ name, versionId, session }` a **nic jiného** – `name` z uzavřeného seznamu `impression | first_input | win | lose |
