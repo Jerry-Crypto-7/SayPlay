@@ -26,7 +26,17 @@ describe('tagIndex', () => {
     ]);
     expect(index.get('pizza')).toBe('pizza');
     expect(index.get('cake')).toBe('cc0-cake');
-    expect(index.get('birthday cake')).toBe('pizza');
+    // Hlavní slovo „cake“ nese dort sám: dvojslovné jméno ze soudu by ho jinak přebilo.
+    expect(index.get('birthday cake')).toBeUndefined();
+  });
+
+  it('keeps a judged phrase whose head no model carries', () => {
+    const index = tagIndex([
+      { assetId: 'gen3d-thief', tags: ['thief', 'seen:security guard', 'seen:night watchman'] },
+      { assetId: 'gen3d-guard', tags: ['guard'] },
+    ]);
+    expect(index.get('security guard')).toBeUndefined();
+    expect(index.get('night watchman')).toBe('gen3d-thief');
   });
 });
 

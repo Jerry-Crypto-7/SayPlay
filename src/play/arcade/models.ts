@@ -51,7 +51,8 @@ const SEEN = 'seen:';
 /**
  * Tag → model. Tag, který nese víc modelů (`robot`), patří tomu, který se tak jmenuje.
  * Jméno ze slepého soudu (`seen:cake` u pizzy, která vypadá jako dort) dostane slovo
- * jen tehdy, když ho žádný model nenese vlastním tagem.
+ * jen tehdy, když ho žádný model nenese vlastním tagem – ani jeho hlavní (poslední) slovo:
+ * `seen:security guard` u zloděje by jako dvojslovný tag přebil strážného s tagem `guard`.
  */
 export function tagIndex(assets: ReadonlyArray<{ readonly assetId: string; readonly tags: readonly string[] }>): ReadonlyMap<string, string> {
   const index = new Map<string, string>();
@@ -62,10 +63,15 @@ export function tagIndex(assets: ReadonlyArray<{ readonly assetId: string; reado
       if (!index.has(tag) || tag === asset.assetId) index.set(tag, asset.assetId);
     }
   }
+  const own = new Set(index.keys());
+  const ownHead = (word: string): boolean => {
+    const head = word.split(' ').at(-1)!;
+    return head !== word && [head, ...singulars(head)].some((form) => own.has(form));
+  };
   for (const asset of known) {
     for (const tag of asset.tags) {
       const word = tag.startsWith(SEEN) ? tag.slice(SEEN.length) : undefined;
-      if (word !== undefined && !index.has(word)) index.set(word, asset.assetId);
+      if (word !== undefined && !index.has(word) && !ownHead(word)) index.set(word, asset.assetId);
     }
   }
   return index;
