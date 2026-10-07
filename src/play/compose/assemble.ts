@@ -52,7 +52,8 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   const keepsReading = moved !== undefined && moved.genre !== selected.genre && move === base.move && plays(base);
   const preset = { ...selected, ...(items.some(item => item.axis !== 'unknown') && !keepsReading ? moved : {}) } as GenreSpec;
   const assembled = PRESETS[`${preset.genre}.${preset.mode}`]!;
-  const recipe: Recipe = { move, actions: [...new Set(action.length ? action : move === base.move ? base.actions : [])].filter(verb => !intent.negated.includes(verb)),
+  // A catch is a whole game: the read genre's own action (collecting) was never asked for.
+  const recipe: Recipe = { move, actions: [...new Set(action.length ? action : move === base.move && objective !== 'catch' ? base.actions : [])].filter(verb => !intent.negated.includes(verb)),
     objective: objective ?? (move === 'ball' ? 'score' : move === 'drive' || move === 'glide' || move === 'walk' ? 'reach' : assembled.objective),
     threats: [...new Set(threats)].filter(verb => !intent.negated.includes(verb)) };
   return { id: `assembled.${move}`, recipe, preset, assembly: 'native' };
@@ -68,7 +69,8 @@ export function assemble(intent: Intent, source: AssemblySource, content: GenreS
     if (!['catch', 'rival', 'hazard', 'chaser', 'fight', 'duel', 'deliver', 'interact', 'escape'].includes(kind)) continue;
     if (kind === 'escape' && (item.object === null || intent.items.some(other => other.axis === 'threat' && other.actor === item.object))) continue;
     // Mechanics already implemented by the movement keep their native rules.
-    const native = kind === 'rival' && (source.recipe.move === 'ball' || ['drive', 'glide'].includes(source.recipe.move) && source.recipe.objective === 'race') ||
+    const native = kind === 'catch' && source.recipe.move === 'roam' && source.recipe.objective === 'catch' && source.recipe.actions.length === 0 && source.recipe.threats.length === 0 ||
+      kind === 'rival' && (source.recipe.move === 'ball' || ['drive', 'glide'].includes(source.recipe.move) && source.recipe.objective === 'race') ||
       kind === 'chaser' && (['run', 'jump', 'drive', 'walk', 'roam'].includes(source.recipe.move) || source.recipe.move === 'glide' && source.recipe.objective === 'escape') ||
       kind === 'fight' && source.recipe.move === 'roam' && source.preset.mode === 'fight' ||
       kind === 'duel' && source.recipe.move === 'stationary' && source.preset.genre === 'duel' ||

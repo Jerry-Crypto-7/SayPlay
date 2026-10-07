@@ -4,7 +4,7 @@ import type { GameSpecV1 } from '../spec';
 import { type CastRole, FOE_DOES, type GenreModule, type GenreSpec, type ParamBounds, withCounts } from '../genre/contract';
 import { GENRE_MODULES } from '../genre/modules';
 import { DRIVE_PRESETS, NATIVE_PRESETS, TRACK_GOAL_PRESETS, assertPreset, type RecipeAssembly } from './presets';
-import { catchSpec } from './catch';
+import { CATCH_TUNING, catchSpec } from './catch';
 import { driveSpec } from './drive';
 import { nativeSpec } from './native';
 import { timeOfDayFor } from '../arcade/look';
@@ -99,6 +99,10 @@ function compileAssembly(assembly: RecipeAssembly): GameSpecV1 {
   const separate = new Set<string>(parts.map(part => part.kind));
   const recipe = { move, objective: assembledObjective(assembly), actions: assembly.actions.filter(action => !separate.has(action)), threats: assembly.threats.filter(threat => !separate.has(threat)) };
   let base: GameSpecV1;
+  // A catch with nothing else to do is the native catch game, not an arena that also collects.
+  if (move === 'roam' && recipe.objective === 'catch' && recipe.actions.length === 0 && recipe.threats.length === 0 && parts.length === 0) {
+    return catchSpec(recipe, { ...content, params: { ...CATCH_TUNING, ...content.params } });
+  }
   if (move === 'drive') {
     base = driveSpec({ ...recipe, objective: ['race', 'escape'].includes(recipe.objective) ? recipe.objective : 'reach',
       actions: recipe.actions.filter(action => ['shoot', 'collect', 'deliver'].includes(action)),
