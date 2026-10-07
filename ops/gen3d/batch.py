@@ -153,13 +153,17 @@ def run_batch(
         result = None
         if hit and Path(hit["lod0"]).exists():
             result, record["cached"] = hit, True
+            if "seed" in hit:
+                record["seed"] = hit["seed"]
         else:
             out_dir = cache.entry_dir(noun, cache_root)
             for seed in seeds:
                 tried = time.perf_counter()
                 try:
                     result = cache.store(
-                        noun, generate(noun, out_dir, seed), cache_root
+                        noun,
+                        {**generate(noun, out_dir, seed), "seed": seed},
+                        cache_root,
                     )
                     record["seed"] = seed
                     break
@@ -332,6 +336,7 @@ def main() -> None:
         return
 
     from comfy_client import ComfyClient
+
     from server import generate
 
     comfy = ComfyClient()
