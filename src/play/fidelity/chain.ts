@@ -197,8 +197,7 @@ function drawsRole(spec: GameSpecV1, control: ControlId, role: GameRole, scene: 
   const { bodies } = built;
   if (built.styled && (role.kind === 'hazard' || role.kind === 'collectible' || role.kind === 'target')) return styledReads(role, built) && styledDraws(spec, role);
   if (PLAYER(role)) {
-    // Rytmus hrdinu nekreslí vůbec (`RhythmScene.tsx`).
-    if (!bodies.has('player') || control === 'rhythm') return false;
+    if (!bodies.has('player')) return false;
     // Výchozí hrdina (průzkumník, závodní auto, ptáček) popisek nekreslí – kromě popisku, který ho jmenuje.
     // P43 T14b: ptá se stejné volby jako scéna (`heroModel`); `sceneModelOf` dal rytíři katalogový
     // model, scéna rigovaného rytíře, a hrdina z popisku se počítal jako nenakreslený.

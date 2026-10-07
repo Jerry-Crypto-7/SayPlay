@@ -639,9 +639,9 @@ const StageCanvas = memo(function StageCanvas({
     rival === undefined
       ? undefined
       : (w, h, d) => (character !== undefined ? <RiggedModel character={character} h={h} clip={() => 'idle'} fallback="#64748b" /> : <FittedModel id={rival} w={w} h={h} d={d} fallback="#64748b" />);
-  // P43 T14b: hrdina souboje z popisku (rytíř, pirát); výchozí průzkumník zůstává postavou z kvádrů.
+  // P43 T14b: hrdina souboje a rytmu z popisku (rytíř, pirát, babička); výchozí průzkumník zůstává postavou z kvádrů.
   const heroRig = riggedCharacter(cast.player);
-  const duelHero: RivalModel | undefined =
+  const castHero: RivalModel | undefined =
     cast.player === 'explorer'
       ? undefined
       : (w, h, d) => (heroRig !== undefined ? <RiggedModel character={heroRig} h={h} clip={() => 'idle'} fallback="#2563eb" /> : <FittedModel id={cast.player} w={w} h={h} d={d} fallback="#2563eb" character />);
@@ -660,14 +660,14 @@ const StageCanvas = memo(function StageCanvas({
       {/* Rig svítí všem scénám: načasování a rytmus od P32A T10, souboj od P37B T3. */}
       <StyleRig look={look} lookId={lookId} control={control} surface={surface} />
       {stage.scene === 'duel' ? (
-        <DuelScene session={session} look={look} heroModel={duelHero} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
+        <DuelScene session={session} look={look} heroModel={castHero} rivalModel={rivalModel} heroAction={heroAction} ghost={ghost} />
       ) : (
         <>
           {/* Souboj (P32E T3) je režim arény: stejná plocha, kamera i pohyb, úder přidává `ActionButton`. */}
           {stage.scene === 'timing' ? (
             <TimingScene session={session} look={look} blockModel={blockModel} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'rhythm' ? (
-            <RhythmScene session={session} look={look} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
+            <RhythmScene session={session} look={look} heroModel={castHero} noteModel={noteModel} surface={surface} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'arena' ? (
             <ArenaWorld session={session} half={Number(base.params.half)} surface={surface} look={look} cast={cast} heroAction={heroAction} ghost={ghost} />
           ) : stage.scene === 'runner' ? (
