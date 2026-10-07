@@ -1,0 +1,255 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-021",
+    "sentence": "A mouse walks through the kitchen while cats patrol and knives fall from above.",
+    "seed": 4,
+    "milliseconds": 99.14860000000044,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "hazard",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_stealth"
+      },
+      "addons": [],
+      "title": "mouse reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "kitchen",
+        "mood": "adventurous",
+        "look": "supermarket"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Sneak past the guard and reach the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "mouse",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "kitchen",
+          "count": 1
+        },
+        {
+          "id": "guard",
+          "kind": "patrol",
+          "label": "patrol",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "hazard",
+          "label": "knife",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Dodge the knife.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "dca47e63",
+    "worldHash": "51056f1d52c97b711c10e9fa4e14ffc4a67f7618dd65444b0a2b8587a2a5c37b",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "escape",
+        "object": {
+          "body": 73,
+          "roleId": "guard",
+          "label": "patrol",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 715,
+        "evidence": "survived-threat:probe:guard",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 73,
+          "roleId": "guard",
+          "label": "patrol",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 715,
+        "evidence": "survived-threat:probe:guard",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "knife",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 715,
+        "evidence": "survived-threat:probe:part_0",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 73,
+          "roleId": "guard",
+          "label": "patrol",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "verb": "guard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 24,
+        "evidence": "caught-in-patrol-sight",
+        "run": "probe",
+        "runId": "probe:guard"
+      },
+      {
+        "actor": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "knife",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "mouse",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 100,
+        "evidence": "moving-threat-contact",
+        "run": "probe",
+        "runId": "probe:part_0"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": false,
+      "total": 3,
+      "proved": 2,
+      "missing": [
+        {
+          "actor": "cat",
+          "verb": "guard",
+          "object": "mouse"
+        }
+      ],
+      "silent": [
+        {
+          "actor": "cat",
+          "verb": "guard",
+          "object": "mouse"
+        }
+      ]
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 715,
+      "hash": "38694d51",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,211 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-059",
+    "sentence": "A postman delivers packages in the village.",
+    "seed": 3,
+    "milliseconds": 176.05240000001504,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "deliver",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "move_free",
+      "controlParams": {
+        "generator": "arena_collect",
+        "tuning": {
+          "items": 10,
+          "waves": 3
+        }
+      },
+      "genre": {
+        "id": "arena",
+        "mode": "collect",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Postman Hunt",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "village",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect 10 coins in each of 3 waves before time runs out.",
+        "count": 10,
+        "role": "item"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "postman",
+          "count": 1
+        },
+        {
+          "id": "item",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 10
+        },
+        {
+          "id": "part_0",
+          "kind": "item",
+          "label": "package",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Deliver the package.",
+        "controlsHint": "Drag or arrows to move."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "6e5ed760",
+    "worldHash": "e5922cbe385569d80b81c1fa8c5a4e2e18d9df706d0314bdee07922a874fa5db",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "postman",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 12,
+          "roleId": "part_0",
+          "label": "package",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 9,
+        "evidence": "grabbed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "postman",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "roam",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "postman",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "deliver",
+        "object": {
+          "body": 12,
+          "roleId": "part_0",
+          "label": "package",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 48,
+        "evidence": "carried-to-destination",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "postman",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 85,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "postman",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 8,
+          "roleId": "item",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 85,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2802,
+      "hash": "08480913",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

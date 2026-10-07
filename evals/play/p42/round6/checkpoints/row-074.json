@@ -1,0 +1,217 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-015",
+    "sentence": "A firefighter walks around the station collecting helmets and rescuing kittens.",
+    "seed": 4,
+    "milliseconds": 377.45130000000063,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "interact",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "collect": true,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "firefighter reach",
+      "archetype": "collect_exit",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "station",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "collect",
+        "description": "Collect the helmet and reach the exit.",
+        "count": 1,
+        "role": "coin"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "firefighter",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "exit",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "helmet",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "item",
+          "label": "kitten",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Rescue the kitten.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "d1040834",
+    "worldHash": "6a2da757911b500235bedee5a55ac6364b8fd5639a901385bd18bcea2149eb52",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "firefighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "firefighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "kitten",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 97,
+        "evidence": "grabbed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "firefighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 680,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "firefighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 73,
+          "roleId": "coin",
+          "label": "helmet",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 680,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "firefighter",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "interact",
+        "object": {
+          "body": 74,
+          "roleId": "part_0",
+          "label": "kitten",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 708,
+        "evidence": "carried-to-destination",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 3,
+      "proved": 3,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 715,
+      "hash": "497f47f2",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

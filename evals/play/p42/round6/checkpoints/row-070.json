@@ -1,0 +1,267 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-014",
+    "sentence": "A squirrel jumps through the garden and throws acorns.",
+    "seed": 5,
+    "milliseconds": 211.89999999999418,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "platform",
+      "controlParams": {
+        "checkpoints": true,
+        "tuning": {
+          "feel": 2,
+          "sections": 3
+        }
+      },
+      "genre": {
+        "id": "platformer",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Squirrel Jump",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "garden",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Jump across the platforms to the flag without touching a acorn.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "squirrel",
+          "count": 1
+        },
+        {
+          "id": "spikes",
+          "kind": "hazard",
+          "label": "acorn",
+          "count": 5
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "flower",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "flag",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the flag. Jump over gaps and hazards.",
+        "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "923cacb5",
+    "worldHash": "69db2cc0fe5602f58809502ad9685bb07782688ff74606be9fd6c41d4ef2181c",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 56,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 112,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 37,
+          "roleId": "coin",
+          "label": "flower",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 112,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 80,
+          "roleId": "finish",
+          "label": "flag",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2859,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "acorn",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2860,
+        "evidence": "survived-threat:probe:spikes",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "acorn",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 542,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 24,
+          "roleId": "spikes",
+          "label": "acorn",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "squirrel",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 542,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "squirrel",
+          "verb": "throw",
+          "object": "acorn"
+        }
+      ],
+      "closest": "a platformer",
+      "reason": "Throw isn't here yet – here's a platformer."
+    },
+    "score": {
+      "preserved": false,
+      "total": 2,
+      "proved": 1,
+      "missing": [
+        {
+          "actor": "squirrel",
+          "verb": "throw",
+          "object": "acorn"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2860,
+      "hash": "90667ea1",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

@@ -1,0 +1,138 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-055",
+    "sentence": "A detective sneaks through the mansion.",
+    "seed": 3,
+    "milliseconds": 339.9396999999881,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "detective reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "mansion",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Find a path through the maze to the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "detective",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "mansion",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Find a path through the maze to the exit.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "f1ac71ff",
+    "worldHash": "23a3855f8d6fc5d486cf45964ee87796500f554e834bbff34fc0a6805ae06da6",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "detective",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "detective",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 72,
+          "roleId": "finish",
+          "label": "mansion",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 860,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 861,
+      "hash": "2f79a664",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

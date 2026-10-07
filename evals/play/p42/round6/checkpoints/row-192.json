@@ -1,0 +1,138 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-039",
+    "sentence": "Make a knight walk through the castle without throwing stones.",
+    "seed": 2,
+    "milliseconds": 270.0411000000022,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "walker",
+      "controlParams": {
+        "size": 11,
+        "speed": 110,
+        "generator": "walker_labyrinth"
+      },
+      "addons": [],
+      "title": "knight reach",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "castle",
+        "mood": "adventurous"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Find a path through the maze to the exit.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "knight",
+          "count": 1
+        },
+        {
+          "id": "wall",
+          "kind": "hazard",
+          "label": "wall",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "stone",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Find a path through the maze to the exit.",
+        "controlsHint": "Drag in any direction, or use arrows or WASD to walk."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 64,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      }
+    },
+    "specHash": "2de50c78",
+    "worldHash": "c909c9bf7fb7a7f60b3c68477101842e9c54f79225d4f0bbd879e27a105e918f",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "knight",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "walk",
+        "object": null,
+        "tick": 9,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "knight",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 72,
+          "roleId": "finish",
+          "label": "stone",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 571,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 572,
+      "hash": "476ce33d",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

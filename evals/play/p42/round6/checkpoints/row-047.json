@@ -1,0 +1,324 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-010",
+    "sentence": "An archer runs across the bridge and fires arrows at trolls.",
+    "seed": 2,
+    "milliseconds": 186.313900000001,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "runner",
+      "controlParams": {
+        "obstacles": [
+          "hurdle",
+          "cone",
+          "crate"
+        ],
+        "feel": 2,
+        "sections": 3
+      },
+      "addons": [
+        "shoot"
+      ],
+      "genre": {
+        "id": "runner",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Archer Run",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "bridge",
+        "mood": "energetic"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Run to the finish without hitting a rock.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "archer",
+          "count": 1
+        },
+        {
+          "id": "obstacle",
+          "kind": "hazard",
+          "label": "rock",
+          "count": 1
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "coin",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "finish line",
+          "count": 1
+        },
+        {
+          "id": "enemy",
+          "kind": "hazard",
+          "label": "troll",
+          "count": 1
+        },
+        {
+          "id": "ammunition",
+          "kind": "item",
+          "label": "arrow",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Reach the finish line. Jump, slide and switch lanes.",
+        "controlsHint": "Tap or Space to jump, swipe or arrows to change lane. F or Fire to shoot."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "2daa150e",
+    "worldHash": "b7fbf3bc8d04536531c4ad5af6039367abca8cadd3dd8e1d7f386188a295e109",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "run",
+        "object": null,
+        "tick": 3,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 213,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 38,
+          "roleId": "coin",
+          "label": "coin",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 213,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 110,
+          "roleId": "ammunition",
+          "label": "arrow",
+          "roleKind": "item",
+          "player": false
+        },
+        "tick": 280,
+        "evidence": "launched-projectile-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 100,
+          "roleId": "enemy",
+          "label": "troll",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 331,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 100,
+          "roleId": "enemy",
+          "label": "troll",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 331,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 1713,
+        "evidence": "runner-takeoff",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 98,
+          "roleId": "finish",
+          "label": "finish line",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2176,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 99,
+          "roleId": "enemy",
+          "label": "troll",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2177,
+        "evidence": "survived-threat:probe:enemy",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 99,
+          "roleId": "enemy",
+          "label": "troll",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "archer",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 242,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:enemy"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 2,
+      "proved": 2,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2177,
+      "hash": "ff2da0e4",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

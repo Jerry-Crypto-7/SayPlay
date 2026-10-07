@@ -1,6 +1,6 @@
 ﻿# P42 — implementace a stav přejímky
 
-Implementace je na větvi `features/p42-composable-pieces`. **P42 není dokončené:** poslední nezávislá sada nesplnila pět ze šesti automatických limitů. Zelené regresní testy ani potvrzené lidské zahrání čtyř scénářů tento výsledek nenahrazují.
+Implementace je na větvi `features/p42-composable-pieces`. **P42 není dokončené:** poslední nezávislá sada (round6) nesplnila dva ze šesti automatických limitů – celé věty o jednu větu a nulové ticho. Zelené regresní testy ani potvrzené lidské zahrání čtyř scénářů tento výsledek nenahrazují.
 
 ## Pokračování po round4 — rozpracovaná přejímka
 
@@ -12,7 +12,19 @@ Otevřený diagnostický běh nad původními štítky round4: 64/64 publikovate
 
 Poslední produkční build včetně typů prošel, browserové ověření je rozšířené na **16/16 PASS** (3,1 minuty). Nezávislý autor připravil novou sadu round5 podle původního významového kontraktu, uzavřenou SHA256 `521dd6a7a910867f3b7b88e37d729d806035628edb08e7e158056e790134aa24`; obsah sady zatím implementace ani hlavní agent neotevřeli. Úspěšná přejímka se dosud netvrdí.
 
-## Poslední dokončené nezávislé měření (round5)
+## Poslední dokončené nezávislé měření (round6, 7. 10. 2026)
+
+Jednorázový nepřerušený běh nad commitem `20b54739` (všech 320 pozorování, offline, 0 volání modelu): **FAIL**. **51/64 vět (79,69 %, limit 80 % – chybí jedna věta), 20 tichých trojic (limit 0)**, hrdina 100 %, prostředí 100 %, p95 456 ms, golden PASS, publikovatelné 320/320. Hrdina, prostředí a latence jsou nejlepší ze všech kol. [Úplný výsledek](round6/final.json), [souhrn](round6/final.md).
+
+Pečeť `6326987d…` je hash souboru s konci řádků CRLF, jak ležel na disku při zapečetění; commitnutý blob je normalizovaný na LF (`.gitattributes eol=lf`) a má jiný hash. Čerstvý checkout proto pečeť neprojde, dokud se soubor nepřevede na CRLF.
+
+Nezachované věty (13; „tichá“ = hra akci nemá a ani ji nepřizná):
+
+- chybějící druhá akce ve složené větě: `gathering apples as wasps chase` (collect), `fight…, then escape` (escape), `duel a ghost… and then catch a rat` (catch), `throws acorns` (throw), `reaches the lighthouse` (reach), `…and then lands` (land), `delivers pearls` (deliver, 1 z 5 semen);
+- `stack crates` / `stack barrels` – sloveso stack se nerealizuje;
+- tiché: `frees trapped birds`, `frees prisoners` (interact), `cats patrol` (guard), `with moths to catch` (catch).
+
+## Předchozí nezávislé měření (round5)
 
 Jednorázový nepřerušený běh dokončil všech 320 pozorování s neměnnými checkpointy: **50/64 vět (78,125 %), 55 tichých trojic, hrdina 92,1875 %, prostředí 98,4375 %, p95 1243,93 ms, golden 20/20 PASS**. Všechny hry jsou publikovatelné. Nesplněné zůstávají zachování celé věty a nulové ticho. [Úplný výsledek](round5/final.json), [souhrn](round5/final.md).
 
@@ -58,6 +70,7 @@ Další konkrétní práce je sjednotit určování aktéra, pohybu a předmětu
 | [Round3](round3/final.md) | 55/64 | 20 | 91,67 % | 95,56 % | 1818,70 | PASS |
 | [Round4](round4/final-resumed.md) | 39/64 | 140 | 87,5 % | 87,5 % | 3313,83 | PASS |
 | [Round5](round5/final.md) | 50/64 | 55 | 98,44 % | 92,19 % | 1243,93 | PASS |
+| [Round6](round6/final.md) | 51/64 | 20 | 100 % | 100 % | 456,00 | PASS |
 
 Po každém otevření výsledků přešla daná sada mezi vývojová data; další sada byla vytvořena a uzavřena před spuštěním. Původní výsledky se nepřepisovaly. Round2 také vyžadovalo provozní pokračování po chybě zápisu se zachováním 47 původních pozorování. Výsledky různých sad nejsou měřením časového trendu na stejné distribuci.
 

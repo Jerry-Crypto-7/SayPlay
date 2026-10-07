@@ -1,0 +1,252 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-035",
+    "sentence": "A kangaroo collects stars in the desert but never jumps.",
+    "seed": 2,
+    "milliseconds": 99.37270000000717,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "platform",
+      "controlParams": {
+        "checkpoints": true,
+        "tuning": {
+          "feel": 2,
+          "sections": 3,
+          "collectAll": true,
+          "coinCount": 5
+        }
+      },
+      "genre": {
+        "id": "platformer",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Kangaroo Jump",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "desert",
+        "mood": "playful"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Collect 5 stars and reach the flag.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "kangaroo",
+          "count": 1
+        },
+        {
+          "id": "spikes",
+          "kind": "hazard",
+          "label": "spikes",
+          "count": 5
+        },
+        {
+          "id": "coin",
+          "kind": "collectible",
+          "label": "star",
+          "count": 5
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "flag",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Collect 5 stars and reach the flag.",
+        "controlsHint": "Arrows or A/D to move, Space or tap to jump."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "a1cd90f4",
+    "worldHash": "3f351691ce47cefe0f8106c83bfbea066f19d3e897a04384007c89681df8b94f",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kangaroo",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "jump",
+        "object": null,
+        "tick": 56,
+        "evidence": "player-moved",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kangaroo",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 128,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kangaroo",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "collect",
+        "object": {
+          "body": 31,
+          "roleId": "coin",
+          "label": "star",
+          "roleKind": "collectible",
+          "player": false
+        },
+        "tick": 128,
+        "evidence": "pickup",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kangaroo",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "reach",
+        "object": {
+          "body": 36,
+          "roleId": "finish",
+          "label": "flag",
+          "roleKind": "exit",
+          "player": false
+        },
+        "tick": 2355,
+        "evidence": "finish-contact",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kangaroo",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "survive",
+        "object": {
+          "body": 20,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 2356,
+        "evidence": "survived-threat:probe:spikes",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 20,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "hazard",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kangaroo",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 542,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      },
+      {
+        "actor": {
+          "body": 20,
+          "roleId": "spikes",
+          "label": "spikes",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "obstacle",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "kangaroo",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 542,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:spikes"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2356,
+      "hash": "ec88ecc1",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

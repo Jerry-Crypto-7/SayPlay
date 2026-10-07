@@ -1,0 +1,227 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-057",
+    "sentence": "A wizard shoots sparks in the tower.",
+    "seed": 1,
+    "milliseconds": 172.89949999999953,
+    "spec": {
+      "schema": "gamespec.v1",
+      "control": "shooter",
+      "controlParams": {
+        "waves": 6,
+        "rise": 4
+      },
+      "genre": {
+        "id": "shooter",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Wizard Shootout",
+      "archetype": "combat_lite",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "tower",
+        "mood": "tense"
+      },
+      "objective": {
+        "kind": "defeat_targets",
+        "description": "Stop 6 waves of sparks before they reach you.",
+        "count": 6,
+        "role": "enemy"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "wizard",
+          "count": 1
+        },
+        {
+          "id": "target",
+          "kind": "target",
+          "label": "ghost",
+          "count": 1
+        },
+        {
+          "id": "enemy",
+          "kind": "hazard",
+          "label": "spark",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Stop 6 waves of sparks. Each wave is faster.",
+        "controlsHint": "Tap where you aim to shoot. Arrows aim, Space fires."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "be356af6",
+    "worldHash": "2dd27f29ad75b78c70b62ed126ad2a781e0b8da43cc41bd2b88950550b79ca44",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 30,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "ghost",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 30,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 2,
+          "roleId": "target",
+          "label": "ghost",
+          "roleKind": "target",
+          "player": false
+        },
+        "tick": 30,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "shoot",
+        "object": {
+          "body": 8,
+          "roleId": "enemy",
+          "label": "spark",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 114,
+        "evidence": "projectile-hit",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 8,
+          "roleId": "enemy",
+          "label": "spark",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 114,
+        "evidence": "target-destroyed",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 6,
+          "roleId": "enemy",
+          "label": "spark",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "verb": "rival",
+        "object": {
+          "body": 0,
+          "roleId": "player",
+          "label": "wizard",
+          "roleKind": "player",
+          "player": true
+        },
+        "tick": 1056,
+        "evidence": "harmful-contact",
+        "run": "probe",
+        "runId": "probe:enemy"
+      }
+    ],
+    "honesty": null,
+    "score": {
+      "preserved": true,
+      "total": 1,
+      "proved": 1,
+      "missing": [],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2637,
+      "hash": "16031e30",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}

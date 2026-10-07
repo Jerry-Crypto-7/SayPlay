@@ -1,0 +1,237 @@
+{
+  "sourceFingerprint": "d5289e145f1ef46f028875b89dbe964102dc11b6bbb3bd3757eb1ba4be778723",
+  "datasetSha256": "6326987d894168bea807b64e8134d69bb60ad18ba34e4239b67bc95fc1436de7",
+  "row": {
+    "id": "r6-ho-013",
+    "sentence": "Make a pirate duel a ghost on the ship and then catch a rat.",
+    "seed": 3,
+    "milliseconds": 139.13120000000345,
+    "spec": {
+      "schema": "gamespec.v1",
+      "assemblyParts": [
+        {
+          "kind": "duel",
+          "role": "part_0",
+          "phase": 0,
+          "motion": "fall"
+        }
+      ],
+      "control": "duel",
+      "controlParams": {
+        "difficulty": "normal",
+        "rounds": 9
+      },
+      "genre": {
+        "id": "duel",
+        "mode": "default",
+        "compilerVersion": "genre.v1"
+      },
+      "title": "Pirate Duel",
+      "archetype": "hazard_crossing",
+      "targetDurationSec": 60,
+      "theme": {
+        "setting": "ship",
+        "mood": "tense",
+        "look": "ocean"
+      },
+      "objective": {
+        "kind": "reach",
+        "description": "Beat 9 rivals in a row. Each one attacks faster.",
+        "role": "finish"
+      },
+      "mechanics": [
+        {
+          "id": "health",
+          "params": {
+            "max": 3
+          }
+        }
+      ],
+      "roles": [
+        {
+          "id": "player",
+          "kind": "player",
+          "label": "pirate",
+          "count": 1
+        },
+        {
+          "id": "rival",
+          "kind": "hazard",
+          "label": "rival",
+          "count": 1
+        },
+        {
+          "id": "finish",
+          "kind": "exit",
+          "label": "knockout",
+          "count": 1
+        },
+        {
+          "id": "part_0",
+          "kind": "patrol",
+          "label": "ghost",
+          "count": 1
+        }
+      ],
+      "tutorial": {
+        "goalLine": "Defeat the ghost.",
+        "controlsHint": "Arrows move. J or Attack strikes nearby opponents."
+      },
+      "verification": [
+        {
+          "id": "winnable",
+          "kind": "reachability",
+          "assert": {
+            "runState": "won"
+          }
+        }
+      ],
+      "budgets": {
+        "maxEntities": 40,
+        "maxRules": 120,
+        "maxTriangles": 200000
+      },
+      "scoring": {}
+    },
+    "specHash": "dc0c4b0a",
+    "worldHash": "7dafcab6f6bacf5fc9d8b521f32c8fe12f0d7b2fe9c8743146ae4400112269a5",
+    "built": true,
+    "witnesses": [
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "score",
+        "object": null,
+        "tick": 127,
+        "evidence": "score-increased",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "duel",
+        "object": {
+          "body": 1,
+          "roleId": "rival",
+          "label": "rival",
+          "roleKind": "hazard",
+          "player": false
+        },
+        "tick": 127,
+        "evidence": "successful-timing",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "fight",
+        "object": {
+          "body": 2,
+          "roleId": "part_0",
+          "label": "ghost",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 280,
+        "evidence": "hit-points",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "defeat",
+        "object": {
+          "body": 2,
+          "roleId": "part_0",
+          "label": "ghost",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 320,
+        "evidence": "target-knocked-out",
+        "run": "winner",
+        "runId": "winner"
+      },
+      {
+        "actor": {
+          "body": 0,
+          "roleId": "player",
+          "label": "pirate",
+          "roleKind": "player",
+          "player": true
+        },
+        "verb": "duel",
+        "object": {
+          "body": 2,
+          "roleId": "part_0",
+          "label": "ghost",
+          "roleKind": "patrol",
+          "player": false
+        },
+        "tick": 321,
+        "evidence": "opponent-knocked-out",
+        "run": "winner",
+        "runId": "winner"
+      }
+    ],
+    "honesty": {
+      "kind": "actions",
+      "unmet": [
+        {
+          "actor": "pirate",
+          "verb": "catch",
+          "object": "rat"
+        }
+      ],
+      "closest": "a duel",
+      "reason": "Catch isn't here yet – here's a duel."
+    },
+    "score": {
+      "preserved": false,
+      "total": 2,
+      "proved": 1,
+      "missing": [
+        {
+          "actor": "pirate",
+          "verb": "catch",
+          "object": "rat"
+        }
+      ],
+      "silent": []
+    },
+    "hero": true,
+    "environment": true,
+    "verification": {
+      "outcome": "won",
+      "tick": 2032,
+      "hash": "97612f3b",
+      "replayEqual": true,
+      "publishEligible": true,
+      "failures": []
+    },
+    "error": null
+  }
+}
