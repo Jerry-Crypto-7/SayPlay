@@ -1,0 +1,510 @@
+{
+  "version": 1,
+  "about": "P44A T1: red test files of features/p42-composable-pieces split into P42 regressions and reds already on main.",
+  "p42Head": "65e449d5",
+  "mainBase": "ce5145d0",
+  "method": [
+    "P42 full suite alone (npx vitest run, json reporter) -> failedOnP42",
+    "the same red files alone on P42 -> failedOnP42Alone (removes full-suite load noise)",
+    "the same files alone on main ce5145d0 in a temporary worktree (node_modules junction) -> failedOnMain"
+  ],
+  "classes": {
+    "regression": "a test (or the whole suite) fails alone on P42 and passes on main",
+    "pre-existing": "every test failing alone on P42 also fails on main",
+    "load-noise": "fails only inside the full suite; passes alone on P42 and on main (timing under load)",
+    "p42-only-file": "the file does not exist on main",
+    "worktree-env": "fails on main only because the worktree lacks gitignored plans/** (ENOENT)"
+  },
+  "totals": {
+    "fullSuite": {
+      "total": 14587,
+      "failed": 126,
+      "passed": 14458,
+      "redFiles": 40
+    },
+    "failedOnP42": 129,
+    "failedOnP42Alone": 123,
+    "failedOnMain": 5,
+    "byClass": {
+      "regression": 34,
+      "load-noise": 4,
+      "pre-existing": 2
+    },
+    "regressionTests": 120
+  },
+  "files": [
+    {
+      "file": "evals/gates/__tests__/divergence-lock.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "evals — každé volání gitu obchází refs/replace žádné volání gitu pod evals/ nechybí --no-replace-objects"
+      ]
+    },
+    {
+      "file": "evals/play/compiled/compile-report.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 0,
+      "failedOnMain": 0,
+      "class": "load-noise"
+    },
+    {
+      "file": "evals/play/rules/coverage.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "verb coverage on the demand set the committed coverage-p41.json is today's measurement"
+      ]
+    },
+    {
+      "file": "scripts/__tests__/p32-fidelity-b.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "P32B offline fidelity after the genre rewire keeps the recorded nouns and either plays or explicitly admits each old verb claim"
+      ]
+    },
+    {
+      "file": "scripts/__tests__/submission-check-gate.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 0,
+      "failedOnMain": 0,
+      "class": "load-noise"
+    },
+    {
+      "file": "scripts/assets/cc0/__tests__/promote.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 0,
+      "failedOnMain": 0,
+      "class": "load-noise"
+    },
+    {
+      "file": "src/app/api/play/__tests__/api-profile.test.ts",
+      "failedOnP42": 2,
+      "failedOnP42Alone": 2,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "final API profile over a provider double (D1) create: one call in the Messages format, the key only in the provider header, the AI child stored",
+        "final API profile over a provider double (D1) repair: an unplayable answer gets one repair round and the repaired game is published"
+      ]
+    },
+    {
+      "file": "src/app/api/play/__tests__/director-hedge.test.ts",
+      "failedOnP42": 2,
+      "failedOnP42Alone": 2,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "getDirector with a local fallback a stalled subscription call ends with the local answer and authoredBy",
+        "getDirector with a local fallback PLAY_DIRECTOR_HEDGE_MS moves the moment the fallback starts"
+      ]
+    },
+    {
+      "file": "src/app/api/play/__tests__/director-route.test.ts",
+      "failedOnP42": 9,
+      "failedOnP42Alone": 9,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "gpt-oss-20b first, astra as capped backup the primary wins when it answers, and the backup is never asked",
+        "gpt-oss-20b first, astra as capped backup the backup wins when it answers first, and the hanging primary is cancelled",
+        "gpt-oss-20b first, astra as capped backup bills the backup from its own cap, so a tight main cap still lets it play",
+        "gpt-oss-20b first, astra as capped backup an exhausted backup cap leaves the game on the primary alone",
+        "the minimum time left depends on the model calls hosted gpt-oss with 40 s left, where an astra primary is skipped",
+        "the paid backup has its own pool of slots (T2a, T2b) starts while two director calls hold both play slots",
+        "the paid backup has its own pool of slots (T2a, T2b) refuses a third paid backup while two are in flight",
+        "the paid backup has its own pool of slots (T2a, T2b) gives its slot back when the backup fails or times out",
+        "the paid backup has its own pool of slots (T2a, T2b) a free llama.cpp backup takes no slot, even with two in flight"
+      ]
+    },
+    {
+      "file": "src/app/api/play/__tests__/publish-moderation.test.ts",
+      "failedOnP42": 2,
+      "failedOnP42Alone": 2,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "věta: rychlá verze a AI verze AI verze se zakázaným textem skončí draft-final BLOCKED, rychlá verze zůstane",
+        "věta: rychlá verze a AI verze čistá AI verze dál projde jako ready"
+      ]
+    },
+    {
+      "file": "src/app/api/play/__tests__/routes.test.ts",
+      "failedOnP42": 3,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 2,
+      "class": "regression",
+      "regressionTests": [
+        "skutečný kompilátor, verifikátor a režisér (P23-D T1) osm startovních vět → hratelné recepty; každá 201 a GET nese ověřené keypointy"
+      ]
+    },
+    {
+      "file": "src/app/api/play/__tests__/upgrade.test.ts",
+      "failedOnP42": 18,
+      "failedOnP42Alone": 18,
+      "failedOnMain": 1,
+      "class": "regression",
+      "regressionTests": [
+        "POST s větou: návrh hned, režisér na pozadí pending → ready: autorská verze je dítě návrhu s rodokmenem a vodopádem",
+        "POST s větou: návrh hned, režisér na pozadí autorské dítě se do denního stropu publikací nepočítá (R11)",
+        "POST s větou: návrh hned, režisér na pozadí autorská hra s neprošlým caller keypointem zůstane návrhem bez dítěte",
+        "POST s větou: návrh hned, režisér na pozadí neprošlý keypoint dostane opravné kolo a opravená hra se publikuje",
+        "POST s větou: návrh hned, režisér na pozadí neopravený keypoint zůstane NOT_PLAYABLE i po opravných kolech",
+        "POST s větou: návrh hned, režisér na pozadí návrh zachová skákání a odmítne plošinovku, která ztratila pronásledovatele",
+        "POST s větou: návrh hned, režisér na pozadí běžec vylepšený běžcem je ready a dítě zůstane běžcem",
+        "POST s větou: návrh hned, režisér na pozadí návrh zachová běh i útěk a odmítne běžce, který ztratil pronásledovatele",
+        "GET …/upgrade uložený přechodný důvod (starší build) se nečte – nový pokus (revize R10 kolo 2)",
+        "GET …/upgrade přechodný výpadek modelu se nepamatuje – další dotaz dostane nový pokus (revize R10)",
+        "GET …/upgrade každý pokus zapíše začátek, příčinu a konec v tomto pořadí do console.warn (P30A T7b)",
+        "GET …/upgrade vyčerpaný počet diváka se nepamatuje – další dotaz dostane vlastní pokus (revize R8)",
+        "GET …/upgrade připojený divák přechodného pokusu dostane pending a jeho další dotaz vlastní pokus (R13)",
+        "GET …/upgrade táž autorská verze zapsaná dvakrát s jinými časy je exists, ne conflict",
+        "AI verze se nabídne i bez zisku věrnosti (P38) věrnější (ledovec dostane sadu sněhu) verze je hotová jako dítě návrhu",
+        "AI verze se nabídne i bez zisku věrnosti (P38) opravený nepřítel zachová původní obsah verze je hotová jako dítě návrhu",
+        "AI verze se nabídne i bez zisku věrnosti (P38) opravený cíl zachová původní hrnec verze je hotová jako dítě návrhu"
+      ],
+      "preExistingTests": [
+        "POST s větou: návrh hned, režisér na pozadí odpoví návrhem dřív, než režisér doběhne, a pod 3 s"
+      ]
+    },
+    {
+      "file": "src/components/play/arcade/__tests__/hero-motion.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 1,
+      "class": "pre-existing",
+      "preExistingTests": [
+        "runner hero motion (P32A T5) motion on and off give the same replay hash and never touch the state"
+      ]
+    },
+    {
+      "file": "src/components/play/arcade/__tests__/chaser-in-frame.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "a chaser named by the sentence is in the camera frame (P39 T16) platform: run from zombies and jump over cars in a city"
+      ]
+    },
+    {
+      "file": "src/components/play/arcade/__tests__/named-goal.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "the renderer draws the named voyage goal while delivery remains unmet"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/director-answer-roles.test.ts",
+      "failedOnP42": 8,
+      "failedOnP42Alone": 8,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "the thing the player uses is never a role repairs it with the enemy and the chaser count of the sentence, so the water never chases the firefighter",
+        "the thing the player uses is never a role keeps the quick version off the tool too",
+        "the AI version adds what the sentence says and the quick version misses plays the chaser the sentence names – the quick version already has it as the default quest chaser",
+        "the runner rides by the sentence, not by the model hands the sentence to the read, so the directed game rides too",
+        "the platformer keeps the sentence’s item and goal when the model leaves them out (P35 T9) hands the sentence to the read, so the directed game has the goal too",
+        "the AI version plays a cast thing of the sentence the quick version missed shoots the animals the sentence names, where the quick version only jumps logs",
+        "the AI version throws what the sentence throws throws the pinecones the answer left out, not the acorns it collects",
+        "the AI version throws what the sentence throws throws the pinecones after the repair drops an ammo the sentence never said"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/director-authored-by.test.ts",
+      "failedOnP42": 4,
+      "failedOnP42Alone": 4,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "authoredBy names the model of the answer and survives the cache",
+        "authoredBy does not cache a game the local fallback wrote, in the answer or in a repair round",
+        "authoredBy adds the model that wrote the repair round, and both survive the cache",
+        "authoredBy has no authoredBy when the branch does not name a model"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/director-compact.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "compact request direct() sends the compact contract, retains named roles and proves the obstacle through a harmful-contact probe"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/director-critic.test.ts",
+      "failedOnP42": 8,
+      "failedOnP42Alone": 8,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "fidelity of a GenreSpec answer passes the quick cast: A mouse flees a haunted library while a ghost cat chases it to the front door.",
+        "fidelity of a GenreSpec answer passes the quick cast: runner game where you collect people and your crowd gets bigger then fight the boss at the end",
+        "fidelity of a GenreSpec answer passes the quick cast: escape room in a spaceship",
+        "fidelity of a GenreSpec answer passes the quick cast: A surfer rides giant waves and does tricks while avoiding sharks",
+        "fidelity of a GenreSpec answer passes the quick cast: be a bee collecting pollen and bringing it to the hive",
+        "fidelity of a GenreSpec answer passes the quick cast: pop ten balloons at a birthday party",
+        "fidelity of a GenreSpec answer passes the quick cast: a dragon burns down villages and dodges arrows from knights",
+        "fidelity of a GenreSpec answer passes the quick cast: a goldfish swims through a sunken city dodging sharks"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/director.test.ts",
+      "failedOnP42": 13,
+      "failedOnP42Alone": 13,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "direct – the model answers a good GenreSpec answer is authored in one call: the genre module builds the game",
+        "direct – the model answers every ready mode is authored on the control its genre module compiles, with the hero the answer named",
+        "direct – the model answers a failed keypoint costs one RFC 6902 round and the patched game is accepted",
+        "direct – the model answers carries the critic warnings of the accepted spec, not of the first one",
+        "direct – failure paths fall back to the draft, never throw a blocking issue that survives the last round → the draft genre, authored, failure UNREPAIRED after exactly 3 calls, never 4",
+        "direct – failure paths fall back to the draft, never throw a keypoint that keeps failing costs at most two rounds – 3 calls, never 4 – and the game is not cached",
+        "direct – failure paths fall back to the draft, never throw maxRepairRounds: 0 means no repair call at all",
+        "direct – failure paths fall back to the draft, never throw a branch that dies during a repair round over a blocking issue → draft + MODEL_UNAVAILABLE",
+        "direct – cache the second direct of the same sentence is cached with zero calls, whitespace and case aside",
+        "direct – cache a broken record in the store is a miss",
+        "direct – cache a cached spec the critic blocks today is a miss – the model is called again",
+        "direct – cache an unrepaired game played as the draft genre is never written – the next direct calls the model again",
+        "direct – cache a store that throws is a miss on read and silent on write"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/draft-nearest.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "nearest arcade game for a sentence the draft does not know publishes 'j05': 'pop ten balloons at a birthday party'"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/draft-reading.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "draft from the local reading the counts of the reading land in a new genre game"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/draft-unsupported.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "a sentence without a game verb stays quiet for a sentence with a verb, a noun cue, or once the AI version is another game"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/draft.test.ts",
+      "failedOnP42": 17,
+      "failedOnP42Alone": 17,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: only up but in a candy land",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: tank battle in a desert",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: car racing game",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: drift around a mountain road at night",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: like mario kart but with shopping carts",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: A pizza delivery scooter races through traffic to deliver before the pizza gets cold",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: monster truck jumping over cars",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: boat race through a jungle river full of crocodiles",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: motorbike stunts on crazy ramps in the sky",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: escape the police in a stolen ice cream truck",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: bumper cars arena",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: park the cars in a jammed parking lot, tap them to drive out in the right order",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: A surfer rides giant waves and does tricks while avoiding sharks",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: like overcooked but in a food truck",
+        "draftGameSpecWithMeta through the genres (P32B T2) drafts through a recipe without legacy fallback: A multiplayer city where I build my house, drive cars, rob banks and the cops chase me like GTA",
+        "draftGameSpecWithMeta through the genres (P32B T2) names every hero and item the template draft drew in the P30B baseline",
+        "draftGameSpecWithMeta through the genres (P32B T2) keeps roles and place apart prefers the place the look set knows"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/fidelity-chain.test.ts",
+      "failedOnP42": 3,
+      "failedOnP42Alone": 3,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "fidelityChain counts the named collectible in the selected live scene as read and drawn",
+        "fidelityChain reads the roles a genre arena builds bodies for and draws them only with the model the scene gives them",
+        "fidelityChain counts a verb of a genre game when its mode is the one the verb plays"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/fidelity-offline.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "offline fidelity loss map draws the supermarket of the shopping cart race"
+      ]
+    },
+    {
+      "file": "src/play/__tests__/hero-drawn.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "suiteError": "No playable assembly: assembled.stationary: /controlParams/count: Too big: expected number to be <=3 (generator quest_station)"
+    },
+    {
+      "file": "src/play/__tests__/items-drawn.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "suiteError": "No playable assembly: assembled.stationary: /controlParams/count: Too big: expected number to be <=3 (generator quest_station)"
+    },
+    {
+      "file": "src/play/arcade/__tests__/quest.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 0,
+      "failedOnMain": 0,
+      "class": "load-noise"
+    },
+    {
+      "file": "src/play/compile/__tests__/scenery-carve.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 1,
+      "class": "pre-existing",
+      "preExistingTests": [
+        "grid scenery – the arena cut leaves the family whole the carve removes zero triangles for every grid fixture and family"
+      ]
+    },
+    {
+      "file": "src/play/director/__tests__/composed-content.test.ts",
+      "failedOnP42": 2,
+      "failedOnP42Alone": 2,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "composed answers preserve sentence content and actual omissions omitted ammo becomes the stated pinecone, while unsupported clauses remain unmet",
+        "composed answers preserve sentence content and actual omissions wrong ammo becomes the stated pinecone, while unsupported clauses remain unmet"
+      ]
+    },
+    {
+      "file": "src/play/director/__tests__/legacy-native-params.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "validated legacy content migrates to native parameters keeps the named dog in an authored native chase and truthfully reports every missing action"
+      ]
+    },
+    {
+      "file": "src/play/director/__tests__/recipe-end-to-end.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "recipe answers through direct keeps a native glide assembly when the model answers in the legacy genre format"
+      ]
+    },
+    {
+      "file": "src/play/director/__tests__/retrieval.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "nearestExamples gives 3–5 examples within the character budget: 'j05'"
+      ]
+    },
+    {
+      "file": "src/play/fidelity/__tests__/checklist.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "sentenceChecklist cuts the word the draft left after the noun, so the match is the noun"
+      ]
+    },
+    {
+      "file": "src/play/genre/__tests__/families.test.ts",
+      "failedOnP42": 2,
+      "failedOnP42Alone": 2,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "family chop on dev-150 plays the family genre with the hero action and the sentence object in ≥ 90 % of its sentences",
+        "u08 collects the named carrots and admits the missing digging action"
+      ]
+    },
+    {
+      "file": "src/play/genre/__tests__/lives.test.ts",
+      "failedOnP42": 1,
+      "failedOnP42Alone": 1,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "the number of lives a sentence says the quick draft carries it into the game: A pirate ship sails between islands with seven lives → 7"
+      ]
+    },
+    {
+      "file": "src/play/genre/__tests__/roles.test.ts",
+      "failedOnP42": 8,
+      "failedOnP42Alone": 8,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "roles of a new game come only from the sentence or setting defaults: throw a basketball into a hoop from crazy angles",
+        "roles of a new game come only from the sentence or setting defaults: A snowball rolls through a village getting bigger and flattening snowmen",
+        "roles of a new game come only from the sentence or setting defaults: penalty kicks against a goalkeeper",
+        "roles of a new game come only from the sentence or setting defaults: basketball free throws",
+        "roles of a new game come only from the sentence or setting defaults: mini golf with windmills and loops",
+        "roles of a new game come only from the sentence or setting defaults: table tennis vs a robot",
+        "roles of a new game give 'cat' the genre, mode and hero the set expects",
+        "roles of a new game give 'rocket' the genre, mode and hero the set expects"
+      ]
+    },
+    {
+      "file": "src/play/version/__tests__/remix-diff.test.ts",
+      "failedOnP42": 2,
+      "failedOnP42Alone": 2,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "remixChips 4. the swap-enemy chip names the new obstacle and the one it replaced",
+        "remixChips 5. the harder chip says faster when the pace moves from its default, new rules when only tuning numbers move"
+      ]
+    },
+    {
+      "file": "src/server/__tests__/upstream-hosted.test.ts",
+      "failedOnP42": 3,
+      "failedOnP42Alone": 3,
+      "failedOnMain": 0,
+      "class": "regression",
+      "regressionTests": [
+        "the director pays a hosted call through the process spend cap reserves the worst case before the call and settles the metered price after it",
+        "the director pays a hosted call through the process spend cap bills the paid openai: fallback through its own cap (P30A T3)",
+        "the director pays a hosted call through the process spend cap never caches a game the paid fallback wrote under the primary key"
+      ]
+    }
+  ]
+}
