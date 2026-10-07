@@ -49,6 +49,8 @@ import { pauseWhenAway } from './focus';
 import { type LoadedGhost, loadGhost } from './GhostSlot';
 import { isTyping } from './input';
 import { heroActionOf } from './action-cue/cues';
+import { verbLine, verbLineShown } from './action-cue/verb-line';
+import { VerbLine } from './action-cue/VerbLine';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
 import { ZONE_HINTS } from './touch-zones';
@@ -599,6 +601,7 @@ function ArcadePlayGame({
     if (!offline && record === null) setBest(readBest(versionId));
   }, [offline, record, versionId]);
   const survive = arcade.rules.some((rule) => rule.id === 'survive_time');
+  const verb = useMemo(() => verbLine(spec), [spec]);
   const goal = useMemo(() => (challenge === null ? bestGoal(best, ARCADE_HZ, survive) : dareGoal(challenge, ARCADE_HZ, survive)), [best, challenge, survive]);
   const goalLabel = challenge === null ? 'best' : 'dare';
   const beaten = goal !== null && goal.score !== null && snapshot.score > goal.score;
@@ -855,6 +858,8 @@ function ArcadePlayGame({
                 dare={challenge === null ? null : { goal: dareStart(challenge, ARCADE_HZ, survive), changed: challenge.liveChanges > 0 }}
               />
             )}
+            {/* Sloveso, které hra hraje (P43 T7), první tři vteřiny po prvním tahu. Cílovou větu doplňuje, nenahrazuje. */}
+            {running && active && verb !== null && verbLineShown(snapshot.tick, ARCADE_HZ, demo === null) && <VerbLine line={verb} />}
           </>
         }
       />

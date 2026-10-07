@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { GameSpecV1 } from '@/play/spec';
 
-import { VERB_LINE_MAX, verbLine } from '../verb-line';
+import { VERB_LINE_MAX, VERB_LINE_SECONDS, verbLine, verbLineShown } from '../verb-line';
 
 type Role = { id: string; kind: string; label: string };
 const spec = (control: string, objective: { kind: string; role?: string }, roles: Role[], addons: string[] = []) =>
@@ -33,5 +33,19 @@ describe('verbLine', () => {
     const long = verbLine(spec('move_free', { kind: 'collect', role: 'item' }, [{ id: 'item', kind: 'collectible', label: 'very long winding description of a magical glowing gemstone' }]));
     expect(long).toBe('Grab them!');
     expect(VERB_LINE_MAX).toBe(50);
+  });
+});
+
+describe('verbLineShown', () => {
+  const hz = 60;
+  it('shows only in the first three seconds of the player run, after the first move', () => {
+    expect(verbLineShown(0, hz, true)).toBe(false); // tick 0 belongs to "Tap to start"
+    expect(verbLineShown(1, hz, true)).toBe(true);
+    expect(verbLineShown(VERB_LINE_SECONDS * hz - 1, hz, true)).toBe(true);
+    expect(verbLineShown(VERB_LINE_SECONDS * hz, hz, true)).toBe(false);
+  });
+
+  it('stays hidden while the robot demo plays', () => {
+    expect(verbLineShown(30, hz, false)).toBe(false);
   });
 });

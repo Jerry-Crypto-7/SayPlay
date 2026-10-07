@@ -12,6 +12,14 @@ import { type CueVerb, verbsOfSpec } from './cues';
 
 export const VERB_LINE_MAX = 50;
 
+/** Jak dlouho řádek visí: první tři vteřiny hry hráče (cíl P43 – „do 3 s“). */
+export const VERB_LINE_SECONDS = 3;
+
+/** Řádek se ukáže až po prvním tahu (tik 0 patří výzvě „Tap to start“), jen v běhu hráče, ne v ukázce robota. */
+export function verbLineShown(tick: number, hz: number, playerRun: boolean): boolean {
+  return playerRun && tick > 0 && tick < VERB_LINE_SECONDS * hz;
+}
+
 /** Jak sloveso zní hráči; chybějící sloveso (dojít, přežít, rytmus, „interact“) řádek nemá – to řekne cílová věta. */
 const SAY: Partial<Record<CueVerb, (things: string) => string>> = {
   shoot: (things) => `Shoot the ${things}!`,
