@@ -2765,3 +2765,34 @@ button.play-feed-card {
     animation: none;
   }
 }
+
+/* Interní trychtýř smyčky `/play/stats` (P44B T13): papírová tabulka kitu, čísla v zarovnaných sloupcích. */
+.play-stats {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--sp-space-8) var(--_side);
+}
+
+.play-stats-window {
+  margin-top: var(--sp-space-6);
+}
+
+.play-stats-table {
+  width: 100%;
+  margin-top: var(--sp-space-3);
+  border-collapse: collapse;
+  background: var(--sp-surface);
+  border: var(--sp-border-base) solid var(--sp-outline);
+  font-variant-numeric: tabular-nums;
+}
+
+.play-stats-table th,
+.play-stats-table td {
+  padding: var(--sp-space-2) var(--sp-space-3);
+  border-bottom: var(--sp-border-thin) solid var(--sp-outline);
+  text-align: left;
+}
+
+.play-stats-table td:last-child {
+  color: var(--sp-text-secondary);
+}
