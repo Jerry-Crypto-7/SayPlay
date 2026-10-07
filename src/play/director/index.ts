@@ -118,7 +118,7 @@ function readComposedAnswer(body: unknown, intent: Intent, seed: number, reading
       const read = readRecipeAnswer(body);
       if (!read.ok) return read;
       const cell = liveCells().find(candidate => recipeKey(candidate.recipe) === recipeKey(read.value.recipe))!;
-      if ([cell.recipe.move, ...cell.recipe.actions, ...cell.recipe.threats].some(verb => intent.negated.includes(verb))) return { ok: false, reason: 'MALFORMED_SPEC', detail: 'recipe contains an explicitly forbidden action' };
+      if ([cell.recipe.move, cell.recipe.objective, ...cell.recipe.actions, ...cell.recipe.threats].some(verb => intent.negated.includes(verb))) return { ok: false, reason: 'MALFORMED_SPEC', detail: 'recipe contains an explicitly forbidden action' };
       const { recipe: _recipe, unmet, ...content } = read.value;
       const checked = readRecipeContent(cell, content);
       if (!checked.ok) return { ok: false, reason: 'MALFORMED_SPEC', detail: checked.issues.join('; ') };
