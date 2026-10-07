@@ -10,7 +10,7 @@ import { BALL_PLAYER, DEFAULT_LABELS, defaultCollectible, defaultFoe } from '../
 import { essentialTriples, type Intent, type IntentTriple } from '../intent/contract';
 import type { GameSpecV1 } from '../spec';
 import type { Reading } from '../read/schema';
-import { assemble, sourceFor, type AssemblySource } from './assemble';
+import { assemble, sourceFor, unplayed, type AssemblySource } from './assemble';
 import { compileRecipe } from './compile';
 import { namedProjectiles } from './projectiles';
 import { type RecipeAssembly } from './presets';
@@ -180,9 +180,13 @@ export function compose(intent: Intent, seed = 1, reading: Reading | null = null
   const ranking = hasKnownAction ? classified.ranked : draftChoiceOrder(intent.sentence, classified, reading);
   const issues: string[] = [];
   const attempted = new Set<string>();
-  for (const choice of ranking) {
-    const fallback = { genre: choice.genre, mode: choice.mode, hero: intent.hero ?? 'fox', setting: intent.setting ?? 'forest' } as GenreSpec;
-    const source = sourceFor(intent, fallback);
+  // A reading whose movement cannot play a requested action yields to a later reading
+  // that can ("collect and shoot" is no shooting gallery); ties keep the rank.
+  const sources = ranking.map((choice, rank) => {
+    const source = sourceFor(intent, { genre: choice.genre, mode: choice.mode, hero: intent.hero ?? 'fox', setting: intent.setting ?? 'forest' } as GenreSpec);
+    return { source, rank, missing: unplayed(source) };
+  }).sort((a, b) => a.missing - b.missing || a.rank - b.rank);
+  for (const { source } of sources) {
     const requested = assemble(intent, source, contentOf(intent, source, reading));
     // A failed combination is reduced one independent part at a time. Every
     // removed/unproved triple is still included in the public admission.

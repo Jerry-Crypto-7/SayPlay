@@ -59,6 +59,20 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
   return { id: `assembled.${move}`, recipe, preset, assembly: 'native' };
 }
 
+/** Actions a movement plays itself (`compileAssembly`, track addons, the arena's pickups). */
+const MOVE_ACTIONS: Partial<Record<Recipe['move'], readonly string[]>> = {
+  run: ['shoot', 'collect'], jump: ['shoot', 'collect'], drive: ['shoot', 'collect'],
+  glide: ['shoot', 'collect'], walk: ['collect'], roam: ['collect'], ball: ['kick', 'throw'],
+};
+/** Actions an attachable part plays on any movement. */
+const PART_ACTIONS = ['fight', 'duel', 'deliver', 'interact'];
+
+/** Requested actions a source plays neither itself nor through an attachable part. */
+export function unplayed(source: AssemblySource): number {
+  const own = [...(MOVE_ACTIONS[source.recipe.move] ?? []), ...PRESETS[`${source.preset.genre}.${source.preset.mode}`]!.actions];
+  return source.recipe.actions.filter(verb => !own.includes(verb) && !PART_ACTIONS.includes(verb)).length;
+}
+
 /** Names belong to parts, not to whichever genre happened to provide scenery. */
 export function assemble(intent: Intent, source: AssemblySource, content: GenreSpec): RecipeAssembly {
   const parts: (AssemblyPart & { label: string })[] = [];
