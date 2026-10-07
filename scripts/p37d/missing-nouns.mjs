@@ -36,6 +36,8 @@ if (isMain && !process.features.typescript) {
   const run = spawnSync(process.execPath, ['--experimental-strip-types', '--no-warnings', fileURLToPath(import.meta.url), ...process.argv.slice(2)], { stdio: 'inherit' });
   process.exit(run.status ?? 1);
 }
+// Lexikon importuje bez přípon (`../arcade/look`) – doplní je `ts-paths.mjs`, vitest sám.
+if (!process.env.VITEST) await import('../ts-paths.mjs');
 const { singular } = await import('../../src/play/draft/lexicon.ts');
 const { heroClass } = await import('../../src/play/genre/roles.ts');
 
