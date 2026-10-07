@@ -1,0 +1,1328 @@
+{
+ "about": "P43 T2 dev visibility panel: 30 sentences picked once on 2026-10-07 before any P43 render change – 20 from evals/play/p37a/dev-150.json and 10 from evals/play/p30/dev.json; in each set two thirds have a verb the offline chain proves played (witness, round-robin over genres by id) and one third do not (round-robin over groups). Never contains test-200 or sealed-100. Tune on this panel only.",
+ "sentences": [
+  {
+   "id": "f01",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a dragon guards its gold hoard from greedy knights inside a volcano",
+   "checklist": [
+    {
+     "item": "dragon",
+     "slot": "hero",
+     "match": [
+      "dragon"
+     ]
+    },
+    {
+     "item": "gold hoard",
+     "slot": "role",
+     "match": [
+      "gold",
+      "coin",
+      "treasure"
+     ]
+    },
+    {
+     "item": "knights",
+     "slot": "role",
+     "match": [
+      "knight",
+      "soldier",
+      "armor"
+     ]
+    },
+    {
+     "item": "volcano",
+     "slot": "setting",
+     "match": [
+      "volcano",
+      "lava",
+      "cave"
+     ]
+    },
+    {
+     "item": "guard",
+     "slot": "verb",
+     "controls": [
+      "shooter",
+      "duel"
+     ],
+     "mechanics": [
+      "spawn_wave"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f02",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "an ogre arm wrestles a frost giant in a smoky mountain tavern",
+   "checklist": [
+    {
+     "item": "ogre",
+     "slot": "hero",
+     "match": [
+      "ogre",
+      "troll"
+     ]
+    },
+    {
+     "item": "frost giant",
+     "slot": "role",
+     "match": [
+      "giant",
+      "yeti",
+      "ice"
+     ]
+    },
+    {
+     "item": "tavern",
+     "slot": "setting",
+     "match": [
+      "tavern",
+      "inn",
+      "pub"
+     ]
+    },
+    {
+     "item": "wrestle",
+     "slot": "verb",
+     "controls": [
+      "duel",
+      "timing"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f03",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "An elf archer shoots goblins from the treetops.",
+   "checklist": [
+    {
+     "item": "elf archer",
+     "slot": "hero",
+     "match": [
+      "elf",
+      "archer",
+      "bow"
+     ]
+    },
+    {
+     "item": "goblins",
+     "slot": "role",
+     "match": [
+      "goblin"
+     ]
+    },
+    {
+     "item": "treetops",
+     "slot": "setting",
+     "match": [
+      "tree",
+      "treetop",
+      "forest"
+     ]
+    },
+    {
+     "item": "shoot",
+     "slot": "verb",
+     "controls": [
+      "shooter"
+     ],
+     "mechanics": [
+      "defeat"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f04",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a troll collects toll coins from travelers crossing his bridge",
+   "checklist": [
+    {
+     "item": "troll",
+     "slot": "hero",
+     "match": [
+      "troll",
+      "ogre"
+     ]
+    },
+    {
+     "item": "coins",
+     "slot": "role",
+     "match": [
+      "coin",
+      "gold",
+      "money"
+     ]
+    },
+    {
+     "item": "travelers",
+     "slot": "role",
+     "match": [
+      "traveler",
+      "villager",
+      "people",
+      "knight"
+     ]
+    },
+    {
+     "item": "bridge",
+     "slot": "setting",
+     "match": [
+      "bridge",
+      "river"
+     ]
+    },
+    {
+     "item": "collect",
+     "slot": "verb",
+     "controls": [
+      "move_free"
+     ],
+     "mechanics": [
+      "collectible"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f05",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a fairy lights lanterns along a moonlit forest path",
+   "checklist": [
+    {
+     "item": "fairy",
+     "slot": "hero",
+     "match": [
+      "fairy",
+      "pixie"
+     ]
+    },
+    {
+     "item": "lanterns",
+     "slot": "role",
+     "match": [
+      "lantern",
+      "lamp",
+      "light"
+     ]
+    },
+    {
+     "item": "forest path",
+     "slot": "setting",
+     "match": [
+      "forest",
+      "path",
+      "tree",
+      "night"
+     ]
+    },
+    {
+     "item": "light",
+     "slot": "verb",
+     "controls": [
+      "move_free",
+      "flap"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f08",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a unicorn gallops across a rainbow to reach a castle in the clouds",
+   "checklist": [
+    {
+     "item": "unicorn",
+     "slot": "hero",
+     "match": [
+      "unicorn",
+      "horse"
+     ]
+    },
+    {
+     "item": "rainbow",
+     "slot": "role",
+     "match": [
+      "rainbow"
+     ]
+    },
+    {
+     "item": "cloud castle",
+     "slot": "setting",
+     "match": [
+      "castle",
+      "cloud",
+      "sky"
+     ]
+    },
+    {
+     "item": "gallop",
+     "slot": "verb",
+     "controls": [
+      "runner",
+      "platform"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f11",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a necromancer raises a skeleton army in a foggy graveyard",
+   "checklist": [
+    {
+     "item": "necromancer",
+     "slot": "hero",
+     "match": [
+      "necromancer",
+      "wizard",
+      "sorcerer",
+      "warlock"
+     ]
+    },
+    {
+     "item": "skeleton army",
+     "slot": "role",
+     "match": [
+      "skeleton",
+      "undead",
+      "zombie"
+     ]
+    },
+    {
+     "item": "graveyard",
+     "slot": "setting",
+     "match": [
+      "graveyard",
+      "cemetery",
+      "grave",
+      "tombstone"
+     ]
+    },
+    {
+     "item": "raise",
+     "slot": "verb",
+     "controls": [],
+     "mechanics": [
+      "spawn_wave"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f12",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a baby dragon learns to fly over a medieval town",
+   "checklist": [
+    {
+     "item": "baby dragon",
+     "slot": "hero",
+     "match": [
+      "dragon",
+      "baby dragon"
+     ]
+    },
+    {
+     "item": "medieval town",
+     "slot": "setting",
+     "match": [
+      "town",
+      "village",
+      "castle",
+      "houses"
+     ]
+    },
+    {
+     "item": "fly",
+     "slot": "verb",
+     "controls": [
+      "flap"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f17",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a phoenix rises from the ashes over a burning desert",
+   "checklist": [
+    {
+     "item": "phoenix",
+     "slot": "hero",
+     "match": [
+      "phoenix",
+      "firebird",
+      "bird"
+     ]
+    },
+    {
+     "item": "ashes",
+     "slot": "role",
+     "match": [
+      "ash",
+      "fire",
+      "flame"
+     ]
+    },
+    {
+     "item": "desert",
+     "slot": "setting",
+     "match": [
+      "desert",
+      "sand",
+      "dune"
+     ]
+    },
+    {
+     "item": "rise",
+     "slot": "verb",
+     "controls": [
+      "flap"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f22",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "A knight fights a three-headed hydra at the castle gates.",
+   "checklist": [
+    {
+     "item": "knight",
+     "slot": "hero",
+     "match": [
+      "knight",
+      "armor",
+      "soldier"
+     ]
+    },
+    {
+     "item": "hydra",
+     "slot": "role",
+     "match": [
+      "hydra",
+      "dragon",
+      "serpent",
+      "monster"
+     ]
+    },
+    {
+     "item": "castle gates",
+     "slot": "setting",
+     "match": [
+      "castle",
+      "gate"
+     ]
+    },
+    {
+     "item": "fight",
+     "slot": "verb",
+     "controls": [
+      "duel"
+     ],
+     "mechanics": [
+      "defeat"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f24",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a cyclops hurls boulders at passing ships from a seaside cliff",
+   "checklist": [
+    {
+     "item": "cyclops",
+     "slot": "hero",
+     "match": [
+      "cyclops",
+      "giant",
+      "one eye"
+     ]
+    },
+    {
+     "item": "boulders",
+     "slot": "role",
+     "match": [
+      "boulder",
+      "rock",
+      "stone"
+     ]
+    },
+    {
+     "item": "ships",
+     "slot": "role",
+     "match": [
+      "ship",
+      "boat"
+     ]
+    },
+    {
+     "item": "cliff",
+     "slot": "setting",
+     "match": [
+      "cliff",
+      "sea",
+      "coast"
+     ]
+    },
+    {
+     "item": "hurl",
+     "slot": "verb",
+     "controls": [
+      "throw"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "f26",
+   "source": "p37a-dev",
+   "group": "fantasy",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "an enchanted broom escapes from the wizard's castle",
+   "checklist": [
+    {
+     "item": "broom",
+     "slot": "hero",
+     "match": [
+      "broom",
+      "broomstick"
+     ]
+    },
+    {
+     "item": "wizard",
+     "slot": "role",
+     "match": [
+      "wizard",
+      "mage"
+     ]
+    },
+    {
+     "item": "castle",
+     "slot": "setting",
+     "match": [
+      "castle",
+      "tower"
+     ]
+    },
+    {
+     "item": "escape",
+     "slot": "verb",
+     "controls": [
+      "runner",
+      "move_free"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "m02",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "unknown-verb",
+    "short"
+   ],
+   "text": "cat lasers",
+   "checklist": [
+    {
+     "item": "cat",
+     "slot": "any",
+     "match": [
+      "cat",
+      "kitten"
+     ]
+    },
+    {
+     "item": "lasers",
+     "slot": "role",
+     "match": [
+      "laser",
+      "beam",
+      "light"
+     ]
+    },
+    {
+     "item": "shoot",
+     "slot": "verb",
+     "controls": [
+      "shooter"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "m06",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "fantasy",
+    "short"
+   ],
+   "text": "dragon taxi",
+   "checklist": [
+    {
+     "item": "dragon",
+     "slot": "any",
+     "match": [
+      "dragon"
+     ]
+    },
+    {
+     "item": "passengers",
+     "slot": "role",
+     "match": [
+      "passenger",
+      "people",
+      "villager",
+      "rider"
+     ]
+    },
+    {
+     "item": "ferry",
+     "slot": "verb",
+     "controls": [
+      "flap",
+      "move_free"
+     ],
+     "mechanics": [
+      "carry",
+      "delivery"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "m09",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "typo"
+   ],
+   "text": "ninja cat jumpin on rooftops plz",
+   "checklist": [
+    {
+     "item": "ninja cat",
+     "slot": "hero",
+     "match": [
+      "cat",
+      "ninja",
+      "kitten"
+     ]
+    },
+    {
+     "item": "rooftops",
+     "slot": "setting",
+     "match": [
+      "rooftop",
+      "roof",
+      "city",
+      "building"
+     ]
+    },
+    {
+     "item": "jump",
+     "slot": "verb",
+     "controls": [
+      "platform",
+      "runner"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "m16",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "two-verbs"
+   ],
+   "text": "a kangaroo jumps over cars then collects coins on the highway",
+   "checklist": [
+    {
+     "item": "kangaroo",
+     "slot": "hero",
+     "match": [
+      "kangaroo"
+     ]
+    },
+    {
+     "item": "cars",
+     "slot": "role",
+     "match": [
+      "car",
+      "vehicle"
+     ]
+    },
+    {
+     "item": "coins",
+     "slot": "role",
+     "match": [
+      "coin",
+      "gold"
+     ]
+    },
+    {
+     "item": "highway",
+     "slot": "setting",
+     "match": [
+      "highway",
+      "road"
+     ]
+    },
+    {
+     "item": "jump",
+     "slot": "verb",
+     "controls": [
+      "platform",
+      "runner"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "m17",
+   "source": "p37a-dev",
+   "group": "mix",
+   "tags": [
+    "unknown-verb",
+    "two-verbs"
+   ],
+   "text": "grandma knits a sweater while her cat unravels it",
+   "checklist": [
+    {
+     "item": "grandma",
+     "slot": "hero",
+     "match": [
+      "grandma",
+      "grandmother",
+      "old woman"
+     ]
+    },
+    {
+     "item": "sweater",
+     "slot": "role",
+     "match": [
+      "sweater",
+      "yarn",
+      "wool"
+     ]
+    },
+    {
+     "item": "cat",
+     "slot": "role",
+     "match": [
+      "cat",
+      "kitten"
+     ]
+    },
+    {
+     "item": "knit",
+     "slot": "verb",
+     "controls": [
+      "timing",
+      "rhythm"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "n01",
+   "source": "p37a-dev",
+   "group": "non-game",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "text": "file my expense report with a pile of crumpled receipts",
+   "checklist": [
+    {
+     "item": "expense report",
+     "slot": "any",
+     "match": [
+      "report",
+      "document",
+      "paper",
+      "form"
+     ]
+    },
+    {
+     "item": "receipts",
+     "slot": "any",
+     "match": [
+      "receipt",
+      "paper",
+      "bill"
+     ]
+    },
+    {
+     "item": "file",
+     "slot": "verb",
+     "controls": []
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "n03",
+   "source": "p37a-dev",
+   "group": "non-game",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "text": "monday morning standup meeting with the sales team",
+   "checklist": [
+    {
+     "item": "sales team",
+     "slot": "role",
+     "match": [
+      "team",
+      "coworker",
+      "office worker",
+      "people"
+     ]
+    },
+    {
+     "item": "meeting room",
+     "slot": "setting",
+     "match": [
+      "meeting room",
+      "office",
+      "conference room",
+      "desk"
+     ]
+    },
+    {
+     "item": "talk",
+     "slot": "verb",
+     "controls": []
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "u08",
+   "source": "p37a-dev",
+   "group": "unknown-verb",
+   "tags": [
+    "unknown-verb"
+   ],
+   "text": "a mole digs tunnels under the farm looking for lost carrots",
+   "checklist": [
+    {
+     "item": "mole",
+     "slot": "hero",
+     "match": [
+      "mole"
+     ]
+    },
+    {
+     "item": "carrots",
+     "slot": "role",
+     "match": [
+      "carrot",
+      "vegetable"
+     ]
+    },
+    {
+     "item": "farm",
+     "slot": "setting",
+     "match": [
+      "farm",
+      "field",
+      "tunnel",
+      "dirt"
+     ]
+    },
+    {
+     "item": "dig",
+     "slot": "verb",
+     "controls": [
+      "move_free",
+      "tap_go"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p37a/dev-150.json"
+  },
+  {
+   "id": "d01",
+   "source": "dev",
+   "tags": [],
+   "text": "a hedgehog rolls down a mushroom hill avoiding foxes",
+   "checklist": [
+    {
+     "item": "hedgehog",
+     "slot": "hero",
+     "match": [
+      "hedgehog"
+     ]
+    },
+    {
+     "item": "fox",
+     "slot": "role",
+     "match": [
+      "fox"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "mushroom hill",
+     "slot": "setting",
+     "match": [
+      "mushroom",
+      "hill",
+      "forest"
+     ]
+    },
+    {
+     "item": "roll",
+     "slot": "verb",
+     "controls": [
+      "steer",
+      "runner"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "d02",
+   "source": "dev",
+   "tags": [
+    "non-game",
+    "unknown-verb"
+   ],
+   "text": "teach my little brother the multiplication table",
+   "checklist": [
+    {
+     "item": "brother",
+     "slot": "any",
+     "match": [
+      "brother",
+      "boy",
+      "kid",
+      "child"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "multiplication table",
+     "slot": "any",
+     "match": [
+      "number",
+      "math",
+      "multiplication",
+      "table"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "teach",
+     "slot": "verb",
+     "controls": []
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "d03",
+   "source": "dev",
+   "tags": [
+    "fantasy",
+    "unknown-verb"
+   ],
+   "text": "a witch brews potions in a crooked tower during a thunderstorm",
+   "checklist": [
+    {
+     "item": "witch",
+     "slot": "hero",
+     "match": [
+      "witch"
+     ]
+    },
+    {
+     "item": "potion",
+     "slot": "any",
+     "match": [
+      "potion",
+      "cauldron",
+      "flask",
+      "bottle"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "crooked tower",
+     "slot": "setting",
+     "match": [
+      "tower"
+     ]
+    },
+    {
+     "item": "brew",
+     "slot": "verb",
+     "controls": [
+      "timing"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "d08",
+   "source": "dev",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a mermaid collects pearls while avoiding jellyfish",
+   "checklist": [
+    {
+     "item": "mermaid",
+     "slot": "hero",
+     "match": [
+      "mermaid"
+     ]
+    },
+    {
+     "item": "pearl",
+     "slot": "role",
+     "match": [
+      "pearl",
+      "shell"
+     ],
+     "does": "collect"
+    },
+    {
+     "item": "jellyfish",
+     "slot": "role",
+     "match": [
+      "jellyfish",
+      "jelly"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "collect",
+     "slot": "verb",
+     "controls": [],
+     "mechanics": [
+      "collectible"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "d10",
+   "source": "dev",
+   "tags": [
+    "fantasy"
+   ],
+   "text": "a pirate duels a skeleton captain on a sinking ship",
+   "checklist": [
+    {
+     "item": "pirate",
+     "slot": "hero",
+     "match": [
+      "pirate",
+      "buccaneer"
+     ]
+    },
+    {
+     "item": "skeleton captain",
+     "slot": "role",
+     "match": [
+      "skeleton",
+      "captain",
+      "undead"
+     ],
+     "does": "fight"
+    },
+    {
+     "item": "ship",
+     "slot": "setting",
+     "match": [
+      "ship",
+      "deck",
+      "boat"
+     ]
+    },
+    {
+     "item": "duel",
+     "slot": "verb",
+     "controls": [
+      "duel"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "d11",
+   "source": "dev",
+   "tags": [],
+   "text": "tap along to the drums at a jungle festival",
+   "checklist": [
+    {
+     "item": "drums",
+     "slot": "any",
+     "match": [
+      "drum"
+     ],
+     "does": "scenery"
+    },
+    {
+     "item": "jungle festival",
+     "slot": "setting",
+     "match": [
+      "jungle",
+      "festival"
+     ]
+    },
+    {
+     "item": "tap to the beat",
+     "slot": "verb",
+     "controls": [
+      "rhythm"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "d12",
+   "source": "dev",
+   "tags": [
+    "unknown-verb"
+   ],
+   "text": "a goldfish swims through a sunken city dodging sharks",
+   "checklist": [
+    {
+     "item": "goldfish",
+     "slot": "hero",
+     "match": [
+      "goldfish",
+      "fish"
+     ]
+    },
+    {
+     "item": "shark",
+     "slot": "role",
+     "match": [
+      "shark"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "sunken city",
+     "slot": "setting",
+     "match": [
+      "sunken",
+      "underwater",
+      "atlantis",
+      "ruin"
+     ]
+    },
+    {
+     "item": "swim",
+     "slot": "verb",
+     "controls": [
+      "flap",
+      "move_free",
+      "runner"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "d14",
+   "source": "dev",
+   "tags": [],
+   "text": "a bear sneaks into a campsite to steal honey",
+   "checklist": [
+    {
+     "item": "bear",
+     "slot": "hero",
+     "match": [
+      "bear"
+     ]
+    },
+    {
+     "item": "honey",
+     "slot": "role",
+     "match": [
+      "honey",
+      "jar",
+      "pot"
+     ],
+     "does": "collect"
+    },
+    {
+     "item": "campsite",
+     "slot": "setting",
+     "match": [
+      "camp",
+      "campsite",
+      "tent",
+      "forest"
+     ]
+    },
+    {
+     "item": "steal",
+     "slot": "verb",
+     "controls": [],
+     "mechanics": [
+      "collectible",
+      "patrol"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "s021",
+   "source": "corpus",
+   "text": "obby game with lava and spinning bars",
+   "checklist": [
+    {
+     "item": "lava",
+     "slot": "role",
+     "match": [
+      "lava",
+      "magma"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "spinning bar",
+     "slot": "role",
+     "match": [
+      "bar",
+      "spinner",
+      "beam"
+     ],
+     "does": "avoid"
+    },
+    {
+     "item": "jump",
+     "slot": "verb",
+     "controls": [
+      "platform"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  },
+  {
+   "id": "s035",
+   "source": "corpus",
+   "text": "like flappy bird but underwater",
+   "checklist": [
+    {
+     "item": "bird",
+     "slot": "hero",
+     "match": [
+      "bird",
+      "fish"
+     ]
+    },
+    {
+     "item": "underwater",
+     "slot": "setting",
+     "match": [
+      "underwater",
+      "sea",
+      "ocean",
+      "reef",
+      "deep"
+     ]
+    },
+    {
+     "item": "flap",
+     "slot": "verb",
+     "controls": [
+      "flap"
+     ]
+    }
+   ],
+   "panelFrom": "evals/play/p30/dev.json"
+  }
+ ]
+}

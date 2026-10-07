@@ -19,6 +19,26 @@ node --experimental-strip-types scripts/play-fidelity.mjs run --set p43-sealed -
 
 Bez `--open-sealed-once` (nebo `--open-test-once`) běh odmítne. S ním se před první větou zapíše `sealed-opened.json` (čas, běh, commit, SHA-256) a každé další otevření odmítne.
 
+## `panel.json` a `visible.measure.ts` – vývojový panel viditelnosti
+
+30 vět vybraných jednou 7. 10. 2026 před první změnou vykreslení P43: 20 z `p37a/dev-150.json`, 10 z `p30/dev.json`; v každé sadě dvě třetiny se slovesem, které offline řetěz dokáže jako hrané (svědek), po žánrech, a třetina bez něj, po skupinách. Ladí se jen na něm. Měřidlo (`visible.ts`) čte jen panel; zapečetěnou sadu otevře až s `P43_OPEN_SEALED_ONCE=1` po běhu, který pečeť zlomil (hlídá `__tests__/visible.test.ts`).
+
+```
+node --experimental-strip-types scripts/play-fidelity.mjs run --set <cesta>/evals/play/p43/panel.json --clip --draft-only --gpu --run <id>
+node --experimental-strip-types scripts/play-fidelity.mjs judge --clip --run <id>     # 30 volání Codexu
+P43_RUN=<id> P43_OUT=<soubor>.json npx vitest run --config vitest.measure.mts evals/play/p43/visible.measure.ts
+```
+
+| | `baseline.json` |
+|---|---|
+| sloveso poznané v klipu | 8/30 |
+| sloveso poznané u vět se svědkem | 7/20 |
+| hrdina modelem | 17/23 |
+| hrdina poznaný | 7/23 |
+| položka modelem | 13/38 |
+
+Baseline 7. 10. 2026: klip z buildu `118f26da` (před změnami vykreslení P43), návrh bez režiséra, běh `p43-baseline`.
+
 ## `missing.json` – podstatná jména bez modelu
 
 `npx vitest run --config vitest.measure.mts evals/play/p43/missing.measure.ts` – sady demand, fidelity, judge-10, P30 dev, dev-150 a celá P41 (od P42 vývojová). Zapečetěné sady se nečtou.
