@@ -37,14 +37,20 @@ if (isMain && !process.features.typescript) {
   process.exit(run.status ?? 1);
 }
 const { singular } = await import('../../src/play/draft/lexicon.ts');
+const { heroClass } = await import('../../src/play/genre/roles.ts');
 
-/** Sady vět; `optional` = soubor ještě nemusí existovat. Zapečetěná sada tu chybí schválně. */
+/**
+ * Sady vět; `optional` = soubor ještě nemusí existovat. Zapečetěné sady
+ * (`p30/test-200.json`, `p43/sealed-100.json`) tu chybí schválně. Sada P41 je
+ * od P42 celá vývojová, včetně dřívější held-out skupiny.
+ */
 export const SETS = [
   { name: 'demand', file: 'evals/play/demand/corpus.json' },
   { name: 'fidelity', file: 'evals/play/fidelity/corpus.json' },
   { name: 'judge-10', file: 'evals/play/fidelity/judge-10.json' },
   { name: 'dev', file: 'evals/play/p30/dev.json' },
   { name: 'dev-150', file: 'evals/play/p37a/dev-150.json', optional: true },
+  { name: 'p41', file: 'evals/play/p41/sentences.json', optional: true },
 ];
 
 const OBJECT_SLOTS = new Set(['hero', 'role', 'any']);
@@ -83,8 +89,21 @@ export function coveredVocabulary({ index, playEntries, rigged }) {
 export const parseNotNouns = (text) =>
   new Set(text.split(/\r?\n/).filter((line) => !line.startsWith('#')).flatMap((line) => line.split(/\s+/)).filter(Boolean).flatMap(wordsOf));
 
-/** Věty sady, ať je soubor pole (poptávka) nebo `{ sentences }` (sady s kontrolním seznamem). */
-const sentencesOf = (data) => (Array.isArray(data) ? data : data.sentences);
+/**
+ * Věty sady: pole (poptávka), `{ sentences }` (sady s kontrolním seznamem), nebo
+ * `{ groups }` (P41) – tam podstatná jména nesou hrdina a trojice aktér–sloveso–předmět.
+ */
+export function sentencesOf(data) {
+  if (Array.isArray(data)) return data;
+  if (data.sentences !== undefined) return data.sentences;
+  return Object.values(data.groups).flat().map((item) => {
+    const nouns = new Set([item.hero, ...item.essential.flatMap((triple) => [triple.actor, triple.object])].filter((noun) => noun !== null && noun !== 'hero'));
+    return { id: item.id, text: item.sentence, checklist: [...nouns].map((noun) => ({ item: noun, slot: noun === item.hero ? 'hero' : 'any', match: [] })) };
+  });
+}
+
+/** Třída modelu pro řazení výroby (zvíře, vozidlo, …); `null`, když ji slovo neprozradí. */
+const categoryOf = (noun) => heroClass(noun);
 
 /**
  * Rozdělí slova vět do přihrádek (viz hlavička souboru).
@@ -148,7 +167,7 @@ export function missingNouns({ sets, common, notNouns, covered }) {
 
   const bins = { covered: [], undrawable: [], missing: [], settings: [], unclassified: [] };
   for (const [word, entry] of counts) {
-    const row = { noun: word, sentences: entry.sentences, sources: [...entry.sources].sort(), examples: entry.examples };
+    const row = { noun: word, category: categoryOf(word), sentences: entry.sentences, sources: [...entry.sources].sort(), examples: entry.examples };
     if (isCovered(word)) bins.covered.push(row);
     else if (abstract.has(word)) bins.undrawable.push(row);
     else if (notNouns.has(word)) continue;
@@ -181,22 +200,31 @@ export function loadInputs(root = ROOT) {
   };
 }
 
-if (isMain) {
-  const inputs = loadInputs();
+/**
+ * Zapíše přihrádky do `out` (cesta od kořene repa), jeden řádek na slovo.
+ * Holý `node` lexikon dnes nenačte (adresářový import v `lexicon.ts`), proto
+ * P43 volá tuhle funkci z `evals/play/p43/missing.measure.ts` přes vitest.
+ */
+export function writeReport(out = 'evals/play/p37d/missing.json', inputs = loadInputs()) {
   const result = missingNouns(inputs);
   const compact = (rows) => rows.map((row) => JSON.stringify(row));
-  const out = {
+  const report = {
     about:
-      'P37D T1: nouns jurors write that the PLAY catalog cannot draw. Sentences from the sets below (the sealed test-200 is never read) plus evals/play/p37d/common-nouns.json; one bin per word, in this order: covered (catalog id, tag or hero identity, or a checklist match word), undrawable (abstract), not-nouns.txt (dropped), missing, settings (drawn by the scene), unclassified (belongs on a list, not in production). missing is ranked by sentence count, then by the common-nouns order. Written by node scripts/p37d/missing-nouns.mjs.',
+      'P37D T1: nouns jurors write that the PLAY catalog cannot draw. Sentences from the sets below (the sealed test-200 and p43/sealed-100 are never read) plus evals/play/p37d/common-nouns.json; one bin per word, in this order: covered (catalog id, tag or hero identity, or a checklist match word), undrawable (abstract), not-nouns.txt (dropped), missing, settings (drawn by the scene), unclassified (belongs on a list, not in production). missing is ranked by sentence count, then by the common-nouns order; category is the model class the word reveals (P43). Written by scripts/p37d/missing-nouns.mjs.',
     sets: Object.fromEntries(inputs.sets.map((set) => [set.name, set.sentences.length])),
     uniqueSentences: result.sentences,
     counts: Object.fromEntries(['missing', 'undrawable', 'settings', 'unclassified', 'covered'].map((bin) => [bin, result[bin].length])),
   };
   // Jeden řádek na slovo: diff dávky je pak čitelný.
-  const lines = JSON.stringify(out, null, 1).replace(/\n}$/, '');
+  const lines = JSON.stringify(report, null, 1).replace(/\n}$/, '');
   const bins = ['missing', 'undrawable', 'settings', 'unclassified', 'covered']
     .map((bin) => `,\n "${bin}": [\n  ${compact(result[bin]).join(',\n  ')}\n ]`)
     .join('');
-  writeFileSync(path.join(ROOT, 'evals/play/p37d/missing.json'), `${lines}${bins}\n}\n`);
-  console.log(JSON.stringify(out.counts));
+  writeFileSync(path.resolve(ROOT, out), `${lines}${bins}\n}\n`);
+  return report.counts;
+}
+
+if (isMain) {
+  const at = process.argv.indexOf('--out');
+  console.log(JSON.stringify(writeReport(at > 0 ? process.argv[at + 1] : undefined)));
 }
