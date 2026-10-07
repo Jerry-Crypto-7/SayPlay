@@ -62,9 +62,10 @@ afterEach(() => {
 });
 
 describe('/play/stats', () => {
-  it('is never indexed and never cached', () => {
+  it('is never indexed, never cached and never leaks the key as a referrer', () => {
     expect(dynamic).toBe('force-dynamic');
     expect(metadata.robots).toMatchObject({ index: false, follow: false });
+    expect(metadata.referrer).toBe('no-referrer');
   });
 
   it('shows 7 and 14 day counts, adjacent conversion and the strongest game – no ids, no sentence', async () => {

@@ -6,7 +6,8 @@ import { RECENT_CAP, versionStoreFromEnv } from '@/play/version';
 import { statsAccess } from '@/server/stats-access';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'sayplay – loop funnel', robots: { index: false, follow: false } };
+// `no-referrer`: klíč z adresy by jinak odešel v `Referer` s prvním kliknutím (nález revize T13-1).
+export const metadata: Metadata = { title: 'sayplay – loop funnel', robots: { index: false, follow: false }, referrer: 'no-referrer' };
 
 const LABEL: Record<FunnelStage, string> = { say: 'Say', play: 'Play', finish: 'Finish', share: 'Share', open: 'Open', beat: 'Beat', remix: 'Remix' };
 const WINDOWS = [7, 14] as const;
