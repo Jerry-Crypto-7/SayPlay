@@ -7,6 +7,7 @@
  * akce, kterou hra nehraje. Simulace tenhle modul nikdy nečte.
  */
 
+import { ROLE } from '@/play/arcade/contract';
 import type { ActionId, ObjectiveId } from '@/play/intent/contract';
 import type { GameSpecV1 } from '@/play/spec';
 
@@ -19,8 +20,8 @@ export type CueVerb = ActionId | ObjectiveId;
  * viditelnou událost (trefa do rytmu, skóre míče) a podnět nedostane.
  */
 export const CUE_EVENTS: Readonly<Record<CueVerb, readonly VisualEventKind[]>> = {
-  shoot: ['hit', 'death'],
-  throw: ['hit', 'death'],
+  shoot: ['spawn', 'hit', 'death'],
+  throw: ['spawn', 'hit', 'death'],
   fight: ['hit', 'death'],
   beat: ['hit', 'death'],
   duel: ['hit', 'death'],
@@ -40,6 +41,9 @@ export const CUE_EVENTS: Readonly<Record<CueVerb, readonly VisualEventKind[]>> =
   time: [],
   score: [],
 };
+
+/** Slovesa, která dokazuje vypuštěná střela (`spawn` těla `ROLE.projectile`). */
+const LAUNCH: ReadonlySet<CueVerb> = new Set(['shoot', 'throw']);
 
 /** Události, které patří hrdinovi samému, ne tělu, se kterým něco udělal. */
 const OWN: readonly VisualEventKind[] = ['win', 'lose', 'land'];
@@ -65,6 +69,8 @@ export function cuesOf(verbs: readonly CueVerb[], events: readonly VisualEvent[]
     if (own !== (event.body === player)) continue;
     for (const verb of verbs) {
       if (!CUE_EVENTS[verb].includes(event.kind)) continue;
+      // Vypuštěná střela je výstřel nebo hod; jiné nové tělo je stavba.
+      if (event.kind === 'spawn' && (event.role === ROLE.projectile) !== LAUNCH.has(verb)) continue;
       cues.push({ verb, at: event.tick, ...(own ? {} : { target: event.body }), x: event.x, y: event.y, z: event.z });
     }
   }
@@ -75,6 +81,15 @@ const BY_CONTROL: Partial<Record<string, CueVerb>> = { shooter: 'shoot', throw: 
 const BY_ADDON: Partial<Record<string, CueVerb>> = { shoot: 'shoot', collect: 'collect' };
 const BY_OBJECTIVE: Partial<Record<string, CueVerb>> = { reach: 'reach', checkpoints: 'reach', collect: 'collect', survive: 'survive', deliver: 'deliver', puzzle: 'interact', defeat_targets: 'defeat' };
 const BY_HERO_ACTION: Partial<Record<string, CueVerb>> = { throw: 'throw', carry: 'deliver', stack: 'stack' };
+
+/**
+ * Činnost hrdiny, kterou scéna kreslí: hra hodu bez vlastní činnosti drží
+ * míček v ruce a nahazuje (`heroAction` `throw`), ať je hod vidět i před prvním hodem.
+ */
+export function heroActionOf(spec: Pick<GameSpecV1, 'control' | 'heroAction'>): NonNullable<GameSpecV1['heroAction']> {
+  const own = spec.heroAction ?? 'none';
+  return own === 'none' && spec.control === 'throw' ? 'throw' : own;
+}
 
 /** Slovesa, která hra podle specu hraje (renderer `Intent` nezná). Bez duplicit, v pořadí ovládání → doplňky → cíl → akce hrdiny. */
 export function verbsOfSpec(spec: Pick<GameSpecV1, 'control' | 'addons' | 'objective' | 'heroAction'>): CueVerb[] {

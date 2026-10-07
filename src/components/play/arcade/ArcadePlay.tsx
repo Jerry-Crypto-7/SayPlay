@@ -48,6 +48,7 @@ import { publishLive } from './live-share';
 import { pauseWhenAway } from './focus';
 import { type LoadedGhost, loadGhost } from './GhostSlot';
 import { isTyping } from './input';
+import { heroActionOf } from './action-cue/cues';
 import { LiveBox, enterOpensLiveBox } from './LiveBox';
 import { holdUntilTouch, wakesGame } from './ready-gate';
 import { ZONE_HINTS } from './touch-zones';
@@ -840,7 +841,7 @@ function ArcadePlayGame({
         lookId={lookOf(spec.theme)}
         look={scene}
         enabled={active && running}
-        heroAction={spec.heroAction ?? 'none'}
+        heroAction={heroActionOf(spec)}
         // Ukázka robota není závod: duch jen v běhu hráče.
         ghost={demo === null && ghost !== null ? ghost : undefined}
         overlay={
