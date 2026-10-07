@@ -62,6 +62,11 @@ export function useInfoPart(part: InfoPart, node: ReactNode): boolean {
   return store !== null;
 }
 
+/** Je nad volajícím list „About this game“? Ve feedu ne – tam se nic navíc nenačítá. */
+export function useInInfoSheet(): boolean {
+  return useContext(InfoContext) !== null;
+}
+
 const NO_PARTS: Parts = {};
 const quiet = () => () => {};
 

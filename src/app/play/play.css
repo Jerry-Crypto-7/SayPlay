@@ -2134,6 +2134,30 @@ button.play-version-switch__item:not(:disabled) {
   font-variant-numeric: tabular-nums;
 }
 
+/* Řetěz remixů (P44B T11) pod rodokmenem v listu „About this game“: řádek na remix. */
+.play-remix-chain {
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-space-2);
+}
+
+.play-remix-chain-title {
+  color: var(--sp-text);
+  font-weight: 700;
+}
+
+.play-remix-chain-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-space-2);
+}
+
+.play-remix-chain-top {
+  font-variant-numeric: tabular-nums;
+}
+
 .play-chips {
   display: flex;
   flex-wrap: wrap;
