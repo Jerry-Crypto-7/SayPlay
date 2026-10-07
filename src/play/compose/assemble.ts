@@ -26,10 +26,16 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
     interact: { genre: 'quest', mode: 'station' }, stack: { genre: 'timing', mode: 'stack' },
     beat: { genre: 'rhythm', mode: 'default' },
   };
-  const preferred = explicit === undefined && implied === undefined && objective !== 'escape' ? actionDefaults[action[0]] : undefined;
+  // The sentence reading stands when its own recipe plays the requested action:
+  // lighting candles in a haunted house stays the spatial quest the reading chose.
+  const read = PRESETS[`${fallback.genre}.${fallback.mode}`]!;
+  const plays = (recipe: Recipe) => action.every(verb => recipe.actions.includes(verb));
+  const first = action[0];
+  const preferred = explicit === undefined && implied === undefined && objective !== 'escape' && first !== undefined && !read.actions.includes(first) ? actionDefaults[first] : undefined;
   const selected = { ...fallback, ...preferred } as GenreSpec;
   const base = PRESETS[`${selected.genre}.${selected.mode}`]!;
-  const move = explicit ?? implied ?? (objective === 'escape' ? 'run' : objective === 'race' ? 'run' : base.move);
+  // A race keeps a movement that can race (the reading drives a cart); otherwise it runs.
+  const move = explicit ?? implied ?? (objective === 'escape' ? 'run' : objective === 'race' ? (['drive', 'glide'].includes(base.move) ? base.move : 'run') : base.move);
   const threats = items.filter(item => item.axis === 'threat').map(item => item.verb) as Recipe['threats'];
   const defaults: Partial<Record<Recipe['move'], Pick<GenreSpec, 'genre' | 'mode'>>> = {
     run: { genre: 'runner', mode: 'default' }, jump: { genre: 'platformer', mode: 'default' },
@@ -38,9 +44,14 @@ export function sourceFor(intent: Intent, fallback: GenreSpec): AssemblySource {
     ball: { genre: 'throw', mode: 'default' },
     roam: { genre: 'arena', mode: action.includes('fight') && !action.some(verb => ['collect', 'deliver', 'interact'].includes(verb)) ? 'fight' : objective === 'survive' || objective === 'escape' || intent.negated.includes('collect') ? 'escape' : 'collect' },
   };
-  const preset = { ...selected, ...(items.some(item => item.axis !== 'unknown') ? defaults[move] : {}) } as GenreSpec;
+  // The movement's genre replaces a reading of another genre on the same movement
+  // only when that reading cannot play every requested action (a quest is no arena).
+  const moved = defaults[move];
+  const keepsReading = moved !== undefined && moved.genre !== selected.genre && move === base.move && plays(base);
+  const preset = { ...selected, ...(items.some(item => item.axis !== 'unknown') && !keepsReading ? moved : {}) } as GenreSpec;
+  const assembled = PRESETS[`${preset.genre}.${preset.mode}`]!;
   const recipe: Recipe = { move, actions: [...new Set(action.length ? action : move === base.move ? base.actions : [])].filter(verb => !intent.negated.includes(verb)),
-    objective: objective ?? (move === 'ball' ? 'score' : move === 'drive' || move === 'glide' || move === 'walk' ? 'reach' : base.objective),
+    objective: objective ?? (move === 'ball' ? 'score' : move === 'drive' || move === 'glide' || move === 'walk' ? 'reach' : assembled.objective),
     threats: [...new Set(threats)].filter(verb => !intent.negated.includes(verb)) };
   return { id: `assembled.${move}`, recipe, preset, assembly: 'native' };
 }
@@ -59,7 +70,7 @@ export function assemble(intent: Intent, source: AssemblySource, content: GenreS
       kind === 'chaser' && (['run', 'jump', 'drive', 'walk', 'roam'].includes(source.recipe.move) || source.recipe.move === 'glide' && source.recipe.objective === 'escape') ||
       kind === 'fight' && source.recipe.move === 'roam' && source.preset.mode === 'fight' ||
       kind === 'duel' && source.recipe.move === 'stationary' && source.preset.genre === 'duel' ||
-      kind === 'interact' && source.recipe.move === 'stationary' && source.preset.genre === 'quest' ||
+      kind === 'interact' && source.preset.genre === 'quest' && ['stationary', 'roam'].includes(source.recipe.move) ||
       kind === 'deliver' && source.recipe.move === 'drive' && source.recipe.actions.length === 1 && source.recipe.threats.length === 0;
     if (native && phaseAt < 0) continue;
     const label = item.axis === 'threat' ? item.actor : item.object;
