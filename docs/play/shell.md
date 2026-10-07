@@ -122,7 +122,7 @@ ani cookie.** Obojí za `admit` (páka `sessions`, identita, okno `play`).
 | Krok | Kód | Stav |
 |---|---|---|
 | identita vypnutá (Vercel nebo sdílené úložiště bez `PLAY_IDENTITY_SECRET`, tajemství kratší než 32 znaků) | `IDENTITY_UNAVAILABLE` | 503 |
-| `GET`: 21. nová identita za den z jednoho volajícího (`NEW_PLAYERS_PER_DAY`) | `NEW_PLAYER_QUOTA` | 429 + `retry-after: 3600` |
+| `GET`: 21. nová identita za hodinu z jednoho volajícího (`NEW_PLAYERS_PER_HOUR`; volající jen z důvěryhodného konce, mimo Vercel jeden společný strop – `x-forwarded-for` píše volající) | `NEW_PLAYER_QUOTA` | 429 + `retry-after: 3600` |
 | `PUT` bez platné cookie (cookie nevydá) | `PLAYER_REQUIRED` | 403 |
 | `PUT` jiný `content-type` než JSON | `BAD_REQUEST` | 415 |
 | `PUT` vlastní okno `play/me` | `TOO_MANY_REQUESTS` / `SERVER_AT_CAPACITY` | 429 + `retry-after` |

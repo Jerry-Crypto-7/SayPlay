@@ -22,7 +22,7 @@
  * - `<prefix>:play:loop:<finish|dare|skip|start|clear>:<versionId>` – čítače událostí smyčky pro řazení
  *   feedu (P36B T9) a „clear rate“ (P37C T5), hlas `<prefix>:play:loop-vote:<čítač>:<versionId>:<hash volajícího>` na den,
  * - `<prefix>:play:player:<id hráče>` – JSON `PlayerRecord` (P44B T3), nově vydané identity
- *   `<prefix>:play:new-player:<den>:<hash volajícího>`.
+ *   `<prefix>:play:new-player:<hodina UTC>:<hash volajícího>`.
  *
  * **Rodokmen se píše při publikaci, ne počítá při čtení.** Chůze po `parentId`
  * by stála jedno čtení na předka – až 32 příkazů na jeden `GET` z veřejných
@@ -131,8 +131,8 @@ export interface VersionStore {
   /** Uloží hráče na dobu života hry. Výpadek je `VersionStoreUnavailable`. */
   putPlayer(playerId: string, player: PlayerRecord): Promise<void>;
   /**
-   * Započte volajícímu (`voter`) jednu nově vydanou identitu na dnešek; `false` = byla by nad
-   * `limit` (sybil, debata P44B T1). Výpadek úložiště je `VersionStoreUnavailable`.
+   * Započte volajícímu (`voter`) jednu nově vydanou identitu v této hodině (UTC); `false` = byla
+   * by nad `limit` (sybil, debata P44B T1). Výpadek úložiště je `VersionStoreUnavailable`.
    */
   countNewPlayer(voter: string, limit: number): Promise<boolean>;
 }
@@ -771,7 +771,8 @@ function versionStoreOver(id: string, prefix: string, raw: RawStore, limits: Wri
     },
     async countNewPlayer(voter, limit) {
       try {
-        return (await raw.incr(`${prefix}:play:new-player:${quotaDay(now())}:${voter}`, 2 * 24 * 3600)) <= limit;
+        // Hodina v UTC (`2026-10-07T21`); klíč vyprší po dvou.
+        return (await raw.incr(`${prefix}:play:new-player:${new Date(now()).toISOString().slice(0, 13)}:${voter}`, 2 * 3600)) <= limit;
       } catch (thrown) {
         throw new VersionStoreUnavailable(thrown);
       }

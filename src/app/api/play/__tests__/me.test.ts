@@ -13,7 +13,7 @@ import { __resetProcessVersionStore } from '@/play/version';
 import { issuePlayer, PLAYER_COOKIE } from '@/server/player-identity';
 import { MAX_REQUESTS_PER_WINDOW, resetRateWindows } from '@/server/rate-limit';
 
-import { NEW_PLAYERS_PER_DAY } from '../_player';
+import { NEW_PLAYERS_PER_HOUR } from '../_player';
 import { GET, PUT } from '../me/route';
 
 const SECRET = 'FIXTURE_ONLY_NOT_A_REAL_SECRET_0000000000';
@@ -147,27 +147,50 @@ describe.each(['memory', 'file'])('GET and PUT /api/play/me over the %s store', 
     expect(await nicknameOf(player.cookie)).toBe(player.nickname);
   });
 
-  it(`issues at most ${NEW_PLAYERS_PER_DAY} new identities a day to one caller`, async () => {
-    const caller = freshCaller();
-    for (let i = 0; i < NEW_PLAYERS_PER_DAY; i++) {
-      resetRateWindows();
-      expect((await GET(get(caller))).status).toBe(200);
+  it(`off Vercel a new x-forwarded-for does not reset the cap of ${NEW_PLAYERS_PER_HOUR} new identities an hour (review T3-1)`, async () => {
+    vi.useFakeTimers({ now: Date.parse('2026-10-07T20:10:00Z'), toFake: ['Date'] });
+    try {
+      const players = [];
+      for (let i = 0; i < NEW_PLAYERS_PER_HOUR; i++) players.push(await newPlayer());
+      const refused = await GET(get(freshCaller()));
+      expect(refused.status).toBe(429);
+      expect(((await refused.json()) as { error: { code: string } }).error.code).toBe('NEW_PLAYER_QUOTA');
+      expect(refused.headers.get('set-cookie')).toBeNull();
+      // Hráč, který cookie má, na strop nenarazí.
+      expect(await nicknameOf((players[0] as { cookie: string }).cookie)).toBe((players[0] as { nickname: string }).nickname);
+      // Další hodina strop obnoví.
+      vi.setSystemTime(Date.parse('2026-10-07T21:00:00Z'));
+      expect((await GET(get(freshCaller()))).status).toBe(200);
+    } finally {
+      vi.useRealTimers();
     }
-    const refused = await GET(get(caller));
-    expect(refused.status).toBe(429);
-    expect(((await refused.json()) as { error: { code: string } }).error.code).toBe('NEW_PLAYER_QUOTA');
-    expect(refused.headers.get('set-cookie')).toBeNull();
-    // Hráč, který cookie má, na strop nenarazí; jiný volající taky ne.
-    const player = await newPlayer();
-    expect((await GET(get(caller, player.cookie))).status).toBe(200);
   });
 
   it('PUT has its own rate window per caller', async () => {
-    const player = await newPlayer();
-    const caller = freshCaller();
-    // `admit` bere slot `play` (50 za okno) dřív než `play/me`; obě okna mají týž strop.
-    for (let i = 0; i < MAX_REQUESTS_PER_WINDOW; i++) expect((await PUT(put(caller, player.cookie, { nickname: 'Bo' }))).status).toBe(200);
-    expect((await PUT(put(caller, player.cookie, { nickname: 'Bo' }))).status).toBe(429);
+    // Pevný čas: okno stropu je 10 s hodin, smyčka nad souborovým úložištěm by jinak mohla jeho hranici přejít.
+    vi.useFakeTimers({ now: Date.parse('2026-10-07T20:10:00.500Z'), toFake: ['Date'] });
+    try {
+      const player = await newPlayer();
+      const caller = freshCaller();
+      // `admit` bere slot `play` (50 za okno) dřív než `play/me`; obě okna mají týž strop.
+      for (let i = 0; i < MAX_REQUESTS_PER_WINDOW; i++) expect((await PUT(put(caller, player.cookie, { nickname: 'Bo' }))).status).toBe(200);
+      expect((await PUT(put(caller, player.cookie, { nickname: 'Bo' }))).status).toBe(429);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe('on Vercel with a secret', () => {
+  it(`counts new identities per trusted caller (x-vercel-forwarded-for), ${NEW_PLAYERS_PER_HOUR} an hour`, async () => {
+    vi.stubEnv('VERCEL', '1');
+    const trusted = (ip: string): Request => new Request(URL_ME, { headers: { 'x-vercel-forwarded-for': ip, 'x-forwarded-for': freshCaller() } });
+    for (let i = 0; i < NEW_PLAYERS_PER_HOUR; i++) {
+      resetRateWindows();
+      expect((await GET(trusted('203.0.113.7'))).status).toBe(200);
+    }
+    expect((await GET(trusted('203.0.113.7'))).status).toBe(429);
+    expect((await GET(trusted('203.0.113.8'))).status).toBe(200);
   });
 });
 

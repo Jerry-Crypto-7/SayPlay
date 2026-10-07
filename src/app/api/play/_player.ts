@@ -1,29 +1,44 @@
 /**
  * Vydání identity hráče (P44B T3) pro dveře, které ji smí založit: `GET /api/play/me`
- * a výzva Dare (T5). Strop nových identit na volajícího a den drží sybil
+ * a výzva Dare (T5). Strop nových identit na volajícího a hodinu drží sybil
  * (debata T1); id jde ven jen v hlavičce `set-cookie`, nikdy v těle.
  */
+
+import { createHash } from 'node:crypto';
 
 import { type VersionStore, VersionStoreUnavailable } from '@/play/version';
 import { issuePlayer, playerCookie } from '@/server/player-identity';
 
 import { fail } from './_errors';
-import { voterOf } from './_publish';
+import { directorCallerOf } from './_publish';
 
-/** Kolik nových identit smí jeden volající dostat za den. */
-export const NEW_PLAYERS_PER_DAY = 20;
+/**
+ * Kolik nových identit smí jeden volající dostat za hodinu. Hodina, ne den (nález revize T3-1):
+ * jedno zařízení za sdílenou adresou (Wi-Fi na místě, NAT operátora) by jinak denní strop
+ * vyčerpalo všem za sebou za vteřinu – takhle nejvýš na hodinu.
+ */
+export const NEW_PLAYERS_PER_HOUR = 20;
+
+/**
+ * Hlas volajícího pro strop jen z důvěryhodného konce (nález revize T3-1, blokující): mimo
+ * Vercel `x-forwarded-for` píše volající a každou novou hodnotou by si strop obnovil. Takoví
+ * volající sdílejí jeden strop – týž kompromis jako denní počet režiséra (`directorCallerOf`).
+ */
+function newPlayerVoterOf(request: Request): string {
+  return createHash('sha256').update(directorCallerOf(request)).digest('hex').slice(0, 16);
+}
 
 export type Minted = { readonly ok: true; readonly id: string; readonly setCookie: string } | { readonly ok: false; readonly response: Response };
 
 export async function mintPlayer(request: Request, versions: VersionStore, secret: string): Promise<Minted> {
   let allowed: boolean;
   try {
-    allowed = await versions.countNewPlayer(voterOf(request), NEW_PLAYERS_PER_DAY);
+    allowed = await versions.countNewPlayer(newPlayerVoterOf(request), NEW_PLAYERS_PER_HOUR);
   } catch (thrown) {
     if (thrown instanceof VersionStoreUnavailable) return { ok: false, response: fail(503, 'STORE_UNAVAILABLE', 'player names are unavailable right now') };
     throw thrown;
   }
-  if (!allowed) return { ok: false, response: fail(429, 'NEW_PLAYER_QUOTA', "today's new player quota for this network is used up; try again tomorrow", { 'retry-after': '3600' }) };
+  if (!allowed) return { ok: false, response: fail(429, 'NEW_PLAYER_QUOTA', 'too many new players from this network right now; try again within the hour', { 'retry-after': '3600' }) };
   const { id, value } = issuePlayer(secret);
   return { ok: true, id, setCookie: playerCookie(value, request) };
 }

@@ -222,7 +222,8 @@ export type RateLimitedDoor =
   | 'play/events'
   // Výzva Dare (P36B T5) navíc ke slotu `play`: jedna stojí řádově víc CPU (`MAX_DARE_REQUESTS_PER_WINDOW`).
   | 'play/dare'
-  // Změna přezdívky (P44B T3) navíc ke slotu `play`: zápis do úložiště nemá ubírat z kvóty tvorby her.
+  // Změna přezdívky (P44B T3): vlastní okno na volajícího navíc ke slotu `play`, který bere už
+  // `admit` – strop instance i okno `play` sdílí s ostatními dveřmi (nález revize T3-1).
   | 'play/me';
 
 export interface RateVerdict {
