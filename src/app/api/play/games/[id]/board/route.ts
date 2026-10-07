@@ -26,9 +26,8 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
   const { id } = await context.params;
   if (!VERSION_ID_PATTERN.test(id)) return markVolatileStore(notFound());
 
+  // Žebříček dřív než hra: `get` výpadek spolkne jako `null` a z výpadku by bylo 404 (nález revize fáze 1).
   const versions = store();
-  if ((await versions.get(id)) === null) return markVolatileStore(notFound());
-
   let top;
   try {
     top = await versions.board(id, BOARD_SHOWN);
@@ -36,6 +35,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     if (thrown instanceof VersionStoreUnavailable) return fail(503, 'STORE_UNAVAILABLE', 'the leaderboard is unavailable right now');
     throw thrown;
   }
+  if ((await versions.get(id)) === null) return markVolatileStore(notFound());
   const you = playerOf(request);
   // simplified: jedno čtení hráče na řádek (až 10 příkazů Upstash na žebříček); dávka přes `getMany`, až čtení žebříčku zdraží úložiště.
   const players = await Promise.all(top.map(({ playerId }) => versions.getPlayer(playerId)));

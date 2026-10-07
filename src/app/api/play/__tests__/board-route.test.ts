@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { defaultNickname } from '@/play/player/nickname';
 import { packInputs } from '@/play/score/dare';
-import { __resetProcessVersionStore, versionStoreFromEnv, VersionStoreUnavailable } from '@/play/version';
+import { __resetProcessVersionStore, versionStoreFromEnv } from '@/play/version';
 import { PLAYER_COOKIE } from '@/server/player-identity';
 import { resetRateWindows } from '@/server/rate-limit';
 
@@ -129,14 +129,6 @@ describe.each(['memory', 'file'])('GET /api/play/games/:id/board over the %s sto
     expect((await read('../etc')).status).toBe(404);
   });
 
-  it('výpadek úložiště → 503, ne prázdný žebříček', async () => {
-    const { id } = await publishedGame();
-    vi.spyOn(versions(), 'board').mockRejectedValueOnce(new VersionStoreUnavailable('connect ECONNREFUSED'));
-    const down = await read(id);
-    expect(down.status).toBe(503);
-    expect(down.text).not.toContain('"rows"');
-  });
-
   it('vypínač all zavře i čtení žebříčku', async () => {
     const { id } = await publishedGame();
     const dir = mkdtempSync(join(tmpdir(), 'p44b-board-kill-'));
@@ -144,5 +136,20 @@ describe.each(['memory', 'file'])('GET /api/play/games/:id/board over the %s sto
     writeFileSync(join(dir, 'control.json'), JSON.stringify({ off: ['all'] }));
     vi.stubEnv('WORLDSMITH_CONTROL_FILE', join(dir, 'control.json'));
     expect((await read(id)).status).toBe(503);
+  });
+});
+
+describe('GET /api/play/games/:id/board when the shared store is down (P44B T6, phase 1 review)', () => {
+  it('nedostupný Upstash → 503, ne 404 ani prázdný žebříček', async () => {
+    vi.stubEnv('KV_REST_API_URL', 'https://kv.invalid');
+    vi.stubEnv('KV_REST_API_TOKEN', 'FIXTURE_ONLY_TOKEN');
+    vi.stubGlobal('fetch', () => Promise.reject(new TypeError('fetch failed')));
+    try {
+      const down = await read('f'.repeat(64));
+      expect(down.status).toBe(503);
+      expect(down.text).not.toContain('"rows"');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
